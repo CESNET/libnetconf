@@ -300,6 +300,9 @@ void nc_session_close (struct nc_session* session)
 		if (session->hostname != NULL) {
 			free (session->hostname);
 		}
+		if (session->username != NULL) {
+			free (session->username);
+		}
 		close (session->libssh2_socket);
 
 		if (session->capabilities != NULL) {

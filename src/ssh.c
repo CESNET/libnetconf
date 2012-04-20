@@ -522,6 +522,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->fd_input = -1;
 	retval->fd_output = -1;
 	retval->hostname = strdup(host);
+	retval->username = strdup(username);
 	retval->msgid = 1;
 
 	/* Create a session instance */
