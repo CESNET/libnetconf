@@ -275,7 +275,7 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 	return (dupmsg);
 }
 
-nc_rpc *nc_msg_server_hello(struct nc_session *session, char **cpblts)
+nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
 {
 	nc_rpc *msg;
 
@@ -286,7 +286,7 @@ nc_rpc *nc_msg_server_hello(struct nc_session *session, char **cpblts)
 
 	/* assign session-id */
 	/* check if session-id is prepared */
-	if (session->session_id[0] == 0) {
+	if (session_id == NULL || strlen(session_id) == 0) {
 		/* no session-id set */
 		ERROR("Hello: session ID is empty");
 		xmlFreeDoc(msg->doc);
@@ -295,7 +295,7 @@ nc_rpc *nc_msg_server_hello(struct nc_session *session, char **cpblts)
 	}
 
 	/* create <session-id> node */
-	xmlNewChild(msg->doc->children, NULL, BAD_CAST "session-id", BAD_CAST session->session_id);
+	xmlNewChild(msg->doc->children, NULL, BAD_CAST "session-id", BAD_CAST session_id);
 
 	return (msg);
 }

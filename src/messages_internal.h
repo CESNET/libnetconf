@@ -53,11 +53,11 @@ nc_rpc *nc_msg_client_hello(char **caps);
 /**
  * @brief Create server's \<hello\> message.
  * @ingroup internalAPI
- * @param session Session structure connected with this hello message.
  * @param caps List of server's capabilities.
+ * @param session_id Generated the NETCONF session ID string.
  * @return rpc structure with the created server's \<hello\> message.
  */
-nc_rpc *nc_msg_server_hello(struct nc_session *session, char **caps);
+nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id);
 
 /**
  * @ingroup internalAPI

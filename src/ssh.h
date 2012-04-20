@@ -96,4 +96,21 @@ void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference);
  */
 struct nc_session *nc_session_connect(const char *host, unsigned short port, const char *username, struct nc_cpblts* cpblts);
 
+/**
+ * @ingroup session
+ * @brief Accept NETCONF session from a client.
+ *
+ * The caller process of this function is supposed to run as SSH Subsystem
+ * application launched automatically by SSH server when the NETCONF subsystem
+ * request comes to the SSH server. Only one NETCONF session can be accepted in
+ * the single SSH Subsystem.
+ *
+ * @param[in] capabilities NETCONF capabilities structure with capabilities supported
+ * by the server. Caller can use nc_session_get_cpblts_default() to get the
+ * structure with the list of all capabilities supported by libnetconf (this is
+ * used in case of NULL parameter).
+ * @return Structure describing the accepted NETCONF session or NULL in case of error.
+ */
+struct nc_session *nc_session_accept(struct nc_cpblts* capabilities);
+
 #endif /* SSH_H_ */

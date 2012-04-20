@@ -70,6 +70,9 @@ static struct auth_pref_couple sshauth_pref[AUTH_COUNT] = {
 		{ NC_SSH_AUTH_PUBLIC_KEYS, 1 }
 };
 
+/* number of characters to store short number */
+#define SHORT_INT_LENGTH 6
+
 void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 {
 	int dir = 0;
@@ -255,49 +258,41 @@ char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 	return (capabilities);
 }
 
-int nc_client_handshake(struct nc_session *session, char** cpblts)
+int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello)
 {
-	nc_rpc *hello;
-	nc_reply *server_hello = NULL;
-	char **server_cpblts = NULL, **merged_cpblts = NULL;
 	int retval = EXIT_SUCCESS;
 	int i;
-
-	hello = nc_msg_client_hello(cpblts);
-	if (hello == NULL) {
-		return (EXIT_FAILURE);
-	}
+	nc_reply *recv_hello = NULL;
+	char **recv_cpblts = NULL, **merged_cpblts = NULL;
 
 	if (nc_session_send_rpc(session, hello) == 0) {
-		nc_rpc_free(hello);
-		return (EXIT_FAILURE);
-	}
-	nc_rpc_free(hello);
-
-	nc_session_recv_reply(session, &server_hello);
-	if (server_hello == NULL) {
 		return (EXIT_FAILURE);
 	}
 
-	if ((server_cpblts = nc_parse_hello((struct nc_msg*) server_hello, session)) == NULL) {
-		nc_reply_free(server_hello);
+	nc_session_recv_reply(session, &recv_hello);
+	if (recv_hello == NULL) {
 		return (EXIT_FAILURE);
 	}
-	nc_reply_free(server_hello);
 
-	if ((merged_cpblts = nc_merge_capabilities(cpblts, server_cpblts, &(session->version))) == NULL) {
+	if ((recv_cpblts = nc_parse_hello((struct nc_msg*) recv_hello, session)) == NULL) {
+		nc_reply_free(recv_hello);
+		return (EXIT_FAILURE);
+	}
+	nc_reply_free(recv_hello);
+
+	if ((merged_cpblts = nc_merge_capabilities(cpblts, recv_cpblts, &(session->version))) == NULL) {
 		retval = EXIT_FAILURE;
 	} else if ((session->capabilities = nc_cpblts_new(merged_cpblts)) == NULL) {
 		retval = EXIT_FAILURE;
 	}
 
-	if (server_cpblts) {
+	if (recv_cpblts) {
 		i = 0;
-		while (server_cpblts[i]) {
-			free(server_cpblts[i]);
+		while (recv_cpblts[i]) {
+			free(recv_cpblts[i]);
 			i++;
 		}
-		free(server_cpblts);
+		free(recv_cpblts);
 	}
 
 	if (merged_cpblts) {
@@ -308,6 +303,51 @@ int nc_client_handshake(struct nc_session *session, char** cpblts)
 		}
 		free(merged_cpblts);
 	}
+
+	return (retval);
+}
+
+int nc_client_handshake(struct nc_session *session, char** cpblts)
+{
+	nc_rpc *hello;
+	int retval;
+
+	/* just for sure, it should be already done */
+	memset(session->session_id, '\0', SID_SIZE);
+
+	/* create client's <hello> message */
+	hello = nc_msg_client_hello(cpblts);
+	if (hello == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	retval = nc_handshake(session, cpblts, hello);
+	nc_rpc_free(hello);
+
+	return (retval);
+}
+
+int nc_server_handshake(struct nc_session *session, char** cpblts)
+{
+	nc_rpc *hello;
+	int pid;
+	int retval;
+
+	/* set session ID == PID */
+	pid = (int)getpid();
+	if (snprintf(session->session_id, SID_SIZE, "%d", pid) <= 0) {
+		ERROR("Unable to generate NETCONF session ID.");
+		return (EXIT_FAILURE);
+	}
+
+	/* create server's <hello> message */
+	hello = nc_msg_server_hello(cpblts, session->session_id);
+	if (hello == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	retval = nc_handshake(session, cpblts, hello);
+	nc_rpc_free(hello);
 
 	return (retval);
 }
@@ -421,7 +461,71 @@ int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_SESSION
 	return (EXIT_FAILURE);
 }
 
-#define SHORT_INT_LENGTH 6
+struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
+{
+	static int uniqueness = 0;
+	struct nc_session *retval = NULL;
+	struct nc_cpblts *server_cpblts = NULL;
+	struct passwd *pw;
+
+	/* check, that this function is called only once in the process */
+	if (uniqueness != 0) {
+		VERB("You are trying to accept multiple NETCONF sessions in the single SSH NETCONF Subsystem.");
+		return (NULL);
+	} else {
+		uniqueness++;
+	}
+
+	/* allocate netconf session structure */
+	retval = malloc(sizeof(struct nc_session));
+	if (retval == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
+		uniqueness--;
+		return (NULL);
+	}
+	memset(retval, 0, sizeof(struct nc_session));
+	retval->libssh2_socket = -1;
+	retval->fd_input = STDIN_FILENO;
+	retval->fd_output = STDOUT_FILENO;
+
+	/*
+	 * get username - we are running as SSH Subsystem which was started
+	 * under the user which was connecting to NETCONF server
+	 */
+	pw = getpwuid(geteuid());
+	if (pw == NULL) {
+		/* unable to get correct username */
+		ERROR("Unable to set username for SSH connection (%s).", strerror(errno));
+		nc_session_close(retval);
+		uniqueness--;
+		return (NULL);
+	}
+	retval->username = strdup(pw->pw_name);
+
+	if (capabilities == NULL) {
+		if ((server_cpblts = nc_session_get_cpblts_default()) == NULL) {
+			VERB("Unable to set client's NETCONF capabilities.");
+			nc_session_close(retval);
+			uniqueness--;
+			return (NULL);
+		}
+	} else {
+		server_cpblts = capabilities;
+	}
+
+	if (nc_server_handshake(retval, server_cpblts->list) != 0) {
+		nc_session_close(retval);
+		uniqueness--;
+		return (NULL);
+	}
+
+	if (capabilities == NULL) {
+		nc_cpblts_free(server_cpblts);
+	}
+
+	return (retval);
+}
+
 struct nc_session *nc_session_connect(const char *host, unsigned short port, const char *username, struct nc_cpblts* cpblts)
 {
 	int i;
@@ -667,7 +771,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 	return (retval);
 
-	shutdown:
+shutdown:
 
 	/* cleanup */
 	nc_session_close(retval);
