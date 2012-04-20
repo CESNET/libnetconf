@@ -21,5 +21,6 @@ var group__session =
     [ "nc_cpblts_iter_next", "db/d52/group__session.html#gab7d5432fa16f2d44bc8411f51fafb7b9", null ],
     [ "nc_session_get_cpblts_default", "db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71", null ],
     [ "nc_ssh_pref", "db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0", null ],
-    [ "nc_session_connect", "db/d52/group__session.html#ga6b35fd9f2321a59f0117aa5c28a5d72e", null ]
+    [ "nc_session_connect", "db/d52/group__session.html#ga6b35fd9f2321a59f0117aa5c28a5d72e", null ],
+    [ "nc_session_accept", "db/d52/group__session.html#ga1bd6c4469064bf3e86538082b232c9cd", null ]
 ];

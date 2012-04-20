@@ -70,6 +70,7 @@ var NAVTREEINDEX =
 "db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10":[2,0,0,5,0],
 "db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0":[2,0,0,5,1],
 "db/d52/group__session.html#ga6b35fd9f2321a59f0117aa5c28a5d72e":[2,0,0,5,2],
+"db/d52/group__session.html#ga1bd6c4469064bf3e86538082b232c9cd":[2,0,0,5,3],
 "globals.html":[2,1,0],
 "globals_func.html":[2,1,1],
 "globals_type.html":[2,1,2],

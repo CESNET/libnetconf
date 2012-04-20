@@ -31,6 +31,10 @@ Functions to connect to NETCONF server via SSH2\&.
 .RI "struct nc_session * \fBnc_session_connect\fP (const char *host, unsigned short port, const char *username, struct nc_cpblts *cpblts)"
 .br
 .RI "\fICreate NETCONF session to the specified server\&. \fP"
+.ti -1c
+.RI "struct nc_session * \fBnc_session_accept\fP (struct nc_cpblts *capabilities)"
+.br
+.RI "\fIAccept NETCONF session from a client\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 

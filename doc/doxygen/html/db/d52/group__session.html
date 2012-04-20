@@ -168,6 +168,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set preference of the SSH authentication methods.  <a href="#ga13119fdaa84544bf254bdb35ffdf83e0"></a><br/></td></tr>
 <tr class="memitem:ga6b35fd9f2321a59f0117aa5c28a5d72e"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga6b35fd9f2321a59f0117aa5c28a5d72e">nc_session_connect</a> (const char *host, unsigned short port, const char *username, struct nc_cpblts *cpblts)</td></tr>
 <tr class="memdesc:ga6b35fd9f2321a59f0117aa5c28a5d72e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create NETCONF session to the specified server.  <a href="#ga6b35fd9f2321a59f0117aa5c28a5d72e"></a><br/></td></tr>
+<tr class="memitem:ga1bd6c4469064bf3e86538082b232c9cd"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga1bd6c4469064bf3e86538082b232c9cd">nc_session_accept</a> (struct nc_cpblts *capabilities)</td></tr>
+<tr class="memdesc:ga1bd6c4469064bf3e86538082b232c9cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept NETCONF session from a client.  <a href="#ga1bd6c4469064bf3e86538082b232c9cd"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's functions for handling NETCONF sessions. </p>
@@ -806,12 +808,46 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga1bd6c4469064bf3e86538082b232c9cd"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct nc_session* <a class="el" href="../../db/d52/group__session.html#ga1bd6c4469064bf3e86538082b232c9cd">nc_session_accept</a> </td>
+          <td>(</td>
+          <td class="paramtype">struct nc_cpblts *&#160;</td>
+          <td class="paramname"><em>capabilities</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">read</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Accept NETCONF session from a client. </p>
+<p>The caller process of this function is supposed to run as SSH Subsystem application launched automatically by SSH server when the NETCONF subsystem request comes to the SSH server. Only one NETCONF session can be accepted in the single SSH Subsystem.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">capabilities</td><td>NETCONF capabilities structure with capabilities supported by the server. Caller can use <a class="el" href="../../db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71" title="Get NULL terminated list of default capabilities supported by libnetconf.">nc_session_get_cpblts_default()</a> to get the structure with the list of all capabilities supported by libnetconf (this is used in case of NULL parameter). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>Structure describing the accepted NETCONF session or NULL in case of error. </dd></dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Fri Apr 20 2012 13:35:58 for libnetconf by
+    <li class="footer">Generated on Fri Apr 20 2012 16:22:52 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

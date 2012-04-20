@@ -105,6 +105,10 @@ libnetconf's functions for handling NETCONF sessions\&.
 .RI "struct nc_session * \fBnc_session_connect\fP (const char *host, unsigned short port, const char *username, struct nc_cpblts *cpblts)"
 .br
 .RI "\fICreate NETCONF session to the specified server\&. \fP"
+.ti -1c
+.RI "struct nc_session * \fBnc_session_accept\fP (struct nc_cpblts *capabilities)"
+.br
+.RI "\fIAccept NETCONF session from a client\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -400,6 +404,22 @@ Create NETCONF session to the specified server\&. This function internally can u
 \fBReturns:\fP
 .RS 4
 Structure describing the NETCONF session or NULL in case of error\&. 
+.RE
+.PP
+
+.SS "struct nc_session* \fBnc_session_accept\fP (struct nc_cpblts *capabilities)\fC [read]\fP"
+
+.PP
+Accept NETCONF session from a client\&. The caller process of this function is supposed to run as SSH Subsystem application launched automatically by SSH server when the NETCONF subsystem request comes to the SSH server\&. Only one NETCONF session can be accepted in the single SSH Subsystem\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcapabilities\fP NETCONF capabilities structure with capabilities supported by the server\&. Caller can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all capabilities supported by libnetconf (this is used in case of NULL parameter)\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Structure describing the accepted NETCONF session or NULL in case of error\&. 
 .RE
 .PP
 
