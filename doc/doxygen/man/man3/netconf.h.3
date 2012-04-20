@@ -1,0 +1,140 @@
+.TH "src/netconf.h" 3 "Fri Apr 20 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+src/netconf.h \- 
+.PP
+libnetconf's general public functions and structures definitions\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.SS "Typedefs"
+
+.in +1c
+.ti -1c
+.RI "typedef struct nc_msg \fBnc_rpc\fP"
+.br
+.RI "\fIrpc message\&. \fP"
+.ti -1c
+.RI "typedef struct nc_msg \fBnc_reply\fP"
+.br
+.RI "\fIreply message\&. \fP"
+.ti -1c
+.RI "typedef long long unsigned int \fBnc_msgid\fP"
+.br
+.RI "\fIType representing NETCONF message-id attribute\&. \fP"
+.in -1c
+.SS "Enumerations"
+
+.in +1c
+.ti -1c
+.RI "enum \fBNC_REPLY_TYPE\fP { \fBNC_REPLY_UNKNOWN\fP, \fBNC_REPLY_OK\fP, \fBNC_REPLY_ERROR\fP, \fBNC_REPLY_DATA\fP }"
+.br
+.RI "\fIEnumeration of <rpc-reply> types\&. \fP"
+.ti -1c
+.RI "enum \fBNC_DATASTORE_TYPE\fP { \fBNC_DATASTORE_NONE\fP, \fBNC_DATASTORE_RUNNING\fP, \fBNC_DATASTORE_STARTUP\fP, \fBNC_DATASTORE_CANDIDATE\fP }"
+.br
+.RI "\fIEnumeration of supported types of datastores defined by NETCONF\&. \fP"
+.ti -1c
+.RI "enum \fBNC_FILTER_TYPE\fP { \fBNC_FILTER_SUBTREE\fP }"
+.br
+.RI "\fIEnumeration of supported NETCONF filter types\&. \fP"
+.ti -1c
+.RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP =  -1, \fBNC_EDIT_OP_MERGE\fP =  1, \fBNC_EDIT_OP_REPLACE\fP =  2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
+.br
+.ti -1c
+.RI "enum \fBNC_EDIT_DEFOP_TYPE\fP { \fBNC_EDIT_DEFOP_NONE\fP =  0, \fBNC_EDIT_DEFOP_MERGE\fP =  1, \fBNC_EDIT_DEFOP_REPLACE\fP =  2 }"
+.br
+.ti -1c
+.RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_STOP\fP =  0, \fBNC_EDIT_ERROPT_CONT\fP =  1, \fBNC_EDIT_ERROPT_ROLLBACK\fP =  2 }"
+.br
+.ti -1c
+.RI "enum \fBNC_VERB_LEVEL\fP { \fBNC_VERB_ERROR\fP, \fBNC_VERB_WARNING\fP, \fBNC_VERB_VERBOSE\fP, \fBNC_VERB_DEBUG\fP }"
+.br
+.RI "\fIVerbosity levels\&. \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBnc_verbosity\fP (\fBNC_VERB_LEVEL\fP level)"
+.br
+.RI "\fISet libnetconf's verbosity level\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+libnetconf's general public functions and structures definitions\&. 
+
+\fBAuthor:\fP
+.RS 4
+Radek Krejci rkrejci@cesnet.cz Copyright (C) 2012 CESNET, z\&.s\&.p\&.o\&.
+.RE
+.PP
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+.IP "1." 4
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer\&.
+.IP "2." 4
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution\&.
+.IP "3." 4
+Neither the name of the Company nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission\&.
+.PP
+.PP
+ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above\&.
+.PP
+This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
+.PP
+Definition in file \fBnetconf\&.h\fP\&.
+.SH "Enumeration Type Documentation"
+.PP 
+.SS "enum \fBNC_EDIT_OP_TYPE\fP"
+
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fINC_EDIT_OP_ERROR \fP\fP
+.TP
+\fB\fINC_EDIT_OP_MERGE \fP\fP
+.TP
+\fB\fINC_EDIT_OP_REPLACE \fP\fP
+.TP
+\fB\fINC_EDIT_OP_CREATE \fP\fP
+.TP
+\fB\fINC_EDIT_OP_DELETE \fP\fP
+.TP
+\fB\fINC_EDIT_OP_REMOVE \fP\fP
+
+.PP
+Definition at line 112 of file netconf\&.h\&.
+.SS "enum \fBNC_EDIT_DEFOP_TYPE\fP"
+
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fINC_EDIT_DEFOP_NONE \fP\fP
+.TP
+\fB\fINC_EDIT_DEFOP_MERGE \fP\fP
+.TP
+\fB\fINC_EDIT_DEFOP_REPLACE \fP\fP
+
+.PP
+Definition at line 122 of file netconf\&.h\&.
+.SS "enum \fBNC_EDIT_ERROPT_TYPE\fP"
+
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fINC_EDIT_ERROPT_STOP \fP\fP
+.TP
+\fB\fINC_EDIT_ERROPT_CONT \fP\fP
+.TP
+\fB\fINC_EDIT_ERROPT_ROLLBACK \fP\fP
+
+.PP
+Definition at line 128 of file netconf\&.h\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.
