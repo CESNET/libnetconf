@@ -142,8 +142,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gac3f7d54dda784b74330df4cd563be127"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;delete-config&gt; NETCONF rpc message.  <a href="#gac3f7d54dda784b74330df4cd563be127"></a><br/></td></tr>
 <tr class="memitem:ga4cc913ece1d511b4328c1bc8b81ba156"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga4cc913ece1d511b4328c1bc8b81ba156">nc_rpc_editconfig</a> (<a class="el" href="../../db/d67/group__store.html#gac1d3986b5d4d3faee9e4a91c465a5fd2">NC_DATASTORE_TYPE</a> target, <a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a> default_operation, <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a> error_option, const char *data)</td></tr>
 <tr class="memdesc:ga4cc913ece1d511b4328c1bc8b81ba156"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;edit-config&gt; NETCONF rpc message.  <a href="#ga4cc913ece1d511b4328c1bc8b81ba156"></a><br/></td></tr>
-<tr class="memitem:gae88d6b905cd1a52853acf4f33bc1ac52"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gae88d6b905cd1a52853acf4f33bc1ac52">nc_rpc_get</a> (const char *filter)</td></tr>
-<tr class="memdesc:gae88d6b905cd1a52853acf4f33bc1ac52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;get&gt; NETCONF rpc message.  <a href="#gae88d6b905cd1a52853acf4f33bc1ac52"></a><br/></td></tr>
+<tr class="memitem:ga48ce8c99fe73c47ccf36840607705a5e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga48ce8c99fe73c47ccf36840607705a5e">nc_rpc_get</a> (struct nc_filter *filter)</td></tr>
+<tr class="memdesc:ga48ce8c99fe73c47ccf36840607705a5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;get&gt; NETCONF rpc message.  <a href="#ga48ce8c99fe73c47ccf36840607705a5e"></a><br/></td></tr>
 <tr class="memitem:ga7a168ed73365315c8706e044c920af30"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga7a168ed73365315c8706e044c920af30">nc_rpc_getconfig</a> (<a class="el" href="../../db/d67/group__store.html#gac1d3986b5d4d3faee9e4a91c465a5fd2">NC_DATASTORE_TYPE</a> source, struct nc_filter *filter)</td></tr>
 <tr class="memdesc:ga7a168ed73365315c8706e044c920af30"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;get-config&gt; NETCONF rpc message.  <a href="#ga7a168ed73365315c8706e044c920af30"></a><br/></td></tr>
 <tr class="memitem:gae9876e8d038eb81a376bd82a08c58b95"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gae9876e8d038eb81a376bd82a08c58b95">nc_rpc_killsession</a> (const char *kill_sid)</td></tr>
@@ -482,14 +482,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gae88d6b905cd1a52853acf4f33bc1ac52"></a>
+<a class="anchor" id="ga48ce8c99fe73c47ccf36840607705a5e"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a>* <a class="el" href="../../db/de9/group__rpc.html#gae88d6b905cd1a52853acf4f33bc1ac52">nc_rpc_get</a> </td>
+          <td class="memname"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a>* <a class="el" href="../../db/de9/group__rpc.html#ga48ce8c99fe73c47ccf36840607705a5e">nc_rpc_get</a> </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
+          <td class="paramtype">struct nc_filter *&#160;</td>
           <td class="paramname"><em>filter</em></td><td>)</td>
           <td></td>
         </tr>
@@ -499,7 +499,7 @@ Functions</h2></td></tr>
 <p>Create &lt;get&gt; NETCONF rpc message. </p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">filter</td><td>XML form of NETCONF filter defined by RFC or NULL if no filter required. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">filter</td><td>NETCONF filter or NULL if no filter required. </td></tr>
   </table>
   </dd>
 </dl>
@@ -649,7 +649,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Fri Apr 20 2012 16:22:52 for libnetconf by
+    <li class="footer">Generated on Fri Apr 27 2012 14:49:27 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

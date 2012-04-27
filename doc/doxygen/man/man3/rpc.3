@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Fri Apr 20 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Fri Apr 27 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -58,7 +58,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fICreate <edit-config> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_get\fP (const char *filter)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_get\fP (struct nc_filter *filter)"
 .br
 .RI "\fICreate <get> NETCONF rpc message\&. \fP"
 .ti -1c
@@ -231,12 +231,12 @@ Created rpc message\&.
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_get\fP (const char *filter)"
+.SS "\fBnc_rpc\fP* \fBnc_rpc_get\fP (struct nc_filter *filter)"
 
 .PP
 Create <get> NETCONF rpc message\&. \fBParameters:\fP
 .RS 4
-\fIfilter\fP XML form of NETCONF filter defined by RFC or NULL if no filter required\&. 
+\fIfilter\fP NETCONF filter or NULL if no filter required\&. 
 .RE
 .PP
 \fBReturns:\fP

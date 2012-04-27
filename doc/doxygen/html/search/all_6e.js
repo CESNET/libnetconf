@@ -55,7 +55,7 @@ var searchData=
   ['nc_5frpc_5feditconfig',['nc_rpc_editconfig',['../db/de9/group__rpc.html#ga4cc913ece1d511b4328c1bc8b81ba156',1,'messages.h']]],
   ['nc_5frpc_5ffree',['nc_rpc_free',['../db/de9/group__rpc.html#ga4041bda37caa9eedb7a1e2534280f3df',1,'messages.h']]],
   ['nc_5frpc_5fgeneric',['nc_rpc_generic',['../db/de9/group__rpc.html#gaa9ad7fac41fdef0063c2e2793fb19efd',1,'messages.h']]],
-  ['nc_5frpc_5fget',['nc_rpc_get',['../db/de9/group__rpc.html#gae88d6b905cd1a52853acf4f33bc1ac52',1,'messages.h']]],
+  ['nc_5frpc_5fget',['nc_rpc_get',['../db/de9/group__rpc.html#ga48ce8c99fe73c47ccf36840607705a5e',1,'messages.h']]],
   ['nc_5frpc_5fgetconfig',['nc_rpc_getconfig',['../db/de9/group__rpc.html#ga7a168ed73365315c8706e044c920af30',1,'messages.h']]],
   ['nc_5frpc_5fkillsession',['nc_rpc_killsession',['../db/de9/group__rpc.html#gae9876e8d038eb81a376bd82a08c58b95',1,'messages.h']]],
   ['nc_5frpc_5flock',['nc_rpc_lock',['../db/de9/group__rpc.html#ga049c607ac1af8c6d22bd0ea014bb790e',1,'messages.h']]],
