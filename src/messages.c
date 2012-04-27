@@ -544,3 +544,32 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE_TYPE target)
 
 	return (rpc);
 }
+
+nc_rpc *nc_rpc_killsession(const char *kill_sid)
+{
+	nc_rpc *rpc;
+	xmlNodePtr content, node_sid;
+
+	/* check input parameter */
+	if (kill_sid == NULL || strlen(kill_sid) == 0) {
+		ERROR("Invalid session id for <kill-session> rpc message specified.");
+		return (NULL);
+	}
+
+	if ((content = xmlNewNode(NULL, BAD_CAST "kill-session")) == NULL) {
+		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	node_sid = xmlNewChild(content, NULL, BAD_CAST "session-id", BAD_CAST kill_sid);
+	if (node_sid == NULL) {
+		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+		xmlFreeNode(content);
+		return (NULL);
+	}
+
+	rpc = nc_rpc_create(content);
+	xmlFreeNode(content);
+
+	return (rpc);
+}
