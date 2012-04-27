@@ -162,11 +162,10 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE_TYPE target, NC_EDIT_DEFOP_TYPE default_o
  * @ingroup rpc
  * @brief Create \<get\> NETCONF rpc message.
  *
- * @param[in] filter XML form of NETCONF filter defined by RFC or NULL if no
- * filter required.
+ * @param[in] filter NETCONF filter or NULL if no filter required.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_get(const char *filter);
+nc_rpc *nc_rpc_get(struct nc_filter *filter);
 
 /**
  * @ingroup rpc

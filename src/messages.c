@@ -445,6 +445,60 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE_TYPE source, struct nc_filter *filter)
 	return (rpc);
 }
 
+nc_rpc *nc_rpc_get(struct nc_filter *filter)
+{
+	nc_rpc *rpc;
+	xmlDocPtr doc_filter = NULL;
+	xmlNodePtr content, node_filter = NULL;
+
+	if ((content = xmlNewNode(NULL, BAD_CAST "get")) == NULL) {
+		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	if (filter != NULL) {
+		if (filter->type == NC_FILTER_SUBTREE) {
+			doc_filter = xmlReadMemory(filter->content, strlen(filter->content), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			if (doc_filter == NULL) {
+				ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				return (NULL);
+			}
+
+			node_filter = xmlNewChild(content, NULL, BAD_CAST "filter", NULL);
+			if (node_filter == NULL) {
+				ERROR("xmlCopyNode failed (%s:%d)", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				xmlFreeDoc(doc_filter);
+				return (NULL);
+			}
+			if (xmlAddChild(node_filter, xmlCopyNode(doc_filter->children, 1)) == NULL) {
+				ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				xmlFreeDoc(doc_filter);
+				return (NULL);
+			}
+		}
+
+		if (doc_filter != NULL && node_filter != NULL) {
+			xmlFreeDoc(doc_filter);
+			if (xmlNewProp(node_filter, BAD_CAST "type", BAD_CAST filter->type_string) == NULL) {
+				ERROR("xmlNewProp failed (%s:%d)", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				return (NULL);
+			}
+		} else {
+			WARN("Unknown filter type used - skipping filter.");
+		}
+	}
+
+	rpc = nc_rpc_create(content);
+	xmlFreeNode(content);
+
+	return (rpc);
+
+}
+
 nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE_TYPE target)
 {
 	nc_rpc *rpc;
