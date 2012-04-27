@@ -370,10 +370,6 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE_TYPE source, struct nc_filter *filter)
 	xmlNodePtr content, node_source, node_filter = NULL;
 	char* datastore;
 
-	if ((content = xmlNewNode(NULL, BAD_CAST "get-config")) == NULL) {
-		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-		return (NULL);
-	}
 
 	switch (source) {
 	case NC_DATASTORE_RUNNING:
@@ -387,11 +383,14 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE_TYPE source, struct nc_filter *filter)
 		break;
 	default:
 		ERROR("Unknown source datastore for <get-config>.");
-		xmlFreeNode(content);
 		return (NULL);
 		break;
 	}
 
+	if ((content = xmlNewNode(NULL, BAD_CAST "get-config")) == NULL) {
+		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
 	node_source = xmlNewChild(content, NULL, BAD_CAST "source", NULL);
 	if (node_source == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
