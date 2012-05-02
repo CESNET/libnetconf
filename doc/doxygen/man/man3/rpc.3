@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Fri Apr 27 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Wed May 2 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -218,9 +218,9 @@ Create <edit-config> NETCONF rpc message\&. \fBParameters:\fP
 .RS 4
 \fItarget\fP Target configuration datastore type to be edited\&. 
 .br
-\fIdefault_operation\fP Default operation for this request\&. NC_EDIT_DEFOP_MERGE is NETCONF default edit-config operation\&. 
+\fIdefault_operation\fP Default operation for this request, 0 to skip setting this parameter and use default server's ('merge') behavior\&. 
 .br
-\fIerror_option\fP Set reaction to an error\&. 
+\fIerror_option\fP Set reaction to an error, 0 for the server's default behavior\&. 
 .br
 \fIdata\fP edit-config operation request description\&. The content of this parameter is sent to server as a content of the <config> element\&.
 .RE
