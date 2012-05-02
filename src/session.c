@@ -273,22 +273,28 @@ struct nc_cpblts* nc_session_get_cpblts (const struct nc_session* session)
 
 void nc_session_close (struct nc_session* session)
 {
-	nc_rpc *rpc_close;
-	nc_reply *reply;
+	nc_rpc *rpc_close = NULL;
+	nc_reply *reply = NULL;
 
 
 	/* close the SSH session */
 	if (session != NULL) {
 		if (session->ssh_channel != NULL) {
 
-			/* close NETCONF session */
-			rpc_close = nc_rpc_closesession ();
-			if (rpc_close != NULL) {
-				if (nc_session_send_rpc (session, rpc_close) != 0) {
-					nc_session_recv_reply (session, &reply);
-					nc_reply_free (reply);
+			if (libssh2_channel_eof(session->ssh_channel) == 0) {
+				/* close NETCONF session */
+				rpc_close = nc_rpc_closesession();
+				if (rpc_close != NULL) {
+					if (nc_session_send_rpc(session, rpc_close) != 0) {
+						nc_session_recv_reply(session, &reply);
+						if (reply != NULL) {
+							nc_reply_free(reply);
+						}
+					}
+					if (rpc_close != NULL) {
+						nc_rpc_free(rpc_close);
+					}
 				}
-				nc_rpc_free (rpc_close);
 			}
 
 			libssh2_channel_free (session->ssh_channel);
@@ -461,6 +467,7 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 				libssh2_session_last_error (session->ssh_session, &err_msg, NULL, 0);
 				ERROR("Reading from SSH channel failed (%s)", err_msg);
 				free (buf);
+				buflen = 0;
 				if (len != NULL) {
 					*len = 0;
 				}
@@ -472,6 +479,7 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 				if (libssh2_channel_eof (session->ssh_channel)) {
 					ERROR("Server has closed the communication socket");
 					free (buf);
+					buflen = 0;
 					if (len != NULL) {
 						*len = 0;
 					}
@@ -493,6 +501,7 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 				} else {
 					ERROR("Reading from input file descriptor failed (%s)", strerror(errno));
 					free (buf);
+					buflen = 0;
 					if (len != NULL) {
 						*len = 0;
 					}
@@ -505,6 +514,7 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 		} else {
 			ERROR("No way to read input, fatal error.");
 			free (buf);
+			buflen = 0;
 			if (len != NULL) {
 				*len = 0;
 			}
@@ -555,6 +565,7 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 	ERROR("Reading NETCONF message fatal failure");
 	if (buf != NULL) {
 		free (buf);
+		buflen = 0;
 	}
 	if (len != NULL) {
 		*len = 0;
