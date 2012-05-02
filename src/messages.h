@@ -148,9 +148,10 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE_TYPE target);
  * @brief Create \<edit-config\> NETCONF rpc message.
  *
  * @param[in] target Target configuration datastore type to be edited.
- * @param[in] default_operation Default operation for this request.
- * NC_EDIT_DEFOP_MERGE is NETCONF default edit-config operation.
- * @param[in] error_option Set reaction to an error.
+ * @param[in] default_operation Default operation for this request, 0 to skip
+ * setting this parameter and use default server's ('merge') behavior.
+ * @param[in] error_option Set reaction to an error, 0 for the server's default
+ * behavior.
  * @param[in] data edit-config operation request description. The content of
  * this parameter is sent to server as a content of the \<config\> element.
  *
