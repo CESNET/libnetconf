@@ -105,6 +105,9 @@ int main(int argc, char *argv[])
 
 	initialize_readline();
 
+	/* disable publickey authentication */
+	nc_ssh_pref(NC_SSH_AUTH_PUBLIC_KEYS, -1);
+
 	/* set verbosity and function to print libnetconf's messages */
 	nc_callback_print(clb_print);
 
@@ -149,88 +152,6 @@ int main(int argc, char *argv[])
 		free(cmd);
 		free(cmdline);
 	}
-
-	return (EXIT_SUCCESS);
-
-	struct nc_session *session = NULL;
-	nc_rpc *rpc = NULL;
-	nc_reply *reply = NULL;
-	char *s = NULL;
-	struct nc_filter *filter;
-	NC_REPLY_TYPE type;
-
-
-	/* disable password authentication */
-	nc_ssh_pref(NC_SSH_AUTH_PASSWORD, 2);
-	/* disable publickey authentication */
-	nc_ssh_pref(NC_SSH_AUTH_PUBLIC_KEYS, -1);
-	/* enable/set high priority of the interactive authentication */
-	nc_ssh_pref(NC_SSH_AUTH_INTERACTIVE, 5);
-
-	/* create filter for <get-config> */
-//	filter = nc_filter_new(NC_FILTER_SUBTREE, "<flowmon-config xmlns=\"http://www.liberouter.org/ns/netopeer/flowmon/1.0\"><collectors/></flowmon-config>");
-	/* create the session - localhost:830, for current user with default capabilities */
-	session = nc_session_connect(NULL, 0, NULL, NULL);
-	if (session == NULL) {
-		return (EXIT_FAILURE);
-	}
-
-	/* create requests */
-	rpc = nc_rpc_editconfig(NC_DATASTORE_CANDIDATE, NC_EDIT_DEFOP_MERGE, NC_EDIT_ERROPT_STOP, "<mydata><someconfig/></mydata>");
-	if (rpc != NULL) {
-		nc_session_send_rpc(session, rpc);
-		nc_rpc_free(rpc);
-	}
-
-	rpc = nc_rpc_editconfig(NC_DATASTORE_CANDIDATE, 0, 0, "<mydata><someconfig/></mydata>");
-	if (rpc != NULL) {
-		nc_session_send_rpc(session, rpc);
-		nc_rpc_free(rpc);
-	}
-
-	rpc = nc_rpc_editconfig(NC_DATASTORE_CANDIDATE, NC_EDIT_DEFOP_MERGE, NC_EDIT_ERROPT_STOP, "<mydata><someconfig/></mydata>");
-	if (rpc != NULL) {
-		nc_session_send_rpc(session, rpc);
-		nc_rpc_free(rpc);
-	}
-
-	rpc = nc_rpc_editconfig(NC_DATASTORE_CANDIDATE, NC_EDIT_DEFOP_MERGE, NC_EDIT_ERROPT_STOP, NULL);
-	if (rpc != NULL) {
-		nc_session_send_rpc(session, rpc);
-		nc_rpc_free(rpc);
-	}
-
-	rpc = nc_rpc_editconfig(NC_DATASTORE_CANDIDATE, NC_EDIT_DEFOP_MERGE, -1, "<mydata><someconfig/></mydata>");
-	if (rpc != NULL) {
-		nc_session_send_rpc(session, rpc);
-		nc_rpc_free(rpc);
-	}
-
-	exit(0);
-
-	/* send the rpc */
-	nc_session_send_rpc(session, rpc);
-
-	/* get the reply */
-	nc_session_recv_reply(session, &reply);
-
-	/* process the reply */
-	type = nc_reply_get_type(reply);
-	if (type == NC_REPLY_ERROR) {
-		printf("Oups: %s\n", s = nc_reply_get_errormsg(reply));
-		free(s);
-	} else if (type == NC_REPLY_DATA) {
-		printf("DATA: %s\n", s = nc_reply_get_data(reply));
-		free(s);
-	}
-
-	/* close the NETCONF session */
-	nc_session_close(session);
-
-	/* cleanup */
-	nc_reply_free(reply);
-	nc_filter_free(filter);
-	nc_rpc_free(rpc);
 
 	/* bye, bye */
 	return (EXIT_SUCCESS);
