@@ -280,7 +280,6 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	}
 
 	nc_cpblts_add(retval, "urn:ietf:params:netconf:base:1.0");
-	nc_cpblts_add(retval, "urn:ietf:params:netconf:base:1.0");
 	nc_cpblts_add(retval, "urn:ietf:params:netconf:base:1.1");
 	nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:writable-running:1.0");
 	nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:candidate:1.0");
