@@ -170,4 +170,4 @@ if test -z "$RPMBUILD"; then
 	AC_MSG_WARN([Due to missing rpmbuild you will not able to generate RPM package.])
 fi
 
-AC_OUTPUT(Makefile libnetconf.spec libnetconf.pc)
+AC_OUTPUT(Makefile examples/client/Makefile libnetconf.spec libnetconf.pc)

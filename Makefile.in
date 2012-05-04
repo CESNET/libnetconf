@@ -67,7 +67,7 @@ MAJOR_VER = $(shell echo $(VERSION) | cut -d. -f1)
 RELEASE = @RELEASE@
 
 TOPDIR = @CONFIGURE_PWD@
-SUBDIRS = 
+SUBDIRS = ./examples/client/
 
 SRCS =  src/callbacks.c \
 	src/internal.c \
