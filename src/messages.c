@@ -545,6 +545,96 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE_TYPE target)
 	return (rpc);
 }
 
+nc_rpc *nc_rpc_lock(NC_DATASTORE_TYPE target)
+{
+	nc_rpc *rpc;
+	xmlNodePtr content, node_target;
+	char* datastore;
+
+	switch (target) {
+	case NC_DATASTORE_RUNNING:
+		datastore = "running";
+		break;
+	case NC_DATASTORE_STARTUP:
+		datastore = "startup";
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		datastore = "candidate";
+		break;
+	default:
+		ERROR("Unknown target datastore for <lock>.");
+		return (NULL);
+		break;
+	}
+
+	if ((content = xmlNewNode(NULL, BAD_CAST "lock")) == NULL) {
+		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	node_target = xmlNewChild(content, NULL, BAD_CAST "target", NULL);
+	if (node_target == NULL) {
+		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+		xmlFreeNode(content);
+		return (NULL);
+	}
+	if (xmlNewChild(node_target, NULL, BAD_CAST datastore, NULL) == NULL) {
+		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+		xmlFreeNode(content);
+		return (NULL);
+	}
+
+	rpc = nc_rpc_create(content);
+	xmlFreeNode(content);
+
+	return (rpc);
+}
+
+nc_rpc *nc_rpc_unlock(NC_DATASTORE_TYPE target)
+{
+	nc_rpc *rpc;
+	xmlNodePtr content, node_target;
+	char* datastore;
+
+	switch (target) {
+	case NC_DATASTORE_RUNNING:
+		datastore = "running";
+		break;
+	case NC_DATASTORE_STARTUP:
+		datastore = "startup";
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		datastore = "candidate";
+		break;
+	default:
+		ERROR("Unknown target datastore for <unlock>.");
+		return (NULL);
+		break;
+	}
+
+	if ((content = xmlNewNode(NULL, BAD_CAST "unlock")) == NULL) {
+		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	node_target = xmlNewChild(content, NULL, BAD_CAST "target", NULL);
+	if (node_target == NULL) {
+		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+		xmlFreeNode(content);
+		return (NULL);
+	}
+	if (xmlNewChild(node_target, NULL, BAD_CAST datastore, NULL) == NULL) {
+		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+		xmlFreeNode(content);
+		return (NULL);
+	}
+
+	rpc = nc_rpc_create(content);
+	xmlFreeNode(content);
+
+	return (rpc);
+}
+
 nc_rpc *nc_rpc_copyconfig(NC_DATASTORE_TYPE source, NC_DATASTORE_TYPE target, const char *data)
 {
 	nc_rpc *rpc;
