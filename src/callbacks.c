@@ -179,7 +179,7 @@ void callback_sshauth_interactive_default (const char* name,
 		void** abstract)
 {
 	int i, buflen = 8;
-	int c;
+	int c = 0;
 	struct termios newterm, oldterm;
 
 	if (tcgetattr(STDIN_FILENO, &oldterm) != 0) {
