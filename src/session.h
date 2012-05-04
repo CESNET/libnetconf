@@ -85,6 +85,33 @@ char* nc_session_get_id(const struct nc_session* session);
 
 /**
  * @ingroup session
+ * @brief Get NETCONF session host
+ * @param[in] session NETCONF session structure
+ * @return Copy of the string identifying NETCONF session server host. Caller is
+ * supposed to free returned value;
+ */
+char* nc_session_get_host(const struct nc_session* session);
+
+/**
+ * @ingroup session
+ * @brief Get NETCONF session port number
+ * @param[in] session NETCONF session structure
+ * @return Copy of the string identifying NETCONF session server host. Caller is
+ * supposed to free returned value;
+ */
+char* nc_session_get_port(const struct nc_session* session);
+
+/**
+ * @ingroup session
+ * @brief Get NETCONF session username
+ * @param[in] session NETCONF session structure
+ * @return Copy of the string identifying NETCONF session server host. Caller is
+ * supposed to free returned value;
+ */
+char* nc_session_get_user(const struct nc_session* session);
+
+/**
+ * @ingroup session
  * @brief Get NULL terminated list of capabilities associated with the session.
  *
  * Returned list is a copy of the original list associated with the session.

@@ -576,6 +576,8 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 	if (snprintf(port_s, SHORT_INT_LENGTH, "%d", port) < 0) {
 		/* converting short int to the string failed */
+		ERROR("Unable to convert port number to string.");
+		return (NULL);
 	}
 
 	/* Connect to SSH server */
@@ -627,6 +629,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->fd_output = -1;
 	retval->hostname = strdup(host);
 	retval->username = strdup(username);
+	retval->port = strdup(port_s);
 	retval->msgid = 1;
 
 	/* Create a session instance */

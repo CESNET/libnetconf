@@ -172,6 +172,8 @@ struct nc_session {
 	LIBSSH2_CHANNEL * ssh_channel;
 	/**< @brief netopeer-agent's hostname */
 	char *hostname;
+	/**< @brief netopeer-agent's port */
+	char *port;
 	/**< @brief name of the user holding the session */
 	char *username;
 	/**< @brief number of configrmed capabilities */

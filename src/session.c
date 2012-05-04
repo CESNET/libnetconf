@@ -76,6 +76,33 @@ char* nc_session_get_id (const struct nc_session *session)
 	return (strdup (session->session_id));
 }
 
+char* nc_session_get_host(const struct nc_session* session)
+{
+	if (session == NULL) {
+		return (NULL);
+	}
+	return (strdup (session->hostname));
+
+}
+
+char* nc_session_get_port(const struct nc_session* session)
+{
+	if (session == NULL) {
+		return (NULL);
+	}
+	return (strdup (session->port));
+
+}
+
+char* nc_session_get_user(const struct nc_session* session)
+{
+	if (session == NULL) {
+		return (NULL);
+	}
+	return (strdup (session->username));
+
+}
+
 int nc_session_get_version (const struct nc_session *session)
 {
 	if (session == NULL) {
