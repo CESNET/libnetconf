@@ -223,21 +223,30 @@ int cmd_getconfig (char *arg)
 		switch (c) {
 		case 'h':
 			cmd_getconfig_help ();
+			clear_arglist(&cmd);
 			return (EXIT_SUCCESS);
 			break;
 		default:
 			fprintf (stderr, "get-config: unknown option %c\n", c);
 			cmd_getconfig_help ();
+			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
 	}
+
+/* TODO - filter
+	struct nc_filter *filter;
+	filter = nc_filter_new(NC_FILTER_SUBTREE, "<flowmon-config xmlns=\"http://www.liberouter.org/ns/netopeer/flowmon/1.0\"><collectors/></flowmon-config>");
+*/
+
 	if (optind == cmd.count) {
 
-		userinput:
+userinput:
 
 		datastore = malloc (sizeof(char) * BUFFER_SIZE);
 		if (datastore == NULL) {
 			fprintf (stderr, "Memory allocation error (%s)\n", strerror (errno));
+			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
 		param_free = 1;
@@ -302,6 +311,8 @@ int cmd_getconfig (char *arg)
 	if (param_free) {
 		free (datastore);
 	}
+	/* arglist is no more needed */
+	clear_arglist(&cmd);
 
 	/* create requests */
 	rpc = nc_rpc_getconfig (target, NULL);
@@ -311,7 +322,11 @@ int cmd_getconfig (char *arg)
 	}
 	/* send the request and get the reply */
 	nc_session_send_rpc (session, rpc);
-	nc_session_recv_reply (session, &reply);
+	if (nc_session_recv_reply (session, &reply) == 0) {
+		fprintf(stderr, "get-config: receiving rpc-reply failed\n");
+		nc_rpc_free (rpc);
+		return (EXIT_FAILURE);
+	}
 	nc_rpc_free (rpc);
 
 	switch (nc_reply_get_type (reply)) {
@@ -325,6 +340,7 @@ int cmd_getconfig (char *arg)
 		fprintf (stdout, "get-config: unexpected operation result\n");
 		break;
 	}
+	nc_reply_free(reply);
 	if (data) {
 		free (data);
 	}
@@ -390,6 +406,7 @@ int cmd_connect (char* arg)
 		host = malloc (sizeof(char) * BUFFER_SIZE);
 		if (host == NULL) {
 			fprintf (stderr, "Memory allocation error (%s)\n", strerror (errno));
+			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
 		hostfree = 1;
@@ -406,11 +423,13 @@ int cmd_connect (char* arg)
 		if (hostfree) {
 			free (host);
 		}
+		clear_arglist(&cmd);
 		return (EXIT_FAILURE);
 	}
 	if (hostfree) {
 		free (host);
 	}
+	clear_arglist(&cmd);
 
 	return (EXIT_SUCCESS);
 }
