@@ -159,6 +159,16 @@ int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_str
 
 /**
  * @ingroup session
+ * @brief Check if the given capability is supported by the session.
+ * @param session Established session where the given capability support will
+ * be checked.
+ * @param cpblt NETCONF capability  string to check.
+ * @return 0 for false result, 1 if the given capability is supported.
+ */
+int nc_cpblts_enabled(struct nc_session* session, const char* capability_string);
+
+/**
+ * @ingroup session
  * @brief Move NETCONF capabilities structure iterator to the beginning of the capability strings list.
  * @param c NETCONF capabilities structure to be iterated.
  */

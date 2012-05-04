@@ -248,6 +248,21 @@ int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_str
 	return (EXIT_SUCCESS);
 }
 
+int nc_cpblts_enabled(struct nc_session* session, const char* capability_string)
+{
+	int i;
+
+	if (capability_string == NULL || session == NULL || session->capabilities == NULL) {
+		return (0);
+	}
+
+	for (i = 0; session->capabilities->list[i]; i++) {
+		if (strcmp(capability_string, session->capabilities->list[i]) == 0) {
+			return (1);
+		}
+	}
+	return (0);
+}
 
 void nc_cpblts_iter_start(struct nc_cpblts *c)
 {
