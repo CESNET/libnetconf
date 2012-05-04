@@ -107,7 +107,6 @@ int main(int argc, char *argv[])
 
 	/* set verbosity and function to print libnetconf's messages */
 	nc_callback_print(clb_print);
-	nc_verbosity(NC_VERB_DEBUG);
 
 	while (!done) {
 		/* get the command from user */

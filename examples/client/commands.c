@@ -8,7 +8,11 @@
 
 #include "commands.h"
 
+#define NC_CAP_CANDIDATE_ID "urn:ietf:params:netconf:capability:candidate:1.0"
+#define NC_CAP_STARTUP_ID   "urn:ietf:params:netconf:capability:startup:1.0"
+
 extern int done;
+volatile int verb_level = 0;
 
 void print_version();
 
@@ -19,10 +23,13 @@ struct nc_session* session = NULL;
 COMMAND commands[] = {
 		{ "connect", cmd_connect, "Connect to the NETCONF server" },
 		{ "disconnect", cmd_disconnect, "Disconnect from the NETCONF server" },
+		{ "get-config", cmd_getconfig, "NETCONF <get-config> operation" },
 		{ "help", cmd_help, "Display this text" },
-		{ "status", cmd_status, "Print information about current NETCONF session" },
 		{ "quit", cmd_quit, "Quit the program" },
+		{ "status", cmd_status, "Print information about current NETCONF session" },
+		{ "verbose", cmd_verbose, "Enable/disable verbose messages" },
 	/* synonyms for previous commands */
+		{ "debug", cmd_debug, NULL },
 		{ "?", cmd_help, NULL },
 		{ "exit", cmd_quit, NULL },
 		{ NULL, NULL, NULL } \
@@ -174,6 +181,155 @@ int cmd_status(char* arg)
 	return (EXIT_SUCCESS);
 }
 
+
+void cmd_getconfig_help()
+{
+	/* if session not established, print complete help for all capabilities */
+	fprintf(stdout, "get-config [--help] running");
+	if (session == NULL || nc_cpblts_enabled(session, NC_CAP_STARTUP_ID)) {
+		fprintf (stdout, "|startup");
+	}
+	if (session == NULL || nc_cpblts_enabled(session, NC_CAP_CANDIDATE_ID)) {
+		fprintf (stdout, "|candidate");
+	}
+	fprintf(stdout, "\n");
+}
+
+int cmd_getconfig(char *arg)
+{
+	int c, param_free = 0, valid = 0;
+	char *datastore = NULL;
+	char *data = NULL;
+	NC_DATASTORE_TYPE target;
+	nc_rpc *rpc = NULL;
+	nc_reply *reply = NULL;
+	struct arglist cmd;
+	struct option long_options[] = {
+			{ "help", 0, 0, 'h' },
+			{ 0, 0, 0, 0 }
+	};
+	int option_index = 0;
+
+	/* set back to start to be able to use getopt() repeatedly */
+	optind = 0;
+
+	if (session == NULL) {
+		fprintf(stderr, "NETCONF session not established, use \'connect\' command.\n");
+		return (EXIT_FAILURE);
+	}
+
+    init_arglist(&cmd);
+    addargs (&cmd, "%s", arg);
+
+    while ((c = getopt_long(cmd.count, cmd.list, "h", long_options, &option_index)) != -1) {
+    	switch(c) {
+    	case 'h':
+    		cmd_getconfig_help();
+    		return (EXIT_SUCCESS);
+    		break;
+    	default:
+    		fprintf(stderr, "get-config: unknown option %c\n", c);
+    		cmd_getconfig_help();
+    		return (EXIT_FAILURE);
+    	}
+    }
+    if (optind == cmd.count) {
+
+userinput:
+
+		datastore = malloc (sizeof(char) * BUFFER_SIZE);
+		if (datastore == NULL) {
+			fprintf (stderr, "Memory allocation error (%s)\n", strerror (errno));
+			return (EXIT_FAILURE);
+		}
+		param_free = 1;
+
+		/* repeat user input until valid datastore is selected */
+		while (!valid) {
+			/* get mandatory argument */
+			fprintf (stdout, "  Select target datastore (running");
+			if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
+				fprintf (stdout, "|startup");
+			}
+			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+				fprintf (stdout, "|candidate");
+			}
+			fprintf (stdout, "): ");
+			scanf ("%1023s", datastore);
+
+			/* validate argument */
+			if (strcmp (datastore, "running") == 0) {
+				valid = 1;
+				target = NC_DATASTORE_RUNNING;
+			}
+			if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) &&
+					strcmp (datastore, "startup") == 0) {
+				valid = 1;
+				target = NC_DATASTORE_STARTUP;
+			}
+			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) &&
+					strcmp (datastore, "candidate") == 0) {
+				valid = 1;
+				target = NC_DATASTORE_CANDIDATE;
+			}
+
+			if (!valid) {
+				fprintf (stdout, "get-config: invalid target datastore type.\n");
+			}
+    	}
+    } else if ((optind + 1) == cmd.count) {
+    	datastore = cmd.list[optind];
+
+		/* validate argument */
+		if (strcmp (datastore, "running") == 0) {
+			valid = 1;
+			target = NC_DATASTORE_RUNNING;
+		}
+		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) &&
+				strcmp (datastore, "startup") == 0) {
+			valid = 1;
+			target = NC_DATASTORE_STARTUP;
+		}
+		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) &&
+				strcmp (datastore, "candidate") == 0) {
+			valid = 1;
+			target = NC_DATASTORE_CANDIDATE;
+		}
+
+		if (!valid) {
+			goto userinput;
+		}
+    }
+
+	if (param_free) {free(datastore);}
+
+	/* create requests */
+	rpc = nc_rpc_getconfig(target, NULL);
+	if (rpc == NULL) {
+		fprintf (stderr, "get-config: creating rpc request failed.\n");
+		return (EXIT_FAILURE);
+	}
+	/* send the request and get the reply */
+	nc_session_send_rpc(session, rpc);
+	nc_session_recv_reply(session, &reply);
+	nc_rpc_free(rpc);
+
+	switch(nc_reply_get_type(reply)) {
+	case NC_REPLY_DATA:
+		fprintf (stdout, "%s\n", data = nc_reply_get_data(reply));
+		break;
+	case NC_REPLY_ERROR:
+		fprintf (stdout, "get-config: operation failed (%s)\n", data = nc_reply_get_errormsg(reply));
+		break;
+	default:
+		fprintf (stdout, "get-config: unexpected operation result\n");
+		break;
+	}
+	if (data) {free(data);}
+
+	return (EXIT_SUCCESS);
+}
+
 void cmd_connect_help()
 {
 	fprintf(stdout, "connect [--help] [--port <num>] [--login <username>] host\n");
@@ -274,6 +430,32 @@ int cmd_quit(char* arg)
 	return (0);
 }
 
+int cmd_verbose(char *arg)
+{
+	if (verb_level != 1) {
+		verb_level = 1;
+		nc_verbosity(NC_VERB_VERBOSE);
+	} else {
+		verb_level = 0;
+		nc_verbosity(NC_VERB_ERROR);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+int cmd_debug(char *arg)
+{
+	if (verb_level != 2) {
+		verb_level = 2;
+		nc_verbosity(NC_VERB_DEBUG);
+	} else {
+		verb_level = 0;
+		nc_verbosity(NC_VERB_ERROR);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
 int cmd_help(char* arg)
 {
 	int i;
@@ -283,7 +465,7 @@ int cmd_help(char* arg)
 
 	for (i = 0; commands[i].name; i++) {
 		if (commands[i].helpstring != NULL) {
-			fprintf(stdout, "  %-10s %s\n", commands[i].name, commands[i].helpstring);
+			fprintf(stdout, "  %-15s %s\n", commands[i].name, commands[i].helpstring);
 		}
 	}
 
