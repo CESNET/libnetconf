@@ -119,9 +119,10 @@ void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
 char* callback_sshauth_password_default (const char* username,
 		const char* hostname)
 {
-	int c;
 	char* buf;
 	int buflen = 1024, len = 0;
+	int c;
+	struct termios newterm, oldterm;
 
 	buf = malloc (buflen * sizeof(char));
 	if (buf == NULL) {
@@ -129,11 +130,22 @@ char* callback_sshauth_password_default (const char* username,
 		return (NULL);
 	}
 
-	fprintf(stdout, "%s@%s password:", username, hostname);
-	system("stty -echo");
-	fflush(stdin);
+	if (tcgetattr(STDIN_FILENO, &oldterm) != 0) {
+		ERROR("tcgetattr: %s", strerror(errno));
+	}
 
-	while ((c = getchar ()) != '\n') {
+	fprintf(stdout, "%s@%s password: ", username, hostname);
+	fflush(stdout);
+
+	/* system("stty -echo"); */
+	newterm = oldterm;
+	newterm.c_lflag &= ~ECHO;
+	tcflush(STDIN_FILENO, TCIFLUSH);
+	if (tcsetattr(STDIN_FILENO, TCSANOW, &newterm) != 0) {
+		ERROR("tcseattr: %s", strerror(errno));
+	}
+
+	while (read(STDIN_FILENO, &c, 1) == 1 && c != '\n') {
 		if (len >= (buflen-1)) {
 			buflen *= 2;
 			buf = realloc (buf, buflen*sizeof (char));
@@ -141,7 +153,12 @@ char* callback_sshauth_password_default (const char* username,
 		buf[len++] = (char)c;
 	}
 	buf[len++] = 0; /* terminating null byte */
-	system ("stty echo");
+
+	/* system ("stty echo"); */
+	if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+		ERROR("tcseattr: %s", strerror(errno));
+	}
+
 	fprintf(stdout, "\n");
 
 	return (buf);
@@ -171,6 +188,7 @@ void callback_sshauth_interactive_default (const char* name,
 
 	for (i=0; i<num_prompts; i++) {
 		fwrite (prompts[i].text, sizeof(char), prompts[i].length, stdout);
+		fflush(stdout);
 		if (prompts[i].echo == 0) {
 			/* system("stty -echo"); */
 			newterm = oldterm;
@@ -181,15 +199,16 @@ void callback_sshauth_interactive_default (const char* name,
 			}
 		}
 		responses[i].text = malloc (buflen*sizeof(char));
-
 		responses[i].length = 0;
-		while ((c = getchar ()) != '\n') {
+
+		while (read(STDIN_FILENO, &c, 1) == 1 && c != '\n') {
 			if (responses[i].length >= (buflen-1)) {
 				buflen *= 2;
 				responses[i].text = realloc (responses[i].text, buflen*sizeof (char));
 			}
 			responses[i].text[responses[i].length++] = c;
 		}
+		/* terminating null byte */
 		responses[i].text[responses[i].length++] = '\0';
 
 		/* system ("stty echo"); */
@@ -197,7 +216,7 @@ void callback_sshauth_interactive_default (const char* name,
 			ERROR("tcseattr: %s", strerror(errno));
 		}
 
-		fwrite ("\n", sizeof(char), 1, stdout);
+		fprintf(stdout, "\n");
 	}
 	return;
 }
