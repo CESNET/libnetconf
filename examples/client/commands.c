@@ -1,15 +1,24 @@
 #define _GNU_SOURCE
 #include <stdarg.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <libnetconf.h>
 #include <getopt.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include <libxml/parser.h>
 
 #include "commands.h"
+#include "mreadline.h"
 
 #define NC_CAP_CANDIDATE_ID "urn:ietf:params:netconf:capability:candidate:1.0"
 #define NC_CAP_STARTUP_ID   "urn:ietf:params:netconf:capability:startup:1.0"
+#define NC_CAP_ROLLBACK_ID  "urn:ietf:params:netconf:capability:rollback-on-error:1.0"
 
 extern int done;
 volatile int verb_level = 0;
@@ -23,6 +32,8 @@ struct nc_session* session = NULL;
 COMMAND commands[] = {
 		{"connect", cmd_connect, "Connect to the NETCONF server"},
 		{"disconnect", cmd_disconnect, "Disconnect from the NETCONF server"},
+		{"edit-config", cmd_editconfig, "NETCONF <edit-config> operation"},
+		{"get", cmd_get, "NETCONF <get> operation"},
 		{"get-config", cmd_getconfig, "NETCONF <get-config> operation"},
 		{"help", cmd_help, "Display this text"},
 		{"quit", cmd_quit, "Quit the program"},
@@ -180,10 +191,213 @@ int cmd_status (char* arg)
 	return (EXIT_SUCCESS);
 }
 
+static struct nc_filter *set_filter(const char* operation, const char *file)
+{
+	int filter_fd;
+	struct stat filter_stat;
+	char *filter_s;
+	struct nc_filter *filter = NULL;
+
+	if (operation == NULL) {
+		return (NULL);
+	}
+
+	if (file) {
+		/* open filter from the file */
+		filter_fd = open(optarg, O_RDONLY);
+		if (filter_fd == -1) {
+			ERROR(operation, "unable to open filter file (%s).", strerror(errno));
+			return (NULL);
+		}
+
+		/* map content of the file into the memory */
+		fstat(filter_fd, &filter_stat);
+		filter_s = (char*) mmap(NULL, filter_stat.st_size, PROT_READ, MAP_PRIVATE, filter_fd, 0);
+		if (filter_s == MAP_FAILED) {
+			ERROR(operation, "mmapping filter file failed (%s).", strerror(errno));
+			close(filter_fd);
+			return (NULL);
+		}
+
+		/* create the filter according to the file content */
+		filter = nc_filter_new(NC_FILTER_SUBTREE, filter_s);
+
+		/* unmap filter file and close it */
+		munmap(filter_s, filter_stat.st_size);
+		close(filter_fd);
+	} else {
+		/* let user write filter interactively */
+		INSTRUCTION("Type the filter (close editor by Ctrl-D):\n");
+		filter_s = mreadline(NULL);
+		if (filter_s == NULL) {
+			ERROR(operation, "reading filter failed.");
+			return (NULL);
+		}
+
+		/* create the filter according to the file content */
+		filter = nc_filter_new(NC_FILTER_SUBTREE, filter_s);
+
+		/* cleanup */
+		free(filter_s);
+	}
+
+	return (filter);
+}
+
+void cmd_editconfig_help()
+{
+	char *rollback;
+
+	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_ROLLBACK_ID)) {
+		rollback = "|rollback";
+	} else {
+		rollback = "";
+	}
+
+	/* if session not established, print complete help for all capabilities */
+	fprintf (stdout, "edit-config [--help] [--defop <merge|replace|none>] [--error <stop|continue%s>] [--config <file>] running", rollback);
+	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
+		fprintf (stdout, "|startup");
+	}
+	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+		fprintf (stdout, "|candidate");
+	}
+	fprintf (stdout, "\n");
+}
+
+int cmd_editconfig (char *arg)
+{
+	struct arglist cmd;
+	struct option long_options[] ={
+			{"config", 1, 0, 'c'},
+			{"defop", 1, 0, 'd'},
+			{"error", 1, 0, 'e'},
+			{"help", 0, 0, 'h'},
+			{0, 0, 0, 0}
+	};
+	int option_index = 0;
+
+	/* set back to start to be able to use getopt() repeatedly */
+	optind = 0;
+
+	if (session == NULL) {
+		ERROR("get", "NETCONF session not established, use \'connect\' command.");
+		return (EXIT_FAILURE);
+	}
+
+	init_arglist (&cmd);
+	addargs (&cmd, "%s", arg);
+
+	cmd_editconfig_help();
+
+	clear_arglist(&cmd);
+
+	return (EXIT_SUCCESS);
+}
+
+void cmd_get_help ()
+{
+	fprintf (stdout, "get [--help] [--filter[=filepath]]\n");
+}
+
+
+int cmd_get (char *arg)
+{
+	int c;
+	char *data = NULL;
+	struct nc_filter *filter = NULL;
+	nc_rpc *rpc = NULL;
+	nc_reply *reply = NULL;
+	struct arglist cmd;
+	struct option long_options[] ={
+			{"filter", 2, 0, 'f'},
+			{"help", 0, 0, 'h'},
+			{0, 0, 0, 0}
+	};
+	int option_index = 0;
+
+	/* set back to start to be able to use getopt() repeatedly */
+	optind = 0;
+
+	if (session == NULL) {
+		ERROR("get", "NETCONF session not established, use \'connect\' command.");
+		return (EXIT_FAILURE);
+	}
+
+	init_arglist (&cmd);
+	addargs (&cmd, "%s", arg);
+
+	while ((c = getopt_long (cmd.count, cmd.list, "f:h", long_options, &option_index)) != -1) {
+		switch (c) {
+		case 'f':
+			filter = set_filter("get", optarg);
+			if (filter == NULL) {
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+			break;
+		case 'h':
+			cmd_get_help ();
+			clear_arglist(&cmd);
+			return (EXIT_SUCCESS);
+			break;
+		default:
+			ERROR("get", "unknown option -%c.", c);
+			cmd_get_help ();
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
+	}
+
+	if (optind > cmd.count) {
+		ERROR("get", "invalid parameters, see \'get --help\'.");
+		clear_arglist(&cmd);
+		return (EXIT_FAILURE);
+	}
+
+	/* arglist is no more needed */
+	clear_arglist(&cmd);
+
+	/* create requests */
+	rpc = nc_rpc_get (filter);
+	nc_filter_free(filter);
+	if (rpc == NULL) {
+		ERROR("get", "creating rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+	/* send the request and get the reply */
+	nc_session_send_rpc (session, rpc);
+	if (nc_session_recv_reply (session, &reply) == 0) {
+		ERROR("get", "receiving rpc-reply failed.");
+		nc_rpc_free (rpc);
+		return (EXIT_FAILURE);
+	}
+	nc_rpc_free (rpc);
+
+	switch (nc_reply_get_type (reply)) {
+	case NC_REPLY_DATA:
+		INSTRUCTION("Result:\n%s\n", data = nc_reply_get_data (reply));
+		break;
+	case NC_REPLY_ERROR:
+		ERROR("get", "operation failed (%s).", data = nc_reply_get_errormsg (reply));
+		break;
+	default:
+		ERROR("get", "unexpected operation result.");
+		break;
+	}
+	nc_reply_free(reply);
+	if (data) {
+		free (data);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+
 void cmd_getconfig_help ()
 {
 	/* if session not established, print complete help for all capabilities */
-	fprintf (stdout, "get-config [--help] running");
+	fprintf (stdout, "get-config [--help] [--filter[=file]] running");
 	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
 		fprintf (stdout, "|startup");
 	}
@@ -199,10 +413,12 @@ int cmd_getconfig (char *arg)
 	char *datastore = NULL;
 	char *data = NULL;
 	NC_DATASTORE_TYPE target;
+	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
 	struct arglist cmd;
-	struct option long_options[] = {
+	struct option long_options[] ={
+			{"filter", 2, 0, 'f'},
 			{"help", 0, 0, 'h'},
 			{0, 0, 0, 0}
 	};
@@ -212,32 +428,34 @@ int cmd_getconfig (char *arg)
 	optind = 0;
 
 	if (session == NULL) {
-		fprintf (stderr, "NETCONF session not established, use \'connect\' command.\n");
+		ERROR("get-config", "NETCONF session not established, use \'connect\' command.");
 		return (EXIT_FAILURE);
 	}
 
 	init_arglist (&cmd);
 	addargs (&cmd, "%s", arg);
 
-	while ((c = getopt_long (cmd.count, cmd.list, "h", long_options, &option_index)) != -1) {
+	while ((c = getopt_long (cmd.count, cmd.list, "f:h", long_options, &option_index)) != -1) {
 		switch (c) {
+		case 'f':
+			filter = set_filter("get-config", optarg);
+			if (filter == NULL) {
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+			break;
 		case 'h':
 			cmd_getconfig_help ();
 			clear_arglist(&cmd);
 			return (EXIT_SUCCESS);
 			break;
 		default:
-			fprintf (stderr, "get-config: unknown option %c\n", c);
+			ERROR("get-config", "unknown option -%c.", c);
 			cmd_getconfig_help ();
 			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
 	}
-
-/* TODO - filter
-	struct nc_filter *filter;
-	filter = nc_filter_new(NC_FILTER_SUBTREE, "<flowmon-config xmlns=\"http://www.liberouter.org/ns/netopeer/flowmon/1.0\"><collectors/></flowmon-config>");
-*/
 
 	if (optind == cmd.count) {
 
@@ -245,7 +463,7 @@ userinput:
 
 		datastore = malloc (sizeof(char) * BUFFER_SIZE);
 		if (datastore == NULL) {
-			fprintf (stderr, "Memory allocation error (%s)\n", strerror (errno));
+			ERROR("get-config", "memory allocation error (%s).", strerror (errno));
 			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
@@ -254,7 +472,7 @@ userinput:
 		/* repeat user input until valid datastore is selected */
 		while (!valid) {
 			/* get mandatory argument */
-			fprintf (stdout, "  Select target datastore (running");
+			INSTRUCTION("Select target datastore (running");
 			if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
 				fprintf (stdout, "|startup");
 			}
@@ -281,7 +499,7 @@ userinput:
 			}
 
 			if (!valid) {
-				fprintf (stdout, "get-config: invalid target datastore type.\n");
+				ERROR("get-config", "invalid target datastore type.");
 			}
 		}
 	} else if ((optind + 1) == cmd.count) {
@@ -306,6 +524,11 @@ userinput:
 		if (!valid) {
 			goto userinput;
 		}
+	} else {
+		ERROR("get-config", "invalid parameters, see \'get-config --help\'.");
+		clear_arglist(&cmd);
+		free (datastore);
+		return (EXIT_FAILURE);
 	}
 
 	if (param_free) {
@@ -315,15 +538,16 @@ userinput:
 	clear_arglist(&cmd);
 
 	/* create requests */
-	rpc = nc_rpc_getconfig (target, NULL);
+	rpc = nc_rpc_getconfig (target, filter);
+	nc_filter_free(filter);
 	if (rpc == NULL) {
-		fprintf (stderr, "get-config: creating rpc request failed.\n");
+		ERROR("get-config", "creating rpc request failed.");
 		return (EXIT_FAILURE);
 	}
 	/* send the request and get the reply */
 	nc_session_send_rpc (session, rpc);
 	if (nc_session_recv_reply (session, &reply) == 0) {
-		fprintf(stderr, "get-config: receiving rpc-reply failed\n");
+		ERROR("get-config", "receiving rpc-reply failed.");
 		nc_rpc_free (rpc);
 		return (EXIT_FAILURE);
 	}
@@ -331,13 +555,13 @@ userinput:
 
 	switch (nc_reply_get_type (reply)) {
 	case NC_REPLY_DATA:
-		fprintf (stdout, "%s\n", data = nc_reply_get_data (reply));
+		INSTRUCTION("Result:\n%s\n", data = nc_reply_get_data (reply));
 		break;
 	case NC_REPLY_ERROR:
-		fprintf (stdout, "get-config: operation failed (%s)\n", data = nc_reply_get_errormsg (reply));
+		ERROR("get-config", "operation failed (%s).", data = nc_reply_get_errormsg (reply));
 		break;
 	default:
-		fprintf (stdout, "get-config: unexpected operation result\n");
+		ERROR("get-config", "unexpected operation result.");
 		break;
 	}
 	nc_reply_free(reply);
@@ -362,8 +586,8 @@ int cmd_connect (char* arg)
 	struct arglist cmd;
 	struct option long_options[] = {
 			{"help", 0, 0, 'h'},
-			{"port", 2, 0, 'p'},
-			{"login", 2, 0, 'l'},
+			{"port", 1, 0, 'p'},
+			{"login", 1, 0, 'l'},
 			{0, 0, 0, 0}
 	};
 	int option_index = 0;
@@ -372,7 +596,7 @@ int cmd_connect (char* arg)
 	optind = 0;
 
 	if (session != NULL) {
-		fprintf (stderr, "Client is already connected to %s\n", host = nc_session_get_host (session));
+		ERROR("connect", "already connected to %s.", host = nc_session_get_host (session));
 		if (host != NULL) {
 			free (host);
 		}
@@ -396,7 +620,7 @@ int cmd_connect (char* arg)
 			user = optarg;
 			break;
 		default:
-			fprintf (stderr, "connect: unknown option %c\n", c);
+			ERROR("connect", "unknown option -%c.", c);
 			cmd_connect_help ();
 			return (EXIT_FAILURE);
 		}
@@ -405,12 +629,12 @@ int cmd_connect (char* arg)
 		/* get mandatory argument */
 		host = malloc (sizeof(char) * BUFFER_SIZE);
 		if (host == NULL) {
-			fprintf (stderr, "Memory allocation error (%s)\n", strerror (errno));
+			ERROR("connect", "memory allocation error (%s).", strerror (errno));
 			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
 		hostfree = 1;
-		fprintf (stdout, "  Set the hostname to connect with: ");
+		INSTRUCTION("Hostname to connect to: ");
 		scanf ("%1023s", host);
 	} else if ((optind + 1) == cmd.count) {
 		host = cmd.list[optind];
@@ -419,7 +643,7 @@ int cmd_connect (char* arg)
 	/* create the session */
 	session = nc_session_connect (host, port, user, NULL);
 	if (session == NULL) {
-		fprintf (stderr, "Connecting to the %s failed!\n", host);
+		ERROR("connect", "connecting to the %s failed.", host);
 		if (hostfree) {
 			free (host);
 		}
@@ -437,7 +661,7 @@ int cmd_connect (char* arg)
 int cmd_disconnect (char* arg)
 {
 	if (session == NULL) {
-		fprintf (stderr, "Client is not connected to any NETCONF server.\n");
+		ERROR("disconnect", "not connected to any NETCONF server.");
 	} else {
 		nc_session_close (session);
 		session = NULL;
@@ -486,7 +710,7 @@ int cmd_help (char* arg)
 	int i;
 
 	print_version ();
-	fprintf (stdout, "\nAvailable commands:\n");
+	INSTRUCTION("Available commands:\n");
 
 	for (i = 0; commands[i].name; i++) {
 		if (commands[i].helpstring != NULL) {

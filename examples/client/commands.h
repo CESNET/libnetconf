@@ -4,9 +4,14 @@
 #ifndef COMMANDS_H_
 #define COMMANDS_H_
 
+char some_msg[4096];
+#define INSTRUCTION(format,args...) {snprintf(some_msg,4095,format,##args);fprintf(stdout,"\n  %s",some_msg);}
+#define ERROR(function,format,args...) {snprintf(some_msg,4095,format,##args);fprintf(stderr,"%s: %s\n",function,some_msg);}
 
 int cmd_connect(char* arg);
 int cmd_disconnect(char* arg);
+int cmd_editconfig (char *arg);
+int cmd_get(char *arg);
 int cmd_getconfig(char *arg);
 int cmd_help(char* arg);
 int cmd_status(char* arg);

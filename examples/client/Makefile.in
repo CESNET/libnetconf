@@ -46,9 +46,11 @@ OBJDIR= .obj
 TOPDIR = @CONFIGURE_PWD@
 
 SRCS =  main.c \
-	commands.c
+	commands.c \
+	mreadline.c
 
-HDRS = commands.h
+HDRS = commands.h \
+       mreadline.h
 
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 
