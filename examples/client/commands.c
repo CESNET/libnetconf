@@ -191,6 +191,83 @@ int cmd_status (char* arg)
 	return (EXIT_SUCCESS);
 }
 
+static NC_DATASTORE_TYPE get_datastore(const char* paramtype, const char* operation, struct arglist *cmd, int index)
+{
+	int valid = 0;
+	char *datastore;
+	NC_DATASTORE_TYPE retval;
+
+	if (index == cmd->count) {
+
+userinput:
+
+		datastore = malloc (sizeof(char) * BUFFER_SIZE);
+		if (datastore == NULL) {
+			ERROR(operation, "memory allocation error (%s).", strerror (errno));
+			return (NC_DATASTORE_NONE);
+		}
+
+		/* repeat user input until valid datastore is selected */
+		while (!valid) {
+			/* get mandatory argument */
+			INSTRUCTION("Select %s datastore (running", paramtype);
+			if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
+				fprintf (stdout, "|startup");
+			}
+			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+				fprintf (stdout, "|candidate");
+			}
+			fprintf (stdout, "): ");
+			scanf ("%1023s", datastore);
+
+			/* validate argument */
+			if (strcmp (datastore, "running") == 0) {
+				valid = 1;
+				retval = NC_DATASTORE_RUNNING;
+			}
+			if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) && strcmp (datastore, "startup") == 0) {
+				valid = 1;
+				retval = NC_DATASTORE_STARTUP;
+			}
+			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) && strcmp (datastore, "candidate") == 0) {
+				valid = 1;
+				retval = NC_DATASTORE_CANDIDATE;
+			}
+
+			if (!valid) {
+				ERROR(operation, "invalid %s datastore type.", paramtype);
+			} else {
+				free(datastore);
+			}
+		}
+	} else if ((index + 1) == cmd->count) {
+		datastore = cmd->list[index];
+
+		/* validate argument */
+		if (strcmp (datastore, "running") == 0) {
+			valid = 1;
+			retval = NC_DATASTORE_RUNNING;
+		}
+		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) && strcmp (datastore, "startup") == 0) {
+			valid = 1;
+			retval = NC_DATASTORE_STARTUP;
+		}
+		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) && strcmp (datastore, "candidate") == 0) {
+			valid = 1;
+			retval = NC_DATASTORE_CANDIDATE;
+		}
+
+		if (!valid) {
+			goto userinput;
+		}
+	} else {
+		ERROR(operation, "invalid parameters, see \'%s --help\'.", operation);
+		return (NC_DATASTORE_NONE);
+	}
+
+	return (retval);
+}
+
 static struct nc_filter *set_filter(const char* operation, const char *file)
 {
 	int filter_fd;
@@ -267,6 +344,15 @@ void cmd_editconfig_help()
 
 int cmd_editconfig (char *arg)
 {
+	int c;
+	char *config_m = NULL, *config = NULL, *err_info;
+	int config_fd;
+	struct stat config_stat;
+	NC_DATASTORE_TYPE target;
+	NC_EDIT_DEFOP_TYPE defop = 0; /* do not set this parameter by default */
+	NC_EDIT_ERROPT_TYPE erropt = 0; /* do not set this parameter by default */
+	nc_rpc *rpc = NULL;
+	nc_reply *reply = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"config", 1, 0, 'c'},
@@ -288,9 +374,132 @@ int cmd_editconfig (char *arg)
 	init_arglist (&cmd);
 	addargs (&cmd, "%s", arg);
 
-	cmd_editconfig_help();
+	/* rocess command line parameters */
+	while ((c = getopt_long (cmd.count, cmd.list, "c:d:e:h", long_options, &option_index)) != -1) {
+		switch (c) {
+		case 'c':
+			/* open edit configuration data from the file */
+			config_fd = open(optarg, O_RDONLY);
+			if (config_fd == -1) {
+				ERROR("edit-config", "unable to open edit data file (%s).", strerror(errno));
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
 
+			/* map content of the file into the memory */
+			fstat(config_fd, &config_stat);
+			config_m = (char*) mmap(NULL, config_stat.st_size, PROT_READ, MAP_PRIVATE, config_fd, 0);
+			if (config_m == MAP_FAILED) {
+				ERROR("edit-config", "mmapping edit data file failed (%s).", strerror(errno));
+				clear_arglist(&cmd);
+				close(config_fd);
+				return (EXIT_FAILURE);
+			}
+
+			/* make a copy of the content to allow closing the file */
+			config = strdup(config_m);
+
+			/* unmap edit data file and close it */
+			munmap(config_m, config_stat.st_size);
+			close(config_fd);
+
+			break;
+		case 'd':
+			/* validate default operation */
+			if (strcmp (optarg, "merge") == 0) {
+				defop = NC_EDIT_DEFOP_MERGE;
+			} else if (strcmp (optarg, "replace") == 0) {
+				defop = NC_EDIT_DEFOP_REPLACE;
+			} else if (strcmp (optarg, "none") == 0) {
+				defop = NC_EDIT_DEFOP_NONE;
+			} else {
+				ERROR("edit-config", "invalid default operation %s.", optarg);
+				cmd_editconfig_help ();
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+
+			break;
+		case 'e':
+			/* validate error option */
+			if (strcmp (optarg, "stop") == 0) {
+				defop = NC_EDIT_ERROPT_STOP;
+			} else if (strcmp (optarg, "continue") == 0) {
+				defop = NC_EDIT_ERROPT_CONT;
+			} else if (nc_cpblts_enabled (session, NC_CAP_ROLLBACK_ID) && strcmp (optarg, "rollback") == 0) {
+				defop = NC_EDIT_ERROPT_ROLLBACK;
+			} else {
+				ERROR("edit-config", "invalid error-option %s.", optarg);
+				cmd_editconfig_help ();
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+
+			break;
+		case 'h':
+			cmd_editconfig_help ();
+			clear_arglist(&cmd);
+			return (EXIT_SUCCESS);
+			break;
+		default:
+			ERROR("edit-config", "unknown option -%c.", c);
+			cmd_editconfig_help ();
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
+	}
+
+	/* get what datastore is target of the operation */
+	target = get_datastore("target", "edit-config", &cmd, optind);
+
+	/* arglist is no more needed */
 	clear_arglist(&cmd);
+
+	if (target == NC_DATASTORE_NONE) {
+		return (EXIT_FAILURE);
+	}
+
+	/* check if edit configuration data were specified */
+	if (config == NULL) {
+		/* let user write edit data interactively */
+		INSTRUCTION("Type the edit configuration data (close editor by Ctrl-D):\n");
+		config = mreadline(NULL);
+		if (config == NULL) {
+			ERROR("edit-config", "reading filter failed.");
+			return (EXIT_FAILURE);
+		}
+	}
+
+	/* create requests */
+	rpc = nc_rpc_editconfig(target, defop, erropt, config);
+	free(config);
+	if (rpc == NULL) {
+		ERROR("edit-config", "creating rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+	/* send the request and get the reply */
+	nc_session_send_rpc (session, rpc);
+	if (nc_session_recv_reply (session, &reply) == 0) {
+		ERROR("edit-config", "receiving rpc-reply failed.");
+		nc_rpc_free (rpc);
+		return (EXIT_FAILURE);
+	}
+	nc_rpc_free (rpc);
+
+	/* parse result */
+	switch (nc_reply_get_type (reply)) {
+	case NC_REPLY_OK:
+		INSTRUCTION("Result OK\n");
+		break;
+	case NC_REPLY_ERROR:
+		ERROR("edit-config", "operation failed (%s).", err_info = nc_reply_get_errormsg (reply));
+		if (err_info) {free (err_info);}
+		break;
+	default:
+		ERROR("edit-config", "unexpected operation result.");
+		break;
+	}
+	nc_reply_free(reply);
 
 	return (EXIT_SUCCESS);
 }
@@ -409,8 +618,7 @@ void cmd_getconfig_help ()
 
 int cmd_getconfig (char *arg)
 {
-	int c, param_free = 0, valid = 0;
-	char *datastore = NULL;
+	int c;
 	char *data = NULL;
 	NC_DATASTORE_TYPE target;
 	struct nc_filter *filter = NULL;
@@ -457,85 +665,14 @@ int cmd_getconfig (char *arg)
 		}
 	}
 
-	if (optind == cmd.count) {
+	target = get_datastore("target", "get-config", &cmd, optind);
 
-userinput:
-
-		datastore = malloc (sizeof(char) * BUFFER_SIZE);
-		if (datastore == NULL) {
-			ERROR("get-config", "memory allocation error (%s).", strerror (errno));
-			clear_arglist(&cmd);
-			return (EXIT_FAILURE);
-		}
-		param_free = 1;
-
-		/* repeat user input until valid datastore is selected */
-		while (!valid) {
-			/* get mandatory argument */
-			INSTRUCTION("Select target datastore (running");
-			if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
-				fprintf (stdout, "|startup");
-			}
-			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-				fprintf (stdout, "|candidate");
-			}
-			fprintf (stdout, "): ");
-			scanf ("%1023s", datastore);
-
-			/* validate argument */
-			if (strcmp (datastore, "running") == 0) {
-				valid = 1;
-				target = NC_DATASTORE_RUNNING;
-			}
-			if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) &&
-					strcmp (datastore, "startup") == 0) {
-				valid = 1;
-				target = NC_DATASTORE_STARTUP;
-			}
-			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) &&
-					strcmp (datastore, "candidate") == 0) {
-				valid = 1;
-				target = NC_DATASTORE_CANDIDATE;
-			}
-
-			if (!valid) {
-				ERROR("get-config", "invalid target datastore type.");
-			}
-		}
-	} else if ((optind + 1) == cmd.count) {
-		datastore = cmd.list[optind];
-
-		/* validate argument */
-		if (strcmp (datastore, "running") == 0) {
-			valid = 1;
-			target = NC_DATASTORE_RUNNING;
-		}
-		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) &&
-				strcmp (datastore, "startup") == 0) {
-			valid = 1;
-			target = NC_DATASTORE_STARTUP;
-		}
-		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) &&
-				strcmp (datastore, "candidate") == 0) {
-			valid = 1;
-			target = NC_DATASTORE_CANDIDATE;
-		}
-
-		if (!valid) {
-			goto userinput;
-		}
-	} else {
-		ERROR("get-config", "invalid parameters, see \'get-config --help\'.");
-		clear_arglist(&cmd);
-		free (datastore);
-		return (EXIT_FAILURE);
-	}
-
-	if (param_free) {
-		free (datastore);
-	}
 	/* arglist is no more needed */
 	clear_arglist(&cmd);
+
+	if (target == NC_DATASTORE_NONE) {
+		return (EXIT_FAILURE);
+	}
 
 	/* create requests */
 	rpc = nc_rpc_getconfig (target, filter);
