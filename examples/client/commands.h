@@ -10,6 +10,7 @@ char some_msg[4096];
 
 int cmd_connect(char* arg);
 int cmd_disconnect(char* arg);
+int cmd_copyconfig (char *arg);
 int cmd_editconfig (char *arg);
 int cmd_get(char *arg);
 int cmd_getconfig(char *arg);

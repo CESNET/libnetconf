@@ -32,6 +32,7 @@ struct nc_session* session = NULL;
 COMMAND commands[] = {
 		{"connect", cmd_connect, "Connect to the NETCONF server"},
 		{"disconnect", cmd_disconnect, "Disconnect from the NETCONF server"},
+		{"copy-config", cmd_copyconfig, "NETCONF <copy-config> operation"},
 		{"edit-config", cmd_editconfig, "NETCONF <edit-config> operation"},
 		{"get", cmd_get, "NETCONF <get> operation"},
 		{"get-config", cmd_getconfig, "NETCONF <get-config> operation"},
@@ -504,9 +505,178 @@ int cmd_editconfig (char *arg)
 	return (EXIT_SUCCESS);
 }
 
+void cmd_copyconfig_help ()
+{
+	char *datastores;
+
+	if (session == NULL) {
+		/* if session not established, print complete help for all capabilities */
+		datastores = "running|startup|candidate";
+	} else {
+		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
+			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+				datastores = "running|startup|candidate";
+			} else {
+				datastores = "running|startup";
+			}
+		} else if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+			datastores = "running|candidate";
+		} else {
+			datastores = "running";
+		}
+	}
+
+	fprintf (stdout, "copy-config [--help] [--source %s | --config <file>] %s\n", datastores, datastores);
+}
+
+int cmd_copyconfig (char *arg)
+{
+	int c;
+	int config_fd;
+	struct stat config_stat;
+	char *err_info;
+	char *config = NULL, *config_m = NULL;
+	NC_DATASTORE_TYPE target;
+	NC_DATASTORE_TYPE source = NC_DATASTORE_NONE;
+	struct nc_filter *filter = NULL;
+	nc_rpc *rpc = NULL;
+	nc_reply *reply = NULL;
+	struct arglist cmd;
+	struct option long_options[] ={
+			{"config", 1, 0, 'c'},
+			{"source", 1, 0, 's'},
+			{"help", 0, 0, 'h'},
+			{0, 0, 0, 0}
+	};
+	int option_index = 0;
+
+	/* set back to start to be able to use getopt() repeatedly */
+	optind = 0;
+
+	if (session == NULL) {
+		ERROR("copy-config", "NETCONF session not established, use \'connect\' command.");
+		return (EXIT_FAILURE);
+	}
+
+	init_arglist (&cmd);
+	addargs (&cmd, "%s", arg);
+
+	while ((c = getopt_long (cmd.count, cmd.list, "c:s:h", long_options, &option_index)) != -1) {
+		switch (c) {
+		case 'c':
+			/* open edit configuration data from the file */
+			config_fd = open(optarg, O_RDONLY);
+			if (config_fd == -1) {
+				ERROR("copy-config", "unable to open local datastore file (%s).", strerror(errno));
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+
+			/* map content of the file into the memory */
+			fstat(config_fd, &config_stat);
+			config_m = (char*) mmap(NULL, config_stat.st_size, PROT_READ, MAP_PRIVATE, config_fd, 0);
+			if (config_m == MAP_FAILED) {
+				ERROR("copy-config", "mmapping local datastore file failed (%s).", strerror(errno));
+				clear_arglist(&cmd);
+				close(config_fd);
+				return (EXIT_FAILURE);
+			}
+
+			/* make a copy of the content to allow closing the file */
+			config = strdup(config_m);
+
+			/* unmap local datastore file and close it */
+			munmap(config_m, config_stat.st_size);
+			close(config_fd);
+			break;
+		case 's':
+			/* validate argument */
+			if (strcmp (optarg, "running") == 0) {
+				source = NC_DATASTORE_RUNNING;
+			}
+			if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) && strcmp (optarg, "startup") == 0) {
+				source = NC_DATASTORE_STARTUP;
+			}
+			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) && strcmp (optarg, "candidate") == 0) {
+				source = NC_DATASTORE_CANDIDATE;
+			}
+
+			if (source == NC_DATASTORE_NONE) {
+				ERROR("copy-config", "invalid source datastore specified (%s).", optarg);
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+			break;
+		case 'h':
+			cmd_copyconfig_help ();
+			clear_arglist(&cmd);
+			return (EXIT_SUCCESS);
+			break;
+		default:
+			ERROR("copy-config", "unknown option -%c.", c);
+			cmd_copyconfig_help ();
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
+	}
+
+	target = get_datastore("target", "copy-config", &cmd, optind);
+
+	/* arglist is no more needed */
+	clear_arglist(&cmd);
+
+	if (target == NC_DATASTORE_NONE) {
+		return (EXIT_FAILURE);
+	}
+
+	/* check if edit configuration data were specified */
+	if (source == NC_DATASTORE_NONE && config == NULL) {
+		/* let user write edit data interactively */
+		INSTRUCTION("Type the content of a configuration datastore (close editor by Ctrl-D):\n");
+		config = mreadline(NULL);
+		if (config == NULL) {
+			ERROR("copy-config", "reading filter failed.");
+			return (EXIT_FAILURE);
+		}
+	}
+
+	/* create requests */
+	rpc = nc_rpc_getconfig (target, filter);
+	nc_filter_free(filter);
+	if (rpc == NULL) {
+		ERROR("copy-config", "creating rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+	/* send the request and get the reply */
+	nc_session_send_rpc (session, rpc);
+	if (nc_session_recv_reply (session, &reply) == 0) {
+		ERROR("copy-config", "receiving rpc-reply failed.");
+		nc_rpc_free (rpc);
+		return (EXIT_FAILURE);
+	}
+	nc_rpc_free (rpc);
+
+	/* parse result */
+	switch (nc_reply_get_type (reply)) {
+	case NC_REPLY_OK:
+		INSTRUCTION("Result OK\n");
+		break;
+	case NC_REPLY_ERROR:
+		ERROR("copy-config", "operation failed (%s).", err_info = nc_reply_get_errormsg (reply));
+		if (err_info) {free (err_info);}
+		break;
+	default:
+		ERROR("copy-config", "unexpected operation result.");
+		break;
+	}
+	nc_reply_free(reply);
+
+	return (EXIT_SUCCESS);
+}
+
 void cmd_get_help ()
 {
-	fprintf (stdout, "get [--help] [--filter[=filepath]]\n");
+	fprintf (stdout, "get [--help] [--filter[=file]]\n");
 }
 
 
