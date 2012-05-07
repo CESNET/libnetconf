@@ -690,15 +690,14 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		case NC_SSH_AUTH_PASSWORD:
 			VERB("Password authentication (host %s, user %s)", host, username);
 			s = callbacks.sshauth_password(username, host);
-			if (libssh2_userauth_password(retval->ssh_session,
-					username,
-					s) != 0) {
+			if (libssh2_userauth_password(retval->ssh_session, username, s) != 0) {
 				memset(s, 0, strlen(s));
 				libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
 				ERROR("Authentication failed (%s)", err_msg);
 				goto shutdown;
 			}
 			memset(s, 0, strlen(s));
+			free(s);
 			break;
 		case NC_SSH_AUTH_INTERACTIVE:
 			if (libssh2_userauth_keyboard_interactive(retval->ssh_session,
@@ -723,6 +722,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 				goto shutdown;
 			}
 			memset(s, 0, strlen(s));
+			free(s);
 			break;
 		}
 		if (libssh2_userauth_authenticated(retval->ssh_session) == 1) {
