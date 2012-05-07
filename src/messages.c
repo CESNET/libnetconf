@@ -122,6 +122,7 @@ NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
 char *nc_reply_get_data(const nc_reply *reply)
 {
 	xmlDocPtr doc;
+	xmlNodePtr node, root;
 	xmlChar *buf;
 	int len;
 
@@ -137,7 +138,10 @@ char *nc_reply_get_data(const nc_reply *reply)
 		return (NULL);
 	}
 	doc->encoding = xmlStrdup(BAD_CAST UTF8);
-	xmlDocSetRootElement(doc, xmlCopyNode(reply->doc->children->children->children, 1));
+	xmlDocSetRootElement(doc, root = xmlCopyNode(node = reply->doc->children->children->children, 1));
+	for (node = node->next; node != NULL; node = node->next) {
+		xmlAddNextSibling(root, node);
+	}
 	xmlDocDumpFormatMemory(doc, &buf, &len, 1);
 	xmlFreeDoc(doc);
 
