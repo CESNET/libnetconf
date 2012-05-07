@@ -33,6 +33,7 @@ COMMAND commands[] = {
 		{"connect", cmd_connect, "Connect to the NETCONF server"},
 		{"disconnect", cmd_disconnect, "Disconnect from the NETCONF server"},
 		{"copy-config", cmd_copyconfig, "NETCONF <copy-config> operation"},
+		{"delete-config", cmd_deleteconfig, "NETCONF <delete-config> operation"},
 		{"edit-config", cmd_editconfig, "NETCONF <edit-config> operation"},
 		{"get", cmd_get, "NETCONF <get> operation"},
 		{"get-config", cmd_getconfig, "NETCONF <get-config> operation"},
@@ -772,6 +773,118 @@ int cmd_get (char *arg)
 	return (EXIT_SUCCESS);
 }
 
+void cmd_deleteconfig_help ()
+{
+	char *datastores = NULL;
+
+	if (session == NULL) {
+		datastores = "startup|candidate";
+	} else if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
+		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+			datastores = "startup|candidate";
+		} else {
+			datastores = "startup";
+		}
+	} else if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+		datastores = "candidate";
+	} else {
+		fprintf (stdout, "delete-config can not be used in the current session.\n");
+		return;
+	}
+
+	fprintf (stdout, "delete-config [--help]  %s\n", datastores);
+}
+
+int cmd_deleteconfig (char *arg)
+{
+	int c;
+	char *err_info = NULL;
+	NC_DATASTORE_TYPE target;
+	nc_rpc *rpc = NULL;
+	nc_reply *reply = NULL;
+	struct arglist cmd;
+	struct option long_options[] ={
+			{"help", 0, 0, 'h'},
+			{0, 0, 0, 0}
+	};
+	int option_index = 0;
+
+	/* set back to start to be able to use getopt() repeatedly */
+	optind = 0;
+
+	if (session == NULL) {
+		ERROR("delete-config", "NETCONF session not established, use \'connect\' command.");
+		return (EXIT_FAILURE);
+	}
+
+	if (!nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) && !nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+		ERROR ("delete-config", "operation can not be used in the current session.");
+		return (EXIT_FAILURE);
+	}
+
+	init_arglist (&cmd);
+	addargs (&cmd, "%s", arg);
+
+	while ((c = getopt_long (cmd.count, cmd.list, "h", long_options, &option_index)) != -1) {
+		switch (c) {
+		case 'h':
+			cmd_deleteconfig_help ();
+			clear_arglist(&cmd);
+			return (EXIT_SUCCESS);
+			break;
+		default:
+			ERROR("delete-config", "unknown option -%c.", c);
+			cmd_deleteconfig_help ();
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
+	}
+
+	target = get_datastore("target", "delete-config", &cmd, optind);
+	while (target == NC_DATASTORE_RUNNING) {
+		fprintf (stdout, "delete-config: <running> datastore cannot be deleted.");
+		target = get_datastore("target", "delete-config", &cmd, cmd.count);
+	}
+
+	/* arglist is no more needed */
+	clear_arglist(&cmd);
+
+	if (target == NC_DATASTORE_NONE) {
+		return (EXIT_FAILURE);
+	}
+
+	/* create requests */
+	rpc = nc_rpc_deleteconfig(target);
+	if (rpc == NULL) {
+		ERROR("delete-config", "creating rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+	/* send the request and get the reply */
+	nc_session_send_rpc (session, rpc);
+	if (nc_session_recv_reply (session, &reply) == 0) {
+		ERROR("delete-config", "receiving rpc-reply failed.");
+		nc_rpc_free (rpc);
+		return (EXIT_FAILURE);
+	}
+	nc_rpc_free (rpc);
+
+	/* parse result */
+	switch (nc_reply_get_type (reply)) {
+	case NC_REPLY_OK:
+		INSTRUCTION("Result OK\n");
+		break;
+	case NC_REPLY_ERROR:
+		ERROR("delete-config", "operation failed (%s).", err_info = nc_reply_get_errormsg (reply));
+		if (err_info) {free (err_info);}
+		break;
+	default:
+		ERROR("delete-config", "unexpected operation result.");
+		break;
+	}
+	nc_reply_free(reply);
+
+	return (EXIT_SUCCESS);
+}
 
 void cmd_getconfig_help ()
 {
