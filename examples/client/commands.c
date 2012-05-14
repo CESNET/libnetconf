@@ -30,6 +30,7 @@ struct nc_session* session = NULL;
 #define BUFFER_SIZE 1024
 
 COMMAND commands[] = {
+		{"help", cmd_help, "Display this text"},
 		{"connect", cmd_connect, "Connect to the NETCONF server"},
 		{"disconnect", cmd_disconnect, "Disconnect from the NETCONF server"},
 		{"copy-config", cmd_copyconfig, "NETCONF <copy-config> operation"},
@@ -37,10 +38,11 @@ COMMAND commands[] = {
 		{"edit-config", cmd_editconfig, "NETCONF <edit-config> operation"},
 		{"get", cmd_get, "NETCONF <get> operation"},
 		{"get-config", cmd_getconfig, "NETCONF <get-config> operation"},
-		{"help", cmd_help, "Display this text"},
-		{"quit", cmd_quit, "Quit the program"},
+		{"lock", cmd_lock, "NETCONF <lock> operation"},
+		{"unlock", cmd_unlock, "NETCONF <unlock> operation"},
 		{"status", cmd_status, "Print information about current NETCONF session"},
 		{"verbose", cmd_verbose, "Enable/disable verbose messages"},
+		{"quit", cmd_quit, "Quit the program"},
 /* synonyms for previous commands */
 		{"debug", cmd_debug, NULL},
 		{"?", cmd_help, NULL},
@@ -990,6 +992,133 @@ int cmd_getconfig (char *arg)
 	}
 
 	return (EXIT_SUCCESS);
+}
+
+void cmd_un_lock_help (char* operation)
+{
+	/* if session not established, print complete help for all capabilities */
+	fprintf (stdout, "%s running", operation);
+	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
+		fprintf (stdout, "|startup");
+	}
+	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+		fprintf (stdout, "|candidate");
+	}
+	fprintf (stdout, "\n");
+}
+
+#define LOCK_OP 1
+#define UNLOCK_OP 2
+int cmd_un_lock (int op, char *arg)
+{
+	int c;
+	char *err_info = NULL;
+	NC_DATASTORE_TYPE target;
+	nc_rpc *rpc = NULL;
+	nc_reply *reply = NULL;
+	struct arglist cmd;
+	struct option long_options[] ={
+			{"help", 0, 0, 'h'},
+			{0, 0, 0, 0}
+	};
+	int option_index = 0;
+	char *operation;
+
+	switch (op) {
+	case LOCK_OP:
+		operation = "lock";
+		break;
+	case UNLOCK_OP:
+		operation = "unlock";
+		break;
+	default:
+		ERROR("cmd_un_lock()", "Wrong use of internal function (Invalid parameter)");
+		return (EXIT_FAILURE);
+	}
+
+	/* set back to start to be able to use getopt() repeatedly */
+	optind = 0;
+
+	if (session == NULL) {
+		ERROR(operation, "NETCONF session not established, use \'connect\' command.");
+		return (EXIT_FAILURE);
+	}
+
+	init_arglist (&cmd);
+	addargs (&cmd, "%s", arg);
+
+	while ((c = getopt_long (cmd.count, cmd.list, "h", long_options, &option_index)) != -1) {
+		switch (c) {
+		case 'h':
+			cmd_un_lock_help (operation);
+			clear_arglist(&cmd);
+			return (EXIT_SUCCESS);
+			break;
+		default:
+			ERROR(operation, "unknown option -%c.", c);
+			cmd_un_lock_help (operation);
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
+	}
+
+	target = get_datastore("target", operation, &cmd, optind);
+
+	/* arglist is no more needed */
+	clear_arglist(&cmd);
+
+	if (target == NC_DATASTORE_NONE) {
+		return (EXIT_FAILURE);
+	}
+
+	/* create requests */
+	switch (op) {
+	case LOCK_OP:
+		rpc = nc_rpc_lock(target);
+		break;
+	case UNLOCK_OP:
+		rpc = nc_rpc_unlock(target);
+		break;
+	}
+	if (rpc == NULL) {
+		ERROR(operation, "creating rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+	/* send the request and get the reply */
+	nc_session_send_rpc (session, rpc);
+	if (nc_session_recv_reply (session, &reply) == 0) {
+		ERROR(operation, "receiving rpc-reply failed.");
+		nc_rpc_free (rpc);
+		return (EXIT_FAILURE);
+	}
+	nc_rpc_free (rpc);
+
+	/* parse result */
+	switch (nc_reply_get_type (reply)) {
+	case NC_REPLY_OK:
+		INSTRUCTION("Result OK\n");
+		break;
+	case NC_REPLY_ERROR:
+		ERROR(operation, "operation failed (%s).", err_info = nc_reply_get_errormsg (reply));
+		if (err_info) {free (err_info);}
+		break;
+	default:
+		ERROR(operation, "unexpected operation result.");
+		break;
+	}
+	nc_reply_free(reply);
+
+	return (EXIT_SUCCESS);
+}
+
+int cmd_lock (char *arg)
+{
+	return cmd_un_lock (LOCK_OP, arg);
+}
+
+int cmd_unlock (char *arg)
+{
+	return cmd_un_lock (UNLOCK_OP, arg);
 }
 
 void cmd_connect_help ()

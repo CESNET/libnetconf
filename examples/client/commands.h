@@ -16,6 +16,8 @@ int cmd_editconfig (char *arg);
 int cmd_get(char *arg);
 int cmd_getconfig(char *arg);
 int cmd_help(char* arg);
+int cmd_lock(char *arg);
+int cmd_unlock(char *arg);
 int cmd_status(char* arg);
 int cmd_quit(char* arg);
 int cmd_debug(char *arg);
