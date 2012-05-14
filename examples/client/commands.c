@@ -38,6 +38,7 @@ COMMAND commands[] = {
 		{"edit-config", cmd_editconfig, "NETCONF <edit-config> operation"},
 		{"get", cmd_get, "NETCONF <get> operation"},
 		{"get-config", cmd_getconfig, "NETCONF <get-config> operation"},
+		{"kill-session", cmd_killsession, "NETCONF <kill-session> operation"},
 		{"lock", cmd_lock, "NETCONF <lock> operation"},
 		{"unlock", cmd_unlock, "NETCONF <unlock> operation"},
 		{"status", cmd_status, "Print information about current NETCONF session"},
@@ -881,6 +882,106 @@ int cmd_deleteconfig (char *arg)
 		break;
 	default:
 		ERROR("delete-config", "unexpected operation result.");
+		break;
+	}
+	nc_reply_free(reply);
+
+	return (EXIT_SUCCESS);
+}
+
+void cmd_killsession_help ()
+{
+	fprintf (stdout, "kill-session [--help] <sessionID>\n");
+}
+
+int cmd_killsession (char *arg)
+{
+	int c;
+	char *err_info = NULL;
+	char *id;
+	nc_rpc *rpc = NULL;
+	nc_reply *reply = NULL;
+	struct arglist cmd;
+	struct option long_options[] ={
+			{"help", 0, 0, 'h'},
+			{0, 0, 0, 0}
+	};
+	int option_index = 0;
+
+	/* set back to start to be able to use getopt() repeatedly */
+	optind = 0;
+
+	if (session == NULL) {
+		ERROR("kill-session", "NETCONF session not established, use \'connect\' command.");
+		return (EXIT_FAILURE);
+	}
+
+	init_arglist (&cmd);
+	addargs (&cmd, "%s", arg);
+
+	while ((c = getopt_long (cmd.count, cmd.list, "h", long_options, &option_index)) != -1) {
+		switch (c) {
+		case 'h':
+			cmd_killsession_help ();
+			clear_arglist(&cmd);
+			return (EXIT_SUCCESS);
+			break;
+		default:
+			ERROR("kill-session", "unknown option -%c.", c);
+			cmd_killsession_help ();
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
+	}
+
+	if ((optind + 1) == cmd.count) {
+		id = strdup(cmd.list[optind]);
+	} else {
+		id = malloc (sizeof(char) * BUFFER_SIZE);
+		if (id == NULL) {
+			ERROR("kill-session", "memory allocation error (%s).", strerror (errno));
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
+		id[0] = 0;
+
+		while (strlen(id) == 0) {
+			/* get mandatory argument */
+			INSTRUCTION("Set session ID to kill: ");
+			scanf ("%1023s", id);
+		}
+	}
+
+	/* arglist is no more needed */
+	clear_arglist(&cmd);
+
+	/* create requests */
+	rpc = nc_rpc_killsession(id);
+	free(id);
+	if (rpc == NULL) {
+		ERROR("kill-session", "creating rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+	/* send the request and get the reply */
+	nc_session_send_rpc (session, rpc);
+	if (nc_session_recv_reply (session, &reply) == 0) {
+		ERROR("kill-session", "receiving rpc-reply failed.");
+		nc_rpc_free (rpc);
+		return (EXIT_FAILURE);
+	}
+	nc_rpc_free (rpc);
+
+	/* parse result */
+	switch (nc_reply_get_type (reply)) {
+	case NC_REPLY_OK:
+		INSTRUCTION("Result OK\n");
+		break;
+	case NC_REPLY_ERROR:
+		ERROR("kill-session", "operation failed (%s).", err_info = nc_reply_get_errormsg (reply));
+		if (err_info) {free (err_info);}
+		break;
+	default:
+		ERROR("kill-session", "unexpected operation result.");
 		break;
 	}
 	nc_reply_free(reply);
