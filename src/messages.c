@@ -131,17 +131,17 @@ char *nc_reply_get_data(const nc_reply *reply)
 			reply->doc == NULL ||
 			reply->doc->children == NULL || /* <rpc-reply> */
 			reply->doc->children->children == NULL /* <data> */) {
-		if (reply->doc->children->children->children == NULL) { /* content */
-			/*
-			 * Returned data content is empty, so return empty
-			 * string without any error message. This can be a valid
-			 * content of the reply, e.g. in case of filtering
-			 */
-			return (strdup(""));
-		}
-		/* in other cases, show that the error occured */
+		/* some part of the reply is corrupted */
 		ERROR("nc_reply_get_data: invalid input parameter.");
 		return (NULL);
+	}
+	if (reply->doc->children->children->children == NULL) { /* content */
+		/*
+		 * Returned data content is empty, so return empty
+		 * string without any error message. This can be a valid
+		 * content of the reply, e.g. in case of filtering.
+		 */
+		return (strdup(""));
 	}
 
 	if ((doc = xmlNewDoc(BAD_CAST XML_VERSION)) == NULL) {
