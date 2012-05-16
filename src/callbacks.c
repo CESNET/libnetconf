@@ -121,7 +121,7 @@ char* callback_sshauth_password_default (const char* username,
 {
 	char* buf;
 	int buflen = 1024, len = 0;
-	int c;
+	int c = 0;
 	struct termios newterm, oldterm;
 
 	buf = malloc (buflen * sizeof(char));
