@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 		/* EOF -> exit */
 		if (cmdline == NULL) {
 			done = 1;
-			break;
+			cmdline = strdup ("quit");
 		}
 
 		/* empty line -> wait for another command */
