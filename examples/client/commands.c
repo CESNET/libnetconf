@@ -200,7 +200,7 @@ static NC_DATASTORE_TYPE get_datastore(const char* paramtype, const char* operat
 {
 	int valid = 0;
 	char *datastore;
-	NC_DATASTORE_TYPE retval;
+	NC_DATASTORE_TYPE retval = NC_DATASTORE_NONE;
 
 	if (index == cmd->count) {
 
