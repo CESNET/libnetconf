@@ -609,6 +609,7 @@ LIBOBJS
 EGREP
 GREP
 CPP
+LIBSSH2_SESSION_HANDSHAKE
 LIBSSH2_LIBS
 LIBSSH2_CFLAGS
 PKG_CONFIG_LIBDIR
@@ -3468,7 +3469,6 @@ fi
 CFLAGS="$CFLAGS `xml2-config --cflags`"
 
 # libssh2
-LIBSSH2_REQUIRED="1.0"
 
 
 
@@ -3597,12 +3597,12 @@ if test -n "$LIBSSH2_CFLAGS"; then
     pkg_cv_LIBSSH2_CFLAGS="$LIBSSH2_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libssh2 >= \$LIBSSH2_REQUIRED\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libssh2 >= $LIBSSH2_REQUIRED") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libssh2 >= \"1.2.8\"\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libssh2 >= "1.2.8"") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBSSH2_CFLAGS=`$PKG_CONFIG --cflags "libssh2 >= $LIBSSH2_REQUIRED" 2>/dev/null`
+  pkg_cv_LIBSSH2_CFLAGS=`$PKG_CONFIG --cflags "libssh2 >= "1.2.8"" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -3613,12 +3613,12 @@ if test -n "$LIBSSH2_LIBS"; then
     pkg_cv_LIBSSH2_LIBS="$LIBSSH2_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libssh2 >= \$LIBSSH2_REQUIRED\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libssh2 >= $LIBSSH2_REQUIRED") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libssh2 >= \"1.2.8\"\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libssh2 >= "1.2.8"") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBSSH2_LIBS=`$PKG_CONFIG --libs "libssh2 >= $LIBSSH2_REQUIRED" 2>/dev/null`
+  pkg_cv_LIBSSH2_LIBS=`$PKG_CONFIG --libs "libssh2 >= "1.2.8"" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -3638,44 +3638,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBSSH2_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libssh2 >= $LIBSSH2_REQUIRED" 2>&1`
+	        LIBSSH2_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libssh2 >= "1.2.8"" 2>&1`
         else
-	        LIBSSH2_PKG_ERRORS=`$PKG_CONFIG --print-errors "libssh2 >= $LIBSSH2_REQUIRED" 2>&1`
+	        LIBSSH2_PKG_ERRORS=`$PKG_CONFIG --print-errors "libssh2 >= "1.2.8"" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBSSH2_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (libssh2 >= $LIBSSH2_REQUIRED) were not met:
-
-$LIBSSH2_PKG_ERRORS
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables LIBSSH2_CFLAGS
-and LIBSSH2_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details." "$LINENO" 5
+	LIBSSH2_SESSION_HANDSHAKE="libssh2_session_startup"
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
-
-Alternatively, you may set the environment variables LIBSSH2_CFLAGS
-and LIBSSH2_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details" "$LINENO" 5; }
+	LIBSSH2_SESSION_HANDSHAKE="libssh2_session_startup"
 else
 	LIBSSH2_CFLAGS=$pkg_cv_LIBSSH2_CFLAGS
 	LIBSSH2_LIBS=$pkg_cv_LIBSSH2_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-
+	LIBSSH2_SESSION_HANDSHAKE="libssh2_session_handshake"
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libssh2_version in -lssh2" >&5
 $as_echo_n "checking for libssh2_version in -lssh2... " >&6; }
@@ -3720,7 +3700,10 @@ _ACEOF
 
   LIBS="-lssh2 $LIBS"
 
+else
+  as_fn_error $? "Missing development package of libssh2." "$LINENO" 5
 fi
+
 
 
 ###################### Check for configure parameters ##########################
@@ -4344,7 +4327,7 @@ if test -z "$RPMBUILD"; then
 $as_echo "$as_me: WARNING: Due to missing rpmbuild you will not able to generate RPM package." >&2;}
 fi
 
-ac_config_files="$ac_config_files Makefile examples/client/Makefile libnetconf.spec libnetconf.pc"
+ac_config_files="$ac_config_files Makefile src/config.h examples/client/Makefile libnetconf.spec libnetconf.pc"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -5065,6 +5048,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "src/config.h") CONFIG_FILES="$CONFIG_FILES src/config.h" ;;
     "examples/client/Makefile") CONFIG_FILES="$CONFIG_FILES examples/client/Makefile" ;;
     "libnetconf.spec") CONFIG_FILES="$CONFIG_FILES libnetconf.spec" ;;
     "libnetconf.pc") CONFIG_FILES="$CONFIG_FILES libnetconf.pc" ;;

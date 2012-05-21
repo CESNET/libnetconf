@@ -132,9 +132,9 @@ AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no])
 CFLAGS="$CFLAGS `xml2-config --cflags`"
 
 # libssh2
-LIBSSH2_REQUIRED="1.0"
-PKG_CHECK_MODULES([LIBSSH2], [libssh2 >= $LIBSSH2_REQUIRED])
-AC_CHECK_LIB([ssh2], [libssh2_version])
+PKG_CHECK_MODULES([LIBSSH2], [libssh2 >= "1.2.8"], [LIBSSH2_SESSION_HANDSHAKE="libssh2_session_handshake"],[LIBSSH2_SESSION_HANDSHAKE="libssh2_session_startup"])
+AC_CHECK_LIB([ssh2], [libssh2_version], [], AC_MSG_ERROR([Missing development package of libssh2.]))
+AC_SUBST(LIBSSH2_SESSION_HANDSHAKE)
 
 ###################### Check for configure parameters ##########################
 
@@ -170,4 +170,4 @@ if test -z "$RPMBUILD"; then
 	AC_MSG_WARN([Due to missing rpmbuild you will not able to generate RPM package.])
 fi
 
-AC_OUTPUT(Makefile examples/client/Makefile libnetconf.spec libnetconf.pc)
+AC_OUTPUT(Makefile src/config.h examples/client/Makefile libnetconf.spec libnetconf.pc)

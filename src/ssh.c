@@ -51,6 +51,8 @@
 
 #include "libssh2.h"
 
+#include "config.h"
+
 #include "ssh.h"
 #include "messages.h"
 #include "session.h"
@@ -642,7 +644,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	/*
 	 * Set up the SSH session, deprecated variant is libssh2_session_startup()
 	 */
-	if (libssh2_session_handshake(retval->ssh_session, retval->libssh2_socket) != 0) {
+	if (LIBSSH2_SESSION_HANDSHAKE(retval->ssh_session, retval->libssh2_socket) != 0) {
 		ERROR("Starting SSH session failed.");
 		goto shutdown;
 	}

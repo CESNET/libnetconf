@@ -86,7 +86,8 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 HDRS_PUBL = $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR)
 SUBHEADERS_DIR = libnetconf
 
-HDRS_PRIV = src/libnetconf.h \
+HDRS_PRIV = src/config.h.in \
+	src/libnetconf.h \
 	src/callbacks.h \
 	src/messages.h \
 	src/messages_internal.h \
