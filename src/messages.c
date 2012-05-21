@@ -381,7 +381,7 @@ nc_rpc *nc_rpc_closesession()
 static int process_filter_param (xmlNodePtr content, struct nc_filter* filter)
 {
 	char* aux_string;
-	xmlDocPtr doc_filter;
+	xmlDocPtr doc_filter = NULL;
 
 	if (filter != NULL) {
 		if (filter->type == NC_FILTER_SUBTREE) {
@@ -749,7 +749,7 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE_TYPE target, NC_EDIT_DEFOP_TYPE default_o
 	nc_rpc *rpc;
 	xmlDocPtr doc_data;
 	xmlNodePtr content, node_target, node_defop, node_erropt, node_config;
-	char* datastore, *defop, *erropt;
+	char* datastore, *defop = NULL, *erropt = NULL;
 
 	if (data == NULL || strlen(data) == 0) {
 		ERROR("Invalid configuration data for <edit-config>");
