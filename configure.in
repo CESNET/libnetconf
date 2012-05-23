@@ -127,8 +127,11 @@ AC_PROG_INSTALL
 export PKG_CONFIG_PATH=/usr/local/${libdir##*/}/pkgconfig:$PKG_CONFIG_PATH
 
 ### LibXML2 ###
-AC_CHECK_LIB([xml2], [main], [LIBS="$LIBS -lxml2"])
+AC_CHECK_LIB([xml2], [main], [LIBS="$LIBS -lxml2"], AC_MSG_ERROR([Missing libxml2]))
 AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no])
+if test "$XML2_CONFIG" = "no"; then
+	AC_MSG_ERROR([Missing development package of libxml2.])
+fi
 CFLAGS="$CFLAGS `xml2-config --cflags`"
 
 # libssh2
