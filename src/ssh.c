@@ -59,6 +59,8 @@
 #include "netconf_internal.h"
 #include "messages_internal.h"
 
+#define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
+
 struct auth_pref_couple
 {
 	NC_SSH_AUTH_TYPE type;
@@ -530,7 +532,7 @@ struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
 
 struct nc_session *nc_session_connect(const char *host, unsigned short port, const char *username, struct nc_cpblts* cpblts)
 {
-	int i;
+	int i, r;
 	int sock = -1;
 	int auth = 0;
 	struct addrinfo hints, *res_list, *res;
@@ -642,10 +644,47 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	}
 
 	/*
+	 * set timeout for libssh2 functions - they are still blocking, but
+	 * after the timeout they return with LIBSSH2_ERROR_TIMEOUT and we
+	 * can perform appropriate reaction
+	 */
+	libssh2_session_set_timeout(retval->ssh_session, SSH2_TIMEOUT);
+
+	/*
 	 * Set up the SSH session, deprecated variant is libssh2_session_startup()
 	 */
-	if (LIBSSH2_SESSION_HANDSHAKE(retval->ssh_session, retval->libssh2_socket) != 0) {
-		ERROR("Starting SSH session failed.");
+	if ((r = LIBSSH2_SESSION_HANDSHAKE(retval->ssh_session, retval->libssh2_socket)) != 0) {
+		switch(r) {
+		case LIBSSH2_ERROR_SOCKET_NONE:
+			s = "Invalid socket";
+			break;
+		case LIBSSH2_ERROR_BANNER_SEND:
+			s = "Unable to send banner to remote host";
+			break;
+		case LIBSSH2_ERROR_KEX_FAILURE:
+			s = "Encryption key exchange with the remote host failed";
+			break;
+		case LIBSSH2_ERROR_SOCKET_SEND:
+			s = "Unable to send data on socket";
+			break;
+		case LIBSSH2_ERROR_SOCKET_DISCONNECT:
+			s = "The socket was disconnected";
+			break;
+		case LIBSSH2_ERROR_PROTO:
+			s = "An invalid SSH protocol response was received on the socket";
+			break;
+		case LIBSSH2_ERROR_EAGAIN:
+			s = "Marked for non-blocking I/O but the call would block";
+			break;
+		case LIBSSH2_ERROR_TIMEOUT:
+			s = "Request timeouted";
+			break;
+		default:
+			s = "Unknown error";
+			DBG("Error code %d.", r);
+			break;
+		}
+		ERROR("Starting SSH session failed (%s)", s);
 		goto shutdown;
 	}
 
@@ -752,6 +791,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		ERROR("Starting netconf SSH subsystem failed (%s)", err_msg);
 		goto shutdown;
 	}
+	retval->status = NC_SESSION_STATUS_WORKING;
 
 	if (cpblts == NULL) {
 		if ((client_cpblts = nc_session_get_cpblts_default()) == NULL) {

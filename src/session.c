@@ -322,7 +322,8 @@ void nc_session_close (struct nc_session* session)
 	if (session != NULL) {
 		if (session->ssh_channel != NULL) {
 
-			if (libssh2_channel_eof(session->ssh_channel) == 0) {
+			if (session->status == NC_SESSION_STATUS_WORKING &&
+					libssh2_channel_eof(session->ssh_channel) == 0) {
 				/* close NETCONF session */
 				rpc_close = nc_rpc_closesession();
 				if (rpc_close != NULL) {
@@ -361,6 +362,7 @@ void nc_session_close (struct nc_session* session)
 		memset (session, 0, sizeof(struct nc_session));
 		free (session);
 	}
+	session->status = NC_SESSION_STATUS_CLOSED;
 }
 
 int nc_session_send (struct nc_session* session, struct nc_msg *msg)
@@ -374,6 +376,15 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 		return (EXIT_FAILURE);
 	}
 
+	/*
+	 * maybe the previous check can be replaced by the following one, but
+	 * using both cannot be wrong
+	 */
+	if (session->status != NC_SESSION_STATUS_WORKING) {
+		return (EXIT_FAILURE);
+	}
+
+
 	xmlDocDumpFormatMemory (msg->doc, (xmlChar**) (&text), &len, 1);
 	DBG("Writing message: %s", text);
 
@@ -383,6 +394,10 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 		c = 0;
 		do {
 			NC_WRITE(session, &(buf[c]), c);
+			if (c == LIBSSH2_ERROR_TIMEOUT) {
+				VERB("Writing data into the communication channel timeouted.");
+				return (EXIT_FAILURE);
+			}
 		} while (c != strlen (buf));
 	}
 
@@ -390,6 +405,10 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	c = 0;
 	do {
 		NC_WRITE(session, &(text[c]), c);
+		if (c == LIBSSH2_ERROR_TIMEOUT) {
+			VERB("Writing data into the communication channel timeouted.");
+			return (EXIT_FAILURE);
+		}
 	} while (c != strlen (text));
 	free (text);
 
@@ -402,6 +421,10 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	c = 0;
 	do {
 		NC_WRITE(session, &(text[c]), c);
+		if (c == LIBSSH2_ERROR_TIMEOUT) {
+			VERB("Writing data into the communication channel timeouted.");
+			return (EXIT_FAILURE);
+		}
 	} while (c != strlen (text));
 
 	return (EXIT_SUCCESS);
@@ -412,6 +435,11 @@ int nc_session_read_len (struct nc_session* session, size_t chunk_length, char *
 	char *buf, *err_msg;
 	ssize_t c;
 	size_t rd = 0;
+
+	/* check if we can work with the session */
+	if (session->status != NC_SESSION_STATUS_WORKING) {
+		return (EXIT_FAILURE);
+	}
 
 	buf = malloc ((chunk_length + 1) * sizeof(char));
 	if (buf == NULL) {
@@ -487,6 +515,11 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 	ssize_t c;
 	static char *buf = NULL;
 	static int buflen = 0;
+
+	/* check if we can work with the session */
+	if (session->status != NC_SESSION_STATUS_WORKING) {
+		return (EXIT_FAILURE);
+	}
 
 	/* allocate memory according to so far maximum buffer size */
 	if (buflen == 0) {

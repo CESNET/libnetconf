@@ -149,6 +149,12 @@ struct callbacks {
  */
 extern struct callbacks callbacks;
 
+typedef enum {
+	NC_SESSION_STATUS_STARTUP = 0,
+	NC_SESSION_STATUS_WORKING = 1,
+	NC_SESSION_STATUS_CLOSED = 2
+} NC_SESSION_STATUS;
+
 /**
  * @ingroup internalAPI
  * @brief NETCONF session description structure
@@ -180,6 +186,8 @@ struct nc_session {
 	struct nc_cpblts *capabilities;
 	/**< @brief NETCONF protocol version */
 	int version;
+	/**< @brief status of the NETCONF session */
+	NC_SESSION_STATUS status;
 };
 
 /* define error elements */
