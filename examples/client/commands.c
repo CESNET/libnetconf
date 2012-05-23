@@ -1334,9 +1334,11 @@ int cmd_verbose (char *arg)
 	if (verb_level != 1) {
 		verb_level = 1;
 		nc_verbosity (NC_VERB_VERBOSE);
+		fprintf (stdout, "Verbose level VERBOSE\n");
 	} else {
 		verb_level = 0;
 		nc_verbosity (NC_VERB_ERROR);
+		fprintf (stdout, "Verbose messages switched off\n");
 	}
 
 	return (EXIT_SUCCESS);
@@ -1347,9 +1349,11 @@ int cmd_debug (char *arg)
 	if (verb_level != 2) {
 		verb_level = 2;
 		nc_verbosity (NC_VERB_DEBUG);
+		fprintf (stdout, "Verbose level DEBUG\n");
 	} else {
 		verb_level = 0;
 		nc_verbosity (NC_VERB_ERROR);
+		fprintf (stdout, "Verbose messages switched off\n");
 	}
 
 	return (EXIT_SUCCESS);
