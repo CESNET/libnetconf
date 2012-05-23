@@ -32,11 +32,14 @@ int main(int argc, char *argv[])
 
 	initialize_readline();
 
+
+	/* set verbosity and function to print libnetconf's messages */
+	nc_verbosity(NC_VERB_WARNING);
+	nc_callback_print(clb_print);
+
 	/* disable publickey authentication */
 	nc_ssh_pref(NC_SSH_AUTH_PUBLIC_KEYS, -1);
 
-	/* set verbosity and function to print libnetconf's messages */
-	nc_callback_print(clb_print);
 
 	while (!done) {
 		/* get the command from user */
