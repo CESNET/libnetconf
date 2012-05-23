@@ -135,14 +135,19 @@ fi
 CFLAGS="$CFLAGS `xml2-config --cflags`"
 
 # libssh2
-PKG_CHECK_MODULES([LIBSSH2], [libssh2 >= "1.2.8"], [LIBSSH2_SESSION_HANDSHAKE="libssh2_session_handshake"],[LIBSSH2_SESSION_HANDSHAKE="libssh2_session_startup"])
-AC_CHECK_LIB([ssh2], [libssh2_version], [], AC_MSG_ERROR([Missing development package of libssh2.]))
+AC_CHECK_LIB([ssh2], [libssh2_version], [], AC_MSG_ERROR([Missing libssh2.]))
+AC_CHECK_HEADERS([libssh2.h], [], AC_MSG_ERROR([Missing libssh2 headers.]))
+PKG_CHECK_MODULES([LIBSSH2_HANDSHAKE], [libssh2 >= "1.2.8"], [LIBSSH2_SESSION_HANDSHAKE="libssh2_session_handshake"],[LIBSSH2_SESSION_HANDSHAKE="libssh2_session_startup"])
 AC_SUBST(LIBSSH2_SESSION_HANDSHAKE)
+
+# libreadline
+AC_CHECK_LIB([readline], [readline], [], AC_MSG_ERROR([Missing libreadline]))
+AC_CHECK_HEADERS(readline/readline.h readline/history.h, [], AC_MSG_ERROR([Missing libreadline headers.]))
 
 ###################### Check for configure parameters ##########################
 
 ######################### Checks for header files ##############################
-AC_CHECK_HEADERS([netdb.h stddef.h stdlib.h string.h sys/socket.h termios.h unistd.h])
+AC_CHECK_HEADERS([netdb.h stddef.h stdlib.h string.h sys/socket.h termios.h unistd.h], [], AC_MSG_ERROR([Missing system headers.]))
 
 ######## Checks for typedefs, structures, and compiler characteristics #########
 AC_TYPE_SIZE_T
