@@ -387,7 +387,7 @@ int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_SESSION
 		hostkey_typebit = (hostkey_type == LIBSSH2_HOSTKEY_TYPE_RSA) ? LIBSSH2_KNOWNHOST_KEY_SSHRSA : LIBSSH2_KNOWNHOST_KEY_SSHDSS;
 
 		/* get all hosts */
-		if (knownhosts_file != NULL) {
+		if (knownhosts_file != NULL && access(knownhosts_file, F_OK) == 0) {
 			ret = libssh2_knownhost_readfile(knownhosts,
 					knownhosts_file,
 					LIBSSH2_KNOWNHOST_FILE_OPENSSH);
@@ -447,13 +447,15 @@ int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_SESSION
 					NULL);
 			if (ret != 0) {
 				WARN("Adding the known host %s failed!", host);
-			} else {
+			} else if (knownhosts_file != NULL) {
 				ret = libssh2_knownhost_writefile(knownhosts,
 						knownhosts_file,
 						LIBSSH2_KNOWNHOST_FILE_OPENSSH);
 				if (ret) {
 					WARN("Writing %s failed!", knownhosts_file);
 				}
+			} else {
+				WARN("Unknown known_hosts file location, skipping writing your decision.");
 			}
 
 			libssh2_knownhost_free(knownhosts);
@@ -537,7 +539,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	int auth = 0;
 	struct addrinfo hints, *res_list, *res;
 	struct passwd *pw;
-	char *homedir, *knownhosts_file;
+	char *knownhosts_file = NULL;
 	char port_s[SHORT_INT_LENGTH];
 	char *userauthlist;
 	char *err_msg, *s;
@@ -551,32 +553,30 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	if (port == 0) {
 		port = NC_PORT;
 	}
-	if (username == NULL || strlen(username) == 0) {
-		pw = getpwuid(geteuid());
-		if (pw == NULL) {
-			/* unable to get correct username */
+
+	/* get current user to locate SSH known_hosts file */
+	pw = getpwuid(geteuid());
+	if (pw == NULL) {
+		if (username == NULL || strlen(username) == 0) {
+			/* unable to get correct username (errno from getpwuid) */
 			ERROR("Unable to set username for SSH connection (%s).", strerror(errno));
 			return (NULL);
 		}
-		username = pw->pw_name;
-		homedir = pw->pw_dir;
 	} else {
-		pw = getpwnam(username);
-		if (pw == NULL) {
-			/* unable to get correct username */
-			ERROR("Unable to set username for SSH connection (%s).", strerror(errno));
-			return (NULL);
+		username = pw->pw_name;
+		asprintf(&knownhosts_file, "%s/.ssh/known_hosts", pw->pw_dir);
+
+		/* check the existence of the known_hosts file */
+		if (knownhosts_file != NULL && access(knownhosts_file, F_OK) == 0) {
+			/* check needed access rights */
+			if (access(knownhosts_file, R_OK | W_OK) == -1) {
+				WARN("Unable to access known host file (%s).", knownhosts_file);
+				free(knownhosts_file);
+				knownhosts_file = NULL;
+			}
 		}
-		homedir = pw->pw_dir;
 	}
-	if (asprintf(&knownhosts_file, "%s/.ssh/known_hosts", homedir) == -1) {
-		knownhosts_file = NULL;
-	}
-	if (access(knownhosts_file, R_OK | W_OK) == -1) {
-		WARN("Unable to access known host file (%s).", knownhosts_file);
-		free(knownhosts_file);
-		knownhosts_file = NULL;
-	}
+
 
 	if (snprintf(port_s, SHORT_INT_LENGTH, "%d", port) < 0) {
 		/* converting short int to the string failed */
@@ -689,6 +689,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	}
 
 	if (check_hostkey(host, knownhosts_file, retval->ssh_session) != 0) {
+
 		goto shutdown;
 	}
 
