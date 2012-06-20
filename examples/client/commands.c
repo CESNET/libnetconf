@@ -1364,13 +1364,40 @@ int cmd_debug (char *arg)
 int cmd_help (char* arg)
 {
 	int i;
+	char *cmd = NULL;
+	char cmdline[BUFFER_SIZE];
 
-	print_version ();
-	INSTRUCTION("Available commands:\n");
+	strtok (arg, " ");
+	if ((cmd = strtok (NULL, " ")) == NULL) {
+		/* generic help for the application */
+		print_version ();
 
-	for (i = 0; commands[i].name; i++) {
-		if (commands[i].helpstring != NULL) {
-			fprintf (stdout, "  %-15s %s\n", commands[i].name, commands[i].helpstring);
+generic_help:
+		INSTRUCTION("Available commands:\n");
+
+		for (i = 0; commands[i].name; i++) {
+			if (commands[i].helpstring != NULL) {
+				fprintf (stdout, "  %-15s %s\n", commands[i].name, commands[i].helpstring);
+			}
+		}
+	} else {
+		/* print specific help for the selected command */
+
+		/* get the command of the specified name */
+		for (i = 0; commands[i].name; i++) {
+			if (strcmp(cmd, commands[i].name) == 0) {
+				break;
+			}
+		}
+
+		/* execute the command's help if any valid command specified */
+		if (commands[i].name) {
+			snprintf(cmdline, BUFFER_SIZE, "%s --help", commands[i].name);
+			commands[i].func(cmdline);
+		} else {
+			/* if unknown command specified, print the list of commands */
+			fprintf(stdout, "Unknown command \'%s\'\n", cmd);
+			goto generic_help;
 		}
 	}
 
