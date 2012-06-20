@@ -5,3 +5,8 @@
  * time) libssh2 version is used.
  */
 #define LIBSSH2_SESSION_HANDSHAKE(session,socket) @LIBSSH2_SESSION_HANDSHAKE@(session,socket)
+
+/*
+ * libssh2_session_set_timeout() is available since libssh2 1.2.9
+ */
+#define LIBSSH2_SET_TIMEOUT(session,timeout) @LIBSSH2_SET_TIMEOUT@

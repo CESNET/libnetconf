@@ -648,7 +648,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	 * after the timeout they return with LIBSSH2_ERROR_TIMEOUT and we
 	 * can perform appropriate reaction
 	 */
-	libssh2_session_set_timeout(retval->ssh_session, SSH2_TIMEOUT);
+	LIBSSH2_SET_TIMEOUT(retval->ssh_session, SSH2_TIMEOUT);
 
 	/*
 	 * Set up the SSH session, deprecated variant is libssh2_session_startup()
