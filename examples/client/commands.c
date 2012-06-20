@@ -1231,7 +1231,7 @@ int cmd_connect (char* arg)
 {
 	char *host = NULL, *user = NULL;
 	int hostfree = 0;
-	unsigned short port = 0;
+	unsigned short port = 830;
 	int c;
 	struct arglist cmd;
 	struct option long_options[] = {
@@ -1336,7 +1336,7 @@ int cmd_verbose (char *arg)
 	if (verb_level != 1) {
 		verb_level = 1;
 		nc_verbosity (NC_VERB_VERBOSE);
-		fprintf (stdout, "Verbose level VERBOSE\n");
+		fprintf (stdout, "Verbose level set to VERBOSE\n");
 	} else {
 		verb_level = 0;
 		nc_verbosity (NC_VERB_ERROR);
@@ -1351,7 +1351,7 @@ int cmd_debug (char *arg)
 	if (verb_level != 2) {
 		verb_level = 2;
 		nc_verbosity (NC_VERB_DEBUG);
-		fprintf (stdout, "Verbose level DEBUG\n");
+		fprintf (stdout, "Verbose level set to DEBUG\n");
 	} else {
 		verb_level = 0;
 		nc_verbosity (NC_VERB_ERROR);
