@@ -1261,6 +1261,7 @@ int cmd_connect (char* arg)
 		switch (c) {
 		case 'h':
 			cmd_connect_help ();
+			clear_arglist(&cmd);
 			return (EXIT_SUCCESS);
 			break;
 		case 'p':
@@ -1272,6 +1273,7 @@ int cmd_connect (char* arg)
 		default:
 			ERROR("connect", "unknown option -%c.", c);
 			cmd_connect_help ();
+			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
 	}
