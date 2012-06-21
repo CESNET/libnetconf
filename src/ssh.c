@@ -469,24 +469,14 @@ int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_SESSION
 
 struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
 {
-	static int uniqueness = 0;
 	struct nc_session *retval = NULL;
 	struct nc_cpblts *server_cpblts = NULL;
 	struct passwd *pw;
-
-	/* check, that this function is called only once in the process */
-	if (uniqueness != 0) {
-		VERB("You are trying to accept multiple NETCONF sessions in the single SSH NETCONF Subsystem.");
-		return (NULL);
-	} else {
-		uniqueness++;
-	}
 
 	/* allocate netconf session structure */
 	retval = malloc(sizeof(struct nc_session));
 	if (retval == NULL) {
 		ERROR("Memory allocation failed (%s)", strerror(errno));
-		uniqueness--;
 		return (NULL);
 	}
 	memset(retval, 0, sizeof(struct nc_session));
@@ -503,7 +493,6 @@ struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
 		/* unable to get correct username */
 		ERROR("Unable to set username for SSH connection (%s).", strerror(errno));
 		nc_session_close(retval);
-		uniqueness--;
 		return (NULL);
 	}
 	retval->username = strdup(pw->pw_name);
@@ -512,7 +501,6 @@ struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
 		if ((server_cpblts = nc_session_get_cpblts_default()) == NULL) {
 			VERB("Unable to set client's NETCONF capabilities.");
 			nc_session_close(retval);
-			uniqueness--;
 			return (NULL);
 		}
 	} else {
@@ -521,7 +509,6 @@ struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
 
 	if (nc_server_handshake(retval, server_cpblts->list) != 0) {
 		nc_session_close(retval);
-		uniqueness--;
 		return (NULL);
 	}
 
