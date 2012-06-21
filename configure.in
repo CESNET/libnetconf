@@ -138,7 +138,7 @@ CFLAGS="$CFLAGS `xml2-config --cflags`"
 AC_CHECK_LIB([ssh2], [libssh2_version], [], AC_MSG_ERROR([Missing libssh2.]))
 AC_CHECK_HEADERS([libssh2.h], [], AC_MSG_ERROR([Missing libssh2 headers.]))
 PKG_CHECK_MODULES([LIBSSH2_HANDSHAKE], [libssh2 >= "1.2.8"], [LIBSSH2_SESSION_HANDSHAKE="libssh2_session_handshake"],[LIBSSH2_SESSION_HANDSHAKE="libssh2_session_startup"])
-PKG_CHECK_MODULES([LIBSSH2_TIMEOUT], [libssh2 >= "1.8.9"], [LIBSSH2_SET_TIMEOUT="libssh2_session_set_timeout(session,timeout)"],[LIBSSH2_SET_TIMEOUT=""])
+PKG_CHECK_MODULES([LIBSSH2_TIMEOUT], [libssh2 >= "1.2.9"], [LIBSSH2_SET_TIMEOUT="libssh2_session_set_timeout(session,timeout)"],[LIBSSH2_SET_TIMEOUT=""])
 AC_SUBST(LIBSSH2_SESSION_HANDSHAKE)
 AC_SUBST(LIBSSH2_SET_TIMEOUT)
 

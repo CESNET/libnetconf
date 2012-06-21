@@ -4138,12 +4138,12 @@ if test -n "$LIBSSH2_TIMEOUT_CFLAGS"; then
     pkg_cv_LIBSSH2_TIMEOUT_CFLAGS="$LIBSSH2_TIMEOUT_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libssh2 >= \"1.8.9\"\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libssh2 >= "1.8.9"") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libssh2 >= \"1.2.9\"\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libssh2 >= "1.2.9"") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBSSH2_TIMEOUT_CFLAGS=`$PKG_CONFIG --cflags "libssh2 >= "1.8.9"" 2>/dev/null`
+  pkg_cv_LIBSSH2_TIMEOUT_CFLAGS=`$PKG_CONFIG --cflags "libssh2 >= "1.2.9"" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -4154,12 +4154,12 @@ if test -n "$LIBSSH2_TIMEOUT_LIBS"; then
     pkg_cv_LIBSSH2_TIMEOUT_LIBS="$LIBSSH2_TIMEOUT_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libssh2 >= \"1.8.9\"\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libssh2 >= "1.8.9"") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libssh2 >= \"1.2.9\"\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libssh2 >= "1.2.9"") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBSSH2_TIMEOUT_LIBS=`$PKG_CONFIG --libs "libssh2 >= "1.8.9"" 2>/dev/null`
+  pkg_cv_LIBSSH2_TIMEOUT_LIBS=`$PKG_CONFIG --libs "libssh2 >= "1.2.9"" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -4179,9 +4179,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBSSH2_TIMEOUT_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libssh2 >= "1.8.9"" 2>&1`
+	        LIBSSH2_TIMEOUT_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libssh2 >= "1.2.9"" 2>&1`
         else
-	        LIBSSH2_TIMEOUT_PKG_ERRORS=`$PKG_CONFIG --print-errors "libssh2 >= "1.8.9"" 2>&1`
+	        LIBSSH2_TIMEOUT_PKG_ERRORS=`$PKG_CONFIG --print-errors "libssh2 >= "1.2.9"" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBSSH2_TIMEOUT_PKG_ERRORS" >&5
