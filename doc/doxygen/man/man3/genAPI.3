@@ -1,10 +1,10 @@
-.TH "General functions" 3 "Wed May 9 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Thu Jun 21 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 General functions \- 
 .PP
-libnetconf's miscellaneous functions'\&.  
+libnetconf's miscellaneous functions\&.  
 
 .SS "Enumerations"
 
@@ -12,7 +12,7 @@ libnetconf's miscellaneous functions'\&.
 .ti -1c
 .RI "enum \fBNC_VERB_LEVEL\fP { \fBNC_VERB_ERROR\fP, \fBNC_VERB_WARNING\fP, \fBNC_VERB_VERBOSE\fP, \fBNC_VERB_DEBUG\fP }"
 .br
-.RI "\fIVerbosity levels'\&. \fP"
+.RI "\fIVerbosity levels\&. \fP"
 .in -1c
 .SS "Functions"
 
@@ -20,55 +20,60 @@ libnetconf's miscellaneous functions'\&.
 .ti -1c
 .RI "void \fBnc_verbosity\fP (\fBNC_VERB_LEVEL\fP level)"
 .br
-.RI "\fISet libnetconf's verbosity level'\&. \fP"
+.RI "\fISet libnetconf's verbosity level\&. \fP"
 .ti -1c
 .RI "void \fBnc_callback_print\fP (int(*func)(const char *msg))"
 .br
-.RI "\fISet callback function for printing libnetconf's messages'\&. \fP"
+.RI "\fISet callback function for printing libnetconf's messages\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
-libnetconf's miscellaneous functions'\&. 
+libnetconf's miscellaneous functions\&. 
+
+
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_VERB_LEVEL\fP"
+
 .PP
-Verbosity levels'\&. 
+Verbosity levels\&. 
 .PP
 \fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINC_VERB_ERROR \fP\fP
-Print only error messages'\&. 
+Print only error messages\&. 
 .TP
 \fB\fINC_VERB_WARNING \fP\fP
-Print error and warning messages'\&. 
+Print error and warning messages\&. 
 .TP
 \fB\fINC_VERB_VERBOSE \fP\fP
-Besides errors and warnings, print some other verbose messages'\&. 
+Besides errors and warnings, print some other verbose messages\&. 
 .TP
 \fB\fINC_VERB_DEBUG \fP\fP
-Print all messages including some development debug messages'\&. 
+Print all messages including some development debug messages\&. 
 .PP
-Definition at line 138 of file netconf\&.h'\&.
+Definition at line 138 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
-.SS "void nc_verbosity (\fBNC_VERB_LEVEL\fPlevel)"
+.SS "void \fBnc_verbosity\fP (\fBNC_VERB_LEVEL\fPlevel)"
+
 .PP
-Set libnetconf's verbosity level'\&. \fBParameters:\fP
+Set libnetconf's verbosity level\&. \fBParameters:\fP
 .RS 4
-\fIlevel\fP Enabled verbosity level (includes all levels with higher priority)'\&. 
+\fIlevel\fP Enabled verbosity level (includes all levels with higher priority)\&. 
 .RE
 .PP
 
-.SS "void nc_callback_print (int(*)(const char *msg)func)"
+.SS "void \fBnc_callback_print\fP (int(*)(const char *msg)func)"
+
 .PP
-Set callback function for printing libnetconf's messages'\&. \fBParameters:\fP
+Set callback function for printing libnetconf's messages\&. \fBParameters:\fP
 .RS 4
-\fIfunc\fP Callback function to use'\&. 
+\fIfunc\fP Callback function to use\&. 
 .RE
 .PP
 
 .SH "Author"
 .PP 
-Generated automatically by Doxygen for libnetconf from the source code'\&.
+Generated automatically by Doxygen for libnetconf from the source code\&.
