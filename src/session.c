@@ -832,3 +832,21 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 		return (session->msgid);
 	}
 }
+
+nc_reply *nc_session_send_recv (struct nc_session* session, nc_rpc *rpc)
+{
+	nc_msgid msgid1, msgid2;
+	nc_reply *reply = NULL;
+
+	msgid1 = nc_session_send_rpc(session, rpc);
+	if (msgid1 == 0) {
+		return (NULL);
+	}
+
+	if ((msgid2 = nc_session_recv_reply(session, &reply)) != msgid1) {
+		/* \todo: handling asynchronous messages (Notifications) using message queues */
+		WARN("Sent message %llu, but received message is %llu.", msgid1, msgid2);
+	}
+
+	return (reply);
+}
