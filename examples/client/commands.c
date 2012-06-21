@@ -759,7 +759,8 @@ int cmd_get (char *arg)
 
 	switch (nc_reply_get_type (reply)) {
 	case NC_REPLY_DATA:
-		INSTRUCTION("Result:\n%s\n", data = nc_reply_get_data (reply));
+		INSTRUCTION("Result:\n");
+		fprintf(stdout, "%s\n", data = nc_reply_get_data (reply));
 		break;
 	case NC_REPLY_ERROR:
 		ERROR("get", "operation failed (%s).", data = nc_reply_get_errormsg (reply));
@@ -1078,7 +1079,8 @@ int cmd_getconfig (char *arg)
 
 	switch (nc_reply_get_type (reply)) {
 	case NC_REPLY_DATA:
-		INSTRUCTION("Result:\n%s\n", data = nc_reply_get_data (reply));
+		INSTRUCTION("Result:\n");
+		fprintf(stdout, "%s\n", data = nc_reply_get_data (reply));
 		break;
 	case NC_REPLY_ERROR:
 		ERROR("get-config", "operation failed (%s).", data = nc_reply_get_errormsg (reply));
