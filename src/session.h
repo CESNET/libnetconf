@@ -200,15 +200,42 @@ struct nc_cpblts *nc_session_get_cpblts_default();
 /**
  * @ingroup rpc
  * @brief Send \<rpc\> request via specified NETCONF session.
+ * This function is supposed to be performed only by NETCONF clients.
+ *
  * @param[in] session NETCONF session to use.
- * @param[in] rpc RPC message to send.
+ * @param[in] rpc \<rpc\> message to send.
  * @return 0 on error,\n message-id of sent message on success.
  */
 nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc);
 
 /**
  * @ingroup reply
- * @brief Receive \<rpc-reply\> from the specified NETCONF session.
+ * @brief Send \<rpc-reply\> response via specified NETCONF session.
+ * This function is supposed to be performed only by NETCONF servers.
+ *
+ * @param[in] session NETCONF session to use.
+ * @param[in] rpc \<rpc\> message which is request for the sending reply
+ * @param[in] reply \<repc-reply\> message to send.
+ * @return 0 on error,\n message-id of sent message on success.
+ */
+nc_msgid nc_session_send_reply (struct nc_session* session, nc_rpc* rpc, nc_reply *reply);
+
+/**
+ * @ingroup rpc
+ * @brief Receive \<rpc\> request from the specified NETCONF session.
+ * This function is supposed to be performed only by NETCONF servers.
+ *
+ * @param[in] session NETCONF session to use.
+ * @param[out] rpc Received \<rpc\>
+ * @return 0 on error,\n message-id of received message on success.
+ */
+nc_msgid nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc);
+
+/**
+ * @ingroup reply
+ * @brief Receive \<rpc-reply\> response from the specified NETCONF session.
+ * This function is supposed to be performed only by NETCONF clients.
+ *
  * @param[in] session NETCONF session to use.
  * @param[out] reply Received \<rpc-reply\>
  * @return 0 on error,\n message-id of received message on success.

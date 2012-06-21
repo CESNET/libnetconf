@@ -110,10 +110,19 @@ nc_msgid nc_reply_get_msgid(const nc_reply *reply)
 	}
 }
 
+nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc)
+{
+	if (rpc != NULL) {
+		return (rpc->msgid);
+	} else {
+		return (0);
+	}
+}
+
 NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
 {
 	if (reply != NULL) {
-		return (reply->type);
+		return (reply->type.reply);
 	} else {
 		return (NC_REPLY_UNKNOWN);
 	}
@@ -127,7 +136,7 @@ char *nc_reply_get_data(const nc_reply *reply)
 	int len;
 
 	if (reply == NULL ||
-			reply->type != NC_REPLY_DATA ||
+			reply->type.reply != NC_REPLY_DATA ||
 			reply->doc == NULL ||
 			reply->doc->children == NULL || /* <rpc-reply> */
 			reply->doc->children->children == NULL /* <data> */) {
@@ -168,7 +177,7 @@ char *nc_reply_get_errormsg(const nc_reply *reply)
 	char *xpath_query;
 	char *retval;
 
-	if (reply == NULL || reply->type != NC_REPLY_ERROR) {
+	if (reply == NULL || reply->type.reply != NC_REPLY_ERROR) {
 		ERROR("nc_reply_get_errormsg: invalid input parameter.");
 		return (NULL);
 	}

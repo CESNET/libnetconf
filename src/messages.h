@@ -75,6 +75,14 @@ char* nc_reply_get_string (const nc_reply *reply);
 nc_msgid nc_reply_get_msgid(const nc_reply *reply);
 
 /**
+ * @ingroup rpc
+ * @brief Get message-id of the given rpc.
+ * @param[in] rpc rpc message.
+ * @return message-id of the given rpc message.
+ */
+nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc);
+
+/**
  * @ingroup reply
  * @brief Get type of the rpc-reply message.
  *

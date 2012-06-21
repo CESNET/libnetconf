@@ -336,7 +336,10 @@ struct nc_err {
 struct nc_msg {
 	xmlDocPtr doc;
 	nc_msgid msgid;
-	NC_REPLY_TYPE type;
+	union {
+		NC_REPLY_TYPE reply;
+		NC_REPLY_TYPE rpc;
+	} type;
 };
 
 struct nc_filter {

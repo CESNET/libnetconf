@@ -516,6 +516,8 @@ struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
 		nc_cpblts_free(server_cpblts);
 	}
 
+	retval->status = NC_SESSION_STATUS_WORKING;
+
 	return (retval);
 }
 

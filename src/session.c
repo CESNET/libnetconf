@@ -653,6 +653,30 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 	return (EXIT_FAILURE);
 }
 
+/**
+ * @brief Get message id string from the NETCONF message
+ *
+ * @param[in] msg NETCONF message to parse.
+ * @return 0 on error,\n message-id of the message on success.
+ */
+nc_msgid nc_msg_parse_msgid(struct nc_msg *msg)
+{
+	xmlChar *msgid;
+	nc_msgid ret = 0;
+
+	/* parse and store message-id */
+	msgid = xmlGetProp(msg->doc->children, BAD_CAST "message-id");
+	if (msgid != NULL) {
+		ret = strtoull((char*) msgid, NULL, 10);
+		xmlFree(msgid);
+	} else {
+		WARN("Missing message-id in %s.", (char*)msg->doc->children->name);
+		ret = 0;
+	}
+
+	return (ret);
+}
+
 int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 {
 	struct nc_msg *retval;
@@ -660,9 +684,8 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	size_t len;
 	unsigned long long int text_size = 0, total_len = 0;
 	size_t chunk_length;
-	xmlChar *msgid;
 
-	if (session == NULL || (session->hostname == NULL)) {
+	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING)) {
 		ERROR("Invalid session to receive data.");
 		return (EXIT_FAILURE);
 	}
@@ -752,31 +775,38 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	free (text);
 
 	/* parse and store message-id */
-	msgid = xmlGetProp (retval->doc->children, BAD_CAST "message-id");
-	if (msgid != NULL) {
-		retval->msgid = strtoull ((char*) msgid, NULL, 10);
-		xmlFree (msgid);
-	} else {
-		if (xmlStrcmp (retval->doc->children->name, BAD_CAST "rpc-reply") == 0) {
-			WARN("Missing message-id in rpc-reply.");
-		}
-		retval->msgid = 0;
-	}
+	retval->msgid = nc_msg_parse_msgid(retval);
 
 	/* parse and store rpc-reply type */
 	if (xmlStrcmp (retval->doc->children->name, BAD_CAST "rpc-reply") == 0) {
 		if (xmlStrcmp (retval->doc->children->children->name, BAD_CAST "ok") == 0) {
-			retval->type = NC_REPLY_OK;
+			retval->type.reply = NC_REPLY_OK;
 		} else if (xmlStrcmp (retval->doc->children->children->name, BAD_CAST "rpc-error") == 0) {
-			retval->type = NC_REPLY_ERROR;
+			retval->type.reply = NC_REPLY_ERROR;
 		} else if (xmlStrcmp (retval->doc->children->children->name, BAD_CAST "data") == 0) {
-			retval->type = NC_REPLY_DATA;
+			retval->type.reply = NC_REPLY_DATA;
 		} else {
-			retval->type = NC_REPLY_UNKNOWN;
+			retval->type.reply = NC_REPLY_UNKNOWN;
 			WARN("Unknown type of received <rpc-reply> detected.");
 		}
+	} else if (xmlStrcmp (retval->doc->children->name, BAD_CAST "rpc") == 0) {
+		if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "copy-config") == 0) ||
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "delete-config") == 0) ||
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "edit-config") == 0) ||
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get") == 0) ||
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get-config") == 0) ||
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "lock") == 0) ||
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "unlock") == 0)) {
+			retval->type.rpc = NC_RPC_DATASTORE;
+		} else if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "kill-session") == 0) ||
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "close-session") == 0)){
+			retval->type.rpc = NC_RPC_SESSION;
+		} else {
+			retval->type.rpc = NC_RPC_UNKNOWN;
+		}
 	} else {
-		retval->type = NC_REPLY_UNKNOWN;
+		WARN("Unknown (unsupported) type of received message detected.");
+		retval->type.rpc = NC_RPC_UNKNOWN;
 	}
 
 	/* return the result */
@@ -796,13 +826,25 @@ nc_msgid nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 	}
 }
 
+nc_msgid nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
+{
+	int ret;
+
+	ret = nc_session_receive (session, (struct nc_msg**) rpc);
+	if (ret != EXIT_SUCCESS) {
+		return (0);
+	} else {
+		return (nc_rpc_get_msgid (*rpc));
+	}
+}
+
 nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 {
 	int ret;
 	char msg_id_str[16];
 	struct nc_msg *msg;
 
-	if (session == NULL || (session->hostname == NULL)) {
+	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING)) {
 		ERROR("Invalid session to send <rpc>.");
 		return (0); /* failure */
 	}
@@ -811,7 +853,7 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 	msg = nc_msg_dup ((struct nc_msg*) rpc);
 
 	/* set message id */
-	if (xmlStrcmp (rpc->doc->children->name, BAD_CAST "rpc") == 0) {
+	if (xmlStrcmp (msg->doc->children->name, BAD_CAST "rpc") == 0) {
 		sprintf (msg_id_str, "%llu", session->msgid++);
 		xmlSetProp (msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str);
 	}
@@ -832,6 +874,54 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 		return (session->msgid);
 	}
 }
+
+nc_msgid nc_session_send_reply (struct nc_session* session, nc_rpc* rpc, nc_reply *reply)
+{
+	int ret;
+	char msg_id_str[16];
+	struct nc_msg *msg;
+
+	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING)) {
+		ERROR("Invalid session to send <rpc-reply>.");
+		return (0); /* failure */
+	}
+
+	if (rpc == NULL) {
+		ERROR("Invalid <rpc> to reply.");
+		return (0); /* failure */
+	}
+
+	if (rpc->msgid == 0) {
+		/* parse and store message-id */
+		rpc->msgid = nc_msg_parse_msgid(rpc);
+	}
+
+	/* TODO: lock for threads */
+	msg = nc_msg_dup ((struct nc_msg*) reply);
+	msg->msgid = rpc->msgid;
+
+	/* set message id */
+	if (xmlStrcmp (msg->doc->children->name, BAD_CAST "rpc-reply") == 0) {
+		sprintf (msg_id_str, "%llu", msg->msgid);
+		xmlSetProp (msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str);
+	}
+
+	/* set proper namespace according to NETCONF version */
+	xmlNewNs (msg->doc->children, (xmlChar *) (
+	        (session->version == NETCONFV10) ? NC_NS_BASE10 : NC_NS_BASE11), NULL);
+
+	/* send message */
+	ret = nc_session_send (session, msg);
+
+	nc_msg_free (msg);
+
+	if (ret != EXIT_SUCCESS) {
+		return (0);
+	} else {
+		return (msg->msgid);
+	}
+}
+
 
 nc_reply *nc_session_send_recv (struct nc_session* session, nc_rpc *rpc)
 {

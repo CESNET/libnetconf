@@ -90,6 +90,16 @@ typedef enum NC_REPLY_TYPE {
 } NC_REPLY_TYPE;
 
 /**
+ * @brief Enumeration of \<rpc\> operation types.
+ * @ingroup rpc
+ */
+typedef enum NC_RPC_TYPE {
+	NC_RPC_UNKNOWN, /**< value describing that no supported operation type was detected so far */
+	NC_RPC_DATASTORE, /**< \<rpc\> contains operation affecting datastore */
+	NC_RPC_SESSION, /**< \<rpc\> contains operation affecting session */
+} NC_RPC_TYPE;
+
+/**
  * @brief Enumeration of supported types of datastores defined by NETCONF
  * @ingroup store
  */
