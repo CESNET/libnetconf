@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Thu Jun 21 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Fri Jun 22 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -32,6 +32,14 @@ libnetconf's general public functions and structures definitions\&.
 .RI "enum \fBNC_REPLY_TYPE\fP { \fBNC_REPLY_UNKNOWN\fP, \fBNC_REPLY_OK\fP, \fBNC_REPLY_ERROR\fP, \fBNC_REPLY_DATA\fP }"
 .br
 .RI "\fIEnumeration of <rpc-reply> types\&. \fP"
+.ti -1c
+.RI "enum \fBNC_RPC_TYPE\fP { \fBNC_RPC_UNKNOWN\fP, \fBNC_RPC_DATASTORE\fP, \fBNC_RPC_SESSION\fP }"
+.br
+.RI "\fIEnumeration of <rpc> operation types\&. \fP"
+.ti -1c
+.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP }"
+.br
+.RI "\fIEnumeration of supported <rpc> operations\&. \fP"
 .ti -1c
 .RI "enum \fBNC_DATASTORE_TYPE\fP { \fBNC_DATASTORE_NONE\fP, \fBNC_DATASTORE_RUNNING\fP, \fBNC_DATASTORE_STARTUP\fP, \fBNC_DATASTORE_CANDIDATE\fP }"
 .br
@@ -106,7 +114,7 @@ Definition in file \fBnetconf\&.h\fP\&.
 \fB\fINC_EDIT_OP_REMOVE \fP\fP
 
 .PP
-Definition at line 112 of file netconf\&.h\&.
+Definition at line 139 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_DEFOP_TYPE\fP"
 
 .PP
@@ -120,7 +128,7 @@ Definition at line 112 of file netconf\&.h\&.
 \fB\fINC_EDIT_DEFOP_REPLACE \fP\fP
 
 .PP
-Definition at line 122 of file netconf\&.h\&.
+Definition at line 149 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_ERROPT_TYPE\fP"
 
 .PP
@@ -134,7 +142,7 @@ Definition at line 122 of file netconf\&.h\&.
 \fB\fINC_EDIT_ERROPT_ROLLBACK \fP\fP
 
 .PP
-Definition at line 128 of file netconf\&.h\&.
+Definition at line 155 of file netconf\&.h\&.
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

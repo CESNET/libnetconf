@@ -4,6 +4,8 @@ var netconf_8h =
     [ "nc_reply", "d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d", null ],
     [ "nc_msgid", "db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7", null ],
     [ "NC_REPLY_TYPE", "d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29", null ],
+    [ "NC_RPC_TYPE", "db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00", null ],
+    [ "NC_OP", "db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07", null ],
     [ "NC_DATASTORE_TYPE", "db/d67/group__store.html#gac1d3986b5d4d3faee9e4a91c465a5fd2", null ],
     [ "NC_FILTER_TYPE", "db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706", null ],
     [ "NC_EDIT_OP_TYPE", "d3/d7a/netconf_8h.html#aff232fd4280e385c8e45fcca033e58fd", null ],

@@ -1,11 +1,17 @@
 var group__rpc =
 [
     [ "nc_rpc", "db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262", null ],
+    [ "NC_RPC_TYPE", "db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00", null ],
+    [ "NC_OP", "db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07", null ],
     [ "NC_FILTER_TYPE", "db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706", null ],
     [ "nc_session_send_rpc", "db/de9/group__rpc.html#ga5e74aefb070caa3437a4a2312c3dfc84", null ],
+    [ "nc_session_recv_rpc", "db/de9/group__rpc.html#ga30e4280a6d10447d210ebdfb2befb4c6", null ],
     [ "nc_session_send_recv", "db/de9/group__rpc.html#ga19f68212e621d7b556ee9e60ec71dc7a", null ],
     [ "nc_filter_new", "db/de9/group__rpc.html#ga3c58ae7be965b57a20681d137cae8c91", null ],
     [ "nc_filter_free", "db/de9/group__rpc.html#ga0dbfd598d6fd303819817370cdf63229", null ],
+    [ "nc_rpc_get_msgid", "db/de9/group__rpc.html#ga3bb3dd2d08b439d612f5954e3ce78205", null ],
+    [ "nc_rpc_get_operation", "db/de9/group__rpc.html#gaf78e7da3bc6494d32521a2949c172c74", null ],
+    [ "nc_rpc_get_type", "db/de9/group__rpc.html#gaa502fb30575000775b29a764101c1bef", null ],
     [ "nc_rpc_free", "db/de9/group__rpc.html#ga4041bda37caa9eedb7a1e2534280f3df", null ],
     [ "nc_rpc_copyconfig", "db/de9/group__rpc.html#gaf4f288c246a0f379f3e65faa98bff299", null ],
     [ "nc_rpc_deleteconfig", "db/de9/group__rpc.html#gac3f7d54dda784b74330df4cd563be127", null ],

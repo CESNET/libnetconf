@@ -140,8 +140,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gae521c81f448de075a84f62388320ebae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to publickey file used in case of SSH authentication via publickey mechanism.  <a href="#gae521c81f448de075a84f62388320ebae"></a><br/></td></tr>
 <tr class="memitem:ga66beddc668fcc5c3699165bf3d3fd089"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga66beddc668fcc5c3699165bf3d3fd089">nc_set_privatekey_path</a> (const char *path)</td></tr>
 <tr class="memdesc:ga66beddc668fcc5c3699165bf3d3fd089"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to privatekey file used in case of SSH authentication via publickey mechanism.  <a href="#ga66beddc668fcc5c3699165bf3d3fd089"></a><br/></td></tr>
-<tr class="memitem:ga2464c6b4be5e2d9f91cb6649642f77c6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga2464c6b4be5e2d9f91cb6649642f77c6">nc_session_close</a> (struct nc_session *session)</td></tr>
-<tr class="memdesc:ga2464c6b4be5e2d9f91cb6649642f77c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close NETCONF connection with the server and cleanup the session structure.  <a href="#ga2464c6b4be5e2d9f91cb6649642f77c6"></a><br/></td></tr>
+<tr class="memitem:ga20b9940ed7af543a05b4bef6e871cedd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd">nc_session_close</a> (struct nc_session *session, const char *msg)</td></tr>
+<tr class="memdesc:ga20b9940ed7af543a05b4bef6e871cedd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close NETCONF connection with the server and cleanup the session structure.  <a href="#ga20b9940ed7af543a05b4bef6e871cedd"></a><br/></td></tr>
 <tr class="memitem:gac8ea61702127df024c037869feb72d97"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gac8ea61702127df024c037869feb72d97">nc_session_get_version</a> (const struct nc_session *session)</td></tr>
 <tr class="memdesc:gac8ea61702127df024c037869feb72d97"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NETCONF protocol version used in the given session.  <a href="#gac8ea61702127df024c037869feb72d97"></a><br/></td></tr>
 <tr class="memitem:ga826890ed745633bc2d31a53971dada32"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga826890ed745633bc2d31a53971dada32">nc_session_get_eventfd</a> (const struct nc_session *session)</td></tr>
@@ -373,16 +373,26 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga2464c6b4be5e2d9f91cb6649642f77c6"></a>
+<a class="anchor" id="ga20b9940ed7af543a05b4bef6e871cedd"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="../../db/d52/group__session.html#ga2464c6b4be5e2d9f91cb6649642f77c6">nc_session_close</a> </td>
+          <td class="memname">void <a class="el" href="../../db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd">nc_session_close</a> </td>
           <td>(</td>
           <td class="paramtype">struct nc_session *&#160;</td>
-          <td class="paramname"><em>session</em></td><td>)</td>
+          <td class="paramname"><em>session</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>msg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -392,6 +402,7 @@ Functions</h2></td></tr>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>Session to close. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">msg</td><td>Human readable reason for SSH session disconnection. </td></tr>
   </table>
   </dd>
 </dl>
@@ -966,7 +977,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Thu Jun 21 2012 12:54:40 for libnetconf by
+    <li class="footer">Generated on Fri Jun 22 2012 15:04:51 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

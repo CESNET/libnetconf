@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Thu Jun 21 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Fri Jun 22 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -26,9 +26,13 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 
 .in +1c
 .ti -1c
+.RI "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, \fBnc_rpc\fP *rpc, \fBnc_reply\fP *reply)"
+.br
+.RI "\fISend <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
+.ti -1c
 .RI "\fBnc_msgid\fP \fBnc_session_recv_reply\fP (struct nc_session *session, \fBnc_reply\fP **reply)"
 .br
-.RI "\fIReceive <rpc-reply> from the specified NETCONF session\&. \fP"
+.RI "\fIReceive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
 .RI "char * \fBnc_reply_get_string\fP (const \fBnc_reply\fP *reply)"
 .br
@@ -53,6 +57,10 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .RI "void \fBnc_reply_free\fP (\fBnc_reply\fP *reply)"
 .br
 .RI "\fIFree reply message\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBnc_reply_ok\fP ()"
+.br
+.RI "\fICreate <ok> rpc-reply response\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -92,10 +100,30 @@ rpc-reply message containing <data>
 Definition at line 85 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
+.SS "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, \fBnc_rpc\fP *rpc, \fBnc_reply\fP *reply)"
+
+.PP
+Send <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fBParameters:\fP
+.RS 4
+\fIsession\fP NETCONF session to use\&. 
+.br
+\fIrpc\fP <rpc> message which is request for the sending reply 
+.br
+\fIreply\fP <repc-reply> message to send\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on error,
+.br
+ message-id of sent message on success\&. 
+.RE
+.PP
+
 .SS "\fBnc_msgid\fP \fBnc_session_recv_reply\fP (struct nc_session *session, \fBnc_reply\fP **reply)"
 
 .PP
-Receive <rpc-reply> from the specified NETCONF session\&. \fBParameters:\fP
+Receive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session to use\&. 
 .br
@@ -190,6 +218,15 @@ error-message string or NULL on error\&.
 Free reply message\&. \fBParameters:\fP
 .RS 4
 \fIreply\fP reply message to free\&. 
+.RE
+.PP
+
+.SS "\fBnc_reply\fP* \fBnc_reply_ok\fP ()"
+
+.PP
+Create <ok> rpc-reply response\&. \fBReturns:\fP
+.RS 4
+Created <rpc-reply> message\&. 
 .RE
 .PP
 

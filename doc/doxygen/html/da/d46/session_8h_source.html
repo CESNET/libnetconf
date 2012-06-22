@@ -120,45 +120,49 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00043"></a>00043 <span class="preprocessor">#include &quot;<a class="code" href="../../d8/dd3/ssh_8h.html" title="Functions to connect to NETCONF server via SSH2.">ssh.h</a>&quot;</span>
 <a name="l00044"></a>00044 <span class="preprocessor">#include &quot;<a class="code" href="../../d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions.">netconf.h</a>&quot;</span>
 <a name="l00045"></a>00045 
-<a name="l00054"></a>00054 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#ga2464c6b4be5e2d9f91cb6649642f77c6" title="Close NETCONF connection with the server and cleanup the session structure.">nc_session_close</a> (<span class="keyword">struct</span> nc_session* session);
-<a name="l00055"></a>00055 
-<a name="l00062"></a>00062 <span class="keywordtype">int</span> <a class="code" href="../../db/d52/group__session.html#gac8ea61702127df024c037869feb72d97" title="Get NETCONF protocol version used in the given session.">nc_session_get_version</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
-<a name="l00063"></a>00063 
-<a name="l00075"></a>00075 <span class="keywordtype">int</span> <a class="code" href="../../db/d52/group__session.html#ga826890ed745633bc2d31a53971dada32" title="Get input file descriptor to asynchronous control of input events.">nc_session_get_eventfd</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
-<a name="l00076"></a>00076 
-<a name="l00084"></a>00084 <span class="keywordtype">char</span>* <a class="code" href="../../db/d52/group__session.html#gacb94f394ae4511d098f37820d438ffa0" title="Get NETCONF session ID.">nc_session_get_id</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
-<a name="l00085"></a>00085 
-<a name="l00093"></a>00093 <span class="keywordtype">char</span>* <a class="code" href="../../db/d52/group__session.html#ga38ced7c2ce96c76bc8e19ca980786c9a" title="Get NETCONF session host.">nc_session_get_host</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
-<a name="l00094"></a>00094 
-<a name="l00102"></a>00102 <span class="keywordtype">char</span>* <a class="code" href="../../db/d52/group__session.html#ga3755e43670b7d02a2270336172767e58" title="Get NETCONF session port number.">nc_session_get_port</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
-<a name="l00103"></a>00103 
-<a name="l00111"></a>00111 <span class="keywordtype">char</span>* <a class="code" href="../../db/d52/group__session.html#gaaec4ab627bf29ee26b16fd1ca4ab5636" title="Get NETCONF session username.">nc_session_get_user</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
-<a name="l00112"></a>00112 
-<a name="l00124"></a>00124 <span class="keyword">struct </span>nc_cpblts* <a class="code" href="../../db/d52/group__session.html#ga09bdf1d9eacf9f53bf3f05557ffe0821" title="Get NULL terminated list of capabilities associated with the session.">nc_session_get_cpblts</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
-<a name="l00125"></a>00125 
-<a name="l00133"></a>00133 <span class="keyword">struct </span>nc_cpblts *<a class="code" href="../../db/d52/group__session.html#ga05b3653778304c77316b12cdfd775616" title="Create new NETCONF capabilities structure.">nc_cpblts_new</a>(<span class="keywordtype">char</span> **list);
-<a name="l00134"></a>00134 
-<a name="l00140"></a>00140 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#ga6465c58b3ca057b46655d5ffa90caff3" title="Free NETCONF capabilities structure.">nc_cpblts_free</a>(<span class="keyword">struct</span> nc_cpblts *c);
-<a name="l00141"></a>00141 
-<a name="l00149"></a>00149 <span class="keywordtype">int</span> <a class="code" href="../../db/d52/group__session.html#ga2ea9b318015206d886c7e54386fc85e3" title="Add another one capability string into the NETCONF capabilities structure.">nc_cpblts_add</a> (<span class="keyword">struct</span> nc_cpblts *capabilities, <span class="keyword">const</span> <span class="keywordtype">char</span>* capability_string);
-<a name="l00150"></a>00150 
-<a name="l00158"></a>00158 <span class="keywordtype">int</span> <a class="code" href="../../db/d52/group__session.html#gacb59cf4fa78bf02c22afac395acf0693" title="Remove specified capability string from the NETCONF capabilities structure.">nc_cpblts_remove</a> (<span class="keyword">struct</span> nc_cpblts *capabilities, <span class="keyword">const</span> <span class="keywordtype">char</span>* capability_string);
-<a name="l00159"></a>00159 
-<a name="l00168"></a>00168 <span class="keywordtype">int</span> <a class="code" href="../../db/d52/group__session.html#ga88ffe8d6d818838dfc226052ae0005b7" title="Check if the given capability is supported by the session.">nc_cpblts_enabled</a>(<span class="keyword">struct</span> nc_session* session, <span class="keyword">const</span> <span class="keywordtype">char</span>* capability_string);
-<a name="l00169"></a>00169 
-<a name="l00175"></a>00175 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#gae92c774e940114b4733f85e186d84620" title="Move NETCONF capabilities structure iterator to the beginning of the capability strings list...">nc_cpblts_iter_start</a>(<span class="keyword">struct</span> nc_cpblts *c);
-<a name="l00176"></a>00176 
-<a name="l00187"></a>00187 <span class="keywordtype">char</span> *<a class="code" href="../../db/d52/group__session.html#gab7d5432fa16f2d44bc8411f51fafb7b9" title="Get the next capability string from the given NETCONF capabilities structure.">nc_cpblts_iter_next</a>(<span class="keyword">struct</span> nc_cpblts *c);
-<a name="l00188"></a>00188 
-<a name="l00198"></a>00198 <span class="keyword">struct </span>nc_cpblts *<a class="code" href="../../db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71" title="Get NULL terminated list of default capabilities supported by libnetconf.">nc_session_get_cpblts_default</a>();
-<a name="l00199"></a>00199 
-<a name="l00207"></a>00207 <a class="code" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7" title="Type representing NETCONF message-id attribute.">nc_msgid</a> <a class="code" href="../../db/de9/group__rpc.html#ga5e74aefb070caa3437a4a2312c3dfc84" title="Send &lt;rpc&gt; request via specified NETCONF session.">nc_session_send_rpc</a> (<span class="keyword">struct</span> nc_session* session, <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);
-<a name="l00208"></a>00208 
-<a name="l00216"></a>00216 <a class="code" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7" title="Type representing NETCONF message-id attribute.">nc_msgid</a> <a class="code" href="../../d0/de2/group__reply.html#ga53fec7353656b7e9c7ca4742149dced0" title="Receive &lt;rpc-reply&gt; from the specified NETCONF session.">nc_session_recv_reply</a> (<span class="keyword">struct</span> nc_session* session, <a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d" title="reply message.">nc_reply</a>** reply);
-<a name="l00217"></a>00217 
-<a name="l00225"></a>00225 <a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d" title="reply message.">nc_reply</a> *<a class="code" href="../../db/de9/group__rpc.html#ga19f68212e621d7b556ee9e60ec71dc7a" title="Send &lt;rpc&gt; and receive &lt;rpc-reply&gt; via the specified NETCONF session.">nc_session_send_recv</a> (<span class="keyword">struct</span> nc_session* session, <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);
-<a name="l00226"></a>00226 
-<a name="l00227"></a>00227 <span class="preprocessor">#endif </span><span class="comment">/* SESSION_H_ */</span><span class="preprocessor"></span>
+<a name="l00055"></a>00055 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd" title="Close NETCONF connection with the server and cleanup the session structure.">nc_session_close</a> (<span class="keyword">struct</span> nc_session* session, <span class="keyword">const</span> <span class="keywordtype">char</span>* msg);
+<a name="l00056"></a>00056 
+<a name="l00063"></a>00063 <span class="keywordtype">int</span> <a class="code" href="../../db/d52/group__session.html#gac8ea61702127df024c037869feb72d97" title="Get NETCONF protocol version used in the given session.">nc_session_get_version</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
+<a name="l00064"></a>00064 
+<a name="l00076"></a>00076 <span class="keywordtype">int</span> <a class="code" href="../../db/d52/group__session.html#ga826890ed745633bc2d31a53971dada32" title="Get input file descriptor to asynchronous control of input events.">nc_session_get_eventfd</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
+<a name="l00077"></a>00077 
+<a name="l00085"></a>00085 <span class="keywordtype">char</span>* <a class="code" href="../../db/d52/group__session.html#gacb94f394ae4511d098f37820d438ffa0" title="Get NETCONF session ID.">nc_session_get_id</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
+<a name="l00086"></a>00086 
+<a name="l00094"></a>00094 <span class="keywordtype">char</span>* <a class="code" href="../../db/d52/group__session.html#ga38ced7c2ce96c76bc8e19ca980786c9a" title="Get NETCONF session host.">nc_session_get_host</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
+<a name="l00095"></a>00095 
+<a name="l00103"></a>00103 <span class="keywordtype">char</span>* <a class="code" href="../../db/d52/group__session.html#ga3755e43670b7d02a2270336172767e58" title="Get NETCONF session port number.">nc_session_get_port</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
+<a name="l00104"></a>00104 
+<a name="l00112"></a>00112 <span class="keywordtype">char</span>* <a class="code" href="../../db/d52/group__session.html#gaaec4ab627bf29ee26b16fd1ca4ab5636" title="Get NETCONF session username.">nc_session_get_user</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
+<a name="l00113"></a>00113 
+<a name="l00125"></a>00125 <span class="keyword">struct </span>nc_cpblts* <a class="code" href="../../db/d52/group__session.html#ga09bdf1d9eacf9f53bf3f05557ffe0821" title="Get NULL terminated list of capabilities associated with the session.">nc_session_get_cpblts</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);
+<a name="l00126"></a>00126 
+<a name="l00134"></a>00134 <span class="keyword">struct </span>nc_cpblts *<a class="code" href="../../db/d52/group__session.html#ga05b3653778304c77316b12cdfd775616" title="Create new NETCONF capabilities structure.">nc_cpblts_new</a>(<span class="keywordtype">char</span> **list);
+<a name="l00135"></a>00135 
+<a name="l00141"></a>00141 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#ga6465c58b3ca057b46655d5ffa90caff3" title="Free NETCONF capabilities structure.">nc_cpblts_free</a>(<span class="keyword">struct</span> nc_cpblts *c);
+<a name="l00142"></a>00142 
+<a name="l00150"></a>00150 <span class="keywordtype">int</span> <a class="code" href="../../db/d52/group__session.html#ga2ea9b318015206d886c7e54386fc85e3" title="Add another one capability string into the NETCONF capabilities structure.">nc_cpblts_add</a> (<span class="keyword">struct</span> nc_cpblts *capabilities, <span class="keyword">const</span> <span class="keywordtype">char</span>* capability_string);
+<a name="l00151"></a>00151 
+<a name="l00159"></a>00159 <span class="keywordtype">int</span> <a class="code" href="../../db/d52/group__session.html#gacb59cf4fa78bf02c22afac395acf0693" title="Remove specified capability string from the NETCONF capabilities structure.">nc_cpblts_remove</a> (<span class="keyword">struct</span> nc_cpblts *capabilities, <span class="keyword">const</span> <span class="keywordtype">char</span>* capability_string);
+<a name="l00160"></a>00160 
+<a name="l00169"></a>00169 <span class="keywordtype">int</span> <a class="code" href="../../db/d52/group__session.html#ga88ffe8d6d818838dfc226052ae0005b7" title="Check if the given capability is supported by the session.">nc_cpblts_enabled</a>(<span class="keyword">struct</span> nc_session* session, <span class="keyword">const</span> <span class="keywordtype">char</span>* capability_string);
+<a name="l00170"></a>00170 
+<a name="l00176"></a>00176 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#gae92c774e940114b4733f85e186d84620" title="Move NETCONF capabilities structure iterator to the beginning of the capability strings list...">nc_cpblts_iter_start</a>(<span class="keyword">struct</span> nc_cpblts *c);
+<a name="l00177"></a>00177 
+<a name="l00188"></a>00188 <span class="keywordtype">char</span> *<a class="code" href="../../db/d52/group__session.html#gab7d5432fa16f2d44bc8411f51fafb7b9" title="Get the next capability string from the given NETCONF capabilities structure.">nc_cpblts_iter_next</a>(<span class="keyword">struct</span> nc_cpblts *c);
+<a name="l00189"></a>00189 
+<a name="l00199"></a>00199 <span class="keyword">struct </span>nc_cpblts *<a class="code" href="../../db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71" title="Get NULL terminated list of default capabilities supported by libnetconf.">nc_session_get_cpblts_default</a>();
+<a name="l00200"></a>00200 
+<a name="l00210"></a>00210 <a class="code" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7" title="Type representing NETCONF message-id attribute.">nc_msgid</a> <a class="code" href="../../db/de9/group__rpc.html#ga5e74aefb070caa3437a4a2312c3dfc84" title="Send &lt;rpc&gt; request via specified NETCONF session. This function is supposed to be performed only by N...">nc_session_send_rpc</a> (<span class="keyword">struct</span> nc_session* session, <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);
+<a name="l00211"></a>00211 
+<a name="l00222"></a>00222 <a class="code" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7" title="Type representing NETCONF message-id attribute.">nc_msgid</a> <a class="code" href="../../d0/de2/group__reply.html#ga87af88fde9cef4913c78855056b51804" title="Send &lt;rpc-reply&gt; response via specified NETCONF session. This function is supposed to be performed on...">nc_session_send_reply</a> (<span class="keyword">struct</span> nc_session* session, <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a>* rpc, <a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d" title="reply message.">nc_reply</a> *reply);
+<a name="l00223"></a>00223 
+<a name="l00233"></a>00233 <a class="code" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7" title="Type representing NETCONF message-id attribute.">nc_msgid</a> <a class="code" href="../../db/de9/group__rpc.html#ga30e4280a6d10447d210ebdfb2befb4c6" title="Receive &lt;rpc&gt; request from the specified NETCONF session. This function is supposed to be performed o...">nc_session_recv_rpc</a> (<span class="keyword">struct</span> nc_session* session, <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a>** rpc);
+<a name="l00234"></a>00234 
+<a name="l00244"></a>00244 <a class="code" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7" title="Type representing NETCONF message-id attribute.">nc_msgid</a> <a class="code" href="../../d0/de2/group__reply.html#ga53fec7353656b7e9c7ca4742149dced0" title="Receive &lt;rpc-reply&gt; response from the specified NETCONF session. This function is supposed to be perf...">nc_session_recv_reply</a> (<span class="keyword">struct</span> nc_session* session, <a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d" title="reply message.">nc_reply</a>** reply);
+<a name="l00245"></a>00245 
+<a name="l00253"></a>00253 <a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d" title="reply message.">nc_reply</a> *<a class="code" href="../../db/de9/group__rpc.html#ga19f68212e621d7b556ee9e60ec71dc7a" title="Send &lt;rpc&gt; and receive &lt;rpc-reply&gt; via the specified NETCONF session.">nc_session_send_recv</a> (<span class="keyword">struct</span> nc_session* session, <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);
+<a name="l00254"></a>00254 
+<a name="l00255"></a>00255 <span class="preprocessor">#endif </span><span class="comment">/* SESSION_H_ */</span><span class="preprocessor"></span>
 </pre></div></div><!-- contents -->
 </div>
   <div id="nav-path" class="navpath">
@@ -166,7 +170,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
       <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a>      </li>
       <li class="navelem"><a class="el" href="../../da/d46/session_8h.html">session.h</a>      </li>
 
-    <li class="footer">Generated on Thu Jun 21 2012 12:54:40 for libnetconf by
+    <li class="footer">Generated on Fri Jun 22 2012 15:04:51 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

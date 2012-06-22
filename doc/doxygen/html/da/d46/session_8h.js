@@ -1,6 +1,6 @@
 var session_8h =
 [
-    [ "nc_session_close", "db/d52/group__session.html#ga2464c6b4be5e2d9f91cb6649642f77c6", null ],
+    [ "nc_session_close", "db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd", null ],
     [ "nc_session_get_version", "db/d52/group__session.html#gac8ea61702127df024c037869feb72d97", null ],
     [ "nc_session_get_eventfd", "db/d52/group__session.html#ga826890ed745633bc2d31a53971dada32", null ],
     [ "nc_session_get_id", "db/d52/group__session.html#gacb94f394ae4511d098f37820d438ffa0", null ],
@@ -17,6 +17,8 @@ var session_8h =
     [ "nc_cpblts_iter_next", "db/d52/group__session.html#gab7d5432fa16f2d44bc8411f51fafb7b9", null ],
     [ "nc_session_get_cpblts_default", "db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71", null ],
     [ "nc_session_send_rpc", "db/de9/group__rpc.html#ga5e74aefb070caa3437a4a2312c3dfc84", null ],
+    [ "nc_session_send_reply", "d0/de2/group__reply.html#ga87af88fde9cef4913c78855056b51804", null ],
+    [ "nc_session_recv_rpc", "db/de9/group__rpc.html#ga30e4280a6d10447d210ebdfb2befb4c6", null ],
     [ "nc_session_recv_reply", "d0/de2/group__reply.html#ga53fec7353656b7e9c7ca4742149dced0", null ],
     [ "nc_session_send_recv", "db/de9/group__rpc.html#ga19f68212e621d7b556ee9e60ec71dc7a", null ]
 ];

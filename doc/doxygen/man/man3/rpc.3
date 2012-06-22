@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Thu Jun 21 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Fri Jun 22 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,6 +18,14 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 
 .in +1c
 .ti -1c
+.RI "enum \fBNC_RPC_TYPE\fP { \fBNC_RPC_UNKNOWN\fP, \fBNC_RPC_DATASTORE\fP, \fBNC_RPC_SESSION\fP }"
+.br
+.RI "\fIEnumeration of <rpc> operation types\&. \fP"
+.ti -1c
+.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP }"
+.br
+.RI "\fIEnumeration of supported <rpc> operations\&. \fP"
+.ti -1c
 .RI "enum \fBNC_FILTER_TYPE\fP { \fBNC_FILTER_SUBTREE\fP }"
 .br
 .RI "\fIEnumeration of supported NETCONF filter types\&. \fP"
@@ -28,7 +36,11 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .ti -1c
 .RI "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fISend <rpc> request via specified NETCONF session\&. \fP"
+.RI "\fISend <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
+.ti -1c
+.RI "\fBnc_msgid\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
+.br
+.RI "\fIReceive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_session_send_recv\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
 .br
@@ -41,6 +53,18 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .RI "void \fBnc_filter_free\fP (struct nc_filter *filter)"
 .br
 .RI "\fIDestroy filter structure\&. \fP"
+.ti -1c
+.RI "\fBnc_msgid\fP \fBnc_rpc_get_msgid\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet message-id of the given rpc\&. \fP"
+.ti -1c
+.RI "\fBNC_OP\fP \fBnc_rpc_get_operation\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet operation of the given rpc\&. \fP"
+.ti -1c
+.RI "\fBNC_RPC_TYPE\fP \fBnc_rpc_get_type\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet type of the rpc message\&. \fP"
 .ti -1c
 .RI "void \fBnc_rpc_free\fP (\fBnc_rpc\fP *rpc)"
 .br
@@ -97,6 +121,63 @@ rpc message\&.
 Definition at line 49 of file netconf\&.h\&.
 .SH "Enumeration Type Documentation"
 .PP 
+.SS "enum \fBNC_RPC_TYPE\fP"
+
+.PP
+Enumeration of <rpc> operation types\&. 
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fINC_RPC_UNKNOWN \fP\fP
+value describing that no supported operation type was detected so far 
+.TP
+\fB\fINC_RPC_DATASTORE \fP\fP
+<rpc> contains operation affecting datastore 
+.TP
+\fB\fINC_RPC_SESSION \fP\fP
+<rpc> contains operation affecting session 
+.PP
+Definition at line 96 of file netconf\&.h\&.
+.SS "enum \fBNC_OP\fP"
+
+.PP
+Enumeration of supported <rpc> operations\&. 
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fINC_OP_UNKNOWN \fP\fP
+unknown/error value 
+.TP
+\fB\fINC_OP_GETCONFIG \fP\fP
+<get-config> operation 
+.TP
+\fB\fINC_OP_GET \fP\fP
+<get> operation 
+.TP
+\fB\fINC_OP_EDITCONFIG \fP\fP
+<edit-config> operation 
+.TP
+\fB\fINC_OP_CLOSESESSION \fP\fP
+<close-session> operation 
+.TP
+\fB\fINC_OP_KILLSESSION \fP\fP
+<kill-session> operation 
+.TP
+\fB\fINC_OP_COPYCONFIG \fP\fP
+<copy-config> operation 
+.TP
+\fB\fINC_OP_DELETECONFIG \fP\fP
+<delete-config> operation 
+.TP
+\fB\fINC_OP_LOCK \fP\fP
+<lock> operation 
+.TP
+\fB\fINC_OP_UNLOCK \fP\fP
+<unlock> operation 
+.PP
+Definition at line 106 of file netconf\&.h\&.
 .SS "enum \fBNC_FILTER_TYPE\fP"
 
 .PP
@@ -108,17 +189,17 @@ Enumeration of supported NETCONF filter types\&.
 \fB\fINC_FILTER_SUBTREE \fP\fP
 NC_FILTER_SUBTREE\&. 
 .PP
-Definition at line 107 of file netconf\&.h\&.
+Definition at line 134 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
 
 .PP
-Send <rpc> request via specified NETCONF session\&. \fBParameters:\fP
+Send <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session to use\&. 
 .br
-\fIrpc\fP RPC message to send\&. 
+\fIrpc\fP <rpc> message to send\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -126,6 +207,24 @@ Send <rpc> request via specified NETCONF session\&. \fBParameters:\fP
 0 on error,
 .br
  message-id of sent message on success\&. 
+.RE
+.PP
+
+.SS "\fBnc_msgid\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
+
+.PP
+Receive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fBParameters:\fP
+.RS 4
+\fIsession\fP NETCONF session to use\&. 
+.br
+\fIrpc\fP Received <rpc> 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on error,
+.br
+ message-id of received message on success\&. 
 .RE
 .PP
 
@@ -167,6 +266,50 @@ Created NETCONF filter structure\&.
 Destroy filter structure\&. \fBParameters:\fP
 .RS 4
 \fIfilter\fP Filter to destroy\&. 
+.RE
+.PP
+
+.SS "\fBnc_msgid\fP \fBnc_rpc_get_msgid\fP (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Get message-id of the given rpc\&. \fBParameters:\fP
+.RS 4
+\fIrpc\fP rpc message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+message-id of the given rpc message\&. 
+.RE
+.PP
+
+.SS "\fBNC_OP\fP \fBnc_rpc_get_operation\fP (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Get operation of the given rpc\&. \fBParameters:\fP
+.RS 4
+\fIrpc\fP rpc message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Operation identification of the given rpc message\&. 
+.RE
+.PP
+
+.SS "\fBNC_RPC_TYPE\fP \fBnc_rpc_get_type\fP (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Get type of the rpc message\&. <rpc> message can affect datastore, session or it can be unknown for the libnetconf (defined by some of unsupported capability or device configuration model)
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrpc\fP rpc message 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+One of the NC_RPC_TYPE\&. 
 .RE
 .PP
 

@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Thu Jun 21 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Fri Jun 22 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -50,7 +50,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .br
 .RI "\fISet path to privatekey file used in case of SSH authentication via publickey mechanism\&. \fP"
 .ti -1c
-.RI "void \fBnc_session_close\fP (struct nc_session *session)"
+.RI "void \fBnc_session_close\fP (struct nc_session *session, const char *msg)"
 .br
 .RI "\fIClose NETCONF connection with the server and cleanup the session structure\&. \fP"
 .ti -1c
@@ -215,7 +215,7 @@ Set path to privatekey file used in case of SSH authentication via publickey mec
 .RE
 .PP
 
-.SS "void \fBnc_session_close\fP (struct nc_session *session)"
+.SS "void \fBnc_session_close\fP (struct nc_session *session, const char *msg)"
 
 .PP
 Close NETCONF connection with the server and cleanup the session structure\&. Do not use given session structure after this call\&.
@@ -223,6 +223,8 @@ Close NETCONF connection with the server and cleanup the session structure\&. Do
 \fBParameters:\fP
 .RS 4
 \fIsession\fP Session to close\&. 
+.br
+\fImsg\fP Human readable reason for SSH session disconnection\&. 
 .RE
 .PP
 
