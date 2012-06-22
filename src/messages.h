@@ -83,6 +83,27 @@ nc_msgid nc_reply_get_msgid(const nc_reply *reply);
 nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc);
 
 /**
+ * @ingroup rpc
+ * @brief Get operation of the given rpc.
+ * @param[in] rpc rpc message.
+ * @return Operation identification of the given rpc message.
+ */
+NC_OP nc_rpc_get_operation(const nc_rpc *rpc);
+
+/**
+ * @ingroup rpc
+ * @brief Get type of the rpc message.
+ *
+ * \<rpc\> message can affect datastore, session or it can be unknown for the
+ * libnetconf (defined by some of unsupported capability or device configuration
+ * model)
+ *
+ * @param[in] rpc rpc message
+ * @return One of the NC_RPC_TYPE.
+ */
+NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc);
+
+/**
  * @ingroup reply
  * @brief Get type of the rpc-reply message.
  *
@@ -126,6 +147,13 @@ void nc_rpc_free(nc_rpc *rpc);
  * @param[in] reply reply message to free.
  */
 void nc_reply_free(nc_reply *reply);
+
+/**
+ * @ingroup reply
+ * @brief Create \<ok\> rpc-reply response.
+ * @return Created \<rpc-reply\> message.
+ */
+nc_reply *nc_reply_ok();
 
 /**
  * @ingroup rpc

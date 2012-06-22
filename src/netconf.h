@@ -100,6 +100,23 @@ typedef enum NC_RPC_TYPE {
 } NC_RPC_TYPE;
 
 /**
+ * @brief Enumeration of supported \<rpc\> operations
+ * @ingroup rpc
+ */
+typedef enum NC_OP {
+	NC_OP_UNKNOWN,		/**< unknown/error value */
+	NC_OP_GETCONFIG,	/**< \<get-config\> operation */
+	NC_OP_GET,		/**< \<get\> operation */
+	NC_OP_EDITCONFIG,	/**< \<edit-config\> operation */
+	NC_OP_CLOSESESSION,	/**< \<close-session\> operation */
+	NC_OP_KILLSESSION,	/**< \<kill-session\> operation */
+	NC_OP_COPYCONFIG,	/**< \<copy-config\> operation */
+	NC_OP_DELETECONFIG,	/**< \<delete-config\> operation */
+	NC_OP_LOCK,		/**< \<lock\> operation */
+	NC_OP_UNLOCK		/**< \<unlock\> operation */
+} NC_OP;
+
+/**
  * @brief Enumeration of supported types of datastores defined by NETCONF
  * @ingroup store
  */

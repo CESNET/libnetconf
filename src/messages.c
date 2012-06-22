@@ -119,6 +119,50 @@ nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc)
 	}
 }
 
+NC_OP nc_rpc_get_operation(const nc_rpc *rpc)
+{
+	if (rpc == NULL || rpc->doc == NULL) {
+		WARN("Invalid parameter for nc_rpc_get_operation().")
+		return (NC_OP_UNKNOWN);
+	}
+
+	if (xmlStrcmp(rpc->doc->children->name, BAD_CAST "rpc") == 0) {
+		if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "copy-config") == 0) {
+			return (NC_OP_COPYCONFIG);
+		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "delete-config") == 0) {
+			return (NC_OP_DELETECONFIG);
+		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "edit-config") == 0) {
+			return (NC_OP_EDITCONFIG);
+		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "get") == 0) {
+			return (NC_OP_GET);
+		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "get-config") == 0) {
+			return (NC_OP_GETCONFIG);
+		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "lock") == 0) {
+			return (NC_OP_LOCK);
+		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "unlock") == 0) {
+			return (NC_OP_UNLOCK);
+		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "kill-session") == 0) {
+			return (NC_OP_KILLSESSION);
+		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "close-session") == 0) {
+			return (NC_OP_CLOSESESSION);
+		} else {
+			return (NC_OP_UNKNOWN);
+		}
+	} else {
+		WARN("Invalid rpc message for nc_rpc_get_operation - not a <rpc> message.");
+		return (NC_OP_UNKNOWN);
+	}
+}
+
+NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc)
+{
+	if (rpc != NULL) {
+		return (rpc->type.rpc);
+	} else {
+		return (NC_RPC_UNKNOWN);
+	}
+}
+
 NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
 {
 	if (reply != NULL) {
@@ -325,50 +369,92 @@ nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
 }
 
 /**
+ * @brief Create generic NETCONF message envelope according to given type (rpc or rpc-reply) and insert given data
+ *
+ * @param[in] content pointer to xml node containing data
+ * @param[in] msgtype string of the envelope element (rpc, rpc-reply)
+ *
+ * @return Prepared nc_msg structure.
+ */
+struct nc_msg* nc_msg_create(xmlNodePtr content, char* msgtype)
+{
+	struct nc_msg* msg;
+
+	xmlDocPtr xmlmsg = NULL;
+
+	if ((xmlmsg = xmlNewDoc(BAD_CAST XML_VERSION)) == NULL) {
+		ERROR("xmlNewDoc failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return NULL;
+	}
+	xmlmsg->encoding = xmlStrdup(BAD_CAST UTF8);
+
+	if ((xmlmsg->children = xmlNewDocNode(xmlmsg, NULL, BAD_CAST msgtype, NULL)) == NULL) {
+		ERROR("xmlNewDocNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		xmlFreeDoc(xmlmsg);
+		return NULL;
+	}
+
+	if (xmlNewProp(xmlmsg->children, BAD_CAST "message-id", BAD_CAST "") == NULL) {
+		ERROR("xmlNewProp failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		xmlFreeDoc(xmlmsg);
+		return NULL;
+	}
+
+	if (xmlAddChild(xmlmsg->children, xmlCopyNode(content, 1)) == NULL) {
+		ERROR("xmlAddChild failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		xmlFreeDoc(xmlmsg);
+		return NULL;
+	}
+
+	msg = malloc(sizeof(nc_rpc));
+	if (msg == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+	msg->doc = xmlmsg;
+
+	return (msg);
+}
+
+/**
  * @brief Create \<rpc\> envelope and insert given data
  *
- * @param[in]	content		pointer to xml node containing data
+ * @param[in] content pointer to xml node containing data
  *
  * @return Prepared nc_rpc structure.
  */
 nc_rpc* nc_rpc_create(xmlNodePtr content)
 {
-	nc_rpc* rpc;
+	return ((nc_rpc*)nc_msg_create(content,"rpc"));
+}
 
-	xmlDocPtr rpcmsg = NULL;
+/**
+ * @brief Create \<rpc-reply\> envelope and insert given data
+ *
+ * @param[in] content pointer to xml node containing data
+ *
+ * @return Prepared nc_reply structure.
+ */
+nc_reply* nc_reply_create(xmlNodePtr content)
+{
+	return ((nc_reply*)nc_msg_create(content,"rpc-reply"));
+}
 
-	if ((rpcmsg = xmlNewDoc(BAD_CAST XML_VERSION)) == NULL) {
-		ERROR("xmlNewDoc failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-		return NULL;
-	}
-	rpcmsg->encoding = xmlStrdup(BAD_CAST UTF8);
+nc_reply *nc_reply_ok()
+{
+	nc_reply *reply;
+	xmlNodePtr content;
 
-	if ((rpcmsg->children = xmlNewDocNode(rpcmsg, NULL, BAD_CAST "rpc", NULL)) == NULL) {
-		ERROR("xmlNewDocNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-		xmlFreeDoc(rpcmsg);
-		return NULL;
-	}
-
-	if (xmlNewProp(rpcmsg->children, BAD_CAST "message-id", BAD_CAST "") == NULL) {
-		ERROR("xmlNewProp failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-		xmlFreeDoc(rpcmsg);
-		return NULL;
-	}
-
-	if (xmlAddChild(rpcmsg->children, xmlCopyNode(content, 1)) == NULL) {
-		ERROR("xmlAddChild failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-		xmlFreeDoc(rpcmsg);
-		return NULL;
-	}
-
-	rpc = malloc(sizeof(nc_rpc));
-	if (rpc == NULL) {
-		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+	if ((content = xmlNewNode(NULL, BAD_CAST "ok")) == NULL) {
+		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
-	rpc->doc = rpcmsg;
 
-	return (rpc);
+	reply = nc_reply_create(content);
+	reply->type.reply = NC_REPLY_OK;
+	xmlFreeNode(content);
+
+	return (reply);
 }
 
 nc_rpc *nc_rpc_closesession()
@@ -382,6 +468,7 @@ nc_rpc *nc_rpc_closesession()
 	}
 
 	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_SESSION;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -475,6 +562,7 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE_TYPE source, struct nc_filter *filter)
 	}
 
 	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_DATASTORE;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -497,6 +585,7 @@ nc_rpc *nc_rpc_get(struct nc_filter *filter)
 	}
 
 	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_DATASTORE;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -544,6 +633,7 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE_TYPE target)
 	}
 
 	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_DATASTORE;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -589,6 +679,7 @@ nc_rpc *nc_rpc_lock(NC_DATASTORE_TYPE target)
 	}
 
 	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_DATASTORE;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -634,6 +725,7 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE_TYPE target)
 	}
 
 	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_DATASTORE;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -748,6 +840,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE_TYPE source, NC_DATASTORE_TYPE target, co
 	}
 
 	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_DATASTORE;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -885,6 +978,7 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE_TYPE target, NC_EDIT_DEFOP_TYPE default_o
 	xmlFreeDoc(doc_data);
 
 	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_DATASTORE;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -915,6 +1009,7 @@ nc_rpc *nc_rpc_killsession(const char *kill_sid)
 	}
 
 	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_SESSION;
 	xmlFreeNode(content);
 
 	return (rpc);
