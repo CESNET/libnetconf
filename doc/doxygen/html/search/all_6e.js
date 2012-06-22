@@ -50,7 +50,7 @@ var searchData=
   ['nc_5fop_5funknown',['NC_OP_UNKNOWN',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a7ca4781a2c8644c3c15e3b0cd9116090',1,'netconf.h']]],
   ['nc_5fop_5funlock',['NC_OP_UNLOCK',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aa4071db38c423865b24543cb504a4b42',1,'netconf.h']]],
   ['nc_5freply',['nc_reply',['../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d',1,'netconf.h']]],
-  ['nc_5freply_5fdata',['NC_REPLY_DATA',['../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29acf47a744ed6a6b613d63f4a77aa7135e',1,'netconf.h']]],
+  ['nc_5freply_5fdata',['NC_REPLY_DATA',['../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29acf47a744ed6a6b613d63f4a77aa7135e',1,'NC_REPLY_DATA():&#160;netconf.h'],['../d0/de2/group__reply.html#ga4543351c89208bb06fa895be334d59ad',1,'nc_reply_data(const char *data):&#160;messages.h']]],
   ['nc_5freply_5ferror',['NC_REPLY_ERROR',['../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa47af543410586d8da28f02f099abce0',1,'netconf.h']]],
   ['nc_5freply_5ffree',['nc_reply_free',['../d0/de2/group__reply.html#ga17aa9f38d7b75dec1a57b478b0b39710',1,'messages.h']]],
   ['nc_5freply_5fget_5fdata',['nc_reply_get_data',['../d0/de2/group__reply.html#gaac62fb3d427985311cf71a2c3ab8d424',1,'messages.h']]],

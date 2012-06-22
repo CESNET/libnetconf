@@ -61,6 +61,10 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .RI "\fBnc_reply\fP * \fBnc_reply_ok\fP ()"
 .br
 .RI "\fICreate <ok> rpc-reply response\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBnc_reply_data\fP (const char *data)"
+.br
+.RI "\fICreate rpc-reply response with <data> content\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -225,6 +229,15 @@ Free reply message\&. \fBParameters:\fP
 
 .PP
 Create <ok> rpc-reply response\&. \fBReturns:\fP
+.RS 4
+Created <rpc-reply> message\&. 
+.RE
+.PP
+
+.SS "\fBnc_reply\fP* \fBnc_reply_data\fP (const char *data)"
+
+.PP
+Create rpc-reply response with <data> content\&. \fBReturns:\fP
 .RS 4
 Created <rpc-reply> message\&. 
 .RE

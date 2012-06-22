@@ -13,6 +13,7 @@ var messages_8h =
     [ "nc_rpc_free", "db/de9/group__rpc.html#ga4041bda37caa9eedb7a1e2534280f3df", null ],
     [ "nc_reply_free", "d0/de2/group__reply.html#ga17aa9f38d7b75dec1a57b478b0b39710", null ],
     [ "nc_reply_ok", "d0/de2/group__reply.html#ga4789f8372e5f2676236ddb0e6eeb8bb4", null ],
+    [ "nc_reply_data", "d0/de2/group__reply.html#ga4543351c89208bb06fa895be334d59ad", null ],
     [ "nc_rpc_copyconfig", "db/de9/group__rpc.html#gaf4f288c246a0f379f3e65faa98bff299", null ],
     [ "nc_rpc_deleteconfig", "db/de9/group__rpc.html#gac3f7d54dda784b74330df4cd563be127", null ],
     [ "nc_rpc_editconfig", "db/de9/group__rpc.html#ga4cc913ece1d511b4328c1bc8b81ba156", null ],

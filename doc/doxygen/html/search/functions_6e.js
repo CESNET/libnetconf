@@ -14,6 +14,7 @@ var searchData=
   ['nc_5fcpblts_5fremove',['nc_cpblts_remove',['../db/d52/group__session.html#gacb59cf4fa78bf02c22afac395acf0693',1,'session.h']]],
   ['nc_5ffilter_5ffree',['nc_filter_free',['../db/de9/group__rpc.html#ga0dbfd598d6fd303819817370cdf63229',1,'messages.h']]],
   ['nc_5ffilter_5fnew',['nc_filter_new',['../db/de9/group__rpc.html#ga3c58ae7be965b57a20681d137cae8c91',1,'messages.h']]],
+  ['nc_5freply_5fdata',['nc_reply_data',['../d0/de2/group__reply.html#ga4543351c89208bb06fa895be334d59ad',1,'messages.h']]],
   ['nc_5freply_5ffree',['nc_reply_free',['../d0/de2/group__reply.html#ga17aa9f38d7b75dec1a57b478b0b39710',1,'messages.h']]],
   ['nc_5freply_5fget_5fdata',['nc_reply_get_data',['../d0/de2/group__reply.html#gaac62fb3d427985311cf71a2c3ab8d424',1,'messages.h']]],
   ['nc_5freply_5fget_5ferrormsg',['nc_reply_get_errormsg',['../d0/de2/group__reply.html#ga22b65c37e45e27e9bd375f9bc5ad8891',1,'messages.h']]],
