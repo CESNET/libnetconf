@@ -156,6 +156,13 @@ void nc_reply_free(nc_reply *reply);
 nc_reply *nc_reply_ok();
 
 /**
+ * @ingroup reply
+ * @brief Create rpc-reply response with \<data\> content.
+ * @return Created \<rpc-reply\> message.
+ */
+nc_reply *nc_reply_data(const char* data);
+
+/**
  * @ingroup rpc
  * @brief Create \<copy-config\> NETCONF rpc message.
  *

@@ -457,6 +457,45 @@ nc_reply *nc_reply_ok()
 	return (reply);
 }
 
+nc_reply *nc_reply_data(const char* data)
+{
+	nc_reply *reply;
+	xmlNodePtr content;
+	xmlDocPtr doc_data;
+
+	if ((content = xmlNewNode(NULL, BAD_CAST "data")) == NULL) {
+		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	if (data != NULL) {
+		/* prepare XML structure from given data */
+		doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		if (doc_data == NULL) {
+			ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+
+		/* connect given configuration data with the rpc request */
+		if (xmlAddChild(content, xmlCopyNode(doc_data->children, 1)) == NULL) {
+			ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			xmlFreeDoc(doc_data);
+			return (NULL);
+		}
+
+		/* free no more needed structure */
+		xmlFreeDoc(doc_data);
+	}
+
+	reply = nc_reply_create(content);
+	reply->type.reply = NC_REPLY_DATA;
+	xmlFreeNode(content);
+
+	return (reply);
+}
+
 nc_rpc *nc_rpc_closesession()
 {
 	nc_rpc *rpc;
