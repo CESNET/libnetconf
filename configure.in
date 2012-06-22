@@ -61,8 +61,9 @@ if test "x$PKG_CONFIG" = "xno"; then
 	AC_MSG_ERROR(['pkgconfig' not found.])
 fi
 
-AC_ARG_WITH([libxml2], AC_HELP_STRING([--with-libxml2], [specific libxml2 location]),[],[])
-AC_ARG_WITH([libssh2], AC_HELP_STRING([--with-libssh2], [specific libssh2 location]),[],[])
+#AC_ARG_WITH([libxml2], AC_HELP_STRING([--with-libxml2], [specific libxml2 location]),[],[])
+#AC_ARG_WITH([libssh2], AC_HELP_STRING([--with-libssh2], [specific libssh2 location]),[],[])
+AC_ARG_WITH([examples], AC_HELP_STRING([--with-examples], [enable building example applications]),[SUBDIRS="./examples/client/ ./examples/server/"],[SUBDIRS=""])
 
 AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],[Compile with debug options]),
@@ -142,9 +143,15 @@ PKG_CHECK_MODULES([LIBSSH2_TIMEOUT], [libssh2 >= "1.2.9"], [LIBSSH2_SET_TIMEOUT=
 AC_SUBST(LIBSSH2_SESSION_HANDSHAKE)
 AC_SUBST(LIBSSH2_SET_TIMEOUT)
 
-# libreadline
-AC_CHECK_LIB([readline], [readline], [], AC_MSG_ERROR([Missing libreadline]))
-AC_CHECK_HEADERS(readline/readline.h readline/history.h, [], AC_MSG_ERROR([Missing libreadline headers.]))
+if test -n "$SUBDIRS"; then
+    # libreadline
+    AC_CHECK_LIB([readline], [readline], [], AC_MSG_ERROR([Missing libreadline]))
+    AC_CHECK_HEADERS(readline/readline.h readline/history.h, [], AC_MSG_ERROR([Missing libreadline headers.]))
+    
+    # libevent
+    AC_CHECK_LIB([event], [event_base_dispatch], [], AC_MSG_ERROR([Missing libevent]))
+    AC_CHECK_HEADERS(event2/event.h, [], AC_MSG_ERROR([Missing libevent headers.]))
+fi
 
 ###################### Check for configure parameters ##########################
 
@@ -168,7 +175,7 @@ AC_SUBST(V_SONAME_OPT)
 AC_SUBST(BUILDREQS)
 AC_SUBST(REQS)
 AC_SUBST(DISTRO)
-
+AC_SUBST(SUBDIRS)
 
 AC_SUBST(DOXYGEN)
 if test -z "$DOXYGEN"; then
@@ -180,4 +187,4 @@ if test -z "$RPMBUILD"; then
 	AC_MSG_WARN([Due to missing rpmbuild you will not able to generate RPM package.])
 fi
 
-AC_OUTPUT(Makefile src/config.h examples/client/Makefile libnetconf.spec libnetconf.pc)
+AC_OUTPUT(Makefile src/config.h examples/client/Makefile examples/server/Makefile libnetconf.spec libnetconf.pc)
