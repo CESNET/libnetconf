@@ -483,6 +483,7 @@ struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
 	retval->libssh2_socket = -1;
 	retval->fd_input = STDIN_FILENO;
 	retval->fd_output = STDOUT_FILENO;
+	retval->msgid = 1;
 
 	/*
 	 * get username - we are running as SSH Subsystem which was started
@@ -492,7 +493,7 @@ struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
 	if (pw == NULL) {
 		/* unable to get correct username */
 		ERROR("Unable to set username for SSH connection (%s).", strerror(errno));
-		nc_session_close(retval);
+		nc_session_close(retval, "NETCONF server: unable to set username for SSH connection (%s).");
 		return (NULL);
 	}
 	retval->username = strdup(pw->pw_name);
@@ -500,15 +501,17 @@ struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
 	if (capabilities == NULL) {
 		if ((server_cpblts = nc_session_get_cpblts_default()) == NULL) {
 			VERB("Unable to set client's NETCONF capabilities.");
-			nc_session_close(retval);
+			nc_session_close(retval, "NETCONF server: unable to set client's NETCONF capabilities.");
 			return (NULL);
 		}
 	} else {
 		server_cpblts = capabilities;
 	}
 
+	retval->status = NC_SESSION_STATUS_WORKING;
+
 	if (nc_server_handshake(retval, server_cpblts->list) != 0) {
-		nc_session_close(retval);
+		nc_session_close(retval, "NETCONF handshake failed.");
 		return (NULL);
 	}
 
@@ -516,7 +519,6 @@ struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
 		nc_cpblts_free(server_cpblts);
 	}
 
-	retval->status = NC_SESSION_STATUS_WORKING;
 
 	return (retval);
 }
@@ -809,7 +811,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 shutdown:
 
 	/* cleanup */
-	nc_session_close(retval);
+	nc_session_close(retval, "Preparation of NETCONF session failed.");
 
 	if (knownhosts_file != NULL) {
 		free(knownhosts_file);

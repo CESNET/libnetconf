@@ -50,8 +50,9 @@
  * Do not use given session structure after this call.
  *
  * @param[in] session Session to close.
+ * @param[in] msg Human readable reason for SSH session disconnection.
  */
-void nc_session_close (struct nc_session* session);
+void nc_session_close (struct nc_session* session, const char* msg);
 
 /**
  * @ingroup session

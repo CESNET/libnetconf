@@ -312,7 +312,7 @@ struct nc_cpblts* nc_session_get_cpblts (const struct nc_session* session)
 	return (session->capabilities);
 }
 
-void nc_session_close (struct nc_session* session)
+void nc_session_close (struct nc_session* session, const char* msg)
 {
 	nc_rpc *rpc_close = NULL;
 	nc_reply *reply = NULL;
@@ -342,7 +342,7 @@ void nc_session_close (struct nc_session* session)
 			libssh2_channel_free (session->ssh_channel);
 		}
 		if (session->ssh_session != NULL) {
-			libssh2_session_disconnect(session->ssh_session, "Initializing NETCONF session failed");
+			libssh2_session_disconnect(session->ssh_session, msg);
 			libssh2_session_free (session->ssh_session);
 		}
 		if (session->hostname != NULL) {
@@ -362,7 +362,6 @@ void nc_session_close (struct nc_session* session)
 		memset (session, 0, sizeof(struct nc_session));
 		free (session);
 	}
-	session->status = NC_SESSION_STATUS_CLOSED;
 }
 
 int nc_session_send (struct nc_session* session, struct nc_msg *msg)
@@ -670,8 +669,12 @@ nc_msgid nc_msg_parse_msgid(struct nc_msg *msg)
 		ret = strtoull((char*) msgid, NULL, 10);
 		xmlFree(msgid);
 	} else {
-		WARN("Missing message-id in %s.", (char*)msg->doc->children->name);
-		ret = 0;
+		if (xmlStrcmp (msg->doc->children->name, BAD_CAST "hello") != 0) {
+			WARN("Missing message-id in %s.", (char*)msg->doc->children->name);
+			ret = 0;
+		} else {
+			ret = (nc_msgid)(-1);
+		}
 	}
 
 	return (ret);
@@ -804,6 +807,8 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 		} else {
 			retval->type.rpc = NC_RPC_UNKNOWN;
 		}
+	} else if (xmlStrcmp (retval->doc->children->name, BAD_CAST "hello") == 0) {
+		/* do nothing, we have <hello> message */
 	} else {
 		WARN("Unknown (unsupported) type of received message detected.");
 		retval->type.rpc = NC_RPC_UNKNOWN;
@@ -888,6 +893,11 @@ nc_msgid nc_session_send_reply (struct nc_session* session, nc_rpc* rpc, nc_repl
 
 	if (rpc == NULL) {
 		ERROR("Invalid <rpc> to reply.");
+		return (0); /* failure */
+	}
+
+	if (reply == NULL) {
+		ERROR("Invalid <reply> message to send.");
 		return (0); /* failure */
 	}
 

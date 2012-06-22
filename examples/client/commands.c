@@ -1317,7 +1317,7 @@ int cmd_disconnect (char* arg)
 	if (session == NULL) {
 		ERROR("disconnect", "not connected to any NETCONF server.");
 	} else {
-		nc_session_close (session);
+		nc_session_close (session, "NETCONF session closed by client");
 		session = NULL;
 	}
 
