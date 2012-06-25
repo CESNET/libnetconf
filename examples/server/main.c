@@ -70,6 +70,7 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
 	NC_RPC_TYPE req_type;
+	NC_OP req_op;
 	struct srv_config *config = (struct srv_config*)arg;
 
 	/* receive incoming message */
@@ -79,20 +80,39 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 
 	/* process it */
 	req_type = nc_rpc_get_type(rpc);
+	req_op = nc_rpc_get_operation(rpc);
 	if (req_type == NC_RPC_SESSION) {
 		/* process operations affectinf session */
-		if (nc_rpc_get_operation(rpc) == NC_OP_CLOSESESSION) {
+		if (req_op == NC_OP_CLOSESESSION) {
 			/* exit the event loop immediately without processing any following request */
 			event_base_loopbreak(config->event_base);
+		} else if (req_op == NC_OP_KILLSESSION) {
+			/* todo: kill the requested session */
 		}
 	} else if (req_type == NC_RPC_DATASTORE) {
+		if (req_op == NC_OP_GETCONFIG) {
+			reply = nc_reply_data("<libnetconf-server xmlns=\"urn:cesnet:tmc:libnetconf-server:0.1\"/>");
+		} else if (req_op == NC_OP_GET) {
+			reply = nc_reply_data("<libnetconf-server xmlns=\"urn:cesnet:tmc:libnetconf-server:0.1\"><version>" VERSION "</version></libnetconf-server>");
+		}
 		/* process operations affecting datastore */
 	} else {
 		/* process other operations */
 	}
 
 	/* create reply */
-	reply = nc_reply_ok();
+	if (reply == NULL) {
+		/*
+		 * Following operations are handled by this answer:
+		 * - edit-config
+		 * - copy-config
+		 * - delete-config
+		 * - lock, unlock
+		 * Mentioned operations will be handled correctly in the future,
+		 * for now, server does not work with any real datastore.
+		 */
+		reply = nc_reply_ok();
+	}
 
 	/* and send the reply to the client */
 	nc_session_send_reply(config->session, rpc, reply);
