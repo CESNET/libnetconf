@@ -774,6 +774,8 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	if (retval->doc == NULL) {
 		free (retval);
 		free (text);
+		ERROR("Invalid XML data received.");
+		return (EXIT_FAILURE);
 	}
 	free (text);
 
