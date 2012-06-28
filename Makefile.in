@@ -70,6 +70,7 @@ TOPDIR = @CONFIGURE_PWD@
 SUBDIRS = @SUBDIRS@
 
 SRCS =  src/callbacks.c \
+	src/error.c \
 	src/internal.c \
 	src/messages.c \
 	src/session.c \
@@ -79,6 +80,7 @@ HDRS_PUBL_ROOT = headers/libnetconf.h
 
 HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/callbacks.h \
+	src/error.h \
 	src/session.h \
 	src/messages.h \
 	src/ssh.h
@@ -89,6 +91,7 @@ SUBHEADERS_DIR = libnetconf
 HDRS_PRIV = src/config.h.in \
 	src/libnetconf.h \
 	src/callbacks.h \
+	src/error.h \
 	src/messages.h \
 	src/messages_internal.h \
 	src/netconf.h \

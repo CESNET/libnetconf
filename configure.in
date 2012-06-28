@@ -116,7 +116,7 @@ esac
 # Check for doxygen
 AC_CHECK_PROG(DOXYGEN, doxygen, doxygen)
 
-# Check for rpmbuil
+# Check for rpmbuild
 AC_CHECK_PROG(RPMBUILD, rpmbuild, rpmbuild)
 
 # Check for standard programs
@@ -187,4 +187,9 @@ if test -z "$RPMBUILD"; then
 	AC_MSG_WARN([Due to missing rpmbuild you will not able to generate RPM package.])
 fi
 
-AC_OUTPUT(Makefile src/config.h examples/client/Makefile examples/server/Makefile libnetconf.spec libnetconf.pc)
+AC_CONFIG_FILES(Makefile src/config.h libnetconf.spec libnetconf.pc)
+if test -n "$SUBDIRS"; then
+	AC_CONFIG_FILES(examples/client/Makefile examples/server/Makefile)
+fi
+
+AC_OUTPUT

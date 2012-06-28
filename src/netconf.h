@@ -116,6 +116,65 @@ typedef enum NC_OP {
 	NC_OP_UNLOCK		/**< \<unlock\> operation */
 } NC_OP;
 
+typedef enum {
+	/**
+	 * error-type - The conceptual layer that the error occurred, accepted
+	 * values include 'transport', 'rpc', 'protocol', 'application'.
+	 */
+	NC_ERR_PARAM_TYPE,
+	/**
+	 * error-tag - Contains a string identifying the error condition.
+	 */
+	NC_ERR_PARAM_TAG,
+	/**
+	 * error-severity - The error severity, accepted values are 'error' and
+	 * 'warning'.
+	 */
+	NC_ERR_PARAM_SEVERITY,
+	/**
+	 * error-app-tag - Contains a string identifying the data-model-specific
+	 * or implementation-specific error condition, if one exists.  This
+	 * element will not be present if no appropriate application error-tag
+	 * can be associated with a particular error condition.  If a
+	 * data-model-specific and an implementation-specific error-app-tag
+	 * both exist, then the data-model-specific value MUST be used by the
+	 * server.
+	 */
+	NC_ERR_PARAM_APPTAG,
+	/**
+	 * error-path - Contains the absolute XPath expression identifying the
+	 * element path to the node that is associated with the error being
+	 * reported.
+	 */
+	NC_ERR_PARAM_PATH,
+	/**
+	 * error-message - A string describing the error.
+	 */
+	NC_ERR_PARAM_MSG,
+	/**
+	 * bad-attribute in error-info - name of the attribute, contained in
+	 * 'bad-attribute', 'missing-attribute' and 'unknown-attribute' errors.
+	 */
+	NC_ERR_PARAM_INFO_BADATTR,
+	/**
+	 * bad-element in error-info - name of the element, contained in
+	 * 'missing-attribute', bad-attribute', 'unknown-attribute',
+	 * 'missing-element', 'bad-element', 'unknown-element' and
+	 * 'unknown-namespace' errors.
+	 */
+	NC_ERR_PARAM_INFO_BADELEM,
+	/**
+	 * bad-namespace in error-info - name of the unexpected namespace,
+	 * contained in 'unknown-namespace' error.
+	 */
+	NC_ERR_PARAM_INFO_BADNS,
+	/**
+	 * session-id in error-info - session ID of session holding the
+	 * requested lock, contained in 'lock-denied' error.
+	 */
+	NC_ERR_PARAM_INFO_SID,
+} NC_ERR_PARAM;
+
 /**
  * @brief Enumeration of supported types of datastores defined by NETCONF
  * @ingroup store
