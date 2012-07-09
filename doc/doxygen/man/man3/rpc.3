@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Fri Jun 22 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Mon Jul 9 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,7 +18,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_RPC_TYPE\fP { \fBNC_RPC_UNKNOWN\fP, \fBNC_RPC_DATASTORE\fP, \fBNC_RPC_SESSION\fP }"
+.RI "enum \fBNC_RPC_TYPE\fP { \fBNC_RPC_UNKNOWN\fP, \fBNC_RPC_HELLO\fP, \fBNC_RPC_DATASTORE\fP, \fBNC_RPC_SESSION\fP }"
 .br
 .RI "\fIEnumeration of <rpc> operation types\&. \fP"
 .ti -1c
@@ -132,13 +132,16 @@ Enumeration of <rpc> operation types\&.
 \fB\fINC_RPC_UNKNOWN \fP\fP
 value describing that no supported operation type was detected so far 
 .TP
+\fB\fINC_RPC_HELLO \fP\fP
+<hello> message type, same as NC_REPLY_HELLO 
+.TP
 \fB\fINC_RPC_DATASTORE \fP\fP
 <rpc> contains operation affecting datastore 
 .TP
 \fB\fINC_RPC_SESSION \fP\fP
 <rpc> contains operation affecting session 
 .PP
-Definition at line 96 of file netconf\&.h\&.
+Definition at line 97 of file netconf\&.h\&.
 .SS "enum \fBNC_OP\fP"
 
 .PP
@@ -177,7 +180,7 @@ unknown/error value
 \fB\fINC_OP_UNLOCK \fP\fP
 <unlock> operation 
 .PP
-Definition at line 106 of file netconf\&.h\&.
+Definition at line 108 of file netconf\&.h\&.
 .SS "enum \fBNC_FILTER_TYPE\fP"
 
 .PP
@@ -189,7 +192,7 @@ Enumeration of supported NETCONF filter types\&.
 \fB\fINC_FILTER_SUBTREE \fP\fP
 NC_FILTER_SUBTREE\&. 
 .PP
-Definition at line 134 of file netconf\&.h\&.
+Definition at line 195 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"

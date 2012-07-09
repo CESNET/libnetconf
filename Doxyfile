@@ -641,6 +641,7 @@ WARN_LOGFILE           =
 INPUT                  = src/libnetconf.h \
                          src/netconf.h \
                          src/callbacks.h \
+                         src/error.h \
                          src/session.h \
                          src/ssh.h \
                          src/messages.h

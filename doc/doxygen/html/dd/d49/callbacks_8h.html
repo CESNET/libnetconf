@@ -126,6 +126,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 Functions</h2></td></tr>
 <tr class="memitem:gadd495650e5d752712e285fd61c87362e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gadd495650e5d752712e285fd61c87362e">nc_callback_print</a> (int(*func)(const char *msg))</td></tr>
 <tr class="memdesc:gadd495650e5d752712e285fd61c87362e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set callback function for printing libnetconf's messages.  <a href="../../d3/d35/group__gen_a_p_i.html#gadd495650e5d752712e285fd61c87362e"></a><br/></td></tr>
+<tr class="memitem:ga771a110143440bcd3b7d4c0e98388e80"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80">nc_callback_error_reply</a> (void(*func)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid))</td></tr>
+<tr class="memdesc:ga771a110143440bcd3b7d4c0e98388e80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set callback function to process (e.g. print) NETCONF &lt;rpc-error&gt; message items.  <a href="../../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80"></a><br/></td></tr>
 <tr class="memitem:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb">nc_callback_sshauth_interactive</a> (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))</td></tr>
 <tr class="memdesc:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set callback function for passing user credentials into libssh2's keyboard-interactive authentication method.  <a href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb"></a><br/></td></tr>
 <tr class="memitem:ga28299d575ef4e234ed96bad5c4f086fb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb">nc_callback_sshauth_password</a> (char *(*func)(const char *username, const char *hostname))</td></tr>
@@ -159,7 +161,7 @@ Functions</h2></td></tr>
       <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a>      </li>
       <li class="navelem"><a class="el" href="../../dd/d49/callbacks_8h.html">callbacks.h</a>      </li>
 
-    <li class="footer">Generated on Fri Jun 22 2012 15:55:16 for libnetconf by
+    <li class="footer">Generated on Mon Jul 9 2012 14:38:12 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

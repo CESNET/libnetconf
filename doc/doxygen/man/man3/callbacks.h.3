@@ -1,4 +1,4 @@
-.TH "src/callbacks.h" 3 "Fri Jun 22 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "src/callbacks.h" 3 "Mon Jul 9 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -19,6 +19,10 @@ Functions to set application's callbacks\&.
 .RI "void \fBnc_callback_print\fP (int(*func)(const char *msg))"
 .br
 .RI "\fISet callback function for printing libnetconf's messages\&. \fP"
+.ti -1c
+.RI "void \fBnc_callback_error_reply\fP (void(*func)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid))"
+.br
+.RI "\fISet callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fP"
 .ti -1c
 .RI "void \fBnc_callback_sshauth_interactive\fP (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))"
 .br

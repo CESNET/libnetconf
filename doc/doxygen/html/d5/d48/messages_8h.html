@@ -119,6 +119,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <p>Functions to create NETCONF messages.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="../../da/d41/error_8h_source.html">error.h</a>&quot;</code><br/>
 </div>
 <p><a href="../../d5/d48/messages_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -142,8 +143,6 @@ Functions</h2></td></tr>
 <tr class="memdesc:gab12cdef82337060c425348dada7fe983"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get type of the rpc-reply message.  <a href="../../d0/de2/group__reply.html#gab12cdef82337060c425348dada7fe983"></a><br/></td></tr>
 <tr class="memitem:gaac62fb3d427985311cf71a2c3ab8d424"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gaac62fb3d427985311cf71a2c3ab8d424">nc_reply_get_data</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:gaac62fb3d427985311cf71a2c3ab8d424"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get content of the &lt;data&gt; element in &lt;rpc-reply&gt;.  <a href="../../d0/de2/group__reply.html#gaac62fb3d427985311cf71a2c3ab8d424"></a><br/></td></tr>
-<tr class="memitem:ga22b65c37e45e27e9bd375f9bc5ad8891"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga22b65c37e45e27e9bd375f9bc5ad8891">nc_reply_get_errormsg</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
-<tr class="memdesc:ga22b65c37e45e27e9bd375f9bc5ad8891"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get &lt;error-message&gt; string of &lt;rpc-error&gt;  <a href="../../d0/de2/group__reply.html#ga22b65c37e45e27e9bd375f9bc5ad8891"></a><br/></td></tr>
 <tr class="memitem:ga4041bda37caa9eedb7a1e2534280f3df"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga4041bda37caa9eedb7a1e2534280f3df">nc_rpc_free</a> (<a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:ga4041bda37caa9eedb7a1e2534280f3df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free rpc message.  <a href="../../db/de9/group__rpc.html#ga4041bda37caa9eedb7a1e2534280f3df"></a><br/></td></tr>
 <tr class="memitem:ga17aa9f38d7b75dec1a57b478b0b39710"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga17aa9f38d7b75dec1a57b478b0b39710">nc_reply_free</a> (<a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
@@ -152,6 +151,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga4789f8372e5f2676236ddb0e6eeb8bb4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;ok&gt; rpc-reply response.  <a href="../../d0/de2/group__reply.html#ga4789f8372e5f2676236ddb0e6eeb8bb4"></a><br/></td></tr>
 <tr class="memitem:ga4543351c89208bb06fa895be334d59ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga4543351c89208bb06fa895be334d59ad">nc_reply_data</a> (const char *data)</td></tr>
 <tr class="memdesc:ga4543351c89208bb06fa895be334d59ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create rpc-reply response with &lt;data&gt; content.  <a href="../../d0/de2/group__reply.html#ga4543351c89208bb06fa895be334d59ad"></a><br/></td></tr>
+<tr class="memitem:ga8e8fc5f277a171839dade4669480616a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga8e8fc5f277a171839dade4669480616a">nc_reply_error</a> (const struct nc_err *error)</td></tr>
+<tr class="memdesc:ga8e8fc5f277a171839dade4669480616a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create rpc-reply response with &lt;drpc-error&gt; content.  <a href="../../d0/de2/group__reply.html#ga8e8fc5f277a171839dade4669480616a"></a><br/></td></tr>
 <tr class="memitem:gaf4f288c246a0f379f3e65faa98bff299"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaf4f288c246a0f379f3e65faa98bff299">nc_rpc_copyconfig</a> (<a class="el" href="../../db/d67/group__store.html#gac1d3986b5d4d3faee9e4a91c465a5fd2">NC_DATASTORE_TYPE</a> source, <a class="el" href="../../db/d67/group__store.html#gac1d3986b5d4d3faee9e4a91c465a5fd2">NC_DATASTORE_TYPE</a> target, const char *data)</td></tr>
 <tr class="memdesc:gaf4f288c246a0f379f3e65faa98bff299"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;copy-config&gt; NETCONF rpc message.  <a href="../../db/de9/group__rpc.html#gaf4f288c246a0f379f3e65faa98bff299"></a><br/></td></tr>
 <tr class="memitem:gac3f7d54dda784b74330df4cd563be127"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gac3f7d54dda784b74330df4cd563be127">nc_rpc_deleteconfig</a> (<a class="el" href="../../db/d67/group__store.html#gac1d3986b5d4d3faee9e4a91c465a5fd2">NC_DATASTORE_TYPE</a> target)</td></tr>
@@ -191,7 +192,7 @@ Functions</h2></td></tr>
       <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a>      </li>
       <li class="navelem"><a class="el" href="../../d5/d48/messages_8h.html">messages.h</a>      </li>
 
-    <li class="footer">Generated on Fri Jun 22 2012 15:55:16 for libnetconf by
+    <li class="footer">Generated on Mon Jul 9 2012 14:38:12 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

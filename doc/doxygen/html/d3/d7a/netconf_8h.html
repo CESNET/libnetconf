@@ -133,13 +133,18 @@ Typedefs</h2></td></tr>
 <tr class="memdesc:ga076533ff0185f0be79fa9edbed22e0b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type representing NETCONF message-id attribute.  <a href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7"></a><br/></td></tr>
 <tr><td colspan="2"><h2><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:gad31ee5df47d5671ebdf1b06f785e6c29"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29">NC_REPLY_TYPE</a> { <a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa4e871d4592173b6fff7a8d4815c8e29">NC_REPLY_UNKNOWN</a>, 
+<tr class="memitem:gad31ee5df47d5671ebdf1b06f785e6c29"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29">NC_REPLY_TYPE</a> { <br/>
+&#160;&#160;<a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa4e871d4592173b6fff7a8d4815c8e29">NC_REPLY_UNKNOWN</a>, 
+<a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29a6d190ad4c3f0ecbaab7956227e606d27">NC_REPLY_HELLO</a>, 
 <a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29ac65f86e9af3940dc910231afd07a70cf">NC_REPLY_OK</a>, 
 <a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa47af543410586d8da28f02f099abce0">NC_REPLY_ERROR</a>, 
-<a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29acf47a744ed6a6b613d63f4a77aa7135e">NC_REPLY_DATA</a>
+<br/>
+&#160;&#160;<a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29acf47a744ed6a6b613d63f4a77aa7135e">NC_REPLY_DATA</a>
+<br/>
  }</td></tr>
 <tr class="memdesc:gad31ee5df47d5671ebdf1b06f785e6c29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of &lt;rpc-reply&gt; types.  <a href="../../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29">More...</a><br/></td></tr>
 <tr class="memitem:ga4088fac1dd592062b27ff5b0e1708d00"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00">NC_RPC_TYPE</a> { <a class="el" href="../../db/de9/group__rpc.html#gga4088fac1dd592062b27ff5b0e1708d00ae27a06c29d4cb56cce4298bc54dc498a">NC_RPC_UNKNOWN</a>, 
+<a class="el" href="../../db/de9/group__rpc.html#gga4088fac1dd592062b27ff5b0e1708d00a4c352cf3bf15069fc76e4ac698de0a8c">NC_RPC_HELLO</a>, 
 <a class="el" href="../../db/de9/group__rpc.html#gga4088fac1dd592062b27ff5b0e1708d00a2a62597b6976691af64ce12529b83c30">NC_RPC_DATASTORE</a>, 
 <a class="el" href="../../db/de9/group__rpc.html#gga4088fac1dd592062b27ff5b0e1708d00aa7e77d1cd094384f2683352c63a4fccb">NC_RPC_SESSION</a>
  }</td></tr>
@@ -160,6 +165,21 @@ Enumerations</h2></td></tr>
 <br/>
  }</td></tr>
 <tr class="memdesc:ga3e6fc59e2d06c1c0edb36ee64ee9cc07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported &lt;rpc&gt; operations.  <a href="../../db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07">More...</a><br/></td></tr>
+<tr class="memitem:a39c5f77f5cf9108a27e7a65f3b2ba73d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73d">NC_ERR_PARAM</a> { <br/>
+&#160;&#160;<a class="el" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73daa777fcc6abf46387ccbf73ce7b1cdabc">NC_ERR_PARAM_TYPE</a>, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73da9388fec5282d00e26142e16dab1200ba">NC_ERR_PARAM_TAG</a>, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73daeefe8ec3bdedcb2d7a151797054caba8">NC_ERR_PARAM_SEVERITY</a>, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73da957ee42cbef93b50bccb99973e5e66a2">NC_ERR_PARAM_APPTAG</a>, 
+<br/>
+&#160;&#160;<a class="el" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73da8f99385b8d5f3bb2a731b1d3c293fddc">NC_ERR_PARAM_PATH</a>, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73da1695230cad67458870f4cf93a2d530a5">NC_ERR_PARAM_MSG</a>, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73da7627991d5ebf378bc4824541a1fdc975">NC_ERR_PARAM_INFO_BADATTR</a>, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73dab456dd34c6e5fc0ced9b017d7543ba2c">NC_ERR_PARAM_INFO_BADELEM</a>, 
+<br/>
+&#160;&#160;<a class="el" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73dad9e65dbfdcddfa9321c9ff8993e02906">NC_ERR_PARAM_INFO_BADNS</a>, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73da655a0142f1874a7b03d73caf6cd6164f">NC_ERR_PARAM_INFO_SID</a>
+<br/>
+ }</td></tr>
 <tr class="memitem:gac1d3986b5d4d3faee9e4a91c465a5fd2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gac1d3986b5d4d3faee9e4a91c465a5fd2">NC_DATASTORE_TYPE</a> { <a class="el" href="../../db/d67/group__store.html#ggac1d3986b5d4d3faee9e4a91c465a5fd2ab1ee236a888fcffc100ec13b21c51ff1">NC_DATASTORE_NONE</a>, 
 <a class="el" href="../../db/d67/group__store.html#ggac1d3986b5d4d3faee9e4a91c465a5fd2a431a59cb5a2f00f50ab887ee0931156a">NC_DATASTORE_RUNNING</a>, 
 <a class="el" href="../../db/d67/group__store.html#ggac1d3986b5d4d3faee9e4a91c465a5fd2ab0fb14c1d3e587701536c288520d945b">NC_DATASTORE_STARTUP</a>, 
@@ -212,6 +232,54 @@ Functions</h2></td></tr>
 
 <p>Definition in file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 </div><hr/><h2>Enumeration Type Documentation</h2>
+<a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73d">NC_ERR_PARAM</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73daa777fcc6abf46387ccbf73ce7b1cdabc"></a>NC_ERR_PARAM_TYPE</em>&nbsp;</td><td>
+<p>error-type - The conceptual layer that the error occurred, accepted values include 'transport', 'rpc', 'protocol', 'application'. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73da9388fec5282d00e26142e16dab1200ba"></a>NC_ERR_PARAM_TAG</em>&nbsp;</td><td>
+<p>error-tag - Contains a string identifying the error condition. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73daeefe8ec3bdedcb2d7a151797054caba8"></a>NC_ERR_PARAM_SEVERITY</em>&nbsp;</td><td>
+<p>error-severity - The error severity, accepted values are 'error' and 'warning'. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73da957ee42cbef93b50bccb99973e5e66a2"></a>NC_ERR_PARAM_APPTAG</em>&nbsp;</td><td>
+<p>error-app-tag - Contains a string identifying the data-model-specific or implementation-specific error condition, if one exists. This element will not be present if no appropriate application error-tag can be associated with a particular error condition. If a data-model-specific and an implementation-specific error-app-tag both exist, then the data-model-specific value MUST be used by the server. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73da8f99385b8d5f3bb2a731b1d3c293fddc"></a>NC_ERR_PARAM_PATH</em>&nbsp;</td><td>
+<p>error-path - Contains the absolute XPath expression identifying the element path to the node that is associated with the error being reported. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73da1695230cad67458870f4cf93a2d530a5"></a>NC_ERR_PARAM_MSG</em>&nbsp;</td><td>
+<p>error-message - A string describing the error. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73da7627991d5ebf378bc4824541a1fdc975"></a>NC_ERR_PARAM_INFO_BADATTR</em>&nbsp;</td><td>
+<p>bad-attribute in error-info - name of the attribute, contained in 'bad-attribute', 'missing-attribute' and 'unknown-attribute' errors. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73dab456dd34c6e5fc0ced9b017d7543ba2c"></a>NC_ERR_PARAM_INFO_BADELEM</em>&nbsp;</td><td>
+<p>bad-element in error-info - name of the element, contained in 'missing-attribute', bad-attribute', 'unknown-attribute', 'missing-element', 'bad-element', 'unknown-element' and 'unknown-namespace' errors. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73dad9e65dbfdcddfa9321c9ff8993e02906"></a>NC_ERR_PARAM_INFO_BADNS</em>&nbsp;</td><td>
+<p>bad-namespace in error-info - name of the unexpected namespace, contained in 'unknown-namespace' error. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73da655a0142f1874a7b03d73caf6cd6164f"></a>NC_ERR_PARAM_INFO_SID</em>&nbsp;</td><td>
+<p>session-id in error-info - session ID of session holding the requested lock, contained in 'lock-denied' error. </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00121">121</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="aff232fd4280e385c8e45fcca033e58fd"></a>
 <div class="memitem">
 <div class="memproto">
@@ -238,7 +306,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00139">139</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00200">200</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -262,7 +330,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00149">149</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00210">210</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -286,7 +354,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00155">155</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00216">216</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -297,7 +365,7 @@ Functions</h2></td></tr>
       <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a>      </li>
       <li class="navelem"><a class="el" href="../../d3/d7a/netconf_8h.html">netconf.h</a>      </li>
 
-    <li class="footer">Generated on Fri Jun 22 2012 15:55:16 for libnetconf by
+    <li class="footer">Generated on Mon Jul 9 2012 14:38:12 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

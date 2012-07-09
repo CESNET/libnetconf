@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Fri Jun 22 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Mon Jul 9 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,13 +18,17 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_REPLY_TYPE\fP { \fBNC_REPLY_UNKNOWN\fP, \fBNC_REPLY_OK\fP, \fBNC_REPLY_ERROR\fP, \fBNC_REPLY_DATA\fP }"
+.RI "enum \fBNC_REPLY_TYPE\fP { \fBNC_REPLY_UNKNOWN\fP, \fBNC_REPLY_HELLO\fP, \fBNC_REPLY_OK\fP, \fBNC_REPLY_ERROR\fP, \fBNC_REPLY_DATA\fP }"
 .br
 .RI "\fIEnumeration of <rpc-reply> types\&. \fP"
 .in -1c
 .SS "Functions"
 
 .in +1c
+.ti -1c
+.RI "void \fBnc_callback_error_reply\fP (void(*func)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid))"
+.br
+.RI "\fISet callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fP"
 .ti -1c
 .RI "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, \fBnc_rpc\fP *rpc, \fBnc_reply\fP *reply)"
 .br
@@ -50,10 +54,6 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .br
 .RI "\fIGet content of the <data> element in <rpc-reply>\&. \fP"
 .ti -1c
-.RI "char * \fBnc_reply_get_errormsg\fP (const \fBnc_reply\fP *reply)"
-.br
-.RI "\fIGet <error-message> string of <rpc-error> \fP"
-.ti -1c
 .RI "void \fBnc_reply_free\fP (\fBnc_reply\fP *reply)"
 .br
 .RI "\fIFree reply message\&. \fP"
@@ -65,6 +65,10 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .RI "\fBnc_reply\fP * \fBnc_reply_data\fP (const char *data)"
 .br
 .RI "\fICreate rpc-reply response with <data> content\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBnc_reply_error\fP (const struct nc_err *error)"
+.br
+.RI "\fICreate rpc-reply response with <drpc-error> content\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -92,6 +96,9 @@ Enumeration of <rpc-reply> types\&.
 \fB\fINC_REPLY_UNKNOWN \fP\fP
 value describing that no rpc-reply type was detected so far 
 .TP
+\fB\fINC_REPLY_HELLO \fP\fP
+<hello> message type, same as NC_RPC_HELLO 
+.TP
 \fB\fINC_REPLY_OK \fP\fP
 <ok> rpc-reply message type 
 .TP
@@ -104,6 +111,36 @@ rpc-reply message containing <data>
 Definition at line 85 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
+.SS "void \fBnc_callback_error_reply\fP (void(*)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid)func)"
+
+.PP
+Set callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fBParameters:\fP
+.RS 4
+\fIfunc\fP Callback function to use\&. Passed parameters are:
+.IP "\(bu" 2
+tag - error tag,
+.IP "\(bu" 2
+type - error layer where the error occurred,
+.IP "\(bu" 2
+severity - error severity,
+.IP "\(bu" 2
+apptag - the data-model-specific or implementation-specific error condition, if one exists,
+.IP "\(bu" 2
+path - XPATH expression identifying element with error,
+.IP "\(bu" 2
+message - human description of the error,
+.IP "\(bu" 2
+attribute - name of the data-model-specific XML attribute that caused the error,
+.IP "\(bu" 2
+element - name of the data-model-specific XML element that caused the error,
+.IP "\(bu" 2
+ns - name of the unexpected XML namespace that caused the error,
+.IP "\(bu" 2
+sid - session ID of session holding requested lock\&. 
+.PP
+.RE
+.PP
+
 .SS "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, \fBnc_rpc\fP *rpc, \fBnc_reply\fP *reply)"
 
 .PP
@@ -200,22 +237,6 @@ String with the content of the <data> element\&.
 .RE
 .PP
 
-.SS "char* \fBnc_reply_get_errormsg\fP (const \fBnc_reply\fP *reply)"
-
-.PP
-Get <error-message> string of <rpc-error> This function can be used only on nc_reply with NC_REPLY_ERROR type, that can be checked by \fBnc_reply_get_type()\fP\&.
-.PP
-\fBParameters:\fP
-.RS 4
-\fIreply\fP rpc-reply of NC_REPLY_ERROR type 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-error-message string or NULL on error\&. 
-.RE
-.PP
-
 .SS "void \fBnc_reply_free\fP (\fBnc_reply\fP *reply)"
 
 .PP
@@ -238,6 +259,20 @@ Created <rpc-reply> message\&.
 
 .PP
 Create rpc-reply response with <data> content\&. \fBReturns:\fP
+.RS 4
+Created <rpc-reply> message\&. 
+.RE
+.PP
+
+.SS "\fBnc_reply\fP* \fBnc_reply_error\fP (const struct nc_err *error)"
+
+.PP
+Create rpc-reply response with <drpc-error> content\&. \fBParameters:\fP
+.RS 4
+\fIerror\fP NETCONF error description structure for reply message\&. 
+.RE
+.PP
+\fBReturns:\fP
 .RS 4
 Created <rpc-reply> message\&. 
 .RE

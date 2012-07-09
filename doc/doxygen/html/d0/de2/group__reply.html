@@ -121,14 +121,20 @@ Typedefs</h2></td></tr>
 <tr class="memdesc:ga40338a1274759a932a7c2c7b8ed0121d"><td class="mdescLeft">&#160;</td><td class="mdescRight">reply message.  <a href="#ga40338a1274759a932a7c2c7b8ed0121d"></a><br/></td></tr>
 <tr><td colspan="2"><h2><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:gad31ee5df47d5671ebdf1b06f785e6c29"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29">NC_REPLY_TYPE</a> { <a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa4e871d4592173b6fff7a8d4815c8e29">NC_REPLY_UNKNOWN</a>, 
+<tr class="memitem:gad31ee5df47d5671ebdf1b06f785e6c29"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29">NC_REPLY_TYPE</a> { <br/>
+&#160;&#160;<a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa4e871d4592173b6fff7a8d4815c8e29">NC_REPLY_UNKNOWN</a>, 
+<a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29a6d190ad4c3f0ecbaab7956227e606d27">NC_REPLY_HELLO</a>, 
 <a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29ac65f86e9af3940dc910231afd07a70cf">NC_REPLY_OK</a>, 
 <a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa47af543410586d8da28f02f099abce0">NC_REPLY_ERROR</a>, 
-<a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29acf47a744ed6a6b613d63f4a77aa7135e">NC_REPLY_DATA</a>
+<br/>
+&#160;&#160;<a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29acf47a744ed6a6b613d63f4a77aa7135e">NC_REPLY_DATA</a>
+<br/>
  }</td></tr>
 <tr class="memdesc:gad31ee5df47d5671ebdf1b06f785e6c29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of &lt;rpc-reply&gt; types.  <a href="../../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29">More...</a><br/></td></tr>
 <tr><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ga771a110143440bcd3b7d4c0e98388e80"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80">nc_callback_error_reply</a> (void(*func)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid))</td></tr>
+<tr class="memdesc:ga771a110143440bcd3b7d4c0e98388e80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set callback function to process (e.g. print) NETCONF &lt;rpc-error&gt; message items.  <a href="#ga771a110143440bcd3b7d4c0e98388e80"></a><br/></td></tr>
 <tr class="memitem:ga87af88fde9cef4913c78855056b51804"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga87af88fde9cef4913c78855056b51804">nc_session_send_reply</a> (struct nc_session *session, <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:ga87af88fde9cef4913c78855056b51804"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc-reply&gt; response via specified NETCONF session. This function is supposed to be performed only by NETCONF servers.  <a href="#ga87af88fde9cef4913c78855056b51804"></a><br/></td></tr>
 <tr class="memitem:ga53fec7353656b7e9c7ca4742149dced0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga53fec7353656b7e9c7ca4742149dced0">nc_session_recv_reply</a> (struct nc_session *session, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> **reply)</td></tr>
@@ -141,14 +147,14 @@ Functions</h2></td></tr>
 <tr class="memdesc:gab12cdef82337060c425348dada7fe983"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get type of the rpc-reply message.  <a href="#gab12cdef82337060c425348dada7fe983"></a><br/></td></tr>
 <tr class="memitem:gaac62fb3d427985311cf71a2c3ab8d424"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gaac62fb3d427985311cf71a2c3ab8d424">nc_reply_get_data</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:gaac62fb3d427985311cf71a2c3ab8d424"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get content of the &lt;data&gt; element in &lt;rpc-reply&gt;.  <a href="#gaac62fb3d427985311cf71a2c3ab8d424"></a><br/></td></tr>
-<tr class="memitem:ga22b65c37e45e27e9bd375f9bc5ad8891"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga22b65c37e45e27e9bd375f9bc5ad8891">nc_reply_get_errormsg</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
-<tr class="memdesc:ga22b65c37e45e27e9bd375f9bc5ad8891"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get &lt;error-message&gt; string of &lt;rpc-error&gt;  <a href="#ga22b65c37e45e27e9bd375f9bc5ad8891"></a><br/></td></tr>
 <tr class="memitem:ga17aa9f38d7b75dec1a57b478b0b39710"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga17aa9f38d7b75dec1a57b478b0b39710">nc_reply_free</a> (<a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:ga17aa9f38d7b75dec1a57b478b0b39710"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free reply message.  <a href="#ga17aa9f38d7b75dec1a57b478b0b39710"></a><br/></td></tr>
 <tr class="memitem:ga4789f8372e5f2676236ddb0e6eeb8bb4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga4789f8372e5f2676236ddb0e6eeb8bb4">nc_reply_ok</a> ()</td></tr>
 <tr class="memdesc:ga4789f8372e5f2676236ddb0e6eeb8bb4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;ok&gt; rpc-reply response.  <a href="#ga4789f8372e5f2676236ddb0e6eeb8bb4"></a><br/></td></tr>
 <tr class="memitem:ga4543351c89208bb06fa895be334d59ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga4543351c89208bb06fa895be334d59ad">nc_reply_data</a> (const char *data)</td></tr>
 <tr class="memdesc:ga4543351c89208bb06fa895be334d59ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create rpc-reply response with &lt;data&gt; content.  <a href="#ga4543351c89208bb06fa895be334d59ad"></a><br/></td></tr>
+<tr class="memitem:ga8e8fc5f277a171839dade4669480616a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga8e8fc5f277a171839dade4669480616a">nc_reply_error</a> (const struct nc_err *error)</td></tr>
+<tr class="memdesc:ga8e8fc5f277a171839dade4669480616a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create rpc-reply response with &lt;drpc-error&gt; content.  <a href="#ga8e8fc5f277a171839dade4669480616a"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's functions for handling NETCONF &lt;rpc-reply&gt; messages. </p>
@@ -185,6 +191,9 @@ Functions</h2></td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggad31ee5df47d5671ebdf1b06f785e6c29aa4e871d4592173b6fff7a8d4815c8e29"></a>NC_REPLY_UNKNOWN</em>&nbsp;</td><td>
 <p>value describing that no rpc-reply type was detected so far </p>
 </td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggad31ee5df47d5671ebdf1b06f785e6c29a6d190ad4c3f0ecbaab7956227e606d27"></a>NC_REPLY_HELLO</em>&nbsp;</td><td>
+<p>&lt;hello&gt; message type, same as NC_RPC_HELLO </p>
+</td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggad31ee5df47d5671ebdf1b06f785e6c29ac65f86e9af3940dc910231afd07a70cf"></a>NC_REPLY_OK</em>&nbsp;</td><td>
 <p>&lt;ok&gt; rpc-reply message type </p>
 </td></tr>
@@ -203,6 +212,42 @@ Functions</h2></td></tr>
 </div>
 </div>
 <hr/><h2>Function Documentation</h2>
+<a class="anchor" id="ga771a110143440bcd3b7d4c0e98388e80"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="../../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80">nc_callback_error_reply</a> </td>
+          <td>(</td>
+          <td class="paramtype">void(*)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid)&#160;</td>
+          <td class="paramname"><em>func</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set callback function to process (e.g. print) NETCONF &lt;rpc-error&gt; message items. </p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. Passed parameters are:<ul>
+<li>tag - error tag,</li>
+<li>type - error layer where the error occurred,</li>
+<li>severity - error severity,</li>
+<li>apptag - the data-model-specific or implementation-specific error condition, if one exists,</li>
+<li>path - XPATH expression identifying element with error,</li>
+<li>message - human description of the error,</li>
+<li>attribute - name of the data-model-specific XML attribute that caused the error,</li>
+<li>element - name of the data-model-specific XML element that caused the error,</li>
+<li>ns - name of the unexpected XML namespace that caused the error,</li>
+<li>sid - session ID of session holding requested lock. </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga87af88fde9cef4913c78855056b51804"></a>
 <div class="memitem">
 <div class="memproto">
@@ -385,32 +430,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga22b65c37e45e27e9bd375f9bc5ad8891"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">char* <a class="el" href="../../d0/de2/group__reply.html#ga22b65c37e45e27e9bd375f9bc5ad8891">nc_reply_get_errormsg</a> </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td>
-          <td class="paramname"><em>reply</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Get &lt;error-message&gt; string of &lt;rpc-error&gt; </p>
-<p>This function can be used only on nc_reply with NC_REPLY_ERROR type, that can be checked by <a class="el" href="../../d0/de2/group__reply.html#gab12cdef82337060c425348dada7fe983" title="Get type of the rpc-reply message.">nc_reply_get_type()</a>.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">reply</td><td>rpc-reply of NC_REPLY_ERROR type </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns:</dt><dd>error-message string or NULL on error. </dd></dl>
-
-</div>
-</div>
 <a class="anchor" id="ga17aa9f38d7b75dec1a57b478b0b39710"></a>
 <div class="memitem">
 <div class="memproto">
@@ -472,12 +491,37 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga8e8fc5f277a171839dade4669480616a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* <a class="el" href="../../d0/de2/group__reply.html#ga8e8fc5f277a171839dade4669480616a">nc_reply_error</a> </td>
+          <td>(</td>
+          <td class="paramtype">const struct nc_err *&#160;</td>
+          <td class="paramname"><em>error</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create rpc-reply response with &lt;drpc-error&gt; content. </p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">error</td><td>NETCONF error description structure for reply message. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>Created &lt;rpc-reply&gt; message. </dd></dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Fri Jun 22 2012 15:55:16 for libnetconf by
+    <li class="footer">Generated on Mon Jul 9 2012 14:38:13 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

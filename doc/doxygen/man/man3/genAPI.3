@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Fri Jun 22 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Mon Jul 9 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -25,6 +25,26 @@ libnetconf's miscellaneous functions\&.
 .RI "void \fBnc_callback_print\fP (int(*func)(const char *msg))"
 .br
 .RI "\fISet callback function for printing libnetconf's messages\&. \fP"
+.ti -1c
+.RI "struct nc_err * \fBnc_err_new\fP (\fBNC_ERR\fP error)"
+.br
+.RI "\fICreate new error description structure\&. \fP"
+.ti -1c
+.RI "struct nc_err * \fBnc_err_dup\fP (const struct nc_err *error)"
+.br
+.RI "\fIDuplicate error description structure\&. \fP"
+.ti -1c
+.RI "void \fBnc_err_free\fP (struct nc_err *err)"
+.br
+.RI "\fIFree NETCONF error structure\&. \fP"
+.ti -1c
+.RI "int \fBnc_err_set\fP (struct nc_err *err, \fBNC_ERR_PARAM\fP param, char *value)"
+.br
+.RI "\fISet selected parameter of the NETCONF error structure to the specified value\&. \fP"
+.ti -1c
+.RI "char * \fBnc_err_get\fP (struct nc_err *err, \fBNC_ERR_PARAM\fP param)"
+.br
+.RI "\fIGet value of the specified parameter of the NETCONF error structure\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -53,7 +73,7 @@ Besides errors and warnings, print some other verbose messages\&.
 \fB\fINC_VERB_DEBUG \fP\fP
 Print all messages including some development debug messages\&. 
 .PP
-Definition at line 165 of file netconf\&.h\&.
+Definition at line 226 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "void \fBnc_verbosity\fP (\fBNC_VERB_LEVEL\fPlevel)"
@@ -71,6 +91,79 @@ Set libnetconf's verbosity level\&. \fBParameters:\fP
 Set callback function for printing libnetconf's messages\&. \fBParameters:\fP
 .RS 4
 \fIfunc\fP Callback function to use\&. 
+.RE
+.PP
+
+.SS "struct nc_err* \fBnc_err_new\fP (\fBNC_ERR\fPerror)\fC [read]\fP"
+
+.PP
+Create new error description structure\&. \fBParameters:\fP
+.RS 4
+\fIerror\fP Predefined NETCONF error (according to RFC 6241 Appendix A)\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Created NETCONF error structure on success, NULL on error\&. 
+.RE
+.PP
+
+.SS "struct nc_err* \fBnc_err_dup\fP (const struct nc_err *error)\fC [read]\fP"
+
+.PP
+Duplicate error description structure\&. \fBParameters:\fP
+.RS 4
+\fIerror\fP Existing NETCONF error description structure to be duplicated\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Duplicated NETCONF error structure on success, NULL on error\&. 
+.RE
+.PP
+
+.SS "void \fBnc_err_free\fP (struct nc_err *err)"
+
+.PP
+Free NETCONF error structure\&. \fBParameters:\fP
+.RS 4
+\fIerr\fP NETCONF error structure to free\&. 
+.RE
+.PP
+
+.SS "int \fBnc_err_set\fP (struct nc_err *err, \fBNC_ERR_PARAM\fPparam, char *value)"
+
+.PP
+Set selected parameter of the NETCONF error structure to the specified value\&. \fBParameters:\fP
+.RS 4
+\fIerr\fP NETCONF error structure to be modified\&. 
+.br
+\fIparam\fP NETCONF error structure's parameter to be modified\&. 
+.br
+\fIvalue\fP New value for the specified parameter\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success
+.br
+ non-zero on error 
+.RE
+.PP
+
+.SS "char* \fBnc_err_get\fP (struct nc_err *err, \fBNC_ERR_PARAM\fPparam)"
+
+.PP
+Get value of the specified parameter of the NETCONF error structure\&. \fBParameters:\fP
+.RS 4
+\fIerr\fP NETCONF error structure from which the value will be read\&. 
+.br
+\fIparam\fP NETCONF error structure's parameter to be returned\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+String value of the requested parameter, caller is supposed to free the data\&. 
 .RE
 .PP
 
