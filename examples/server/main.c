@@ -73,6 +73,8 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 	NC_OP req_op;
 	struct srv_config *config = (struct srv_config*)arg;
 
+	struct nc_err *err;
+
 	/* receive incoming message */
 	if (nc_session_recv_rpc(config->session, &rpc) == 0) {
 		return;
@@ -88,6 +90,9 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 			event_base_loopbreak(config->event_base);
 		} else if (req_op == NC_OP_KILLSESSION) {
 			/* todo: kill the requested session */
+			err = nc_err_new(NC_ERR_OP_NOT_SUPPORTED);
+			reply = nc_reply_error(err);
+			nc_err_free(err);
 		}
 	} else if (req_type == NC_RPC_DATASTORE) {
 		if (req_op == NC_OP_GETCONFIG) {

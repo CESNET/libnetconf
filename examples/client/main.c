@@ -18,6 +18,20 @@ int clb_print(const char* msg)
 	return (fprintf(stderr, "libnetconf: %s\n", msg));
 }
 
+void clb_error_print(const char* tag,
+		const char* type,
+		const char* severity,
+		const char* apptag,
+		const char* path,
+		const char* message,
+		const char* attribute,
+		const char* element,
+		const char* ns,
+		const char* sid)
+{
+	fprintf(stderr, "NETCONF %s: %s (%s) - %s\n", severity, tag, type, message);
+}
+
 void print_version()
 {
 	fprintf(stdout, "libnetconf client version: %s\n", VERSION);
@@ -36,6 +50,7 @@ int main(int argc, char *argv[])
 	/* set verbosity and function to print libnetconf's messages */
 	nc_verbosity(NC_VERB_WARNING);
 	nc_callback_print(clb_print);
+	nc_callback_error_reply(clb_error_print);
 
 	/* disable publickey authentication */
 	nc_ssh_pref(NC_SSH_AUTH_PUBLIC_KEYS, -1);

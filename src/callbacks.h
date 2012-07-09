@@ -50,6 +50,32 @@
 void nc_callback_print(int (*func)(const char* msg));
 
 /**
+ * @brief Set callback function to process (e.g. print) NETCONF \<rpc-error\> message items.
+ * @ingroup reply
+ * @param[in] func Callback function to use. Passed parameters are:
+ * - tag - error tag,
+ * - type - error layer where the error occurred,
+ * - severity - error severity,
+ * - apptag - the data-model-specific or implementation-specific error condition, if one exists,
+ * - path - XPATH expression identifying element with error,
+ * - message - human description of the error,
+ * - attribute - name of the data-model-specific XML attribute that caused the error,
+ * - element - name of the data-model-specific XML element that caused the error,
+ * - ns - name of the unexpected XML namespace that caused the error,
+ * - sid - session ID of session holding requested lock.
+ */
+void nc_callback_error_reply(void (*func)(const char* tag,
+		const char* type,
+		const char* severity,
+		const char* apptag,
+		const char* path,
+		const char* message,
+		const char* attribute,
+		const char* element,
+		const char* ns,
+		const char* sid));
+
+/**
  * @brief Set callback function for passing user credentials into libssh2's
  * keyboard-interactive authentication method
  * @ingroup session

@@ -1,7 +1,7 @@
 /**
  * \file error.h
- * \author <name> <email>
- * \brief <Idea of what it does>
+ * \author Radek Krejci <rkrejci@cesnet.cz>
+ * \brief NETCONF error handling functions.
  *
  * Copyright (C) 2012 CESNET, z.s.p.o.
  *
@@ -74,10 +74,18 @@ typedef enum {
 /**
  * @ingroup genAPI
  * @brief Create new error description structure.
- * @param error Predefined NETCONF error (according to RFC 6241 Appendix A).
- * @return Created error structure on success, NULL on error.
+ * @param[in] error Predefined NETCONF error (according to RFC 6241 Appendix A).
+ * @return Created NETCONF error structure on success, NULL on error.
  */
 struct nc_err* nc_err_new(NC_ERR error);
+
+/**
+ * @ingroup genAPI
+ * @brief Duplicate error description structure.
+ * @param[in] error Existing NETCONF error description structure to be duplicated.
+ * @return Duplicated NETCONF error structure on success, NULL on error.
+ */
+struct nc_err* nc_err_dup(const struct nc_err* error);
 
 /**
  * @ingroup genAPI

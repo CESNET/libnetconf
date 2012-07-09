@@ -119,6 +119,17 @@ extern int verbose_level;
 struct callbacks {
 	/**< @brief Message printing function, if not set, messages are suppressed */
 	int (*print)(const char* msg);
+	/**< @brief Function processing \<rpc-error\> replies on a client side. If no callback function is set, error details are ignored */
+	void (*process_error_reply)(const char* tag,
+			const char* type,
+			const char* severity,
+			const char* apptag,
+			const char* path,
+			const char* message,
+			const char* attribute,
+			const char* element,
+			const char* ns,
+			const char* sid);
 	/**< @brief Callback for libssh2's 'keyboard-interactive' authentication method */
 	void (*sshauth_interactive)(const char* name,
 			int name_len,
@@ -191,6 +202,80 @@ struct nc_session {
 };
 
 /**
+ * @brief NETCONF error structure representation
+ * @ingroup internalAPI
+ */
+struct nc_err {
+	/**
+	 * @brief Error tag
+	 *
+	 * Expected values are
+	 * <br/>#NC_ERR_TAG_IN_USE,<br/>#NC_ERR_TAG_INVALID_VALUE,
+	 * <br/>#NC_ERR_TAG_TOO_BIG,<br/>#NC_ERR_TAG_MISSING_ATTR,
+	 * <br/>#NC_ERR_TAG_BAD_ATTR,<br/>#NC_ERR_TAG_UNKN_ATTR,
+	 * <br/>#NC_ERR_TAG_MISSING_ELEM,<br/>#NC_ERR_TAG_BAD_ELEM,
+	 * <br/>#NC_ERR_TAG_UNKN_ELEM,<br/>#NC_ERR_TAG_UNKN_NAMESPACE,
+	 * <br/>#NC_ERR_TAG_ACCESS_DENIED,<br/>#NC_ERR_TAG_LOCK_DENIED,
+	 * <br/>#NC_ERR_TAG_RES_DENIED,<br/>#NC_ERR_TAG_ROLLBCK,
+	 * <br/>#NC_ERR_TAG_DATA_EXISTS,<br/>#NC_ERR_TAG_DATA_MISSING,
+	 * <br/>#NC_ERR_TAG_OP_NOT_SUPPORTED,<br/>#NC_ERR_TAG_OP_FAILED,
+	 * <br/>#NC_ERR_TAG_PARTIAL_OP,<br/>#NC_ERR_TAG_MALFORMED_MSG.
+	 */
+	char *tag;
+	/**
+	 * @brief Error layer where the error occurred
+	 *
+	 * Expected values are
+	 * <br/>#NC_ERR_TYPE_RPC,<br/>#NC_ERR_TYPE_PROT,
+	 * <br/>#NC_ERR_TYPE_APP,<br/>#NC_ERR_TYPE_TRANS.
+	 */
+	char *type;
+	/**
+	 * @brief Error severity.
+	 *
+	 * Expected values are
+	 * <br/>#NC_ERR_SEV_ERR,<br/>#NC_ERR_SEV_WARN.
+	 */
+	char *severity;
+	/**
+	 * @brief The data-model-specific or implementation-specific error condition, if one exists.
+	 */
+	char *apptag;
+	/**
+	 * @brief XPATH expression identifying element with error.
+	 */
+	char *path;
+	/**
+	 * @brief Human description of the error.
+	 */
+	char *message;
+	/**
+	 * @brief Name of the data-model-specific XML attribute that caused the error.
+	 *
+	 * This information is part of error-info element.
+	 */
+	char *attribute;
+	/**
+	 * @brief Name of the data-model-specific XML element that caused the error.
+	 *
+	 * This information is part of error-info element.
+	 */
+	char *element;
+	/**
+	 * @brief Name of the unexpected XML namespace that caused the error.
+	 *
+	 * This information is part of error-info element.
+	 */
+	char *ns;
+	/**
+	 * @brief Session ID of session holding requested lock.
+	 *
+	 * This information is part of error-info element.
+	 */
+	char *sid;
+};
+
+/**
  * @brief generic message structure covering both rpc and reply.
  * @ingroup internalAPI
  */
@@ -201,6 +286,7 @@ struct nc_msg {
 		NC_REPLY_TYPE reply;
 		NC_REPLY_TYPE rpc;
 	} type;
+	struct nc_err* error;
 };
 
 struct nc_filter {

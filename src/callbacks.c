@@ -65,6 +65,7 @@ int callback_ssh_hostkey_check_default (const char* hostname, int keytype, const
 
 struct callbacks callbacks = {
 		NULL, /* message printing callback */
+		NULL, /* process_error_reply callback */
 		callback_sshauth_interactive_default, /* default keyboard_interactive callback */
 		callback_sshauth_password_default, /* default password callback */
 		callback_sshauth_publickey_default, /* default publickey (get passphrase) callback */
@@ -76,6 +77,20 @@ struct callbacks callbacks = {
 void nc_callback_print(int (*func)(const char* msg))
 {
 	callbacks.print = func;
+}
+
+void nc_callback_error_reply(void (*func)(const char* tag,
+		const char* type,
+		const char* severity,
+		const char* apptag,
+		const char* path,
+		const char* message,
+		const char* attribute,
+		const char* element,
+		const char* ns,
+		const char* sid))
+{
+	callbacks.process_error_reply = func;
 }
 
 void nc_callback_sshauth_interactive(void (*func)(const char* name,

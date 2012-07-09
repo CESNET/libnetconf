@@ -38,16 +38,16 @@
  */
 
 #define _GNU_SOURCE
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 
 #include <libxml/tree.h>
-#include <libxml/xpath.h>
-#include <libxml/xpathInternals.h>
 
 #include "messages.h"
 #include "netconf_internal.h"
+#include "error.h"
 
 struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, char* filter)
 {
@@ -212,68 +212,6 @@ char *nc_reply_get_data(const nc_reply *reply)
 	return ((char*) buf);
 }
 
-char *nc_reply_get_errormsg(const nc_reply *reply)
-{
-	xmlXPathContextPtr ctxt = NULL;
-	xmlXPathObjectPtr xpath_obj = NULL;
-	const xmlChar *ns = NULL;
-	char *nsid = NULL;
-	char *xpath_query;
-	char *retval;
-
-	if (reply == NULL || reply->type.reply != NC_REPLY_ERROR) {
-		ERROR("nc_reply_get_errormsg: invalid input parameter.");
-		return (NULL);
-	}
-
-	/* create xpath evaluation context of the xml  document */
-	if ((ctxt = xmlXPathNewContext(reply->doc)) == NULL) {
-		ERROR("Unable to create XPath context for the <rpc-reply> message (%s:%d).", __FILE__, __LINE__);
-		return (NULL);
-	}
-	if (reply->doc->children->ns != NULL) {
-		ns = reply->doc->children->ns->href;
-		/* register namespace for the context of internal configuration file */
-		if (xmlXPathRegisterNs(ctxt, BAD_CAST "base", ns) != 0) {
-			ERROR("Unable to register namespace for <rpc-reply> message (%s:%d).", __FILE__, __LINE__);
-			xmlXPathFreeContext(ctxt);
-			return (NULL);
-		}
-		nsid = "base:";
-	} else {
-		nsid = "";
-	}
-	/* get the device module subtree */
-	if (asprintf(&xpath_query, "//%srpc-error/%serror-message", nsid, nsid) == -1) {
-		ERROR("Unable to prepare XPath query for <error-message> (%s:%d).", __FILE__, __LINE__);
-		xmlXPathFreeContext(ctxt);
-		return (NULL);
-	}
-	if ((xpath_obj = xmlXPathEvalExpression(BAD_CAST xpath_query, ctxt)) == NULL) {
-		ERROR("XPath query evaluation failed (%s:%d).", __FILE__, __LINE__);
-		xmlXPathFreeContext(ctxt);
-		free(xpath_query);
-		return (NULL);
-	}
-	free(xpath_query);
-
-	if (xpath_obj->nodesetval->nodeNr != 1) {
-		WARN("Missing <error-message> in <rpc-error>.");
-		xmlXPathFreeObject(xpath_obj);
-		xmlXPathFreeContext(ctxt);
-		return (NULL);
-	}
-	retval = (char*) xmlNodeGetContent(xpath_obj->nodesetval->nodeTab[0]);
-
-	/* cleanup */
-	xmlXPathFreeObject(xpath_obj);
-	xpath_obj = NULL;
-	xmlXPathFreeContext(ctxt);
-	ctxt = NULL;
-
-	return (retval);
-}
-
 nc_rpc *nc_msg_client_hello(char **cpblts)
 {
 	nc_rpc *msg;
@@ -291,6 +229,7 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 		return (NULL);
 	}
 
+	msg->error = NULL;
 	msg->doc = xmlNewDoc(BAD_CAST "1.0");
 	msg->doc->encoding = xmlStrdup(BAD_CAST UTF8);
 
@@ -312,7 +251,12 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 void nc_msg_free(struct nc_msg *msg)
 {
 	if (msg != NULL) {
-		xmlFreeDoc(msg->doc);
+		if (msg->doc != NULL) {
+			xmlFreeDoc(msg->doc);
+		}
+		if (msg->error != NULL) {
+			nc_err_free(msg->error);
+		}
 		free(msg);
 	}
 }
@@ -339,6 +283,11 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 	dupmsg->doc = xmlCopyDoc(msg->doc, 1);
 	dupmsg->msgid = msg->msgid;
 	dupmsg->type = msg->type;
+	if (msg->error != NULL) {
+		dupmsg->error = nc_err_dup(msg->error);
+	} else {
+		dupmsg->error = NULL;
+	}
 
 	return (dupmsg);
 }
@@ -351,6 +300,7 @@ nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
 	if (msg == NULL) {
 		return (NULL);
 	}
+	msg->error = NULL;
 
 	/* assign session-id */
 	/* check if session-id is prepared */
@@ -412,6 +362,7 @@ struct nc_msg* nc_msg_create(xmlNodePtr content, char* msgtype)
 		return (NULL);
 	}
 	msg->doc = xmlmsg;
+	msg->error = NULL;
 
 	return (msg);
 }
@@ -491,6 +442,109 @@ nc_reply *nc_reply_data(const char* data)
 
 	reply = nc_reply_create(content);
 	reply->type.reply = NC_REPLY_DATA;
+	xmlFreeNode(content);
+
+	return (reply);
+}
+
+nc_reply *nc_reply_error(const struct nc_err* error)
+{
+	nc_reply *reply;
+	xmlNodePtr content;
+
+	if (error == NULL) {
+		ERROR("Empty error structure to create rpc-error reply.");
+		return (NULL);
+	}
+
+	if ((content = xmlNewNode(NULL, BAD_CAST "rpc-error")) == NULL) {
+		ERROR("xmlNewNode failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	if (error->tag != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "tag", BAD_CAST error->tag) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	if (error->type != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "type", BAD_CAST error->type) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	if (error->severity != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "severity", BAD_CAST error->severity) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	if (error->apptag != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "apptag", BAD_CAST error->apptag) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	if (error->path != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "path", BAD_CAST error->path) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	if (error->message != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "message", BAD_CAST error->message) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	if (error->attribute != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "attribute", BAD_CAST error->attribute) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	if (error->element != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "element", BAD_CAST error->element) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	if (error->ns != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "ns", BAD_CAST error->ns) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	if (error->sid != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "sid", BAD_CAST error->sid) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	reply = nc_reply_create(content);
+	reply->error = nc_err_dup(error);
+	reply->type.reply = NC_REPLY_ERROR;
 	xmlFreeNode(content);
 
 	return (reply);

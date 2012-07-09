@@ -680,6 +680,61 @@ nc_msgid nc_msg_parse_msgid(struct nc_msg *msg)
 	return (ret);
 }
 
+struct nc_err* nc_msg_parse_error(struct nc_msg* msg)
+{
+	struct nc_err* err;
+	xmlNodePtr node;
+
+	if (msg == NULL || msg->doc == NULL) {
+		ERROR ("libnetconf internal error, invalid NETCONF message structure to parse.");
+		return (NULL);
+	}
+
+	err = calloc(1, sizeof(struct nc_err));
+	if (err == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	if (xmlStrcmp (msg->doc->children->children->name, BAD_CAST "rpc-error") != 0) {
+		ERROR("%s: Given message is not rpc-error.", __func__);
+		return (NULL);
+	}
+
+	for (node = msg->doc->children->children->children; node != NULL; node = node->next) {
+		if (node->type != XML_ELEMENT_NODE) {
+			/* skip comment nodes and others */
+			continue;
+		}
+
+		if (xmlStrcmp(node->name, BAD_CAST "tag") == 0) {
+			err->tag = (char*)xmlNodeGetContent(node);
+		} else if (xmlStrcmp(node->name, BAD_CAST "type") == 0) {
+			err->type = (char*)xmlNodeGetContent(node);
+		} else if (xmlStrcmp(node->name, BAD_CAST "severity") == 0) {
+			err->severity = (char*)xmlNodeGetContent(node);
+		} else if (xmlStrcmp(node->name, BAD_CAST "apptag") == 0) {
+			err->apptag = (char*)xmlNodeGetContent(node);
+		} else if (xmlStrcmp(node->name, BAD_CAST "path") == 0) {
+			err->path = (char*)xmlNodeGetContent(node);
+		} else if (xmlStrcmp(node->name, BAD_CAST "message") == 0) {
+			err->message = (char*)xmlNodeGetContent(node);
+		} else if (xmlStrcmp(node->name, BAD_CAST "attribute") == 0) {
+			err->attribute = (char*)xmlNodeGetContent(node);
+		} else if (xmlStrcmp(node->name, BAD_CAST "element") == 0) {
+			err->element = (char*)xmlNodeGetContent(node);
+		} else if (xmlStrcmp(node->name, BAD_CAST "ns") == 0) {
+			err->ns = (char*)xmlNodeGetContent(node);
+		} else if (xmlStrcmp(node->name, BAD_CAST "sid") == 0) {
+			err->sid = (char*)xmlNodeGetContent(node);
+		} else {
+			WARN("Unknown element %s while parsing rpc-error.", (char*)(node->name));
+		}
+	}
+
+	return (err);
+}
+
 int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 {
 	struct nc_msg *retval;
@@ -768,6 +823,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 		free (text);
 		return (EXIT_FAILURE);
 	}
+	retval->error = NULL;
 
 	/* store the received message in libxml2 format */
 	retval->doc = xmlReadDoc (BAD_CAST text, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
@@ -788,6 +844,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 			retval->type.reply = NC_REPLY_OK;
 		} else if (xmlStrcmp (retval->doc->children->children->name, BAD_CAST "rpc-error") == 0) {
 			retval->type.reply = NC_REPLY_ERROR;
+			retval->error = nc_msg_parse_error(retval);
 		} else if (xmlStrcmp (retval->doc->children->children->name, BAD_CAST "data") == 0) {
 			retval->type.reply = NC_REPLY_DATA;
 		} else {
@@ -810,7 +867,8 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 			retval->type.rpc = NC_RPC_UNKNOWN;
 		}
 	} else if (xmlStrcmp (retval->doc->children->name, BAD_CAST "hello") == 0) {
-		/* do nothing, we have <hello> message */
+		/* set message type, we have <hello> message */
+		retval->type.reply = NC_REPLY_HELLO;
 	} else {
 		WARN("Unknown (unsupported) type of received message detected.");
 		retval->type.rpc = NC_RPC_UNKNOWN;
@@ -829,6 +887,23 @@ nc_msgid nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 	if (ret != EXIT_SUCCESS) {
 		return (0);
 	} else {
+		if (nc_reply_get_type (*reply) == NC_REPLY_ERROR) {
+			/* process rpc-error reply */
+			callbacks.process_error_reply((*reply)->error->tag,
+					(*reply)->error->type,
+					(*reply)->error->severity,
+					(*reply)->error->apptag,
+					(*reply)->error->path,
+					(*reply)->error->message,
+					(*reply)->error->attribute,
+					(*reply)->error->element,
+					(*reply)->error->ns,
+					(*reply)->error->sid);
+			/* free the data */
+			nc_reply_free(*reply);
+			*reply = NULL;
+			return (0);
+		}
 		return (nc_reply_get_msgid (*reply));
 	}
 }

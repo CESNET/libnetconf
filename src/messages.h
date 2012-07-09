@@ -41,6 +41,7 @@
 #define MESSAGES_H_
 
 #include "netconf.h"
+#include "error.h"
 
 /**
  * @ingroup rpc
@@ -123,18 +124,6 @@ NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply);
 char *nc_reply_get_data(const nc_reply *reply);
 
 /**
- * @ingroup reply
- * @brief Get \<error-message\> string of \<rpc-error\>
- *
- * This function can be used only on nc_reply with NC_REPLY_ERROR type, that
- * can be checked by nc_reply_get_type().
- *
- * @param[in] reply rpc-reply of NC_REPLY_ERROR type
- * @return error-message string or NULL on error.
- */
-char *nc_reply_get_errormsg(const nc_reply *reply);
-
-/**
  * @brief Free rpc message.
  * @ingroup rpc
  * @param[in] rpc rpc message to free.
@@ -161,6 +150,14 @@ nc_reply *nc_reply_ok();
  * @return Created \<rpc-reply\> message.
  */
 nc_reply *nc_reply_data(const char* data);
+
+/**
+ * @ingroup reply
+ * @brief Create rpc-reply response with \<drpc-error\> content.
+ * @param[in] error NETCONF error description structure for reply message.
+ * @return Created \<rpc-reply\> message.
+ */
+nc_reply *nc_reply_error(const struct nc_err* error);
 
 /**
  * @ingroup rpc

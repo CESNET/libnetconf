@@ -84,6 +84,7 @@ struct nc_filter;
  */
 typedef enum NC_REPLY_TYPE {
 	NC_REPLY_UNKNOWN, /**< value describing that no rpc-reply type was detected so far */
+	NC_REPLY_HELLO, /**< \<hello\> message type, same as NC_RPC_HELLO */
 	NC_REPLY_OK, /**< \<ok\> rpc-reply message type */
 	NC_REPLY_ERROR, /**< \<rpc-error\> rpc-reply message type */
 	NC_REPLY_DATA /**< rpc-reply message containing \<data\> */
@@ -95,6 +96,7 @@ typedef enum NC_REPLY_TYPE {
  */
 typedef enum NC_RPC_TYPE {
 	NC_RPC_UNKNOWN, /**< value describing that no supported operation type was detected so far */
+	NC_RPC_HELLO, /**< \<hello\> message type, same as NC_REPLY_HELLO */
 	NC_RPC_DATASTORE, /**< \<rpc\> contains operation affecting datastore */
 	NC_RPC_SESSION, /**< \<rpc\> contains operation affecting session */
 } NC_RPC_TYPE;

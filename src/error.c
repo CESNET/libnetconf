@@ -1,7 +1,7 @@
 /**
  * \file error.c
- * \author <name> <email>
- * \brief <Idea of what it does>
+ * \author Radek Krejci <rkrejci@cesnet.cz>
+ * \brief Implementation of NETCONF error handling functions.
  *
  * Copyright (C) 2012 CESNET, z.s.p.o.
  *
@@ -44,79 +44,6 @@
 #include "error.h"
 #include "netconf_internal.h"
 
-/**
- * @brief NETCONF error structure representation
- * @ingroup internalAPI
- */
-struct nc_err {
-	/**
-	 * @brief Error tag
-	 *
-	 * Expected values are
-	 * <br/>#NC_ERR_TAG_IN_USE,<br/>#NC_ERR_TAG_INVALID_VALUE,
-	 * <br/>#NC_ERR_TAG_TOO_BIG,<br/>#NC_ERR_TAG_MISSING_ATTR,
-	 * <br/>#NC_ERR_TAG_BAD_ATTR,<br/>#NC_ERR_TAG_UNKN_ATTR,
-	 * <br/>#NC_ERR_TAG_MISSING_ELEM,<br/>#NC_ERR_TAG_BAD_ELEM,
-	 * <br/>#NC_ERR_TAG_UNKN_ELEM,<br/>#NC_ERR_TAG_UNKN_NAMESPACE,
-	 * <br/>#NC_ERR_TAG_ACCESS_DENIED,<br/>#NC_ERR_TAG_LOCK_DENIED,
-	 * <br/>#NC_ERR_TAG_RES_DENIED,<br/>#NC_ERR_TAG_ROLLBCK,
-	 * <br/>#NC_ERR_TAG_DATA_EXISTS,<br/>#NC_ERR_TAG_DATA_MISSING,
-	 * <br/>#NC_ERR_TAG_OP_NOT_SUPPORTED,<br/>#NC_ERR_TAG_OP_FAILED,
-	 * <br/>#NC_ERR_TAG_PARTIAL_OP,<br/>#NC_ERR_TAG_MALFORMED_MSG.
-	 */
-	char *tag;
-	/**
-	 * @brief Error layer where the error occurred
-	 *
-	 * Expected values are
-	 * <br/>#NC_ERR_TYPE_RPC,<br/>#NC_ERR_TYPE_PROT,
-	 * <br/>#NC_ERR_TYPE_APP,<br/>#NC_ERR_TYPE_TRANS.
-	 */
-	char *type;
-	/**
-	 * @brief Error severity.
-	 *
-	 * Expected values are
-	 * <br/>#NC_ERR_SEV_ERR,<br/>#NC_ERR_SEV_WARN.
-	 */
-	char *severity;
-	/**
-	 * @brief The data-model-specific or implementation-specific error condition, if one exists.
-	 */
-	char *apptag;
-	/**
-	 * @brief XPATH expression identifying element with error.
-	 */
-	char *path;
-	/**
-	 * @brief Human description of the error.
-	 */
-	char *message;
-	/**
-	 * @brief Name of the data-model-specific XML attribute that caused the error.
-	 *
-	 * This information is part of error-info element.
-	 */
-	char *attribute;
-	/**
-	 * @brief Name of the data-model-specific XML element that caused the error.
-	 *
-	 * This information is part of error-info element.
-	 */
-	char *element;
-	/**
-	 * @brief Name of the unexpected XML namespace that caused the error.
-	 *
-	 * This information is part of error-info element.
-	 */
-	char *ns;
-	/**
-	 * @brief Session ID of session holding requested lock.
-	 *
-	 * This information is part of error-info element.
-	 */
-	char *sid;
-};
 
 struct nc_err* nc_err_new(NC_ERR error)
 {
@@ -250,6 +177,56 @@ struct nc_err* nc_err_new(NC_ERR error)
 	}
 
 	return (err);
+}
+
+struct nc_err* nc_err_dup(const struct nc_err* err)
+{
+	struct nc_err *duperr;
+
+	if (err == NULL) {
+		ERROR("%s: no error structure to duplicate.", __func__);
+		return (NULL);
+	}
+
+	duperr = calloc(1, sizeof(struct nc_err));
+	if (duperr == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	if (err->apptag) {
+		duperr->apptag = strdup (err->apptag);
+	}
+	if (err->attribute) {
+		duperr->attribute = strdup (err->attribute);
+	}
+	if (err->element) {
+		duperr->element = strdup (err->element);
+	}
+	if (err->message) {
+		duperr->message = strdup (err->message);
+	}
+	if (err->ns) {
+		duperr->ns = strdup (err->ns);
+	}
+	if (err->path) {
+		duperr->path = strdup (err->path);
+	}
+	if(err->severity) {
+		duperr->severity = strdup (err->severity);
+	}
+	if (err->sid) {
+		duperr->sid = strdup (err->sid);
+	}
+	if (err->tag) {
+		duperr->tag = strdup (err->tag);
+	}
+	if (err->type) {
+		duperr->type = strdup (err->type);
+	}
+
+
+	return (duperr);
 }
 
 void nc_err_free (struct nc_err* err)

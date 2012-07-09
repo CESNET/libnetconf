@@ -350,7 +350,7 @@ void cmd_editconfig_help()
 int cmd_editconfig (char *arg)
 {
 	int c;
-	char *config_m = NULL, *config = NULL, *err_info;
+	char *config_m = NULL, *config = NULL;
 	int config_fd;
 	struct stat config_stat;
 	NC_DATASTORE_TYPE target;
@@ -497,8 +497,8 @@ int cmd_editconfig (char *arg)
 		INSTRUCTION("Result OK\n");
 		break;
 	case NC_REPLY_ERROR:
-		ERROR("edit-config", "operation failed (%s).", err_info = nc_reply_get_errormsg (reply));
-		if (err_info) {free (err_info);}
+		/* wtf, you shouldn't be here !?!? */
+		ERROR("edit-config", "operation failed, but rpc-error was not processed.");
 		break;
 	default:
 		ERROR("edit-config", "unexpected operation result.");
@@ -538,7 +538,6 @@ int cmd_copyconfig (char *arg)
 	int c;
 	int config_fd;
 	struct stat config_stat;
-	char *err_info;
 	char *config = NULL, *config_m = NULL;
 	NC_DATASTORE_TYPE target;
 	NC_DATASTORE_TYPE source = NC_DATASTORE_NONE;
@@ -666,8 +665,8 @@ int cmd_copyconfig (char *arg)
 		INSTRUCTION("Result OK\n");
 		break;
 	case NC_REPLY_ERROR:
-		ERROR("copy-config", "operation failed (%s).", err_info = nc_reply_get_errormsg (reply));
-		if (err_info) {free (err_info);}
+		/* wtf, you shouldn't be here !?!? */
+		ERROR("copy-config", "operation failed, but rpc-error was not processed.");
 		break;
 	default:
 		ERROR("copy-config", "unexpected operation result.");
@@ -763,7 +762,8 @@ int cmd_get (char *arg)
 		fprintf(stdout, "%s\n", data = nc_reply_get_data (reply));
 		break;
 	case NC_REPLY_ERROR:
-		ERROR("get", "operation failed (%s).", data = nc_reply_get_errormsg (reply));
+		/* wtf, you shouldn't be here !?!? */
+		ERROR("get", "operation failed, but rpc-error was not processed.");
 		break;
 	default:
 		ERROR("get", "unexpected operation result.");
@@ -802,7 +802,6 @@ void cmd_deleteconfig_help ()
 int cmd_deleteconfig (char *arg)
 {
 	int c;
-	char *err_info = NULL;
 	NC_DATASTORE_TYPE target;
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
@@ -878,8 +877,8 @@ int cmd_deleteconfig (char *arg)
 		INSTRUCTION("Result OK\n");
 		break;
 	case NC_REPLY_ERROR:
-		ERROR("delete-config", "operation failed (%s).", err_info = nc_reply_get_errormsg (reply));
-		if (err_info) {free (err_info);}
+		/* wtf, you shouldn't be here !?!? */
+		ERROR("delete-config", "operation failed, but rpc-error was not processed.");
 		break;
 	default:
 		ERROR("delete-config", "unexpected operation result.");
@@ -898,7 +897,6 @@ void cmd_killsession_help ()
 int cmd_killsession (char *arg)
 {
 	int c;
-	char *err_info = NULL;
 	char *id;
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
@@ -978,8 +976,8 @@ int cmd_killsession (char *arg)
 		INSTRUCTION("Result OK\n");
 		break;
 	case NC_REPLY_ERROR:
-		ERROR("kill-session", "operation failed (%s).", err_info = nc_reply_get_errormsg (reply));
-		if (err_info) {free (err_info);}
+		/* wtf, you shouldn't be here !?!? */
+		ERROR("kill-session", "operation failed, but rpc-error was not processed.");
 		break;
 	default:
 		ERROR("kill-session", "unexpected operation result.");
@@ -1083,7 +1081,8 @@ int cmd_getconfig (char *arg)
 		fprintf(stdout, "%s\n", data = nc_reply_get_data (reply));
 		break;
 	case NC_REPLY_ERROR:
-		ERROR("get-config", "operation failed (%s).", data = nc_reply_get_errormsg (reply));
+		/* wtf, you shouldn't be here !?!? */
+		ERROR("get-config", "operation failed, but rpc-error was not processed.");
 		break;
 	default:
 		ERROR("get-config", "unexpected operation result.");
@@ -1115,7 +1114,6 @@ void cmd_un_lock_help (char* operation)
 int cmd_un_lock (int op, char *arg)
 {
 	int c;
-	char *err_info = NULL;
 	NC_DATASTORE_TYPE target;
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
@@ -1202,8 +1200,8 @@ int cmd_un_lock (int op, char *arg)
 		INSTRUCTION("Result OK\n");
 		break;
 	case NC_REPLY_ERROR:
-		ERROR(operation, "operation failed (%s).", err_info = nc_reply_get_errormsg (reply));
-		if (err_info) {free (err_info);}
+		/* wtf, you shouldn't be here !?!? */
+		ERROR(operation, "operation failed, but rpc-error was not processed.");
 		break;
 	default:
 		ERROR(operation, "unexpected operation result.");

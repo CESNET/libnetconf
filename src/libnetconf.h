@@ -144,5 +144,6 @@
 #include "callbacks.h"
 #include "session.h"
 #include "messages.h"
+#include "error.h"
 
 #endif /* LIBNETCONF_H_ */
