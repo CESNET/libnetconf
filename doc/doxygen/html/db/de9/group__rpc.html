@@ -54,6 +54,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="../../index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="../../pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="../../modules.html"><span>Modules</span></a></li>
       <li><a href="../../files.html"><span>Files</span></a></li>
       <li>
@@ -158,10 +159,16 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga3c58ae7be965b57a20681d137cae8c91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new NETCONF filter of the specified type.  <a href="#ga3c58ae7be965b57a20681d137cae8c91"></a><br/></td></tr>
 <tr class="memitem:ga0dbfd598d6fd303819817370cdf63229"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga0dbfd598d6fd303819817370cdf63229">nc_filter_free</a> (struct nc_filter *filter)</td></tr>
 <tr class="memdesc:ga0dbfd598d6fd303819817370cdf63229"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy filter structure.  <a href="#ga0dbfd598d6fd303819817370cdf63229"></a><br/></td></tr>
+<tr class="memitem:ga3e840368c40be2ea4d5201edbd3adaca"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga3e840368c40be2ea4d5201edbd3adaca">nc_rpc_dump</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
+<tr class="memdesc:ga3e840368c40be2ea4d5201edbd3adaca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the rpc message into a string.  <a href="#ga3e840368c40be2ea4d5201edbd3adaca"></a><br/></td></tr>
+<tr class="memitem:ga16bda6ae6ad26653e8793abf58ebec2b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga16bda6ae6ad26653e8793abf58ebec2b">nc_rpc_build</a> (const char *rpc_dump)</td></tr>
+<tr class="memdesc:ga16bda6ae6ad26653e8793abf58ebec2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build &lt;rpc&gt; message from the string. This is the reverse function of the <a class="el" href="../../db/de9/group__rpc.html#ga3e840368c40be2ea4d5201edbd3adaca" title="Dump the rpc message into a string.">nc_rpc_dump()</a>.  <a href="#ga16bda6ae6ad26653e8793abf58ebec2b"></a><br/></td></tr>
 <tr class="memitem:ga3bb3dd2d08b439d612f5954e3ce78205"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga3bb3dd2d08b439d612f5954e3ce78205">nc_rpc_get_msgid</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:ga3bb3dd2d08b439d612f5954e3ce78205"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get message-id of the given rpc.  <a href="#ga3bb3dd2d08b439d612f5954e3ce78205"></a><br/></td></tr>
-<tr class="memitem:gaf78e7da3bc6494d32521a2949c172c74"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07">NC_OP</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaf78e7da3bc6494d32521a2949c172c74">nc_rpc_get_operation</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
-<tr class="memdesc:gaf78e7da3bc6494d32521a2949c172c74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get operation of the given rpc.  <a href="#gaf78e7da3bc6494d32521a2949c172c74"></a><br/></td></tr>
+<tr class="memitem:gabf639574395456fb6f4bade36fb4babd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07">NC_OP</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gabf639574395456fb6f4bade36fb4babd">nc_rpc_get_op</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
+<tr class="memdesc:gabf639574395456fb6f4bade36fb4babd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get operation of the given rpc.  <a href="#gabf639574395456fb6f4bade36fb4babd"></a><br/></td></tr>
+<tr class="memitem:gade3f111e7c7727d512313b4875fd8f50"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gade3f111e7c7727d512313b4875fd8f50">nc_rpc_get_op_content</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
+<tr class="memdesc:gade3f111e7c7727d512313b4875fd8f50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get content of the operation specification from the given rpc.  <a href="#gade3f111e7c7727d512313b4875fd8f50"></a><br/></td></tr>
 <tr class="memitem:gaa502fb30575000775b29a764101c1bef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00">NC_RPC_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaa502fb30575000775b29a764101c1bef">nc_rpc_get_type</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gaa502fb30575000775b29a764101c1bef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get type of the rpc message.  <a href="#gaa502fb30575000775b29a764101c1bef"></a><br/></td></tr>
 <tr class="memitem:ga4041bda37caa9eedb7a1e2534280f3df"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga4041bda37caa9eedb7a1e2534280f3df">nc_rpc_free</a> (<a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
@@ -489,6 +496,57 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga3e840368c40be2ea4d5201edbd3adaca"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* <a class="el" href="../../db/de9/group__rpc.html#ga3e840368c40be2ea4d5201edbd3adaca">nc_rpc_dump</a> </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
+          <td class="paramname"><em>rpc</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Dump the rpc message into a string. </p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>rpc message. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>String in XML format containing the NETCONF's &lt;rpc&gt; element and all its content. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga16bda6ae6ad26653e8793abf58ebec2b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a>* <a class="el" href="../../db/de9/group__rpc.html#ga16bda6ae6ad26653e8793abf58ebec2b">nc_rpc_build</a> </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>rpc_dump</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Build &lt;rpc&gt; message from the string. This is the reverse function of the <a class="el" href="../../db/de9/group__rpc.html#ga3e840368c40be2ea4d5201edbd3adaca" title="Dump the rpc message into a string.">nc_rpc_dump()</a>. </p>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000003">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/de9/group__rpc.html#ga16bda6ae6ad26653e8793abf58ebec2b" title="Build &lt;rpc&gt; message from the string. This is the reverse function of the nc_rpc_dump().">nc_rpc_build()</a></dd></dl>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">rpc_dump</td><td>String containing the NETCONF &lt;rpc&gt; message. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>Complete rpc structure used by libnetconf's functions. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ga3bb3dd2d08b439d612f5954e3ce78205"></a>
 <div class="memitem">
 <div class="memproto">
@@ -514,12 +572,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gaf78e7da3bc6494d32521a2949c172c74"></a>
+<a class="anchor" id="gabf639574395456fb6f4bade36fb4babd"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07">NC_OP</a> <a class="el" href="../../db/de9/group__rpc.html#gaf78e7da3bc6494d32521a2949c172c74">nc_rpc_get_operation</a> </td>
+          <td class="memname"><a class="el" href="../../db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07">NC_OP</a> <a class="el" href="../../db/de9/group__rpc.html#gabf639574395456fb6f4bade36fb4babd">nc_rpc_get_op</a> </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
           <td class="paramname"><em>rpc</em></td><td>)</td>
@@ -536,6 +594,32 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns:</dt><dd>Operation identification of the given rpc message. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gade3f111e7c7727d512313b4875fd8f50"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* <a class="el" href="../../db/de9/group__rpc.html#gade3f111e7c7727d512313b4875fd8f50">nc_rpc_get_op_content</a> </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
+          <td class="paramname"><em>rpc</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get content of the operation specification from the given rpc. </p>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000004">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/de9/group__rpc.html#gade3f111e7c7727d512313b4875fd8f50" title="Get content of the operation specification from the given rpc.">nc_rpc_get_op_content()</a></dd></dl>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>rpc message. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>String in XML form starting with the operation name element. </dd></dl>
 
 </div>
 </div>
@@ -874,7 +958,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Mon Jul 9 2012 14:38:12 for libnetconf by
+    <li class="footer">Generated on Tue Jul 10 2012 10:31:51 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

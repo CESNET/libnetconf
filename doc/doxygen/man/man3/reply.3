@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Mon Jul 9 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Tue Jul 10 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -38,9 +38,13 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .br
 .RI "\fIReceive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
-.RI "char * \fBnc_reply_get_string\fP (const \fBnc_reply\fP *reply)"
+.RI "char * \fBnc_reply_dump\fP (const \fBnc_reply\fP *reply)"
 .br
-.RI "\fIGet content of the rpc-reply\&. \fP"
+.RI "\fIDump the rpc-reply message into a string\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBnc_reply_build\fP (const char *reply_dump)"
+.br
+.RI "\fIBuild <rpc-reply> message from the string\&. This is the reverse function of the \fBnc_reply_dump()\fP\&. \fP"
 .ti -1c
 .RI "\fBnc_msgid\fP \fBnc_reply_get_msgid\fP (const \fBnc_reply\fP *reply)"
 .br
@@ -179,17 +183,36 @@ Receive <rpc-reply> response from the specified NETCONF session\&. This function
 .RE
 .PP
 
-.SS "char* \fBnc_reply_get_string\fP (const \fBnc_reply\fP *reply)"
+.SS "char* \fBnc_reply_dump\fP (const \fBnc_reply\fP *reply)"
 
 .PP
-Get content of the rpc-reply\&. \fBParameters:\fP
+Dump the rpc-reply message into a string\&. \fBParameters:\fP
 .RS 4
-\fIreply\fP reply message from the server\&. 
+\fIreply\fP rpc-reply message\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-String with the content of the NETCONF's <rpc-reply> element\&. 
+String in XML format containing the NETCONF's <rpc-reply> element and all its content\&. 
+.RE
+.PP
+
+.SS "\fBnc_reply\fP* \fBnc_reply_build\fP (const char *reply_dump)"
+
+.PP
+Build <rpc-reply> message from the string\&. This is the reverse function of the \fBnc_reply_dump()\fP\&. \fBTodo\fP
+.RS 4
+Implement \fBnc_reply_build()\fP
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIreply_dump\fP String containing the NETCONF <rpc-reply> message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Complete reply structure used by libnetconf's functions\&. 
 .RE
 .PP
 

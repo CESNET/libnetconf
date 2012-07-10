@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Mon Jul 9 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Tue Jul 10 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -54,13 +54,25 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIDestroy filter structure\&. \fP"
 .ti -1c
+.RI "char * \fBnc_rpc_dump\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIDump the rpc message into a string\&. \fP"
+.ti -1c
+.RI "\fBnc_rpc\fP * \fBnc_rpc_build\fP (const char *rpc_dump)"
+.br
+.RI "\fIBuild <rpc> message from the string\&. This is the reverse function of the \fBnc_rpc_dump()\fP\&. \fP"
+.ti -1c
 .RI "\fBnc_msgid\fP \fBnc_rpc_get_msgid\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet message-id of the given rpc\&. \fP"
 .ti -1c
-.RI "\fBNC_OP\fP \fBnc_rpc_get_operation\fP (const \fBnc_rpc\fP *rpc)"
+.RI "\fBNC_OP\fP \fBnc_rpc_get_op\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet operation of the given rpc\&. \fP"
+.ti -1c
+.RI "char * \fBnc_rpc_get_op_content\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet content of the operation specification from the given rpc\&. \fP"
 .ti -1c
 .RI "\fBNC_RPC_TYPE\fP \fBnc_rpc_get_type\fP (const \fBnc_rpc\fP *rpc)"
 .br
@@ -272,6 +284,39 @@ Destroy filter structure\&. \fBParameters:\fP
 .RE
 .PP
 
+.SS "char* \fBnc_rpc_dump\fP (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Dump the rpc message into a string\&. \fBParameters:\fP
+.RS 4
+\fIrpc\fP rpc message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+String in XML format containing the NETCONF's <rpc> element and all its content\&. 
+.RE
+.PP
+
+.SS "\fBnc_rpc\fP* \fBnc_rpc_build\fP (const char *rpc_dump)"
+
+.PP
+Build <rpc> message from the string\&. This is the reverse function of the \fBnc_rpc_dump()\fP\&. \fBTodo\fP
+.RS 4
+Implement \fBnc_rpc_build()\fP
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrpc_dump\fP String containing the NETCONF <rpc> message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Complete rpc structure used by libnetconf's functions\&. 
+.RE
+.PP
+
 .SS "\fBnc_msgid\fP \fBnc_rpc_get_msgid\fP (const \fBnc_rpc\fP *rpc)"
 
 .PP
@@ -286,7 +331,7 @@ message-id of the given rpc message\&.
 .RE
 .PP
 
-.SS "\fBNC_OP\fP \fBnc_rpc_get_operation\fP (const \fBnc_rpc\fP *rpc)"
+.SS "\fBNC_OP\fP \fBnc_rpc_get_op\fP (const \fBnc_rpc\fP *rpc)"
 
 .PP
 Get operation of the given rpc\&. \fBParameters:\fP
@@ -297,6 +342,25 @@ Get operation of the given rpc\&. \fBParameters:\fP
 \fBReturns:\fP
 .RS 4
 Operation identification of the given rpc message\&. 
+.RE
+.PP
+
+.SS "char* \fBnc_rpc_get_op_content\fP (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Get content of the operation specification from the given rpc\&. \fBTodo\fP
+.RS 4
+Implement \fBnc_rpc_get_op_content()\fP
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrpc\fP rpc message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+String in XML form starting with the operation name element\&. 
 .RE
 .PP
 

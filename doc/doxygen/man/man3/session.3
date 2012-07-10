@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Mon Jul 9 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Tue Jul 10 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -49,6 +49,10 @@ libnetconf's functions for handling NETCONF sessions\&.
 .RI "void \fBnc_set_privatekey_path\fP (const char *path)"
 .br
 .RI "\fISet path to privatekey file used in case of SSH authentication via publickey mechanism\&. \fP"
+.ti -1c
+.RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, const struct nc_cpblts *capabilities)"
+.br
+.RI "\fICreate disconnected session structure\&. \fP"
 .ti -1c
 .RI "void \fBnc_session_close\fP (struct nc_session *session, const char *msg)"
 .br
@@ -212,6 +216,33 @@ Set path to publickey file used in case of SSH authentication via publickey mech
 Set path to privatekey file used in case of SSH authentication via publickey mechanism\&. \fBParameters:\fP
 .RS 4
 \fIpath\fP 
+.RE
+.PP
+
+.SS "struct nc_session* \fBnc_session_dummy\fP (const char *sid, const char *username, const struct nc_cpblts *capabilities)\fC [read]\fP"
+
+.PP
+Create disconnected session structure\&. \fBTodo\fP
+.RS 4
+Implement \fBnc_session_dummy()\fP
+.RE
+.PP
+This creates dummy session structure which is not supposed to pass NETCONF messages between client and server\&. Instead, it can be successfully used by server (e\&.g\&. detached process that doesn't hold the real session structure) to access NETCONF datastores via libnetconf\&.
+.PP
+All required parameters can be obtained from the real session structure by the session getter functions (\fBnc_session_get_id()\fP, \fBnc_session_get_user()\fP and \fBnc_session_get_cpblts()\fP)\&. NULL values are not allowed\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsid\fP Session ID\&. 
+.br
+\fIusername\fP Name of the user holding the session\&. 
+.br
+\fIcapabilities\fP List of capabilities supported by the session\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Structure describing a dummy NETCONF session or NULL in case of error\&. 
 .RE
 .PP
 

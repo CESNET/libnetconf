@@ -1,5 +1,6 @@
 var session_8h =
 [
+    [ "nc_session_dummy", "db/d52/group__session.html#gaa4542a7148d59f2fe259eff9d6852a8c", null ],
     [ "nc_session_close", "db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd", null ],
     [ "nc_session_get_version", "db/d52/group__session.html#gac8ea61702127df024c037869feb72d97", null ],
     [ "nc_session_get_eventfd", "db/d52/group__session.html#ga826890ed745633bc2d31a53971dada32", null ],

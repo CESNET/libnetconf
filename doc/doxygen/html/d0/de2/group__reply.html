@@ -54,6 +54,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="../../index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="../../pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="../../modules.html"><span>Modules</span></a></li>
       <li><a href="../../files.html"><span>Files</span></a></li>
       <li>
@@ -139,8 +140,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga87af88fde9cef4913c78855056b51804"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc-reply&gt; response via specified NETCONF session. This function is supposed to be performed only by NETCONF servers.  <a href="#ga87af88fde9cef4913c78855056b51804"></a><br/></td></tr>
 <tr class="memitem:ga53fec7353656b7e9c7ca4742149dced0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga53fec7353656b7e9c7ca4742149dced0">nc_session_recv_reply</a> (struct nc_session *session, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> **reply)</td></tr>
 <tr class="memdesc:ga53fec7353656b7e9c7ca4742149dced0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;rpc-reply&gt; response from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="#ga53fec7353656b7e9c7ca4742149dced0"></a><br/></td></tr>
-<tr class="memitem:gaa868843c448eab95149401f68d94cd34"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gaa868843c448eab95149401f68d94cd34">nc_reply_get_string</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
-<tr class="memdesc:gaa868843c448eab95149401f68d94cd34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get content of the rpc-reply.  <a href="#gaa868843c448eab95149401f68d94cd34"></a><br/></td></tr>
+<tr class="memitem:ga279c8b48bfdf590c15a043b7d385dfb8"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8">nc_reply_dump</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
+<tr class="memdesc:ga279c8b48bfdf590c15a043b7d385dfb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the rpc-reply message into a string.  <a href="#ga279c8b48bfdf590c15a043b7d385dfb8"></a><br/></td></tr>
+<tr class="memitem:ga78b032942cee08721d51ea97acff68b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga78b032942cee08721d51ea97acff68b5">nc_reply_build</a> (const char *reply_dump)</td></tr>
+<tr class="memdesc:ga78b032942cee08721d51ea97acff68b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build &lt;rpc-reply&gt; message from the string. This is the reverse function of the <a class="el" href="../../d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8" title="Dump the rpc-reply message into a string.">nc_reply_dump()</a>.  <a href="#ga78b032942cee08721d51ea97acff68b5"></a><br/></td></tr>
 <tr class="memitem:gaee352730e4d35c10adbb6c24f7b2bf26"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gaee352730e4d35c10adbb6c24f7b2bf26">nc_reply_get_msgid</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:gaee352730e4d35c10adbb6c24f7b2bf26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get message-id of the given rpc-reply.  <a href="#gaee352730e4d35c10adbb6c24f7b2bf26"></a><br/></td></tr>
 <tr class="memitem:gab12cdef82337060c425348dada7fe983"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29">NC_REPLY_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gab12cdef82337060c425348dada7fe983">nc_reply_get_type</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
@@ -329,12 +332,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gaa868843c448eab95149401f68d94cd34"></a>
+<a class="anchor" id="ga279c8b48bfdf590c15a043b7d385dfb8"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* <a class="el" href="../../d0/de2/group__reply.html#gaa868843c448eab95149401f68d94cd34">nc_reply_get_string</a> </td>
+          <td class="memname">char* <a class="el" href="../../d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8">nc_reply_dump</a> </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td>
           <td class="paramname"><em>reply</em></td><td>)</td>
@@ -343,14 +346,40 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get content of the rpc-reply. </p>
+<p>Dump the rpc-reply message into a string. </p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">reply</td><td>reply message from the server. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">reply</td><td>rpc-reply message. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>String with the content of the NETCONF's &lt;rpc-reply&gt; element. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>String in XML format containing the NETCONF's &lt;rpc-reply&gt; element and all its content. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga78b032942cee08721d51ea97acff68b5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* <a class="el" href="../../d0/de2/group__reply.html#ga78b032942cee08721d51ea97acff68b5">nc_reply_build</a> </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>reply_dump</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Build &lt;rpc-reply&gt; message from the string. This is the reverse function of the <a class="el" href="../../d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8" title="Dump the rpc-reply message into a string.">nc_reply_dump()</a>. </p>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000002">Todo:</a></b></dt><dd>Implement <a class="el" href="../../d0/de2/group__reply.html#ga78b032942cee08721d51ea97acff68b5" title="Build &lt;rpc-reply&gt; message from the string. This is the reverse function of the nc_reply_dump().">nc_reply_build()</a></dd></dl>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">reply_dump</td><td>String containing the NETCONF &lt;rpc-reply&gt; message. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>Complete reply structure used by libnetconf's functions. </dd></dl>
 
 </div>
 </div>
@@ -521,7 +550,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Mon Jul 9 2012 14:38:13 for libnetconf by
+    <li class="footer">Generated on Tue Jul 10 2012 10:31:51 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>
