@@ -284,7 +284,7 @@ struct nc_msg {
 	nc_msgid msgid;
 	union {
 		NC_REPLY_TYPE reply;
-		NC_REPLY_TYPE rpc;
+		NC_RPC_TYPE rpc;
 	} type;
 	struct nc_err* error;
 };
