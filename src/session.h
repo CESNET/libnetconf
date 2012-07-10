@@ -44,6 +44,27 @@
 #include "netconf.h"
 
 /**
+ * \todo Implement nc_session_dummy()
+ * @ingroup session
+ * @brief Create disconnected session structure.
+ *
+ * This creates dummy session structure which is not supposed to pass NETCONF
+ * messages between client and server. Instead, it can be successfully used by
+ * server (e.g. detached process that doesn't hold the real session structure)
+ * to access NETCONF datastores via libnetconf.
+ *
+ * All required parameters can be obtained from the real session structure by
+ * the session getter functions (nc_session_get_id(), nc_session_get_user() and
+ * nc_session_get_cpblts()). NULL values are not allowed.
+ *
+ * @param[in] sid Session ID.
+ * @param[in] username Name of the user holding the session.
+ * @param[in] capabilities List of capabilities supported by the session.
+ * @return Structure describing a dummy NETCONF session or NULL in case of error.
+ */
+struct nc_session* nc_session_dummy(const char* sid, const char* username, const struct nc_cpblts *capabilities);
+
+/**
  * @ingroup session
  * @brief Close NETCONF connection with the server and cleanup the session structure.
  *

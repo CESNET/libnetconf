@@ -87,18 +87,28 @@ void nc_filter_free(struct nc_filter *filter)
 	}
 }
 
-char* nc_reply_get_string(const nc_reply *reply)
+char* nc_msg_dump(const struct nc_msg *msg)
 {
 	xmlChar *buf;
 	int len;
 
-	if (reply == NULL || reply->doc == NULL) {
-		ERROR("nc_reply_get_string: invalid input parameter.");
+	if (msg == NULL || msg->doc == NULL) {
+		ERROR("%s: invalid input parameter.", __func__);
 		return (NULL);
 	}
 
-	xmlDocDumpFormatMemory(reply->doc, &buf, &len, 1);
+	xmlDocDumpFormatMemory(msg->doc, &buf, &len, 1);
 	return ((char*) buf);
+}
+
+char* nc_reply_dump(const nc_reply *reply)
+{
+	return (nc_msg_dump((struct nc_msg*)reply));
+}
+
+char* nc_rpc_dump(const nc_rpc *rpc)
+{
+	return (nc_msg_dump((struct nc_msg*)rpc));
 }
 
 nc_msgid nc_reply_get_msgid(const nc_reply *reply)
@@ -119,7 +129,7 @@ nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc)
 	}
 }
 
-NC_OP nc_rpc_get_operation(const nc_rpc *rpc)
+NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 {
 	if (rpc == NULL || rpc->doc == NULL) {
 		WARN("Invalid parameter for nc_rpc_get_operation().")

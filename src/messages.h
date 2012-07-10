@@ -60,12 +60,24 @@ struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, char* filter);
 void nc_filter_free(struct nc_filter *filter);
 
 /**
- * @brief Get content of the rpc-reply.
+ * @brief Dump the rpc-reply message into a string.
  * @ingroup reply
- * @param[in] reply reply message from the server.
- * @return String with the content of the NETCONF's <rpc-reply> element.
+ * @param[in] reply rpc-reply message.
+ * @return String in XML format containing the NETCONF's \<rpc-reply\> element
+ * and all its content.
  */
-char* nc_reply_get_string (const nc_reply *reply);
+char* nc_reply_dump (const nc_reply *reply);
+
+/**
+ * \todo Implement nc_reply_build()
+ * @ingroup reply
+ * @brief Build \<rpc-reply\> message from the string.
+ * This is the reverse function of the nc_reply_dump().
+ *
+ * @param[in] reply_dump String containing the NETCONF \<rpc-reply\> message.
+ * @return Complete reply structure used by libnetconf's functions.
+ */
+nc_reply* nc_reply_build (const char* reply_dump);
 
 /**
  * @ingroup reply
@@ -74,6 +86,26 @@ char* nc_reply_get_string (const nc_reply *reply);
  * @return message-id of the given rpc-reply message.
  */
 nc_msgid nc_reply_get_msgid(const nc_reply *reply);
+
+/**
+ * @brief Dump the rpc message into a string.
+ * @ingroup rpc
+ * @param[in] rpc rpc message.
+ * @return String in XML format containing the NETCONF's \<rpc\> element
+ * and all its content.
+ */
+char* nc_rpc_dump (const nc_rpc *rpc);
+
+/**
+ * \todo Implement nc_rpc_build()
+ * @ingroup rpc
+ * @brief Build \<rpc\> message from the string.
+ * This is the reverse function of the nc_rpc_dump().
+ *
+ * @param[in] rpc_dump String containing the NETCONF \<rpc\> message.
+ * @return Complete rpc structure used by libnetconf's functions.
+ */
+nc_rpc* nc_rpc_build (const char* rpc_dump);
 
 /**
  * @ingroup rpc
@@ -89,7 +121,16 @@ nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc);
  * @param[in] rpc rpc message.
  * @return Operation identification of the given rpc message.
  */
-NC_OP nc_rpc_get_operation(const nc_rpc *rpc);
+NC_OP nc_rpc_get_op(const nc_rpc *rpc);
+
+/**
+ * \todo Implement nc_rpc_get_op_content()
+ * @ingroup rpc
+ * @brief Get content of the operation specification from the given rpc.
+ * @param[in] rpc rpc message.
+ * @return String in XML form starting with the operation name element.
+ */
+char* nc_rpc_get_op_content(const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
