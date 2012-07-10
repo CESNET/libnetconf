@@ -320,6 +320,38 @@ struct nc_cpblts* nc_session_get_cpblts (const struct nc_session* session)
 	return (session->capabilities);
 }
 
+struct nc_session* nc_session_dummy(const char* sid, const char* username, const struct nc_cpblts *capabilities)
+{
+	struct nc_session * session;
+	char * cpblt;
+
+	if ((session = malloc (sizeof (struct nc_session))) == NULL) {
+		return NULL;
+	}
+
+	memset (session, 0, sizeof (struct nc_session));
+
+	/* set invalid fd values to prevent comunication */
+	session->fd_input = -1;
+	session->fd_output = -1;
+	session->libssh2_socket = -1;
+
+	/* copy session id */
+	strncpy (session->session_id, sid, SID_SIZE);
+	/* copy user name */
+	session->username = strdup (username);
+	/* create empty capabilities list */
+	session->capabilities = nc_cpblts_new (NULL);
+	/* initialize capabilities iterator */
+	nc_cpblts_iter_start (capabilities);
+	/* copy all capabilities */
+	while ((cpblt = nc_cpblts_iter_next (capabilities)) != NULL) {
+		nc_cpblts_add (session->capabilities, cpblt);
+	}
+
+	return session;
+}
+
 void nc_session_close (struct nc_session* session, const char* msg)
 {
 	nc_rpc *rpc_close = NULL;

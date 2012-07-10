@@ -44,7 +44,6 @@
 #include "netconf.h"
 
 /**
- * \todo Implement nc_session_dummy()
  * @ingroup session
  * @brief Create disconnected session structure.
  *
