@@ -4,14 +4,14 @@
 .SH NAME
 src/messages.h \- 
 .PP
-Functions to create NETCONF messages\&.  
+Functions to create NETCONF messages.  
 
 .SH SYNOPSIS
 .br
 .PP
-\fC#include 'netconf\&.h'\fP
+\fC#include 'netconf.h'\fP
 .br
-\fC#include 'error\&.h'\fP
+\fC#include 'error.h'\fP
 .br
 
 .SS "Functions"
@@ -20,135 +20,128 @@ Functions to create NETCONF messages\&.
 .ti -1c
 .RI "struct nc_filter * \fBnc_filter_new\fP (\fBNC_FILTER_TYPE\fP type, char *filter)"
 .br
-.RI "\fICreate new NETCONF filter of the specified type\&. \fP"
+.RI "\fICreate new NETCONF filter of the specified type. \fP"
 .ti -1c
 .RI "void \fBnc_filter_free\fP (struct nc_filter *filter)"
 .br
-.RI "\fIDestroy filter structure\&. \fP"
+.RI "\fIDestroy filter structure. \fP"
 .ti -1c
 .RI "char * \fBnc_reply_dump\fP (const \fBnc_reply\fP *reply)"
 .br
-.RI "\fIDump the rpc-reply message into a string\&. \fP"
+.RI "\fIDump the rpc-reply message into a string. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_reply_build\fP (const char *reply_dump)"
 .br
-.RI "\fIBuild <rpc-reply> message from the string\&. This is the reverse function of the \fBnc_reply_dump()\fP\&. \fP"
+.RI "\fIBuild <rpc-reply> message from the string. This is the reverse function of the \fBnc_reply_dump()\fP. \fP"
 .ti -1c
 .RI "\fBnc_msgid\fP \fBnc_reply_get_msgid\fP (const \fBnc_reply\fP *reply)"
 .br
-.RI "\fIGet message-id of the given rpc-reply\&. \fP"
+.RI "\fIGet message-id of the given rpc-reply. \fP"
 .ti -1c
 .RI "char * \fBnc_rpc_dump\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIDump the rpc message into a string\&. \fP"
+.RI "\fIDump the rpc message into a string. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_build\fP (const char *rpc_dump)"
 .br
-.RI "\fIBuild <rpc> message from the string\&. This is the reverse function of the \fBnc_rpc_dump()\fP\&. \fP"
+.RI "\fIBuild <rpc> message from the string. This is the reverse function of the \fBnc_rpc_dump()\fP. \fP"
 .ti -1c
 .RI "\fBnc_msgid\fP \fBnc_rpc_get_msgid\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet message-id of the given rpc\&. \fP"
+.RI "\fIGet message-id of the given rpc. \fP"
 .ti -1c
 .RI "\fBNC_OP\fP \fBnc_rpc_get_op\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet operation of the given rpc\&. \fP"
+.RI "\fIGet operation of the given rpc. \fP"
 .ti -1c
 .RI "char * \fBnc_rpc_get_op_content\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet content of the operation specification from the given rpc\&. \fP"
+.RI "\fIGet content of the operation specification from the given rpc. \fP"
 .ti -1c
 .RI "\fBNC_RPC_TYPE\fP \fBnc_rpc_get_type\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet type of the rpc message\&. \fP"
+.RI "\fIGet type of the rpc message. \fP"
 .ti -1c
 .RI "\fBNC_REPLY_TYPE\fP \fBnc_reply_get_type\fP (const \fBnc_reply\fP *reply)"
 .br
-.RI "\fIGet type of the rpc-reply message\&. \fP"
+.RI "\fIGet type of the rpc-reply message. \fP"
 .ti -1c
 .RI "char * \fBnc_reply_get_data\fP (const \fBnc_reply\fP *reply)"
 .br
-.RI "\fIGet content of the <data> element in <rpc-reply>\&. \fP"
+.RI "\fIGet content of the <data> element in <rpc-reply>. \fP"
 .ti -1c
 .RI "void \fBnc_rpc_free\fP (\fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIFree rpc message\&. \fP"
+.RI "\fIFree rpc message. \fP"
 .ti -1c
 .RI "void \fBnc_reply_free\fP (\fBnc_reply\fP *reply)"
 .br
-.RI "\fIFree reply message\&. \fP"
+.RI "\fIFree reply message. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_reply_ok\fP ()"
 .br
-.RI "\fICreate <ok> rpc-reply response\&. \fP"
+.RI "\fICreate <ok> rpc-reply response. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_reply_data\fP (const char *data)"
 .br
-.RI "\fICreate rpc-reply response with <data> content\&. \fP"
+.RI "\fICreate rpc-reply response with <data> content. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_reply_error\fP (const struct nc_err *error)"
 .br
-.RI "\fICreate rpc-reply response with <drpc-error> content\&. \fP"
+.RI "\fICreate rpc-reply response with <drpc-error> content. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_copyconfig\fP (\fBNC_DATASTORE_TYPE\fP source, \fBNC_DATASTORE_TYPE\fP target, const char *data)"
 .br
-.RI "\fICreate <copy-config> NETCONF rpc message\&. \fP"
+.RI "\fICreate <copy-config> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_deleteconfig\fP (\fBNC_DATASTORE_TYPE\fP target)"
 .br
-.RI "\fICreate <delete-config> NETCONF rpc message\&. \fP"
+.RI "\fICreate <delete-config> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_editconfig\fP (\fBNC_DATASTORE_TYPE\fP target, \fBNC_EDIT_DEFOP_TYPE\fP default_operation, \fBNC_EDIT_ERROPT_TYPE\fP error_option, const char *data)"
 .br
-.RI "\fICreate <edit-config> NETCONF rpc message\&. \fP"
+.RI "\fICreate <edit-config> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_get\fP (struct nc_filter *filter)"
 .br
-.RI "\fICreate <get> NETCONF rpc message\&. \fP"
+.RI "\fICreate <get> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE_TYPE\fP source, struct nc_filter *filter)"
 .br
-.RI "\fICreate <get-config> NETCONF rpc message\&. \fP"
+.RI "\fICreate <get-config> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_killsession\fP (const char *kill_sid)"
 .br
-.RI "\fICreate <kill-session> NETCONF rpc message\&. \fP"
+.RI "\fICreate <kill-session> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_lock\fP (\fBNC_DATASTORE_TYPE\fP target)"
 .br
-.RI "\fICreate <lock> NETCONF rpc message\&. \fP"
+.RI "\fICreate <lock> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_unlock\fP (\fBNC_DATASTORE_TYPE\fP target)"
 .br
-.RI "\fICreate <unlock> NETCONF rpc message\&. \fP"
+.RI "\fICreate <unlock> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_generic\fP (const char *data)"
 .br
-.RI "\fICreate a generic NETCONF rpc message with specified content\&. \fP"
+.RI "\fICreate a generic NETCONF rpc message with specified content. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
-Functions to create NETCONF messages\&. 
+Functions to create NETCONF messages. 
 
 \fBAuthor:\fP
 .RS 4
-Radek Krejci rkrejci@cesnet.cz Copyright (C) 2012 CESNET, z\&.s\&.p\&.o\&.
+Radek Krejci <rkrejci@cesnet.cz> Copyright (C) 2012 CESNET, z.s.p.o.
 .RE
 .PP
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-.IP "1." 4
-Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer\&.
-.IP "2." 4
-Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution\&.
-.IP "3." 4
-Neither the name of the Company nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission\&.
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. 3. Neither the name of the Company nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 .PP
+ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above.
 .PP
-ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above\&.
+This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage. 
 .PP
-This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
-.PP
-Definition in file \fBmessages\&.h\fP\&.
+Definition in file \fBmessages.h\fP.
 .SH "Author"
 .PP 
-Generated automatically by Doxygen for libnetconf from the source code\&.
+Generated automatically by Doxygen for libnetconf from the source code.
