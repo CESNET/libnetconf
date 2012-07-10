@@ -138,7 +138,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
  To send created NETCONF rpc message to the NETCONF server, use <a class="el" href="db/de9/group__rpc.html#ga5e74aefb070caa3437a4a2312c3dfc84" title="Send &lt;rpc&gt; request via specified NETCONF session. This function is supposed to be performed only by N...">nc_session_send_rpc()</a> function. <a class="el" href="db/de9/group__rpc.html#ga19f68212e621d7b556ee9e60ec71dc7a" title="Send &lt;rpc&gt; and receive &lt;rpc-reply&gt; via the specified NETCONF session.">nc_session_send_recv()</a> function connect sending and receiving the reply (see next step) into one blocking call.</li>
 <li><b>Get the server's rpc-reply message</b>. When the NETCONF rpc is sent, use <a class="el" href="d0/de2/group__reply.html#ga53fec7353656b7e9c7ca4742149dced0" title="Receive &lt;rpc-reply&gt; response from the specified NETCONF session. This function is supposed to be perf...">nc_session_recv_reply()</a> to receive the reply. To get know when the reply is coming, file descriptor of the communication channel can be checked by poll(), select(), ... This descriptor can be obtained via <a class="el" href="db/d52/group__session.html#ga826890ed745633bc2d31a53971dada32" title="Get input file descriptor to asynchronous control of input events.">nc_session_get_eventfd()</a> function.</li>
 <li><b>Close the NETCONF session</b>.<br/>
- When the communication is finnished, the NETCONF session is closed and all used structures are freed by <a class="el" href="db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd" title="Close NETCONF connection with the server and cleanup the session structure.">nc_session_close()</a>.</li>
+ When the communication is finnished, the NETCONF session is closed by <a class="el" href="db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd" title="Close NETCONF connection with the server.">nc_session_close()</a> and all used structures are freed by <a class="el" href="db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee" title="Cleanup the session structure and free all allocated resources.">nc_session_free()</a>.</li>
 <li><b>Free all created objects</b>.<br/>
  Do not forget to free created rpc messages (<a class="el" href="db/de9/group__rpc.html#ga4041bda37caa9eedb7a1e2534280f3df" title="Free rpc message.">nc_rpc_free()</a>), <a class="el" href="db/de9/group__rpc.html#ga3c58ae7be965b57a20681d137cae8c91">filters</a> (<a class="el" href="db/de9/group__rpc.html#ga0dbfd598d6fd303819817370cdf63229" title="Destroy filter structure.">nc_filter_free()</a>) or received NETCONF rpc-replies (<a class="el" href="d0/de2/group__reply.html#ga17aa9f38d7b75dec1a57b478b0b39710" title="Free reply message.">nc_reply_free()</a>).</li>
 </ol>
@@ -151,7 +151,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Tue Jul 10 2012 10:31:51 for libnetconf by
+    <li class="footer">Generated on Tue Jul 10 2012 14:14:18 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

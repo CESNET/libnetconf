@@ -77,12 +77,15 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 
 	/* receive incoming message */
 	if (nc_session_recv_rpc(config->session, &rpc) == 0) {
+		/* something really bad happend, and communication os not possible anymore */
+		nc_session_free(config->session);
+		event_base_loopbreak(config->event_base);
 		return;
 	}
 
 	/* process it */
 	req_type = nc_rpc_get_type(rpc);
-	req_op = nc_rpc_get_operation(rpc);
+	req_op = nc_rpc_get_op(rpc);
 	if (req_type == NC_RPC_SESSION) {
 		/* process operations affectinf session */
 		if (req_op == NC_OP_CLOSESESSION) {
@@ -156,6 +159,10 @@ int main(int argc, char *argv[])
 	/* add the event to the event base and run the main event loop */
 	event_add (config.event_input, NULL);
 	event_base_dispatch(config.event_base);
+
+	/* cleanup */
+	event_free(config.event_input);
+	event_base_free(config.event_base);
 
 	/* bye, bye */
 	return (EXIT_SUCCESS);

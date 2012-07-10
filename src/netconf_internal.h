@@ -160,12 +160,6 @@ struct callbacks {
  */
 extern struct callbacks callbacks;
 
-typedef enum {
-	NC_SESSION_STATUS_STARTUP = 0,
-	NC_SESSION_STATUS_WORKING = 1,
-	NC_SESSION_STATUS_CLOSED = 2
-} NC_SESSION_STATUS;
-
 /**
  * @ingroup internalAPI
  * @brief NETCONF session description structure

@@ -95,8 +95,8 @@
  * communication channel can be checked by poll(), select(), ... This descriptor
  * can be obtained via nc_session_get_eventfd() function.
  * -# **Close the NETCONF session**.\n
- * When the communication is finnished, the NETCONF session is closed and all
- * used structures are freed by nc_session_close().
+ * When the communication is finnished, the NETCONF session is closed by
+ * nc_session_close() and all used structures are freed by nc_session_free().
  * -# **Free all created objects**.\n
  * Do not forget to free created rpc messages (nc_rpc_free()),
  * \link nc_filter_new() filters\endlink (nc_filter_free()) or received NETCONF

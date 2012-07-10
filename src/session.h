@@ -65,14 +65,33 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 
 /**
  * @ingroup session
- * @brief Close NETCONF connection with the server and cleanup the session structure.
+ * @brief Close NETCONF connection with the server.
  *
- * Do not use given session structure after this call.
+ * Only nc_session_free() and nc_session_get_status() functions are allowed
+ * after this call.
  *
  * @param[in] session Session to close.
  * @param[in] msg Human readable reason for SSH session disconnection.
  */
 void nc_session_close (struct nc_session* session, const char* msg);
+
+/**
+ * @ingroup session
+ * @brief Cleanup the session structure and free all allocated resources.
+ *
+ * Do not use given session structure after this call.
+ *
+ * @param[in] session Session to free.
+ */
+void nc_session_free (struct nc_session* session);
+
+/**
+ * @ingroup session
+ * @brief Get information about the session current status.
+ * @param[in] session NETCONF session.
+ * @return NETCONF session status.
+ */
+NC_SESSION_STATUS nc_session_get_status (struct nc_session* session);
 
 /**
  * @ingroup session

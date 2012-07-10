@@ -391,17 +391,38 @@ void nc_session_close (struct nc_session* session, const char* msg)
 		if (session->port != NULL) {
 			free (session->port);
 		}
-		if (session->username != NULL) {
-			free (session->username);
+		if (session->libssh2_socket != -1) {
+			close (session->libssh2_socket);
 		}
-		close (session->libssh2_socket);
 
-		if (session->capabilities != NULL) {
-			nc_cpblts_free(session->capabilities);
-		}
-		memset (session, 0, sizeof(struct nc_session));
-		free (session);
+		/*
+		 * userbame, capabilities and session_id are untouched
+		 */
+		session->status = NC_SESSION_STATUS_CLOSED;
 	}
+}
+
+void nc_session_free (struct nc_session* session)
+{
+	nc_session_close(session, "Final closing of the NETCONF session.");
+
+	/* free items untouched by nc_session_close() */
+	if (session->username != NULL) {
+		free (session->username);
+	}
+	if (session->capabilities != NULL) {
+		nc_cpblts_free(session->capabilities);
+	}
+	free (session);
+}
+
+NC_SESSION_STATUS nc_session_get_status (struct nc_session* session)
+{
+	if (session == NULL) {
+		return (NC_SESSION_STATUS_ERROR);
+	}
+
+	return (session->status);
 }
 
 int nc_session_send (struct nc_session* session, struct nc_msg *msg)
@@ -778,6 +799,8 @@ struct nc_err* nc_msg_parse_error(struct nc_msg* msg)
 int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 {
 	struct nc_msg *retval;
+	nc_reply* reply;
+	struct nc_err* err;
 	char *text = NULL, *chunk = NULL;
 	size_t len;
 	unsigned long long int text_size = 0, total_len = 0;
@@ -791,7 +814,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	switch (session->version) {
 	case NETCONFV10:
 		if (nc_session_read_until (session, NC_V10_END_MSG, &text, &len) != 0) {
-			return (EXIT_FAILURE);
+			goto malformed_msg;
 		}
 		text[len - strlen (NC_V10_END_MSG)] = 0;
 		DBG("Received message: %s", text);
@@ -802,13 +825,13 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 				if (total_len > 0) {
 					free (text);
 				}
-				return (EXIT_FAILURE);
+				goto malformed_msg;
 			}
 			if (nc_session_read_until (session, "\n", &chunk, &len) != 0) {
 				if (total_len > 0) {
 					free (text);
 				}
-				return (EXIT_FAILURE);
+				goto malformed_msg;
 			}
 			if (strcmp (chunk, "#\n") == 0) {
 				/* end of chunked framing message */
@@ -820,7 +843,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 			chunk_length = strtoul (chunk, (char **) NULL, 10);
 			if (chunk_length == 0) {
 				ERROR("Invalid frame chunk size detected, fatal error.");
-				return (EXIT_FAILURE);
+				goto malformed_msg;
 			}
 			free (chunk);
 			chunk = NULL;
@@ -830,7 +853,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 				if (total_len > 0) {
 					free (text);
 				}
-				return (EXIT_FAILURE);
+				goto malformed_msg;
 			}
 
 			/* realloc resulting text buffer if needed (always needed now) */
@@ -838,7 +861,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 				text = realloc (text, total_len + len + 1);
 				if (text == NULL) {
 					ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
-					return (EXIT_FAILURE);
+					goto malformed_msg;
 				}
 				text[total_len] = '\0';
 				text_size = total_len + len + 1;
@@ -853,7 +876,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 		break;
 	default:
 		ERROR("Unsupported NETCONF protocol version (%d)", session->version);
-		return (EXIT_FAILURE);
+		goto malformed_msg;
 		break;
 	}
 
@@ -861,7 +884,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	if (retval == NULL) {
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 		free (text);
-		return (EXIT_FAILURE);
+		goto malformed_msg;
 	}
 	retval->error = NULL;
 
@@ -871,7 +894,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 		free (retval);
 		free (text);
 		ERROR("Invalid XML data received.");
-		return (EXIT_FAILURE);
+		goto malformed_msg;
 	}
 	free (text);
 
@@ -918,6 +941,28 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	/* return the result */
 	*msg = retval;
 	return (EXIT_SUCCESS);
+
+malformed_msg:
+	if (session->version == NETCONFV11) {
+		reply = nc_reply_error(err = nc_err_new(NC_ERR_MALFORMED_MSG));
+		if (reply == NULL) {
+			if (err != NULL) {
+				nc_err_free(err);
+			}
+			ERROR("Unable to create \'Malformed message\' reply");
+			nc_session_close(session, "Malformed NETCONF message received.");
+			return (EXIT_FAILURE);
+		}
+
+		nc_err_free(err);
+		nc_session_send_reply(session, NULL, reply);
+		nc_reply_free(reply);
+	}
+
+	ERROR("Malformed message received, closing the session %s.", session->session_id);
+	nc_session_close(session, "Malformed NETCONF message received.");
+
+	return (EXIT_FAILURE);
 }
 
 nc_msgid nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
@@ -1003,14 +1048,10 @@ nc_msgid nc_session_send_reply (struct nc_session* session, nc_rpc* rpc, nc_repl
 	int ret;
 	char msg_id_str[16];
 	struct nc_msg *msg;
+	nc_msgid retval = 0;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING)) {
 		ERROR("Invalid session to send <rpc-reply>.");
-		return (0); /* failure */
-	}
-
-	if (rpc == NULL) {
-		ERROR("Invalid <rpc> to reply.");
 		return (0); /* failure */
 	}
 
@@ -1019,19 +1060,26 @@ nc_msgid nc_session_send_reply (struct nc_session* session, nc_rpc* rpc, nc_repl
 		return (0); /* failure */
 	}
 
-	if (rpc->msgid == 0) {
+	if (rpc != NULL && rpc->msgid == 0) {
 		/* parse and store message-id */
 		rpc->msgid = nc_msg_parse_msgid(rpc);
 	}
 
 	/* TODO: lock for threads */
 	msg = nc_msg_dup ((struct nc_msg*) reply);
-	msg->msgid = rpc->msgid;
 
-	/* set message id */
-	if (xmlStrcmp (msg->doc->children->name, BAD_CAST "rpc-reply") == 0) {
-		sprintf (msg_id_str, "%llu", msg->msgid);
-		xmlSetProp (msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str);
+	if (rpc != NULL) {
+		/* set message id */
+		msg->msgid = rpc->msgid;
+		if (xmlStrcmp(msg->doc->children->name, BAD_CAST "rpc-reply") == 0) {
+			sprintf(msg_id_str, "%llu", msg->msgid);
+			xmlSetProp(msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str);
+		}
+	} else {
+		/* unknown message ID, send reply without it */
+		if (xmlStrcmp(msg->doc->children->name, BAD_CAST "rpc-reply") == 0) {
+			xmlRemoveProp(xmlHasProp(msg->doc->children, BAD_CAST "message-id"));
+		}
 	}
 
 	/* set proper namespace according to NETCONF version */
@@ -1041,12 +1089,13 @@ nc_msgid nc_session_send_reply (struct nc_session* session, nc_rpc* rpc, nc_repl
 	/* send message */
 	ret = nc_session_send (session, msg);
 
+	retval = msg->msgid;
 	nc_msg_free (msg);
 
 	if (ret != EXIT_SUCCESS) {
 		return (0);
 	} else {
-		return (msg->msgid);
+		return (retval);
 	}
 }
 
