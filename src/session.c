@@ -753,7 +753,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 		if (nc_session_read_until (session, NC_V10_END_MSG, &text, &len) != 0) {
 			return (EXIT_FAILURE);
 		}
-		text[len - 1 - strlen (NC_V10_END_MSG)] = 0;
+		text[len - strlen (NC_V10_END_MSG)] = 0;
 		DBG("Received message: %s", text);
 		break;
 	case NETCONFV11:
