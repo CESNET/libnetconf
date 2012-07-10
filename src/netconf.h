@@ -97,7 +97,8 @@ typedef enum NC_REPLY_TYPE {
 typedef enum NC_RPC_TYPE {
 	NC_RPC_UNKNOWN, /**< value describing that no supported operation type was detected so far */
 	NC_RPC_HELLO, /**< \<hello\> message type, same as NC_REPLY_HELLO */
-	NC_RPC_DATASTORE, /**< \<rpc\> contains operation affecting datastore */
+	NC_RPC_DATASTORE_READ, /**< \<rpc\> contains operation reading datastore */
+	NC_RPC_DATASTORE_WRITE, /**< \<rpc\> contains operation modifying datastore */
 	NC_RPC_SESSION, /**< \<rpc\> contains operation affecting session */
 } NC_RPC_TYPE;
 
