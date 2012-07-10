@@ -285,6 +285,14 @@ char *nc_cpblts_iter_next(struct nc_cpblts *c)
 	return (strdup(c->list[c->iter++]));
 }
 
+int nc_cpblts_count(struct nc_cpblts *c)
+{
+	if (c == NULL || c->list == NULL) {
+		return 0;
+	}
+	return c->items;
+}
+
 struct nc_cpblts *nc_session_get_cpblts_default ()
 {
 	struct nc_cpblts *retval;
