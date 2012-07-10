@@ -29,6 +29,10 @@ libnetconf's general public functions and structures definitions\&.
 
 .in +1c
 .ti -1c
+.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP =  -1, \fBNC_SESSION_STATUS_STARTUP\fP =  0, \fBNC_SESSION_STATUS_WORKING\fP =  1, \fBNC_SESSION_STATUS_CLOSED\fP =  2 }"
+.br
+.RI "\fIEnumeration of possible states of the NETCONF session\&. \fP"
+.ti -1c
 .RI "enum \fBNC_REPLY_TYPE\fP { \fBNC_REPLY_UNKNOWN\fP, \fBNC_REPLY_HELLO\fP, \fBNC_REPLY_OK\fP, \fBNC_REPLY_ERROR\fP, \fBNC_REPLY_DATA\fP }"
 .br
 .RI "\fIEnumeration of <rpc-reply> types\&. \fP"
@@ -134,7 +138,7 @@ bad-namespace in error-info - name of the unexpected namespace, contained in 'un
 \fB\fINC_ERR_PARAM_INFO_SID \fP\fP
 session-id in error-info - session ID of session holding the requested lock, contained in 'lock-denied' error\&. 
 .PP
-Definition at line 121 of file netconf\&.h\&.
+Definition at line 132 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_OP_TYPE\fP"
 
 .PP
@@ -154,7 +158,7 @@ Definition at line 121 of file netconf\&.h\&.
 \fB\fINC_EDIT_OP_REMOVE \fP\fP
 
 .PP
-Definition at line 200 of file netconf\&.h\&.
+Definition at line 211 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_DEFOP_TYPE\fP"
 
 .PP
@@ -168,7 +172,7 @@ Definition at line 200 of file netconf\&.h\&.
 \fB\fINC_EDIT_DEFOP_REPLACE \fP\fP
 
 .PP
-Definition at line 210 of file netconf\&.h\&.
+Definition at line 221 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_ERROPT_TYPE\fP"
 
 .PP
@@ -182,7 +186,7 @@ Definition at line 210 of file netconf\&.h\&.
 \fB\fINC_EDIT_ERROPT_ROLLBACK \fP\fP
 
 .PP
-Definition at line 216 of file netconf\&.h\&.
+Definition at line 227 of file netconf\&.h\&.
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

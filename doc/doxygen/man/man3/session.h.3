@@ -24,7 +24,15 @@ Functions to handle NETCONF sessions\&.
 .ti -1c
 .RI "void \fBnc_session_close\fP (struct nc_session *session, const char *msg)"
 .br
-.RI "\fIClose NETCONF connection with the server and cleanup the session structure\&. \fP"
+.RI "\fIClose NETCONF connection with the server\&. \fP"
+.ti -1c
+.RI "void \fBnc_session_free\fP (struct nc_session *session)"
+.br
+.RI "\fICleanup the session structure and free all allocated resources\&. \fP"
+.ti -1c
+.RI "\fBNC_SESSION_STATUS\fP \fBnc_session_get_status\fP (struct nc_session *session)"
+.br
+.RI "\fIGet information about the session current status\&. \fP"
 .ti -1c
 .RI "int \fBnc_session_get_version\fP (const struct nc_session *session)"
 .br
@@ -81,6 +89,10 @@ Functions to handle NETCONF sessions\&.
 .RI "char * \fBnc_cpblts_iter_next\fP (struct nc_cpblts *c)"
 .br
 .RI "\fIGet the next capability string from the given NETCONF capabilities structure\&. \fP"
+.ti -1c
+.RI "int \fBnc_cpblts_count\fP (struct nc_cpblts *c)"
+.br
+.RI "\fIGet number of capabilities in structure\&. \fP"
 .ti -1c
 .RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP ()"
 .br
