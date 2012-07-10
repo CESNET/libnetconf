@@ -189,6 +189,17 @@ char *nc_cpblts_iter_next(struct nc_cpblts *c);
 
 /**
  * @ingroup session
+ * @brief Get number of capabilities in structure.
+ *
+ * Use this function to get count of capabilities held by nc_cpblts structure.
+ *
+ * @param c NETCONF capabilities structure.
+ * @return Number of capabilities held by structure c.
+ */
+int nc_cpblts_count(struct nc_cpblts *c);
+
+/**
+ * @ingroup session
  * @brief Get NULL terminated list of default capabilities supported by libnetconf.
  *
  * Caller is supposed to free all returned strings.
