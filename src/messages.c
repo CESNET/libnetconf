@@ -751,7 +751,7 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE_TYPE source, struct nc_filter *filter)
 	}
 
 	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	rpc->type.rpc = NC_RPC_DATASTORE_READ;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -774,7 +774,7 @@ nc_rpc *nc_rpc_get(struct nc_filter *filter)
 	}
 
 	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	rpc->type.rpc = NC_RPC_DATASTORE_READ;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -822,7 +822,7 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE_TYPE target)
 	}
 
 	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_READ;
+	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -868,7 +868,7 @@ nc_rpc *nc_rpc_lock(NC_DATASTORE_TYPE target)
 	}
 
 	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_READ;
+	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
 	xmlFreeNode(content);
 
 	return (rpc);
