@@ -258,7 +258,7 @@ char * nc_rpc_get_op_content (const nc_rpc * rpc)
 	}
 
 	buffer = xmlBufferCreate ();
-	xmlNodeDump (buffer, rpc->doc, root, 1, 1);
+	xmlNodeDump (buffer, rpc->doc, root->children, 1, 1);
 	retval = (char *)xmlBufferContent (buffer);
 	xmlBufferFree (buffer);
 
