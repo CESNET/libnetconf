@@ -619,7 +619,7 @@ static int process_filter_param (xmlNodePtr content, struct nc_filter* filter)
 	return (EXIT_SUCCESS);
 }
 
-nc_rpc *nc_rpc_getconfig(NC_DATASTORE_TYPE source, struct nc_filter *filter)
+nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, struct nc_filter *filter)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_source;
@@ -695,7 +695,7 @@ nc_rpc *nc_rpc_get(struct nc_filter *filter)
 
 }
 
-nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE_TYPE target)
+nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_target;
@@ -742,7 +742,7 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE_TYPE target)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_lock(NC_DATASTORE_TYPE target)
+nc_rpc *nc_rpc_lock(NC_DATASTORE target)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_target;
@@ -788,7 +788,7 @@ nc_rpc *nc_rpc_lock(NC_DATASTORE_TYPE target)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_unlock(NC_DATASTORE_TYPE target)
+nc_rpc *nc_rpc_unlock(NC_DATASTORE target)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_target;
@@ -834,12 +834,12 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE_TYPE target)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_copyconfig(NC_DATASTORE_TYPE source, NC_DATASTORE_TYPE target, const char *data)
+nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *data)
 {
 	nc_rpc *rpc;
 	xmlDocPtr doc_data;
 	xmlNodePtr content, node_target, node_source, config;
-	NC_DATASTORE_TYPE params[2] = {source, target};
+	NC_DATASTORE params[2] = {source, target};
 	char *datastores[2]; /* 0 - source, 1 - target */
 	int i;
 
@@ -949,7 +949,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE_TYPE source, NC_DATASTORE_TYPE target, co
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_editconfig(NC_DATASTORE_TYPE target, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, const char *data)
+nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, const char *data)
 {
 	nc_rpc *rpc;
 	xmlDocPtr doc_data;

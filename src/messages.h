@@ -213,7 +213,7 @@ nc_reply *nc_reply_error(const struct nc_err* error);
  * source datastore, this parameter is ignored.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_copyconfig(NC_DATASTORE_TYPE source, NC_DATASTORE_TYPE target, const char *data);
+nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *data);
 
 /**
  * @ingroup rpc
@@ -222,7 +222,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE_TYPE source, NC_DATASTORE_TYPE target, co
  * @param[in] target Target configuration datastore type to be deleted.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE_TYPE target);
+nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target);
 
 /**
  * @ingroup rpc
@@ -238,7 +238,7 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE_TYPE target);
  *
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_editconfig(NC_DATASTORE_TYPE target, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, const char *data);
+nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, const char *data);
 
 /**
  * @ingroup rpc
@@ -257,7 +257,7 @@ nc_rpc *nc_rpc_get(struct nc_filter *filter);
  * @param[in] filter NETCONF filter or NULL if no filter required.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_getconfig(NC_DATASTORE_TYPE source, struct nc_filter *filter);
+nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, struct nc_filter *filter);
 
 /**
  * @ingroup rpc
@@ -275,7 +275,7 @@ nc_rpc *nc_rpc_killsession(const char *kill_sid);
  * @param[in] target Target configuration datastore type to be locked.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_lock(NC_DATASTORE_TYPE target);
+nc_rpc *nc_rpc_lock(NC_DATASTORE target);
 
 /**
  * @ingroup rpc
@@ -284,7 +284,7 @@ nc_rpc *nc_rpc_lock(NC_DATASTORE_TYPE target);
  * @param[in] target Target configuration datastore type to be unlocked.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_unlock(NC_DATASTORE_TYPE target);
+nc_rpc *nc_rpc_unlock(NC_DATASTORE target);
 
 /**
  * @ingroup rpc
