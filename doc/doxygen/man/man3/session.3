@@ -1,10 +1,10 @@
-.TH "NETCONF Session" 3 "Tue Jul 10 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Wed Jul 11 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 NETCONF Session \- 
 .PP
-libnetconf's functions for handling NETCONF sessions.  
+libnetconf's functions for handling NETCONF sessions\&.  
 
 .SS "Typedefs"
 
@@ -12,19 +12,19 @@ libnetconf's functions for handling NETCONF sessions.
 .ti -1c
 .RI "typedef long long unsigned int \fBnc_msgid\fP"
 .br
-.RI "\fIType representing NETCONF message-id attribute. \fP"
+.RI "\fIType representing NETCONF message-id attribute\&. \fP"
 .in -1c
 .SS "Enumerations"
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP =  -1, \fBNC_SESSION_STATUS_STARTUP\fP =  0, \fBNC_SESSION_STATUS_WORKING\fP =  1, \fBNC_SESSION_STATUS_CLOSED\fP =  2 }"
+.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP =  -1, \fBNC_SESSION_STATUS_STARTUP\fP =  0, \fBNC_SESSION_STATUS_WORKING\fP =  1, \fBNC_SESSION_STATUS_CLOSED\fP =  2, \fBNC_SESSION_STATUS_DUMMY\fP =  3 }"
 .br
-.RI "\fIEnumeration of possible states of the NETCONF session. \fP"
+.RI "\fIEnumeration of possible states of the NETCONF session\&. \fP"
 .ti -1c
 .RI "enum \fBNC_SSH_AUTH_TYPE\fP { \fBNC_SSH_AUTH_PUBLIC_KEYS\fP =  1, \fBNC_SSH_AUTH_PASSWORD\fP =  2, \fBNC_SSH_AUTH_INTERACTIVE\fP =  4 }"
 .br
-.RI "\fIAvailable SSH authentication mechanisms. \fP"
+.RI "\fIAvailable SSH authentication mechanisms\&. \fP"
 .in -1c
 .SS "Functions"
 
@@ -32,135 +32,139 @@ libnetconf's functions for handling NETCONF sessions.
 .ti -1c
 .RI "void \fBnc_callback_sshauth_interactive\fP (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))"
 .br
-.RI "\fISet callback function for passing user credentials into libssh2's keyboard-interactive authentication method. \fP"
+.RI "\fISet callback function for passing user credentials into libssh2's keyboard-interactive authentication method\&. \fP"
 .ti -1c
 .RI "void \fBnc_callback_sshauth_password\fP (char *(*func)(const char *username, const char *hostname))"
 .br
-.RI "\fISet callback function for passing user password into libssh2's password authentication method when connecting to 'hostname' as 'username'. \fP"
+.RI "\fISet callback function for passing user password into libssh2's password authentication method when connecting to 'hostname' as 'username'\&. \fP"
 .ti -1c
 .RI "void \fBnc_callback_sshauth_passphrase\fP (char *(*func)(const char *username, const char *hostname, const char *priv_key_file))"
 .br
-.RI "\fISet callback function for passing user password into libssh2's publickey authentication method when connecting to 'hostname' as 'username'. \fP"
+.RI "\fISet callback function for passing user password into libssh2's publickey authentication method when connecting to 'hostname' as 'username'\&. \fP"
 .ti -1c
 .RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, int keytype, const char *fingerprint))"
 .br
-.RI "\fISet callback function to authorize authenticity of an unknown host. \fP"
+.RI "\fISet callback function to authorize authenticity of an unknown host\&. \fP"
 .ti -1c
 .RI "void \fBnc_set_publickey_path\fP (const char *path)"
 .br
-.RI "\fISet path to publickey file used in case of SSH authentication via publickey mechanism. \fP"
+.RI "\fISet path to publickey file used in case of SSH authentication via publickey mechanism\&. \fP"
 .ti -1c
 .RI "void \fBnc_set_privatekey_path\fP (const char *path)"
 .br
-.RI "\fISet path to privatekey file used in case of SSH authentication via publickey mechanism. \fP"
+.RI "\fISet path to privatekey file used in case of SSH authentication via publickey mechanism\&. \fP"
 .ti -1c
 .RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, const struct nc_cpblts *capabilities)"
 .br
-.RI "\fICreate disconnected session structure. \fP"
+.RI "\fICreate disconnected session structure\&. \fP"
 .ti -1c
 .RI "void \fBnc_session_close\fP (struct nc_session *session, const char *msg)"
 .br
-.RI "\fIClose NETCONF connection with the server. \fP"
+.RI "\fIClose NETCONF connection with the server\&. \fP"
 .ti -1c
 .RI "void \fBnc_session_free\fP (struct nc_session *session)"
 .br
-.RI "\fICleanup the session structure and free all allocated resources. \fP"
+.RI "\fICleanup the session structure and free all allocated resources\&. \fP"
 .ti -1c
 .RI "\fBNC_SESSION_STATUS\fP \fBnc_session_get_status\fP (struct nc_session *session)"
 .br
-.RI "\fIGet information about the session current status. \fP"
+.RI "\fIGet information about the session current status\&. \fP"
 .ti -1c
 .RI "int \fBnc_session_get_version\fP (const struct nc_session *session)"
 .br
-.RI "\fIGet NETCONF protocol version used in the given session. \fP"
+.RI "\fIGet NETCONF protocol version used in the given session\&. \fP"
 .ti -1c
 .RI "int \fBnc_session_get_eventfd\fP (const struct nc_session *session)"
 .br
-.RI "\fIGet input file descriptor to asynchronous control of input events. \fP"
+.RI "\fIGet input file descriptor to asynchronous control of input events\&. \fP"
 .ti -1c
 .RI "char * \fBnc_session_get_id\fP (const struct nc_session *session)"
 .br
-.RI "\fIGet NETCONF session ID. \fP"
+.RI "\fIGet NETCONF session ID\&. \fP"
 .ti -1c
 .RI "char * \fBnc_session_get_host\fP (const struct nc_session *session)"
 .br
-.RI "\fIGet NETCONF session host. \fP"
+.RI "\fIGet NETCONF session host\&. \fP"
 .ti -1c
 .RI "char * \fBnc_session_get_port\fP (const struct nc_session *session)"
 .br
-.RI "\fIGet NETCONF session port number. \fP"
+.RI "\fIGet NETCONF session port number\&. \fP"
 .ti -1c
 .RI "char * \fBnc_session_get_user\fP (const struct nc_session *session)"
 .br
-.RI "\fIGet NETCONF session username. \fP"
+.RI "\fIGet NETCONF session username\&. \fP"
 .ti -1c
 .RI "struct nc_cpblts * \fBnc_session_get_cpblts\fP (const struct nc_session *session)"
 .br
-.RI "\fIGet NULL terminated list of capabilities associated with the session. \fP"
+.RI "\fIGet NULL terminated list of capabilities associated with the session\&. \fP"
 .ti -1c
 .RI "struct nc_cpblts * \fBnc_cpblts_new\fP (char **list)"
 .br
-.RI "\fICreate new NETCONF capabilities structure. \fP"
+.RI "\fICreate new NETCONF capabilities structure\&. \fP"
 .ti -1c
 .RI "void \fBnc_cpblts_free\fP (struct nc_cpblts *c)"
 .br
-.RI "\fIFree NETCONF capabilities structure. \fP"
+.RI "\fIFree NETCONF capabilities structure\&. \fP"
 .ti -1c
 .RI "int \fBnc_cpblts_add\fP (struct nc_cpblts *capabilities, const char *capability_string)"
 .br
-.RI "\fIAdd another one capability string into the NETCONF capabilities structure. \fP"
+.RI "\fIAdd another one capability string into the NETCONF capabilities structure\&. \fP"
 .ti -1c
 .RI "int \fBnc_cpblts_remove\fP (struct nc_cpblts *capabilities, const char *capability_string)"
 .br
-.RI "\fIRemove specified capability string from the NETCONF capabilities structure. \fP"
+.RI "\fIRemove specified capability string from the NETCONF capabilities structure\&. \fP"
 .ti -1c
 .RI "int \fBnc_cpblts_enabled\fP (struct nc_session *session, const char *capability_string)"
 .br
-.RI "\fICheck if the given capability is supported by the session. \fP"
+.RI "\fICheck if the given capability is supported by the session\&. \fP"
 .ti -1c
 .RI "void \fBnc_cpblts_iter_start\fP (struct nc_cpblts *c)"
 .br
-.RI "\fIMove NETCONF capabilities structure iterator to the beginning of the capability strings list. \fP"
+.RI "\fIMove NETCONF capabilities structure iterator to the beginning of the capability strings list\&. \fP"
 .ti -1c
 .RI "char * \fBnc_cpblts_iter_next\fP (struct nc_cpblts *c)"
 .br
-.RI "\fIGet the next capability string from the given NETCONF capabilities structure. \fP"
+.RI "\fIGet the next capability string from the given NETCONF capabilities structure\&. \fP"
 .ti -1c
 .RI "int \fBnc_cpblts_count\fP (struct nc_cpblts *c)"
 .br
-.RI "\fIGet number of capabilities in structure. \fP"
+.RI "\fIGet number of capabilities in structure\&. \fP"
 .ti -1c
 .RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP ()"
 .br
-.RI "\fIGet NULL terminated list of default capabilities supported by libnetconf. \fP"
+.RI "\fIGet NULL terminated list of default capabilities supported by libnetconf\&. \fP"
 .ti -1c
 .RI "void \fBnc_ssh_pref\fP (\fBNC_SSH_AUTH_TYPE\fP type, short int preference)"
 .br
-.RI "\fISet preference of the SSH authentication methods. \fP"
+.RI "\fISet preference of the SSH authentication methods\&. \fP"
 .ti -1c
 .RI "struct nc_session * \fBnc_session_connect\fP (const char *host, unsigned short port, const char *username, struct nc_cpblts *cpblts)"
 .br
-.RI "\fICreate NETCONF session to the specified server. \fP"
+.RI "\fICreate NETCONF session to the specified server\&. \fP"
 .ti -1c
 .RI "struct nc_session * \fBnc_session_accept\fP (struct nc_cpblts *capabilities)"
 .br
-.RI "\fIAccept NETCONF session from a client. \fP"
+.RI "\fIAccept NETCONF session from a client\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
-libnetconf's functions for handling NETCONF sessions. 
+libnetconf's functions for handling NETCONF sessions\&. 
+
+
 .SH "Typedef Documentation"
 .PP 
 .SS "typedef long long unsigned int \fBnc_msgid\fP"
+
 .PP
-Type representing NETCONF message-id attribute. 
+Type representing NETCONF message-id attribute\&. 
 .PP
-Definition at line 61 of file netconf.h.
+Definition at line 61 of file netconf\&.h\&.
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_SESSION_STATUS\fP"
+
 .PP
-Enumeration of possible states of the NETCONF session. 
+Enumeration of possible states of the NETCONF session\&. 
 .PP
 \fBEnumerator: \fP
 .in +1c
@@ -176,11 +180,15 @@ session is established and ready to work
 .TP
 \fB\fINC_SESSION_STATUS_CLOSED \fP\fP
 session was closed and could not be used to communication 
+.TP
+\fB\fINC_SESSION_STATUS_DUMMY \fP\fP
+session is DUMMY, only holds information, does not provide connection 
 .PP
-Definition at line 85 of file netconf.h.
+Definition at line 85 of file netconf\&.h\&.
 .SS "enum \fBNC_SSH_AUTH_TYPE\fP"
+
 .PP
-Available SSH authentication mechanisms. 
+Available SSH authentication mechanisms\&. 
 .PP
 \fBEnumerator: \fP
 .in +1c
@@ -194,196 +202,141 @@ SSH user authorization via password
 \fB\fINC_SSH_AUTH_INTERACTIVE \fP\fP
 interactive SSH user authorization 
 .PP
-Definition at line 49 of file ssh.h.
+Definition at line 49 of file ssh\&.h\&.
 .SH "Function Documentation"
 .PP 
-.SS "void nc_callback_sshauth_interactive (void(*)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract)func)"
+.SS "void \fBnc_callback_sshauth_interactive\fP (void(*)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract)func)"
+
 .PP
-Set callback function for passing user credentials into libssh2's keyboard-interactive authentication method. \fBParameters:\fP
+Set callback function for passing user credentials into libssh2's keyboard-interactive authentication method\&. \fBParameters:\fP
 .RS 4
-\fIfunc\fP Callback function to use. 
+\fIfunc\fP Callback function to use\&. 
 .RE
 .PP
 
-.SS "void nc_callback_sshauth_password (char *(*)(const char *username, const char *hostname)func)"
+.SS "void \fBnc_callback_sshauth_password\fP (char *(*)(const char *username, const char *hostname)func)"
+
 .PP
-Set callback function for passing user password into libssh2's password authentication method when connecting to 'hostname' as 'username'. \fBParameters:\fP
+Set callback function for passing user password into libssh2's password authentication method when connecting to 'hostname' as 'username'\&. \fBParameters:\fP
 .RS 4
-\fIfunc\fP Callback function to use. 
+\fIfunc\fP Callback function to use\&. 
 .RE
 .PP
 
-.SS "void nc_callback_sshauth_passphrase (char *(*)(const char *username, const char *hostname, const char *priv_key_file)func)"
+.SS "void \fBnc_callback_sshauth_passphrase\fP (char *(*)(const char *username, const char *hostname, const char *priv_key_file)func)"
+
 .PP
-Set callback function for passing user password into libssh2's publickey authentication method when connecting to 'hostname' as 'username'. \fBParameters:\fP
+Set callback function for passing user password into libssh2's publickey authentication method when connecting to 'hostname' as 'username'\&. \fBParameters:\fP
 .RS 4
-\fIfunc\fP Callback function to use. 
+\fIfunc\fP Callback function to use\&. 
 .RE
 .PP
 
-.SS "void nc_callback_ssh_host_authenticity_check (int(*)(const char *hostname, int keytype, const char *fingerprint)func)"
+.SS "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*)(const char *hostname, int keytype, const char *fingerprint)func)"
+
 .PP
-Set callback function to authorize authenticity of an unknown host. \fBParameters:\fP
+Set callback function to authorize authenticity of an unknown host\&. \fBParameters:\fP
 .RS 4
-\fIfunc\fP Callback function to use. 
+\fIfunc\fP Callback function to use\&. 
 .RE
 .PP
 
-.SS "void nc_set_publickey_path (const char *path)"
+.SS "void \fBnc_set_publickey_path\fP (const char *path)"
+
 .PP
-Set path to publickey file used in case of SSH authentication via publickey mechanism. \fBParameters:\fP
+Set path to publickey file used in case of SSH authentication via publickey mechanism\&. \fBParameters:\fP
 .RS 4
-\fIpath\fP Path to the file to use. 
+\fIpath\fP Path to the file to use\&. 
 .RE
 .PP
 
-.SS "void nc_set_privatekey_path (const char *path)"
+.SS "void \fBnc_set_privatekey_path\fP (const char *path)"
+
 .PP
-Set path to privatekey file used in case of SSH authentication via publickey mechanism. \fBParameters:\fP
+Set path to privatekey file used in case of SSH authentication via publickey mechanism\&. \fBParameters:\fP
 .RS 4
 \fIpath\fP 
 .RE
 .PP
 
-.SS "struct nc_session* nc_session_dummy (const char *sid, const char *username, const struct nc_cpblts *capabilities)\fC [read]\fP"
+.SS "struct nc_session* \fBnc_session_dummy\fP (const char *sid, const char *username, const struct nc_cpblts *capabilities)\fC [read]\fP"
+
 .PP
-Create disconnected session structure. This creates dummy session structure which is not supposed to pass NETCONF messages between client and server. Instead, it can be successfully used by server (e.g. detached process that doesn't hold the real session structure) to access NETCONF datastores via libnetconf.
+Create disconnected session structure\&. This creates dummy session structure which is not supposed to pass NETCONF messages between client and server\&. Instead, it can be successfully used by server (e\&.g\&. detached process that doesn't hold the real session structure) to access NETCONF datastores via libnetconf\&.
 .PP
-All required parameters can be obtained from the real session structure by the session getter functions (\fBnc_session_get_id()\fP, \fBnc_session_get_user()\fP and \fBnc_session_get_cpblts()\fP). NULL values are not allowed.
+All required parameters can be obtained from the real session structure by the session getter functions (\fBnc_session_get_id()\fP, \fBnc_session_get_user()\fP and \fBnc_session_get_cpblts()\fP)\&. NULL values are not allowed\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIsid\fP Session ID. 
+\fIsid\fP Session ID\&. 
 .br
-\fIusername\fP Name of the user holding the session. 
+\fIusername\fP Name of the user holding the session\&. 
 .br
-\fIcapabilities\fP List of capabilities supported by the session. 
+\fIcapabilities\fP List of capabilities supported by the session\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Structure describing a dummy NETCONF session or NULL in case of error. 
+Structure describing a dummy NETCONF session or NULL in case of error\&. 
 .RE
 .PP
 
-.SS "void nc_session_close (struct nc_session *session, const char *msg)"
+.SS "void \fBnc_session_close\fP (struct nc_session *session, const char *msg)"
+
 .PP
-Close NETCONF connection with the server. Only \fBnc_session_free()\fP and \fBnc_session_get_status()\fP functions are allowed after this call.
+Close NETCONF connection with the server\&. Only \fBnc_session_free()\fP and \fBnc_session_get_status()\fP functions are allowed after this call\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIsession\fP Session to close. 
+\fIsession\fP Session to close\&. 
 .br
-\fImsg\fP Human readable reason for SSH session disconnection. 
+\fImsg\fP Human readable reason for SSH session disconnection\&. 
 .RE
 .PP
 
-.SS "void nc_session_free (struct nc_session *session)"
+.SS "void \fBnc_session_free\fP (struct nc_session *session)"
+
 .PP
-Cleanup the session structure and free all allocated resources. Do not use given session structure after this call.
+Cleanup the session structure and free all allocated resources\&. Do not use given session structure after this call\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIsession\fP Session to free. 
+\fIsession\fP Session to free\&. 
 .RE
 .PP
 
-.SS "\fBNC_SESSION_STATUS\fP nc_session_get_status (struct nc_session *session)"
+.SS "\fBNC_SESSION_STATUS\fP \fBnc_session_get_status\fP (struct nc_session *session)"
+
 .PP
-Get information about the session current status. \fBParameters:\fP
+Get information about the session current status\&. \fBParameters:\fP
 .RS 4
-\fIsession\fP NETCONF session. 
+\fIsession\fP NETCONF session\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-NETCONF session status. 
+NETCONF session status\&. 
 .RE
 .PP
 
-.SS "int nc_session_get_version (const struct nc_session *session)"
+.SS "int \fBnc_session_get_version\fP (const struct nc_session *session)"
+
 .PP
-Get NETCONF protocol version used in the given session. \fBParameters:\fP
+Get NETCONF protocol version used in the given session\&. \fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session structure 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-NETCONF protocol version, 0 for 1.0, 1 for 1.1 
+NETCONF protocol version, 0 for 1\&.0, 1 for 1\&.1 
 .RE
 .PP
 
-.SS "int nc_session_get_eventfd (const struct nc_session *session)"
-.PP
-Get input file descriptor to asynchronous control of input events. Caller must avoid direct reading from the returned file descriptor. It is supposed to be used only by select, poll, epoll or an event library (e.g. libevent).
-.PP
-\fBParameters:\fP
-.RS 4
-\fIsession\fP NETCONF session structure 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-Input file descriptor of the communication channel. 
-.RE
-.PP
+.SS "int \fBnc_session_get_eventfd\fP (const struct nc_session *session)"
 
-.SS "char* nc_session_get_id (const struct nc_session *session)"
 .PP
-Get NETCONF session ID. \fBParameters:\fP
-.RS 4
-\fIsession\fP NETCONF session structure 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-Copy of the string identifying NETCONF session. Caller is supposed to free returned value; 
-.RE
-.PP
-
-.SS "char* nc_session_get_host (const struct nc_session *session)"
-.PP
-Get NETCONF session host. \fBParameters:\fP
-.RS 4
-\fIsession\fP NETCONF session structure 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-Copy of the string identifying NETCONF session server host. Caller is supposed to free returned value; 
-.RE
-.PP
-
-.SS "char* nc_session_get_port (const struct nc_session *session)"
-.PP
-Get NETCONF session port number. \fBParameters:\fP
-.RS 4
-\fIsession\fP NETCONF session structure 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-Copy of the string identifying NETCONF session server host. Caller is supposed to free returned value; 
-.RE
-.PP
-
-.SS "char* nc_session_get_user (const struct nc_session *session)"
-.PP
-Get NETCONF session username. \fBParameters:\fP
-.RS 4
-\fIsession\fP NETCONF session structure 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-Copy of the string identifying NETCONF session server host. Caller is supposed to free returned value; 
-.RE
-.PP
-
-.SS "struct nc_cpblts* nc_session_get_cpblts (const struct nc_session *session)\fC [read]\fP"
-.PP
-Get NULL terminated list of capabilities associated with the session. Returned list is a copy of the original list associated with the session. Caller is supposed to free all returned strings.
+Get input file descriptor to asynchronous control of input events\&. Caller must avoid direct reading from the returned file descriptor\&. It is supposed to be used only by select, poll, epoll or an event library (e\&.g\&. libevent)\&.
 .PP
 \fBParameters:\fP
 .RS 4
@@ -392,38 +345,113 @@ Get NULL terminated list of capabilities associated with the session. Returned l
 .PP
 \fBReturns:\fP
 .RS 4
-NETCONF capabilities structure containing capabilities associated with the given session. NULL is returned on error. 
+Input file descriptor of the communication channel\&. 
 .RE
 .PP
 
-.SS "struct nc_cpblts* nc_cpblts_new (char **list)\fC [read]\fP"
+.SS "char* \fBnc_session_get_id\fP (const struct nc_session *session)"
+
 .PP
-Create new NETCONF capabilities structure. \fBParameters:\fP
+Get NETCONF session ID\&. \fBParameters:\fP
 .RS 4
-\fIlist\fP NULL terminated list of capabilities strings to initially add into the NETCONF capabilities structure. 
+\fIsession\fP NETCONF session structure 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Created NETCONF capabilities structure. 
+Copy of the string identifying NETCONF session\&. Caller is supposed to free returned value; 
 .RE
 .PP
 
-.SS "void nc_cpblts_free (struct nc_cpblts *c)"
+.SS "char* \fBnc_session_get_host\fP (const struct nc_session *session)"
+
 .PP
-Free NETCONF capabilities structure. \fBParameters:\fP
+Get NETCONF session host\&. \fBParameters:\fP
 .RS 4
-\fIc\fP Capabilities structure to free. 
+\fIsession\fP NETCONF session structure 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Copy of the string identifying NETCONF session server host\&. Caller is supposed to free returned value; 
 .RE
 .PP
 
-.SS "int nc_cpblts_add (struct nc_cpblts *capabilities, const char *capability_string)"
+.SS "char* \fBnc_session_get_port\fP (const struct nc_session *session)"
+
 .PP
-Add another one capability string into the NETCONF capabilities structure. \fBParameters:\fP
+Get NETCONF session port number\&. \fBParameters:\fP
 .RS 4
-\fIcapabilities\fP Current NETCONF capabilities structure. 
+\fIsession\fP NETCONF session structure 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Copy of the string identifying NETCONF session server host\&. Caller is supposed to free returned value; 
+.RE
+.PP
+
+.SS "char* \fBnc_session_get_user\fP (const struct nc_session *session)"
+
+.PP
+Get NETCONF session username\&. \fBParameters:\fP
+.RS 4
+\fIsession\fP NETCONF session structure 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Copy of the string identifying NETCONF session server host\&. Caller is supposed to free returned value; 
+.RE
+.PP
+
+.SS "struct nc_cpblts* \fBnc_session_get_cpblts\fP (const struct nc_session *session)\fC [read]\fP"
+
+.PP
+Get NULL terminated list of capabilities associated with the session\&. Returned list is a copy of the original list associated with the session\&. Caller is supposed to free all returned strings\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsession\fP NETCONF session structure 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+NETCONF capabilities structure containing capabilities associated with the given session\&. NULL is returned on error\&. 
+.RE
+.PP
+
+.SS "struct nc_cpblts* \fBnc_cpblts_new\fP (char **list)\fC [read]\fP"
+
+.PP
+Create new NETCONF capabilities structure\&. \fBParameters:\fP
+.RS 4
+\fIlist\fP NULL terminated list of capabilities strings to initially add into the NETCONF capabilities structure\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Created NETCONF capabilities structure\&. 
+.RE
+.PP
+
+.SS "void \fBnc_cpblts_free\fP (struct nc_cpblts *c)"
+
+.PP
+Free NETCONF capabilities structure\&. \fBParameters:\fP
+.RS 4
+\fIc\fP Capabilities structure to free\&. 
+.RE
+.PP
+
+.SS "int \fBnc_cpblts_add\fP (struct nc_cpblts *capabilities, const char *capability_string)"
+
+.PP
+Add another one capability string into the NETCONF capabilities structure\&. \fBParameters:\fP
+.RS 4
+\fIcapabilities\fP Current NETCONF capabilities structure\&. 
 .br
-\fIcapability_string\fP Capability string to add. 
+\fIcapability_string\fP Capability string to add\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -434,13 +462,14 @@ Add another one capability string into the NETCONF capabilities structure. \fBPa
 .RE
 .PP
 
-.SS "int nc_cpblts_remove (struct nc_cpblts *capabilities, const char *capability_string)"
+.SS "int \fBnc_cpblts_remove\fP (struct nc_cpblts *capabilities, const char *capability_string)"
+
 .PP
-Remove specified capability string from the NETCONF capabilities structure. \fBParameters:\fP
+Remove specified capability string from the NETCONF capabilities structure\&. \fBParameters:\fP
 .RS 4
-\fIcapabilities\fP Current NETCONF capabilities structure. 
+\fIcapabilities\fP Current NETCONF capabilities structure\&. 
 .br
-\fIcapability_string\fP Capability string to remove. 
+\fIcapability_string\fP Capability string to remove\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -451,117 +480,132 @@ Remove specified capability string from the NETCONF capabilities structure. \fBP
 .RE
 .PP
 
-.SS "int nc_cpblts_enabled (struct nc_session *session, const char *capability_string)"
+.SS "int \fBnc_cpblts_enabled\fP (struct nc_session *session, const char *capability_string)"
+
 .PP
-Check if the given capability is supported by the session. \fBParameters:\fP
+Check if the given capability is supported by the session\&. \fBParameters:\fP
 .RS 4
-\fIsession\fP Established session where the given capability support will be checked. 
+\fIsession\fP Established session where the given capability support will be checked\&. 
 .br
-\fIcapability_string\fP NETCONF capability string to check. 
+\fIcapability_string\fP NETCONF capability string to check\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-0 for false result, 1 if the given capability is supported. 
+0 for false result, 1 if the given capability is supported\&. 
 .RE
 .PP
 
-.SS "void nc_cpblts_iter_start (struct nc_cpblts *c)"
+.SS "void \fBnc_cpblts_iter_start\fP (struct nc_cpblts *c)"
+
 .PP
-Move NETCONF capabilities structure iterator to the beginning of the capability strings list. \fBParameters:\fP
+Move NETCONF capabilities structure iterator to the beginning of the capability strings list\&. \fBParameters:\fP
 .RS 4
-\fIc\fP NETCONF capabilities structure to be iterated. 
+\fIc\fP NETCONF capabilities structure to be iterated\&. 
 .RE
 .PP
 
-.SS "char* nc_cpblts_iter_next (struct nc_cpblts *c)"
+.SS "char* \fBnc_cpblts_iter_next\fP (struct nc_cpblts *c)"
+
 .PP
-Get the next capability string from the given NETCONF capabilities structure. To move iterator to the beginning of the capability strings list, use \fBnc_cpblts_iter_start()\fP.
+Get the next capability string from the given NETCONF capabilities structure\&. To move iterator to the beginning of the capability strings list, use \fBnc_cpblts_iter_start()\fP\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIc\fP NETCONF capabilities structure to be iterated. 
+\fIc\fP NETCONF capabilities structure to be iterated\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Another capability string, NULL if all strings were already returned. 
+Another capability string, NULL if all strings were already returned\&. 
 .RE
 .PP
 
-.SS "int nc_cpblts_count (struct nc_cpblts *c)"
+.SS "int \fBnc_cpblts_count\fP (struct nc_cpblts *c)"
+
 .PP
-Get number of capabilities in structure. Use this function to get count of capabilities held by nc_cpblts structure.
+Get number of capabilities in structure\&. Use this function to get count of capabilities held by nc_cpblts structure\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIc\fP NETCONF capabilities structure. 
+\fIc\fP NETCONF capabilities structure\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Number of capabilities held by structure c. 
+Number of capabilities held by structure c\&. 
 .RE
 .PP
 
-.SS "struct nc_cpblts* nc_session_get_cpblts_default ()\fC [read]\fP"
+.SS "struct nc_cpblts* \fBnc_session_get_cpblts_default\fP ()\fC [read]\fP"
+
 .PP
-Get NULL terminated list of default capabilities supported by libnetconf. Caller is supposed to free all returned strings.
+Get NULL terminated list of default capabilities supported by libnetconf\&. Caller is supposed to free all returned strings\&.
 .PP
 \fBReturns:\fP
 .RS 4
-NETCONF capabilities structure containing capabilities supported by libnetconf. 
+NETCONF capabilities structure containing capabilities supported by libnetconf\&. 
 .RE
 .PP
 
-.SS "void nc_ssh_pref (\fBNC_SSH_AUTH_TYPE\fPtype, short intpreference)"
+.SS "void \fBnc_ssh_pref\fP (\fBNC_SSH_AUTH_TYPE\fPtype, short intpreference)"
+
 .PP
-Set preference of the SSH authentication methods. Allowed authentication types are defined as NC_SSH_AUTH_TYPE type. Default preferences are: 1. interactive (3) 2. password (2) 3. public keys (1)
+Set preference of the SSH authentication methods\&. Allowed authentication types are defined as NC_SSH_AUTH_TYPE type\&. Default preferences are:
+.IP "1." 4
+interactive (3)
+.IP "2." 4
+password (2)
+.IP "3." 4
+public keys (1)
+.PP
 .PP
 \fBParameters:\fP
 .RS 4
-\fItype\fP Setting preference for the given authentication type. 
+\fItype\fP Setting preference for the given authentication type\&. 
 .br
-\fIpreference\fP Preference value. Higher value means higher preference. Negative value disables the given authentication type. On equality of values, the last set authentication type is preferred. 
+\fIpreference\fP Preference value\&. Higher value means higher preference\&. Negative value disables the given authentication type\&. On equality of values, the last set authentication type is preferred\&. 
 .RE
 .PP
 
-.SS "struct nc_session* nc_session_connect (const char *host, unsigned shortport, const char *username, struct nc_cpblts *cpblts)\fC [read]\fP"
+.SS "struct nc_session* \fBnc_session_connect\fP (const char *host, unsigned shortport, const char *username, struct nc_cpblts *cpblts)\fC [read]\fP"
+
 .PP
-Create NETCONF session to the specified server. This function internally can use various callbacks set by client to perform SSH authentication. It selects authentication mechanism from the list provided by the SSH server and according to preferences set by client via \fBnc_ssh_pref()\fP. Then, appropriate callback function (set by \fBnc_callback_sshauth_password()\fP, \fBnc_callback_sshauth_passphrase()\fP, \fBnc_set_publickey_path()\fP or \fBnc_set_privatekey_path()\fP) is used to perform authentication.
+Create NETCONF session to the specified server\&. This function internally can use various callbacks set by client to perform SSH authentication\&. It selects authentication mechanism from the list provided by the SSH server and according to preferences set by client via \fBnc_ssh_pref()\fP\&. Then, appropriate callback function (set by \fBnc_callback_sshauth_password()\fP, \fBnc_callback_sshauth_passphrase()\fP, \fBnc_set_publickey_path()\fP or \fBnc_set_privatekey_path()\fP) is used to perform authentication\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIhost\fP Hostname or address (both Ipv4 and IPv6 are accepted). 'localhost' is used by default if NULL is specified. 
+\fIhost\fP Hostname or address (both Ipv4 and IPv6 are accepted)\&. 'localhost' is used by default if NULL is specified\&. 
 .br
-\fIport\fP Port number of the server. Default value 830 is used if 0 is specified. 
+\fIport\fP Port number of the server\&. Default value 830 is used if 0 is specified\&. 
 .br
-\fIusername\fP Name of the user to login to the server. The user running the application (detected from the effective UID) is used if NULL is specified. 
+\fIusername\fP Name of the user to login to the server\&. The user running the application (detected from the effective UID) is used if NULL is specified\&. 
 .br
-\fIcpblts\fP NETCONF capabilities structure with capabilities supported by the client. Client can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all capabilities supported by libnetconf (this is used in case of NULL parameter). 
+\fIcpblts\fP NETCONF capabilities structure with capabilities supported by the client\&. Client can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all capabilities supported by libnetconf (this is used in case of NULL parameter)\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Structure describing the NETCONF session or NULL in case of error. 
+Structure describing the NETCONF session or NULL in case of error\&. 
 .RE
 .PP
 
-.SS "struct nc_session* nc_session_accept (struct nc_cpblts *capabilities)\fC [read]\fP"
+.SS "struct nc_session* \fBnc_session_accept\fP (struct nc_cpblts *capabilities)\fC [read]\fP"
+
 .PP
-Accept NETCONF session from a client. The caller process of this function is supposed to run as SSH Subsystem application launched automatically by SSH server when the NETCONF subsystem request comes to the SSH server. Only one NETCONF session can be accepted in the single SSH Subsystem.
+Accept NETCONF session from a client\&. The caller process of this function is supposed to run as SSH Subsystem application launched automatically by SSH server when the NETCONF subsystem request comes to the SSH server\&. Only one NETCONF session can be accepted in the single SSH Subsystem\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIcapabilities\fP NETCONF capabilities structure with capabilities supported by the server. Caller can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all capabilities supported by libnetconf (this is used in case of NULL parameter). 
+\fIcapabilities\fP NETCONF capabilities structure with capabilities supported by the server\&. Caller can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all capabilities supported by libnetconf (this is used in case of NULL parameter)\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Structure describing the accepted NETCONF session or NULL in case of error. 
+Structure describing the accepted NETCONF session or NULL in case of error\&. 
 .RE
 .PP
 
 .SH "Author"
 .PP 
-Generated automatically by Doxygen for libnetconf from the source code.
+Generated automatically by Doxygen for libnetconf from the source code\&.

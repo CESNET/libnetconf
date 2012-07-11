@@ -196,11 +196,11 @@ int cmd_status (char* arg)
 	return (EXIT_SUCCESS);
 }
 
-static NC_DATASTORE_TYPE get_datastore(const char* paramtype, const char* operation, struct arglist *cmd, int index)
+static NC_DATASTORE get_datastore(const char* paramtype, const char* operation, struct arglist *cmd, int index)
 {
 	int valid = 0;
 	char *datastore;
-	NC_DATASTORE_TYPE retval = NC_DATASTORE_NONE;
+	NC_DATASTORE retval = NC_DATASTORE_NONE;
 
 	if (index == cmd->count) {
 
@@ -353,7 +353,7 @@ int cmd_editconfig (char *arg)
 	char *config_m = NULL, *config = NULL;
 	int config_fd;
 	struct stat config_stat;
-	NC_DATASTORE_TYPE target;
+	NC_DATASTORE target;
 	NC_EDIT_DEFOP_TYPE defop = 0; /* do not set this parameter by default */
 	NC_EDIT_ERROPT_TYPE erropt = 0; /* do not set this parameter by default */
 	nc_rpc *rpc = NULL;
@@ -539,8 +539,8 @@ int cmd_copyconfig (char *arg)
 	int config_fd;
 	struct stat config_stat;
 	char *config = NULL, *config_m = NULL;
-	NC_DATASTORE_TYPE target;
-	NC_DATASTORE_TYPE source = NC_DATASTORE_NONE;
+	NC_DATASTORE target;
+	NC_DATASTORE source = NC_DATASTORE_NONE;
 	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
@@ -802,7 +802,7 @@ void cmd_deleteconfig_help ()
 int cmd_deleteconfig (char *arg)
 {
 	int c;
-	NC_DATASTORE_TYPE target;
+	NC_DATASTORE target;
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
 	struct arglist cmd;
@@ -1005,7 +1005,7 @@ int cmd_getconfig (char *arg)
 {
 	int c;
 	char *data = NULL;
-	NC_DATASTORE_TYPE target;
+	NC_DATASTORE target;
 	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
@@ -1114,7 +1114,7 @@ void cmd_un_lock_help (char* operation)
 int cmd_un_lock (int op, char *arg)
 {
 	int c;
-	NC_DATASTORE_TYPE target;
+	NC_DATASTORE target;
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
 	struct arglist cmd;

@@ -74,7 +74,8 @@ SRCS =  src/callbacks.c \
 	src/internal.c \
 	src/messages.c \
 	src/session.c \
-	src/ssh.c
+	src/ssh.c \
+	src/datastore.c
 
 HDRS_PUBL_ROOT = headers/libnetconf.h
 
@@ -83,7 +84,8 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/error.h \
 	src/session.h \
 	src/messages.h \
-	src/ssh.h
+	src/ssh.h \
+	src/datastore.h
 		
 HDRS_PUBL = $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR)
 SUBHEADERS_DIR = libnetconf
@@ -97,7 +99,8 @@ HDRS_PRIV = src/config.h.in \
 	src/netconf.h \
 	src/netconf_internal.h \
 	src/session.h \
-	src/ssh.h
+	src/ssh.h \
+	src/datastore.h
 
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 

@@ -199,7 +199,7 @@ typedef enum NC_DATASTORE_TYPE {
 	NC_DATASTORE_RUNNING, /**< base NETCONF's datastore containing current device configuration */
 	NC_DATASTORE_STARTUP, /**< separated startup datastore as defined in Distinct Startup Capability */
 	NC_DATASTORE_CANDIDATE /**< separated working datastore as defined in Candidate Configuration Capability */
-} NC_DATASTORE_TYPE;
+} NC_DATASTORE;
 
 /**
  * @ingroup rpc

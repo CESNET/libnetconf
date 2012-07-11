@@ -1,27 +1,70 @@
-.TH "Datastore operations" 3 "Tue Jul 10 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Wed Jul 11 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 Datastore operations \- 
 .PP
-libnetconf's functions for handling NETCONF datastores.  
+libnetconf's functions for handling NETCONF datastores\&.  
 
+.SS "Typedefs"
+
+.in +1c
+.ti -1c
+.RI "typedef int \fBncds_id\fP"
+.br
+.RI "\fIDatastore ID\&. \fP"
+.in -1c
 .SS "Enumerations"
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_DATASTORE_TYPE\fP { \fBNC_DATASTORE_NONE\fP, \fBNC_DATASTORE_RUNNING\fP, \fBNC_DATASTORE_STARTUP\fP, \fBNC_DATASTORE_CANDIDATE\fP }"
+.RI "enum \fBNC_DATASTORE\fP { \fBNC_DATASTORE_NONE\fP, \fBNC_DATASTORE_RUNNING\fP, \fBNC_DATASTORE_STARTUP\fP, \fBNC_DATASTORE_CANDIDATE\fP }"
 .br
-.RI "\fIEnumeration of supported types of datastores defined by NETCONF. \fP"
+.RI "\fIEnumeration of supported types of datastores defined by NETCONF\&. \fP"
+.ti -1c
+.RI "enum \fBNCDS_TYPE\fP { \fBNCDS_TYPE_FILE\fP }"
+.br
+.RI "\fIDatastore implementation types provided by libnetconf\&. \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "struct ncds_ds * \fBncds_new\fP (\fBNCDS_TYPE\fP type, const char *model_path)"
+.br
+.RI "\fICreate new datastore structure of the specified implementation type\&. \fP"
+.ti -1c
+.RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, char *path)"
+.br
+.RI "\fIFile datastore implementation type setter for the path parameter\&. \fP"
+.ti -1c
+.RI "\fBncds_id\fP \fBncds_init\fP (struct ncds_ds *datastore)"
+.br
+.RI "\fIActivate datastore structure for use\&. \fP"
+.ti -1c
+.RI "void \fBncds_free\fP (struct ncds_ds *datastore)"
+.br
+.RI "\fIClose specified datastore and free all resources\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
-libnetconf's functions for handling NETCONF datastores. 
+libnetconf's functions for handling NETCONF datastores\&. 
+
+
+.SH "Typedef Documentation"
+.PP 
+.SS "typedef int \fBncds_id\fP"
+
+.PP
+Datastore ID\&. Each datastore gets its ID after initialisation (\fBncds_init()\fP)\&. Only initialised datstores can be used to access configuration data\&. 
+.PP
+Definition at line 58 of file datastore\&.h\&.
 .SH "Enumeration Type Documentation"
 .PP 
-.SS "enum \fBNC_DATASTORE_TYPE\fP"
+.SS "enum \fBNC_DATASTORE\fP"
+
 .PP
-Enumeration of supported types of datastores defined by NETCONF. 
+Enumeration of supported types of datastores defined by NETCONF\&. 
 .PP
 \fBEnumerator: \fP
 .in +1c
@@ -38,7 +81,101 @@ separated startup datastore as defined in Distinct Startup Capability
 \fB\fINC_DATASTORE_CANDIDATE \fP\fP
 separated working datastore as defined in Candidate Configuration Capability 
 .PP
-Definition at line 196 of file netconf.h.
+Definition at line 197 of file netconf\&.h\&.
+.SS "enum \fBNCDS_TYPE\fP"
+
+.PP
+Datastore implementation types provided by libnetconf\&. 
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fINCDS_TYPE_FILE \fP\fP
+Datastores implemented as files 
+.PP
+Definition at line 47 of file datastore\&.h\&.
+.SH "Function Documentation"
+.PP 
+.SS "struct ncds_ds* \fBncds_new\fP (\fBNCDS_TYPE\fPtype, const char *model_path)\fC [read]\fP"
+
+.PP
+Create new datastore structure of the specified implementation type\&. \fBParameters:\fP
+.RS 4
+\fItype\fP Datastore implementation type for new datastore structure\&. 
+.br
+\fImodel_path\fP Path to the YIN configuration data model\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Prepared (not configured) datastore structure\&. To configure the structure, caller must use parameters setters of the specific datastore implementation type\&. Then, the datastore can be initiated (\fBncds_init()\fP) and used to access configuration data\&. 
+.RE
+.PP
+
+.SS "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, char *path)"
+
+.PP
+File datastore implementation type setter for the path parameter\&. \fBTodo\fP
+.RS 4
+Implement \fBncds_file_set_path()\fP
+.RE
+.PP
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdatastore\fP Datastore structure to be configured\&. 
+.br
+\fIpath\fP File path to the file storing configuration datastores\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success, nonzero on error\&. 
+.RE
+.PP
+
+.SS "\fBncds_id\fP \fBncds_init\fP (struct ncds_ds *datastore)"
+
+.PP
+Activate datastore structure for use\&. \fBTodo\fP
+.RS 4
+Implement \fBncds_init()\fP
+.RE
+.PP
+.PP
+The datastore configuration is checked and if everything is correct, datastore gets its unique ID to be used for datastore operation\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdatastore\fP Datastore to be initiated\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Positive integer with datastore ID on success, negative value on error\&. 
+.RE
+.PP
+\fBTodo\fP
+.RS 4
+Specify error codes for indicating the problem 
+.RE
+.PP
+
+.SS "void \fBncds_free\fP (struct ncds_ds *datastore)"
+
+.PP
+Close specified datastore and free all resources\&. \fBTodo\fP
+.RS 4
+Implement \fBncds_free()\fP
+.RE
+.PP
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdatastore\fP Datastore to be closed\&. 
+.RE
+.PP
+
 .SH "Author"
 .PP 
-Generated automatically by Doxygen for libnetconf from the source code.
+Generated automatically by Doxygen for libnetconf from the source code\&.
