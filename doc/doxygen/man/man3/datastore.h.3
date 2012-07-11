@@ -1,0 +1,73 @@
+.TH "src/datastore.h" 3 "Wed Jul 11 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+src/datastore.h \- 
+.PP
+NETCONF datastore handling function prototypes and structures\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.SS "Typedefs"
+
+.in +1c
+.ti -1c
+.RI "typedef int \fBncds_id\fP"
+.br
+.RI "\fIDatastore ID\&. \fP"
+.in -1c
+.SS "Enumerations"
+
+.in +1c
+.ti -1c
+.RI "enum \fBNCDS_TYPE\fP { \fBNCDS_TYPE_FILE\fP }"
+.br
+.RI "\fIDatastore implementation types provided by libnetconf\&. \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "struct ncds_ds * \fBncds_new\fP (\fBNCDS_TYPE\fP type, const char *model_path)"
+.br
+.RI "\fICreate new datastore structure of the specified implementation type\&. \fP"
+.ti -1c
+.RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, char *path)"
+.br
+.RI "\fIFile datastore implementation type setter for the path parameter\&. \fP"
+.ti -1c
+.RI "\fBncds_id\fP \fBncds_init\fP (struct ncds_ds *datastore)"
+.br
+.RI "\fIActivate datastore structure for use\&. \fP"
+.ti -1c
+.RI "void \fBncds_free\fP (struct ncds_ds *datastore)"
+.br
+.RI "\fIClose specified datastore and free all resources\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+NETCONF datastore handling function prototypes and structures\&. 
+
+\fBAuthor:\fP
+.RS 4
+Radek Krejci rkrejci@cesnet.cz Copyright (C) 2012 CESNET, z\&.s\&.p\&.o\&.
+.RE
+.PP
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+.IP "1." 4
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer\&.
+.IP "2." 4
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution\&.
+.IP "3." 4
+Neither the name of the Company nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission\&.
+.PP
+.PP
+ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above\&.
+.PP
+This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
+.PP
+Definition in file \fBdatastore\&.h\fP\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.

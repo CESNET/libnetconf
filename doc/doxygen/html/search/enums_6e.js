@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['nc_5fdatastore_5ftype',['NC_DATASTORE_TYPE',['../db/d67/group__store.html#gac1d3986b5d4d3faee9e4a91c465a5fd2',1,'netconf.h']]],
+  ['nc_5fdatastore',['NC_DATASTORE',['../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73',1,'netconf.h']]],
   ['nc_5fedit_5fdefop_5ftype',['NC_EDIT_DEFOP_TYPE',['../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454',1,'netconf.h']]],
   ['nc_5fedit_5ferropt_5ftype',['NC_EDIT_ERROPT_TYPE',['../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32',1,'netconf.h']]],
   ['nc_5fedit_5fop_5ftype',['NC_EDIT_OP_TYPE',['../d3/d7a/netconf_8h.html#aff232fd4280e385c8e45fcca033e58fd',1,'netconf.h']]],
@@ -12,5 +12,6 @@ var searchData=
   ['nc_5frpc_5ftype',['NC_RPC_TYPE',['../db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00',1,'netconf.h']]],
   ['nc_5fsession_5fstatus',['NC_SESSION_STATUS',['../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c',1,'netconf.h']]],
   ['nc_5fssh_5fauth_5ftype',['NC_SSH_AUTH_TYPE',['../db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10',1,'ssh.h']]],
-  ['nc_5fverb_5flevel',['NC_VERB_LEVEL',['../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060',1,'netconf.h']]]
+  ['nc_5fverb_5flevel',['NC_VERB_LEVEL',['../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060',1,'netconf.h']]],
+  ['ncds_5ftype',['NCDS_TYPE',['../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f',1,'datastore.h']]]
 ];
