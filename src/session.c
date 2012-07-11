@@ -746,7 +746,7 @@ nc_msgid nc_msg_parse_msgid(struct nc_msg *msg)
 struct nc_err* nc_msg_parse_error(struct nc_msg* msg)
 {
 	struct nc_err* err;
-	xmlNodePtr node;
+	xmlNodePtr node, tmp;
 
 	if (msg == NULL || msg->doc == NULL) {
 		ERROR ("libnetconf internal error, invalid NETCONF message structure to parse.");
@@ -770,26 +770,32 @@ struct nc_err* nc_msg_parse_error(struct nc_msg* msg)
 			continue;
 		}
 
-		if (xmlStrcmp(node->name, BAD_CAST "tag") == 0) {
+		if (xmlStrEqual(node->name, BAD_CAST "error-tag")) {
 			err->tag = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrcmp(node->name, BAD_CAST "type") == 0) {
+		} else if (xmlStrEqual(node->name, BAD_CAST "error-type")) {
 			err->type = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrcmp(node->name, BAD_CAST "severity") == 0) {
+		} else if (xmlStrEqual(node->name, BAD_CAST "error-severity")) {
 			err->severity = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrcmp(node->name, BAD_CAST "apptag") == 0) {
+		} else if (xmlStrEqual(node->name, BAD_CAST "error-app-tag")) {
 			err->apptag = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrcmp(node->name, BAD_CAST "path") == 0) {
+		} else if (xmlStrEqual(node->name, BAD_CAST "error-path")) {
 			err->path = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrcmp(node->name, BAD_CAST "message") == 0) {
+		} else if (xmlStrEqual(node->name, BAD_CAST "error-message")) {
 			err->message = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrcmp(node->name, BAD_CAST "attribute") == 0) {
-			err->attribute = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrcmp(node->name, BAD_CAST "element") == 0) {
-			err->element = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrcmp(node->name, BAD_CAST "ns") == 0) {
-			err->ns = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrcmp(node->name, BAD_CAST "sid") == 0) {
-			err->sid = (char*)xmlNodeGetContent(node);
+		} else if (xmlStrEqual (node->name, BAD_CAST "error-info")) {
+			tmp = node->children;
+			while (tmp) {
+				if (xmlStrEqual(tmp->name, BAD_CAST "bad-attribute")) {
+					err->attribute = (char*)xmlNodeGetContent(node);
+				} else if (xmlStrEqual(tmp->name, BAD_CAST "bad-element")) {
+					err->element = (char*)xmlNodeGetContent(node);
+				} else if (xmlStrEqual(node->name, BAD_CAST "session-id")) {
+					err->sid = (char*)xmlNodeGetContent(node);
+				} else if (xmlStrEqual(node->name, BAD_CAST "bad-namespace")) {
+					err->ns = (char*)xmlNodeGetContent(node);
+				}
+				tmp = tmp->next;
+			}
 		} else {
 			WARN("Unknown element %s while parsing rpc-error.", (char*)(node->name));
 		}
