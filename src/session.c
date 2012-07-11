@@ -336,6 +336,8 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	session->fd_output = -1;
 	session->libssh2_socket = -1;
 
+	/* session is DUMMY */
+	session->status = NC_SESSION_STATUS_DUMMY;
 	/* copy session id */
 	strncpy (session->session_id, sid, SID_SIZE);
 	/* copy user name */

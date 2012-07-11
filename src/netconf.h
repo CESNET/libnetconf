@@ -86,7 +86,8 @@ typedef enum {
 	NC_SESSION_STATUS_ERROR = -1, /**< undefined status or error return code */
 	NC_SESSION_STATUS_STARTUP = 0, /**< session is setting up */
 	NC_SESSION_STATUS_WORKING = 1, /**< session is established and ready to work */
-	NC_SESSION_STATUS_CLOSED = 2 /**< session was closed and could not be used to communication */
+	NC_SESSION_STATUS_CLOSED = 2, /**< session was closed and could not be used to communication */
+	NC_SESSION_STATUS_DUMMY = 3 /**< session is DUMMY, only holds information, does not provide connection */
 } NC_SESSION_STATUS;
 
 /**
