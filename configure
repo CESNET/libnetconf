@@ -4311,12 +4311,12 @@ else
   as_fn_error $? "Missing libevent" "$LINENO" 5
 fi
 
-    for ac_header in event2/event.h
+    for ac_header in event.h
 do :
-  ac_fn_c_check_header_mongrel "$LINENO" "event2/event.h" "ac_cv_header_event2_event_h" "$ac_includes_default"
-if test "x$ac_cv_header_event2_event_h" = xyes; then :
+  ac_fn_c_check_header_mongrel "$LINENO" "event.h" "ac_cv_header_event_h" "$ac_includes_default"
+if test "x$ac_cv_header_event_h" = xyes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_EVENT2_EVENT_H 1
+#define HAVE_EVENT_H 1
 _ACEOF
 
 else

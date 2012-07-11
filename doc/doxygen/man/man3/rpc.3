@@ -4,7 +4,7 @@
 .SH NAME
 NETCONF rpc \- 
 .PP
-libnetconf's functions for handling NETCONF <rpc> messages\&.  
+libnetconf's functions for handling NETCONF <rpc> messages.  
 
 .SS "Typedefs"
 
@@ -12,23 +12,23 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .ti -1c
 .RI "typedef struct nc_msg \fBnc_rpc\fP"
 .br
-.RI "\fIrpc message\&. \fP"
+.RI "\fIrpc message. \fP"
 .in -1c
 .SS "Enumerations"
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_RPC_TYPE\fP { \fBNC_RPC_UNKNOWN\fP, \fBNC_RPC_HELLO\fP, \fBNC_RPC_DATASTORE\fP, \fBNC_RPC_SESSION\fP }"
+.RI "enum \fBNC_RPC_TYPE\fP { \fBNC_RPC_UNKNOWN\fP, \fBNC_RPC_HELLO\fP, \fBNC_RPC_DATASTORE_READ\fP, \fBNC_RPC_DATASTORE_WRITE\fP, \fBNC_RPC_SESSION\fP }"
 .br
-.RI "\fIEnumeration of <rpc> operation types\&. \fP"
+.RI "\fIEnumeration of <rpc> operation types. \fP"
 .ti -1c
 .RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP }"
 .br
-.RI "\fIEnumeration of supported <rpc> operations\&. \fP"
+.RI "\fIEnumeration of supported <rpc> operations. \fP"
 .ti -1c
 .RI "enum \fBNC_FILTER_TYPE\fP { \fBNC_FILTER_SUBTREE\fP }"
 .br
-.RI "\fIEnumeration of supported NETCONF filter types\&. \fP"
+.RI "\fIEnumeration of supported NETCONF filter types. \fP"
 .in -1c
 .SS "Functions"
 
@@ -36,107 +36,103 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .ti -1c
 .RI "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fISend <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
+.RI "\fISend <rpc> request via specified NETCONF session. This function is supposed to be performed only by NETCONF clients. \fP"
 .ti -1c
 .RI "\fBnc_msgid\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
 .br
-.RI "\fIReceive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
+.RI "\fIReceive <rpc> request from the specified NETCONF session. This function is supposed to be performed only by NETCONF servers. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_session_send_recv\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fISend <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fP"
+.RI "\fISend <rpc> and receive <rpc-reply> via the specified NETCONF session. \fP"
 .ti -1c
 .RI "struct nc_filter * \fBnc_filter_new\fP (\fBNC_FILTER_TYPE\fP type, char *filter)"
 .br
-.RI "\fICreate new NETCONF filter of the specified type\&. \fP"
+.RI "\fICreate new NETCONF filter of the specified type. \fP"
 .ti -1c
 .RI "void \fBnc_filter_free\fP (struct nc_filter *filter)"
 .br
-.RI "\fIDestroy filter structure\&. \fP"
+.RI "\fIDestroy filter structure. \fP"
 .ti -1c
 .RI "char * \fBnc_rpc_dump\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIDump the rpc message into a string\&. \fP"
+.RI "\fIDump the rpc message into a string. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_build\fP (const char *rpc_dump)"
 .br
-.RI "\fIBuild <rpc> message from the string\&. This is the reverse function of the \fBnc_rpc_dump()\fP\&. \fP"
+.RI "\fIBuild <rpc> message from the string. This is the reverse function of the \fBnc_rpc_dump()\fP. \fP"
 .ti -1c
 .RI "\fBnc_msgid\fP \fBnc_rpc_get_msgid\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet message-id of the given rpc\&. \fP"
+.RI "\fIGet message-id of the given rpc. \fP"
 .ti -1c
 .RI "\fBNC_OP\fP \fBnc_rpc_get_op\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet operation of the given rpc\&. \fP"
+.RI "\fIGet operation of the given rpc. \fP"
 .ti -1c
 .RI "char * \fBnc_rpc_get_op_content\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet content of the operation specification from the given rpc\&. \fP"
+.RI "\fIGet content of the operation specification from the given rpc. \fP"
 .ti -1c
 .RI "\fBNC_RPC_TYPE\fP \fBnc_rpc_get_type\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet type of the rpc message\&. \fP"
+.RI "\fIGet type of the rpc message. \fP"
 .ti -1c
 .RI "void \fBnc_rpc_free\fP (\fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIFree rpc message\&. \fP"
+.RI "\fIFree rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_copyconfig\fP (\fBNC_DATASTORE_TYPE\fP source, \fBNC_DATASTORE_TYPE\fP target, const char *data)"
 .br
-.RI "\fICreate <copy-config> NETCONF rpc message\&. \fP"
+.RI "\fICreate <copy-config> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_deleteconfig\fP (\fBNC_DATASTORE_TYPE\fP target)"
 .br
-.RI "\fICreate <delete-config> NETCONF rpc message\&. \fP"
+.RI "\fICreate <delete-config> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_editconfig\fP (\fBNC_DATASTORE_TYPE\fP target, \fBNC_EDIT_DEFOP_TYPE\fP default_operation, \fBNC_EDIT_ERROPT_TYPE\fP error_option, const char *data)"
 .br
-.RI "\fICreate <edit-config> NETCONF rpc message\&. \fP"
+.RI "\fICreate <edit-config> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_get\fP (struct nc_filter *filter)"
 .br
-.RI "\fICreate <get> NETCONF rpc message\&. \fP"
+.RI "\fICreate <get> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE_TYPE\fP source, struct nc_filter *filter)"
 .br
-.RI "\fICreate <get-config> NETCONF rpc message\&. \fP"
+.RI "\fICreate <get-config> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_killsession\fP (const char *kill_sid)"
 .br
-.RI "\fICreate <kill-session> NETCONF rpc message\&. \fP"
+.RI "\fICreate <kill-session> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_lock\fP (\fBNC_DATASTORE_TYPE\fP target)"
 .br
-.RI "\fICreate <lock> NETCONF rpc message\&. \fP"
+.RI "\fICreate <lock> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_unlock\fP (\fBNC_DATASTORE_TYPE\fP target)"
 .br
-.RI "\fICreate <unlock> NETCONF rpc message\&. \fP"
+.RI "\fICreate <unlock> NETCONF rpc message. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_generic\fP (const char *data)"
 .br
-.RI "\fICreate a generic NETCONF rpc message with specified content\&. \fP"
+.RI "\fICreate a generic NETCONF rpc message with specified content. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
-libnetconf's functions for handling NETCONF <rpc> messages\&. 
-
-
+libnetconf's functions for handling NETCONF <rpc> messages. 
 .SH "Typedef Documentation"
 .PP 
 .SS "typedef struct nc_msg \fBnc_rpc\fP"
-
 .PP
-rpc message\&. 
+rpc message. 
 .PP
-Definition at line 49 of file netconf\&.h\&.
+Definition at line 49 of file netconf.h.
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_RPC_TYPE\fP"
-
 .PP
-Enumeration of <rpc> operation types\&. 
+Enumeration of <rpc> operation types. 
 .PP
 \fBEnumerator: \fP
 .in +1c
@@ -147,17 +143,19 @@ value describing that no supported operation type was detected so far
 \fB\fINC_RPC_HELLO \fP\fP
 <hello> message type, same as NC_REPLY_HELLO 
 .TP
-\fB\fINC_RPC_DATASTORE \fP\fP
-<rpc> contains operation affecting datastore 
+\fB\fINC_RPC_DATASTORE_READ \fP\fP
+<rpc> contains operation reading datastore 
+.TP
+\fB\fINC_RPC_DATASTORE_WRITE \fP\fP
+<rpc> contains operation modifying datastore 
 .TP
 \fB\fINC_RPC_SESSION \fP\fP
 <rpc> contains operation affecting session 
 .PP
-Definition at line 108 of file netconf\&.h\&.
+Definition at line 108 of file netconf.h.
 .SS "enum \fBNC_OP\fP"
-
 .PP
-Enumeration of supported <rpc> operations\&. 
+Enumeration of supported <rpc> operations. 
 .PP
 \fBEnumerator: \fP
 .in +1c
@@ -192,45 +190,42 @@ unknown/error value
 \fB\fINC_OP_UNLOCK \fP\fP
 <unlock> operation 
 .PP
-Definition at line 119 of file netconf\&.h\&.
+Definition at line 120 of file netconf.h.
 .SS "enum \fBNC_FILTER_TYPE\fP"
-
 .PP
-Enumeration of supported NETCONF filter types\&. 
+Enumeration of supported NETCONF filter types. 
 .PP
 \fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINC_FILTER_SUBTREE \fP\fP
-NC_FILTER_SUBTREE\&. 
+NC_FILTER_SUBTREE. 
 .PP
-Definition at line 206 of file netconf\&.h\&.
+Definition at line 207 of file netconf.h.
 .SH "Function Documentation"
 .PP 
-.SS "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
-
+.SS "\fBnc_msgid\fP nc_session_send_rpc (struct nc_session *session, \fBnc_rpc\fP *rpc)"
 .PP
-Send <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fBParameters:\fP
+Send <rpc> request via specified NETCONF session. This function is supposed to be performed only by NETCONF clients. \fBParameters:\fP
 .RS 4
-\fIsession\fP NETCONF session to use\&. 
+\fIsession\fP NETCONF session to use. 
 .br
-\fIrpc\fP <rpc> message to send\&. 
+\fIrpc\fP <rpc> message to send. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
 0 on error,
 .br
- message-id of sent message on success\&. 
+ message-id of sent message on success. 
 .RE
 .PP
 
-.SS "\fBnc_msgid\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
-
+.SS "\fBnc_msgid\fP nc_session_recv_rpc (struct nc_session *session, \fBnc_rpc\fP **rpc)"
 .PP
-Receive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fBParameters:\fP
+Receive <rpc> request from the specified NETCONF session. This function is supposed to be performed only by NETCONF servers. \fBParameters:\fP
 .RS 4
-\fIsession\fP NETCONF session to use\&. 
+\fIsession\fP NETCONF session to use. 
 .br
 \fIrpc\fP Received <rpc> 
 .RE
@@ -239,135 +234,116 @@ Receive <rpc> request from the specified NETCONF session\&. This function is sup
 .RS 4
 0 on error,
 .br
- message-id of received message on success\&. 
+ message-id of received message on success. 
 .RE
 .PP
 
-.SS "\fBnc_reply\fP* \fBnc_session_send_recv\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
-
+.SS "\fBnc_reply\fP* nc_session_send_recv (struct nc_session *session, \fBnc_rpc\fP *rpc)"
 .PP
-Send <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fBParameters:\fP
+Send <rpc> and receive <rpc-reply> via the specified NETCONF session. \fBParameters:\fP
 .RS 4
-\fIsession\fP NETCONF session to use\&. 
+\fIsession\fP NETCONF session to use. 
 .br
-\fIrpc\fP RPC message to send\&. 
+\fIrpc\fP RPC message to send. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Received <rpc-reply>\&. 
+Received <rpc-reply>. 
 .RE
 .PP
 
-.SS "struct nc_filter* \fBnc_filter_new\fP (\fBNC_FILTER_TYPE\fPtype, char *filter)\fC [read]\fP"
-
+.SS "struct nc_filter* nc_filter_new (\fBNC_FILTER_TYPE\fPtype, char *filter)\fC [read]\fP"
 .PP
-Create new NETCONF filter of the specified type\&. \fBParameters:\fP
+Create new NETCONF filter of the specified type. \fBParameters:\fP
 .RS 4
-\fItype\fP Type of the filter\&. 
+\fItype\fP Type of the filter. 
 .br
-\fIfilter\fP Filter content\&. 
+\fIfilter\fP Filter content. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Created NETCONF filter structure\&. 
+Created NETCONF filter structure. 
 .RE
 .PP
 
-.SS "void \fBnc_filter_free\fP (struct nc_filter *filter)"
-
+.SS "void nc_filter_free (struct nc_filter *filter)"
 .PP
-Destroy filter structure\&. \fBParameters:\fP
+Destroy filter structure. \fBParameters:\fP
 .RS 4
-\fIfilter\fP Filter to destroy\&. 
+\fIfilter\fP Filter to destroy. 
 .RE
 .PP
 
-.SS "char* \fBnc_rpc_dump\fP (const \fBnc_rpc\fP *rpc)"
-
+.SS "char* nc_rpc_dump (const \fBnc_rpc\fP *rpc)"
 .PP
-Dump the rpc message into a string\&. \fBParameters:\fP
+Dump the rpc message into a string. \fBParameters:\fP
 .RS 4
-\fIrpc\fP rpc message\&. 
+\fIrpc\fP rpc message. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-String in XML format containing the NETCONF's <rpc> element and all its content\&. 
+String in XML format containing the NETCONF's <rpc> element and all its content. 
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_build\fP (const char *rpc_dump)"
-
+.SS "\fBnc_rpc\fP* nc_rpc_build (const char *rpc_dump)"
 .PP
-Build <rpc> message from the string\&. This is the reverse function of the \fBnc_rpc_dump()\fP\&. \fBTodo\fP
+Build <rpc> message from the string. This is the reverse function of the \fBnc_rpc_dump()\fP. \fBParameters:\fP
 .RS 4
-Implement \fBnc_rpc_build()\fP
-.RE
-.PP
-\fBParameters:\fP
-.RS 4
-\fIrpc_dump\fP String containing the NETCONF <rpc> message\&. 
+\fIrpc_dump\fP String containing the NETCONF <rpc> message. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Complete rpc structure used by libnetconf's functions\&. 
+Complete rpc structure used by libnetconf's functions. 
 .RE
 .PP
 
-.SS "\fBnc_msgid\fP \fBnc_rpc_get_msgid\fP (const \fBnc_rpc\fP *rpc)"
-
+.SS "\fBnc_msgid\fP nc_rpc_get_msgid (const \fBnc_rpc\fP *rpc)"
 .PP
-Get message-id of the given rpc\&. \fBParameters:\fP
+Get message-id of the given rpc. \fBParameters:\fP
 .RS 4
-\fIrpc\fP rpc message\&. 
+\fIrpc\fP rpc message. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-message-id of the given rpc message\&. 
+message-id of the given rpc message. 
 .RE
 .PP
 
-.SS "\fBNC_OP\fP \fBnc_rpc_get_op\fP (const \fBnc_rpc\fP *rpc)"
-
+.SS "\fBNC_OP\fP nc_rpc_get_op (const \fBnc_rpc\fP *rpc)"
 .PP
-Get operation of the given rpc\&. \fBParameters:\fP
+Get operation of the given rpc. \fBParameters:\fP
 .RS 4
-\fIrpc\fP rpc message\&. 
+\fIrpc\fP rpc message. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Operation identification of the given rpc message\&. 
+Operation identification of the given rpc message. 
 .RE
 .PP
 
-.SS "char* \fBnc_rpc_get_op_content\fP (const \fBnc_rpc\fP *rpc)"
-
+.SS "char* nc_rpc_get_op_content (const \fBnc_rpc\fP *rpc)"
 .PP
-Get content of the operation specification from the given rpc\&. \fBTodo\fP
+Get content of the operation specification from the given rpc. \fBParameters:\fP
 .RS 4
-Implement \fBnc_rpc_get_op_content()\fP
-.RE
-.PP
-\fBParameters:\fP
-.RS 4
-\fIrpc\fP rpc message\&. 
+\fIrpc\fP rpc message. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-String in XML form starting with the operation name element\&. 
+String in XML form starting with the operation name element. 
 .RE
 .PP
 
-.SS "\fBNC_RPC_TYPE\fP \fBnc_rpc_get_type\fP (const \fBnc_rpc\fP *rpc)"
-
+.SS "\fBNC_RPC_TYPE\fP nc_rpc_get_type (const \fBnc_rpc\fP *rpc)"
 .PP
-Get type of the rpc message\&. <rpc> message can affect datastore, session or it can be unknown for the libnetconf (defined by some of unsupported capability or device configuration model)
+Get type of the rpc message. <rpc> message can affect datastore, session or it can be unknown for the libnetconf (defined by some of unsupported capability or device configuration model)
 .PP
 \fBParameters:\fP
 .RS 4
@@ -376,159 +352,149 @@ Get type of the rpc message\&. <rpc> message can affect datastore, session or it
 .PP
 \fBReturns:\fP
 .RS 4
-One of the NC_RPC_TYPE\&. 
+One of the NC_RPC_TYPE. 
 .RE
 .PP
 
-.SS "void \fBnc_rpc_free\fP (\fBnc_rpc\fP *rpc)"
-
+.SS "void nc_rpc_free (\fBnc_rpc\fP *rpc)"
 .PP
-Free rpc message\&. \fBParameters:\fP
+Free rpc message. \fBParameters:\fP
 .RS 4
-\fIrpc\fP rpc message to free\&. 
+\fIrpc\fP rpc message to free. 
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_copyconfig\fP (\fBNC_DATASTORE_TYPE\fPsource, \fBNC_DATASTORE_TYPE\fPtarget, const char *data)"
-
+.SS "\fBnc_rpc\fP* nc_rpc_copyconfig (\fBNC_DATASTORE_TYPE\fPsource, \fBNC_DATASTORE_TYPE\fPtarget, const char *data)"
 .PP
-Create <copy-config> NETCONF rpc message\&. \fBParameters:\fP
+Create <copy-config> NETCONF rpc message. \fBParameters:\fP
 .RS 4
-\fIsource\fP Source configuration datastore type\&. If the NC_DATASTORE_NONE is specified, data parameter is used as the complete configuration to copy\&. 
+\fIsource\fP Source configuration datastore type. If the NC_DATASTORE_NONE is specified, data parameter is used as the complete configuration to copy. 
 .br
-\fItarget\fP Target configuration datastore type to be replaced\&. 
+\fItarget\fP Target configuration datastore type to be replaced. 
 .br
-\fIdata\fP If the NC_DATASTORE_NONE is specified as the source, data parameter is used as the complete configuration to copy\&. For other types of source datastore, this parameter is ignored\&. 
+\fIdata\fP If the NC_DATASTORE_NONE is specified as the source, data parameter is used as the complete configuration to copy. For other types of source datastore, this parameter is ignored. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Created rpc message\&. 
+Created rpc message. 
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_deleteconfig\fP (\fBNC_DATASTORE_TYPE\fPtarget)"
-
+.SS "\fBnc_rpc\fP* nc_rpc_deleteconfig (\fBNC_DATASTORE_TYPE\fPtarget)"
 .PP
-Create <delete-config> NETCONF rpc message\&. \fBParameters:\fP
+Create <delete-config> NETCONF rpc message. \fBParameters:\fP
 .RS 4
-\fItarget\fP Target configuration datastore type to be deleted\&. 
+\fItarget\fP Target configuration datastore type to be deleted. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Created rpc message\&. 
+Created rpc message. 
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_editconfig\fP (\fBNC_DATASTORE_TYPE\fPtarget, \fBNC_EDIT_DEFOP_TYPE\fPdefault_operation, \fBNC_EDIT_ERROPT_TYPE\fPerror_option, const char *data)"
-
+.SS "\fBnc_rpc\fP* nc_rpc_editconfig (\fBNC_DATASTORE_TYPE\fPtarget, \fBNC_EDIT_DEFOP_TYPE\fPdefault_operation, \fBNC_EDIT_ERROPT_TYPE\fPerror_option, const char *data)"
 .PP
-Create <edit-config> NETCONF rpc message\&. \fBParameters:\fP
+Create <edit-config> NETCONF rpc message. \fBParameters:\fP
 .RS 4
-\fItarget\fP Target configuration datastore type to be edited\&. 
+\fItarget\fP Target configuration datastore type to be edited. 
 .br
-\fIdefault_operation\fP Default operation for this request, 0 to skip setting this parameter and use default server's ('merge') behavior\&. 
+\fIdefault_operation\fP Default operation for this request, 0 to skip setting this parameter and use default server's ('merge') behavior. 
 .br
-\fIerror_option\fP Set reaction to an error, 0 for the server's default behavior\&. 
+\fIerror_option\fP Set reaction to an error, 0 for the server's default behavior. 
 .br
-\fIdata\fP edit-config operation request description\&. The content of this parameter is sent to server as a content of the <config> element\&.
+\fIdata\fP edit-config operation request description. The content of this parameter is sent to server as a content of the <config> element.
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Created rpc message\&. 
+Created rpc message. 
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_get\fP (struct nc_filter *filter)"
-
+.SS "\fBnc_rpc\fP* nc_rpc_get (struct nc_filter *filter)"
 .PP
-Create <get> NETCONF rpc message\&. \fBParameters:\fP
+Create <get> NETCONF rpc message. \fBParameters:\fP
 .RS 4
-\fIfilter\fP NETCONF filter or NULL if no filter required\&. 
+\fIfilter\fP NETCONF filter or NULL if no filter required. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Created rpc message\&. 
+Created rpc message. 
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE_TYPE\fPsource, struct nc_filter *filter)"
-
+.SS "\fBnc_rpc\fP* nc_rpc_getconfig (\fBNC_DATASTORE_TYPE\fPsource, struct nc_filter *filter)"
 .PP
-Create <get-config> NETCONF rpc message\&. \fBParameters:\fP
+Create <get-config> NETCONF rpc message. \fBParameters:\fP
 .RS 4
-\fIsource\fP Source configuration datastore type being queried\&. 
+\fIsource\fP Source configuration datastore type being queried. 
 .br
-\fIfilter\fP NETCONF filter or NULL if no filter required\&. 
+\fIfilter\fP NETCONF filter or NULL if no filter required. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Created rpc message\&. 
+Created rpc message. 
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_killsession\fP (const char *kill_sid)"
-
+.SS "\fBnc_rpc\fP* nc_rpc_killsession (const char *kill_sid)"
 .PP
-Create <kill-session> NETCONF rpc message\&. \fBParameters:\fP
+Create <kill-session> NETCONF rpc message. \fBParameters:\fP
 .RS 4
-\fIkill_sid\fP ID of session to kill\&. 
+\fIkill_sid\fP ID of session to kill. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Created rpc message\&. 
+Created rpc message. 
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_lock\fP (\fBNC_DATASTORE_TYPE\fPtarget)"
-
+.SS "\fBnc_rpc\fP* nc_rpc_lock (\fBNC_DATASTORE_TYPE\fPtarget)"
 .PP
-Create <lock> NETCONF rpc message\&. \fBParameters:\fP
+Create <lock> NETCONF rpc message. \fBParameters:\fP
 .RS 4
-\fItarget\fP Target configuration datastore type to be locked\&. 
+\fItarget\fP Target configuration datastore type to be locked. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Created rpc message\&. 
+Created rpc message. 
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_unlock\fP (\fBNC_DATASTORE_TYPE\fPtarget)"
-
+.SS "\fBnc_rpc\fP* nc_rpc_unlock (\fBNC_DATASTORE_TYPE\fPtarget)"
 .PP
-Create <unlock> NETCONF rpc message\&. \fBParameters:\fP
+Create <unlock> NETCONF rpc message. \fBParameters:\fP
 .RS 4
-\fItarget\fP Target configuration datastore type to be unlocked\&. 
+\fItarget\fP Target configuration datastore type to be unlocked. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Created rpc message\&. 
+Created rpc message. 
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_generic\fP (const char *data)"
-
+.SS "\fBnc_rpc\fP* nc_rpc_generic (const char *data)"
 .PP
-Create a generic NETCONF rpc message with specified content\&. Function gets data parameter and envelope it into <rpc> container\&. Caller is fully responsible for the correctness of the given data\&.
+Create a generic NETCONF rpc message with specified content. Function gets data parameter and envelope it into <rpc> container. Caller is fully responsible for the correctness of the given data.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIdata\fP XML content of the <rpc> request to be sent\&. 
+\fIdata\fP XML content of the <rpc> request to be sent. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Created rpc message\&. 
+Created rpc message. 
 .RE
 .PP
 
 .SH "Author"
 .PP 
-Generated automatically by Doxygen for libnetconf from the source code\&.
+Generated automatically by Doxygen for libnetconf from the source code.

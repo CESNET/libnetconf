@@ -48,6 +48,7 @@
 #include "messages.h"
 #include "netconf_internal.h"
 #include "error.h"
+#include "messages_internal.h"
 
 struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, char* filter)
 {
@@ -111,6 +112,84 @@ char* nc_rpc_dump(const nc_rpc *rpc)
 	return (nc_msg_dump((struct nc_msg*)rpc));
 }
 
+struct nc_msg * nc_msg_build (const char * msg_dump)
+{
+	struct nc_msg * msg;
+
+	if ((msg = malloc (sizeof(struct nc_msg))) == NULL) {
+		return NULL;
+	}
+
+	if ((msg->doc = xmlReadMemory (msg_dump, strlen(msg_dump), NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN)) == NULL) {
+		free (msg);
+		return NULL;
+	}
+
+	msg->msgid = nc_msg_parse_msgid (msg);
+	msg->error = NULL;
+	
+	return msg;
+}
+
+nc_rpc * nc_rpc_build (const char * rpc_dump)
+{
+	nc_rpc * rpc;
+	NC_OP op;
+
+	if ((rpc = nc_msg_build (rpc_dump)) == NULL) {
+		return NULL;
+	}
+
+	op = nc_rpc_get_op (rpc);
+
+	switch (op) {
+	case (NC_OP_GETCONFIG):
+	case (NC_OP_GET):
+		rpc->type.rpc = NC_RPC_DATASTORE_READ;
+		break;
+	case (NC_OP_EDITCONFIG):
+	case (NC_OP_COPYCONFIG):
+	case (NC_OP_DELETECONFIG):
+	case (NC_OP_LOCK): 
+	case (NC_OP_UNLOCK):
+		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+		break;
+	case (NC_OP_CLOSESESSION):
+	case (NC_OP_KILLSESSION):
+		rpc->type.rpc = NC_RPC_SESSION;
+		break;
+	default:
+		rpc->type.rpc = NC_RPC_UNKNOWN;
+		break;
+	}
+
+	return rpc;
+}
+
+nc_reply * nc_reply_build (const char * reply_dump)
+{
+	nc_reply * reply;
+	xmlNodePtr root;
+
+	if ((reply = nc_msg_build (reply_dump)) == NULL) {
+		return NULL;
+	}
+
+	root = xmlDocGetRootElement (reply->doc);
+	
+	if (xmlStrEqual (root->children->name, BAD_CAST "ok")) {
+		reply->type.reply = NC_REPLY_OK;
+	} else if (xmlStrEqual (root->children->name, BAD_CAST "data")) {
+		reply->type.reply = NC_REPLY_DATA;
+	} else if (xmlStrEqual (root->children->name, BAD_CAST "error")) {
+		reply->type.reply = NC_REPLY_ERROR;
+	} else {
+		reply->type.reply = NC_REPLY_UNKNOWN;
+	}
+
+	return reply;
+}
+
 nc_msgid nc_reply_get_msgid(const nc_reply *reply)
 {
 	if (reply != NULL) {
@@ -162,6 +241,28 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 		WARN("Invalid rpc message for nc_rpc_get_operation - not a <rpc> message.");
 		return (NC_OP_UNKNOWN);
 	}
+}
+
+char * nc_rpc_get_op_content (const nc_rpc * rpc)
+{
+	char * retval;
+	xmlNodePtr root;
+	xmlBufferPtr buffer;
+
+	if (rpc == NULL || rpc->doc == NULL) {
+		return NULL;
+	}
+
+	if ((root = xmlDocGetRootElement (rpc->doc)) == NULL) {
+		return NULL;
+	}
+
+	buffer = xmlBufferCreate ();
+	xmlNodeDump (buffer, rpc->doc, root, 1, 1);
+	retval = (char *)xmlBufferContent (buffer);
+	xmlBufferFree (buffer);
+
+	return retval;
 }
 
 NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc)
@@ -665,7 +766,7 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, struct nc_filter *filter)
 	}
 
 	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE;
+	rpc->type.rpc = NC_RPC_DATASTORE_READ;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -688,7 +789,7 @@ nc_rpc *nc_rpc_get(struct nc_filter *filter)
 	}
 
 	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE;
+	rpc->type.rpc = NC_RPC_DATASTORE_READ;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -736,7 +837,7 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target)
 	}
 
 	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE;
+	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -782,7 +883,7 @@ nc_rpc *nc_rpc_lock(NC_DATASTORE target)
 	}
 
 	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE;
+	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -828,7 +929,7 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE target)
 	}
 
 	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE;
+	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -943,7 +1044,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 	}
 
 	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE;
+	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -1081,7 +1182,7 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
 	xmlFreeDoc(doc_data);
 
 	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE;
+	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
 	xmlFreeNode(content);
 
 	return (rpc);

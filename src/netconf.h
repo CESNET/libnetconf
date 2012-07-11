@@ -86,7 +86,8 @@ typedef enum {
 	NC_SESSION_STATUS_ERROR = -1, /**< undefined status or error return code */
 	NC_SESSION_STATUS_STARTUP = 0, /**< session is setting up */
 	NC_SESSION_STATUS_WORKING = 1, /**< session is established and ready to work */
-	NC_SESSION_STATUS_CLOSED = 2 /**< session was closed and could not be used to communication */
+	NC_SESSION_STATUS_CLOSED = 2, /**< session was closed and could not be used to communication */
+	NC_SESSION_STATUS_DUMMY = 3 /**< session is DUMMY, only holds information, does not provide connection */
 } NC_SESSION_STATUS;
 
 /**
@@ -108,7 +109,8 @@ typedef enum NC_REPLY_TYPE {
 typedef enum NC_RPC_TYPE {
 	NC_RPC_UNKNOWN, /**< value describing that no supported operation type was detected so far */
 	NC_RPC_HELLO, /**< \<hello\> message type, same as NC_REPLY_HELLO */
-	NC_RPC_DATASTORE, /**< \<rpc\> contains operation affecting datastore */
+	NC_RPC_DATASTORE_READ, /**< \<rpc\> contains operation reading datastore */
+	NC_RPC_DATASTORE_WRITE, /**< \<rpc\> contains operation modifying datastore */
 	NC_RPC_SESSION, /**< \<rpc\> contains operation affecting session */
 } NC_RPC_TYPE;
 

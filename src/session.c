@@ -320,6 +320,40 @@ struct nc_cpblts* nc_session_get_cpblts (const struct nc_session* session)
 	return (session->capabilities);
 }
 
+struct nc_session* nc_session_dummy(const char* sid, const char* username, const struct nc_cpblts *capabilities)
+{
+	struct nc_session * session;
+	char * cpblt;
+
+	if ((session = malloc (sizeof (struct nc_session))) == NULL) {
+		return NULL;
+	}
+
+	memset (session, 0, sizeof (struct nc_session));
+
+	/* set invalid fd values to prevent comunication */
+	session->fd_input = -1;
+	session->fd_output = -1;
+	session->libssh2_socket = -1;
+
+	/* session is DUMMY */
+	session->status = NC_SESSION_STATUS_DUMMY;
+	/* copy session id */
+	strncpy (session->session_id, sid, SID_SIZE);
+	/* copy user name */
+	session->username = strdup (username);
+	/* create empty capabilities list */
+	session->capabilities = nc_cpblts_new (NULL);
+	/* initialize capabilities iterator */
+	nc_cpblts_iter_start (capabilities);
+	/* copy all capabilities */
+	while ((cpblt = nc_cpblts_iter_next (capabilities)) != NULL) {
+		nc_cpblts_add (session->capabilities, cpblt);
+	}
+
+	return session;
+}
+
 void nc_session_close (struct nc_session* session, const char* msg)
 {
 	nc_rpc *rpc_close = NULL;
@@ -883,14 +917,15 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 			WARN("Unknown type of received <rpc-reply> detected.");
 		}
 	} else if (xmlStrcmp (retval->doc->children->name, BAD_CAST "rpc") == 0) {
-		if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "copy-config") == 0) ||
+		if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get") == 0) ||
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get-config") == 0)) {
+			retval->type.rpc = NC_RPC_DATASTORE_READ;
+		} else if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "copy-config") == 0) ||
 				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "delete-config") == 0) ||
 				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "edit-config") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get-config") == 0) ||
 				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "lock") == 0) ||
 				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "unlock") == 0)) {
-			retval->type.rpc = NC_RPC_DATASTORE;
+			retval->type.rpc = NC_RPC_DATASTORE_WRITE;
 		} else if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "kill-session") == 0) ||
 				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "close-session") == 0)){
 			retval->type.rpc = NC_RPC_SESSION;

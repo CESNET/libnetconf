@@ -69,7 +69,6 @@ void nc_filter_free(struct nc_filter *filter);
 char* nc_reply_dump (const nc_reply *reply);
 
 /**
- * \todo Implement nc_reply_build()
  * @ingroup reply
  * @brief Build \<rpc-reply\> message from the string.
  * This is the reverse function of the nc_reply_dump().
@@ -97,7 +96,6 @@ nc_msgid nc_reply_get_msgid(const nc_reply *reply);
 char* nc_rpc_dump (const nc_rpc *rpc);
 
 /**
- * \todo Implement nc_rpc_build()
  * @ingroup rpc
  * @brief Build \<rpc\> message from the string.
  * This is the reverse function of the nc_rpc_dump().
@@ -124,7 +122,6 @@ nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc);
 NC_OP nc_rpc_get_op(const nc_rpc *rpc);
 
 /**
- * \todo Implement nc_rpc_get_op_content()
  * @ingroup rpc
  * @brief Get content of the operation specification from the given rpc.
  * @param[in] rpc rpc message.

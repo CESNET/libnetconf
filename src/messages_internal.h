@@ -60,6 +60,14 @@ nc_rpc *nc_msg_client_hello(char **caps);
 nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id);
 
 /**
+ * @brief Get message id string from the NETCONF message
+ *
+ * @param[in] msg NETCONF message to parse.
+ * @return 0 on error,\n message-id of the message on success.
+ */
+nc_msgid nc_msg_parse_msgid(struct nc_msg *msg);
+
+/**
  * @ingroup internalAPI
  * @brief Create <close-session> NETCONF rpc message.
  *

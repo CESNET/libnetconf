@@ -2,105 +2,103 @@ var NAVTREE =
 [
   [ "libnetconf", "index.html", [
     [ "NETCONF library - libnetconf", "index.html", null ],
-    [ "Todo List", "dd/da0/todo.html", null ],
-    [ "Modules", "modules.html", "modules" ],
-    [ "Files", null, [
-      [ "File List", "files.html", "files" ],
-      [ "Globals", "globals.html", [
-        [ "All", "globals.html", null ],
-        [ "Functions", "globals_func.html", null ],
-        [ "Typedefs", "globals_type.html", null ],
-        [ "Enumerations", "globals_enum.html", null ],
-        [ "Enumerator", "globals_eval.html", null ]
-      ] ]
-    ] ]
+    [ "Modules", "modules.html", [
+      [ "NETCONF rpc", "db/de9/group__rpc.html", null ],
+      [ "NETCONF rpc-reply", "d0/de2/group__reply.html", null ],
+      [ "NETCONF Session", "db/d52/group__session.html", null ],
+      [ "Datastore operations", "db/d67/group__store.html", null ],
+      [ "General functions", "d3/d35/group__gen_a_p_i.html", null ]
+    ] ],
+    [ "File List", "files.html", [
+      [ "src/callbacks.h", "dd/d49/callbacks_8h.html", null ],
+      [ "src/error.h", "da/d41/error_8h.html", null ],
+      [ "src/libnetconf.h", "d1/d87/libnetconf_8h.html", null ],
+      [ "src/messages.h", "d5/d48/messages_8h.html", null ],
+      [ "src/netconf.h", "d3/d7a/netconf_8h.html", null ],
+      [ "src/session.h", "da/d46/session_8h.html", null ],
+      [ "src/ssh.h", "d8/dd3/ssh_8h.html", null ]
+    ] ],
+    [ "Directories", "dirs.html", [
+      [ "src", "dir_3d0bf8c7a7c7fdf6f3eccbee2fd7a8b3.html", null ]
+    ] ],
+    [ "Globals", "globals.html", null ]
   ] ]
 ];
 
-
-var navTreeIndex;
-
-function getData(varName)
-{
-  var i = varName.lastIndexOf('/');
-  var n = i>=0 ? varName.substring(i+1) : varName;
-  return eval(n);
-}
-
-function stripPath(uri)
-{
-  return uri.substring(uri.lastIndexOf('/')+1);
-}
-
-function getScript(scriptName,func,show)
-{
-  var head = document.getElementsByTagName("head")[0]; 
-  var script = document.createElement('script');
-  script.id = scriptName;
-  script.type = 'text/javascript';
-  script.onload = func; 
-  script.src = scriptName+'.js'; 
-  if ($.browser.msie && $.browser.version<=8) { 
-    // script.onload does work with older versions of IE
-    script.onreadystatechange = function() {
-      if (script.readyState=='complete' || script.readyState=='loaded') { 
-        func(); if (show) showRoot(); 
-      }
-    }
-  }
-  head.appendChild(script); 
-}
-
 function createIndent(o,domNode,node,level)
 {
-  if (node.parentNode && node.parentNode.parentNode) {
+  if (node.parentNode && node.parentNode.parentNode)
+  {
     createIndent(o,domNode,node.parentNode,level+1);
   }
   var imgNode = document.createElement("img");
-  imgNode.width = 16;
-  imgNode.height = 22;
-  if (level==0 && node.childrenData) {
+  if (level==0 && node.childrenData)
+  {
     node.plus_img = imgNode;
     node.expandToggle = document.createElement("a");
     node.expandToggle.href = "javascript:void(0)";
-    node.expandToggle.onclick = function() {
-      if (node.expanded) {
+    node.expandToggle.onclick = function() 
+    {
+      if (node.expanded) 
+      {
         $(node.getChildrenUL()).slideUp("fast");
-        if (node.isLast) {
+        if (node.isLast)
+        {
           node.plus_img.src = node.relpath+"ftv2plastnode.png";
-        } else {
+        }
+        else
+        {
           node.plus_img.src = node.relpath+"ftv2pnode.png";
         }
         node.expanded = false;
-      } else {
-        expandNode(o, node, false, false);
+      } 
+      else 
+      {
+        expandNode(o, node, false);
       }
     }
     node.expandToggle.appendChild(imgNode);
     domNode.appendChild(node.expandToggle);
-  } else {
+  }
+  else
+  {
     domNode.appendChild(imgNode);
   }
-  if (level==0) {
-    if (node.isLast) {
-      if (node.childrenData) {
+  if (level==0)
+  {
+    if (node.isLast)
+    {
+      if (node.childrenData)
+      {
         imgNode.src = node.relpath+"ftv2plastnode.png";
-      } else {
+      }
+      else
+      {
         imgNode.src = node.relpath+"ftv2lastnode.png";
         domNode.appendChild(imgNode);
       }
-    } else {
-      if (node.childrenData) {
+    }
+    else
+    {
+      if (node.childrenData)
+      {
         imgNode.src = node.relpath+"ftv2pnode.png";
-      } else {
+      }
+      else
+      {
         imgNode.src = node.relpath+"ftv2node.png";
         domNode.appendChild(imgNode);
       }
     }
-  } else {
-    if (node.isLast) {
+  }
+  else
+  {
+    if (node.isLast)
+    {
       imgNode.src = node.relpath+"ftv2blank.png";
-    } else {
+    }
+    else
+    {
       imgNode.src = node.relpath+"ftv2vertline.png";
     }
   }
@@ -133,63 +131,27 @@ function newNode(o, po, text, link, childrenData, lastNode)
   var a = document.createElement("a");
   node.labelSpan.appendChild(a);
   node.label = document.createTextNode(text);
-  node.expanded = false;
   a.appendChild(node.label);
-  if (link) {
-    var url;
-    if (link.substring(0,1)=='^') {
-      url = link.substring(1);
-      link = url;
-    } else {
-      url = node.relpath+link;
-    }
-    a.className = stripPath(link.replace('#',':'));
-    if (link.indexOf('#')!=-1) {
-      var aname = '#'+link.split('#')[1];
-      var srcPage = stripPath($(location).attr('pathname'));
-      var targetPage = stripPath(link.split('#')[0]);
-      a.href = srcPage!=targetPage ? url : '#';
-      a.onclick = function(){
-        if (!$(a).parent().parent().hasClass('selected'))
-        {
-          $('.item').removeClass('selected');
-          $('.item').removeAttr('id');
-          $(a).parent().parent().addClass('selected');
-          $(a).parent().parent().attr('id','selected');
-        }
-        var pos, anchor = $(aname), docContent = $('#doc-content');
-        if (anchor.parent().attr('class')=='memItemLeft') {
-          pos = anchor.parent().position().top;
-        } else if (anchor.position()) {
-          pos = anchor.position().top;
-        }
-        if (pos) {
-          var dist = Math.abs(Math.min(
-                     pos-docContent.offset().top,
-                     docContent[0].scrollHeight-
-                     docContent.height()-docContent.scrollTop()));
-          docContent.animate({
-            scrollTop: pos + docContent.scrollTop() - docContent.offset().top
-          },Math.max(50,Math.min(500,dist)),function(){
-            window.location.replace(aname);
-          });
-        }
-      };
-    } else {
-      a.href = url;
-    }
-  } else {
+  if (link) 
+  {
+    a.href = node.relpath+link;
+  } 
+  else 
+  {
     if (childrenData != null) 
     {
       a.className = "nolink";
       a.href = "javascript:void(0)";
       a.onclick = node.expandToggle.onclick;
+      node.expanded = false;
     }
   }
 
   node.childrenUL = null;
-  node.getChildrenUL = function() {
-    if (!node.childrenUL) {
+  node.getChildrenUL = function() 
+  {
+    if (!node.childrenUL) 
+    {
       node.childrenUL = document.createElement("ul");
       node.childrenUL.className = "children_ul";
       node.childrenUL.style.display = "none";
@@ -206,125 +168,34 @@ function showRoot()
   var headerHeight = $("#top").height();
   var footerHeight = $("#nav-path").height();
   var windowHeight = $(window).height() - headerHeight - footerHeight;
-  (function (){ // retry until we can scroll to the selected item
-    try {
-      var navtree=$('#nav-tree');
-      navtree.scrollTo('#selected',0,{offset:-windowHeight/2});
-    } catch (err) {
-      setTimeout(arguments.callee, 0);
+  navtree.scrollTo('#selected',0,{offset:-windowHeight/2});
+}
+
+function expandNode(o, node, imm)
+{
+  if (node.childrenData && !node.expanded) 
+  {
+    if (!node.childrenVisited) 
+    {
+      getNode(o, node);
     }
-  })();
-}
-
-function expandNode(o, node, imm, showRoot)
-{
-  if (node.childrenData && !node.expanded) {
-    if (typeof(node.childrenData)==='string') {
-      var varName    = node.childrenData;
-      getScript(node.relpath+varName,function(){
-        node.childrenData = getData(varName);
-        expandNode(o, node, imm, showRoot);
-      }, showRoot);
-    } else {
-      if (!node.childrenVisited) {
-        getNode(o, node);
-      } if (imm || ($.browser.msie && $.browser.version>8)) { 
-        // somehow slideDown jumps to the start of tree for IE9 :-(
-        $(node.getChildrenUL()).show();
-      } else {
-        $(node.getChildrenUL()).slideDown("fast");
-      }
-      if (node.isLast) {
-        node.plus_img.src = node.relpath+"ftv2mlastnode.png";
-      } else {
-        node.plus_img.src = node.relpath+"ftv2mnode.png";
-      }
-      node.expanded = true;
-    }
-  }
-}
-
-function glowEffect(n,duration)
-{
-  n.addClass('glow').delay(duration).queue(function(next){
-    $(this).removeClass('glow');next();
-  });
-}
-
-function highlightAnchor()
-{
-  var anchor = $($(location).attr('hash'));
-  if (anchor.parent().attr('class')=='memItemLeft'){
-    var rows = $('.memberdecls tr[class$="'+
-               window.location.hash.substring(1)+'"]');
-    glowEffect(rows.children(),300);
-  } else if (anchor.parent().is(":header")) {
-    glowEffect(anchor.parent(),1000);
-  } else {
-    glowEffect(anchor.next(),1000);
-  }
-}
-
-function selectAndHighlight(n)
-{
-  var a;
-  if ($(location).attr('hash')) {
-    var link=stripPath($(location).attr('pathname'))+':'+
-      $(location).attr('hash').substring(1);
-    a=$('.item a[class$="'+link+'"]');
-  }
-  if (a && a.length) {
-    a.parent().parent().addClass('selected');
-    a.parent().parent().attr('id','selected');
-    highlightAnchor();
-  } else if (n) {
-    $(n.itemDiv).addClass('selected');
-    $(n.itemDiv).attr('id','selected');
-  }
-  showRoot();
-}
-
-function showNode(o, node, index)
-{
-  if (node && node.childrenData) {
-    if (typeof(node.childrenData)==='string') {
-      var varName    = node.childrenData;
-      getScript(node.relpath+varName,function(){
-        node.childrenData = getData(varName);
-        showNode(o,node,index);
-      },true);
-    } else {
-      if (!node.childrenVisited) {
-        getNode(o, node);
-      }
+    if (imm)
+    {
       $(node.getChildrenUL()).show();
-      if (node.isLast) {
-        node.plus_img.src = node.relpath+"ftv2mlastnode.png";
-      } else {
-        node.plus_img.src = node.relpath+"ftv2mnode.png";
-      }
-      node.expanded = true;
-      var n = node.children[o.breadcrumbs[index]];
-      if (index+1<o.breadcrumbs.length) {
-        showNode(o,n,index+1);
-      } else {
-        if (typeof(n.childrenData)==='string') {
-          var varName = n.childrenData;
-          getScript(n.relpath+varName,function(){
-            n.childrenData = getData(varName);
-            node.expanded=false;
-            showNode(o,node,index); // retry with child node expanded
-          },true);
-        } else {
-          if (o.toroot=="index.html" || n.childrenData) {
-            expandNode(o, n, true, true);
-          }
-          selectAndHighlight(n);
-        }
-      }
+    } 
+    else 
+    {
+      $(node.getChildrenUL()).slideDown("fast",showRoot);
     }
-  } else {
-    selectAndHighlight();
+    if (node.isLast)
+    {
+      node.plus_img.src = node.relpath+"ftv2mlastnode.png";
+    }
+    else
+    {
+      node.plus_img.src = node.relpath+"ftv2mnode.png";
+    }
+    node.expanded = true;
   }
 }
 
@@ -332,34 +203,35 @@ function getNode(o, po)
 {
   po.childrenVisited = true;
   var l = po.childrenData.length-1;
-  for (var i in po.childrenData) {
+  for (var i in po.childrenData) 
+  {
     var nodeData = po.childrenData[i];
     po.children[i] = newNode(o, po, nodeData[0], nodeData[1], nodeData[2],
-      i==l);
+        i==l);
   }
 }
 
-function gotoNode(o,root,hash)
+function findNavTreePage(url, data)
 {
-  var nti = navTreeIndex[root+hash];
-  o.breadcrumbs = nti ? nti : navTreeIndex[root];
-  if (o.breadcrumbs==null) o.breadcrumbs = navTreeIndex["index.html"];
-  o.breadcrumbs.unshift(0);
-  showNode(o, o.node, 0);
-}
-
-function navTo(o,root,hash,relpath)
-{
-  if (navTreeIndex){
-    gotoNode(o,root,hash);
-  } else {
-    getScript(relpath+"navtreeindex",function(){
-      navTreeIndex = eval('NAVTREEINDEX');
-      if (navTreeIndex){
-        gotoNode(o,root,hash);
+  var nodes = data;
+  var result = null;
+  for (var i in nodes) 
+  {
+    var d = nodes[i];
+    if (d[1] == url) 
+    {
+      return new Array(i);
+    }
+    else if (d[2] != null) // array of children
+    {
+      result = findNavTreePage(url, d[2]);
+      if (result != null) 
+      {
+        return (new Array(i).concat(result));
       }
-    },true);
-  } 
+    }
+  }
+  return null;
 }
 
 function initNavTree(toroot,relpath)
@@ -375,32 +247,26 @@ function initNavTree(toroot,relpath)
   o.node.li.appendChild(o.node.childrenUL);
   o.node.depth = 0;
   o.node.relpath = relpath;
-  o.node.expanded = false;
-  o.node.isLast = true;
-  o.node.plus_img = document.createElement("img");
-  o.node.plus_img.src = relpath+"ftv2pnode.png";
-  o.node.plus_img.width = 16;
-  o.node.plus_img.height = 22;
 
-  navTo(o,toroot,window.location.hash,relpath);
+  getNode(o, o.node);
 
-  $(window).bind('hashchange', function(){
-     if (window.location.hash && window.location.hash.length>1){
-       var a;
-       if ($(location).attr('hash')){
-         var clslink=stripPath($(location).attr('pathname'))+':'+
-                               $(location).attr('hash').substring(1);
-         a=$('.item a[class$="'+clslink+'"]');
-       }
-       if (a==null || !$(a).parent().parent().hasClass('selected')){
-         $('.item').removeClass('selected');
-         $('.item').removeAttr('id');
-       }
-       var link=stripPath($(location).attr('pathname'));
-       navTo(o,link,$(location).attr('hash'),relpath);
-     }
-  })
-
-  $(window).load(showRoot);
+  o.breadcrumbs = findNavTreePage(toroot, NAVTREE);
+  if (o.breadcrumbs == null)
+  {
+    o.breadcrumbs = findNavTreePage("index.html",NAVTREE);
+  }
+  if (o.breadcrumbs != null && o.breadcrumbs.length>0)
+  {
+    var p = o.node;
+    for (var i in o.breadcrumbs) 
+    {
+      var j = o.breadcrumbs[i];
+      p = p.children[j];
+      expandNode(o,p,true);
+    }
+    p.itemDiv.className = p.itemDiv.className + " selected";
+    p.itemDiv.id = "selected";
+    $(window).load(showRoot);
+  }
 }
 
