@@ -157,6 +157,7 @@ nc_rpc * nc_rpc_build (const char * rpc_dump)
 	case (NC_OP_CLOSESESSION):
 	case (NC_OP_KILLSESSION):
 		rpc->type.rpc = NC_RPC_SESSION;
+		break;
 	default:
 		rpc->type.rpc = NC_RPC_UNKNOWN;
 		break;
