@@ -244,10 +244,24 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 
 char * nc_rpc_get_op_content (const nc_rpc * rpc)
 {
+	char * retval;
+	xmlNodePtr root;
+	xmlBufferPtr buffer;
+
 	if (rpc == NULL || rpc->doc == NULL) {
 		return NULL;
 	}
-	return (char *)xmlNodeGetContent (xmlDocGetRootElement (rpc->doc));
+
+	if ((root = xmlDocGetRootElement (rpc->doc)) == NULL) {
+		return NULL;
+	}
+
+	buffer = xmlBufferCreate ();
+	xmlNodeDump (buffer, rpc->doc, root, 1, 1);
+	retval = (char *)xmlBufferContent (buffer);
+	xmlBufferFree (buffer);
+
+	return retval;
 }
 
 NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc)
