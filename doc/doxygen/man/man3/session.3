@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Wed Jul 11 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Thu Jul 12 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -54,7 +54,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .br
 .RI "\fISet path to privatekey file used in case of SSH authentication via publickey mechanism\&. \fP"
 .ti -1c
-.RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, const struct nc_cpblts *capabilities)"
+.RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, struct nc_cpblts *capabilities)"
 .br
 .RI "\fICreate disconnected session structure\&. \fP"
 .ti -1c
@@ -259,7 +259,7 @@ Set path to privatekey file used in case of SSH authentication via publickey mec
 .RE
 .PP
 
-.SS "struct nc_session* \fBnc_session_dummy\fP (const char *sid, const char *username, const struct nc_cpblts *capabilities)\fC [read]\fP"
+.SS "struct nc_session* \fBnc_session_dummy\fP (const char *sid, const char *username, struct nc_cpblts *capabilities)\fC [read]\fP"
 
 .PP
 Create disconnected session structure\&. This creates dummy session structure which is not supposed to pass NETCONF messages between client and server\&. Instead, it can be successfully used by server (e\&.g\&. detached process that doesn't hold the real session structure) to access NETCONF datastores via libnetconf\&.

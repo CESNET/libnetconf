@@ -1,4 +1,4 @@
-.TH "src/messages.h" 3 "Wed Jul 11 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "src/messages.h" 3 "Thu Jul 12 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -61,6 +61,10 @@ Functions to create NETCONF messages\&.
 .RI "\fBNC_RPC_TYPE\fP \fBnc_rpc_get_type\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet type of the rpc message\&. \fP"
+.ti -1c
+.RI "\fBNC_DATASTORE\fP \fBnc_rpc_get_target\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet target datastore type (running, startup, candidate) of the rpc request\&. \fP"
 .ti -1c
 .RI "\fBNC_REPLY_TYPE\fP \fBnc_reply_get_type\fP (const \fBnc_reply\fP *reply)"
 .br

@@ -151,8 +151,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gae521c81f448de075a84f62388320ebae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to publickey file used in case of SSH authentication via publickey mechanism.  <a href="#gae521c81f448de075a84f62388320ebae"></a><br/></td></tr>
 <tr class="memitem:ga66beddc668fcc5c3699165bf3d3fd089"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga66beddc668fcc5c3699165bf3d3fd089">nc_set_privatekey_path</a> (const char *path)</td></tr>
 <tr class="memdesc:ga66beddc668fcc5c3699165bf3d3fd089"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to privatekey file used in case of SSH authentication via publickey mechanism.  <a href="#ga66beddc668fcc5c3699165bf3d3fd089"></a><br/></td></tr>
-<tr class="memitem:gaa4542a7148d59f2fe259eff9d6852a8c"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaa4542a7148d59f2fe259eff9d6852a8c">nc_session_dummy</a> (const char *sid, const char *username, const struct nc_cpblts *capabilities)</td></tr>
-<tr class="memdesc:gaa4542a7148d59f2fe259eff9d6852a8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create disconnected session structure.  <a href="#gaa4542a7148d59f2fe259eff9d6852a8c"></a><br/></td></tr>
+<tr class="memitem:gad821a04ee9dc04bbed04ea1d138afbed"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad821a04ee9dc04bbed04ea1d138afbed">nc_session_dummy</a> (const char *sid, const char *username, struct nc_cpblts *capabilities)</td></tr>
+<tr class="memdesc:gad821a04ee9dc04bbed04ea1d138afbed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create disconnected session structure.  <a href="#gad821a04ee9dc04bbed04ea1d138afbed"></a><br/></td></tr>
 <tr class="memitem:ga20b9940ed7af543a05b4bef6e871cedd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd">nc_session_close</a> (struct nc_session *session, const char *msg)</td></tr>
 <tr class="memdesc:ga20b9940ed7af543a05b4bef6e871cedd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close NETCONF connection with the server.  <a href="#ga20b9940ed7af543a05b4bef6e871cedd"></a><br/></td></tr>
 <tr class="memitem:gaa5994f45a7031dc931bdf4a3acebedee"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee">nc_session_free</a> (struct nc_session *session)</td></tr>
@@ -427,7 +427,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gaa4542a7148d59f2fe259eff9d6852a8c"></a>
+<a class="anchor" id="gad821a04ee9dc04bbed04ea1d138afbed"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -435,7 +435,7 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">struct nc_session* <a class="el" href="../../db/d52/group__session.html#gaa4542a7148d59f2fe259eff9d6852a8c">nc_session_dummy</a> </td>
+          <td class="memname">struct nc_session* <a class="el" href="../../db/d52/group__session.html#gad821a04ee9dc04bbed04ea1d138afbed">nc_session_dummy</a> </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>sid</em>, </td>
@@ -449,7 +449,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const struct nc_cpblts *&#160;</td>
+          <td class="paramtype">struct nc_cpblts *&#160;</td>
           <td class="paramname"><em>capabilities</em>&#160;</td>
         </tr>
         <tr>
@@ -1160,7 +1160,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Wed Jul 11 2012 15:27:56 for libnetconf by
+    <li class="footer">Generated on Thu Jul 12 2012 14:26:30 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

@@ -81,7 +81,8 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path);
  * @brief Activate datastore structure for use.
  *
  * The datastore configuration is checked and if everything is correct,
- * datastore gets its unique ID to be used for datastore operation.
+ * datastore gets its unique ID to be used for datastore operations
+ * (ncds_apply_rpc()).
  *
  * @param[in] datastore Datastore to be initiated.
  * @return Positive integer with datastore ID on success, negative value on
@@ -98,8 +99,38 @@ ncds_id ncds_init(struct ncds_ds* datastore);
  *
  * @ingroup store
  * @brief Close specified datastore and free all resources.
+ *
+ * Equivalent function to ncds_free2().
+ *
  * @param[in] datastore Datastore to be closed.
  */
 void ncds_free(struct ncds_ds* datastore);
+
+/**
+ * \todo Implement ncds_free2()
+ *
+ * @ingroup store
+ * @brief Close specified datastore and free all resources.
+ *
+ * Equivalent function to ncds_free().
+ *
+ * @param[in] datastore_id ID of the datastore to be closed.
+ */
+void ncds_free2(ncds_id datastore_id);
+
+/**
+ * \todo Implement ncds_apply_rpc()
+ *
+ * @ingroup store
+ * @brief Perform requested RPC operation on the datastore.
+ * @param[in] id Datastore ID.
+ * @param[in] session NETCONF session (dummy session is acceptable) where the
+ * \<rpc\> came from. Capabilities checks are done according to this session.
+ * @param[in] rpc NETCONF \<rpc\> message specifying requested operation.
+ * @return NULL in case of non NC_RPC_DATASTORE_* operation type, else
+ * \<rpc-reply\> with \<ok\>, \<data\> or \<rpc-error\> according to the type
+ * and the result of the requested operation.
+ */
+nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc);
 
 #endif /* DATASTORE_H_ */
