@@ -76,18 +76,6 @@ struct ncds_ds;
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path);
 
 /**
- * \todo Implement ncds_file_set_path()
- *
- * @ingroup store
- * @brief File datastore implementation type setter for the path parameter.
- * @param[in] datastore Datastore structure to be configured.
- * @param[in] path File path to the file storing configuration datastores.
- * @return 0 on success, nonzero on error.
- */
-int ncds_file_set_path(struct ncds_ds* datastore, char* path);
-
-/**
- * \todo Implement ncds_init()
  *
  * @ingroup store
  * @brief Activate datastore structure for use.
@@ -98,7 +86,10 @@ int ncds_file_set_path(struct ncds_ds* datastore, char* path);
  * @param[in] datastore Datastore to be initiated.
  * @return Positive integer with datastore ID on success, negative value on
  * error.
- * \todo Specify error codes for indicating the problem
+ * 	-1 Invalid datastore
+ * 	-2 Type-specific initialization failed
+ * 	-3 Unsupported datastore type 
+ * 	-4 Memory allocation problem
  */
 ncds_id ncds_init(struct ncds_ds* datastore);
 
