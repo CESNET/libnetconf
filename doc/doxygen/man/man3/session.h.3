@@ -1,4 +1,4 @@
-.TH "src/session.h" 3 "Wed Jul 11 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "src/session.h" 3 "Thu Jul 12 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,7 +18,7 @@ Functions to handle NETCONF sessions\&.
 
 .in +1c
 .ti -1c
-.RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, const struct nc_cpblts *capabilities)"
+.RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, struct nc_cpblts *capabilities)"
 .br
 .RI "\fICreate disconnected session structure\&. \fP"
 .ti -1c

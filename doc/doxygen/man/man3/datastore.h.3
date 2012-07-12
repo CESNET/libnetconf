@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Wed Jul 11 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Thu Jul 12 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -44,6 +44,14 @@ NETCONF datastore handling function prototypes and structures\&.
 .RI "void \fBncds_free\fP (struct ncds_ds *datastore)"
 .br
 .RI "\fIClose specified datastore and free all resources\&. \fP"
+.ti -1c
+.RI "void \fBncds_free2\fP (\fBncds_id\fP datastore_id)"
+.br
+.RI "\fIClose specified datastore and free all resources\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc\fP (\fBncds_id\fP id, struct nc_session *session, \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIPerform requested RPC operation on the datastore\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 

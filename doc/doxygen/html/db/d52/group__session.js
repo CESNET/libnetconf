@@ -9,7 +9,7 @@ var group__session =
     [ "nc_callback_ssh_host_authenticity_check", "db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a", null ],
     [ "nc_set_publickey_path", "db/d52/group__session.html#gae521c81f448de075a84f62388320ebae", null ],
     [ "nc_set_privatekey_path", "db/d52/group__session.html#ga66beddc668fcc5c3699165bf3d3fd089", null ],
-    [ "nc_session_dummy", "db/d52/group__session.html#gaa4542a7148d59f2fe259eff9d6852a8c", null ],
+    [ "nc_session_dummy", "db/d52/group__session.html#gad821a04ee9dc04bbed04ea1d138afbed", null ],
     [ "nc_session_close", "db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd", null ],
     [ "nc_session_free", "db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee", null ],
     [ "nc_session_get_status", "db/d52/group__session.html#ga1bba4b1d6a3f4d3860bcef4783c1edd5", null ],

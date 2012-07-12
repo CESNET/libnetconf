@@ -41,6 +41,7 @@ var searchData=
   ['nc_5frpc_5fget_5fmsgid',['nc_rpc_get_msgid',['../db/de9/group__rpc.html#ga3bb3dd2d08b439d612f5954e3ce78205',1,'messages.h']]],
   ['nc_5frpc_5fget_5fop',['nc_rpc_get_op',['../db/de9/group__rpc.html#gabf639574395456fb6f4bade36fb4babd',1,'messages.h']]],
   ['nc_5frpc_5fget_5fop_5fcontent',['nc_rpc_get_op_content',['../db/de9/group__rpc.html#gade3f111e7c7727d512313b4875fd8f50',1,'messages.h']]],
+  ['nc_5frpc_5fget_5ftarget',['nc_rpc_get_target',['../db/de9/group__rpc.html#gab240067d45d58c945cdfd61948751379',1,'messages.h']]],
   ['nc_5frpc_5fget_5ftype',['nc_rpc_get_type',['../db/de9/group__rpc.html#gaa502fb30575000775b29a764101c1bef',1,'messages.h']]],
   ['nc_5frpc_5fgetconfig',['nc_rpc_getconfig',['../db/de9/group__rpc.html#gaf4957efa92e46705d37002443d8c810d',1,'messages.h']]],
   ['nc_5frpc_5fkillsession',['nc_rpc_killsession',['../db/de9/group__rpc.html#gae9876e8d038eb81a376bd82a08c58b95',1,'messages.h']]],
@@ -49,7 +50,7 @@ var searchData=
   ['nc_5fsession_5faccept',['nc_session_accept',['../db/d52/group__session.html#ga1bd6c4469064bf3e86538082b232c9cd',1,'ssh.h']]],
   ['nc_5fsession_5fclose',['nc_session_close',['../db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd',1,'session.h']]],
   ['nc_5fsession_5fconnect',['nc_session_connect',['../db/d52/group__session.html#ga6b35fd9f2321a59f0117aa5c28a5d72e',1,'ssh.h']]],
-  ['nc_5fsession_5fdummy',['nc_session_dummy',['../db/d52/group__session.html#gaa4542a7148d59f2fe259eff9d6852a8c',1,'session.h']]],
+  ['nc_5fsession_5fdummy',['nc_session_dummy',['../db/d52/group__session.html#gad821a04ee9dc04bbed04ea1d138afbed',1,'session.h']]],
   ['nc_5fsession_5ffree',['nc_session_free',['../db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee',1,'session.h']]],
   ['nc_5fsession_5fget_5fcpblts',['nc_session_get_cpblts',['../db/d52/group__session.html#ga09bdf1d9eacf9f53bf3f05557ffe0821',1,'session.h']]],
   ['nc_5fsession_5fget_5fcpblts_5fdefault',['nc_session_get_cpblts_default',['../db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71',1,'session.h']]],
@@ -69,8 +70,10 @@ var searchData=
   ['nc_5fset_5fpublickey_5fpath',['nc_set_publickey_path',['../db/d52/group__session.html#gae521c81f448de075a84f62388320ebae',1,'callbacks.h']]],
   ['nc_5fssh_5fpref',['nc_ssh_pref',['../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0',1,'ssh.h']]],
   ['nc_5fverbosity',['nc_verbosity',['../d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7',1,'netconf.h']]],
+  ['ncds_5fapply_5frpc',['ncds_apply_rpc',['../db/d67/group__store.html#ga0dc4238eb2952da8241e401261174a70',1,'datastore.h']]],
   ['ncds_5ffile_5fset_5fpath',['ncds_file_set_path',['../db/d67/group__store.html#ga2a45352da9996851fe4d19ac1c68be1a',1,'datastore.h']]],
   ['ncds_5ffree',['ncds_free',['../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754',1,'datastore.h']]],
+  ['ncds_5ffree2',['ncds_free2',['../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2',1,'datastore.h']]],
   ['ncds_5finit',['ncds_init',['../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff',1,'datastore.h']]],
   ['ncds_5fnew',['ncds_new',['../db/d67/group__store.html#ga35274d407f561c0358be08050e021179',1,'datastore.h']]]
 ];

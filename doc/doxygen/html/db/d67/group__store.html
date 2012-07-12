@@ -141,6 +141,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate datastore structure for use.  <a href="#gaabb1ae2c497726ad826fc6478f97e8ff"></a><br/></td></tr>
 <tr class="memitem:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">ncds_free</a> (struct ncds_ds *datastore)</td></tr>
 <tr class="memdesc:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close specified datastore and free all resources.  <a href="#ga77b479cc1496b0c3883bb0f6bfe46754"></a><br/></td></tr>
+<tr class="memitem:ga05e7f1ed8185b92a6dbf904172dba9d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2">ncds_free2</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> datastore_id)</td></tr>
+<tr class="memdesc:ga05e7f1ed8185b92a6dbf904172dba9d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close specified datastore and free all resources.  <a href="#ga05e7f1ed8185b92a6dbf904172dba9d2"></a><br/></td></tr>
+<tr class="memitem:ga0dc4238eb2952da8241e401261174a70"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga0dc4238eb2952da8241e401261174a70">ncds_apply_rpc</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id, struct nc_session *session, <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
+<tr class="memdesc:ga0dc4238eb2952da8241e401261174a70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform requested RPC operation on the datastore.  <a href="#ga0dc4238eb2952da8241e401261174a70"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's functions for handling NETCONF datastores. </p>
@@ -288,7 +292,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>File datastore implementation type setter for the path parameter. </p>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000001">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#ga2a45352da9996851fe4d19ac1c68be1a" title="File datastore implementation type setter for the path parameter.">ncds_file_set_path()</a></dd></dl>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000002">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#ga2a45352da9996851fe4d19ac1c68be1a" title="File datastore implementation type setter for the path parameter.">ncds_file_set_path()</a></dd></dl>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore structure to be configured. </td></tr>
@@ -315,8 +319,8 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Activate datastore structure for use. </p>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000002">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a></dd></dl>
-<p>The datastore configuration is checked and if everything is correct, datastore gets its unique ID to be used for datastore operation.</p>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000003">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a></dd></dl>
+<p>The datastore configuration is checked and if everything is correct, datastore gets its unique ID to be used for datastore operations (<a class="el" href="../../db/d67/group__store.html#ga0dc4238eb2952da8241e401261174a70" title="Perform requested RPC operation on the datastore.">ncds_apply_rpc()</a>).</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore to be initiated. </td></tr>
@@ -324,7 +328,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns:</dt><dd>Positive integer with datastore ID on success, negative value on error. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000003">Todo:</a></b></dt><dd>Specify error codes for indicating the problem </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000004">Todo:</a></b></dt><dd>Specify error codes for indicating the problem </dd></dl>
 
 </div>
 </div>
@@ -343,7 +347,8 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Close specified datastore and free all resources. </p>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000004">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754" title="Close specified datastore and free all resources.">ncds_free()</a></dd></dl>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000005">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754" title="Close specified datastore and free all resources.">ncds_free()</a></dd></dl>
+<p>Equivalent function to <a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2" title="Close specified datastore and free all resources.">ncds_free2()</a>.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore to be closed. </td></tr>
@@ -353,12 +358,82 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga05e7f1ed8185b92a6dbf904172dba9d2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2">ncds_free2</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
+          <td class="paramname"><em>datastore_id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Close specified datastore and free all resources. </p>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000006">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2" title="Close specified datastore and free all resources.">ncds_free2()</a></dd></dl>
+<p>Equivalent function to <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754" title="Close specified datastore and free all resources.">ncds_free()</a>.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">datastore_id</td><td>ID of the datastore to be closed. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga0dc4238eb2952da8241e401261174a70"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* <a class="el" href="../../db/d67/group__store.html#ga0dc4238eb2952da8241e401261174a70">ncds_apply_rpc</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct nc_session *&#160;</td>
+          <td class="paramname"><em>session</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
+          <td class="paramname"><em>rpc</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Perform requested RPC operation on the datastore. </p>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000007">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#ga0dc4238eb2952da8241e401261174a70" title="Perform requested RPC operation on the datastore.">ncds_apply_rpc()</a></dd></dl>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Datastore ID. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session (dummy session is acceptable) where the &lt;rpc&gt; came from. Capabilities checks are done according to this session. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>NETCONF &lt;rpc&gt; message specifying requested operation. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>NULL in case of non NC_RPC_DATASTORE_* operation type, else &lt;rpc-reply&gt; with &lt;ok&gt;, &lt;data&gt; or &lt;rpc-error&gt; according to the type and the result of the requested operation. </dd></dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Wed Jul 11 2012 15:27:56 for libnetconf by
+    <li class="footer">Generated on Thu Jul 12 2012 14:26:30 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

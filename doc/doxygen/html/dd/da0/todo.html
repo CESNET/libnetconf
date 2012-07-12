@@ -109,11 +109,17 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><dl class="reflist">
-<dt><a class="anchor" id="_todo000001"></a>Global <a class="el" href="../../db/d67/group__store.html#ga2a45352da9996851fe4d19ac1c68be1a">ncds_file_set_path</a>  (struct ncds_ds *datastore, char *path)</dt>
+<dt><a class="anchor" id="_todo000001"></a>Global <a class="el" href="../../db/de9/group__rpc.html#gab240067d45d58c945cdfd61948751379">nc_rpc_get_target</a>  (const nc_rpc *rpc)</dt>
+<dd>Implement <a class="el" href="../../db/de9/group__rpc.html#gab240067d45d58c945cdfd61948751379" title="Get target datastore type (running, startup, candidate) of the rpc request.">nc_rpc_get_target()</a> </dd>
+<dt><a class="anchor" id="_todo000007"></a>Global <a class="el" href="../../db/d67/group__store.html#ga0dc4238eb2952da8241e401261174a70">ncds_apply_rpc</a>  (ncds_id id, struct nc_session *session, nc_rpc *rpc)</dt>
+<dd>Implement <a class="el" href="../../db/d67/group__store.html#ga0dc4238eb2952da8241e401261174a70" title="Perform requested RPC operation on the datastore.">ncds_apply_rpc()</a> </dd>
+<dt><a class="anchor" id="_todo000002"></a>Global <a class="el" href="../../db/d67/group__store.html#ga2a45352da9996851fe4d19ac1c68be1a">ncds_file_set_path</a>  (struct ncds_ds *datastore, char *path)</dt>
 <dd>Implement <a class="el" href="../../db/d67/group__store.html#ga2a45352da9996851fe4d19ac1c68be1a" title="File datastore implementation type setter for the path parameter.">ncds_file_set_path()</a> </dd>
-<dt><a class="anchor" id="_todo000004"></a>Global <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">ncds_free</a>  (struct ncds_ds *datastore)</dt>
+<dt><a class="anchor" id="_todo000005"></a>Global <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">ncds_free</a>  (struct ncds_ds *datastore)</dt>
 <dd>Implement <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754" title="Close specified datastore and free all resources.">ncds_free()</a> </dd>
-<dt><a class="anchor" id="_todo000002"></a>Global <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">ncds_init</a>  (struct ncds_ds *datastore)</dt>
+<dt><a class="anchor" id="_todo000006"></a>Global <a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2">ncds_free2</a>  (ncds_id datastore_id)</dt>
+<dd>Implement <a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2" title="Close specified datastore and free all resources.">ncds_free2()</a> </dd>
+<dt><a class="anchor" id="_todo000003"></a>Global <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">ncds_init</a>  (struct ncds_ds *datastore)</dt>
 <dd><p class="startdd">Implement <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a></p>
 <p class="enddd">Specify error codes for indicating the problem </p>
 </dd>
@@ -123,7 +129,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Wed Jul 11 2012 15:27:56 for libnetconf by
+    <li class="footer">Generated on Thu Jul 12 2012 14:26:30 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>
