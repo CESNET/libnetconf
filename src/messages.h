@@ -143,13 +143,11 @@ char* nc_rpc_get_op_content(const nc_rpc *rpc);
 NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc);
 
 /**
- * \todo Implement nc_rpc_get_target()
- *
  * @ingroup rpc
  * @brief Get target datastore type (running, startup, candidate) of the rpc request.
  *
  * For \<rpc\> message that does not affect datastore (e.g. kill-session), the
- * NC_DATASTORE_UNKNOWN is returned.
+ * NC_DATASTORE_NONE is returned.
  *
  * @param[in] rpc rpc message
  * @return One of the NC_DATASTORE.

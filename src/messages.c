@@ -274,6 +274,41 @@ NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc)
 	}
 }
 
+NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
+{
+	xmlNodePtr root, target;
+
+	if (rpc == NULL || rpc->doc == NULL) {
+		return NC_DATASTORE_NONE;
+	}
+
+	if ((root = xmlDocGetRootElement (rpc->doc)) == NULL || !xmlStrEqual (root->name, BAD_CAST "rpc") || root->children == NULL) {
+		return NC_DATASTORE_NONE;
+	}
+
+	target = root->children->children;
+	while (target) {
+		if (xmlStrEqual (target->name, BAD_CAST "target")) {
+			break;
+		}
+		target = target->next;
+	}
+
+	if (target == NULL || target->children == NULL) {
+		return NC_DATASTORE_NONE;
+	}
+
+	if (xmlStrEqual (target->children->name, BAD_CAST "candidate")) {
+		return NC_DATASTORE_CANDIDATE;
+	} else if (xmlStrEqual (target->children->name, BAD_CAST "running")) {
+		return NC_DATASTORE_RUNNING;
+	} else if (xmlStrEqual (target->children->name, BAD_CAST "startup")) {
+		return NC_DATASTORE_STARTUP;
+	}
+
+	return NC_DATASTORE_NONE;
+}
+
 NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
 {
 	if (reply != NULL) {
