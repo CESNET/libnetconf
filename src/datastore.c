@@ -70,6 +70,26 @@ struct ncds_ds {
 	xmlDocPtr model;
 };
 
+/** \ todo implement function */
+struct ncds_ds_empty { 
+	/**
+	 * @brief Datastore implementation type
+	 */
+	NCDS_TYPE type;
+	/**
+	 * @brief Datastore ID: 0 - uninitiated datastore, positive value - valid ID
+	 */
+	ncds_id id;
+	/**
+	 * @brief Path to file containing YIN configuration data model
+	 */
+	char* model_path;
+	/**
+	 * @brief YIN configuration data model in the libxml2's document form.
+	 */
+	xmlDocPtr model;
+};
+
 struct ncds_ds_file {
 	/**
 	 * @brief Datastore implementation type
@@ -105,6 +125,8 @@ struct ncds_ds_file {
 	 */
 	xmlNodePtr candidate, running, startup;
 };
+
+
 
 struct ncds_ds_list {
 	struct ncds_ds *datastore;
