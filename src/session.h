@@ -61,7 +61,7 @@
  * @param[in] capabilities List of capabilities supported by the session.
  * @return Structure describing a dummy NETCONF session or NULL in case of error.
  */
-struct nc_session* nc_session_dummy(const char* sid, const char* username, const struct nc_cpblts *capabilities);
+struct nc_session* nc_session_dummy(const char* sid, const char* username, struct nc_cpblts *capabilities);
 
 /**
  * @ingroup session

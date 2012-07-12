@@ -320,7 +320,7 @@ struct nc_cpblts* nc_session_get_cpblts (const struct nc_session* session)
 	return (session->capabilities);
 }
 
-struct nc_session* nc_session_dummy(const char* sid, const char* username, const struct nc_cpblts *capabilities)
+struct nc_session* nc_session_dummy(const char* sid, const char* username, struct nc_cpblts *capabilities)
 {
 	struct nc_session * session;
 	char * cpblt;
