@@ -95,8 +95,6 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path);
 ncds_id ncds_init(struct ncds_ds* datastore);
 
 /**
- * \todo Implement ncds_free()
- *
  * @ingroup store
  * @brief Close specified datastore and free all resources.
  *
@@ -107,8 +105,6 @@ ncds_id ncds_init(struct ncds_ds* datastore);
 void ncds_free(struct ncds_ds* datastore);
 
 /**
- * \todo Implement ncds_free2()
- *
  * @ingroup store
  * @brief Close specified datastore and free all resources.
  *

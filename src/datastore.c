@@ -523,3 +523,32 @@ ncds_id ncds_init (struct ncds_ds* datastore)
 
 	return datastore->id;
 }
+
+void ncds_free2 (ncds_id datastore_id)
+{
+	struct ncds_ds_list *tmp, *del;
+
+	/* empty list */
+	if (datastores == NULL) {
+		return;
+	}
+
+	/* remove first */
+	if (datastores->datastore->id == datastore_id) {
+		del = datastores;
+		datastores = datastores->next;
+	} else {
+		tmp = datastores;
+		while (tmp->next) {
+			if (tmp->next->datastore->id == datastore_id) {
+				del = tmp->next;
+				tmp->next = tmp->next->next;
+				break;
+			}
+			tmp = tmp->next;
+		}
+	}
+
+	ncds_free (del->datastore);
+	free (del);
+}
