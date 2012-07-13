@@ -786,13 +786,13 @@ struct nc_err* nc_msg_parse_error(struct nc_msg* msg)
 			tmp = node->children;
 			while (tmp) {
 				if (xmlStrEqual(tmp->name, BAD_CAST "bad-attribute")) {
-					err->attribute = (char*)xmlNodeGetContent(node);
+					err->attribute = (char*)xmlNodeGetContent(tmp);
 				} else if (xmlStrEqual(tmp->name, BAD_CAST "bad-element")) {
-					err->element = (char*)xmlNodeGetContent(node);
-				} else if (xmlStrEqual(node->name, BAD_CAST "session-id")) {
-					err->sid = (char*)xmlNodeGetContent(node);
-				} else if (xmlStrEqual(node->name, BAD_CAST "bad-namespace")) {
-					err->ns = (char*)xmlNodeGetContent(node);
+					err->element = (char*)xmlNodeGetContent(tmp);
+				} else if (xmlStrEqual(tmp->name, BAD_CAST "session-id")) {
+					err->sid = (char*)xmlNodeGetContent(tmp);
+				} else if (xmlStrEqual(tmp->name, BAD_CAST "bad-namespace")) {
+					err->ns = (char*)xmlNodeGetContent(tmp);
 				}
 				tmp = tmp->next;
 			}

@@ -596,7 +596,7 @@ nc_reply *nc_reply_data(const char* data)
 nc_reply *nc_reply_error(const struct nc_err* error)
 {
 	nc_reply *reply;
-	xmlNodePtr content;
+	xmlNodePtr content, einfo;
 
 	if (error == NULL) {
 		ERROR("Empty error structure to create rpc-error reply.");
@@ -608,8 +608,17 @@ nc_reply *nc_reply_error(const struct nc_err* error)
 		return (NULL);
 	}
 
+	/* prepare error-info if needed */
+	if (error->sid != NULL || error->attribute != NULL || error->element != NULL || error->ns != NULL) {
+		if ((einfo = xmlNewChild(content, NULL, BAD_CAST "error-info", NULL)) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
 	if (error->tag != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "tag", BAD_CAST error->tag) == NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "error-tag", BAD_CAST error->tag) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
@@ -617,7 +626,7 @@ nc_reply *nc_reply_error(const struct nc_err* error)
 	}
 
 	if (error->type != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "type", BAD_CAST error->type) == NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "error-type", BAD_CAST error->type) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
@@ -625,7 +634,7 @@ nc_reply *nc_reply_error(const struct nc_err* error)
 	}
 
 	if (error->severity != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "severity", BAD_CAST error->severity) == NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "error-severity", BAD_CAST error->severity) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
@@ -633,7 +642,7 @@ nc_reply *nc_reply_error(const struct nc_err* error)
 	}
 
 	if (error->apptag != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "apptag", BAD_CAST error->apptag) == NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "error-app-tag", BAD_CAST error->apptag) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
@@ -641,7 +650,7 @@ nc_reply *nc_reply_error(const struct nc_err* error)
 	}
 
 	if (error->path != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "path", BAD_CAST error->path) == NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "error-path", BAD_CAST error->path) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
@@ -649,15 +658,16 @@ nc_reply *nc_reply_error(const struct nc_err* error)
 	}
 
 	if (error->message != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "message", BAD_CAST error->message) == NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "error-message", BAD_CAST error->message) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
 		}
 	}
 
+	/* error-info items */
 	if (error->attribute != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "attribute", BAD_CAST error->attribute) == NULL) {
+		if (xmlNewChild(einfo, NULL, BAD_CAST "attribute", BAD_CAST error->attribute) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
@@ -665,7 +675,7 @@ nc_reply *nc_reply_error(const struct nc_err* error)
 	}
 
 	if (error->element != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "element", BAD_CAST error->element) == NULL) {
+		if (xmlNewChild(einfo, NULL, BAD_CAST "element", BAD_CAST error->element) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
@@ -673,7 +683,7 @@ nc_reply *nc_reply_error(const struct nc_err* error)
 	}
 
 	if (error->ns != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "ns", BAD_CAST error->ns) == NULL) {
+		if (xmlNewChild(einfo, NULL, BAD_CAST "ns", BAD_CAST error->ns) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
@@ -681,7 +691,7 @@ nc_reply *nc_reply_error(const struct nc_err* error)
 	}
 
 	if (error->sid != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "sid", BAD_CAST error->sid) == NULL) {
+		if (xmlNewChild(einfo, NULL, BAD_CAST "session-id", BAD_CAST error->sid) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
