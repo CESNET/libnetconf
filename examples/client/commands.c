@@ -485,9 +485,14 @@ int cmd_editconfig (char *arg)
 	/* send the request and get the reply */
 	nc_session_send_rpc (session, rpc);
 	if (nc_session_recv_reply (session, &reply) == 0) {
-		ERROR("edit-config", "receiving rpc-reply failed.");
 		nc_rpc_free (rpc);
-		return (EXIT_FAILURE);
+		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
+			ERROR("edit-config", "receiving rpc-reply failed.");
+			INSTRUCTION("Closing the session.\n");
+			cmd_disconnect(NULL);
+			return (EXIT_FAILURE);
+		}
+		return (EXIT_SUCCESS);
 	}
 	nc_rpc_free (rpc);
 
@@ -653,9 +658,14 @@ int cmd_copyconfig (char *arg)
 	/* send the request and get the reply */
 	nc_session_send_rpc (session, rpc);
 	if (nc_session_recv_reply (session, &reply) == 0) {
-		ERROR("copy-config", "receiving rpc-reply failed.");
 		nc_rpc_free (rpc);
-		return (EXIT_FAILURE);
+		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
+			ERROR("copy-config", "receiving rpc-reply failed.");
+			INSTRUCTION("Closing the session.\n");
+			cmd_disconnect(NULL);
+			return (EXIT_FAILURE);
+		}
+		return (EXIT_SUCCESS);
 	}
 	nc_rpc_free (rpc);
 
@@ -750,9 +760,14 @@ int cmd_get (char *arg)
 	/* send the request and get the reply */
 	nc_session_send_rpc (session, rpc);
 	if (nc_session_recv_reply (session, &reply) == 0) {
-		ERROR("get", "receiving rpc-reply failed.");
 		nc_rpc_free (rpc);
-		return (EXIT_FAILURE);
+		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
+			ERROR("get", "receiving rpc-reply failed.");
+			INSTRUCTION("Closing the session.\n");
+			cmd_disconnect(NULL);
+			return (EXIT_FAILURE);
+		}
+		return (EXIT_SUCCESS);
 	}
 	nc_rpc_free (rpc);
 
@@ -865,9 +880,14 @@ int cmd_deleteconfig (char *arg)
 	/* send the request and get the reply */
 	nc_session_send_rpc (session, rpc);
 	if (nc_session_recv_reply (session, &reply) == 0) {
-		ERROR("delete-config", "receiving rpc-reply failed.");
 		nc_rpc_free (rpc);
-		return (EXIT_FAILURE);
+		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
+			ERROR("delete-config", "receiving rpc-reply failed.");
+			INSTRUCTION("Closing the session.\n");
+			cmd_disconnect(NULL);
+			return (EXIT_FAILURE);
+		}
+		return (EXIT_SUCCESS);
 	}
 	nc_rpc_free (rpc);
 
@@ -964,9 +984,14 @@ int cmd_killsession (char *arg)
 	/* send the request and get the reply */
 	nc_session_send_rpc (session, rpc);
 	if (nc_session_recv_reply (session, &reply) == 0) {
-		ERROR("kill-session", "receiving rpc-reply failed.");
 		nc_rpc_free (rpc);
-		return (EXIT_FAILURE);
+		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
+			ERROR("kill-session", "receiving rpc-reply failed.");
+			INSTRUCTION("Closing the session.\n");
+			cmd_disconnect(NULL);
+			return (EXIT_FAILURE);
+		}
+		return (EXIT_SUCCESS);
 	}
 	nc_rpc_free (rpc);
 
@@ -1069,9 +1094,14 @@ int cmd_getconfig (char *arg)
 	/* send the request and get the reply */
 	nc_session_send_rpc (session, rpc);
 	if (nc_session_recv_reply (session, &reply) == 0) {
-		ERROR("get-config", "receiving rpc-reply failed.");
 		nc_rpc_free (rpc);
-		return (EXIT_FAILURE);
+		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
+			ERROR("get-config", "receiving rpc-reply failed.");
+			INSTRUCTION("Closing the session.\n");
+			cmd_disconnect(NULL);
+			return (EXIT_FAILURE);
+		}
+		return (EXIT_SUCCESS);
 	}
 	nc_rpc_free (rpc);
 
@@ -1188,9 +1218,14 @@ int cmd_un_lock (int op, char *arg)
 	/* send the request and get the reply */
 	nc_session_send_rpc (session, rpc);
 	if (nc_session_recv_reply (session, &reply) == 0) {
-		ERROR(operation, "receiving rpc-reply failed.");
 		nc_rpc_free (rpc);
-		return (EXIT_FAILURE);
+		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
+			ERROR(operation, "receiving rpc-reply failed.");
+			INSTRUCTION("Closing the session.\n");
+			cmd_disconnect(NULL);
+			return (EXIT_FAILURE);
+		}
+		return (EXIT_SUCCESS);
 	}
 	nc_rpc_free (rpc);
 
