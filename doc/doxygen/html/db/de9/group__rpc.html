@@ -671,8 +671,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Get target datastore type (running, startup, candidate) of the rpc request. </p>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000001">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/de9/group__rpc.html#gab240067d45d58c945cdfd61948751379" title="Get target datastore type (running, startup, candidate) of the rpc request.">nc_rpc_get_target()</a></dd></dl>
-<p>For &lt;rpc&gt; message that does not affect datastore (e.g. kill-session), the NC_DATASTORE_UNKNOWN is returned.</p>
+<p>For &lt;rpc&gt; message that does not affect datastore (e.g. kill-session), the NC_DATASTORE_NONE is returned.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>rpc message </td></tr>
@@ -992,7 +991,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Thu Jul 12 2012 14:26:30 for libnetconf by
+    <li class="footer">Generated on Fri Jul 13 2012 15:58:08 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

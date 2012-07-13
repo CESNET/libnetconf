@@ -128,7 +128,8 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830">NC_DATASTORE_CANDIDATE</a>
  }</td></tr>
 <tr class="memdesc:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported types of datastores defined by NETCONF.  <a href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">More...</a><br/></td></tr>
-<tr class="memitem:gab0f0cbd5268577ec36fc76cf89c72a8f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> { <a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629">NCDS_TYPE_FILE</a>
+<tr class="memitem:gab0f0cbd5268577ec36fc76cf89c72a8f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> { <a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b">NCDS_TYPE_EMPTY</a>, 
+<a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629">NCDS_TYPE_FILE</a>
  }</td></tr>
 <tr class="memdesc:gab0f0cbd5268577ec36fc76cf89c72a8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Datastore implementation types provided by libnetconf.  <a href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">More...</a><br/></td></tr>
 <tr><td colspan="2"><h2><a name="func-members"></a>
@@ -136,7 +137,7 @@ Functions</h2></td></tr>
 <tr class="memitem:ga35274d407f561c0358be08050e021179"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga35274d407f561c0358be08050e021179">ncds_new</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path)</td></tr>
 <tr class="memdesc:ga35274d407f561c0358be08050e021179"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new datastore structure of the specified implementation type.  <a href="#ga35274d407f561c0358be08050e021179"></a><br/></td></tr>
 <tr class="memitem:ga2a45352da9996851fe4d19ac1c68be1a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga2a45352da9996851fe4d19ac1c68be1a">ncds_file_set_path</a> (struct ncds_ds *datastore, char *path)</td></tr>
-<tr class="memdesc:ga2a45352da9996851fe4d19ac1c68be1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">File datastore implementation type setter for the path parameter.  <a href="#ga2a45352da9996851fe4d19ac1c68be1a"></a><br/></td></tr>
+<tr class="memdesc:ga2a45352da9996851fe4d19ac1c68be1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign path of the datastore file into the datastore structure.  <a href="#ga2a45352da9996851fe4d19ac1c68be1a"></a><br/></td></tr>
 <tr class="memitem:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">ncds_init</a> (struct ncds_ds *datastore)</td></tr>
 <tr class="memdesc:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate datastore structure for use.  <a href="#gaabb1ae2c497726ad826fc6478f97e8ff"></a><br/></td></tr>
 <tr class="memitem:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">ncds_free</a> (struct ncds_ds *datastore)</td></tr>
@@ -162,7 +163,7 @@ Functions</h2></td></tr>
 <p>Datastore ID. </p>
 <p>Each datastore gets its ID after initialisation (<a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>). Only initialised datstores can be used to access configuration data. </p>
 
-<p>Definition at line <a class="el" href="../../d9/db6/datastore_8h_source.html#l00058">58</a> of file <a class="el" href="../../d9/db6/datastore_8h_source.html">datastore.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d9/db6/datastore_8h_source.html#l00061">61</a> of file <a class="el" href="../../d9/db6/datastore_8h_source.html">datastore.h</a>.</p>
 
 </div>
 </div>
@@ -211,6 +212,10 @@ Functions</h2></td></tr>
 
 <p>Datastore implementation types provided by libnetconf. </p>
 <dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b"></a>NCDS_TYPE_EMPTY</em>&nbsp;</td><td>
+<p>No datastore. For read-only devices.</p>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000002">Todo:</a></b></dt><dd>Implement functions </dd></dl>
+</td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629"></a>NCDS_TYPE_FILE</em>&nbsp;</td><td>
 <p>Datastores implemented as files </p>
 </td></tr>
@@ -218,7 +223,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d9/db6/datastore_8h_source.html#l00047">47</a> of file <a class="el" href="../../d9/db6/datastore_8h_source.html">datastore.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d9/db6/datastore_8h_source.html#l00049">49</a> of file <a class="el" href="../../d9/db6/datastore_8h_source.html">datastore.h</a>.</p>
 
 </div>
 </div>
@@ -291,8 +296,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>File datastore implementation type setter for the path parameter. </p>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000002">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#ga2a45352da9996851fe4d19ac1c68be1a" title="File datastore implementation type setter for the path parameter.">ncds_file_set_path()</a></dd></dl>
+<p>Assign path of the datastore file into the datastore structure. </p>
+<p>Checks if the file exist and is accessible for reading and writing. If the file does not exist it is created. File is opened and file descriptor is stored in the structure</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore structure to be configured. </td></tr>
@@ -300,7 +305,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>0 on success, nonzero on error. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>0 on success -1 Invalid datastore -2 Invalid path ((does not exist &amp;&amp; can not be created) || insufficient rights) </dd></dl>
 
 </div>
 </div>
@@ -319,7 +324,6 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Activate datastore structure for use. </p>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000003">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a></dd></dl>
 <p>The datastore configuration is checked and if everything is correct, datastore gets its unique ID to be used for datastore operations (<a class="el" href="../../db/d67/group__store.html#ga0dc4238eb2952da8241e401261174a70" title="Perform requested RPC operation on the datastore.">ncds_apply_rpc()</a>).</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
@@ -327,8 +331,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Positive integer with datastore ID on success, negative value on error. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000004">Todo:</a></b></dt><dd>Specify error codes for indicating the problem </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Positive integer with datastore ID on success, negative value on error. -1 Invalid datastore -2 Type-specific initialization failed -3 Unsupported datastore type -4 Memory allocation problem </dd></dl>
 
 </div>
 </div>
@@ -347,7 +350,6 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Close specified datastore and free all resources. </p>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000005">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754" title="Close specified datastore and free all resources.">ncds_free()</a></dd></dl>
 <p>Equivalent function to <a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2" title="Close specified datastore and free all resources.">ncds_free2()</a>.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
@@ -373,7 +375,6 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Close specified datastore and free all resources. </p>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000006">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2" title="Close specified datastore and free all resources.">ncds_free2()</a></dd></dl>
 <p>Equivalent function to <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754" title="Close specified datastore and free all resources.">ncds_free()</a>.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
@@ -415,7 +416,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Perform requested RPC operation on the datastore. </p>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000007">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#ga0dc4238eb2952da8241e401261174a70" title="Perform requested RPC operation on the datastore.">ncds_apply_rpc()</a></dd></dl>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000001">Todo:</a></b></dt><dd>Implement <a class="el" href="../../db/d67/group__store.html#ga0dc4238eb2952da8241e401261174a70" title="Perform requested RPC operation on the datastore.">ncds_apply_rpc()</a></dd></dl>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Datastore ID. </td></tr>
@@ -433,7 +434,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Thu Jul 12 2012 14:26:30 for libnetconf by
+    <li class="footer">Generated on Fri Jul 13 2012 15:58:08 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

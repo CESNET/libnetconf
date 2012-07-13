@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Thu Jul 12 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Fri Jul 13 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -380,13 +380,7 @@ One of the NC_RPC_TYPE\&.
 .SS "\fBNC_DATASTORE\fP \fBnc_rpc_get_target\fP (const \fBnc_rpc\fP *rpc)"
 
 .PP
-Get target datastore type (running, startup, candidate) of the rpc request\&. \fBTodo\fP
-.RS 4
-Implement \fBnc_rpc_get_target()\fP
-.RE
-.PP
-.PP
-For <rpc> message that does not affect datastore (e\&.g\&. kill-session), the NC_DATASTORE_UNKNOWN is returned\&.
+Get target datastore type (running, startup, candidate) of the rpc request\&. For <rpc> message that does not affect datastore (e\&.g\&. kill-session), the NC_DATASTORE_NONE is returned\&.
 .PP
 \fBParameters:\fP
 .RS 4

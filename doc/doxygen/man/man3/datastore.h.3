@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Thu Jul 12 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Fri Jul 13 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -9,6 +9,9 @@ NETCONF datastore handling function prototypes and structures\&.
 .SH SYNOPSIS
 .br
 .PP
+\fC#include 'netconf\&.h'\fP
+.br
+
 .SS "Typedefs"
 
 .in +1c
@@ -21,7 +24,7 @@ NETCONF datastore handling function prototypes and structures\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNCDS_TYPE\fP { \fBNCDS_TYPE_FILE\fP }"
+.RI "enum \fBNCDS_TYPE\fP { \fBNCDS_TYPE_EMPTY\fP, \fBNCDS_TYPE_FILE\fP }"
 .br
 .RI "\fIDatastore implementation types provided by libnetconf\&. \fP"
 .in -1c
@@ -35,7 +38,7 @@ NETCONF datastore handling function prototypes and structures\&.
 .ti -1c
 .RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, char *path)"
 .br
-.RI "\fIFile datastore implementation type setter for the path parameter\&. \fP"
+.RI "\fIAssign path of the datastore file into the datastore structure\&. \fP"
 .ti -1c
 .RI "\fBncds_id\fP \fBncds_init\fP (struct ncds_ds *datastore)"
 .br
