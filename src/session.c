@@ -382,19 +382,24 @@ void nc_session_close (struct nc_session* session, const char* msg)
 			}
 
 			libssh2_channel_free (session->ssh_channel);
+			session->ssh_channel = NULL;
 		}
 		if (session->ssh_session != NULL) {
 			libssh2_session_disconnect(session->ssh_session, msg);
 			libssh2_session_free (session->ssh_session);
+			session->ssh_session = NULL;
 		}
 		if (session->hostname != NULL) {
 			free (session->hostname);
+			session->hostname = NULL;
 		}
 		if (session->port != NULL) {
 			free (session->port);
+			session->port = NULL;
 		}
 		if (session->libssh2_socket != -1) {
 			close (session->libssh2_socket);
+			session->libssh2_socket = -1;
 		}
 
 		/*
