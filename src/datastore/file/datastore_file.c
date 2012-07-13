@@ -57,7 +57,7 @@
 <datastores xmlns=\"urn:cesnet:tmc:datastores:file\">\
   <running lock=\"\"/>\
   <startup lock=\"\"/>\
-  <candidate lock=\"\">\
+  <candidate lock=\"\"/>\
 </datastores>"
 
 int ncds_file_set_path (struct ncds_ds* datastore, char* path)
