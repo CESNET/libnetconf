@@ -145,5 +145,6 @@
 #include "session.h"
 #include "messages.h"
 #include "error.h"
+#include "datastore.h"
 
 #endif /* LIBNETCONF_H_ */
