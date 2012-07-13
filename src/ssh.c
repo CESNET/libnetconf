@@ -812,6 +812,7 @@ shutdown:
 
 	/* cleanup */
 	nc_session_close(retval, "Preparation of NETCONF session failed.");
+	nc_session_free(retval);
 
 	if (knownhosts_file != NULL) {
 		free(knownhosts_file);
