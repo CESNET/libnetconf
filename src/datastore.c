@@ -192,11 +192,11 @@ ncds_id ncds_init (struct ncds_ds* datastore)
 
 	switch(datastore->type) {
 	case NCDS_TYPE_FILE:
-/*		if (ncds_file_init ((struct ncds_ds_file*)datastore)) {
+		if (ncds_file_init ((struct ncds_ds_file*)datastore)) {
 			ERROR ("File-specific datastore initialization failed.");
 			return -2;
 		}
-*/		break;
+		break;
 	default:
 		ERROR("Unsupported datastore implementation required.");
 		return -3;
@@ -240,7 +240,7 @@ void ncds_free(struct ncds_ds* datastore)
 	if (aux != NULL) {
 		switch (aux->type) {
 		case NCDS_TYPE_FILE:
-//			ncds_file_free((struct ncds_ds_file*) (aux));
+			ncds_file_free((struct ncds_ds_file*) (aux));
 			break;
 		default:
 			ERROR("Unsupported datastore implementation to be freed.");

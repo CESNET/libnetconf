@@ -280,3 +280,26 @@ int ncds_file_init (struct ncds_ds_file* file_ds)
 	return EXIT_SUCCESS;
 }
 
+void ncds_file_free(struct ncds_ds_file* file_ds)
+{
+	if (file_ds != NULL) {
+		/* generic ncds_ds part */
+		if (file_ds->model_path != NULL) {
+			free(file_ds->model_path);
+		}
+		if (file_ds->model != NULL) {
+			xmlFreeDoc(file_ds->model);
+		}
+		/* ncds_ds_file specific part */
+		if (file_ds->file != NULL) {
+			fclose(file_ds->file);
+		}
+		if (file_ds->path != NULL) {
+			free(file_ds->path);
+		}
+		if (file_ds->xml != NULL) {
+			xmlFreeDoc(file_ds->xml);
+		}
+		free(file_ds);
+	}
+}

@@ -101,4 +101,11 @@ int ncds_file_set_path (struct ncds_ds* datastore, char* path);
  */
 int ncds_file_init (struct ncds_ds_file* file_ds);
 
+
+/**
+ * @brief Close specified datastore and free all resources.
+ * @param[in] datastore Datastore to be closed.
+ */
+void ncds_file_free(struct ncds_ds_file* file_ds);
+
 #endif /* DATASTORE_FILE_H_ */
