@@ -44,6 +44,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
+#include <errno.h>
 
 #include <libxml/tree.h>
 
@@ -51,6 +53,12 @@
 #include "../datastore_internal.h"
 #include "datastore_file.h"
 
+#define FILEDSFRAME "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+<datastores xmlns=\"urn:cesnet:tmc:datastores:file\">\
+  <running lock=\"\"/>\
+  <startup lock=\"\"/>\
+  <candidate lock=\"\">\
+</datastores>"
 
 int ncds_file_set_path (struct ncds_ds* datastore, char* path)
 {
@@ -67,23 +75,24 @@ int ncds_file_set_path (struct ncds_ds* datastore, char* path)
 	}
 
 	/* file does not exist */
-	if (access (path, F_OK)) {
-		WARN ("File %s does not exist.", path);
+	if (access (path, F_OK) != 0) {
+		WARN ("Datastore file %s does not exist, creating it.", path);
 		/* try to create it */
-		file_ds->fd = open (path, O_CREAT|O_RDWR);
-		if (file_ds->fd == -1) {
-			ERROR ("File %s can not be created.", path);
-			return -2;
+		file_ds->file = fopen (path, "w+");
+		if (file_ds->file == NULL) {
+			ERROR ("Datastore file %s can not be created (%s).", path, strerror(errno));
+			return (-2);
 		} else {
-			WARN ("File %s was created.", path);
+			VERB ("Datastore file %s was created.", path);
 		}
 	} else if (access (path, W_OK|R_OK)) {
-		ERROR ("Insufficient rights for manipulation with file %s.", path);
-		return -2;
+		ERROR ("Insufficient rights for manipulation with the datastore file %s.", path);
+		return (-2);
 	} else {
-		file_ds->fd = open (path, O_RDWR);
-		if (file_ds->fd == -1) {
-			ERROR ("File %s can not be opened in RW mode. (Possibly EUID != UID)", path);
+		/* file exists and it is accessible */
+		file_ds->file = fopen (path, "r+");
+		if (file_ds->file == NULL) {
+			ERROR ("Datastore file %s can not be opened (%s).", path, strerror(errno));
 			return -2;
 		}
 	}
@@ -135,7 +144,7 @@ static int file_structure_check (xmlDocPtr doc)
 				startup = 1;
 			}
 		} else {
-			WARN ("Ignoring unknown element %s.", ds->name);
+			VERB ("File datastore structure check: ignoring unknown element %s.", ds->name);
 		}
 	}
 
@@ -147,69 +156,69 @@ static int file_structure_check (xmlDocPtr doc)
 }
 
 /**
- * @brief Create datastore internal structure
- *
- * @param[out] candidate Pointer to candidate part of datastore
- * @param[out] running Pointer to running part of datastore
- * @param[out] startup Pointer to startup part of datastore
- * @param[out] mem Pointer to serialized xml, if mem and len not NULL
- * @param[out] len length of serialized xml, if mem and len not NULL
- *
- * return xml document holding basic structure
+ * @brief Create xml frame of the file datastore
+ * @return xml document holding basic structure
  */
-static xmlDocPtr file_structure_create (xmlNodePtr *candidate, xmlNodePtr *running, xmlNodePtr *startup, char ** mem, int *len)
+static xmlDocPtr file_create_xmlframe ()
 {
 	xmlDocPtr doc;
-	xmlNodePtr root;
-	xmlNsPtr ns;
 
-	if ((doc = xmlNewDoc (BAD_CAST "1.0")) == NULL) {
-		goto doc_failed;
-	}
-
-	if ((root = xmlNewDocNode (doc, NULL, BAD_CAST "datastores", NULL)) == NULL) {
-		goto root_failed;
-	}
-	xmlDocSetRootElement (doc, root);
-
-	if ((ns = xmlNewNs (root, BAD_CAST "urn:cesnet:tmc:datastores", BAD_CAST "datastores")) == NULL) {
-		goto ns_failed;
-	}
-
-	if ((*candidate = xmlNewChild (root, NULL, BAD_CAST "candidate", NULL)) == NULL) {
-		goto candidate_failed;
-	}
-	xmlNewNsProp (*candidate, ns, BAD_CAST "lock", BAD_CAST "none");
-
-	if ((*running = xmlNewChild (root, NULL, BAD_CAST "running", NULL)) == NULL) {
-		goto running_failed;
-	}
-	xmlNewNsProp (*running, ns, BAD_CAST "lock", BAD_CAST "none");
-
-	if ((*startup = xmlNewChild (root, NULL, BAD_CAST "startup", NULL)) == NULL) {
-		goto startup_failed;
-	}
-	xmlNewNsProp (*startup, ns, BAD_CAST "lock", BAD_CAST "none");
-
-	if (mem != NULL && len != NULL) {
-		xmlDocDumpFormatMemory (doc, (xmlChar**)mem, len, 1);
+	doc = xmlReadDoc(BAD_CAST FILEDSFRAME, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
+	if (doc == NULL) {
+		ERROR ("%s: creating empty file datastore failed.", __func__);
+		return (NULL);
 	}
 
 	return doc;
+}
 
-/* big nice cleanup */
-startup_failed:
-	xmlFreeNode (*running);
-running_failed:
-	xmlFreeNode (*candidate);
-candidate_failed:
-	xmlFreeNs (ns);
-ns_failed:
-	xmlFreeNode (root);
-root_failed:
-	xmlFreeDoc (doc);
-doc_failed:
-	return NULL;
+static int file_fill_dsnodes(struct ncds_ds_file* ds)
+{
+	xmlNodePtr aux;
+
+	if (ds == NULL || ds->xml == NULL || ds->xml->children == NULL) {
+		ERROR("%s: invalid input parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+	ds->running = NULL;
+	ds->startup = NULL;
+	ds->candidate = NULL;
+
+	for (aux = ds->xml->children->children; aux != NULL; aux = aux->next) {
+		if (xmlStrcmp(aux->name, BAD_CAST "running") == 0) {
+			if (ds->running != NULL) {
+				goto invalid_ds;
+			} else {
+				ds->running = aux;
+			}
+		}else if (xmlStrcmp(aux->name, BAD_CAST "startup") == 0) {
+			if (ds->startup != NULL) {
+				goto invalid_ds;
+			} else {
+				ds->startup = aux;
+			}
+		}else if (xmlStrcmp(aux->name, BAD_CAST "candidate") == 0) {
+			if (ds->candidate != NULL) {
+				goto invalid_ds;
+			} else {
+				ds->candidate = aux;
+			}
+		}
+		/* else - ignore such unknown nodes until we get all required nodes */
+	}
+
+	if (ds->running == NULL || ds->startup == NULL || ds->candidate == NULL) {
+		/* xml structure of the file datastore is invalid */
+		goto invalid_ds;
+	}
+
+	return (EXIT_SUCCESS);
+
+invalid_ds:
+	ds->running = NULL;
+	ds->startup = NULL;
+	ds->candidate = NULL;
+	return (EXIT_FAILURE);
 }
 
 /**
@@ -223,35 +232,49 @@ doc_failed:
 int ncds_file_init (struct ncds_ds_file* file_ds)
 {
 	struct stat st;
-	char * new_path, *mem;
-	int len;
+	char* new_path;
+	int fd;
 
-	file_ds->xml = xmlReadFd (file_ds->fd, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
+	file_ds->xml = xmlReadFile (file_ds->path, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
 	if (file_ds->xml == NULL || file_structure_check (file_ds->xml) == 0) {
 		WARN ("Failed to parse XML in file.");
-		/* Unable to determine size or size bigger than 0 */
-		if (fstat(file_ds->fd, &st) || st.st_size > 0) {
-			WARN ("File %s contains some data.", file_ds->path);
-			close (file_ds->fd);
-			xmlFreeDoc (file_ds->xml);
+		if (stat(file_ds->path, &st) || st.st_size > 0) {
+			/* Unable to determine size or size bigger than 0 */
+			WARN ("File %s contains some unknown data.", file_ds->path);
+
+			/* cleanup so far structures because new will be created */
+			fclose (file_ds->file);
+			if (file_ds->xml != NULL) {
+				xmlFreeDoc (file_ds->xml);
+			}
+			file_ds->file = NULL;
+			file_ds->xml = NULL;
+
 			/* Create file based on original name */
 			asprintf (&new_path, "%s.XXXXXX", file_ds->path);
-			file_ds->fd = mkstemp (new_path);
-			if (file_ds->fd == -1) {
-				ERROR ("Can not create alternative file.");
+			fd = mkstemp (new_path);
+			if (fd == -1 || (file_ds->file = fdopen(fd, "r+")) == NULL) {
+				ERROR ("Can not create alternate file %s (%s).", new_path, strerror(errno));
 				free (new_path);
-				return EXIT_FAILURE;
+				return (EXIT_FAILURE);
 			}
+
+			/* store new path */
 			free (file_ds->path);
 			file_ds->path = new_path;
 			WARN("Using file %s to prevent data loss.", file_ds->path);
 		}
-		file_ds->xml = file_structure_create (&file_ds->candidate, &file_ds->running, &file_ds->startup, &mem, &len);
+		file_ds->xml = file_create_xmlframe();
 		if (file_ds->xml == NULL) {
-			return EXIT_FAILURE;
+			return (EXIT_FAILURE);
 		}
-		write (file_ds->fd, mem, len);
+		xmlDocFormatDump(file_ds->file, file_ds->xml, 1);
 		WARN ("File %s was empty. Basic structure created.", file_ds->path);
+	}
+
+	/* get pointers to running, startup and candidate nodes in xml */
+	if (file_fill_dsnodes(file_ds) != EXIT_SUCCESS) {
+		return (EXIT_FAILURE);
 	}
 
 	return EXIT_SUCCESS;

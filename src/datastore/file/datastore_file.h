@@ -67,7 +67,7 @@ struct ncds_ds_file {
 	/**
 	 * @brief File descriptor of opened file containing configuration data
 	 */
-	int fd;
+	FILE* file;
 	/**
 	 * libxml2's document structure of the datastore
 	 */
