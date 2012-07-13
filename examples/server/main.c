@@ -49,6 +49,7 @@
 
 struct srv_config {
 	struct nc_session *session;
+	ncds_id dsid;
 	struct event_base *event_base;
 	struct event *event_input;
 };
@@ -133,6 +134,7 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 int main(int argc, char *argv[])
 {
 	struct srv_config config;
+	struct ncds_ds* datastore;
 
 	/* set verbosity and function to print libnetconf's messages */
 	nc_verbosity(NC_VERB_DEBUG);
@@ -140,6 +142,22 @@ int main(int argc, char *argv[])
 	/* set message printing into the system log */
 	openlog("ncserver", LOG_PID, LOG_DAEMON);
 	nc_callback_print(clb_print);
+
+	/* prepare configuration datastore */
+	datastore = ncds_new(NCDS_TYPE_FILE, "/tmp/model.yin");
+	if (datastore == NULL) {
+		clb_print("Datastore preparing failed.");
+		return (EXIT_FAILURE);
+	}
+	if (ncds_file_set_path(datastore, "/tmp/datastore.xml") != 0) {
+		clb_print("Linking datastore to a file failed.");
+		return (EXIT_FAILURE);
+	}
+	config.dsid = ncds_init(datastore);
+	if (config.dsid <= 0) {
+		clb_print("Initiating datastore failed.");
+		return (EXIT_FAILURE);
+	}
 
 	/* create the NETCONF session */
 	config.session = nc_session_accept(NULL);
