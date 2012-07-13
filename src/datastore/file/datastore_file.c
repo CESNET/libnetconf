@@ -103,9 +103,7 @@ int ncds_file_set_path (struct ncds_ds* datastore, char* path)
 
 /**
  * @brief Checks if structure of XML is matches the expected one
- *
  * @param[in] doc Document to check.
- *
  * @return non-zero if matches zero if not.
  */
 static int file_structure_check (xmlDocPtr doc)
