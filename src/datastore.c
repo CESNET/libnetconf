@@ -246,7 +246,6 @@ void ncds_free(struct ncds_ds* datastore)
 			ERROR("Unsupported datastore implementation to be freed.");
 			break;
 		}
-		free(ds);
 	}
 
 	/* free the datastore list structure */
@@ -257,29 +256,29 @@ void ncds_free(struct ncds_ds* datastore)
 
 void ncds_free2 (ncds_id datastore_id)
 {
-	struct ncds_ds_list *tmp, *del;
+	struct ncds_ds_list *del;
 
 	/* empty list */
 	if (datastores == NULL) {
 		return;
 	}
 
-	/* remove first */
-	if (datastores->datastore->id == datastore_id) {
-		del = datastores;
-		datastores = datastores->next;
-	} else {
-		tmp = datastores;
-		while (tmp->next) {
-			if (tmp->next->datastore->id == datastore_id) {
-				del = tmp->next;
-				tmp->next = tmp->next->next;
-				break;
-			}
-			tmp = tmp->next;
-		}
+	/* invalid id */
+	if (datastore_id <= 0) {
+		WARN("%s: invalid datastore ID to free.", __func__);
+		return;
 	}
 
-	ncds_free (del->datastore);
-	free (del);
+	/* get datastore from the internal datastores list */
+	del = datastores_get_ds(datastore_id);
+
+	/* free if any found */
+	if (del != NULL) {
+		/*
+		 * ncds_free() detaches the item from the internal datastores
+		 * list, also the whole list item (del variable here) is freed
+		 * by ncds_free(), so do not do it here!
+		 */
+		ncds_free (del->datastore);
+	}
 }
