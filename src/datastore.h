@@ -40,6 +40,8 @@
 #ifndef DATASTORE_H_
 #define DATASTORE_H_
 
+#include "netconf.h"
+
 /**
  * @ingroup store
  * @brief Datastore implementation types provided by libnetconf

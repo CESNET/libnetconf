@@ -75,7 +75,8 @@ SRCS =  src/callbacks.c \
 	src/messages.c \
 	src/session.c \
 	src/ssh.c \
-	src/datastore.c
+	src/datastore.c \
+	src/datastore/file/datastore_file.c
 
 HDRS_PUBL_ROOT = headers/libnetconf.h
 
@@ -100,7 +101,9 @@ HDRS_PRIV = src/config.h.in \
 	src/netconf_internal.h \
 	src/session.h \
 	src/ssh.h \
-	src/datastore.h
+	src/datastore.h \
+	src/datastore/datastore_internal.h \
+	src/datastore/file/datastore_file.h
 
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 
