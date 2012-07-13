@@ -79,21 +79,6 @@ struct ncds_ds_file {
 };
 
 /**
- * @brief Assign path of the datastore file into the datastore structure.
- *
- * Checks if the file exist and is accessible for reading and writing.
- * If the file does not exist it is created. File is opened and file
- * descriptor is stored in the structure
- *
- * @param[in] datastore Datastore structure to be configured.
- * @param[in] path File path to the file storing configuration datastores.
- * @return 0 on success
- * 	  -1 Invalid datastore
- *	  -2 Invalid path ((does not exist && can not be created) || insufficient rights)
- */
-int ncds_file_set_path (struct ncds_ds* datastore, char* path);
-
-/**
  * @brief Initialization of file datastore
  *
  * @param[in] file_ds File datastore structure
