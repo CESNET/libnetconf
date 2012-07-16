@@ -275,6 +275,11 @@ int ncds_file_init (struct ncds_ds_file* file_ds)
 		return (EXIT_FAILURE);
 	}
 
+	/* unlock forgotten locks if any */
+	xmlSetProp (file_ds->running, BAD_CAST "lock", BAD_CAST "");
+	xmlSetProp (file_ds->startup, BAD_CAST "lock", BAD_CAST "");
+	xmlSetProp (file_ds->candidate, BAD_CAST "lock", BAD_CAST "");
+
 	return EXIT_SUCCESS;
 }
 
