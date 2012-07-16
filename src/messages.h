@@ -203,11 +203,12 @@ nc_reply *nc_reply_data(const char* data);
 
 /**
  * @ingroup reply
- * @brief Create rpc-reply response with \<drpc-error\> content.
- * @param[in] error NETCONF error description structure for reply message.
+ * @brief Create rpc-reply response with \<rpc-error\> content.
+ * @param[in] error NETCONF error description structure for reply message. From
+ * now, error is connected with the reply and should not be used by the caller.
  * @return Created \<rpc-reply\> message.
  */
-nc_reply *nc_reply_error(const struct nc_err* error);
+nc_reply *nc_reply_error(struct nc_err* error);
 
 /**
  * @ingroup rpc

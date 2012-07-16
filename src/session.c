@@ -813,7 +813,6 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 {
 	struct nc_msg *retval;
 	nc_reply* reply;
-	struct nc_err* err;
 	char *text = NULL, *chunk = NULL;
 	size_t len;
 	unsigned long long int text_size = 0, total_len = 0;
@@ -957,17 +956,13 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 
 malformed_msg:
 	if (session->version == NETCONFV11) {
-		reply = nc_reply_error(err = nc_err_new(NC_ERR_MALFORMED_MSG));
+		reply = nc_reply_error(nc_err_new(NC_ERR_MALFORMED_MSG));
 		if (reply == NULL) {
-			if (err != NULL) {
-				nc_err_free(err);
-			}
 			ERROR("Unable to create \'Malformed message\' reply");
 			nc_session_close(session, "Malformed NETCONF message received.");
 			return (EXIT_FAILURE);
 		}
 
-		nc_err_free(err);
 		nc_session_send_reply(session, NULL, reply);
 		nc_reply_free(reply);
 	}

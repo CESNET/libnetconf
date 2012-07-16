@@ -593,7 +593,7 @@ nc_reply *nc_reply_data(const char* data)
 	return (reply);
 }
 
-nc_reply *nc_reply_error(const struct nc_err* error)
+nc_reply *nc_reply_error(struct nc_err* error)
 {
 	nc_reply *reply;
 	xmlNodePtr content, einfo;
@@ -699,7 +699,7 @@ nc_reply *nc_reply_error(const struct nc_err* error)
 	}
 
 	reply = nc_reply_create(content);
-	reply->error = nc_err_dup(error);
+	reply->error = error;
 	reply->type.reply = NC_REPLY_ERROR;
 	xmlFreeNode(content);
 
