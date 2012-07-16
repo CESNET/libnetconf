@@ -41,7 +41,13 @@
 #define DATASTORE_INTERNAL_H_
 
 #include "../datastore.h"
-#include "file/datastore_file.h"
+
+struct ncds_funcs {
+	int (*init) (struct ncds_ds* ds);
+	void (*free)(struct ncds_ds* ds);
+	struct nc_err* (*lock)(struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target);
+	struct nc_err* (*unlock)(struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target);
+};
 
 struct ncds_ds {
 	/**
@@ -60,6 +66,10 @@ struct ncds_ds {
 	 * @brief YIN configuration data model in the libxml2's document form.
 	 */
 	xmlDocPtr model;
+	/**
+	 * @brief Datastore implementation functions.
+	 */
+	struct ncds_funcs func;
 };
 
 /**

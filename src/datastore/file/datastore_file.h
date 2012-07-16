@@ -60,6 +60,10 @@ struct ncds_ds_file {
 	 */
 	xmlDocPtr model;
 	/**
+	 * @brief Datastore implementation functions.
+	 */
+	struct ncds_funcs func;
+	/**
 	 * @brief Path to file containing configuration data, single file is
 	 * used for all datastore types (running, startup, candidate).
 	 */
@@ -84,13 +88,32 @@ struct ncds_ds_file {
  * @param[in] file_ds File datastore structure
  * @return 0 on success, non-zero else
  */
-int ncds_file_init (struct ncds_ds_file* file_ds);
+int ncds_file_init (struct ncds_ds* ds);
 
+/**
+ * @brief Perform lock of specified datastore for specified session.
+ *
+ * @param[in] file_ds File datastore structure where the lock should be applied.
+ * @param[in] session Session originating the request.
+ * @param[in] target Datastore (runnign, startup, candidate) to lock.
+ * @return NULL on success, filled NETCONF error structure in case of error.
+ */
+struct nc_err* ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target);
+
+/**
+ * @brief Perform unlock of specified datastore for specified session.
+ *
+ * @param[in] file_ds File datastore structure where the unlock should be applied.
+ * @param[in] session Session originating the request.
+ * @param[in] target Datastore (runnign, startup, candidate) to unlock.
+ * @return NULL on success, filled NETCONF error structure in case of error.
+ */
+struct nc_err* ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target);
 
 /**
  * @brief Close specified datastore and free all resources.
  * @param[in] datastore Datastore to be closed.
  */
-void ncds_file_free(struct ncds_ds_file* file_ds);
+void ncds_file_free(struct ncds_ds* ds);
 
 #endif /* DATASTORE_FILE_H_ */

@@ -50,6 +50,7 @@
 #include <libxml/tree.h>
 
 #include "../../netconf_internal.h"
+#include "../../error.h"
 #include "../datastore_internal.h"
 #include "datastore_file.h"
 
@@ -227,11 +228,12 @@ invalid_ds:
  *
  * @return 0 on success, non-zero else
  */
-int ncds_file_init (struct ncds_ds_file* file_ds)
+int ncds_file_init (struct ncds_ds* ds)
 {
 	struct stat st;
 	char* new_path;
 	int fd;
+	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
 	file_ds->xml = xmlReadFile (file_ds->path, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
 	if (file_ds->xml == NULL || file_structure_check (file_ds->xml) == 0) {
@@ -283,8 +285,10 @@ int ncds_file_init (struct ncds_ds_file* file_ds)
 	return EXIT_SUCCESS;
 }
 
-void ncds_file_free(struct ncds_ds_file* file_ds)
+void ncds_file_free(struct ncds_ds* ds)
 {
+	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
+
 	if (file_ds != NULL) {
 		/* generic ncds_ds part */
 		if (file_ds->model_path != NULL) {
@@ -305,4 +309,102 @@ void ncds_file_free(struct ncds_ds_file* file_ds)
 		}
 		free(file_ds);
 	}
+}
+
+void ncds_file_sync(struct ncds_ds_file* file_ds)
+{
+	xmlDocFormatDump(file_ds->file, file_ds->xml, 1);
+}
+
+struct nc_err* ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target)
+{
+	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
+	xmlChar* lock;
+	xmlNodePtr target_ds;
+	struct nc_err* retval = NULL;
+
+	/* check validity of function parameters */
+	switch(target) {
+	case NC_DATASTORE_RUNNING:
+		target_ds = file_ds->running;
+		break;
+	case NC_DATASTORE_STARTUP:
+		target_ds = file_ds->startup;
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		target_ds = file_ds->candidate;
+		break;
+	default:
+		ERROR("%s: invalid target.", __func__);
+		retval = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(retval, NC_ERR_PARAM_INFO_BADELEM, "target");
+		break;
+	}
+
+	/* check if repository is locked */
+	lock = xmlGetProp(target_ds, BAD_CAST "lock");
+	if (lock != NULL) {
+		if (xmlStrcmp(lock, BAD_CAST "") == 0) {
+			/* datastore is NOT locked */
+			xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST session->session_id);
+		} else {
+			/* datastore is locked */
+			retval = nc_err_new(NC_ERR_LOCK_DENIED);
+			nc_err_set(retval, NC_ERR_PARAM_INFO_SID, (char*)lock);
+		}
+		xmlFree(lock);
+	}
+
+	ncds_file_sync(file_ds);
+	return (retval);
+}
+
+struct nc_err* ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target)
+{
+	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
+	xmlChar* lock;
+	xmlNodePtr target_ds;
+	struct nc_err* retval = NULL;
+
+	/* check validity of function parameters */
+	switch(target) {
+	case NC_DATASTORE_RUNNING:
+		target_ds = file_ds->running;
+		break;
+	case NC_DATASTORE_STARTUP:
+		target_ds = file_ds->startup;
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		target_ds = file_ds->candidate;
+		break;
+	default:
+		ERROR("%s: invalid target.", __func__);
+		retval = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(retval, NC_ERR_PARAM_INFO_BADELEM, "target");
+		break;
+	}
+
+	/* check if repository is locked */
+	lock = xmlGetProp(target_ds, BAD_CAST "lock");
+	if (lock != NULL) {
+		if (xmlStrcmp(lock, BAD_CAST "") == 0) {
+			/* datastore is NOT locked */
+			retval = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(retval, NC_ERR_PARAM_MSG, "Target datastore is not locked.");
+		} else {
+			/* datastore is locked */
+			if (xmlStrcmp(lock, BAD_CAST (session->session_id)) == 0) {
+				/* the datastore is locked by request originating session */
+				xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST "");
+			} else {
+				/* the datastore is locked by somebody else */
+				retval = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(retval, NC_ERR_PARAM_MSG, "Target datastore is locked by another session.");
+			}
+		}
+		xmlFree(lock);
+	}
+
+	ncds_file_sync(file_ds);
+	return (retval);
 }

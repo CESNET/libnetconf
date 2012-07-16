@@ -49,8 +49,11 @@
 #include <libxml/parser.h>
 
 #include "netconf_internal.h"
+#include "messages.h"
+#include "error.h"
 #include "datastore.h"
 #include "datastore/datastore_internal.h"
+#include "datastore/file/datastore_file.h"
 
 /** \ todo implement function */
 struct ncds_ds_empty { 
@@ -137,6 +140,10 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path)
 	switch(type) {
 	case NCDS_TYPE_FILE:
 		ds = (struct ncds_ds*) calloc (1, sizeof(struct ncds_ds_file));
+		ds->func.init = ncds_file_init;
+		ds->func.free = ncds_file_free;
+		ds->func.lock = ncds_file_lock;
+		ds->func.unlock = ncds_file_unlock;
 		break;
 	default:
 		ERROR("Unsupported datastore implementation required.");
@@ -190,17 +197,8 @@ ncds_id ncds_init (struct ncds_ds* datastore)
 
 	/** \todo data model validation */
 
-	switch(datastore->type) {
-	case NCDS_TYPE_FILE:
-		if (ncds_file_init ((struct ncds_ds_file*)datastore)) {
-			ERROR ("File-specific datastore initialization failed.");
-			return -2;
-		}
-		break;
-	default:
-		ERROR("Unsupported datastore implementation required.");
-		return -3;
-	}
+	/* call implementation-specific datastore init() function */
+	datastore->func.init(datastore);
 	
 	/* acquire unique id */
 	datastore->id = generate_id ();
@@ -238,14 +236,7 @@ void ncds_free(struct ncds_ds* datastore)
 
 	/* close and free the datastore itself */
 	if (aux != NULL) {
-		switch (aux->type) {
-		case NCDS_TYPE_FILE:
-			ncds_file_free((struct ncds_ds_file*) (aux));
-			break;
-		default:
-			ERROR("Unsupported datastore implementation to be freed.");
-			break;
-		}
+		datastore->func.free(aux);
 	}
 
 	/* free the datastore list structure */
@@ -281,4 +272,40 @@ void ncds_free2 (ncds_id datastore_id)
 		 */
 		ncds_free (del->datastore);
 	}
+}
+
+nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
+{
+	struct nc_err* e = NULL;
+	struct ncds_ds_list* ds_list;
+
+	if (rpc->type.rpc != NC_RPC_DATASTORE_READ && rpc->type.rpc != NC_RPC_DATASTORE_WRITE) {
+		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
+	}
+
+	ds_list = datastores_get_ds(id);
+	if (ds_list == NULL) {
+		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
+	}
+
+	switch(nc_rpc_get_op(rpc)) {
+	case NC_OP_LOCK:
+		e = ds_list->datastore->func.lock(ds_list->datastore, session, nc_rpc_get_target(rpc));
+		break;
+	case NC_OP_UNLOCK:
+		e = ds_list->datastore->func.unlock(ds_list->datastore, session, nc_rpc_get_target(rpc));
+		break;
+	default:
+		ERROR("%s: unsupported basic NETCONF operation requested.", __func__);
+		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
+		break;
+	}
+
+	if (e != NULL) {
+		return (nc_reply_error(e));
+	} else {
+		/* \todo process data result operations */
+		return (nc_reply_ok());
+	}
+
 }

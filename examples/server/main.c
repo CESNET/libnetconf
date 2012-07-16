@@ -103,6 +103,15 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 		}
 	} else if (req_type == NC_RPC_DATASTORE_WRITE) {
 		/* process operations affecting datastore */
+		switch (req_op) {
+		case NC_OP_LOCK:
+		case NC_OP_UNLOCK:
+			reply = ncds_apply_rpc(config->dsid, config->session, rpc);
+			break;
+		default:
+			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
+			break;
+		}
 	} else {
 		/* process other operations */
 	}
