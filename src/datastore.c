@@ -144,6 +144,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path)
 		ds->func.free = ncds_file_free;
 		ds->func.lock = ncds_file_lock;
 		ds->func.unlock = ncds_file_unlock;
+		ds->func.getconfig = ncds_file_getconfig;
 		break;
 	default:
 		ERROR("Unsupported datastore implementation required.");
@@ -278,6 +279,9 @@ nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
 	struct ncds_ds_list* ds_list;
+	char* data = NULL;
+	int ret = EXIT_FAILURE;
+	nc_reply* reply;
 
 	if (rpc->type.rpc != NC_RPC_DATASTORE_READ && rpc->type.rpc != NC_RPC_DATASTORE_WRITE) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
@@ -290,10 +294,14 @@ nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
 
 	switch(nc_rpc_get_op(rpc)) {
 	case NC_OP_LOCK:
-		e = ds_list->datastore->func.lock(ds_list->datastore, session, nc_rpc_get_target(rpc));
+		ret = ds_list->datastore->func.lock(ds_list->datastore, session, nc_rpc_get_target(rpc), &e);
 		break;
 	case NC_OP_UNLOCK:
-		e = ds_list->datastore->func.unlock(ds_list->datastore, session, nc_rpc_get_target(rpc));
+		ret = ds_list->datastore->func.unlock(ds_list->datastore, session, nc_rpc_get_target(rpc), &e);
+		break;
+	case NC_OP_GETCONFIG:
+		/* todo filtering */
+		data = ds_list->datastore->func.getconfig(ds_list->datastore, session, nc_rpc_get_source(rpc), NULL, &e);
 		break;
 	default:
 		ERROR("%s: unsupported basic NETCONF operation requested.", __func__);
@@ -302,10 +310,18 @@ nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
 	}
 
 	if (e != NULL) {
-		return (nc_reply_error(e));
+		/* operation failed and error is filled */
+		reply = nc_reply_error(e);
+	} else if (data == NULL && ret != EXIT_SUCCESS) {
+		/* operation failed, but no additional information is provided */
+		reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
 	} else {
-		/* \todo process data result operations */
-		return (nc_reply_ok());
+		if (data != NULL) {
+			reply = nc_reply_data(data);
+			free(data);
+		} else {
+			reply = nc_reply_ok();
+		}
 	}
-
+	return (reply);
 }

@@ -96,10 +96,16 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 		}
 	} else if (req_type == NC_RPC_DATASTORE_READ) {
 		/* process operations reading datastore */
-		if (req_op == NC_OP_GETCONFIG) {
-			reply = nc_reply_data("<libnetconf-server xmlns=\"urn:cesnet:tmc:libnetconf-server:0.1\"/>");
-		} else if (req_op == NC_OP_GET) {
+		switch (req_op) {
+		case NC_OP_GETCONFIG:
+			reply = ncds_apply_rpc(config->dsid, config->session, rpc);
+			break;
+		case NC_OP_GET:
 			reply = nc_reply_data("<libnetconf-server xmlns=\"urn:cesnet:tmc:libnetconf-server:0.1\"><version>" VERSION "</version></libnetconf-server>");
+			break;
+		default:
+			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
+			break;
 		}
 	} else if (req_type == NC_RPC_DATASTORE_WRITE) {
 		/* process operations affecting datastore */

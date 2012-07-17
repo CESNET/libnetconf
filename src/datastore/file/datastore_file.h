@@ -40,6 +40,7 @@
 #ifndef DATASTORE_FILE_H_
 #define DATASTORE_FILE_H_
 
+#include "../../netconf_internal.h"
 #include "../datastore_internal.h"
 
 struct ncds_ds_file {
@@ -91,14 +92,27 @@ struct ncds_ds_file {
 int ncds_file_init (struct ncds_ds* ds);
 
 /**
+ * @brief Perform get-config on specified repository.
+ *
+ * @param[in] file_ds File datastore structure from where the data will be obtained.
+ * @param[in] session Session originating the request.
+ * @param[in] source Datastore (runnign, startup, candidate) to get data from.
+ * @param[in] filter NETCONF filter to apply on resulting data.
+ * @param[out] error NETCONF error structure describing arised error.
+ * @return NULL on error, resulting data on success.
+*/
+char* ncds_file_getconfig (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE source, const struct nc_filter *filter, struct nc_err** error);
+
+/**
  * @brief Perform lock of specified datastore for specified session.
  *
  * @param[in] file_ds File datastore structure where the lock should be applied.
  * @param[in] session Session originating the request.
  * @param[in] target Datastore (runnign, startup, candidate) to lock.
- * @return NULL on success, filled NETCONF error structure in case of error.
+ * @param[out] error NETCONF error structure describing arised error.
+ * @return 0 on success, non-zero on error and error structure is filled.
  */
-struct nc_err* ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target);
+int ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 
 /**
  * @brief Perform unlock of specified datastore for specified session.
@@ -106,9 +120,10 @@ struct nc_err* ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, N
  * @param[in] file_ds File datastore structure where the unlock should be applied.
  * @param[in] session Session originating the request.
  * @param[in] target Datastore (runnign, startup, candidate) to unlock.
- * @return NULL on success, filled NETCONF error structure in case of error.
+ * @param[out] error NETCONF error structure describing arised error.
+ * @return 0 on success, non-zero on error and error structure is filled.
  */
-struct nc_err* ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target);
+int ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 
 /**
  * @brief Close specified datastore and free all resources.

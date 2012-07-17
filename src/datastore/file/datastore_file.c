@@ -316,12 +316,12 @@ void ncds_file_sync(struct ncds_ds_file* file_ds)
 	xmlDocFormatDump(file_ds->file, file_ds->xml, 1);
 }
 
-struct nc_err* ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target)
+int ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 	xmlChar* lock;
 	xmlNodePtr target_ds;
-	struct nc_err* retval = NULL;
+	int retval = EXIT_SUCCESS;
 
 	/* check validity of function parameters */
 	switch(target) {
@@ -336,8 +336,9 @@ struct nc_err* ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, N
 		break;
 	default:
 		ERROR("%s: invalid target.", __func__);
-		retval = nc_err_new(NC_ERR_BAD_ELEM);
-		nc_err_set(retval, NC_ERR_PARAM_INFO_BADELEM, "target");
+		*error = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
+		return (EXIT_FAILURE);
 		break;
 	}
 
@@ -349,22 +350,26 @@ struct nc_err* ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, N
 			xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST session->session_id);
 		} else {
 			/* datastore is locked */
-			retval = nc_err_new(NC_ERR_LOCK_DENIED);
-			nc_err_set(retval, NC_ERR_PARAM_INFO_SID, (char*)lock);
+			*error = nc_err_new(NC_ERR_LOCK_DENIED);
+			nc_err_set(*error, NC_ERR_PARAM_INFO_SID, (char*)lock);
+			retval = EXIT_FAILURE;
 		}
 		xmlFree(lock);
 	}
 
-	ncds_file_sync(file_ds);
+	if (retval == EXIT_SUCCESS) {
+		ncds_file_sync(file_ds);
+	}
+
 	return (retval);
 }
 
-struct nc_err* ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target)
+int ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 	xmlChar* lock;
 	xmlNodePtr target_ds;
-	struct nc_err* retval = NULL;
+	int retval = EXIT_SUCCESS;
 
 	/* check validity of function parameters */
 	switch(target) {
@@ -379,8 +384,9 @@ struct nc_err* ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session,
 		break;
 	default:
 		ERROR("%s: invalid target.", __func__);
-		retval = nc_err_new(NC_ERR_BAD_ELEM);
-		nc_err_set(retval, NC_ERR_PARAM_INFO_BADELEM, "target");
+		*error = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
+		return (EXIT_FAILURE);
 		break;
 	}
 
@@ -389,8 +395,9 @@ struct nc_err* ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session,
 	if (lock != NULL) {
 		if (xmlStrcmp(lock, BAD_CAST "") == 0) {
 			/* datastore is NOT locked */
-			retval = nc_err_new(NC_ERR_OP_FAILED);
-			nc_err_set(retval, NC_ERR_PARAM_MSG, "Target datastore is not locked.");
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Target datastore is not locked.");
+			retval = EXIT_FAILURE;
 		} else {
 			/* datastore is locked */
 			if (xmlStrcmp(lock, BAD_CAST (session->session_id)) == 0) {
@@ -398,13 +405,58 @@ struct nc_err* ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session,
 				xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST "");
 			} else {
 				/* the datastore is locked by somebody else */
-				retval = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(retval, NC_ERR_PARAM_MSG, "Target datastore is locked by another session.");
+				*error = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Target datastore is locked by another session.");
+				retval = EXIT_FAILURE;
 			}
 		}
 		xmlFree(lock);
 	}
 
-	ncds_file_sync(file_ds);
+	if (retval == EXIT_SUCCESS) {
+		ncds_file_sync(file_ds);
+	}
+
 	return (retval);
+}
+
+char* ncds_file_getconfig (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE source, const struct nc_filter *filter, struct nc_err** error)
+{
+	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
+	xmlNodePtr target_ds, aux_node;
+	xmlBufferPtr resultbuffer;
+	char* data = NULL;
+
+	/* check validity of function parameters */
+	switch(source) {
+	case NC_DATASTORE_RUNNING:
+		target_ds = file_ds->running;
+		break;
+	case NC_DATASTORE_STARTUP:
+		target_ds = file_ds->startup;
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		target_ds = file_ds->candidate;
+		break;
+	default:
+		ERROR("%s: invalid target.", __func__);
+		*error = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
+		return (NULL);
+		break;
+	}
+
+	resultbuffer = xmlBufferCreate();
+	if (resultbuffer == NULL) {
+		ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		return (NULL);
+	}
+	for (aux_node = target_ds->children; aux_node != NULL; aux_node = aux_node->next) {
+		xmlNodeDump(resultbuffer, file_ds->xml, aux_node, 2, 1);
+	}
+	data = strdup((char *) xmlBufferContent(resultbuffer));
+	xmlBufferFree(resultbuffer);
+
+	return (data);
 }
