@@ -274,9 +274,14 @@ NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc)
 	}
 }
 
-NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
+/**
+ * @brief Get source or target datastore type
+ * @param rpc RPC message
+ * @param ds_type 'target' or 'source'
+ */
+static NC_DATASTORE nc_rpc_get_ds (const nc_rpc *rpc, char* ds_type)
 {
-	xmlNodePtr root, target;
+	xmlNodePtr root, ds_node;
 
 	if (rpc == NULL || rpc->doc == NULL) {
 		return NC_DATASTORE_NONE;
@@ -286,27 +291,37 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 		return NC_DATASTORE_NONE;
 	}
 
-	target = root->children->children;
-	while (target) {
-		if (xmlStrEqual (target->name, BAD_CAST "target")) {
+	ds_node = root->children->children;
+	while (ds_node) {
+		if (xmlStrEqual (ds_node->name, BAD_CAST ds_type)) {
 			break;
 		}
-		target = target->next;
+		ds_node = ds_node->next;
 	}
 
-	if (target == NULL || target->children == NULL) {
+	if (ds_node == NULL || ds_node->children == NULL) {
 		return NC_DATASTORE_NONE;
 	}
 
-	if (xmlStrEqual (target->children->name, BAD_CAST "candidate")) {
+	if (xmlStrEqual (ds_node->children->name, BAD_CAST "candidate")) {
 		return NC_DATASTORE_CANDIDATE;
-	} else if (xmlStrEqual (target->children->name, BAD_CAST "running")) {
+	} else if (xmlStrEqual (ds_node->children->name, BAD_CAST "running")) {
 		return NC_DATASTORE_RUNNING;
-	} else if (xmlStrEqual (target->children->name, BAD_CAST "startup")) {
+	} else if (xmlStrEqual (ds_node->children->name, BAD_CAST "startup")) {
 		return NC_DATASTORE_STARTUP;
 	}
 
 	return NC_DATASTORE_NONE;
+}
+
+NC_DATASTORE nc_rpc_get_source (const nc_rpc *rpc)
+{
+	return (nc_rpc_get_ds(rpc, "source"));
+}
+
+NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
+{
+	return (nc_rpc_get_ds(rpc, "target"));
 }
 
 NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
@@ -557,38 +572,30 @@ nc_reply *nc_reply_ok()
 nc_reply *nc_reply_data(const char* data)
 {
 	nc_reply *reply;
-	xmlNodePtr content;
 	xmlDocPtr doc_data;
-
-	if ((content = xmlNewNode(NULL, BAD_CAST "data")) == NULL) {
-		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-		return (NULL);
-	}
+	char* data_env;
+	struct nc_err* e;
 
 	if (data != NULL) {
-		/* prepare XML structure from given data */
-		doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-		if (doc_data == NULL) {
-			ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			return (NULL);
-		}
-
-		/* connect given configuration data with the rpc request */
-		if (xmlAddChild(content, xmlCopyNode(doc_data->children, 1)) == NULL) {
-			ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			xmlFreeDoc(doc_data);
-			return (NULL);
-		}
-
-		/* free no more needed structure */
-		xmlFreeDoc(doc_data);
+		asprintf(&data_env, "<data>%s</data>", data);
+	} else {
+		asprintf(&data_env, "<data/>");
 	}
 
-	reply = nc_reply_create(content);
+	/* prepare XML structure from given data */
+	doc_data = xmlReadMemory(data_env, strlen(data_env), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	if (doc_data == NULL) {
+		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+		free(data_env);
+		e = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(e, NC_ERR_PARAM_MSG, "Configuration data seems to be corrupted.");
+		return (nc_reply_error(e));
+	}
+
+	reply = nc_reply_create(doc_data->children);
 	reply->type.reply = NC_REPLY_DATA;
-	xmlFreeNode(content);
+	xmlFreeDoc(doc_data);
+	free(data_env);
 
 	return (reply);
 }
