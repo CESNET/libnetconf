@@ -132,6 +132,8 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 
 	/* and send the reply to the client */
 	nc_session_send_reply(config->session, rpc, reply);
+	nc_rpc_free(rpc);
+	nc_reply_free(reply);
 
 	/* and run again when a next message comes */
 }
@@ -188,6 +190,10 @@ int main(int argc, char *argv[])
 	/* cleanup */
 	event_free(config.event_input);
 	event_base_free(config.event_base);
+	if (nc_session_get_status(config.session) == NC_SESSION_STATUS_WORKING) {
+		nc_session_close(config.session, "Closing NETCONF server.");
+	}
+	nc_session_free(config.session);
 
 	/* bye, bye */
 	return (EXIT_SUCCESS);
