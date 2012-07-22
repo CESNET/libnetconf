@@ -554,7 +554,9 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			return (NULL);
 		}
 	} else {
-		username = pw->pw_name;
+		if (username == NULL) {
+			username = pw->pw_name;
+		}
 		asprintf(&knownhosts_file, "%s/.ssh/known_hosts", pw->pw_dir);
 
 		/* check the existence of the known_hosts file */
