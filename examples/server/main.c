@@ -77,7 +77,6 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 	/* receive incoming message */
 	if (nc_session_recv_rpc(config->session, &rpc) == 0) {
 		/* something really bad happend, and communication os not possible anymore */
-		nc_session_free(config->session);
 		event_base_loopbreak(config->event_base);
 		return;
 	}
