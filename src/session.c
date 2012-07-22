@@ -42,6 +42,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
+#include <poll.h>
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
@@ -817,10 +818,40 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	size_t len;
 	unsigned long long int text_size = 0, total_len = 0;
 	size_t chunk_length;
+	struct pollfd fds;
+	int status;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING)) {
 		ERROR("Invalid session to receive data.");
 		return (EXIT_FAILURE);
+	}
+
+	/* use while for possibility of repeating test */
+	while (session->ssh_channel == NULL && session->fd_input != -1) {
+		/* check input state (only for file descriptor, not libssh2) via poll */
+		fds.fd = session->fd_input;
+		fds.events = POLLIN;
+		fds.revents = 0;
+		status = poll(&fds, 1, 100);
+		if (status == 0 ||  (status == -1 && errno == EINTR)) {
+			/* poll timed out or was interrupted */
+			continue;
+		} else if (status < 0) {
+			/* poll failed - something wrong happend, close this socket and wait for another request */
+			ERROR("Input channel error");
+			nc_session_close(session, "Input stream closed");
+			return (EXIT_FAILURE);
+		}
+		/* status > 0 */
+		/* check the status of the socket */
+		/* if nothing to read and POLLHUP (EOF) or POLLERR set */
+		if ((fds.revents & POLLHUP) || (fds.revents & POLLERR)) {
+			/* close client's socket (it's probably already closed by client */
+			ERROR("Input channel closed");
+			nc_session_close(session, "Input stream closed");
+			return (EXIT_FAILURE);
+		}
+		break;
 	}
 
 	switch (session->version) {
