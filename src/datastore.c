@@ -90,7 +90,7 @@ static struct ncds_ds_list *datastores = NULL;
  * @return Pointer to the required ncds_ds_list structure inside internal
  * datastores variable.
  */
-static struct ncds_ds_list *datastores_get_ds(ncds_id id)
+static struct ncds_ds *datastores_get_ds(ncds_id id)
 {
 	struct ncds_ds_list *ds_iter;
 
@@ -100,7 +100,7 @@ static struct ncds_ds_list *datastores_get_ds(ncds_id id)
 		}
 	}
 
-	return (ds_iter);
+	return (ds_iter->datastore);
 }
 
 static struct ncds_ds_list *datastores_detach_ds(ncds_id id)
@@ -248,7 +248,7 @@ void ncds_free(struct ncds_ds* datastore)
 
 void ncds_free2 (ncds_id datastore_id)
 {
-	struct ncds_ds_list *del;
+	struct ncds_ds *del;
 
 	/* empty list */
 	if (datastores == NULL) {
@@ -271,14 +271,14 @@ void ncds_free2 (ncds_id datastore_id)
 		 * list, also the whole list item (del variable here) is freed
 		 * by ncds_free(), so do not do it here!
 		 */
-		ncds_free (del->datastore);
+		ncds_free (del);
 	}
 }
 
 nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
-	struct ncds_ds_list* ds_list;
+	struct ncds_ds* ds;
 	char* data = NULL;
 	int ret = EXIT_FAILURE;
 	nc_reply* reply;
@@ -287,21 +287,21 @@ nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
 	}
 
-	ds_list = datastores_get_ds(id);
-	if (ds_list == NULL) {
+	ds = datastores_get_ds(id);
+	if (ds == NULL) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 	}
 
 	switch(nc_rpc_get_op(rpc)) {
 	case NC_OP_LOCK:
-		ret = ds_list->datastore->func.lock(ds_list->datastore, session, nc_rpc_get_target(rpc), &e);
+		ret = ds->func.lock(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
 	case NC_OP_UNLOCK:
-		ret = ds_list->datastore->func.unlock(ds_list->datastore, session, nc_rpc_get_target(rpc), &e);
+		ret = ds->func.unlock(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
 	case NC_OP_GETCONFIG:
 		/* todo filtering */
-		data = ds_list->datastore->func.getconfig(ds_list->datastore, session, nc_rpc_get_source(rpc), NULL, &e);
+		data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), NULL, &e);
 		break;
 	default:
 		ERROR("%s: unsupported basic NETCONF operation requested.", __func__);
