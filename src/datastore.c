@@ -103,10 +103,11 @@ static struct ncds_ds *datastores_get_ds(ncds_id id)
 	return (ds_iter->datastore);
 }
 
-static struct ncds_ds_list *datastores_detach_ds(ncds_id id)
+static struct ncds_ds *datastores_detach_ds(ncds_id id)
 {
 	struct ncds_ds_list *ds_iter;
 	struct ncds_ds_list *ds_prev = NULL;
+	struct ncds_ds * retval = NULL;
 
 	for (ds_iter = datastores; ds_iter != NULL; ds_prev = ds_iter, ds_iter = ds_iter->next) {
 		if (ds_iter->datastore != NULL && ds_iter->datastore->id == id) {
@@ -122,10 +123,11 @@ static struct ncds_ds_list *datastores_detach_ds(ncds_id id)
 		} else {
 			ds_prev->next = ds_iter->next;
 		}
-		ds_iter->next = NULL;
+		retval = ds_iter->datastore;
+		free (ds_iter);
 	}
 
-	return (ds_iter);
+	return retval;
 }
 
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path)
@@ -218,8 +220,7 @@ ncds_id ncds_init (struct ncds_ds* datastore)
 
 void ncds_free(struct ncds_ds* datastore)
 {
-	struct ncds_ds_list *ds = NULL;
-	struct ncds_ds *aux;
+	struct ncds_ds *ds = NULL;
 
 	if (datastore == NULL) {
 		WARN ("%s: no datastore to free.", __func__);
@@ -229,20 +230,14 @@ void ncds_free(struct ncds_ds* datastore)
 	if (datastore->id > 0) {
 		/* datastore is initialized and must be in the datastores list */
 		ds = datastores_detach_ds(datastore->id);
-		aux = ds->datastore;
 	} else {
 		/* datastore to free is uninitialized and will be only freed */
-		aux = datastore;
+		ds = datastore;
 	}
 
 	/* close and free the datastore itself */
-	if (aux != NULL) {
-		datastore->func.free(aux);
-	}
-
-	/* free the datastore list structure */
 	if (ds != NULL) {
-		free(ds);
+		datastore->func.free(ds);
 	}
 }
 
