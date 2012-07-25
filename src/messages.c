@@ -50,7 +50,7 @@
 #include "error.h"
 #include "messages_internal.h"
 
-struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, char* filter)
+struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, const char* filter)
 {
 	struct nc_filter *retval;
 
