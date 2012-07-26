@@ -134,8 +134,6 @@ void ncds_free(struct ncds_ds* datastore);
 void ncds_free2(ncds_id datastore_id);
 
 /**
- * \todo Implement ncds_apply_rpc()
- *
  * @ingroup store
  * @brief Perform requested RPC operation on the datastore.
  * @param[in] id Datastore ID.

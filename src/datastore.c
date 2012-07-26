@@ -81,6 +81,10 @@ static struct ncds_ds *datastores_get_ds(ncds_id id)
 		}
 	}
 
+	if (ds_iter == NULL) {
+		return NULL;
+	}
+
 	return (ds_iter->datastore);
 }
 
@@ -128,6 +132,15 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path)
 		ds->func.lock = ncds_file_lock;
 		ds->func.unlock = ncds_file_unlock;
 		ds->func.getconfig = ncds_file_getconfig;
+		ds->func.copyconfig = ncds_file_copyconfig;
+		ds->func.deleteconfig = ncds_file_deleteconfig;
+		ds->func.editconfig = ncds_file_editconfig;
+
+		break;
+	case NCDS_TYPE_EMPTY:
+		ds = (struct ncds_ds*) calloc (1, sizeof(struct ncds_ds_empty));
+		ds->func.init = ncds_empty_init;
+		ds->func.free = ncds_empty_free;
 		break;
 	default:
 		ERROR("Unsupported datastore implementation required.");
@@ -255,7 +268,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
 	struct ncds_ds* ds;
-	char* data = NULL;
+	char* data = NULL, * config;
 	int ret = EXIT_FAILURE;
 	nc_reply* reply;
 
@@ -278,6 +291,20 @@ nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
 	case NC_OP_GETCONFIG:
 		/* todo filtering */
 		data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), NULL, &e);
+		break;
+	case NC_OP_COPYCONFIG:
+		/* \todo implement nc_rpc_get_config */
+		config = nc_rpc_get_config(rpc);
+		ret = ds->func.copyconfig(ds, session, nc_rpc_get_target(rpc), nc_rpc_get_source(rpc), config, &e);
+		free (config);
+		break;
+	case NC_OP_DELETECONFIG:
+		ret = ds->func.deleteconfig(ds, session, nc_rpc_get_target(rpc), &e);
+		break;
+	case NC_OP_EDITCONFIG:
+		config = nc_rpc_get_config(rpc);
+		ret = ds->func.editconfig(ds, session, nc_rpc_get_target(rpc), config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
+		free (config);
 		break;
 	default:
 		ERROR("%s: unsupported basic NETCONF operation requested.", __func__);
