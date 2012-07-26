@@ -148,4 +148,12 @@ void ncds_free2(ncds_id datastore_id);
  */
 nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc);
 
+/**
+ * @ingroup store
+ * @brief Remove all locks that is holding given session
+ *
+ * @param[in] session Session holding locks to remove
+ */
+void ncds_break_locks (struct nc_session * session);
+
 #endif /* DATASTORE_H_ */

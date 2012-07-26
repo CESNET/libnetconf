@@ -301,3 +301,36 @@ nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
 	}
 	return (reply);
 }
+
+void ncds_break_locks (struct nc_session * session)
+{
+	struct ncds_ds_list * ds;
+	struct nc_err * e = NULL;
+
+	ds = datastores;
+
+	while (ds) {
+		if (ds->datastore) {
+			ds->datastore->func.unlock(ds->datastore, session, NC_DATASTORE_CANDIDATE,&e);
+			if (e) {
+				nc_err_free (e);
+				e = NULL;
+			}
+
+			ds->datastore->func.unlock(ds->datastore, session, NC_DATASTORE_RUNNING,&e);
+			if (e) {
+				nc_err_free (e);
+				e = NULL;
+			}
+
+			ds->datastore->func.unlock(ds->datastore, session, NC_DATASTORE_STARTUP,&e);
+			if (e) {
+				nc_err_free (e);
+				e = NULL;
+			}
+		}
+		ds = ds->next;
+	}
+
+	return;
+}
