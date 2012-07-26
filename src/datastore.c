@@ -54,26 +54,7 @@
 #include "datastore.h"
 #include "datastore/datastore_internal.h"
 #include "datastore/file/datastore_file.h"
-
-/** \ todo implement function */
-struct ncds_ds_empty { 
-	/**
-	 * @brief Datastore implementation type
-	 */
-	NCDS_TYPE type;
-	/**
-	 * @brief Datastore ID: 0 - uninitiated datastore, positive value - valid ID
-	 */
-	ncds_id id;
-	/**
-	 * @brief Path to file containing YIN configuration data model
-	 */
-	char* model_path;
-	/**
-	 * @brief YIN configuration data model in the libxml2's document form.
-	 */
-	xmlDocPtr model;
-};
+#include "datastore/empty/datastore_empty.h"
 
 struct ncds_ds_list {
 	struct ncds_ds *datastore;
