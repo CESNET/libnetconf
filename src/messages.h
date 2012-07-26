@@ -167,6 +167,36 @@ NC_DATASTORE nc_rpc_get_target(const nc_rpc *rpc);
 NC_DATASTORE nc_rpc_get_source(const nc_rpc *rpc);
 
 /**
+ * @ingroup rpc
+ *
+ * @brief Get serialized XML containing config parameter
+ *
+ * @param[in] rpc rpc message
+ *
+ * @return Serialized XML or NULL if not available
+ */
+char * nc_rpc_get_config (const nc_rpc *rpc);
+
+/**
+ * @ingroup rpc
+ * @brief Get default-operation type
+ *
+ * @param[in] rpc rpc message
+ *
+ * @return One of the NC_EDIT_DEFOP_TYPE
+ */
+NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc);
+
+/**
+ * @ingroup rpc
+ * @brief Get error-option type
+ * @param[in] rpc rpc message
+ *
+ * @return One of the NC_EDIT_ERROPT_TYPE
+ */
+NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc);
+
+/**
  * @ingroup reply
  * @brief Get type of the rpc-reply message.
  *

@@ -324,6 +324,111 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 	return (nc_rpc_get_ds(rpc, "target"));
 }
 
+char * nc_rpc_get_config (const nc_rpc *rpc)
+{
+	xmlNodePtr rpc_root, op, config;
+	xmlDocPtr config_doc;
+	char * retval = NULL;
+	int len;
+
+	rpc_root = xmlDocGetRootElement (rpc->doc);
+	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
+		return NULL;
+	}
+
+	if ((op = rpc_root->children) == NULL) {
+		return NULL;
+	}
+
+	config = op->children;
+	while (config != NULL && !xmlStrEqual(config->name, BAD_CAST "config")) {
+		config = config->next;
+	}
+
+	if (config != NULL) {
+		config_doc = xmlNewDoc (BAD_CAST "1.0");
+		config_doc->children = xmlDocCopyNode (config->children, config_doc, 1);
+		xmlDocSetRootElement (config_doc, config_doc->children);
+		xmlDocDumpFormatMemory (config_doc, (xmlChar**)&retval, &len, 1);
+		xmlFreeDoc (config_doc);
+	}
+	return retval;
+}
+
+NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
+{
+	xmlNodePtr rpc_root, op, defop;
+	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_DEFOP_MERGE;
+
+	/* only applicable on edit-config */
+	if (nc_rpc_get_op(rpc) != NC_OP_EDITCONFIG) {
+		return NC_EDIT_DEFOP_ERROR;
+	}
+
+	rpc_root = xmlDocGetRootElement (rpc->doc);
+	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
+		return NC_EDIT_DEFOP_ERROR;
+	}
+
+	if ((op = rpc_root->children) == NULL) {
+		return NC_EDIT_DEFOP_ERROR;
+	}
+
+	defop = op->children;
+	while (defop != NULL && !xmlStrEqual(defop->name, BAD_CAST "default-operation")) {
+		defop = defop->next;
+	}
+
+	if (defop != NULL) {
+		if (xmlStrEqual(defop->children->content, BAD_CAST "merge")) {
+			retval = NC_EDIT_DEFOP_MERGE;
+		} else if (xmlStrEqual(defop->children->content, BAD_CAST "replace")) {
+			retval = NC_EDIT_DEFOP_REPLACE;
+		} else if (xmlStrEqual(defop->children->content, BAD_CAST "none")) {
+			retval = NC_EDIT_DEFOP_NONE;
+		}
+	}
+
+	return retval;
+}
+
+NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
+{
+	xmlNodePtr rpc_root, op, erropt;
+	NC_EDIT_ERROPT_TYPE retval = NC_EDIT_ERROPT_STOP;
+
+	/* only applicable on edit-config */
+	if (nc_rpc_get_op(rpc) != NC_OP_EDITCONFIG) {
+		return NC_EDIT_ERROPT_ERROR;
+	}
+
+	rpc_root = xmlDocGetRootElement (rpc->doc);
+	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
+		return NC_EDIT_ERROPT_ERROR;
+	}
+
+	if ((op = rpc_root->children) == NULL) {
+		return NC_EDIT_ERROPT_ERROR;
+	}
+
+	erropt = op->children;
+	while (erropt != NULL && !xmlStrEqual(erropt->name, BAD_CAST "error-option")) {
+		erropt = erropt->next;
+	}
+
+	if (erropt != NULL) {
+		if (xmlStrEqual(erropt->children->content, BAD_CAST "stop-on-error")) {
+			retval = NC_EDIT_ERROPT_STOP;
+		} else if (xmlStrEqual(erropt->children->content, BAD_CAST "continue-on-error")) {
+			retval = NC_EDIT_ERROPT_CONT;
+		} else if (xmlStrEqual(erropt->children->content, BAD_CAST "rollback-on-error")) {
+			retval = NC_EDIT_ERROPT_ROLLBACK;
+		}
+	}
+
+	return retval;
+}
+
 NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
 {
 	if (reply != NULL) {
