@@ -54,6 +54,7 @@
 #include "../../error.h"
 #include "../datastore_internal.h"
 #include "datastore_file.h"
+#include "../edit_config.h"
 
 /* ncds lock path */
 #define NCDS_LOCK "/NCDS_LOCK"
@@ -653,4 +654,251 @@ char* ncds_file_getconfig (struct ncds_ds* ds, struct nc_session* session, NC_DA
 
 	ds_unlock (file_ds);
 	return (data);
+}
+
+/**
+ * @brief Copy content of datastore or externally send configuration to other datastore
+ *
+ * @param ds Pointer to datastore structure
+ * @param session Session of which the request is part of
+ * @param target Target datastore.
+ * @param source Source datastore, if the value is NC_DATASTORE_NONE then next parametr holds configration to copy
+ * @param config Configuration to use as source in form of serialized XML.
+ * @param error	 Netconf error structure.
+ *
+ * @return EXIT_SUCCESS when done without problems
+ * 	   EXIT_FAILURE when error occured
+ */
+int ncds_file_copyconfig (struct ncds_ds *ds, struct nc_session *session, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error)
+{
+	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
+	xmlDocPtr config_doc = NULL;
+	xmlNodePtr target_ds, source_ds, del;
+
+	if (ds_lock (file_ds)) {
+		return EXIT_FAILURE;
+	}
+
+	if (ncds_file_reload (file_ds)) {
+		ds_unlock (file_ds);
+		return EXIT_FAILURE;
+	}
+
+	/* isnt target locked? */
+	if (ncds_file_locked (ds, target, session)) {
+		ds_unlock (file_ds);
+		*error = nc_err_new (NC_ERR_IN_USE);
+		return EXIT_FAILURE;
+	}
+
+	switch(target) {
+	case NC_DATASTORE_RUNNING:
+		target_ds = file_ds->running;
+		break;
+	case NC_DATASTORE_STARTUP:
+		target_ds = file_ds->startup;
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		target_ds = file_ds->candidate;
+		break;
+	default:
+		ERROR("%s: invalid target.", __func__);
+		*error = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
+		ds_unlock (file_ds);
+		return EXIT_FAILURE;
+		break;
+	}
+	
+	switch(source) {
+	case NC_DATASTORE_RUNNING:
+		source_ds = file_ds->running;
+		break;
+	case NC_DATASTORE_STARTUP:
+		source_ds = file_ds->startup;
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		source_ds = file_ds->candidate;
+		break;
+	case NC_DATASTORE_NONE:
+		config_doc = xmlReadMemory (config, strlen(config), NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
+		source_ds = xmlDocGetRootElement (config_doc);
+		break;
+	default:
+		ERROR("%s: invalid source.", __func__);
+		*error = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
+		ds_unlock (file_ds);
+		return EXIT_FAILURE;
+		break;
+	}
+
+	/* drop current target configuration */
+	del = target_ds->children;
+	xmlUnlinkNode (target_ds->children);
+	xmlFreeNode (del);
+
+	/* copy new target configuration */
+	target_ds->children = xmlDocCopyNode (source_ds->children, file_ds->xml, 1);
+
+	if (ncds_file_sync (file_ds)) {
+		ds_unlock (file_ds);
+		return EXIT_FAILURE;
+	}
+	ds_unlock (file_ds);
+	return EXIT_SUCCESS;
+}
+
+/**
+ * @brief Delete target datastore
+ *
+ * @param ds Datastore to delete
+ * @param session Session requesting deletition
+ * @param target Datastore type
+ * @param error Netconf error structure
+ *
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int ncds_file_deleteconfig (struct ncds_ds * ds, struct nc_session * session, NC_DATASTORE target, struct nc_err **error)
+{
+	struct ncds_ds_file * file_ds = (struct ncds_ds_file*)ds;
+	xmlNodePtr target_ds, del;
+
+	if (ds_lock (file_ds)) {
+		return EXIT_FAILURE;
+	}
+
+	if (ncds_file_reload(file_ds)) {
+		ds_unlock (file_ds);
+		return EXIT_FAILURE;
+	}
+
+	if (ncds_file_locked (ds, target, session)) {
+		ds_unlock (file_ds);
+		*error = nc_err_new (NC_ERR_IN_USE);
+		return EXIT_FAILURE;
+	}
+
+	switch(target) {
+	case NC_DATASTORE_RUNNING:
+		target_ds = file_ds->running;
+		break;
+	case NC_DATASTORE_STARTUP:
+		target_ds = file_ds->startup;
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		target_ds = file_ds->candidate;
+		break;
+	default:
+		ERROR("%s: invalid target.", __func__);
+		*error = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
+		ds_unlock (file_ds);
+		return EXIT_FAILURE;
+		break;
+	}
+
+	del = target_ds->children;
+	xmlUnlinkNode (target_ds->children);
+	xmlFreeNode (del);
+
+	if (ncds_file_sync (file_ds)) {
+		ds_unlock (file_ds);
+		return EXIT_FAILURE;
+	}
+	ds_unlock (file_ds);
+		
+	return EXIT_SUCCESS;
+}
+
+/**
+ * @brief Perform edit config operation
+ *
+ * @param ds Datastore to edit
+ * @param session Session sending edit request
+ * @param target Datastore type
+ * @param config Edit configuration.
+ * @param defop Default edit operation.
+ * @param error Netconf error structure
+ *
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int ncds_file_editconfig (struct ncds_ds *ds, struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
+{
+	struct ncds_ds_file * file_ds = (struct ncds_ds_file *)ds;
+	xmlDocPtr config_doc, datastore_doc;
+	xmlNodePtr target_ds, tmp_target_ds;
+	int retval = EXIT_SUCCESS;
+	FILE * tmp = fopen ("/tmp/target.xml", "w");
+
+	if (ds_lock (file_ds)) {
+		return EXIT_FAILURE;
+	}
+
+	if (ncds_file_reload (file_ds)) {
+		ds_unlock (file_ds);
+		return EXIT_FAILURE;
+	}
+
+	if (ncds_file_locked (ds, target, session)) {
+		ds_unlock (file_ds);
+		*error = nc_err_new (NC_ERR_IN_USE);
+		return EXIT_FAILURE;
+	}
+
+	switch(target) {
+	case NC_DATASTORE_RUNNING:
+		target_ds = file_ds->running;
+		break;
+	case NC_DATASTORE_STARTUP:
+		target_ds = file_ds->startup;
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		target_ds = file_ds->candidate;
+		break;
+	default:
+		ERROR("%s: invalid target.", __func__);
+		*error = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
+		ds_unlock (file_ds);
+		return EXIT_FAILURE;
+		break;
+	}
+
+	/* read config to XML doc */
+	if ((config_doc = xmlReadMemory (config, strlen(config), NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN)) == NULL) {
+		ds_unlock (file_ds);
+		return EXIT_FAILURE;
+	}
+
+	/* create XML doc with copy of datastore configuration */
+	datastore_doc = xmlNewDoc (BAD_CAST "1.0");
+	tmp_target_ds = xmlDocCopyNode (target_ds->children, datastore_doc, 1);
+	xmlDocSetRootElement (datastore_doc, tmp_target_ds);
+	datastore_doc->children = tmp_target_ds;
+
+	xmlDocDump (tmp, datastore_doc);
+
+	/* preform edit config */
+	if (edit_config (datastore_doc, config_doc, file_ds->model, defop, errop, error)) {
+		retval = EXIT_FAILURE;
+	}
+
+	if (retval == EXIT_SUCCESS) {
+		/* replace datastore by edited configuration */
+		xmlFreeNode (target_ds->children);
+		target_ds->children = xmlDocCopyNode (datastore_doc->children, file_ds->xml, 1);
+		if (ncds_file_sync (file_ds)) {
+			/* if sync fail reload current config from file */
+			ncds_file_reload (file_ds);
+			retval = EXIT_FAILURE;
+		}
+	}
+
+	fclose (tmp);
+	xmlFreeDoc (datastore_doc);
+	xmlFreeDoc (config_doc);
+	ds_unlock (file_ds);
+
+	return retval;
 }

@@ -149,4 +149,45 @@ int ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTO
  */
 void ncds_file_free(struct ncds_ds* ds);
 
+/**
+ * @brief Copy content of datastore or externally send configuration to other datastore
+ *
+ * @param ds Pointer to datastore structure
+ * @param session Session of which the request is part of
+ * @param target Target datastore.
+ * @param source Source datastore, if the value is NC_DATASTORE_NONE then next parametr holds configration to copy
+ * @param config Configuration to use as source in form of serialized XML.
+ * @param error	 Netconf error structure.
+ *
+ * @return EXIT_SUCCESS when done without problems
+ * 	   EXIT_FAILURE when error occured
+ */
+int ncds_file_copyconfig (struct ncds_ds *ds, struct nc_session *session, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error);
+
+/**
+ * @brief Delete target datastore
+ *
+ * @param ds Datastore to delete
+ * @param session Session requesting deletition
+ * @param target Datastore type
+ * @param error Netconf error structure
+ *
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int ncds_file_deleteconfig (struct ncds_ds * ds, struct nc_session * session, NC_DATASTORE target, struct nc_err **error);
+
+/**
+ * @brief Perform edit config operation
+ *
+ * @param ds Datastore to edit
+ * @param session Session sending edit request
+ * @param target Datastore type
+ * @param config Edit configuration.
+ * @param defop Default edit operation.
+ * @param error Netconf error structure
+ *
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int ncds_file_editconfig (struct ncds_ds *ds, struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
+
 #endif /* DATASTORE_FILE_H_ */
