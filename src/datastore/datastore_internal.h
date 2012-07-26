@@ -48,6 +48,9 @@ struct ncds_funcs {
 	int (*lock)(struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 	int (*unlock)(struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 	char* (*getconfig)(struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, const struct nc_filter *filter, struct nc_err** error);
+	int (*copyconfig)(struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, NC_DATASTORE source, char* config, struct nc_err** error);
+	int (*deleteconfig)(struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
+	int (*editconfig)(struct ncds_ds *ds, struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 };
 
 struct ncds_ds {
