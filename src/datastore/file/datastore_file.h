@@ -42,6 +42,7 @@
 
 #include "../../netconf_internal.h"
 #include "../datastore_internal.h"
+#include <semaphore.h>
 
 struct ncds_ds_file {
 	/**
@@ -81,6 +82,23 @@ struct ncds_ds_file {
 	 * libxml2 Node pointers providing access to individual datastores
 	 */
 	xmlNodePtr candidate, running, startup;
+	/**
+	 * locking structure
+	 */
+	struct ds_lock_s {
+		/**
+		 * semaphore pointer
+		 */
+		sem_t * lock;
+		/**
+		 * signal set before locked
+	 	 */
+		sigset_t sigset;
+		/**
+		 * Am I holding the lock
+		 */
+		int holding_lock;
+	} ds_lock;
 };
 
 /**
