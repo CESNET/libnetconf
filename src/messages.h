@@ -50,7 +50,7 @@
  * @param[in] filter Filter content.
  * @return Created NETCONF filter structure.
  */
-struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, char* filter);
+struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, const char* filter);
 
 /**
  * @ingroup rpc

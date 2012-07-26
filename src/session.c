@@ -1012,7 +1012,8 @@ nc_msgid nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 	if (ret != EXIT_SUCCESS) {
 		return (0);
 	} else {
-		if (nc_reply_get_type (*reply) == NC_REPLY_ERROR) {
+		if (nc_reply_get_type (*reply) == NC_REPLY_ERROR &&
+				callbacks.process_error_reply != NULL) {
 			/* process rpc-error reply */
 			callbacks.process_error_reply((*reply)->error->tag,
 					(*reply)->error->type,
