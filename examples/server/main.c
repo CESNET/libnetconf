@@ -88,6 +88,7 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 		/* process operations affectinf session */
 		if (req_op == NC_OP_CLOSESESSION) {
 			/* exit the event loop immediately without processing any following request */
+			ncds_break_locks (config->session);
 			event_base_loopbreak(config->event_base);
 		} else if (req_op == NC_OP_KILLSESSION) {
 			/* todo: kill the requested session */
@@ -111,6 +112,9 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 		switch (req_op) {
 		case NC_OP_LOCK:
 		case NC_OP_UNLOCK:
+		case NC_OP_COPYCONFIG:
+		case NC_OP_DELETECONFIG:
+		case NC_OP_EDITCONFIG:
 			reply = ncds_apply_rpc(config->dsid, config->session, rpc);
 			break;
 		default:
