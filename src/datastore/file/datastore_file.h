@@ -44,6 +44,9 @@
 #include "../datastore_internal.h"
 #include <semaphore.h>
 
+/**
+ * @brief File datastore implementation specific ncds_ds structure.
+ */
 struct ncds_ds_file {
 	/**
 	 * @brief Datastore implementation type
