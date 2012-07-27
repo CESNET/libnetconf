@@ -4623,7 +4623,7 @@ if test -z "$RPMBUILD"; then
 $as_echo "$as_me: WARNING: Due to missing rpmbuild you will not able to generate RPM package." >&2;}
 fi
 
-ac_config_files="$ac_config_files Makefile src/config.h libnetconf.spec libnetconf.pc"
+ac_config_files="$ac_config_files Makefile src/config.h libnetconf.spec libnetconf.pc Doxyfile"
 
 if test -n "$SUBDIRS"; then
 	ac_config_files="$ac_config_files examples/client/Makefile examples/server/Makefile"
@@ -5352,6 +5352,7 @@ do
     "src/config.h") CONFIG_FILES="$CONFIG_FILES src/config.h" ;;
     "libnetconf.spec") CONFIG_FILES="$CONFIG_FILES libnetconf.spec" ;;
     "libnetconf.pc") CONFIG_FILES="$CONFIG_FILES libnetconf.pc" ;;
+    "Doxyfile") CONFIG_FILES="$CONFIG_FILES Doxyfile" ;;
     "examples/client/Makefile") CONFIG_FILES="$CONFIG_FILES examples/client/Makefile" ;;
     "examples/server/Makefile") CONFIG_FILES="$CONFIG_FILES examples/server/Makefile" ;;
 

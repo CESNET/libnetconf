@@ -1,6 +1,6 @@
 Summary: NETCONF protocol library for NETCONF applications.
 Name: libnetconf
-Version: %(cut -f1 ./VERSION | tr -d '\n')
+Version: @PACKAGE_VERSION@
 Release: @RELEASE@
 URL: http://www.liberouter.org/
 Source: https://www.liberouter.org/repo/SOURCES/%{name}-%{version}-%{release}.tar.gz
