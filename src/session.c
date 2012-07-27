@@ -326,6 +326,10 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, struc
 	struct nc_session * session;
 	char * cpblt;
 
+	if (sid == NULL || username == NULL || capabilities == NULL) {
+		return NULL;
+	}
+
 	if ((session = malloc (sizeof (struct nc_session))) == NULL) {
 		return NULL;
 	}
