@@ -35,7 +35,7 @@
   
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.1.1</span>
    </div>
    <div id="projectbrief">NETCONF library</div>
   </td>
@@ -205,27 +205,29 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00221"></a>00221 } <a class="code" href="../../d3/d7a/netconf_8h.html#aff232fd4280e385c8e45fcca033e58fd">NC_EDIT_OP_TYPE</a>;
 <a name="l00222"></a>00222 
 <a name="l00223"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">00223</a> <span class="keyword">typedef</span> <span class="keyword">enum</span> <a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a> {
-<a name="l00224"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a37dd969ad73f6ac990785d9802672946">00224</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a37dd969ad73f6ac990785d9802672946">NC_EDIT_DEFOP_NONE</a> = 1,
-<a name="l00225"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a5242dcc6a090887ef8b3f6c96b1b4931">00225</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a5242dcc6a090887ef8b3f6c96b1b4931">NC_EDIT_DEFOP_MERGE</a> = 2,
-<a name="l00226"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a80cda5b10ba3ff7f819c08508be9237c">00226</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a80cda5b10ba3ff7f819c08508be9237c">NC_EDIT_DEFOP_REPLACE</a> = 3
-<a name="l00227"></a>00227 } <a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a>;
-<a name="l00228"></a>00228 
-<a name="l00229"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">00229</a> <span class="keyword">typedef</span> <span class="keyword">enum</span> NC_EEDIT_RROPT_TYPE {
-<a name="l00230"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32ae3322bea978cea2d2a7c0818680bd721">00230</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32ae3322bea978cea2d2a7c0818680bd721">NC_EDIT_ERROPT_STOP</a> = 1,
-<a name="l00231"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a69d82c66a324215010791718c1bc61f6">00231</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a69d82c66a324215010791718c1bc61f6">NC_EDIT_ERROPT_CONT</a> = 2,
-<a name="l00232"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a35128042558e32842f827be8c31d5b1a">00232</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a35128042558e32842f827be8c31d5b1a">NC_EDIT_ERROPT_ROLLBACK</a> = 3
-<a name="l00233"></a>00233 } <a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a>;
-<a name="l00234"></a>00234 
-<a name="l00239"></a><a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060">00239</a> <span class="keyword">typedef</span> <span class="keyword">enum</span> {
-<a name="l00240"></a><a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a908c5d51b81e0ab37d2c57e569446d9b">00240</a>         <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a908c5d51b81e0ab37d2c57e569446d9b" title="Print only error messages.">NC_VERB_ERROR</a>,  
-<a name="l00241"></a><a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a4a0cbb6bc660d3a50c3dff6028185abf">00241</a>         <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a4a0cbb6bc660d3a50c3dff6028185abf" title="Print error and warning messages.">NC_VERB_WARNING</a>,
-<a name="l00242"></a><a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060ae023b386220c2337dc9a556f5c669172">00242</a>         <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060ae023b386220c2337dc9a556f5c669172" title="Besides errors and warnings, print some other verbose messages.">NC_VERB_VERBOSE</a>,
-<a name="l00243"></a><a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a1ddf66190b3b38c4de213321e3ae6491">00243</a>         <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a1ddf66190b3b38c4de213321e3ae6491" title="Print all messages including some development debug messages.">NC_VERB_DEBUG</a>   
-<a name="l00244"></a>00244 } <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060" title="Verbosity levels.">NC_VERB_LEVEL</a>;
-<a name="l00245"></a>00245 
-<a name="l00251"></a>00251 <span class="keywordtype">void</span> <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7" title="Set libnetconf&#39;s verbosity level.">nc_verbosity</a>(<a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060" title="Verbosity levels.">NC_VERB_LEVEL</a> level);
-<a name="l00252"></a>00252 
-<a name="l00253"></a>00253 <span class="preprocessor">#endif </span><span class="comment">/* NETCONF_H_ */</span><span class="preprocessor"></span>
+<a name="l00224"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187">00224</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187">NC_EDIT_DEFOP_ERROR</a> = -1,
+<a name="l00225"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a37dd969ad73f6ac990785d9802672946">00225</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a37dd969ad73f6ac990785d9802672946">NC_EDIT_DEFOP_NONE</a> = 0,
+<a name="l00226"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a5242dcc6a090887ef8b3f6c96b1b4931">00226</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a5242dcc6a090887ef8b3f6c96b1b4931">NC_EDIT_DEFOP_MERGE</a> = 1,
+<a name="l00227"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a80cda5b10ba3ff7f819c08508be9237c">00227</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a80cda5b10ba3ff7f819c08508be9237c">NC_EDIT_DEFOP_REPLACE</a> = 2
+<a name="l00228"></a>00228 } <a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a>;
+<a name="l00229"></a>00229 
+<a name="l00230"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">00230</a> <span class="keyword">typedef</span> <span class="keyword">enum</span> NC_EEDIT_RROPT_TYPE {
+<a name="l00231"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4">00231</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4">NC_EDIT_ERROPT_ERROR</a> = -1,
+<a name="l00232"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32ae3322bea978cea2d2a7c0818680bd721">00232</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32ae3322bea978cea2d2a7c0818680bd721">NC_EDIT_ERROPT_STOP</a> = 1,
+<a name="l00233"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a69d82c66a324215010791718c1bc61f6">00233</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a69d82c66a324215010791718c1bc61f6">NC_EDIT_ERROPT_CONT</a> = 2,
+<a name="l00234"></a><a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a35128042558e32842f827be8c31d5b1a">00234</a>         <a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a35128042558e32842f827be8c31d5b1a">NC_EDIT_ERROPT_ROLLBACK</a> = 3
+<a name="l00235"></a>00235 } <a class="code" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a>;
+<a name="l00236"></a>00236 
+<a name="l00241"></a><a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060">00241</a> <span class="keyword">typedef</span> <span class="keyword">enum</span> {
+<a name="l00242"></a><a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a908c5d51b81e0ab37d2c57e569446d9b">00242</a>         <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a908c5d51b81e0ab37d2c57e569446d9b" title="Print only error messages.">NC_VERB_ERROR</a>,  
+<a name="l00243"></a><a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a4a0cbb6bc660d3a50c3dff6028185abf">00243</a>         <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a4a0cbb6bc660d3a50c3dff6028185abf" title="Print error and warning messages.">NC_VERB_WARNING</a>,
+<a name="l00244"></a><a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060ae023b386220c2337dc9a556f5c669172">00244</a>         <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060ae023b386220c2337dc9a556f5c669172" title="Besides errors and warnings, print some other verbose messages.">NC_VERB_VERBOSE</a>,
+<a name="l00245"></a><a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a1ddf66190b3b38c4de213321e3ae6491">00245</a>         <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a1ddf66190b3b38c4de213321e3ae6491" title="Print all messages including some development debug messages.">NC_VERB_DEBUG</a>   
+<a name="l00246"></a>00246 } <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060" title="Verbosity levels.">NC_VERB_LEVEL</a>;
+<a name="l00247"></a>00247 
+<a name="l00253"></a>00253 <span class="keywordtype">void</span> <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7" title="Set libnetconf&#39;s verbosity level.">nc_verbosity</a>(<a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060" title="Verbosity levels.">NC_VERB_LEVEL</a> level);
+<a name="l00254"></a>00254 
+<a name="l00255"></a>00255 <span class="preprocessor">#endif </span><span class="comment">/* NETCONF_H_ */</span><span class="preprocessor"></span>
 </pre></div></div><!-- contents -->
 </div>
   <div id="nav-path" class="navpath">
@@ -233,7 +235,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
       <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a>      </li>
       <li class="navelem"><a class="el" href="../../d3/d7a/netconf_8h.html">netconf.h</a>      </li>
 
-    <li class="footer">Generated on Fri Jul 13 2012 15:58:08 for libnetconf by
+    <li class="footer">Generated on Fri Jul 27 2012 14:38:24 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

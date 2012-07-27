@@ -1,4 +1,4 @@
-.TH "src/session.h" 3 "Fri Jul 13 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "src/session.h" 3 "Fri Jul 27 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -30,7 +30,7 @@ Functions to handle NETCONF sessions\&.
 .br
 .RI "\fICleanup the session structure and free all allocated resources\&. \fP"
 .ti -1c
-.RI "\fBNC_SESSION_STATUS\fP \fBnc_session_get_status\fP (struct nc_session *session)"
+.RI "\fBNC_SESSION_STATUS\fP \fBnc_session_get_status\fP (const struct nc_session *session)"
 .br
 .RI "\fIGet information about the session current status\&. \fP"
 .ti -1c
@@ -42,19 +42,19 @@ Functions to handle NETCONF sessions\&.
 .br
 .RI "\fIGet input file descriptor to asynchronous control of input events\&. \fP"
 .ti -1c
-.RI "char * \fBnc_session_get_id\fP (const struct nc_session *session)"
+.RI "const char * \fBnc_session_get_id\fP (const struct nc_session *session)"
 .br
 .RI "\fIGet NETCONF session ID\&. \fP"
 .ti -1c
-.RI "char * \fBnc_session_get_host\fP (const struct nc_session *session)"
+.RI "const char * \fBnc_session_get_host\fP (const struct nc_session *session)"
 .br
 .RI "\fIGet NETCONF session host\&. \fP"
 .ti -1c
-.RI "char * \fBnc_session_get_port\fP (const struct nc_session *session)"
+.RI "const char * \fBnc_session_get_port\fP (const struct nc_session *session)"
 .br
 .RI "\fIGet NETCONF session port number\&. \fP"
 .ti -1c
-.RI "char * \fBnc_session_get_user\fP (const struct nc_session *session)"
+.RI "const char * \fBnc_session_get_user\fP (const struct nc_session *session)"
 .br
 .RI "\fIGet NETCONF session username\&. \fP"
 .ti -1c
@@ -62,7 +62,7 @@ Functions to handle NETCONF sessions\&.
 .br
 .RI "\fIGet NULL terminated list of capabilities associated with the session\&. \fP"
 .ti -1c
-.RI "struct nc_cpblts * \fBnc_cpblts_new\fP (char **list)"
+.RI "struct nc_cpblts * \fBnc_cpblts_new\fP (char *const *list)"
 .br
 .RI "\fICreate new NETCONF capabilities structure\&. \fP"
 .ti -1c
@@ -78,7 +78,7 @@ Functions to handle NETCONF sessions\&.
 .br
 .RI "\fIRemove specified capability string from the NETCONF capabilities structure\&. \fP"
 .ti -1c
-.RI "int \fBnc_cpblts_enabled\fP (struct nc_session *session, const char *capability_string)"
+.RI "int \fBnc_cpblts_enabled\fP (const struct nc_session *session, const char *capability_string)"
 .br
 .RI "\fICheck if the given capability is supported by the session\&. \fP"
 .ti -1c
@@ -86,11 +86,11 @@ Functions to handle NETCONF sessions\&.
 .br
 .RI "\fIMove NETCONF capabilities structure iterator to the beginning of the capability strings list\&. \fP"
 .ti -1c
-.RI "char * \fBnc_cpblts_iter_next\fP (struct nc_cpblts *c)"
+.RI "const char * \fBnc_cpblts_iter_next\fP (struct nc_cpblts *c)"
 .br
 .RI "\fIGet the next capability string from the given NETCONF capabilities structure\&. \fP"
 .ti -1c
-.RI "int \fBnc_cpblts_count\fP (struct nc_cpblts *c)"
+.RI "int \fBnc_cpblts_count\fP (const struct nc_cpblts *c)"
 .br
 .RI "\fIGet number of capabilities in structure\&. \fP"
 .ti -1c
@@ -98,11 +98,11 @@ Functions to handle NETCONF sessions\&.
 .br
 .RI "\fIGet NULL terminated list of default capabilities supported by libnetconf\&. \fP"
 .ti -1c
-.RI "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
+.RI "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fISend <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
-.RI "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, \fBnc_rpc\fP *rpc, \fBnc_reply\fP *reply)"
+.RI "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
 .br
 .RI "\fISend <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
 .ti -1c
@@ -114,7 +114,7 @@ Functions to handle NETCONF sessions\&.
 .br
 .RI "\fIReceive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBnc_session_send_recv\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
+.RI "\fBnc_reply\fP * \fBnc_session_send_recv\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fISend <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fP"
 .in -1c

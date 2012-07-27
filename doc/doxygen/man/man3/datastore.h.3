@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Fri Jul 13 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Fri Jul 27 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -36,7 +36,7 @@ NETCONF datastore handling function prototypes and structures\&.
 .br
 .RI "\fICreate new datastore structure of the specified implementation type\&. \fP"
 .ti -1c
-.RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, char *path)"
+.RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
 .br
 .RI "\fIAssign path of the datastore file into the datastore structure\&. \fP"
 .ti -1c
@@ -52,9 +52,13 @@ NETCONF datastore handling function prototypes and structures\&.
 .br
 .RI "\fIClose specified datastore and free all resources\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBncds_apply_rpc\fP (\fBncds_id\fP id, struct nc_session *session, \fBnc_rpc\fP *rpc)"
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc\fP (\fBncds_id\fP id, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIPerform requested RPC operation on the datastore\&. \fP"
+.ti -1c
+.RI "void \fBncds_break_locks\fP (const struct nc_session *session)"
+.br
+.RI "\fIRemove all locks that is holding given session\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 

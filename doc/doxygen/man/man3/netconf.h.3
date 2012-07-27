@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Fri Jul 13 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Fri Jul 27 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -59,10 +59,10 @@ libnetconf's general public functions and structures definitions\&.
 .RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP =  -1, \fBNC_EDIT_OP_MERGE\fP =  1, \fBNC_EDIT_OP_REPLACE\fP =  2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
 .br
 .ti -1c
-.RI "enum \fBNC_EDIT_DEFOP_TYPE\fP { \fBNC_EDIT_DEFOP_NONE\fP =  1, \fBNC_EDIT_DEFOP_MERGE\fP =  2, \fBNC_EDIT_DEFOP_REPLACE\fP =  3 }"
+.RI "enum \fBNC_EDIT_DEFOP_TYPE\fP { \fBNC_EDIT_DEFOP_ERROR\fP =  -1, \fBNC_EDIT_DEFOP_NONE\fP =  0, \fBNC_EDIT_DEFOP_MERGE\fP =  1, \fBNC_EDIT_DEFOP_REPLACE\fP =  2 }"
 .br
 .ti -1c
-.RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_STOP\fP =  1, \fBNC_EDIT_ERROPT_CONT\fP =  2, \fBNC_EDIT_ERROPT_ROLLBACK\fP =  3 }"
+.RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_ERROR\fP =  -1, \fBNC_EDIT_ERROPT_STOP\fP =  1, \fBNC_EDIT_ERROPT_CONT\fP =  2, \fBNC_EDIT_ERROPT_ROLLBACK\fP =  3 }"
 .br
 .ti -1c
 .RI "enum \fBNC_VERB_LEVEL\fP { \fBNC_VERB_ERROR\fP, \fBNC_VERB_WARNING\fP, \fBNC_VERB_VERBOSE\fP, \fBNC_VERB_DEBUG\fP }"
@@ -165,6 +165,8 @@ Definition at line 213 of file netconf\&.h\&.
 \fBEnumerator: \fP
 .in +1c
 .TP
+\fB\fINC_EDIT_DEFOP_ERROR \fP\fP
+.TP
 \fB\fINC_EDIT_DEFOP_NONE \fP\fP
 .TP
 \fB\fINC_EDIT_DEFOP_MERGE \fP\fP
@@ -179,6 +181,8 @@ Definition at line 223 of file netconf\&.h\&.
 \fBEnumerator: \fP
 .in +1c
 .TP
+\fB\fINC_EDIT_ERROPT_ERROR \fP\fP
+.TP
 \fB\fINC_EDIT_ERROPT_STOP \fP\fP
 .TP
 \fB\fINC_EDIT_ERROPT_CONT \fP\fP
@@ -186,7 +190,7 @@ Definition at line 223 of file netconf\&.h\&.
 \fB\fINC_EDIT_ERROPT_ROLLBACK \fP\fP
 
 .PP
-Definition at line 229 of file netconf\&.h\&.
+Definition at line 230 of file netconf\&.h\&.
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

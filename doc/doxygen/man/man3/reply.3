@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Fri Jul 13 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Fri Jul 27 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -30,7 +30,7 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .br
 .RI "\fISet callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fP"
 .ti -1c
-.RI "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, \fBnc_rpc\fP *rpc, \fBnc_reply\fP *reply)"
+.RI "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
 .br
 .RI "\fISend <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
 .ti -1c
@@ -70,9 +70,9 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .br
 .RI "\fICreate rpc-reply response with <data> content\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBnc_reply_error\fP (const struct nc_err *error)"
+.RI "\fBnc_reply\fP * \fBnc_reply_error\fP (struct nc_err *error)"
 .br
-.RI "\fICreate rpc-reply response with <drpc-error> content\&. \fP"
+.RI "\fICreate rpc-reply response with <rpc-error> content\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -145,7 +145,7 @@ sid - session ID of session holding requested lock\&.
 .RE
 .PP
 
-.SS "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, \fBnc_rpc\fP *rpc, \fBnc_reply\fP *reply)"
+.SS "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
 
 .PP
 Send <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fBParameters:\fP
@@ -193,7 +193,7 @@ Dump the rpc-reply message into a string\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-String in XML format containing the NETCONF's <rpc-reply> element and all its content\&. 
+String in XML format containing the NETCONF's <rpc-reply> element and all its content\&. Caller is responsible for free of returned string with free()\&. 
 .RE
 .PP
 
@@ -251,7 +251,7 @@ Get content of the <data> element in <rpc-reply>\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-String with the content of the <data> element\&. 
+String with the content of the <data> element\&. Caller is responsible for free of returned string with free()\&. 
 .RE
 .PP
 
@@ -282,12 +282,12 @@ Created <rpc-reply> message\&.
 .RE
 .PP
 
-.SS "\fBnc_reply\fP* \fBnc_reply_error\fP (const struct nc_err *error)"
+.SS "\fBnc_reply\fP* \fBnc_reply_error\fP (struct nc_err *error)"
 
 .PP
-Create rpc-reply response with <drpc-error> content\&. \fBParameters:\fP
+Create rpc-reply response with <rpc-error> content\&. \fBParameters:\fP
 .RS 4
-\fIerror\fP NETCONF error description structure for reply message\&. 
+\fIerror\fP NETCONF error description structure for reply message\&. From now, error is connected with the reply and should not be used by the caller\&. 
 .RE
 .PP
 \fBReturns:\fP

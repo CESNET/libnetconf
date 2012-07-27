@@ -35,7 +35,7 @@
   
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.1.1</span>
    </div>
    <div id="projectbrief">NETCONF library</div>
   </td>
@@ -214,11 +214,13 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../d3/d7a/netconf_8h.html#aff232fd4280e385c8e45fcca033e58fda5c6473715392eb03614abc6d7e62bdf9">NC_EDIT_OP_REMOVE</a>
 <br/>
  }</td></tr>
-<tr class="memitem:a5852fd110198481afb37cc8dcf0bf454"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a> { <a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a37dd969ad73f6ac990785d9802672946">NC_EDIT_DEFOP_NONE</a> =  1, 
-<a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a5242dcc6a090887ef8b3f6c96b1b4931">NC_EDIT_DEFOP_MERGE</a> =  2, 
-<a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a80cda5b10ba3ff7f819c08508be9237c">NC_EDIT_DEFOP_REPLACE</a> =  3
+<tr class="memitem:a5852fd110198481afb37cc8dcf0bf454"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a> { <a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187">NC_EDIT_DEFOP_ERROR</a> =  -1, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a37dd969ad73f6ac990785d9802672946">NC_EDIT_DEFOP_NONE</a> =  0, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a5242dcc6a090887ef8b3f6c96b1b4931">NC_EDIT_DEFOP_MERGE</a> =  1, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a80cda5b10ba3ff7f819c08508be9237c">NC_EDIT_DEFOP_REPLACE</a> =  2
  }</td></tr>
-<tr class="memitem:a8eb32ba579043f2750fa8558d9284b32"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a> { <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32ae3322bea978cea2d2a7c0818680bd721">NC_EDIT_ERROPT_STOP</a> =  1, 
+<tr class="memitem:a8eb32ba579043f2750fa8558d9284b32"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a> { <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4">NC_EDIT_ERROPT_ERROR</a> =  -1, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32ae3322bea978cea2d2a7c0818680bd721">NC_EDIT_ERROPT_STOP</a> =  1, 
 <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a69d82c66a324215010791718c1bc61f6">NC_EDIT_ERROPT_CONT</a> =  2, 
 <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a35128042558e32842f827be8c31d5b1a">NC_EDIT_ERROPT_ROLLBACK</a> =  3
  }</td></tr>
@@ -335,6 +337,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="a5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187"></a>NC_EDIT_DEFOP_ERROR</em>&nbsp;</td><td>
+</td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a5852fd110198481afb37cc8dcf0bf454a37dd969ad73f6ac990785d9802672946"></a>NC_EDIT_DEFOP_NONE</em>&nbsp;</td><td>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a5852fd110198481afb37cc8dcf0bf454a5242dcc6a090887ef8b3f6c96b1b4931"></a>NC_EDIT_DEFOP_MERGE</em>&nbsp;</td><td>
@@ -359,6 +363,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="a8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4"></a>NC_EDIT_ERROPT_ERROR</em>&nbsp;</td><td>
+</td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a8eb32ba579043f2750fa8558d9284b32ae3322bea978cea2d2a7c0818680bd721"></a>NC_EDIT_ERROPT_STOP</em>&nbsp;</td><td>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a8eb32ba579043f2750fa8558d9284b32a69d82c66a324215010791718c1bc61f6"></a>NC_EDIT_ERROPT_CONT</em>&nbsp;</td><td>
@@ -369,7 +375,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00229">229</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00230">230</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -380,7 +386,7 @@ Functions</h2></td></tr>
       <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a>      </li>
       <li class="navelem"><a class="el" href="../../d3/d7a/netconf_8h.html">netconf.h</a>      </li>
 
-    <li class="footer">Generated on Fri Jul 13 2012 15:58:08 for libnetconf by
+    <li class="footer">Generated on Fri Jul 27 2012 14:38:24 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

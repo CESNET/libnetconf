@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Fri Jul 13 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Fri Jul 27 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -34,7 +34,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 
 .in +1c
 .ti -1c
-.RI "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
+.RI "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fISend <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
@@ -42,11 +42,11 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIReceive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBnc_session_send_recv\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
+.RI "\fBnc_reply\fP * \fBnc_session_send_recv\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fISend <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fP"
 .ti -1c
-.RI "struct nc_filter * \fBnc_filter_new\fP (\fBNC_FILTER_TYPE\fP type, char *filter)"
+.RI "struct nc_filter * \fBnc_filter_new\fP (\fBNC_FILTER_TYPE\fP type, const char *filter)"
 .br
 .RI "\fICreate new NETCONF filter of the specified type\&. \fP"
 .ti -1c
@@ -82,6 +82,22 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIGet target datastore type (running, startup, candidate) of the rpc request\&. \fP"
 .ti -1c
+.RI "\fBNC_DATASTORE\fP \fBnc_rpc_get_source\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet source datastore type (running, startup, candidate) of the rpc request\&. \fP"
+.ti -1c
+.RI "char * \fBnc_rpc_get_editconfig\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet serialized content of the config parameter (<config> itself is not part of the returned data)\&. This function is valid only for <edit-config> RPCs\&. \fP"
+.ti -1c
+.RI "\fBNC_EDIT_DEFOP_TYPE\fP \fBnc_rpc_get_defop\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet default-operation type, valid only for <edit-config> RPCs\&. \fP"
+.ti -1c
+.RI "\fBNC_EDIT_ERROPT_TYPE\fP \fBnc_rpc_get_erropt\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet error-option type, valid only for <edit-config> RPCs\&. \fP"
+.ti -1c
 .RI "void \fBnc_rpc_free\fP (\fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIFree rpc message\&. \fP"
@@ -98,11 +114,11 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fICreate <edit-config> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_get\fP (struct nc_filter *filter)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_get\fP (const struct nc_filter *filter)"
 .br
 .RI "\fICreate <get> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE\fP source, struct nc_filter *filter)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE\fP source, const struct nc_filter *filter)"
 .br
 .RI "\fICreate <get-config> NETCONF rpc message\&. \fP"
 .ti -1c
@@ -214,7 +230,7 @@ NC_FILTER_SUBTREE\&.
 Definition at line 208 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
-.SS "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
+.SS "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 
 .PP
 Send <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fBParameters:\fP
@@ -250,7 +266,7 @@ Receive <rpc> request from the specified NETCONF session\&. This function is sup
 .RE
 .PP
 
-.SS "\fBnc_reply\fP* \fBnc_session_send_recv\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
+.SS "\fBnc_reply\fP* \fBnc_session_send_recv\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 
 .PP
 Send <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fBParameters:\fP
@@ -266,7 +282,7 @@ Received <rpc-reply>\&.
 .RE
 .PP
 
-.SS "struct nc_filter* \fBnc_filter_new\fP (\fBNC_FILTER_TYPE\fPtype, char *filter)\fC [read]\fP"
+.SS "struct nc_filter* \fBnc_filter_new\fP (\fBNC_FILTER_TYPE\fPtype, const char *filter)\fC [read]\fP"
 
 .PP
 Create new NETCONF filter of the specified type\&. \fBParameters:\fP
@@ -301,7 +317,7 @@ Dump the rpc message into a string\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-String in XML format containing the NETCONF's <rpc> element and all its content\&. 
+String in XML format containing the NETCONF's <rpc> element and all its content\&. Caller is responsible for free of returned string with free()\&. 
 .RE
 .PP
 
@@ -357,7 +373,7 @@ Get content of the operation specification from the given rpc\&. \fBParameters:\
 .PP
 \fBReturns:\fP
 .RS 4
-String in XML form starting with the operation name element\&. 
+String in XML form starting with the operation name element\&. Caller is responsible for free of returned string with free()\&. 
 .RE
 .PP
 
@@ -390,6 +406,64 @@ Get target datastore type (running, startup, candidate) of the rpc request\&. Fo
 \fBReturns:\fP
 .RS 4
 One of the NC_DATASTORE\&. 
+.RE
+.PP
+
+.SS "\fBNC_DATASTORE\fP \fBnc_rpc_get_source\fP (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Get source datastore type (running, startup, candidate) of the rpc request\&. For <rpc> message that does not affect datastore (e\&.g\&. kill-session), the NC_DATASTORE_NONE is returned\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrpc\fP rpc message 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+One of the NC_DATASTORE\&. 
+.RE
+.PP
+
+.SS "char* \fBnc_rpc_get_editconfig\fP (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Get serialized content of the config parameter (<config> itself is not part of the returned data)\&. This function is valid only for <edit-config> RPCs\&. \fBParameters:\fP
+.RS 4
+\fIrpc\fP <edit-config> rpc message\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Serialized XML or NULL if not available\&. Caller is responsible for free of returned string with free()\&. 
+.RE
+.PP
+
+.SS "\fBNC_EDIT_DEFOP_TYPE\fP \fBnc_rpc_get_defop\fP (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Get default-operation type, valid only for <edit-config> RPCs\&. \fBParameters:\fP
+.RS 4
+\fIrpc\fP <edit-config> rpc message
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+One of the NC_EDIT_DEFOP_TYPE, NC_EDIT_DEFOP_ERROR in case of error\&. 
+.RE
+.PP
+
+.SS "\fBNC_EDIT_ERROPT_TYPE\fP \fBnc_rpc_get_erropt\fP (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Get error-option type, valid only for <edit-config> RPCs\&. \fBParameters:\fP
+.RS 4
+\fIrpc\fP <edit-config> rpc message
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+One of the NC_EDIT_ERROPT_TYPE, NC_EDIT_ERROPT_ERROR in case of error 
 .RE
 .PP
 
@@ -454,7 +528,7 @@ Created rpc message\&.
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_get\fP (struct nc_filter *filter)"
+.SS "\fBnc_rpc\fP* \fBnc_rpc_get\fP (const struct nc_filter *filter)"
 
 .PP
 Create <get> NETCONF rpc message\&. \fBParameters:\fP
@@ -468,7 +542,7 @@ Created rpc message\&.
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE\fPsource, struct nc_filter *filter)"
+.SS "\fBnc_rpc\fP* \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE\fPsource, const struct nc_filter *filter)"
 
 .PP
 Create <get-config> NETCONF rpc message\&. \fBParameters:\fP

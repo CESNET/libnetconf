@@ -35,7 +35,7 @@
   
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.1.1</span>
    </div>
    <div id="projectbrief">NETCONF library</div>
   </td>
@@ -157,46 +157,46 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga20b9940ed7af543a05b4bef6e871cedd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close NETCONF connection with the server.  <a href="#ga20b9940ed7af543a05b4bef6e871cedd"></a><br/></td></tr>
 <tr class="memitem:gaa5994f45a7031dc931bdf4a3acebedee"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee">nc_session_free</a> (struct nc_session *session)</td></tr>
 <tr class="memdesc:gaa5994f45a7031dc931bdf4a3acebedee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cleanup the session structure and free all allocated resources.  <a href="#gaa5994f45a7031dc931bdf4a3acebedee"></a><br/></td></tr>
-<tr class="memitem:ga1bba4b1d6a3f4d3860bcef4783c1edd5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">NC_SESSION_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga1bba4b1d6a3f4d3860bcef4783c1edd5">nc_session_get_status</a> (struct nc_session *session)</td></tr>
-<tr class="memdesc:ga1bba4b1d6a3f4d3860bcef4783c1edd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the session current status.  <a href="#ga1bba4b1d6a3f4d3860bcef4783c1edd5"></a><br/></td></tr>
+<tr class="memitem:gacebd018e30c3eeb0638bbb428a1741b4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">NC_SESSION_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacebd018e30c3eeb0638bbb428a1741b4">nc_session_get_status</a> (const struct nc_session *session)</td></tr>
+<tr class="memdesc:gacebd018e30c3eeb0638bbb428a1741b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the session current status.  <a href="#gacebd018e30c3eeb0638bbb428a1741b4"></a><br/></td></tr>
 <tr class="memitem:gac8ea61702127df024c037869feb72d97"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gac8ea61702127df024c037869feb72d97">nc_session_get_version</a> (const struct nc_session *session)</td></tr>
 <tr class="memdesc:gac8ea61702127df024c037869feb72d97"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NETCONF protocol version used in the given session.  <a href="#gac8ea61702127df024c037869feb72d97"></a><br/></td></tr>
 <tr class="memitem:ga826890ed745633bc2d31a53971dada32"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga826890ed745633bc2d31a53971dada32">nc_session_get_eventfd</a> (const struct nc_session *session)</td></tr>
 <tr class="memdesc:ga826890ed745633bc2d31a53971dada32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get input file descriptor to asynchronous control of input events.  <a href="#ga826890ed745633bc2d31a53971dada32"></a><br/></td></tr>
-<tr class="memitem:gacb94f394ae4511d098f37820d438ffa0"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacb94f394ae4511d098f37820d438ffa0">nc_session_get_id</a> (const struct nc_session *session)</td></tr>
-<tr class="memdesc:gacb94f394ae4511d098f37820d438ffa0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NETCONF session ID.  <a href="#gacb94f394ae4511d098f37820d438ffa0"></a><br/></td></tr>
-<tr class="memitem:ga38ced7c2ce96c76bc8e19ca980786c9a"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga38ced7c2ce96c76bc8e19ca980786c9a">nc_session_get_host</a> (const struct nc_session *session)</td></tr>
-<tr class="memdesc:ga38ced7c2ce96c76bc8e19ca980786c9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NETCONF session host.  <a href="#ga38ced7c2ce96c76bc8e19ca980786c9a"></a><br/></td></tr>
-<tr class="memitem:ga3755e43670b7d02a2270336172767e58"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga3755e43670b7d02a2270336172767e58">nc_session_get_port</a> (const struct nc_session *session)</td></tr>
-<tr class="memdesc:ga3755e43670b7d02a2270336172767e58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NETCONF session port number.  <a href="#ga3755e43670b7d02a2270336172767e58"></a><br/></td></tr>
-<tr class="memitem:gaaec4ab627bf29ee26b16fd1ca4ab5636"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaaec4ab627bf29ee26b16fd1ca4ab5636">nc_session_get_user</a> (const struct nc_session *session)</td></tr>
-<tr class="memdesc:gaaec4ab627bf29ee26b16fd1ca4ab5636"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NETCONF session username.  <a href="#gaaec4ab627bf29ee26b16fd1ca4ab5636"></a><br/></td></tr>
+<tr class="memitem:ga91012cb5ae50651916ee2239661d7603"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga91012cb5ae50651916ee2239661d7603">nc_session_get_id</a> (const struct nc_session *session)</td></tr>
+<tr class="memdesc:ga91012cb5ae50651916ee2239661d7603"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NETCONF session ID.  <a href="#ga91012cb5ae50651916ee2239661d7603"></a><br/></td></tr>
+<tr class="memitem:ga6399681dfce6e139cc5707af25d20bb3"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga6399681dfce6e139cc5707af25d20bb3">nc_session_get_host</a> (const struct nc_session *session)</td></tr>
+<tr class="memdesc:ga6399681dfce6e139cc5707af25d20bb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NETCONF session host.  <a href="#ga6399681dfce6e139cc5707af25d20bb3"></a><br/></td></tr>
+<tr class="memitem:ga09bec340611b4b99c8c1bfb2ef3992d6"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga09bec340611b4b99c8c1bfb2ef3992d6">nc_session_get_port</a> (const struct nc_session *session)</td></tr>
+<tr class="memdesc:ga09bec340611b4b99c8c1bfb2ef3992d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NETCONF session port number.  <a href="#ga09bec340611b4b99c8c1bfb2ef3992d6"></a><br/></td></tr>
+<tr class="memitem:gabdd090cbc50a8f7db58e5be8062296d6"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gabdd090cbc50a8f7db58e5be8062296d6">nc_session_get_user</a> (const struct nc_session *session)</td></tr>
+<tr class="memdesc:gabdd090cbc50a8f7db58e5be8062296d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NETCONF session username.  <a href="#gabdd090cbc50a8f7db58e5be8062296d6"></a><br/></td></tr>
 <tr class="memitem:ga09bdf1d9eacf9f53bf3f05557ffe0821"><td class="memItemLeft" align="right" valign="top">struct nc_cpblts *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga09bdf1d9eacf9f53bf3f05557ffe0821">nc_session_get_cpblts</a> (const struct nc_session *session)</td></tr>
 <tr class="memdesc:ga09bdf1d9eacf9f53bf3f05557ffe0821"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NULL terminated list of capabilities associated with the session.  <a href="#ga09bdf1d9eacf9f53bf3f05557ffe0821"></a><br/></td></tr>
-<tr class="memitem:ga05b3653778304c77316b12cdfd775616"><td class="memItemLeft" align="right" valign="top">struct nc_cpblts *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga05b3653778304c77316b12cdfd775616">nc_cpblts_new</a> (char **list)</td></tr>
-<tr class="memdesc:ga05b3653778304c77316b12cdfd775616"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new NETCONF capabilities structure.  <a href="#ga05b3653778304c77316b12cdfd775616"></a><br/></td></tr>
+<tr class="memitem:gae8220136acd191591ad25d6849f0b59c"><td class="memItemLeft" align="right" valign="top">struct nc_cpblts *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gae8220136acd191591ad25d6849f0b59c">nc_cpblts_new</a> (char *const *list)</td></tr>
+<tr class="memdesc:gae8220136acd191591ad25d6849f0b59c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new NETCONF capabilities structure.  <a href="#gae8220136acd191591ad25d6849f0b59c"></a><br/></td></tr>
 <tr class="memitem:ga6465c58b3ca057b46655d5ffa90caff3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga6465c58b3ca057b46655d5ffa90caff3">nc_cpblts_free</a> (struct nc_cpblts *c)</td></tr>
 <tr class="memdesc:ga6465c58b3ca057b46655d5ffa90caff3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free NETCONF capabilities structure.  <a href="#ga6465c58b3ca057b46655d5ffa90caff3"></a><br/></td></tr>
 <tr class="memitem:ga2ea9b318015206d886c7e54386fc85e3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga2ea9b318015206d886c7e54386fc85e3">nc_cpblts_add</a> (struct nc_cpblts *capabilities, const char *capability_string)</td></tr>
 <tr class="memdesc:ga2ea9b318015206d886c7e54386fc85e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add another one capability string into the NETCONF capabilities structure.  <a href="#ga2ea9b318015206d886c7e54386fc85e3"></a><br/></td></tr>
 <tr class="memitem:gacb59cf4fa78bf02c22afac395acf0693"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacb59cf4fa78bf02c22afac395acf0693">nc_cpblts_remove</a> (struct nc_cpblts *capabilities, const char *capability_string)</td></tr>
 <tr class="memdesc:gacb59cf4fa78bf02c22afac395acf0693"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove specified capability string from the NETCONF capabilities structure.  <a href="#gacb59cf4fa78bf02c22afac395acf0693"></a><br/></td></tr>
-<tr class="memitem:ga88ffe8d6d818838dfc226052ae0005b7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga88ffe8d6d818838dfc226052ae0005b7">nc_cpblts_enabled</a> (struct nc_session *session, const char *capability_string)</td></tr>
-<tr class="memdesc:ga88ffe8d6d818838dfc226052ae0005b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the given capability is supported by the session.  <a href="#ga88ffe8d6d818838dfc226052ae0005b7"></a><br/></td></tr>
+<tr class="memitem:gaa8325078c33d25a7cf48e1ed9d417ff4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaa8325078c33d25a7cf48e1ed9d417ff4">nc_cpblts_enabled</a> (const struct nc_session *session, const char *capability_string)</td></tr>
+<tr class="memdesc:gaa8325078c33d25a7cf48e1ed9d417ff4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the given capability is supported by the session.  <a href="#gaa8325078c33d25a7cf48e1ed9d417ff4"></a><br/></td></tr>
 <tr class="memitem:gae92c774e940114b4733f85e186d84620"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gae92c774e940114b4733f85e186d84620">nc_cpblts_iter_start</a> (struct nc_cpblts *c)</td></tr>
 <tr class="memdesc:gae92c774e940114b4733f85e186d84620"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move NETCONF capabilities structure iterator to the beginning of the capability strings list.  <a href="#gae92c774e940114b4733f85e186d84620"></a><br/></td></tr>
-<tr class="memitem:gab7d5432fa16f2d44bc8411f51fafb7b9"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gab7d5432fa16f2d44bc8411f51fafb7b9">nc_cpblts_iter_next</a> (struct nc_cpblts *c)</td></tr>
-<tr class="memdesc:gab7d5432fa16f2d44bc8411f51fafb7b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the next capability string from the given NETCONF capabilities structure.  <a href="#gab7d5432fa16f2d44bc8411f51fafb7b9"></a><br/></td></tr>
-<tr class="memitem:ga75927ac76357db0d6a32c7538703e13c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga75927ac76357db0d6a32c7538703e13c">nc_cpblts_count</a> (struct nc_cpblts *c)</td></tr>
-<tr class="memdesc:ga75927ac76357db0d6a32c7538703e13c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get number of capabilities in structure.  <a href="#ga75927ac76357db0d6a32c7538703e13c"></a><br/></td></tr>
+<tr class="memitem:gaea2ced8d4e5f2cc9971680e49f876c58"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaea2ced8d4e5f2cc9971680e49f876c58">nc_cpblts_iter_next</a> (struct nc_cpblts *c)</td></tr>
+<tr class="memdesc:gaea2ced8d4e5f2cc9971680e49f876c58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the next capability string from the given NETCONF capabilities structure.  <a href="#gaea2ced8d4e5f2cc9971680e49f876c58"></a><br/></td></tr>
+<tr class="memitem:ga79a7aea77cbfe29535eb83a6e5c60419"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga79a7aea77cbfe29535eb83a6e5c60419">nc_cpblts_count</a> (const struct nc_cpblts *c)</td></tr>
+<tr class="memdesc:ga79a7aea77cbfe29535eb83a6e5c60419"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get number of capabilities in structure.  <a href="#ga79a7aea77cbfe29535eb83a6e5c60419"></a><br/></td></tr>
 <tr class="memitem:ga6f39a278e3d907a0b26878df332ebc71"><td class="memItemLeft" align="right" valign="top">struct nc_cpblts *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71">nc_session_get_cpblts_default</a> ()</td></tr>
 <tr class="memdesc:ga6f39a278e3d907a0b26878df332ebc71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NULL terminated list of default capabilities supported by libnetconf.  <a href="#ga6f39a278e3d907a0b26878df332ebc71"></a><br/></td></tr>
 <tr class="memitem:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0">nc_ssh_pref</a> (<a class="el" href="../../db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10">NC_SSH_AUTH_TYPE</a> type, short int preference)</td></tr>
 <tr class="memdesc:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set preference of the SSH authentication methods.  <a href="#ga13119fdaa84544bf254bdb35ffdf83e0"></a><br/></td></tr>
-<tr class="memitem:ga6b35fd9f2321a59f0117aa5c28a5d72e"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga6b35fd9f2321a59f0117aa5c28a5d72e">nc_session_connect</a> (const char *host, unsigned short port, const char *username, struct nc_cpblts *cpblts)</td></tr>
-<tr class="memdesc:ga6b35fd9f2321a59f0117aa5c28a5d72e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create NETCONF session to the specified server.  <a href="#ga6b35fd9f2321a59f0117aa5c28a5d72e"></a><br/></td></tr>
-<tr class="memitem:ga1bd6c4469064bf3e86538082b232c9cd"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga1bd6c4469064bf3e86538082b232c9cd">nc_session_accept</a> (struct nc_cpblts *capabilities)</td></tr>
-<tr class="memdesc:ga1bd6c4469064bf3e86538082b232c9cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept NETCONF session from a client.  <a href="#ga1bd6c4469064bf3e86538082b232c9cd"></a><br/></td></tr>
+<tr class="memitem:gae3858d998d19cb2fb700b15fdf602f23"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23">nc_session_connect</a> (const char *host, unsigned short port, const char *username, const struct nc_cpblts *cpblts)</td></tr>
+<tr class="memdesc:gae3858d998d19cb2fb700b15fdf602f23"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create NETCONF session to the specified server.  <a href="#gae3858d998d19cb2fb700b15fdf602f23"></a><br/></td></tr>
+<tr class="memitem:gad0e758dfee764ae9c2a032e0151c6707"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707">nc_session_accept</a> (const struct nc_cpblts *capabilities)</td></tr>
+<tr class="memdesc:gad0e758dfee764ae9c2a032e0151c6707"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept NETCONF session from a client.  <a href="#gad0e758dfee764ae9c2a032e0151c6707"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's functions for handling NETCONF sessions. </p>
@@ -467,7 +467,7 @@ Functions</h2></td></tr>
 
 <p>Create disconnected session structure. </p>
 <p>This creates dummy session structure which is not supposed to pass NETCONF messages between client and server. Instead, it can be successfully used by server (e.g. detached process that doesn't hold the real session structure) to access NETCONF datastores via libnetconf.</p>
-<p>All required parameters can be obtained from the real session structure by the session getter functions (<a class="el" href="../../db/d52/group__session.html#gacb94f394ae4511d098f37820d438ffa0" title="Get NETCONF session ID.">nc_session_get_id()</a>, <a class="el" href="../../db/d52/group__session.html#gaaec4ab627bf29ee26b16fd1ca4ab5636" title="Get NETCONF session username.">nc_session_get_user()</a> and <a class="el" href="../../db/d52/group__session.html#ga09bdf1d9eacf9f53bf3f05557ffe0821" title="Get NULL terminated list of capabilities associated with the session.">nc_session_get_cpblts()</a>). NULL values are not allowed.</p>
+<p>All required parameters can be obtained from the real session structure by the session getter functions (<a class="el" href="../../db/d52/group__session.html#ga91012cb5ae50651916ee2239661d7603" title="Get NETCONF session ID.">nc_session_get_id()</a>, <a class="el" href="../../db/d52/group__session.html#gabdd090cbc50a8f7db58e5be8062296d6" title="Get NETCONF session username.">nc_session_get_user()</a> and <a class="el" href="../../db/d52/group__session.html#ga09bdf1d9eacf9f53bf3f05557ffe0821" title="Get NULL terminated list of capabilities associated with the session.">nc_session_get_cpblts()</a>). NULL values are not allowed.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">sid</td><td>Session ID. </td></tr>
@@ -505,7 +505,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Close NETCONF connection with the server. </p>
-<p>Only <a class="el" href="../../db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee" title="Cleanup the session structure and free all allocated resources.">nc_session_free()</a> and <a class="el" href="../../db/d52/group__session.html#ga1bba4b1d6a3f4d3860bcef4783c1edd5" title="Get information about the session current status.">nc_session_get_status()</a> functions are allowed after this call.</p>
+<p>Only <a class="el" href="../../db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee" title="Cleanup the session structure and free all allocated resources.">nc_session_free()</a> and <a class="el" href="../../db/d52/group__session.html#gacebd018e30c3eeb0638bbb428a1741b4" title="Get information about the session current status.">nc_session_get_status()</a> functions are allowed after this call.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>Session to close. </td></tr>
@@ -541,14 +541,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga1bba4b1d6a3f4d3860bcef4783c1edd5"></a>
+<a class="anchor" id="gacebd018e30c3eeb0638bbb428a1741b4"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">NC_SESSION_STATUS</a> <a class="el" href="../../db/d52/group__session.html#ga1bba4b1d6a3f4d3860bcef4783c1edd5">nc_session_get_status</a> </td>
+          <td class="memname"><a class="el" href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">NC_SESSION_STATUS</a> <a class="el" href="../../db/d52/group__session.html#gacebd018e30c3eeb0638bbb428a1741b4">nc_session_get_status</a> </td>
           <td>(</td>
-          <td class="paramtype">struct nc_session *&#160;</td>
+          <td class="paramtype">const struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em></td><td>)</td>
           <td></td>
         </tr>
@@ -617,12 +617,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gacb94f394ae4511d098f37820d438ffa0"></a>
+<a class="anchor" id="ga91012cb5ae50651916ee2239661d7603"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* <a class="el" href="../../db/d52/group__session.html#gacb94f394ae4511d098f37820d438ffa0">nc_session_get_id</a> </td>
+          <td class="memname">const char* <a class="el" href="../../db/d52/group__session.html#ga91012cb5ae50651916ee2239661d7603">nc_session_get_id</a> </td>
           <td>(</td>
           <td class="paramtype">const struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em></td><td>)</td>
@@ -638,16 +638,16 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Copy of the string identifying NETCONF session. Caller is supposed to free returned value; </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Constant string identifying NETCONF session. </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ga38ced7c2ce96c76bc8e19ca980786c9a"></a>
+<a class="anchor" id="ga6399681dfce6e139cc5707af25d20bb3"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* <a class="el" href="../../db/d52/group__session.html#ga38ced7c2ce96c76bc8e19ca980786c9a">nc_session_get_host</a> </td>
+          <td class="memname">const char* <a class="el" href="../../db/d52/group__session.html#ga6399681dfce6e139cc5707af25d20bb3">nc_session_get_host</a> </td>
           <td>(</td>
           <td class="paramtype">const struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em></td><td>)</td>
@@ -663,16 +663,16 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Copy of the string identifying NETCONF session server host. Caller is supposed to free returned value; </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Constant string identifying NETCONF session server host. </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ga3755e43670b7d02a2270336172767e58"></a>
+<a class="anchor" id="ga09bec340611b4b99c8c1bfb2ef3992d6"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* <a class="el" href="../../db/d52/group__session.html#ga3755e43670b7d02a2270336172767e58">nc_session_get_port</a> </td>
+          <td class="memname">const char* <a class="el" href="../../db/d52/group__session.html#ga09bec340611b4b99c8c1bfb2ef3992d6">nc_session_get_port</a> </td>
           <td>(</td>
           <td class="paramtype">const struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em></td><td>)</td>
@@ -688,16 +688,16 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Copy of the string identifying NETCONF session server host. Caller is supposed to free returned value; </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Constant string identifying NETCONF session server host. </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="gaaec4ab627bf29ee26b16fd1ca4ab5636"></a>
+<a class="anchor" id="gabdd090cbc50a8f7db58e5be8062296d6"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* <a class="el" href="../../db/d52/group__session.html#gaaec4ab627bf29ee26b16fd1ca4ab5636">nc_session_get_user</a> </td>
+          <td class="memname">const char* <a class="el" href="../../db/d52/group__session.html#gabdd090cbc50a8f7db58e5be8062296d6">nc_session_get_user</a> </td>
           <td>(</td>
           <td class="paramtype">const struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em></td><td>)</td>
@@ -713,7 +713,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Copy of the string identifying NETCONF session server host. Caller is supposed to free returned value; </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Constant string identifying NETCONF session server host. </dd></dl>
 
 </div>
 </div>
@@ -751,7 +751,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga05b3653778304c77316b12cdfd775616"></a>
+<a class="anchor" id="gae8220136acd191591ad25d6849f0b59c"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -759,9 +759,9 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">struct nc_cpblts* <a class="el" href="../../db/d52/group__session.html#ga05b3653778304c77316b12cdfd775616">nc_cpblts_new</a> </td>
+          <td class="memname">struct nc_cpblts* <a class="el" href="../../db/d52/group__session.html#gae8220136acd191591ad25d6849f0b59c">nc_cpblts_new</a> </td>
           <td>(</td>
-          <td class="paramtype">char **&#160;</td>
+          <td class="paramtype">char *const *&#160;</td>
           <td class="paramname"><em>list</em></td><td>)</td>
           <td></td>
         </tr>
@@ -882,14 +882,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga88ffe8d6d818838dfc226052ae0005b7"></a>
+<a class="anchor" id="gaa8325078c33d25a7cf48e1ed9d417ff4"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="../../db/d52/group__session.html#ga88ffe8d6d818838dfc226052ae0005b7">nc_cpblts_enabled</a> </td>
+          <td class="memname">int <a class="el" href="../../db/d52/group__session.html#gaa8325078c33d25a7cf48e1ed9d417ff4">nc_cpblts_enabled</a> </td>
           <td>(</td>
-          <td class="paramtype">struct nc_session *&#160;</td>
+          <td class="paramtype">const struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em>, </td>
         </tr>
         <tr>
@@ -942,12 +942,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gab7d5432fa16f2d44bc8411f51fafb7b9"></a>
+<a class="anchor" id="gaea2ced8d4e5f2cc9971680e49f876c58"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* <a class="el" href="../../db/d52/group__session.html#gab7d5432fa16f2d44bc8411f51fafb7b9">nc_cpblts_iter_next</a> </td>
+          <td class="memname">const char* <a class="el" href="../../db/d52/group__session.html#gaea2ced8d4e5f2cc9971680e49f876c58">nc_cpblts_iter_next</a> </td>
           <td>(</td>
           <td class="paramtype">struct nc_cpblts *&#160;</td>
           <td class="paramname"><em>c</em></td><td>)</td>
@@ -968,14 +968,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga75927ac76357db0d6a32c7538703e13c"></a>
+<a class="anchor" id="ga79a7aea77cbfe29535eb83a6e5c60419"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="../../db/d52/group__session.html#ga75927ac76357db0d6a32c7538703e13c">nc_cpblts_count</a> </td>
+          <td class="memname">int <a class="el" href="../../db/d52/group__session.html#ga79a7aea77cbfe29535eb83a6e5c60419">nc_cpblts_count</a> </td>
           <td>(</td>
-          <td class="paramtype">struct nc_cpblts *&#160;</td>
+          <td class="paramtype">const struct nc_cpblts *&#160;</td>
           <td class="paramname"><em>c</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1062,7 +1062,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga6b35fd9f2321a59f0117aa5c28a5d72e"></a>
+<a class="anchor" id="gae3858d998d19cb2fb700b15fdf602f23"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1070,7 +1070,7 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">struct nc_session* <a class="el" href="../../db/d52/group__session.html#ga6b35fd9f2321a59f0117aa5c28a5d72e">nc_session_connect</a> </td>
+          <td class="memname">struct nc_session* <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23">nc_session_connect</a> </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>host</em>, </td>
@@ -1090,7 +1090,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">struct nc_cpblts *&#160;</td>
+          <td class="paramtype">const struct nc_cpblts *&#160;</td>
           <td class="paramname"><em>cpblts</em>&#160;</td>
         </tr>
         <tr>
@@ -1121,7 +1121,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga1bd6c4469064bf3e86538082b232c9cd"></a>
+<a class="anchor" id="gad0e758dfee764ae9c2a032e0151c6707"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1129,9 +1129,9 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">struct nc_session* <a class="el" href="../../db/d52/group__session.html#ga1bd6c4469064bf3e86538082b232c9cd">nc_session_accept</a> </td>
+          <td class="memname">struct nc_session* <a class="el" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707">nc_session_accept</a> </td>
           <td>(</td>
-          <td class="paramtype">struct nc_cpblts *&#160;</td>
+          <td class="paramtype">const struct nc_cpblts *&#160;</td>
           <td class="paramname"><em>capabilities</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1160,7 +1160,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Fri Jul 13 2012 15:58:08 for libnetconf by
+    <li class="footer">Generated on Fri Jul 27 2012 14:38:24 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

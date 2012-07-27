@@ -1,4 +1,4 @@
-.TH "src/messages.h" 3 "Fri Jul 13 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "src/messages.h" 3 "Fri Jul 27 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,7 +18,7 @@ Functions to create NETCONF messages\&.
 
 .in +1c
 .ti -1c
-.RI "struct nc_filter * \fBnc_filter_new\fP (\fBNC_FILTER_TYPE\fP type, char *filter)"
+.RI "struct nc_filter * \fBnc_filter_new\fP (\fBNC_FILTER_TYPE\fP type, const char *filter)"
 .br
 .RI "\fICreate new NETCONF filter of the specified type\&. \fP"
 .ti -1c
@@ -66,6 +66,22 @@ Functions to create NETCONF messages\&.
 .br
 .RI "\fIGet target datastore type (running, startup, candidate) of the rpc request\&. \fP"
 .ti -1c
+.RI "\fBNC_DATASTORE\fP \fBnc_rpc_get_source\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet source datastore type (running, startup, candidate) of the rpc request\&. \fP"
+.ti -1c
+.RI "char * \fBnc_rpc_get_editconfig\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet serialized content of the config parameter (<config> itself is not part of the returned data)\&. This function is valid only for <edit-config> RPCs\&. \fP"
+.ti -1c
+.RI "\fBNC_EDIT_DEFOP_TYPE\fP \fBnc_rpc_get_defop\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet default-operation type, valid only for <edit-config> RPCs\&. \fP"
+.ti -1c
+.RI "\fBNC_EDIT_ERROPT_TYPE\fP \fBnc_rpc_get_erropt\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet error-option type, valid only for <edit-config> RPCs\&. \fP"
+.ti -1c
 .RI "\fBNC_REPLY_TYPE\fP \fBnc_reply_get_type\fP (const \fBnc_reply\fP *reply)"
 .br
 .RI "\fIGet type of the rpc-reply message\&. \fP"
@@ -90,9 +106,9 @@ Functions to create NETCONF messages\&.
 .br
 .RI "\fICreate rpc-reply response with <data> content\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBnc_reply_error\fP (const struct nc_err *error)"
+.RI "\fBnc_reply\fP * \fBnc_reply_error\fP (struct nc_err *error)"
 .br
-.RI "\fICreate rpc-reply response with <drpc-error> content\&. \fP"
+.RI "\fICreate rpc-reply response with <rpc-error> content\&. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_copyconfig\fP (\fBNC_DATASTORE\fP source, \fBNC_DATASTORE\fP target, const char *data)"
 .br
@@ -106,11 +122,11 @@ Functions to create NETCONF messages\&.
 .br
 .RI "\fICreate <edit-config> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_get\fP (struct nc_filter *filter)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_get\fP (const struct nc_filter *filter)"
 .br
 .RI "\fICreate <get> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE\fP source, struct nc_filter *filter)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE\fP source, const struct nc_filter *filter)"
 .br
 .RI "\fICreate <get-config> NETCONF rpc message\&. \fP"
 .ti -1c

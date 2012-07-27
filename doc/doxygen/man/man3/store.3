@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Fri Jul 13 2012" "Version 0.1.0" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Fri Jul 27 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -34,7 +34,7 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fICreate new datastore structure of the specified implementation type\&. \fP"
 .ti -1c
-.RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, char *path)"
+.RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
 .br
 .RI "\fIAssign path of the datastore file into the datastore structure\&. \fP"
 .ti -1c
@@ -50,9 +50,13 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fIClose specified datastore and free all resources\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBncds_apply_rpc\fP (\fBncds_id\fP id, struct nc_session *session, \fBnc_rpc\fP *rpc)"
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc\fP (\fBncds_id\fP id, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIPerform requested RPC operation on the datastore\&. \fP"
+.ti -1c
+.RI "void \fBncds_break_locks\fP (const struct nc_session *session)"
+.br
+.RI "\fIRemove all locks that is holding given session\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -130,7 +134,7 @@ Prepared (not configured) datastore structure\&. To configure the structure, cal
 .RE
 .PP
 
-.SS "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, char *path)"
+.SS "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
 
 .PP
 Assign path of the datastore file into the datastore structure\&. Checks if the file exist and is accessible for reading and writing\&. If the file does not exist it is created\&. File is opened and file descriptor is stored in the structure
@@ -186,16 +190,10 @@ Close specified datastore and free all resources\&. Equivalent function to \fBnc
 .RE
 .PP
 
-.SS "\fBnc_reply\fP* \fBncds_apply_rpc\fP (\fBncds_id\fPid, struct nc_session *session, \fBnc_rpc\fP *rpc)"
+.SS "\fBnc_reply\fP* \fBncds_apply_rpc\fP (\fBncds_id\fPid, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 
 .PP
-Perform requested RPC operation on the datastore\&. \fBTodo\fP
-.RS 4
-Implement \fBncds_apply_rpc()\fP
-.RE
-.PP
-.PP
-\fBParameters:\fP
+Perform requested RPC operation on the datastore\&. \fBParameters:\fP
 .RS 4
 \fIid\fP Datastore ID\&. 
 .br
@@ -207,6 +205,15 @@ Implement \fBncds_apply_rpc()\fP
 \fBReturns:\fP
 .RS 4
 NULL in case of non NC_RPC_DATASTORE_* operation type, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. 
+.RE
+.PP
+
+.SS "void \fBncds_break_locks\fP (const struct nc_session *session)"
+
+.PP
+Remove all locks that is holding given session\&. \fBParameters:\fP
+.RS 4
+\fIsession\fP Session holding locks to remove 
 .RE
 .PP
 
