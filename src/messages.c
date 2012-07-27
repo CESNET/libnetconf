@@ -835,7 +835,7 @@ nc_rpc *nc_rpc_closesession()
 	return (rpc);
 }
 
-static int process_filter_param (xmlNodePtr content, struct nc_filter* filter)
+static int process_filter_param (xmlNodePtr content, const struct nc_filter* filter)
 {
 	char* aux_string;
 	xmlDocPtr doc_filter = NULL;
@@ -877,7 +877,7 @@ static int process_filter_param (xmlNodePtr content, struct nc_filter* filter)
 	return (EXIT_SUCCESS);
 }
 
-nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, struct nc_filter *filter)
+nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_source;
@@ -929,7 +929,7 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, struct nc_filter *filter)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_get(struct nc_filter *filter)
+nc_rpc *nc_rpc_get(const struct nc_filter *filter)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;

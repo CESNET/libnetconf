@@ -266,7 +266,7 @@ void nc_err_free (struct nc_err* err)
 	}
 }
 
-char* nc_err_get(struct nc_err* err, NC_ERR_PARAM param)
+const char* nc_err_get(const struct nc_err* err, NC_ERR_PARAM param)
 {
 
 	if (err == NULL) {
@@ -301,7 +301,7 @@ char* nc_err_get(struct nc_err* err, NC_ERR_PARAM param)
 	}
 }
 
-int nc_err_set (struct nc_err* err, NC_ERR_PARAM param, char* value)
+int nc_err_set (struct nc_err* err, NC_ERR_PARAM param, const char* value)
 {
 	char** param_item = NULL;
 

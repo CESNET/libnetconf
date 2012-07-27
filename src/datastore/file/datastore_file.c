@@ -92,7 +92,7 @@ static sigset_t fullsigset;
  * @return 0 when all tests passed and caller session can work with target
  * datastore, non-zero elsewhere.
  */
-static int file_ds_access (struct ncds_ds_file* file_ds, NC_DATASTORE target, struct nc_session* session)
+static int file_ds_access (struct ncds_ds_file* file_ds, NC_DATASTORE target, const struct nc_session* session)
 {
 	xmlChar * lock;
 	xmlNodePtr target_ds;
@@ -132,7 +132,7 @@ static int file_ds_access (struct ncds_ds_file* file_ds, NC_DATASTORE target, st
 	return retval;
 }
 
-int ncds_file_set_path (struct ncds_ds* datastore, char* path)
+int ncds_file_set_path (struct ncds_ds* datastore, const char* path)
 {
 	struct ncds_ds_file * file_ds = (struct ncds_ds_file*)datastore;
 
@@ -468,7 +468,7 @@ static int file_sync(struct ncds_ds_file* file_ds)
 }
 
 
-int ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
+int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 	xmlChar* lock;
@@ -528,7 +528,7 @@ int ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE
 	return (retval);
 }
 
-int ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
+int ncds_file_unlock (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 	xmlNodePtr target_ds;
@@ -592,7 +592,7 @@ int ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTO
 	return (retval);
 }
 
-char* ncds_file_getconfig (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE source, const struct nc_filter *filter, struct nc_err** error)
+char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, const struct nc_filter *filter, struct nc_err** error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 	xmlNodePtr target_ds, aux_node;
@@ -656,7 +656,7 @@ char* ncds_file_getconfig (struct ncds_ds* ds, struct nc_session* session, NC_DA
  * @return EXIT_SUCCESS when done without problems
  * 	   EXIT_FAILURE when error occured
  */
-int ncds_file_copyconfig (struct ncds_ds *ds, struct nc_session *session, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error)
+int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 	xmlDocPtr config_doc = NULL;
@@ -744,7 +744,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, struct nc_session *session, NC_DAT
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_file_deleteconfig (struct ncds_ds * ds, struct nc_session * session, NC_DATASTORE target, struct nc_err **error)
+int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * session, NC_DATASTORE target, struct nc_err **error)
 {
 	struct ncds_ds_file * file_ds = (struct ncds_ds_file*)ds;
 	xmlNodePtr target_ds, del;
@@ -806,7 +806,7 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, struct nc_session * session, NC
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_file_editconfig (struct ncds_ds *ds, struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
+int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
 {
 	struct ncds_ds_file * file_ds = (struct ncds_ds_file *)ds;
 	xmlDocPtr config_doc, datastore_doc;

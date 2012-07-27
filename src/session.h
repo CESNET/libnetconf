@@ -91,7 +91,7 @@ void nc_session_free (struct nc_session* session);
  * @param[in] session NETCONF session.
  * @return NETCONF session status.
  */
-NC_SESSION_STATUS nc_session_get_status (struct nc_session* session);
+NC_SESSION_STATUS nc_session_get_status (const struct nc_session* session);
 
 /**
  * @ingroup session
@@ -118,37 +118,33 @@ int nc_session_get_eventfd(const struct nc_session* session);
  * @ingroup session
  * @brief Get NETCONF session ID
  * @param[in] session NETCONF session structure
- * @return Copy of the string identifying NETCONF session. Caller is
- * supposed to free returned value;
+ * @return Constant string identifying NETCONF session.
  */
-char* nc_session_get_id(const struct nc_session* session);
+const char* nc_session_get_id(const struct nc_session* session);
 
 /**
  * @ingroup session
  * @brief Get NETCONF session host
  * @param[in] session NETCONF session structure
- * @return Copy of the string identifying NETCONF session server host. Caller is
- * supposed to free returned value;
+ * @return Constant string identifying NETCONF session server host.
  */
-char* nc_session_get_host(const struct nc_session* session);
+const char* nc_session_get_host(const struct nc_session* session);
 
 /**
  * @ingroup session
  * @brief Get NETCONF session port number
  * @param[in] session NETCONF session structure
- * @return Copy of the string identifying NETCONF session server host. Caller is
- * supposed to free returned value;
+ * @return Constant string identifying NETCONF session server host.
  */
-char* nc_session_get_port(const struct nc_session* session);
+const char* nc_session_get_port(const struct nc_session* session);
 
 /**
  * @ingroup session
  * @brief Get NETCONF session username
  * @param[in] session NETCONF session structure
- * @return Copy of the string identifying NETCONF session server host. Caller is
- * supposed to free returned value;
+ * @return Constant string identifying NETCONF session server host.
  */
-char* nc_session_get_user(const struct nc_session* session);
+const char* nc_session_get_user(const struct nc_session* session);
 
 /**
  * @ingroup session
@@ -170,7 +166,7 @@ struct nc_cpblts* nc_session_get_cpblts(const struct nc_session* session);
  * into the NETCONF capabilities structure.
  * @return Created NETCONF capabilities structure.
  */
-struct nc_cpblts *nc_cpblts_new(char **list);
+struct nc_cpblts *nc_cpblts_new(char* const* list);
 
 /**
  * @ingroup session
@@ -205,7 +201,7 @@ int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_str
  * @param capability_string NETCONF capability string to check.
  * @return 0 for false result, 1 if the given capability is supported.
  */
-int nc_cpblts_enabled(struct nc_session* session, const char* capability_string);
+int nc_cpblts_enabled(const struct nc_session* session, const char* capability_string);
 
 /**
  * @ingroup session
@@ -224,7 +220,7 @@ void nc_cpblts_iter_start(struct nc_cpblts *c);
  * @param c NETCONF capabilities structure to be iterated.
  * @return Another capability string, NULL if all strings were already returned.
  */
-char *nc_cpblts_iter_next(struct nc_cpblts *c);
+const char *nc_cpblts_iter_next(struct nc_cpblts *c);
 
 /**
  * @ingroup session
@@ -235,7 +231,7 @@ char *nc_cpblts_iter_next(struct nc_cpblts *c);
  * @param c NETCONF capabilities structure.
  * @return Number of capabilities held by structure c.
  */
-int nc_cpblts_count(struct nc_cpblts *c);
+int nc_cpblts_count(const struct nc_cpblts *c);
 
 /**
  * @ingroup session
@@ -257,7 +253,7 @@ struct nc_cpblts *nc_session_get_cpblts_default();
  * @param[in] rpc \<rpc\> message to send.
  * @return 0 on error,\n message-id of sent message on success.
  */
-nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc);
+nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc);
 
 /**
  * @ingroup reply
@@ -269,7 +265,7 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc);
  * @param[in] reply \<repc-reply\> message to send.
  * @return 0 on error,\n message-id of sent message on success.
  */
-nc_msgid nc_session_send_reply (struct nc_session* session, nc_rpc* rpc, nc_reply *reply);
+nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* rpc, const nc_reply *reply);
 
 /**
  * @ingroup rpc
@@ -300,6 +296,6 @@ nc_msgid nc_session_recv_reply (struct nc_session* session, nc_reply** reply);
  * @param[in] rpc RPC message to send.
  * @return Received \<rpc-reply\>.
  */
-nc_reply *nc_session_send_recv (struct nc_session* session, nc_rpc *rpc);
+nc_reply *nc_session_send_recv (struct nc_session* session, const nc_rpc *rpc);
 
 #endif /* SESSION_H_ */

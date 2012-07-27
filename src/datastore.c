@@ -275,7 +275,7 @@ void ncds_free2 (ncds_id datastore_id)
 	}
 }
 
-nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
+nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
 	struct ncds_ds* ds;
@@ -339,7 +339,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
 	return (reply);
 }
 
-void ncds_break_locks (struct nc_session * session)
+void ncds_break_locks (const struct nc_session* session)
 {
 	struct ncds_ds_list * ds;
 	struct nc_err * e = NULL;

@@ -102,16 +102,16 @@ void nc_err_free(struct nc_err* err);
  * @param value New value for the specified parameter.
  * @return 0 on success\n non-zero on error
  */
-int nc_err_set(struct nc_err* err, NC_ERR_PARAM param, char* value);
+int nc_err_set(struct nc_err* err, NC_ERR_PARAM param, const char* value);
 
 /**
  * @ingroup genAPI
  * @brief Get value of the specified parameter of the NETCONF error structure.
  * @param err NETCONF error structure from which the value will be read.
  * @param param NETCONF error structure's parameter to be returned.
- * @return String value of the requested parameter, caller is supposed to free
- * the data.
+ * @return Constant string value of the requested parameter, NULL if the
+ * specified parameter is not set.
  */
-char* nc_err_get(struct nc_err* err, NC_ERR_PARAM param);
+const char* nc_err_get(const struct nc_err* err, NC_ERR_PARAM param);
 
 #endif /* ERROR_H_ */

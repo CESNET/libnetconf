@@ -467,7 +467,7 @@ int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_SESSION
 	return (EXIT_FAILURE);
 }
 
-struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
+struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 {
 	struct nc_session *retval = NULL;
 	struct nc_cpblts *server_cpblts = NULL;
@@ -505,7 +505,7 @@ struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
 			return (NULL);
 		}
 	} else {
-		server_cpblts = capabilities;
+		server_cpblts = nc_cpblts_new(capabilities->list);
 	}
 
 	retval->status = NC_SESSION_STATUS_WORKING;
@@ -515,15 +515,12 @@ struct nc_session *nc_session_accept(struct nc_cpblts* capabilities)
 		return (NULL);
 	}
 
-	if (capabilities == NULL) {
-		nc_cpblts_free(server_cpblts);
-	}
-
+	nc_cpblts_free(server_cpblts);
 
 	return (retval);
 }
 
-struct nc_session *nc_session_connect(const char *host, unsigned short port, const char *username, struct nc_cpblts* cpblts)
+struct nc_session *nc_session_connect(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts)
 {
 	int i, r;
 	int sock = -1;
@@ -793,16 +790,14 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			goto shutdown;
 		}
 	} else {
-		client_cpblts = cpblts;
+		client_cpblts = nc_cpblts_new(cpblts->list);
 	}
 
 	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
 		goto shutdown;
 	}
 
-	if (cpblts == NULL) {
-		nc_cpblts_free(client_cpblts);
-	}
+	nc_cpblts_free(client_cpblts);
 
 	if (knownhosts_file != NULL) {
 		free(knownhosts_file);

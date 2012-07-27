@@ -44,6 +44,7 @@
 #include <errno.h>
 #include <poll.h>
 
+#include <libssh2.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 
@@ -69,39 +70,36 @@
 	} else if (session->fd_output != -1) { \
 		c += write (session->fd_output, (buf), strlen(buf));}
 
-char* nc_session_get_id (const struct nc_session *session)
+const char* nc_session_get_id (const struct nc_session *session)
 {
 	if (session == NULL) {
 		return (NULL);
 	}
-	return (strdup (session->session_id));
+	return (session->session_id);
 }
 
-char* nc_session_get_host(const struct nc_session* session)
+const char* nc_session_get_host(const struct nc_session* session)
 {
 	if (session == NULL) {
 		return (NULL);
 	}
-	return (strdup (session->hostname));
-
+	return (session->hostname);
 }
 
-char* nc_session_get_port(const struct nc_session* session)
+const char* nc_session_get_port(const struct nc_session* session)
 {
 	if (session == NULL) {
 		return (NULL);
 	}
-	return (strdup (session->port));
-
+	return (session->port);
 }
 
-char* nc_session_get_user(const struct nc_session* session)
+const char* nc_session_get_user(const struct nc_session* session)
 {
 	if (session == NULL) {
 		return (NULL);
 	}
-	return (strdup (session->username));
-
+	return (session->username);
 }
 
 int nc_session_get_version (const struct nc_session *session)
@@ -150,7 +148,7 @@ void nc_cpblts_free(struct nc_cpblts *c)
 	free(c);
 }
 
-struct nc_cpblts *nc_cpblts_new(char **list)
+struct nc_cpblts *nc_cpblts_new(char* const* list)
 {
 	struct nc_cpblts *retval;
 	char* item;
@@ -249,7 +247,7 @@ int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_str
 	return (EXIT_SUCCESS);
 }
 
-int nc_cpblts_enabled(struct nc_session* session, const char* capability_string)
+int nc_cpblts_enabled(const struct nc_session* session, const char* capability_string)
 {
 	int i;
 
@@ -273,7 +271,7 @@ void nc_cpblts_iter_start(struct nc_cpblts *c)
 	c->iter = 0;
 }
 
-char *nc_cpblts_iter_next(struct nc_cpblts *c)
+const char *nc_cpblts_iter_next(struct nc_cpblts *c)
 {
 	if (c == NULL || c->list == NULL) {
 		return (NULL);
@@ -283,10 +281,10 @@ char *nc_cpblts_iter_next(struct nc_cpblts *c)
 		return NULL;
 	}
 
-	return (strdup(c->list[c->iter++]));
+	return (c->list[c->iter++]);
 }
 
-int nc_cpblts_count(struct nc_cpblts *c)
+int nc_cpblts_count(const struct nc_cpblts *c)
 {
 	if (c == NULL || c->list == NULL) {
 		return 0;
@@ -324,7 +322,7 @@ struct nc_cpblts* nc_session_get_cpblts (const struct nc_session* session)
 struct nc_session* nc_session_dummy(const char* sid, const char* username, struct nc_cpblts *capabilities)
 {
 	struct nc_session * session;
-	char * cpblt;
+	const char* cpblt;
 
 	if (sid == NULL || username == NULL || capabilities == NULL) {
 		return NULL;
@@ -428,7 +426,7 @@ void nc_session_free (struct nc_session* session)
 	free (session);
 }
 
-NC_SESSION_STATUS nc_session_get_status (struct nc_session* session)
+NC_SESSION_STATUS nc_session_get_status (const struct nc_session* session)
 {
 	if (session == NULL) {
 		return (NC_SESSION_STATUS_ERROR);
@@ -731,7 +729,7 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
  * @param[in] msg NETCONF message to parse.
  * @return 0 on error,\n message-id of the message on success.
  */
-nc_msgid nc_msg_parse_msgid(struct nc_msg *msg)
+nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg)
 {
 	xmlChar *msgid;
 	nc_msgid ret = 0;
@@ -1050,7 +1048,7 @@ nc_msgid nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
 	}
 }
 
-nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
+nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 {
 	int ret;
 	char msg_id_str[16];
@@ -1087,7 +1085,7 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 	}
 }
 
-nc_msgid nc_session_send_reply (struct nc_session* session, nc_rpc* rpc, nc_reply *reply)
+nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* rpc, const nc_reply *reply)
 {
 	int ret;
 	char msg_id_str[16];
@@ -1099,14 +1097,21 @@ nc_msgid nc_session_send_reply (struct nc_session* session, nc_rpc* rpc, nc_repl
 		return (0); /* failure */
 	}
 
-	if (reply == NULL) {
-		ERROR("Invalid <reply> message to send.");
+	if (rpc == NULL) {
+		ERROR("%s: Invalid <rpc> message to answer.", __func__);
 		return (0); /* failure */
 	}
 
-	if (rpc != NULL && rpc->msgid == 0) {
+	if (reply == NULL) {
+		ERROR("%s: Invalid <reply> message to send.", __func__);
+		return (0); /* failure */
+	}
+
+	if (rpc->msgid == 0) {
 		/* parse and store message-id */
-		rpc->msgid = nc_msg_parse_msgid(rpc);
+		retval = nc_msg_parse_msgid(rpc);
+	} else {
+		retval = rpc->msgid;
 	}
 
 	/* TODO: lock for threads */
@@ -1114,7 +1119,7 @@ nc_msgid nc_session_send_reply (struct nc_session* session, nc_rpc* rpc, nc_repl
 
 	if (rpc != NULL) {
 		/* set message id */
-		msg->msgid = rpc->msgid;
+		msg->msgid = retval;
 		if (xmlStrcmp(msg->doc->children->name, BAD_CAST "rpc-reply") == 0) {
 			sprintf(msg_id_str, "%llu", msg->msgid);
 			xmlSetProp(msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str);
@@ -1144,7 +1149,7 @@ nc_msgid nc_session_send_reply (struct nc_session* session, nc_rpc* rpc, nc_repl
 }
 
 
-nc_reply *nc_session_send_recv (struct nc_session* session, nc_rpc *rpc)
+nc_reply *nc_session_send_recv (struct nc_session* session, const nc_rpc *rpc)
 {
 	nc_msgid msgid1, msgid2;
 	nc_reply *reply = NULL;

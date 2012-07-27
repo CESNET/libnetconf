@@ -159,36 +159,23 @@ void addargs (struct arglist *args, char *format, ...)
 
 int cmd_status (char* arg)
 {
-	char *s;
+	const char *s;
 	struct nc_cpblts* cpblts;
 
 	if (session == NULL) {
 		fprintf (stdout, "Client is not connected to any NETCONF server.\n");
 	} else {
 		fprintf (stdout, "Current NETCONF session:\n");
-		fprintf (stdout, "  ID          : %s\n", s = nc_session_get_id (session));
-		if (s != NULL) {
-			free (s);
-		}
-		fprintf (stdout, "  Host        : %s\n", s = nc_session_get_host (session));
-		if (s != NULL) {
-			free (s);
-		}
-		fprintf (stdout, "  Port        : %s\n", s = nc_session_get_port (session));
-		if (s != NULL) {
-			free (s);
-		}
-		fprintf (stdout, "  User        : %s\n", s = nc_session_get_user (session));
-		if (s != NULL) {
-			free (s);
-		}
+		fprintf (stdout, "  ID          : %s\n", nc_session_get_id (session));
+		fprintf (stdout, "  Host        : %s\n", nc_session_get_host (session));
+		fprintf (stdout, "  Port        : %s\n", nc_session_get_port (session));
+		fprintf (stdout, "  User        : %s\n", nc_session_get_user (session));
 		fprintf (stdout, "  Capabilities:\n");
 		cpblts = nc_session_get_cpblts (session);
 		if (cpblts != NULL) {
 			nc_cpblts_iter_start (cpblts);
 			while ((s = nc_cpblts_iter_next (cpblts)) != NULL) {
 				fprintf (stdout, "\t%s\n", s);
-				free (s);
 			}
 		}
 	}
@@ -1281,10 +1268,7 @@ int cmd_connect (char* arg)
 	optind = 0;
 
 	if (session != NULL) {
-		ERROR("connect", "already connected to %s.", host = nc_session_get_host (session));
-		if (host != NULL) {
-			free (host);
-		}
+		ERROR("connect", "already connected to %s.", nc_session_get_host (session));
 		return (EXIT_FAILURE);
 	}
 

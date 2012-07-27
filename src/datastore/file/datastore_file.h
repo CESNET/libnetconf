@@ -122,7 +122,7 @@ int ncds_file_init (struct ncds_ds* ds);
  * @param[out] error NETCONF error structure describing arised error.
  * @return NULL on error, resulting data on success.
 */
-char* ncds_file_getconfig (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE source, const struct nc_filter *filter, struct nc_err** error);
+char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, const struct nc_filter *filter, struct nc_err** error);
 
 /**
  * @brief Perform lock of specified datastore for specified session.
@@ -133,7 +133,7 @@ char* ncds_file_getconfig (struct ncds_ds* ds, struct nc_session* session, NC_DA
  * @param[out] error NETCONF error structure describing arised error.
  * @return 0 on success, non-zero on error and error structure is filled.
  */
-int ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
+int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 
 /**
  * @brief Perform unlock of specified datastore for specified session.
@@ -144,7 +144,7 @@ int ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE
  * @param[out] error NETCONF error structure describing arised error.
  * @return 0 on success, non-zero on error and error structure is filled.
  */
-int ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
+int ncds_file_unlock (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 
 /**
  * @brief Close specified datastore and free all resources.
@@ -165,7 +165,7 @@ void ncds_file_free(struct ncds_ds* ds);
  * @return EXIT_SUCCESS when done without problems
  * 	   EXIT_FAILURE when error occured
  */
-int ncds_file_copyconfig (struct ncds_ds *ds, struct nc_session *session, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error);
+int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error);
 
 /**
  * @brief Delete target datastore
@@ -177,7 +177,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, struct nc_session *session, NC_DAT
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_file_deleteconfig (struct ncds_ds * ds, struct nc_session * session, NC_DATASTORE target, struct nc_err **error);
+int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * session, NC_DATASTORE target, struct nc_err **error);
 
 /**
  * @brief Perform edit config operation
@@ -191,6 +191,6 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, struct nc_session * session, NC
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_file_editconfig (struct ncds_ds *ds, struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
+int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 
 #endif /* DATASTORE_FILE_H_ */

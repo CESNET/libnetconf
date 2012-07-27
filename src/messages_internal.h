@@ -65,7 +65,7 @@ nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id);
  * @param[in] msg NETCONF message to parse.
  * @return 0 on error,\n message-id of the message on success.
  */
-nc_msgid nc_msg_parse_msgid(struct nc_msg *msg);
+nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg);
 
 /**
  * @ingroup internalAPI

@@ -64,7 +64,8 @@ void nc_filter_free(struct nc_filter *filter);
  * @ingroup reply
  * @param[in] reply rpc-reply message.
  * @return String in XML format containing the NETCONF's \<rpc-reply\> element
- * and all its content.
+ * and all its content. Caller is responsible for free of returned string with
+ * free().
  */
 char* nc_reply_dump (const nc_reply *reply);
 
@@ -91,7 +92,8 @@ nc_msgid nc_reply_get_msgid(const nc_reply *reply);
  * @ingroup rpc
  * @param[in] rpc rpc message.
  * @return String in XML format containing the NETCONF's \<rpc\> element
- * and all its content.
+ * and all its content. Caller is responsible for free of returned string with
+ * free().
  */
 char* nc_rpc_dump (const nc_rpc *rpc);
 
@@ -125,7 +127,8 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc);
  * @ingroup rpc
  * @brief Get content of the operation specification from the given rpc.
  * @param[in] rpc rpc message.
- * @return String in XML form starting with the operation name element.
+ * @return String in XML form starting with the operation name element. Caller
+ * is responsible for free of returned string with free().
  */
 char* nc_rpc_get_op_content(const nc_rpc *rpc);
 
@@ -175,9 +178,10 @@ NC_DATASTORE nc_rpc_get_source(const nc_rpc *rpc);
  *
  * @param[in] rpc \<edit-config\> rpc message.
  *
- * @return Serialized XML or NULL if not available
+ * @return Serialized XML or NULL if not available. Caller is responsible for
+ * free of returned string with free().
  */
-char * nc_rpc_get_editconfig (const nc_rpc *rpc);
+char* nc_rpc_get_editconfig (const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
@@ -213,7 +217,8 @@ NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply);
  * @ingroup reply
  * @brief Get content of the \<data\> element in \<rpc-reply\>.
  * @param reply rpc-reply message.
- * @return String with the content of the \<data\> element.
+ * @return String with the content of the \<data\> element. Caller is
+ * responsible for free of returned string with free().
  */
 char *nc_reply_get_data(const nc_reply *reply);
 
@@ -301,7 +306,7 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
  * @param[in] filter NETCONF filter or NULL if no filter required.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_get(struct nc_filter *filter);
+nc_rpc *nc_rpc_get(const struct nc_filter *filter);
 
 /**
  * @ingroup rpc
@@ -311,7 +316,7 @@ nc_rpc *nc_rpc_get(struct nc_filter *filter);
  * @param[in] filter NETCONF filter or NULL if no filter required.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, struct nc_filter *filter);
+nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter);
 
 /**
  * @ingroup rpc

@@ -94,7 +94,7 @@ void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference);
  * used in case of NULL parameter).
  * @return Structure describing the NETCONF session or NULL in case of error.
  */
-struct nc_session *nc_session_connect(const char *host, unsigned short port, const char *username, struct nc_cpblts* cpblts);
+struct nc_session *nc_session_connect(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts);
 
 /**
  * @ingroup session
@@ -111,6 +111,6 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
  * used in case of NULL parameter).
  * @return Structure describing the accepted NETCONF session or NULL in case of error.
  */
-struct nc_session *nc_session_accept(struct nc_cpblts* capabilities);
+struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities);
 
 #endif /* SSH_H_ */

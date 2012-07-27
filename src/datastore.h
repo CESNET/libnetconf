@@ -92,7 +92,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path);
  * 	  -1 Invalid datastore
  *	  -2 Invalid path ((does not exist && can not be created) || insufficient rights)
  */
-int ncds_file_set_path (struct ncds_ds* datastore, char* path);
+int ncds_file_set_path (struct ncds_ds* datastore, const char* path);
 
 /**
  *
@@ -144,7 +144,7 @@ void ncds_free2(ncds_id datastore_id);
  * \<rpc-reply\> with \<ok\>, \<data\> or \<rpc-error\> according to the type
  * and the result of the requested operation.
  */
-nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc);
+nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc);
 
 /**
  * @ingroup store
@@ -152,6 +152,6 @@ nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc);
  *
  * @param[in] session Session holding locks to remove
  */
-void ncds_break_locks (struct nc_session * session);
+void ncds_break_locks (const struct nc_session* session);
 
 #endif /* DATASTORE_H_ */
