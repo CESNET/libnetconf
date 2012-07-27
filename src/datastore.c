@@ -148,6 +148,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path)
 
 		break;
 	case NCDS_TYPE_EMPTY:
+		/** \todo EMPTY Datastore - implementa all required functions and return proper values */
 		ds = (struct ncds_ds*) calloc (1, sizeof(struct ncds_ds_empty));
 		ds->func.init = ncds_empty_init;
 		ds->func.free = ncds_empty_free;
@@ -303,7 +304,6 @@ nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
 		data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), NULL, &e);
 		break;
 	case NC_OP_COPYCONFIG:
-		/* \todo implement nc_rpc_get_config */
 		config = nc_rpc_get_editconfig(rpc);
 		ret = ds->func.copyconfig(ds, session, nc_rpc_get_target(rpc), nc_rpc_get_source(rpc), config, &e);
 		free (config);
