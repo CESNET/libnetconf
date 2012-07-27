@@ -304,7 +304,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
 		break;
 	case NC_OP_COPYCONFIG:
 		/* \todo implement nc_rpc_get_config */
-		config = nc_rpc_get_config(rpc);
+		config = nc_rpc_get_editconfig(rpc);
 		ret = ds->func.copyconfig(ds, session, nc_rpc_get_target(rpc), nc_rpc_get_source(rpc), config, &e);
 		free (config);
 		break;
@@ -312,7 +312,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, struct nc_session* session, nc_rpc* rpc)
 		ret = ds->func.deleteconfig(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
 	case NC_OP_EDITCONFIG:
-		config = nc_rpc_get_config(rpc);
+		config = nc_rpc_get_editconfig(rpc);
 		ret = ds->func.editconfig(ds, session, nc_rpc_get_target(rpc), config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 		free (config);
 		break;

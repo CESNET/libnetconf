@@ -324,7 +324,7 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 	return (nc_rpc_get_ds(rpc, "target"));
 }
 
-char * nc_rpc_get_config (const nc_rpc *rpc)
+char * nc_rpc_get_editconfig (const nc_rpc *rpc)
 {
 	xmlNodePtr rpc_root, op, config;
 	xmlDocPtr config_doc;

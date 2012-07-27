@@ -169,13 +169,15 @@ NC_DATASTORE nc_rpc_get_source(const nc_rpc *rpc);
 /**
  * @ingroup rpc
  *
- * @brief Get serialized XML containing config parameter
+ * @brief Get serialized content of the config parameter (\<config\> itself is
+ * not part of the returned data). This function is valid only for
+ * \<edit-config\> RPCs.
  *
- * @param[in] rpc rpc message
+ * @param[in] rpc \<edit-config\> rpc message.
  *
  * @return Serialized XML or NULL if not available
  */
-char * nc_rpc_get_config (const nc_rpc *rpc);
+char * nc_rpc_get_editconfig (const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
