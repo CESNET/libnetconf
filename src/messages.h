@@ -179,20 +179,20 @@ char * nc_rpc_get_config (const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
- * @brief Get default-operation type
+ * @brief Get default-operation type, valid only for \<edit-config\> RPCs.
  *
- * @param[in] rpc rpc message
+ * @param[in] rpc \<edit-config\> rpc message
  *
- * @return One of the NC_EDIT_DEFOP_TYPE
+ * @return One of the NC_EDIT_DEFOP_TYPE, NC_EDIT_DEFOP_ERROR in case of error.
  */
 NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
- * @brief Get error-option type
- * @param[in] rpc rpc message
+ * @brief Get error-option type, valid only for \<edit-config\> RPCs.
+ * @param[in] rpc \<edit-config\> rpc message
  *
- * @return One of the NC_EDIT_ERROPT_TYPE
+ * @return One of the NC_EDIT_ERROPT_TYPE, NC_EDIT_ERROPT_ERROR in case of error
  */
 NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc);
 

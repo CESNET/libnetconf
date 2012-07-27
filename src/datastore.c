@@ -61,14 +61,17 @@ struct ncds_ds_list {
 	struct ncds_ds_list* next;
 };
 
+/**
+ * @brief Internal list of initiated datastores.
+ */
 static struct ncds_ds_list *datastores = NULL;
 
 /**
- * @brief Get ncds_ds_list structure containing storage information with
- * specified ID.
+ * @brief Get ncds_ds structure from datastore list containing storage
+ * information with specified ID.
  *
  * @param[in] id ID of the storage.
- * @return Pointer to the required ncds_ds_list structure inside internal
+ * @return Pointer to the required ncds_ds structure inside internal
  * datastores variable.
  */
 static struct ncds_ds *datastores_get_ds(ncds_id id)
@@ -88,6 +91,13 @@ static struct ncds_ds *datastores_get_ds(ncds_id id)
 	return (ds_iter->datastore);
 }
 
+/**
+ * @brief Remove datastore with specified ID from the internal datastore list.
+ *
+ * @param[in] id ID of the storage.
+ * @return Pointer to the required ncds_ds structure detached from the internal
+ * datastores variable.
+ */
 static struct ncds_ds *datastores_detach_ds(ncds_id id)
 {
 	struct ncds_ds_list *ds_iter;
