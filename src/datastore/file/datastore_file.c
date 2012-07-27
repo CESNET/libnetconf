@@ -52,12 +52,13 @@
 
 #include "../../netconf_internal.h"
 #include "../../error.h"
+#include "../../session.h"
 #include "../datastore_internal.h"
 #include "datastore_file.h"
 #include "../edit_config.h"
 
 /* ncds lock path */
-#define NCDS_LOCK "/NCDS_LOCK"
+#define NCDS_LOCK "/NCDS_FLOCK"
 
 #define FILEDSFRAME "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
 <datastores xmlns=\"urn:cesnet:tmc:datastores:file\">\
@@ -65,6 +66,71 @@
   <startup lock=\"\"/>\
   <candidate lock=\"\"/>\
 </datastores>"
+
+static sigset_t fullsigset;
+#define LOCK(file_ds) {\
+	sigfillset(&fullsigset);\
+	sigprocmask(SIG_SETMASK, &fullsigset, &(file_ds->ds_lock.sigset));\
+	sem_wait(file_ds->ds_lock.lock);\
+	file_ds->ds_lock.holding_lock = 1;\
+}
+#define UNLOCK(file_ds) {\
+	sem_post(file_ds->ds_lock.lock);\
+	file_ds->ds_lock.holding_lock = 0;\
+	sigprocmask(SIG_SETMASK, &(file_ds->ds_lock.sigset), NULL);\
+}
+
+/**
+ * @brief Determine if datastore is accessible (is not NETCONF locked) for the
+ * specified session. This function MUST be called between LOCK and UNLOCK
+ * macros, which serialize access to the datastore.
+ *
+ * @param ds Datastore to verify
+ * @param target Datastore type
+ * @param session session to test accessibility for
+ *
+ * @return 0 when all tests passed and caller session can work with target
+ * datastore, non-zero elsewhere.
+ */
+static int file_ds_access (struct ncds_ds_file* file_ds, NC_DATASTORE target, struct nc_session* session)
+{
+	xmlChar * lock;
+	xmlNodePtr target_ds;
+	int retval;
+
+	if (file_ds == NULL) {
+		ERROR("%s: invalid datastore structure.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	switch(target) {
+	case NC_DATASTORE_RUNNING:
+		target_ds = file_ds->running;
+		break;
+	case NC_DATASTORE_STARTUP:
+		target_ds = file_ds->startup;
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		target_ds = file_ds->candidate;
+		break;
+	default:
+		ERROR("%s: invalid target.", __func__);
+		return (EXIT_FAILURE);
+		break;
+	}
+
+	lock = xmlGetProp (target_ds, BAD_CAST "lock");
+	if (xmlStrEqual (lock, BAD_CAST "")) {
+		retval = EXIT_SUCCESS;
+	} else if (session != NULL && xmlStrEqual (lock, BAD_CAST session->session_id)) {
+		retval = EXIT_SUCCESS;
+	} else {
+		retval = EXIT_FAILURE;
+	}
+
+	xmlFree (lock);
+	return retval;
+}
 
 int ncds_file_set_path (struct ncds_ds* datastore, char* path)
 {
@@ -226,40 +292,6 @@ invalid_ds:
 }
 
 /**
- * @brief Block all signals and lock datastore
- *
- * @param file_ds Datastore to lock
- *
- * @return EXIT_SUCCESS on success
- * 		EXIT_FAILURE on error
- */
-int ds_lock (struct ncds_ds_file *file_ds)
-{
-	sigset_t sigset;
-
-	sigfillset (&sigset);
-	sigprocmask (SIG_SETMASK, &sigset, &file_ds->ds_lock.sigset);
-
-	if (sem_wait (file_ds->ds_lock.lock)) {
-		return EXIT_FAILURE;
-	}
-	file_ds->ds_lock.holding_lock = 1;
-	return EXIT_SUCCESS;
-}
-
-/**
- * @brief Unlock datastore and restore signal mask
- *
- * @param file_ds Datastore to lock
- */
-void ds_unlock (struct ncds_ds_file *file_ds)
-{
-	sem_post (file_ds->ds_lock.lock);
-	file_ds->ds_lock.holding_lock = 0;
-	sigprocmask (SIG_SETMASK, &file_ds->ds_lock.sigset, NULL);
-}
-
-/**
  * @ingroup store
  * @brief Initialization of file datastore
  *
@@ -270,7 +302,7 @@ void ds_unlock (struct ncds_ds_file *file_ds)
 int ncds_file_init (struct ncds_ds* ds)
 {
 	struct stat st;
-	char* new_path;
+	char* new_path, *sempath, *saux;
 	int fd;
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
@@ -321,8 +353,21 @@ int ncds_file_init (struct ncds_ds* ds)
 	xmlSetProp (file_ds->startup, BAD_CAST "lock", BAD_CAST "");
 	xmlSetProp (file_ds->candidate, BAD_CAST "lock", BAD_CAST "");
 
-	/* open and eventually create lock */
-	if ((file_ds->ds_lock.lock = sem_open (NCDS_LOCK, O_CREAT, S_IRWXU|S_IRWXG|S_IRWXO, 1)) == SEM_FAILED) {
+	/*
+	 * open and eventually create lock
+	 */
+	/* first - prepare path, there must be separate lock for each
+	 * datastore(set), so name it according to filepath with special prefix.
+	 * backslash in the path are replaced by underscore.
+	 */
+	asprintf(&sempath, "%s/%s", NCDS_LOCK, file_ds->path);
+	while((saux = strchr(sempath, '/')) != NULL) {
+		*saux = '_';
+	}
+	/* recreate initial backslash in the semaphore name */
+	sempath[0] = '/';
+	/* and then create the lock (actually it is a semaphore */
+	if ((file_ds->ds_lock.lock = sem_open (sempath, O_CREAT, S_IRWXU|S_IRWXG|S_IRWXO, 1)) == SEM_FAILED) {
 		return EXIT_FAILURE;
 	}
 
@@ -362,7 +407,8 @@ void ncds_file_free(struct ncds_ds* ds)
 }
 
 /**
- * @brief Reloads xml configuration from datastorage file
+ * @brief Reloads xml configuration from datastorage file. This function MUST be
+ * called ONLY between file_ds_lock() and file_ds_unlock().
  *
  * Tries to read datastore and find datastore root elements.
  * If succeed old xml is freed and replaced with new one.
@@ -372,7 +418,7 @@ void ncds_file_free(struct ncds_ds* ds)
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_file_reload (struct ncds_ds_file* file_ds)
+static int file_reload (struct ncds_ds_file* file_ds)
 {
 	struct ncds_ds_file new;
 
@@ -399,13 +445,14 @@ int ncds_file_reload (struct ncds_ds_file* file_ds)
 }
 
 /**
- * @brief Write current version of configuration to file.
+ * @brief Write current version of configuration to file. This function MUST be
+ * called ONLY between file_ds_lock() and file_ds_unlock().
  *
  * @param file_ds Datastore to sync.
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_file_sync(struct ncds_ds_file* file_ds)
+static int file_sync(struct ncds_ds_file* file_ds)
 {
 	if (!file_ds->ds_lock.holding_lock) {
 		return EXIT_FAILURE;
@@ -420,83 +467,19 @@ int ncds_file_sync(struct ncds_ds_file* file_ds)
 	return EXIT_SUCCESS;
 }
 
-/**
- * @brief Determine if datastore is locked for session
- *
- * @param ds Datastore to verify
- * @param target Datastore type
- * @param session if not NULL specify session to test accessibility if datastore locked
- *
- * @return EXIT_SUCCESS when not locked or locked and accessible for session
- * 		EXIT_FAILURE when locked and not accessible for session
- */
-int ncds_file_locked (struct ncds_ds * ds, NC_DATASTORE target, struct nc_session* session)
-{
-	struct ncds_ds_file * file_ds = (struct ncds_ds_file*)ds;
-	xmlChar * lock;
-	xmlNodePtr target_ds;
-	int retval, was_holding;
-
-	/* remember if was locked before */
-	was_holding = file_ds->ds_lock.holding_lock;
-
-	if (!file_ds->ds_lock.holding_lock) {
-		if (ds_lock (file_ds)) {
-			return EXIT_FAILURE;
-		}
-
-		if (ncds_file_reload (file_ds)) {
-			ds_unlock (file_ds);
-			return EXIT_FAILURE;
-		}
-	}
-
-	switch(target) {
-	case NC_DATASTORE_RUNNING:
-		target_ds = file_ds->running;
-		break;
-	case NC_DATASTORE_STARTUP:
-		target_ds = file_ds->startup;
-		break;
-	case NC_DATASTORE_CANDIDATE:
-		target_ds = file_ds->candidate;
-		break;
-	default:
-		ERROR("%s: invalid target.", __func__);
-		ds_unlock (file_ds);
-		return (EXIT_FAILURE);
-		break;
-	}
-
-	lock = xmlGetProp (target_ds, BAD_CAST "lock");
-	if (xmlStrEqual (lock, BAD_CAST "")) {
-		retval = EXIT_SUCCESS;
-	} else if (session != NULL && xmlStrEqual (lock, BAD_CAST session->session_id)) {
-		retval = EXIT_SUCCESS;
-	} else {
-		retval = EXIT_FAILURE;
-	}
-
-	xmlFree (lock);
-	if (!was_holding) {
-		ds_unlock (file_ds);
-	}
-	return retval;
-}
 
 int ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 	xmlChar* lock;
 	xmlNodePtr target_ds;
+	struct nc_session* no_session;
 	int retval = EXIT_SUCCESS;
 
-	if (ds_lock (file_ds)) {
-		return EXIT_FAILURE;
-	}
+	LOCK(file_ds);
 
-	if (ncds_file_reload (file_ds)) {
-		ds_unlock (file_ds);
+	if (file_reload (file_ds)) {
+		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}
 
@@ -512,16 +495,18 @@ int ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE
 		target_ds = file_ds->candidate;
 		break;
 	default:
+		UNLOCK(file_ds);
 		ERROR("%s: invalid target.", __func__);
 		*error = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
-		ds_unlock (file_ds);
 		return (EXIT_FAILURE);
 		break;
 	}
 
-	/* check if repository is locked */
-	if (ncds_file_locked (ds, target, NULL)) {
+	/* check if repository is locked by anyone including me */
+	no_session = nc_session_dummy("0", session->username, session->capabilities);
+	if (file_ds_access (file_ds, target, no_session) != 0) {
+		/* someone is already holding the lock */
 		lock = xmlGetProp (target_ds, BAD_CAST "lock");
 		*error = nc_err_new(NC_ERR_LOCK_DENIED);
 		nc_err_set(*error, NC_ERR_PARAM_INFO_SID, (char*)lock);
@@ -529,15 +514,16 @@ int ncds_file_lock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTORE
 		retval = EXIT_FAILURE;
 	} else {
 		xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST session->session_id);
-	}
-
-	if (retval == EXIT_SUCCESS) {
-		if (ncds_file_sync(file_ds)) {
+		if (file_sync(file_ds)) {
 			retval = EXIT_FAILURE;
 		}
 	}
+	UNLOCK(file_ds);
 
-	ds_unlock (file_ds);
+	/* cleanup */
+	if (no_session != NULL) {
+		nc_session_free(no_session);
+	}
 
 	return (retval);
 }
@@ -546,14 +532,13 @@ int ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTO
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 	xmlNodePtr target_ds;
+	struct nc_session* no_session;
 	int retval = EXIT_SUCCESS;
 
-	if (ds_lock (file_ds)) {
-		return EXIT_FAILURE;
-	}
+	LOCK(file_ds);
 
-	if (ncds_file_reload (file_ds)) {
-		ds_unlock (file_ds);
+	if (file_reload (file_ds)) {
+		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}
 
@@ -569,21 +554,22 @@ int ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTO
 		target_ds = file_ds->candidate;
 		break;
 	default:
+		UNLOCK(file_ds);
 		ERROR("%s: invalid target.", __func__);
 		*error = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
-		ds_unlock (file_ds);
 		return (EXIT_FAILURE);
 		break;
 	}
 
 	/* check if repository is locked */
-	if (!ncds_file_locked (ds, target, NULL)) {
+	no_session = nc_session_dummy("0", session->username, session->capabilities);
+	if (file_ds_access (file_ds, target, no_session) == 0) {
 		/* not locked */
 		*error = nc_err_new(NC_ERR_OP_FAILED);
 		nc_err_set(*error, NC_ERR_PARAM_MSG, "Target datastore is not locked.");
 		retval = EXIT_FAILURE;
-	} else if (ncds_file_locked (ds, target, session)) {
+	} else if (file_ds_access (file_ds, target, session) != 0) {
 		/* the datastore is locked by somebody else */
 		*error = nc_err_new(NC_ERR_OP_FAILED);
 		nc_err_set(*error, NC_ERR_PARAM_MSG, "Target datastore is locked by another session.");
@@ -591,14 +577,17 @@ int ncds_file_unlock (struct ncds_ds* ds, struct nc_session* session, NC_DATASTO
 	} else {
 		/* the datastore is locked by request originating session */
 		xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST "");
-	}
-
-	if (retval == EXIT_SUCCESS) {
-		if (ncds_file_sync(file_ds)) {
+		if (file_sync(file_ds)) {
 			retval = EXIT_FAILURE;
 		}
 	}
-	ds_unlock (file_ds);
+
+	UNLOCK(file_ds);
+
+	/* cleanup */
+	if (no_session != NULL) {
+		nc_session_free(no_session);
+	}
 
 	return (retval);
 }
@@ -610,12 +599,10 @@ char* ncds_file_getconfig (struct ncds_ds* ds, struct nc_session* session, NC_DA
 	xmlBufferPtr resultbuffer;
 	char* data = NULL;
 
-	if (ds_lock (file_ds)) {
-		return NULL;
-	}
+	LOCK(file_ds);
 
-	if (ncds_file_reload (file_ds)) {
-		ds_unlock (file_ds);
+	if (file_reload (file_ds)) {
+		UNLOCK(file_ds);
 		return NULL;
 	}
 
@@ -631,19 +618,19 @@ char* ncds_file_getconfig (struct ncds_ds* ds, struct nc_session* session, NC_DA
 		target_ds = file_ds->candidate;
 		break;
 	default:
+		UNLOCK(file_ds);
 		ERROR("%s: invalid target.", __func__);
 		*error = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
-		ds_unlock (file_ds);
 		return (NULL);
 		break;
 	}
 
 	resultbuffer = xmlBufferCreate();
 	if (resultbuffer == NULL) {
+		UNLOCK(file_ds);
 		ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
 		*error = nc_err_new(NC_ERR_OP_FAILED);
-		ds_unlock (file_ds);
 		return (NULL);
 	}
 	for (aux_node = target_ds->children; aux_node != NULL; aux_node = aux_node->next) {
@@ -652,7 +639,7 @@ char* ncds_file_getconfig (struct ncds_ds* ds, struct nc_session* session, NC_DA
 	data = strdup((char *) xmlBufferContent(resultbuffer));
 	xmlBufferFree(resultbuffer);
 
-	ds_unlock (file_ds);
+	UNLOCK(file_ds);
 	return (data);
 }
 
@@ -675,19 +662,10 @@ int ncds_file_copyconfig (struct ncds_ds *ds, struct nc_session *session, NC_DAT
 	xmlDocPtr config_doc = NULL;
 	xmlNodePtr target_ds, source_ds, del;
 
-	if (ds_lock (file_ds)) {
-		return EXIT_FAILURE;
-	}
+	LOCK(file_ds);
 
-	if (ncds_file_reload (file_ds)) {
-		ds_unlock (file_ds);
-		return EXIT_FAILURE;
-	}
-
-	/* isnt target locked? */
-	if (ncds_file_locked (ds, target, session)) {
-		ds_unlock (file_ds);
-		*error = nc_err_new (NC_ERR_IN_USE);
+	if (file_reload (file_ds)) {
+		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}
 
@@ -702,14 +680,21 @@ int ncds_file_copyconfig (struct ncds_ds *ds, struct nc_session *session, NC_DAT
 		target_ds = file_ds->candidate;
 		break;
 	default:
+		UNLOCK(file_ds);
 		ERROR("%s: invalid target.", __func__);
 		*error = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
-		ds_unlock (file_ds);
 		return EXIT_FAILURE;
 		break;
 	}
 	
+	/* isn't target locked? */
+	if (file_ds_access (file_ds, target, session) != 0) {
+		UNLOCK(file_ds);
+		*error = nc_err_new (NC_ERR_IN_USE);
+		return EXIT_FAILURE;
+	}
+
 	switch(source) {
 	case NC_DATASTORE_RUNNING:
 		source_ds = file_ds->running;
@@ -725,10 +710,10 @@ int ncds_file_copyconfig (struct ncds_ds *ds, struct nc_session *session, NC_DAT
 		source_ds = xmlDocGetRootElement (config_doc);
 		break;
 	default:
+		UNLOCK(file_ds);
 		ERROR("%s: invalid source.", __func__);
 		*error = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
-		ds_unlock (file_ds);
 		return EXIT_FAILURE;
 		break;
 	}
@@ -741,11 +726,11 @@ int ncds_file_copyconfig (struct ncds_ds *ds, struct nc_session *session, NC_DAT
 	/* copy new target configuration */
 	target_ds->children = xmlDocCopyNode (source_ds->children, file_ds->xml, 1);
 
-	if (ncds_file_sync (file_ds)) {
-		ds_unlock (file_ds);
+	if (file_sync (file_ds)) {
+		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}
-	ds_unlock (file_ds);
+	UNLOCK(file_ds);
 	return EXIT_SUCCESS;
 }
 
@@ -764,18 +749,10 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, struct nc_session * session, NC
 	struct ncds_ds_file * file_ds = (struct ncds_ds_file*)ds;
 	xmlNodePtr target_ds, del;
 
-	if (ds_lock (file_ds)) {
-		return EXIT_FAILURE;
-	}
+	LOCK(file_ds);
 
-	if (ncds_file_reload(file_ds)) {
-		ds_unlock (file_ds);
-		return EXIT_FAILURE;
-	}
-
-	if (ncds_file_locked (ds, target, session)) {
-		ds_unlock (file_ds);
-		*error = nc_err_new (NC_ERR_IN_USE);
+	if (file_reload(file_ds)) {
+		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}
 
@@ -790,23 +767,29 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, struct nc_session * session, NC
 		target_ds = file_ds->candidate;
 		break;
 	default:
+		UNLOCK(file_ds);
 		ERROR("%s: invalid target.", __func__);
 		*error = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
-		ds_unlock (file_ds);
 		return EXIT_FAILURE;
 		break;
+	}
+
+	if (file_ds_access (file_ds, target, session) != 0) {
+		UNLOCK(file_ds);
+		*error = nc_err_new (NC_ERR_IN_USE);
+		return EXIT_FAILURE;
 	}
 
 	del = target_ds->children;
 	xmlUnlinkNode (target_ds->children);
 	xmlFreeNode (del);
 
-	if (ncds_file_sync (file_ds)) {
-		ds_unlock (file_ds);
+	if (file_sync (file_ds)) {
+		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}
-	ds_unlock (file_ds);
+	UNLOCK(file_ds);
 		
 	return EXIT_SUCCESS;
 }
@@ -831,18 +814,10 @@ int ncds_file_editconfig (struct ncds_ds *ds, struct nc_session * session, NC_DA
 	int retval = EXIT_SUCCESS;
 	FILE * tmp = fopen ("/tmp/target.xml", "w");
 
-	if (ds_lock (file_ds)) {
-		return EXIT_FAILURE;
-	}
+	LOCK(file_ds);
 
-	if (ncds_file_reload (file_ds)) {
-		ds_unlock (file_ds);
-		return EXIT_FAILURE;
-	}
-
-	if (ncds_file_locked (ds, target, session)) {
-		ds_unlock (file_ds);
-		*error = nc_err_new (NC_ERR_IN_USE);
+	if (file_reload (file_ds)) {
+		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}
 
@@ -857,17 +832,23 @@ int ncds_file_editconfig (struct ncds_ds *ds, struct nc_session * session, NC_DA
 		target_ds = file_ds->candidate;
 		break;
 	default:
+		UNLOCK(file_ds);
 		ERROR("%s: invalid target.", __func__);
 		*error = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
-		ds_unlock (file_ds);
 		return EXIT_FAILURE;
 		break;
 	}
 
+	if (file_ds_access (file_ds, target, session) != 0) {
+		UNLOCK(file_ds);
+		*error = nc_err_new (NC_ERR_IN_USE);
+		return EXIT_FAILURE;
+	}
+
 	/* read config to XML doc */
 	if ((config_doc = xmlReadMemory (config, strlen(config), NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN)) == NULL) {
-		ds_unlock (file_ds);
+		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}
 
@@ -882,23 +863,19 @@ int ncds_file_editconfig (struct ncds_ds *ds, struct nc_session * session, NC_DA
 	/* preform edit config */
 	if (edit_config (datastore_doc, config_doc, file_ds->model, defop, errop, error)) {
 		retval = EXIT_FAILURE;
-	}
-
-	if (retval == EXIT_SUCCESS) {
+	} else {
 		/* replace datastore by edited configuration */
 		xmlFreeNode (target_ds->children);
 		target_ds->children = xmlDocCopyNode (datastore_doc->children, file_ds->xml, 1);
-		if (ncds_file_sync (file_ds)) {
-			/* if sync fail reload current config from file */
-			ncds_file_reload (file_ds);
+		if (file_sync (file_ds)) {
 			retval = EXIT_FAILURE;
 		}
 	}
+	UNLOCK(file_ds);
 
 	fclose (tmp);
 	xmlFreeDoc (datastore_doc);
 	xmlFreeDoc (config_doc);
-	ds_unlock (file_ds);
 
 	return retval;
 }
