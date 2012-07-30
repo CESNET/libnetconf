@@ -41,7 +41,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <syslog.h>
-#include <event.h>
+#include <event2/event.h>
 
 #include "../../src/libnetconf.h"
 
@@ -66,10 +66,7 @@ void print_version()
 	fprintf(stdout, "compile time: %s, %s\n", __DATE__, __TIME__);
 }
 
-/* event2:
- * void process_rpc(evutil_socket_t in, short events, void *arg)
- */
-void process_rpc(int in, short events, void *arg)
+void process_rpc(evutil_socket_t in, short events, void *arg)
 {
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
@@ -152,7 +149,6 @@ void process_rpc(int in, short events, void *arg)
 
 int main(int argc, char *argv[])
 {
-	int retval = EXIT_SUCCESS;
 	struct srv_config config;
 	struct ncds_ds* datastore;
 
@@ -193,32 +189,19 @@ int main(int argc, char *argv[])
 		return (EXIT_FAILURE);
 	}
 
-	/* create the event of receiving incoming message from the NETCONF client */
-	/* event2:
-	 * config.event_input = event_new(config.event_base, (evutil_socket_t)nc_session_get_eventfd(config.session), EV_READ | EV_PERSIST, process_rpc, (void*) (&config));
-	 */
-	config.event_input = malloc(sizeof(struct event));
-	if (config.event_input != NULL) {
-		event_set(config.event_input, nc_session_get_eventfd(config.session), EV_READ | EV_PERSIST, process_rpc, (void*) (&config));
-		/* add the event to the event base and run the main event loop */
-		event_add (config.event_input, NULL);
-		event_base_dispatch(config.event_base);
+	config.event_input = event_new(config.event_base, (evutil_socket_t)nc_session_get_eventfd(config.session), EV_READ | EV_PERSIST, process_rpc, (void*) (&config));
+	/* add the event to the event base and run the main event loop */
+	event_add (config.event_input, NULL);
+	event_base_dispatch(config.event_base);
 
-		/* cleanup */
-		/* event2:
-		 * event_free(config.event_input);
-		 */
-		free(config.event_input);
-		event_base_free(config.event_base);
-	} else {
-		retval = EXIT_FAILURE;
-	}
-
+	/* cleanup */
+	event_free(config.event_input);
+	event_base_free(config.event_base);
 	if (nc_session_get_status(config.session) == NC_SESSION_STATUS_WORKING) {
 		nc_session_close(config.session, "Closing NETCONF server.");
 	}
 	nc_session_free(config.session);
 
 	/* bye, bye */
-	return (retval);
+	return (EXIT_SUCCESS);
 }
