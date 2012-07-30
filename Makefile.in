@@ -106,7 +106,7 @@ HDRS_PRIV = src/config.h.in \
 	src/datastore.h \
 	src/datastore/datastore_internal.h \
 	src/datastore/edit_config.h \
-	src/datastore/empty/datastore_empty.c \
+	src/datastore/empty/datastore_empty.h \
 	src/datastore/file/datastore_file.h
 
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
