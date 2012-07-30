@@ -1375,3 +1375,36 @@ nc_rpc *nc_rpc_killsession(const char *kill_sid)
 
 	return (rpc);
 }
+
+/**
+ * @ingroup rpc
+ * @brief Create a generic NETCONF rpc message with specified content.
+ *
+ * Function gets data parameter and envelope it into \<rpc\> container. Caller
+ * is fully responsible for the correctness of the given data.
+ *
+ * @param[in] data XML content of the \<rpc\> request to be sent.
+ * @return Created rpc message.
+ */
+nc_rpc *nc_rpc_generic(const char* data)
+{
+	nc_rpc *rpc;
+	xmlDocPtr doc_data;
+
+	if (data == NULL) {
+		return (NULL);
+	}
+
+	/* read data as XML document */
+	doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	if (doc_data == NULL) {
+		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	rpc = nc_rpc_create(xmlCopyNode(xmlDocGetRootElement(doc_data), 1));
+	rpc->type.rpc = NC_RPC_SESSION;
+	xmlFreeDoc(doc_data);
+
+	return (rpc);
+}
