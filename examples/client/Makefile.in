@@ -36,10 +36,16 @@
 
 NAME = netconf-client
 
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+
 CC = @CC@
 LIBS = -L../../ -lnetconf -lreadline
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ -I../../src/
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
 
 OBJDIR= .obj
 
@@ -54,7 +60,7 @@ HDRS = commands.h \
 
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 
-all: $(NAME) $(SUBDIRS)
+all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LIBS) $(OBJS) -o $(NAME)
@@ -67,6 +73,12 @@ $(OBJDIR)/%.o: %.c
 	@[ -d $$(dirname $@) ] || \
 		(mkdir -p $$(dirname $@))
 	$(CC) $(CFLAGS) $(CPPFLAGS) -fPIC -c $< -o $@
+
+.PHONY: install
+install: $(NAME)
+	[ -d $(DESTDIR)/$(bindir) ] || \
+		(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir))
+	$(INSTALL_PROGRAM) $(NAME) $(DESTDIR)/$(bindir)/;
 
 .PHONY: clean
 clean:

@@ -50,7 +50,7 @@ CC = @CC@
 LN_S = @LN_S@
 DOXYGEN = @DOXYGEN@
 DOXYGEN_CONFIG = Doxyfile
-DOXYGEN_DIR = `cat $(DOXYGEN_CONFIG) | grep '^OUTPUT_DIRECTORY' | sed 's/.*=//'`
+DOXYGEN_DIR = $(shell cat $(DOXYGEN_CONFIG) | grep '^OUTPUT_DIRECTORY' | sed 's/.*=//')
 RPMBUILD = @RPMBUILD@
 LDCONFIG = ldconfig
 INSTALL = @INSTALL@
@@ -181,7 +181,7 @@ distclean:
 	rm -rf $(RPMDIR)
 
 .PHONY: install
-install: install-devel install-doc
+install: all install-devel install-doc
 	[ -d $(DESTDIR)/$(libdir) ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir))
 	$(INSTALL_PROGRAM) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/;
@@ -216,7 +216,7 @@ install-devel:
 	done
 
 .PHONY: install-doc
-install-doc:
+install-doc: doc
 	[ -d $(DESTDIR)/$(datadir)/$(NAME)/doxygen ] || \
 		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/doxygen; \
 		chmod -R 755 $(DESTDIR)/$(datadir)/$(NAME))

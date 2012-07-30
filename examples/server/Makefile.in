@@ -36,10 +36,16 @@
 
 NAME = netconf-server
 
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+
 CC = @CC@
 LIBS = -L../../ -lnetconf -levent
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ -I../../src/
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
 
 OBJDIR= .obj
 
@@ -65,6 +71,13 @@ $(OBJDIR)/%.o: %.c
 		(mkdir -p $$(dirname $@))
 	$(CC) $(CFLAGS) $(CPPFLAGS) -fPIC -c $< -o $@
 
+
 .PHONY: clean
 clean:
 	rm -rf $(NAME) $(OBJDIR); 
+
+install: $(NAME)
+	[ -d $(DESTDIR)/$(bindir) ] || \
+		(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir))
+	$(INSTALL_PROGRAM) $(NAME) $(DESTDIR)/$(bindir)/;
+

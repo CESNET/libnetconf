@@ -91,9 +91,7 @@ case $host_cpu in
 	AC_MSG_RESULT($host_cpu is supported)
 	;;
     x86_64 )
-	if test "$host_cpu" != "$build_cpu"; then
-		libdir='${prefix}/lib64'
-	fi
+	libdir='${exec_prefix}/lib64'
 	AC_MSG_RESULT($host_cpu is supported)
         ;;
     * )
@@ -139,7 +137,7 @@ if test -n "$SUBDIRS"; then
     
     # libevent
     AC_CHECK_LIB([event], [event_base_dispatch], [], AC_MSG_ERROR([Missing libevent]))
-    AC_CHECK_HEADERS(event2/event.h, [], AC_MSG_ERROR([Missing libevent headers.]))
+    AC_CHECK_HEADERS(event.h, [], AC_MSG_ERROR([Missing libevent headers.]))
 fi
 
 ###################### Check for configure parameters ##########################
