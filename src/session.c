@@ -591,6 +591,10 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 		return (EXIT_FAILURE);
 	}
 
+	if (endtag == NULL) {
+		return (EXIT_FAILURE);
+	}
+
 	/* allocate memory according to so far maximum buffer size */
 	if (buflen == 0) {
 		/* set starting buffer size */
@@ -601,7 +605,6 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 			return (EXIT_FAILURE);
 		}
 	}
-	memset (buf, 0, buflen);
 
 	for (rd = 0;;) {
 		if (session->ssh_channel) {
@@ -672,6 +675,7 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 		}
 
 		rd += c; /* should be rd++ */
+		buf[rd] = '\0';
 
 		if ((rd) < strlen (endtag)) {
 			/* not enough data to compare with endtag */
@@ -691,7 +695,7 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 		}
 
 		/* resize buffer if needed */
-		if (rd == buflen) {
+		if (rd == (buflen-1)) {
 			/* get more memory for the text */
 			buf = (char*) realloc (buf, (2 * buflen) * sizeof(char));
 			if (buf == NULL) {
