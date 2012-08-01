@@ -85,17 +85,55 @@ NCDFLT_MODE ncdflt_get_supported()
 
 int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCDFLT_MODE mode)
 {
+	xmlNodePtr root, n;
+	char* mode_s;
+
 	if (rpc == NULL) {
 		return (EXIT_FAILURE);
 	}
-	if (mode != NCDFLT_MODE_ALL
-			&& mode != NCDFLT_MODE_TRIM
-			&& mode != NCDFLT_MODE_EXPLICIT
-			&& mode != NCDFLT_MODE_ALL_TAGGED) {
+	switch (mode) {
+	case NCDFLT_MODE_ALL:
+		mode_s = "report-all";
+		break;
+	case NCDFLT_MODE_ALL_TAGGED:
+		mode_s = "report-all-tagged";
+		break;
+	case NCDFLT_MODE_TRIM:
+		mode_s = "trim";
+		break;
+	case NCDFLT_MODE_EXPLICIT:
+		mode_s = "explicit";
+		break;
+	default:
+		ERROR("Invalid with-defaults mode.");
+		return (EXIT_FAILURE);
+		break;
+	}
+
+	/* all checks passed - save the flag */
+	rpc->with_defaults = mode;
+
+	/* modify XML */
+	switch (nc_rpc_get_op(rpc)) {
+	case NC_OP_COPYCONFIG:
+	case NC_OP_GETCONFIG:
+	case NC_OP_GET:
+		/* ok, add the element */
+		root = xmlDocGetRootElement(rpc->doc);
+		if (root != NULL && root->children != NULL) {
+			n = xmlNewChild(root->children, NULL, BAD_CAST "with-defaults", BAD_CAST mode_s);
+			xmlNewNs(n, BAD_CAST "urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults", NULL);
+		} else {
+			ERROR("%s: Invalid RPC format.", __func__);
+			return (EXIT_FAILURE);
+		}
+		break;
+	default:
+		/* no other operation allows using <with-defaults> */
+		ERROR("Given RPC request can not contain <with-defaults> parameter.");
 		return (EXIT_FAILURE);
 	}
-	/* all checks passed */
-	rpc->with_defaults = mode;
+
 	return (EXIT_SUCCESS);
 }
 
