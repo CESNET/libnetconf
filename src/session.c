@@ -1135,11 +1135,50 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 {
 	int ret;
 	char msg_id_str[16];
+	const char* wd;
 	struct nc_msg *msg;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING)) {
 		ERROR("Invalid session to send <rpc>.");
 		return (0); /* failure */
+	}
+
+	/* check for with-defaults capability */
+	if (rpc->with_defaults != NCDFLT_MODE_DISABLED) {
+		/* check if the session support this */
+		if ((wd = nc_cpblts_get(session->capabilities, NC_CAP_WITHDEFAULTS_ID)) == NULL) {
+			ERROR("RPC requires with-defaults capability, but session does not support it.");
+			return (0); /* failure */
+		}
+		switch (rpc->with_defaults) {
+		case NCDFLT_MODE_ALL:
+			if (strstr(wd, "report-all") == NULL) {
+				ERROR("RPC requires with-defaults capability report-all mode, but session does not support it.");
+				return (0); /* failure */
+			}
+			break;
+		case NCDFLT_MODE_ALL_TAGGED:
+			if (strstr(wd, "report-all-tagged") == NULL) {
+				ERROR("RPC requires with-defaults capability report-all-tagged mode, but session does not support it.");
+				return (0); /* failure */
+			}
+			break;
+		case NCDFLT_MODE_TRIM:
+			if (strstr(wd, "trim") == NULL) {
+				ERROR("RPC requires with-defaults capability trim mode, but session does not support it.");
+				return (0); /* failure */
+			}
+			break;
+		case NCDFLT_MODE_EXPLICIT:
+			if (strstr(wd, "explicit") == NULL) {
+				ERROR("RPC requires with-defaults capability explicit mode, but session does not support it.");
+				return (0); /* failure */
+			}
+			break;
+		default: /* NCDFLT_MODE_DISABLED */
+			/* nothing to check */
+			break;
+		}
 	}
 
 	/* TODO: lock for threads */
