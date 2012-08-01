@@ -304,7 +304,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), NULL, &e);
 		break;
 	case NC_OP_COPYCONFIG:
-		config = nc_rpc_get_editconfig(rpc);
+		config = nc_rpc_get_copyconfig(rpc);
 		ret = ds->func.copyconfig(ds, session, nc_rpc_get_target(rpc), nc_rpc_get_source(rpc), config, &e);
 		free (config);
 		break;
