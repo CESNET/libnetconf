@@ -79,16 +79,19 @@
 #define NC_NS_BASE NC_NS_BASE10
 #define NC_NS_BASE_ID NC_NS_BASE10_ID
 
-#define NC_CAP_BASE10_ID      "urn:ietf:params:netconf:base:1.0"
-#define NC_CAP_BASE11_ID      "urn:ietf:params:netconf:base:1.1"
-#define NC_CAP_NOTIFICATION_ID "urn:ietf:params:xml:ns:netconf:notification:1.0"
-#define NC_CAP_WRUNNING_ID  "urn:ietf:params:netconf:capability:writable-running:1.0"
-#define NC_CAP_CANDIDATE_ID "urn:ietf:params:netconf:capability:candidate:1.0"
-#define NC_CAP_STARTUP_ID   "urn:ietf:params:netconf:capability:startup:1.0"
-#define NC_CAP_POWERCTL_ID  "urn:liberouter:params:netconf:capability:power-control:1.0"
+#define NC_CAP_BASE10_ID      	"urn:ietf:params:netconf:base:1.0"
+#define NC_CAP_BASE11_ID      	"urn:ietf:params:netconf:base:1.1"
+#define NC_CAP_NOTIFICATION_ID 	"urn:ietf:params:xml:ns:netconf:notification:1.0"
+#define NC_CAP_WRUNNING_ID  	"urn:ietf:params:netconf:capability:writable-running:1.0"
+#define NC_CAP_CANDIDATE_ID 	"urn:ietf:params:netconf:capability:candidate:1.0"
+#define NC_CAP_STARTUP_ID   	"urn:ietf:params:netconf:capability:startup:1.0"
+#define NC_CAP_POWERCTL_ID 	"urn:liberouter:params:netconf:capability:power-control:1.0"
 #define NC_CAP_CONFIRMED_COMMIT_ID "urn:ietf:params:netconf:capability:confirmed-commit:1.1"
-#define NC_CAP_ROLLBACK_ID		"urn:ietf:params:netconf:capability:rollback-on-error:1.0"
-#define NC_CAP_VALIDATE_ID		"urn:ietf:params:netconf:capability:validate:1.1"
+#define NC_CAP_ROLLBACK_ID	"urn:ietf:params:netconf:capability:rollback-on-error:1.0"
+#define NC_CAP_VALIDATE_ID	"urn:ietf:params:netconf:capability:validate:1.1"
+#define NC_CAP_WITHDEFAULTS_ID 	"urn:ietf:params:netconf:capability:with-defaults:1.0"
+
+#define NC_NS_CAP_WITHDEFAULTS 	"urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"
 
 /* NETCONF versions identificators */
 #define NETCONFV10	0
