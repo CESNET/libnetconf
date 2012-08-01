@@ -440,10 +440,8 @@ NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
 
 char *nc_reply_get_data(const nc_reply *reply)
 {
-	xmlDocPtr doc;
-	xmlNodePtr node, root;
-	xmlChar *buf;
-	int len;
+	char *buf;
+	xmlBufferPtr data_buf;
 
 	if (reply == NULL ||
 			reply->type.reply != NC_REPLY_DATA ||
@@ -463,17 +461,13 @@ char *nc_reply_get_data(const nc_reply *reply)
 		return (strdup(""));
 	}
 
-	if ((doc = xmlNewDoc(BAD_CAST XML_VERSION)) == NULL) {
-		ERROR("nc_reply_get_data: xmlNewDoc failed.");
-		return (NULL);
+	if ((data_buf = xmlBufferCreate ()) == NULL) {
+		return NULL;
 	}
-	doc->encoding = xmlStrdup(BAD_CAST UTF8);
-	xmlDocSetRootElement(doc, root = xmlCopyNode(node = reply->doc->children->children->children, 1));
-	for (node = node->next; node != NULL; node = node->next) {
-		xmlAddNextSibling(root, xmlCopyNode(node, 1));
-	}
-	xmlDocDumpFormatMemory(doc, &buf, &len, 1);
-	xmlFreeDoc(doc);
+
+	xmlNodeDump (data_buf, reply->doc, reply->doc->children->children->children, 1, 1);
+	buf = strdup ((char*) xmlBufferContent(data_buf));
+	xmlBufferFree(data_buf);
 
 	return ((char*) buf);
 }
