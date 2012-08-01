@@ -370,6 +370,7 @@ int ncds_file_init (struct ncds_ds* ds)
 	if ((file_ds->ds_lock.lock = sem_open (sempath, O_CREAT, S_IRWXU|S_IRWXG|S_IRWXO, 1)) == SEM_FAILED) {
 		return EXIT_FAILURE;
 	}
+	free (sempath);
 
 	return EXIT_SUCCESS;
 }
@@ -724,13 +725,15 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 	xmlFreeNode (del);
 
 	/* copy new target configuration */
-	target_ds->children = xmlDocCopyNode (source_ds->children, file_ds->xml, 1);
+	target_ds->children = xmlDocCopyNode (source_ds, file_ds->xml, 1);
 
 	if (file_sync (file_ds)) {
 		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}
 	UNLOCK(file_ds);
+
+	xmlFreeDoc (config_doc);
 	return EXIT_SUCCESS;
 }
 
