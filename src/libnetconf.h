@@ -135,6 +135,12 @@
  */
 
 /**
+ * \defgroup withdefaults With-defaults capability
+ * \brief libnetconf's implementation of NETCONF with-defaults capability as
+ * defined in RFC 6243.
+ */
+
+/**
  * \internal
  * \defgroup internalAPI Internal API
  * \brief libnetconf's functions, structures and macros for internal usage.
@@ -146,5 +152,6 @@
 #include "messages.h"
 #include "error.h"
 #include "datastore.h"
+#include "with_defaults.h"
 
 #endif /* LIBNETCONF_H_ */

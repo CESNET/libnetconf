@@ -170,7 +170,7 @@ struct nc_cpblts *nc_cpblts_new(char* const* list)
 	retval->list[0] = NULL;
 
 	if (list != NULL) {
-		for (i = 0, item = list[i]; item != NULL; item = list[i++]) {
+		for (i = 0, item = list[i]; item != NULL; i++) {
 			retval->list[i] = strdup (item);
 			retval->items++;
 			if (retval->items == retval->list_size) {
@@ -184,6 +184,7 @@ struct nc_cpblts *nc_cpblts_new(char* const* list)
 				retval->list_size *= 2;
 			}
 			retval->list[i + 1] = NULL;
+			item = list[i+1];
 		}
 	}
 
@@ -192,6 +193,9 @@ struct nc_cpblts *nc_cpblts_new(char* const* list)
 
 int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string)
 {
+	int i;
+	char *s, *p;
+
 	if (capabilities == NULL || capability_string == NULL) {
 		return (EXIT_FAILURE);
 	}
@@ -201,7 +205,34 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 		return (EXIT_FAILURE);
 	}
 
-	capabilities->list[capabilities->items] = strdup(capability_string);
+	/* get working copy of capability_string where the parameters will be ignored */
+	s = strdup(capability_string);
+	if ((p = strchr(s, '?')) != NULL) {
+		/* in following comparison, ignore capability's parameters */
+		*p = 0;
+	}
+
+	/* find duplicities */
+	for (i = 0; i < capabilities->items; i++) {
+		if (strcmp(capabilities->list[i], s) == 0) {
+			/* capability is already in the capabilities list, but
+			 * parameters can differ, so substitute current instance
+			 * with the new one
+			 */
+			free(capabilities->list[i]);
+			if (p != NULL) {
+				*p = '?';
+			}
+			capabilities->list[i] = s;
+			return (EXIT_SUCCESS);
+		}
+	}
+	/* unhide capability's parameters */
+	if (p != NULL) {
+		*p = '?';
+	}
+
+	capabilities->list[capabilities->items] = s;
 	capabilities->items++;
 	if (capabilities->items == capabilities->list_size) {
 		/* resize the capacity of the capabilities list */
@@ -220,6 +251,7 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_string)
 {
 	int i;
+	char* s, *p;
 
 	if (capabilities == NULL || capability_string == NULL) {
 		return (EXIT_FAILURE);
@@ -230,11 +262,19 @@ int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_str
 		return (EXIT_FAILURE);
 	}
 
+	s = strdup(capability_string);
+	if ((p = strchr(s, '?')) != NULL) {
+		/* in comparison, ignore capability's parameters */
+		p = 0;
+	}
+
 	for (i = 0; i < capabilities->items; i++) {
-		if (capabilities->list[i] != NULL && strcmp(capabilities->list[i], capability_string) == 0) {
+		if (capabilities->list[i] != NULL && strcmp(capabilities->list[i], s) == 0) {
 			break;
 		}
 	}
+	free(s);
+
 	if (i < capabilities->items) {
 		free(capabilities->list[i]);
 		/* move here the last item from the list */
@@ -306,6 +346,9 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:writable-running:1.0");
 	nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:candidate:1.0");
 	nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:startup:1.0");
+	if (ncdflt_get_basic_mode() != NCDFLT_MODE_DISABLED) {
+		nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:with-defaults:1.0");
+	}
 
 	return (retval);
 }

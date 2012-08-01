@@ -58,6 +58,7 @@
 #include "session.h"
 #include "netconf_internal.h"
 #include "messages_internal.h"
+#include "with_defaults.h"
 
 #define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
 
@@ -125,6 +126,8 @@ void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 /**
  * @brief Compare two sets of capabilities and return intersection
  *
+ * cap_list_x should be the list from server, these capabilities have higher priority
+ *
  * @param[in]	cap_list_x	array of strings idetifying X capabilities
  * @param[in]	cap_list_y	array of strings idetifying Y capabilities
  * @param[out]	version		accepted NETCONF version
@@ -136,12 +139,11 @@ char** nc_merge_capabilities(char ** cap_list_x, char ** cap_list_y, int *versio
 	int c = 0, i, j;
 	(*version) = NETCONFVUNK;
 	char ** result;
+	char *px, *py;
 
 	/* count max size of the resulting list */
-	for (i = 0; cap_list_x[i] != NULL; i++)
-		;
-	for (j = 0; cap_list_y[j] != NULL; j++)
-		;
+	for (i = 0; cap_list_x[i] != NULL; i++);
+	for (j = 0; cap_list_y[j] != NULL; j++);
 	c = (j > i) ? j : i;
 
 	if ((result = malloc((c + 1) * sizeof(char*))) == NULL) {
@@ -152,8 +154,24 @@ char** nc_merge_capabilities(char ** cap_list_x, char ** cap_list_y, int *versio
 	c = 0;
 	for (i = 0; cap_list_x[i] != NULL; i++) {
 		for (j = 0; cap_list_y[j] != NULL; j++) {
+			/* ignore parameters in comparison */
+			if ((px = strchr(cap_list_x[i], '?')) != NULL) {*px = 0;}
+			if ((py = strchr(cap_list_y[j], '?')) != NULL) {*py = 0;}
+
 			if (strcmp(cap_list_x[i], cap_list_y[j]) == 0) {
-				result[c++] = strdup(cap_list_x[i]);
+				if (px != NULL) {
+					/* unhide parameters */
+					*px = '?';
+					/* and store string with parameters */
+					result[c++] = strdup(cap_list_x[i]);
+				} else {
+					/* unhide parameters if any */
+					if (py != NULL) {
+						*py = '?';
+					}
+					/* and store string */
+					result[c++] = strdup(cap_list_y[j]);
+				}
 				break;
 			}
 		}
@@ -472,6 +490,9 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	struct nc_session *retval = NULL;
 	struct nc_cpblts *server_cpblts = NULL;
 	struct passwd *pw;
+	char *wdc, *wdc_aux;
+	char list[255];
+	NCDFLT_MODE mode;
 
 	/* allocate netconf session structure */
 	retval = malloc(sizeof(struct nc_session));
@@ -506,6 +527,51 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		}
 	} else {
 		server_cpblts = nc_cpblts_new(capabilities->list);
+	}
+	/* set with-defaults capability announcement */
+	if ((mode = ncdflt_get_basic_mode()) != NCDFLT_MODE_DISABLED) {
+		switch(mode) {
+		case NCDFLT_MODE_ALL:
+			wdc_aux = "?basic-mode=report-all";
+			break;
+		case NCDFLT_MODE_TRIM:
+			wdc_aux = "?basic-mode=trim";
+			break;
+		case NCDFLT_MODE_EXPLICIT:
+			wdc_aux = "?basic-mode=explicit";
+			break;
+		default:
+			wdc_aux = NULL;
+			break;
+		}
+		if (wdc_aux != NULL) {
+			mode = ncdflt_get_supported();
+			list[0] = 0;
+			if ((mode & NCDFLT_MODE_ALL) != 0) {
+				strcat(list, ",report-all");
+			}
+			if ((mode & NCDFLT_MODE_ALL_TAGGED) != 0) {
+				strcat(list, ",report-all-tagged");
+			}
+			if ((mode & NCDFLT_MODE_TRIM) != 0) {
+				strcat(list, ",trim");
+			}
+			if ((mode & NCDFLT_MODE_EXPLICIT) != 0) {
+				strcat(list, ",explicit");
+			}
+
+			if (strlen(list) > 0) {
+				list[0] = '='; /* replace initial comma */
+				asprintf(&wdc, "urn:ietf:params:netconf:capability:with-defaults:1.0%s&amp;also-supported%s", wdc_aux, list);
+			} else {
+				/* no also-supported */
+				asprintf(&wdc, "urn:ietf:params:netconf:capability:with-defaults:1.0%s", wdc_aux);
+			}
+
+			/* add/update capabilities list */
+			nc_cpblts_add(server_cpblts, wdc);
+			free(wdc);
+		}
 	}
 
 	retval->status = NC_SESSION_STATUS_WORKING;

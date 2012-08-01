@@ -45,6 +45,7 @@
 
 #include "netconf.h"
 #include "callbacks.h"
+#include "with_defaults.h"
 
 #define SID_SIZE 	16
 
@@ -280,6 +281,7 @@ struct nc_msg {
 		NC_REPLY_TYPE reply;
 		NC_RPC_TYPE rpc;
 	} type;
+	NCDFLT_MODE with_defaults;
 	struct nc_err* error;
 };
 

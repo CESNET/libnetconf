@@ -1,7 +1,7 @@
 /**
- * \file libnetconf.h
+ * \file with_defaults.c
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief libnetconf's main header.
+ * \brief Implementation of NETCONF's with-defaults capability defined in RFC 6243
  *
  * Copyright (C) 2012 CESNET, z.s.p.o.
  *
@@ -37,14 +37,64 @@
  *
  */
 
-#ifndef LIBNETCONF_H_
-#define LIBNETCONF_H_
+#include <stdlib.h>
 
-#include "libnetconf/netconf.h"
-#include "libnetconf/callbacks.h"
-#include "libnetconf/session.h"
-#include "libnetconf/messages.h"
-#include "libnetconf/with_defaults.h"
+#include "with_defaults.h"
+#include "netconf_internal.h"
 
-#endif /* LIBNETCONF_H_ */
+static NCDFLT_MODE ncdflt_basic_mode = NCDFLT_MODE_EXPLICIT;
+static NCDFLT_MODE ncdflt_supported = (NCDFLT_MODE_ALL
+		| NCDFLT_MODE_ALL_TAGGED
+		| NCDFLT_MODE_TRIM
+		| NCDFLT_MODE_EXPLICIT);
 
+NCDFLT_MODE ncdflt_get_basic_mode()
+{
+	return (ncdflt_basic_mode);
+}
+
+void ncdflt_set_basic_mode(NCDFLT_MODE mode)
+{
+	/* if one of valid values, change the value */
+	if (mode == NCDFLT_MODE_ALL
+			|| mode == NCDFLT_MODE_TRIM
+			|| mode == NCDFLT_MODE_EXPLICIT) {
+		/* set basic mode */
+		ncdflt_basic_mode = mode;
+
+		/* if current basic mode is not in supported set, add it */
+		if ((ncdflt_supported & ncdflt_basic_mode) == 0) {
+			ncdflt_supported |= ncdflt_basic_mode;
+		}
+	}
+}
+
+void ncdflt_set_supported(NCDFLT_MODE modes)
+{
+	ncdflt_supported = ncdflt_basic_mode;
+	ncdflt_supported |= (modes & NCDFLT_MODE_ALL) ? NCDFLT_MODE_ALL : 0;
+	ncdflt_supported |= (modes & NCDFLT_MODE_ALL_TAGGED) ? NCDFLT_MODE_ALL_TAGGED : 0;
+	ncdflt_supported |= (modes & NCDFLT_MODE_TRIM) ? NCDFLT_MODE_TRIM : 0;
+	ncdflt_supported |= (modes & NCDFLT_MODE_EXPLICIT) ? NCDFLT_MODE_EXPLICIT : 0;
+}
+
+NCDFLT_MODE ncdflt_get_supported()
+{
+	return (ncdflt_supported);
+}
+
+int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCDFLT_MODE mode)
+{
+	if (rpc == NULL) {
+		return (EXIT_FAILURE);
+	}
+	if (mode != NCDFLT_MODE_ALL
+			&& mode != NCDFLT_MODE_TRIM
+			&& mode != NCDFLT_MODE_EXPLICIT
+			&& mode != NCDFLT_MODE_ALL_TAGGED) {
+		return (EXIT_FAILURE);
+	}
+	/* all checks passed */
+	rpc->with_defaults = mode;
+	return (EXIT_SUCCESS);
+}
