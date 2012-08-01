@@ -173,6 +173,20 @@ NC_DATASTORE nc_rpc_get_source(const nc_rpc *rpc);
  * @ingroup rpc
  *
  * @brief Get serialized content of the config parameter (\<config\> itself is
+ * not part of the returned data) in \<source\>. This function is valid only for
+ * \<copy-config\> RPCs.
+ *
+ * @param[in] rpc \<copy-config\> rpc message.
+ *
+ * @return Serialized XML or NULL if not available. Caller is responsible for
+ * free of returned string with free().
+ */
+char * nc_rpc_get_copyconfig (const nc_rpc *rpc);
+
+/**
+ * @ingroup rpc
+ *
+ * @brief Get serialized content of the config parameter (\<config\> itself is
  * not part of the returned data). This function is valid only for
  * \<edit-config\> RPCs.
  *

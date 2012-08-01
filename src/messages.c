@@ -324,6 +324,46 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 	return (nc_rpc_get_ds(rpc, "target"));
 }
 
+char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
+{
+	xmlNodePtr rpc_root, op, source, config;
+	xmlDocPtr config_doc;
+	char * retval = NULL;
+	int len;
+
+	rpc_root = xmlDocGetRootElement (rpc->doc);
+	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
+		return NULL;
+	}
+
+	if ((op = rpc_root->children) == NULL) {
+		return NULL;
+	}
+
+	source = op->children;
+	while (source != NULL && !xmlStrEqual(source->name, BAD_CAST "source")) {
+		source = source->next;
+	}
+
+	if (source == NULL) {
+		return NULL;
+	}
+
+	config = source->children;
+	while (config != NULL && !xmlStrEqual(config->name, BAD_CAST "config")) {
+		config = config->next;
+	}
+
+	if (config != NULL) {
+		config_doc = xmlNewDoc (BAD_CAST "1.0");
+		config_doc->children = xmlDocCopyNode (config->children, config_doc, 1);
+		xmlDocSetRootElement (config_doc, config_doc->children);
+		xmlDocDumpFormatMemory (config_doc, (xmlChar**)&retval, &len, 1);
+		xmlFreeDoc (config_doc);
+	}
+	return retval;
+}
+
 char * nc_rpc_get_editconfig (const nc_rpc *rpc)
 {
 	xmlNodePtr rpc_root, op, config;
