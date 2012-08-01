@@ -77,7 +77,7 @@ void ncdflt_set_basic_mode(NCDFLT_MODE mode);
  * with-defaults capability, use ncdflt_set_basic_mode() to set with-defaults'
  * basic mode.
  */
-#define NCDFLT_DISABLE ncdflt_basic_mode(NCDFLT_MODE_DISABLED)
+#define NCDFLT_DISABLE ncdflt_set_basic_mode(NCDFLT_MODE_DISABLED)
 /**
  * @ingroup withdefaults
  * @brief Get current set basic mode of the with-defaults capability.
