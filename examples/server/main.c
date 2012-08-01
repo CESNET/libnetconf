@@ -97,12 +97,15 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 	} else if (req_type == NC_RPC_DATASTORE_READ) {
 		/* process operations reading datastore */
 		switch (req_op) {
+		case NC_OP_GET:
 		case NC_OP_GETCONFIG:
 			reply = ncds_apply_rpc(config->dsid, config->session, rpc);
 			break;
+/*
 		case NC_OP_GET:
 			reply = nc_reply_data("<libnetconf-server xmlns=\"urn:cesnet:tmc:libnetconf-server:0.1\"><version>" VERSION "</version></libnetconf-server>");
 			break;
+*/
 		default:
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
 			break;
@@ -160,7 +163,7 @@ int main(int argc, char *argv[])
 	nc_callback_print(clb_print);
 
 	/* prepare configuration datastore */
-	datastore = ncds_new(NCDS_TYPE_FILE, "/tmp/model.yin");
+	datastore = ncds_new(NCDS_TYPE_FILE, "/tmp/model.yin", NULL);
 	if (datastore == NULL) {
 		clb_print("Datastore preparing failed.");
 		return (EXIT_FAILURE);

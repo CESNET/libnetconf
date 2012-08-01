@@ -71,12 +71,17 @@ struct ncds_ds;
  * @brief Create new datastore structure of the specified implementation type.
  * @param[in] type Datastore implementation type for new datastore structure.
  * @param[in] model_path Path to the YIN configuration data model.
+ * @param[in] get_state Pointer to a callback function that returns serialized
+ * XML document containing state configuration data of the device. As parameters,
+ * it receives serialized configuration data model in YIN format and current
+ * content of the running datastore. If NULL is set, <get> operation is
+ * performed in the same way as <get-config>.
  * @return Prepared (not configured) datastore structure. To configure the
  * structure, caller must use parameters setters of the specific datastore
  * implementation type. Then, the datastore can be initiated (ncds_init()) and
  * used to access configuration data.
  */
-struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path);
+struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running));
 
 /**
  * @ingroup store

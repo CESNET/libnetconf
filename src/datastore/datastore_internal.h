@@ -71,6 +71,11 @@ struct ncds_ds {
 	 */
 	xmlDocPtr model;
 	/**
+	 * @brief Pointer to a callback function implementing retrieving of the
+	 * device status data.
+	 */
+	char* (*get_state)(const char* model, const char* running);
+	/**
 	 * @brief Datastore implementation functions.
 	 */
 	struct ncds_funcs func;
@@ -81,5 +86,16 @@ struct ncds_ds {
  * @return unique datastore id
  */
 ncds_id generate_id (void);
+
+/**
+ * @brief Merge two XML documents with a common data model.
+ * @param first First XML document to merge.
+ * @param second Second XML document to merge.
+ * @param data_model XML document containing data model of the merged documents
+ * in YIN format.
+ * @return Resulting XML document merged from input documents. It is up to the
+ * caller to free the memory with xmlFreeDoc().
+ */
+xmlDocPtr ncxml_merge (const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model);
 
 #endif /* DATASTORE_INTERNAL_H_ */

@@ -52,6 +52,7 @@
 #include "messages.h"
 #include "error.h"
 #include "datastore.h"
+#include "datastore/edit_config.h"
 #include "datastore/datastore_internal.h"
 #include "datastore/file/datastore_file.h"
 #include "datastore/empty/datastore_empty.h"
@@ -125,7 +126,7 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
-struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path)
+struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running))
 {
 	struct ncds_ds* ds = NULL;
 
@@ -176,6 +177,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path)
 		return (NULL);
 	}
 	ds->model_path = strdup(model_path);
+	ds->get_state = get_state;
 
 	/* ds->id stays 0 to indicate, that datastore is still not fully configured */
 
@@ -275,11 +277,46 @@ void ncds_free2 (ncds_id datastore_id)
 	}
 }
 
+xmlDocPtr ncxml_merge (const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model)
+{
+	int ret;
+	keyList keys;
+	xmlDocPtr result;
+
+	if (first == NULL || second == NULL) {
+		return (NULL);
+	}
+
+	result = xmlCopyDoc(first, 1);
+	if (result == NULL) {
+		return (NULL);
+	}
+
+	/* get all keys from data model */
+	keys = get_keynode_list(data_model);
+
+	/* merge the documents */
+	ret = edit_merge(result, second->children, keys);
+
+	if (keys != NULL) {
+		keyListFree(keys);
+	}
+
+	if (ret != EXIT_SUCCESS) {
+		xmlFreeDoc(result);
+		return (NULL);
+	} else {
+		return (result);
+	}
+}
+
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
 	struct ncds_ds* ds;
-	char* data = NULL, * config;
+	char* data = NULL, * config, *model = NULL, *data2;
+	xmlDocPtr doc1, doc2, doc_merged;
+	int len;
 	int ret = EXIT_FAILURE;
 	nc_reply* reply;
 
@@ -298,6 +335,41 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		break;
 	case NC_OP_UNLOCK:
 		ret = ds->func.unlock(ds, session, nc_rpc_get_target(rpc), &e);
+		break;
+	case NC_OP_GET:
+		/* todo filtering - not partially but on the compounded result */
+
+		if (ds->get_state != NULL) {
+			/* caller provided callback function to retrieve status data */
+
+			/* do not filter here, filter must be applied on merged result */
+			data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, NULL, &e);
+
+			xmlDocDumpMemory(ds->model, (xmlChar**)(&model), &len);
+			data2 = ds->get_state(model, data);
+			free(model);
+
+			/* merge status and config data */
+			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			doc_merged = ncxml_merge(doc1, doc2, ds->model);
+
+			/* \todo now do filtering */
+
+			/* cleanup */
+			free(data);
+			free(data2);
+			xmlFreeDoc(doc1);
+			xmlFreeDoc(doc2);
+
+			/* dump the result */
+			xmlDocDumpFormatMemory(doc_merged, (xmlChar**)(&data), &len, 1);
+			xmlFreeDoc(doc_merged);
+		} else {
+			/* \todo filtering */
+			data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, NULL, &e);
+		}
+
 		break;
 	case NC_OP_GETCONFIG:
 		/* todo filtering */

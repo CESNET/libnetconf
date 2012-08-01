@@ -65,6 +65,11 @@ struct ncds_ds_file {
 	 */
 	xmlDocPtr model;
 	/**
+	 * @brief Pointer to a callback function implementing retrieving of the
+	 * device status data.
+	 */
+	char* (*get_state)(const char* model, const char* running);
+	/**
 	 * @brief Datastore implementation functions.
 	 */
 	struct ncds_funcs func;
