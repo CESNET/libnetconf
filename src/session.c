@@ -287,6 +287,32 @@ int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_str
 	return (EXIT_SUCCESS);
 }
 
+const char* nc_cpblts_get(const struct nc_cpblts *c, const char* capability_string)
+{
+	int i;
+	char* s, *p;
+
+	if (capability_string == NULL || c == NULL ) {
+		return (NULL);
+	}
+
+	s = strdup(capability_string);
+	if ((p = strchr(s, '?')) != NULL) {
+		/* in comparison, ignore capability's parameters */
+		p = 0;
+	}
+
+	for (i = 0; c->list[i]; i++) {
+		if (strncmp(s, c->list[i], strlen(s)) == 0) {
+			free(s);
+			return (c->list[i]);
+		}
+	}
+	free(s);
+	return (NULL);
+
+}
+
 int nc_cpblts_enabled(const struct nc_session* session, const char* capability_string)
 {
 	int i;
