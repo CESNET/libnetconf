@@ -98,3 +98,8 @@ int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCDFLT_MODE mode)
 	rpc->with_defaults = mode;
 	return (EXIT_SUCCESS);
 }
+
+NCDFLT_MODE ncdflt_rpc_get_withdefaults(nc_rpc* rpc)
+{
+	return (rpc->with_defaults);
+}
