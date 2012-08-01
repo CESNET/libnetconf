@@ -1091,6 +1091,7 @@ nc_msgid nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
 	if (ret != EXIT_SUCCESS) {
 		return (0);
 	} else {
+		(*rpc)->with_defaults = nc_rpc_parse_withdefaults(*rpc);
 		return (nc_rpc_get_msgid (*rpc));
 	}
 }

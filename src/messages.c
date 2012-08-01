@@ -44,6 +44,8 @@
 #include <errno.h>
 
 #include <libxml/tree.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
 
 #include "messages.h"
 #include "netconf_internal.h"
@@ -127,8 +129,56 @@ struct nc_msg * nc_msg_build (const char * msg_dump)
 
 	msg->msgid = nc_msg_parse_msgid (msg);
 	msg->error = NULL;
+	msg->with_defaults = 0;
 	
 	return msg;
+}
+
+NCDFLT_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc)
+{
+	xmlXPathContextPtr rpc_ctxt = NULL;
+	xmlXPathObjectPtr result = NULL;
+	xmlChar* data;
+	NCDFLT_MODE retval;
+
+	/* create xpath evaluation context */
+	if ((rpc_ctxt = xmlXPathNewContext(rpc->doc)) == NULL) {
+		WARN("%s: Creating XPath context failed.", __func__)
+		/* with-defaults cannot be found */
+		return (NCDFLT_MODE_DISABLED);
+	}
+	if (xmlXPathRegisterNs(rpc_ctxt, BAD_CAST "wd", BAD_CAST NC_NS_CAP_WITHDEFAULTS) != 0) {
+		xmlXPathFreeContext(rpc_ctxt);
+		return (NCDFLT_MODE_DISABLED);
+	}
+
+	/* set with-defaults if any */
+	result = xmlXPathEvalExpression(BAD_CAST "//wd:with-defaults", rpc_ctxt);
+	if (result != NULL) {
+		if (result->nodesetval->nodeNr != 1) {
+			xmlXPathFreeObject(result);
+			retval = NCDFLT_MODE_DISABLED;
+		} else {
+			data = xmlNodeGetContent(result->nodesetval->nodeTab[0]);
+			if (xmlStrcmp(data, BAD_CAST "report-all") == 0) {
+				retval = NCDFLT_MODE_ALL;
+			} else if (xmlStrcmp(data, BAD_CAST "report-all-tagged") == 0) {
+				retval = NCDFLT_MODE_ALL_TAGGED;
+			} else if (xmlStrcmp(data, BAD_CAST "trim") == 0) {
+				retval = NCDFLT_MODE_TRIM;
+			} else if (xmlStrcmp(data, BAD_CAST "explicit") == 0) {
+				retval = NCDFLT_MODE_EXPLICIT;
+			} else {
+				WARN("%s: unknown with-defaults mode detected (%s), disabling with-defaults.", __func__, data);
+				retval = NCDFLT_MODE_DISABLED;
+			}
+			xmlFree(data);
+		}
+	} else {
+		retval = NCDFLT_MODE_DISABLED;
+	}
+	xmlXPathFreeContext(rpc_ctxt);
+	return (retval);
 }
 
 nc_rpc * nc_rpc_build (const char * rpc_dump)
@@ -140,8 +190,9 @@ nc_rpc * nc_rpc_build (const char * rpc_dump)
 		return NULL;
 	}
 
-	op = nc_rpc_get_op (rpc);
 
+	/* operation type */
+	op = nc_rpc_get_op (rpc);
 	switch (op) {
 	case (NC_OP_GETCONFIG):
 	case (NC_OP_GET):
@@ -162,6 +213,9 @@ nc_rpc * nc_rpc_build (const char * rpc_dump)
 		rpc->type.rpc = NC_RPC_UNKNOWN;
 		break;
 	}
+
+	/* set with-defaults if any */
+	rpc->with_defaults = nc_rpc_parse_withdefaults(rpc);
 
 	return rpc;
 }
