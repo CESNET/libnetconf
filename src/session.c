@@ -1121,12 +1121,77 @@ nc_msgid nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 nc_msgid nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
 {
 	int ret;
+	const char* wd;
+	struct nc_err* e = NULL;
+	nc_reply* reply;
 
 	ret = nc_session_receive (session, (struct nc_msg**) rpc);
 	if (ret != EXIT_SUCCESS) {
 		return (0);
 	} else {
 		(*rpc)->with_defaults = nc_rpc_parse_withdefaults(*rpc);
+
+		/* check for with-defaults capability */
+		if ((*rpc)->with_defaults != NCDFLT_MODE_DISABLED) {
+			/* check if the session support this */
+			if ((wd = nc_cpblts_get(session->capabilities, NC_CAP_WITHDEFAULTS_ID)) == NULL) {
+				ERROR("rpc requires with-defaults capability, but session does not support it.");
+				e = nc_err_new(NC_ERR_INVALID_VALUE);
+				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
+				nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability, but session does not support it.");
+			} else {
+				switch ((*rpc)->with_defaults) {
+				case NCDFLT_MODE_ALL:
+					if (strstr(wd, "report-all") == NULL) {
+						ERROR("rpc requires with-defaults capability report-all mode, but session does not support it.");
+						e = nc_err_new(NC_ERR_INVALID_VALUE);
+						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
+						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability report-all mode, but session does not support it.");
+					}
+					break;
+				case NCDFLT_MODE_ALL_TAGGED:
+					if (strstr(wd, "report-all-tagged") == NULL) {
+						ERROR("rpc requires with-defaults capability report-all-tagged mode, but session does not support it.");
+						e = nc_err_new(NC_ERR_INVALID_VALUE);
+						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
+						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability report-all-tagged mode, but session does not support it.");
+					}
+					break;
+				case NCDFLT_MODE_TRIM:
+					if (strstr(wd, "trim") == NULL) {
+						ERROR("rpc requires with-defaults capability trim mode, but session does not support it.");
+						e = nc_err_new(NC_ERR_INVALID_VALUE);
+						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
+						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability trim mode, but session does not support it.");
+					}
+					break;
+				case NCDFLT_MODE_EXPLICIT:
+					if (strstr(wd, "explicit") == NULL) {
+						ERROR("rpc requires with-defaults capability explicit mode, but session does not support it.");
+						e = nc_err_new(NC_ERR_INVALID_VALUE);
+						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
+						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability explicit mode, but session does not support it.");
+					}
+					break;
+				default: /* something weird */
+					ERROR("rpc requires with-defaults capability with unknown mode.");
+					e = nc_err_new(NC_ERR_INVALID_VALUE);
+					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
+					nc_err_set(e, NC_ERR_PARAM_MSG, "pc requires with-defaults capability with unknown mode.");
+					break;
+				}
+			}
+
+			if (e != NULL) {
+				reply = nc_reply_error(e);
+				nc_session_send_reply(session, *rpc, reply);
+				nc_rpc_free(*rpc);
+				*rpc = NULL;
+				nc_reply_free(reply);
+				return (0); /* failure */
+			}
+		}
+
 		return (nc_rpc_get_msgid (*rpc));
 	}
 }
