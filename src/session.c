@@ -269,7 +269,7 @@ int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_str
 	}
 
 	for (i = 0; i < capabilities->items; i++) {
-		if (capabilities->list[i] != NULL && strcmp(capabilities->list[i], s) == 0) {
+		if (capabilities->list[i] != NULL && strncmp(capabilities->list[i], s, strlen(s)) == 0) {
 			break;
 		}
 	}
@@ -290,16 +290,25 @@ int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_str
 int nc_cpblts_enabled(const struct nc_session* session, const char* capability_string)
 {
 	int i;
+	char* s, *p;
 
 	if (capability_string == NULL || session == NULL || session->capabilities == NULL) {
 		return (0);
 	}
 
+	s = strdup(capability_string);
+	if ((p = strchr(s, '?')) != NULL) {
+		/* in comparison, ignore capability's parameters */
+		p = 0;
+	}
+
 	for (i = 0; session->capabilities->list[i]; i++) {
-		if (strcmp(capability_string, session->capabilities->list[i]) == 0) {
+		if (strncmp(s, session->capabilities->list[i], strlen(s)) == 0) {
+			free(s);
 			return (1);
 		}
 	}
+	free(s);
 	return (0);
 }
 
