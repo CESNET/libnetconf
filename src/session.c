@@ -397,6 +397,45 @@ struct nc_cpblts* nc_session_get_cpblts (const struct nc_session* session)
 	return (session->capabilities);
 }
 
+/**
+ * @brief Parse with-defaults capability
+ */
+void parse_wdcap(struct nc_cpblts *capabilities, NCDFLT_MODE *basic, int *supported)
+{
+	const char* cpblt;
+	char* s;
+
+	if ((cpblt = nc_cpblts_get(capabilities, NC_CAP_WITHDEFAULTS_ID)) != NULL) {
+		if ((s = strstr(cpblt, "report-all")) != NULL) {
+			if (s[-1] == '=' && s[-2] == 'e') {
+				/* basic mode: basic-mode=report-all */
+				*basic = NCDFLT_MODE_ALL;
+			}
+			*supported = *supported | NCDFLT_MODE_ALL;
+		}
+		if ((s = strstr(cpblt, "trim")) != NULL) {
+			if (s[-1] == '=' && s[-2] == 'e') {
+				/* basic mode: basic-mode=trim */
+				*basic = NCDFLT_MODE_TRIM;
+			}
+			*supported = *supported | NCDFLT_MODE_TRIM;
+		}
+		if ((s = strstr(cpblt, "explicit")) != NULL) {
+			if (s[-1] == '=' && s[-2] == 'e') {
+				/* basic mode: basic-mode=explicit */
+				*basic = NCDFLT_MODE_EXPLICIT;
+			}
+			*supported = *supported | NCDFLT_MODE_EXPLICIT;
+		}
+		if ((s = strstr(cpblt, "report-all-tagged")) != NULL) {
+			*supported = *supported | NCDFLT_MODE_ALL_TAGGED;
+		}
+	} else {
+		*basic = NCDFLT_MODE_DISABLED;
+		*supported = 0;
+	}
+}
+
 struct nc_session* nc_session_dummy(const char* sid, const char* username, struct nc_cpblts *capabilities)
 {
 	struct nc_session * session;
@@ -431,6 +470,11 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, struc
 	while ((cpblt = nc_cpblts_iter_next (capabilities)) != NULL) {
 		nc_cpblts_add (session->capabilities, cpblt);
 	}
+
+	session->wd_basic = NCDFLT_MODE_DISABLED;
+	session->wd_modes = 0;
+	/* set with defaults capability flags */
+	parse_wdcap(session->capabilities, &(session->wd_basic), &(session->wd_modes));
 
 	return session;
 }

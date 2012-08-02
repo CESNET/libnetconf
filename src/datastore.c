@@ -51,6 +51,7 @@
 #include "netconf_internal.h"
 #include "messages.h"
 #include "error.h"
+#include "with_defaults.h"
 #include "datastore.h"
 #include "datastore/edit_config.h"
 #include "datastore/datastore_internal.h"
@@ -337,13 +338,10 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		ret = ds->func.unlock(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
 	case NC_OP_GET:
-		/* todo filtering - not partially but on the compounded result */
+		data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
 
 		if (ds->get_state != NULL) {
 			/* caller provided callback function to retrieve status data */
-
-			/* do not filter here, filter must be applied on merged result */
-			data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, NULL, &e);
 
 			xmlDocDumpMemory(ds->model, (xmlChar**)(&model), &len);
 			data2 = ds->get_state(model, data);
@@ -354,29 +352,57 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			doc_merged = ncxml_merge(doc1, doc2, ds->model);
 
-			/* \todo now do filtering */
-
 			/* cleanup */
 			free(data);
 			free(data2);
 			xmlFreeDoc(doc1);
 			xmlFreeDoc(doc2);
-
-			/* dump the result */
-			xmlDocDumpFormatMemory(doc_merged, (xmlChar**)(&data), &len, 1);
-			xmlFreeDoc(doc_merged);
 		} else {
-			/* \todo filtering */
-			data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, NULL, &e);
+			doc_merged = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(data);
 		}
+
+		/* process default values */
+		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
+
+		/* \todo now do filtering */
+
+		/* dump the result */
+		xmlDocDumpFormatMemory(doc_merged, (xmlChar**)(&data), &len, 1);
+		xmlFreeDoc(doc_merged);
 
 		break;
 	case NC_OP_GETCONFIG:
-		/* todo filtering */
-		data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), NULL, &e);
+		data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), &e);
+		doc_merged = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		free(data);
+
+		/* process default values */
+		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
+
+		/* \todo now do filtering */
+
+		/* dump the result */
+		xmlDocDumpFormatMemory(doc_merged, (xmlChar**)(&data), &len, 1);
+		xmlFreeDoc(doc_merged);
+
 		break;
 	case NC_OP_COPYCONFIG:
 		config = nc_rpc_get_editconfig(rpc);
+
+		if (ncdflt_rpc_get_withdefaults(rpc) == NCDFLT_MODE_ALL_TAGGED) {
+			doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(config);
+
+			if (ncdflt_cpclear(doc1, ds->model) != EXIT_SUCCESS) {
+				e = nc_err_new(NC_ERR_INVALID_VALUE);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "with-defaults capability failure");
+				break;
+			}
+			xmlDocDumpFormatMemory(doc1, (xmlChar**)(&config), &len, 1);
+			xmlFreeDoc(doc1);
+		}
+
 		ret = ds->func.copyconfig(ds, session, nc_rpc_get_target(rpc), nc_rpc_get_source(rpc), config, &e);
 		free (config);
 		break;

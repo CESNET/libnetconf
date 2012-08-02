@@ -76,6 +76,8 @@
 #define NC_NS_BASE11		"urn:ietf:params:xml:ns:netconf:base:1.1"
 #define NC_NS_BASE11_ID		"base11"
 
+#define NC_NS_YIN 		"urn:ietf:params:xml:ns:yang:yin:1"
+
 #define NC_NS_BASE NC_NS_BASE10
 #define NC_NS_BASE_ID NC_NS_BASE10_ID
 
@@ -195,6 +197,10 @@ struct nc_session {
 	struct nc_cpblts *capabilities;
 	/**< @brief NETCONF protocol version */
 	int version;
+	/**< @brief session's with-defaults basic mode */
+	NCDFLT_MODE wd_basic;
+	/**< @brief session's with-defaults ORed supported modes */
+	int wd_modes;
 	/**< @brief status of the NETCONF session */
 	NC_SESSION_STATUS status;
 };
@@ -309,5 +315,16 @@ struct nc_cpblts {
  * return Copy of the given string without whitespaces. Caller is supposed to free it.
  */
 char* nc_clrwspace (const char* in);
+
+/**
+ * @brief Process config data according to with-defaults' mode and data model
+ */
+int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCDFLT_MODE mode);
+
+/**
+ * @breaf Remove defaults nodes from copy-config's config when report-all-tagged
+ * mode is used.
+ */
+int ncdflt_cpclear(xmlDocPtr config, const xmlDocPtr model);
 
 #endif /* NETCONF_INTERNAL_H_ */

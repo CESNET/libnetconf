@@ -126,6 +126,6 @@ int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCDFLT_MODE mode);
  * @param[in] rpc RPC message to be parsed.
  * @return with-defaults mode of the NETCONF rpc message.
  */
-NCDFLT_MODE ncdflt_rpc_get_withdefaults(nc_rpc* rpc);
+NCDFLT_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc);
 
 #endif /* WITH_DEFAULTS_H_ */

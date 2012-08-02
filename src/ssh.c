@@ -78,6 +78,9 @@ static struct auth_pref_couple sshauth_pref[AUTH_COUNT] = {
 /* number of characters to store short number */
 #define SHORT_INT_LENGTH 6
 
+/* definition in session.c */
+void parse_wdcap(struct nc_cpblts *capabilities, NCDFLT_MODE *basic, int *supported);
+
 void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 {
 	int dir = 0;
@@ -581,6 +584,10 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		return (NULL);
 	}
 
+	/* set with-defaults capability flags */
+	parse_wdcap(retval->capabilities, &(retval->wd_basic), &(retval->wd_modes));
+
+	/* cleanup */
 	nc_cpblts_free(server_cpblts);
 
 	return (retval);
@@ -863,6 +870,10 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		goto shutdown;
 	}
 
+	/* set with-defaults capability flags */
+	parse_wdcap(retval->capabilities, &(retval->wd_basic), &(retval->wd_modes));
+
+	/* cleanup */
 	nc_cpblts_free(client_cpblts);
 
 	if (knownhosts_file != NULL) {

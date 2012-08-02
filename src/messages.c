@@ -174,8 +174,10 @@ NCDFLT_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc)
 			}
 			xmlFree(data);
 		}
+		xmlXPathFreeObject(result);
 	} else {
-		retval = NCDFLT_MODE_DISABLED;
+		/* set basic mode */
+		retval = ncdflt_get_basic_mode();
 	}
 	xmlXPathFreeContext(rpc_ctxt);
 	return (retval);

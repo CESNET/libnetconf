@@ -39,6 +39,12 @@
 
 #include <stdlib.h>
 
+#include <libxml/tree.h>
+#include <libxml/parser.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
+
+#include "datastore/edit_config.h"
 #include "with_defaults.h"
 #include "netconf_internal.h"
 
@@ -137,7 +143,333 @@ int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCDFLT_MODE mode)
 	return (EXIT_SUCCESS);
 }
 
-NCDFLT_MODE ncdflt_rpc_get_withdefaults(nc_rpc* rpc)
+NCDFLT_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc)
 {
 	return (rpc->with_defaults);
+}
+
+static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE mode)
+{
+	xmlNodePtr *parents, *retvals = NULL;
+	xmlNodePtr aux = NULL;
+	xmlNsPtr ns;
+	xmlChar* value, *name, *value2;
+	int i, j, k, size = 0;
+
+	if (mode == NCDFLT_MODE_DISABLED || mode == NCDFLT_MODE_EXPLICIT) {
+		return (NULL);
+	}
+
+	/* do recursion */
+	if (node->parent == NULL) {
+		return (NULL);
+	} else if (xmlStrcmp(node->parent->name, BAD_CAST "module") != 0) {
+		/* we will get parent of the config's equivalent of the node */
+		parents = fill_default(config, node->parent, mode);
+		if (parents == NULL) {
+			return (NULL);
+		}
+	} else {
+		/* we are in the root */
+		aux = xmlDocGetRootElement(config);
+		switch (mode) {
+		case NCDFLT_MODE_ALL:
+		case NCDFLT_MODE_ALL_TAGGED:
+			/* return root element, create it if it does not exist */
+			retvals = (xmlNodePtr*) malloc(2 * sizeof(xmlNodePtr));
+			retvals[1] = NULL;
+			if (aux == NULL) {
+				/* create root element */
+				name = xmlGetProp(node, BAD_CAST "name");
+				aux = xmlNewDocNode(config, NULL, name, NULL);
+				xmlDocSetRootElement(config, aux);
+				xmlFree(name);
+			}
+			retvals[0] = aux;
+			return (retvals);
+			break;
+		case NCDFLT_MODE_TRIM:
+			/* return root element, do not create it if it does not exist */
+			if (aux != NULL) {
+				retvals = (xmlNodePtr*) malloc(2 * sizeof(xmlNodePtr));
+				retvals[0] = aux;
+				retvals[1] = NULL;
+			}
+			return (retvals);
+			break;
+		default:
+			/* remove compiler warnings, but do nothing */
+			break;
+		}
+	}
+
+	for (i = 0, j = 0; parents[i] != NULL; i++) {
+		if (xmlStrcmp(node->name, BAD_CAST "default") == 0) {
+			switch (mode) {
+			case NCDFLT_MODE_ALL:
+			case NCDFLT_MODE_ALL_TAGGED:
+				/* we are at the end - set default content if needed */
+				value = xmlGetProp(node, BAD_CAST "value");
+				if (parents[i]->children == NULL) {
+					/* element is empty -> fill it with the default value */
+					xmlNodeSetContent(parents[i], value);
+				} /* else do nothing, configuration data contain (non-)default value */
+
+				if (mode == NCDFLT_MODE_ALL_TAGGED) {
+					value2 = xmlNodeGetContent(parents[i]);
+					if (xmlStrcmp(value, value2) == 0) {
+						/* add default attribute if element has default value */
+						aux = xmlDocGetRootElement(config);
+						for (ns = aux->nsDef; ns != NULL; ns = ns->next) {
+							if (xmlStrcmp(ns->href, BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0") == 0) {
+								break;
+							}
+						}
+						xmlNewNsProp(parents[i], ns, BAD_CAST "default", BAD_CAST "true");
+					}
+					xmlFree(value2);
+				}
+
+				xmlFree(value);
+				/* continue to another parent node in the list to process */
+				continue;
+			case NCDFLT_MODE_TRIM:
+				/* we are at the end - remove element if it contain default value */
+				if (parents[i]->children != NULL) {
+					value = xmlGetProp(node, BAD_CAST "value");
+					value2 = xmlNodeGetContent(parents[i]);
+					if (xmlStrcmp(value, value2) == 0) {
+						/* element contain default value, remove it */
+						xmlUnlinkNode(parents[i]);
+						xmlFreeNode(parents[i]);
+					}
+					xmlFree(value);
+					xmlFree(value2);
+				}
+				break;
+			default:
+				/* remove compiler warnings, but do nothing */
+				break;
+			}
+		} else {
+			/* remember the number of retvals */
+			k = j;
+			/* find node's equivalents in config */
+			name = xmlGetProp(node, BAD_CAST "name");
+			for(aux = parents[i]->children; aux != NULL; aux = aux->next) {
+				if (xmlStrcmp(aux->name, name) == 0) {
+					/* remember the node */
+					if (size <= j+1) {
+						/* (re)allocate retvals list */
+						size += 32;
+						retvals = (xmlNodePtr*) realloc(retvals, size * sizeof(xmlNodePtr));
+					}
+
+					retvals[j] = aux;
+					j++;
+					retvals[j] = NULL; /* list terminating NULL */
+				}
+			}
+
+			switch (mode) {
+			case NCDFLT_MODE_ALL:
+			case NCDFLT_MODE_ALL_TAGGED:
+				if (k == j) {
+					/* no new equivalent node found */
+					if (size <= j + 1) {
+						/* (re)allocate retvals list */
+						size += 32;
+						retvals = (xmlNodePtr*) realloc(retvals, size * sizeof(xmlNodePtr));
+					}
+					/* no new equivalent node found -> create one */
+					retvals[j] = xmlNewChild(parents[i], NULL, name, NULL);
+					j++;
+					retvals[j] = NULL; /* list terminating NULL */
+				}
+				break;
+			case NCDFLT_MODE_TRIM:
+				/* nothing needed */
+				break;
+			default:
+				/* remove compiler warnings, but do nothing */
+				break;
+			}
+			xmlFree(name);
+		}
+	}
+	if (parents != NULL) {
+		free(parents);
+	}
+
+	return (retvals);
+}
+
+int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCDFLT_MODE mode)
+{
+	xmlXPathContextPtr model_ctxt = NULL;
+	xmlXPathObjectPtr defaults = NULL;
+	int i;
+
+	if (config == NULL || model == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (mode == NCDFLT_MODE_DISABLED || mode == NCDFLT_MODE_EXPLICIT) {
+		/* nothing to do */
+		return (EXIT_SUCCESS);
+	}
+
+	/* create xpath evaluation context */
+	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
+		WARN("%s: Creating XPath context failed.", __func__)
+		/* with-defaults cannot be found */
+		return (EXIT_FAILURE);
+	}
+	if (xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) != 0) {
+		xmlXPathFreeContext(model_ctxt);
+		return (EXIT_FAILURE);
+	}
+	defaults = xmlXPathEvalExpression(BAD_CAST "//yin:default", model_ctxt);
+	if (defaults != NULL) {
+		/* if report-all-tagged, add namespace for default attribute into the whole doc */
+		if (mode == NCDFLT_MODE_ALL_TAGGED) {
+			xmlNewNs(xmlDocGetRootElement(config), BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
+		}
+		/* process all defaults elements */
+		for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
+			fill_default(config, defaults->nodesetval->nodeTab[i], mode);
+		}
+
+		xmlXPathFreeObject(defaults);
+	}
+	xmlXPathFreeContext(model_ctxt);
+
+	return (EXIT_SUCCESS);
+}
+
+static xmlNodePtr* remove_default_copyconfig(xmlDocPtr config, xmlNodePtr node)
+{
+	xmlNodePtr *parents, *retvals = NULL;
+	xmlNodePtr aux = NULL;
+	xmlChar* value, *name, *value2;
+	int i, j, size = 0;
+
+	/* do recursion */
+	if (node->parent == NULL) {
+		return (NULL);
+	} else if (xmlStrcmp(node->parent->name, BAD_CAST "module") != 0) {
+		/* we will get parent of the config's equivalent of the node */
+		parents = remove_default_copyconfig(config, node->parent);
+		if (parents == NULL) {
+			return (NULL);
+		}
+	} else {
+		/* we are in the root */
+		aux = xmlDocGetRootElement(config);
+		/* return root element, do not create it if it does not exist */
+		if (aux != NULL) {
+			retvals = (xmlNodePtr*) malloc(2 * sizeof(xmlNodePtr));
+			retvals[0] = aux;
+			retvals[1] = NULL;
+		}
+		return (retvals);
+	}
+
+	for (i = 0, j = 0; parents[i] != NULL; i++) {
+		if (xmlStrcmp(node->name, BAD_CAST "default") == 0) {
+			/* we are at the end */
+			/* check if element has specified default attribute */
+			value2 = xmlGetNsProp(parents[i], BAD_CAST "default", BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0");
+			if ((xmlStrcmp(value2, BAD_CAST "true") == 0)
+					|| (xmlStrcmp(value2, BAD_CAST "1") == 0)) {
+				/* check if it has the real default value - stupid RFC requires all these rules :( */
+				value = xmlGetProp(node, BAD_CAST "value");
+				if (xmlStrcmp(value, value2) != 0) {
+					/* error should be generated by the server */
+					xmlFree(value);
+					xmlFree(value2);
+					return (NULL);
+				} else {
+					/* element contain default value, remove it */
+					xmlUnlinkNode(parents[i]);
+					xmlFreeNode(parents[i]);
+				}
+				xmlFree(value);
+			} /* else ignore this element and go to another */
+			xmlFree(value2);
+		} else {
+			/* find node's equivalents in config */
+			name = xmlGetProp(node, BAD_CAST "name");
+			for (aux = parents[i]->children; aux != NULL;
+			                aux = aux->next) {
+				if (xmlStrcmp(aux->name, name) == 0) {
+					/* remember the node */
+					if (size <= j + 1) {
+						/* (re)allocate retvals list */
+						size += 32;
+						retvals = (xmlNodePtr*) realloc(retvals, size * sizeof(xmlNodePtr));
+					}
+
+					retvals[j] = aux;
+					j++;
+					retvals[j] = NULL; /* list terminating NULL */
+				}
+			}
+			xmlFree(name);
+		}
+	}
+	if (parents != NULL) {
+		free(parents);
+	}
+
+	if (xmlStrcmp(node->name, BAD_CAST "default") == 0) {
+		/* success and end of recursion */
+		retvals = (xmlNodePtr*) malloc(sizeof(xmlNodePtr));
+		retvals[0] = NULL;
+	}
+	return (retvals);
+}
+
+/**
+ * @breaf Remove defaults nodes from copy-config's config when report-all-tagged
+ * mode is used.
+ */
+int ncdflt_cpclear(xmlDocPtr config, const xmlDocPtr model)
+{
+	xmlXPathContextPtr model_ctxt = NULL;
+	xmlXPathObjectPtr defaults = NULL;
+	xmlNodePtr* r;
+	int i, retval = EXIT_SUCCESS;
+
+	if (config == NULL || model == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	/* create xpath evaluation context */
+	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
+		WARN("%s: Creating XPath context failed.", __func__)
+		/* with-defaults cannot be found */
+		return (EXIT_FAILURE);
+	}
+	if (xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) != 0) {
+		xmlXPathFreeContext(model_ctxt);
+		return (EXIT_FAILURE);
+	}
+	defaults = xmlXPathEvalExpression(BAD_CAST "//yin:default", model_ctxt);
+	if (defaults != NULL) {
+		/* process all defaults elements */
+		for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
+			if ((r = remove_default_copyconfig(config, defaults->nodesetval->nodeTab[i])) == NULL) {
+				retval = EXIT_FAILURE;
+				break;
+			} else {
+				free(r);
+			}
+		}
+
+		xmlXPathFreeObject(defaults);
+	}
+	xmlXPathFreeContext(model_ctxt);
+
+	return (retval);
 }

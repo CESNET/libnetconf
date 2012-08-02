@@ -127,7 +127,7 @@ int ncds_file_init (struct ncds_ds* ds);
  * @param[out] error NETCONF error structure describing arised error.
  * @return NULL on error, resulting data on success.
 */
-char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, const struct nc_filter *filter, struct nc_err** error);
+char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, struct nc_err** error);
 
 /**
  * @brief Perform lock of specified datastore for specified session.
