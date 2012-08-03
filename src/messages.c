@@ -161,7 +161,6 @@ NCDFLT_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc)
 	result = xmlXPathEvalExpression(BAD_CAST "//wd:with-defaults", rpc_ctxt);
 	if (result != NULL) {
 		if (result->nodesetval->nodeNr != 1) {
-			xmlXPathFreeObject(result);
 			retval = NCDFLT_MODE_DISABLED;
 		} else {
 			data = xmlNodeGetContent(result->nodesetval->nodeTab[0]);
