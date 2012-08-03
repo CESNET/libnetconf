@@ -150,7 +150,7 @@ NCDFLT_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc)
 
 static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE mode)
 {
-	xmlNodePtr *parents, *retvals = NULL;
+	xmlNodePtr *parents = NULL, *retvals = NULL;
 	xmlNodePtr aux = NULL;
 	xmlNsPtr ns;
 	xmlChar* value, *name, *value2;
@@ -166,9 +166,6 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE m
 	} else if (xmlStrcmp(node->parent->name, BAD_CAST "module") != 0) {
 		/* we will get parent of the config's equivalent of the node */
 		parents = fill_default(config, node->parent, mode);
-		if (parents == NULL) {
-			return (NULL);
-		}
 	} else {
 		/* we are in the root */
 		aux = xmlDocGetRootElement(config);
@@ -201,6 +198,9 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE m
 			/* remove compiler warnings, but do nothing */
 			break;
 		}
+	}
+	if (parents == NULL) {
+		return (NULL);
 	}
 
 	for (i = 0, j = 0; parents[i] != NULL; i++) {
