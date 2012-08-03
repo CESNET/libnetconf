@@ -1114,7 +1114,8 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	return (EXIT_SUCCESS);
 
 malformed_msg:
-	if (session->version == NETCONFV11) {
+	if (session->version == NETCONFV11 && session->ssh_session == NULL) {
+		/* NETCONF version 1.1 define sending error reply from the server */
 		reply = nc_reply_error(nc_err_new(NC_ERR_MALFORMED_MSG));
 		if (reply == NULL) {
 			ERROR("Unable to create \'Malformed message\' reply");
