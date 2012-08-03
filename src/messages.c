@@ -141,6 +141,11 @@ NCDFLT_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc)
 	xmlChar* data;
 	NCDFLT_MODE retval;
 
+
+	if (nc_rpc_get_type(rpc) == NC_RPC_HELLO) {
+		return (NCDFLT_MODE_DISABLED);
+	}
+
 	/* create xpath evaluation context */
 	if ((rpc_ctxt = xmlXPathNewContext(rpc->doc)) == NULL) {
 		WARN("%s: Creating XPath context failed.", __func__)
