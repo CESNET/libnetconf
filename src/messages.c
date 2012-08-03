@@ -451,6 +451,21 @@ char * nc_rpc_get_editconfig (const nc_rpc *rpc)
 	return retval;
 }
 
+char * nc_rpc_get_config (const nc_rpc *rpc)
+{
+	switch(nc_rpc_get_op(rpc)) {
+	case NC_OP_COPYCONFIG:
+		return (nc_rpc_get_copyconfig(rpc));
+		break;
+	case NC_OP_EDITCONFIG:
+		return (nc_rpc_get_editconfig(rpc));
+		break;
+	default:
+		/* other operations do not have config parameter */
+		return (NULL);
+	}
+}
+
 NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 {
 	xmlNodePtr rpc_root, op, defop;

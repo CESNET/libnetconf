@@ -388,7 +388,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 
 		break;
 	case NC_OP_COPYCONFIG:
-		config = nc_rpc_get_editconfig(rpc);
+		config = nc_rpc_get_config(rpc);
 
 		if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) != 0) {
 			/* if report-all-tagged mode is supported, 'default'
@@ -417,7 +417,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		ret = ds->func.deleteconfig(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
 	case NC_OP_EDITCONFIG:
-		config = nc_rpc_get_editconfig(rpc);
+		config = nc_rpc_get_config(rpc);
 
 		if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) != 0) {
 			/* if report-all-tagged mode is supported, 'default'
