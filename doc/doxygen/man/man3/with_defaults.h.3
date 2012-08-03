@@ -1,68 +1,63 @@
-.TH "src/datastore.h" 3 "Fri Aug 3 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
+.TH "src/with_defaults.h" 3 "Fri Aug 3 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
-src/datastore.h \- 
+src/with_defaults.h \- 
 .PP
-NETCONF datastore handling function prototypes and structures\&.  
+Implementation of NETCONF's with-defaults capability defined in RFC 6243\&.  
 
 .SH SYNOPSIS
 .br
 .PP
-\fC#include 'netconf\&.h'\fP
+\fC#include 'messages\&.h'\fP
 .br
 
-.SS "Typedefs"
+.SS "Macros"
 
 .in +1c
 .ti -1c
-.RI "typedef int \fBncds_id\fP"
+.RI "#define \fBNCDFLT_DISABLE\fP   \fBncdflt_set_basic_mode\fP(\fBNCDFLT_MODE_DISABLED\fP)"
 .br
-.RI "\fIDatastore ID\&. \fP"
+.RI "\fIDisable support for with-defaults capability\&. This can be done on both client and server\&. \fP"
 .in -1c
 .SS "Enumerations"
 
 .in +1c
 .ti -1c
-.RI "enum \fBNCDS_TYPE\fP { \fBNCDS_TYPE_EMPTY\fP, \fBNCDS_TYPE_FILE\fP }"
+.RI "enum \fBNCDFLT_MODE\fP { \fBNCDFLT_MODE_DISABLED\fP =  0, \fBNCDFLT_MODE_ALL\fP =  1, \fBNCDFLT_MODE_TRIM\fP =  2, \fBNCDFLT_MODE_EXPLICIT\fP =  4, \fBNCDFLT_MODE_ALL_TAGGED\fP =  8 }"
 .br
-.RI "\fIDatastore implementation types provided by libnetconf\&. \fP"
 .in -1c
 .SS "Functions"
 
 .in +1c
 .ti -1c
-.RI "struct ncds_ds * \fBncds_new\fP (\fBNCDS_TYPE\fP type, const char *model_path, char *(*get_state)(const char *model, const char *running))"
+.RI "void \fBncdflt_set_basic_mode\fP (\fBNCDFLT_MODE\fP mode)"
 .br
-.RI "\fICreate new datastore structure of the specified implementation type\&. \fP"
+.RI "\fISet basic mode of the with-defaults capability for the NETCONF server\&. \fP"
 .ti -1c
-.RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
+.RI "\fBNCDFLT_MODE\fP \fBncdflt_get_basic_mode\fP ()"
 .br
-.RI "\fIAssign path of the datastore file into the datastore structure\&. \fP"
+.RI "\fIGet current set basic mode of the with-defaults capability\&. \fP"
 .ti -1c
-.RI "\fBncds_id\fP \fBncds_init\fP (struct ncds_ds *datastore)"
+.RI "void \fBncdflt_set_supported\fP (\fBNCDFLT_MODE\fP modes)"
 .br
-.RI "\fIActivate datastore structure for use\&. \fP"
+.RI "\fISet with-defaults modes that are supported\&. \fP"
 .ti -1c
-.RI "void \fBncds_free\fP (struct ncds_ds *datastore)"
+.RI "\fBNCDFLT_MODE\fP \fBncdflt_get_supported\fP ()"
 .br
-.RI "\fIClose specified datastore and free all resources\&. \fP"
+.RI "\fIGet ORed value containing currently supported with-defaults modes\&. \fP"
 .ti -1c
-.RI "void \fBncds_free2\fP (\fBncds_id\fP datastore_id)"
+.RI "int \fBncdflt_rpc_withdefaults\fP (\fBnc_rpc\fP *rpc, \fBNCDFLT_MODE\fP mode)"
 .br
-.RI "\fIClose specified datastore and free all resources\&. \fP"
+.RI "\fISet <with-defaults> parameter for the given NETCONF RPC message\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBncds_apply_rpc\fP (\fBncds_id\fP id, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
+.RI "\fBNCDFLT_MODE\fP \fBncdflt_rpc_get_withdefaults\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIPerform requested RPC operation on the datastore\&. \fP"
-.ti -1c
-.RI "void \fBncds_break_locks\fP (const struct nc_session *session)"
-.br
-.RI "\fIRemove all locks that is holding given session\&. \fP"
+.RI "\fIGet value of the <with-defaults> element from the rpc message\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
-NETCONF datastore handling function prototypes and structures\&. 
+Implementation of NETCONF's with-defaults capability defined in RFC 6243\&. 
 
 \fBAuthor:\fP
 .RS 4
@@ -82,7 +77,27 @@ ALTERNATIVELY, provided that this notice is retained in full, this product may b
 .PP
 This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
 .PP
-Definition in file \fBdatastore\&.h\fP\&.
+Definition in file \fBwith_defaults\&.h\fP\&.
+.SH "Enumeration Type Documentation"
+.PP 
+.SS "enum \fBNCDFLT_MODE\fP"
+
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fINCDFLT_MODE_DISABLED \fP\fP
+.TP
+\fB\fINCDFLT_MODE_ALL \fP\fP
+.TP
+\fB\fINCDFLT_MODE_TRIM \fP\fP
+.TP
+\fB\fINCDFLT_MODE_EXPLICIT \fP\fP
+.TP
+\fB\fINCDFLT_MODE_ALL_TAGGED \fP\fP
+
+.PP
+Definition at line 46 of file with_defaults\&.h\&.
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

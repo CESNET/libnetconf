@@ -1,4 +1,4 @@
-.TH "src/session.h" 3 "Fri Jul 27 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
+.TH "src/session.h" 3 "Fri Aug 3 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -81,6 +81,10 @@ Functions to handle NETCONF sessions\&.
 .RI "int \fBnc_cpblts_enabled\fP (const struct nc_session *session, const char *capability_string)"
 .br
 .RI "\fICheck if the given capability is supported by the session\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_cpblts_get\fP (const struct nc_cpblts *c, const char *capability_string)"
+.br
+.RI "\fIGet complete capability string including parameters\&. \fP"
 .ti -1c
 .RI "void \fBnc_cpblts_iter_start\fP (struct nc_cpblts *c)"
 .br

@@ -74,8 +74,8 @@ struct ncds_ds;
  * @param[in] get_state Pointer to a callback function that returns serialized
  * XML document containing state configuration data of the device. As parameters,
  * it receives serialized configuration data model in YIN format and current
- * content of the running datastore. If NULL is set, <get> operation is
- * performed in the same way as <get-config>.
+ * content of the running datastore. If NULL is set, \<get\> operation is
+ * performed in the same way as \<get-config\>.
  * @return Prepared (not configured) datastore structure. To configure the
  * structure, caller must use parameters setters of the specific datastore
  * implementation type. Then, the datastore can be initiated (ncds_init()) and

@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Fri Jul 27 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Fri Aug 3 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -117,6 +117,10 @@ libnetconf's functions for handling NETCONF sessions\&.
 .RI "int \fBnc_cpblts_enabled\fP (const struct nc_session *session, const char *capability_string)"
 .br
 .RI "\fICheck if the given capability is supported by the session\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_cpblts_get\fP (const struct nc_cpblts *c, const char *capability_string)"
+.br
+.RI "\fIGet complete capability string including parameters\&. \fP"
 .ti -1c
 .RI "void \fBnc_cpblts_iter_start\fP (struct nc_cpblts *c)"
 .br
@@ -493,6 +497,22 @@ Check if the given capability is supported by the session\&. \fBParameters:\fP
 \fBReturns:\fP
 .RS 4
 0 for false result, 1 if the given capability is supported\&. 
+.RE
+.PP
+
+.SS "const char* \fBnc_cpblts_get\fP (const struct nc_cpblts *c, const char *capability_string)"
+
+.PP
+Get complete capability string including parameters\&. \fBParameters:\fP
+.RS 4
+\fIc\fP Capabilities structure to be examined 
+.br
+\fIcapability_string\fP Capability identifier, parameters are ignored and only basic identifier is used to retrieve specific identifier including parameters from the given capability structure\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Constant capability identifier including parameters 
 .RE
 .PP
 
