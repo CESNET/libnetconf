@@ -45,6 +45,7 @@
 
 #include "netconf.h"
 #include "callbacks.h"
+#include "with_defaults.h"
 
 #define SID_SIZE 	16
 
@@ -75,19 +76,24 @@
 #define NC_NS_BASE11		"urn:ietf:params:xml:ns:netconf:base:1.1"
 #define NC_NS_BASE11_ID		"base11"
 
+#define NC_NS_YIN 		"urn:ietf:params:xml:ns:yang:yin:1"
+
 #define NC_NS_BASE NC_NS_BASE10
 #define NC_NS_BASE_ID NC_NS_BASE10_ID
 
-#define NC_CAP_BASE10_ID      "urn:ietf:params:netconf:base:1.0"
-#define NC_CAP_BASE11_ID      "urn:ietf:params:netconf:base:1.1"
-#define NC_CAP_NOTIFICATION_ID "urn:ietf:params:xml:ns:netconf:notification:1.0"
-#define NC_CAP_WRUNNING_ID  "urn:ietf:params:netconf:capability:writable-running:1.0"
-#define NC_CAP_CANDIDATE_ID "urn:ietf:params:netconf:capability:candidate:1.0"
-#define NC_CAP_STARTUP_ID   "urn:ietf:params:netconf:capability:startup:1.0"
-#define NC_CAP_POWERCTL_ID  "urn:liberouter:params:netconf:capability:power-control:1.0"
+#define NC_CAP_BASE10_ID      	"urn:ietf:params:netconf:base:1.0"
+#define NC_CAP_BASE11_ID      	"urn:ietf:params:netconf:base:1.1"
+#define NC_CAP_NOTIFICATION_ID 	"urn:ietf:params:xml:ns:netconf:notification:1.0"
+#define NC_CAP_WRUNNING_ID  	"urn:ietf:params:netconf:capability:writable-running:1.0"
+#define NC_CAP_CANDIDATE_ID 	"urn:ietf:params:netconf:capability:candidate:1.0"
+#define NC_CAP_STARTUP_ID   	"urn:ietf:params:netconf:capability:startup:1.0"
+#define NC_CAP_POWERCTL_ID 	"urn:liberouter:params:netconf:capability:power-control:1.0"
 #define NC_CAP_CONFIRMED_COMMIT_ID "urn:ietf:params:netconf:capability:confirmed-commit:1.1"
-#define NC_CAP_ROLLBACK_ID		"urn:ietf:params:netconf:capability:rollback-on-error:1.0"
-#define NC_CAP_VALIDATE_ID		"urn:ietf:params:netconf:capability:validate:1.1"
+#define NC_CAP_ROLLBACK_ID	"urn:ietf:params:netconf:capability:rollback-on-error:1.0"
+#define NC_CAP_VALIDATE_ID	"urn:ietf:params:netconf:capability:validate:1.1"
+#define NC_CAP_WITHDEFAULTS_ID 	"urn:ietf:params:netconf:capability:with-defaults:1.0"
+
+#define NC_NS_CAP_WITHDEFAULTS 	"urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"
 
 /* NETCONF versions identificators */
 #define NETCONFV10	0
@@ -191,6 +197,10 @@ struct nc_session {
 	struct nc_cpblts *capabilities;
 	/**< @brief NETCONF protocol version */
 	int version;
+	/**< @brief session's with-defaults basic mode */
+	NCDFLT_MODE wd_basic;
+	/**< @brief session's with-defaults ORed supported modes */
+	int wd_modes;
 	/**< @brief status of the NETCONF session */
 	NC_SESSION_STATUS status;
 };
@@ -280,6 +290,7 @@ struct nc_msg {
 		NC_REPLY_TYPE reply;
 		NC_RPC_TYPE rpc;
 	} type;
+	NCDFLT_MODE with_defaults;
 	struct nc_err* error;
 };
 
@@ -304,5 +315,30 @@ struct nc_cpblts {
  * return Copy of the given string without whitespaces. Caller is supposed to free it.
  */
 char* nc_clrwspace (const char* in);
+
+/**
+ * @brief Process config data according to with-defaults' mode and data model
+ * @param[in] config XML configuretion data document where default values will
+ * be modified (added for report-all and removed for trim mode).
+ * @param[in] model Configuration data model for data given in config parameter.
+ * @param[in] mode With-defaults capability mode for configuration data modification.
+ * @return 0 on success, non-zero else.
+ */
+int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCDFLT_MODE mode);
+
+/**
+ * @breaf Remove defaults nodes from copy-config's and edit-config's config.
+ *
+ * This function should be used only if report-all-tagged mode is supported.
+ *
+ * @param[in] config XML configuretion data document where default node will
+ * be checked if they contain 'default' attribute and also correct default value
+ * according to the model and in such case the node will be returned to its
+ * default value (i.e. removed from the config where it can be again added by
+ * following input operation).
+ * @param[in] model Configuration data model for data given in config parameter.
+ * @return 0 on success, non-zero else.
+ */
+int ncdflt_default_clear(xmlDocPtr config, const xmlDocPtr model);
 
 #endif /* NETCONF_INTERNAL_H_ */

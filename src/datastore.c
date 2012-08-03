@@ -51,7 +51,9 @@
 #include "netconf_internal.h"
 #include "messages.h"
 #include "error.h"
+#include "with_defaults.h"
 #include "datastore.h"
+#include "datastore/edit_config.h"
 #include "datastore/datastore_internal.h"
 #include "datastore/file/datastore_file.h"
 #include "datastore/empty/datastore_empty.h"
@@ -125,7 +127,7 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
-struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path)
+struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running))
 {
 	struct ncds_ds* ds = NULL;
 
@@ -176,6 +178,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path)
 		return (NULL);
 	}
 	ds->model_path = strdup(model_path);
+	ds->get_state = get_state;
 
 	/* ds->id stays 0 to indicate, that datastore is still not fully configured */
 
@@ -275,11 +278,46 @@ void ncds_free2 (ncds_id datastore_id)
 	}
 }
 
+xmlDocPtr ncxml_merge (const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model)
+{
+	int ret;
+	keyList keys;
+	xmlDocPtr result;
+
+	if (first == NULL || second == NULL) {
+		return (NULL);
+	}
+
+	result = xmlCopyDoc(first, 1);
+	if (result == NULL) {
+		return (NULL);
+	}
+
+	/* get all keys from data model */
+	keys = get_keynode_list(data_model);
+
+	/* merge the documents */
+	ret = edit_merge(result, second->children, keys);
+
+	if (keys != NULL) {
+		keyListFree(keys);
+	}
+
+	if (ret != EXIT_SUCCESS) {
+		xmlFreeDoc(result);
+		return (NULL);
+	} else {
+		return (result);
+	}
+}
+
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
 	struct ncds_ds* ds;
-	char* data = NULL, * config;
+	char* data = NULL, * config, *model = NULL, *data2;
+	xmlDocPtr doc1, doc2, doc_merged;
+	int len;
 	int ret = EXIT_FAILURE;
 	nc_reply* reply;
 
@@ -299,12 +337,79 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	case NC_OP_UNLOCK:
 		ret = ds->func.unlock(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
+	case NC_OP_GET:
+		data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
+
+		if (ds->get_state != NULL) {
+			/* caller provided callback function to retrieve status data */
+
+			xmlDocDumpMemory(ds->model, (xmlChar**)(&model), &len);
+			data2 = ds->get_state(model, data);
+			free(model);
+
+			/* merge status and config data */
+			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			doc_merged = ncxml_merge(doc1, doc2, ds->model);
+
+			/* cleanup */
+			free(data);
+			free(data2);
+			xmlFreeDoc(doc1);
+			xmlFreeDoc(doc2);
+		} else {
+			doc_merged = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(data);
+		}
+
+		/* process default values */
+		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
+
+		/* \todo now do filtering */
+
+		/* dump the result */
+		xmlDocDumpFormatMemory(doc_merged, (xmlChar**)(&data), &len, 1);
+		xmlFreeDoc(doc_merged);
+
+		break;
 	case NC_OP_GETCONFIG:
-		/* todo filtering */
-		data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), NULL, &e);
+		data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), &e);
+		doc_merged = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		free(data);
+
+		/* process default values */
+		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
+
+		/* \todo now do filtering */
+
+		/* dump the result */
+		xmlDocDumpFormatMemory(doc_merged, (xmlChar**)(&data), &len, 1);
+		xmlFreeDoc(doc_merged);
+
 		break;
 	case NC_OP_COPYCONFIG:
-		config = nc_rpc_get_copyconfig(rpc);
+		config = nc_rpc_get_editconfig(rpc);
+
+		if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) != 0) {
+			/* if report-all-tagged mode is supported, 'default'
+			 * attribute with 'true' or '1' value can appear and we
+			 * have to check that the element's value is equal to
+			 * default value. If does, the element is removed and
+			 * it is supposed to be default, otherwise the
+			 * invalid-value error reply must be returned.
+			 */
+			doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(config);
+
+			if (ncdflt_default_clear(doc1, ds->model) != EXIT_SUCCESS) {
+				e = nc_err_new(NC_ERR_INVALID_VALUE);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "with-defaults capability failure");
+				break;
+			}
+			xmlDocDumpFormatMemory(doc1, (xmlChar**)(&config), &len, 1);
+			xmlFreeDoc(doc1);
+		}
+
 		ret = ds->func.copyconfig(ds, session, nc_rpc_get_target(rpc), nc_rpc_get_source(rpc), config, &e);
 		free (config);
 		break;
@@ -313,6 +418,27 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		break;
 	case NC_OP_EDITCONFIG:
 		config = nc_rpc_get_editconfig(rpc);
+
+		if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) != 0) {
+			/* if report-all-tagged mode is supported, 'default'
+			 * attribute with 'true' or '1' value can appear and we
+			 * have to check that the element's value is equal to
+			 * default value. If does, the element is removed and
+			 * it is supposed to be default, otherwise the
+			 * invalid-value error reply must be returned.
+			 */
+			doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(config);
+
+			if (ncdflt_default_clear(doc1, ds->model) != EXIT_SUCCESS) {
+				e = nc_err_new(NC_ERR_INVALID_VALUE);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "with-defaults capability failure");
+				break;
+			}
+			xmlDocDumpFormatMemory(doc1, (xmlChar**)(&config), &len, 1);
+			xmlFreeDoc(doc1);
+		}
+
 		ret = ds->func.editconfig(ds, session, nc_rpc_get_target(rpc), config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 		free (config);
 		break;

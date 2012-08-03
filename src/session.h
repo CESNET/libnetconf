@@ -205,6 +205,17 @@ int nc_cpblts_enabled(const struct nc_session* session, const char* capability_s
 
 /**
  * @ingroup session
+ * @brief Get complete capability string including parameters
+ * @param[in] c Capabilities structure to be examined
+ * @param[in] capability_string Capability identifier, parameters are ignored
+ * and only basic identifier is used to retrieve specific identifier including
+ * parameters from the given capability structure.
+ * @return Constant capability identifier including parameters
+ */
+const char* nc_cpblts_get(const struct nc_cpblts *c, const char* capability_string);
+
+/**
+ * @ingroup session
  * @brief Move NETCONF capabilities structure iterator to the beginning of the capability strings list.
  * @param c NETCONF capabilities structure to be iterated.
  */

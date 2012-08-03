@@ -41,6 +41,7 @@
 #define MESSAGES_INTERNAL_H_
 
 #include "netconf_internal.h"
+#include "with_defaults.h"
 
 /**
  * @brief Create client's \<hello\> message.
@@ -66,6 +67,13 @@ nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id);
  * @return 0 on error,\n message-id of the message on success.
  */
 nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg);
+
+/**
+ * @brief Parse rpc and get with-defaults mode
+ * @param[in] rpc NETCONF rpc message to be parsed
+ * @return one of the with-defaults mode, 0 (NCDFLT_MODE_DISABLED) if not set
+ */
+NCDFLT_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc);
 
 /**
  * @ingroup internalAPI

@@ -193,7 +193,8 @@ void callback_sshauth_interactive_default (const char* name,
 		LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
 		void** abstract)
 {
-	int i, buflen = 8;
+	int i;
+	unsigned int buflen = 8;
 	int c = 0;
 	struct termios newterm, oldterm;
 

@@ -25,6 +25,7 @@ var group__session =
     [ "nc_cpblts_add", "db/d52/group__session.html#ga2ea9b318015206d886c7e54386fc85e3", null ],
     [ "nc_cpblts_remove", "db/d52/group__session.html#gacb59cf4fa78bf02c22afac395acf0693", null ],
     [ "nc_cpblts_enabled", "db/d52/group__session.html#gaa8325078c33d25a7cf48e1ed9d417ff4", null ],
+    [ "nc_cpblts_get", "db/d52/group__session.html#gabed55135f1868bef5f266737b8862aa4", null ],
     [ "nc_cpblts_iter_start", "db/d52/group__session.html#gae92c774e940114b4733f85e186d84620", null ],
     [ "nc_cpblts_iter_next", "db/d52/group__session.html#gaea2ced8d4e5f2cc9971680e49f876c58", null ],
     [ "nc_cpblts_count", "db/d52/group__session.html#ga79a7aea77cbfe29535eb83a6e5c60419", null ],

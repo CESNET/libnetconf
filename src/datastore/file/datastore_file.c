@@ -593,7 +593,7 @@ int ncds_file_unlock (struct ncds_ds* ds, const struct nc_session* session, NC_D
 	return (retval);
 }
 
-char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, const struct nc_filter *filter, struct nc_err** error)
+char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, struct nc_err** error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 	xmlNodePtr target_ds, aux_node;

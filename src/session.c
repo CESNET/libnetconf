@@ -170,7 +170,7 @@ struct nc_cpblts *nc_cpblts_new(char* const* list)
 	retval->list[0] = NULL;
 
 	if (list != NULL) {
-		for (i = 0, item = list[i]; item != NULL; item = list[i++]) {
+		for (i = 0, item = list[i]; item != NULL; i++) {
 			retval->list[i] = strdup (item);
 			retval->items++;
 			if (retval->items == retval->list_size) {
@@ -184,6 +184,7 @@ struct nc_cpblts *nc_cpblts_new(char* const* list)
 				retval->list_size *= 2;
 			}
 			retval->list[i + 1] = NULL;
+			item = list[i+1];
 		}
 	}
 
@@ -192,6 +193,9 @@ struct nc_cpblts *nc_cpblts_new(char* const* list)
 
 int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string)
 {
+	int i;
+	char *s, *p;
+
 	if (capabilities == NULL || capability_string == NULL) {
 		return (EXIT_FAILURE);
 	}
@@ -201,7 +205,34 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 		return (EXIT_FAILURE);
 	}
 
-	capabilities->list[capabilities->items] = strdup(capability_string);
+	/* get working copy of capability_string where the parameters will be ignored */
+	s = strdup(capability_string);
+	if ((p = strchr(s, '?')) != NULL) {
+		/* in following comparison, ignore capability's parameters */
+		*p = 0;
+	}
+
+	/* find duplicities */
+	for (i = 0; i < capabilities->items; i++) {
+		if (strcmp(capabilities->list[i], s) == 0) {
+			/* capability is already in the capabilities list, but
+			 * parameters can differ, so substitute current instance
+			 * with the new one
+			 */
+			free(capabilities->list[i]);
+			if (p != NULL) {
+				*p = '?';
+			}
+			capabilities->list[i] = s;
+			return (EXIT_SUCCESS);
+		}
+	}
+	/* unhide capability's parameters */
+	if (p != NULL) {
+		*p = '?';
+	}
+
+	capabilities->list[capabilities->items] = s;
 	capabilities->items++;
 	if (capabilities->items == capabilities->list_size) {
 		/* resize the capacity of the capabilities list */
@@ -220,6 +251,7 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_string)
 {
 	int i;
+	char* s, *p;
 
 	if (capabilities == NULL || capability_string == NULL) {
 		return (EXIT_FAILURE);
@@ -230,11 +262,19 @@ int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_str
 		return (EXIT_FAILURE);
 	}
 
+	s = strdup(capability_string);
+	if ((p = strchr(s, '?')) != NULL) {
+		/* in comparison, ignore capability's parameters */
+		p = 0;
+	}
+
 	for (i = 0; i < capabilities->items; i++) {
-		if (capabilities->list[i] != NULL && strcmp(capabilities->list[i], capability_string) == 0) {
+		if (capabilities->list[i] != NULL && strncmp(capabilities->list[i], s, strlen(s)) == 0) {
 			break;
 		}
 	}
+	free(s);
+
 	if (i < capabilities->items) {
 		free(capabilities->list[i]);
 		/* move here the last item from the list */
@@ -247,19 +287,54 @@ int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_str
 	return (EXIT_SUCCESS);
 }
 
+const char* nc_cpblts_get(const struct nc_cpblts *c, const char* capability_string)
+{
+	int i;
+	char* s, *p;
+
+	if (capability_string == NULL || c == NULL ) {
+		return (NULL);
+	}
+
+	s = strdup(capability_string);
+	if ((p = strchr(s, '?')) != NULL) {
+		/* in comparison, ignore capability's parameters */
+		p = 0;
+	}
+
+	for (i = 0; c->list[i]; i++) {
+		if (strncmp(s, c->list[i], strlen(s)) == 0) {
+			free(s);
+			return (c->list[i]);
+		}
+	}
+	free(s);
+	return (NULL);
+
+}
+
 int nc_cpblts_enabled(const struct nc_session* session, const char* capability_string)
 {
 	int i;
+	char* s, *p;
 
 	if (capability_string == NULL || session == NULL || session->capabilities == NULL) {
 		return (0);
 	}
 
+	s = strdup(capability_string);
+	if ((p = strchr(s, '?')) != NULL) {
+		/* in comparison, ignore capability's parameters */
+		p = 0;
+	}
+
 	for (i = 0; session->capabilities->list[i]; i++) {
-		if (strcmp(capability_string, session->capabilities->list[i]) == 0) {
+		if (strncmp(s, session->capabilities->list[i], strlen(s)) == 0) {
+			free(s);
 			return (1);
 		}
 	}
+	free(s);
 	return (0);
 }
 
@@ -306,6 +381,9 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:writable-running:1.0");
 	nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:candidate:1.0");
 	nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:startup:1.0");
+	if (ncdflt_get_basic_mode() != NCDFLT_MODE_DISABLED) {
+		nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:with-defaults:1.0");
+	}
 
 	return (retval);
 }
@@ -317,6 +395,45 @@ struct nc_cpblts* nc_session_get_cpblts (const struct nc_session* session)
 	}
 
 	return (session->capabilities);
+}
+
+/**
+ * @brief Parse with-defaults capability
+ */
+void parse_wdcap(struct nc_cpblts *capabilities, NCDFLT_MODE *basic, int *supported)
+{
+	const char* cpblt;
+	char* s;
+
+	if ((cpblt = nc_cpblts_get(capabilities, NC_CAP_WITHDEFAULTS_ID)) != NULL) {
+		if ((s = strstr(cpblt, "report-all")) != NULL) {
+			if (s[-1] == '=' && s[-2] == 'e') {
+				/* basic mode: basic-mode=report-all */
+				*basic = NCDFLT_MODE_ALL;
+			}
+			*supported = *supported | NCDFLT_MODE_ALL;
+		}
+		if ((s = strstr(cpblt, "trim")) != NULL) {
+			if (s[-1] == '=' && s[-2] == 'e') {
+				/* basic mode: basic-mode=trim */
+				*basic = NCDFLT_MODE_TRIM;
+			}
+			*supported = *supported | NCDFLT_MODE_TRIM;
+		}
+		if ((s = strstr(cpblt, "explicit")) != NULL) {
+			if (s[-1] == '=' && s[-2] == 'e') {
+				/* basic mode: basic-mode=explicit */
+				*basic = NCDFLT_MODE_EXPLICIT;
+			}
+			*supported = *supported | NCDFLT_MODE_EXPLICIT;
+		}
+		if ((s = strstr(cpblt, "report-all-tagged")) != NULL) {
+			*supported = *supported | NCDFLT_MODE_ALL_TAGGED;
+		}
+	} else {
+		*basic = NCDFLT_MODE_DISABLED;
+		*supported = 0;
+	}
 }
 
 struct nc_session* nc_session_dummy(const char* sid, const char* username, struct nc_cpblts *capabilities)
@@ -353,6 +470,11 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, struc
 	while ((cpblt = nc_cpblts_iter_next (capabilities)) != NULL) {
 		nc_cpblts_add (session->capabilities, cpblt);
 	}
+
+	session->wd_basic = NCDFLT_MODE_DISABLED;
+	session->wd_modes = 0;
+	/* set with defaults capability flags */
+	parse_wdcap(session->capabilities, &(session->wd_basic), &(session->wd_modes));
 
 	return session;
 }
@@ -1043,11 +1165,77 @@ nc_msgid nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 nc_msgid nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
 {
 	int ret;
+	const char* wd;
+	struct nc_err* e = NULL;
+	nc_reply* reply;
 
 	ret = nc_session_receive (session, (struct nc_msg**) rpc);
 	if (ret != EXIT_SUCCESS) {
 		return (0);
 	} else {
+		(*rpc)->with_defaults = nc_rpc_parse_withdefaults(*rpc);
+
+		/* check for with-defaults capability */
+		if ((*rpc)->with_defaults != NCDFLT_MODE_DISABLED) {
+			/* check if the session support this */
+			if ((wd = nc_cpblts_get(session->capabilities, NC_CAP_WITHDEFAULTS_ID)) == NULL) {
+				ERROR("rpc requires with-defaults capability, but session does not support it.");
+				e = nc_err_new(NC_ERR_INVALID_VALUE);
+				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
+				nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability, but session does not support it.");
+			} else {
+				switch ((*rpc)->with_defaults) {
+				case NCDFLT_MODE_ALL:
+					if (strstr(wd, "report-all") == NULL) {
+						ERROR("rpc requires with-defaults capability report-all mode, but session does not support it.");
+						e = nc_err_new(NC_ERR_INVALID_VALUE);
+						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
+						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability report-all mode, but session does not support it.");
+					}
+					break;
+				case NCDFLT_MODE_ALL_TAGGED:
+					if (strstr(wd, "report-all-tagged") == NULL) {
+						ERROR("rpc requires with-defaults capability report-all-tagged mode, but session does not support it.");
+						e = nc_err_new(NC_ERR_INVALID_VALUE);
+						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
+						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability report-all-tagged mode, but session does not support it.");
+					}
+					break;
+				case NCDFLT_MODE_TRIM:
+					if (strstr(wd, "trim") == NULL) {
+						ERROR("rpc requires with-defaults capability trim mode, but session does not support it.");
+						e = nc_err_new(NC_ERR_INVALID_VALUE);
+						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
+						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability trim mode, but session does not support it.");
+					}
+					break;
+				case NCDFLT_MODE_EXPLICIT:
+					if (strstr(wd, "explicit") == NULL) {
+						ERROR("rpc requires with-defaults capability explicit mode, but session does not support it.");
+						e = nc_err_new(NC_ERR_INVALID_VALUE);
+						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
+						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability explicit mode, but session does not support it.");
+					}
+					break;
+				default: /* something weird */
+					ERROR("rpc requires with-defaults capability with unknown mode.");
+					e = nc_err_new(NC_ERR_INVALID_VALUE);
+					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
+					nc_err_set(e, NC_ERR_PARAM_MSG, "pc requires with-defaults capability with unknown mode.");
+					break;
+				}
+			}
+
+			if (e != NULL) {
+				reply = nc_reply_error(e);
+				nc_session_send_reply(session, *rpc, reply);
+				nc_rpc_free(*rpc);
+				*rpc = NULL;
+				nc_reply_free(reply);
+				return (0); /* failure */
+			}
+		}
+
 		return (nc_rpc_get_msgid (*rpc));
 	}
 }
@@ -1056,11 +1244,50 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 {
 	int ret;
 	char msg_id_str[16];
+	const char* wd;
 	struct nc_msg *msg;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING)) {
 		ERROR("Invalid session to send <rpc>.");
 		return (0); /* failure */
+	}
+
+	/* check for with-defaults capability */
+	if (rpc->with_defaults != NCDFLT_MODE_DISABLED) {
+		/* check if the session support this */
+		if ((wd = nc_cpblts_get(session->capabilities, NC_CAP_WITHDEFAULTS_ID)) == NULL) {
+			ERROR("RPC requires with-defaults capability, but session does not support it.");
+			return (0); /* failure */
+		}
+		switch (rpc->with_defaults) {
+		case NCDFLT_MODE_ALL:
+			if (strstr(wd, "report-all") == NULL) {
+				ERROR("RPC requires with-defaults capability report-all mode, but session does not support it.");
+				return (0); /* failure */
+			}
+			break;
+		case NCDFLT_MODE_ALL_TAGGED:
+			if (strstr(wd, "report-all-tagged") == NULL) {
+				ERROR("RPC requires with-defaults capability report-all-tagged mode, but session does not support it.");
+				return (0); /* failure */
+			}
+			break;
+		case NCDFLT_MODE_TRIM:
+			if (strstr(wd, "trim") == NULL) {
+				ERROR("RPC requires with-defaults capability trim mode, but session does not support it.");
+				return (0); /* failure */
+			}
+			break;
+		case NCDFLT_MODE_EXPLICIT:
+			if (strstr(wd, "explicit") == NULL) {
+				ERROR("RPC requires with-defaults capability explicit mode, but session does not support it.");
+				return (0); /* failure */
+			}
+			break;
+		default: /* NCDFLT_MODE_DISABLED */
+			/* nothing to check */
+			break;
+		}
 	}
 
 	/* TODO: lock for threads */

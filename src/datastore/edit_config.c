@@ -143,6 +143,43 @@ NC_EDIT_OP_TYPE get_operation(xmlNodePtr node, NC_EDIT_DEFOP_TYPE defop, struct 
 }
 
 /**
+ * @brief Get all nodes that have default value defined in the model.
+ * @param[in] model Configuration data model to search for nodes with defined
+ * default values.
+ * @return The list of found nodes with default value definitions.
+ */
+xmlXPathObjectPtr get_defaults_list(xmlDocPtr model)
+{
+	xmlXPathContextPtr model_ctxt = NULL;
+	xmlXPathObjectPtr defaults = NULL;
+
+	if (model == NULL) {
+		return (NULL);
+	}
+
+	/* create xpath evaluation context */
+	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
+		return (NULL);
+	}
+
+	if (xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) != 0) {
+		xmlXPathFreeContext(model_ctxt);
+		return (NULL);
+	}
+
+	defaults = xmlXPathEvalExpression(BAD_CAST "//yin:default", model_ctxt);
+	if (defaults != NULL) {
+		if (xmlXPathNodeSetIsEmpty(defaults->nodesetval)) {
+			xmlXPathFreeObject(defaults);
+			defaults = (NULL);
+		}
+	}
+	xmlXPathFreeContext(model_ctxt);
+
+	return (defaults);
+}
+
+/**
  * \brief Get all key elements from configuration data model
  *
  * \param model         XML form (YIN) of the configuration data model.
@@ -421,6 +458,68 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 }
 
 /**
+ * @brief Go recursively in YIN model and find model's equivalent of the node
+ * @param[in] node XML element which we want to find in model
+ * @param[in] model Configuration data model (YIN format)
+ * @return model's equivalent of the node, NULL if no such element found.
+ */
+static xmlNodePtr model_recursion(xmlNodePtr node, xmlDocPtr model)
+{
+	xmlNodePtr mparent, aux;
+	xmlChar* name;
+
+	if (node->parent->type != XML_DOCUMENT_NODE) {
+		mparent = model_recursion(node->parent, model);
+	} else {
+		mparent = xmlDocGetRootElement(model);
+	}
+	if (mparent == NULL) {
+		return (NULL);
+	}
+
+	for (aux = mparent->children; aux != NULL; aux = aux->next) {
+		name = xmlGetNsProp(aux, BAD_CAST "name", BAD_CAST NC_NS_YIN);
+		if (name == NULL) {
+			continue;
+		}
+
+		if (xmlStrcmp(node->name, name) == 0) {
+			xmlFree(name);
+			return (aux);
+		}
+		xmlFree(name);
+	}
+
+	return (NULL);
+}
+
+/**
+ * @brief Get default value of the node if a default value defined in the model
+ * @param[in] node XML element whose default value we want to get
+ * @param[in] model Configuration data model for the document of the given node.
+ * @return Default value of the node, NULL if no default value defined or found.
+ */
+xmlChar* get_default_value(xmlNodePtr node, xmlDocPtr model)
+{
+	xmlNodePtr mnode, aux;
+	xmlChar* value = NULL;
+
+	mnode = model_recursion(node, model);
+	if (mnode == NULL) {
+		return (NULL);
+	}
+
+	for (aux = mnode->children; aux != NULL; aux = aux->next) {
+		if (xmlStrcmp(aux->name, BAD_CAST "default") == 0) {
+			value = xmlGetNsProp(aux, BAD_CAST "value", BAD_CAST NC_NS_YIN);
+			break;
+		}
+	}
+
+	return (value);
+}
+
+/**
  * \brief Find corresponding equivalent of the given edit node on orig_doc document.
  *
  * \param[in] orig_doc Original configuration document to edit.
@@ -614,19 +713,24 @@ int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, struct n
  * \param[in] orig Original configuration document to edit.
  * \param[in] edit XML document covering edit-config's \<config\> element
  * supposed to edit orig configuration data.
- * \param[in] keys  List of key elements from configuration data model.
+ * \param[in] model XML form (YIN) of the configuration data model appropriate
+ * to the given repo.
  * \param[out] err NETCONF error structure.
  * \return On error, non-zero is returned and err structure is filled. Zero is
  * returned on success.
  */
-int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr orig, xmlDocPtr edit, keyList keys, struct nc_err **error)
+int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr orig, xmlDocPtr edit, xmlDocPtr model, struct nc_err **error)
 {
 	xmlXPathObjectPtr operation_nodes = NULL;
 	xmlNodePtr node_to_process = NULL, n;
+	keyList keys;
+	xmlChar *defval = NULL, *value = NULL;
 	int i;
 
 	assert(orig != NULL);
 	assert(edit != NULL);
+
+	keys = get_keynode_list(model);
 
 	operation_nodes = get_operation_elements((NC_EDIT_OP_TYPE) op, edit);
 	if (operation_nodes == NULL) {
@@ -639,6 +743,7 @@ int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr ori
 		return EXIT_SUCCESS;
 	}
 
+	*error = NULL;
 	for (i = 0; i < operation_nodes->nodesetval->nodeNr; i++) {
 		node_to_process = operation_nodes->nodesetval->nodeTab[i];
 
@@ -650,18 +755,89 @@ int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr ori
 		/* \todo namespace handlings */
 		n = find_element_equiv(orig, node_to_process, keys);
 		if (op == NC_CHECK_EDIT_DELETE && n == NULL) {
-			xmlXPathFreeObject(operation_nodes);
-			*error = nc_err_new (NC_ERR_DATA_MISSING);
-			return EXIT_FAILURE;
-		} else if (op == NC_CHECK_EDIT_CREATE && n != NULL) {
-			xmlXPathFreeObject(operation_nodes);
-			*error = nc_err_new (NC_ERR_DATA_EXISTS);
-			return EXIT_FAILURE;
+			if (ncdflt_get_basic_mode() == NCDFLT_MODE_ALL) {
+				/* A valid 'delete' operation attribute for a
+				 * data node that contains its schema default
+				 * value MUST succeed, even though the data node
+				 * is immediately replaced by the server with
+				 * the default value.
+				 */
+				defval = get_default_value(node_to_process, model);
+				if (defval == NULL) {
+					/* no default value for this node */
+					*error = nc_err_new (NC_ERR_DATA_MISSING);
+					break;
+				}
+				value = xmlNodeGetContent(node_to_process);
+				if (value == NULL) {
+					*error = nc_err_new (NC_ERR_DATA_MISSING);
+					break;
+				}
+				if (xmlStrcmp(defval, value) != 0) {
+					/* node do not contain default value */
+					*error = nc_err_new (NC_ERR_DATA_MISSING);
+					break;
+				} else {
+					/* remove delete operation - it is valid
+					 * but there is no reason to really
+					 * perform it
+					 */
+					xmlUnlinkNode(node_to_process);
+					xmlFreeNode(node_to_process);
+				}
+				xmlFree(defval); defval = NULL;
+				xmlFree(value); value = NULL;
+			} else {
+				*error = nc_err_new (NC_ERR_DATA_MISSING);
+				break;
+			}
+		} else if (op == NC_CHECK_EDIT_CREATE  && n != NULL) {
+			if (ncdflt_get_basic_mode() == NCDFLT_MODE_TRIM) {
+				/* A valid 'create' operation attribute for a
+				 * data node that has a schema default value
+				 * defined MUST succeed.
+				 */
+				defval = get_default_value(node_to_process, model);
+				if (defval == NULL) {
+					/* no default value for this node */
+					*error = nc_err_new (NC_ERR_DATA_EXISTS);
+					break;
+				}
+				value = xmlNodeGetContent(node_to_process);
+				if (value == NULL) {
+					*error = nc_err_new (NC_ERR_DATA_EXISTS);
+					break;
+				}
+				if (xmlStrcmp(defval, value) != 0) {
+					/* node do not contain default value */
+					*error = nc_err_new (NC_ERR_DATA_MISSING);
+					break;
+				} else {
+					/* remove old node in configuration to
+					 * allow recreate it by the new one with
+					 * the default value
+					 */
+					xmlUnlinkNode(n);
+					xmlFreeNode(n);
+				}
+				xmlFree(defval); defval = NULL;
+				xmlFree(value); value = NULL;
+
+			} else {
+				*error = nc_err_new (NC_ERR_DATA_EXISTS);
+				break;
+			}
 		}
 	}
 	xmlXPathFreeObject(operation_nodes);
+	if (defval != NULL) { xmlFree(defval);}
+	if (value != NULL) { xmlFree(value);}
 
-	return EXIT_SUCCESS;
+	if (error != NULL) {
+		return (EXIT_FAILURE);
+	} else {
+		return EXIT_SUCCESS;
+	}
 }
 
 /**
@@ -1171,10 +1347,10 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 	keys = get_keynode_list(model);
 
 	/* check operations */
-	if (check_edit_ops(NC_CHECK_EDIT_DELETE, defop, repo, edit, keys, error) != EXIT_SUCCESS) {
+	if (check_edit_ops(NC_CHECK_EDIT_DELETE, defop, repo, edit, model, error) != EXIT_SUCCESS) {
 		goto error_cleanup;
 	}
-	if (check_edit_ops(NC_CHECK_EDIT_CREATE, defop, repo, edit, keys, error) != EXIT_SUCCESS) {
+	if (check_edit_ops(NC_CHECK_EDIT_CREATE, defop, repo, edit, model, error) != EXIT_SUCCESS) {
 		goto error_cleanup;
 	}
 
@@ -1187,6 +1363,14 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 	/* perform operations */
 	if (edit_operations(repo, edit, defop, keys, error) != EXIT_SUCCESS) {
 		goto error_cleanup;
+	}
+
+	/* with defaults capability */
+	if (ncdflt_get_basic_mode() == NCDFLT_MODE_TRIM) {
+		/* server work in trim basic mode and therefore all default
+		 * values must be removed from the datastore.
+		 */
+		ncdflt_default_values(repo, model, NCDFLT_MODE_TRIM);
 	}
 
 	if (keys != NULL) {

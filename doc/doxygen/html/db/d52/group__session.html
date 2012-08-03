@@ -183,6 +183,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gacb59cf4fa78bf02c22afac395acf0693"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove specified capability string from the NETCONF capabilities structure.  <a href="#gacb59cf4fa78bf02c22afac395acf0693"></a><br/></td></tr>
 <tr class="memitem:gaa8325078c33d25a7cf48e1ed9d417ff4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaa8325078c33d25a7cf48e1ed9d417ff4">nc_cpblts_enabled</a> (const struct nc_session *session, const char *capability_string)</td></tr>
 <tr class="memdesc:gaa8325078c33d25a7cf48e1ed9d417ff4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the given capability is supported by the session.  <a href="#gaa8325078c33d25a7cf48e1ed9d417ff4"></a><br/></td></tr>
+<tr class="memitem:gabed55135f1868bef5f266737b8862aa4"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gabed55135f1868bef5f266737b8862aa4">nc_cpblts_get</a> (const struct nc_cpblts *c, const char *capability_string)</td></tr>
+<tr class="memdesc:gabed55135f1868bef5f266737b8862aa4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get complete capability string including parameters.  <a href="#gabed55135f1868bef5f266737b8862aa4"></a><br/></td></tr>
 <tr class="memitem:gae92c774e940114b4733f85e186d84620"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gae92c774e940114b4733f85e186d84620">nc_cpblts_iter_start</a> (struct nc_cpblts *c)</td></tr>
 <tr class="memdesc:gae92c774e940114b4733f85e186d84620"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move NETCONF capabilities structure iterator to the beginning of the capability strings list.  <a href="#gae92c774e940114b4733f85e186d84620"></a><br/></td></tr>
 <tr class="memitem:gaea2ced8d4e5f2cc9971680e49f876c58"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaea2ced8d4e5f2cc9971680e49f876c58">nc_cpblts_iter_next</a> (struct nc_cpblts *c)</td></tr>
@@ -918,6 +920,42 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="gabed55135f1868bef5f266737b8862aa4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* <a class="el" href="../../db/d52/group__session.html#gabed55135f1868bef5f266737b8862aa4">nc_cpblts_get</a> </td>
+          <td>(</td>
+          <td class="paramtype">const struct nc_cpblts *&#160;</td>
+          <td class="paramname"><em>c</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>capability_string</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get complete capability string including parameters. </p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">c</td><td>Capabilities structure to be examined </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">capability_string</td><td>Capability identifier, parameters are ignored and only basic identifier is used to retrieve specific identifier including parameters from the given capability structure. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>Constant capability identifier including parameters </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="gae92c774e940114b4733f85e186d84620"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1160,7 +1198,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Fri Jul 27 2012 14:38:24 for libnetconf by
+    <li class="footer">Generated on Fri Aug 3 2012 08:08:55 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Fri Jul 27 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Fri Aug 3 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -32,7 +32,7 @@ NETCONF datastore handling function prototypes and structures\&.
 
 .in +1c
 .ti -1c
-.RI "struct ncds_ds * \fBncds_new\fP (\fBNCDS_TYPE\fP type, const char *model_path)"
+.RI "struct ncds_ds * \fBncds_new\fP (\fBNCDS_TYPE\fP type, const char *model_path, char *(*get_state)(const char *model, const char *running))"
 .br
 .RI "\fICreate new datastore structure of the specified implementation type\&. \fP"
 .ti -1c
