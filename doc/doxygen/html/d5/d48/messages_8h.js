@@ -13,7 +13,7 @@ var messages_8h =
     [ "nc_rpc_get_type", "db/de9/group__rpc.html#gaa502fb30575000775b29a764101c1bef", null ],
     [ "nc_rpc_get_target", "db/de9/group__rpc.html#gab240067d45d58c945cdfd61948751379", null ],
     [ "nc_rpc_get_source", "db/de9/group__rpc.html#ga3fcf5083b04a294e935a2897c212065b", null ],
-    [ "nc_rpc_get_editconfig", "db/de9/group__rpc.html#ga5d7bb71e047260319f6fc306dfa9fc11", null ],
+    [ "nc_rpc_get_config", "db/de9/group__rpc.html#ga05a10e0b6c89ac04426410f399b87257", null ],
     [ "nc_rpc_get_defop", "db/de9/group__rpc.html#gaf867eacee93e3596371415d028e62d29", null ],
     [ "nc_rpc_get_erropt", "db/de9/group__rpc.html#ga488f894b9fa4866326837a9ed0575e36", null ],
     [ "nc_reply_get_type", "d0/de2/group__reply.html#gab12cdef82337060c425348dada7fe983", null ],

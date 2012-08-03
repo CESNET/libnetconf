@@ -70,9 +70,9 @@ Functions to create NETCONF messages\&.
 .br
 .RI "\fIGet source datastore type (running, startup, candidate) of the rpc request\&. \fP"
 .ti -1c
-.RI "char * \fBnc_rpc_get_editconfig\fP (const \fBnc_rpc\fP *rpc)"
+.RI "char * \fBnc_rpc_get_config\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet serialized content of the config parameter (<config> itself is not part of the returned data)\&. This function is valid only for <edit-config> RPCs\&. \fP"
+.RI "\fIGet serialized content of the config parameter (<config> itself is not part of the returned data)\&. This function is valid only for <copy-config> and <edit-config> RPCs\&. \fP"
 .ti -1c
 .RI "\fBNC_EDIT_DEFOP_TYPE\fP \fBnc_rpc_get_defop\fP (const \fBnc_rpc\fP *rpc)"
 .br

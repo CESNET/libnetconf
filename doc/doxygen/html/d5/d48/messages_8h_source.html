@@ -147,7 +147,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00159"></a>00159 
 <a name="l00170"></a>00170 <a class="code" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73" title="Enumeration of supported types of datastores defined by NETCONF.">NC_DATASTORE</a> <a class="code" href="../../db/de9/group__rpc.html#ga3fcf5083b04a294e935a2897c212065b" title="Get source datastore type (running, startup, candidate) of the rpc request.">nc_rpc_get_source</a>(<span class="keyword">const</span> <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);
 <a name="l00171"></a>00171 
-<a name="l00184"></a>00184 <span class="keywordtype">char</span>* <a class="code" href="../../db/de9/group__rpc.html#ga5d7bb71e047260319f6fc306dfa9fc11" title="Get serialized content of the config parameter (&lt;config&gt; itself is not part of the returned data)...">nc_rpc_get_editconfig</a> (<span class="keyword">const</span> <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);
+<a name="l00184"></a>00184 <span class="keywordtype">char</span> * <a class="code" href="../../db/de9/group__rpc.html#ga05a10e0b6c89ac04426410f399b87257" title="Get serialized content of the config parameter (&lt;config&gt; itself is not part of the returned data)...">nc_rpc_get_config</a> (<span class="keyword">const</span> <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);
 <a name="l00185"></a>00185 
 <a name="l00194"></a>00194 <a class="code" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a> <a class="code" href="../../db/de9/group__rpc.html#gaf867eacee93e3596371415d028e62d29" title="Get default-operation type, valid only for &lt;edit-config&gt; RPCs.">nc_rpc_get_defop</a> (<span class="keyword">const</span> <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);
 <a name="l00195"></a>00195 
@@ -193,7 +193,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
       <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a>      </li>
       <li class="navelem"><a class="el" href="../../d5/d48/messages_8h.html">messages.h</a>      </li>
 
-    <li class="footer">Generated on Fri Aug 3 2012 08:08:54 for libnetconf by
+    <li class="footer">Generated on Fri Aug 3 2012 08:25:37 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>
