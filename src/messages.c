@@ -607,6 +607,7 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 	msg->error = NULL;
 	msg->doc = xmlNewDoc(BAD_CAST "1.0");
 	msg->doc->encoding = xmlStrdup(BAD_CAST UTF8);
+	msg->with_defaults = NCDFLT_MODE_DISABLED;
 
 	/* create root element */
 	msg->doc->children = xmlNewDocNode(msg->doc, NULL, BAD_CAST NC_HELLO_MSG, NULL);
@@ -658,6 +659,7 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 	dupmsg->doc = xmlCopyDoc(msg->doc, 1);
 	dupmsg->msgid = msg->msgid;
 	dupmsg->type = msg->type;
+	dupmsg->with_defaults = msg->with_defaults;
 	if (msg->error != NULL) {
 		dupmsg->error = nc_err_dup(msg->error);
 	} else {
