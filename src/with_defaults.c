@@ -347,7 +347,10 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCDFLT_MODE m
 	return (EXIT_SUCCESS);
 }
 
-static xmlNodePtr* remove_default_copyconfig(xmlDocPtr config, xmlNodePtr node)
+/**
+ *
+ */
+static xmlNodePtr* remove_default_node(xmlDocPtr config, xmlNodePtr node)
 {
 	xmlNodePtr *parents, *retvals = NULL;
 	xmlNodePtr aux = NULL;
@@ -359,7 +362,7 @@ static xmlNodePtr* remove_default_copyconfig(xmlDocPtr config, xmlNodePtr node)
 		return (NULL);
 	} else if (xmlStrcmp(node->parent->name, BAD_CAST "module") != 0) {
 		/* we will get parent of the config's equivalent of the node */
-		parents = remove_default_copyconfig(config, node->parent);
+		parents = remove_default_node(config, node->parent);
 		if (parents == NULL) {
 			return (NULL);
 		}
@@ -430,11 +433,7 @@ static xmlNodePtr* remove_default_copyconfig(xmlDocPtr config, xmlNodePtr node)
 	return (retvals);
 }
 
-/**
- * @breaf Remove defaults nodes from copy-config's config when report-all-tagged
- * mode is used.
- */
-int ncdflt_cpclear(xmlDocPtr config, const xmlDocPtr model)
+int ncdflt_default_clear(xmlDocPtr config, const xmlDocPtr model)
 {
 	xmlXPathContextPtr model_ctxt = NULL;
 	xmlXPathObjectPtr defaults = NULL;
@@ -459,7 +458,7 @@ int ncdflt_cpclear(xmlDocPtr config, const xmlDocPtr model)
 	if (defaults != NULL) {
 		/* process all defaults elements */
 		for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
-			if ((r = remove_default_copyconfig(config, defaults->nodesetval->nodeTab[i])) == NULL) {
+			if ((r = remove_default_node(config, defaults->nodesetval->nodeTab[i])) == NULL) {
 				retval = EXIT_FAILURE;
 				break;
 			} else {

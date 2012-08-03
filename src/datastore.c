@@ -390,11 +390,18 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	case NC_OP_COPYCONFIG:
 		config = nc_rpc_get_editconfig(rpc);
 
-		if (ncdflt_rpc_get_withdefaults(rpc) == NCDFLT_MODE_ALL_TAGGED) {
+		if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) != 0) {
+			/* if report-all-tagged mode is supported, 'default'
+			 * attribute with 'true' or '1' value can appear and we
+			 * have to check that the element's value is equal to
+			 * default value. If does, the element is removed and
+			 * it is supposed to be default, otherwise the
+			 * invalid-value error reply must be returned.
+			 */
 			doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			free(config);
 
-			if (ncdflt_cpclear(doc1, ds->model) != EXIT_SUCCESS) {
+			if (ncdflt_default_clear(doc1, ds->model) != EXIT_SUCCESS) {
 				e = nc_err_new(NC_ERR_INVALID_VALUE);
 				nc_err_set(e, NC_ERR_PARAM_MSG, "with-defaults capability failure");
 				break;
@@ -411,6 +418,27 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		break;
 	case NC_OP_EDITCONFIG:
 		config = nc_rpc_get_editconfig(rpc);
+
+		if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) != 0) {
+			/* if report-all-tagged mode is supported, 'default'
+			 * attribute with 'true' or '1' value can appear and we
+			 * have to check that the element's value is equal to
+			 * default value. If does, the element is removed and
+			 * it is supposed to be default, otherwise the
+			 * invalid-value error reply must be returned.
+			 */
+			doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(config);
+
+			if (ncdflt_default_clear(doc1, ds->model) != EXIT_SUCCESS) {
+				e = nc_err_new(NC_ERR_INVALID_VALUE);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "with-defaults capability failure");
+				break;
+			}
+			xmlDocDumpFormatMemory(doc1, (xmlChar**)(&config), &len, 1);
+			xmlFreeDoc(doc1);
+		}
+
 		ret = ds->func.editconfig(ds, session, nc_rpc_get_target(rpc), config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 		free (config);
 		break;

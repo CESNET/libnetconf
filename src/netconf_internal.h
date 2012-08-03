@@ -318,13 +318,27 @@ char* nc_clrwspace (const char* in);
 
 /**
  * @brief Process config data according to with-defaults' mode and data model
+ * @param[in] config XML configuretion data document where default values will
+ * be modified (added for report-all and removed for trim mode).
+ * @param[in] model Configuration data model for data given in config parameter.
+ * @param[in] mode With-defaults capability mode for configuration data modification.
+ * @return 0 on success, non-zero else.
  */
 int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCDFLT_MODE mode);
 
 /**
- * @breaf Remove defaults nodes from copy-config's config when report-all-tagged
- * mode is used.
+ * @breaf Remove defaults nodes from copy-config's and edit-config's config.
+ *
+ * This function should be used only if report-all-tagged mode is supported.
+ *
+ * @param[in] config XML configuretion data document where default node will
+ * be checked if they contain 'default' attribute and also correct default value
+ * according to the model and in such case the node will be returned to its
+ * default value (i.e. removed from the config where it can be again added by
+ * following input operation).
+ * @param[in] model Configuration data model for data given in config parameter.
+ * @return 0 on success, non-zero else.
  */
-int ncdflt_cpclear(xmlDocPtr config, const xmlDocPtr model);
+int ncdflt_default_clear(xmlDocPtr config, const xmlDocPtr model);
 
 #endif /* NETCONF_INTERNAL_H_ */
