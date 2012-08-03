@@ -320,6 +320,8 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	int len;
 	int ret = EXIT_FAILURE;
 	nc_reply* reply;
+	xmlBufferPtr resultbuffer;
+	xmlNodePtr aux_node;
 
 	if (rpc->type.rpc != NC_RPC_DATASTORE_READ && rpc->type.rpc != NC_RPC_DATASTORE_WRITE) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
@@ -353,14 +355,13 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			doc_merged = ncxml_merge(doc1, doc2, ds->model);
 
 			/* cleanup */
-			free(data);
 			free(data2);
 			xmlFreeDoc(doc1);
 			xmlFreeDoc(doc2);
 		} else {
 			doc_merged = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-			free(data);
 		}
+		free(data);
 
 		/* process default values */
 		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
@@ -368,7 +369,17 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		/* \todo now do filtering */
 
 		/* dump the result */
-		xmlDocDumpFormatMemory(doc_merged, (xmlChar**)(&data), &len, 1);
+		resultbuffer = xmlBufferCreate();
+		if (resultbuffer == NULL) {
+			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+			e = nc_err_new(NC_ERR_OP_FAILED);
+			break;
+		}
+		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
+			xmlNodeDump(resultbuffer, doc_merged, aux_node, 2, 1);
+		}
+		data = strdup((char *) xmlBufferContent(resultbuffer));
+		xmlBufferFree(resultbuffer);
 		xmlFreeDoc(doc_merged);
 
 		break;
@@ -383,7 +394,17 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		/* \todo now do filtering */
 
 		/* dump the result */
-		xmlDocDumpFormatMemory(doc_merged, (xmlChar**)(&data), &len, 1);
+		resultbuffer = xmlBufferCreate();
+		if (resultbuffer == NULL) {
+			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+			e = nc_err_new(NC_ERR_OP_FAILED);
+			break;
+		}
+		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
+			xmlNodeDump(resultbuffer, doc_merged, aux_node, 2, 1);
+		}
+		data = strdup((char *) xmlBufferContent(resultbuffer));
+		xmlBufferFree(resultbuffer);
 		xmlFreeDoc(doc_merged);
 
 		break;
@@ -406,7 +427,19 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 				nc_err_set(e, NC_ERR_PARAM_MSG, "with-defaults capability failure");
 				break;
 			}
-			xmlDocDumpFormatMemory(doc1, (xmlChar**)(&config), &len, 1);
+
+			/* dump the result */
+			resultbuffer = xmlBufferCreate();
+			if (resultbuffer == NULL) {
+				ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				break;
+			}
+			for (aux_node = doc1->children; aux_node != NULL; aux_node = aux_node->next) {
+				xmlNodeDump(resultbuffer, doc1, aux_node, 2, 1);
+			}
+			config = strdup((char *) xmlBufferContent(resultbuffer));
+			xmlBufferFree(resultbuffer);
 			xmlFreeDoc(doc1);
 		}
 
