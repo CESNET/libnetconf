@@ -385,7 +385,11 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		break;
 	case NC_OP_GETCONFIG:
 		data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), &e);
-		doc_merged = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		if (strcmp(data, "") == 0) {
+			doc_merged = xmlNewDoc (BAD_CAST "1.0");
+		} else {
+			doc_merged = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		}
 		free(data);
 
 		/* process default values */
