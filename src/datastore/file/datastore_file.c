@@ -761,7 +761,10 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
 
 	switch(target) {
 	case NC_DATASTORE_RUNNING:
-		target_ds = file_ds->running;
+		UNLOCK(file_ds);
+		*error = nc_err_new (NC_ERR_OP_FAILED);
+		nc_err_set (*error, NC_ERR_PARAM_MSG, "Can not delete running datastore.");
+		return EXIT_FAILURE;
 		break;
 	case NC_DATASTORE_STARTUP:
 		target_ds = file_ds->startup;

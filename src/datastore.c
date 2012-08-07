@@ -451,6 +451,12 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		free (config);
 		break;
 	case NC_OP_DELETECONFIG:
+		if (nc_rpc_get_target (rpc) == NC_DATASTORE_RUNNING) {
+			/* can not delete running */
+			e = nc_err_new (NC_ERR_OP_FAILED);
+			nc_err_set (e, NC_ERR_PARAM_MSG, "Can not delete running datastore.");
+			break;
+		}
 		ret = ds->func.deleteconfig(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
 	case NC_OP_EDITCONFIG:
