@@ -194,7 +194,7 @@ struct nc_cpblts *nc_cpblts_new(char* const* list)
 int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string)
 {
 	int i;
-	char *s, *p;
+	char *s, *p = NULL;
 
 	if (capabilities == NULL || capability_string == NULL) {
 		return (EXIT_FAILURE);
@@ -243,7 +243,7 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 		}
 		capabilities->list_size *= 2;
 	}
-	capabilities->list[capabilities->items + 1] = NULL;
+	capabilities->list[capabilities->items] = NULL;
 
 	return (EXIT_SUCCESS);
 }
