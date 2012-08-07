@@ -74,7 +74,7 @@ struct ncds_ds {
 	 * @brief Pointer to a callback function implementing retrieving of the
 	 * device status data.
 	 */
-	char* (*get_state)(const char* model, const char* running);
+	char* (*get_state)(const char* model, const char* running, struct nc_err ** e);
 	/**
 	 * @brief Datastore implementation functions.
 	 */

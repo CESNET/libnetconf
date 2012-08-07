@@ -81,7 +81,7 @@ struct ncds_ds;
  * implementation type. Then, the datastore can be initiated (ncds_init()) and
  * used to access configuration data.
  */
-struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running));
+struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err ** e));
 
 /**
  * @ingroup store

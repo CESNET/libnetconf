@@ -127,7 +127,7 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
-struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running))
+struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
 {
 	struct ncds_ds* ds = NULL;
 
@@ -346,8 +346,14 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			/* caller provided callback function to retrieve status data */
 
 			xmlDocDumpMemory(ds->model, (xmlChar**)(&model), &len);
-			data2 = ds->get_state(model, data);
+			data2 = ds->get_state(model, data, &e);
 			free(model);
+
+			if (e != NULL) {
+				/* state data retrival error */
+				free (data);
+				break;
+			}
 
 			/* merge status and config data */
 			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
