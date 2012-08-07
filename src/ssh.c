@@ -532,7 +532,8 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		server_cpblts = nc_cpblts_new(capabilities->list);
 	}
 	/* set with-defaults capability announcement */
-	if ((mode = ncdflt_get_basic_mode()) != NCDFLT_MODE_DISABLED) {
+	if ((nc_cpblts_get (server_cpblts, NC_CAP_WITHDEFAULTS_ID) != NULL)
+         && ((mode = ncdflt_get_basic_mode()) != NCDFLT_MODE_DISABLED)) {
 		switch(mode) {
 		case NCDFLT_MODE_ALL:
 			wdc_aux = "?basic-mode=report-all";
