@@ -740,6 +740,7 @@ struct nc_msg* nc_msg_create(xmlNodePtr content, char* msgtype)
 	}
 	msg->doc = xmlmsg;
 	msg->error = NULL;
+	msg->with_defaults = NCDFLT_MODE_DISABLED;
 
 	return (msg);
 }
