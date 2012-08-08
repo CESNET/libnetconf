@@ -42,6 +42,7 @@ COMMAND commands[] = {
 		{"lock", cmd_lock, "NETCONF <lock> operation"},
 		{"unlock", cmd_unlock, "NETCONF <unlock> operation"},
 		{"status", cmd_status, "Print information about current NETCONF session"},
+		{"user-rpc", cmd_userrpc, "Send own content in RPC envelop (for DEBUG purpose)"},
 		{"verbose", cmd_verbose, "Enable/disable verbose messages"},
 		{"quit", cmd_quit, "Quit the program"},
 /* synonyms for previous commands */
@@ -1423,3 +1424,136 @@ generic_help:
 
 	return (0);
 }
+
+void cmd_userrpc_help()
+{
+	fprintf (stdout, "user-rpc [--help] [--source[=file]]\n");
+}
+
+int cmd_userrpc(char *arg)
+{
+	int c;
+	int config_fd;
+	struct stat config_stat;
+	char *config = NULL, *config_m = NULL;
+	char *data = NULL;
+	nc_rpc *rpc = NULL;
+	nc_reply *reply = NULL;
+	struct arglist cmd;
+	struct option long_options[] ={
+			{"source", 1, 0, 's'},
+			{"help", 0, 0, 'h'},
+			{0, 0, 0, 0}
+	};
+	int option_index = 0;
+
+	/* set back to start to be able to use getopt() repeatedly */
+	optind = 0;
+
+	if (session == NULL) {
+		ERROR("user-rpc", "NETCONF session not established, use \'connect\' command.");
+		return (EXIT_FAILURE);
+	}
+
+	init_arglist (&cmd);
+	addargs (&cmd, "%s", arg);
+
+	while ((c = getopt_long (cmd.count, cmd.list, "s:h", long_options, &option_index)) != -1) {
+		switch (c) {
+		case 's':
+			/* open edit configuration data from the file */
+			config_fd = open(optarg, O_RDONLY);
+			if (config_fd == -1) {
+				ERROR("user-rpc", "unable to open local file (%s).", strerror(errno));
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+
+			/* map content of the file into the memory */
+			fstat(config_fd, &config_stat);
+			config_m = (char*) mmap(NULL, config_stat.st_size, PROT_READ, MAP_PRIVATE, config_fd, 0);
+			if (config_m == MAP_FAILED) {
+				ERROR("user-rpc", "mmapping local datastore file failed (%s).", strerror(errno));
+				clear_arglist(&cmd);
+				close(config_fd);
+				return (EXIT_FAILURE);
+			}
+
+			/* make a copy of the content to allow closing the file */
+			config = strdup(config_m);
+
+			/* unmap local datastore file and close it */
+			munmap(config_m, config_stat.st_size);
+			close(config_fd);
+			break;
+		case 'h':
+			cmd_userrpc_help ();
+			clear_arglist(&cmd);
+			return (EXIT_SUCCESS);
+			break;
+		default:
+			ERROR("user-rpc", "unknown option -%c.", c);
+			cmd_copyconfig_help ();
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
+	}
+
+	/* arglist is no more needed */
+	clear_arglist(&cmd);
+
+	if (config == NULL) {
+		INSTRUCTION("Type the content of a RPC operation (close editor by Ctrl-D):\n");
+		config = mreadline(NULL);
+		if (config == NULL) {
+			ERROR("copy-config", "reading filter failed.");
+			return (EXIT_FAILURE);
+		}
+	}
+
+	/* create requests */
+	rpc = nc_rpc_generic (config);
+	free(config);
+	if (rpc == NULL) {
+		ERROR("user-rpc", "creating rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+	/* send the request and get the reply */
+	nc_session_send_rpc (session, rpc);
+	if (nc_session_recv_reply (session, &reply) == 0) {
+		nc_rpc_free (rpc);
+		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
+			ERROR("user-rpc", "receiving rpc-reply failed.");
+			INSTRUCTION("Closing the session.\n");
+			cmd_disconnect(NULL);
+			return (EXIT_FAILURE);
+		}
+		return (EXIT_SUCCESS);
+	}
+	nc_rpc_free (rpc);
+
+	/* parse result */
+	switch (nc_reply_get_type (reply)) {
+	case NC_REPLY_OK:
+		INSTRUCTION("Result OK\n");
+		break;
+	case NC_REPLY_DATA:
+		INSTRUCTION("Result:\n");
+		fprintf(stdout, "%s\n", data = nc_reply_get_data (reply));
+		if (data) {
+			free (data);
+		}
+		break;
+	case NC_REPLY_ERROR:
+		/* wtf, you shouldn't be here !?!? */
+		ERROR("user-rpc", "operation failed, but rpc-error was not processed.");
+		break;
+	default:
+		ERROR("user-rpc", "unexpected operation result.");
+		break;
+	}
+	nc_reply_free (reply);
+
+	return (EXIT_SUCCESS);
+}
+
