@@ -147,13 +147,18 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		ds->func.copyconfig = ncds_file_copyconfig;
 		ds->func.deleteconfig = ncds_file_deleteconfig;
 		ds->func.editconfig = ncds_file_editconfig;
-
 		break;
 	case NCDS_TYPE_EMPTY:
 		/** \todo EMPTY Datastore - implementa all required functions and return proper values */
 		ds = (struct ncds_ds*) calloc (1, sizeof(struct ncds_ds_empty));
 		ds->func.init = ncds_empty_init;
 		ds->func.free = ncds_empty_free;
+		ds->func.lock = ncds_empty_lock;
+		ds->func.unlock = ncds_empty_unlock;
+		ds->func.getconfig = ncds_empty_getconfig;
+		ds->func.copyconfig = ncds_empty_copyconfig;
+		ds->func.deleteconfig = ncds_empty_deleteconfig;
+		ds->func.editconfig = ncds_empty_editconfig;
 		break;
 	default:
 		ERROR("Unsupported datastore implementation required.");

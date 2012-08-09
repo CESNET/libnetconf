@@ -52,3 +52,33 @@ void ncds_empty_free (struct ncds_ds * ds)
 	/* nothing else to do */
 	return;
 }
+
+int ncds_empty_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
+{
+	return EXIT_SUCCESS;
+}
+
+int ncds_empty_unlock(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
+{
+	return EXIT_SUCCESS;
+}
+
+char* ncds_empty_getconfig(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
+{
+	return strdup ("");
+}
+
+int ncds_empty_copyconfig(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, NC_DATASTORE source, char* config, struct nc_err** error)
+{
+	return EXIT_SUCCESS;
+}
+
+int ncds_empty_deleteconfig(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
+{
+	return EXIT_SUCCESS;
+}
+
+int ncds_empty_editconfig(struct ncds_ds *ds, const struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
+{
+	return EXIT_SUCCESS;
+}
