@@ -557,6 +557,7 @@ char *nc_reply_get_data(const nc_reply *reply)
 {
 	char *buf;
 	xmlBufferPtr data_buf;
+   xmlNodePtr inside_data;
 
 	if (reply == NULL ||
 			reply->type.reply != NC_REPLY_DATA ||
@@ -580,7 +581,11 @@ char *nc_reply_get_data(const nc_reply *reply)
 		return NULL;
 	}
 
-	xmlNodeDump (data_buf, reply->doc, reply->doc->children->children->children, 1, 1);
+   inside_data = reply->doc->children->children->children;
+   while (inside_data) {
+   	xmlNodeDump (data_buf, reply->doc, inside_data, 1, 1);
+      inside_data = inside_data->next;
+   }
 	buf = strdup ((char*) xmlBufferContent(data_buf));
 	xmlBufferFree(data_buf);
 
