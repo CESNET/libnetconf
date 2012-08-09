@@ -1427,7 +1427,7 @@ generic_help:
 
 void cmd_userrpc_help()
 {
-	fprintf (stdout, "user-rpc [--help] [--source[=file]]\n");
+	fprintf (stdout, "user-rpc [--help] [--file <file>]]\n");
 }
 
 int cmd_userrpc(char *arg)
@@ -1441,7 +1441,7 @@ int cmd_userrpc(char *arg)
 	nc_reply *reply = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
-			{"source", 1, 0, 's'},
+			{"file", 1, 0, 'f'},
 			{"help", 0, 0, 'h'},
 			{0, 0, 0, 0}
 	};
@@ -1458,9 +1458,9 @@ int cmd_userrpc(char *arg)
 	init_arglist (&cmd);
 	addargs (&cmd, "%s", arg);
 
-	while ((c = getopt_long (cmd.count, cmd.list, "s:h", long_options, &option_index)) != -1) {
+	while ((c = getopt_long (cmd.count, cmd.list, "f:h", long_options, &option_index)) != -1) {
 		switch (c) {
-		case 's':
+		case 'f':
 			/* open edit configuration data from the file */
 			config_fd = open(optarg, O_RDONLY);
 			if (config_fd == -1) {
@@ -1493,7 +1493,7 @@ int cmd_userrpc(char *arg)
 			break;
 		default:
 			ERROR("user-rpc", "unknown option -%c.", c);
-			cmd_copyconfig_help ();
+			cmd_userrpc_help ();
 			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
