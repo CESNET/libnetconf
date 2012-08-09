@@ -698,13 +698,13 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 
 	switch(source) {
 	case NC_DATASTORE_RUNNING:
-		source_ds = file_ds->running;
+		source_ds = file_ds->running->children;
 		break;
 	case NC_DATASTORE_STARTUP:
-		source_ds = file_ds->startup;
+		source_ds = file_ds->startup->children;
 		break;
 	case NC_DATASTORE_CANDIDATE:
-		source_ds = file_ds->candidate;
+		source_ds = file_ds->candidate->children;
 		break;
 	case NC_DATASTORE_NONE:
 		config_doc = xmlReadMemory (config, strlen(config), NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
