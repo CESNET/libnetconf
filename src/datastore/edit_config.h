@@ -67,4 +67,16 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 
 int edit_merge (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys);
 
+/**
+ * \todo: stolen from old netopeer, verify function
+ * \brief compare node namespace against reference node namespace
+ *
+ * \param reference     reference node, compared node must has got same namespace as reference node
+ * \param node          compared node
+ *
+ * \return              0 if compared node is in same namespace as reference
+ *                      node, 1 otherelse
+ */
+int nc_nscmp(xmlNodePtr reference, xmlNodePtr node);
+
 #endif /* EDIT_CONFIG_H_ */

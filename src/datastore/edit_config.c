@@ -71,16 +71,6 @@ typedef enum {
 } NC_CHECK_EDIT_OP;
 
 
-/**
- * \todo: stolen from old netopeer, verify function 
- * \brief compare node namespace against reference node namespace
- *
- * \param reference     reference node, compared node must has got same namespace as reference node
- * \param node          compared node
- *
- * \return              0 if compared node is in same namespace as reference
- *                      node, 1 otherelse
- */
 int nc_nscmp(xmlNodePtr reference, xmlNodePtr node)
 {
         int in_ns = 1;
