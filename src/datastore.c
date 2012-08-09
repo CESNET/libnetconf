@@ -358,12 +358,28 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			/* merge status and config data */
 			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-			doc_merged = ncxml_merge(doc1, doc2, ds->model);
-
-			/* cleanup */
 			free(data2);
-			xmlFreeDoc(doc1);
-			xmlFreeDoc(doc2);
+			/* if merge fail (probably one of docs NULL)*/
+			if ((doc_merged = ncxml_merge(doc1, doc2, ds->model)) == NULL) {
+				/* use only config if not null*/
+				if (doc1 != NULL) {
+					doc_merged = doc1;
+					xmlFreeDoc(doc2);
+				/* or only state if not null*/
+				} else if (doc2 != NULL) {
+					doc_merged = doc2;
+					xmlFreeDoc(doc1);
+				/* or create empty document to allow further processing */
+				} else {
+					doc_merged = xmlNewDoc (BAD_CAST "1.0");
+					xmlFreeDoc(doc1);
+					xmlFreeDoc(doc2);
+				}
+			} else {
+			/* cleanup */
+				xmlFreeDoc(doc1);
+				xmlFreeDoc(doc2);
+			}
 		} else {
 			doc_merged = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		}
