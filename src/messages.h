@@ -203,6 +203,16 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc);
 NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc);
 
 /**
+ * @ingroup rpc
+ * @brief Get filter from \<get\> or \<get-config\> RPC
+ *
+ * @param[in] rpc \<get\> or \<get-config\> rpc message
+ *
+ * @return pointer struct nc_filter or NULL if no filter specified
+ */
+struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc);
+
+/**
  * @ingroup reply
  * @brief Get type of the rpc-reply message.
  *

@@ -544,6 +544,39 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 	return retval;
 }
 
+struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
+{
+	struct nc_filter * retval = NULL;
+	xmlNodePtr filter_node;
+	xmlBufferPtr buf;
+
+	if (rpc != NULL) {
+		if (nc_rpc_get_op(rpc) == NC_OP_GET || nc_rpc_get_op(rpc) == NC_OP_GETCONFIG) {
+			/* doc -> <rpc> -> <op> -> <param> */
+			filter_node = rpc->doc->children->children->children;
+			while (filter_node) {
+				if (xmlStrEqual(filter_node->name, BAD_CAST "filter")) {
+					retval = malloc (sizeof(struct nc_filter));
+					retval->type_string = (char*)xmlGetProp (filter_node, BAD_CAST "type");
+					if (xmlStrEqual(BAD_CAST retval->type_string, BAD_CAST "subtree")) {
+						retval->type = NC_FILTER_SUBTREE;
+						buf = xmlBufferCreate();
+						xmlNodeDump(buf, rpc->doc, filter_node->children, 1, 1);
+						retval->content = strdup ((char*)xmlBufferContent(buf));
+						xmlBufferFree(buf);
+					} else {
+						free (retval->type_string);
+						free (retval);
+					}
+					break;
+				}
+				filter_node = filter_node->next;
+			}
+		}
+	}
+	return retval;
+}
+
 NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
 {
 	if (reply != NULL) {
