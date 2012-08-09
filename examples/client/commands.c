@@ -636,7 +636,7 @@ int cmd_copyconfig (char *arg)
 	}
 
 	/* create requests */
-	rpc = nc_rpc_getconfig (target, filter);
+	rpc = nc_rpc_copyconfig (source, target, config);
 	nc_filter_free(filter);
 	if (rpc == NULL) {
 		ERROR("copy-config", "creating rpc request failed.");
