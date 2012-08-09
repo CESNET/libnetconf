@@ -1427,7 +1427,9 @@ generic_help:
 
 void cmd_userrpc_help()
 {
-	fprintf (stdout, "user-rpc [--help] [--file <file>]]\n");
+	fprintf (stdout, "user-rpc [--help] [--file <file>]]\n\n"
+	"\'--file <file>\' - input file with RPC message content.\n"
+	"If \'--file\' is omitted, user is asked to enter content manually.\n");
 }
 
 int cmd_userrpc(char *arg)
