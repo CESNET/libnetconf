@@ -567,6 +567,7 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 					} else {
 						free (retval->type_string);
 						free (retval);
+                  retval = NULL;
 					}
 					break;
 				}
