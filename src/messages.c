@@ -1311,24 +1311,29 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 			return (NULL);
 		}
 
-		/* prepare XML structure from given data */
-		doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-		if (doc_data == NULL) {
-			ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			return (NULL);
-		}
+      /* if data empty string, create \<copy-config\> with empty \<config\> */
+      /* only if data is not empty string, fill \<config\> */
+      /* RFC 6241 defines \<config\> as anyxml and thus it can be empty */
+      if (strcmp (data, "") != 0) {
+   		/* prepare XML structure from given data */
+   		doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+   		if (doc_data == NULL) {
+   			ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+   			xmlFreeNode(content);
+   			return (NULL);
+   		}
+   
+   		/* connect given configuration data with the rpc request */
+   		if (xmlAddChild(config, xmlCopyNode(doc_data->children, 1)) == NULL) {
+   			ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
+   			xmlFreeNode(content);
+   			xmlFreeDoc(doc_data);
+   			return (NULL);
+   		}
 
-		/* connect given configuration data with the rpc request */
-		if (xmlAddChild(config, xmlCopyNode(doc_data->children, 1)) == NULL) {
-			ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			xmlFreeDoc(doc_data);
-			return (NULL);
-		}
-
-		/* free no more needed structure */
-		xmlFreeDoc(doc_data);
+   		/* free no more needed structure */
+	   	xmlFreeDoc(doc_data);
+      }
 	} else {
 		/* source is one of the standard datastores */
 		if (xmlNewChild(node_source, NULL, BAD_CAST datastores[0], NULL) == NULL) {
