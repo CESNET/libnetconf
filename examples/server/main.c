@@ -54,10 +54,23 @@ struct srv_config {
 	struct event *event_input;
 };
 
-int clb_print(const char* msg)
+void clb_print(NC_VERB_LEVEL level, const char* msg)
 {
-	syslog(LOG_CRIT, msg);
-	return (EXIT_SUCCESS);
+
+	switch (level) {
+	case NC_VERB_ERROR:
+		syslog(LOG_ERR, msg);
+		break;
+	case NC_VERB_WARNING:
+		syslog(LOG_WARNING, msg);
+		break;
+	case NC_VERB_VERBOSE:
+		syslog(LOG_INFO, msg);
+		break;
+	case NC_VERB_DEBUG:
+		syslog(LOG_DEBUG, msg);
+		break;
+	}
 }
 
 void print_version()
@@ -166,30 +179,30 @@ int main(int argc, char *argv[])
 	/* prepare configuration datastore */
 	datastore = ncds_new(NCDS_TYPE_FILE, "/tmp/model.yin", NULL);
 	if (datastore == NULL) {
-		clb_print("Datastore preparing failed.");
+		clb_print(NC_VERB_ERROR, "Datastore preparing failed.");
 		return (EXIT_FAILURE);
 	}
 	if (ncds_file_set_path(datastore, "/tmp/datastore.xml") != 0) {
-		clb_print("Linking datastore to a file failed.");
+		clb_print(NC_VERB_ERROR, "Linking datastore to a file failed.");
 		return (EXIT_FAILURE);
 	}
 	config.dsid = ncds_init(datastore);
 	if (config.dsid <= 0) {
-		clb_print("Initiating datastore failed.");
+		clb_print(NC_VERB_ERROR, "Initiating datastore failed.");
 		return (EXIT_FAILURE);
 	}
 
 	/* create the NETCONF session */
 	config.session = nc_session_accept(NULL);
 	if (config.session == NULL) {
-		clb_print("Session not established.\n");
+		clb_print(NC_VERB_ERROR, "Session not established.\n");
 		return (EXIT_FAILURE);
 	}
 
 	/* prepare event base (libevent) */
 	config.event_base = event_base_new();
 	if (config.event_base == NULL) {
-		clb_print("Event base initialisation failed.\n");
+		clb_print(NC_VERB_ERROR, "Event base initialisation failed.\n");
 		return (EXIT_FAILURE);
 	}
 

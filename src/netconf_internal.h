@@ -111,12 +111,12 @@
 
 /* libnetconf's message printing */
 char prv_msg[4096];
-void prv_print(const char* msg);
+void prv_print(NC_VERB_LEVEL level, const char* msg);
 extern int verbose_level;
-#define ERROR(format,args...) if(verbose_level>=NC_VERB_ERROR){snprintf(prv_msg,4095,"ERROR: "format,##args); prv_print(prv_msg);}
-#define WARN(format,args...) if(verbose_level>=NC_VERB_WARNING){snprintf(prv_msg,4095,"WARNING: "format,##args); prv_print(prv_msg);}
-#define VERB(format,args...) if(verbose_level>=NC_VERB_VERBOSE){snprintf(prv_msg,4095,"VERBOSE: "format,##args); prv_print(prv_msg);}
-#define DBG(format,args...) if(verbose_level>=NC_VERB_DEBUG){snprintf(prv_msg,4095,"DEBUG: "format,##args); prv_print(prv_msg);}
+#define ERROR(format,args...) if(verbose_level>=NC_VERB_ERROR){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_ERROR, prv_msg);}
+#define WARN(format,args...) if(verbose_level>=NC_VERB_WARNING){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_WARNING, prv_msg);}
+#define VERB(format,args...) if(verbose_level>=NC_VERB_VERBOSE){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_VERBOSE, prv_msg);}
+#define DBG(format,args...) if(verbose_level>=NC_VERB_DEBUG){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_DEBUG, prv_msg);}
 
 /**
  * @brief Callbacks structure for all callbacks functions that can be set by application
@@ -124,7 +124,7 @@ extern int verbose_level;
  */
 struct callbacks {
 	/**< @brief Message printing function, if not set, messages are suppressed */
-	int (*print)(const char* msg);
+	void (*print)(NC_VERB_LEVEL level, const char* msg);
 	/**< @brief Function processing \<rpc-error\> replies on a client side. If no callback function is set, error details are ignored */
 	void (*process_error_reply)(const char* tag,
 			const char* type,
