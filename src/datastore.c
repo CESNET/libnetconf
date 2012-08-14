@@ -514,7 +514,7 @@ int ncxml_filter (xmlDocPtr data, const struct nc_filter * filter)
 	xmlDocPtr filter_doc;
 	int ret = EXIT_FAILURE;
 
-	if (data == NULL || filter == NULL) {
+	if (data == NULL || data->children == NULL || filter == NULL) {
 		return EXIT_SUCCESS;
 	}
 
