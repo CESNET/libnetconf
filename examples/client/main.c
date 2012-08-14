@@ -101,11 +101,11 @@ int main(int argc, char *argv[])
 		/* execute the command if any valid specified */
 		if (commands[i].name) {
 			commands[i].func(cmdstart);
-			add_history(cmdline);
 		} else {
 			/* if unknown command specified, tell it to user */
 			fprintf(stdout, "%s: no such command, type 'help' for more information.\n", cmd);
 		}
+		add_history(cmdline);
 
 		free(cmd);
 		free(cmdline);
