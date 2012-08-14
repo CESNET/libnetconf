@@ -21,6 +21,7 @@
 #define NC_CAP_ROLLBACK_ID  "urn:ietf:params:netconf:capability:rollback-on-error:1.0"
 
 extern int done;
+extern struct nc_cpblts * stored_cpblts;
 volatile int verb_level = 0;
 struct nc_cpblts * client_supported_cpblts = NULL;
 
@@ -1007,9 +1008,11 @@ int cmd_killsession (char *arg)
 #define CAP_REM 'r'
 #define CAP_LIST 'l'
 #define CAP_DEF 'd'
+#define CAP_LOAD 'o'
+#define CAP_STORE 's'
 void cmd_capability_help (void)
 {
-	fprintf (stdout, "capability [--help] {--add|--rem|--list|--default} [--uri=[URI]]\n");
+	fprintf (stdout, "capability [--help] {--add|--rem|--list|--default|--load|--store} [--uri=[URI]]\n");
 }
 
 int cmd_capability (char * arg)
@@ -1022,6 +1025,8 @@ int cmd_capability (char * arg)
 			{"rem", 0, &op, CAP_REM},
 			{"list", 0, &op, CAP_LIST},
 			{"default", 0, &op, CAP_DEF},
+			{"load", 0, &op, CAP_LOAD},
+			{"store", 0, &op, CAP_STORE},
 			{"uri", 1, 0, 'u'},
 			{"help", 0, 0, 'h'}
 	};
@@ -1035,7 +1040,7 @@ int cmd_capability (char * arg)
 	init_arglist (&cmd);
 	addargs (&cmd, "%s", arg);
 
-	while ((c=getopt_long (cmd.count, cmd.list, "a:r:l:d:u:h", long_options, &option_index)) != -1) {
+	while ((c=getopt_long (cmd.count, cmd.list, "a:r:l:d:o:s:u:h", long_options, &option_index)) != -1) {
 		switch (c) {
 		case 'u':
 			uri = optarg;
@@ -1099,6 +1104,22 @@ int cmd_capability (char * arg)
 			nc_cpblts_free (client_supported_cpblts);
 		}
 		client_supported_cpblts = nc_session_get_cpblts_default ();
+		break;
+	case CAP_LOAD:
+			nc_cpblts_free(client_supported_cpblts);
+			client_supported_cpblts = nc_cpblts_new(NULL);
+			nc_cpblts_iter_start(stored_cpblts);
+			while ((cap = nc_cpblts_iter_next(stored_cpblts)) != NULL) {
+				nc_cpblts_add(client_supported_cpblts, cap);
+			}
+		break;
+	case CAP_STORE:
+			nc_cpblts_free(stored_cpblts);
+			stored_cpblts = nc_cpblts_new(NULL);
+			nc_cpblts_iter_start(client_supported_cpblts);
+			while ((cap = nc_cpblts_iter_next(client_supported_cpblts)) != NULL) {
+				nc_cpblts_add(stored_cpblts, cap);
+			}
 		break;
 	default:
 		ERROR ("capability", "Unsupported operation");
