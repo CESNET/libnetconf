@@ -74,7 +74,7 @@ struct callbacks callbacks = {
 		NULL  /* privatekey file path */
 };
 
-void nc_callback_print(int (*func)(const char* msg))
+void nc_callback_print(void (*func)(NC_VERB_LEVEL level, const char* msg))
 {
 	callbacks.print = func;
 }

@@ -42,12 +42,14 @@
 
 #include <libssh2.h>
 
+#include "netconf.h"
+
 /**
  * @brief Set callback function for printing libnetconf's messages.
  * @ingroup genAPI
  * @param[in] func Callback function to use.
  */
-void nc_callback_print(int (*func)(const char* msg));
+void nc_callback_print(void (*func)(NC_VERB_LEVEL level, const char* msg));
 
 /**
  * @brief Set callback function to process (e.g. print) NETCONF \<rpc-error\> message items.

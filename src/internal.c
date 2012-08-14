@@ -52,10 +52,10 @@ void nc_verbosity(NC_VERB_LEVEL level)
 	verbose_level = level;
 }
 
-void prv_print(const char* msg)
+void prv_print(NC_VERB_LEVEL level, const char* msg)
 {
 	if (callbacks.print != NULL) {
-		callbacks.print(msg);
+		callbacks.print(level, msg);
 	}
 }
 

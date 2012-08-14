@@ -13,9 +13,22 @@
 volatile int done = 0;
 extern COMMAND commands[];
 
-int clb_print(const char* msg)
+void clb_print(NC_VERB_LEVEL level, const char* msg)
 {
-	return (fprintf(stderr, "libnetconf: %s\n", msg));
+	switch (level) {
+	case NC_VERB_ERROR:
+		fprintf(stderr, "libnetconf ERROR: %s\n", msg);
+		break;
+	case NC_VERB_WARNING:
+		fprintf(stderr, "libnetconf WARNING: %s\n", msg);
+		break;
+	case NC_VERB_VERBOSE:
+		fprintf(stderr, "libnetconf VERBOSE: %s\n", msg);
+		break;
+	case NC_VERB_DEBUG:
+		fprintf(stderr, "libnetconf DEBUG: %s\n", msg);
+		break;
+	}
 }
 
 void clb_error_print(const char* tag,
