@@ -24,6 +24,7 @@ int cmd_quit(char* arg);
 int cmd_debug(char *arg);
 int cmd_verbose(char *arg);
 int cmd_userrpc(char *arg);
+int cmd_capability(char *arg);
 
 typedef struct
 {

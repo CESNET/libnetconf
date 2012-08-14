@@ -22,6 +22,7 @@
 
 extern int done;
 volatile int verb_level = 0;
+struct nc_cpblts * client_supported_cpblts = NULL;
 
 void print_version ();
 
@@ -45,6 +46,7 @@ COMMAND commands[] = {
 		{"user-rpc", cmd_userrpc, "Send own content in RPC envelop (for DEBUG purpose)"},
 		{"verbose", cmd_verbose, "Enable/disable verbose messages"},
 		{"quit", cmd_quit, "Quit the program"},
+		{"capability", cmd_capability, "Add/remove capability to/from list of supported capabilities"},
 /* synonyms for previous commands */
 		{"debug", cmd_debug, NULL},
 		{"?", cmd_help, NULL},
@@ -1001,6 +1003,112 @@ int cmd_killsession (char *arg)
 	return (EXIT_SUCCESS);
 }
 
+#define CAP_ADD 'a'
+#define CAP_REM 'r'
+#define CAP_LIST 'l'
+#define CAP_DEF 'd'
+void cmd_capability_help (void)
+{
+	fprintf (stdout, "capability [--help] {--add|--rem|--list|--default} [--uri=[URI]]\n");
+}
+
+int cmd_capability (char * arg)
+{
+	struct arglist cmd;
+	int op = -1, c;
+	const char * uri = NULL, *cap;
+	struct option long_options[] = {
+			{"add", 0, &op, CAP_ADD},
+			{"rem", 0, &op, CAP_REM},
+			{"list", 0, &op, CAP_LIST},
+			{"default", 0, &op, CAP_DEF},
+			{"uri", 1, 0, 'u'},
+			{"help", 0, 0, 'h'}
+	};
+	int option_index = 0;
+	optind = 0;
+
+	if (session != NULL) {
+		ERROR ("capability", "NETCONF session already established. Changes to supported capability list will take efekt after reconnection.");
+	}
+
+	init_arglist (&cmd);
+	addargs (&cmd, "%s", arg);
+
+	while ((c=getopt_long (cmd.count, cmd.list, "a:r:l:d:u:h", long_options, &option_index)) != -1) {
+		switch (c) {
+		case 'u':
+			uri = optarg;
+			break;
+		case 'h':
+			cmd_capability_help ();
+			clear_arglist(&cmd);
+			return (EXIT_SUCCESS);
+			break;
+		case 0:
+			/* add/rem/list/default/load/store set */
+			break;
+		default:
+			break;
+		}
+	}
+
+	clear_arglist(&cmd);
+
+	if (op < 0) {
+		cmd_capability_help();
+		return EXIT_FAILURE;
+	}
+
+	if ((op == CAP_ADD || op == CAP_REM) && uri == NULL) {
+		INSTRUCTION("Type the URI specifying the capability (close editor by Ctrl-D):\n");
+		uri = mreadline (NULL);
+		if (uri == NULL) {
+			ERROR ("capability", "Reading capability URI failed.");
+			return EXIT_FAILURE;
+		}
+	}
+
+	switch (op) {
+	case CAP_ADD:
+		/* if adding first */
+		if (client_supported_cpblts == NULL) {
+			/* create structure */
+			client_supported_cpblts = nc_cpblts_new (NULL);
+		}
+		if (nc_cpblts_add (client_supported_cpblts, uri)) {
+			ERROR ("capability", "Can not add capability \"%s\" to client supported list.", uri);
+			return EXIT_FAILURE;
+		}
+		break;
+	case CAP_REM:
+		if (nc_cpblts_remove (client_supported_cpblts, uri)) {
+			ERROR ("capability", "Can not remove capability %s from client supported list.", uri);
+			return EXIT_FAILURE;
+		}
+		break;
+	case CAP_LIST:
+		fprintf (stdout, "Client claims support of folowing capabilities:\n");
+		nc_cpblts_iter_start (client_supported_cpblts);
+		while ((uri = nc_cpblts_iter_next (client_supported_cpblts)) != NULL) {
+			fprintf (stdout, "%s\n", uri);
+		}
+		break;
+	case CAP_DEF:
+		if (client_supported_cpblts != NULL) {
+			nc_cpblts_free (client_supported_cpblts);
+		}
+		client_supported_cpblts = nc_session_get_cpblts_default ();
+		break;
+	default:
+		ERROR ("capability", "Unsupported operation");
+		return EXIT_FAILURE;
+		break;
+	}
+
+	return EXIT_SUCCESS;
+}
+
 void cmd_getconfig_help ()
 {
 	/* if session not established, print complete help for all capabilities */
@@ -1313,7 +1421,7 @@ int cmd_connect (char* arg)
 	}
 
 	/* create the session */
-	session = nc_session_connect (host, port, user, NULL);
+	session = nc_session_connect (host, port, user, client_supported_cpblts);
 	if (session == NULL) {
 		ERROR("connect", "connecting to the %s failed.", host);
 		if (hostfree) {
