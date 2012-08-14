@@ -237,7 +237,7 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 	if (capabilities->items == capabilities->list_size) {
 		/* resize the capacity of the capabilities list */
 		errno = 0;
-		capabilities->list = realloc(capabilities->list, capabilities->list_size * 2);
+		capabilities->list = realloc(capabilities->list, capabilities->list_size * 2 * sizeof (char*));
 		if (errno != 0) {
 			return (EXIT_FAILURE);
 		}
