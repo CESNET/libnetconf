@@ -281,7 +281,7 @@ int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_str
 		capabilities->list[i] = capabilities->list[capabilities->items - 1];
 		/* and then set the last item in the list to NULL */
 		capabilities->list[capabilities->items - 1] = NULL;
-		capabilities->list_size--;
+		capabilities->items--;
 	}
 
 	return (EXIT_SUCCESS);
