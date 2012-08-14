@@ -176,7 +176,7 @@ struct nc_cpblts *nc_cpblts_new(char* const* list)
 			if (retval->items == retval->list_size) {
 				/* resize the capacity of the capabilities list */
 				errno = 0;
-				retval->list = realloc (retval->list, retval->list_size * 2);
+				retval->list = realloc (retval->list, retval->list_size * 2 * sizeof (char*));
 				if (errno != 0) {
 					nc_cpblts_free (retval);
 					return (NULL);
