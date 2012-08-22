@@ -110,7 +110,7 @@ void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 				sshauth_pref[i] = new;
 				dir = 1;
 				/* correct order */
-				while ((i + dir) <= AUTH_COUNT) {
+				while ((i + dir) < AUTH_COUNT) {
 					if (sshauth_pref[i].value < sshauth_pref[i + dir].value) {
 						aux = sshauth_pref[i + dir];
 						sshauth_pref[i + dir] = sshauth_pref[i];
