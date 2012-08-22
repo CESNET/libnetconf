@@ -292,7 +292,7 @@ const char* nc_cpblts_get(const struct nc_cpblts *c, const char* capability_stri
 	int i;
 	char* s, *p;
 
-	if (capability_string == NULL || c == NULL ) {
+	if (capability_string == NULL || c == NULL || c->list == NULL) {
 		return (NULL);
 	}
 
