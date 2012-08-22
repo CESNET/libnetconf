@@ -119,19 +119,12 @@ void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
 		int keytype, const char* fingerprint));
 
 /**
- * @brief Set path to publickey file used in case of SSH authentication via
+ * @brief Set path to private and public key file used in case of SSH authentication via
  * publickey mechanism.
  * @ingroup session
- * @param[in] path Path to the file to use.
+ * @param[in] private
+ * @param[in] public
  */
-void nc_set_publickey_path(const char* path);
-
-/**
- * @brief Set path to privatekey file used in case of SSH authentication via
- * publickey mechanism.
- * @ingroup session
- * @param[in] path
- */
-void nc_set_privatekey_path(const char* path);
+void nc_set_keypair_path(const char* private, const char * public);
 
 #endif /* CALLBACKS_H_ */
