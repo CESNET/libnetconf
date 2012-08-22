@@ -1019,7 +1019,8 @@ int cmd_capability (char * arg)
 {
 	struct arglist cmd;
 	int op = -1, c;
-	const char * uri = NULL, *cap;
+	const char * uri, *cap;
+	char * par_uri = NULL;
 	struct option long_options[] = {
 			{"add", 0, &op, CAP_ADD},
 			{"rem", 0, &op, CAP_REM},
@@ -1028,7 +1029,8 @@ int cmd_capability (char * arg)
 			{"load", 0, &op, CAP_LOAD},
 			{"store", 0, &op, CAP_STORE},
 			{"uri", 1, 0, 'u'},
-			{"help", 0, 0, 'h'}
+			{"help", 0, 0, 'h'},
+			{0, 0, 0, 0}
 	};
 	int option_index = 0;
 	optind = 0;
@@ -1043,7 +1045,7 @@ int cmd_capability (char * arg)
 	while ((c=getopt_long (cmd.count, cmd.list, "a:r:l:d:o:s:u:h", long_options, &option_index)) != -1) {
 		switch (c) {
 		case 'u':
-			uri = optarg;
+			par_uri = strdup(optarg);
 			break;
 		case 'h':
 			cmd_capability_help ();
@@ -1065,10 +1067,10 @@ int cmd_capability (char * arg)
 		return EXIT_FAILURE;
 	}
 
-	if ((op == CAP_ADD || op == CAP_REM) && uri == NULL) {
+	if ((op == CAP_ADD || op == CAP_REM) && par_uri == NULL) {
 		INSTRUCTION("Type the URI specifying the capability (close editor by Ctrl-D):\n");
-		uri = mreadline (NULL);
-		if (uri == NULL) {
+		par_uri = mreadline (NULL);
+		if (par_uri == NULL) {
 			ERROR ("capability", "Reading capability URI failed.");
 			return EXIT_FAILURE;
 		}
@@ -1081,16 +1083,20 @@ int cmd_capability (char * arg)
 			/* create structure */
 			client_supported_cpblts = nc_cpblts_new (NULL);
 		}
-		if (nc_cpblts_add (client_supported_cpblts, uri)) {
-			ERROR ("capability", "Can not add capability \"%s\" to client supported list.", uri);
+		if (nc_cpblts_add (client_supported_cpblts, par_uri)) {
+			ERROR ("capability", "Can not add capability \"%s\" to client supported list.", par_uri);
+			free (par_uri);
 			return EXIT_FAILURE;
 		}
+		free (par_uri);
 		break;
 	case CAP_REM:
-		if (nc_cpblts_remove (client_supported_cpblts, uri)) {
-			ERROR ("capability", "Can not remove capability %s from client supported list.", uri);
+		if (nc_cpblts_remove (client_supported_cpblts, par_uri)) {
+			ERROR ("capability", "Can not remove capability %s from client supported list.", par_uri);
+			free (par_uri);
 			return EXIT_FAILURE;
 		}
+		free (par_uri);
 		break;
 	case CAP_LIST:
 		fprintf (stdout, "Client claims support of folowing capabilities:\n");
