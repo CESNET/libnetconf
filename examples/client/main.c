@@ -5,6 +5,7 @@
 
 #include "commands.h"
 #include "mreadline.h"
+#include "configuration.h"
 #include "../../src/libnetconf.h"
 
 #define VERSION "0.1"
@@ -12,6 +13,7 @@
 
 volatile int done = 0;
 extern COMMAND commands[];
+struct nc_cpblts * stored_cpblts;
 
 void clb_print(NC_VERB_LEVEL level, const char* msg)
 {
@@ -59,6 +61,7 @@ int main(int argc, char *argv[])
 
 	initialize_readline();
 
+	load_config (&stored_cpblts);
 
 	/* set verbosity and function to print libnetconf's messages */
 	nc_verbosity(NC_VERB_WARNING);
@@ -101,16 +104,18 @@ int main(int argc, char *argv[])
 		/* execute the command if any valid specified */
 		if (commands[i].name) {
 			commands[i].func(cmdstart);
-			add_history(cmdline);
 		} else {
 			/* if unknown command specified, tell it to user */
 			fprintf(stdout, "%s: no such command, type 'help' for more information.\n", cmd);
 		}
+		add_history(cmdline);
 
 		free(cmd);
 		free(cmdline);
 	}
 
+	store_config (stored_cpblts);
+	nc_cpblts_free(stored_cpblts);
 	/* bye, bye */
 	return (EXIT_SUCCESS);
 }

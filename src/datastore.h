@@ -159,4 +159,25 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
  */
 void ncds_break_locks (const struct nc_session* session);
 
+/**
+ * @ingroup store
+ * @brief Return serialized XML containing data model in YIN format
+ *
+ * @param[in] id ID of datastore which data model we want
+ *
+ * @return String containing YIN model. Caller must free memory after use.
+ */
+char * ncds_get_model (ncds_id id);
+
+/**
+ * @ingroup store
+ * @brief Return path to file containing datastore datamodel
+ *
+ * @param[in] id ID of datastore which data model we want
+ *
+ * @return String containing path to file containing datastore datamodel. Caller must NOT free the memory.
+ */
+const char * ncds_get_model_path (ncds_id id);
+
+
 #endif /* DATASTORE_H_ */

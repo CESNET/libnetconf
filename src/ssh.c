@@ -110,7 +110,7 @@ void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 				sshauth_pref[i] = new;
 				dir = 1;
 				/* correct order */
-				while ((i + dir) <= AUTH_COUNT) {
+				while ((i + dir) < AUTH_COUNT) {
 					if (sshauth_pref[i].value < sshauth_pref[i + dir].value) {
 						aux = sshauth_pref[i + dir];
 						sshauth_pref[i + dir] = sshauth_pref[i];
@@ -594,9 +594,40 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	return (retval);
 }
 
+int find_ssh_keys ()
+{
+	struct passwd *pw;
+	char * user_home, *key_pub_path, *key_priv_path;
+	char * key_names[SSH2_KEYS] = {"id_rsa", "id_dsa", "id_ecdsa"};
+	int i, retval = EXIT_FAILURE;
+
+	if ((user_home = getenv("HOME")) == NULL) {
+		if ((pw = getpwuid(getuid())) == NULL) {
+			return EXIT_FAILURE;
+		}
+		user_home = pw->pw_dir;
+	}
+
+	/* search in the same location as ssh do (~/.ssh/) */
+	VERB ("Searching for key pairs in standard ssh directory.");
+	for (i=0; i<SSH2_KEYS; i++) {
+		asprintf (&key_priv_path, "%s/.ssh/%s", user_home, key_names[i]);
+		asprintf (&key_pub_path, "%s/.ssh/%s.pub", user_home, key_names[i]);
+		if (access(key_priv_path, R_OK) == 0 && access(key_pub_path, R_OK) == 0) {
+			VERB ("Found pair %s[.pub]", key_priv_path);
+			nc_set_keypair_path (key_priv_path, key_pub_path);
+			retval = EXIT_SUCCESS;
+		}
+		free (key_priv_path);
+		free (key_pub_path);
+	}
+
+	return retval;
+}
+
 struct nc_session *nc_session_connect(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts)
 {
-	int i, r;
+	int i, r, j;
 	int sock = -1;
 	int auth = 0;
 	struct addrinfo hints, *res_list, *res;
@@ -782,6 +813,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	/* select authentication according to preferences */
 	for (i = 0; i < AUTH_COUNT; i++) {
 		if ((sshauth_pref[i].type & auth) == 0) {
+			/* method not supported by server, skip */
 			continue;
 		}
 
@@ -800,35 +832,58 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 				memset(s, 0, strlen(s));
 				libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
 				ERROR("Authentication failed (%s)", err_msg);
-				goto shutdown;
 			}
 			memset(s, 0, strlen(s));
 			free(s);
 			break;
 		case NC_SSH_AUTH_INTERACTIVE:
+			VERB("Keyboard-interactive authentication");
 			if (libssh2_userauth_keyboard_interactive(retval->ssh_session,
 					username,
 					callbacks.sshauth_interactive) != 0) {
 				libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
 				ERROR("Authentication failed (%s)", err_msg);
-				goto shutdown;
 			}
 			break;
 		case NC_SSH_AUTH_PUBLIC_KEYS:
-			s = callbacks.sshauth_passphrase(username, host,
-			                callbacks.privatekey_filename != NULL ? callbacks.privatekey_filename : "~/.ssh/id_rsa");
-			if (libssh2_userauth_publickey_fromfile(retval->ssh_session,
-					username,
-					callbacks.publickey_filename != NULL ? callbacks.publickey_filename : "~/.ssh/id_rsa.pub",
-					callbacks.privatekey_filename != NULL ? callbacks.privatekey_filename : "~/.ssh/id_rsa",
-					s) != 0) {
-				memset(s, 0, strlen(s));
-				libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-				ERROR("Authentication failed (%s)", err_msg);
-				goto shutdown;
+			VERB ("Publickey athentication");
+			/* if publickeys path not provided, try to find them in standard path */
+			if (callbacks.publickey_filename[0] == NULL || callbacks.privatekey_filename[0] == NULL) {
+				WARN ("No key pair specified. Looking for some in standard SSH path.");
+				if (find_ssh_keys ()) {
+					ERROR ("Searching keys failed.");
+					/* error */
+					break;
+				}
 			}
-			memset(s, 0, strlen(s));
-			free(s);
+
+			for (j=0; j<SSH2_KEYS; j++) {
+				if (callbacks.privatekey_filename[j] == NULL) {
+					/* key not available */
+					continue;
+				}
+
+				VERB("Trying to authenticate using %spair %s %s", callbacks.key_protected[j] ? "password protected" : "", callbacks.privatekey_filename[j], callbacks.publickey_filename[j]);
+
+				if (callbacks.key_protected[j]) {
+					s = callbacks.sshauth_passphrase(username, host, callbacks.privatekey_filename[j]);
+				} else {
+					s = NULL;
+				}
+
+				if (libssh2_userauth_publickey_fromfile(retval->ssh_session,
+					username, callbacks.publickey_filename[j], callbacks.privatekey_filename[j], s) != 0) {
+					memset(s, 0, strlen(s));
+					libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+					ERROR("Authentication failed (%s)", err_msg);
+				} else {
+					break;
+				}
+				if (s != NULL) {
+					memset(s, 0, strlen(s));
+					free(s);
+				}
+			}
 			break;
 		}
 		if (libssh2_userauth_authenticated(retval->ssh_session) == 1) {

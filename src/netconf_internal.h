@@ -108,6 +108,8 @@
 #define NC_RPC_OK           "ok"
 #define NC_RPC_DATA         "data"
 
+#define SSH2_KEYS 3 /* number of supported keys */
+
 
 /* libnetconf's message printing */
 char prv_msg[4096];
@@ -152,9 +154,11 @@ struct callbacks {
 	/**< @brief Callback to get answer to the host authenticity: 0 ok, 1 failed */
 	int (*hostkey_check)(const char* hostname, int keytype, const char* fingerprint);
 	/**< @brief */
-	char *publickey_filename;
+	char *publickey_filename[SSH2_KEYS];
 	/**< @brief */
-	char *privatekey_filename;
+	char *privatekey_filename[SSH2_KEYS];
+	/**< @brief is private key protected by password */
+	int key_protected[SSH2_KEYS];
 };
 
 /**

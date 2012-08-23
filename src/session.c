@@ -237,7 +237,7 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 	if (capabilities->items == capabilities->list_size) {
 		/* resize the capacity of the capabilities list */
 		errno = 0;
-		capabilities->list = realloc(capabilities->list, capabilities->list_size * 2);
+		capabilities->list = realloc(capabilities->list, capabilities->list_size * 2 * sizeof (char*));
 		if (errno != 0) {
 			return (EXIT_FAILURE);
 		}
@@ -281,7 +281,7 @@ int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_str
 		capabilities->list[i] = capabilities->list[capabilities->items - 1];
 		/* and then set the last item in the list to NULL */
 		capabilities->list[capabilities->items - 1] = NULL;
-		capabilities->list_size--;
+		capabilities->items--;
 	}
 
 	return (EXIT_SUCCESS);
@@ -292,7 +292,7 @@ const char* nc_cpblts_get(const struct nc_cpblts *c, const char* capability_stri
 	int i;
 	char* s, *p;
 
-	if (capability_string == NULL || c == NULL ) {
+	if (capability_string == NULL || c == NULL || c->list == NULL) {
 		return (NULL);
 	}
 

@@ -37,6 +37,7 @@
  *
  */
 
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -70,8 +71,9 @@ struct callbacks callbacks = {
 		callback_sshauth_password_default, /* default password callback */
 		callback_sshauth_publickey_default, /* default publickey (get passphrase) callback */
 		callback_ssh_hostkey_check_default, /* default hostkey check callback */
-		NULL, /* publickey file path */
-		NULL  /* privatekey file path */
+		{ NULL }, /* publickey file path */
+		{ NULL },  /* privatekey file path */
+		{ 0 }
 };
 
 void nc_callback_print(void (*func)(NC_VERB_LEVEL level, const char* msg))
@@ -295,22 +297,35 @@ again:
 
 void nc_set_publickey_path (const char* path)
 {
+	static int i = 0;
 	if (path != NULL) {
-		if (callbacks.publickey_filename != NULL) {
-			free (callbacks.publickey_filename);
-		}
-		callbacks.publickey_filename = strdup (path);
+		callbacks.publickey_filename[i++] = strdup (path);
 	}
 }
 
 void nc_set_privatekey_path (const char* path)
 {
+	FILE * key;
+	char line[128];
+	static int i = 0;
+
 	if (path != NULL) {
-		if (callbacks.privatekey_filename != NULL) {
-			free (callbacks.privatekey_filename);
+		if ((key = fopen (path, "r")) != NULL) {
+			/* Key type line */
+			fgets(line, sizeof(line), key);
+			/* encryption information or key */
+			fgets(line, sizeof(line), key);
+			if (strcasestr (line, "encrypted") != NULL) {
+				callbacks.key_protected[i] = 1;
+			}
 		}
-		callbacks.privatekey_filename = strdup (path);
+		callbacks.privatekey_filename[i++] = strdup (path);
 	}
 }
 
+void nc_set_keypair_path (const char * private, const char * public)
+{
+	nc_set_privatekey_path(private);
+	nc_set_publickey_path(public);
+}
 

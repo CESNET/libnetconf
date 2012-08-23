@@ -127,6 +127,32 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
+char * ncds_get_model (ncds_id id)
+{
+	struct ncds_ds * datastore = datastores_get_ds(id);
+	xmlBufferPtr buf;
+	char * retval = NULL;
+
+	if (datastore != NULL && datastore->model != NULL) {
+		buf = xmlBufferCreate();
+		xmlNodeDump(buf, datastore->model, datastore->model->children, 1, 1);
+		retval = strdup ((char*)xmlBufferContent(buf));
+		xmlBufferFree(buf);
+	}
+	return retval;
+}
+
+const char * ncds_get_model_path (ncds_id id)
+{
+	struct ncds_ds * datastore = datastores_get_ds(id);
+
+	if (datastore == NULL) {
+		return NULL;
+	}
+
+	return datastore->model_path;
+}
+
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
 {
 	struct ncds_ds* ds = NULL;
