@@ -885,7 +885,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			}
 			break;
 		}
-		if (libssh2_userauth_authenticated(retval->ssh_session) == 1) {
+		if (libssh2_userauth_authenticated(retval->ssh_session) != 0) {
 			break;
 		}
 	}
