@@ -873,7 +873,6 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 				if (libssh2_userauth_publickey_fromfile(retval->ssh_session,
 					username, callbacks.publickey_filename[j], callbacks.privatekey_filename[j], s) != 0) {
-					memset(s, 0, strlen(s));
 					libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
 					ERROR("Authentication failed (%s)", err_msg);
 				} else {
