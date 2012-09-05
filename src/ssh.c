@@ -863,7 +863,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 					continue;
 				}
 
-				VERB("Trying to authenticate using %spair %s %s", callbacks.key_protected[j] ? "password protected" : "", callbacks.privatekey_filename[j], callbacks.publickey_filename[j]);
+				VERB("Trying to authenticate using %spair %s %s", callbacks.key_protected[j] ? "password-protected " : "", callbacks.privatekey_filename[j], callbacks.publickey_filename[j]);
 
 				if (callbacks.key_protected[j]) {
 					s = callbacks.sshauth_passphrase(username, host, callbacks.privatekey_filename[j]);
@@ -873,20 +873,27 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 				if (libssh2_userauth_publickey_fromfile(retval->ssh_session,
 					username, callbacks.publickey_filename[j], callbacks.privatekey_filename[j], s) != 0) {
-					memset(s, 0, strlen(s));
 					libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+
+					/* clear the password string */
+					if (s != NULL) {
+						memset(s, 0, strlen(s));
+						free(s);
+					}
+
 					ERROR("Authentication failed (%s)", err_msg);
 				} else {
+					/* clear the password string */
+					if (s != NULL) {
+						memset(s, 0, strlen(s));
+						free(s);
+					}
 					break;
-				}
-				if (s != NULL) {
-					memset(s, 0, strlen(s));
-					free(s);
 				}
 			}
 			break;
 		}
-		if (libssh2_userauth_authenticated(retval->ssh_session) == 1) {
+		if (libssh2_userauth_authenticated(retval->ssh_session) != 0) {
 			break;
 		}
 	}
