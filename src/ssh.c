@@ -863,7 +863,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 					continue;
 				}
 
-				VERB("Trying to authenticate using %spair %s %s", callbacks.key_protected[j] ? "password protected" : "", callbacks.privatekey_filename[j], callbacks.publickey_filename[j]);
+				VERB("Trying to authenticate using %spair %s %s", callbacks.key_protected[j] ? "password-protected " : "", callbacks.privatekey_filename[j], callbacks.publickey_filename[j]);
 
 				if (callbacks.key_protected[j]) {
 					s = callbacks.sshauth_passphrase(username, host, callbacks.privatekey_filename[j]);
