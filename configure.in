@@ -39,6 +39,8 @@
 # Process this file with autoconf to produce a configure script.
 AC_INIT([libnetconf], m4_esyscmd([cut -f1 ./VERSION | tr -d '\n']))
 
+m4_include([m4/ax_pthread.m4])
+
 AC_CANONICAL_HOST
 
 PACKAGE_VERSION=`cut -f1 ./VERSION | tr -d '\n'`
@@ -131,14 +133,23 @@ AC_SUBST(LIBSSH2_SESSION_HANDSHAKE)
 AC_SUBST(LIBSSH2_SET_TIMEOUT)
 
 if test -n "$SUBDIRS"; then
-    # libreadline
-    AC_CHECK_LIB([readline], [readline], [], AC_MSG_ERROR([Missing libreadline]))
-    AC_CHECK_HEADERS(readline/readline.h readline/history.h, [], AC_MSG_ERROR([Missing libreadline headers.]))
-    
-    # libevent
-    AC_CHECK_LIB([event], [event_base_dispatch], [], AC_MSG_ERROR([Missing libevent]))
-    AC_CHECK_HEADERS(event2/event.h, [], AC_MSG_ERROR([Missing libevent headers.]))
+	### libreadline ###
+	AC_CHECK_LIB([readline], [readline], [], AC_MSG_ERROR([Missing libreadline]))
+	AC_CHECK_HEADERS(readline/readline.h readline/history.h, [], AC_MSG_ERROR([Missing libreadline headers.]))
+
+	### libevent ###
+	AC_CHECK_LIB([event], [event_base_dispatch], [], AC_MSG_ERROR([Missing libevent]))
+	AC_CHECK_HEADERS(event2/event.h, [], AC_MSG_ERROR([Missing libevent headers.]))
 fi
+
+
+### pthread ###
+AX_PTHREAD([
+	LIBS="$PTHREAD_LIBS $LIBS"
+	CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+	CC="$PTHREAD_CC"], AC_MSG_ERROR([Missing POSIX threads support.]))
+#AC_CHECK_LIB([pthread], [pthread_create], [], AC_MSG_ERROR([Missing POSIX threads library.]))
+#AC_CHECK_HEADERS([pthread.h], [], AC_MSG_ERROR([Missing POSIX threads headers.]))
 
 ###################### Check for configure parameters ##########################
 
