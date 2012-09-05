@@ -1031,7 +1031,7 @@ int cmd_authentication (char * arg)
 	optind = 0;
 
 	if (session != NULL) {
-		ERROR ("authentication", "NETCONF session already established. Changes to supported capability list will take efekt after reconnection.");
+		ERROR ("authentication", "NETCONF session is already established. Changes on supported capability list will take effect after reconnection.");
 	}
 
 	init_arglist (&cmd);
