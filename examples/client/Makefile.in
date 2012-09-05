@@ -41,7 +41,7 @@ exec_prefix = @exec_prefix@
 bindir = @bindir@
 
 CC = @CC@
-LIBS = -L../../ -lnetconf -lreadline
+LIBS = -L../../ -lnetconf -lreadline -lxml2
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ -I../../src/
 INSTALL = @INSTALL@
