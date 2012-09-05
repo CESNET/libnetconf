@@ -483,10 +483,13 @@ void nc_session_close (struct nc_session* session, const char* msg)
 {
 	nc_rpc *rpc_close = NULL;
 	nc_reply *reply = NULL;
+   static int closing = 0;
 
 
 	/* close the SSH session */
-	if (session != NULL) {
+	if (session != NULL && closing == 0) {
+      /* prevent infinite recursion when socket is corrupted -> stack overflow */
+      closing = 1;
 		if (session->ssh_channel != NULL) {
 
 			if (session->status == NC_SESSION_STATUS_WORKING &&
@@ -531,6 +534,8 @@ void nc_session_close (struct nc_session* session, const char* msg)
 		 * userbame, capabilities and session_id are untouched
 		 */
 		session->status = NC_SESSION_STATUS_CLOSED;
+      /* successfully closed */
+      closing = 0;
 	}
 }
 
