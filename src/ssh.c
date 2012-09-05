@@ -874,13 +874,21 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 				if (libssh2_userauth_publickey_fromfile(retval->ssh_session,
 					username, callbacks.publickey_filename[j], callbacks.privatekey_filename[j], s) != 0) {
 					libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+
+					/* clear the password string */
+					if (s != NULL) {
+						memset(s, 0, strlen(s));
+						free(s);
+					}
+
 					ERROR("Authentication failed (%s)", err_msg);
 				} else {
+					/* clear the password string */
+					if (s != NULL) {
+						memset(s, 0, strlen(s));
+						free(s);
+					}
 					break;
-				}
-				if (s != NULL) {
-					memset(s, 0, strlen(s));
-					free(s);
 				}
 			}
 			break;
