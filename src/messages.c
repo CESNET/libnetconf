@@ -294,11 +294,13 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 			return (NC_OP_KILLSESSION);
 		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "close-session") == 0) {
 			return (NC_OP_CLOSESESSION);
+		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "create-subscription") == 0) {
+			return (NC_OP_CREATESUBSCRIPTION);
 		} else {
 			return (NC_OP_UNKNOWN);
 		}
 	} else {
-		WARN("Invalid rpc message for nc_rpc_get_operation - not a <rpc> message.");
+		WARN("Invalid rpc message for nc_rpc_get_op - not a <rpc> message.");
 		return (NC_OP_UNKNOWN);
 	}
 }
@@ -651,6 +653,7 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 	msg->doc = xmlNewDoc(BAD_CAST "1.0");
 	msg->doc->encoding = xmlStrdup(BAD_CAST UTF8);
 	msg->with_defaults = NCDFLT_MODE_DISABLED;
+	msg->type.rpc = NC_RPC_HELLO;
 
 	/* create root element */
 	msg->doc->children = xmlNewDocNode(msg->doc, NULL, BAD_CAST NC_HELLO_MSG, NULL);
@@ -1529,6 +1532,61 @@ nc_rpc *nc_rpc_killsession(const char *kill_sid)
 		return (NULL);
 	}
 
+	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_SESSION;
+	xmlFreeNode(content);
+
+	return (rpc);
+}
+
+nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, const char* start, const char* stop)
+{
+	nc_rpc *rpc = NULL;
+	xmlNodePtr content;
+
+	/* prepare notification namespace */
+
+
+	if ((content = xmlNewNode(NULL, BAD_CAST "create-subscription")) == NULL) {
+		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+	xmlNewNs(content, BAD_CAST NC_NS_CAP_NOTIFICATIONS, NULL);
+
+	/* add <stream> specification if set */
+	if (stream != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "stream", BAD_CAST stream) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	/* add filter specification if any required */
+	if (process_filter_param(content, filter) != 0) {
+		xmlFreeNode(content);
+		return (NULL);
+	}
+
+	/* add <startTime> specification if set */
+	if (start != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "startTime", BAD_CAST start) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	/* add <stopTime> specification if set */
+	if (stop != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "stopTime", BAD_CAST stop) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	/* finnish the message building */
 	rpc = nc_rpc_create(content);
 	rpc->type.rpc = NC_RPC_SESSION;
 	xmlFreeNode(content);

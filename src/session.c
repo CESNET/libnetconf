@@ -377,13 +377,14 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 		return (NULL);
 	}
 
-	nc_cpblts_add(retval, "urn:ietf:params:netconf:base:1.0");
-	nc_cpblts_add(retval, "urn:ietf:params:netconf:base:1.1");
-	nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:writable-running:1.0");
-	nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:candidate:1.0");
-	nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:startup:1.0");
+	nc_cpblts_add(retval, NC_CAP_BASE10_ID);
+	nc_cpblts_add(retval, NC_CAP_BASE11_ID);
+	nc_cpblts_add(retval, NC_CAP_WRUNNING_ID);
+	nc_cpblts_add(retval, NC_CAP_CANDIDATE_ID);
+	nc_cpblts_add(retval, NC_CAP_STARTUP_ID);
+	nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
 	if (ncdflt_get_basic_mode() != NCDFLT_MODE_DISABLED) {
-		nc_cpblts_add(retval, "urn:ietf:params:netconf:capability:with-defaults:1.0");
+		nc_cpblts_add(retval, NC_CAP_WITHDEFAULTS_ID);
 	}
 
 	return (retval);
@@ -1285,6 +1286,7 @@ nc_msgid nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
 nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 {
 	int ret;
+	nc_msgid retval;
 	char msg_id_str[16];
 	const char* wd;
 	struct nc_msg *msg;
@@ -1294,41 +1296,52 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 		return (0); /* failure */
 	}
 
-	/* check for with-defaults capability */
-	if (rpc->with_defaults != NCDFLT_MODE_DISABLED) {
-		/* check if the session support this */
-		if ((wd = nc_cpblts_get(session->capabilities, NC_CAP_WITHDEFAULTS_ID)) == NULL) {
-			ERROR("RPC requires with-defaults capability, but session does not support it.");
-			return (0); /* failure */
+	if (rpc->type.rpc != NC_RPC_HELLO) {
+		/* check for capabilities operations */
+		/* :notifications */
+		if (nc_rpc_get_op(rpc) == NC_OP_CREATESUBSCRIPTION) {
+			if (nc_cpblts_enabled(session, NC_CAP_NOTIFICATION_ID) == 0) {
+				ERROR("RPC requires :notifications capability, but session does not support it.");
+				return (0); /* failure */
+			}
 		}
-		switch (rpc->with_defaults) {
-		case NCDFLT_MODE_ALL:
-			if (strstr(wd, "report-all") == NULL) {
-				ERROR("RPC requires with-defaults capability report-all mode, but session does not support it.");
+
+		/* check for with-defaults capability */
+		if (rpc->with_defaults != NCDFLT_MODE_DISABLED) {
+			/* check if the session support this */
+			if ((wd = nc_cpblts_get(session->capabilities, NC_CAP_WITHDEFAULTS_ID)) == NULL) {
+				ERROR("RPC requires :with-defaults capability, but session does not support it.");
 				return (0); /* failure */
 			}
-			break;
-		case NCDFLT_MODE_ALL_TAGGED:
-			if (strstr(wd, "report-all-tagged") == NULL) {
-				ERROR("RPC requires with-defaults capability report-all-tagged mode, but session does not support it.");
-				return (0); /* failure */
+			switch (rpc->with_defaults) {
+			case NCDFLT_MODE_ALL:
+				if (strstr(wd, "report-all") == NULL) {
+					ERROR("RPC requires with-defaults capability report-all mode, but session does not support it.");
+					return (0); /* failure */
+				}
+				break;
+			case NCDFLT_MODE_ALL_TAGGED:
+				if (strstr(wd, "report-all-tagged") == NULL) {
+					ERROR("RPC requires with-defaults capability report-all-tagged mode, but session does not support it.");
+					return (0); /* failure */
+				}
+				break;
+			case NCDFLT_MODE_TRIM:
+				if (strstr(wd, "trim") == NULL) {
+					ERROR("RPC requires with-defaults capability trim mode, but session does not support it.");
+					return (0); /* failure */
+				}
+				break;
+			case NCDFLT_MODE_EXPLICIT:
+				if (strstr(wd, "explicit") == NULL) {
+					ERROR("RPC requires with-defaults capability explicit mode, but session does not support it.");
+					return (0); /* failure */
+				}
+				break;
+			default: /* NCDFLT_MODE_DISABLED */
+				/* nothing to check */
+				break;
 			}
-			break;
-		case NCDFLT_MODE_TRIM:
-			if (strstr(wd, "trim") == NULL) {
-				ERROR("RPC requires with-defaults capability trim mode, but session does not support it.");
-				return (0); /* failure */
-			}
-			break;
-		case NCDFLT_MODE_EXPLICIT:
-			if (strstr(wd, "explicit") == NULL) {
-				ERROR("RPC requires with-defaults capability explicit mode, but session does not support it.");
-				return (0); /* failure */
-			}
-			break;
-		default: /* NCDFLT_MODE_DISABLED */
-			/* nothing to check */
-			break;
 		}
 	}
 
@@ -1338,9 +1351,13 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 	if (xmlStrcmp (msg->doc->children->name, BAD_CAST "rpc") == 0) {
 		/* lock the session due to accessing msgid item */
 		pthread_mutex_lock(&(session->mut_session));
-		sprintf (msg_id_str, "%llu", session->msgid++);
+		retval = session->msgid++;
 		pthread_mutex_unlock(&(session->mut_session));
+		sprintf (msg_id_str, "%llu", retval);
 		xmlSetProp (msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str);
+	} else {
+		/* hello message */
+		retval = 1;
 	}
 
 	/* set proper namespace according to NETCONF version */
@@ -1358,7 +1375,7 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 		pthread_mutex_unlock(&(session->mut_session));
 		return (0);
 	} else {
-		return (session->msgid);
+		return (retval);
 	}
 }
 

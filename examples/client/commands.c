@@ -43,6 +43,7 @@ COMMAND commands[] = {
 		{"kill-session", cmd_killsession, "NETCONF <kill-session> operation"},
 		{"lock", cmd_lock, "NETCONF <lock> operation"},
 		{"unlock", cmd_unlock, "NETCONF <unlock> operation"},
+		{"subscribe", cmd_subscribe, "NETCONF Event Notifications <create-subscription> operation"},
 		{"status", cmd_status, "Print information about current NETCONF session"},
 		{"user-rpc", cmd_userrpc, "Send own content in RPC envelop (for DEBUG purpose)"},
 		{"verbose", cmd_verbose, "Enable/disable verbose messages"},
@@ -733,7 +734,7 @@ int cmd_get (char *arg)
 		}
 	}
 
-	if (optind > cmd.count) {
+	if (optind < cmd.count) {
 		ERROR("get", "invalid parameters, see \'get --help\'.");
 		clear_arglist(&cmd);
 		return (EXIT_FAILURE);
@@ -1639,6 +1640,111 @@ generic_help:
 	}
 
 	return (0);
+}
+
+void cmd_subscribe_help()
+{
+	fprintf (stdout, "subscribe [--help] [--filter] [<stream>]\n");
+}
+
+int cmd_subscribe(char *arg)
+{
+	int c;
+	struct nc_filter *filter = NULL;
+	char *stream;
+	nc_rpc *rpc = NULL;
+	nc_reply *reply = NULL;
+	struct arglist cmd;
+	struct option long_options[] ={
+			{"filter", 2, 0, 'f'},
+			{"help", 0, 0, 'h'},
+			{0, 0, 0, 0}
+	};
+	int option_index = 0;
+
+	/* set back to start to be able to use getopt() repeatedly */
+	optind = 0;
+
+	if (session == NULL) {
+		ERROR("get", "NETCONF session not established, use \'connect\' command.");
+		return (EXIT_FAILURE);
+	}
+
+	init_arglist (&cmd);
+	addargs (&cmd, "%s", arg);
+
+	while ((c = getopt_long (cmd.count, cmd.list, "f:h", long_options, &option_index)) != -1) {
+		switch (c) {
+		case 'f':
+			filter = set_filter("create-subscription", optarg);
+			if (filter == NULL) {
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+			break;
+		case 'h':
+			cmd_subscribe_help ();
+			clear_arglist(&cmd);
+			return (EXIT_SUCCESS);
+			break;
+		default:
+			ERROR("create-subscription", "unknown option -%c.", c);
+			cmd_get_help ();
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
+	}
+
+	if ((optind + 1) < cmd.count) {
+		ERROR("create-subscription", "invalid parameters, see \'get --help\'.");
+		clear_arglist(&cmd);
+		return (EXIT_FAILURE);
+	} else if ((optind + 1) == cmd.count) {
+		/* stream specified */
+		stream = cmd.list[optind];
+	} else {
+		stream = NULL;
+	}
+
+
+	/* create requests */
+	rpc = nc_rpc_subscribe(stream, filter, NULL, NULL);
+	nc_filter_free(filter);
+	clear_arglist(&cmd);
+	if (rpc == NULL) {
+		ERROR("create-subscription", "creating rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+	/* send the request and get the reply */
+	reply = nc_session_send_recv(session, rpc);
+	if (reply == NULL) {
+		nc_rpc_free (rpc);
+		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
+			ERROR("create-subscription", "receiving rpc-reply failed.");
+			INSTRUCTION("Closing the session.\n");
+			cmd_disconnect(NULL);
+			return (EXIT_FAILURE);
+		}
+		return (EXIT_SUCCESS);
+	}
+	nc_rpc_free (rpc);
+
+	/* parse result */
+	switch (nc_reply_get_type (reply)) {
+	case NC_REPLY_OK:
+		INSTRUCTION("Result OK\n");
+		break;
+	case NC_REPLY_ERROR:
+		/* wtf, you shouldn't be here !?!? */
+		ERROR("create-subscription", "operation failed, but rpc-error was not processed.");
+		break;
+	default:
+		ERROR("create-subscription", "unexpected operation result.");
+		break;
+	}
+	nc_reply_free(reply);
+
+	return (EXIT_SUCCESS);
 }
 
 void cmd_userrpc_help()

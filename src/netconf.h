@@ -55,6 +55,12 @@ typedef struct nc_msg nc_rpc;
 typedef struct nc_msg nc_reply;
 
 /**
+ * @brief Event notification message.
+ * @ingroup notifications
+ */
+typedef struct nc_msg nc_notif;
+
+/**
  * @ingroup session
  * @brief NETCONF capabilities structure
  */
@@ -129,7 +135,8 @@ typedef enum NC_OP {
 	NC_OP_COPYCONFIG,	/**< \<copy-config\> operation */
 	NC_OP_DELETECONFIG,	/**< \<delete-config\> operation */
 	NC_OP_LOCK,		/**< \<lock\> operation */
-	NC_OP_UNLOCK		/**< \<unlock\> operation */
+	NC_OP_UNLOCK,		/**< \<unlock\> operation */
+	NC_OP_CREATESUBSCRIPTION/**< \<create-subscription\> operation (RFC 5277) */
 } NC_OP;
 
 typedef enum {

@@ -356,6 +356,27 @@ nc_rpc *nc_rpc_lock(NC_DATASTORE target);
 nc_rpc *nc_rpc_unlock(NC_DATASTORE target);
 
 /**
+ * @ingroup notifications
+ * @brief Create \<create-subsciption\> NETCONF rpc message.
+ *
+ * Detailed description of this operation can be found in RFC 5277, section 2.1.1.
+ *
+ * @param[in] stream Name of the stream of events is of interest. Optional
+ * parameter (NULL is accepted), if not specified, the default NETCONF stream is
+ * subscribed.
+ * @param[in] filter Specify the subset of all possible events to be received.
+ * Optional parameter (NULL is accepted).
+ * @param[in] start Start time to trigger the replay feature from the specified
+ * time. Optional parameter (NULL is accepted). Format of the date is of type
+ * dateTime according to RFC 3339.
+ * @param[in] stop Stop time to stop the replay of event notifications. Optional
+ * parameter (NULL is accepted). Format of the date is of type dateTime
+ * according to RFC 3339.
+ * @return Created rpc message.
+ */
+nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, const char* start, const char* stop);
+
+/**
  * @ingroup rpc
  * @brief Create a generic NETCONF rpc message with specified content.
  *

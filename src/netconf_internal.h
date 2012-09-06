@@ -85,7 +85,7 @@
 
 #define NC_CAP_BASE10_ID      	"urn:ietf:params:netconf:base:1.0"
 #define NC_CAP_BASE11_ID      	"urn:ietf:params:netconf:base:1.1"
-#define NC_CAP_NOTIFICATION_ID 	"urn:ietf:params:xml:ns:netconf:notification:1.0"
+#define NC_CAP_NOTIFICATION_ID 	"urn:ietf:params:netconf:capability:notification:1.0"
 #define NC_CAP_WRUNNING_ID  	"urn:ietf:params:netconf:capability:writable-running:1.0"
 #define NC_CAP_CANDIDATE_ID 	"urn:ietf:params:netconf:capability:candidate:1.0"
 #define NC_CAP_STARTUP_ID   	"urn:ietf:params:netconf:capability:startup:1.0"
@@ -96,6 +96,7 @@
 #define NC_CAP_WITHDEFAULTS_ID 	"urn:ietf:params:netconf:capability:with-defaults:1.0"
 
 #define NC_NS_CAP_WITHDEFAULTS 	"urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"
+#define NC_NS_CAP_NOTIFICATIONS "urn:ietf:params:xml:ns:netconf:notification:1.0"
 
 /* NETCONF versions identificators */
 #define NETCONFV10	0
@@ -215,6 +216,10 @@ struct nc_session {
 	pthread_mutex_t mut_out;
 	/**< @brief thread lock for accessing in */
 	pthread_mutex_t mut_in;
+	/**< @brief queue for received, but not processed, NETCONF messages */
+	struct nc_msg* msg;
+	/**< @brief queue for received, but not processed, NETCONF Event Notifications */
+	struct nc_msg* event;
 };
 
 /**
@@ -304,6 +309,7 @@ struct nc_msg {
 	} type;
 	NCDFLT_MODE with_defaults;
 	struct nc_err* error;
+	struct nc_msg* next;
 };
 
 struct nc_filter {

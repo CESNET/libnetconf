@@ -141,6 +141,12 @@
  */
 
 /**
+ * \defgroup notifications NETCONF Event Notifications
+ * \brief libnetconf's implementation of NETCONF asynchronous message delivery
+ * as defined in RFC 5277.
+ */
+
+/**
  * \internal
  * \defgroup internalAPI Internal API
  * \brief libnetconf's functions, structures and macros for internal usage.
