@@ -556,22 +556,22 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 			filter_node = rpc->doc->children->children->children;
 			while (filter_node) {
 				if (xmlStrEqual(filter_node->name, BAD_CAST "filter")) {
-					retval = malloc (sizeof(struct nc_filter));
-					retval->type_string = (char*)xmlGetProp (filter_node, BAD_CAST "type");
-               /* implicit filter type is NC_FILTER_SUBTREE */
-               if (retval->type_string == NULL) {
-                  retval->type_string = strdup ("subtree");
-               }
+					retval = malloc(sizeof(struct nc_filter));
+					retval->type_string = (char*) xmlGetProp(filter_node, BAD_CAST "type");
+					/* implicit filter type is NC_FILTER_SUBTREE */
+					if (retval->type_string == NULL) {
+						retval->type_string = strdup("subtree");
+					}
 					if (xmlStrEqual(BAD_CAST retval->type_string, BAD_CAST "subtree")) {
 						retval->type = NC_FILTER_SUBTREE;
 						buf = xmlBufferCreate();
 						xmlNodeDump(buf, rpc->doc, filter_node->children, 1, 1);
-						retval->content = strdup ((char*)xmlBufferContent(buf));
+						retval->content = strdup((char*) xmlBufferContent(buf));
 						xmlBufferFree(buf);
 					} else {
-						free (retval->type_string);
-						free (retval);
-                  retval = NULL;
+						free(retval->type_string);
+						free(retval);
+						retval = NULL;
 					}
 					break;
 				}
@@ -1315,29 +1315,29 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 			return (NULL);
 		}
 
-      /* if data empty string, create \<copy-config\> with empty \<config\> */
-      /* only if data is not empty string, fill \<config\> */
-      /* RFC 6241 defines \<config\> as anyxml and thus it can be empty */
-      if (strcmp (data, "") != 0) {
-   		/* prepare XML structure from given data */
-   		doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-   		if (doc_data == NULL) {
-   			ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
-   			xmlFreeNode(content);
-   			return (NULL);
-   		}
-   
-   		/* connect given configuration data with the rpc request */
-   		if (xmlAddChild(config, xmlCopyNode(doc_data->children, 1)) == NULL) {
-   			ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
-   			xmlFreeNode(content);
-   			xmlFreeDoc(doc_data);
-   			return (NULL);
-   		}
+		/* if data empty string, create \<copy-config\> with empty \<config\> */
+		/* only if data is not empty string, fill \<config\> */
+		/* RFC 6241 defines \<config\> as anyxml and thus it can be empty */
+		if (strcmp(data, "") != 0) {
+			/* prepare XML structure from given data */
+			doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			if (doc_data == NULL) {
+				ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				return (NULL);
+			}
 
-   		/* free no more needed structure */
-	   	xmlFreeDoc(doc_data);
-      }
+			/* connect given configuration data with the rpc request */
+			if (xmlAddChild(config, xmlCopyNode(doc_data->children, 1)) == NULL) {
+				ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				xmlFreeDoc(doc_data);
+				return (NULL);
+			}
+
+			/* free no more needed structure */
+			xmlFreeDoc(doc_data);
+		}
 	} else {
 		/* source is one of the standard datastores */
 		if (xmlNewChild(node_source, NULL, BAD_CAST datastores[0], NULL) == NULL) {
