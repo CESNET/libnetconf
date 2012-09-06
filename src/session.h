@@ -171,6 +171,9 @@ struct nc_cpblts *nc_cpblts_new(char* const* list);
 /**
  * @ingroup session
  * @brief Free NETCONF capabilities structure.
+ *
+ * This function is NOT thread safe.
+ *
  * @param c Capabilities structure to free.
  */
 void nc_cpblts_free(struct nc_cpblts *c);
@@ -178,6 +181,9 @@ void nc_cpblts_free(struct nc_cpblts *c);
 /**
  * @ingroup session
  * @brief Add another one capability string into the NETCONF capabilities structure.
+ *
+ * This function is NOT thread safe.
+ *
  * @param capabilities Current NETCONF capabilities structure.
  * @param capability_string Capability string to add.
  * @return 0 on success\n non-zero on error
@@ -187,6 +193,9 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 /**
  * @ingroup session
  * @brief Remove specified capability string from the NETCONF capabilities structure.
+ *
+ * This function is NOT thread safe.
+ *
  * @param capabilities Current NETCONF capabilities structure.
  * @param capability_string Capability string to remove.
  * @return 0 on success\n non-zero on error
@@ -217,6 +226,9 @@ const char* nc_cpblts_get(const struct nc_cpblts *c, const char* capability_stri
 /**
  * @ingroup session
  * @brief Move NETCONF capabilities structure iterator to the beginning of the capability strings list.
+ *
+ * This function is NOT thread safe.
+ *
  * @param c NETCONF capabilities structure to be iterated.
  */
 void nc_cpblts_iter_start(struct nc_cpblts *c);
@@ -227,6 +239,8 @@ void nc_cpblts_iter_start(struct nc_cpblts *c);
  *
  * To move iterator to the beginning of the capability strings list, use
  * nc_cpblts_iter_start().
+ *
+ * This function is NOT thread safe.
  *
  * @param c NETCONF capabilities structure to be iterated.
  * @return Another capability string, NULL if all strings were already returned.
@@ -260,6 +274,8 @@ struct nc_cpblts *nc_session_get_cpblts_default();
  * @brief Send \<rpc\> request via specified NETCONF session.
  * This function is supposed to be performed only by NETCONF clients.
  *
+ * This function IS thread safe.
+ *
  * @param[in] session NETCONF session to use.
  * @param[in] rpc \<rpc\> message to send.
  * @return 0 on error,\n message-id of sent message on success.
@@ -270,6 +286,8 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc);
  * @ingroup reply
  * @brief Send \<rpc-reply\> response via specified NETCONF session.
  * This function is supposed to be performed only by NETCONF servers.
+ *
+ * This function IS thread safe.
  *
  * @param[in] session NETCONF session to use.
  * @param[in] rpc \<rpc\> message which is request for the sending reply

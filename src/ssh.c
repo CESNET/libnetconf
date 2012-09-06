@@ -48,6 +48,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "libssh2.h"
 
@@ -490,12 +491,14 @@ int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_SESSION
 
 struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 {
+	int r;
 	struct nc_session *retval = NULL;
 	struct nc_cpblts *server_cpblts = NULL;
 	struct passwd *pw;
 	char *wdc, *wdc_aux;
 	char list[255];
 	NCDFLT_MODE mode;
+	pthread_mutexattr_t mattr;
 
 	/* allocate netconf session structure */
 	retval = malloc(sizeof(struct nc_session));
@@ -508,6 +511,19 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	retval->fd_input = STDIN_FILENO;
 	retval->fd_output = STDOUT_FILENO;
 	retval->msgid = 1;
+
+	if (pthread_mutexattr_init(&mattr) != 0) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
+	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
+		ERROR("Mutex initialization failed (%s).", strerror(r));
+		return (NULL);
+	}
+	pthread_mutexattr_destroy(&mattr);
 
 	/*
 	 * get username - we are running as SSH Subsystem which was started
@@ -638,6 +654,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	char *err_msg, *s;
 	struct nc_cpblts *client_cpblts = NULL;
 	struct nc_session *retval = NULL;
+	pthread_mutexattr_t mattr;
 
 	/* set default values */
 	if (host == NULL || strlen(host) == 0) {
@@ -730,6 +747,19 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->username = strdup(username);
 	retval->port = strdup(port_s);
 	retval->msgid = 1;
+
+	if (pthread_mutexattr_init(&mattr) != 0) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
+	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
+		ERROR("Mutex initialization failed (%s).", strerror(r));
+		return (NULL);
+	}
+	pthread_mutexattr_destroy(&mattr);
 
 	/* Create a session instance */
 	retval->ssh_session = libssh2_session_init();

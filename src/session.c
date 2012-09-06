@@ -43,6 +43,7 @@
 #include <string.h>
 #include <errno.h>
 #include <poll.h>
+#include <pthread.h>
 
 #include <libssh2.h>
 #include <libxml/tree.h>
@@ -456,6 +457,11 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, struc
 	session->fd_output = -1;
 	session->libssh2_socket = -1;
 
+	/*
+	 * mut_in and mut_out fields are not initialized since dummy session
+	 * can not send or receive any data
+	 */
+
 	/* session is DUMMY */
 	session->status = NC_SESSION_STATUS_DUMMY;
 	/* copy session id */
@@ -483,15 +489,20 @@ void nc_session_close(struct nc_session* session, const char* msg)
 {
 	nc_rpc *rpc_close = NULL;
 	nc_reply *reply = NULL;
-	static int closing = 0;
+	NC_SESSION_STATUS sstatus = session->status;
+
+	/* lock session due to accessing its status and other items */
+	if (sstatus != NC_SESSION_STATUS_DUMMY) {
+		pthread_mutex_lock(&(session->mut_session));
+	}
 
 	/* close the SSH session */
-	if (session != NULL && closing == 0) {
-		/* prevent infinite recursion when socket is corrupted -> stack overflow */
-		closing = 1;
+	if (session != NULL && session->status != NC_SESSION_STATUS_CLOSING && session->status != NC_SESSION_STATUS_CLOSED) {
 		if (session->ssh_channel != NULL) {
-
 			if (session->status == NC_SESSION_STATUS_WORKING && libssh2_channel_eof(session->ssh_channel) == 0) {
+				/* prevent infinite recursion when socket is corrupted -> stack overflow */
+				session->status = NC_SESSION_STATUS_CLOSING;
+
 				/* close NETCONF session */
 				rpc_close = nc_rpc_closesession();
 				if (rpc_close != NULL) {
@@ -528,12 +539,23 @@ void nc_session_close(struct nc_session* session, const char* msg)
 			session->libssh2_socket = -1;
 		}
 
+		if (sstatus != NC_SESSION_STATUS_DUMMY) {
+			session->status = NC_SESSION_STATUS_CLOSED;
+			pthread_mutex_unlock(&(session->mut_session));
+			/* destroy mutexes */
+			pthread_mutex_destroy(&(session->mut_in));
+			pthread_mutex_destroy(&(session->mut_out));
+			pthread_mutex_destroy(&(session->mut_session));
+		} else {
+			session->status = NC_SESSION_STATUS_CLOSED;
+
+		}
+
 		/*
-		 * userbame, capabilities and session_id are untouched
+		 * username, capabilities and session_id are untouched
 		 */
-		session->status = NC_SESSION_STATUS_CLOSED;
+
 		/* successfully closed */
-		closing = 0;
 	}
 }
 
@@ -583,6 +605,9 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	xmlDocDumpFormatMemory (msg->doc, (xmlChar**) (&text), &len, 1);
 	DBG("Writing message: %s", text);
 
+	/* lock the session for sending the data */
+	pthread_mutex_lock(&(session->mut_out));
+
 	/* if v1.1 send chunk information before message */
 	if (session->version == NETCONFV11) {
 		snprintf (buf, 1024, "\n#%d\n", (int) strlen (text));
@@ -590,6 +615,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 		do {
 			NC_WRITE(session, &(buf[c]), c);
 			if (c == LIBSSH2_ERROR_TIMEOUT) {
+				pthread_mutex_unlock(&(session->mut_out));
 				VERB("Writing data into the communication channel timeouted.");
 				return (EXIT_FAILURE);
 			}
@@ -601,6 +627,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	do {
 		NC_WRITE(session, &(text[c]), c);
 		if (c == LIBSSH2_ERROR_TIMEOUT) {
+			pthread_mutex_unlock(&(session->mut_out));
 			VERB("Writing data into the communication channel timeouted.");
 			return (EXIT_FAILURE);
 		}
@@ -617,10 +644,14 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	do {
 		NC_WRITE(session, &(text[c]), c);
 		if (c == LIBSSH2_ERROR_TIMEOUT) {
+			pthread_mutex_unlock(&(session->mut_out));
 			VERB("Writing data into the communication channel timeouted.");
 			return (EXIT_FAILURE);
 		}
 	} while (c != strlen (text));
+
+	/* unlock the session's output */
+	pthread_mutex_unlock(&(session->mut_out));
 
 	return (EXIT_SUCCESS);
 }
@@ -952,10 +983,13 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	struct pollfd fds;
 	int status;
 
-	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING)) {
+	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to receive data.");
 		return (EXIT_FAILURE);
 	}
+
+	/* lock the session for receiving */
+	pthread_mutex_lock(&(session->mut_in));
 
 	/* use while for possibility of repeating test */
 	while (session->ssh_channel == NULL && session->fd_input != -1) {
@@ -971,6 +1005,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 			/* poll failed - something wrong happend, close this socket and wait for another request */
 			ERROR("Input channel error");
 			nc_session_close(session, "Input stream closed");
+			pthread_mutex_unlock(&(session->mut_in));
 			return (EXIT_FAILURE);
 		}
 		/* status > 0 */
@@ -980,6 +1015,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 			/* close client's socket (it's probably already closed by client */
 			ERROR("Input channel closed");
 			nc_session_close(session, "Input stream closed");
+			pthread_mutex_unlock(&(session->mut_in));
 			return (EXIT_FAILURE);
 		}
 		break;
@@ -1053,6 +1089,8 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 		goto malformed_msg;
 		break;
 	}
+
+	pthread_mutex_unlock(&(session->mut_in));
 
 	retval = malloc (sizeof(struct nc_msg));
 	if (retval == NULL) {
@@ -1251,7 +1289,7 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 	const char* wd;
 	struct nc_msg *msg;
 
-	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING)) {
+	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to send <rpc>.");
 		return (0); /* failure */
 	}
@@ -1294,12 +1332,14 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 		}
 	}
 
-	/* TODO: lock for threads */
 	msg = nc_msg_dup ((struct nc_msg*) rpc);
 
 	/* set message id */
 	if (xmlStrcmp (msg->doc->children->name, BAD_CAST "rpc") == 0) {
+		/* lock the session due to accessing msgid item */
+		pthread_mutex_lock(&(session->mut_session));
 		sprintf (msg_id_str, "%llu", session->msgid++);
+		pthread_mutex_unlock(&(session->mut_session));
 		xmlSetProp (msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str);
 	}
 
@@ -1313,7 +1353,9 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 	nc_msg_free (msg);
 
 	if (ret != EXIT_SUCCESS) {
+		pthread_mutex_lock(&(session->mut_session));
 		session->msgid--;
+		pthread_mutex_unlock(&(session->mut_session));
 		return (0);
 	} else {
 		return (session->msgid);
@@ -1349,7 +1391,6 @@ nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* rpc, c
 		retval = rpc->msgid;
 	}
 
-	/* TODO: lock for threads */
 	msg = nc_msg_dup ((struct nc_msg*) reply);
 
 	if (rpc != NULL) {

@@ -40,6 +40,8 @@
 #ifndef NETCONF_INTERNAL_H_
 #define NETCONF_INTERNAL_H_
 
+#include <pthread.h>
+
 #include <libssh2.h>
 #include <libxml/tree.h>
 
@@ -207,6 +209,12 @@ struct nc_session {
 	int wd_modes;
 	/**< @brief status of the NETCONF session */
 	NC_SESSION_STATUS status;
+	/**< @brief thread lock for accessing session items */
+	pthread_mutex_t mut_session;
+	/**< @brief thread lock for accessing output */
+	pthread_mutex_t mut_out;
+	/**< @brief thread lock for accessing in */
+	pthread_mutex_t mut_in;
 };
 
 /**
