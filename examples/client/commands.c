@@ -48,7 +48,6 @@ COMMAND commands[] = {
 		{"verbose", cmd_verbose, "Enable/disable verbose messages"},
 		{"quit", cmd_quit, "Quit the program"},
 		{"capability", cmd_capability, "Add/remove capability to/from list of supported capabilities"},
-		{"authentication", cmd_authentication, "Manage authentication methods"},
 /* synonyms for previous commands */
 		{"debug", cmd_debug, NULL},
 		{"?", cmd_help, NULL},
@@ -1003,86 +1002,6 @@ int cmd_killsession (char *arg)
 	nc_reply_free(reply);
 
 	return (EXIT_SUCCESS);
-}
-
-void cmd_authentication_help (void)
-{
-	fprintf (stdout, "authentication [--help] {--pref [kip]{3}|--keys-add private-path|--keys-rem private-path}\n");
-}
-
-int cmd_authentication (char * arg)
-{
-#define AUTH_PREF 'p'
-#define AUTH_KEY_ADD 'a'
-#define AUTH_KEY_REM 'r'
-
-	struct arglist cmd;
-	int op = -1, c, i;
-	char * tmp;
-	struct option long_options[] = {
-			{"pref", 1, 0, AUTH_PREF},
-			{"keys-add", 1, 0, AUTH_KEY_ADD},
-			{"keys-rem", 1, 0, AUTH_KEY_REM},
-			{"help", 0, 0, 'h'},
-			{0, 0, 0, 0}
-	};
-	int pref[3] =  {-1,-1,-1}; /* authentication methods' preferences in aplhabetical order - interactive - keys - password */
-	int option_index = 0;
-	optind = 0;
-
-	if (session != NULL) {
-		ERROR ("authentication", "NETCONF session already established. Changes to supported capability list will take efekt after reconnection.");
-	}
-
-	init_arglist (&cmd);
-	addargs (&cmd, "%s", arg);
-
-	while ((c=getopt_long (cmd.count, cmd.list, "p:a:r:h", long_options, &option_index)) != -1) {
-		switch (c) {
-		case 'p':
-			if (optarg != NULL) {
-				for (i=0; optarg[i] != '\0'; i++) {
-					switch (optarg[i]) {
-					case 'i':
-						pref[0] = 3-i;
-						break;
-					case 'k':
-						pref[1] = 3-i;
-						break;
-					case 'p':
-						pref[2] = 3-i;
-						break;
-					default:
-						break;
-					}
-				}
-			}
-			nc_ssh_pref(NC_SSH_AUTH_INTERACTIVE, pref[0]);
-			nc_ssh_pref(NC_SSH_AUTH_PUBLIC_KEYS, pref[1]);
-			nc_ssh_pref(NC_SSH_AUTH_PASSWORD, pref[2]);
-			break;
-		case 'a':
-			asprintf (&tmp, "%s.pub", optarg);
-			nc_set_keypair_path(optarg, tmp);
-			free (tmp);
-			break;
-		case 'r':
-			break;
-		case 'h':
-			cmd_authentication_help();
-			clear_arglist(&cmd);
-			return (EXIT_SUCCESS);
-			break;
-		case 0:
-			/* load/store set */
-			break;
-		default:
-			break;
-		}
-	}
-
-	clear_arglist(&cmd);
-	return EXIT_SUCCESS;
 }
 
 #define CAP_ADD 'a'
