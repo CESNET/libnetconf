@@ -144,7 +144,8 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07abf39ac97e04fd8d77d6a409a004eb234">NC_OP_DELETECONFIG</a>, 
 <br/>
 &#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07af07ffd285bc743fcbdeace96f2b21d22">NC_OP_LOCK</a>, 
-<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aa4071db38c423865b24543cb504a4b42">NC_OP_UNLOCK</a>
+<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aa4071db38c423865b24543cb504a4b42">NC_OP_UNLOCK</a>, 
+<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aafc549220669ed05b9c043b09be496fe">NC_OP_CREATESUBSCRIPTION</a>
 <br/>
  }</td></tr>
 <tr class="memdesc:ga3e6fc59e2d06c1c0edb36ee64ee9cc07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported &lt;rpc&gt; operations.  <a href="../../db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07">More...</a><br/></td></tr>
@@ -259,7 +260,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00109">109</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00116">116</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -305,11 +306,14 @@ Functions</h2></td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga3e6fc59e2d06c1c0edb36ee64ee9cc07aa4071db38c423865b24543cb504a4b42"></a>NC_OP_UNLOCK</em>&nbsp;</td><td>
 <p>&lt;unlock&gt; operation </p>
 </td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga3e6fc59e2d06c1c0edb36ee64ee9cc07aafc549220669ed05b9c043b09be496fe"></a>NC_OP_CREATESUBSCRIPTION</em>&nbsp;</td><td>
+<p>&lt;create-subscription&gt; operation (RFC 5277) </p>
+</td></tr>
 </table>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00121">121</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00128">128</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -332,7 +336,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00208">208</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00216">216</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -362,6 +366,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Send &lt;rpc&gt; request via specified NETCONF session. This function is supposed to be performed only by NETCONF clients. </p>
+<p>This function IS thread safe.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session to use. </td></tr>
@@ -1135,7 +1140,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Thu Sep 6 2012 16:58:52 for libnetconf by
+    <li class="footer">Generated on Thu Sep 6 2012 17:07:21 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

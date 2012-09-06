@@ -2,6 +2,7 @@ var netconf_8h =
 [
     [ "nc_rpc", "db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262", null ],
     [ "nc_reply", "d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d", null ],
+    [ "nc_notif", "da/d54/group__notifications.html#ga905a8d57e16c12eb1d8511646b2ce9eb", null ],
     [ "nc_msgid", "db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7", null ],
     [ "NC_SESSION_STATUS", "db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c", null ],
     [ "NC_REPLY_TYPE", "d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29", null ],

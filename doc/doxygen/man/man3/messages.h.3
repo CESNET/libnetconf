@@ -146,6 +146,10 @@ Functions to create NETCONF messages\&.
 .br
 .RI "\fICreate <unlock> NETCONF rpc message\&. \fP"
 .ti -1c
+.RI "\fBnc_rpc\fP * \fBnc_rpc_subscribe\fP (const char *stream, const struct nc_filter *filter, const char *start, const char *stop)"
+.br
+.RI "\fICreate <create-subsciption> NETCONF rpc message\&. \fP"
+.ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_generic\fP (const char *data)"
 .br
 .RI "\fICreate a generic NETCONF rpc message with specified content\&. \fP"

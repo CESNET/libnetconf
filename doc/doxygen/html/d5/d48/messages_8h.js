@@ -32,5 +32,6 @@ var messages_8h =
     [ "nc_rpc_killsession", "db/de9/group__rpc.html#gae9876e8d038eb81a376bd82a08c58b95", null ],
     [ "nc_rpc_lock", "db/de9/group__rpc.html#ga6a03d40e00fbe019a34541a55f3f4a31", null ],
     [ "nc_rpc_unlock", "db/de9/group__rpc.html#gad843551f9d1ff8be6a118d026e8b995a", null ],
+    [ "nc_rpc_subscribe", "da/d54/group__notifications.html#gaa2f00866db1ca1241802ff0a6224b4d8", null ],
     [ "nc_rpc_generic", "db/de9/group__rpc.html#gaa9ad7fac41fdef0063c2e2793fb19efd", null ]
 ];

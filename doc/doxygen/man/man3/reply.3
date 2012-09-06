@@ -112,7 +112,7 @@ value describing that no rpc-reply type was detected so far
 \fB\fINC_REPLY_DATA \fP\fP
 rpc-reply message containing <data> 
 .PP
-Definition at line 97 of file netconf\&.h\&.
+Definition at line 104 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "void \fBnc_callback_error_reply\fP (void(*)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid)func)"
@@ -148,7 +148,9 @@ sid - session ID of session holding requested lock\&.
 .SS "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
 
 .PP
-Send <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fBParameters:\fP
+Send <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. This function IS thread safe\&.
+.PP
+\fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session to use\&. 
 .br

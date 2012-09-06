@@ -126,9 +126,10 @@ Enumerations</h2></td></tr>
 &#160;&#160;<a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca4d07b03d91d5e589af9f17fb88fc6922">NC_SESSION_STATUS_ERROR</a> =  -1, 
 <a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca7f69f00ab7d6af9665f6094c45654502">NC_SESSION_STATUS_STARTUP</a> =  0, 
 <a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca56a15c8d7ae66a3bf02a13607210598c">NC_SESSION_STATUS_WORKING</a> =  1, 
-<a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca9fe6e4f2dd207f6a66382f8ade448e78">NC_SESSION_STATUS_CLOSED</a> =  2, 
+<a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630cafa56bc16f9f7d9ad58a94ef03a7e82e0">NC_SESSION_STATUS_CLOSING</a> =  2, 
 <br/>
-&#160;&#160;<a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca3a417a51dfb315ebb7d1427357a838b2">NC_SESSION_STATUS_DUMMY</a> =  3
+&#160;&#160;<a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca9fe6e4f2dd207f6a66382f8ade448e78">NC_SESSION_STATUS_CLOSED</a> =  3, 
+<a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca3a417a51dfb315ebb7d1427357a838b2">NC_SESSION_STATUS_DUMMY</a> =  4
 <br/>
  }</td></tr>
 <tr class="memdesc:ga9fba5da8e4c50d2427d0d24e8e7b630c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of possible states of the NETCONF session.  <a href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">More...</a><br/></td></tr>
@@ -213,7 +214,7 @@ Functions</h2></td></tr>
 
 <p>Type representing NETCONF message-id attribute. </p>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00061">61</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00067">67</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -239,6 +240,9 @@ Functions</h2></td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga9fba5da8e4c50d2427d0d24e8e7b630ca56a15c8d7ae66a3bf02a13607210598c"></a>NC_SESSION_STATUS_WORKING</em>&nbsp;</td><td>
 <p>session is established and ready to work </p>
 </td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga9fba5da8e4c50d2427d0d24e8e7b630cafa56bc16f9f7d9ad58a94ef03a7e82e0"></a>NC_SESSION_STATUS_CLOSING</em>&nbsp;</td><td>
+<p>session is being closed </p>
+</td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga9fba5da8e4c50d2427d0d24e8e7b630ca9fe6e4f2dd207f6a66382f8ade448e78"></a>NC_SESSION_STATUS_CLOSED</em>&nbsp;</td><td>
 <p>session was closed and could not be used to communication </p>
 </td></tr>
@@ -249,7 +253,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00085">85</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00091">91</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -786,6 +790,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Free NETCONF capabilities structure. </p>
+<p>This function is NOT thread safe.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">c</td><td>Capabilities structure to free. </td></tr>
@@ -820,6 +825,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Add another one capability string into the NETCONF capabilities structure. </p>
+<p>This function is NOT thread safe.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">capabilities</td><td>Current NETCONF capabilities structure. </td></tr>
@@ -857,6 +863,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Remove specified capability string from the NETCONF capabilities structure. </p>
+<p>This function is NOT thread safe.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">capabilities</td><td>Current NETCONF capabilities structure. </td></tr>
@@ -956,6 +963,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Move NETCONF capabilities structure iterator to the beginning of the capability strings list. </p>
+<p>This function is NOT thread safe.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">c</td><td>NETCONF capabilities structure to be iterated. </td></tr>
@@ -981,6 +989,7 @@ Functions</h2></td></tr>
 
 <p>Get the next capability string from the given NETCONF capabilities structure. </p>
 <p>To move iterator to the beginning of the capability strings list, use <a class="el" href="../../db/d52/group__session.html#gae92c774e940114b4733f85e186d84620" title="Move NETCONF capabilities structure iterator to the beginning of the capability strings list...">nc_cpblts_iter_start()</a>.</p>
+<p>This function is NOT thread safe.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">c</td><td>NETCONF capabilities structure to be iterated. </td></tr>
@@ -1183,7 +1192,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Thu Sep 6 2012 16:58:52 for libnetconf by
+    <li class="footer">Generated on Thu Sep 6 2012 17:07:21 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

@@ -22,7 +22,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIEnumeration of <rpc> operation types\&. \fP"
 .ti -1c
-.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP }"
+.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP, \fBNC_OP_CREATESUBSCRIPTION\fP }"
 .br
 .RI "\fIEnumeration of supported <rpc> operations\&. \fP"
 .ti -1c
@@ -180,7 +180,7 @@ value describing that no supported operation type was detected so far
 \fB\fINC_RPC_SESSION \fP\fP
 <rpc> contains operation affecting session 
 .PP
-Definition at line 109 of file netconf\&.h\&.
+Definition at line 116 of file netconf\&.h\&.
 .SS "enum \fBNC_OP\fP"
 
 .PP
@@ -218,8 +218,11 @@ unknown/error value
 .TP
 \fB\fINC_OP_UNLOCK \fP\fP
 <unlock> operation 
+.TP
+\fB\fINC_OP_CREATESUBSCRIPTION \fP\fP
+<create-subscription> operation (RFC 5277) 
 .PP
-Definition at line 121 of file netconf\&.h\&.
+Definition at line 128 of file netconf\&.h\&.
 .SS "enum \fBNC_FILTER_TYPE\fP"
 
 .PP
@@ -231,13 +234,15 @@ Enumeration of supported NETCONF filter types\&.
 \fB\fINC_FILTER_SUBTREE \fP\fP
 NC_FILTER_SUBTREE\&. 
 .PP
-Definition at line 208 of file netconf\&.h\&.
+Definition at line 216 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 
 .PP
-Send <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fBParameters:\fP
+Send <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. This function IS thread safe\&.
+.PP
+\fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session to use\&. 
 .br
