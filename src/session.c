@@ -479,21 +479,19 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, struc
 	return session;
 }
 
-void nc_session_close (struct nc_session* session, const char* msg)
+void nc_session_close(struct nc_session* session, const char* msg)
 {
 	nc_rpc *rpc_close = NULL;
 	nc_reply *reply = NULL;
-   static int closing = 0;
-
+	static int closing = 0;
 
 	/* close the SSH session */
 	if (session != NULL && closing == 0) {
-      /* prevent infinite recursion when socket is corrupted -> stack overflow */
-      closing = 1;
+		/* prevent infinite recursion when socket is corrupted -> stack overflow */
+		closing = 1;
 		if (session->ssh_channel != NULL) {
 
-			if (session->status == NC_SESSION_STATUS_WORKING &&
-					libssh2_channel_eof(session->ssh_channel) == 0) {
+			if (session->status == NC_SESSION_STATUS_WORKING && libssh2_channel_eof(session->ssh_channel) == 0) {
 				/* close NETCONF session */
 				rpc_close = nc_rpc_closesession();
 				if (rpc_close != NULL) {
@@ -509,24 +507,24 @@ void nc_session_close (struct nc_session* session, const char* msg)
 				}
 			}
 
-			libssh2_channel_free (session->ssh_channel);
+			libssh2_channel_free(session->ssh_channel);
 			session->ssh_channel = NULL;
 		}
 		if (session->ssh_session != NULL) {
 			libssh2_session_disconnect(session->ssh_session, msg);
-			libssh2_session_free (session->ssh_session);
+			libssh2_session_free(session->ssh_session);
 			session->ssh_session = NULL;
 		}
 		if (session->hostname != NULL) {
-			free (session->hostname);
+			free(session->hostname);
 			session->hostname = NULL;
 		}
 		if (session->port != NULL) {
-			free (session->port);
+			free(session->port);
 			session->port = NULL;
 		}
 		if (session->libssh2_socket != -1) {
-			close (session->libssh2_socket);
+			close(session->libssh2_socket);
 			session->libssh2_socket = -1;
 		}
 
@@ -534,8 +532,8 @@ void nc_session_close (struct nc_session* session, const char* msg)
 		 * userbame, capabilities and session_id are untouched
 		 */
 		session->status = NC_SESSION_STATUS_CLOSED;
-      /* successfully closed */
-      closing = 0;
+		/* successfully closed */
+		closing = 0;
 	}
 }
 
