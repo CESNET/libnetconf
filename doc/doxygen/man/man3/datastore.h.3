@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Fri Aug 3 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Thu Sep 6 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -32,7 +32,7 @@ NETCONF datastore handling function prototypes and structures\&.
 
 .in +1c
 .ti -1c
-.RI "struct ncds_ds * \fBncds_new\fP (\fBNCDS_TYPE\fP type, const char *model_path, char *(*get_state)(const char *model, const char *running))"
+.RI "struct ncds_ds * \fBncds_new\fP (\fBNCDS_TYPE\fP type, const char *model_path, char *(*get_state)(const char *model, const char *running, struct nc_err **e))"
 .br
 .RI "\fICreate new datastore structure of the specified implementation type\&. \fP"
 .ti -1c
@@ -59,6 +59,14 @@ NETCONF datastore handling function prototypes and structures\&.
 .RI "void \fBncds_break_locks\fP (const struct nc_session *session)"
 .br
 .RI "\fIRemove all locks that is holding given session\&. \fP"
+.ti -1c
+.RI "char * \fBncds_get_model\fP (\fBncds_id\fP id)"
+.br
+.RI "\fIReturn serialized XML containing data model in YIN format\&. \fP"
+.ti -1c
+.RI "const char * \fBncds_get_model_path\fP (\fBncds_id\fP id)"
+.br
+.RI "\fIReturn path to file containing datastore datamodel\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 

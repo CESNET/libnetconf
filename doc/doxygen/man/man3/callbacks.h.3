@@ -1,4 +1,4 @@
-.TH "src/callbacks.h" 3 "Fri Aug 3 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
+.TH "src/callbacks.h" 3 "Thu Sep 6 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -11,12 +11,14 @@ Functions to set application's callbacks\&.
 .PP
 \fC#include <libssh2\&.h>\fP
 .br
+\fC#include 'netconf\&.h'\fP
+.br
 
 .SS "Functions"
 
 .in +1c
 .ti -1c
-.RI "void \fBnc_callback_print\fP (int(*func)(const char *msg))"
+.RI "void \fBnc_callback_print\fP (void(*func)(\fBNC_VERB_LEVEL\fP level, const char *msg))"
 .br
 .RI "\fISet callback function for printing libnetconf's messages\&. \fP"
 .ti -1c
@@ -40,13 +42,9 @@ Functions to set application's callbacks\&.
 .br
 .RI "\fISet callback function to authorize authenticity of an unknown host\&. \fP"
 .ti -1c
-.RI "void \fBnc_set_publickey_path\fP (const char *path)"
+.RI "void \fBnc_set_keypair_path\fP (const char *private, const char *public)"
 .br
-.RI "\fISet path to publickey file used in case of SSH authentication via publickey mechanism\&. \fP"
-.ti -1c
-.RI "void \fBnc_set_privatekey_path\fP (const char *path)"
-.br
-.RI "\fISet path to privatekey file used in case of SSH authentication via publickey mechanism\&. \fP"
+.RI "\fISet path to private and public key file used in case of SSH authentication via publickey mechanism\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 

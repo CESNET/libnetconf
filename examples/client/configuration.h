@@ -1,4 +1,4 @@
 #include <libnetconf.h>
 
-int load_config (struct nc_cpblts **);
-int store_config (struct nc_cpblts *);
+void load_config (struct nc_cpblts **);
+void store_config (struct nc_cpblts *);

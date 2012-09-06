@@ -1,7 +1,7 @@
 var searchData=
 [
   ['nc_5fcallback_5ferror_5freply',['nc_callback_error_reply',['../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80',1,'callbacks.h']]],
-  ['nc_5fcallback_5fprint',['nc_callback_print',['../d3/d35/group__gen_a_p_i.html#gadd495650e5d752712e285fd61c87362e',1,'callbacks.h']]],
+  ['nc_5fcallback_5fprint',['nc_callback_print',['../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7',1,'callbacks.h']]],
   ['nc_5fcallback_5fssh_5fhost_5fauthenticity_5fcheck',['nc_callback_ssh_host_authenticity_check',['../db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a',1,'callbacks.h']]],
   ['nc_5fcallback_5fsshauth_5finteractive',['nc_callback_sshauth_interactive',['../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb',1,'callbacks.h']]],
   ['nc_5fcallback_5fsshauth_5fpassphrase',['nc_callback_sshauth_passphrase',['../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726',1,'callbacks.h']]],
@@ -42,6 +42,7 @@ var searchData=
   ['nc_5frpc_5fget_5fconfig',['nc_rpc_get_config',['../db/de9/group__rpc.html#ga05a10e0b6c89ac04426410f399b87257',1,'messages.h']]],
   ['nc_5frpc_5fget_5fdefop',['nc_rpc_get_defop',['../db/de9/group__rpc.html#gaf867eacee93e3596371415d028e62d29',1,'messages.h']]],
   ['nc_5frpc_5fget_5ferropt',['nc_rpc_get_erropt',['../db/de9/group__rpc.html#ga488f894b9fa4866326837a9ed0575e36',1,'messages.h']]],
+  ['nc_5frpc_5fget_5ffilter',['nc_rpc_get_filter',['../db/de9/group__rpc.html#ga05705bba8345c15637bc54cf6b9a4b3d',1,'messages.h']]],
   ['nc_5frpc_5fget_5fmsgid',['nc_rpc_get_msgid',['../db/de9/group__rpc.html#ga3bb3dd2d08b439d612f5954e3ce78205',1,'messages.h']]],
   ['nc_5frpc_5fget_5fop',['nc_rpc_get_op',['../db/de9/group__rpc.html#gabf639574395456fb6f4bade36fb4babd',1,'messages.h']]],
   ['nc_5frpc_5fget_5fop_5fcontent',['nc_rpc_get_op_content',['../db/de9/group__rpc.html#gade3f111e7c7727d512313b4875fd8f50',1,'messages.h']]],
@@ -71,8 +72,7 @@ var searchData=
   ['nc_5fsession_5fsend_5frecv',['nc_session_send_recv',['../db/de9/group__rpc.html#ga53db624265a53d44d597c9ac7df74259',1,'session.h']]],
   ['nc_5fsession_5fsend_5freply',['nc_session_send_reply',['../d0/de2/group__reply.html#ga893dde0156194a5146f5d5ae44558281',1,'session.h']]],
   ['nc_5fsession_5fsend_5frpc',['nc_session_send_rpc',['../db/de9/group__rpc.html#ga9a4b99f1ccfbf736f35730ea45bed8dc',1,'session.h']]],
-  ['nc_5fset_5fprivatekey_5fpath',['nc_set_privatekey_path',['../db/d52/group__session.html#ga66beddc668fcc5c3699165bf3d3fd089',1,'callbacks.h']]],
-  ['nc_5fset_5fpublickey_5fpath',['nc_set_publickey_path',['../db/d52/group__session.html#gae521c81f448de075a84f62388320ebae',1,'callbacks.h']]],
+  ['nc_5fset_5fkeypair_5fpath',['nc_set_keypair_path',['../db/d52/group__session.html#gab5beccc3acd15a5ad6499992e24fbe59',1,'callbacks.h']]],
   ['nc_5fssh_5fpref',['nc_ssh_pref',['../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0',1,'ssh.h']]],
   ['nc_5fverbosity',['nc_verbosity',['../d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7',1,'netconf.h']]],
   ['ncdflt_5fget_5fbasic_5fmode',['ncdflt_get_basic_mode',['../d1/df7/group__withdefaults.html#gaf5b02a59944cda3cc65859f67df4a0f6',1,'with_defaults.h']]],
@@ -86,6 +86,8 @@ var searchData=
   ['ncds_5ffile_5fset_5fpath',['ncds_file_set_path',['../db/d67/group__store.html#gad48955dab497b1258d80019e542acb9b',1,'datastore.h']]],
   ['ncds_5ffree',['ncds_free',['../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754',1,'datastore.h']]],
   ['ncds_5ffree2',['ncds_free2',['../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2',1,'datastore.h']]],
+  ['ncds_5fget_5fmodel',['ncds_get_model',['../db/d67/group__store.html#ga1855a095ba88d392b0a03af79f17fe93',1,'datastore.h']]],
+  ['ncds_5fget_5fmodel_5fpath',['ncds_get_model_path',['../db/d67/group__store.html#ga5ec9fea534bfd146019b7efb882648be',1,'datastore.h']]],
   ['ncds_5finit',['ncds_init',['../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff',1,'datastore.h']]],
-  ['ncds_5fnew',['ncds_new',['../db/d67/group__store.html#gabe9dbc058e9a60e0f0a4e163ca874357',1,'datastore.h']]]
+  ['ncds_5fnew',['ncds_new',['../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6',1,'datastore.h']]]
 ];

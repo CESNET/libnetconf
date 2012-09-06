@@ -35,7 +35,7 @@
   
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.1.1</span>
+   &#160;<span id="projectnumber">0.1.3</span>
    </div>
    <div id="projectbrief">NETCONF library</div>
   </td>
@@ -132,7 +132,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80">callbacks.h</a>
 </li>
 <li>nc_callback_print()
-: <a class="el" href="d3/d35/group__gen_a_p_i.html#gadd495650e5d752712e285fd61c87362e">callbacks.h</a>
+: <a class="el" href="d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7">callbacks.h</a>
 </li>
 <li>nc_callback_ssh_host_authenticity_check()
 : <a class="el" href="db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a">callbacks.h</a>
@@ -254,6 +254,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>nc_rpc_get_erropt()
 : <a class="el" href="db/de9/group__rpc.html#ga488f894b9fa4866326837a9ed0575e36">messages.h</a>
 </li>
+<li>nc_rpc_get_filter()
+: <a class="el" href="db/de9/group__rpc.html#ga05705bba8345c15637bc54cf6b9a4b3d">messages.h</a>
+</li>
 <li>nc_rpc_get_msgid()
 : <a class="el" href="db/de9/group__rpc.html#ga3bb3dd2d08b439d612f5954e3ce78205">messages.h</a>
 </li>
@@ -341,11 +344,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>nc_session_send_rpc()
 : <a class="el" href="db/de9/group__rpc.html#ga9a4b99f1ccfbf736f35730ea45bed8dc">session.h</a>
 </li>
-<li>nc_set_privatekey_path()
-: <a class="el" href="db/d52/group__session.html#ga66beddc668fcc5c3699165bf3d3fd089">callbacks.h</a>
-</li>
-<li>nc_set_publickey_path()
-: <a class="el" href="db/d52/group__session.html#gae521c81f448de075a84f62388320ebae">callbacks.h</a>
+<li>nc_set_keypair_path()
+: <a class="el" href="db/d52/group__session.html#gab5beccc3acd15a5ad6499992e24fbe59">callbacks.h</a>
 </li>
 <li>nc_ssh_pref()
 : <a class="el" href="db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0">ssh.h</a>
@@ -386,11 +386,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>ncds_free2()
 : <a class="el" href="db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2">datastore.h</a>
 </li>
+<li>ncds_get_model()
+: <a class="el" href="db/d67/group__store.html#ga1855a095ba88d392b0a03af79f17fe93">datastore.h</a>
+</li>
+<li>ncds_get_model_path()
+: <a class="el" href="db/d67/group__store.html#ga5ec9fea534bfd146019b7efb882648be">datastore.h</a>
+</li>
 <li>ncds_init()
 : <a class="el" href="db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">datastore.h</a>
 </li>
 <li>ncds_new()
-: <a class="el" href="db/d67/group__store.html#gabe9dbc058e9a60e0f0a4e163ca874357">datastore.h</a>
+: <a class="el" href="db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6">datastore.h</a>
 </li>
 </ul>
 </div><!-- contents -->
@@ -398,7 +404,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Fri Aug 3 2012 08:25:37 for libnetconf by
+    <li class="footer">Generated on Thu Sep 6 2012 16:58:52 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

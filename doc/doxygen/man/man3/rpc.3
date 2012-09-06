@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Fri Aug 3 2012" "Version 0.1.1" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Thu Sep 6 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -97,6 +97,10 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .RI "\fBNC_EDIT_ERROPT_TYPE\fP \fBnc_rpc_get_erropt\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet error-option type, valid only for <edit-config> RPCs\&. \fP"
+.ti -1c
+.RI "struct nc_filter * \fBnc_rpc_get_filter\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet filter from <get> or <get-config> RPC\&. \fP"
 .ti -1c
 .RI "void \fBnc_rpc_free\fP (\fBnc_rpc\fP *rpc)"
 .br
@@ -464,6 +468,20 @@ Get error-option type, valid only for <edit-config> RPCs\&. \fBParameters:\fP
 \fBReturns:\fP
 .RS 4
 One of the NC_EDIT_ERROPT_TYPE, NC_EDIT_ERROPT_ERROR in case of error 
+.RE
+.PP
+
+.SS "struct nc_filter* \fBnc_rpc_get_filter\fP (const \fBnc_rpc\fP *rpc)\fC [read]\fP"
+
+.PP
+Get filter from <get> or <get-config> RPC\&. \fBParameters:\fP
+.RS 4
+\fIrpc\fP <get> or <get-config> rpc message
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+pointer struct nc_filter or NULL if no filter specified 
 .RE
 .PP
 

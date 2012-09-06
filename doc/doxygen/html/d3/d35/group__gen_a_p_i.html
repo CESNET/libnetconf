@@ -35,7 +35,7 @@
   
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.1.1</span>
+   &#160;<span id="projectnumber">0.1.3</span>
    </div>
    <div id="projectbrief">NETCONF library</div>
   </td>
@@ -127,8 +127,8 @@ Enumerations</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:gadd8fd7b3bb2e7cba580c9a4229fe02d7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7">nc_verbosity</a> (<a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060">NC_VERB_LEVEL</a> level)</td></tr>
 <tr class="memdesc:gadd8fd7b3bb2e7cba580c9a4229fe02d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set libnetconf's verbosity level.  <a href="#gadd8fd7b3bb2e7cba580c9a4229fe02d7"></a><br/></td></tr>
-<tr class="memitem:gadd495650e5d752712e285fd61c87362e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gadd495650e5d752712e285fd61c87362e">nc_callback_print</a> (int(*func)(const char *msg))</td></tr>
-<tr class="memdesc:gadd495650e5d752712e285fd61c87362e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set callback function for printing libnetconf's messages.  <a href="#gadd495650e5d752712e285fd61c87362e"></a><br/></td></tr>
+<tr class="memitem:ga806dfa9c27d2b8076bae21bcd549cce7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7">nc_callback_print</a> (void(*func)(<a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060">NC_VERB_LEVEL</a> level, const char *msg))</td></tr>
+<tr class="memdesc:ga806dfa9c27d2b8076bae21bcd549cce7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set callback function for printing libnetconf's messages.  <a href="#ga806dfa9c27d2b8076bae21bcd549cce7"></a><br/></td></tr>
 <tr class="memitem:ga057524ba5256c428b6bf88710f000e0c"><td class="memItemLeft" align="right" valign="top">struct nc_err *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga057524ba5256c428b6bf88710f000e0c">nc_err_new</a> (<a class="el" href="../../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2">NC_ERR</a> error)</td></tr>
 <tr class="memdesc:ga057524ba5256c428b6bf88710f000e0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new error description structure.  <a href="#ga057524ba5256c428b6bf88710f000e0c"></a><br/></td></tr>
 <tr class="memitem:ga316faef1140f1b48a2ed1de6d84d2bef"><td class="memItemLeft" align="right" valign="top">struct nc_err *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga316faef1140f1b48a2ed1de6d84d2bef">nc_err_dup</a> (const struct nc_err *error)</td></tr>
@@ -200,14 +200,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gadd495650e5d752712e285fd61c87362e"></a>
+<a class="anchor" id="ga806dfa9c27d2b8076bae21bcd549cce7"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gadd495650e5d752712e285fd61c87362e">nc_callback_print</a> </td>
+          <td class="memname">void <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7">nc_callback_print</a> </td>
           <td>(</td>
-          <td class="paramtype">int(*)(const char *msg)&#160;</td>
+          <td class="paramtype">void(*)(<a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060">NC_VERB_LEVEL</a> level, const char *msg)&#160;</td>
           <td class="paramname"><em>func</em></td><td>)</td>
           <td></td>
         </tr>
@@ -399,7 +399,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Fri Aug 3 2012 08:25:37 for libnetconf by
+    <li class="footer">Generated on Thu Sep 6 2012 16:58:52 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

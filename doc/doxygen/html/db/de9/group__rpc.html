@@ -35,7 +35,7 @@
   
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.1.1</span>
+   &#160;<span id="projectnumber">0.1.3</span>
    </div>
    <div id="projectbrief">NETCONF library</div>
   </td>
@@ -185,6 +185,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaf867eacee93e3596371415d028e62d29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get default-operation type, valid only for &lt;edit-config&gt; RPCs.  <a href="#gaf867eacee93e3596371415d028e62d29"></a><br/></td></tr>
 <tr class="memitem:ga488f894b9fa4866326837a9ed0575e36"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga488f894b9fa4866326837a9ed0575e36">nc_rpc_get_erropt</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:ga488f894b9fa4866326837a9ed0575e36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get error-option type, valid only for &lt;edit-config&gt; RPCs.  <a href="#ga488f894b9fa4866326837a9ed0575e36"></a><br/></td></tr>
+<tr class="memitem:ga05705bba8345c15637bc54cf6b9a4b3d"><td class="memItemLeft" align="right" valign="top">struct nc_filter *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga05705bba8345c15637bc54cf6b9a4b3d">nc_rpc_get_filter</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
+<tr class="memdesc:ga05705bba8345c15637bc54cf6b9a4b3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get filter from &lt;get&gt; or &lt;get-config&gt; RPC.  <a href="#ga05705bba8345c15637bc54cf6b9a4b3d"></a><br/></td></tr>
 <tr class="memitem:ga4041bda37caa9eedb7a1e2534280f3df"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga4041bda37caa9eedb7a1e2534280f3df">nc_rpc_free</a> (<a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:ga4041bda37caa9eedb7a1e2534280f3df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free rpc message.  <a href="#ga4041bda37caa9eedb7a1e2534280f3df"></a><br/></td></tr>
 <tr class="memitem:ga34e288de7d99df065f1e5866144af139"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga34e288de7d99df065f1e5866144af139">nc_rpc_copyconfig</a> (<a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a> source, <a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a> target, const char *data)</td></tr>
@@ -791,6 +793,39 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga05705bba8345c15637bc54cf6b9a4b3d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct nc_filter* <a class="el" href="../../db/de9/group__rpc.html#ga05705bba8345c15637bc54cf6b9a4b3d">nc_rpc_get_filter</a> </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
+          <td class="paramname"><em>rpc</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">read</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get filter from &lt;get&gt; or &lt;get-config&gt; RPC. </p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>&lt;get&gt; or &lt;get-config&gt; rpc message</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>pointer struct nc_filter or NULL if no filter specified </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ga4041bda37caa9eedb7a1e2534280f3df"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1100,7 +1135,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Fri Aug 3 2012 08:25:37 for libnetconf by
+    <li class="footer">Generated on Thu Sep 6 2012 16:58:52 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

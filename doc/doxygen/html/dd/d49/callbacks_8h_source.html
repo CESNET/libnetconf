@@ -35,7 +35,7 @@
   
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.1.1</span>
+   &#160;<span id="projectnumber">0.1.3</span>
    </div>
    <div id="projectbrief">NETCONF library</div>
   </td>
@@ -120,42 +120,42 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00042"></a>00042 <span class="preprocessor"></span>
 <a name="l00043"></a>00043 <span class="preprocessor">#include &lt;libssh2.h&gt;</span>
 <a name="l00044"></a>00044 
-<a name="l00050"></a>00050 <span class="keywordtype">void</span> <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gadd495650e5d752712e285fd61c87362e" title="Set callback function for printing libnetconf&#39;s messages.">nc_callback_print</a>(<span class="keywordtype">int</span> (*func)(<span class="keyword">const</span> <span class="keywordtype">char</span>* msg));
-<a name="l00051"></a>00051 
-<a name="l00067"></a>00067 <span class="keywordtype">void</span> <a class="code" href="../../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80" title="Set callback function to process (e.g. print) NETCONF &lt;rpc-error&gt; message items.">nc_callback_error_reply</a>(<span class="keywordtype">void</span> (*func)(<span class="keyword">const</span> <span class="keywordtype">char</span>* tag,
-<a name="l00068"></a>00068                 <span class="keyword">const</span> <span class="keywordtype">char</span>* type,
-<a name="l00069"></a>00069                 <span class="keyword">const</span> <span class="keywordtype">char</span>* severity,
-<a name="l00070"></a>00070                 <span class="keyword">const</span> <span class="keywordtype">char</span>* apptag,
-<a name="l00071"></a>00071                 <span class="keyword">const</span> <span class="keywordtype">char</span>* path,
-<a name="l00072"></a>00072                 <span class="keyword">const</span> <span class="keywordtype">char</span>* message,
-<a name="l00073"></a>00073                 <span class="keyword">const</span> <span class="keywordtype">char</span>* attribute,
-<a name="l00074"></a>00074                 <span class="keyword">const</span> <span class="keywordtype">char</span>* element,
-<a name="l00075"></a>00075                 <span class="keyword">const</span> <span class="keywordtype">char</span>* ns,
-<a name="l00076"></a>00076                 <span class="keyword">const</span> <span class="keywordtype">char</span>* sid));
-<a name="l00077"></a>00077 
-<a name="l00084"></a>00084 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb" title="Set callback function for passing user credentials into libssh2&#39;s keyboard-interactive authentication...">nc_callback_sshauth_interactive</a>(<span class="keywordtype">void</span> (*func)(<span class="keyword">const</span> <span class="keywordtype">char</span>* name,
-<a name="l00085"></a>00085                 <span class="keywordtype">int</span> name_len,
-<a name="l00086"></a>00086                 <span class="keyword">const</span> <span class="keywordtype">char</span>* instruction,
-<a name="l00087"></a>00087                 <span class="keywordtype">int</span> instruction_len,
-<a name="l00088"></a>00088                 <span class="keywordtype">int</span> num_prompts,
-<a name="l00089"></a>00089                 <span class="keyword">const</span> LIBSSH2_USERAUTH_KBDINT_PROMPT* prompts,
-<a name="l00090"></a>00090                 LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
-<a name="l00091"></a>00091                 <span class="keywordtype">void</span>** <span class="keyword">abstract</span>));
-<a name="l00092"></a>00092 
-<a name="l00099"></a>00099 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb" title="Set callback function for passing user password into libssh2&#39;s password authentication method when co...">nc_callback_sshauth_password</a>(<span class="keywordtype">char</span>* (*func)(<span class="keyword">const</span> <span class="keywordtype">char</span>* username,
-<a name="l00100"></a>00100                 <span class="keyword">const</span> <span class="keywordtype">char</span>* hostname));
-<a name="l00101"></a>00101 
-<a name="l00108"></a>00108 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726" title="Set callback function for passing user password into libssh2&#39;s publickey authentication method when c...">nc_callback_sshauth_passphrase</a>(<span class="keywordtype">char</span>* (*func)(<span class="keyword">const</span> <span class="keywordtype">char</span>* username,
-<a name="l00109"></a>00109                 <span class="keyword">const</span> <span class="keywordtype">char</span>* hostname, <span class="keyword">const</span> <span class="keywordtype">char</span>* priv_key_file));
-<a name="l00110"></a>00110 
-<a name="l00116"></a>00116 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a" title="Set callback function to authorize authenticity of an unknown host.">nc_callback_ssh_host_authenticity_check</a>(<span class="keywordtype">int</span> (*func)(<span class="keyword">const</span> <span class="keywordtype">char</span>* hostname,
-<a name="l00117"></a>00117                 <span class="keywordtype">int</span> keytype, <span class="keyword">const</span> <span class="keywordtype">char</span>* fingerprint));
-<a name="l00118"></a>00118 
-<a name="l00125"></a>00125 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#gae521c81f448de075a84f62388320ebae" title="Set path to publickey file used in case of SSH authentication via publickey mechanism.">nc_set_publickey_path</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* path);
-<a name="l00126"></a>00126 
-<a name="l00133"></a>00133 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#ga66beddc668fcc5c3699165bf3d3fd089" title="Set path to privatekey file used in case of SSH authentication via publickey mechanism.">nc_set_privatekey_path</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* path);
-<a name="l00134"></a>00134 
-<a name="l00135"></a>00135 <span class="preprocessor">#endif </span><span class="comment">/* CALLBACKS_H_ */</span><span class="preprocessor"></span>
+<a name="l00045"></a>00045 <span class="preprocessor">#include &quot;<a class="code" href="../../d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions.">netconf.h</a>&quot;</span>
+<a name="l00046"></a>00046 
+<a name="l00052"></a>00052 <span class="keywordtype">void</span> <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7" title="Set callback function for printing libnetconf&#39;s messages.">nc_callback_print</a>(<span class="keywordtype">void</span> (*func)(<a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060" title="Verbosity levels.">NC_VERB_LEVEL</a> level, <span class="keyword">const</span> <span class="keywordtype">char</span>* msg));
+<a name="l00053"></a>00053 
+<a name="l00069"></a>00069 <span class="keywordtype">void</span> <a class="code" href="../../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80" title="Set callback function to process (e.g. print) NETCONF &lt;rpc-error&gt; message items.">nc_callback_error_reply</a>(<span class="keywordtype">void</span> (*func)(<span class="keyword">const</span> <span class="keywordtype">char</span>* tag,
+<a name="l00070"></a>00070                 <span class="keyword">const</span> <span class="keywordtype">char</span>* type,
+<a name="l00071"></a>00071                 <span class="keyword">const</span> <span class="keywordtype">char</span>* severity,
+<a name="l00072"></a>00072                 <span class="keyword">const</span> <span class="keywordtype">char</span>* apptag,
+<a name="l00073"></a>00073                 <span class="keyword">const</span> <span class="keywordtype">char</span>* path,
+<a name="l00074"></a>00074                 <span class="keyword">const</span> <span class="keywordtype">char</span>* message,
+<a name="l00075"></a>00075                 <span class="keyword">const</span> <span class="keywordtype">char</span>* attribute,
+<a name="l00076"></a>00076                 <span class="keyword">const</span> <span class="keywordtype">char</span>* element,
+<a name="l00077"></a>00077                 <span class="keyword">const</span> <span class="keywordtype">char</span>* ns,
+<a name="l00078"></a>00078                 <span class="keyword">const</span> <span class="keywordtype">char</span>* sid));
+<a name="l00079"></a>00079 
+<a name="l00086"></a>00086 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb" title="Set callback function for passing user credentials into libssh2&#39;s keyboard-interactive authentication...">nc_callback_sshauth_interactive</a>(<span class="keywordtype">void</span> (*func)(<span class="keyword">const</span> <span class="keywordtype">char</span>* name,
+<a name="l00087"></a>00087                 <span class="keywordtype">int</span> name_len,
+<a name="l00088"></a>00088                 <span class="keyword">const</span> <span class="keywordtype">char</span>* instruction,
+<a name="l00089"></a>00089                 <span class="keywordtype">int</span> instruction_len,
+<a name="l00090"></a>00090                 <span class="keywordtype">int</span> num_prompts,
+<a name="l00091"></a>00091                 <span class="keyword">const</span> LIBSSH2_USERAUTH_KBDINT_PROMPT* prompts,
+<a name="l00092"></a>00092                 LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
+<a name="l00093"></a>00093                 <span class="keywordtype">void</span>** <span class="keyword">abstract</span>));
+<a name="l00094"></a>00094 
+<a name="l00101"></a>00101 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb" title="Set callback function for passing user password into libssh2&#39;s password authentication method when co...">nc_callback_sshauth_password</a>(<span class="keywordtype">char</span>* (*func)(<span class="keyword">const</span> <span class="keywordtype">char</span>* username,
+<a name="l00102"></a>00102                 <span class="keyword">const</span> <span class="keywordtype">char</span>* hostname));
+<a name="l00103"></a>00103 
+<a name="l00110"></a>00110 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726" title="Set callback function for passing user password into libssh2&#39;s publickey authentication method when c...">nc_callback_sshauth_passphrase</a>(<span class="keywordtype">char</span>* (*func)(<span class="keyword">const</span> <span class="keywordtype">char</span>* username,
+<a name="l00111"></a>00111                 <span class="keyword">const</span> <span class="keywordtype">char</span>* hostname, <span class="keyword">const</span> <span class="keywordtype">char</span>* priv_key_file));
+<a name="l00112"></a>00112 
+<a name="l00118"></a>00118 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a" title="Set callback function to authorize authenticity of an unknown host.">nc_callback_ssh_host_authenticity_check</a>(<span class="keywordtype">int</span> (*func)(<span class="keyword">const</span> <span class="keywordtype">char</span>* hostname,
+<a name="l00119"></a>00119                 <span class="keywordtype">int</span> keytype, <span class="keyword">const</span> <span class="keywordtype">char</span>* fingerprint));
+<a name="l00120"></a>00120 
+<a name="l00128"></a>00128 <span class="keywordtype">void</span> <a class="code" href="../../db/d52/group__session.html#gab5beccc3acd15a5ad6499992e24fbe59" title="Set path to private and public key file used in case of SSH authentication via publickey mechanism...">nc_set_keypair_path</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">private</span>, <span class="keyword">const</span> <span class="keywordtype">char</span> * <span class="keyword">public</span>);
+<a name="l00129"></a>00129 
+<a name="l00130"></a>00130 <span class="preprocessor">#endif </span><span class="comment">/* CALLBACKS_H_ */</span><span class="preprocessor"></span>
 </pre></div></div><!-- contents -->
 </div>
   <div id="nav-path" class="navpath">
@@ -163,7 +163,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
       <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a>      </li>
       <li class="navelem"><a class="el" href="../../dd/d49/callbacks_8h.html">callbacks.h</a>      </li>
 
-    <li class="footer">Generated on Fri Aug 3 2012 08:25:37 for libnetconf by
+    <li class="footer">Generated on Thu Sep 6 2012 16:58:52 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

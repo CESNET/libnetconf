@@ -35,7 +35,7 @@
   
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.1.1</span>
+   &#160;<span id="projectnumber">0.1.3</span>
    </div>
    <div id="projectbrief">NETCONF library</div>
   </td>
@@ -147,10 +147,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set callback function for passing user password into libssh2's publickey authentication method when connecting to 'hostname' as 'username'.  <a href="#ga81ef9b1c1949bbffd86cbfd9aa159726"></a><br/></td></tr>
 <tr class="memitem:ga9810aff5060e374925933d41913fbe5a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a">nc_callback_ssh_host_authenticity_check</a> (int(*func)(const char *hostname, int keytype, const char *fingerprint))</td></tr>
 <tr class="memdesc:ga9810aff5060e374925933d41913fbe5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set callback function to authorize authenticity of an unknown host.  <a href="#ga9810aff5060e374925933d41913fbe5a"></a><br/></td></tr>
-<tr class="memitem:gae521c81f448de075a84f62388320ebae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gae521c81f448de075a84f62388320ebae">nc_set_publickey_path</a> (const char *path)</td></tr>
-<tr class="memdesc:gae521c81f448de075a84f62388320ebae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to publickey file used in case of SSH authentication via publickey mechanism.  <a href="#gae521c81f448de075a84f62388320ebae"></a><br/></td></tr>
-<tr class="memitem:ga66beddc668fcc5c3699165bf3d3fd089"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga66beddc668fcc5c3699165bf3d3fd089">nc_set_privatekey_path</a> (const char *path)</td></tr>
-<tr class="memdesc:ga66beddc668fcc5c3699165bf3d3fd089"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to privatekey file used in case of SSH authentication via publickey mechanism.  <a href="#ga66beddc668fcc5c3699165bf3d3fd089"></a><br/></td></tr>
+<tr class="memitem:gab5beccc3acd15a5ad6499992e24fbe59"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gab5beccc3acd15a5ad6499992e24fbe59">nc_set_keypair_path</a> (const char *private, const char *public)</td></tr>
+<tr class="memdesc:gab5beccc3acd15a5ad6499992e24fbe59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to private and public key file used in case of SSH authentication via publickey mechanism.  <a href="#gab5beccc3acd15a5ad6499992e24fbe59"></a><br/></td></tr>
 <tr class="memitem:gad821a04ee9dc04bbed04ea1d138afbed"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad821a04ee9dc04bbed04ea1d138afbed">nc_session_dummy</a> (const char *sid, const char *username, struct nc_cpblts *capabilities)</td></tr>
 <tr class="memdesc:gad821a04ee9dc04bbed04ea1d138afbed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create disconnected session structure.  <a href="#gad821a04ee9dc04bbed04ea1d138afbed"></a><br/></td></tr>
 <tr class="memitem:ga20b9940ed7af543a05b4bef6e871cedd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd">nc_session_close</a> (struct nc_session *session, const char *msg)</td></tr>
@@ -381,48 +379,35 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gae521c81f448de075a84f62388320ebae"></a>
+<a class="anchor" id="gab5beccc3acd15a5ad6499992e24fbe59"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="../../db/d52/group__session.html#gae521c81f448de075a84f62388320ebae">nc_set_publickey_path</a> </td>
+          <td class="memname">void <a class="el" href="../../db/d52/group__session.html#gab5beccc3acd15a5ad6499992e24fbe59">nc_set_keypair_path</a> </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>path</em></td><td>)</td>
-          <td></td>
+          <td class="paramname"><em>private</em>, </td>
         </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set path to publickey file used in case of SSH authentication via publickey mechanism. </p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Path to the file to use. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga66beddc668fcc5c3699165bf3d3fd089"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="../../db/d52/group__session.html#ga66beddc668fcc5c3699165bf3d3fd089">nc_set_privatekey_path</a> </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>path</em></td><td>)</td>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>public</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Set path to privatekey file used in case of SSH authentication via publickey mechanism. </p>
+<p>Set path to private and public key file used in case of SSH authentication via publickey mechanism. </p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">private</td><td></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">public</td><td></td></tr>
   </table>
   </dd>
 </dl>
@@ -1145,7 +1130,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Create NETCONF session to the specified server. </p>
-<p>This function internally can use various callbacks set by client to perform SSH authentication. It selects authentication mechanism from the list provided by the SSH server and according to preferences set by client via <a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0" title="Set preference of the SSH authentication methods.">nc_ssh_pref()</a>. Then, appropriate callback function (set by <a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb" title="Set callback function for passing user password into libssh2&#39;s password authentication method when co...">nc_callback_sshauth_password()</a>, <a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726" title="Set callback function for passing user password into libssh2&#39;s publickey authentication method when c...">nc_callback_sshauth_passphrase()</a>, <a class="el" href="../../db/d52/group__session.html#gae521c81f448de075a84f62388320ebae" title="Set path to publickey file used in case of SSH authentication via publickey mechanism.">nc_set_publickey_path()</a> or <a class="el" href="../../db/d52/group__session.html#ga66beddc668fcc5c3699165bf3d3fd089" title="Set path to privatekey file used in case of SSH authentication via publickey mechanism.">nc_set_privatekey_path()</a>) is used to perform authentication.</p>
+<p>This function internally can use various callbacks set by client to perform SSH authentication. It selects authentication mechanism from the list provided by the SSH server and according to preferences set by client via <a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0" title="Set preference of the SSH authentication methods.">nc_ssh_pref()</a>. Then, appropriate callback function (set by <a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb" title="Set callback function for passing user password into libssh2&#39;s password authentication method when co...">nc_callback_sshauth_password()</a>, <a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726" title="Set callback function for passing user password into libssh2&#39;s publickey authentication method when c...">nc_callback_sshauth_passphrase()</a>, nc_set_publickey_path() or nc_set_privatekey_path()) is used to perform authentication.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">host</td><td>Hostname or address (both Ipv4 and IPv6 are accepted). 'localhost' is used by default if NULL is specified. </td></tr>
@@ -1198,7 +1183,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Fri Aug 3 2012 08:25:37 for libnetconf by
+    <li class="footer">Generated on Thu Sep 6 2012 16:58:52 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

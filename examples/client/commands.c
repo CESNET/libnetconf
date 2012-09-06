@@ -14,6 +14,7 @@
 #include <libxml/parser.h>
 
 #include "commands.h"
+#include "configuration.h"
 #include "mreadline.h"
 
 #define NC_CAP_CANDIDATE_ID "urn:ietf:params:netconf:capability:candidate:1.0"
@@ -21,9 +22,8 @@
 #define NC_CAP_ROLLBACK_ID  "urn:ietf:params:netconf:capability:rollback-on-error:1.0"
 
 extern int done;
-extern struct nc_cpblts * stored_cpblts;
+extern struct nc_cpblts * client_supported_cpblts;
 volatile int verb_level = 0;
-struct nc_cpblts * client_supported_cpblts = NULL;
 
 void print_version ();
 
@@ -49,7 +49,6 @@ COMMAND commands[] = {
 		{"verbose", cmd_verbose, "Enable/disable verbose messages"},
 		{"quit", cmd_quit, "Quit the program"},
 		{"capability", cmd_capability, "Add/remove capability to/from list of supported capabilities"},
-		{"authentication", cmd_authentication, "Manage authentication methods"},
 /* synonyms for previous commands */
 		{"debug", cmd_debug, NULL},
 		{"?", cmd_help, NULL},
@@ -1006,111 +1005,25 @@ int cmd_killsession (char *arg)
 	return (EXIT_SUCCESS);
 }
 
-void cmd_authentication_help (void)
-{
-	fprintf (stdout, "authentication [--help] {--pref [kip]{3}|--keys-add private-path|--keys-rem private-path}\n");
-}
-
-int cmd_authentication (char * arg)
-{
-#define AUTH_PREF 'p'
-#define AUTH_KEY_ADD 'a'
-#define AUTH_KEY_REM 'r'
-
-	struct arglist cmd;
-	int op = -1, c, i;
-	char * tmp;
-	struct option long_options[] = {
-			{"pref", 1, 0, AUTH_PREF},
-			{"keys-add", 1, 0, AUTH_KEY_ADD},
-			{"keys-rem", 1, 0, AUTH_KEY_REM},
-			{"help", 0, 0, 'h'},
-			{0, 0, 0, 0}
-	};
-	int pref[3] =  {-1,-1,-1}; /* authentication methods' preferences in aplhabetical order - interactive - keys - password */
-	int option_index = 0;
-	optind = 0;
-
-	if (session != NULL) {
-		ERROR ("authentication", "NETCONF session already established. Changes to supported capability list will take efekt after reconnection.");
-	}
-
-	init_arglist (&cmd);
-	addargs (&cmd, "%s", arg);
-
-	while ((c=getopt_long (cmd.count, cmd.list, "p:a:r:h", long_options, &option_index)) != -1) {
-		switch (c) {
-		case 'p':
-			if (optarg != NULL) {
-				for (i=0; optarg[i] != '\0'; i++) {
-					switch (optarg[i]) {
-					case 'i':
-						pref[0] = 3-i;
-						break;
-					case 'k':
-						pref[1] = 3-i;
-						break;
-					case 'p':
-						pref[2] = 3-i;
-						break;
-					default:
-						break;
-					}
-				}
-			}
-			nc_ssh_pref(NC_SSH_AUTH_INTERACTIVE, pref[0]);
-			nc_ssh_pref(NC_SSH_AUTH_PUBLIC_KEYS, pref[1]);
-			nc_ssh_pref(NC_SSH_AUTH_PASSWORD, pref[2]);
-			break;
-		case 'a':
-			asprintf (&tmp, "%s.pub", optarg);
-			nc_set_keypair_path(optarg, tmp);
-			free (tmp);
-			break;
-		case 'r':
-			break;
-		case 'h':
-			cmd_authentication_help();
-			clear_arglist(&cmd);
-			return (EXIT_SUCCESS);
-			break;
-		case 0:
-			/* load/store set */
-			break;
-		default:
-			break;
-		}
-	}
-
-	clear_arglist(&cmd);
-	return EXIT_SUCCESS;
-}
-
 #define CAP_ADD 'a'
 #define CAP_REM 'r'
 #define CAP_LIST 'l'
 #define CAP_DEF 'd'
-#define CAP_LOAD 'o'
-#define CAP_STORE 's'
 void cmd_capability_help (void)
 {
-	fprintf (stdout, "capability [--help] {--add|--rem|--list|--default|--load|--store} [--uri=[URI]]\n");
+	fprintf (stdout, "capability {--help|--add <uri>|--rem {<uri>|*}|--list|--default\n");
 }
 
 int cmd_capability (char * arg)
 {
 	struct arglist cmd;
-	int op = -1, c;
-	const char * uri, *cap;
-	char * par_uri = NULL;
+	int c = -1;
+	const char * uri;
 	struct option long_options[] = {
-			{"add", 0, &op, CAP_ADD},
-			{"rem", 0, &op, CAP_REM},
-			{"list", 0, &op, CAP_LIST},
-			{"default", 0, &op, CAP_DEF},
-			{"load", 0, &op, CAP_LOAD},
-			{"store", 0, &op, CAP_STORE},
-			{"uri", 1, 0, 'u'},
+			{"add", 1, 0, CAP_ADD},
+			{"rem", 1, 0, CAP_REM},
+			{"list", 0, 0, CAP_LIST},
+			{"default", 0, 0, CAP_DEF},
 			{"help", 0, 0, 'h'},
 			{0, 0, 0, 0}
 	};
@@ -1124,96 +1037,64 @@ int cmd_capability (char * arg)
 	init_arglist (&cmd);
 	addargs (&cmd, "%s", arg);
 
-	while ((c=getopt_long (cmd.count, cmd.list, "a:r:l:d:o:s:u:h", long_options, &option_index)) != -1) {
+	if ((c=getopt_long (cmd.count, cmd.list, "a:r:l:d:h", long_options, &option_index)) == -1) {
+		cmd_capability_help();
+	} else do {
 		switch (c) {
-		case 'u':
-			par_uri = strdup(optarg);
-			break;
 		case 'h':
 			cmd_capability_help ();
 			clear_arglist(&cmd);
 			return (EXIT_SUCCESS);
 			break;
-		case 0:
-			/* add/rem/list/default/load/store set */
+		case CAP_ADD:
+			/* if adding first */
+			if (client_supported_cpblts == NULL) {
+				/* create structure */
+				client_supported_cpblts = nc_cpblts_new (NULL);
+			}
+			if (nc_cpblts_add (client_supported_cpblts, optarg)) {
+				ERROR ("capability", "Can not add capability \"%s\" to client supported list.", optarg);
+				return EXIT_FAILURE;
+			}
+			store_config (client_supported_cpblts);
+			break;
+		case CAP_REM:
+			if (strcmp(optarg, "*") == 0) {
+				nc_cpblts_free(client_supported_cpblts);
+				client_supported_cpblts = nc_cpblts_new(NULL);
+			} else {
+				if (nc_cpblts_remove (client_supported_cpblts, optarg)) {
+					ERROR ("capability", "Can not remove capability %s from client supported list.", optarg);
+					return EXIT_FAILURE;
+				}
+			}
+			if (nc_cpblts_get(client_supported_cpblts, "urn:ietf:params:netconf:base:1.0") == NULL &&
+					nc_cpblts_get(client_supported_cpblts, "urn:ietf:params:netconf:base:1.1") == NULL) {
+				ERROR ("capability", "No base capability left in supported list. Connection to any server will be impossible.");
+			}
+			store_config (client_supported_cpblts);
+			break;
+		case CAP_LIST:
+			fprintf (stdout, "Client claims support of folowing capabilities:\n");
+			nc_cpblts_iter_start (client_supported_cpblts);
+			while ((uri = nc_cpblts_iter_next (client_supported_cpblts)) != NULL) {
+				fprintf (stdout, "%s\n", uri);
+			}
+			break;
+		case CAP_DEF:
+			if (client_supported_cpblts != NULL) {
+				nc_cpblts_free (client_supported_cpblts);
+			}
+			client_supported_cpblts = nc_session_get_cpblts_default ();
+			store_config (client_supported_cpblts);
 			break;
 		default:
+			cmd_capability_help();
 			break;
 		}
-	}
+	} while ((c=getopt_long (cmd.count, cmd.list, "a:r:l:d:h", long_options, &option_index)) != -1);
 
 	clear_arglist(&cmd);
-
-	if (op < 0) {
-		cmd_capability_help();
-		return EXIT_FAILURE;
-	}
-
-	if ((op == CAP_ADD || op == CAP_REM) && par_uri == NULL) {
-		INSTRUCTION("Type the URI specifying the capability (close editor by Ctrl-D):\n");
-		par_uri = mreadline (NULL);
-		if (par_uri == NULL) {
-			ERROR ("capability", "Reading capability URI failed.");
-			return EXIT_FAILURE;
-		}
-	}
-
-	switch (op) {
-	case CAP_ADD:
-		/* if adding first */
-		if (client_supported_cpblts == NULL) {
-			/* create structure */
-			client_supported_cpblts = nc_cpblts_new (NULL);
-		}
-		if (nc_cpblts_add (client_supported_cpblts, par_uri)) {
-			ERROR ("capability", "Can not add capability \"%s\" to client supported list.", par_uri);
-			free (par_uri);
-			return EXIT_FAILURE;
-		}
-		free (par_uri);
-		break;
-	case CAP_REM:
-		if (nc_cpblts_remove (client_supported_cpblts, par_uri)) {
-			ERROR ("capability", "Can not remove capability %s from client supported list.", par_uri);
-			free (par_uri);
-			return EXIT_FAILURE;
-		}
-		free (par_uri);
-		break;
-	case CAP_LIST:
-		fprintf (stdout, "Client claims support of folowing capabilities:\n");
-		nc_cpblts_iter_start (client_supported_cpblts);
-		while ((uri = nc_cpblts_iter_next (client_supported_cpblts)) != NULL) {
-			fprintf (stdout, "%s\n", uri);
-		}
-		break;
-	case CAP_DEF:
-		if (client_supported_cpblts != NULL) {
-			nc_cpblts_free (client_supported_cpblts);
-		}
-		client_supported_cpblts = nc_session_get_cpblts_default ();
-		break;
-	case CAP_LOAD:
-			nc_cpblts_free(client_supported_cpblts);
-			client_supported_cpblts = nc_cpblts_new(NULL);
-			nc_cpblts_iter_start(stored_cpblts);
-			while ((cap = nc_cpblts_iter_next(stored_cpblts)) != NULL) {
-				nc_cpblts_add(client_supported_cpblts, cap);
-			}
-		break;
-	case CAP_STORE:
-			nc_cpblts_free(stored_cpblts);
-			stored_cpblts = nc_cpblts_new(NULL);
-			nc_cpblts_iter_start(client_supported_cpblts);
-			while ((cap = nc_cpblts_iter_next(client_supported_cpblts)) != NULL) {
-				nc_cpblts_add(stored_cpblts, cap);
-			}
-		break;
-	default:
-		ERROR ("capability", "Unsupported operation");
-		return EXIT_FAILURE;
-		break;
-	}
 
 	return EXIT_SUCCESS;
 }
