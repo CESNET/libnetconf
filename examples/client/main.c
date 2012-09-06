@@ -13,7 +13,7 @@
 
 volatile int done = 0;
 extern COMMAND commands[];
-struct nc_cpblts * stored_cpblts;
+struct nc_cpblts * client_supported_cpblts;
 
 void clb_print(NC_VERB_LEVEL level, const char* msg)
 {
@@ -61,8 +61,6 @@ int main(int argc, char *argv[])
 
 	initialize_readline();
 
-	load_config (&stored_cpblts);
-
 	/* set verbosity and function to print libnetconf's messages */
 	nc_verbosity(NC_VERB_WARNING);
 	nc_callback_print(clb_print);
@@ -71,6 +69,7 @@ int main(int argc, char *argv[])
 	/* disable publickey authentication */
 	nc_ssh_pref(NC_SSH_AUTH_PUBLIC_KEYS, -1);
 
+	load_config (&client_supported_cpblts);
 
 	while (!done) {
 		/* get the command from user */
@@ -114,8 +113,8 @@ int main(int argc, char *argv[])
 		free(cmdline);
 	}
 
-	store_config (stored_cpblts);
-	nc_cpblts_free(stored_cpblts);
+	store_config (client_supported_cpblts);
+	nc_cpblts_free(client_supported_cpblts);
 	/* bye, bye */
 	return (EXIT_SUCCESS);
 }
