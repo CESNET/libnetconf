@@ -1,0 +1,150 @@
+.TH "src/session.h" 3 "Thu Sep 6 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+src/session.h \- 
+.PP
+Functions to handle NETCONF sessions\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'ssh\&.h'\fP
+.br
+\fC#include 'netconf\&.h'\fP
+.br
+
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, struct nc_cpblts *capabilities)"
+.br
+.RI "\fICreate disconnected session structure\&. \fP"
+.ti -1c
+.RI "void \fBnc_session_close\fP (struct nc_session *session, const char *msg)"
+.br
+.RI "\fIClose NETCONF connection with the server\&. \fP"
+.ti -1c
+.RI "void \fBnc_session_free\fP (struct nc_session *session)"
+.br
+.RI "\fICleanup the session structure and free all allocated resources\&. \fP"
+.ti -1c
+.RI "\fBNC_SESSION_STATUS\fP \fBnc_session_get_status\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet information about the session current status\&. \fP"
+.ti -1c
+.RI "int \fBnc_session_get_version\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet NETCONF protocol version used in the given session\&. \fP"
+.ti -1c
+.RI "int \fBnc_session_get_eventfd\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet input file descriptor to asynchronous control of input events\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_session_get_id\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet NETCONF session ID\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_session_get_host\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet NETCONF session host\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_session_get_port\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet NETCONF session port number\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_session_get_user\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet NETCONF session username\&. \fP"
+.ti -1c
+.RI "struct nc_cpblts * \fBnc_session_get_cpblts\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet NULL terminated list of capabilities associated with the session\&. \fP"
+.ti -1c
+.RI "struct nc_cpblts * \fBnc_cpblts_new\fP (char *const *list)"
+.br
+.RI "\fICreate new NETCONF capabilities structure\&. \fP"
+.ti -1c
+.RI "void \fBnc_cpblts_free\fP (struct nc_cpblts *c)"
+.br
+.RI "\fIFree NETCONF capabilities structure\&. \fP"
+.ti -1c
+.RI "int \fBnc_cpblts_add\fP (struct nc_cpblts *capabilities, const char *capability_string)"
+.br
+.RI "\fIAdd another one capability string into the NETCONF capabilities structure\&. \fP"
+.ti -1c
+.RI "int \fBnc_cpblts_remove\fP (struct nc_cpblts *capabilities, const char *capability_string)"
+.br
+.RI "\fIRemove specified capability string from the NETCONF capabilities structure\&. \fP"
+.ti -1c
+.RI "int \fBnc_cpblts_enabled\fP (const struct nc_session *session, const char *capability_string)"
+.br
+.RI "\fICheck if the given capability is supported by the session\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_cpblts_get\fP (const struct nc_cpblts *c, const char *capability_string)"
+.br
+.RI "\fIGet complete capability string including parameters\&. \fP"
+.ti -1c
+.RI "void \fBnc_cpblts_iter_start\fP (struct nc_cpblts *c)"
+.br
+.RI "\fIMove NETCONF capabilities structure iterator to the beginning of the capability strings list\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_cpblts_iter_next\fP (struct nc_cpblts *c)"
+.br
+.RI "\fIGet the next capability string from the given NETCONF capabilities structure\&. \fP"
+.ti -1c
+.RI "int \fBnc_cpblts_count\fP (const struct nc_cpblts *c)"
+.br
+.RI "\fIGet number of capabilities in structure\&. \fP"
+.ti -1c
+.RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP ()"
+.br
+.RI "\fIGet NULL terminated list of default capabilities supported by libnetconf\&. \fP"
+.ti -1c
+.RI "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fISend <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
+.ti -1c
+.RI "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
+.br
+.RI "\fISend <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
+.ti -1c
+.RI "\fBnc_msgid\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
+.br
+.RI "\fIReceive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
+.ti -1c
+.RI "\fBnc_msgid\fP \fBnc_session_recv_reply\fP (struct nc_session *session, \fBnc_reply\fP **reply)"
+.br
+.RI "\fIReceive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBnc_session_send_recv\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fISend <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Functions to handle NETCONF sessions\&. 
+
+\fBAuthor:\fP
+.RS 4
+Radek Krejci rkrejci@cesnet.cz Copyright (C) 2012 CESNET, z\&.s\&.p\&.o\&.
+.RE
+.PP
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+.IP "1." 4
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer\&.
+.IP "2." 4
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution\&.
+.IP "3." 4
+Neither the name of the Company nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission\&.
+.PP
+.PP
+ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above\&.
+.PP
+This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
+.PP
+Definition in file \fBsession\&.h\fP\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.
