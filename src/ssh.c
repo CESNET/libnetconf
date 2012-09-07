@@ -511,6 +511,8 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	retval->fd_input = STDIN_FILENO;
 	retval->fd_output = STDOUT_FILENO;
 	retval->msgid = 1;
+	retval->queue_event = NULL;
+	retval->queue_msg = NULL;
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
@@ -747,6 +749,8 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->username = strdup(username);
 	retval->port = strdup(port_s);
 	retval->msgid = 1;
+	retval->queue_event = NULL;
+	retval->queue_msg = NULL;
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);

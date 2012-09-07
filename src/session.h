@@ -304,7 +304,7 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
  * @param[in] session NETCONF session to use.
  * @param[out] rpc Received \<rpc\>
  * @return Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_RPC
- * means that *reply points to the received \<rpc-reply\> message.
+ * means that *rpc points to the received \<rpc\> message.
  */
 NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc);
 
@@ -321,6 +321,19 @@ NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc);
 NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply);
 
 /**
+ * @ingroup notifications
+ * @brief Receive \<notification\> message from the specified NETCONF session.
+ * This function is supposed to be performed only by NETCONF clients.
+ *
+ * @param[in] session NETCONF session to use.
+ * @param[out] notif Received \<notification\> message
+ * @return Type of received message. NC_MSG_UNKNOWN means error,
+ * NC_MSG_NOTIFICATION means that *notif points to the received \<notification\>
+ * message.
+ */
+NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, nc_notif** notif);
+
+/**
  * @ingroup genAPI
  * @brief Compare two message IDs if they are the same.
  *
@@ -335,8 +348,10 @@ int nc_msgid_compare (const nc_msgid id1, const nc_msgid id2);
  * @brief Send \<rpc\> and receive \<rpc-reply\> via the specified NETCONF session.
  * @param[in] session NETCONF session to use.
  * @param[in] rpc RPC message to send.
- * @return Received \<rpc-reply\>.
+ * @param[out] reply Received \<rpc-reply\>
+ * @return Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_REPLY
+ * means that *reply points to the received \<rpc-reply\> message.
  */
-nc_reply *nc_session_send_recv (struct nc_session* session, nc_rpc *rpc);
+NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_reply** reply);
 
 #endif /* SESSION_H_ */

@@ -1535,6 +1535,7 @@ int cmd_subscribe(char *arg)
 	char *stream;
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
+	NC_MSG_TYPE type;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"filter", 2, 0, 'f'},
@@ -1597,8 +1598,9 @@ int cmd_subscribe(char *arg)
 		return (EXIT_FAILURE);
 	}
 	/* send the request and get the reply */
-	reply = nc_session_send_recv(session, rpc);
-	if (reply == NULL) {
+	type = nc_session_send_recv(session, rpc, &reply);
+	switch (type) {
+	case NC_MSG_UNKNOWN:
 		nc_rpc_free (rpc);
 		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
 			ERROR("create-subscription", "receiving rpc-reply failed.");
@@ -1607,6 +1609,13 @@ int cmd_subscribe(char *arg)
 			return (EXIT_FAILURE);
 		}
 		return (EXIT_SUCCESS);
+		break;
+	case NC_MSG_NONE:
+		/* NC_REPLY_ERROR was processed by callback function */
+		break;
+	default:
+		/* do nothing */
+		break;
 	}
 	nc_rpc_free (rpc);
 

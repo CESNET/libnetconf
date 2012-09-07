@@ -459,7 +459,7 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, struc
 	session->libssh2_socket = -1;
 
 	/*
-	 * mut_in and mut_out fields are not initialized since dummy session
+	 * mutexes and queues fields are not initialized since dummy session
 	 * can not send or receive any data
 	 */
 
@@ -488,8 +488,10 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, struc
 
 void nc_session_close(struct nc_session* session, const char* msg)
 {
+	int i;
 	nc_rpc *rpc_close = NULL;
 	nc_reply *reply = NULL;
+	struct nc_msg *qmsg, *qmsg_aux;
 	NC_SESSION_STATUS sstatus = session->status;
 
 	/* lock session due to accessing its status and other items */
@@ -538,6 +540,15 @@ void nc_session_close(struct nc_session* session, const char* msg)
 		if (session->libssh2_socket != -1) {
 			close(session->libssh2_socket);
 			session->libssh2_socket = -1;
+		}
+
+		/* remove messages from the queues */
+		for (i = 0, qmsg = session->queue_event; i < 2; i++, qmsg = session->queue_msg) {
+			while (qmsg != NULL) {
+				qmsg_aux = qmsg->next;
+				nc_msg_free(qmsg);
+				qmsg = qmsg_aux;
+			}
 		}
 
 		if (sstatus != NC_SESSION_STATUS_DUMMY) {
@@ -893,9 +904,13 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 const nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg)
 {
 	nc_msgid ret = NULL;
+	xmlAttrPtr prop;
 
 	/* parse and store message-id */
-	ret = (char*) xmlGetProp(msg->doc->children, BAD_CAST "message-id");
+	prop = xmlHasProp(msg->doc->children, BAD_CAST "message-id");
+	if (prop != NULL && prop->children != NULL && prop->children->content != NULL) {
+		ret = (char*)prop->children->content;
+	}
 	if (ret == NULL) {
 		if (xmlStrcmp (msg->doc->children->name, BAD_CAST "hello") != 0) {
 			WARN("Missing message-id in %s.", (char*)msg->doc->children->name);
@@ -1099,6 +1114,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 		goto malformed_msg;
 	}
 	retval->error = NULL;
+	retval->next = NULL;
 
 	/* store the received message in libxml2 format */
 	retval->doc = xmlReadDoc (BAD_CAST text, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
@@ -1182,34 +1198,141 @@ malformed_msg:
 	return (NC_MSG_UNKNOWN);
 }
 
-NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
+NC_MSG_TYPE nc_session_recv_msg (struct nc_session* session, struct nc_msg** msg)
 {
 	NC_MSG_TYPE ret;
 
-	ret = nc_session_receive (session, (struct nc_msg**) reply);
-	if (ret != NC_MSG_REPLY) {
-		return (NC_MSG_UNKNOWN);
-	} else {
-		if (nc_reply_get_type (*reply) == NC_REPLY_ERROR &&
+	ret = nc_session_receive (session, msg);
+	switch (ret) {
+	case NC_MSG_REPLY: /* regular reply received */
+		/* if specified callback for processing rpc-error, use it */
+		if (nc_reply_get_type (*msg) == NC_REPLY_ERROR &&
 				callbacks.process_error_reply != NULL) {
-			/* process rpc-error reply */
-			callbacks.process_error_reply((*reply)->error->tag,
-					(*reply)->error->type,
-					(*reply)->error->severity,
-					(*reply)->error->apptag,
-					(*reply)->error->path,
-					(*reply)->error->message,
-					(*reply)->error->attribute,
-					(*reply)->error->element,
-					(*reply)->error->ns,
-					(*reply)->error->sid);
+			/* process rpc-error msg */
+			callbacks.process_error_reply((*msg)->error->tag,
+					(*msg)->error->type,
+					(*msg)->error->severity,
+					(*msg)->error->apptag,
+					(*msg)->error->path,
+					(*msg)->error->message,
+					(*msg)->error->attribute,
+					(*msg)->error->element,
+					(*msg)->error->ns,
+					(*msg)->error->sid);
 			/* free the data */
-			nc_reply_free(*reply);
-			*reply = NULL;
-			return (NC_MSG_NONE);
+			nc_reply_free(*msg);
+			*msg = NULL;
+			ret = NC_MSG_NONE;
 		}
+		break;
+	case NC_MSG_HELLO:
+	case NC_MSG_NOTIFICATION:
+		/* do nothing, just return the type */
+		break;
+	default:
+		ret = NC_MSG_UNKNOWN;
+		break;
+	}
+
+	return (ret);
+}
+
+NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
+{
+	struct nc_msg *msg_aux, *msg;
+	NC_MSG_TYPE ret;
+
+	pthread_mutex_lock(&(session->mut_session));
+	if (session->queue_msg != NULL) {
+		/* pop the oldest reply from the queue */
+		*reply = (nc_reply*)(session->queue_msg);
+		session->queue_msg = (*reply)->next;
+		pthread_mutex_unlock(&(session->mut_session));
+		(*reply)->next = NULL;
 		return (NC_MSG_REPLY);
 	}
+
+	ret = nc_session_recv_msg(session, &msg);
+
+	switch (ret) {
+	case NC_MSG_REPLY: /* regular reply received */
+	case NC_MSG_HELLO: /* hello message received */
+		*reply = (nc_reply*)msg;
+		break;
+	case NC_MSG_NONE:
+		/* <rpc-reply> with error information was processed automatically */
+		break;
+	case NC_MSG_NOTIFICATION:
+		/* add event notification into the session's list of notification messages */
+		msg_aux = session->queue_event;
+		if (msg_aux == NULL) {
+			msg->next = session->queue_event;
+			session->queue_event = msg;
+		} else {
+			for (; msg_aux->next != NULL; msg_aux = msg_aux->next);
+			msg_aux->next = msg;
+		}
+
+		break;
+	default:
+		ret = NC_MSG_UNKNOWN;
+		break;
+	}
+
+	/* session lock is no more needed */
+	pthread_mutex_unlock(&(session->mut_session));
+
+	return (ret);
+}
+
+NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, nc_notif** notif)
+{
+	struct nc_msg *msg_aux, *msg;
+	NC_MSG_TYPE ret;
+
+	pthread_mutex_lock(&(session->mut_session));
+	if (session->queue_event != NULL) {
+		/* pop the oldest reply from the queue */
+		*notif = (nc_reply*)(session->queue_event);
+		session->queue_event = (*notif)->next;
+		pthread_mutex_unlock(&(session->mut_session));
+		(*notif)->next = NULL;
+		return (NC_MSG_NOTIFICATION);
+	}
+
+read_again:
+	ret = nc_session_recv_msg(session, &msg);
+
+	switch (ret) {
+	case NC_MSG_REPLY: /* regular reply received */
+		/* add reply into the session's list of reply messages */
+		msg_aux = session->queue_msg;
+		if (msg_aux == NULL) {
+			msg->next = session->queue_msg;
+			session->queue_msg = msg;
+		} else {
+			for (; msg_aux->next != NULL; msg_aux = msg_aux->next);
+			msg_aux->next = msg;
+		}
+		/* no break */
+	case NC_MSG_NONE:
+		/* <rpc-reply> with error information was processed
+		 * automatically, but we are waiting for notification
+		 */
+		goto read_again;
+		break;
+	case NC_MSG_NOTIFICATION:
+		*notif = (nc_reply*)msg;
+		break;
+	default:
+		ret = NC_MSG_UNKNOWN;
+		break;
+	}
+
+	/* session lock is no more needed */
+	pthread_mutex_unlock(&(session->mut_session));
+
+	return (ret);
 }
 
 NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
@@ -1220,9 +1343,8 @@ NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
 	nc_reply* reply;
 
 	ret = nc_session_receive (session, (struct nc_msg**) rpc);
-	if (ret != NC_MSG_RPC) {
-		return (NC_MSG_UNKNOWN);
-	} else {
+	switch (ret) {
+	case NC_MSG_RPC:
 		(*rpc)->with_defaults = nc_rpc_parse_withdefaults(*rpc);
 
 		/* check for with-defaults capability */
@@ -1285,9 +1407,16 @@ NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
 				return (0); /* failure */
 			}
 		}
-
-		return (NC_MSG_RPC);
+		break;
+	case NC_MSG_HELLO:
+		/* do nothing, just return the type */
+		break;
+	default:
+		ret = NC_MSG_UNKNOWN;
+		break;
 	}
+
+	return (ret);
 }
 
 const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
@@ -1352,7 +1481,6 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 	}
 
 	msg = nc_msg_dup ((struct nc_msg*) rpc);
-DBG("msgid: %llu", session->msgid);
 	/* set message id */
 	if (xmlStrcmp (msg->doc->children->name, BAD_CAST "rpc") == 0) {
 		/* lock the session due to accessing msgid item */
@@ -1364,7 +1492,6 @@ DBG("msgid: %llu", session->msgid);
 		/* hello message */
 		sprintf (msg_id_str, "hello");
 	}
-DBG("msgid: %llu (%s)", session->msgid, msg_id_str);
 
 	/* set proper namespace according to NETCONF version */
 	xmlNewNs (msg->doc->children, (xmlChar *) (
@@ -1456,27 +1583,88 @@ int nc_msgid_compare (const nc_msgid id1, const nc_msgid id2)
 	}
 }
 
-nc_reply *nc_session_send_recv (struct nc_session* session, nc_rpc *rpc)
+NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_reply** reply)
 {
 	nc_msgid msgid1, msgid2;
-	nc_reply *reply = NULL;
 	NC_MSG_TYPE replytype;
+	struct nc_msg* queue = NULL, *msg, *p;
 
 	msgid1 = nc_session_send_rpc(session, rpc);
 	if (msgid1 == NULL) {
-		return (NULL);
+		return (NC_MSG_UNKNOWN);
 	}
 
-	/* \todo: handling asynchronous messages (Notifications) using message queues */
-	replytype = nc_session_recv_reply(session, &reply);
-	if (replytype == NC_MSG_REPLY) {
-		/* compare message ID */
-		if (nc_msgid_compare(msgid1, msgid2 = nc_reply_get_msgid(reply)) != 0) {
-			WARN("Sent message \'%s\', but received message is \'%s\'.", msgid1, msgid2);
+	pthread_mutex_lock(&(session->mut_session));
+
+	/* first, look into the session's list of previously received messages */
+	if ((queue = session->queue_msg) != NULL) {
+		/* search in the queue for the reply with required message ID */
+		for (msg = queue; msg != NULL; msg = msg->next) {
+			/* test message IDs */
+			if (nc_msgid_compare(msgid1, nc_reply_get_msgid((nc_reply*) msg)) == 0) {
+				break;
+			}
+
+			/* store the predecessor */
+			p = msg;
 		}
-	} else {
-		return (NULL);
+
+		if (msg != NULL) {
+			/* we have found the reply in the queue */
+			(*reply) = (nc_reply*) msg;
+
+			/* detach the reply from session's queue */
+			if (p == NULL) {
+				/* no predecessor - we detach the first item in the queue */
+				session->queue_msg = msg->next;
+			} else {
+				p->next = msg->next;
+			}
+			msg->next = NULL;
+			pthread_mutex_unlock(&(session->mut_session));
+			return (NC_MSG_REPLY);
+		} else {
+			/*
+			 * the queue does not contain required reply, we have to
+			 * read it from the input, but first we have to hide
+			 * session's queue from nc_session_recv_reply()
+			 */
+			session->queue_msg = NULL;
+		}
 	}
 
-	return (reply);
+	while (1) {
+		replytype = nc_session_recv_reply(session, reply);
+		if (replytype == NC_MSG_REPLY) {
+			/* compare message ID */
+			if (nc_msgid_compare(msgid1, msgid2 = nc_reply_get_msgid(*reply)) != 0) {
+				/* reply with different message ID is expected */
+				/* store this reply for the later use of someone else */
+				if (queue == NULL) {
+					queue = (struct nc_msg*) (*reply);
+				} else {
+					for (msg = queue; msg->next != NULL; msg = msg->next);
+					msg->next = (struct nc_msg*) (*reply);
+				}
+			} else {
+				/* we have it! */
+				break;
+			}
+		} else if (replytype == NC_MSG_UNKNOWN) {
+			/* some error occured */
+			break;
+		}
+		/*
+		 * else (e.g. Notification or not expected reply was received)
+		 * read another message in the loop
+		 */
+	}
+
+	if (queue != NULL) {
+		/* reconnect hidden queue back to the session */
+		session->queue_msg = queue;
+	}
+	pthread_mutex_unlock(&(session->mut_session));
+
+	return (replytype);
 }

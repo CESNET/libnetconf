@@ -217,9 +217,9 @@ struct nc_session {
 	/**< @brief thread lock for accessing in */
 	pthread_mutex_t mut_in;
 	/**< @brief queue for received, but not processed, NETCONF messages */
-	struct nc_msg* msg;
+	struct nc_msg* queue_msg;
 	/**< @brief queue for received, but not processed, NETCONF Event Notifications */
-	struct nc_msg* event;
+	struct nc_msg* queue_event;
 };
 
 /**
