@@ -64,7 +64,7 @@ struct nc_cpblts;
  * @ingroup session
  * @brief Type representing NETCONF message-id attribute.
  */
-typedef long long unsigned int nc_msgid;
+typedef const char* nc_msgid;
 
 /**
  * @brief NETCONF session description structure
@@ -89,6 +89,19 @@ typedef enum {
 	NC_SESSION_STATUS_CLOSED = 2, /**< session was closed and could not be used to communication */
 	NC_SESSION_STATUS_DUMMY = 3 /**< session is DUMMY, only holds information, does not provide connection */
 } NC_SESSION_STATUS;
+
+/**
+ * @brief Enumeration of NETCONF message types.
+ * @generic genAPI
+ */
+typedef enum NC_MSG_TYPE {
+	NC_MSG_UNKNOWN, /**< error state */
+	NC_MSG_NONE, /**< no message at input or message processed internally */
+	NC_MSG_HELLO, /**< \<hello\> message */
+	NC_MSG_RPC, /**< \<rpc\> message */
+	NC_MSG_REPLY, /**< \<rpc-reply\> message */
+	NC_MSG_NOTIFICATION = -5 /**< \<notification\> message */
+} NC_MSG_TYPE;
 
 /**
  * @brief Enumeration of \<rpc-reply\> types.

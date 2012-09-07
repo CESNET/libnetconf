@@ -862,20 +862,16 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
  */
 nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg)
 {
-	xmlChar *msgid;
 	nc_msgid ret = 0;
 
 	/* parse and store message-id */
-	msgid = xmlGetProp(msg->doc->children, BAD_CAST "message-id");
-	if (msgid != NULL) {
-		ret = strtoull((char*) msgid, NULL, 10);
-		xmlFree(msgid);
-	} else {
+	ret = (char*) xmlGetProp(msg->doc->children, BAD_CAST "message-id");
+	if (ret == NULL) {
 		if (xmlStrcmp (msg->doc->children->name, BAD_CAST "hello") != 0) {
 			WARN("Missing message-id in %s.", (char*)msg->doc->children->name);
-			ret = 0;
+			ret = NULL;
 		} else {
-			ret = (nc_msgid)(-1);
+			ret = "hello";
 		}
 	}
 
@@ -943,20 +939,22 @@ struct nc_err* nc_msg_parse_error(struct nc_msg* msg)
 	return (err);
 }
 
-int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
+NC_MSG_TYPE nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 {
 	struct nc_msg *retval;
 	nc_reply* reply;
+	const char* id;
 	char *text = NULL, *chunk = NULL;
 	size_t len;
 	unsigned long long int text_size = 0, total_len = 0;
 	size_t chunk_length;
 	struct pollfd fds;
 	int status;
+	NC_MSG_TYPE msgtype;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING)) {
 		ERROR("Invalid session to receive data.");
-		return (EXIT_FAILURE);
+		return (NC_MSG_UNKNOWN);
 	}
 
 	/* use while for possibility of repeating test */
@@ -973,7 +971,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 			/* poll failed - something wrong happend, close this socket and wait for another request */
 			ERROR("Input channel error");
 			nc_session_close(session, "Input stream closed");
-			return (EXIT_FAILURE);
+			return (NC_MSG_UNKNOWN);
 		}
 		/* status > 0 */
 		/* check the status of the socket */
@@ -982,7 +980,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 			/* close client's socket (it's probably already closed by client */
 			ERROR("Input channel closed");
 			nc_session_close(session, "Input stream closed");
-			return (EXIT_FAILURE);
+			return (NC_MSG_UNKNOWN);
 		}
 		break;
 	}
@@ -1075,10 +1073,15 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	free (text);
 
 	/* parse and store message-id */
-	retval->msgid = nc_msg_parse_msgid(retval);
+	if ((id = nc_msg_parse_msgid(retval)) == NULL) {
+		retval->msgid = NULL;
+	} else {
+		retval->msgid = strdup(id);
+	}
 
 	/* parse and store rpc-reply type */
 	if (xmlStrcmp (retval->doc->children->name, BAD_CAST "rpc-reply") == 0) {
+		msgtype = NC_MSG_REPLY;
 		if (xmlStrcmp (retval->doc->children->children->name, BAD_CAST "ok") == 0) {
 			retval->type.reply = NC_REPLY_OK;
 		} else if (xmlStrcmp (retval->doc->children->children->name, BAD_CAST "rpc-error") == 0) {
@@ -1091,6 +1094,7 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 			WARN("Unknown type of received <rpc-reply> detected.");
 		}
 	} else if (xmlStrcmp (retval->doc->children->name, BAD_CAST "rpc") == 0) {
+		msgtype = NC_MSG_RPC;
 		if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get") == 0) ||
 				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get-config") == 0)) {
 			retval->type.rpc = NC_RPC_DATASTORE_READ;
@@ -1109,14 +1113,16 @@ int nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	} else if (xmlStrcmp (retval->doc->children->name, BAD_CAST "hello") == 0) {
 		/* set message type, we have <hello> message */
 		retval->type.reply = NC_REPLY_HELLO;
+		msgtype = NC_MSG_HELLO;
 	} else {
 		WARN("Unknown (unsupported) type of received message detected.");
 		retval->type.rpc = NC_RPC_UNKNOWN;
+		msgtype = NC_MSG_UNKNOWN;
 	}
 
 	/* return the result */
 	*msg = retval;
-	return (EXIT_SUCCESS);
+	return (msgtype);
 
 malformed_msg:
 	if (session->version == NETCONFV11 && session->ssh_session == NULL) {
@@ -1125,7 +1131,7 @@ malformed_msg:
 		if (reply == NULL) {
 			ERROR("Unable to create \'Malformed message\' reply");
 			nc_session_close(session, "Malformed NETCONF message received.");
-			return (EXIT_FAILURE);
+			return (NC_MSG_UNKNOWN);
 		}
 
 		nc_session_send_reply(session, NULL, reply);
@@ -1135,16 +1141,16 @@ malformed_msg:
 	ERROR("Malformed message received, closing the session %s.", session->session_id);
 	nc_session_close(session, "Malformed NETCONF message received.");
 
-	return (EXIT_FAILURE);
+	return (NC_MSG_UNKNOWN);
 }
 
-nc_msgid nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
+NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 {
-	int ret;
+	NC_MSG_TYPE ret;
 
 	ret = nc_session_receive (session, (struct nc_msg**) reply);
-	if (ret != EXIT_SUCCESS) {
-		return (0);
+	if (ret != NC_MSG_REPLY) {
+		return (NC_MSG_UNKNOWN);
 	} else {
 		if (nc_reply_get_type (*reply) == NC_REPLY_ERROR &&
 				callbacks.process_error_reply != NULL) {
@@ -1162,22 +1168,22 @@ nc_msgid nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 			/* free the data */
 			nc_reply_free(*reply);
 			*reply = NULL;
-			return (0);
+			return (NC_MSG_NONE);
 		}
-		return (nc_reply_get_msgid (*reply));
+		return (NC_MSG_REPLY);
 	}
 }
 
-nc_msgid nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
+NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
 {
-	int ret;
+	NC_MSG_TYPE ret;
 	const char* wd;
 	struct nc_err* e = NULL;
 	nc_reply* reply;
 
 	ret = nc_session_receive (session, (struct nc_msg**) rpc);
-	if (ret != EXIT_SUCCESS) {
-		return (0);
+	if (ret != NC_MSG_RPC) {
+		return (NC_MSG_UNKNOWN);
 	} else {
 		(*rpc)->with_defaults = nc_rpc_parse_withdefaults(*rpc);
 
@@ -1242,11 +1248,11 @@ nc_msgid nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
 			}
 		}
 
-		return (nc_rpc_get_msgid (*rpc));
+		return (NC_MSG_RPC);
 	}
 }
 
-nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
+nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 {
 	int ret;
 	char msg_id_str[16];
@@ -1255,7 +1261,7 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING)) {
 		ERROR("Invalid session to send <rpc>.");
-		return (0); /* failure */
+		return (NULL); /* failure */
 	}
 
 	/* check for with-defaults capability */
@@ -1263,31 +1269,31 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 		/* check if the session support this */
 		if ((wd = nc_cpblts_get(session->capabilities, NC_CAP_WITHDEFAULTS_ID)) == NULL) {
 			ERROR("RPC requires with-defaults capability, but session does not support it.");
-			return (0); /* failure */
+			return (NULL); /* failure */
 		}
 		switch (rpc->with_defaults) {
 		case NCDFLT_MODE_ALL:
 			if (strstr(wd, "report-all") == NULL) {
 				ERROR("RPC requires with-defaults capability report-all mode, but session does not support it.");
-				return (0); /* failure */
+				return (NULL); /* failure */
 			}
 			break;
 		case NCDFLT_MODE_ALL_TAGGED:
 			if (strstr(wd, "report-all-tagged") == NULL) {
 				ERROR("RPC requires with-defaults capability report-all-tagged mode, but session does not support it.");
-				return (0); /* failure */
+				return (NULL); /* failure */
 			}
 			break;
 		case NCDFLT_MODE_TRIM:
 			if (strstr(wd, "trim") == NULL) {
 				ERROR("RPC requires with-defaults capability trim mode, but session does not support it.");
-				return (0); /* failure */
+				return (NULL); /* failure */
 			}
 			break;
 		case NCDFLT_MODE_EXPLICIT:
 			if (strstr(wd, "explicit") == NULL) {
 				ERROR("RPC requires with-defaults capability explicit mode, but session does not support it.");
-				return (0); /* failure */
+				return (NULL); /* failure */
 			}
 			break;
 		default: /* NCDFLT_MODE_DISABLED */
@@ -1300,8 +1306,8 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 	msg = nc_msg_dup ((struct nc_msg*) rpc);
 
 	/* set message id */
+	sprintf (msg_id_str, "%llu", session->msgid++);
 	if (xmlStrcmp (msg->doc->children->name, BAD_CAST "rpc") == 0) {
-		sprintf (msg_id_str, "%llu", session->msgid++);
 		xmlSetProp (msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str);
 	}
 
@@ -1316,16 +1322,16 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc)
 
 	if (ret != EXIT_SUCCESS) {
 		session->msgid--;
-		return (0);
+		return (NULL);
 	} else {
-		return (session->msgid);
+		rpc->msgid = strdup(msg_id_str);
+		return (rpc->msgid);
 	}
 }
 
 nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* rpc, const nc_reply *reply)
 {
 	int ret;
-	char msg_id_str[16];
 	struct nc_msg *msg;
 	nc_msgid retval = 0;
 
@@ -1356,10 +1362,9 @@ nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* rpc, c
 
 	if (rpc != NULL) {
 		/* set message id */
-		msg->msgid = retval;
+		msg->msgid = strdup(retval);
 		if (xmlStrcmp(msg->doc->children->name, BAD_CAST "rpc-reply") == 0) {
-			sprintf(msg_id_str, "%llu", msg->msgid);
-			xmlSetProp(msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str);
+			xmlSetProp(msg->doc->children, BAD_CAST "message-id", BAD_CAST msg->msgid);
 		}
 	} else {
 		/* unknown message ID, send reply without it */
@@ -1375,7 +1380,6 @@ nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* rpc, c
 	/* send message */
 	ret = nc_session_send (session, msg);
 
-	retval = msg->msgid;
 	nc_msg_free (msg);
 
 	if (ret != EXIT_SUCCESS) {
@@ -1385,20 +1389,35 @@ nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* rpc, c
 	}
 }
 
+int nc_msgid_compare (const nc_msgid id1, const nc_msgid id2)
+{
+	if (id1 == NULL || id2 == NULL) {
+		return (-1);
+	} else {
+		return (strcmp(id1, id2));
+	}
+}
 
-nc_reply *nc_session_send_recv (struct nc_session* session, const nc_rpc *rpc)
+nc_reply *nc_session_send_recv (struct nc_session* session, nc_rpc *rpc)
 {
 	nc_msgid msgid1, msgid2;
 	nc_reply *reply = NULL;
+	NC_MSG_TYPE replytype;
 
 	msgid1 = nc_session_send_rpc(session, rpc);
-	if (msgid1 == 0) {
+	if (msgid1 == NULL) {
 		return (NULL);
 	}
 
-	if ((msgid2 = nc_session_recv_reply(session, &reply)) != msgid1) {
-		/* \todo: handling asynchronous messages (Notifications) using message queues */
-		WARN("Sent message %llu, but received message is %llu.", msgid1, msgid2);
+	/* \todo: handling asynchronous messages (Notifications) using message queues */
+	replytype = nc_session_recv_reply(session, &reply);
+	if (replytype == NC_MSG_REPLY) {
+		/* compare message ID */
+		if (nc_msgid_compare(msgid1, msgid2 = nc_reply_get_msgid(reply)) != 0) {
+			WARN("Sent message \'%s\', but received message is \'%s\'.", msgid1, msgid2);
+		}
+	} else {
+		return (NULL);
 	}
 
 	return (reply);
