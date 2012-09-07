@@ -183,7 +183,7 @@ struct nc_session {
 	/**< @brief Session ID */
 	char session_id[SID_SIZE];
 	/**< @brief Last message ID */
-	nc_msgid msgid;
+	long long unsigned int msgid;
 	/**< @brief only for clients using libssh2 for communication */
 	int libssh2_socket;
 	/**< @brief Input file descriptor for communication with (reading from) the other side of the NETCONF session */
@@ -302,7 +302,7 @@ struct nc_err {
  */
 struct nc_msg {
 	xmlDocPtr doc;
-	nc_msgid msgid;
+	char* msgid;
 	union {
 		NC_REPLY_TYPE reply;
 		NC_RPC_TYPE rpc;

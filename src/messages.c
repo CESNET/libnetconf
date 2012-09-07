@@ -117,6 +117,7 @@ char* nc_rpc_dump(const nc_rpc *rpc)
 struct nc_msg * nc_msg_build (const char * msg_dump)
 {
 	struct nc_msg * msg;
+	const char* id;
 
 	if ((msg = malloc (sizeof(struct nc_msg))) == NULL) {
 		return NULL;
@@ -127,7 +128,11 @@ struct nc_msg * nc_msg_build (const char * msg_dump)
 		return NULL;
 	}
 
-	msg->msgid = nc_msg_parse_msgid (msg);
+	if ((id = nc_msg_parse_msgid (msg)) != NULL) {
+		msg->msgid = strdup(id);
+	} else {
+		msg->msgid = NULL;
+	}
 	msg->error = NULL;
 	msg->with_defaults = 0;
 	
@@ -250,7 +255,7 @@ nc_reply * nc_reply_build (const char * reply_dump)
 	return reply;
 }
 
-nc_msgid nc_reply_get_msgid(const nc_reply *reply)
+const nc_msgid nc_reply_get_msgid(const nc_reply *reply)
 {
 	if (reply != NULL) {
 		return (reply->msgid);
@@ -259,7 +264,7 @@ nc_msgid nc_reply_get_msgid(const nc_reply *reply)
 	}
 }
 
-nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc)
+const nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc)
 {
 	if (rpc != NULL) {
 		return (rpc->msgid);
@@ -652,6 +657,7 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 	msg->error = NULL;
 	msg->doc = xmlNewDoc(BAD_CAST "1.0");
 	msg->doc->encoding = xmlStrdup(BAD_CAST UTF8);
+	msg->msgid = NULL;
 	msg->with_defaults = NCDFLT_MODE_DISABLED;
 	msg->type.rpc = NC_RPC_HELLO;
 
@@ -678,6 +684,9 @@ void nc_msg_free(struct nc_msg *msg)
 		}
 		if (msg->error != NULL) {
 			nc_err_free(msg->error);
+		}
+		if (msg->msgid != NULL) {
+			free(msg->msgid);
 		}
 		free(msg);
 	}
@@ -785,6 +794,7 @@ struct nc_msg* nc_msg_create(xmlNodePtr content, char* msgtype)
 		return (NULL);
 	}
 	msg->doc = xmlmsg;
+	msg->msgid = NULL;
 	msg->error = NULL;
 	msg->with_defaults = NCDFLT_MODE_DISABLED;
 

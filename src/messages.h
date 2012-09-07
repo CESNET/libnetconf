@@ -85,7 +85,7 @@ nc_reply* nc_reply_build (const char* reply_dump);
  * @param[in] reply rpc-reply message.
  * @return message-id of the given rpc-reply message.
  */
-nc_msgid nc_reply_get_msgid(const nc_reply *reply);
+const nc_msgid nc_reply_get_msgid(const nc_reply *reply);
 
 /**
  * @brief Dump the rpc message into a string.
@@ -113,7 +113,7 @@ nc_rpc* nc_rpc_build (const char* rpc_dump);
  * @param[in] rpc rpc message.
  * @return message-id of the given rpc message.
  */
-nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc);
+const nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc);
 
 /**
  * @ingroup rpc

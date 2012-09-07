@@ -280,7 +280,7 @@ struct nc_cpblts *nc_session_get_cpblts_default();
  * @param[in] rpc \<rpc\> message to send.
  * @return 0 on error,\n message-id of sent message on success.
  */
-nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc);
+const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc);
 
 /**
  * @ingroup reply
@@ -294,7 +294,7 @@ nc_msgid nc_session_send_rpc (struct nc_session* session, const nc_rpc *rpc);
  * @param[in] reply \<repc-reply\> message to send.
  * @return 0 on error,\n message-id of sent message on success.
  */
-nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* rpc, const nc_reply *reply);
+const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* rpc, const nc_reply *reply);
 
 /**
  * @ingroup rpc
@@ -303,9 +303,10 @@ nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* rpc, c
  *
  * @param[in] session NETCONF session to use.
  * @param[out] rpc Received \<rpc\>
- * @return 0 on error,\n message-id of received message on success.
+ * @return Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_RPC
+ * means that *reply points to the received \<rpc-reply\> message.
  */
-nc_msgid nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc);
+NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc);
 
 /**
  * @ingroup reply
@@ -314,9 +315,20 @@ nc_msgid nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc);
  *
  * @param[in] session NETCONF session to use.
  * @param[out] reply Received \<rpc-reply\>
- * @return 0 on error,\n message-id of received message on success.
+ * @return Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_REPLY
+ * means that *reply points to the received \<rpc-reply\> message.
  */
-nc_msgid nc_session_recv_reply (struct nc_session* session, nc_reply** reply);
+NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply);
+
+/**
+ * @ingroup genAPI
+ * @brief Compare two message IDs if they are the same.
+ *
+ * @param[in] id1 First message ID to compare.
+ * @param[in] id2 Second message ID to compare.
+ * @return 0 if both IDs are the same.
+ */
+int nc_msgid_compare (const nc_msgid id1, const nc_msgid id2);
 
 /**
  * @ingroup rpc
@@ -325,6 +337,6 @@ nc_msgid nc_session_recv_reply (struct nc_session* session, nc_reply** reply);
  * @param[in] rpc RPC message to send.
  * @return Received \<rpc-reply\>.
  */
-nc_reply *nc_session_send_recv (struct nc_session* session, const nc_rpc *rpc);
+nc_reply *nc_session_send_recv (struct nc_session* session, nc_rpc *rpc);
 
 #endif /* SESSION_H_ */
