@@ -171,6 +171,8 @@ void store_config (struct nc_cpblts * cpblts)
 	}
 
 	asprintf (&netconf_dir, "%s/%s", user_home, NCC_DIR);
+	free (user_home); user_home = NULL;
+
 	ret = access (netconf_dir, R_OK|W_OK|X_OK);
 	if (ret == -1) {
 		if (errno == ENOENT) {
@@ -203,8 +205,11 @@ void store_config (struct nc_cpblts * cpblts)
 	if (write_history (history_file)) {
 		ERROR ("save_config", "Failed to save history.");
 	}
+	free(history_file);
 
 	asprintf (&config_file, "%s/config.xml", netconf_dir);
+	free (netconf_dir); netconf_dir = NULL;
+
 	if (access (config_file, R_OK|W_OK) == -1 ||
 			(config_doc = xmlReadFile(config_file, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN|XML_PARSE_NOERROR)) == NULL) {
 		config_doc = xmlNewDoc (BAD_CAST "1.0");
