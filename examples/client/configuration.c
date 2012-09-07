@@ -82,6 +82,8 @@ void load_config (struct nc_cpblts **cpblts)
 			} else {
 				close (config_fd);
 			}
+		} else {
+			ERROR ("load_config", "Configuration file can not accessed: %s", strerror(errno));
 		}
 	} else {
 		/* file exist and is accessible */
@@ -203,8 +205,12 @@ void store_config (struct nc_cpblts * cpblts)
 	}
 
 	asprintf (&config_file, "%s/config.xml", netconf_dir);
-	if ((config_doc = xmlReadFile(config_file, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN)) != NULL) {
-
+	if (access (config_file, R_OK|W_OK) == -1 ||
+			(config_doc = xmlReadFile(config_file, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN|XML_PARSE_NOERROR)) == NULL) {
+		config_doc = xmlNewDoc (BAD_CAST "1.0");
+		config_doc->children = xmlNewDocNode(config_doc, NULL, BAD_CAST "netconf-client", NULL);
+	}
+	if (config_doc != NULL) {
 		if (config_doc->children != NULL && xmlStrEqual(config_doc->children->name, BAD_CAST "netconf-client")) {
 			config_caps = config_doc->children->children;
 			while (config_caps != NULL && !xmlStrEqual(config_caps->name, BAD_CAST "capabilities")) {
@@ -220,11 +226,14 @@ void store_config (struct nc_cpblts * cpblts)
 				xmlNewChild(config_caps, NULL, BAD_CAST "capability", BAD_CAST cap);
 			}
 		}
-		if ((config_f = fopen(config_file, "w")) != NULL) {
-			xmlDocFormatDump(config_f, config_doc, 1);
+		if ((config_f = fopen(config_file, "w")) == NULL || xmlDocFormatDump(config_f, config_doc, 1) < 0) {
+			ERROR ("store_config", "Can not write configuration to file %s", config_file);
+		} else {
 			fclose(config_f);
 		}
 		xmlFreeDoc (config_doc);
+	} else {
+		ERROR ("store_config", "Can not write configuration to file %s", config_file);
 	}
 
 	free (config_file);
