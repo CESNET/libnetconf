@@ -1,7 +1,7 @@
 /**
- * \file libnetconf.h
+ * \file utils.h
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief libnetconf's main header.
+ * \brief libnetconf's miscellaneous functions declarations.
  *
  * Copyright (C) 2012 CESNET, z.s.p.o.
  *
@@ -37,15 +37,21 @@
  *
  */
 
-#ifndef LIBNETCONF_H_
-#define LIBNETCONF_H_
+#ifndef UTILS_H_
+#define UTILS_H_
 
-#include "libnetconf/netconf.h"
-#include "libnetconf/callbacks.h"
-#include "libnetconf/session.h"
-#include "libnetconf/messages.h"
-#include "libnetconf/with_defaults.h"
-#include "libnetconf/utils.h"
+#include <time.h>
 
-#endif /* LIBNETCONF_H_ */
+/**
+ * @ingroup genAPI
+ * @brief Transform given time structure into the RFC 3339 format accepted by
+ * NETCONF functions.
+ *
+ * @param[in] time Time structure returned e.g. by localtime().
+ * @return Printed string in a format compliant to RFC 3339.
+ */
+char* nc_tm2datetime(const struct tm *time);
 
+time_t nc_datetime2tm(const char* datetime);
+
+#endif /* UTILS_H_ */

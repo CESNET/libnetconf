@@ -159,5 +159,6 @@
 #include "error.h"
 #include "datastore.h"
 #include "with_defaults.h"
+#include "utils.h"
 
 #endif /* LIBNETCONF_H_ */
