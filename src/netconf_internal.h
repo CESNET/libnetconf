@@ -40,6 +40,7 @@
 #ifndef NETCONF_INTERNAL_H_
 #define NETCONF_INTERNAL_H_
 
+#include <time.h>
 #include <pthread.h>
 
 #include <libssh2.h>
@@ -358,5 +359,30 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCDFLT_MODE m
  * @return 0 on success, non-zero else.
  */
 int ncdflt_default_clear(xmlDocPtr config, const xmlDocPtr model);
+
+/**
+ * @ingroup internalAPI
+ * @brief Transform given time_t (seconds since epoch) into the RFC 3339 format
+ * accepted by NETCONF functions.
+ *
+ * This is a reverse function to nc_datetime2time().
+ *
+ * @param[in] time time_t type value returned e.g. by time().
+ * @return Printed string in a format compliant to RFC 3339. It is up to the
+ * caller to free the returned string.
+ */
+char* nc_time2datetime(const time_t *time);
+
+/**
+ * @ingroup internalAPI
+ * @brief Transform given string in RFC 3339 compliant format to the time_t
+ * (seconds since epoch) accepted by the most Linux functions.
+ *
+ * This is a reverse function to nc_time2datetime().
+ *
+ * @param[in] time Time structure returned e.g. by localtime().
+ * @return time_t value of given string.
+ */
+time_t nc_datetime2time(const char* datetime);
 
 #endif /* NETCONF_INTERNAL_H_ */

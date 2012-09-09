@@ -37,6 +37,10 @@
  *
  */
 
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+#include <time.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
@@ -75,4 +79,105 @@ char* nc_clrwspace (const char* in)
 		retval[j] = retval[i];
 	}
 	return (retval);
+}
+
+time_t nc_datetime2time(const char* datetime)
+{
+	struct tm time;
+	char* dt;
+	int i;
+	long int shift, shift_m;
+	time_t retval;
+
+	if (datetime == NULL) {
+		return (-1);
+	} else {
+		dt = strdup(datetime);
+	}
+
+	if (strlen(dt) < 20 || dt[4] != '-' || dt[7] != '-' || dt[13] != ':' || dt[16] != ':') {
+		ERROR("Wrong date time format not compliant to RFC 3339.");
+		return (-1);
+	}
+
+	memset(&time, 0, sizeof(struct tm));
+	time.tm_year = atoi(&dt[0]) - 1900;
+	time.tm_mon = atoi(&dt[5]) - 1;
+	time.tm_mday = atoi(&dt[8]);
+	time.tm_hour = atoi(&dt[11]);
+	time.tm_min = atoi(&dt[14]);
+	time.tm_sec = atoi(&dt[17]);
+
+	retval = timegm(&time);
+
+	/* apply offset */
+	i = 19;
+	if (dt[i] == '.') { /* we have fractions to skip */
+		for (i++; isdigit(dt[i]); i++);
+	}
+	if (dt[i] == 'Z' || dt[i] == 'z') {
+		/* zero shift */
+		shift = 0;
+	} else if (dt[i+3] != ':') {
+		/* wrong format */
+		ERROR("Wrong date time shift format not compliant to RFC 3339.");
+		return (-1);
+	} else {
+		shift = strtol(&dt[i], NULL, 10);
+		shift = shift * 60 * 60; /* convert from hours to seconds */
+		shift_m = strtol(&dt[i+4], NULL, 10) * 60; /* includes conversion from minutes to seconds */
+		/* correct sign */
+		if (shift < 0) {
+			shift_m *= -1;
+		}
+		/* connect hours and minutes of the shift */
+		shift = shift + shift_m;
+	}
+	/* we have to shift to the opposite way to correct the time */
+	retval -= shift;
+
+	return (retval);
+}
+
+char* nc_time2datetime(const time_t *time)
+{
+	char* date;
+	char* zoneshift = NULL;
+        int zonediff, zonediff_h, zonediff_m;
+        struct tm tm;
+
+	if (time == NULL ) {
+		return (NULL);
+	}
+	if (gmtime_r(time, &tm) == NULL) {
+		return (NULL);
+	}
+
+	if (tm.tm_isdst < 0) {
+		zoneshift = NULL;
+	} else {
+		if (tm.tm_gmtoff == 0) {
+			/* time is Zulu (UTC) */
+			asprintf(&zoneshift, "Z");
+		} else {
+			zonediff = tm.tm_gmtoff;
+			zonediff_h = zonediff / 60 / 60;
+			zonediff_m = zonediff / 60 % 60;
+			asprintf(&zoneshift, "%s%02d:%02d",
+			                (zonediff < 0) ? "-" : "+",
+			                zonediff_h,
+			                zonediff_m);
+		}
+	}
+	asprintf(&date, "%04d-%02d-%02dT%02d:%02d:%02d%s",
+			tm.tm_year + 1900,
+			tm.tm_mon + 1,
+			tm.tm_mday,
+			tm.tm_hour,
+			tm.tm_min,
+			tm.tm_sec,
+			(zoneshift == NULL)?"":zoneshift);
+	free (zoneshift);
+
+	return (date);
 }

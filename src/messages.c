@@ -38,10 +38,12 @@
  */
 
 #define _GNU_SOURCE
+#define _BSD_SOURCE
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
 
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
@@ -1549,10 +1551,11 @@ nc_rpc *nc_rpc_killsession(const char *kill_sid)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, const char* start, const char* stop)
+nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, const time_t* start, const time_t* stop)
 {
 	nc_rpc *rpc = NULL;
 	xmlNodePtr content;
+	char* time;
 
 	/* prepare notification namespace */
 
@@ -1580,20 +1583,30 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 
 	/* add <startTime> specification if set */
 	if (start != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "startTime", BAD_CAST start) == NULL) {
+		time = nc_time2datetime(start);
+		if (time == NULL || xmlNewChild(content, NULL, BAD_CAST "startTime", BAD_CAST time) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode(content);
+			if (time != NULL) {
+				free (time);
+			}
 			return (NULL);
 		}
+		free(time);
 	}
 
 	/* add <stopTime> specification if set */
 	if (stop != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "stopTime", BAD_CAST stop) == NULL) {
+		time = nc_time2datetime(stop);
+		if (time == NULL || xmlNewChild(content, NULL, BAD_CAST "stopTime", BAD_CAST time) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode(content);
+			if (time != NULL) {
+				free (time);
+			}
 			return (NULL);
 		}
+		free(time);
 	}
 
 	/* finnish the message building */

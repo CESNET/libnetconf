@@ -76,7 +76,6 @@ SRCS =  src/callbacks.c \
 	src/session.c \
 	src/ssh.c \
 	src/with_defaults.c \
-	src/utils.c \
 	src/datastore.c \
 	src/datastore/edit_config.c \
 	src/datastore/empty/datastore_empty.c \
@@ -91,7 +90,6 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/messages.h \
 	src/ssh.h \
 	src/with_defaults.h \
-	src/utils.h \
 	src/datastore.h
 		
 HDRS_PUBL = $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR)
@@ -108,7 +106,6 @@ HDRS_PRIV = src/config.h.in \
 	src/session.h \
 	src/ssh.h \
 	src/with_defaults.h \
-	src/utils.h \
 	src/datastore.h \
 	src/datastore/datastore_internal.h \
 	src/datastore/edit_config.h \

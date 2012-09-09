@@ -45,7 +45,6 @@
 #include "libnetconf/session.h"
 #include "libnetconf/messages.h"
 #include "libnetconf/with_defaults.h"
-#include "libnetconf/utils.h"
 
 #endif /* LIBNETCONF_H_ */
 

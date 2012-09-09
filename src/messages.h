@@ -40,6 +40,7 @@
 #ifndef MESSAGES_H_
 #define MESSAGES_H_
 
+#include <time.h>
 #include "netconf.h"
 #include "error.h"
 
@@ -374,7 +375,7 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE target);
  * according to RFC 3339.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, const char* start, const char* stop);
+nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, const time_t* start, const time_t* stop);
 
 /**
  * @ingroup rpc
