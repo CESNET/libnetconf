@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <time.h>
 
 #include <libxml/parser.h>
 
@@ -1525,7 +1526,11 @@ generic_help:
 
 void cmd_subscribe_help()
 {
-	fprintf (stdout, "subscribe [--help] [--filter] [<stream>]\n");
+	fprintf (stdout, "subscribe [--help] [--filter] [--begin <time>] [--end <time>] [<stream>]\n");
+	fprintf (stdout, "\t<time> has following format:");
+	fprintf (stdout, "\t\t+<num>  - current time plus given number of seconds.");
+	fprintf (stdout, "\t\t<num>   - absolute time as number of seconds since 1970-01-01.");
+	fprintf (stdout, "\t\t-<num>  - current time minus given number of seconds.");
 }
 
 int cmd_subscribe(char *arg)
@@ -1533,6 +1538,7 @@ int cmd_subscribe(char *arg)
 	int c;
 	struct nc_filter *filter = NULL;
 	char *stream;
+	time_t t, start = -1, stop = -1;
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
 	NC_MSG_TYPE type;
@@ -1540,6 +1546,8 @@ int cmd_subscribe(char *arg)
 	struct option long_options[] ={
 			{"filter", 2, 0, 'f'},
 			{"help", 0, 0, 'h'},
+			{"begin", 1, 0, 'b'},
+			{"end", 1, 0, 'e'},
 			{0, 0, 0, 0}
 	};
 	int option_index = 0;
@@ -1548,7 +1556,7 @@ int cmd_subscribe(char *arg)
 	optind = 0;
 
 	if (session == NULL) {
-		ERROR("get", "NETCONF session not established, use \'connect\' command.");
+		ERROR("subscribe", "NETCONF session not established, use \'connect\' command.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1557,6 +1565,24 @@ int cmd_subscribe(char *arg)
 
 	while ((c = getopt_long (cmd.count, cmd.list, "f:h", long_options, &option_index)) != -1) {
 		switch (c) {
+		case 'b':
+		case 'e':
+			if (optarg[0] == '-' || optarg[0] == '+') {
+				if ((t = time(NULL)) == -1) {
+					ERROR("subscribe", "Getting current time failed (%s)", strerror(errno));
+					return (EXIT_FAILURE);
+				}
+				t = t + strtol(optarg, NULL, 10);
+			} else {
+				t = strtol(optarg, NULL, 10);
+			}
+
+			if (c == 'b') {
+				start = t;
+			} else { /* c == 'e' */
+				stop = t;
+			}
+			break;
 		case 'f':
 			filter = set_filter("create-subscription", optarg);
 			if (filter == NULL) {
@@ -1577,6 +1603,12 @@ int cmd_subscribe(char *arg)
 		}
 	}
 
+	/* check times */
+	if (start != -1 && stop != -1 && start > stop) {
+		ERROR("subscribe", "Subscription start time must be lower than end time.");
+		return (EXIT_FAILURE);
+	}
+
 	if ((optind + 1) < cmd.count) {
 		ERROR("create-subscription", "invalid parameters, see \'get --help\'.");
 		clear_arglist(&cmd);
@@ -1590,7 +1622,7 @@ int cmd_subscribe(char *arg)
 
 
 	/* create requests */
-	rpc = nc_rpc_subscribe(stream, filter, NULL, NULL);
+	rpc = nc_rpc_subscribe(stream, filter, (start == -1)?NULL:&start, (stop == -1)?NULL:&stop);
 	nc_filter_free(filter);
 	clear_arglist(&cmd);
 	if (rpc == NULL) {
