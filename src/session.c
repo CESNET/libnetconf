@@ -1494,8 +1494,7 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 	}
 
 	/* set proper namespace according to NETCONF version */
-	xmlNewNs (msg->doc->children, (xmlChar *) (
-	        (session->version == NETCONFV10) ? NC_NS_BASE10 : NC_NS_BASE11), NULL);
+	xmlNewNs (msg->doc->children, BAD_CAST NC_NS_BASE10, NULL);
 
 	/* send message */
 	ret = nc_session_send (session, msg);
@@ -1559,8 +1558,7 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 	}
 
 	/* set proper namespace according to NETCONF version */
-	xmlNewNs (msg->doc->children, (xmlChar *) (
-	        (session->version == NETCONFV10) ? NC_NS_BASE10 : NC_NS_BASE11), NULL);
+	xmlNewNs (msg->doc->children, BAD_CAST NC_NS_BASE10, NULL);
 
 	/* send message */
 	ret = nc_session_send (session, msg);

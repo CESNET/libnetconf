@@ -77,7 +77,7 @@ int nc_nscmp(xmlNodePtr reference, xmlNodePtr node)
 
         if (reference->ns != NULL) {
                 /* if filter has got specified no namespace now the NETCONF base namespace must be skipped */
-                if (!strcmp((char *) reference->ns->href, NC_NS_BASE10) || !strcmp((char *) reference->ns->href, NC_NS_BASE11))
+                if (!strcmp((char *) reference->ns->href, NC_NS_BASE10))
                         return 0;
 
                 in_ns = 0;
