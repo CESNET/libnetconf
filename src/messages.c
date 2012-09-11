@@ -395,10 +395,9 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 
 char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
 {
-	xmlNodePtr rpc_root, op, source, config;
-	xmlDocPtr config_doc;
+	xmlNodePtr rpc_root, op, source, config, aux_node;
+	xmlBufferPtr resultbuffer;
 	char * retval = NULL;
-	int len;
 
 	rpc_root = xmlDocGetRootElement (rpc->doc);
 	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
@@ -424,21 +423,28 @@ char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
 	}
 
 	if (config != NULL) {
-		config_doc = xmlNewDoc (BAD_CAST "1.0");
-		config_doc->children = xmlDocCopyNode (config->children, config_doc, 1);
-		xmlDocSetRootElement (config_doc, config_doc->children);
-		xmlDocDumpFormatMemory (config_doc, (xmlChar**)&retval, &len, 1);
-		xmlFreeDoc (config_doc);
+		/* dump the result */
+		resultbuffer = xmlBufferCreate();
+		if (resultbuffer == NULL) {
+			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+			return NULL;
+		}
+		for (aux_node = config->children; aux_node != NULL;
+		                aux_node = aux_node->next) {
+			xmlNodeDump(resultbuffer, rpc->doc, aux_node, 2, 1);
+		}
+		retval = strdup((char *) xmlBufferContent(resultbuffer));
+		xmlBufferFree(resultbuffer);
 	}
+
 	return retval;
 }
 
 char * nc_rpc_get_editconfig (const nc_rpc *rpc)
 {
-	xmlNodePtr rpc_root, op, config;
-	xmlDocPtr config_doc;
+	xmlNodePtr rpc_root, op, config, aux_node;
+	xmlBufferPtr resultbuffer;
 	char * retval = NULL;
-	int len;
 
 	rpc_root = xmlDocGetRootElement (rpc->doc);
 	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
@@ -455,12 +461,20 @@ char * nc_rpc_get_editconfig (const nc_rpc *rpc)
 	}
 
 	if (config != NULL) {
-		config_doc = xmlNewDoc (BAD_CAST "1.0");
-		config_doc->children = xmlDocCopyNode (config->children, config_doc, 1);
-		xmlDocSetRootElement (config_doc, config_doc->children);
-		xmlDocDumpFormatMemory (config_doc, (xmlChar**)&retval, &len, 1);
-		xmlFreeDoc (config_doc);
+		/* dump the result */
+		resultbuffer = xmlBufferCreate();
+		if (resultbuffer == NULL) {
+			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+			return NULL;
+		}
+		for (aux_node = config->children; aux_node != NULL;
+		                aux_node = aux_node->next) {
+			xmlNodeDump(resultbuffer, rpc->doc, aux_node, 2, 1);
+		}
+		retval = strdup((char *) xmlBufferContent(resultbuffer));
+		xmlBufferFree(resultbuffer);
 	}
+
 	return retval;
 }
 
@@ -680,12 +694,18 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 
 void nc_msg_free(struct nc_msg *msg)
 {
+	struct nc_err* e, *efree;
+
 	if (msg != NULL) {
 		if (msg->doc != NULL) {
 			xmlFreeDoc(msg->doc);
 		}
-		if (msg->error != NULL) {
-			nc_err_free(msg->error);
+		if ((e = msg->error) != NULL) {
+			while(e != NULL) {
+				efree = e;
+				e = e->next;
+				nc_err_free(efree);
+			}
 		}
 		if (msg->msgid != NULL) {
 			free(msg->msgid);
@@ -875,15 +895,9 @@ nc_reply *nc_reply_data(const char* data)
 	return (reply);
 }
 
-nc_reply *nc_reply_error(struct nc_err* error)
+static xmlNodePtr new_reply_error_content(struct nc_err* error)
 {
-	nc_reply *reply;
 	xmlNodePtr content, einfo = NULL;
-
-	if (error == NULL) {
-		ERROR("Empty error structure to create rpc-error reply.");
-		return (NULL);
-	}
 
 	if ((content = xmlNewNode(NULL, BAD_CAST "rpc-error")) == NULL) {
 		ERROR("xmlNewNode failed (%s:%d).", __FILE__, __LINE__);
@@ -980,12 +994,62 @@ nc_reply *nc_reply_error(struct nc_err* error)
 		}
 	}
 
-	reply = nc_reply_create(content);
+	return(content);
+}
+
+nc_reply *nc_reply_error(struct nc_err* error)
+{
+	nc_reply *reply;
+	xmlNodePtr content;
+
+	if (error == NULL) {
+		ERROR("Empty error structure to create rpc-error reply.");
+		return (NULL);
+	}
+
+	if ((content = new_reply_error_content(error)) == NULL) {
+		return (NULL);
+	}
+	if ((reply = nc_reply_create(content)) == NULL) {
+		return (NULL);
+	}
 	reply->error = error;
 	reply->type.reply = NC_REPLY_ERROR;
 	xmlFreeNode(content);
 
 	return (reply);
+}
+
+int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
+{
+	xmlNodePtr content;
+
+	if (error == NULL || reply == NULL || reply->type.reply != NC_REPLY_ERROR) {
+		return (EXIT_FAILURE);
+	}
+	if (reply->doc == NULL || reply->doc->children == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	/* prepare new <rpc-error> part */
+	if ((content = new_reply_error_content(error)) == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	/* add new description into the reply */
+	if (xmlAddChild(reply->doc->children, xmlCopyNode(content, 1)) == NULL) {
+		ERROR("xmlAddChild failed (%s:%d).", __FILE__, __LINE__);
+		xmlFreeNode(content);
+		return (EXIT_FAILURE);
+	}
+	/* add error structure into the reply's list */
+	error->next = reply->error;
+	reply->error = error;
+
+	/* cleanup */
+	xmlFreeNode(content);
+
+	return (EXIT_SUCCESS);
 }
 
 nc_rpc *nc_rpc_closesession()
@@ -1266,9 +1330,10 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 {
 	nc_rpc *rpc;
 	xmlDocPtr doc_data;
-	xmlNodePtr content, node_target, node_source, config;
+	xmlNodePtr content, node_target, node_source;
 	NC_DATASTORE params[2] = {source, target};
 	char *datastores[2]; /* 0 - source, 1 - target */
+	char *config;
 	int i;
 
 	if (target == source) {
@@ -1323,19 +1388,17 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 	if (datastores[0] == NULL) {
 		/* source configuration is given as data parameter */
 
-		/* prepare covering element in rpc request */
-		if ((config = xmlNewChild(node_source, NULL, BAD_CAST "config", NULL)) == NULL) {
-			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			return (NULL);
-		}
 
 		/* if data empty string, create \<copy-config\> with empty \<config\> */
 		/* only if data is not empty string, fill \<config\> */
 		/* RFC 6241 defines \<config\> as anyxml and thus it can be empty */
 		if (strcmp(data, "") != 0) {
+			/* add covering <config> element to allow to specify multiple root elements */
+			asprintf(&config, "<config>%s</config>", data);
+
 			/* prepare XML structure from given data */
-			doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			doc_data = xmlReadMemory(config, strlen(config), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(config);
 			if (doc_data == NULL) {
 				ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
 				xmlFreeNode(content);
@@ -1343,7 +1406,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 			}
 
 			/* connect given configuration data with the rpc request */
-			if (xmlAddChild(config, xmlCopyNode(doc_data->children, 1)) == NULL) {
+			if (xmlAddChild(node_source, xmlCopyNode(doc_data->children, 1)) == NULL) {
 				ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				xmlFreeDoc(doc_data);
@@ -1352,6 +1415,13 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 
 			/* free no more needed structure */
 			xmlFreeDoc(doc_data);
+		} else {
+			/* create empty config element in rpc request */
+			if (xmlNewChild(node_source, NULL, BAD_CAST "config", NULL) == NULL) {
+				ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				return (NULL);
+			}
 		}
 	} else {
 		/* source is one of the standard datastores */
@@ -1386,8 +1456,8 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
 {
 	nc_rpc *rpc;
 	xmlDocPtr doc_data;
-	xmlNodePtr content, node_target, node_defop, node_erropt, node_config;
-	char* datastore, *defop = NULL, *erropt = NULL;
+	xmlNodePtr content, node_target, node_defop, node_erropt;
+	char* datastore, *defop = NULL, *erropt = NULL, *config;
 
 	if (data == NULL || strlen(data) == 0) {
 		ERROR("Invalid configuration data for <edit-config>");
@@ -1489,15 +1559,12 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
 	}
 
 	/* set <config> element */
-	/* prepare covering element in rpc request */
-	if ((node_config = xmlNewChild(content, NULL, BAD_CAST "config", NULL)) == NULL) {
-		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-		xmlFreeNode(content);
-		return (NULL);
-	}
+	/* add covering <config> element around the data to allow to specify multiple root elements */
+	asprintf(&config, "<config>%s</config>", data);
 
 	/* prepare XML structure from given data */
-	doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	doc_data = xmlReadMemory(config, strlen(config), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	free(config);
 	if (doc_data == NULL) {
 		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
@@ -1505,12 +1572,14 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
 	}
 
 	/* connect given configuration data with the rpc request */
-	if (xmlAddChild(node_config, xmlCopyNode(doc_data->children, 1)) == NULL) {
+	if (xmlAddChild(content, xmlCopyNode(doc_data->children, 1)) == NULL) {
 		ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
 		xmlFreeDoc(doc_data);
 		return (NULL);
 	}
+
+	/* free no more needed structure */
 	xmlFreeDoc(doc_data);
 
 	rpc = nc_rpc_create(content);
