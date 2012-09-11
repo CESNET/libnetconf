@@ -831,49 +831,6 @@ int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr ori
 }
 
 /**
- * \brief Get appropriate root node from edit-config's \<config\> element according to the specified data model
- *
- * \param[in] roots First of the root elements in edit-config's \<config\>
- *                  (first children of this element).
- * \param[in] model XML form (YIN) of the configuration data model.
- *
- * \return Root element matching specified configuration data model.
- */
-xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
-{
-	xmlNodePtr retval, aux;
-	xmlChar *root_name;
-
-	if (xmlStrcmp(model->children->name, BAD_CAST "module") != 0) {
-		return NULL;
-	}
-
-	aux = model->children->children;
-	while(aux != NULL) {
-		if (xmlStrcmp(aux->name, BAD_CAST "container") == 0) {
-			break;
-		} else {
-			aux = aux->next;
-		}
-	}
-	if (aux == NULL) {
-		return NULL;
-	}
-
-	root_name = xmlGetNsProp(aux, BAD_CAST "name", BAD_CAST NC_NS_YIN);
-	retval = roots;
-	while (retval != NULL) {
-		if (xmlStrcmp(retval->name, root_name) == 0) {
-			break;
-		}
-
-		retval = retval->next;
-	}
-
-	return retval;
-}
-
-/**
  * \brief Perform edit-config's "delete" operation on the selected node.
  *
  * \param[in] node XML node from the configuration data to delete.
@@ -1320,7 +1277,8 @@ int compact_edit_operations (xmlDocPtr edit_doc)
  * \brief Perform edit-config changes according to given parameters
  *
  * \param[in] repo XML document to change (target NETCONF repository).
- * \param[in] edit edit-config's \<config\> element as XML document defining changes to perform.
+ * \param[in] edit content of the edit-config's \<config\> element as XML
+ * document defining changes to perform.
  * \param[in] model XML form (YIN) of the configuration data model appropriate to the given repo.
  * \param[in] defop Default edit-config's operation for this edit-config call.
  * \param[in] errop NETCONF edit-config's error option defining reactions to an error.

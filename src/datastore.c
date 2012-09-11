@@ -44,6 +44,7 @@
 #include <string.h>
 #include <limits.h>
 #include <fcntl.h>
+#include <assert.h>
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
@@ -560,6 +561,63 @@ int ncxml_filter (xmlDocPtr data, const struct nc_filter * filter)
 	return ret;
 }
 
+/**
+ * \brief Get appropriate root node from edit-config's \<config\> element according to the specified data model
+ *
+ * \param[in] roots First of the root elements in edit-config's \<config\>
+ *                  (first children of this element).
+ * \param[in] model XML form (YIN) of the configuration data model.
+ *
+ * \return Root element matching specified configuration data model.
+ */
+xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
+{
+	xmlNodePtr retval, aux;
+	xmlChar *root_name = NULL, *ns = NULL;
+
+	assert(roots != NULL);
+	assert(model != NULL);
+
+
+	if (model->children == NULL || xmlStrcmp(model->children->name, BAD_CAST "module") != 0) {
+		return NULL;
+	}
+
+	aux = model->children->children;
+	while(aux != NULL) {
+		if (root_name == NULL && xmlStrcmp(aux->name, BAD_CAST "container") == 0) {
+			//root_name = xmlGetNsProp(aux, BAD_CAST "name", BAD_CAST NC_NS_YIN);
+			root_name = xmlGetProp(aux, BAD_CAST "name");
+			if (ns != NULL) {
+				break;
+			}
+		} else if (ns == NULL && xmlStrcmp(aux->name, BAD_CAST "namespace") == 0) {
+			//ns = xmlGetNsProp(aux, BAD_CAST "uri", BAD_CAST NC_NS_YIN);
+			ns = xmlGetProp(aux, BAD_CAST "uri");
+			if (root_name != NULL) {
+				break;
+			}
+		}
+		aux = aux->next;
+	}
+	if (root_name == NULL || ns == NULL) {
+		return NULL;
+	}
+
+	retval = roots;
+	while (retval != NULL) {
+		if (xmlStrcmp(retval->name, root_name) == 0 && xmlStrcmp(retval->ns->href, ns) == 0) {
+			break;
+		}
+
+		retval = retval->next;
+	}
+	xmlFree(ns);
+	xmlFree(root_name);
+
+	return retval;
+}
+
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
@@ -572,6 +630,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	nc_reply* reply;
 	xmlBufferPtr resultbuffer;
 	xmlNodePtr aux_node;
+	NC_OP op;
 
 	if (rpc->type.rpc != NC_RPC_DATASTORE_READ && rpc->type.rpc != NC_RPC_DATASTORE_WRITE) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
@@ -582,7 +641,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 	}
 
-	switch(nc_rpc_get_op(rpc)) {
+	switch(op = nc_rpc_get_op(rpc)) {
 	case NC_OP_LOCK:
 		ret = ds->func.lock(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
@@ -690,56 +749,56 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		xmlFreeDoc(doc_merged);
 
 		break;
+	case NC_OP_EDITCONFIG:
 	case NC_OP_COPYCONFIG:
+		/*
+		 * config can contain multiple elements on the root level, so
+		 * cover it with the <config> element to allow creation of xml
+		 * document
+		 */
 		config = nc_rpc_get_config(rpc);
+		asprintf(&data, "<config>%s</config>", config);
+		free(config);
+		doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		free(data); data = NULL;
 
-		if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) != 0) {
-			/* if report-all-tagged mode is supported, 'default'
-			 * attribute with 'true' or '1' value can appear and we
-			 * have to check that the element's value is equal to
-			 * default value. If does, the element is removed and
-			 * it is supposed to be default, otherwise the
-			 * invalid-value error reply must be returned.
-			 */
-			doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-			free(config);
-
-			if (ncdflt_default_clear(doc1, ds->model) != EXIT_SUCCESS) {
-				e = nc_err_new(NC_ERR_INVALID_VALUE);
-				nc_err_set(e, NC_ERR_PARAM_MSG, "with-defaults capability failure");
-				break;
+		if (doc1 == NULL || doc1->children == NULL) {
+			if (doc1 != NULL) {
+				xmlFreeDoc(doc1);
 			}
+			return (NULL);
+		}
 
-			/* dump the result */
+		/*
+		 * select correct config node for the selected datastore,
+		 * it must match the model's namespace and root element name
+		 */
+		aux_node = get_model_root(doc1->children->children, ds->model);
+		if (aux_node != NULL) {
 			resultbuffer = xmlBufferCreate();
 			if (resultbuffer == NULL) {
 				ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
 				e = nc_err_new(NC_ERR_OP_FAILED);
 				break;
 			}
-			for (aux_node = doc1->children; aux_node != NULL; aux_node = aux_node->next) {
-				xmlNodeDump(resultbuffer, doc1, aux_node, 2, 1);
+			xmlNodeDump(resultbuffer, doc1, aux_node, 2, 1);
+			if ((config = strdup((char*) xmlBufferContent(resultbuffer))) == NULL) {
+				xmlBufferFree(resultbuffer);
+				xmlFreeDoc(doc1);
+				return (NULL);
 			}
-			config = strdup((char *) xmlBufferContent(resultbuffer));
+			/*
+			 * now we have config as a valid xml tree with the
+			 * single root
+			 */
 			xmlBufferFree(resultbuffer);
 			xmlFreeDoc(doc1);
+		} else {
+			xmlFreeDoc(doc1);
+			return (NULL);
 		}
 
-		ret = ds->func.copyconfig(ds, session, nc_rpc_get_target(rpc), nc_rpc_get_source(rpc), config, &e);
-		free (config);
-		break;
-	case NC_OP_DELETECONFIG:
-		if (nc_rpc_get_target (rpc) == NC_DATASTORE_RUNNING) {
-			/* can not delete running */
-			e = nc_err_new (NC_ERR_OP_FAILED);
-			nc_err_set (e, NC_ERR_PARAM_MSG, "Can not delete running datastore.");
-			break;
-		}
-		ret = ds->func.deleteconfig(ds, session, nc_rpc_get_target(rpc), &e);
-		break;
-	case NC_OP_EDITCONFIG:
-		config = nc_rpc_get_config(rpc);
-
+		/* do some work in case of used with-defaults capability */
 		if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) != 0) {
 			/* if report-all-tagged mode is supported, 'default'
 			 * attribute with 'true' or '1' value can appear and we
@@ -760,8 +819,24 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			xmlFreeDoc(doc1);
 		}
 
-		ret = ds->func.editconfig(ds, session, nc_rpc_get_target(rpc), config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
+		/* perform the operation */
+		if (op == NC_OP_EDITCONFIG) {
+			ret = ds->func.editconfig(ds, session, nc_rpc_get_target(rpc), config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
+		} else if (op == NC_OP_COPYCONFIG) {
+			ret = ds->func.copyconfig(ds, session, nc_rpc_get_target(rpc), nc_rpc_get_source(rpc), config, &e);
+		} else {
+			ret = EXIT_FAILURE;
+		}
 		free (config);
+		break;
+	case NC_OP_DELETECONFIG:
+		if (nc_rpc_get_target (rpc) == NC_DATASTORE_RUNNING) {
+			/* can not delete running */
+			e = nc_err_new (NC_ERR_OP_FAILED);
+			nc_err_set (e, NC_ERR_PARAM_MSG, "Can not delete running datastore.");
+			break;
+		}
+		ret = ds->func.deleteconfig(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
 	default:
 		ERROR("%s: unsupported basic NETCONF operation requested.", __func__);
