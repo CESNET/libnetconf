@@ -281,6 +281,10 @@ struct nc_err {
 	 * This information is part of error-info element.
 	 */
 	char *sid;
+	/**
+	 * @brief Pointer to the next error in the list
+	 */
+	struct nc_err* next;
 };
 
 /**

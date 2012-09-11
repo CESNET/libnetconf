@@ -689,12 +689,18 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 
 void nc_msg_free(struct nc_msg *msg)
 {
+	struct nc_err* e, *efree;
+
 	if (msg != NULL) {
 		if (msg->doc != NULL) {
 			xmlFreeDoc(msg->doc);
 		}
-		if (msg->error != NULL) {
-			nc_err_free(msg->error);
+		if ((e = msg->error) != NULL) {
+			while(e != NULL) {
+				efree = e;
+				e = e->next;
+				nc_err_free(efree);
+			}
 		}
 		if (msg->msgid != NULL) {
 			free(msg->msgid);
@@ -884,15 +890,9 @@ nc_reply *nc_reply_data(const char* data)
 	return (reply);
 }
 
-nc_reply *nc_reply_error(struct nc_err* error)
+static xmlNodePtr new_reply_error_content(struct nc_err* error)
 {
-	nc_reply *reply;
 	xmlNodePtr content, einfo = NULL;
-
-	if (error == NULL) {
-		ERROR("Empty error structure to create rpc-error reply.");
-		return (NULL);
-	}
 
 	if ((content = xmlNewNode(NULL, BAD_CAST "rpc-error")) == NULL) {
 		ERROR("xmlNewNode failed (%s:%d).", __FILE__, __LINE__);
@@ -989,12 +989,62 @@ nc_reply *nc_reply_error(struct nc_err* error)
 		}
 	}
 
-	reply = nc_reply_create(content);
+	return(content);
+}
+
+nc_reply *nc_reply_error(struct nc_err* error)
+{
+	nc_reply *reply;
+	xmlNodePtr content;
+
+	if (error == NULL) {
+		ERROR("Empty error structure to create rpc-error reply.");
+		return (NULL);
+	}
+
+	if ((content = new_reply_error_content(error)) == NULL) {
+		return (NULL);
+	}
+	if ((reply = nc_reply_create(content)) == NULL) {
+		return (NULL);
+	}
 	reply->error = error;
 	reply->type.reply = NC_REPLY_ERROR;
 	xmlFreeNode(content);
 
 	return (reply);
+}
+
+int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
+{
+	xmlNodePtr content;
+
+	if (error == NULL || reply == NULL || reply->type.reply != NC_REPLY_ERROR) {
+		return (EXIT_FAILURE);
+	}
+	if (reply->doc == NULL || reply->doc->children == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	/* prepare new <rpc-error> part */
+	if ((content = new_reply_error_content(error)) == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	/* add new description into the reply */
+	if (xmlAddChild(reply->doc->children, xmlCopyNode(content, 1)) == NULL) {
+		ERROR("xmlAddChild failed (%s:%d).", __FILE__, __LINE__);
+		xmlFreeNode(content);
+		return (EXIT_FAILURE);
+	}
+	/* add error structure into the reply's list */
+	error->next = reply->error;
+	reply->error = error;
+
+	/* cleanup */
+	xmlFreeNode(content);
+
+	return (EXIT_SUCCESS);
 }
 
 nc_rpc *nc_rpc_closesession()

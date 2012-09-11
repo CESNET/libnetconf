@@ -270,6 +270,20 @@ nc_reply *nc_reply_data(const char* data);
 nc_reply *nc_reply_error(struct nc_err* error);
 
 /**
+ * @ingroup reply
+ * @brief Add another error description into the existing rpc-reply with \<rpc-error\> content.
+ *
+ * This function can be applied only to reply messages created by nc_reply_error().
+ *
+ * @param[in,out] reply Reply structure where the given error description will
+ * be added.
+ * @param[in] error NETCONF error description structure for reply message. From
+ * now, error is connected with the reply and should not be used by the caller.
+ * @return 0 on success, non-zero else.
+ */
+int nc_reply_error_add(nc_reply *reply, struct nc_err* error);
+
+/**
  * @ingroup rpc
  * @brief Create \<copy-config\> NETCONF rpc message.
  *
