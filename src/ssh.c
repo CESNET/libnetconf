@@ -48,6 +48,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <utmpx.h>
 #include <pthread.h>
 
 #include "libssh2.h"
@@ -495,7 +496,8 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	struct nc_session *retval = NULL;
 	struct nc_cpblts *server_cpblts = NULL;
 	struct passwd *pw;
-	char *wdc, *wdc_aux;
+	char *wdc, *wdc_aux, *straux;
+	struct utmpx protox, *utp;
 	char list[255];
 	NCDFLT_MODE mode;
 	pthread_mutexattr_t mattr;
@@ -601,6 +603,42 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	if (nc_server_handshake(retval, server_cpblts->list) != 0) {
 		nc_session_close(retval, "NETCONF handshake failed.");
 		return (NULL);
+	}
+
+	/* get client's hostname */
+	/*
+	 * This is not a critical information, so only warnings are generated if
+	 * the following process fails. The hostname of the client is used by
+	 * server to generate NETCONF base notifications.
+	 */
+	if ((straux = getenv("SSH_CLIENT")) != NULL) {
+		/* OpenSSH implementation provides SSH_CLIENT environment variable */
+		retval->hostname = strdup(straux);
+		if ((straux = strchr(retval->hostname, ' ')) != NULL ) {
+			*straux = 0; /* null byte after IP in $SSH_CLIENT */
+		}
+	} else {
+		/*
+		 * in other cases, we will try to get information from the utmpx
+		 * file of this session
+		 */
+		if ((straux = ttyname(fileno(stdin))) == 0) {
+			WARN("Unable to get tty (%s) to get client's hostname (session %s).", strerror(errno), retval->session_id);
+		} else {
+			if (strncmp(straux, "/dev/", 5) == 0) {
+				straux += 5;
+			}
+			memset(&protox, 0, sizeof protox);
+			strcpy(protox.ut_line, straux);
+
+			if ((utp = getutxline(&protox)) == 0) {
+				WARN("Unable to locate UTMPX for \'%s\' to get client's hostname (session %s).", straux, retval->session_id);
+			} else {
+				retval->hostname = malloc(sizeof(char) * (1 + sizeof(utp->ut_host)));
+				memcpy(retval->hostname, utp->ut_host, sizeof(utp->ut_host));
+				retval->hostname[sizeof(utp->ut_host)] = 0;
+			}
+		}
 	}
 
 	/* set with-defaults capability flags */

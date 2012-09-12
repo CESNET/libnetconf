@@ -438,7 +438,7 @@ void parse_wdcap(struct nc_cpblts *capabilities, NCDFLT_MODE *basic, int *suppor
 	}
 }
 
-struct nc_session* nc_session_dummy(const char* sid, const char* username, struct nc_cpblts *capabilities)
+struct nc_session* nc_session_dummy(const char* sid, const char* username, const char* hostname, struct nc_cpblts *capabilities)
 {
 	struct nc_session * session;
 	const char* cpblt;
@@ -469,6 +469,10 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, struc
 	strncpy (session->session_id, sid, SID_SIZE);
 	/* copy user name */
 	session->username = strdup (username);
+	/* if specified, copy hostname */
+	if (hostname != NULL) {
+		session->hostname = strdup (hostname);
+	}
 	/* create empty capabilities list */
 	session->capabilities = nc_cpblts_new (NULL);
 	/* initialize capabilities iterator */
