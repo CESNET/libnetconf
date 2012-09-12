@@ -55,12 +55,6 @@ typedef struct nc_msg nc_rpc;
 typedef struct nc_msg nc_reply;
 
 /**
- * @brief notification message.
- * @ingroup notifications
- */
-typedef struct nc_msg nc_notif;
-
-/**
  * @brief Event notification message.
  * @ingroup notifications
  */
