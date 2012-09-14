@@ -188,6 +188,7 @@ int main(int argc, char *argv[])
 	}
 	config.dsid = ncds_init(datastore);
 	if (config.dsid <= 0) {
+		ncds_free(datastore);
 		clb_print(NC_VERB_ERROR, "Initiating datastore failed.");
 		return (EXIT_FAILURE);
 	}

@@ -304,6 +304,7 @@ int ncds_file_init (struct ncds_ds* ds)
 	struct stat st;
 	char* new_path, *sempath, *saux;
 	int fd;
+	mode_t mask;
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
 	file_ds->xml = xmlReadFile (file_ds->path, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
@@ -367,9 +368,12 @@ int ncds_file_init (struct ncds_ds* ds)
 	/* recreate initial backslash in the semaphore name */
 	sempath[0] = '/';
 	/* and then create the lock (actually it is a semaphore */
+	mask = umask(0000);
 	if ((file_ds->ds_lock.lock = sem_open (sempath, O_CREAT, S_IRWXU|S_IRWXG|S_IRWXO, 1)) == SEM_FAILED) {
+		umask(mask);
 		return EXIT_FAILURE;
 	}
+	umask(mask);
 	free (sempath);
 
 	return EXIT_SUCCESS;

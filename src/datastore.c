@@ -241,7 +241,9 @@ ncds_id ncds_init (struct ncds_ds* datastore)
 	/** \todo data model validation */
 
 	/* call implementation-specific datastore init() function */
-	datastore->func.init(datastore);
+	if (datastore->func.init(datastore) != 0) {
+		return -2;
+	}
 	
 	/* acquire unique id */
 	datastore->id = generate_id ();
