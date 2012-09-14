@@ -1,6 +1,6 @@
 var session_8h =
 [
-    [ "nc_session_dummy", "db/d52/group__session.html#gad821a04ee9dc04bbed04ea1d138afbed", null ],
+    [ "nc_session_dummy", "db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851", null ],
     [ "nc_session_close", "db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd", null ],
     [ "nc_session_free", "db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee", null ],
     [ "nc_session_get_status", "db/d52/group__session.html#gacebd018e30c3eeb0638bbb428a1741b4", null ],
@@ -21,9 +21,11 @@ var session_8h =
     [ "nc_cpblts_iter_next", "db/d52/group__session.html#gaea2ced8d4e5f2cc9971680e49f876c58", null ],
     [ "nc_cpblts_count", "db/d52/group__session.html#ga79a7aea77cbfe29535eb83a6e5c60419", null ],
     [ "nc_session_get_cpblts_default", "db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71", null ],
-    [ "nc_session_send_rpc", "db/de9/group__rpc.html#ga9a4b99f1ccfbf736f35730ea45bed8dc", null ],
-    [ "nc_session_send_reply", "d0/de2/group__reply.html#ga893dde0156194a5146f5d5ae44558281", null ],
-    [ "nc_session_recv_rpc", "db/de9/group__rpc.html#ga30e4280a6d10447d210ebdfb2befb4c6", null ],
-    [ "nc_session_recv_reply", "d0/de2/group__reply.html#ga53fec7353656b7e9c7ca4742149dced0", null ],
-    [ "nc_session_send_recv", "db/de9/group__rpc.html#ga53db624265a53d44d597c9ac7df74259", null ]
+    [ "nc_session_send_rpc", "db/de9/group__rpc.html#gaeb0d93ea1b5ef0c22c9e5372425fb5c3", null ],
+    [ "nc_session_send_reply", "d0/de2/group__reply.html#ga0b344811af933d80615f0874650938cc", null ],
+    [ "nc_session_recv_rpc", "db/de9/group__rpc.html#gae7db211326df2358bde428f5e2a80605", null ],
+    [ "nc_session_recv_reply", "d0/de2/group__reply.html#ga4bbbfc4e648a74caffeeac0da41ab276", null ],
+    [ "nc_session_recv_notif", "da/d54/group__notifications.html#gae0cc31a11f3a6dc9d87bb4de18e2b9d8", null ],
+    [ "nc_msgid_compare", "d3/d35/group__gen_a_p_i.html#gae160a70158f957344eb3204987329632", null ],
+    [ "nc_session_send_recv", "db/de9/group__rpc.html#ga27d3fe78769630932a18c726df4fe6e6", null ]
 ];

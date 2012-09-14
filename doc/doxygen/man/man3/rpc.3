@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Thu Sep 6 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Fri Sep 14 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -34,15 +34,15 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 
 .in +1c
 .ti -1c
-.RI "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
+.RI "const \fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fISend <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
-.RI "\fBnc_msgid\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
 .br
 .RI "\fIReceive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBnc_session_send_recv\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_send_recv\fP (struct nc_session *session, \fBnc_rpc\fP *rpc, \fBnc_reply\fP **reply)"
 .br
 .RI "\fISend <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fP"
 .ti -1c
@@ -62,7 +62,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIBuild <rpc> message from the string\&. This is the reverse function of the \fBnc_rpc_dump()\fP\&. \fP"
 .ti -1c
-.RI "\fBnc_msgid\fP \fBnc_rpc_get_msgid\fP (const \fBnc_rpc\fP *rpc)"
+.RI "const \fBnc_msgid\fP \fBnc_rpc_get_msgid\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet message-id of the given rpc\&. \fP"
 .ti -1c
@@ -180,7 +180,7 @@ value describing that no supported operation type was detected so far
 \fB\fINC_RPC_SESSION \fP\fP
 <rpc> contains operation affecting session 
 .PP
-Definition at line 116 of file netconf\&.h\&.
+Definition at line 143 of file netconf\&.h\&.
 .SS "enum \fBNC_OP\fP"
 
 .PP
@@ -222,7 +222,7 @@ unknown/error value
 \fB\fINC_OP_CREATESUBSCRIPTION \fP\fP
 <create-subscription> operation (RFC 5277) 
 .PP
-Definition at line 128 of file netconf\&.h\&.
+Definition at line 155 of file netconf\&.h\&.
 .SS "enum \fBNC_FILTER_TYPE\fP"
 
 .PP
@@ -234,10 +234,10 @@ Enumeration of supported NETCONF filter types\&.
 \fB\fINC_FILTER_SUBTREE \fP\fP
 NC_FILTER_SUBTREE\&. 
 .PP
-Definition at line 216 of file netconf\&.h\&.
+Definition at line 243 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
-.SS "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
+.SS "const \fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
 
 .PP
 Send <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. This function IS thread safe\&.
@@ -257,7 +257,7 @@ Send <rpc> request via specified NETCONF session\&. This function is supposed to
 .RE
 .PP
 
-.SS "\fBnc_msgid\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
+.SS "\fBNC_MSG_TYPE\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
 
 .PP
 Receive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fBParameters:\fP
@@ -269,13 +269,11 @@ Receive <rpc> request from the specified NETCONF session\&. This function is sup
 .PP
 \fBReturns:\fP
 .RS 4
-0 on error,
-.br
- message-id of received message on success\&. 
+Type of received message\&. NC_MSG_UNKNOWN means error, NC_MSG_RPC means that *rpc points to the received <rpc> message\&. 
 .RE
 .PP
 
-.SS "\fBnc_reply\fP* \fBnc_session_send_recv\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
+.SS "\fBNC_MSG_TYPE\fP \fBnc_session_send_recv\fP (struct nc_session *session, \fBnc_rpc\fP *rpc, \fBnc_reply\fP **reply)"
 
 .PP
 Send <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fBParameters:\fP
@@ -283,11 +281,13 @@ Send <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fBParam
 \fIsession\fP NETCONF session to use\&. 
 .br
 \fIrpc\fP RPC message to send\&. 
+.br
+\fIreply\fP Received <rpc-reply> 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Received <rpc-reply>\&. 
+Type of received message\&. NC_MSG_UNKNOWN means error, NC_MSG_REPLY means that *reply points to the received <rpc-reply> message\&. 
 .RE
 .PP
 
@@ -344,7 +344,7 @@ Complete rpc structure used by libnetconf's functions\&.
 .RE
 .PP
 
-.SS "\fBnc_msgid\fP \fBnc_rpc_get_msgid\fP (const \fBnc_rpc\fP *rpc)"
+.SS "const \fBnc_msgid\fP \fBnc_rpc_get_msgid\fP (const \fBnc_rpc\fP *rpc)"
 
 .PP
 Get message-id of the given rpc\&. \fBParameters:\fP

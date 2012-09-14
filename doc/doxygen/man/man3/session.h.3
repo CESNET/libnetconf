@@ -1,4 +1,4 @@
-.TH "src/session.h" 3 "Thu Sep 6 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
+.TH "src/session.h" 3 "Fri Sep 14 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,7 +18,7 @@ Functions to handle NETCONF sessions\&.
 
 .in +1c
 .ti -1c
-.RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, struct nc_cpblts *capabilities)"
+.RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)"
 .br
 .RI "\fICreate disconnected session structure\&. \fP"
 .ti -1c
@@ -102,23 +102,31 @@ Functions to handle NETCONF sessions\&.
 .br
 .RI "\fIGet NULL terminated list of default capabilities supported by libnetconf\&. \fP"
 .ti -1c
-.RI "\fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
+.RI "const \fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fISend <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
-.RI "\fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
+.RI "const \fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
 .br
 .RI "\fISend <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
 .ti -1c
-.RI "\fBnc_msgid\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
 .br
 .RI "\fIReceive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
 .ti -1c
-.RI "\fBnc_msgid\fP \fBnc_session_recv_reply\fP (struct nc_session *session, \fBnc_reply\fP **reply)"
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_reply\fP (struct nc_session *session, \fBnc_reply\fP **reply)"
 .br
 .RI "\fIReceive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBnc_session_send_recv\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc)"
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_notif\fP (struct nc_session *session, \fBnc_ntf\fP **ntf)"
+.br
+.RI "\fIReceive <notification> message from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
+.ti -1c
+.RI "int \fBnc_msgid_compare\fP (const \fBnc_msgid\fP id1, const \fBnc_msgid\fP id2)"
+.br
+.RI "\fICompare two message IDs if they are the same\&. \fP"
+.ti -1c
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_send_recv\fP (struct nc_session *session, \fBnc_rpc\fP *rpc, \fBnc_reply\fP **reply)"
 .br
 .RI "\fISend <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fP"
 .in -1c

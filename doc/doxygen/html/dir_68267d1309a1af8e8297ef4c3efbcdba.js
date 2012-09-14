@@ -6,6 +6,7 @@ var dir_68267d1309a1af8e8297ef4c3efbcdba =
     [ "libnetconf.h", "d1/d87/libnetconf_8h.html", null ],
     [ "messages.h", "d5/d48/messages_8h.html", "d5/d48/messages_8h" ],
     [ "netconf.h", "d3/d7a/netconf_8h.html", "d3/d7a/netconf_8h" ],
+    [ "notifications.h", "d7/d62/notifications_8h.html", "d7/d62/notifications_8h" ],
     [ "session.h", "da/d46/session_8h.html", "da/d46/session_8h" ],
     [ "ssh.h", "d8/dd3/ssh_8h.html", "d8/dd3/ssh_8h" ],
     [ "with_defaults.h", "da/dbe/with__defaults_8h.html", "da/dbe/with__defaults_8h" ]

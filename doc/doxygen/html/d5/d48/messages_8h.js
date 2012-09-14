@@ -4,10 +4,10 @@ var messages_8h =
     [ "nc_filter_free", "db/de9/group__rpc.html#ga0dbfd598d6fd303819817370cdf63229", null ],
     [ "nc_reply_dump", "d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8", null ],
     [ "nc_reply_build", "d0/de2/group__reply.html#ga78b032942cee08721d51ea97acff68b5", null ],
-    [ "nc_reply_get_msgid", "d0/de2/group__reply.html#gaee352730e4d35c10adbb6c24f7b2bf26", null ],
+    [ "nc_reply_get_msgid", "d0/de2/group__reply.html#gad6ed5b3e0b7d8fbeb81e80bc0a326d6c", null ],
     [ "nc_rpc_dump", "db/de9/group__rpc.html#ga3e840368c40be2ea4d5201edbd3adaca", null ],
     [ "nc_rpc_build", "db/de9/group__rpc.html#ga16bda6ae6ad26653e8793abf58ebec2b", null ],
-    [ "nc_rpc_get_msgid", "db/de9/group__rpc.html#ga3bb3dd2d08b439d612f5954e3ce78205", null ],
+    [ "nc_rpc_get_msgid", "db/de9/group__rpc.html#gabc7eb11a4f2fdbe302a2430e00935c48", null ],
     [ "nc_rpc_get_op", "db/de9/group__rpc.html#gabf639574395456fb6f4bade36fb4babd", null ],
     [ "nc_rpc_get_op_content", "db/de9/group__rpc.html#gade3f111e7c7727d512313b4875fd8f50", null ],
     [ "nc_rpc_get_type", "db/de9/group__rpc.html#gaa502fb30575000775b29a764101c1bef", null ],
@@ -24,6 +24,7 @@ var messages_8h =
     [ "nc_reply_ok", "d0/de2/group__reply.html#ga4789f8372e5f2676236ddb0e6eeb8bb4", null ],
     [ "nc_reply_data", "d0/de2/group__reply.html#ga4543351c89208bb06fa895be334d59ad", null ],
     [ "nc_reply_error", "d0/de2/group__reply.html#ga12fd89263289491b84398279e0e449fd", null ],
+    [ "nc_reply_error_add", "d0/de2/group__reply.html#gafb04a6695650d05a07b571ac1410a681", null ],
     [ "nc_rpc_copyconfig", "db/de9/group__rpc.html#ga34e288de7d99df065f1e5866144af139", null ],
     [ "nc_rpc_deleteconfig", "db/de9/group__rpc.html#ga629917bffa41d8c8714cfaa0c0630857", null ],
     [ "nc_rpc_editconfig", "db/de9/group__rpc.html#ga4fd8840f089561622f01dbdf64ceca42", null ],
@@ -32,6 +33,6 @@ var messages_8h =
     [ "nc_rpc_killsession", "db/de9/group__rpc.html#gae9876e8d038eb81a376bd82a08c58b95", null ],
     [ "nc_rpc_lock", "db/de9/group__rpc.html#ga6a03d40e00fbe019a34541a55f3f4a31", null ],
     [ "nc_rpc_unlock", "db/de9/group__rpc.html#gad843551f9d1ff8be6a118d026e8b995a", null ],
-    [ "nc_rpc_subscribe", "da/d54/group__notifications.html#gaa2f00866db1ca1241802ff0a6224b4d8", null ],
+    [ "nc_rpc_subscribe", "da/d54/group__notifications.html#gafda56cbfe02d24877d0740618aa2de98", null ],
     [ "nc_rpc_generic", "db/de9/group__rpc.html#gaa9ad7fac41fdef0063c2e2793fb19efd", null ]
 ];

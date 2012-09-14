@@ -130,10 +130,10 @@ Typedefs</h2></td></tr>
 <tr class="memdesc:gab21d1d39737065c552f2ccc5b4819262"><td class="mdescLeft">&#160;</td><td class="mdescRight">rpc message.  <a href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262"></a><br/></td></tr>
 <tr class="memitem:ga40338a1274759a932a7c2c7b8ed0121d"><td class="memItemLeft" align="right" valign="top">typedef struct nc_msg&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a></td></tr>
 <tr class="memdesc:ga40338a1274759a932a7c2c7b8ed0121d"><td class="mdescLeft">&#160;</td><td class="mdescRight">reply message.  <a href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d"></a><br/></td></tr>
-<tr class="memitem:ga905a8d57e16c12eb1d8511646b2ce9eb"><td class="memItemLeft" align="right" valign="top">typedef struct nc_msg&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga905a8d57e16c12eb1d8511646b2ce9eb">nc_notif</a></td></tr>
-<tr class="memdesc:ga905a8d57e16c12eb1d8511646b2ce9eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Event notification message.  <a href="../../da/d54/group__notifications.html#ga905a8d57e16c12eb1d8511646b2ce9eb"></a><br/></td></tr>
-<tr class="memitem:ga076533ff0185f0be79fa9edbed22e0b7"><td class="memItemLeft" align="right" valign="top">typedef long long unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a></td></tr>
-<tr class="memdesc:ga076533ff0185f0be79fa9edbed22e0b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type representing NETCONF message-id attribute.  <a href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7"></a><br/></td></tr>
+<tr class="memitem:ga3c2f8ca237327fcf3c871544f414bdfe"><td class="memItemLeft" align="right" valign="top">typedef struct nc_msg&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a></td></tr>
+<tr class="memdesc:ga3c2f8ca237327fcf3c871544f414bdfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Event notification message.  <a href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe"></a><br/></td></tr>
+<tr class="memitem:ga5a8be0030b2a521edad18d24b348a4aa"><td class="memItemLeft" align="right" valign="top">typedef char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga5a8be0030b2a521edad18d24b348a4aa">nc_msgid</a></td></tr>
+<tr class="memdesc:ga5a8be0030b2a521edad18d24b348a4aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type representing NETCONF message-id attribute.  <a href="../../db/d52/group__session.html#ga5a8be0030b2a521edad18d24b348a4aa"></a><br/></td></tr>
 <tr><td colspan="2"><h2><a name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:ga9fba5da8e4c50d2427d0d24e8e7b630c"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">NC_SESSION_STATUS</a> { <br/>
@@ -147,6 +147,28 @@ Enumerations</h2></td></tr>
 <br/>
  }</td></tr>
 <tr class="memdesc:ga9fba5da8e4c50d2427d0d24e8e7b630c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of possible states of the NETCONF session.  <a href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">More...</a><br/></td></tr>
+<tr class="memitem:gab8fb6ff96d652b9aeb1223729e5694c2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2">NC_SESSION_TERM_REASON</a> { <br/>
+&#160;&#160;<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2a0f2c2854f81cf835944a837c89b3b6c3">NC_SESSION_TERM_CLOSED</a>, 
+<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2ad43b0471a6cc0e281bc7eb135a59da00">NC_SESSION_TERM_KILLED</a>, 
+<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2acf0a8c1f1d26f53e5dc1fa7b7020f980">NC_SESSION_TERM_DROPPED</a>, 
+<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2a2cf875e69005171bbe33feb356dcf539">NC_SESSION_TERM_TIMEOUT</a>, 
+<br/>
+&#160;&#160;<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2a441729b11f47c4c93dcfb59c9959d70a">NC_SESSION_TERM_BADHELLO</a>, 
+<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2af01550127e61eba3ec255fb909ea932f">NC_SESSION_TERM_OTHER</a>
+<br/>
+ }</td></tr>
+<tr class="memdesc:gab8fb6ff96d652b9aeb1223729e5694c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of reasonf of the NETCONF session termination as defined in RFC 6470.  <a href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2">More...</a><br/></td></tr>
+<tr class="memitem:ga298c7a4ad5cc76169a211f86df90f057"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a> { <br/>
+&#160;&#160;<a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a>, 
+<a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a1272e268199e52e368957b6a3b288d50">NC_MSG_NONE</a>, 
+<a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a7cd0f4a4edef33489e675b080645288d">NC_MSG_HELLO</a>, 
+<a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a7f6951d98d30342a65e6b1d7ccca2df0">NC_MSG_RPC</a>, 
+<br/>
+&#160;&#160;<a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a827b3c9c898a48ec8e9f8f9af11f1bdd">NC_MSG_REPLY</a>, 
+<a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057ab4e4b148e14bdf9f320331b0cbe1dc6d">NC_MSG_NOTIFICATION</a> =  -5
+<br/>
+ }</td></tr>
+<tr class="memdesc:ga298c7a4ad5cc76169a211f86df90f057"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of NETCONF message types.  <a href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">More...</a><br/></td></tr>
 <tr class="memitem:gad31ee5df47d5671ebdf1b06f785e6c29"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29">NC_REPLY_TYPE</a> { <br/>
 &#160;&#160;<a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa4e871d4592173b6fff7a8d4815c8e29">NC_REPLY_UNKNOWN</a>, 
 <a class="el" href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29a6d190ad4c3f0ecbaab7956227e606d27">NC_REPLY_HELLO</a>, 
@@ -297,7 +319,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00142">142</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00169">169</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -327,7 +349,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00221">221</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00248">248</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -353,7 +375,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00231">231</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00258">258</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -379,7 +401,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00238">238</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00265">265</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -390,7 +412,7 @@ Functions</h2></td></tr>
       <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a>      </li>
       <li class="navelem"><a class="el" href="../../d3/d7a/netconf_8h.html">netconf.h</a>      </li>
 
-    <li class="footer">Generated on Thu Sep 6 2012 17:07:21 for libnetconf by
+    <li class="footer">Generated on Fri Sep 14 2012 14:12:21 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

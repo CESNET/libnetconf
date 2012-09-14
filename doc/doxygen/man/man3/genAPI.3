@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Thu Sep 6 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Fri Sep 14 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -9,6 +9,10 @@ libnetconf's miscellaneous functions\&.
 .SS "Enumerations"
 
 .in +1c
+.ti -1c
+.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP =  -5 }"
+.br
+.RI "\fIEnumeration of NETCONF message types\&. \fP"
 .ti -1c
 .RI "enum \fBNC_VERB_LEVEL\fP { \fBNC_VERB_ERROR\fP, \fBNC_VERB_WARNING\fP, \fBNC_VERB_VERBOSE\fP, \fBNC_VERB_DEBUG\fP }"
 .br
@@ -45,6 +49,10 @@ libnetconf's miscellaneous functions\&.
 .RI "const char * \fBnc_err_get\fP (const struct nc_err *err, \fBNC_ERR_PARAM\fP param)"
 .br
 .RI "\fIGet value of the specified parameter of the NETCONF error structure\&. \fP"
+.ti -1c
+.RI "int \fBnc_msgid_compare\fP (const \fBnc_msgid\fP id1, const \fBnc_msgid\fP id2)"
+.br
+.RI "\fICompare two message IDs if they are the same\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -53,6 +61,33 @@ libnetconf's miscellaneous functions\&.
 
 .SH "Enumeration Type Documentation"
 .PP 
+.SS "enum \fBNC_MSG_TYPE\fP"
+
+.PP
+Enumeration of NETCONF message types\&. 
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fINC_MSG_UNKNOWN \fP\fP
+error state 
+.TP
+\fB\fINC_MSG_NONE \fP\fP
+no message at input or message processed internally 
+.TP
+\fB\fINC_MSG_HELLO \fP\fP
+<hello> message 
+.TP
+\fB\fINC_MSG_RPC \fP\fP
+<rpc> message 
+.TP
+\fB\fINC_MSG_REPLY \fP\fP
+<rpc-reply> message 
+.TP
+\fB\fINC_MSG_NOTIFICATION \fP\fP
+<notification> message 
+.PP
+Definition at line 118 of file netconf\&.h\&.
 .SS "enum \fBNC_VERB_LEVEL\fP"
 
 .PP
@@ -73,7 +108,7 @@ Besides errors and warnings, print some other verbose messages\&.
 \fB\fINC_VERB_DEBUG \fP\fP
 Print all messages including some development debug messages\&. 
 .PP
-Definition at line 249 of file netconf\&.h\&.
+Definition at line 276 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "void \fBnc_verbosity\fP (\fBNC_VERB_LEVEL\fPlevel)"
@@ -164,6 +199,22 @@ Get value of the specified parameter of the NETCONF error structure\&. \fBParame
 \fBReturns:\fP
 .RS 4
 Constant string value of the requested parameter, NULL if the specified parameter is not set\&. 
+.RE
+.PP
+
+.SS "int \fBnc_msgid_compare\fP (const \fBnc_msgid\fPid1, const \fBnc_msgid\fPid2)"
+
+.PP
+Compare two message IDs if they are the same\&. \fBParameters:\fP
+.RS 4
+\fIid1\fP First message ID to compare\&. 
+.br
+\fIid2\fP Second message ID to compare\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 if both IDs are the same\&. 
 .RE
 .PP
 

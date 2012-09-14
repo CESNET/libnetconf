@@ -118,8 +118,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:ga076533ff0185f0be79fa9edbed22e0b7"><td class="memItemLeft" align="right" valign="top">typedef long long unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a></td></tr>
-<tr class="memdesc:ga076533ff0185f0be79fa9edbed22e0b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type representing NETCONF message-id attribute.  <a href="#ga076533ff0185f0be79fa9edbed22e0b7"></a><br/></td></tr>
+<tr class="memitem:ga5a8be0030b2a521edad18d24b348a4aa"><td class="memItemLeft" align="right" valign="top">typedef char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga5a8be0030b2a521edad18d24b348a4aa">nc_msgid</a></td></tr>
+<tr class="memdesc:ga5a8be0030b2a521edad18d24b348a4aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type representing NETCONF message-id attribute.  <a href="#ga5a8be0030b2a521edad18d24b348a4aa"></a><br/></td></tr>
 <tr><td colspan="2"><h2><a name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:ga9fba5da8e4c50d2427d0d24e8e7b630c"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">NC_SESSION_STATUS</a> { <br/>
@@ -133,6 +133,17 @@ Enumerations</h2></td></tr>
 <br/>
  }</td></tr>
 <tr class="memdesc:ga9fba5da8e4c50d2427d0d24e8e7b630c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of possible states of the NETCONF session.  <a href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">More...</a><br/></td></tr>
+<tr class="memitem:gab8fb6ff96d652b9aeb1223729e5694c2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2">NC_SESSION_TERM_REASON</a> { <br/>
+&#160;&#160;<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2a0f2c2854f81cf835944a837c89b3b6c3">NC_SESSION_TERM_CLOSED</a>, 
+<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2ad43b0471a6cc0e281bc7eb135a59da00">NC_SESSION_TERM_KILLED</a>, 
+<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2acf0a8c1f1d26f53e5dc1fa7b7020f980">NC_SESSION_TERM_DROPPED</a>, 
+<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2a2cf875e69005171bbe33feb356dcf539">NC_SESSION_TERM_TIMEOUT</a>, 
+<br/>
+&#160;&#160;<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2a441729b11f47c4c93dcfb59c9959d70a">NC_SESSION_TERM_BADHELLO</a>, 
+<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2af01550127e61eba3ec255fb909ea932f">NC_SESSION_TERM_OTHER</a>
+<br/>
+ }</td></tr>
+<tr class="memdesc:gab8fb6ff96d652b9aeb1223729e5694c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of reasonf of the NETCONF session termination as defined in RFC 6470.  <a href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2">More...</a><br/></td></tr>
 <tr class="memitem:gad9081cbe1edde22e8612e07ba4c3be10"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10">NC_SSH_AUTH_TYPE</a> { <a class="el" href="../../db/d52/group__session.html#ggad9081cbe1edde22e8612e07ba4c3be10a33741824ba5809f9e29b99d68e1bb6a3">NC_SSH_AUTH_PUBLIC_KEYS</a> =  1, 
 <a class="el" href="../../db/d52/group__session.html#ggad9081cbe1edde22e8612e07ba4c3be10a57ebf13ab1802ab10650d4c4c77e7eef">NC_SSH_AUTH_PASSWORD</a> =  2, 
 <a class="el" href="../../db/d52/group__session.html#ggad9081cbe1edde22e8612e07ba4c3be10a497854e455f81123847c1ba089c40158">NC_SSH_AUTH_INTERACTIVE</a> =  4
@@ -150,8 +161,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga9810aff5060e374925933d41913fbe5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set callback function to authorize authenticity of an unknown host.  <a href="#ga9810aff5060e374925933d41913fbe5a"></a><br/></td></tr>
 <tr class="memitem:gab5beccc3acd15a5ad6499992e24fbe59"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gab5beccc3acd15a5ad6499992e24fbe59">nc_set_keypair_path</a> (const char *private, const char *public)</td></tr>
 <tr class="memdesc:gab5beccc3acd15a5ad6499992e24fbe59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to private and public key file used in case of SSH authentication via publickey mechanism.  <a href="#gab5beccc3acd15a5ad6499992e24fbe59"></a><br/></td></tr>
-<tr class="memitem:gad821a04ee9dc04bbed04ea1d138afbed"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad821a04ee9dc04bbed04ea1d138afbed">nc_session_dummy</a> (const char *sid, const char *username, struct nc_cpblts *capabilities)</td></tr>
-<tr class="memdesc:gad821a04ee9dc04bbed04ea1d138afbed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create disconnected session structure.  <a href="#gad821a04ee9dc04bbed04ea1d138afbed"></a><br/></td></tr>
+<tr class="memitem:ga3868d5331db61a5d3a4df3ff5fa33851"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851">nc_session_dummy</a> (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)</td></tr>
+<tr class="memdesc:ga3868d5331db61a5d3a4df3ff5fa33851"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create disconnected session structure.  <a href="#ga3868d5331db61a5d3a4df3ff5fa33851"></a><br/></td></tr>
 <tr class="memitem:ga20b9940ed7af543a05b4bef6e871cedd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd">nc_session_close</a> (struct nc_session *session, const char *msg)</td></tr>
 <tr class="memdesc:ga20b9940ed7af543a05b4bef6e871cedd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close NETCONF connection with the server.  <a href="#ga20b9940ed7af543a05b4bef6e871cedd"></a><br/></td></tr>
 <tr class="memitem:gaa5994f45a7031dc931bdf4a3acebedee"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee">nc_session_free</a> (struct nc_session *session)</td></tr>
@@ -202,12 +213,12 @@ Functions</h2></td></tr>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's functions for handling NETCONF sessions. </p>
 <hr/><h2>Typedef Documentation</h2>
-<a class="anchor" id="ga076533ff0185f0be79fa9edbed22e0b7"></a>
+<a class="anchor" id="ga5a8be0030b2a521edad18d24b348a4aa"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef long long unsigned int <a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a></td>
+          <td class="memname">typedef char* <a class="el" href="../../db/d52/group__session.html#ga5a8be0030b2a521edad18d24b348a4aa">nc_msgid</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -254,6 +265,44 @@ Functions</h2></td></tr>
 </dl>
 
 <p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00091">91</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="gab8fb6ff96d652b9aeb1223729e5694c2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2">NC_SESSION_TERM_REASON</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeration of reasonf of the NETCONF session termination as defined in RFC 6470. </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="ggab8fb6ff96d652b9aeb1223729e5694c2a0f2c2854f81cf835944a837c89b3b6c3"></a>NC_SESSION_TERM_CLOSED</em>&nbsp;</td><td>
+<p>closed by client in normal fashion </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggab8fb6ff96d652b9aeb1223729e5694c2ad43b0471a6cc0e281bc7eb135a59da00"></a>NC_SESSION_TERM_KILLED</em>&nbsp;</td><td>
+<p>session was terminated by &lt;kill-session&gt; operation </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggab8fb6ff96d652b9aeb1223729e5694c2acf0a8c1f1d26f53e5dc1fa7b7020f980"></a>NC_SESSION_TERM_DROPPED</em>&nbsp;</td><td>
+<p>transport layer connection was unexpectedly closed </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggab8fb6ff96d652b9aeb1223729e5694c2a2cf875e69005171bbe33feb356dcf539"></a>NC_SESSION_TERM_TIMEOUT</em>&nbsp;</td><td>
+<p>terminated because of inactivity </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggab8fb6ff96d652b9aeb1223729e5694c2a441729b11f47c4c93dcfb59c9959d70a"></a>NC_SESSION_TERM_BADHELLO</em>&nbsp;</td><td>
+<p>&lt;hello&gt; message was invalid. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggab8fb6ff96d652b9aeb1223729e5694c2af01550127e61eba3ec255fb909ea932f"></a>NC_SESSION_TERM_OTHER</em>&nbsp;</td><td>
+<p>terminated for some other reason </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00105">105</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -418,7 +467,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gad821a04ee9dc04bbed04ea1d138afbed"></a>
+<a class="anchor" id="ga3868d5331db61a5d3a4df3ff5fa33851"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -426,7 +475,7 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">struct nc_session* <a class="el" href="../../db/d52/group__session.html#gad821a04ee9dc04bbed04ea1d138afbed">nc_session_dummy</a> </td>
+          <td class="memname">struct nc_session* <a class="el" href="../../db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851">nc_session_dummy</a> </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>sid</em>, </td>
@@ -436,6 +485,12 @@ Functions</h2></td></tr>
           <td></td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>username</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>hostname</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -463,6 +518,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">sid</td><td>Session ID. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">username</td><td>Name of the user holding the session. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">hostname</td><td>Name (domain name, IP) of the opposite communication side (optional parameter, can be NULL). </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">capabilities</td><td>List of capabilities supported by the session. </td></tr>
   </table>
   </dd>
@@ -1192,7 +1248,7 @@ Functions</h2></td></tr>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Thu Sep 6 2012 17:07:21 for libnetconf by
+    <li class="footer">Generated on Fri Sep 14 2012 14:12:21 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>

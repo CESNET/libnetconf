@@ -136,16 +136,16 @@ Enumerations</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:ga771a110143440bcd3b7d4c0e98388e80"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80">nc_callback_error_reply</a> (void(*func)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid))</td></tr>
 <tr class="memdesc:ga771a110143440bcd3b7d4c0e98388e80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set callback function to process (e.g. print) NETCONF &lt;rpc-error&gt; message items.  <a href="#ga771a110143440bcd3b7d4c0e98388e80"></a><br/></td></tr>
-<tr class="memitem:ga893dde0156194a5146f5d5ae44558281"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga893dde0156194a5146f5d5ae44558281">nc_session_send_reply</a> (struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
-<tr class="memdesc:ga893dde0156194a5146f5d5ae44558281"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc-reply&gt; response via specified NETCONF session. This function is supposed to be performed only by NETCONF servers.  <a href="#ga893dde0156194a5146f5d5ae44558281"></a><br/></td></tr>
-<tr class="memitem:ga53fec7353656b7e9c7ca4742149dced0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga53fec7353656b7e9c7ca4742149dced0">nc_session_recv_reply</a> (struct nc_session *session, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> **reply)</td></tr>
-<tr class="memdesc:ga53fec7353656b7e9c7ca4742149dced0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;rpc-reply&gt; response from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="#ga53fec7353656b7e9c7ca4742149dced0"></a><br/></td></tr>
+<tr class="memitem:ga0b344811af933d80615f0874650938cc"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../db/d52/group__session.html#ga5a8be0030b2a521edad18d24b348a4aa">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga0b344811af933d80615f0874650938cc">nc_session_send_reply</a> (struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
+<tr class="memdesc:ga0b344811af933d80615f0874650938cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc-reply&gt; response via specified NETCONF session. This function is supposed to be performed only by NETCONF servers.  <a href="#ga0b344811af933d80615f0874650938cc"></a><br/></td></tr>
+<tr class="memitem:ga4bbbfc4e648a74caffeeac0da41ab276"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga4bbbfc4e648a74caffeeac0da41ab276">nc_session_recv_reply</a> (struct nc_session *session, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> **reply)</td></tr>
+<tr class="memdesc:ga4bbbfc4e648a74caffeeac0da41ab276"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;rpc-reply&gt; response from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="#ga4bbbfc4e648a74caffeeac0da41ab276"></a><br/></td></tr>
 <tr class="memitem:ga279c8b48bfdf590c15a043b7d385dfb8"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8">nc_reply_dump</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:ga279c8b48bfdf590c15a043b7d385dfb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the rpc-reply message into a string.  <a href="#ga279c8b48bfdf590c15a043b7d385dfb8"></a><br/></td></tr>
 <tr class="memitem:ga78b032942cee08721d51ea97acff68b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga78b032942cee08721d51ea97acff68b5">nc_reply_build</a> (const char *reply_dump)</td></tr>
 <tr class="memdesc:ga78b032942cee08721d51ea97acff68b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build &lt;rpc-reply&gt; message from the string. This is the reverse function of the <a class="el" href="../../d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8" title="Dump the rpc-reply message into a string.">nc_reply_dump()</a>.  <a href="#ga78b032942cee08721d51ea97acff68b5"></a><br/></td></tr>
-<tr class="memitem:gaee352730e4d35c10adbb6c24f7b2bf26"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gaee352730e4d35c10adbb6c24f7b2bf26">nc_reply_get_msgid</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
-<tr class="memdesc:gaee352730e4d35c10adbb6c24f7b2bf26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get message-id of the given rpc-reply.  <a href="#gaee352730e4d35c10adbb6c24f7b2bf26"></a><br/></td></tr>
+<tr class="memitem:gad6ed5b3e0b7d8fbeb81e80bc0a326d6c"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../db/d52/group__session.html#ga5a8be0030b2a521edad18d24b348a4aa">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gad6ed5b3e0b7d8fbeb81e80bc0a326d6c">nc_reply_get_msgid</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
+<tr class="memdesc:gad6ed5b3e0b7d8fbeb81e80bc0a326d6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get message-id of the given rpc-reply.  <a href="#gad6ed5b3e0b7d8fbeb81e80bc0a326d6c"></a><br/></td></tr>
 <tr class="memitem:gab12cdef82337060c425348dada7fe983"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29">NC_REPLY_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gab12cdef82337060c425348dada7fe983">nc_reply_get_type</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:gab12cdef82337060c425348dada7fe983"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get type of the rpc-reply message.  <a href="#gab12cdef82337060c425348dada7fe983"></a><br/></td></tr>
 <tr class="memitem:gaac62fb3d427985311cf71a2c3ab8d424"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gaac62fb3d427985311cf71a2c3ab8d424">nc_reply_get_data</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
@@ -158,6 +158,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga4543351c89208bb06fa895be334d59ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create rpc-reply response with &lt;data&gt; content.  <a href="#ga4543351c89208bb06fa895be334d59ad"></a><br/></td></tr>
 <tr class="memitem:ga12fd89263289491b84398279e0e449fd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga12fd89263289491b84398279e0e449fd">nc_reply_error</a> (struct nc_err *error)</td></tr>
 <tr class="memdesc:ga12fd89263289491b84398279e0e449fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create rpc-reply response with &lt;rpc-error&gt; content.  <a href="#ga12fd89263289491b84398279e0e449fd"></a><br/></td></tr>
+<tr class="memitem:gafb04a6695650d05a07b571ac1410a681"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gafb04a6695650d05a07b571ac1410a681">nc_reply_error_add</a> (<a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply, struct nc_err *error)</td></tr>
+<tr class="memdesc:gafb04a6695650d05a07b571ac1410a681"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add another error description into the existing rpc-reply with &lt;rpc-error&gt; content.  <a href="#gafb04a6695650d05a07b571ac1410a681"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's functions for handling NETCONF &lt;rpc-reply&gt; messages. </p>
@@ -210,7 +212,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00104">104</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00131">131</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -251,12 +253,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga893dde0156194a5146f5d5ae44558281"></a>
+<a class="anchor" id="ga0b344811af933d80615f0874650938cc"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a> <a class="el" href="../../d0/de2/group__reply.html#ga893dde0156194a5146f5d5ae44558281">nc_session_send_reply</a> </td>
+          <td class="memname">const <a class="el" href="../../db/d52/group__session.html#ga5a8be0030b2a521edad18d24b348a4aa">nc_msgid</a> <a class="el" href="../../d0/de2/group__reply.html#ga0b344811af933d80615f0874650938cc">nc_session_send_reply</a> </td>
           <td>(</td>
           <td class="paramtype">struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em>, </td>
@@ -296,12 +298,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga53fec7353656b7e9c7ca4742149dced0"></a>
+<a class="anchor" id="ga4bbbfc4e648a74caffeeac0da41ab276"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a> <a class="el" href="../../d0/de2/group__reply.html#ga53fec7353656b7e9c7ca4742149dced0">nc_session_recv_reply</a> </td>
+          <td class="memname"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a> <a class="el" href="../../d0/de2/group__reply.html#ga4bbbfc4e648a74caffeeac0da41ab276">nc_session_recv_reply</a> </td>
           <td>(</td>
           <td class="paramtype">struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em>, </td>
@@ -328,8 +330,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>0 on error,<br/>
- message-id of received message on success. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_REPLY means that *reply points to the received &lt;rpc-reply&gt; message. </dd></dl>
 
 </div>
 </div>
@@ -383,12 +384,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gaee352730e4d35c10adbb6c24f7b2bf26"></a>
+<a class="anchor" id="gad6ed5b3e0b7d8fbeb81e80bc0a326d6c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../db/d52/group__session.html#ga076533ff0185f0be79fa9edbed22e0b7">nc_msgid</a> <a class="el" href="../../d0/de2/group__reply.html#gaee352730e4d35c10adbb6c24f7b2bf26">nc_reply_get_msgid</a> </td>
+          <td class="memname">const <a class="el" href="../../db/d52/group__session.html#ga5a8be0030b2a521edad18d24b348a4aa">nc_msgid</a> <a class="el" href="../../d0/de2/group__reply.html#gad6ed5b3e0b7d8fbeb81e80bc0a326d6c">nc_reply_get_msgid</a> </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td>
           <td class="paramname"><em>reply</em></td><td>)</td>
@@ -545,12 +546,49 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="gafb04a6695650d05a07b571ac1410a681"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="../../d0/de2/group__reply.html#gafb04a6695650d05a07b571ac1410a681">nc_reply_error_add</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td>
+          <td class="paramname"><em>reply</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct nc_err *&#160;</td>
+          <td class="paramname"><em>error</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Add another error description into the existing rpc-reply with &lt;rpc-error&gt; content. </p>
+<p>This function can be applied only to reply messages created by <a class="el" href="../../d0/de2/group__reply.html#ga12fd89263289491b84398279e0e449fd" title="Create rpc-reply response with &lt;rpc-error&gt; content.">nc_reply_error()</a>.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">reply</td><td>Reply structure where the given error description will be added. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">error</td><td>NETCONF error description structure for reply message. From now, error is connected with the reply and should not be used by the caller. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>0 on success, non-zero else. </dd></dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div>
   <div id="nav-path" class="navpath">
     <ul>
 
-    <li class="footer">Generated on Thu Sep 6 2012 17:07:21 for libnetconf by
+    <li class="footer">Generated on Fri Sep 14 2012 14:12:21 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.0-20120409 </li>
    </ul>
