@@ -1289,7 +1289,7 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 	return (ret);
 }
 
-NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, nc_notif** notif)
+NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, nc_ntf** ntf)
 {
 	struct nc_msg *msg_aux, *msg;
 	NC_MSG_TYPE ret;
@@ -1297,10 +1297,10 @@ NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, nc_notif** notif)
 	pthread_mutex_lock(&(session->mut_session));
 	if (session->queue_event != NULL) {
 		/* pop the oldest reply from the queue */
-		*notif = (nc_reply*)(session->queue_event);
-		session->queue_event = (*notif)->next;
+		*ntf = (nc_reply*)(session->queue_event);
+		session->queue_event = (*ntf)->next;
 		pthread_mutex_unlock(&(session->mut_session));
-		(*notif)->next = NULL;
+		(*ntf)->next = NULL;
 		return (NC_MSG_NOTIFICATION);
 	}
 
@@ -1326,7 +1326,7 @@ read_again:
 		goto read_again;
 		break;
 	case NC_MSG_NOTIFICATION:
-		*notif = (nc_reply*)msg;
+		*ntf = (nc_reply*)msg;
 		break;
 	default:
 		ret = NC_MSG_UNKNOWN;

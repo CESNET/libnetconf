@@ -328,12 +328,12 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
  * This function is supposed to be performed only by NETCONF clients.
  *
  * @param[in] session NETCONF session to use.
- * @param[out] notif Received \<notification\> message
+ * @param[out] ntf Received \<notification\> message
  * @return Type of received message. NC_MSG_UNKNOWN means error,
  * NC_MSG_NOTIFICATION means that *notif points to the received \<notification\>
  * message.
  */
-NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, nc_notif** notif);
+NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, nc_ntf** ntf);
 
 /**
  * @ingroup genAPI

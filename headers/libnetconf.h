@@ -44,6 +44,7 @@
 #include "libnetconf/callbacks.h"
 #include "libnetconf/session.h"
 #include "libnetconf/messages.h"
+#include "libnetconf/notifications.h"
 #include "libnetconf/with_defaults.h"
 
 #endif /* LIBNETCONF_H_ */

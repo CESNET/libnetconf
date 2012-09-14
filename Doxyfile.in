@@ -646,6 +646,7 @@ INPUT                  = src/libnetconf.h \
                          src/ssh.h \
                          src/messages.h \
                          src/datastore.h \
+			 src/notifications.h \
 			 src/with_defaults.h
 
 # This tag can be used to specify the character encoding of the source files 

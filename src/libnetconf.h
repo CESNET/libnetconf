@@ -158,6 +158,7 @@
 #include "messages.h"
 #include "error.h"
 #include "datastore.h"
+#include "notifications.h"
 #include "with_defaults.h"
 
 #endif /* LIBNETCONF_H_ */

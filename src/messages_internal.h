@@ -83,8 +83,27 @@ NCDFLT_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc);
  */
 nc_rpc *nc_rpc_closesession();
 
+/**
+ * @brief Create generic NETCONF message envelope according to given type (rpc or rpc-reply) and insert given data
+ *
+ * @param[in] content pointer to xml node containing data
+ * @param[in] msgtype string of the envelope element (rpc, rpc-reply)
+ *
+ * @return Prepared nc_msg structure.
+ */
+struct nc_msg* nc_msg_create(xmlNodePtr content, char* msgtype);
+
+/**
+ * @brief Free a generic message.
+ * @param[in] msg Message to free.
+ */
 void nc_msg_free(struct nc_msg *msg);
 
+/**
+ * @brief Duplicate the message.
+ * @param[in] msg Message to duplicate.
+ * @return The copy of the given NETCONF message.
+ */
 struct nc_msg *nc_msg_dup(struct nc_msg *msg);
 
 #endif /* MESSAGES_INTERNAL_H_ */

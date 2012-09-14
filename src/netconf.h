@@ -58,7 +58,7 @@ typedef struct nc_msg nc_reply;
  * @brief Event notification message.
  * @ingroup notifications
  */
-typedef struct nc_msg nc_notif;
+typedef struct nc_msg nc_ntf;
 
 /**
  * @ingroup session
@@ -98,8 +98,22 @@ typedef enum {
 } NC_SESSION_STATUS;
 
 /**
+ * @ingroup session
+ * @brief Enumeration of reasonf of the NETCONF session termination as defined
+ * in RFC 6470.
+ */
+typedef enum {
+	NC_SESSION_TERM_CLOSED, /**< closed by client in normal fashion */
+	NC_SESSION_TERM_KILLED, /**< session was terminated by \<kill-session\> operation */
+	NC_SESSION_TERM_DROPPED, /**< transport layer connection was unexpectedly closed */
+	NC_SESSION_TERM_TIMEOUT, /**< terminated because of inactivity */
+	NC_SESSION_TERM_BADHELLO, /**< \<hello\> message was invalid. */
+	NC_SESSION_TERM_OTHER /**< terminated for some other reason */
+} NC_SESSION_TERM_REASON;
+
+/**
  * @brief Enumeration of NETCONF message types.
- * @generic genAPI
+ * @ingroup genAPI
  */
 typedef enum NC_MSG_TYPE {
 	NC_MSG_UNKNOWN, /**< error state */
