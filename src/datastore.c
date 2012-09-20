@@ -608,7 +608,7 @@ xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
 
 	retval = roots;
 	while (retval != NULL) {
-		if (xmlStrcmp(retval->name, root_name) == 0 && xmlStrcmp(retval->ns->href, ns) == 0) {
+		if (xmlStrcmp(retval->name, root_name) == 0 && (retval->ns == NULL || xmlStrcmp(retval->ns->href, ns) == 0)) {
 			break;
 		}
 
