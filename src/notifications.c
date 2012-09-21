@@ -54,12 +54,18 @@
 #include <stdarg.h>
 #include <pthread.h>
 
+#include <dbus/dbus.h>
+
 #include "notifications.h"
 #include "netconf_internal.h"
 #include "messages_internal.h"
 #include "netconf.h"
 #include "session.h"
 
+#define NC_NTF_DBUS_PATH "/libnetconf/notifications/stream"
+#define NC_NTF_DBUS_INTERFACE "libnetconf.notifications.stream"
+static DBusConnection* dbus = NULL;
+static pthread_mutex_t *dbus_mut = NULL;
 
 /* name of the environment variable to change Events streams path */
 #define STREAMS_PATH_ENV "LIBNETCONF_STREAMS"
@@ -338,13 +344,27 @@ static void nc_ntf_streams_close(void)
 	pthread_mutex_unlock(streams_mut);
 }
 
+/*
+ * close D-Bus communication channel
+ */
+static void nc_ntf_dbus_close(void)
+{
+	pthread_mutex_lock(dbus_mut);
+	if (dbus != NULL) {
+		dbus_connection_unref(dbus);
+		dbus = NULL;
+	}
+	pthread_mutex_unlock(dbus_mut);
 }
 
 void nc_ntf_close(void)
 {
+	nc_ntf_dbus_close();
 	nc_ntf_streams_close();
 	pthread_mutex_destroy(streams_mut);
+	pthread_mutex_destroy(dbus_mut);
 	free(streams_mut); streams_mut = NULL;
+	free(dbus_mut); dbus_mut = NULL;
 }
 
 /*
@@ -459,6 +479,35 @@ static int nc_ntf_streams_init(void)
 	return (EXIT_SUCCESS);
 }
 
+/*
+ * Initialize D-Bus communication
+ */
+static int nc_ntf_dbus_init(void)
+{
+	DBusError dbus_err;
+
+	pthread_mutex_lock(dbus_mut);
+	if (dbus == NULL) {
+		/* initialize the errors */
+		dbus_error_init(&dbus_err);
+
+		/* connect to the D-Bus */
+		dbus = dbus_bus_get(DBUS_BUS_SYSTEM, &dbus_err);
+		if (dbus_error_is_set(&dbus_err)) {
+			ERROR("D-Bus connection error (%s)", dbus_err.message);
+			dbus_error_free(&dbus_err);
+		}
+		if (NULL == dbus) {
+			ERROR("Unable to connect to the D-Bus's system bus");
+			pthread_mutex_unlock(dbus_mut);
+			return (EXIT_FAILURE);
+		}
+	}
+	pthread_mutex_unlock(dbus_mut);
+
+	return (EXIT_SUCCESS);
+}
+
 int nc_ntf_init(void)
 {
 	int ret;
@@ -489,8 +538,36 @@ int nc_ntf_init(void)
 		pthread_mutexattr_destroy(&mattr);
 	}
 
+	/* init dbus's mutex if needed */
+	if (dbus_mut == NULL) {
+		if (pthread_mutexattr_init(&mattr) != 0) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			return (EXIT_FAILURE);
+		}
+		if ((dbus_mut = malloc(sizeof(pthread_mutex_t))) == NULL) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			pthread_mutexattr_destroy(&mattr);
+			return (EXIT_FAILURE);
+		}
+		/*
+		 * mutex MUST be recursive since we use it this way
+		 */
+		pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
+		if ((r = pthread_mutex_init(dbus_mut, &mattr)) != 0) {
+			ERROR("Mutex initialization failed (%s).", strerror(r));
+			pthread_mutexattr_destroy(&mattr);
+			return (EXIT_FAILURE);
+		}
+		pthread_mutexattr_destroy(&mattr);
+	}
+
 	/* initiate streams */
 	if ((ret = nc_ntf_streams_init()) != 0) {
+		return (ret);
+	}
+
+	/* initiate DBus communication */
+	if ((ret = nc_ntf_dbus_init()) != 0) {
 		return (ret);
 	}
 

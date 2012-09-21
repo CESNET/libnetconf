@@ -151,6 +151,23 @@ AX_PTHREAD([
 #AC_CHECK_LIB([pthread], [pthread_create], [], AC_MSG_ERROR([Missing POSIX threads library.]))
 #AC_CHECK_HEADERS([pthread.h], [], AC_MSG_ERROR([Missing POSIX threads headers.]))
 
+# libdbus-1
+PKG_CHECK_MODULES([DBUS], [dbus-1 >= 1.0.0])
+# try to detect Linux distro to distinguish dbus RPM package name
+if test -f /etc/SuSE-release; then
+#	SUSE, including openSUSE
+	BUILDREQS="$BUILDREQS dbus-1-devel >= 1.0.0"
+	REQS="$REQS dbus-1 >= 1.0.0"
+elif test -f /etc/redhat-release; then
+#	RedHat including RHEL, CentOS, ScientificLinux
+	BUILDREQS="$BUILDREQS dbus-devel >= 1.0.0"
+	REQS="$REQS dbus >= 1.0.0"
+fi
+# if you are using other distro, DBUS requirements are not included in spec file
+
+CFLAGS="$CFLAGS $DBUS_CFLAGS"
+LIBS="$LIBS $DBUS_LIBS"
+
 ###################### Check for configure parameters ##########################
 
 ######################### Checks for header files ##############################
