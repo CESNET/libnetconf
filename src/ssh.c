@@ -525,6 +525,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
+		pthread_mutexattr_destroy(&mattr);
 		return (NULL);
 	}
 	pthread_mutexattr_destroy(&mattr);
@@ -799,6 +800,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
+		pthread_mutexattr_destroy(&mattr);
 		return (NULL);
 	}
 	pthread_mutexattr_destroy(&mattr);
