@@ -67,16 +67,17 @@ typedef enum {
 
 /**
  * @ingroup notifications
- * @brief Initiate NETCONF Event Streams
+ * @brief Initiate NETCONF Notifications environment
  * @return 0 on success, non-zero value else
  */
-int nc_ntf_streams_init(void);
+int nc_ntf_init(void);
 
 /**
  * @ingroup notifications
- * @brief Close all NETCONF Event Streams
+ * @brief Close all NETCONF Event Streams and other parts of the Notifications
+ * environment.
  */
-void nc_ntf_streams_close(void);
+void nc_ntf_close(void);
 
 /**
  * @ingroup notifications
@@ -104,13 +105,12 @@ int nc_ntf_stream_new(const char* name, const char* desc, int replay);
 char** nc_ntf_stream_list(void);
 
 /**
- * \todo Implement this function.
  * @ingroup notifications
  * @brief Test if the given stream is already created and available
  * @param[in] name Name of the stream to check.
  * @return 0 - the stream is not present,<br/>1 - the stream is present
  */
-int nc_ntf_stream_avail(const char* name);
+int nc_ntf_stream_isavailable(const char* name);
 
 /**
  * @ingroup notifications
@@ -135,12 +135,13 @@ int nc_ntf_stream_avail(const char* name);
  *
  * \todo Implement this function.
  * @param[in] stream Name of the stream where the event will be stored.
+ * @param[in] time Time of the event, if set to -1, current time is used.
  * @param[in] event Event type to distinguish following parameters.
  * @param[in] ... Specific parameters for different event types as described
  * above.
  * @return 0 for success, non-zero value else.
  */
-int nc_ntf_event_new(char* stream, NC_NTF_EVENT event, ...);
+int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...);
 
 /**
  * \todo Implement this function.
@@ -157,6 +158,5 @@ int nc_ntf_event_new(char* stream, NC_NTF_EVENT event, ...);
  * @return number of sent notifications (including 0), -1 on error.
  */
 long long int nc_ntf_dispatch(struct nc_session* session, const nc_rpc* subscribe_rpc);
-
 
 #endif /* NOTIFICATIONS_H_ */
