@@ -139,17 +139,14 @@ time_t nc_datetime2time(const char* datetime)
 	return (retval);
 }
 
-char* nc_time2datetime(const time_t *time)
+char* nc_time2datetime(time_t time)
 {
 	char* date;
 	char* zoneshift = NULL;
         int zonediff, zonediff_h, zonediff_m;
         struct tm tm;
 
-	if (time == NULL ) {
-		return (NULL);
-	}
-	if (gmtime_r(time, &tm) == NULL) {
+	if (gmtime_r(&time, &tm) == NULL) {
 		return (NULL);
 	}
 

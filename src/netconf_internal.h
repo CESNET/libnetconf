@@ -375,7 +375,7 @@ int ncdflt_default_clear(xmlDocPtr config, const xmlDocPtr model);
  * @return Printed string in a format compliant to RFC 3339. It is up to the
  * caller to free the returned string.
  */
-char* nc_time2datetime(const time_t *time);
+char* nc_time2datetime(time_t time);
 
 /**
  * @ingroup internalAPI
