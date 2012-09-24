@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Thu Sep 6 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Mon Sep 24 2012" "Version 0.1.4" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -101,7 +101,7 @@ separated startup datastore as defined in Distinct Startup Capability
 \fB\fINC_DATASTORE_CANDIDATE \fP\fP
 separated working datastore as defined in Candidate Configuration Capability 
 .PP
-Definition at line 197 of file netconf\&.h\&.
+Definition at line 210 of file netconf\&.h\&.
 .SS "enum \fBNCDS_TYPE\fP"
 
 .PP
@@ -126,7 +126,7 @@ Datastores implemented as files
 Definition at line 49 of file datastore\&.h\&.
 .SH "Function Documentation"
 .PP 
-.SS "struct ncds_ds* \fBncds_new\fP (\fBNCDS_TYPE\fPtype, const char *model_path, char *(*)(const char *model, const char *running, struct nc_err **e)get_state)\fC [read]\fP"
+.SS "struct ncds_ds* ncds_new (\fBNCDS_TYPE\fPtype, const char *model_path, char *(*)(const char *model, const char *running, struct nc_err **e)get_state)\fC [read]\fP"
 
 .PP
 Create new datastore structure of the specified implementation type\&. \fBParameters:\fP
@@ -144,7 +144,7 @@ Prepared (not configured) datastore structure\&. To configure the structure, cal
 .RE
 .PP
 
-.SS "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
+.SS "int ncds_file_set_path (struct ncds_ds *datastore, const char *path)"
 
 .PP
 Assign path of the datastore file into the datastore structure\&. Checks if the file exist and is accessible for reading and writing\&. If the file does not exist it is created\&. File is opened and file descriptor is stored in the structure
@@ -162,7 +162,7 @@ Assign path of the datastore file into the datastore structure\&. Checks if the 
 .RE
 .PP
 
-.SS "\fBncds_id\fP \fBncds_init\fP (struct ncds_ds *datastore)"
+.SS "\fBncds_id\fP ncds_init (struct ncds_ds *datastore)"
 
 .PP
 Activate datastore structure for use\&. The datastore configuration is checked and if everything is correct, datastore gets its unique ID to be used for datastore operations (\fBncds_apply_rpc()\fP)\&.
@@ -178,7 +178,7 @@ Positive integer with datastore ID on success, negative value on error\&. -1 Inv
 .RE
 .PP
 
-.SS "void \fBncds_free\fP (struct ncds_ds *datastore)"
+.SS "void ncds_free (struct ncds_ds *datastore)"
 
 .PP
 Close specified datastore and free all resources\&. Equivalent function to \fBncds_free2()\fP\&.
@@ -189,7 +189,7 @@ Close specified datastore and free all resources\&. Equivalent function to \fBnc
 .RE
 .PP
 
-.SS "void \fBncds_free2\fP (\fBncds_id\fPdatastore_id)"
+.SS "void ncds_free2 (\fBncds_id\fPdatastore_id)"
 
 .PP
 Close specified datastore and free all resources\&. Equivalent function to \fBncds_free()\fP\&.
@@ -200,7 +200,7 @@ Close specified datastore and free all resources\&. Equivalent function to \fBnc
 .RE
 .PP
 
-.SS "\fBnc_reply\fP* \fBncds_apply_rpc\fP (\fBncds_id\fPid, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
+.SS "\fBnc_reply\fP* ncds_apply_rpc (\fBncds_id\fPid, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 
 .PP
 Perform requested RPC operation on the datastore\&. \fBParameters:\fP
@@ -218,7 +218,7 @@ NULL in case of non NC_RPC_DATASTORE_* operation type, else <rpc-reply> with <ok
 .RE
 .PP
 
-.SS "void \fBncds_break_locks\fP (const struct nc_session *session)"
+.SS "void ncds_break_locks (const struct nc_session *session)"
 
 .PP
 Remove all locks that is holding given session\&. \fBParameters:\fP
@@ -227,7 +227,7 @@ Remove all locks that is holding given session\&. \fBParameters:\fP
 .RE
 .PP
 
-.SS "char* \fBncds_get_model\fP (\fBncds_id\fPid)"
+.SS "char* ncds_get_model (\fBncds_id\fPid)"
 
 .PP
 Return serialized XML containing data model in YIN format\&. \fBParameters:\fP
@@ -241,7 +241,7 @@ String containing YIN model\&. Caller must free memory after use\&.
 .RE
 .PP
 
-.SS "const char* \fBncds_get_model_path\fP (\fBncds_id\fPid)"
+.SS "const char* ncds_get_model_path (\fBncds_id\fPid)"
 
 .PP
 Return path to file containing datastore datamodel\&. \fBParameters:\fP

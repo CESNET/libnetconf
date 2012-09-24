@@ -1,4 +1,4 @@
-.TH "src/messages.h" 3 "Thu Sep 6 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
+.TH "src/messages.h" 3 "Mon Sep 24 2012" "Version 0.1.4" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -94,6 +94,10 @@ Functions to create NETCONF messages\&.
 .br
 .RI "\fIGet content of the <data> element in <rpc-reply>\&. \fP"
 .ti -1c
+.RI "const char * \fBnc_reply_get_errormsg\fP (\fBnc_reply\fP *reply)"
+.br
+.RI "\fIGet error-message from the server's <rpc-error> reply\&. \fP"
+.ti -1c
 .RI "void \fBnc_rpc_free\fP (\fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIFree rpc message\&. \fP"
@@ -113,6 +117,10 @@ Functions to create NETCONF messages\&.
 .RI "\fBnc_reply\fP * \fBnc_reply_error\fP (struct nc_err *error)"
 .br
 .RI "\fICreate rpc-reply response with <rpc-error> content\&. \fP"
+.ti -1c
+.RI "int \fBnc_reply_error_add\fP (\fBnc_reply\fP *reply, struct nc_err *error)"
+.br
+.RI "\fIAdd another error description into the existing rpc-reply with <rpc-error> content\&. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_copyconfig\fP (\fBNC_DATASTORE\fP source, \fBNC_DATASTORE\fP target, const char *data)"
 .br

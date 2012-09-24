@@ -7,7 +7,7 @@ var NAVTREE =
     [ "Files", null, [
       [ "File List", "files.html", "files" ],
       [ "Globals", "globals.html", [
-        [ "All", "globals.html", null ],
+        [ "All", "globals.html", "globals_dup" ],
         [ "Functions", "globals_func.html", null ],
         [ "Typedefs", "globals_type.html", null ],
         [ "Enumerations", "globals_enum.html", null ],
@@ -18,8 +18,8 @@ var NAVTREE =
   ] ]
 ];
 
-
 var navTreeIndex;
+var navTreeSubIndices = new Array();
 
 function getData(varName)
 {
@@ -31,6 +31,14 @@ function getData(varName)
 function stripPath(uri)
 {
   return uri.substring(uri.lastIndexOf('/')+1);
+}
+
+function stripPath2(uri)
+{
+  var i = uri.lastIndexOf('/');
+  var s = uri.substring(i+1);
+  var m = uri.substring(0,i+1).match(/\/d\w\/d\w\w\/$/);
+  return m ? uri.substring(i-6) : s;
 }
 
 function getScript(scriptName,func,show)
@@ -317,7 +325,8 @@ function showNode(o, node, index)
             showNode(o,node,index); // retry with child node expanded
           },true);
         } else {
-          if (o.toroot=="index.html" || n.childrenData) {
+          var rootBase = o.toroot.replace(/\..+$/, '');
+          if (rootBase=="index" || rootBase=="pages") {
             expandNode(o, n, true, true);
           }
           selectAndHighlight(n);
@@ -340,24 +349,47 @@ function getNode(o, po)
   }
 }
 
-function gotoNode(o,root,hash)
+function gotoNode(o,subIndex,root,hash)
 {
-  var nti = navTreeIndex[root+hash];
-  o.breadcrumbs = nti ? nti : navTreeIndex[root];
-  if (o.breadcrumbs==null) o.breadcrumbs = navTreeIndex["index.html"];
-  o.breadcrumbs.unshift(0);
-  showNode(o, o.node, 0);
+  var nti = navTreeSubIndices[subIndex][root+hash];
+  o.breadcrumbs = nti ? nti : navTreeSubIndices[subIndex][root];
+  if (o.breadcrumbs)
+  {
+    o.breadcrumbs.unshift(0); // add 0 for root node
+    showNode(o, o.node, 0);
+  }
+}
+
+function gotoSubIndex(o,root,hash,relpath)
+{
+  if (hash.match(/^#l\d+$/)) 
+  {
+    hash=''; // strip line number anchors
+  }
+  var url=root+hash;
+  var i=-1;
+  while (navTreeIndex[i+1]<=url) i++;
+  if (navTreeSubIndices[i]) {
+    gotoNode(o,i,root,hash)
+  } else {
+    getScript(relpath+'navtreeindex'+i,function(){
+      navTreeSubIndices[i] = eval('NAVTREEINDEX'+i);
+      if (navTreeSubIndices[i]) {
+        gotoNode(o,i,root,hash);
+      }
+    },true);
+  }
 }
 
 function navTo(o,root,hash,relpath)
 {
   if (navTreeIndex){
-    gotoNode(o,root,hash);
+    gotoSubIndex(o,root,hash,relpath);
   } else {
     getScript(relpath+"navtreeindex",function(){
       navTreeIndex = eval('NAVTREEINDEX');
       if (navTreeIndex){
-        gotoNode(o,root,hash);
+        gotoSubIndex(o,root,hash,relpath);
       }
     },true);
   } 
@@ -397,7 +429,7 @@ function initNavTree(toroot,relpath)
          $('.item').removeClass('selected');
          $('.item').removeAttr('id');
        }
-       var link=stripPath($(location).attr('pathname'));
+       var link=stripPath2($(location).attr('pathname'));
        navTo(o,link,$(location).attr('hash'),relpath);
      }
   })

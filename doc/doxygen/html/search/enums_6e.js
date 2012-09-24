@@ -7,6 +7,7 @@ var searchData=
   ['nc_5ferr',['NC_ERR',['../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2',1,'error.h']]],
   ['nc_5ferr_5fparam',['NC_ERR_PARAM',['../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73d',1,'netconf.h']]],
   ['nc_5ffilter_5ftype',['NC_FILTER_TYPE',['../db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706',1,'netconf.h']]],
+  ['nc_5fmsg_5ftype',['NC_MSG_TYPE',['../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057',1,'netconf.h']]],
   ['nc_5fop',['NC_OP',['../db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07',1,'netconf.h']]],
   ['nc_5freply_5ftype',['NC_REPLY_TYPE',['../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29',1,'netconf.h']]],
   ['nc_5frpc_5ftype',['NC_RPC_TYPE',['../db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00',1,'netconf.h']]],

@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Thu Sep 6 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Mon Sep 24 2012" "Version 0.1.4" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -21,7 +21,7 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .RI "\fIreply message\&. \fP"
 .ti -1c
-.RI "typedef long long unsigned int \fBnc_msgid\fP"
+.RI "typedef const char * \fBnc_msgid\fP"
 .br
 .RI "\fIType representing NETCONF message-id attribute\&. \fP"
 .in -1c
@@ -32,6 +32,10 @@ libnetconf's general public functions and structures definitions\&.
 .RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP =  -1, \fBNC_SESSION_STATUS_STARTUP\fP =  0, \fBNC_SESSION_STATUS_WORKING\fP =  1, \fBNC_SESSION_STATUS_CLOSED\fP =  2, \fBNC_SESSION_STATUS_DUMMY\fP =  3 }"
 .br
 .RI "\fIEnumeration of possible states of the NETCONF session\&. \fP"
+.ti -1c
+.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP =  -5 }"
+.br
+.RI "\fIEnumeration of NETCONF message types\&. \fP"
 .ti -1c
 .RI "enum \fBNC_REPLY_TYPE\fP { \fBNC_REPLY_UNKNOWN\fP, \fBNC_REPLY_HELLO\fP, \fBNC_REPLY_OK\fP, \fBNC_REPLY_ERROR\fP, \fBNC_REPLY_DATA\fP }"
 .br
@@ -138,7 +142,7 @@ bad-namespace in error-info - name of the unexpected namespace, contained in 'un
 \fB\fINC_ERR_PARAM_INFO_SID \fP\fP
 session-id in error-info - session ID of session holding the requested lock, contained in 'lock-denied' error\&. 
 .PP
-Definition at line 134 of file netconf\&.h\&.
+Definition at line 147 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_OP_TYPE\fP"
 
 .PP
@@ -158,7 +162,7 @@ Definition at line 134 of file netconf\&.h\&.
 \fB\fINC_EDIT_OP_REMOVE \fP\fP
 
 .PP
-Definition at line 213 of file netconf\&.h\&.
+Definition at line 226 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_DEFOP_TYPE\fP"
 
 .PP
@@ -174,7 +178,7 @@ Definition at line 213 of file netconf\&.h\&.
 \fB\fINC_EDIT_DEFOP_REPLACE \fP\fP
 
 .PP
-Definition at line 223 of file netconf\&.h\&.
+Definition at line 236 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_ERROPT_TYPE\fP"
 
 .PP
@@ -190,7 +194,7 @@ Definition at line 223 of file netconf\&.h\&.
 \fB\fINC_EDIT_ERROPT_ROLLBACK \fP\fP
 
 .PP
-Definition at line 230 of file netconf\&.h\&.
+Definition at line 243 of file netconf\&.h\&.
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.
