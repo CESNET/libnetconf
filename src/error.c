@@ -41,9 +41,13 @@
 #include <errno.h>
 #include <string.h>
 
-#include "error.h"
-#include "netconf_internal.h"
+#include <libxml/tree.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
 
+#include "error.h"
+#include "netconf.h"
+#include "netconf_internal.h"
 
 struct nc_err* nc_err_new(NC_ERR error)
 {
@@ -195,45 +199,44 @@ struct nc_err* nc_err_dup(const struct nc_err* err)
 	}
 
 	if (err->apptag) {
-		duperr->apptag = strdup (err->apptag);
+		duperr->apptag = strdup(err->apptag);
 	}
 	if (err->attribute) {
-		duperr->attribute = strdup (err->attribute);
+		duperr->attribute = strdup(err->attribute);
 	}
 	if (err->element) {
-		duperr->element = strdup (err->element);
+		duperr->element = strdup(err->element);
 	}
 	if (err->message) {
-		duperr->message = strdup (err->message);
+		duperr->message = strdup(err->message);
 	}
 	if (err->ns) {
-		duperr->ns = strdup (err->ns);
+		duperr->ns = strdup(err->ns);
 	}
 	if (err->path) {
-		duperr->path = strdup (err->path);
+		duperr->path = strdup(err->path);
 	}
-	if(err->severity) {
-		duperr->severity = strdup (err->severity);
+	if (err->severity) {
+		duperr->severity = strdup(err->severity);
 	}
 	if (err->sid) {
-		duperr->sid = strdup (err->sid);
+		duperr->sid = strdup(err->sid);
 	}
 	if (err->tag) {
-		duperr->tag = strdup (err->tag);
+		duperr->tag = strdup(err->tag);
 	}
 	if (err->type) {
-		duperr->type = strdup (err->type);
+		duperr->type = strdup(err->type);
 	}
-
 
 	return (duperr);
 }
 
-void nc_err_free (struct nc_err* err)
+void nc_err_free(struct nc_err* err)
 {
 	if (err != NULL) {
 		if (err->apptag) {
-			free (err->apptag);
+			free(err->apptag);
 		}
 		if (err->attribute) {
 			free(err->attribute);
@@ -250,7 +253,7 @@ void nc_err_free (struct nc_err* err)
 		if (err->path) {
 			free(err->path);
 		}
-		if(err->severity) {
+		if (err->severity) {
 			free(err->severity);
 		}
 		if (err->sid) {
@@ -262,7 +265,7 @@ void nc_err_free (struct nc_err* err)
 		if (err->type) {
 			free(err->type);
 		}
-		free (err);
+		free(err);
 	}
 }
 
@@ -274,7 +277,7 @@ const char* nc_err_get(const struct nc_err* err, NC_ERR_PARAM param)
 		return (NULL);
 	}
 
-	switch(param) {
+	switch (param) {
 	case NC_ERR_PARAM_TYPE:
 		return (err->type);
 	case NC_ERR_PARAM_TAG:
@@ -301,7 +304,7 @@ const char* nc_err_get(const struct nc_err* err, NC_ERR_PARAM param)
 	}
 }
 
-int nc_err_set (struct nc_err* err, NC_ERR_PARAM param, const char* value)
+int nc_err_set(struct nc_err* err, NC_ERR_PARAM param, const char* value)
 {
 	char** param_item = NULL;
 
@@ -357,8 +360,110 @@ int nc_err_set (struct nc_err* err, NC_ERR_PARAM param, const char* value)
 			/* remove previous value if any */
 			free(*param_item);
 		}
-		*param_item = strdup (value);
+		*param_item = strdup(value);
 	}
 
 	return (EXIT_SUCCESS);
+}
+
+/**
+ * @brief Parse given reply message and create NETCONF error structure
+ * describing the error from the reply. Reply must be of #NC_REPLY_ERROR type.
+ * @param[in] reply \<rpc-reply\> message to be parsed.
+ * @return Filled error structure according to given rpc-reply, it is up to
+ * caller to free the structure using nc_err_free().
+ */
+struct nc_err* nc_err_parse(nc_reply* reply)
+{
+	xmlXPathContextPtr reply_ctxt = NULL;
+	xmlXPathObjectPtr result = NULL;
+	xmlNodePtr node, subnode;
+	int i;
+	struct nc_err* e = NULL, *eaux = NULL;
+
+	if (reply == NULL || reply->doc == NULL || reply->type.reply != NC_REPLY_ERROR) {
+		return (NULL);
+	}
+	if (reply->error != NULL) {
+		/* error structure is already created */
+		return (nc_err_dup(reply->error));
+	}
+
+	/* create xpath evaluation context */
+	if ((reply_ctxt = xmlXPathNewContext(reply->doc)) == NULL) {
+		WARN("%s: Creating XPath context failed.", __func__)
+		return (NULL);
+	}
+	if (xmlXPathRegisterNs(reply_ctxt, BAD_CAST "base10", BAD_CAST NC_NS_BASE10) != 0) {
+		xmlXPathFreeContext(reply_ctxt);
+		return (NULL);
+	}
+
+	/* find all <rpc-error>s */
+	result = xmlXPathEvalExpression(BAD_CAST "//base10:rpc-error", reply_ctxt);
+	if (result != NULL) {
+		for (i = 0; i < result->nodesetval->nodeNr; i++) {
+			/* error structure is not yet created */
+			eaux = nc_err_new(NC_ERR_EMPTY);
+
+			/* parse the content of the message */
+			for (node = result->nodesetval->nodeTab[i]->children;
+			                node != NULL; node = node->next) {
+				if (node->type != XML_ELEMENT_NODE) {
+					continue;
+				}
+				if (xmlStrcmp(node->name, BAD_CAST "error-tag") == 0) {
+					eaux->tag = (char*) xmlNodeGetContent(node);
+				} else if (xmlStrcmp(node->name, BAD_CAST "error-type") == 0) {
+					eaux->type = (char*) xmlNodeGetContent(node);
+				} else if (xmlStrcmp(node->name, BAD_CAST "error-severity") == 0) {
+					eaux->severity = (char*) xmlNodeGetContent(node);
+				} else if (xmlStrcmp(node->name, BAD_CAST "error-app-tag") == 0) {
+					eaux->apptag = (char*) xmlNodeGetContent(node);
+				} else if (xmlStrcmp(node->name, BAD_CAST "error-path") == 0) {
+					eaux->path = (char*) xmlNodeGetContent(node);
+				} else if (xmlStrcmp(node->name, BAD_CAST "error-message") == 0) {
+					eaux->message = (char*) xmlNodeGetContent(node);
+				} else if (xmlStrcmp(node->name, BAD_CAST "error-info") == 0) {
+					subnode = node->children;
+					while (subnode != NULL) {
+						if (subnode->type != XML_ELEMENT_NODE) {
+							subnode = subnode->next;
+							continue;
+						}
+						if (xmlStrcmp(subnode->name, BAD_CAST "bad-atribute") == 0) {
+							eaux->attribute = (char*) xmlNodeGetContent(subnode);
+						} else if (xmlStrcmp(subnode->name, BAD_CAST "bad-element") == 0 ||
+								xmlStrcmp(subnode->name, BAD_CAST "ok-element") == 0 ||
+								xmlStrcmp(subnode->name, BAD_CAST "err-element") == 0 ||
+								xmlStrcmp(subnode->name, BAD_CAST "noop-element") == 0) {
+							eaux->element = (char*) xmlNodeGetContent(subnode);
+						} else if (xmlStrcmp(subnode->name, BAD_CAST "bad-namespace") == 0) {
+							eaux->ns = (char*) xmlNodeGetContent(subnode);
+						} else if (xmlStrcmp(subnode->name, BAD_CAST "session-id") == 0) {
+							eaux->sid = (char*) xmlNodeGetContent(subnode);
+						}
+						subnode = subnode->next;
+					}
+				}
+			}
+
+			if (e != NULL) {
+				/* concatenate multiple rpc-errors in repl-reply */
+				eaux->next = e;
+				e = eaux;
+			}
+		}
+		xmlXPathFreeObject(result);
+	} else {
+		ERROR("No error information in reply message to parse.");
+		/* NULL, which is default e's value, will be returned */
+	}
+	xmlXPathFreeContext(reply_ctxt);
+
+	/* store the result for the further use */
+	//reply->error = nc_err_dup(e);
+	reply->error = e;
+
+	return (e);
 }
