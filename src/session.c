@@ -52,6 +52,7 @@
 #include "messages.h"
 #include "messages_internal.h"
 #include "session.h"
+#include "datastore.h"
 
 /**
  * Sleep time in microseconds to wait between unsuccessful reading due to EAGAIN or EWOULDBLOCK
@@ -489,6 +490,9 @@ void nc_session_close(struct nc_session* session, const char* msg)
 	if (session != NULL && closing == 0) {
 		/* prevent infinite recursion when socket is corrupted -> stack overflow */
 		closing = 1;
+
+		/* break all datastore locks held by the session */
+		ncds_break_locks(session);
 
 		/* close ssh session */
 		if (session->ssh_channel != NULL) {
