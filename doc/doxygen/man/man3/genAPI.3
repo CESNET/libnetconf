@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Fri Sep 14 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Mon Sep 24 2012" "Version 0.1.4" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -111,7 +111,7 @@ Print all messages including some development debug messages\&.
 Definition at line 276 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
-.SS "void \fBnc_verbosity\fP (\fBNC_VERB_LEVEL\fPlevel)"
+.SS "void nc_verbosity (\fBNC_VERB_LEVEL\fPlevel)"
 
 .PP
 Set libnetconf's verbosity level\&. \fBParameters:\fP
@@ -120,7 +120,7 @@ Set libnetconf's verbosity level\&. \fBParameters:\fP
 .RE
 .PP
 
-.SS "void \fBnc_callback_print\fP (void(*)(\fBNC_VERB_LEVEL\fP level, const char *msg)func)"
+.SS "void nc_callback_print (void(*)(\fBNC_VERB_LEVEL\fP level, const char *msg)func)"
 
 .PP
 Set callback function for printing libnetconf's messages\&. \fBParameters:\fP
@@ -129,7 +129,7 @@ Set callback function for printing libnetconf's messages\&. \fBParameters:\fP
 .RE
 .PP
 
-.SS "struct nc_err* \fBnc_err_new\fP (\fBNC_ERR\fPerror)\fC [read]\fP"
+.SS "struct nc_err* nc_err_new (\fBNC_ERR\fPerror)\fC [read]\fP"
 
 .PP
 Create new error description structure\&. \fBParameters:\fP
@@ -143,7 +143,7 @@ Created NETCONF error structure on success, NULL on error\&.
 .RE
 .PP
 
-.SS "struct nc_err* \fBnc_err_dup\fP (const struct nc_err *error)\fC [read]\fP"
+.SS "struct nc_err* nc_err_dup (const struct nc_err *error)\fC [read]\fP"
 
 .PP
 Duplicate error description structure\&. \fBParameters:\fP
@@ -157,7 +157,7 @@ Duplicated NETCONF error structure on success, NULL on error\&.
 .RE
 .PP
 
-.SS "void \fBnc_err_free\fP (struct nc_err *err)"
+.SS "void nc_err_free (struct nc_err *err)"
 
 .PP
 Free NETCONF error structure\&. \fBParameters:\fP
@@ -166,7 +166,7 @@ Free NETCONF error structure\&. \fBParameters:\fP
 .RE
 .PP
 
-.SS "int \fBnc_err_set\fP (struct nc_err *err, \fBNC_ERR_PARAM\fPparam, const char *value)"
+.SS "int nc_err_set (struct nc_err *err, \fBNC_ERR_PARAM\fPparam, const char *value)"
 
 .PP
 Set selected parameter of the NETCONF error structure to the specified value\&. \fBParameters:\fP
@@ -186,7 +186,7 @@ Set selected parameter of the NETCONF error structure to the specified value\&. 
 .RE
 .PP
 
-.SS "const char* \fBnc_err_get\fP (const struct nc_err *err, \fBNC_ERR_PARAM\fPparam)"
+.SS "const char* nc_err_get (const struct nc_err *err, \fBNC_ERR_PARAM\fPparam)"
 
 .PP
 Get value of the specified parameter of the NETCONF error structure\&. \fBParameters:\fP
@@ -202,7 +202,7 @@ Constant string value of the requested parameter, NULL if the specified paramete
 .RE
 .PP
 
-.SS "int \fBnc_msgid_compare\fP (const \fBnc_msgid\fPid1, const \fBnc_msgid\fPid2)"
+.SS "int nc_msgid_compare (const \fBnc_msgid\fPid1, const \fBnc_msgid\fPid2)"
 
 .PP
 Compare two message IDs if they are the same\&. \fBParameters:\fP

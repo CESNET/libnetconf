@@ -1,4 +1,4 @@
-.TH "src/messages.h" 3 "Fri Sep 14 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
+.TH "src/messages.h" 3 "Mon Sep 24 2012" "Version 0.1.4" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -95,6 +95,10 @@ Functions to create NETCONF messages\&.
 .RI "char * \fBnc_reply_get_data\fP (const \fBnc_reply\fP *reply)"
 .br
 .RI "\fIGet content of the <data> element in <rpc-reply>\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_reply_get_errormsg\fP (\fBnc_reply\fP *reply)"
+.br
+.RI "\fIGet error-message from the server's <rpc-error> reply\&. \fP"
 .ti -1c
 .RI "void \fBnc_rpc_free\fP (\fBnc_rpc\fP *rpc)"
 .br
