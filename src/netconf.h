@@ -92,7 +92,7 @@ typedef enum {
 
 /**
  * @brief Enumeration of NETCONF message types.
- * @generic genAPI
+ * @ingroup genAPI
  */
 typedef enum NC_MSG_TYPE {
 	NC_MSG_UNKNOWN, /**< error state */
