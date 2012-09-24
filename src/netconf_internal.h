@@ -259,19 +259,19 @@ struct nc_err {
 	char *message;
 	/**
 	 * @brief Name of the data-model-specific XML attribute that caused the error.
-	 *
+	 * \todo: The model defines this as a sequence, so we have to support storing of multiple values for this
 	 * This information is part of error-info element.
 	 */
 	char *attribute;
 	/**
 	 * @brief Name of the data-model-specific XML element that caused the error.
-	 *
+	 * \todo: The model defines this as a sequence, so we have to support storing of multiple values for this
 	 * This information is part of error-info element.
 	 */
 	char *element;
 	/**
 	 * @brief Name of the unexpected XML namespace that caused the error.
-	 *
+	 * \todo: The model defines this as a sequence, so we have to support storing of multiple values for this
 	 * This information is part of error-info element.
 	 */
 	char *ns;
@@ -348,5 +348,16 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCDFLT_MODE m
  * @return 0 on success, non-zero else.
  */
 int ncdflt_default_clear(xmlDocPtr config, const xmlDocPtr model);
+
+/**
+ * @brief Parse given reply message and create NETCONF error structure
+ * describing the error from the reply. Reply must be of #NC_REPLY_ERROR type.
+ * @param[in] reply \<rpc-reply\> message to be parsed.
+ * @return Filled error structure according to given rpc-reply, returned value
+ * is automatically connected with the given rpc-reply and should not be freed
+ * separatedly. This behaviour should be changed when this function will be part
+ * of the public API and used by applications.
+ */
+struct nc_err* nc_err_parse(nc_reply* reply);
 
 #endif /* NETCONF_INTERNAL_H_ */

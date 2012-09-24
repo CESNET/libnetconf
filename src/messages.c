@@ -649,6 +649,20 @@ char *nc_reply_get_data(const nc_reply *reply)
 	return ((char*) buf);
 }
 
+const char *nc_reply_get_errormsg(nc_reply *reply)
+{
+	if (reply == NULL || reply->type.reply != NC_REPLY_ERROR) {
+		return (NULL);
+	}
+
+	if (reply->error == NULL) {
+		/* parse all error information */
+		nc_err_parse(reply);
+	}
+
+	return ((reply->error == NULL) ? NULL : reply->error->message);
+}
+
 nc_rpc *nc_msg_client_hello(char **cpblts)
 {
 	nc_rpc *msg;

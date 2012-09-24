@@ -233,6 +233,15 @@ NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply);
 char *nc_reply_get_data(const nc_reply *reply);
 
 /**
+ * @ingroup reply
+ * @brief Get error-message from the server's \<rpc-error\> reply.
+ * @param reply rpc-reply message of the #NC_REPLY_ERROR type.
+ * @return String with the content of the \<data\> element. Caller is
+ * responsible for free of returned string with free().
+ */
+const char *nc_reply_get_errormsg(nc_reply *reply);
+
+/**
  * @brief Free rpc message.
  * @ingroup rpc
  * @param[in] rpc rpc message to free.
