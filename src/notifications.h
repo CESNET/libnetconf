@@ -119,23 +119,33 @@ int nc_ntf_stream_isavailable(const char* name);
  *
  * ### Event parameters:
  * - #NC_NTF_GENERIC
- *  - **char* content** Content of the notification as defined in RFC 5277.
+ *  - **const char* content** Content of the notification as defined in RFC 5277.
  *  eventTime is added automatically. The string should be XML formatted.
  * - #NC_NTF_BASE_CFG_CHANGE
  *  - #NC_DATASTORE **datastore** Specify which datastore has changed.
  *  - #NC_NTF_EVENT_BY **changed_by** Specify the source of the change.
+ *   - If the value is set to #NC_NTF_EVENT_BY_USER, following parameter is
+ *   required:
+ *  - **const struct nc_session* session** Session required the configuration change.
  * - #NC_NTF_BASE_CPBLT_CHANGE
  *  - **const struct nc_cpblts* old** Old list of capabilities.
  *  - **const struct nc_cpblts* new** New list of capabilities.
  *  - #NC_NTF_EVENT_BY **changed_by** Specify the source of the change.
+ *   - If the value is set to #NC_NTF_EVENT_BY_USER, following parameter is
+ *   required:
+ *  - **const struct nc_session* session** Session required the configuration change.
  * - #NC_NTF_BASE_SESSION_START
- *  - **const struct nc_session session** Started session (#NC_SESSION_STATUS_DUMMY session is also allowed).
+ *  - **const struct nc_session* session** Started session (#NC_SESSION_STATUS_DUMMY session is also allowed).
  * - #NC_NTF_BASE_SESSION_END
  *  - #NC_SESSION_TERM_REASON **reason** Session termination reason.
  *
- * \todo Implement this function.
+ * ### Examples:
+ * - nc_ntf_event_new("mystream", -1, NC_NTF_GENERIC, "<event>something happend</event>");
+ * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NC_NTF_EVENT_BY_USER, my_session);
+ * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NC_NTF_EVENT_BY_SERVER);
+ *
  * @param[in] stream Name of the stream where the event will be stored.
- * @param[in] time Time of the event, if set to -1, current time is used.
+ * @param[in] etime Time of the event, if set to -1, current time is used.
  * @param[in] event Event type to distinguish following parameters.
  * @param[in] ... Specific parameters for different event types as described
  * above.

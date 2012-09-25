@@ -769,17 +769,30 @@ static int nc_ntf_stream_unlock(struct stream *s)
  * - #NC_NTF_BASE_CFG_CHANGE
  *  - #NC_DATASTORE **datastore** Specify which datastore has changed.
  *  - #NC_NTF_EVENT_BY **changed_by** Specify the source of the change.
+ *   - If the value is set to #NC_NTF_EVENT_BY_USER, following parameter is
+ *   required:
+ *  - **const struct nc_session* session** Session required the configuration change.
  * - #NC_NTF_BASE_CPBLT_CHANGE
  *  - **const struct nc_cpblts* old** Old list of capabilities.
  *  - **const struct nc_cpblts* new** New list of capabilities.
  *  - #NC_NTF_EVENT_BY **changed_by** Specify the source of the change.
+ *   - If the value is set to #NC_NTF_EVENT_BY_USER, following parameter is
+ *   required:
+ *  - **const struct nc_session* session** Session required the configuration change.
  * - #NC_NTF_BASE_SESSION_START
  *  - **const struct nc_session* session** Started session (#NC_SESSION_STATUS_DUMMY session is also allowed).
  * - #NC_NTF_BASE_SESSION_END
  *  - #NC_SESSION_TERM_REASON **reason** Session termination reason.
  *
+ * ### Examples:
+ * - nc_ntf_event_new("mystream", -1, NC_NTF_GENERIC, "<event>something happend</event>");
+ * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NC_NTF_EVENT_BY_USER, my_session);
+ * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NC_NTF_EVENT_BY_SERVER);
+ * - #NC_NTF_BASE_SESSION_START\n
+ * - #NC_NTF_BASE_SESSION_END\n
+ *
  * @param[in] stream Name of the stream where the event will be stored.
- * @param[in] time Time of the event, if set to -1, current time is used.
+ * @param[in] etime Time of the event, if set to -1, current time is used.
  * @param[in] event Event type to distinguish following parameters.
  * @param[in] ... Specific parameters for different event types as described
  * above.
@@ -789,6 +802,7 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 {
 	char *event_time = NULL;
 	char *content = NULL, *record = NULL;
+	char *aux1 = NULL, *aux2 = NULL;
 	NC_DATASTORE ds;
 	NC_NTF_EVENT_BY by;
 	const struct nc_cpblts *old, *new;
@@ -796,6 +810,7 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 	NC_SESSION_TERM_REASON reason;
 	struct stream* s;
 	int32_t len;
+	int poffset, i, j;
 	uint64_t etime64;
 	va_list params;
 
@@ -819,15 +834,196 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 		}
 		break;
 	case NC_NTF_BASE_CFG_CHANGE:
-		/* \todo */
 		ds = va_arg(params, NC_DATASTORE);
 		by = va_arg(params, NC_NTF_EVENT_BY);
+
+		/* check datastore parameter */
+		switch (ds) {
+		case NC_DATASTORE_STARTUP:
+			aux1 = "startup";
+			break;
+		case NC_DATASTORE_RUNNING:
+		case NC_DATASTORE_NONE: /* use default value -> running */
+			aux1 = "running";
+			break;
+		default:
+			/* invalid value */
+			ERROR("Invalid \'datastore\' parameter of %s.", __func__);
+			va_end(params);
+			return (EXIT_FAILURE);
+			break;
+		}
+
+		/* check change-by parameter */
+		switch (by) {
+		case NC_NTF_EVENT_BY_SERVER:
+			/* BY_USER must be created dynamically, so allocate it
+			 * dynamically also in this case to have single free();
+			 */
+			aux2 = strdup("<server/>");
+			break;
+		case NC_NTF_EVENT_BY_USER:
+			/* another parameter should be passed */
+			session = va_arg(params, const struct nc_session*);
+			if (session == NULL) {
+				ERROR("Invalid \'session\' parameter of %s.", __func__);
+				va_end(params);
+				return (EXIT_FAILURE);
+			}
+			asprintf(&aux2, "<username>%s</username>"
+					"<session-id>%s</session-id>"
+					"<source-host>%s</source-host>",
+					session->username,
+					session->session_id,
+					session->hostname);
+			break;
+		}
+
+		/* no more parameters */
+		va_end(params);
+
+		asprintf(&content, "<netconf-config-change><datastore>%s</datastore>"
+				"%s</netconf-config-change>",
+				aux1, aux2);
+		free(aux2);
+
 		break;
 	case NC_NTF_BASE_CPBLT_CHANGE:
 		/* \todo */
 		old = va_arg(params, const struct nc_cpblts*);
 		new = va_arg(params, const struct nc_cpblts*);
 		by = va_arg(params, NC_NTF_EVENT_BY);
+
+		/* find created capabilities */
+		for(i = 0; new->list[i] != NULL; i++) {
+			/*
+			 * check if the capability contains parameter (starting
+			 * with '?'). Then the length of the capability URI
+			 * without parameters is stored and used in comparison
+			 */
+			if ((aux1 = strchr(new->list[i], '?')) != NULL) {
+				/* there are capability's parameters */
+				poffset = (int)(aux1 - (new->list[i]));
+			} else {
+				poffset = strlen(new->list[i]);
+			}
+			/*
+			 * traverse old capabilities and find out if the
+			 * current new one is there
+			 */
+			j = 0;
+			while(old->list[j] != NULL) {
+				if (strncmp(new->list[i], old->list[j], poffset) == 0) {
+					break;
+				}
+				j++;
+			}
+
+			aux1 = NULL;
+			/* process the result of searching */
+			if (old->list[j] != NULL) {
+				/*
+				 * new->list[i] can be the same as old->list[j]
+				 * or there are modified parameters
+				 */
+				if ((old->list[j][poffset] == '?' || old->list[j][poffset] == '\0')
+						&& (strcmp(new->list[i], old->list[j]) != 0)) {
+					asprintf(&aux1, "<modified-capability>%s</modified-capability>", new->list[i]);
+				}
+			} else {
+				/* aux1 is a new capability */
+				asprintf(&aux1, "<added-capability>%s</added-capability>", new->list[i]);
+			}
+
+			if (aux1 != NULL) {
+				/* add new information to the previous one */
+				if (aux2 != NULL) {
+					aux2 = realloc(aux2, strlen(aux2) + strlen(aux1) + 1);
+				} else {
+					aux2 = calloc(strlen(aux1) + 1, sizeof(char));
+				}
+				strncat(aux2, aux1, strlen(aux1));
+				free(aux1);
+			}
+		}
+
+		/* find deleted capabilities */
+		for (i = 0; old->list[i] != NULL; i++) {
+			/*
+			 * find the end of the basic capability URI to not take
+			 * parameters into acount (this case was processed in
+			 * previous loop
+			 */
+			if ((aux1 = strchr(old->list[i], '?')) != NULL) {
+				/* there are capability's parameters */
+				poffset = (int) (aux1 - (old->list[i]));
+			} else {
+				poffset = strlen(old->list[i]);
+			}
+
+			/*
+			 * traverse new capabilities and find out if some of the
+			 * old capabilities is removed
+			 */
+			j = 0;
+			while(new->list[j] != NULL) {
+				if (strncmp(new->list[j], old->list[i], poffset) == 0) {
+					break;
+				}
+				j++;
+			}
+
+			/* process the result */
+			if (new->list[j] == NULL) {
+				aux1 = NULL;
+				/* old->list[i] is deleted capability */
+				asprintf(&aux1, "<deleted-capability>%s</deleted-capability>", old->list[i]);
+				if (aux2 != NULL) {
+					aux2 = realloc(aux2, strlen(aux2) + strlen(aux1) + 1);
+				} else {
+					aux2 = calloc(strlen(aux1) + 1, sizeof(char));
+				}
+				strncat(aux2, aux1, strlen(aux1));
+				free(aux1);
+			}
+		}
+
+		/* check change-by parameter */
+		switch (by) {
+		case NC_NTF_EVENT_BY_SERVER:
+			/* BY_USER must be created dynamically, so allocate it
+			 * dynamically also in this case to have single free();
+			 */
+			aux1 = strdup("<server/>");
+			break;
+		case NC_NTF_EVENT_BY_USER:
+			/* another parameter should be passed */
+			session = va_arg(params, const struct nc_session*);
+			if (session == NULL) {
+				ERROR("Invalid \'session\' parameter of %s.", __func__);
+				va_end(params);
+				return (EXIT_FAILURE);
+			}
+			asprintf(&aux1, "<username>%s</username>"
+					"<session-id>%s</session-id>"
+					"<source-host>%s</source-host>",
+					session->username,
+					session->session_id,
+					session->hostname);
+			break;
+		}
+
+		/* no more parameters */
+		va_end(params);
+
+		if (aux2 == NULL) {
+			aux2 = strdup("");
+		}
+
+		asprintf(&content, "<netconf-capability-change>%s%s</netconf-capability-change>",
+				aux1, aux2);
+		free(aux1);
+		free(aux2);
 		break;
 	case NC_NTF_BASE_SESSION_START:
 		/* \todo */
