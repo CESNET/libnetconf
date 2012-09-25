@@ -1,4 +1,4 @@
-.TH "src/notifications.h" 3 "Fri Sep 14 2012" "Version 0.1.3" "libnetconf" \" -*- nroff -*-
+.TH "src/notifications.h" 3 "Tue Sep 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -28,13 +28,13 @@ Functions to handle NETCONF Notifications\&.
 
 .in +1c
 .ti -1c
-.RI "int \fBnc_ntf_streams_init\fP (void)"
+.RI "int \fBnc_ntf_init\fP (void)"
 .br
-.RI "\fIInitiate NETCONF Event Streams\&. \fP"
+.RI "\fIInitiate NETCONF Notifications environment\&. \fP"
 .ti -1c
-.RI "void \fBnc_ntf_streams_close\fP (void)"
+.RI "void \fBnc_ntf_close\fP (void)"
 .br
-.RI "\fIClose all NETCONF Event Streams\&. \fP"
+.RI "\fIClose all NETCONF Event Streams and other parts of the Notifications environment\&. \fP"
 .ti -1c
 .RI "void \fBnc_ntf_free\fP (\fBnc_ntf\fP *ntf)"
 .br
@@ -48,11 +48,11 @@ Functions to handle NETCONF Notifications\&.
 .br
 .RI "\fIGet the list of NETCONF event notifications streams\&. \fP"
 .ti -1c
-.RI "int \fBnc_ntf_stream_avail\fP (const char *name)"
+.RI "int \fBnc_ntf_stream_isavailable\fP (const char *name)"
 .br
 .RI "\fITest if the given stream is already created and available\&. \fP"
 .ti -1c
-.RI "int \fBnc_ntf_event_new\fP (char *stream, \fBNC_NTF_EVENT\fP event,\&.\&.\&.)"
+.RI "int \fBnc_ntf_event_new\fP (char *stream, time_t etime, \fBNC_NTF_EVENT\fP event,\&.\&.\&.)"
 .br
 .RI "\fIStore new event into the specified stream\&. Parameters are specific for different events\&. \fP"
 .ti -1c

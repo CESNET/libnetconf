@@ -237,8 +237,9 @@ char *nc_reply_get_data(const nc_reply *reply);
  * @ingroup reply
  * @brief Get error-message from the server's \<rpc-error\> reply.
  * @param reply rpc-reply message of the #NC_REPLY_ERROR type.
- * @return String with the content of the \<data\> element. Caller is
- * responsible for free of returned string with free().
+ * @return String with the content of the \<error-message\> element. Referenced
+ * string is a part of the reply, so it can not be used after freeing the
+ * given reply.
  */
 const char *nc_reply_get_errormsg(nc_reply *reply);
 
