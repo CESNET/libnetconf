@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Mon Sep 24 2012" "Version 0.1.4" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Tue Sep 25 2012" "Version 0.1.4" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -271,7 +271,7 @@ Get error-message from the server's <rpc-error> reply\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-String with the content of the <data> element\&. Caller is responsible for free of returned string with free()\&. 
+String with the content of the <error-message> element\&. Referenced string is a part of the reply, so it can not be used after freeing the given reply\&. 
 .RE
 .PP
 

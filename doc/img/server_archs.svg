@@ -1,0 +1,1225 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="520.66016"
+   height="271.46149"
+   id="svg2"
+   inkscape:label="Pozadí"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="server_archs.svg">
+  <defs
+     id="defs3">
+    <linearGradient
+       id="linearGradient5705">
+      <stop
+         style="stop-color:#d3d3d3;stop-opacity:1;"
+         offset="0"
+         id="stop5707" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="1"
+         id="stop5709" />
+    </linearGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient7555"
+       id="radialGradient7561"
+       cx="24.25"
+       cy="99.249969"
+       fx="24.25"
+       fy="99.249969"
+       r="40.25"
+       gradientTransform="matrix(1,0,0,0.217391,0,95.67391)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient7529"
+       id="linearGradient7553"
+       gradientUnits="userSpaceOnUse"
+       x1="39.8125"
+       y1="71.043076"
+       x2="39.8125"
+       y2="75.246735" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5983"
+       id="linearGradient7551"
+       gradientUnits="userSpaceOnUse"
+       x1="6.34375"
+       y1="72.25"
+       x2="45.65625"
+       y2="72.25" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient7529"
+       id="linearGradient7535"
+       x1="39.8125"
+       y1="71.043076"
+       x2="39.8125"
+       y2="75.246735"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5983"
+       id="linearGradient5989"
+       x1="6.34375"
+       y1="72.25"
+       x2="45.65625"
+       y2="72.25"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       id="WhiteTransparent">
+      <stop
+         id="stopWhiteFull"
+         offset="0"
+         style="stop-color:#ffffff;stop-opacity:1;" />
+      <stop
+         id="stopWhiteTransparent"
+         offset="1"
+         style="stop-color:#ffffff;stop-opacity:0;" />
+    </linearGradient>
+    <linearGradient
+       id="TransparentWhite">
+      <stop
+         id="stopwhitefull"
+         offset="0"
+         style="stop-color:#ffffff;stop-opacity:0;" />
+      <stop
+         id="stopwhitetransparent"
+         offset="1"
+         style="stop-color:#ffffff;stop-opacity:1;" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3057">
+      <stop
+         id="stop3058"
+         offset="0.0000000"
+         style="stop-color:#000000;stop-opacity:0.19191919;" />
+      <stop
+         id="stop3059"
+         offset="0.34210527"
+         style="stop-color:#000000;stop-opacity:0.14141414;" />
+      <stop
+         id="stop3060"
+         offset="1.0000000"
+         style="stop-color:#ffffff;stop-opacity:0.0000000;" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2363">
+      <stop
+         id="stop2364"
+         offset="0.0000000"
+         style="stop-color:#ffffff;stop-opacity:0.0000000;" />
+      <stop
+         id="stop2365"
+         offset="1.0000000"
+         style="stop-color:#ffffff;stop-opacity:1.0000000;" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2372">
+      <stop
+         id="stop2373"
+         offset="0.0000000"
+         style="stop-color:#000000;stop-opacity:0.47058824;" />
+      <stop
+         id="stop2374"
+         offset="1.0000000"
+         style="stop-color:#000000;stop-opacity:0.0000000;" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2347">
+      <stop
+         id="stop2348"
+         offset="0.0000000"
+         style="stop-color:#ffffff;stop-opacity:0.0000000;" />
+      <stop
+         id="stop2349"
+         offset="1.0000000"
+         style="stop-color:#ffffff;stop-opacity:0.47058824;" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2341">
+      <stop
+         id="stop2342"
+         offset="0.0000000"
+         style="stop-color:#ffffff;stop-opacity:0.15686275;" />
+      <stop
+         id="stop2343"
+         offset="1.0000000"
+         style="stop-color:#ffffff;stop-opacity:1.0000000;" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient5983">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop5985" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop5987" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient7529">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop7531" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop7533" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient7555">
+      <stop
+         style="stop-color:#2e2e2e;stop-opacity:0.46875000;"
+         offset="0.0000000"
+         id="stop7557" />
+      <stop
+         style="stop-color:#2e2e2e;stop-opacity:0;"
+         offset="1"
+         id="stop7559" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2424">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop2426" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop2428" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2418">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="0"
+         id="stop2420" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="1"
+         id="stop2422" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2409">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.19191919;"
+         offset="0.0000000"
+         id="stop2411" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0.14141414;"
+         offset="0.34210527"
+         id="stop2413" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.0000000;"
+         offset="1.0000000"
+         id="stop2415" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2402">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.0000000;"
+         offset="0.0000000"
+         id="stop2404" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1.0000000;"
+         offset="1.0000000"
+         id="stop2406" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2395">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.47058824;"
+         offset="0.0000000"
+         id="stop2397" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0.0000000;"
+         offset="1.0000000"
+         id="stop2399" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2388">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.0000000;"
+         offset="0.0000000"
+         id="stop2390" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.47058824;"
+         offset="1.0000000"
+         id="stop2392" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2382">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.15686275;"
+         offset="0.0000000"
+         id="stop2384" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1.0000000;"
+         offset="1.0000000"
+         id="stop2386" />
+    </linearGradient>
+    <linearGradient
+       y2="211.3031"
+       x2="576.57422"
+       y1="133.76495"
+       x1="575.89093"
+       gradientTransform="translate(-208.2214,109.7383)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient29798"
+       xlink:href="#linearGradient22094"
+       inkscape:collect="always" />
+    <linearGradient
+       id="linearGradient22094">
+      <stop
+         id="stop22096"
+         offset="0"
+         style="stop-color:#000000;stop-opacity:1;" />
+      <stop
+         id="stop22098"
+         offset="1"
+         style="stop-color:#000000;stop-opacity:0;" />
+    </linearGradient>
+    <linearGradient
+       y2="482.6189"
+       x2="265.58069"
+       y1="306.17703"
+       x1="705.01263"
+       gradientTransform="translate(-208.2214,109.7383)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient29800"
+       xlink:href="#linearGradient22983"
+       inkscape:collect="always" />
+    <linearGradient
+       id="linearGradient22983"
+       inkscape:collect="always">
+      <stop
+         id="stop22985"
+         offset="0"
+         style="stop-color:#000000;stop-opacity:1;" />
+      <stop
+         id="stop22987"
+         offset="1"
+         style="stop-color:#000000;stop-opacity:0;" />
+    </linearGradient>
+    <linearGradient
+       y2="949.10645"
+       x2="659.70892"
+       y1="400.16699"
+       x1="491.75668"
+       gradientTransform="translate(-220.8835,106.9245)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient29802"
+       xlink:href="#linearGradient22094"
+       inkscape:collect="always" />
+    <linearGradient
+       y2="560.5694"
+       x2="379.71634"
+       y1="560.5694"
+       x1="253.14423"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient29804"
+       xlink:href="#linearGradient24757"
+       inkscape:collect="always" />
+    <linearGradient
+       id="linearGradient24757">
+      <stop
+         id="stop24759"
+         offset="0"
+         style="stop-color:#d5d5d5;stop-opacity:1;" />
+      <stop
+         id="stop24761"
+         offset="1"
+         style="stop-color:#848484;stop-opacity:0;" />
+    </linearGradient>
+    <linearGradient
+       y2="611.48108"
+       x2="306.17722"
+       y1="596.63184"
+       x1="309.71277"
+       gradientTransform="translate(-9.015606,192.1563)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient29806"
+       xlink:href="#linearGradient24757"
+       inkscape:collect="always" />
+    <linearGradient
+       y2="654.74451"
+       x2="191.44917"
+       y1="654.74451"
+       x1="177.95348"
+       gradientTransform="translate(225.2135,-257.0333)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient29808"
+       xlink:href="#linearGradient24757"
+       inkscape:collect="always" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4105"
+       id="linearGradient4172"
+       gradientUnits="userSpaceOnUse"
+       x1="73.640739"
+       y1="113.85787"
+       x2="35.60788"
+       y2="8.2969255"
+       gradientTransform="translate(-84.0952,-4.477295)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4130"
+       id="linearGradient4169"
+       gradientUnits="userSpaceOnUse"
+       x1="9.574522"
+       y1="30.543657"
+       x2="71.071434"
+       y2="96.615082"
+       gradientTransform="translate(-84.0952,-4.477295)" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4118"
+       id="radialGradient4164"
+       gradientUnits="userSpaceOnUse"
+       cx="57.106434"
+       cy="45.286964"
+       fx="57.106434"
+       fy="45.286964"
+       r="27.627054" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4130"
+       id="linearGradient4162"
+       gradientUnits="userSpaceOnUse"
+       x1="9.574522"
+       y1="30.543657"
+       x2="71.071434"
+       y2="96.615082" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4105"
+       id="linearGradient4160"
+       gradientUnits="userSpaceOnUse"
+       x1="73.640739"
+       y1="113.85787"
+       x2="35.60788"
+       y2="8.2969255" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4130"
+       id="linearGradient4146"
+       gradientUnits="userSpaceOnUse"
+       x1="9.574522"
+       y1="30.543657"
+       x2="71.071434"
+       y2="96.615082" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4105"
+       id="linearGradient4144"
+       gradientUnits="userSpaceOnUse"
+       x1="73.640739"
+       y1="113.85787"
+       x2="35.60788"
+       y2="8.2969255" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4130"
+       id="linearGradient4136"
+       x1="9.574522"
+       y1="30.543657"
+       x2="71.071434"
+       y2="96.615082"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4118"
+       id="radialGradient4124"
+       cx="57.106434"
+       cy="45.286964"
+       fx="57.106434"
+       fy="45.286964"
+       r="27.627054"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4105"
+       id="linearGradient4114"
+       gradientUnits="userSpaceOnUse"
+       x1="73.640739"
+       y1="113.85787"
+       x2="35.60788"
+       y2="8.2969255" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4105"
+       id="linearGradient4111"
+       x1="16.062044"
+       y1="85.06852"
+       x2="100.61058"
+       y2="85.06852"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       id="linearGradient4105">
+      <stop
+         style="stop-color:#25a2ff;stop-opacity:1.0000000;"
+         offset="0.0000000"
+         id="stop4107" />
+      <stop
+         style="stop-color:#00659a;stop-opacity:1.0000000;"
+         offset="1.0000000"
+         id="stop4109" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4118">
+      <stop
+         style="stop-color:#ffd99b;stop-opacity:1;"
+         offset="0"
+         id="stop4120" />
+      <stop
+         style="stop-color:#b2986c;stop-opacity:1.0000000;"
+         offset="1.0000000"
+         id="stop4122" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4130">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop4132" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop4134" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient22094"
+       id="linearGradient2699"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-208.2214,109.7383)"
+       x1="575.89093"
+       y1="133.76495"
+       x2="576.57422"
+       y2="211.3031" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient22983"
+       id="linearGradient2701"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-208.2214,109.7383)"
+       x1="705.01263"
+       y1="306.17703"
+       x2="265.58069"
+       y2="482.6189" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient22094"
+       id="linearGradient2703"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-220.8835,106.9245)"
+       x1="491.75668"
+       y1="400.16699"
+       x2="659.70892"
+       y2="949.10645" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient24757"
+       id="linearGradient2705"
+       gradientUnits="userSpaceOnUse"
+       x1="253.14423"
+       y1="560.5694"
+       x2="379.71634"
+       y2="560.5694" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient24757"
+       id="linearGradient2707"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-9.015606,192.1563)"
+       x1="309.71277"
+       y1="596.63184"
+       x2="306.17722"
+       y2="611.48108" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient24757"
+       id="linearGradient2709"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(225.2135,-257.0333)"
+       x1="177.95348"
+       y1="654.74451"
+       x2="191.44917"
+       y2="654.74451" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5705"
+       id="linearGradient5711"
+       x1="513.19672"
+       y1="47.867046"
+       x2="428.06345"
+       y2="0.13734059"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-5.58361,1.0284704)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5705"
+       id="linearGradient12509"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-5.58361,1.0284704)"
+       x1="513.19672"
+       y1="47.867046"
+       x2="428.06345"
+       y2="0.13734059" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5705-6"
+       id="linearGradient12509-5"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-5.58361,1.0284704)"
+       x1="513.19672"
+       y1="47.867046"
+       x2="428.06345"
+       y2="0.13734059" />
+    <linearGradient
+       id="linearGradient5705-6">
+      <stop
+         style="stop-color:#d3d3d3;stop-opacity:1;"
+         offset="0"
+         id="stop5707-4" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="1"
+         id="stop5709-1" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="206.54026"
+     inkscape:cy="99.036362"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1920"
+     inkscape:window-height="1142"
+     inkscape:window-x="-3"
+     inkscape:window-y="-3"
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3008"
+       empspacing="5"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata6">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Vrstva 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-154.5,-56.413506)">
+    <path
+       style="fill:#c8c8c8;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       d="m 160,162.36218 70,0 c 2.77,0 5,2.23 5,5 l 0,33.02637 c 0,0 -59.39766,-0.18785 -80,0 l 0,-33.02637 c 0,-2.77 2.23,-5 5,-5 z"
+       id="rect3790-8-95"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssccss"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <path
+       style="fill:#c8c8c8;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       d="m 255,162.36218 70,0 c 2.77,0 5,2.23 5,5 l 0,33.02637 c 0,0 -59.39766,-0.18785 -80,0 l 0,-33.02637 c 0,-2.77 2.23,-5 5,-5 z"
+       id="rect3790-8-9-1"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssccss"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 485,202.36217 95,20.00001 0,-30.00001"
+       id="path3942-6-5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:6, 6;stroke-dashoffset:0"
+       d="m 675,202.36217 -95,20.00001"
+       id="path3942-4-7-5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <g
+       transform="matrix(1.026903,0,0,0.72265169,70.357517,-429.30554)"
+       id="layer1-1"
+       inkscape:label="Layer 1"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247">
+      <g
+         transform="translate(-252.7747,692.41563)"
+         id="g12504">
+        <path
+           style="fill:#666666;fill-opacity:1;stroke:none"
+           d="m 506,38.094482 c 12.5,22.5 -17.61332,20.739537 -26.91639,18.97153 -10,7.5 -22.5,5 -27.5,-2.5 -7.97228,6.819985 -32.35,7.800007 -27.5,-12.5 -10,-5 -15,-22.5 2.5,-30.000001 -5.87116,-14.6899837 14.32379,-22.811861 25,-14.9999997 5,-17.5000043 26.76721,-13.2817733 31.91639,1.02847 12.5,-7.4999986 38.15413,3.915245 22.5,15.0000017 15,7.5 15,19.999999 0,24.999999 z"
+           id="path5713"
+           sodipodi:nodetypes="ccccccccc"
+           inkscape:connector-curvature="0" />
+        <path
+           style="fill:url(#linearGradient12509);fill-opacity:1;stroke:none"
+           d="m 504.41639,35.122952 c 12.5,22.5 -17.61332,20.739537 -26.91639,18.97153 -10,7.5 -22.5,5 -27.5,-2.5 -7.97228,6.819985 -32.35,7.800007 -27.5,-12.5 -10,-5 -15,-22.5 2.5,-29.9999997 -5.87116,-14.6899842 14.32379,-22.8118623 25,-15.0000002 5,-17.5000051 26.76721,-13.2817741 31.91639,1.0284707 12.5,-7.4999998 38.15413,3.91524482 22.5,15.0000002 15,7.5 15,19.999999 0,24.999999 z"
+           id="path3762"
+           sodipodi:nodetypes="ccccccccc"
+           inkscape:connector-curvature="0" />
+        <path
+           style="fill:none;stroke:#b2b2b2;stroke-width:2.19005942;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:6.57017831, 2.19005943;stroke-dashoffset:0"
+           d="m 508.75,39.094482 c 11.25,22.5 -18.3858,21.91473 -28.75151,20.012061 -11.14224,8.071247 -23.17737,6.809187 -28.74849,-1.262061 -8.8829,7.339439 -33.75,3.75 -31.25,-16.25 -11.14224,-5.380831 -16.99892,-26.928753 2.5,-34.9999996 -6.54179,-15.8088648 14.35432,-23.4068634 26.25,-15 5,-15.0000004 28.01266,-14.1502024 33.75,1.25 13.92779,-8.0712474 40,6.25000002 27.5,18.7499996 7.5,3.75 15.46336,22.119169 -1.25,27.5 z"
+           id="path9593"
+           sodipodi:nodetypes="ccccccccc"
+           inkscape:connector-curvature="0" />
+      </g>
+    </g>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       id="rect3811"
+       width="80"
+       height="47"
+       x="155"
+       y="200.36218"
+       ry="0"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       id="rect3817"
+       width="80"
+       height="25"
+       x="250"
+       y="107.36218"
+       ry="5"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       id="rect3811-8"
+       width="80"
+       height="47"
+       x="250"
+       y="200.36218"
+       ry="0"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <rect
+       style="fill:#e6e6e6;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3993"
+       width="185"
+       height="50"
+       x="195"
+       y="277.36218"
+       ry="5"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <path
+       style="fill:#c8c8c8;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       d="m 160,285.38855 70,0 c 2.77,0 5,-2.23 5,-5 l 0,-33.02637 c 0,0 -59.39766,0.18785 -80,0 l 0,33.02637 c 0,2.77 2.23,5 5,5 z"
+       id="rect3790-8"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssccss"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <path
+       style="fill:#c8c8c8;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       d="m 255,285.38855 70,0 c 2.77,0 5,-2.23 5,-5 l 0,-33.02637 c 0,0 -59.39766,0.18785 -80,0 l 0,33.02637 c 0,2.77 2.23,5 5,5 z"
+       id="rect3790-8-9"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssccss"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="194.76562"
+       y="219.67273"
+       id="text2988"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         x="194.76562"
+         y="219.67273"
+         id="tspan2992">device</tspan><tspan
+         sodipodi:role="line"
+         x="194.76562"
+         y="234.67273"
+         id="tspan3815">manager</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="194.31738"
+       y="185.849"
+       id="text2998"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         id="tspan3000"
+         x="194.31738"
+         y="185.849">libnetconf</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="194.31738"
+       y="270.849"
+       id="text3002"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         x="194.31738"
+         y="270.849"
+         id="tspan3006">libnetconf</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="289.61035"
+       y="124.23035"
+       id="text2994"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         id="tspan2996"
+         x="289.61035"
+         y="124.23035">SSH server</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="289.76562"
+       y="219.67273"
+       id="text2988-3"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         x="289.76562"
+         y="219.67273"
+         id="tspan2992-2">device</tspan><tspan
+         sodipodi:role="line"
+         x="289.76562"
+         y="234.67273"
+         id="tspan3815-6">manager</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="289.31738"
+       y="185.849"
+       id="text2998-2"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         id="tspan3000-8"
+         x="289.31738"
+         y="185.849">libnetconf</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="289.31738"
+       y="270.849"
+       id="text3002-8"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         x="289.31738"
+         y="270.849"
+         id="tspan3006-8">libnetconf</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="265.0918"
+       y="90.494164"
+       id="text3938"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         id="tspan3940"
+         x="265.0918"
+         y="90.494164">network</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 195,162.36218 95,-30 0,30"
+       id="path3942"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:6, 6;stroke-dashoffset:0"
+       d="m 385,162.36218 -95,-30"
+       id="path3942-4"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="375"
+       y="209.16394"
+       id="text3962"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         id="tspan3964"
+         x="375"
+         y="209.16394">...</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="287.68457"
+       y="304.33173"
+       id="text3012"
+       sodipodi:linespacing="125%"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/sl_arch.png"><tspan
+         sodipodi:role="line"
+         id="tspan3014"
+         x="287.68457"
+         y="304.33173">configuration</tspan><tspan
+         sodipodi:role="line"
+         x="287.68457"
+         y="319.33173"
+         id="tspan3016">datastore</tspan></text>
+    <g
+       transform="matrix(1.026903,0,0,0.72265169,360.35752,-429.30554)"
+       id="layer1-1-2"
+       inkscape:label="Layer 1"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247">
+      <g
+         transform="translate(-252.7747,692.41563)"
+         id="g12504-3">
+        <path
+           style="fill:#666666;fill-opacity:1;stroke:none"
+           d="m 506,38.094482 c 12.5,22.5 -17.61332,20.739537 -26.91639,18.97153 -10,7.5 -22.5,5 -27.5,-2.5 -7.97228,6.819985 -32.35,7.800007 -27.5,-12.5 -10,-5 -15,-22.5 2.5,-30.000001 -5.87116,-14.6899837 14.32379,-22.811861 25,-14.9999997 5,-17.5000043 26.76721,-13.2817733 31.91639,1.02847 12.5,-7.4999986 38.15413,3.915245 22.5,15.0000017 15,7.5 15,19.999999 0,24.999999 z"
+           id="path5713-5"
+           sodipodi:nodetypes="ccccccccc"
+           inkscape:connector-curvature="0" />
+        <path
+           style="fill:url(#linearGradient12509-5);fill-opacity:1;stroke:none"
+           d="m 504.41639,35.122952 c 12.5,22.5 -17.61332,20.739537 -26.91639,18.97153 -10,7.5 -22.5,5 -27.5,-2.5 -7.97228,6.819985 -32.35,7.800007 -27.5,-12.5 -10,-5 -15,-22.5 2.5,-29.9999997 -5.87116,-14.6899842 14.32379,-22.8118623 25,-15.0000002 5,-17.5000051 26.76721,-13.2817741 31.91639,1.0284707 12.5,-7.4999998 38.15413,3.91524482 22.5,15.0000002 15,7.5 15,19.999999 0,24.999999 z"
+           id="path3762-4"
+           sodipodi:nodetypes="ccccccccc"
+           inkscape:connector-curvature="0" />
+        <path
+           style="fill:none;stroke:#b2b2b2;stroke-width:2.19005942;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:6.57017831, 2.19005943;stroke-dashoffset:0"
+           d="m 508.75,39.094482 c 11.25,22.5 -18.3858,21.91473 -28.75151,20.012061 -11.14224,8.071247 -23.17737,6.809187 -28.74849,-1.262061 -8.8829,7.339439 -33.75,3.75 -31.25,-16.25 -11.14224,-5.380831 -16.99892,-26.928753 2.5,-34.9999996 -6.54179,-15.8088648 14.35432,-23.4068634 26.25,-15 5,-15.0000004 28.01266,-14.1502024 33.75,1.25 13.92779,-8.0712474 40,6.25000002 27.5,18.7499996 7.5,3.75 15.46336,22.119169 -1.25,27.5 z"
+           id="path9593-3"
+           sodipodi:nodetypes="ccccccccc"
+           inkscape:connector-curvature="0" />
+      </g>
+    </g>
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       id="rect3817-1"
+       width="80"
+       height="25"
+       x="540"
+       y="107.36218"
+       ry="5"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <rect
+       style="fill:#e6e6e6;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3993-3"
+       width="185"
+       height="50"
+       x="485"
+       y="277.36218"
+       ry="5"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="579.61035"
+       y="124.23033"
+       id="text2994-3"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         id="tspan2996-5"
+         x="579.61035"
+         y="124.23033">SSH server</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="555.0918"
+       y="90.494156"
+       id="text3938-1"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         id="tspan3940-5"
+         x="555.0918"
+         y="90.494156">network</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 485,152.36218 95,-20.00001 0,30.00001"
+       id="path3942-6"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:6, 6;stroke-dashoffset:0"
+       d="M 675,152.36218 580,132.36217"
+       id="path3942-4-7"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="665"
+       y="178.35046"
+       id="text3962-1"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         id="tspan3964-9"
+         x="665"
+         y="178.35046">...</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="577.68457"
+       y="304.33173"
+       id="text3012-0"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         id="tspan3014-4"
+         x="577.68457"
+         y="304.33173">configuration</tspan><tspan
+         sodipodi:role="line"
+         x="577.68457"
+         y="319.33173"
+         id="tspan3016-4">datastore</tspan></text>
+    <path
+       style="fill:#c8c8c8;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       d="m 450,152.36218 70,0 c 2.77,0 5,2.23 5,5 l 0,20 c 0,0 -59.39766,-0.18785 -80,0 l 0,-20 c 0,-2.77 2.23,-5 5,-5 z"
+       id="rect3790-9-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssccss"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       d="m 450,202.36218 70,0 c 2.77,0 5,-2.23 5,-5 l 0,-20 c 0,0 -59.39766,0.18785 -80,0 l 0,20 c 0,2.77 2.23,5 5,5 z"
+       id="rect3790-8-9-6"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssccss"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="484.31738"
+       y="169.33582"
+       id="text2998-2-0"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         id="tspan3000-8-4"
+         x="484.31738"
+         y="169.33582">libnetconf</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="484.31738"
+       y="194.33582"
+       id="text3002-8-3"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         x="484.31738"
+         y="194.33582"
+         id="tspan3006-8-17">agent</tspan></text>
+    <path
+       style="fill:#c8c8c8;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       d="m 545,152.36218 70,0 c 2.77,0 5,2.23 5,5 l 0,20 c 0,0 -59.39766,-0.18785 -80,0 l 0,-20 c 0,-2.77 2.23,-5 5,-5 z"
+       id="rect3790-9-2-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssccss"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       d="m 545,202.36218 70,0 c 2.77,0 5,-2.23 5,-5 l 0,-20 c 0,0 -59.39766,0.18785 -80,0 l 0,20 c 0,2.77 2.23,5 5,5 z"
+       id="rect3790-8-9-6-9"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssccss"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="579.31738"
+       y="169.33582"
+       id="text2998-2-0-5"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         id="tspan3000-8-4-2"
+         x="579.31738"
+         y="169.33582">libnetconf</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="579.31738"
+       y="194.33582"
+       id="text3002-8-3-5"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         x="579.31738"
+         y="194.33582"
+         id="tspan3006-8-17-0">agent</tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       d="m 545,222.36218 70,0 c 2.77,0 5,2.23 5,5 l 0,35 -80,0 0,-35 c 0,-2.77 2.23,-5 5,-5 z"
+       id="rect3811-8-9"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssccss"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <path
+       style="fill:#c8c8c8;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       d="m 545,287.36218 70,0 c 2.77,0 5,-2.23 5,-5 l 0,-20 c 0,0 -59.39766,0.18785 -80,0 l 0,20 c 0,2.77 2.23,5 5,5 z"
+       id="rect3790-8-9-64"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssccss"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="579.76562"
+       y="239.23035"
+       id="text2988-3-0"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         x="579.76562"
+         y="239.23035"
+         id="tspan2992-2-3">device</tspan><tspan
+         sodipodi:role="line"
+         x="579.76562"
+         y="254.23035"
+         id="tspan3815-6-9">manager</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="579.31738"
+       y="279.33582"
+       id="text3002-8-5"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/ml_arch.png"
+       inkscape:export-xdpi="100.1247"
+       inkscape:export-ydpi="100.1247"><tspan
+         sodipodi:role="line"
+         x="579.31738"
+         y="279.33582"
+         id="tspan3006-8-0">libnetconf</tspan></text>
+  </g>
+</svg>
