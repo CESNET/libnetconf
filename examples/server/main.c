@@ -102,7 +102,6 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 		/* process operations affectinf session */
 		if (req_op == NC_OP_CLOSESESSION) {
 			/* exit the event loop immediately without processing any following request */
-			ncds_break_locks (config->session);
 			event_base_loopbreak(config->event_base);
 		} else if (req_op == NC_OP_KILLSESSION) {
 			/* todo: kill the requested session */
