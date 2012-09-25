@@ -150,7 +150,7 @@
  * used. The application's specific message printing function can be set via
  * nc_callback_print() function.
  * 2. **Initiate datastore**.\n
- * As the first step, create datastore handle using ncdsd_new() with specific
+ * As the first step, create datastore handle using ncds_new() with specific
  * datastore type implementation. Optionally, some implementation type specific
  * parameters can be set (e.g. ncds_file_set_path()). Finally, init datastore
  * using ncds_init() that returns datastore's ID which is used in subsequent
@@ -169,7 +169,7 @@
  *    to perform requested operation on the datastore. If the request affects
  *    the running datastore (nc_rpc_get_target() == NC_DATASTORE_RUNNING),
  *    apply configuration changes to the controlled device.
- *    - *NC_RPC_SESSION*: \todo some common function to performi this type of
+ *    - *NC_RPC_SESSION*: \todo some common function to perform this type of
  *    requests will be added.\n
  *
  * 5. **Reply to the client's request**.\n
