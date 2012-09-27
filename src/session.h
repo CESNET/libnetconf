@@ -73,9 +73,9 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
  * after this call.
  *
  * @param[in] session Session to close.
- * @param[in] msg Human readable reason for SSH session disconnection.
+ * @param[in] reason Type of the session termination reason.
  */
-void nc_session_close (struct nc_session* session, const char* msg);
+void nc_session_close (struct nc_session* session, NC_SESSION_TERM_REASON reason);
 
 /**
  * @ingroup session
@@ -355,5 +355,14 @@ int nc_msgid_compare (const nc_msgid id1, const nc_msgid id2);
  * means that *reply points to the received \<rpc-reply\> message.
  */
 NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_reply** reply);
+
+/**
+ * ingroup session
+ * @brief Get human readable description to the specific type of the session
+ * termination reason.
+ * @param[in] reason Type of the session termination reason.
+ * @return String describing the given termination reason value.
+ */
+const char* nc_session_term_string(NC_SESSION_TERM_REASON reason);
 
 #endif /* SESSION_H_ */

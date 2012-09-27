@@ -491,7 +491,7 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	return session;
 }
 
-void nc_session_close(struct nc_session* session, const char* msg)
+void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 {
 	int i;
 	nc_rpc *rpc_close = NULL;
@@ -534,8 +534,9 @@ void nc_session_close(struct nc_session* session, const char* msg)
 			libssh2_channel_free(session->ssh_channel);
 			session->ssh_channel = NULL;
 		}
+
 		if (session->ssh_session != NULL) {
-			libssh2_session_disconnect(session->ssh_session, msg);
+			libssh2_session_disconnect(session->ssh_session, nc_session_term_string(reason));
 			libssh2_session_free(session->ssh_session);
 			session->ssh_session = NULL;
 		}
@@ -583,7 +584,7 @@ void nc_session_close(struct nc_session* session, const char* msg)
 
 void nc_session_free (struct nc_session* session)
 {
-	nc_session_close(session, "Final closing of the NETCONF session.");
+	nc_session_close(session, NC_SESSION_TERM_OTHER);
 
 	/* free items untouched by nc_session_close() */
 	if (session->username != NULL) {
@@ -1028,7 +1029,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 		} else if (status < 0) {
 			/* poll failed - something wrong happend, close this socket and wait for another request */
 			ERROR("Input channel error");
-			nc_session_close(session, "Input stream closed");
+			nc_session_close(session, NC_SESSION_TERM_DROPPED);
 			pthread_mutex_unlock(&(session->mut_in));
 			return (NC_MSG_UNKNOWN);
 
@@ -1039,7 +1040,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 		if ((fds.revents & POLLHUP) || (fds.revents & POLLERR)) {
 			/* close client's socket (it's probably already closed by client */
 			ERROR("Input channel closed");
-			nc_session_close(session, "Input stream closed");
+			nc_session_close(session, NC_SESSION_TERM_DROPPED);
 			pthread_mutex_unlock(&(session->mut_in));
 			return (NC_MSG_UNKNOWN);
 		}
@@ -1194,7 +1195,7 @@ malformed_msg:
 		reply = nc_reply_error(nc_err_new(NC_ERR_MALFORMED_MSG));
 		if (reply == NULL) {
 			ERROR("Unable to create \'Malformed message\' reply");
-			nc_session_close(session, "Malformed NETCONF message received.");
+			nc_session_close(session, NC_SESSION_TERM_OTHER);
 			return (NC_MSG_UNKNOWN);
 		}
 
@@ -1203,7 +1204,7 @@ malformed_msg:
 	}
 
 	ERROR("Malformed message received, closing the session %s.", session->session_id);
-	nc_session_close(session, "Malformed NETCONF message received.");
+	nc_session_close(session, NC_SESSION_TERM_OTHER);
 
 	return (NC_MSG_UNKNOWN);
 }
@@ -1675,4 +1676,28 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 	pthread_mutex_unlock(&(session->mut_session));
 
 	return (replytype);
+}
+
+const char* nc_session_term_string(NC_SESSION_TERM_REASON reason)
+{
+	switch(reason) {
+	case NC_SESSION_TERM_CLOSED:
+		return ("closed");
+		break;
+	case NC_SESSION_TERM_KILLED:
+		return ("killed");
+		break;
+	case NC_SESSION_TERM_DROPPED:
+		return ("dropped");
+		break;
+	case NC_SESSION_TERM_TIMEOUT:
+		return ("timeout");
+		break;
+	case NC_SESSION_TERM_BADHELLO:
+		return ("bad-hello");
+		break;
+	default:
+		return ("other");
+		break;
+	}
 }
