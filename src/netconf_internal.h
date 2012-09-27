@@ -120,6 +120,13 @@
  */
 #define INTERNAL_DUMMY_ID "0"
 
+/*
+ * how to send NETCONF XML content:
+ * 1 - formatted, i.e. with new lines and spaces
+ * 0 - unformatted, only content without any unnecessary white space formatting characters
+ */
+#define NC_CONTENT_FORMATTED 1
+
 /* libnetconf's message printing */
 char prv_msg[4096];
 void prv_print(NC_VERB_LEVEL level, const char* msg);

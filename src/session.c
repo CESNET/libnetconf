@@ -637,7 +637,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	}
 
 
-	xmlDocDumpFormatMemory (msg->doc, (xmlChar**) (&text), &len, 1);
+	xmlDocDumpFormatMemory (msg->doc, (xmlChar**) (&text), &len, NC_CONTENT_FORMATTED);
 	DBG("Writing message: %s", text);
 
 	/* lock the session for sending the data */
