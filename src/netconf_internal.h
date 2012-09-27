@@ -114,6 +114,11 @@
 
 #define SSH2_KEYS 3 /* number of supported keys */
 
+/*
+ * Special session ID for used by libnetconf's internal dummy sessions. This
+ * kind of dummy sessions does not break datastore locks on session closing.
+ */
+#define INTERNAL_DUMMY_ID "0"
 
 /* libnetconf's message printing */
 char prv_msg[4096];

@@ -509,7 +509,7 @@ int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DAT
 	}
 
 	/* check if repository is locked by anyone including me */
-	no_session = nc_session_dummy("0", session->username, session->hostname, session->capabilities);
+	no_session = nc_session_dummy(INTERNAL_DUMMY_ID, session->username, session->hostname, session->capabilities);
 	if (file_ds_access (file_ds, target, no_session) != 0) {
 		/* someone is already holding the lock */
 		lock = xmlGetProp (target_ds, BAD_CAST "lock");
@@ -568,7 +568,7 @@ int ncds_file_unlock (struct ncds_ds* ds, const struct nc_session* session, NC_D
 	}
 
 	/* check if repository is locked */
-	no_session = nc_session_dummy("0", session->username, session->hostname, session->capabilities);
+	no_session = nc_session_dummy(INTERNAL_DUMMY_ID, session->username, session->hostname, session->capabilities);
 	if (file_ds_access (file_ds, target, no_session) == 0) {
 		/* not locked */
 		*error = nc_err_new(NC_ERR_OP_FAILED);

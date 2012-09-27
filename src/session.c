@@ -507,8 +507,13 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 	/* close the SSH session */
 	if (session != NULL && session->status != NC_SESSION_STATUS_CLOSING && session->status != NC_SESSION_STATUS_CLOSED) {
 
-		/* break all datastore locks held by the session */
-		ncds_break_locks(session);
+		if (strcmp(session->session_id, INTERNAL_DUMMY_ID) != 0) {
+			/*
+			 * break all datastore locks held by the session,
+			 * libnetconf's internal dummy sessions are excluded
+			 */
+			ncds_break_locks(session);
+		}
 
 		/* close ssh session */
 		if (session->ssh_channel != NULL) {
