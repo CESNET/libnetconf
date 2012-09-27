@@ -44,6 +44,7 @@
 #include <string.h>
 #include <errno.h>
 #include <time.h>
+#include <stdarg.h>
 
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
@@ -911,104 +912,114 @@ nc_reply *nc_reply_data(const char* data)
 
 static xmlNodePtr new_reply_error_content(struct nc_err* error)
 {
-	xmlNodePtr content, einfo = NULL;
+	xmlNodePtr content, einfo = NULL, tmp, first = NULL;
 
-	if ((content = xmlNewNode(NULL, BAD_CAST "rpc-error")) == NULL) {
-		ERROR("xmlNewNode failed (%s:%d).", __FILE__, __LINE__);
-		return (NULL);
-	}
-
-	if (error->tag != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "error-tag", BAD_CAST error->tag) == NULL) {
-			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			return (NULL);
-		}
-	}
-
-	if (error->type != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "error-type", BAD_CAST error->type) == NULL) {
-			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			return (NULL);
-		}
-	}
-
-	if (error->severity != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "error-severity", BAD_CAST error->severity) == NULL) {
-			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			return (NULL);
-		}
-	}
-
-	if (error->apptag != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "error-app-tag", BAD_CAST error->apptag) == NULL) {
-			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			return (NULL);
-		}
-	}
-
-	if (error->path != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "error-path", BAD_CAST error->path) == NULL) {
-			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			return (NULL);
-		}
-	}
-
-	if (error->message != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "error-message", BAD_CAST error->message) == NULL) {
-			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			return (NULL);
-		}
-	}
-
-	/* error-info items */
-	if (error->sid != NULL || error->attribute != NULL || error->element != NULL || error->ns != NULL) {
-		/* prepare error-info */
-		if ((einfo = xmlNewChild(content, NULL, BAD_CAST "error-info", NULL)) == NULL) {
-			ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
-			xmlFreeNode(content);
+	while (error != NULL) {
+		if ((content = xmlNewNode(NULL, BAD_CAST "rpc-error")) == NULL) {
+			ERROR("xmlNewNode failed (%s:%d).", __FILE__, __LINE__);
 			return (NULL);
 		}
 
-		if (error->attribute != NULL) {
-			if (xmlNewChild(einfo, NULL, BAD_CAST "attribute", BAD_CAST error->attribute) == NULL) {
+		if (error->tag != NULL) {
+			if (xmlNewChild(content, NULL, BAD_CAST "error-tag", BAD_CAST error->tag) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
 			}
 		}
 
-		if (error->element != NULL) {
-			if (xmlNewChild(einfo, NULL, BAD_CAST "element", BAD_CAST error->element) == NULL) {
+		if (error->type != NULL) {
+			if (xmlNewChild(content, NULL, BAD_CAST "error-type", BAD_CAST error->type) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
 			}
 		}
 
-		if (error->ns != NULL) {
-			if (xmlNewChild(einfo, NULL, BAD_CAST "ns", BAD_CAST error->ns) == NULL) {
+		if (error->severity != NULL) {
+			if (xmlNewChild(content, NULL, BAD_CAST "error-severity", BAD_CAST error->severity) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
 			}
 		}
 
-		if (error->sid != NULL) {
-			if (xmlNewChild(einfo, NULL, BAD_CAST "session-id", BAD_CAST error->sid) == NULL) {
+		if (error->apptag != NULL) {
+			if (xmlNewChild(content, NULL, BAD_CAST "error-app-tag", BAD_CAST error->apptag) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
 			}
 		}
+
+		if (error->path != NULL) {
+			if (xmlNewChild(content, NULL, BAD_CAST "error-path", BAD_CAST error->path) == NULL) {
+				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				return (NULL);
+			}
+		}
+
+		if (error->message != NULL) {
+			if (xmlNewChild(content, NULL, BAD_CAST "error-message", BAD_CAST error->message) == NULL) {
+				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				return (NULL);
+			}
+		}
+
+		/* error-info items */
+		if (error->sid != NULL || error->attribute != NULL || error->element != NULL || error->ns != NULL) {
+			/* prepare error-info */
+			if ((einfo = xmlNewChild(content, NULL, BAD_CAST "error-info", NULL)) == NULL) {
+				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				return (NULL);
+			}
+
+			if (error->attribute != NULL) {
+				if (xmlNewChild(einfo, NULL, BAD_CAST "attribute", BAD_CAST error->attribute) == NULL) {
+					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+					xmlFreeNode(content);
+					return (NULL);
+				}
+			}
+
+			if (error->element != NULL) {
+				if (xmlNewChild(einfo, NULL, BAD_CAST "element", BAD_CAST error->element) == NULL) {
+					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+					xmlFreeNode(content);
+					return (NULL);
+				}
+			}
+
+			if (error->ns != NULL) {
+				if (xmlNewChild(einfo, NULL, BAD_CAST "ns", BAD_CAST error->ns) == NULL) {
+					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+					xmlFreeNode(content);
+					return (NULL);
+				}
+			}
+
+			if (error->sid != NULL) {
+				if (xmlNewChild(einfo, NULL, BAD_CAST "session-id", BAD_CAST error->sid) == NULL) {
+					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+					xmlFreeNode(content);
+					return (NULL);
+				}
+			}
+		}
+
+		if (first == NULL) {
+			tmp = first = content;
+		} else {
+			tmp->next = content;
+			tmp = tmp->next;
+		}
+		error = error->next;
 	}
 
-	return(content);
+	return(first);
 }
 
 nc_reply *nc_reply_error(struct nc_err* error)
@@ -1056,6 +1067,11 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 		xmlFreeNode(content);
 		return (EXIT_FAILURE);
 	}
+
+	/* find last error */
+	while (error->next != NULL) {
+		error = error->next;
+	}
 	/* add error structure into the reply's list */
 	error->next = reply->error;
 	reply->error = error;
@@ -1064,6 +1080,93 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 	xmlFreeNode(content);
 
 	return (EXIT_SUCCESS);
+}
+
+nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
+{
+	nc_reply * merged_reply;
+	nc_reply ** to_merge = NULL;
+	NC_REPLY_TYPE type;
+	va_list ap;
+	int i, len;
+	char * tmp, * data = NULL;
+
+	/* minimal 2 massages */
+	if (count < 2) {
+		VERB("Number of messages must be at least 2 (was %d)", count);
+		return NULL;
+	}
+
+	/* get type and check that first two have the same type */
+	if ((type = nc_reply_get_type(msg1)) != nc_reply_get_type(msg2)) {
+		VERB("All messages to merge must be of the same type.");
+		return NULL;
+	}
+
+	/* initialize argument vector */
+	va_start (ap, msg2);
+
+	/* allocate array for message pointers */
+	to_merge = malloc(sizeof(nc_reply*) * count);
+	to_merge[0] = msg1;
+	to_merge[1] = msg2;
+
+	/* get all messages and check their type */
+	for (i=2; i<count; i++) {
+		to_merge[i] = va_arg(ap,nc_reply*);
+		if (type != nc_reply_get_type(to_merge[i])) {
+			VERB("All messages to merge must be of the same type.");
+			free (to_merge);
+			va_end (ap);
+			return NULL;
+		}
+	}
+
+	/* finalize argument vector */
+	va_end (ap);
+
+	switch (type) {
+	case NC_REPLY_OK:
+		/* just OK */
+		merged_reply = msg1;
+		break;
+	case NC_REPLY_DATA:
+		/* join <data/> */
+		for (i=0; i<count; i++) {
+			tmp = nc_reply_get_data (to_merge[i]);
+			if (data == NULL) {
+				len = strlen (tmp);
+				data = strdup (tmp);
+			} else {
+				len += strlen (tmp);
+				data = realloc (data, sizeof(char)*(len+1));
+				strcat (data, tmp);
+			}
+			free (tmp);
+		}
+		nc_reply_free(msg1);
+		merged_reply = nc_reply_data(data);
+		free(data);
+		break;
+	case NC_REPLY_ERROR:
+		/* join all errors */
+		merged_reply = msg1;
+		for (i=1; i<count; i++) {
+			nc_reply_error_add(merged_reply, to_merge[i]->error);
+			to_merge[i]->error = NULL;
+		}
+		break;
+	default:
+		break;
+	}
+
+	/* clean all merged messages */
+	for (i=1; i<count; i++) {
+		nc_reply_free (to_merge[i]);
+	}
+	free (to_merge);
+
+	return merged_reply;
 }
 
 nc_rpc *nc_rpc_closesession()

@@ -295,6 +295,24 @@ nc_reply *nc_reply_error(struct nc_err* error);
 int nc_reply_error_add(nc_reply *reply, struct nc_err* error);
 
 /**
+ * @ingroup reply
+ * @brief Merge reply messages. All messages MUST be of the same type.
+ *
+ * Function number of \<rpc-reply\> merges specified by count (at least 2) into one \<rpc-reply\>
+ * message which is returned as a result. When merge is successful all input messages are freed
+ * and MUST NOT be used after this call. When merge fails NULL is returned and input messages are left unchanged.
+ *
+ * @param[in] count Number of messages to merge
+ * @param[in] msg1	1st message to merge.
+ * @param[in] msg2	2nd message to merge.
+ * @param[in] ...	Other messages to merge. Total number of messages MUST be equal to count.
+ *
+ * @return Pointer to merged reply or NULL in case of failure.
+ */
+nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...);
+
+
+/**
  * @ingroup rpc
  * @brief Create \<copy-config\> NETCONF rpc message.
  *
