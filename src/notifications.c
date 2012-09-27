@@ -1166,13 +1166,7 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 	return (EXIT_SUCCESS);
 }
 
-/*
- * Start iteration on the events in the specified stream file. Iteration
- * starts on the first event in the first part of the stream file.
- *
- * \todo: thread safety (?thread-specific variables)
- */
-static void nc_ntf_stream_iter_start(const char* stream)
+void nc_ntf_stream_iter_start(const char* stream)
 {
 	struct stream *s;
 
@@ -1194,7 +1188,7 @@ static void nc_ntf_stream_iter_start(const char* stream)
  *
  * \todo: thread safety (?thread-specific variables)
  */
-static char* nc_ntf_stream_iter_next(const char* stream)
+char* nc_ntf_stream_iter_next(const char* stream)
 {
 	struct stream *s;
 	int32_t len;

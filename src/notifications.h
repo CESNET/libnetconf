@@ -179,4 +179,23 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...);
  */
 long long int nc_ntf_dispatch(struct nc_session* session, const nc_rpc* subscribe_rpc);
 
+/**
+ * \todo: thread safety (?thread-specific variables)
+ * @ingroup notifications
+ * @brief Start iteration on the events in the specified stream file. Iteration
+ * starts on the first event in the first part of the stream file.
+ * @param[in] stream Name of the stream to iterate.
+ */
+void nc_ntf_stream_iter_start(const char* stream);
+
+/**
+ * \todo: thread safety (?thread-specific variables)
+ * @ingroup notifications
+ * @brief Pop the next event record from the stream file. The iteration must be
+ * started by nc_ntf_stream_iter_start() function.
+ * @param[in] stream Name of the stream to iterate.
+ * @return Content of the next event in the stream.
+ */
+char* nc_ntf_stream_iter_next(const char* stream);
+
 #endif /* NOTIFICATIONS_H_ */
