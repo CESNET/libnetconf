@@ -105,6 +105,9 @@ struct stream {
 static struct stream *streams = NULL;
 static pthread_mutex_t *streams_mut = NULL;
 
+/* internal flag if the notification structures are properly initialized */
+static int initialized = 0;
+
 void nc_ntf_free(nc_ntf *ntf)
 {
 	nc_msg_free((struct nc_msg*) ntf);
@@ -359,12 +362,17 @@ static void nc_ntf_dbus_close(void)
 
 void nc_ntf_close(void)
 {
-	nc_ntf_dbus_close();
-	nc_ntf_streams_close();
-	pthread_mutex_destroy(streams_mut);
-	pthread_mutex_destroy(dbus_mut);
-	free(streams_mut); streams_mut = NULL;
-	free(dbus_mut); dbus_mut = NULL;
+	if (initialized == 1) {
+		nc_ntf_dbus_close();
+		nc_ntf_streams_close();
+		pthread_mutex_destroy(streams_mut);
+		pthread_mutex_destroy(dbus_mut);
+		free(streams_mut);
+		streams_mut = NULL;
+		free(dbus_mut);
+		dbus_mut = NULL;
+		initialized = 0;
+	}
 }
 
 /*
@@ -473,6 +481,11 @@ static int nc_ntf_streams_init(void)
 		/* free the directory entry information */
 		free(filelist[n]);
 	}
+
+	if (nc_ntf_stream_isavailable(NTF_STREAM_BASE) == 0) {
+		nc_ntf_stream_new(NTF_STREAM_BASE, "NETCONF Base Notifications", 1);
+	}
+
 	pthread_mutex_unlock(streams_mut);
 	free(filelist);
 
@@ -513,6 +526,10 @@ int nc_ntf_init(void)
 	int ret;
 	pthread_mutexattr_t mattr;
 	int r;
+
+	if (initialized == 1) {
+		return(EXIT_SUCCESS);
+	}
 
 	/* init streams' mutex if needed */
 	if (streams_mut == NULL) {
@@ -561,13 +578,16 @@ int nc_ntf_init(void)
 		pthread_mutexattr_destroy(&mattr);
 	}
 
+	initialized = 1;
 	/* initiate streams */
 	if ((ret = nc_ntf_streams_init()) != 0) {
+		initialized = 0;
 		return (ret);
 	}
 
 	/* initiate DBus communication */
 	if ((ret = nc_ntf_dbus_init()) != 0) {
+		initialized = 0;
 		return (ret);
 	}
 
@@ -578,12 +598,11 @@ int nc_ntf_stream_new(const char* name, const char* desc, int replay)
 {
 	struct stream *s;
 
-	pthread_mutex_lock(streams_mut);
-
-	/* get current state of streams */
-	if (streams == NULL) {
-		nc_ntf_streams_init();
+	if (initialized == 0) {
+		return (EXIT_FAILURE);
 	}
+
+	pthread_mutex_lock(streams_mut);
 
 	/* check the stream name if the requested stream already exists */
 	for (s = streams; s != NULL; s = s->next) {
@@ -626,6 +645,10 @@ char** nc_ntf_stream_list(void)
 	struct stream *s;
 	int i;
 
+	if (initialized == 0) {
+		return (NULL);
+	}
+
 	pthread_mutex_lock(streams_mut);
 	if (streams == NULL) {
 		nc_ntf_streams_init();
@@ -650,15 +673,11 @@ int nc_ntf_stream_isavailable(const char* name)
 {
 	struct stream *s;
 
-	if (name == NULL) {
+	if (initialized == 0 || name == NULL) {
 		return(0);
 	}
 
 	pthread_mutex_lock(streams_mut);
-	if (streams == NULL) {
-		nc_ntf_streams_init();
-	}
-
 	for (s = streams; s != NULL; s = s->next) {
 		if (strcmp(s->name, name) == 0) {
 			/* the specified stream does exist */
@@ -782,14 +801,20 @@ static int nc_ntf_stream_unlock(struct stream *s)
  * - #NC_NTF_BASE_SESSION_START
  *  - **const struct nc_session* session** Started session (#NC_SESSION_STATUS_DUMMY session is also allowed).
  * - #NC_NTF_BASE_SESSION_END
+ *  - **const struct nc_session* session** Finnished session (#NC_SESSION_STATUS_DUMMY session is also allowed).
  *  - #NC_SESSION_TERM_REASON **reason** Session termination reason.
+ *   - If the value is set to #NC_SESSION_TERM_KILLED, following parameter is
+ *   required.
+ *  - **const char* killed-by-sid** The ID of the session that directly caused
+ *  the session termination. If the session was terminated by a non-NETCONF
+ *  process unknown to the server, use NULL as the value.
  *
  * ### Examples:
  * - nc_ntf_event_new("mystream", -1, NC_NTF_GENERIC, "<event>something happend</event>");
  * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NC_NTF_EVENT_BY_USER, my_session);
  * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NC_NTF_EVENT_BY_SERVER);
- * - #NC_NTF_BASE_SESSION_START\n
- * - #NC_NTF_BASE_SESSION_END\n
+ * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_SESSION_START, my_session);
+ * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");
  *
  * @param[in] stream Name of the stream where the event will be stored.
  * @param[in] etime Time of the event, if set to -1, current time is used.
@@ -815,7 +840,7 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 	va_list params;
 
 	/* check the stream */
-	if (nc_ntf_stream_isavailable(stream) == 0) {
+	if (initialized == 0 || nc_ntf_stream_isavailable(stream) == 0) {
 		return (EXIT_FAILURE);
 	}
 
@@ -1026,12 +1051,62 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 		free(aux2);
 		break;
 	case NC_NTF_BASE_SESSION_START:
-		/* \todo */
 		session = va_arg(params, const struct nc_session*);
+		if (session == NULL) {
+			ERROR("Invalid \'session\' parameter of %s.", __func__);
+			va_end(params);
+			return (EXIT_FAILURE);
+		}
+		asprintf(&content, "<netconf-session-start><username>%s</username>"
+				"<session-id>%s</session-id>"
+				"<source-host>%s</source-host></netconf-session-start>",
+				session->username,
+				session->session_id,
+				session->hostname);
+
+		/* no more parameters */
+		va_end(params);
+
 		break;
 	case NC_NTF_BASE_SESSION_END:
-		/* \todo */
+		session = va_arg(params, const struct nc_session*);
 		reason = va_arg(params, NC_SESSION_TERM_REASON);
+
+		/* check the result */
+		if (session == NULL) {
+			ERROR("Invalid \'session\' parameter of %s.", __func__);
+			va_end(params);
+			return (EXIT_FAILURE);
+		}
+
+		aux2 = NULL;
+		if (reason == NC_SESSION_TERM_KILLED) {
+			aux1 = va_arg(params, char*);
+			if (aux1 != NULL) {
+				asprintf(&aux2, "<killed-by>%s</killed-by>", aux1);
+			}
+		}
+		/* if termination type is not kill, killed-by will not be used */
+		if (aux2 == NULL) {
+			/* aux2 have to be dynamically allocated */
+			aux2 = strdup("");
+		}
+
+		/* prepare part of the content for the specific termination reason */
+		asprintf(&aux1, "<termination-reason>%s</termination-reason>", nc_session_term_string(reason));
+
+		/* compound the event content */
+		asprintf(&content, "<netconf-session-end><username>%s</username>"
+				"<session-id>%s</session-id>"
+				"<source-host>%s</source-host>"
+				"%s%s</netconf-session-end>",
+				session->username,
+				session->session_id,
+				session->hostname,
+				aux2, aux1);
+		free(aux2);
+		free(aux1);
+
 		break;
 	default:
 		ERROR("Adding unsupported type of event.");
@@ -1101,6 +1176,10 @@ static void nc_ntf_stream_iter_start(const char* stream)
 {
 	struct stream *s;
 
+	if (initialized == 0) {
+		return;
+	}
+
 	pthread_mutex_lock(streams_mut);
 	if ((s = nc_ntf_stream_get(stream)) == NULL) {
 		pthread_mutex_unlock(streams_mut);
@@ -1122,6 +1201,10 @@ static char* nc_ntf_stream_iter_next(const char* stream)
 	uint64_t t;
 	off_t offset;
 	char* text;
+
+	if (initialized == 0) {
+		return (NULL);
+	}
 
 	pthread_mutex_lock(streams_mut);
 	if ((s = nc_ntf_stream_get(stream)) == NULL) {

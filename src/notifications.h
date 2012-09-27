@@ -42,6 +42,8 @@
 
 #include "netconf.h"
 
+#define NTF_STREAM_BASE "netconf"
+
 /**
  * @ingroup notifications
  * @brief Enumeration of supported NETCONF event notifications.
@@ -137,12 +139,20 @@ int nc_ntf_stream_isavailable(const char* name);
  * - #NC_NTF_BASE_SESSION_START
  *  - **const struct nc_session* session** Started session (#NC_SESSION_STATUS_DUMMY session is also allowed).
  * - #NC_NTF_BASE_SESSION_END
+ *  - **const struct nc_session* session** Finnished session (#NC_SESSION_STATUS_DUMMY session is also allowed).
  *  - #NC_SESSION_TERM_REASON **reason** Session termination reason.
+ *   - If the value is set to #NC_SESSION_TERM_KILLED, following parameter is
+ *   required.
+ *  - **const char* killed-by-sid** The ID of the session that directly caused
+ *  the session termination. If the session was terminated by a non-NETCONF
+ *  process unknown to the server, use NULL as the value.
  *
  * ### Examples:
  * - nc_ntf_event_new("mystream", -1, NC_NTF_GENERIC, "<event>something happend</event>");
  * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NC_NTF_EVENT_BY_USER, my_session);
  * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NC_NTF_EVENT_BY_SERVER);
+ * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_SESSION_START, my_session);
+ * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");
  *
  * @param[in] stream Name of the stream where the event will be stored.
  * @param[in] etime Time of the event, if set to -1, current time is used.
