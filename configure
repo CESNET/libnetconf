@@ -2542,7 +2542,7 @@ fi
 
 # Check whether --with-examples was given.
 if test "${with_examples+set}" = set; then :
-  withval=$with_examples; SUBDIRS="./examples/client/ ./examples/server/"
+  withval=$with_examples; SUBDIRS="./examples/client/ ./examples/server/ ./examples/tools/"
 else
   SUBDIRS=""
 fi
@@ -5266,7 +5266,7 @@ fi
 ac_config_files="$ac_config_files Makefile src/config.h libnetconf.spec libnetconf.pc Doxyfile"
 
 if test -n "$SUBDIRS"; then
-	ac_config_files="$ac_config_files examples/client/Makefile examples/server/Makefile"
+	ac_config_files="$ac_config_files examples/client/Makefile examples/server/Makefile examples/tools/Makefile"
 
 fi
 
@@ -5983,6 +5983,7 @@ do
     "Doxyfile") CONFIG_FILES="$CONFIG_FILES Doxyfile" ;;
     "examples/client/Makefile") CONFIG_FILES="$CONFIG_FILES examples/client/Makefile" ;;
     "examples/server/Makefile") CONFIG_FILES="$CONFIG_FILES examples/server/Makefile" ;;
+    "examples/tools/Makefile") CONFIG_FILES="$CONFIG_FILES examples/tools/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
