@@ -61,6 +61,7 @@
 #include "netconf_internal.h"
 #include "messages_internal.h"
 #include "with_defaults.h"
+#include "notifications.h"
 
 #define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
 
@@ -647,6 +648,9 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 
 	/* cleanup */
 	nc_cpblts_free(server_cpblts);
+
+	/* log start of the session */
+	nc_ntf_event_new(NTF_STREAM_BASE, -1, NC_NTF_BASE_SESSION_START, retval);
 
 	return (retval);
 }

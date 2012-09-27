@@ -54,6 +54,7 @@
 #include "messages_internal.h"
 #include "session.h"
 #include "datastore.h"
+#include "notifications.h"
 
 /**
  * Sleep time in microseconds to wait between unsuccessful reading due to EAGAIN or EWOULDBLOCK
@@ -507,6 +508,11 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 	/* close the SSH session */
 	if (session != NULL && session->status != NC_SESSION_STATUS_CLOSING && session->status != NC_SESSION_STATUS_CLOSED) {
 
+		/* log closing of the session */
+		if (sstatus != NC_SESSION_STATUS_DUMMY) {
+			nc_ntf_event_new(NTF_STREAM_BASE, -1, NC_NTF_BASE_SESSION_END, session, reason, NULL);
+		}
+
 		if (strcmp(session->session_id, INTERNAL_DUMMY_ID) != 0) {
 			/*
 			 * break all datastore locks held by the session,
@@ -625,7 +631,8 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	 * maybe the previous check can be replaced by the following one, but
 	 * using both cannot be wrong
 	 */
-	if (session->status != NC_SESSION_STATUS_WORKING) {
+	if (session->status != NC_SESSION_STATUS_WORKING &&
+			session->status != NC_SESSION_STATUS_CLOSING) {
 		return (EXIT_FAILURE);
 	}
 
@@ -691,7 +698,8 @@ int nc_session_read_len (struct nc_session* session, size_t chunk_length, char *
 	size_t rd = 0;
 
 	/* check if we can work with the session */
-	if (session->status != NC_SESSION_STATUS_WORKING) {
+	if (session->status != NC_SESSION_STATUS_WORKING &&
+			session->status != NC_SESSION_STATUS_CLOSING) {
 		return (EXIT_FAILURE);
 	}
 
@@ -771,7 +779,8 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 	static int buflen = 0;
 
 	/* check if we can work with the session */
-	if (session->status != NC_SESSION_STATUS_WORKING) {
+	if (session->status != NC_SESSION_STATUS_WORKING &&
+			session->status != NC_SESSION_STATUS_CLOSING) {
 		return (EXIT_FAILURE);
 	}
 
@@ -1536,7 +1545,7 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 	struct nc_msg *msg;
 	nc_msgid retval = NULL;
 
-	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING)) {
+	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to send <rpc-reply>.");
 		return (0); /* failure */
 	}

@@ -193,6 +193,8 @@ int main(int argc, char *argv[])
 		return (EXIT_FAILURE);
 	}
 
+	nc_ntf_init();
+
 	/* create the NETCONF session */
 	config.session = nc_session_accept(NULL);
 	if (config.session == NULL) {
@@ -219,6 +221,7 @@ int main(int argc, char *argv[])
 		nc_session_close(config.session, NC_SESSION_TERM_CLOSED);
 	}
 	nc_session_free(config.session);
+	nc_ntf_close();
 
 	/* bye, bye */
 	return (EXIT_SUCCESS);
