@@ -224,6 +224,7 @@ static int get_keys(keyList keys, xmlNodePtr node, xmlNodePtr **result)
 
 	assert(keys != NULL);
 	assert(node != NULL);
+	assert(result != NULL);
 
 	*result = NULL;
 
@@ -644,6 +645,8 @@ static int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, s
 	xmlNodePtr parent;
 	NC_EDIT_OP_TYPE op, parent_op;
 
+	assert(error != NULL);
+
 	op = get_operation(edit, NC_EDIT_DEFOP_NONE, error);
 	if (op == (NC_EDIT_OP_TYPE)NC_EDIT_DEFOP_NONE) {
 		/* no operation defined for this node */
@@ -719,6 +722,7 @@ static int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDoc
 
 	assert(orig != NULL);
 	assert(edit != NULL);
+	assert(error != NULL);
 
 	keys = get_keynode_list(model);
 
@@ -1128,6 +1132,8 @@ static int edit_operations (xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFO
 	int i;
 	xmlNodePtr orig_node, edit_node;
 
+	assert(error != NULL);
+
 	/* default replace */
 	if (defop == NC_EDIT_DEFOP_REPLACE) {
 		/* replace whole document */
@@ -1288,8 +1294,9 @@ static int compact_edit_operations (xmlDocPtr edit_doc)
  */
 int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
 {
-	assert(repo != NULL);
-	assert(edit != NULL);
+	if (repo != NULL || edit != NULL) {
+		return (EXIT_FAILURE);
+	}
 
 	keyList keys;
 	keys = get_keynode_list(model);
@@ -1304,7 +1311,9 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 
 	if (compact_edit_operations(edit) != EXIT_SUCCESS) {
 		ERROR("Compacting edit-config operations failed.");
-		*error = nc_err_new (NC_ERR_OP_FAILED);
+		if (error != NULL) {
+			*error = nc_err_new (NC_ERR_OP_FAILED);
+		}
 		goto error_cleanup;
 	}
 
