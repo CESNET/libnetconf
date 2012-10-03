@@ -827,7 +827,7 @@ static int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDoc
 	if (defval != NULL) { xmlFree(defval);}
 	if (value != NULL) { xmlFree(value);}
 
-	if (error != NULL) {
+	if (*error != NULL) {
 		return (EXIT_FAILURE);
 	} else {
 		return EXIT_SUCCESS;
