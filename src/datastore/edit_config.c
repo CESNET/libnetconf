@@ -100,7 +100,7 @@ int nc_nscmp(xmlNodePtr reference, xmlNodePtr node)
  *
  * \return NC_OP_TYPE_ERROR on error, valid NC_OP_TYPE values otherwise
  */
-NC_EDIT_OP_TYPE get_operation(xmlNodePtr node, NC_EDIT_DEFOP_TYPE defop, struct nc_err** error)
+static NC_EDIT_OP_TYPE get_operation(xmlNodePtr node, NC_EDIT_DEFOP_TYPE defop, struct nc_err** error)
 {
 	char *operation = NULL;
 	NC_EDIT_OP_TYPE op;
@@ -216,7 +216,7 @@ keyList get_keynode_list(xmlDocPtr model)
  * \param[out] result List of pointers to the key elements from node's children.
  * \return Zero on success, non-zero otherwise.
  */
-int get_keys(keyList keys, xmlNodePtr node, xmlNodePtr **result)
+static int get_keys(keyList keys, xmlNodePtr node, xmlNodePtr **result)
 {
 	xmlChar *str = NULL;
 	char* s, *token;
@@ -224,6 +224,7 @@ int get_keys(keyList keys, xmlNodePtr node, xmlNodePtr **result)
 
 	assert(keys != NULL);
 	assert(node != NULL);
+	assert(result != NULL);
 
 	*result = NULL;
 
@@ -293,7 +294,7 @@ int get_keys(keyList keys, xmlNodePtr node, xmlNodePtr **result)
  * \param[in] keys List of key elements from configuration data model.
  * \return Zero if the given children is NOT the key element of the parent.
  */
-int is_key(xmlNodePtr parent, xmlNodePtr children, keyList keys)
+static int is_key(xmlNodePtr parent, xmlNodePtr children, keyList keys)
 {
 	xmlChar *str = NULL;
 	char *s, *token;
@@ -356,7 +357,7 @@ int is_key(xmlNodePtr parent, xmlNodePtr children, keyList keys)
  *
  * \return 0 - false, 1 - true (matching elements).
  */
-int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
+static int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 {
 	xmlNodePtr *keynode_list;
 	xmlNodePtr keynode, key;
@@ -489,7 +490,7 @@ static xmlNodePtr model_recursion(xmlNodePtr node, xmlDocPtr model)
  * @param[in] model Configuration data model for the document of the given node.
  * @return Default value of the node, NULL if no default value defined or found.
  */
-xmlChar* get_default_value(xmlNodePtr node, xmlDocPtr model)
+static xmlChar* get_default_value(xmlNodePtr node, xmlDocPtr model)
 {
 	xmlNodePtr mnode, aux;
 	xmlChar* value = NULL;
@@ -518,7 +519,7 @@ xmlChar* get_default_value(xmlNodePtr node, xmlDocPtr model)
  * \param[in] keys List of key elements from configuration data model.
  * \return Found equivalent element, NULL if no such element exists.
  */
-xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, keyList keys)
+static xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, keyList keys)
 {
 	xmlNodePtr orig_parent, node;
 
@@ -565,7 +566,7 @@ xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, keyList keys)
  *                 elements with specified operation will be searched for in
  *                 this document.
  */
-xmlXPathObjectPtr get_operation_elements(NC_EDIT_OP_TYPE op, xmlDocPtr edit)
+static xmlXPathObjectPtr get_operation_elements(NC_EDIT_OP_TYPE op, xmlDocPtr edit)
 {
 	xmlXPathContextPtr edit_ctxt = NULL;
 	xmlXPathObjectPtr operation_nodes = NULL;
@@ -639,10 +640,12 @@ xmlXPathObjectPtr get_operation_elements(NC_EDIT_OP_TYPE op, xmlDocPtr edit)
  * \return On error, non-zero is returned and err structure is filled. Zero is
  * returned on success.
  */
-int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, struct nc_err **error)
+static int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, struct nc_err **error)
 {
 	xmlNodePtr parent;
 	NC_EDIT_OP_TYPE op, parent_op;
+
+	assert(error != NULL);
 
 	op = get_operation(edit, NC_EDIT_DEFOP_NONE, error);
 	if (op == (NC_EDIT_OP_TYPE)NC_EDIT_DEFOP_NONE) {
@@ -709,7 +712,7 @@ int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, struct n
  * \return On error, non-zero is returned and err structure is filled. Zero is
  * returned on success.
  */
-int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr orig, xmlDocPtr edit, xmlDocPtr model, struct nc_err **error)
+static int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr orig, xmlDocPtr edit, xmlDocPtr model, struct nc_err **error)
 {
 	xmlXPathObjectPtr operation_nodes = NULL;
 	xmlNodePtr node_to_process = NULL, n;
@@ -719,6 +722,7 @@ int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr ori
 
 	assert(orig != NULL);
 	assert(edit != NULL);
+	assert(error != NULL);
 
 	keys = get_keynode_list(model);
 
@@ -823,7 +827,7 @@ int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr ori
 	if (defval != NULL) { xmlFree(defval);}
 	if (value != NULL) { xmlFree(value);}
 
-	if (error != NULL) {
+	if (*error != NULL) {
 		return (EXIT_FAILURE);
 	} else {
 		return EXIT_SUCCESS;
@@ -836,7 +840,7 @@ int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr ori
  * \param[in] node XML node from the configuration data to delete.
  * \return Zero on success, non-zero otherwise.
  */
-int edit_delete (xmlNodePtr node)
+static int edit_delete (xmlNodePtr node)
 {
 	assert(node != NULL);
 
@@ -859,7 +863,7 @@ int edit_delete (xmlNodePtr node)
  *
  * \return Zero on success, non-zero otherwise.
  */
-int edit_remove (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
+static int edit_remove (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 {
 	xmlNodePtr old;
 
@@ -914,7 +918,7 @@ static xmlNodePtr edit_create_recursively (xmlDocPtr orig_doc, xmlNodePtr edit_n
  *
  * \return Zero on success, non-zero otherwise.
  */
-int edit_create (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
+static int edit_create (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 {
 	xmlNodePtr parent = NULL;
 
@@ -960,7 +964,7 @@ int edit_create (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
  *
  * \return Zero on success, non-zero otherwise.
  */
-int edit_replace (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
+static int edit_replace (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 {
 	xmlNodePtr old;
 
@@ -986,7 +990,7 @@ int edit_replace (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 	}
 }
 
-int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, keyList keys)
+static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, keyList keys)
 {
 	xmlNodePtr children, aux;
 	int retval;
@@ -1122,11 +1126,13 @@ int edit_merge (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
  * \return On error, non-zero is returned and err structure is filled. Zero is
  *         returned on success.
  */
-int edit_operations (xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop, keyList keys, struct nc_err **error)
+static int edit_operations (xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop, keyList keys, struct nc_err **error)
 {
 	xmlXPathObjectPtr nodes;
 	int i;
 	xmlNodePtr orig_node, edit_node;
+
+	assert(error != NULL);
 
 	/* default replace */
 	if (defop == NC_EDIT_DEFOP_REPLACE) {
@@ -1229,7 +1235,7 @@ error:
 	return EXIT_FAILURE;
 }
 
-int compact_edit_operations_recursively (xmlNodePtr node, NC_EDIT_OP_TYPE supreme_op)
+static int compact_edit_operations_recursively (xmlNodePtr node, NC_EDIT_OP_TYPE supreme_op)
 {
 	NC_EDIT_OP_TYPE op;
 	xmlNodePtr children;
@@ -1263,7 +1269,7 @@ int compact_edit_operations_recursively (xmlNodePtr node, NC_EDIT_OP_TYPE suprem
 	return EXIT_SUCCESS;
 }
 
-int compact_edit_operations (xmlDocPtr edit_doc)
+static int compact_edit_operations (xmlDocPtr edit_doc)
 {
 	if (edit_doc == NULL) {
 		return EXIT_FAILURE;
@@ -1288,8 +1294,9 @@ int compact_edit_operations (xmlDocPtr edit_doc)
  */
 int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
 {
-	assert(repo != NULL);
-	assert(edit != NULL);
+	if (repo != NULL || edit != NULL) {
+		return (EXIT_FAILURE);
+	}
 
 	keyList keys;
 	keys = get_keynode_list(model);
@@ -1304,7 +1311,9 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 
 	if (compact_edit_operations(edit) != EXIT_SUCCESS) {
 		ERROR("Compacting edit-config operations failed.");
-		*error = nc_err_new (NC_ERR_OP_FAILED);
+		if (error != NULL) {
+			*error = nc_err_new (NC_ERR_OP_FAILED);
+		}
 		goto error_cleanup;
 	}
 
