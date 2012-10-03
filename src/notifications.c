@@ -1213,6 +1213,8 @@ cleanup:
 void nc_ntf_stream_iter_start(const char* stream)
 {
 	struct stream *s;
+	char* dbus_filter = NULL;
+	DBusError err;
 
 	if (initialized == 0) {
 		return;
@@ -1225,6 +1227,46 @@ void nc_ntf_stream_iter_start(const char* stream)
 	}
 	lseek(s->fd, s->data, SEEK_SET);
 	pthread_mutex_unlock(streams_mut);
+
+	/* subscribe DBus signals for the stream */
+	asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
+			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream);
+	dbus_error_init(&err);
+
+	pthread_mutex_lock(dbus_mut);
+	dbus_bus_add_match(dbus, dbus_filter, &err);
+	dbus_connection_flush(dbus);
+	pthread_mutex_unlock(dbus_mut);
+
+	free(dbus_filter);
+
+	if (dbus_error_is_set(&err)) {
+		WARN("%s", err.message);
+		dbus_error_free(&err);
+	}
+}
+
+void nc_ntf_stream_iter_finnish(const char* stream)
+{
+	char* dbus_filter = NULL;
+	DBusError err;
+
+	/* unsubscribe DBus */
+	asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
+			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream);
+	dbus_error_init(&err);
+
+	pthread_mutex_lock(dbus_mut);
+	dbus_bus_remove_match(dbus, dbus_filter, &err);
+	dbus_connection_flush(dbus);
+	pthread_mutex_unlock(dbus_mut);
+
+	free(dbus_filter);
+
+	if (dbus_error_is_set(&err)) {
+		WARN("%s", err.message);
+		dbus_error_free(&err);
+	}
 }
 
 /*
@@ -1232,15 +1274,22 @@ void nc_ntf_stream_iter_start(const char* stream)
  *
  * \todo: thread safety (?thread-specific variables)
  */
-char* nc_ntf_stream_iter_next(const char* stream)
+char* nc_ntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time)
 {
 	struct stream *s;
 	int32_t len;
 	uint64_t t;
 	off_t offset;
 	char* text;
+	DBusMessage *signal;
+	DBusMessageIter signal_args;
 
 	if (initialized == 0) {
+		return (NULL);
+	}
+
+	/* check time boundaries */
+	if (start != -1 && stop != -1 && stop < start) {
 		return (NULL);
 	}
 
@@ -1250,27 +1299,113 @@ char* nc_ntf_stream_iter_next(const char* stream)
 		return (NULL);
 	}
 
-	if ((offset = lseek(s->fd, 0, SEEK_CUR)) < lseek(s->fd, 0, SEEK_END)) {
-		/* there are still some data to read */
-		lseek(s->fd, offset, SEEK_SET);
-	} else {
-		pthread_mutex_unlock(streams_mut);
-		return (NULL);
-	}
+	while (1) {
+		if ((offset = lseek(s->fd, 0, SEEK_CUR)) < lseek(s->fd, 0, SEEK_END)) {
+			/* there are still some data to read */
+			lseek(s->fd, offset, SEEK_SET);
+		} else {
+			/* no more data */
+			pthread_mutex_unlock(streams_mut);
 
-	if (nc_ntf_stream_lock(s) == 0) {
-		read(s->fd, &len, sizeof(int32_t));
-		read(s->fd, &t, sizeof(uint64_t));
-		text = malloc(len * sizeof(char));
-		read(s->fd, text, len);
-		nc_ntf_stream_unlock(s);
-	} else {
-		ERROR("Unable to read event from stream file %s (locking failed).", s->name);
-		pthread_mutex_unlock(streams_mut);
-		return (NULL);
+			/* try DBus */
+			while (1) {
+				pthread_mutex_lock(dbus_mut);
+				signal = dbus_connection_pop_message(dbus);
+				pthread_mutex_unlock(dbus_mut);
+
+				if (signal != NULL && dbus_message_is_signal(signal, NC_NTF_DBUS_INTERFACE, "Event")) {
+					/* parse the message, according to the
+					 * filter set in nc_ntf_stream_iter_start(),
+					 * we have Event signal from the stream
+					 * interface of the specified stream
+					 */
+					/* read the parameters */
+					if (dbus_message_iter_init(signal, &signal_args)) {
+						if (DBUS_TYPE_UINT64 != dbus_message_iter_get_arg_type(&signal_args)) {
+							WARN("Unexpected DBus Event signal (timestamp is missing).");
+							dbus_message_unref(signal);
+							continue;
+						}
+						dbus_message_iter_get_basic(&signal_args, &t);
+						/* check boundaries */
+						if (start != -1 && start > t) {
+							/*
+							 * we're not interested in this event, it
+							 * happened before specified start time
+							 */
+							dbus_message_unref(signal);
+							continue; /* try next signal */
+						}
+						if (stop != -1 && stop < t) {
+							/*
+							 * we're not interested in this event, it
+							 * happened after specified stop time
+							 */
+							dbus_message_unref(signal);
+							continue; /* try next signal */
+						}
+						/* we're interested, read content */
+						if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(&signal_args)) {
+							WARN("Unexpected DBus Event signal (content is missing).");
+							dbus_message_unref(signal);
+							continue;
+						}
+						dbus_message_iter_get_basic(&signal_args, &text);
+						dbus_message_unref(signal);
+						if (event_time != NULL) {
+							*event_time = t;
+						}
+						return(text);
+					}
+				}
+				/* else signal == NULL */
+				break;
+			}
+
+			/* no more events */
+			return (NULL);
+		}
+
+		if (nc_ntf_stream_lock(s) == 0) {
+			read(s->fd, &len, sizeof(int32_t));
+			read(s->fd, &t, sizeof(uint64_t));
+
+			/* check boundaries */
+			if (start != -1 && start > t) {
+				/*
+				 * we're not interested in this event, it
+				 * happened before specified start time
+				 */
+				lseek(s->fd, len, SEEK_CUR);
+				/* read another event */
+				continue;
+			}
+			if (stop != -1 && stop < t) {
+				/*
+				 * we're not interested in this event, it
+				 * happened after specified stop time
+				 */
+				lseek(s->fd, len, SEEK_CUR);
+				/* read another event */
+				continue;
+			}
+
+			/* we're interested, read content */
+			text = malloc(len * sizeof(char));
+			read(s->fd, text, len);
+			nc_ntf_stream_unlock(s);
+			break; /* end the reading loop */
+		} else {
+			ERROR("Unable to read event from stream file %s (locking failed).", s->name);
+			pthread_mutex_unlock(streams_mut);
+			return (NULL);
+		}
 	}
 
 	pthread_mutex_unlock(streams_mut);
 
+	if (event_time != NULL) {
+		*event_time = t;
+	}
 	return (text);
 }

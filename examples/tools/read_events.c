@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 
 	nc_ntf_init();
 	nc_ntf_stream_iter_start(argv[1]);
-	while((event = nc_ntf_stream_iter_next(argv[1])) != NULL) {
+	while((event = nc_ntf_stream_iter_next(argv[1], -1, -1, NULL)) != NULL) {
 		if ((eventDoc = xmlReadMemory(event, strlen(event), NULL, NULL, 0)) != NULL) {
 			fprintf(stdout, "Event:\n");
 			xmlDocFormatDump(stdout, eventDoc, 1);
@@ -50,6 +50,8 @@ int main(int argc, char* argv[])
 		}
 		free(event);
 	}
+	nc_ntf_stream_iter_finnish(argv[1]);
+
 	nc_ntf_close();
 
 	return (EXIT_SUCCESS);

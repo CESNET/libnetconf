@@ -194,8 +194,20 @@ void nc_ntf_stream_iter_start(const char* stream);
  * @brief Pop the next event record from the stream file. The iteration must be
  * started by nc_ntf_stream_iter_start() function.
  * @param[in] stream Name of the stream to iterate.
+ * @param[in] start Time of the first event caller is interested in.
+ * @param[in] stop Time of the last event caller is interested in.
+ * @param[out] event_time Time of the returned event, NULL if caller does not care.
  * @return Content of the next event in the stream.
  */
-char* nc_ntf_stream_iter_next(const char* stream);
+char* nc_ntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time);
+
+/**
+ * \todo: thread safety (?thread-specific variables)
+ * @ingroup notifications
+ * @brief Clean all structures used for iteration in the specified stream. This
+ * function must be called as a closing function to nc_ntf_stream_iter_start()
+ * @param[in] stream Name of the iterated stream.
+ */
+void nc_ntf_stream_iter_finnish(const char* stream);
 
 #endif /* NOTIFICATIONS_H_ */
