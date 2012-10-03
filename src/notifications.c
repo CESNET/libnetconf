@@ -510,7 +510,7 @@ static int nc_ntf_dbus_init(void)
 			ERROR("D-Bus connection error (%s)", dbus_err.message);
 			dbus_error_free(&dbus_err);
 		}
-		if (NULL == dbus) {
+		if (dbus == NULL) {
 			ERROR("Unable to connect to the D-Bus's system bus");
 			pthread_mutex_unlock(dbus_mut);
 			return (EXIT_FAILURE);
@@ -825,7 +825,7 @@ static int nc_ntf_stream_unlock(struct stream *s)
  */
 int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 {
-	char *event_time = NULL;
+	char *event_time = NULL, *signal_object = NULL;
 	char *content = NULL, *record = NULL;
 	char *aux1 = NULL, *aux2 = NULL;
 	NC_DATASTORE ds;
@@ -838,6 +838,8 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 	int poffset, i, j;
 	uint64_t etime64;
 	va_list params;
+	DBusMessage *signal = NULL;
+	DBusMessageIter signal_args;
 
 	/* check the stream */
 	if (initialized == 0 || nc_ntf_stream_isavailable(stream) == 0) {
@@ -1159,6 +1161,48 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 		return (EXIT_FAILURE);
 	}
 	pthread_mutex_unlock(streams_mut);
+
+	/* announce event via DBus */
+	pthread_mutex_lock(dbus_mut);
+	if (dbus != NULL) {
+		/* create a signal and check for errors */
+		asprintf(&signal_object, "%s/%s", NC_NTF_DBUS_PATH, stream);
+		signal = dbus_message_new_signal(signal_object, NC_NTF_DBUS_INTERFACE, "Event");
+		free(signal_object);
+		if (signal == NULL) {
+			WARN("Announcing event via DBus failed (creating DBus signal failed).");
+			goto cleanup;
+			/* event already successfully stored, return SUCCESS */
+		}
+		/* append arguments onto signal */
+		dbus_message_iter_init_append(signal, &signal_args);
+		if (!dbus_message_iter_append_basic(&signal_args, DBUS_TYPE_UINT64, &etime64)) {
+			WARN("Announcing event via DBus failed (attaching event timestamp failed).");
+			goto cleanup;
+			/* event already successfully stored, return SUCCESS */
+		}
+		if (!dbus_message_iter_append_basic(&signal_args, DBUS_TYPE_STRING, &record)) {
+			WARN("Announcing event via DBus failed (attaching event content failed).");
+			goto cleanup;
+			/* event already successfully stored, return SUCCESS */
+		}
+
+		/* send the message and flush the connection */
+		if (!dbus_connection_send(dbus, signal, NULL)) {
+			WARN("Announcing event via DBus failed (sending signal failed).");
+			goto cleanup;
+			/* event already successfully stored, return SUCCESS */
+		}
+		dbus_connection_flush(dbus);
+	}
+
+cleanup:
+	pthread_mutex_unlock(dbus_mut);
+
+	/* free DBus signal */
+	if (signal != NULL) {
+		dbus_message_unref(signal);
+	}
 
 	/* final cleanup */
 	free(record);
