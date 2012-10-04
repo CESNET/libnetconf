@@ -711,6 +711,13 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 		source_ds = file_ds->candidate->children;
 		break;
 	case NC_DATASTORE_NONE:
+		if (config == NULL) {
+			UNLOCK(file_ds);
+			ERROR("%s: invalid source config.", __func__);
+			*error = nc_err_new(NC_ERR_BAD_ELEM);
+			nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "config");
+			return EXIT_FAILURE;
+		}
 		config_doc = xmlReadMemory (config, strlen(config), NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
 		source_ds = xmlDocGetRootElement (config_doc);
 		break;

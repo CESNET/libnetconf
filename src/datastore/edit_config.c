@@ -1294,7 +1294,7 @@ static int compact_edit_operations (xmlDocPtr edit_doc)
  */
 int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
 {
-	if (repo != NULL || edit != NULL) {
+	if (repo == NULL || edit == NULL) {
 		return (EXIT_FAILURE);
 	}
 
