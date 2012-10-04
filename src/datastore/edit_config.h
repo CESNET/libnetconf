@@ -52,6 +52,22 @@ typedef xmlXPathObjectPtr keyList;
 keyList get_keynode_list(xmlDocPtr model);
 
 /**
+ * \brief Match 2 elements each other if they are equivalent for NETCONF.
+ *
+ * Match does not include attributes and children match (only key children are
+ * checked). Furthemore, XML node types and namespaces are also checked.
+ *
+ * Supported XML node types are XML_TEXT_NODE and XML_ELEMENT_NODE.
+ *
+ * \param[in] node1 First node to compare.
+ * \param[in] node2 Second node to compare.
+ * \param[in] keys List of key elements from configuration data model.
+ *
+ * \return 0 - false, 1 - true (matching elements).
+ */
+int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys);
+
+/**
  * \brief Perform edit-config changes according to given parameters
  *
  * \param[in] repo XML document to change (target NETCONF repository).
