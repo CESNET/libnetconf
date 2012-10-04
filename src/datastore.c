@@ -771,7 +771,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			free(data);
 			data = NULL;
 
-			if (doc1 == NULL || doc1->children == NULL || doc1->children->children) {
+			if (doc1 == NULL || doc1->children == NULL || doc1->children->children == NULL) {
 				if (doc1 != NULL) {
 					xmlFreeDoc(doc1);
 				}
