@@ -357,7 +357,7 @@ static int is_key(xmlNodePtr parent, xmlNodePtr children, keyList keys)
  *
  * \return 0 - false, 1 - true (matching elements).
  */
-static int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
+int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 {
 	xmlNodePtr *keynode_list;
 	xmlNodePtr keynode, key;
