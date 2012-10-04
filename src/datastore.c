@@ -59,7 +59,8 @@
 #include "datastore/file/datastore_file.h"
 #include "datastore/empty/datastore_empty.h"
 
-struct ncds_ds_list {
+struct ncds_ds_list
+{
 	struct ncds_ds *datastore;
 	struct ncds_ds_list* next;
 };
@@ -122,13 +123,13 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 			ds_prev->next = ds_iter->next;
 		}
 		retval = ds_iter->datastore;
-		free (ds_iter);
+		free(ds_iter);
 	}
 
 	return retval;
 }
 
-char * ncds_get_model (ncds_id id)
+char * ncds_get_model(ncds_id id)
 {
 	struct ncds_ds * datastore = datastores_get_ds(id);
 	xmlBufferPtr buf;
@@ -137,13 +138,13 @@ char * ncds_get_model (ncds_id id)
 	if (datastore != NULL && datastore->model != NULL) {
 		buf = xmlBufferCreate();
 		xmlNodeDump(buf, datastore->model, datastore->model->children, 1, 1);
-		retval = strdup ((char*)xmlBufferContent(buf));
+		retval = strdup((char*) xmlBufferContent(buf));
 		xmlBufferFree(buf);
 	}
 	return retval;
 }
 
-const char * ncds_get_model_path (ncds_id id)
+const char * ncds_get_model_path(ncds_id id)
 {
 	struct ncds_ds * datastore = datastores_get_ds(id);
 
@@ -163,9 +164,9 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		return (NULL);
 	}
 
-	switch(type) {
+	switch (type) {
 	case NCDS_TYPE_FILE:
-		ds = (struct ncds_ds*) calloc (1, sizeof(struct ncds_ds_file));
+		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file));
 		ds->func.init = ncds_file_init;
 		ds->func.free = ncds_file_free;
 		ds->func.lock = ncds_file_lock;
@@ -176,8 +177,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		ds->func.editconfig = ncds_file_editconfig;
 		break;
 	case NCDS_TYPE_EMPTY:
-		/** \todo EMPTY Datastore - implementa all required functions and return proper values */
-		ds = (struct ncds_ds*) calloc (1, sizeof(struct ncds_ds_empty));
+		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty));
 		ds->func.init = ncds_empty_init;
 		ds->func.free = ncds_empty_free;
 		ds->func.lock = ncds_empty_lock;
@@ -217,20 +217,20 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	return (ds);
 }
 
-ncds_id generate_id (void)
+ncds_id generate_id(void)
 {
-	ncds_id	current_id;
-	
+	ncds_id current_id;
+
 	do {
 		/* generate id */
-		current_id = (rand () + 1) % INT_MAX;
-	/* until it's unique */
-	} while (datastores_get_ds (current_id) != NULL);
+		current_id = (rand() + 1) % INT_MAX;
+		/* until it's unique */
+	} while (datastores_get_ds(current_id) != NULL);
 
 	return current_id;
 }
 
-ncds_id ncds_init (struct ncds_ds* datastore)
+ncds_id ncds_init(struct ncds_ds* datastore)
 {
 	struct ncds_ds_list * item;
 
@@ -244,12 +244,12 @@ ncds_id ncds_init (struct ncds_ds* datastore)
 	if (datastore->func.init(datastore) != 0) {
 		return -2;
 	}
-	
+
 	/* acquire unique id */
-	datastore->id = generate_id ();
+	datastore->id = generate_id();
 
 	/* add to list */
-	item = malloc (sizeof (struct ncds_ds_list));
+	item = malloc(sizeof(struct ncds_ds_list));
 	if (item == NULL) {
 		return -4;
 	}
@@ -265,7 +265,7 @@ void ncds_free(struct ncds_ds* datastore)
 	struct ncds_ds *ds = NULL;
 
 	if (datastore == NULL) {
-		WARN ("%s: no datastore to free.", __func__);
+		WARN("%s: no datastore to free.", __func__);
 		return;
 	}
 
@@ -283,7 +283,7 @@ void ncds_free(struct ncds_ds* datastore)
 	}
 }
 
-void ncds_free2 (ncds_id datastore_id)
+void ncds_free2(ncds_id datastore_id)
 {
 	struct ncds_ds *del;
 
@@ -308,11 +308,11 @@ void ncds_free2 (ncds_id datastore_id)
 		 * list, also the whole list item (del variable here) is freed
 		 * by ncds_free(), so do not do it here!
 		 */
-		ncds_free (del);
+		ncds_free(del);
 	}
 }
 
-xmlDocPtr ncxml_merge (const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model)
+xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model)
 {
 	int ret;
 	keyList keys;
@@ -357,26 +357,26 @@ xmlDocPtr ncxml_merge (const xmlDocPtr first, const xmlDocPtr second, const xmlD
  */
 int attrcmp(xmlNodePtr reference, xmlNodePtr node)
 {
-        xmlAttrPtr attr = reference->properties;
-        xmlChar *value = NULL, *refvalue = NULL;
+	xmlAttrPtr attr = reference->properties;
+	xmlChar *value = NULL, *refvalue = NULL;
 
-        while (attr != NULL) {
-                if ((value = xmlGetProp(node, attr->name)) == NULL) {
-                        return 1;
-                } else {
-                        refvalue = xmlGetProp(reference, attr->name);
-                        if (strcmp((char *) refvalue, (char *) value)) {
-                                free(refvalue);
-                                free(value);
-                                return 1;
-                        }
-                        free(refvalue);
-                        free(value);
-                }
-                attr = attr->next;
-        }
+	while (attr != NULL) {
+		if ((value = xmlGetProp(node, attr->name)) == NULL) {
+			return 1;
+		} else {
+			refvalue = xmlGetProp(reference, attr->name);
+			if (strcmp((char *) refvalue, (char *) value)) {
+				free(refvalue);
+				free(value);
+				return 1;
+			}
+			free(refvalue);
+			free(value);
+		}
+		attr = attr->next;
+	}
 
-        return 0;
+	return 0;
 }
 
 /**
@@ -388,157 +388,156 @@ int attrcmp(xmlNodePtr reference, xmlNodePtr node)
  * \return              1 if config is filter output, 0 otherelse
  */
 
-static int ncxml_subtree_filter (xmlNodePtr config, xmlNodePtr filter, xmlDocPtr model)
+static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter, xmlDocPtr model)
 {
-        xmlNodePtr config_node = config;
-        xmlNodePtr filter_node = filter;
-        xmlNodePtr delete = NULL, delete2 = NULL;
+	xmlNodePtr config_node = config;
+	xmlNodePtr filter_node = filter;
+	xmlNodePtr delete = NULL, delete2 = NULL;
 	keyList keys;
 
-        int filter_in = 0, sibling_in = 0, end_node = 0, sibling_selection = 0;
+	int filter_in = 0, sibling_in = 0, end_node = 0, sibling_selection = 0;
 
-        /* check if this filter level is last */
-        filter_node = filter;
-        while (filter_node) {
-                if ((filter_node->children) &&
-                        (filter_node->children->type == XML_TEXT_NODE)) {
-                        end_node = 1;
-                        break;
-                }
-                filter_node = filter_node->next;
-        }
+	/* check if this filter level is last */
+	filter_node = filter;
+	while (filter_node) {
+		if ((filter_node->children) && (filter_node->children->type == XML_TEXT_NODE)) {
+			end_node = 1;
+			break;
+		}
+		filter_node = filter_node->next;
+	}
 
-        if (end_node) {
-                /* try to find required node */
-                config_node = config;
-                while (config_node) {
-                        if (!strcmp((char *)filter_node->name, (char *)config_node->name) &&
-                                !nc_nscmp(filter_node, config_node) &&
-                                !attrcmp(filter_node, config_node)) {
-                                filter_in = 1;
-                                break;
-                        }
-                        config_node = config_node->next;
-                }
+	if (end_node) {
+		/* try to find required node */
+		config_node = config;
+		while (config_node) {
+			if (!strcmp((char *) filter_node->name, (char *) config_node->name) &&
+					!nc_nscmp(filter_node, config_node) &&
+					!attrcmp(filter_node, config_node)) {
+				filter_in = 1;
+				break;
+			}
+			config_node = config_node->next;
+		}
 
-                /* if required node is present, decide about removing sibling nodes */
-                if (filter_in) {
-                        /* choose kind of used filter node */
-                        if (config_node->children && (config_node->children->type == XML_TEXT_NODE) &&
-                                (strcmp((char *)filter_node->children->content, (char *)config_node->children->content))) {
-                                /* content match node doesn't match */
-                                return 0;
-                        }
-                        if (filter_node->next || filter_node->prev) {
-                                /* check if all filter sibling nodes are content match nodes -> then no config sibling node will be removed */
-                                sibling_selection = 0; /* 0 means that all sibling nodes will be in the filter result */
-                                /*go to the first filter sibling node */
-                                filter_node = filter;
-                                /* pass all filter sibling nodes */
-                                while (filter_node) {
-                                        if (!filter_node->children || (filter_node->children->type != XML_TEXT_NODE)) {
-                                                sibling_selection = 1; /* filter result will be selected */
-                                                break;
-                                        }
-                                        filter_node = filter_node->next;
-                                }
+		/* if required node is present, decide about removing sibling nodes */
+		if (filter_in) {
+			/* choose kind of used filter node */
+			if (config_node->children && (config_node->children->type == XML_TEXT_NODE) &&
+					(strcmp((char *) filter_node->children->content, (char *) config_node->children->content))) {
+				/* content match node doesn't match */
+				return 0;
+			}
+			if (filter_node->next || filter_node->prev) {
+				/* check if all filter sibling nodes are content match nodes -> then no config sibling node will be removed */
+				sibling_selection = 0; /* 0 means that all sibling nodes will be in the filter result */
+				/*go to the first filter sibling node */
+				filter_node = filter;
+				/* pass all filter sibling nodes */
+				while (filter_node) {
+					if (!filter_node->children || (filter_node->children->type != XML_TEXT_NODE)) {
+						sibling_selection = 1; /* filter result will be selected */
+						break;
+					}
+					filter_node = filter_node->next;
+				}
 
-                                /* select and remove all unwanted nodes */
-                                config_node = config;
-                                while (config_node) {
-                                        sibling_in = 0;
-                                        /* go to the first filter sibing node */
-                                        filter_node = filter;
-                                        /* pass all filter sibling nodes */
-                                        while (filter_node) {
-                                                if (!strcmp((char *)filter_node->name, (char *)config_node->name) &&
-                                                        !nc_nscmp(filter_node, config_node) &&
-                                                        !attrcmp(filter_node, config_node)) {
-                                                        /* content match node check */
-                                                        if (filter_node->children && (filter_node->children->type == XML_TEXT_NODE) &&
-                                                                config_node->children && (config_node->children->type == XML_TEXT_NODE)) {
-                                                                if (strcmp((char *)filter_node->children->content, (char *)config_node->children->content)) {
-                                                                        /* content match node doesn't match */
-                                                                        return 0;
-                                                                }
-                                                        }
-                                                        sibling_in = 1;
-                                                        break;
-                                                }
-                                                filter_node = filter_node->next;
-                                        }
-                                        /* if this config node is not in filter, remove it */
-                                        if (sibling_selection && !sibling_in) {
-                                                delete = config_node;
-                                                config_node = config_node->next;
-                                                xmlUnlinkNode(delete);
-                                                xmlFreeNode(delete);
-                                        } else {
-                                                config_node = config_node->next;
-                                        }
-                                }
-                        } else {
-                                /* only content match node present - all sibling nodes stays */
-                        }
-                }
-        } else {
-        	/* get all keys from data model */
-        	keys = get_keynode_list(model);
+				/* select and remove all unwanted nodes */
+				config_node = config;
+				while (config_node) {
+					sibling_in = 0;
+					/* go to the first filter sibing node */
+					filter_node = filter;
+					/* pass all filter sibling nodes */
+					while (filter_node) {
+						if (!strcmp((char *) filter_node->name, (char *) config_node->name) &&
+								!nc_nscmp(filter_node, config_node) &&
+								!attrcmp(filter_node, config_node)) {
+							/* content match node check */
+							if (filter_node->children && (filter_node->children->type == XML_TEXT_NODE) &&
+									config_node->children && (config_node->children->type == XML_TEXT_NODE)) {
+								if (strcmp((char *) filter_node->children->content, (char *) config_node->children->content)) {
+									/* content match node doesn't match */
+									return 0;
+								}
+							}
+							sibling_in = 1;
+							break;
+						}
+						filter_node = filter_node->next;
+					}
+					/* if this config node is not in filter, remove it */
+					if (sibling_selection && !sibling_in) {
+						delete = config_node;
+						config_node = config_node->next;
+						xmlUnlinkNode(delete);
+						xmlFreeNode(delete);
+					} else {
+						config_node = config_node->next;
+					}
+				}
+			} else {
+				/* only content match node present - all sibling nodes stays */
+			}
+		}
+	} else {
+		/* get all keys from data model */
+		keys = get_keynode_list(model);
 
-                /* this is containment node (no sibling node is content match node */
-                filter_node = filter;
-                while (filter_node) {
-                        if (matching_elements(filter_node, config, keys) &&
-                                !attrcmp(filter_node, config)) {
-                                filter_in = 1;
-                                break;
-                        }
-                        filter_node = filter_node->next;
-                }
+		/* this is containment node (no sibling node is content match node */
+		filter_node = filter;
+		while (filter_node) {
+			if (matching_elements(filter_node, config, keys) &&
+					!attrcmp(filter_node, config)) {
+				filter_in = 1;
+				break;
+			}
+			filter_node = filter_node->next;
+		}
 
-                if (filter_in == 1) {
-                        while (config->children && filter_node && filter_node->children &&
-                                ((filter_in = ncxml_subtree_filter(config->children, filter_node->children, model)) == 0)) {
-                                filter_node = filter_node->next;
-                                while (filter_node) {
-                                        if (matching_elements(filter_node, config, keys) &&
-                                                !attrcmp(filter_node, config)) {
-                                                filter_in = 1;
-                                                break;
-                                        }
-                                        filter_node = filter_node->next;
-                                }
-                        }
-                        if (filter_in == 0) {
-                                /* subtree is not a content of the filter output */
-                                delete = config->children;
-                                xmlUnlinkNode(delete);
-                                xmlFreeNode(delete);
-                                delete2 = config;
-                        }
-                } else {
-                        delete2 = config;
-                }
-                /* filter next sibling node */
-                if (config->next != NULL) {
-                        if (ncxml_subtree_filter(config->next, filter, model) == 0) {
-                                delete = config->next;
-                                xmlUnlinkNode(delete);
-                                xmlFreeNode(delete);
-                        } else {
-                                filter_in = 1;
-                        }
-                }
-                if (delete2) {
-                        xmlUnlinkNode(delete2);
-                        xmlFreeNode(delete2);
-                }
-        }
+		if (filter_in == 1) {
+			while (config->children && filter_node && filter_node->children &&
+					((filter_in = ncxml_subtree_filter(config->children, filter_node->children, model)) == 0)) {
+				filter_node = filter_node->next;
+				while (filter_node) {
+					if (matching_elements(filter_node, config, keys) &&
+							!attrcmp(filter_node, config)) {
+						filter_in = 1;
+						break;
+					}
+					filter_node = filter_node->next;
+				}
+			}
+			if (filter_in == 0) {
+				/* subtree is not a content of the filter output */
+				delete = config->children;
+				xmlUnlinkNode(delete);
+				xmlFreeNode(delete);
+				delete2 = config;
+			}
+		} else {
+			delete2 = config;
+		}
+		/* filter next sibling node */
+		if (config->next != NULL) {
+			if (ncxml_subtree_filter(config->next, filter, model) == 0) {
+				delete = config->next;
+				xmlUnlinkNode(delete);
+				xmlFreeNode(delete);
+			} else {
+				filter_in = 1;
+			}
+		}
+		if (delete2) {
+			xmlUnlinkNode(delete2);
+			xmlFreeNode(delete2);
+		}
+	}
 
-        return filter_in;
+	return filter_in;
 }
 
-int ncxml_filter (xmlDocPtr data, const struct nc_filter * filter, xmlDocPtr model)
+int ncxml_filter(xmlDocPtr data, const struct nc_filter * filter, xmlDocPtr model)
 {
 	xmlDocPtr filter_doc;
 	int ret = EXIT_FAILURE;
@@ -549,11 +548,11 @@ int ncxml_filter (xmlDocPtr data, const struct nc_filter * filter, xmlDocPtr mod
 
 	switch (filter->type) {
 	case NC_FILTER_SUBTREE:
-		if ((filter_doc = xmlReadDoc (BAD_CAST filter->content, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN)) == NULL) {
+		if ((filter_doc = xmlReadDoc(BAD_CAST filter->content, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN)) == NULL) {
 			return EXIT_FAILURE;
 		}
 		ret = ncxml_subtree_filter(data->children, filter_doc->children, model);
-		xmlFreeDoc (filter_doc);
+		xmlFreeDoc(filter_doc);
 		break;
 	default:
 		return EXIT_FAILURE;
@@ -580,13 +579,12 @@ xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
 	assert(roots != NULL);
 	assert(model != NULL);
 
-
 	if (model->children == NULL || xmlStrcmp(model->children->name, BAD_CAST "module") != 0) {
 		return NULL;
 	}
 
 	aux = model->children->children;
-	while(aux != NULL) {
+	while (aux != NULL) {
 		if (root_name == NULL && xmlStrcmp(aux->name, BAD_CAST "container") == 0) {
 			//root_name = xmlGetNsProp(aux, BAD_CAST "name", BAD_CAST NC_NS_YIN);
 			root_name = xmlGetProp(aux, BAD_CAST "name");
@@ -626,7 +624,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	struct nc_err* e = NULL;
 	struct ncds_ds* ds;
 	struct nc_filter * filter;
-	char* data = NULL, * config, *model = NULL, *data2;
+	char* data = NULL, *config, *model = NULL, *data2;
 	xmlDocPtr doc1, doc2, doc_merged;
 	int len;
 	int ret = EXIT_FAILURE;
@@ -644,7 +642,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 	}
 
-	switch(op = nc_rpc_get_op(rpc)) {
+	switch (op = nc_rpc_get_op(rpc)) {
 	case NC_OP_LOCK:
 		ret = ds->func.lock(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
@@ -657,13 +655,13 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		if (ds->get_state != NULL) {
 			/* caller provided callback function to retrieve status data */
 
-			xmlDocDumpMemory(ds->model, (xmlChar**)(&model), &len);
+			xmlDocDumpMemory(ds->model, (xmlChar**) (&model), &len);
 			data2 = ds->get_state(model, data, &e);
 			free(model);
 
 			if (e != NULL) {
 				/* state data retrival error */
-				free (data);
+				free(data);
 				break;
 			}
 
@@ -677,18 +675,18 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 				if (doc1 != NULL) {
 					doc_merged = doc1;
 					xmlFreeDoc(doc2);
-				/* or only state if not null*/
+					/* or only state if not null*/
 				} else if (doc2 != NULL) {
 					doc_merged = doc2;
 					xmlFreeDoc(doc1);
-				/* or create empty document to allow further processing */
+					/* or create empty document to allow further processing */
 				} else {
-					doc_merged = xmlNewDoc (BAD_CAST "1.0");
+					doc_merged = xmlNewDoc(BAD_CAST "1.0");
 					xmlFreeDoc(doc1);
 					xmlFreeDoc(doc2);
 				}
 			} else {
-			/* cleanup */
+				/* cleanup */
 				xmlFreeDoc(doc1);
 				xmlFreeDoc(doc2);
 			}
@@ -701,7 +699,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
 
 		/* if filter specified, now is good time to apply it */
-		if ((filter = nc_rpc_get_filter (rpc)) != NULL) {
+		if ((filter = nc_rpc_get_filter(rpc)) != NULL) {
 			ncxml_filter(doc_merged, filter, ds->model);
 		}
 
@@ -723,7 +721,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	case NC_OP_GETCONFIG:
 		data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), &e);
 		if (strcmp(data, "") == 0) {
-			doc_merged = xmlNewDoc (BAD_CAST "1.0");
+			doc_merged = xmlNewDoc(BAD_CAST "1.0");
 		} else {
 			doc_merged = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		}
@@ -733,7 +731,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
 
 		/* if filter specified, now is good time to apply it */
-		if ((filter = nc_rpc_get_filter (rpc)) != NULL) {
+		if ((filter = nc_rpc_get_filter(rpc)) != NULL) {
 			ncxml_filter(doc_merged, filter, ds->model);
 		}
 
@@ -846,13 +844,13 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		} else {
 			ret = EXIT_FAILURE;
 		}
-		free (config);
+		free(config);
 		break;
 	case NC_OP_DELETECONFIG:
-		if (nc_rpc_get_target (rpc) == NC_DATASTORE_RUNNING) {
+		if (nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING) {
 			/* can not delete running */
-			e = nc_err_new (NC_ERR_OP_FAILED);
-			nc_err_set (e, NC_ERR_PARAM_MSG, "Can not delete running datastore.");
+			e = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(e, NC_ERR_PARAM_MSG, "Can not delete running datastore.");
 			break;
 		}
 		ret = ds->func.deleteconfig(ds, session, nc_rpc_get_target(rpc), &e);
@@ -880,7 +878,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	return (reply);
 }
 
-void ncds_break_locks (const struct nc_session* session)
+void ncds_break_locks(const struct nc_session* session)
 {
 	struct ncds_ds_list * ds;
 	struct nc_err * e = NULL;
@@ -889,21 +887,21 @@ void ncds_break_locks (const struct nc_session* session)
 
 	while (ds) {
 		if (ds->datastore) {
-			ds->datastore->func.unlock(ds->datastore, session, NC_DATASTORE_CANDIDATE,&e);
+			ds->datastore->func.unlock(ds->datastore, session, NC_DATASTORE_CANDIDATE, &e);
 			if (e) {
-				nc_err_free (e);
+				nc_err_free(e);
 				e = NULL;
 			}
 
-			ds->datastore->func.unlock(ds->datastore, session, NC_DATASTORE_RUNNING,&e);
+			ds->datastore->func.unlock(ds->datastore, session, NC_DATASTORE_RUNNING, &e);
 			if (e) {
-				nc_err_free (e);
+				nc_err_free(e);
 				e = NULL;
 			}
 
-			ds->datastore->func.unlock(ds->datastore, session, NC_DATASTORE_STARTUP,&e);
+			ds->datastore->func.unlock(ds->datastore, session, NC_DATASTORE_STARTUP, &e);
 			if (e) {
-				nc_err_free (e);
+				nc_err_free(e);
 				e = NULL;
 			}
 		}
