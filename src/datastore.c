@@ -695,6 +695,13 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		}
 		free(data);
 
+		if (doc_merged == NULL) {
+			ERROR("Reading configuration datastore failed.");
+			e = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(e, NC_ERR_PARAM_MSG, "Invalid datastore content.");
+			break;
+		}
+
 		/* process default values */
 		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
 
@@ -726,6 +733,13 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			doc_merged = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		}
 		free(data);
+
+		if (doc_merged == NULL) {
+			ERROR("Reading configuration datastore failed.");
+			e = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(e, NC_ERR_PARAM_MSG, "Invalid datastore content.");
+			break;
+		}
 
 		/* process default values */
 		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
