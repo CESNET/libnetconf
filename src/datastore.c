@@ -603,6 +603,7 @@ xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
 		aux = aux->next;
 	}
 	if (root_name == NULL || ns == NULL) {
+		ERROR("Invalid configuration data model - root container or namespace missing (%s:%d).", __FILE__, __LINE__);
 		return NULL;
 	}
 
@@ -753,72 +754,88 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		break;
 	case NC_OP_EDITCONFIG:
 	case NC_OP_COPYCONFIG:
-		/*
-		 * config can contain multiple elements on the root level, so
-		 * cover it with the <config> element to allow creation of xml
-		 * document
-		 */
-		config = nc_rpc_get_config(rpc);
-		asprintf(&data, "<config>%s</config>", config);
-		free(config);
-		doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-		free(data); data = NULL;
 
-		if (doc1 == NULL || doc1->children == NULL) {
-			if (doc1 != NULL) {
-				xmlFreeDoc(doc1);
-			}
-			return (NULL);
-		}
+		if (op == NC_OP_COPYCONFIG && nc_rpc_get_source(rpc) != NC_DATASTORE_NONE) {
+			/* <copy-config> with specified source datastore */
+			config = NULL;
+		} else {
+			/*
+			 * config can contain multiple elements on the root level, so
+			 * cover it with the <config> element to allow creation of xml
+			 * document
+			 */
+			config = nc_rpc_get_config(rpc);
+			asprintf(&data, "<config>%s</config>", config);
+			free(config);
+			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(data);
+			data = NULL;
 
-		/*
-		 * select correct config node for the selected datastore,
-		 * it must match the model's namespace and root element name
-		 */
-		aux_node = get_model_root(doc1->children->children, ds->model);
-		if (aux_node != NULL) {
-			resultbuffer = xmlBufferCreate();
-			if (resultbuffer == NULL) {
-				ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
-				e = nc_err_new(NC_ERR_OP_FAILED);
+			if (doc1 == NULL || doc1->children == NULL || doc1->children->children) {
+				if (doc1 != NULL) {
+					xmlFreeDoc(doc1);
+				}
+				e = nc_err_new(NC_ERR_INVALID_VALUE);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Invalid <config> parameter of the rpc request.");
 				break;
 			}
-			xmlNodeDump(resultbuffer, doc1, aux_node, 2, 1);
-			if ((config = strdup((char*) xmlBufferContent(resultbuffer))) == NULL) {
+
+			/*
+			 * select correct config node for the selected datastore,
+			 * it must match the model's namespace and root element name
+			 */
+			aux_node = get_model_root(doc1->children->children, ds->model);
+			if (aux_node != NULL) {
+				resultbuffer = xmlBufferCreate();
+				if (resultbuffer == NULL) {
+					ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+					e = nc_err_new(NC_ERR_OP_FAILED);
+					nc_err_set(e, NC_ERR_PARAM_MSG, "Internal error, see libnetconf error log.");
+					break;
+				}
+				xmlNodeDump(resultbuffer, doc1, aux_node, 2, 1);
+				if ((config = strdup((char*) xmlBufferContent(resultbuffer))) == NULL) {
+					xmlBufferFree(resultbuffer);
+					xmlFreeDoc(doc1);
+					ERROR("%s: xmlBufferContent failed (%s:%d)", __func__, __FILE__, __LINE__);
+					e = nc_err_new(NC_ERR_OP_FAILED);
+					nc_err_set(e, NC_ERR_PARAM_MSG, "Internal error, see libnetconf error log.");
+					break;
+				}
+				/*
+				 * now we have config as a valid xml tree with the
+				 * single root
+				 */
 				xmlBufferFree(resultbuffer);
 				xmlFreeDoc(doc1);
-				return (NULL);
-			}
-			/*
-			 * now we have config as a valid xml tree with the
-			 * single root
-			 */
-			xmlBufferFree(resultbuffer);
-			xmlFreeDoc(doc1);
-		} else {
-			xmlFreeDoc(doc1);
-			return (NULL);
-		}
-
-		/* do some work in case of used with-defaults capability */
-		if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) != 0) {
-			/* if report-all-tagged mode is supported, 'default'
-			 * attribute with 'true' or '1' value can appear and we
-			 * have to check that the element's value is equal to
-			 * default value. If does, the element is removed and
-			 * it is supposed to be default, otherwise the
-			 * invalid-value error reply must be returned.
-			 */
-			doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-			free(config);
-
-			if (ncdflt_default_clear(doc1, ds->model) != EXIT_SUCCESS) {
-				e = nc_err_new(NC_ERR_INVALID_VALUE);
-				nc_err_set(e, NC_ERR_PARAM_MSG, "with-defaults capability failure");
+			} else {
+				xmlFreeDoc(doc1);
+				/* request is not intended for this device */
+				ret = EXIT_SUCCESS;
+				data = NULL;
 				break;
 			}
-			xmlDocDumpFormatMemory(doc1, (xmlChar**)(&config), &len, 1);
-			xmlFreeDoc(doc1);
+
+			/* do some work in case of used with-defaults capability */
+			if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) != 0) {
+				/* if report-all-tagged mode is supported, 'default'
+				 * attribute with 'true' or '1' value can appear and we
+				 * have to check that the element's value is equal to
+				 * default value. If does, the element is removed and
+				 * it is supposed to be default, otherwise the
+				 * invalid-value error reply must be returned.
+				 */
+				doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+				free(config);
+
+				if (ncdflt_default_clear(doc1, ds->model) != EXIT_SUCCESS) {
+					e = nc_err_new(NC_ERR_INVALID_VALUE);
+					nc_err_set(e, NC_ERR_PARAM_MSG, "with-defaults capability failure");
+					break;
+				}
+				xmlDocDumpFormatMemory(doc1, (xmlChar**) (&config), &len, 1);
+				xmlFreeDoc(doc1);
+			}
 		}
 
 		/* perform the operation */
