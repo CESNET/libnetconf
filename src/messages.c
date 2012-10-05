@@ -912,7 +912,7 @@ nc_reply *nc_reply_data(const char* data)
 
 static xmlNodePtr new_reply_error_content(struct nc_err* error)
 {
-	xmlNodePtr content, einfo = NULL, tmp, first = NULL;
+	xmlNodePtr content, einfo = NULL, first = NULL;
 
 	while (error != NULL) {
 		if ((content = xmlNewNode(NULL, BAD_CAST "rpc-error")) == NULL) {
@@ -1011,10 +1011,10 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 		}
 
 		if (first == NULL) {
-			tmp = first = content;
+			first = content;
 		} else {
-			tmp->next = content;
-			tmp = tmp->next;
+			content->next = first;
+			first = content;
 		}
 		error = error->next;
 	}
@@ -1084,7 +1084,7 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 
 nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
 {
-	nc_reply * merged_reply;
+	nc_reply *merged_reply = NULL;
 	nc_reply ** to_merge = NULL;
 	NC_REPLY_TYPE type;
 	va_list ap;
