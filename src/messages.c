@@ -1079,7 +1079,7 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 
 nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
 {
-	nc_reply * merged_reply;
+	nc_reply *merged_reply = NULL;
 	nc_reply ** to_merge = NULL;
 	NC_REPLY_TYPE type;
 	va_list ap;
