@@ -141,7 +141,7 @@ time_t nc_datetime2time(const char* datetime)
 
 char* nc_time2datetime(time_t time)
 {
-	char* date;
+	char* date = NULL;
 	char* zoneshift = NULL;
         int zonediff, zonediff_h, zonediff_m;
         struct tm tm;
