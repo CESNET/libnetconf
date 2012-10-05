@@ -108,7 +108,7 @@ static pthread_mutex_t *streams_mut = NULL;
 /* internal flag if the notification structures are properly initialized */
 static int initialized = 0;
 
-void nc_ntf_free(nc_ntf *ntf)
+void ncntf_free(nc_ntf *ntf)
 {
 	nc_msg_free((struct nc_msg*) ntf);
 }
@@ -360,7 +360,7 @@ static void nc_ntf_dbus_close(void)
 	pthread_mutex_unlock(dbus_mut);
 }
 
-void nc_ntf_close(void)
+void ncntf_close(void)
 {
 	if (initialized == 1) {
 		nc_ntf_dbus_close();
@@ -482,8 +482,8 @@ static int nc_ntf_streams_init(void)
 		free(filelist[n]);
 	}
 
-	if (nc_ntf_stream_isavailable(NTF_STREAM_BASE) == 0) {
-		nc_ntf_stream_new(NTF_STREAM_BASE, "NETCONF Base Notifications", 1);
+	if (ncntf_stream_isavailable(NCNTF_STREAM_BASE) == 0) {
+		ncntf_stream_new(NCNTF_STREAM_BASE, "NETCONF Base Notifications", 1);
 	}
 
 	pthread_mutex_unlock(streams_mut);
@@ -521,7 +521,7 @@ static int nc_ntf_dbus_init(void)
 	return (EXIT_SUCCESS);
 }
 
-int nc_ntf_init(void)
+int ncntf_init(void)
 {
 	int ret;
 	pthread_mutexattr_t mattr;
@@ -594,7 +594,7 @@ int nc_ntf_init(void)
 	return (EXIT_SUCCESS);
 }
 
-int nc_ntf_stream_new(const char* name, const char* desc, int replay)
+int ncntf_stream_new(const char* name, const char* desc, int replay)
 {
 	struct stream *s;
 
@@ -639,7 +639,7 @@ int nc_ntf_stream_new(const char* name, const char* desc, int replay)
 	}
 }
 
-char** nc_ntf_stream_list(void)
+char** ncntf_stream_list(void)
 {
 	char** list;
 	struct stream *s;
@@ -669,7 +669,7 @@ char** nc_ntf_stream_list(void)
 	return(list);
 }
 
-int nc_ntf_stream_isavailable(const char* name)
+int ncntf_stream_isavailable(const char* name)
 {
 	struct stream *s;
 
@@ -823,13 +823,13 @@ static int nc_ntf_stream_unlock(struct stream *s)
  * above.
  * @return 0 for success, non-zero value else.
  */
-int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
+int ncntf_event_new(char* stream, time_t etime, NCNTF_EVENT event, ...)
 {
 	char *event_time = NULL, *signal_object = NULL;
 	char *content = NULL, *record = NULL;
 	char *aux1 = NULL, *aux2 = NULL;
 	NC_DATASTORE ds;
-	NC_NTF_EVENT_BY by;
+	NCNTF_EVENT_BY by;
 	const struct nc_cpblts *old, *new;
 	const struct nc_session *session;
 	NC_SESSION_TERM_REASON reason;
@@ -842,7 +842,7 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 	DBusMessageIter signal_args;
 
 	/* check the stream */
-	if (initialized == 0 || nc_ntf_stream_isavailable(stream) == 0) {
+	if (initialized == 0 || ncntf_stream_isavailable(stream) == 0) {
 		return (EXIT_FAILURE);
 	}
 
@@ -850,7 +850,7 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 
 	/* get the event description */
 	switch (event) {
-	case NC_NTF_GENERIC:
+	case NCNTF_GENERIC:
 		content = va_arg(params, char *);
 		if (content != NULL) {
 			content = strdup(content);
@@ -860,9 +860,9 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 			return (EXIT_FAILURE);
 		}
 		break;
-	case NC_NTF_BASE_CFG_CHANGE:
+	case NCNTF_BASE_CFG_CHANGE:
 		ds = va_arg(params, NC_DATASTORE);
-		by = va_arg(params, NC_NTF_EVENT_BY);
+		by = va_arg(params, NCNTF_EVENT_BY);
 
 		/* check datastore parameter */
 		switch (ds) {
@@ -883,13 +883,13 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 
 		/* check change-by parameter */
 		switch (by) {
-		case NC_NTF_EVENT_BY_SERVER:
+		case NCNTF_EVENT_BY_SERVER:
 			/* BY_USER must be created dynamically, so allocate it
 			 * dynamically also in this case to have single free();
 			 */
 			aux2 = strdup("<server/>");
 			break;
-		case NC_NTF_EVENT_BY_USER:
+		case NCNTF_EVENT_BY_USER:
 			/* another parameter should be passed */
 			session = va_arg(params, const struct nc_session*);
 			if (session == NULL) {
@@ -915,11 +915,11 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 		free(aux2);
 
 		break;
-	case NC_NTF_BASE_CPBLT_CHANGE:
+	case NCNTF_BASE_CPBLT_CHANGE:
 		/* \todo */
 		old = va_arg(params, const struct nc_cpblts*);
 		new = va_arg(params, const struct nc_cpblts*);
-		by = va_arg(params, NC_NTF_EVENT_BY);
+		by = va_arg(params, NCNTF_EVENT_BY);
 
 		/* find created capabilities */
 		for(i = 0; new->list[i] != NULL; i++) {
@@ -1017,13 +1017,13 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 
 		/* check change-by parameter */
 		switch (by) {
-		case NC_NTF_EVENT_BY_SERVER:
+		case NCNTF_EVENT_BY_SERVER:
 			/* BY_USER must be created dynamically, so allocate it
 			 * dynamically also in this case to have single free();
 			 */
 			aux1 = strdup("<server/>");
 			break;
-		case NC_NTF_EVENT_BY_USER:
+		case NCNTF_EVENT_BY_USER:
 			/* another parameter should be passed */
 			session = va_arg(params, const struct nc_session*);
 			if (session == NULL) {
@@ -1052,7 +1052,7 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 		free(aux1);
 		free(aux2);
 		break;
-	case NC_NTF_BASE_SESSION_START:
+	case NCNTF_BASE_SESSION_START:
 		session = va_arg(params, const struct nc_session*);
 		if (session == NULL) {
 			ERROR("Invalid \'session\' parameter of %s.", __func__);
@@ -1070,7 +1070,7 @@ int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...)
 		va_end(params);
 
 		break;
-	case NC_NTF_BASE_SESSION_END:
+	case NCNTF_BASE_SESSION_END:
 		session = va_arg(params, const struct nc_session*);
 		reason = va_arg(params, NC_SESSION_TERM_REASON);
 
@@ -1210,7 +1210,7 @@ cleanup:
 	return (EXIT_SUCCESS);
 }
 
-void nc_ntf_stream_iter_start(const char* stream)
+void ncntf_stream_iter_start(const char* stream)
 {
 	struct stream *s;
 	char* dbus_filter = NULL;
@@ -1246,7 +1246,7 @@ void nc_ntf_stream_iter_start(const char* stream)
 	}
 }
 
-void nc_ntf_stream_iter_finnish(const char* stream)
+void ncntf_stream_iter_finnish(const char* stream)
 {
 	char* dbus_filter = NULL;
 	DBusError err;
@@ -1274,7 +1274,7 @@ void nc_ntf_stream_iter_finnish(const char* stream)
  *
  * \todo: thread safety (?thread-specific variables)
  */
-char* nc_ntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time)
+char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time)
 {
 	struct stream *s;
 	int32_t len;

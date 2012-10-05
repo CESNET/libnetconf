@@ -42,51 +42,51 @@
 
 #include "netconf.h"
 
-#define NTF_STREAM_BASE "netconf"
+#define NCNTF_STREAM_BASE "netconf"
 
 /**
  * @ingroup notifications
  * @brief Enumeration of supported NETCONF event notifications.
  */
 typedef enum {
-	NC_NTF_ERROR = -1, /**< error return code */
-	NC_NTF_GENERIC = 0, /**< generic notification not directly supported by libnetconf */
-	NC_NTF_BASE_CFG_CHANGE = 1, /**< netconf-config-change (RFC 6470) */
-	NC_NTF_BASE_CPBLT_CHANGE = 2, /**< netconf-capability-change (RFC 6470) */
-	NC_NTF_BASE_SESSION_START = 3, /**< netconf-session-start (RFC 6470) */
-	NC_NTF_BASE_SESSION_END = 4, /**< netconf-session-end (RFC 6470) */
-	NC_NTF_BASE_CONFIRMED_COMMIT = 5 /**< netconf-configrmed-commit (RFC 6470) */
-} NC_NTF_EVENT;
+	NCNTF_ERROR = -1, /**< error return code */
+	NCNTF_GENERIC = 0, /**< generic notification not directly supported by libnetconf */
+	NCNTF_BASE_CFG_CHANGE = 1, /**< netconf-config-change (RFC 6470) */
+	NCNTF_BASE_CPBLT_CHANGE = 2, /**< netconf-capability-change (RFC 6470) */
+	NCNTF_BASE_SESSION_START = 3, /**< netconf-session-start (RFC 6470) */
+	NCNTF_BASE_SESSION_END = 4, /**< netconf-session-end (RFC 6470) */
+	NCNTF_BASE_CONFIRMED_COMMIT = 5 /**< netconf-configrmed-commit (RFC 6470) */
+} NCNTF_EVENT;
 
 /**
  * @ingroup notifications
  * @brief Enumeration of possible source of events
  */
 typedef enum {
-	NC_NTF_EVENT_BY_SERVER, /**< event is caused by server */
-	NC_NTF_EVENT_BY_USER /**< event is caused by user's action */
-}NC_NTF_EVENT_BY;
+	NCNTF_EVENT_BY_SERVER, /**< event is caused by server */
+	NCNTF_EVENT_BY_USER /**< event is caused by user's action */
+}NCNTF_EVENT_BY;
 
 /**
  * @ingroup notifications
  * @brief Initiate NETCONF Notifications environment
  * @return 0 on success, non-zero value else
  */
-int nc_ntf_init(void);
+int ncntf_init(void);
 
 /**
  * @ingroup notifications
  * @brief Close all NETCONF Event Streams and other parts of the Notifications
  * environment.
  */
-void nc_ntf_close(void);
+void ncntf_close(void);
 
 /**
  * @ingroup notifications
  * @brief Free notification message.
  * @param[in] ntf notification message to free.
  */
-void nc_ntf_free(nc_ntf *ntf);
+void ncntf_free(nc_ntf *ntf);
 
 /**
  * @ingroup notifications
@@ -96,7 +96,7 @@ void nc_ntf_free(nc_ntf *ntf);
  * @param[in] replay Specify if the replay is allowed (1 for yes, 0 for no).
  * @return 0 on success, non-zero value else.
  */
-int nc_ntf_stream_new(const char* name, const char* desc, int replay);
+int ncntf_stream_new(const char* name, const char* desc, int replay);
 
 /**
  * @ingroup notifications
@@ -104,7 +104,7 @@ int nc_ntf_stream_new(const char* name, const char* desc, int replay);
  * @return NULL terminated list of stream names. It is up to caller to free the
  * list
  */
-char** nc_ntf_stream_list(void);
+char** ncntf_stream_list(void);
 
 /**
  * @ingroup notifications
@@ -112,7 +112,7 @@ char** nc_ntf_stream_list(void);
  * @param[in] name Name of the stream to check.
  * @return 0 - the stream is not present,<br/>1 - the stream is present
  */
-int nc_ntf_stream_isavailable(const char* name);
+int ncntf_stream_isavailable(const char* name);
 
 /**
  * @ingroup notifications
@@ -120,25 +120,25 @@ int nc_ntf_stream_isavailable(const char* name);
  * for different events.
  *
  * ### Event parameters:
- * - #NC_NTF_GENERIC
+ * - #NCNTF_GENERIC
  *  - **const char* content** Content of the notification as defined in RFC 5277.
  *  eventTime is added automatically. The string should be XML formatted.
- * - #NC_NTF_BASE_CFG_CHANGE
+ * - #NCNTF_BASE_CFG_CHANGE
  *  - #NC_DATASTORE **datastore** Specify which datastore has changed.
- *  - #NC_NTF_EVENT_BY **changed_by** Specify the source of the change.
- *   - If the value is set to #NC_NTF_EVENT_BY_USER, following parameter is
+ *  - #NCNTF_EVENT_BY **changed_by** Specify the source of the change.
+ *   - If the value is set to #NCNTF_EVENT_BY_USER, following parameter is
  *   required:
  *  - **const struct nc_session* session** Session required the configuration change.
- * - #NC_NTF_BASE_CPBLT_CHANGE
+ * - #NCNTF_BASE_CPBLT_CHANGE
  *  - **const struct nc_cpblts* old** Old list of capabilities.
  *  - **const struct nc_cpblts* new** New list of capabilities.
- *  - #NC_NTF_EVENT_BY **changed_by** Specify the source of the change.
- *   - If the value is set to #NC_NTF_EVENT_BY_USER, following parameter is
+ *  - #NCNTF_EVENT_BY **changed_by** Specify the source of the change.
+ *   - If the value is set to #NCNTF_EVENT_BY_USER, following parameter is
  *   required:
  *  - **const struct nc_session* session** Session required the configuration change.
- * - #NC_NTF_BASE_SESSION_START
+ * - #NCNTF_BASE_SESSION_START
  *  - **const struct nc_session* session** Started session (#NC_SESSION_STATUS_DUMMY session is also allowed).
- * - #NC_NTF_BASE_SESSION_END
+ * - #NCNTF_BASE_SESSION_END
  *  - **const struct nc_session* session** Finnished session (#NC_SESSION_STATUS_DUMMY session is also allowed).
  *  - #NC_SESSION_TERM_REASON **reason** Session termination reason.
  *   - If the value is set to #NC_SESSION_TERM_KILLED, following parameter is
@@ -148,11 +148,11 @@ int nc_ntf_stream_isavailable(const char* name);
  *  process unknown to the server, use NULL as the value.
  *
  * ### Examples:
- * - nc_ntf_event_new("mystream", -1, NC_NTF_GENERIC, "<event>something happend</event>");
- * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NC_NTF_EVENT_BY_USER, my_session);
- * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NC_NTF_EVENT_BY_SERVER);
- * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_SESSION_START, my_session);
- * - nc_ntf_event_new("netconf", -1, NC_NTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");
+ * - nc_ntf_event_new("mystream", -1, NCNTF_GENERIC, "<event>something happend</event>");
+ * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, my_session);
+ * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NCNTF_EVENT_BY_SERVER);
+ * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_START, my_session);
+ * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");
  *
  * @param[in] stream Name of the stream where the event will be stored.
  * @param[in] etime Time of the event, if set to -1, current time is used.
@@ -161,7 +161,7 @@ int nc_ntf_stream_isavailable(const char* name);
  * above.
  * @return 0 for success, non-zero value else.
  */
-int nc_ntf_event_new(char* stream, time_t etime, NC_NTF_EVENT event, ...);
+int ncntf_event_new(char* stream, time_t etime, NCNTF_EVENT event, ...);
 
 /**
  * \todo Implement this function.
@@ -186,7 +186,7 @@ long long int nc_ntf_dispatch(struct nc_session* session, const nc_rpc* subscrib
  * starts on the first event in the first part of the stream file.
  * @param[in] stream Name of the stream to iterate.
  */
-void nc_ntf_stream_iter_start(const char* stream);
+void ncntf_stream_iter_start(const char* stream);
 
 /**
  * \todo: thread safety (?thread-specific variables)
@@ -199,7 +199,7 @@ void nc_ntf_stream_iter_start(const char* stream);
  * @param[out] event_time Time of the returned event, NULL if caller does not care.
  * @return Content of the next event in the stream.
  */
-char* nc_ntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time);
+char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time);
 
 /**
  * \todo: thread safety (?thread-specific variables)
@@ -208,6 +208,6 @@ char* nc_ntf_stream_iter_next(const char* stream, time_t start, time_t stop, tim
  * function must be called as a closing function to nc_ntf_stream_iter_start()
  * @param[in] stream Name of the iterated stream.
  */
-void nc_ntf_stream_iter_finnish(const char* stream);
+void ncntf_stream_iter_finnish(const char* stream);
 
 #endif /* NOTIFICATIONS_H_ */
