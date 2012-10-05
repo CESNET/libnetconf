@@ -1610,7 +1610,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 {
 	nc_msgid msgid1, msgid2;
 	NC_MSG_TYPE replytype;
-	struct nc_msg* queue = NULL, *msg, *p;
+	struct nc_msg* queue = NULL, *msg, *p = NULL;
 
 	msgid1 = nc_session_send_rpc(session, rpc);
 	if (msgid1 == NULL) {
