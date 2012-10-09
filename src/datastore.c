@@ -472,7 +472,25 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 						xmlUnlinkNode(delete);
 						xmlFreeNode(delete);
 					} else {
-						config_node = config_node->next;
+						/* recursively process subtree filter */
+						if (filter_node && filter_node->children && (filter_node->children->type == XML_ELEMENT_NODE) &&
+								config_node->children && (config_node->children->type == XML_ELEMENT_NODE)) {
+							sibling_in = ncxml_subtree_filter(config_node->children, filter_node->children);
+						}
+						if (sibling_selection && sibling_in == 0) {
+							/* subtree is not a content of the filter output */
+							delete = config_node;
+
+							/* remeber where to go next */
+							config_node = config_node->next;
+
+							/* and remove unwanted subtree */
+							xmlUnlinkNode(delete);
+							xmlFreeNode(delete);
+						} else {
+							/* go to the next sibling */
+							config_node = config_node->next;
+						}
 					}
 				}
 			} else {
