@@ -699,6 +699,14 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 		*error = nc_err_new (NC_ERR_IN_USE);
 		return EXIT_FAILURE;
 	}
+	if (source == NC_DATASTORE_CANDIDATE && target == NC_DATASTORE_RUNNING) {
+		/* commit - check also the lock on source (i.e. candidate) datastore */
+		if (file_ds_access (file_ds, source, session) != 0) {
+			UNLOCK(file_ds);
+			*error = nc_err_new (NC_ERR_IN_USE);
+			return EXIT_FAILURE;
+		}
+	}
 
 	switch(source) {
 	case NC_DATASTORE_RUNNING:
