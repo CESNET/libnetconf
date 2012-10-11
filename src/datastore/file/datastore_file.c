@@ -536,7 +536,7 @@ int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DAT
 int ncds_file_unlock (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
-	xmlNodePtr target_ds;
+	xmlNodePtr target_ds, del;
 	struct nc_session* no_session;
 	int retval = EXIT_SUCCESS;
 
@@ -581,6 +581,21 @@ int ncds_file_unlock (struct ncds_ds* ds, const struct nc_session* session, NC_D
 		retval = EXIT_FAILURE;
 	} else {
 		/* the datastore is locked by request originating session */
+
+		if (target == NC_DATASTORE_CANDIDATE) {
+			/* drop current candidate configuration */
+			del = file_ds->candidate->children;
+			xmlUnlinkNode (file_ds->candidate->children);
+			xmlFreeNode (del);
+
+			/* copy running into candidate configuration */
+			file_ds->candidate->children = xmlDocCopyNode (file_ds->running->children, file_ds->xml, 1);
+
+			/* mark candidate as not modified */
+			xmlSetProp (target_ds, BAD_CAST "modified", BAD_CAST "false");
+		}
+
+		/* unlock datastore */
 		xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST "");
 		if (file_sync(file_ds)) {
 			*error = nc_err_new(NC_ERR_OP_FAILED);
