@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <stdarg.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <libnetconf.h>
@@ -35,8 +36,10 @@ COMMAND commands[] = {
 		{"help", cmd_help, "Display this text"},
 		{"connect", cmd_connect, "Connect to the NETCONF server"},
 		{"disconnect", cmd_disconnect, "Disconnect from the NETCONF server"},
+		{"commit", cmd_commit, "NETCONF <commit> operation"},
 		{"copy-config", cmd_copyconfig, "NETCONF <copy-config> operation"},
 		{"delete-config", cmd_deleteconfig, "NETCONF <delete-config> operation"},
+		{"discard-changes", cmd_discardchanges, "NETCONF <discard-changes> operation"},
 		{"edit-config", cmd_editconfig, "NETCONF <edit-config> operation"},
 		{"get", cmd_get, "NETCONF <get> operation"},
 		{"get-config", cmd_getconfig, "NETCONF <get-config> operation"},
@@ -54,6 +57,12 @@ COMMAND commands[] = {
 		{"exit", cmd_quit, NULL},
 		{NULL, NULL, NULL}
 };
+
+typedef enum GENERIC_OPS {
+	GO_COMMIT,
+	GO_DISCARD_CHANGES
+} GENERIC_OPS;
+int cmd_generic_op(GENERIC_OPS op, char *arg);
 
 struct arglist {
 	char **list;
@@ -1649,6 +1658,99 @@ int cmd_userrpc(char *arg)
 		break;
 	default:
 		ERROR("user-rpc", "unexpected operation result.");
+		break;
+	}
+	nc_reply_free (reply);
+
+	return (EXIT_SUCCESS);
+}
+
+void cmd_discardchanges_help()
+{
+	fprintf (stdout, "discard-changes\n");
+}
+
+int cmd_discardchanges(char *arg)
+{
+	return (cmd_generic_op(GO_DISCARD_CHANGES, arg));
+}
+
+void cmd_commit_help()
+{
+	fprintf (stdout, "commit\n");
+}
+
+int cmd_commit(char *arg)
+{
+	return (cmd_generic_op(GO_COMMIT, arg));
+}
+
+int cmd_generic_op(GENERIC_OPS op, char *arg)
+{
+	int i;
+	char* op_string = NULL;
+	nc_rpc* (*op_func)(void);
+	void (*op_help)(void);
+	nc_rpc *rpc = NULL;
+	nc_reply *reply = NULL;
+
+	switch (op) {
+	case GO_COMMIT:
+		op_func = nc_rpc_commit;
+		op_help = cmd_commit_help;
+		op_string = "commit";
+		break;
+	case GO_DISCARD_CHANGES:
+		op_func = nc_rpc_discardchanges;
+		op_help = cmd_discardchanges_help;
+		op_string = "discard-changes";
+		break;
+	default:
+		ERROR(op_string, "Unknown generic operation.");
+		return (EXIT_FAILURE);
+	}
+
+	/* check input parameters - no parameter is accepted */
+	/* remove trailing white spaces */
+	for (i = strlen(arg) - 1; i >= 0 && isspace(arg[i]); i--) {
+		arg[i] = '\0';
+	}
+	if (strcmp(arg, op_string) != 0) {
+		op_help();
+		return (EXIT_FAILURE);
+	}
+
+	/* create requests */
+	rpc = op_func();
+	if (rpc == NULL) {
+		ERROR(op_string, "creating rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+	/* send the request and get the reply */
+	nc_session_send_rpc (session, rpc);
+	if (nc_session_recv_reply (session, &reply) == 0) {
+		nc_rpc_free (rpc);
+		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
+			ERROR(op_string, "receiving rpc-reply failed.");
+			INSTRUCTION("Closing the session.\n");
+			cmd_disconnect(NULL);
+			return (EXIT_FAILURE);
+		}
+		return (EXIT_SUCCESS);
+	}
+	nc_rpc_free (rpc);
+
+	/* parse result */
+	switch (nc_reply_get_type (reply)) {
+	case NC_REPLY_OK:
+		INSTRUCTION("Result OK\n");
+		break;
+	case NC_REPLY_ERROR:
+		/* wtf, you shouldn't be here !?!? */
+		ERROR(op_string, "operation failed, but rpc-error was not processed.");
+		break;
+	default:
+		ERROR(op_string, "unexpected operation result.");
 		break;
 	}
 	nc_reply_free (reply);

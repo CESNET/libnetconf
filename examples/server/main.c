@@ -131,6 +131,8 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 		case NC_OP_COPYCONFIG:
 		case NC_OP_DELETECONFIG:
 		case NC_OP_EDITCONFIG:
+		case NC_OP_COMMIT:
+		case NC_OP_DISCARDCHANGES:
 			reply = ncds_apply_rpc(config->dsid, config->session, rpc);
 			break;
 		default:
@@ -139,6 +141,7 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 		}
 	} else {
 		/* process other operations */
+		reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
 	}
 
 	/* create reply */
