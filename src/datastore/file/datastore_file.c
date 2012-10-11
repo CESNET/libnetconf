@@ -583,6 +583,8 @@ int ncds_file_unlock (struct ncds_ds* ds, const struct nc_session* session, NC_D
 		/* the datastore is locked by request originating session */
 		xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST "");
 		if (file_sync(file_ds)) {
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore file synchronisation failed.");
 			retval = EXIT_FAILURE;
 		}
 	}
@@ -748,6 +750,8 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 
 	if (file_sync (file_ds)) {
 		UNLOCK(file_ds);
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore file synchronisation failed.");
 		return EXIT_FAILURE;
 	}
 	UNLOCK(file_ds);
@@ -812,6 +816,8 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
 
 	if (file_sync (file_ds)) {
 		UNLOCK(file_ds);
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore file synchronisation failed.");
 		return EXIT_FAILURE;
 	}
 	UNLOCK(file_ds);
@@ -893,6 +899,8 @@ int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session,
 		xmlFreeNode (target_ds->children);
 		target_ds->children = xmlDocCopyNode (datastore_doc->children, file_ds->xml, 1);
 		if (file_sync (file_ds)) {
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore file synchronisation failed.");
 			retval = EXIT_FAILURE;
 		}
 	}
