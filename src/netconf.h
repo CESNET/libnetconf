@@ -141,7 +141,9 @@ typedef enum NC_OP {
 	NC_OP_COPYCONFIG,	/**< \<copy-config\> operation */
 	NC_OP_DELETECONFIG,	/**< \<delete-config\> operation */
 	NC_OP_LOCK,		/**< \<lock\> operation */
-	NC_OP_UNLOCK		/**< \<unlock\> operation */
+	NC_OP_UNLOCK,		/**< \<unlock\> operation */
+	NC_OP_COMMIT,		/**< \<commit> operation */
+	NC_OP_DISCARDCHANGES	/**< \<discard-changes> operation */
 } NC_OP;
 
 typedef enum {

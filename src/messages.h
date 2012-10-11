@@ -399,6 +399,22 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE target);
 
 /**
  * @ingroup rpc
+ * @brief Create \<commit\> NETCONF rpc message.
+ *
+ * @return Created rpc message.
+ */
+nc_rpc *nc_rpc_commit(void);
+
+/**
+ * @ingroup rpc
+ * @brief Create \<discard-changes\> NETCONF rpc message.
+ *
+ * @return Created rpc message.
+ */
+nc_rpc *nc_rpc_discardchanges(void);
+
+/**
+ * @ingroup rpc
  * @brief Create a generic NETCONF rpc message with specified content.
  *
  * Function gets data parameter and envelope it into \<rpc\> container. Caller

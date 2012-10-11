@@ -1105,7 +1105,9 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "delete-config") == 0) ||
 				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "edit-config") == 0) ||
 				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "lock") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "unlock") == 0)) {
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "unlock") == 0) ||
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "commit") == 0) ||
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "discard-changes") == 0)) {
 			retval->type.rpc = NC_RPC_DATASTORE_WRITE;
 		} else if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "kill-session") == 0) ||
 				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "close-session") == 0)){
