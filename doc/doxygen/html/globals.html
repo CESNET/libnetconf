@@ -29,7 +29,7 @@
   <td id="projectlogo"><img alt="Logo" src="cesnet-logo-125.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.1.4</span>
+   &#160;<span id="projectnumber">0.1.5</span>
    </div>
    <div id="projectbrief">NETCONF library</div>
   </td>
@@ -386,11 +386,17 @@ $(document).ready(function(){initNavTree('globals.html','');});
 <li>NC_OP_CLOSESESSION
 : <a class="el" href="db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07af5cc206ce4cd2b20cd562bb01e0a8da3">netconf.h</a>
 </li>
+<li>NC_OP_COMMIT
+: <a class="el" href="db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a350f96fd686eea971d1d9e087a9ff8f4">netconf.h</a>
+</li>
 <li>NC_OP_COPYCONFIG
 : <a class="el" href="db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07abc36a612cfba2cf3462d99fae4ab4ac5">netconf.h</a>
 </li>
 <li>NC_OP_DELETECONFIG
 : <a class="el" href="db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07abf39ac97e04fd8d77d6a409a004eb234">netconf.h</a>
+</li>
+<li>NC_OP_DISCARDCHANGES
+: <a class="el" href="db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a59fd75a1b96a307a2d87e327c7d9a695">netconf.h</a>
 </li>
 <li>NC_OP_EDITCONFIG
 : <a class="el" href="db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a545f2b8ad13fc1cb449f078908312ef1">netconf.h</a>
@@ -419,11 +425,11 @@ $(document).ready(function(){initNavTree('globals.html','');});
 <li>nc_reply_build()
 : <a class="el" href="d0/de2/group__reply.html#ga78b032942cee08721d51ea97acff68b5">messages.h</a>
 </li>
-<li>nc_reply_data()
-: <a class="el" href="d0/de2/group__reply.html#ga4543351c89208bb06fa895be334d59ad">messages.h</a>
-</li>
 <li>NC_REPLY_DATA
 : <a class="el" href="d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29acf47a744ed6a6b613d63f4a77aa7135e">netconf.h</a>
+</li>
+<li>nc_reply_data()
+: <a class="el" href="d0/de2/group__reply.html#ga4543351c89208bb06fa895be334d59ad">messages.h</a>
 </li>
 <li>nc_reply_dump()
 : <a class="el" href="d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8">messages.h</a>
@@ -455,11 +461,14 @@ $(document).ready(function(){initNavTree('globals.html','');});
 <li>NC_REPLY_HELLO
 : <a class="el" href="d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29a6d190ad4c3f0ecbaab7956227e606d27">netconf.h</a>
 </li>
-<li>NC_REPLY_OK
-: <a class="el" href="d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29ac65f86e9af3940dc910231afd07a70cf">netconf.h</a>
+<li>nc_reply_merge()
+: <a class="el" href="d0/de2/group__reply.html#gab1dd4115fe039fe495713168f9b40d34">messages.h</a>
 </li>
 <li>nc_reply_ok()
 : <a class="el" href="d0/de2/group__reply.html#ga4789f8372e5f2676236ddb0e6eeb8bb4">messages.h</a>
+</li>
+<li>NC_REPLY_OK
+: <a class="el" href="d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29ac65f86e9af3940dc910231afd07a70cf">netconf.h</a>
 </li>
 <li>NC_REPLY_TYPE
 : <a class="el" href="d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29">netconf.h</a>
@@ -473,6 +482,9 @@ $(document).ready(function(){initNavTree('globals.html','');});
 <li>nc_rpc_build()
 : <a class="el" href="db/de9/group__rpc.html#ga16bda6ae6ad26653e8793abf58ebec2b">messages.h</a>
 </li>
+<li>nc_rpc_commit()
+: <a class="el" href="db/de9/group__rpc.html#ga7977ca8b562643607b3c846ed36bbb23">messages.h</a>
+</li>
 <li>nc_rpc_copyconfig()
 : <a class="el" href="db/de9/group__rpc.html#ga34e288de7d99df065f1e5866144af139">messages.h</a>
 </li>
@@ -484,6 +496,9 @@ $(document).ready(function(){initNavTree('globals.html','');});
 </li>
 <li>nc_rpc_deleteconfig()
 : <a class="el" href="db/de9/group__rpc.html#ga629917bffa41d8c8714cfaa0c0630857">messages.h</a>
+</li>
+<li>nc_rpc_discardchanges()
+: <a class="el" href="db/de9/group__rpc.html#ga337ea7a9b006a79ee5ea615e9d9a5a6f">messages.h</a>
 </li>
 <li>nc_rpc_dump()
 : <a class="el" href="db/de9/group__rpc.html#ga3e840368c40be2ea4d5201edbd3adaca">messages.h</a>
@@ -749,7 +764,7 @@ $(document).ready(function(){initNavTree('globals.html','');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Sep 25 2012 10:18:12 for libnetconf by
+    <li class="footer">Generated on Thu Oct 11 2012 17:29:54 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>
