@@ -170,7 +170,7 @@ struct nc_err* nc_err_new(NC_ERR error)
 		nc_err_set(err, NC_ERR_PARAM_TAG, "operation-failed");
 		nc_err_set(err, NC_ERR_PARAM_TYPE, "application");
 		nc_err_set(err, NC_ERR_PARAM_SEVERITY, "error");
-		nc_err_set(err, NC_ERR_PARAM_MSG, "The request requires a resource that already is in use.");
+		nc_err_set(err, NC_ERR_PARAM_MSG, "Some not specified error occurred.");
 		break;
 	case NC_ERR_MALFORMED_MSG:
 		nc_err_set(err, NC_ERR_PARAM_TAG, "malformed-message");
