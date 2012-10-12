@@ -362,18 +362,25 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 	xmlNodePtr *keynode_list;
 	xmlNodePtr keynode, key;
 	xmlChar *key_value = NULL, *keynode_value = NULL;
-	int i;
+	char *aux1, *aux2;
+	int i, ret;
 
 	assert (node1 != NULL);
 	assert (node2 != NULL);
 
 	/* compare text nodes */
 	if (node1->type == XML_TEXT_NODE && node2->type == XML_TEXT_NODE) {
-		if (xmlStrcmp(node1->content, node2->content) == 0) {
-			return 1;
+		aux1 = nc_clrwspace((char*)(node1->content));
+		aux2 = nc_clrwspace((char*)(node2->content));
+
+		if (strcmp(aux1, aux2) == 0) {
+			ret = 1;
 		} else {
-			return 0;
+			ret = 0;
 		}
+		free(aux1);
+		free(aux2);
+		return ret;
 	}
 
 	/* check element types - only element nodes are processed */
