@@ -330,7 +330,7 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
  * @param[in] session NETCONF session to use.
  * @param[out] ntf Received \<notification\> message
  * @return Type of received message. NC_MSG_UNKNOWN means error,
- * NC_MSG_NOTIFICATION means that *notif points to the received \<notification\>
+ * NC_MSG_NOTIFICATION means that *ntf points to the received \<notification\>
  * message.
  */
 NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, nc_ntf** ntf);
