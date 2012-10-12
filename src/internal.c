@@ -72,12 +72,20 @@ char* nc_clrwspace (const char* in)
 		return (NULL);
 	}
 
+	/* remove leading whitespace characters */
 	for (i = 0, j = 0; i < len ; i++, j++) {
 		while (retval[i] != '\0' && isspace(retval[i])) {
 			i++;
 		}
 		retval[j] = retval[i];
 	}
+
+	/* remove trailing whitespace characters */
+	while (j >= 0 && isspace(retval[j])) {
+		retval[j] = '\0';
+		j--;
+	}
+
 	return (retval);
 }
 
