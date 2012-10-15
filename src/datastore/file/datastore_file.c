@@ -64,7 +64,7 @@
 <datastores xmlns=\"urn:cesnet:tmc:datastores:file\">\
   <running lock=\"\"/>\
   <startup lock=\"\"/>\
-  <candidate lock=\"\"/>\
+  <candidate modified=\"false\" lock=\"\"/>\
 </datastores>"
 
 static sigset_t fullsigset;
@@ -476,7 +476,7 @@ static int file_sync(struct ncds_ds_file* file_ds)
 int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
-	xmlChar* lock;
+	xmlChar* lock, *modified = NULL;
 	xmlNodePtr target_ds;
 	struct nc_session* no_session;
 	int retval = EXIT_SUCCESS;
@@ -518,9 +518,19 @@ int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DAT
 		xmlFree (lock);
 		retval = EXIT_FAILURE;
 	} else {
-		xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST session->session_id);
-		if (file_sync(file_ds)) {
+		if (target == NC_DATASTORE_CANDIDATE &&
+				(modified = xmlGetProp(target_ds, BAD_CAST "modified")) != NULL &&
+				xmlStrcmp(modified, BAD_CAST "true") == 0) {
+			*error = nc_err_new(NC_ERR_LOCK_DENIED);
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Candidate datastore not locked but already modified.");
 			retval = EXIT_FAILURE;
+		} else {
+			xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST session->session_id);
+			if (file_sync(file_ds)) {
+				*error = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore file synchronisation failed.");
+				retval = EXIT_FAILURE;
+			}
 		}
 	}
 	UNLOCK(file_ds);
@@ -529,6 +539,9 @@ int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DAT
 	if (no_session != NULL) {
 		nc_session_free(no_session);
 	}
+	if (modified != NULL) {
+		xmlFree(modified);
+	}
 
 	return (retval);
 }
@@ -536,7 +549,7 @@ int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DAT
 int ncds_file_unlock (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
-	xmlNodePtr target_ds;
+	xmlNodePtr target_ds, del;
 	struct nc_session* no_session;
 	int retval = EXIT_SUCCESS;
 
@@ -581,8 +594,25 @@ int ncds_file_unlock (struct ncds_ds* ds, const struct nc_session* session, NC_D
 		retval = EXIT_FAILURE;
 	} else {
 		/* the datastore is locked by request originating session */
+
+		if (target == NC_DATASTORE_CANDIDATE) {
+			/* drop current candidate configuration */
+			del = file_ds->candidate->children;
+			xmlUnlinkNode (file_ds->candidate->children);
+			xmlFreeNode (del);
+
+			/* copy running into candidate configuration */
+			file_ds->candidate->children = xmlDocCopyNode (file_ds->running->children, file_ds->xml, 1);
+
+			/* mark candidate as not modified */
+			xmlSetProp (target_ds, BAD_CAST "modified", BAD_CAST "false");
+		}
+
+		/* unlock datastore */
 		xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST "");
 		if (file_sync(file_ds)) {
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore file synchronisation failed.");
 			retval = EXIT_FAILURE;
 		}
 	}
@@ -699,6 +729,14 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 		*error = nc_err_new (NC_ERR_IN_USE);
 		return EXIT_FAILURE;
 	}
+	if (source == NC_DATASTORE_CANDIDATE && target == NC_DATASTORE_RUNNING) {
+		/* commit - check also the lock on source (i.e. candidate) datastore */
+		if (file_ds_access (file_ds, source, session) != 0) {
+			UNLOCK(file_ds);
+			*error = nc_err_new (NC_ERR_IN_USE);
+			return EXIT_FAILURE;
+		}
+	}
 
 	switch(source) {
 	case NC_DATASTORE_RUNNING:
@@ -738,8 +776,23 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 	/* copy new target configuration */
 	target_ds->children = xmlDocCopyNode (source_ds, file_ds->xml, 1);
 
+	/*
+	 * if we are changing candidate, mark it as modified, since we need
+	 * this information for locking - according to RFC, candidate cannot
+	 * be locked since it has been modified and not committed.
+	 */
+	if (target == NC_DATASTORE_CANDIDATE) {
+		if (source == NC_DATASTORE_RUNNING) {
+			xmlSetProp (target_ds, BAD_CAST "modified", BAD_CAST "false");
+		} else {
+			xmlSetProp (target_ds, BAD_CAST "modified", BAD_CAST "true");
+		}
+	}
+
 	if (file_sync (file_ds)) {
 		UNLOCK(file_ds);
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore file synchronisation failed.");
 		return EXIT_FAILURE;
 	}
 	UNLOCK(file_ds);
@@ -802,8 +855,19 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
 	xmlUnlinkNode (target_ds->children);
 	xmlFreeNode (del);
 
+	/*
+	 * if we are changing candidate, mark it as modified, since we need
+	 * this information for locking - according to RFC, candidate cannot
+	 * be locked since it has been modified and not committed.
+	 */
+	if (target == NC_DATASTORE_CANDIDATE) {
+		xmlSetProp (target_ds, BAD_CAST "modified", BAD_CAST "true");
+	}
+
 	if (file_sync (file_ds)) {
 		UNLOCK(file_ds);
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore file synchronisation failed.");
 		return EXIT_FAILURE;
 	}
 	UNLOCK(file_ds);
@@ -884,7 +948,20 @@ int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session,
 		/* replace datastore by edited configuration */
 		xmlFreeNode (target_ds->children);
 		target_ds->children = xmlDocCopyNode (datastore_doc->children, file_ds->xml, 1);
+
+		/*
+		 * if we are changing candidate, mark it as modified, since we need
+		 * this information for locking - according to RFC, candidate cannot
+		 * be locked since it has been modified and not committed.
+		 */
+		if (target == NC_DATASTORE_CANDIDATE) {
+			xmlSetProp (target_ds, BAD_CAST "modified", BAD_CAST "true");
+		}
+
+		/* sync xml tree with file on the hdd */
 		if (file_sync (file_ds)) {
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore file synchronisation failed.");
 			retval = EXIT_FAILURE;
 		}
 	}

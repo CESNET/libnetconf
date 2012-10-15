@@ -885,6 +885,13 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		}
 		ret = ds->func.deleteconfig(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
+	case NC_OP_COMMIT:
+		/* \todo check somehow, that candidate is not locked by another session */
+		ret = ds->func.copyconfig(ds, session, NC_DATASTORE_RUNNING, NC_DATASTORE_CANDIDATE, NULL, &e);
+		break;
+	case NC_OP_DISCARDCHANGES:
+		ret = ds->func.copyconfig(ds, session, NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NULL, &e);
+		break;
 	default:
 		ERROR("%s: unsupported basic NETCONF operation requested.", __func__);
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));

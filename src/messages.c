@@ -217,6 +217,8 @@ nc_rpc * nc_rpc_build (const char * rpc_dump)
 	case (NC_OP_DELETECONFIG):
 	case (NC_OP_LOCK): 
 	case (NC_OP_UNLOCK):
+	case (NC_OP_COMMIT):
+	case (NC_OP_DISCARDCHANGES):
 		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
 		break;
 	case (NC_OP_CLOSESESSION):
@@ -298,6 +300,10 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 			return (NC_OP_LOCK);
 		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "unlock") == 0) {
 			return (NC_OP_UNLOCK);
+		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "commit") == 0) {
+			return (NC_OP_COMMIT);
+		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "discard-changes") == 0) {
+			return (NC_OP_DISCARDCHANGES);
 		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "kill-session") == 0) {
 			return (NC_OP_KILLSESSION);
 		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "close-session") == 0) {
@@ -1798,6 +1804,40 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 	/* finnish the message building */
 	rpc = nc_rpc_create(content);
 	rpc->type.rpc = NC_RPC_SESSION;
+	xmlFreeNode(content);
+
+	return (rpc);
+}
+
+nc_rpc *nc_rpc_commit(void)
+{
+	nc_rpc *rpc;
+	xmlNodePtr content;
+
+	if ((content = xmlNewNode(NULL, BAD_CAST "commit")) == NULL) {
+		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	xmlFreeNode(content);
+
+	return (rpc);
+}
+
+nc_rpc *nc_rpc_discardchanges(void)
+{
+	nc_rpc *rpc;
+	xmlNodePtr content;
+
+	if ((content = xmlNewNode(NULL, BAD_CAST "discard-changes")) == NULL) {
+		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
 	xmlFreeNode(content);
 
 	return (rpc);
