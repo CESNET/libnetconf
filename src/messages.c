@@ -759,9 +759,13 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 
 	dupmsg = malloc(sizeof(struct nc_msg));
 	dupmsg->doc = xmlCopyDoc(msg->doc, 1);
-	dupmsg->msgid = msg->msgid;
 	dupmsg->type = msg->type;
 	dupmsg->with_defaults = msg->with_defaults;
+	if (msg->msgid != NULL) {
+		dupmsg->msgid = strdup(msg->msgid);
+	} else {
+		dupmsg->msgid = NULL;
+	}
 	if (msg->error != NULL) {
 		dupmsg->error = nc_err_dup(msg->error);
 	} else {
