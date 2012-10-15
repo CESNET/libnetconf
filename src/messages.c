@@ -280,12 +280,13 @@ const nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc)
 
 NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 {
-	if (rpc == NULL || rpc->doc == NULL) {
+	if (rpc == NULL || rpc->doc == NULL || rpc->doc->children == NULL || rpc->doc->children->children == NULL) {
 		WARN("Invalid parameter for nc_rpc_get_operation().")
 		return (NC_OP_UNKNOWN);
 	}
 
-	if (xmlStrcmp(rpc->doc->children->name, BAD_CAST "rpc") == 0) {
+	if (rpc->doc->children->name && rpc->doc->children->children->name &&
+			xmlStrcmp(rpc->doc->children->name, BAD_CAST "rpc") == 0) {
 		if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "copy-config") == 0) {
 			return (NC_OP_COPYCONFIG);
 		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "delete-config") == 0) {
@@ -580,7 +581,10 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 	xmlNodePtr filter_node;
 	xmlBufferPtr buf;
 
-	if (rpc != NULL) {
+	if (rpc != NULL && rpc->doc != NULL &&
+			rpc->doc->children != NULL &&
+			rpc->doc->children->children != NULL &&
+			rpc->doc->children->children->children != NULL) {
 		if (nc_rpc_get_op(rpc) == NC_OP_GET || nc_rpc_get_op(rpc) == NC_OP_GETCONFIG) {
 			/* doc -> <rpc> -> <op> -> <param> */
 			filter_node = rpc->doc->children->children->children;
