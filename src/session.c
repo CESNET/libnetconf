@@ -1151,13 +1151,6 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	}
 	free (text);
 
-	/* parse and store message-id */
-	if ((id = nc_msg_parse_msgid(retval)) == NULL) {
-		retval->msgid = NULL;
-	} else {
-		retval->msgid = strdup(id);
-	}
-
 	/* parse and store rpc-reply type */
 	if (xmlStrcmp (retval->doc->children->name, BAD_CAST "rpc-reply") == 0) {
 		msgtype = NC_MSG_REPLY;
@@ -1184,11 +1177,15 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "unlock") == 0)) {
 			retval->type.rpc = NC_RPC_DATASTORE_WRITE;
 		} else if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "kill-session") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "close-session") == 0)){
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "close-session") == 0) ||
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "create-subscription") == 0)){
 			retval->type.rpc = NC_RPC_SESSION;
 		} else {
 			retval->type.rpc = NC_RPC_UNKNOWN;
 		}
+	} else if (xmlStrcmp (retval->doc->children->name, BAD_CAST "notification") == 0) {
+		/* we have notification */
+		msgtype = NC_MSG_NOTIFICATION;
 	} else if (xmlStrcmp (retval->doc->children->name, BAD_CAST "hello") == 0) {
 		/* set message type, we have <hello> message */
 		retval->type.reply = NC_REPLY_HELLO;
@@ -1197,6 +1194,17 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 		WARN("Unknown (unsupported) type of received message detected.");
 		retval->type.rpc = NC_RPC_UNKNOWN;
 		msgtype = NC_MSG_UNKNOWN;
+	}
+
+	if (msgtype == NC_MSG_RPC || msgtype == NC_MSG_REPLY) {
+		/* parse and store message-id */
+		if ((id = nc_msg_parse_msgid(retval)) == NULL) {
+			retval->msgid = NULL;
+		} else {
+			retval->msgid = strdup(id);
+		}
+	} else {
+		retval->msgid = NULL;
 	}
 
 	/* return the result */
@@ -1306,6 +1314,29 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 
 	/* session lock is no more needed */
 	pthread_mutex_unlock(&(session->mut_session));
+
+	return (ret);
+}
+
+int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf)
+{
+	int ret;
+	struct nc_msg *msg;
+
+	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
+		ERROR("Invalid session to send <notification>.");
+		return (EXIT_FAILURE);
+	}
+
+	msg = nc_msg_dup ((struct nc_msg*) ntf);
+
+	/* set proper namespace according to NETCONF version */
+	xmlNewNs (msg->doc->children, BAD_CAST NC_NS_BASE10, NULL);
+
+	/* send message */
+	ret = nc_session_send (session, msg);
+
+	nc_msg_free (msg);
 
 	return (ret);
 }

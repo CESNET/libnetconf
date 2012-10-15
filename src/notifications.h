@@ -51,11 +51,13 @@
 typedef enum {
 	NCNTF_ERROR = -1, /**< error return code */
 	NCNTF_GENERIC = 0, /**< generic notification not directly supported by libnetconf */
-	NCNTF_BASE_CFG_CHANGE = 1, /**< netconf-config-change (RFC 6470) */
-	NCNTF_BASE_CPBLT_CHANGE = 2, /**< netconf-capability-change (RFC 6470) */
-	NCNTF_BASE_SESSION_START = 3, /**< netconf-session-start (RFC 6470) */
-	NCNTF_BASE_SESSION_END = 4, /**< netconf-session-end (RFC 6470) */
-	NCNTF_BASE_CONFIRMED_COMMIT = 5 /**< netconf-configrmed-commit (RFC 6470) */
+	NCNTF_REPLAY_COMPLETE = 1, /**< \<replayComplete\> notification announcing end of Replaying the stream */
+	NCNTF_NTF_COMPLETE = 2, /**< \<notificationComplete\> notification announcing end of Notification stream */
+	NCNTF_BASE_CFG_CHANGE = 3, /**< netconf-config-change (RFC 6470) */
+	NCNTF_BASE_CPBLT_CHANGE = 4, /**< netconf-capability-change (RFC 6470) */
+	NCNTF_BASE_SESSION_START = 5, /**< netconf-session-start (RFC 6470) */
+	NCNTF_BASE_SESSION_END = 6, /**< netconf-session-end (RFC 6470) */
+	NCNTF_BASE_CONFIRMED_COMMIT = 7 /**< netconf-configrmed-commit (RFC 6470) */
 } NCNTF_EVENT;
 
 /**
@@ -83,10 +85,20 @@ void ncntf_close(void);
 
 /**
  * @ingroup notifications
+ * @brief Create new \<notification\> message with givent eventTime and content.
+ *
+ * @param[in] event_time Time of the event.
+ * @param[in] content Description of the event in the XML form.
+ * @return Created notification message.
+ */
+nc_ntf* ncntf_notif_create(time_t event_time, const char* content);
+
+/**
+ * @ingroup notifications
  * @brief Free notification message.
  * @param[in] ntf notification message to free.
  */
-void ncntf_free(nc_ntf *ntf);
+void ncntf_notif_free(nc_ntf *ntf);
 
 /**
  * @ingroup notifications
@@ -164,22 +176,6 @@ int ncntf_stream_isavailable(const char* name);
 int ncntf_event_new(char* stream, time_t etime, NCNTF_EVENT event, ...);
 
 /**
- * \todo Implement this function.
- * @ingroup notifications
- * @brief Start sending of notification according to the given
- * \<create-subscription\> NETCONF RPC request. All events from the specified
- * stream are processed and sent to the client until the stop time is reached
- * or until the session is terminated.
- *
- * @param[in] session NETCONF session where the notifications will be sent.
- * @param[in] subscribe_rpc \<create-subscription\> RPC, if any other RPC is
- * given, -1 is returned.
- *
- * @return number of sent notifications (including 0), -1 on error.
- */
-long long int nc_ntf_dispatch(struct nc_session* session, const nc_rpc* subscribe_rpc);
-
-/**
  * \todo: thread safety (?thread-specific variables)
  * @ingroup notifications
  * @brief Start iteration on the events in the specified stream file. Iteration
@@ -209,5 +205,54 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
  * @param[in] stream Name of the iterated stream.
  */
 void ncntf_stream_iter_finnish(const char* stream);
+
+/**
+ * @ingroup notifications
+ * @brief Get Time of the event reported in the notification message.
+ * @param[in] notif Notification message.
+ * @return Time of the event (as number of seconds since epoch).
+ */
+time_t ncntf_notif_get_time(nc_ntf* notif);
+
+/**
+ * @ingroup notifications
+ * @brief Get description of the event reported in the notification message.
+ * @param[in] notif Notification message.
+ * @return Content of the event description (serialized XML).
+ */
+char* ncntf_notif_get_content(nc_ntf* notif);
+
+/**
+ * @ingroup notifications
+ * @brief Start sending notification according to the given
+ * \<create-subscription\> NETCONF RPC request. All events from the specified
+ * stream are processed and sent to the client until the stop time is reached
+ * or until the session is terminated.
+ *
+ * @param[in] session NETCONF session where the notifications will be sent.
+ * @param[in] subscribe_rpc \<create-subscription\> RPC, if any other RPC is
+ * given, -1 is returned.
+ *
+ * @return number of sent notifications (including 0), -1 on error.
+ */
+long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subscribe_rpc);
+
+/**
+ * @ingroup notifications
+ * @brief Subscribe for receiving notifications from the given session
+ * according to parameters in the given subscribtion RPC. Received notifications
+ * are processed by the given process_ntf callback function. Functions stops
+ * when the final notification <notificationComplete> is received or when the
+ * session is terminated.
+ *
+ * @param[in] session NETCONF session where the notifications will be sent.
+ * @param[in] subscribe_rpc \<create-subscription\> RPC, if any other RPC is
+ * given, -1 is returned.
+ * @param[in] process_ntf Callback function to process content of the
+ * notification. If NULL, content of the notification is printed on stdout.
+ *
+ * @return number of received notifications, -1 on error.
+ */
+long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* subscribe_rpc, void (*process_ntf)(time_t eventtime, const char* content));
 
 #endif /* NOTIFICATIONS_H_ */

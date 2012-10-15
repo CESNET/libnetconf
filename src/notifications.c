@@ -52,15 +52,23 @@
 #include <errno.h>
 #include <time.h>
 #include <stdarg.h>
+#include <poll.h>
 #include <pthread.h>
 
 #include <dbus/dbus.h>
+
+#include <libxml/tree.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
 
 #include "notifications.h"
 #include "netconf_internal.h"
 #include "messages_internal.h"
 #include "netconf.h"
 #include "session.h"
+
+/* sleep time in dispatch loops in microseconds */
+#define NCNTF_DISPATCH_SLEEP 100
 
 #define NC_NTF_DBUS_PATH "/libnetconf/notifications/stream"
 #define NC_NTF_DBUS_INTERFACE "libnetconf.notifications.stream"
@@ -108,7 +116,7 @@ static pthread_mutex_t *streams_mut = NULL;
 /* internal flag if the notification structures are properly initialized */
 static int initialized = 0;
 
-void ncntf_free(nc_ntf *ntf)
+void ncntf_notif_free(nc_ntf *ntf)
 {
 	nc_msg_free((struct nc_msg*) ntf);
 }
@@ -1408,4 +1416,437 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 		*event_time = t;
 	}
 	return (text);
+}
+static void ncntf_stdoutprint (time_t eventtime, const char* content)
+{
+	char* t = NULL;
+
+	fprintf(stdout, "eventTime: %s\n%s\n", t = nc_time2datetime(eventtime), content);
+	if (t != NULL) {
+		free(t);
+	}
+}
+
+nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
+{
+	char* notif_data = NULL, *etime = NULL;
+	xmlDocPtr notif_doc;
+	nc_ntf* retval;
+
+	if ((etime = nc_time2datetime(event_time)) == NULL) {
+		ERROR("Converting time to string failed (%s:%d)", __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	asprintf(&notif_data, "<notification>%s</notification>", content);
+	notif_doc = xmlReadMemory(notif_data, strlen(notif_data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	if (notif_doc == NULL) {
+		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+		free(notif_data);
+		free(etime);
+		return (NULL);
+	}
+	free(notif_data);
+
+	if (xmlNewChild(notif_doc->children, NULL, BAD_CAST "eventTime", BAD_CAST etime) == NULL) {
+		ERROR("xmlAddChild failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		xmlFreeDoc(notif_doc);
+		free(etime);
+		return NULL;
+	}
+	free(etime);
+
+	retval = malloc(sizeof(nc_rpc));
+	if (retval == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+	retval->doc = notif_doc;
+	retval->msgid = NULL;
+	retval->error = NULL;
+	retval->with_defaults = NCDFLT_MODE_DISABLED;
+
+	return (retval);
+}
+
+static NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif)
+{
+	xmlNodePtr root, node;
+
+	if (notif == NULL || notif->doc == NULL) {
+		ERROR("%s: Invalid input parameter.", __func__);
+		return (NCNTF_ERROR);
+	}
+
+	if ((root = xmlDocGetRootElement (notif->doc)) == NULL) {
+		ERROR("%s: Invalid message format, root element is missing.", __func__);
+		return (NCNTF_ERROR);
+	}
+
+	if (xmlStrcmp(root->name, BAD_CAST "notification") == 0) {
+		for (node = root->children; node != NULL; node = node->next) {
+			if (node->name == NULL || xmlStrcmp(node->name, BAD_CAST "eventTime") == 0) {
+				continue;
+			}
+			/* use first not eventTime element */
+			break;
+		}
+		if (node == NULL) {
+			ERROR("%s: Invalid Notification message - missing event description.", __func__);
+			return (NCNTF_ERROR);
+		}
+
+		if (xmlStrcmp(node->name, BAD_CAST "replayComplete") == 0) {
+			return (NCNTF_REPLAY_COMPLETE);
+		} else if (xmlStrcmp(node->name, BAD_CAST "notificationComplete") == 0) {
+			return (NCNTF_NTF_COMPLETE);
+		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-config-change") == 0) {
+			return (NCNTF_BASE_CFG_CHANGE);
+		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-capability-change") == 0) {
+			return (NCNTF_BASE_CPBLT_CHANGE);
+		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-session-start") == 0) {
+			return (NCNTF_BASE_SESSION_START);
+		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-session-end") == 0) {
+			return (NCNTF_BASE_SESSION_END);
+		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-configrmed-commit") == 0) {
+			return (NCNTF_BASE_CONFIRMED_COMMIT);
+		} else {
+			return (NCNTF_GENERIC);
+		}
+	} else {
+		ERROR("%s: Invalid Notification message - missing <notification> element.", __func__);
+		return (NCNTF_ERROR);
+	}
+}
+
+char* ncntf_notif_get_content(nc_ntf* notif)
+{
+	char * retval;
+	xmlNodePtr root, node;
+	xmlBufferPtr buffer;
+
+	if (notif == NULL || notif->doc == NULL) {
+		ERROR("%s: Invalid input parameter.", __func__);
+		return (NULL);
+	}
+
+	if ((root = xmlDocGetRootElement (notif->doc)) == NULL) {
+		ERROR("%s: Invalid message format, root element is missing.", __func__);
+		return (NULL);
+	}
+	if (xmlStrcmp(root->name, BAD_CAST "notification") != 0) {
+		ERROR("%s: Invalid message format, missing notification element.", __func__);
+		return (NULL);
+	}
+
+	buffer = xmlBufferCreate ();
+	for (node = root->children; node != NULL; node = node->next) {
+		/* skip invalid nodes */
+		if (node->name == NULL || node->ns == NULL || node->ns->href == NULL) {
+			continue;
+		}
+
+		/* skip eventTime element */
+		if (xmlStrcmp(node->name, BAD_CAST "eventTime") == 0 &&
+				xmlStrcmp(node->ns->href, BAD_CAST NC_NS_CAP_NOTIFICATIONS) == 0) {
+			continue;
+		}
+
+		/* dump content into the buffer */
+		xmlNodeDump(buffer, notif->doc, node, 1, 1);
+	}
+	retval = strdup((char *)xmlBufferContent (buffer));
+	xmlBufferFree (buffer);
+
+	return retval;
+}
+
+time_t ncntf_notif_get_time(nc_ntf* notif)
+{
+	xmlXPathContextPtr notif_ctxt = NULL;
+	xmlXPathObjectPtr result = NULL;
+	xmlChar* datetime;
+	time_t t = -1;
+
+	if (notif == NULL || notif->doc == NULL) {
+		return (-1);
+	}
+
+	/* create xpath evaluation context */
+	if ((notif_ctxt = xmlXPathNewContext(notif->doc)) == NULL) {
+		WARN("%s: Creating XPath context failed.", __func__)
+		/* with-defaults cannot be found */
+		return (-1);
+	}
+	if (xmlXPathRegisterNs(notif_ctxt, BAD_CAST "ntf", BAD_CAST NC_NS_CAP_NOTIFICATIONS) != 0) {
+		xmlXPathFreeContext(notif_ctxt);
+		return (-1);
+	}
+
+	/* get eventTime value */
+	result = xmlXPathEvalExpression(BAD_CAST "/ntf:notification/ntf:eventTime", notif_ctxt);
+	if (result != NULL) {
+		if (result->nodesetval->nodeNr != 1) {
+			t = -1;
+		} else {
+			t = nc_datetime2time((char*)(datetime = xmlNodeGetContent(result->nodesetval->nodeTab[0])));
+			if (datetime != NULL) {
+				xmlFree(datetime);
+			}
+		}
+		xmlXPathFreeObject(result);
+	}
+
+	xmlXPathFreeContext(notif_ctxt);
+
+	return (t);
+}
+
+/**
+ * @ingroup notifications
+ * @brief Start sending notification according to the given
+ * \<create-subscription\> NETCONF RPC request. All events from the specified
+ * stream are processed and sent to the client until the stop time is reached
+ * or until the session is terminated.
+ *
+ * @param[in] session NETCONF session where the notifications will be sent.
+ * @param[in] subscribe_rpc \<create-subscription\> RPC, if any other RPC is
+ * given, -1 is returned.
+ *
+ * @return number of sent notifications (including 0), -1 on error.
+ */
+long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subscribe_rpc)
+{
+	long long int count = 0;
+	char* stream = NULL, *event = NULL;
+	xmlDocPtr eventDoc;
+	nc_ntf* ntf;
+
+	if (session == NULL ||
+			session->status != NC_SESSION_STATUS_WORKING ||
+			subscribe_rpc == NULL ||
+			nc_rpc_get_op(subscribe_rpc) != NC_OP_CREATESUBSCRIPTION) {
+		ERROR("%s: Invalid parameters.", __func__);
+		return (-1);
+	}
+
+	/* get stream name from subscription */
+	/* \todo */
+	stream = "netconf";
+
+	/* get time boundaries from subscription message */
+	/* \todo */
+
+	ncntf_stream_iter_start(stream);
+	while((event = ncntf_stream_iter_next(stream, -1, -1, NULL)) != NULL) {
+		if ((eventDoc = xmlReadMemory(event, strlen(event), NULL, NULL, 0)) != NULL) {
+			ntf = malloc(sizeof(nc_rpc));
+			if (ntf == NULL) {
+				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+				return (-1);
+			}
+			ntf->doc = eventDoc;
+			ntf->msgid = NULL;
+			ntf->error = NULL;
+			ntf->with_defaults = NCDFLT_MODE_DISABLED;
+
+			nc_session_send_notif(session, ntf);
+			ncntf_notif_free(ntf);
+		} else {
+			WARN("Invalid format of stored event, skipping.");
+		}
+		free(event);
+	}
+	ncntf_stream_iter_finnish(stream);
+
+	/* send notificationComplete Notification */
+	ntf = malloc(sizeof(nc_rpc));
+	if (ntf == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (-1);
+	}
+	asprintf(&event, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
+			"<eventTime>%s</eventTime><notificationComplete/></notification>", nc_time2datetime(time(NULL)));
+	ntf->doc = xmlReadMemory(event, strlen(event), NULL, NULL, 0);
+	ntf->msgid = NULL;
+	ntf->error = NULL;
+	ntf->with_defaults = NCDFLT_MODE_DISABLED;
+	nc_session_send_notif(session, ntf);
+	ncntf_notif_free(ntf);
+	free(event);
+
+	return (count);
+}
+
+/**
+ * @ingroup notifications
+ * @brief Subscribe for receiving notifications from the given session
+ * according to parameters in the given subscribtion RPC. Received notifications
+ * are processed by the given process_ntf callback function. Functions stops
+ * when the final notification <notificationComplete> is received or when the
+ * session is terminated.
+ *
+ * @param[in] session NETCONF session where the notifications will be sent.
+ * @param[in] subscribe_rpc \<create-subscription\> RPC, if any other RPC is
+ * given, -1 is returned.
+ * @param[in] process_ntf Callback function to process content of the
+ * notification. If NULL, content of the notification is printed on stdout.
+ *
+ * @return number of received notifications, -1 on error.
+ */
+long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* subscribe_rpc, void (*process_ntf)(time_t eventtime, const char* content))
+{
+	long long int count = 0;
+	nc_rpc *rpc;
+	nc_reply *reply = NULL;
+	nc_ntf* ntf = NULL;
+	NC_MSG_TYPE type;
+	NC_REPLY_TYPE type_reply;
+	int eventfd = -1, dispatch = 1;
+	LIBSSH2_POLLFD fds;
+	int status;
+	time_t event_time;
+	char* content;
+
+	if (session == NULL ||
+			session->status != NC_SESSION_STATUS_WORKING ||
+			subscribe_rpc == NULL ||
+			nc_rpc_get_op(subscribe_rpc) != NC_OP_CREATESUBSCRIPTION) {
+		ERROR("%s: Invalid parameters.", __func__);
+		return (-1);
+	}
+
+	if ((eventfd = nc_session_get_eventfd(session)) == -1) {
+		ERROR("Invalid NETCONF session input file descriptor.");
+		return (-1);
+	}
+
+	/* send subscription */
+	rpc = nc_msg_dup((struct nc_msg*)subscribe_rpc);
+	type = nc_session_send_recv(session, rpc, &reply);
+	nc_rpc_free(rpc);
+
+	switch (type) {
+	case NC_MSG_UNKNOWN:
+		ERROR("Subscribing for notifications failed (receiving rpc-reply failed).");
+		return (-1);
+		break;
+	case NC_MSG_NONE:
+		/* NC_REPLY_ERROR was processed by a caller's callback function */
+		return (-1);
+		break;
+	default:
+		switch (type_reply = nc_reply_get_type(reply)) {
+		case NC_REPLY_OK:
+			break;
+		case NC_REPLY_ERROR:
+			ERROR("create-subscription failed (%s)", nc_reply_get_errormsg(reply));
+			break;
+		default:
+			ERROR("create-subscription failed (unexpected operation result).");
+			break;
+		}
+		nc_reply_free(reply);
+		if (type_reply != NC_REPLY_OK) {
+			return (-1);
+		}
+		break;
+	}
+
+	/* check function for notifications processing */
+	if (process_ntf == NULL) {
+		process_ntf = ncntf_stdoutprint;
+	}
+
+	/* main loop for receiving notifications */
+	while(dispatch) {
+		pthread_mutex_lock(&(session->mut_session));
+		if (session->queue_event != NULL) {
+			type = nc_session_recv_notif(session, &ntf);
+			pthread_mutex_unlock(&(session->mut_session));
+
+		} else {
+
+			while (1) {
+				/* start polling on input socket */
+				fds.type = LIBSSH2_POLLFD_CHANNEL;
+				fds.fd.channel = session->ssh_channel;
+				fds.events = LIBSSH2_POLLFD_POLLIN;
+				fds.revents = LIBSSH2_POLLFD_POLLIN;
+				/*
+				 * According to libssh2 documentation, standard poll should work, but it does not.
+				 * It seems, that some data are stored in internal buffers and they are not seen
+				 * by poll, but libssh2_poll on the channel.
+				 */
+				/*
+				fds.fd = eventfd;
+				fds.events = POLLIN;
+				fds.revents = 0;
+				status = poll(&fds, 1, 100);
+				*/
+				status = libssh2_poll(&fds, 1, 100);
+				if (status == 0 || (status == -1 && errno == EINTR)) {
+					/* poll timed out or was interrupted */
+					continue;
+				} else if (status < 0) {
+					/* poll failed - something wrong happend, close this socket and wait for another request */
+					ERROR("Input channel error");
+					nc_session_close(session, NC_SESSION_TERM_DROPPED);
+					dispatch = 0;  /* set the dispatch loop to end */
+					break;
+				}
+				/* status > 0 */
+				/* check the status of the socket */
+				/* if nothing to read and POLLHUP (EOF) or POLLERR set */
+				if ((fds.revents & POLLHUP) || (fds.revents & POLLERR)) {
+					/* close client's socket (it's probably already closed by client */
+					ERROR("Input channel closed");
+					nc_session_close(session, NC_SESSION_TERM_DROPPED);
+					dispatch = 0;  /* set the dispatch loop to end */
+					break;
+				}
+
+				/* we have something to read, leave dispatch == 1 */
+				break;
+			}
+
+			if (dispatch == 0) {
+				pthread_mutex_unlock(&(session->mut_session));
+				break; /* end the dispatch loop */
+			}
+			type = nc_session_recv_notif(session, &ntf);
+			pthread_mutex_unlock(&(session->mut_session));
+		}
+
+		/* process current notification */
+		switch (type) {
+		case NC_MSG_UNKNOWN: /* error */
+			dispatch = 0;
+			continue; /* end the dispatch loop */
+			break;
+		case NC_MSG_NOTIFICATION:
+			/* check for <notificationComplete> */
+			if (ncntf_notif_get_type(ntf) == NCNTF_NTF_COMPLETE) {
+				/* end of the Notification stream */
+				dispatch = 0;
+			}
+
+			/* Parse XML to get parameters for callback function */
+			event_time = ncntf_notif_get_time(ntf);
+			content = ncntf_notif_get_content(ntf);
+			if (event_time == -1 || content == NULL) {
+				free(content);
+				WARN("Invalid notification received. Ignoring.");
+				continue; /* go for another notification */
+			}
+			process_ntf(event_time, content);
+			free(content);
+			break;
+		default:
+			/* no notification available, continue with polling */
+			break;
+		}
+	}
+
+	return (count);
 }

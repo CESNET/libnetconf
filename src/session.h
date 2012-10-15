@@ -299,6 +299,16 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc);
 const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* rpc, const nc_reply *reply);
 
 /**
+ * @ingroup notifications
+ * @brief Send \<notification\> message from server to client
+ *
+ * @param[in] session NETCONF session to use.
+ * @param[in[ ntf \<notification\> message to send.
+ * @return 0 on success,\n non-zero on error.
+ */
+int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf);
+
+/**
  * @ingroup rpc
  * @brief Receive \<rpc\> request from the specified NETCONF session.
  * This function is supposed to be performed only by NETCONF servers.

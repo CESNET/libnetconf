@@ -1527,10 +1527,10 @@ generic_help:
 void cmd_subscribe_help()
 {
 	fprintf (stdout, "subscribe [--help] [--filter] [--begin <time>] [--end <time>] [<stream>]\n");
-	fprintf (stdout, "\t<time> has following format:");
-	fprintf (stdout, "\t\t+<num>  - current time plus given number of seconds.");
-	fprintf (stdout, "\t\t<num>   - absolute time as number of seconds since 1970-01-01.");
-	fprintf (stdout, "\t\t-<num>  - current time minus given number of seconds.");
+	fprintf (stdout, "\t<time> has following format:\n");
+	fprintf (stdout, "\t\t+<num>  - current time plus given number of seconds.\n");
+	fprintf (stdout, "\t\t<num>   - absolute time as number of seconds since 1970-01-01.\n");
+	fprintf (stdout, "\t\t-<num>  - current time minus given number of seconds.\n");
 }
 
 int cmd_subscribe(char *arg)
@@ -1629,6 +1629,16 @@ int cmd_subscribe(char *arg)
 		ERROR("create-subscription", "creating rpc request failed.");
 		return (EXIT_FAILURE);
 	}
+
+	/* process notifications */
+	if (ncntf_dispatch_receive(session, rpc, NULL) != -1) {
+		return (EXIT_SUCCESS);
+	} else {
+		return (EXIT_FAILURE);
+	}
+	/* dead code - \todo use threads for notifications */
+
+
 	/* send the request and get the reply */
 	type = nc_session_send_recv(session, rpc, &reply);
 	switch (type) {

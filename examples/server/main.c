@@ -100,13 +100,31 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 	req_op = nc_rpc_get_op(rpc);
 	if (req_type == NC_RPC_SESSION) {
 		/* process operations affectinf session */
-		if (req_op == NC_OP_CLOSESESSION) {
+		switch(req_op) {
+		case NC_OP_CLOSESESSION:
 			/* exit the event loop immediately without processing any following request */
 			reply = nc_reply_ok();
 			event_base_loopbreak(config->event_base);
-		} else if (req_op == NC_OP_KILLSESSION) {
+			break;
+		case NC_OP_KILLSESSION:
 			/* todo: kill the requested session */
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
+			break;
+		case NC_OP_CREATESUBSCRIPTION:
+			reply = nc_reply_ok();
+			nc_session_send_reply(config->session, rpc, reply);
+			nc_reply_free(reply);
+
+			/* perform notification sending */
+			ncntf_dispatch_send(config->session, rpc);
+			nc_rpc_free(rpc);
+
+			return;
+
+			break;
+		default:
+			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
+			break;
 		}
 	} else if (req_type == NC_RPC_DATASTORE_READ) {
 		/* process operations reading datastore */
