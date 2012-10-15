@@ -30,5 +30,7 @@ var group__rpc =
     [ "nc_rpc_killsession", "db/de9/group__rpc.html#gae9876e8d038eb81a376bd82a08c58b95", null ],
     [ "nc_rpc_lock", "db/de9/group__rpc.html#ga6a03d40e00fbe019a34541a55f3f4a31", null ],
     [ "nc_rpc_unlock", "db/de9/group__rpc.html#gad843551f9d1ff8be6a118d026e8b995a", null ],
+    [ "nc_rpc_commit", "db/de9/group__rpc.html#ga7977ca8b562643607b3c846ed36bbb23", null ],
+    [ "nc_rpc_discardchanges", "db/de9/group__rpc.html#ga337ea7a9b006a79ee5ea615e9d9a5a6f", null ],
     [ "nc_rpc_generic", "db/de9/group__rpc.html#gaa9ad7fac41fdef0063c2e2793fb19efd", null ]
 ];

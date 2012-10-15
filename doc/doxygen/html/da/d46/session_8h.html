@@ -91,7 +91,7 @@ $(document).ready(function(){initNavTree('da/d46/session_8h.html','../../');});
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -119,8 +119,8 @@ $(document).ready(function(){initNavTree('da/d46/session_8h.html','../../');});
 Functions</h2></td></tr>
 <tr class="memitem:ga3868d5331db61a5d3a4df3ff5fa33851"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851">nc_session_dummy</a> (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)</td></tr>
 <tr class="memdesc:ga3868d5331db61a5d3a4df3ff5fa33851"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create disconnected session structure.  <a href="../../db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851"></a><br/></td></tr>
-<tr class="memitem:ga20b9940ed7af543a05b4bef6e871cedd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd">nc_session_close</a> (struct nc_session *session, const char *msg)</td></tr>
-<tr class="memdesc:ga20b9940ed7af543a05b4bef6e871cedd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close NETCONF connection with the server.  <a href="../../db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd"></a><br/></td></tr>
+<tr class="memitem:gab55a757ce7a1abc69a9866c96b125abc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gab55a757ce7a1abc69a9866c96b125abc">nc_session_close</a> (struct nc_session *session, <a class="el" href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2">NC_SESSION_TERM_REASON</a> reason)</td></tr>
+<tr class="memdesc:gab55a757ce7a1abc69a9866c96b125abc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close NETCONF connection with the server.  <a href="../../db/d52/group__session.html#gab55a757ce7a1abc69a9866c96b125abc"></a><br/></td></tr>
 <tr class="memitem:gaa5994f45a7031dc931bdf4a3acebedee"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee">nc_session_free</a> (struct nc_session *session)</td></tr>
 <tr class="memdesc:gaa5994f45a7031dc931bdf4a3acebedee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cleanup the session structure and free all allocated resources.  <a href="../../db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee"></a><br/></td></tr>
 <tr class="memitem:gacebd018e30c3eeb0638bbb428a1741b4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">NC_SESSION_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacebd018e30c3eeb0638bbb428a1741b4">nc_session_get_status</a> (const struct nc_session *session)</td></tr>
@@ -163,6 +163,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaeb0d93ea1b5ef0c22c9e5372425fb5c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc&gt; request via specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="../../db/de9/group__rpc.html#gaeb0d93ea1b5ef0c22c9e5372425fb5c3"></a><br/></td></tr>
 <tr class="memitem:ga0b344811af933d80615f0874650938cc"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../db/d52/group__session.html#ga5a8be0030b2a521edad18d24b348a4aa">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga0b344811af933d80615f0874650938cc">nc_session_send_reply</a> (struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:ga0b344811af933d80615f0874650938cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc-reply&gt; response via specified NETCONF session. This function is supposed to be performed only by NETCONF servers.  <a href="../../d0/de2/group__reply.html#ga0b344811af933d80615f0874650938cc"></a><br/></td></tr>
+<tr class="memitem:ga2a6cd8e0aaaaf4e1b84d3a498a2a710c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga2a6cd8e0aaaaf4e1b84d3a498a2a710c">nc_session_send_notif</a> (struct nc_session *session, const <a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *ntf)</td></tr>
+<tr class="memdesc:ga2a6cd8e0aaaaf4e1b84d3a498a2a710c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;notification&gt; message from server to client.  <a href="../../da/d54/group__notifications.html#ga2a6cd8e0aaaaf4e1b84d3a498a2a710c"></a><br/></td></tr>
 <tr class="memitem:gae7db211326df2358bde428f5e2a80605"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gae7db211326df2358bde428f5e2a80605">nc_session_recv_rpc</a> (struct nc_session *session, <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> **rpc)</td></tr>
 <tr class="memdesc:gae7db211326df2358bde428f5e2a80605"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;rpc&gt; request from the specified NETCONF session. This function is supposed to be performed only by NETCONF servers.  <a href="../../db/de9/group__rpc.html#gae7db211326df2358bde428f5e2a80605"></a><br/></td></tr>
 <tr class="memitem:ga4bbbfc4e648a74caffeeac0da41ab276"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga4bbbfc4e648a74caffeeac0da41ab276">nc_session_recv_reply</a> (struct nc_session *session, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> **reply)</td></tr>
@@ -173,6 +175,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gae160a70158f957344eb3204987329632"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare two message IDs if they are the same.  <a href="../../d3/d35/group__gen_a_p_i.html#gae160a70158f957344eb3204987329632"></a><br/></td></tr>
 <tr class="memitem:ga27d3fe78769630932a18c726df4fe6e6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga27d3fe78769630932a18c726df4fe6e6">nc_session_send_recv</a> (struct nc_session *session, <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> **reply)</td></tr>
 <tr class="memdesc:ga27d3fe78769630932a18c726df4fe6e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc&gt; and receive &lt;rpc-reply&gt; via the specified NETCONF session.  <a href="../../db/de9/group__rpc.html#ga27d3fe78769630932a18c726df4fe6e6"></a><br/></td></tr>
+<tr class="memitem:aa7a7d734813481b2b50443b558fedf4f"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d46/session_8h.html#aa7a7d734813481b2b50443b558fedf4f">nc_session_term_string</a> (<a class="el" href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2">NC_SESSION_TERM_REASON</a> reason)</td></tr>
+<tr class="memdesc:aa7a7d734813481b2b50443b558fedf4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get human readable description to the specific type of the session termination reason.  <a href="#aa7a7d734813481b2b50443b558fedf4f"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Functions to handle NETCONF sessions. </p>
@@ -187,13 +191,40 @@ Functions</h2></td></tr>
 <p>This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage. </p>
 
 <p>Definition in file <a class="el" href="../../da/d46/session_8h_source.html">session.h</a>.</p>
-</div></div><!-- contents -->
+</div><hr/><h2>Function Documentation</h2>
+<a class="anchor" id="aa7a7d734813481b2b50443b558fedf4f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* nc_session_term_string </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2">NC_SESSION_TERM_REASON</a>&#160;</td>
+          <td class="paramname"><em>reason</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get human readable description to the specific type of the session termination reason. </p>
+<p>ingroup session </p>
+<dl class="params"><dt>Parameters:</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">reason</td><td>Type of the session termination reason. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>String describing the given termination reason value. </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="da/d46/session_8h.html">session.h</a></li>
-    <li class="footer">Generated on Tue Sep 25 2012 10:50:36 for libnetconf by
+    <li class="footer">Generated on Mon Oct 15 2012 15:24:41 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

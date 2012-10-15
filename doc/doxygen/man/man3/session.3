@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Tue Sep 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -58,7 +58,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .br
 .RI "\fICreate disconnected session structure\&. \fP"
 .ti -1c
-.RI "void \fBnc_session_close\fP (struct nc_session *session, const char *msg)"
+.RI "void \fBnc_session_close\fP (struct nc_session *session, \fBNC_SESSION_TERM_REASON\fP reason)"
 .br
 .RI "\fIClose NETCONF connection with the server\&. \fP"
 .ti -1c
@@ -310,7 +310,7 @@ Structure describing a dummy NETCONF session or NULL in case of error\&.
 .RE
 .PP
 
-.SS "void nc_session_close (struct nc_session *session, const char *msg)"
+.SS "void nc_session_close (struct nc_session *session, \fBNC_SESSION_TERM_REASON\fPreason)"
 
 .PP
 Close NETCONF connection with the server\&. Only \fBnc_session_free()\fP and \fBnc_session_get_status()\fP functions are allowed after this call\&.
@@ -319,7 +319,7 @@ Close NETCONF connection with the server\&. Only \fBnc_session_free()\fP and \fB
 .RS 4
 \fIsession\fP Session to close\&. 
 .br
-\fImsg\fP Human readable reason for SSH session disconnection\&. 
+\fIreason\fP Type of the session termination reason\&. 
 .RE
 .PP
 

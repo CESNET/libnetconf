@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Tue Sep 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -101,7 +101,7 @@ separated startup datastore as defined in Distinct Startup Capability
 \fB\fINC_DATASTORE_CANDIDATE \fP\fP
 separated working datastore as defined in Candidate Configuration Capability 
 .PP
-Definition at line 232 of file netconf\&.h\&.
+Definition at line 234 of file netconf\&.h\&.
 .SS "enum \fBNCDS_TYPE\fP"
 
 .PP
@@ -111,14 +111,7 @@ Datastore implementation types provided by libnetconf\&.
 .in +1c
 .TP
 \fB\fINCDS_TYPE_EMPTY \fP\fP
-No datastore\&. For read-only devices\&.
-.PP
-\fBTodo\fP
-.RS 4
-Implement functions 
-.RE
-.PP
-
+No datastore\&. For read-only devices\&. 
 .TP
 \fB\fINCDS_TYPE_FILE \fP\fP
 Datastores implemented as files 

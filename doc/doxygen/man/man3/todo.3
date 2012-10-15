@@ -1,17 +1,19 @@
-.TH "todo" 3 "Tue Sep 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "todo" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 todo \- Todo List 
-.IP "\fBGlobal \fBnc_ntf_dispatch\fP (struct nc_session *session, const nc_rpc *subscribe_rpc)\fP" 1c
-Implement this function\&.
+.IP "\fBGlobal \fBncntf_stream_iter_finnish\fP (const char *stream)\fP" 1c
+: thread safety (?thread-specific variables)
 .PP
-.IP "\fBGlobal \fBnc_ntf_event_new\fP (char *stream, time_t etime, NC_NTF_EVENT event,\&.\&.\&.)\fP" 1c
-Implement this function\&.  
-.IP "\fBGlobal \fBNCDS_TYPE_EMPTY\fP \fP" 1c
-Implement functions  
+.IP "\fBGlobal \fBncntf_stream_iter_next\fP (const char *stream, time_t start, time_t stop, time_t *event_time)\fP" 1c
+: thread safety (?thread-specific variables)
+.PP
+.IP "\fBGlobal \fBncntf_stream_iter_start\fP (const char *stream)\fP" 1c
+: thread safety (?thread-specific variables)
+.PP
 .IP "\fBpage \fBNETCONF library - libnetconf\fP \fP" 1c
-some common function to performi this type of requests will be added\&.
+some common function to perform this type of requests will be added\&.
 .br
 .PP
 

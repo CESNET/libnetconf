@@ -1,4 +1,4 @@
-.TH "src/notifications.h" 3 "Tue Sep 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "src/notifications.h" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -12,15 +12,22 @@ Functions to handle NETCONF Notifications\&.
 \fC#include 'netconf\&.h'\fP
 .br
 
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBNCNTF_STREAM_BASE\fP   'netconf'"
+.br
+.in -1c
 .SS "Enumerations"
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_NTF_EVENT\fP { \fBNC_NTF_ERROR\fP =  -1, \fBNC_NTF_GENERIC\fP =  0, \fBNC_NTF_BASE_CFG_CHANGE\fP =  1, \fBNC_NTF_BASE_CPBLT_CHANGE\fP =  2, \fBNC_NTF_BASE_SESSION_START\fP =  3, \fBNC_NTF_BASE_SESSION_END\fP =  4, \fBNC_NTF_BASE_CONFIRMED_COMMIT\fP =  5 }"
+.RI "enum \fBNCNTF_EVENT\fP { \fBNCNTF_ERROR\fP =  -1, \fBNCNTF_GENERIC\fP =  0, \fBNCNTF_REPLAY_COMPLETE\fP =  1, \fBNCNTF_NTF_COMPLETE\fP =  2, \fBNCNTF_BASE_CFG_CHANGE\fP =  3, \fBNCNTF_BASE_CPBLT_CHANGE\fP =  4, \fBNCNTF_BASE_SESSION_START\fP =  5, \fBNCNTF_BASE_SESSION_END\fP =  6, \fBNCNTF_BASE_CONFIRMED_COMMIT\fP =  7 }"
 .br
 .RI "\fIEnumeration of supported NETCONF event notifications\&. \fP"
 .ti -1c
-.RI "enum \fBNC_NTF_EVENT_BY\fP { \fBNC_NTF_EVENT_BY_SERVER\fP, \fBNC_NTF_EVENT_BY_USER\fP }"
+.RI "enum \fBNCNTF_EVENT_BY\fP { \fBNCNTF_EVENT_BY_SERVER\fP, \fBNCNTF_EVENT_BY_USER\fP }"
 .br
 .RI "\fIEnumeration of possible source of events\&. \fP"
 .in -1c
@@ -28,37 +35,65 @@ Functions to handle NETCONF Notifications\&.
 
 .in +1c
 .ti -1c
-.RI "int \fBnc_ntf_init\fP (void)"
+.RI "int \fBncntf_init\fP (void)"
 .br
 .RI "\fIInitiate NETCONF Notifications environment\&. \fP"
 .ti -1c
-.RI "void \fBnc_ntf_close\fP (void)"
+.RI "void \fBncntf_close\fP (void)"
 .br
 .RI "\fIClose all NETCONF Event Streams and other parts of the Notifications environment\&. \fP"
 .ti -1c
-.RI "void \fBnc_ntf_free\fP (\fBnc_ntf\fP *ntf)"
+.RI "\fBnc_ntf\fP * \fBncntf_notif_create\fP (time_t event_time, const char *content)"
+.br
+.RI "\fICreate new <notification> message with givent eventTime and content\&. \fP"
+.ti -1c
+.RI "void \fBncntf_notif_free\fP (\fBnc_ntf\fP *ntf)"
 .br
 .RI "\fIFree notification message\&. \fP"
 .ti -1c
-.RI "int \fBnc_ntf_stream_new\fP (const char *name, const char *desc, int replay)"
+.RI "int \fBncntf_stream_new\fP (const char *name, const char *desc, int replay)"
 .br
 .RI "\fICreate new NETCONF event stream\&. \fP"
 .ti -1c
-.RI "char ** \fBnc_ntf_stream_list\fP (void)"
+.RI "char ** \fBncntf_stream_list\fP (void)"
 .br
 .RI "\fIGet the list of NETCONF event notifications streams\&. \fP"
 .ti -1c
-.RI "int \fBnc_ntf_stream_isavailable\fP (const char *name)"
+.RI "int \fBncntf_stream_isavailable\fP (const char *name)"
 .br
 .RI "\fITest if the given stream is already created and available\&. \fP"
 .ti -1c
-.RI "int \fBnc_ntf_event_new\fP (char *stream, time_t etime, \fBNC_NTF_EVENT\fP event,\&.\&.\&.)"
+.RI "int \fBncntf_event_new\fP (char *stream, time_t etime, \fBNCNTF_EVENT\fP event,\&.\&.\&.)"
 .br
 .RI "\fIStore new event into the specified stream\&. Parameters are specific for different events\&. \fP"
 .ti -1c
-.RI "long long int \fBnc_ntf_dispatch\fP (struct nc_session *session, const \fBnc_rpc\fP *subscribe_rpc)"
+.RI "void \fBncntf_stream_iter_start\fP (const char *stream)"
 .br
-.RI "\fIStart sending of notification according to the given <create-subscription> NETCONF RPC request\&. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated\&. \fP"
+.RI "\fIStart iteration on the events in the specified stream file\&. Iteration starts on the first event in the first part of the stream file\&. \fP"
+.ti -1c
+.RI "char * \fBncntf_stream_iter_next\fP (const char *stream, time_t start, time_t stop, time_t *event_time)"
+.br
+.RI "\fIPop the next event record from the stream file\&. The iteration must be started by nc_ntf_stream_iter_start() function\&. \fP"
+.ti -1c
+.RI "void \fBncntf_stream_iter_finnish\fP (const char *stream)"
+.br
+.RI "\fIClean all structures used for iteration in the specified stream\&. This function must be called as a closing function to nc_ntf_stream_iter_start() \fP"
+.ti -1c
+.RI "time_t \fBncntf_notif_get_time\fP (\fBnc_ntf\fP *notif)"
+.br
+.RI "\fIGet Time of the event reported in the notification message\&. \fP"
+.ti -1c
+.RI "char * \fBncntf_notif_get_content\fP (\fBnc_ntf\fP *notif)"
+.br
+.RI "\fIGet description of the event reported in the notification message\&. \fP"
+.ti -1c
+.RI "long long int \fBncntf_dispatch_send\fP (struct nc_session *session, const \fBnc_rpc\fP *subscribe_rpc)"
+.br
+.RI "\fIStart sending notification according to the given <create-subscription> NETCONF RPC request\&. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated\&. \fP"
+.ti -1c
+.RI "long long int \fBncntf_dispatch_receive\fP (struct nc_session *session, const \fBnc_rpc\fP *subscribe_rpc, void(*process_ntf)(time_t eventtime, const char *content))"
+.br
+.RI "\fISubscribe for receiving notifications from the given session according to parameters in the given subscribtion RPC\&. Received notifications are processed by the given process_ntf callback function\&. Functions stops when the final notification <notificationComplete> is received or when the session is terminated\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -83,6 +118,12 @@ ALTERNATIVELY, provided that this notice is retained in full, this product may b
 This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
 .PP
 Definition in file \fBnotifications\&.h\fP\&.
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define NCNTF_STREAM_BASE   'netconf'"
+
+.PP
+Definition at line 45 of file notifications\&.h\&.
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

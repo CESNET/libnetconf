@@ -85,7 +85,7 @@ $(document).ready(function(){initNavTree('da/d54/group__notifications.html','../
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -114,45 +114,64 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:ga3b304eeb9cb2627b14a2ab5ddc6108c7"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga3b304eeb9cb2627b14a2ab5ddc6108c7">NC_NTF_EVENT</a> { <br/>
-&#160;&#160;<a class="el" href="../../da/d54/group__notifications.html#gga3b304eeb9cb2627b14a2ab5ddc6108c7a687f4438132d03549f191dc125ad5822">NC_NTF_ERROR</a> =  -1, 
-<a class="el" href="../../da/d54/group__notifications.html#gga3b304eeb9cb2627b14a2ab5ddc6108c7a054cae1a37ad5d1c9a898646b127926c">NC_NTF_GENERIC</a> =  0, 
-<a class="el" href="../../da/d54/group__notifications.html#gga3b304eeb9cb2627b14a2ab5ddc6108c7a526a49cf0cb9bc9d335f69cca64b65b9">NC_NTF_BASE_CFG_CHANGE</a> =  1, 
-<a class="el" href="../../da/d54/group__notifications.html#gga3b304eeb9cb2627b14a2ab5ddc6108c7ad3665d0b6718127939546008fc9b5493">NC_NTF_BASE_CPBLT_CHANGE</a> =  2, 
+<tr class="memitem:gadcf8c532762d57f7d9a5491e6abb9977"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977">NCNTF_EVENT</a> { <br/>
+&#160;&#160;<a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977abd5b82879a0ac7c45f8556154fb6286a">NCNTF_ERROR</a> =  -1, 
+<a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1f1e3c2032baf2542b06052243bd42c9">NCNTF_GENERIC</a> =  0, 
+<a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977aa440351ba1c82a0dd9e5301a6d03c5ac">NCNTF_REPLAY_COMPLETE</a> =  1, 
+<a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a0a0d2e20f15e710f1da3dace9a55fc67">NCNTF_NTF_COMPLETE</a> =  2, 
 <br/>
-&#160;&#160;<a class="el" href="../../da/d54/group__notifications.html#gga3b304eeb9cb2627b14a2ab5ddc6108c7aca518a30d4b9913cc6a75206f0751098">NC_NTF_BASE_SESSION_START</a> =  3, 
-<a class="el" href="../../da/d54/group__notifications.html#gga3b304eeb9cb2627b14a2ab5ddc6108c7abc873754ed0ad6d7f5d07f125e711ced">NC_NTF_BASE_SESSION_END</a> =  4, 
-<a class="el" href="../../da/d54/group__notifications.html#gga3b304eeb9cb2627b14a2ab5ddc6108c7aae079792450c0b1fc5d7720a983ff46d">NC_NTF_BASE_CONFIRMED_COMMIT</a> =  5
+&#160;&#160;<a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a9cf730f96784afdb8d783df8dacfab21">NCNTF_BASE_CFG_CHANGE</a> =  3, 
+<a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977af6adea71e2edc918ae1f7ade6f11ca59">NCNTF_BASE_CPBLT_CHANGE</a> =  4, 
+<a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a7e0ecf6ec462565f5bc9a1edfd7d4c6c">NCNTF_BASE_SESSION_START</a> =  5, 
+<a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1c06188153af81757d0ba8aac0768550">NCNTF_BASE_SESSION_END</a> =  6, 
+<br/>
+&#160;&#160;<a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a2048b9cca78f499a6f361e9eeb9fa3e5">NCNTF_BASE_CONFIRMED_COMMIT</a> =  7
 <br/>
  }</td></tr>
-<tr class="memdesc:ga3b304eeb9cb2627b14a2ab5ddc6108c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported NETCONF event notifications.  <a href="../../da/d54/group__notifications.html#ga3b304eeb9cb2627b14a2ab5ddc6108c7">More...</a><br/></td></tr>
-<tr class="memitem:ga4d93915553fcacdbee9d1031958018dd"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga4d93915553fcacdbee9d1031958018dd">NC_NTF_EVENT_BY</a> { <a class="el" href="../../da/d54/group__notifications.html#gga4d93915553fcacdbee9d1031958018ddad2c851e9e797225fb290f010cbb24031">NC_NTF_EVENT_BY_SERVER</a>, 
-<a class="el" href="../../da/d54/group__notifications.html#gga4d93915553fcacdbee9d1031958018ddab8c2281b6b960ec840431c327e77f03e">NC_NTF_EVENT_BY_USER</a>
+<tr class="memdesc:gadcf8c532762d57f7d9a5491e6abb9977"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported NETCONF event notifications.  <a href="../../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977">More...</a><br/></td></tr>
+<tr class="memitem:ga1e9d948b3807d679482c737da720477d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d">NCNTF_EVENT_BY</a> { <a class="el" href="../../da/d54/group__notifications.html#gga1e9d948b3807d679482c737da720477da378e4e13ce4d7f8e1ede2a876fbc30e0">NCNTF_EVENT_BY_SERVER</a>, 
+<a class="el" href="../../da/d54/group__notifications.html#gga1e9d948b3807d679482c737da720477dab20423755c56c213cd2567b2bbf1f9c2">NCNTF_EVENT_BY_USER</a>
  }</td></tr>
-<tr class="memdesc:ga4d93915553fcacdbee9d1031958018dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of possible source of events.  <a href="../../da/d54/group__notifications.html#ga4d93915553fcacdbee9d1031958018dd">More...</a><br/></td></tr>
+<tr class="memdesc:ga1e9d948b3807d679482c737da720477d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of possible source of events.  <a href="../../da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d">More...</a><br/></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ga2a6cd8e0aaaaf4e1b84d3a498a2a710c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga2a6cd8e0aaaaf4e1b84d3a498a2a710c">nc_session_send_notif</a> (struct nc_session *session, const <a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *ntf)</td></tr>
+<tr class="memdesc:ga2a6cd8e0aaaaf4e1b84d3a498a2a710c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;notification&gt; message from server to client.  <a href="#ga2a6cd8e0aaaaf4e1b84d3a498a2a710c"></a><br/></td></tr>
 <tr class="memitem:gae0cc31a11f3a6dc9d87bb4de18e2b9d8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gae0cc31a11f3a6dc9d87bb4de18e2b9d8">nc_session_recv_notif</a> (struct nc_session *session, <a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> **ntf)</td></tr>
 <tr class="memdesc:gae0cc31a11f3a6dc9d87bb4de18e2b9d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;notification&gt; message from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="#gae0cc31a11f3a6dc9d87bb4de18e2b9d8"></a><br/></td></tr>
 <tr class="memitem:gafda56cbfe02d24877d0740618aa2de98"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gafda56cbfe02d24877d0740618aa2de98">nc_rpc_subscribe</a> (const char *stream, const struct nc_filter *filter, const time_t *start, const time_t *stop)</td></tr>
 <tr class="memdesc:gafda56cbfe02d24877d0740618aa2de98"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;create-subsciption&gt; NETCONF rpc message.  <a href="#gafda56cbfe02d24877d0740618aa2de98"></a><br/></td></tr>
-<tr class="memitem:ga82799596179348963189c44dadcfe8b2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga82799596179348963189c44dadcfe8b2">nc_ntf_init</a> (void)</td></tr>
-<tr class="memdesc:ga82799596179348963189c44dadcfe8b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initiate NETCONF Notifications environment.  <a href="#ga82799596179348963189c44dadcfe8b2"></a><br/></td></tr>
-<tr class="memitem:ga6bc356b6a2fb721e2a3c6b769fe022ba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga6bc356b6a2fb721e2a3c6b769fe022ba">nc_ntf_close</a> (void)</td></tr>
-<tr class="memdesc:ga6bc356b6a2fb721e2a3c6b769fe022ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close all NETCONF Event Streams and other parts of the Notifications environment.  <a href="#ga6bc356b6a2fb721e2a3c6b769fe022ba"></a><br/></td></tr>
-<tr class="memitem:ga25057ea7760135ab3cf845032ac13a19"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga25057ea7760135ab3cf845032ac13a19">nc_ntf_free</a> (<a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *ntf)</td></tr>
-<tr class="memdesc:ga25057ea7760135ab3cf845032ac13a19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free notification message.  <a href="#ga25057ea7760135ab3cf845032ac13a19"></a><br/></td></tr>
-<tr class="memitem:gaf0cdd566ea34075026c56b2e20e27ce6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gaf0cdd566ea34075026c56b2e20e27ce6">nc_ntf_stream_new</a> (const char *name, const char *desc, int replay)</td></tr>
-<tr class="memdesc:gaf0cdd566ea34075026c56b2e20e27ce6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new NETCONF event stream.  <a href="#gaf0cdd566ea34075026c56b2e20e27ce6"></a><br/></td></tr>
-<tr class="memitem:ga870f9089fcc41aaff719a0ac44afc3b6"><td class="memItemLeft" align="right" valign="top">char **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga870f9089fcc41aaff719a0ac44afc3b6">nc_ntf_stream_list</a> (void)</td></tr>
-<tr class="memdesc:ga870f9089fcc41aaff719a0ac44afc3b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the list of NETCONF event notifications streams.  <a href="#ga870f9089fcc41aaff719a0ac44afc3b6"></a><br/></td></tr>
-<tr class="memitem:ga23b15f8a4245014124ae04a0feda237c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga23b15f8a4245014124ae04a0feda237c">nc_ntf_stream_isavailable</a> (const char *name)</td></tr>
-<tr class="memdesc:ga23b15f8a4245014124ae04a0feda237c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test if the given stream is already created and available.  <a href="#ga23b15f8a4245014124ae04a0feda237c"></a><br/></td></tr>
-<tr class="memitem:ga275220a9ecfb3bef55166f68f1ff81de"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga275220a9ecfb3bef55166f68f1ff81de">nc_ntf_event_new</a> (char *stream, time_t etime, <a class="el" href="../../da/d54/group__notifications.html#ga3b304eeb9cb2627b14a2ab5ddc6108c7">NC_NTF_EVENT</a> event,...)</td></tr>
-<tr class="memdesc:ga275220a9ecfb3bef55166f68f1ff81de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store new event into the specified stream. Parameters are specific for different events.  <a href="#ga275220a9ecfb3bef55166f68f1ff81de"></a><br/></td></tr>
-<tr class="memitem:gabf463ab5d4829f9c0e535015ba82f1b7"><td class="memItemLeft" align="right" valign="top">long long int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gabf463ab5d4829f9c0e535015ba82f1b7">nc_ntf_dispatch</a> (struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *subscribe_rpc)</td></tr>
-<tr class="memdesc:gabf463ab5d4829f9c0e535015ba82f1b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start sending of notification according to the given &lt;create-subscription&gt; NETCONF RPC request. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated.  <a href="#gabf463ab5d4829f9c0e535015ba82f1b7"></a><br/></td></tr>
+<tr class="memitem:ga7bfaffda6d2c087477935a810d0fef46"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga7bfaffda6d2c087477935a810d0fef46">ncntf_init</a> (void)</td></tr>
+<tr class="memdesc:ga7bfaffda6d2c087477935a810d0fef46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initiate NETCONF Notifications environment.  <a href="#ga7bfaffda6d2c087477935a810d0fef46"></a><br/></td></tr>
+<tr class="memitem:ga2acad5b75f7aaeee58cc6f46fbf9b139"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga2acad5b75f7aaeee58cc6f46fbf9b139">ncntf_close</a> (void)</td></tr>
+<tr class="memdesc:ga2acad5b75f7aaeee58cc6f46fbf9b139"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close all NETCONF Event Streams and other parts of the Notifications environment.  <a href="#ga2acad5b75f7aaeee58cc6f46fbf9b139"></a><br/></td></tr>
+<tr class="memitem:ga226e6acf872c57ca4de3847718cfaafe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga226e6acf872c57ca4de3847718cfaafe">ncntf_notif_create</a> (time_t event_time, const char *content)</td></tr>
+<tr class="memdesc:ga226e6acf872c57ca4de3847718cfaafe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new &lt;notification&gt; message with givent eventTime and content.  <a href="#ga226e6acf872c57ca4de3847718cfaafe"></a><br/></td></tr>
+<tr class="memitem:gabc56c72fca74236e9c96f694cf521b67"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gabc56c72fca74236e9c96f694cf521b67">ncntf_notif_free</a> (<a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *ntf)</td></tr>
+<tr class="memdesc:gabc56c72fca74236e9c96f694cf521b67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free notification message.  <a href="#gabc56c72fca74236e9c96f694cf521b67"></a><br/></td></tr>
+<tr class="memitem:ga30691c17b09e98c56d39c9ebfaba1ded"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga30691c17b09e98c56d39c9ebfaba1ded">ncntf_stream_new</a> (const char *name, const char *desc, int replay)</td></tr>
+<tr class="memdesc:ga30691c17b09e98c56d39c9ebfaba1ded"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new NETCONF event stream.  <a href="#ga30691c17b09e98c56d39c9ebfaba1ded"></a><br/></td></tr>
+<tr class="memitem:ga1f8e55f0f292f0514e844e7293e2b6b4"><td class="memItemLeft" align="right" valign="top">char **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga1f8e55f0f292f0514e844e7293e2b6b4">ncntf_stream_list</a> (void)</td></tr>
+<tr class="memdesc:ga1f8e55f0f292f0514e844e7293e2b6b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the list of NETCONF event notifications streams.  <a href="#ga1f8e55f0f292f0514e844e7293e2b6b4"></a><br/></td></tr>
+<tr class="memitem:ga8958e791e810dd07b9121d78c870e8c5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga8958e791e810dd07b9121d78c870e8c5">ncntf_stream_isavailable</a> (const char *name)</td></tr>
+<tr class="memdesc:ga8958e791e810dd07b9121d78c870e8c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test if the given stream is already created and available.  <a href="#ga8958e791e810dd07b9121d78c870e8c5"></a><br/></td></tr>
+<tr class="memitem:gad20222b4bb2d9029cfd620412949d4a0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gad20222b4bb2d9029cfd620412949d4a0">ncntf_event_new</a> (char *stream, time_t etime, <a class="el" href="../../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977">NCNTF_EVENT</a> event,...)</td></tr>
+<tr class="memdesc:gad20222b4bb2d9029cfd620412949d4a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store new event into the specified stream. Parameters are specific for different events.  <a href="#gad20222b4bb2d9029cfd620412949d4a0"></a><br/></td></tr>
+<tr class="memitem:ga999c0dc786381fe91f1158b76bcbdee9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga999c0dc786381fe91f1158b76bcbdee9">ncntf_stream_iter_start</a> (const char *stream)</td></tr>
+<tr class="memdesc:ga999c0dc786381fe91f1158b76bcbdee9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start iteration on the events in the specified stream file. Iteration starts on the first event in the first part of the stream file.  <a href="#ga999c0dc786381fe91f1158b76bcbdee9"></a><br/></td></tr>
+<tr class="memitem:gae9e1a02911f865bbc0f2b4e702b82ed7"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gae9e1a02911f865bbc0f2b4e702b82ed7">ncntf_stream_iter_next</a> (const char *stream, time_t start, time_t stop, time_t *event_time)</td></tr>
+<tr class="memdesc:gae9e1a02911f865bbc0f2b4e702b82ed7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pop the next event record from the stream file. The iteration must be started by nc_ntf_stream_iter_start() function.  <a href="#gae9e1a02911f865bbc0f2b4e702b82ed7"></a><br/></td></tr>
+<tr class="memitem:gabcc3eb5271d1247fc3472c7d7d97c2a4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gabcc3eb5271d1247fc3472c7d7d97c2a4">ncntf_stream_iter_finnish</a> (const char *stream)</td></tr>
+<tr class="memdesc:gabcc3eb5271d1247fc3472c7d7d97c2a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clean all structures used for iteration in the specified stream. This function must be called as a closing function to nc_ntf_stream_iter_start()  <a href="#gabcc3eb5271d1247fc3472c7d7d97c2a4"></a><br/></td></tr>
+<tr class="memitem:gab0ffc4133ed6b2c8cf39a0f69df776a5"><td class="memItemLeft" align="right" valign="top">time_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gab0ffc4133ed6b2c8cf39a0f69df776a5">ncntf_notif_get_time</a> (<a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *notif)</td></tr>
+<tr class="memdesc:gab0ffc4133ed6b2c8cf39a0f69df776a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get Time of the event reported in the notification message.  <a href="#gab0ffc4133ed6b2c8cf39a0f69df776a5"></a><br/></td></tr>
+<tr class="memitem:ga6e2a945082dc8cecd41c7d79a116442e"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga6e2a945082dc8cecd41c7d79a116442e">ncntf_notif_get_content</a> (<a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *notif)</td></tr>
+<tr class="memdesc:ga6e2a945082dc8cecd41c7d79a116442e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get description of the event reported in the notification message.  <a href="#ga6e2a945082dc8cecd41c7d79a116442e"></a><br/></td></tr>
+<tr class="memitem:ga9a085479245b4da6e20fd89892cc7bc1"><td class="memItemLeft" align="right" valign="top">long long int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga9a085479245b4da6e20fd89892cc7bc1">ncntf_dispatch_send</a> (struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *subscribe_rpc)</td></tr>
+<tr class="memdesc:ga9a085479245b4da6e20fd89892cc7bc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start sending notification according to the given &lt;create-subscription&gt; NETCONF RPC request. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated.  <a href="#ga9a085479245b4da6e20fd89892cc7bc1"></a><br/></td></tr>
+<tr class="memitem:ga4aec749f99481d308e38c2f867932a98"><td class="memItemLeft" align="right" valign="top">long long int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga4aec749f99481d308e38c2f867932a98">ncntf_dispatch_receive</a> (struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *subscribe_rpc, void(*process_ntf)(time_t eventtime, const char *content))</td></tr>
+<tr class="memdesc:ga4aec749f99481d308e38c2f867932a98"><td class="mdescLeft">&#160;</td><td class="mdescRight">Subscribe for receiving notifications from the given session according to parameters in the given subscribtion RPC. Received notifications are processed by the given process_ntf callback function. Functions stops when the final notification &lt;notificationComplete&gt; is received or when the session is terminated.  <a href="#ga4aec749f99481d308e38c2f867932a98"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's implementation of NETCONF asynchronous message delivery as defined in RFC 5277. </p>
@@ -174,74 +193,117 @@ Functions</h2></td></tr>
 </div>
 </div>
 <hr/><h2>Enumeration Type Documentation</h2>
-<a class="anchor" id="ga3b304eeb9cb2627b14a2ab5ddc6108c7"></a>
+<a class="anchor" id="gadcf8c532762d57f7d9a5491e6abb9977"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="../../da/d54/group__notifications.html#ga3b304eeb9cb2627b14a2ab5ddc6108c7">NC_NTF_EVENT</a></td>
+          <td class="memname">enum <a class="el" href="../../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977">NCNTF_EVENT</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Enumeration of supported NETCONF event notifications. </p>
 <dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" id="gga3b304eeb9cb2627b14a2ab5ddc6108c7a687f4438132d03549f191dc125ad5822"></a>NC_NTF_ERROR</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggadcf8c532762d57f7d9a5491e6abb9977abd5b82879a0ac7c45f8556154fb6286a"></a>NCNTF_ERROR</em>&nbsp;</td><td>
 <p>error return code </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga3b304eeb9cb2627b14a2ab5ddc6108c7a054cae1a37ad5d1c9a898646b127926c"></a>NC_NTF_GENERIC</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggadcf8c532762d57f7d9a5491e6abb9977a1f1e3c2032baf2542b06052243bd42c9"></a>NCNTF_GENERIC</em>&nbsp;</td><td>
 <p>generic notification not directly supported by libnetconf </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga3b304eeb9cb2627b14a2ab5ddc6108c7a526a49cf0cb9bc9d335f69cca64b65b9"></a>NC_NTF_BASE_CFG_CHANGE</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggadcf8c532762d57f7d9a5491e6abb9977aa440351ba1c82a0dd9e5301a6d03c5ac"></a>NCNTF_REPLAY_COMPLETE</em>&nbsp;</td><td>
+<p>&lt;replayComplete&gt; notification announcing end of Replaying the stream </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggadcf8c532762d57f7d9a5491e6abb9977a0a0d2e20f15e710f1da3dace9a55fc67"></a>NCNTF_NTF_COMPLETE</em>&nbsp;</td><td>
+<p>&lt;notificationComplete&gt; notification announcing end of Notification stream </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggadcf8c532762d57f7d9a5491e6abb9977a9cf730f96784afdb8d783df8dacfab21"></a>NCNTF_BASE_CFG_CHANGE</em>&nbsp;</td><td>
 <p>netconf-config-change (RFC 6470) </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga3b304eeb9cb2627b14a2ab5ddc6108c7ad3665d0b6718127939546008fc9b5493"></a>NC_NTF_BASE_CPBLT_CHANGE</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggadcf8c532762d57f7d9a5491e6abb9977af6adea71e2edc918ae1f7ade6f11ca59"></a>NCNTF_BASE_CPBLT_CHANGE</em>&nbsp;</td><td>
 <p>netconf-capability-change (RFC 6470) </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga3b304eeb9cb2627b14a2ab5ddc6108c7aca518a30d4b9913cc6a75206f0751098"></a>NC_NTF_BASE_SESSION_START</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggadcf8c532762d57f7d9a5491e6abb9977a7e0ecf6ec462565f5bc9a1edfd7d4c6c"></a>NCNTF_BASE_SESSION_START</em>&nbsp;</td><td>
 <p>netconf-session-start (RFC 6470) </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga3b304eeb9cb2627b14a2ab5ddc6108c7abc873754ed0ad6d7f5d07f125e711ced"></a>NC_NTF_BASE_SESSION_END</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggadcf8c532762d57f7d9a5491e6abb9977a1c06188153af81757d0ba8aac0768550"></a>NCNTF_BASE_SESSION_END</em>&nbsp;</td><td>
 <p>netconf-session-end (RFC 6470) </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga3b304eeb9cb2627b14a2ab5ddc6108c7aae079792450c0b1fc5d7720a983ff46d"></a>NC_NTF_BASE_CONFIRMED_COMMIT</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggadcf8c532762d57f7d9a5491e6abb9977a2048b9cca78f499a6f361e9eeb9fa3e5"></a>NCNTF_BASE_CONFIRMED_COMMIT</em>&nbsp;</td><td>
 <p>netconf-configrmed-commit (RFC 6470) </p>
 </td></tr>
 </table>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d7/d62/notifications_8h_source.html#l00049">49</a> of file <a class="el" href="../../d7/d62/notifications_8h_source.html">notifications.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d7/d62/notifications_8h_source.html#l00051">51</a> of file <a class="el" href="../../d7/d62/notifications_8h_source.html">notifications.h</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ga4d93915553fcacdbee9d1031958018dd"></a>
+<a class="anchor" id="ga1e9d948b3807d679482c737da720477d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="../../da/d54/group__notifications.html#ga4d93915553fcacdbee9d1031958018dd">NC_NTF_EVENT_BY</a></td>
+          <td class="memname">enum <a class="el" href="../../da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d">NCNTF_EVENT_BY</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Enumeration of possible source of events. </p>
 <dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" id="gga4d93915553fcacdbee9d1031958018ddad2c851e9e797225fb290f010cbb24031"></a>NC_NTF_EVENT_BY_SERVER</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga1e9d948b3807d679482c737da720477da378e4e13ce4d7f8e1ede2a876fbc30e0"></a>NCNTF_EVENT_BY_SERVER</em>&nbsp;</td><td>
 <p>event is caused by server </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga4d93915553fcacdbee9d1031958018ddab8c2281b6b960ec840431c327e77f03e"></a>NC_NTF_EVENT_BY_USER</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga1e9d948b3807d679482c737da720477dab20423755c56c213cd2567b2bbf1f9c2"></a>NCNTF_EVENT_BY_USER</em>&nbsp;</td><td>
 <p>event is caused by user's action </p>
 </td></tr>
 </table>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d7/d62/notifications_8h_source.html#l00063">63</a> of file <a class="el" href="../../d7/d62/notifications_8h_source.html">notifications.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d7/d62/notifications_8h_source.html#l00067">67</a> of file <a class="el" href="../../d7/d62/notifications_8h_source.html">notifications.h</a>.</p>
 
 </div>
 </div>
 <hr/><h2>Function Documentation</h2>
+<a class="anchor" id="ga2a6cd8e0aaaaf4e1b84d3a498a2a710c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int nc_session_send_notif </td>
+          <td>(</td>
+          <td class="paramtype">struct nc_session *&#160;</td>
+          <td class="paramname"><em>session</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *&#160;</td>
+          <td class="paramname"><em>ntf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Send &lt;notification&gt; message from server to client. </p>
+<dl class="params"><dt>Parameters:</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session to use. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ntf</td><td>&lt;notification&gt; message to send. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>0 on success,<br/>
+ non-zero on error. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="gae0cc31a11f3a6dc9d87bb4de18e2b9d8"></a>
 <div class="memitem">
 <div class="memproto">
@@ -274,7 +336,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_NOTIFICATION means that *notif points to the received &lt;notification&gt; message. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_NOTIFICATION means that *ntf points to the received &lt;notification&gt; message. </dd></dl>
 
 </div>
 </div>
@@ -329,12 +391,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga82799596179348963189c44dadcfe8b2"></a>
+<a class="anchor" id="ga7bfaffda6d2c087477935a810d0fef46"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int nc_ntf_init </td>
+          <td class="memname">int ncntf_init </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -348,12 +410,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga6bc356b6a2fb721e2a3c6b769fe022ba"></a>
+<a class="anchor" id="ga2acad5b75f7aaeee58cc6f46fbf9b139"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void nc_ntf_close </td>
+          <td class="memname">void ncntf_close </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -366,12 +428,48 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga25057ea7760135ab3cf845032ac13a19"></a>
+<a class="anchor" id="ga226e6acf872c57ca4de3847718cfaafe"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void nc_ntf_free </td>
+          <td class="memname"><a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a>* ncntf_notif_create </td>
+          <td>(</td>
+          <td class="paramtype">time_t&#160;</td>
+          <td class="paramname"><em>event_time</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>content</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create new &lt;notification&gt; message with givent eventTime and content. </p>
+<dl class="params"><dt>Parameters:</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">event_time</td><td>Time of the event. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">content</td><td>Description of the event in the XML form. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>Created notification message. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gabc56c72fca74236e9c96f694cf521b67"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ncntf_notif_free </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *&#160;</td>
           <td class="paramname"><em>ntf</em></td><td>)</td>
@@ -390,12 +488,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gaf0cdd566ea34075026c56b2e20e27ce6"></a>
+<a class="anchor" id="ga30691c17b09e98c56d39c9ebfaba1ded"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int nc_ntf_stream_new </td>
+          <td class="memname">int ncntf_stream_new </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>name</em>, </td>
@@ -433,12 +531,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga870f9089fcc41aaff719a0ac44afc3b6"></a>
+<a class="anchor" id="ga1f8e55f0f292f0514e844e7293e2b6b4"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char** nc_ntf_stream_list </td>
+          <td class="memname">char** ncntf_stream_list </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -452,12 +550,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga23b15f8a4245014124ae04a0feda237c"></a>
+<a class="anchor" id="ga8958e791e810dd07b9121d78c870e8c5"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int nc_ntf_stream_isavailable </td>
+          <td class="memname">int ncntf_stream_isavailable </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>name</em></td><td>)</td>
@@ -478,12 +576,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga275220a9ecfb3bef55166f68f1ff81de"></a>
+<a class="anchor" id="gad20222b4bb2d9029cfd620412949d4a0"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int nc_ntf_event_new </td>
+          <td class="memname">int ncntf_event_new </td>
           <td>(</td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>stream</em>, </td>
@@ -497,7 +595,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../da/d54/group__notifications.html#ga3b304eeb9cb2627b14a2ab5ddc6108c7">NC_NTF_EVENT</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977">NCNTF_EVENT</a>&#160;</td>
           <td class="paramname"><em>event</em>, </td>
         </tr>
         <tr>
@@ -517,35 +615,55 @@ Functions</h2></td></tr>
 <p>Store new event into the specified stream. Parameters are specific for different events. </p>
 <h3>Event parameters:</h3>
 <ul>
-<li><a class="el" href="../../da/d54/group__notifications.html#gga3b304eeb9cb2627b14a2ab5ddc6108c7a054cae1a37ad5d1c9a898646b127926c">NC_NTF_GENERIC</a><ul>
-<li><b>char* content</b> Content of the notification as defined in RFC 5277. eventTime is added automatically. The string should be XML formatted.</li>
+<li><a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1f1e3c2032baf2542b06052243bd42c9">NCNTF_GENERIC</a><ul>
+<li><b>const char* content</b> Content of the notification as defined in RFC 5277. eventTime is added automatically. The string should be XML formatted.</li>
 </ul>
 </li>
-<li><a class="el" href="../../da/d54/group__notifications.html#gga3b304eeb9cb2627b14a2ab5ddc6108c7a526a49cf0cb9bc9d335f69cca64b65b9">NC_NTF_BASE_CFG_CHANGE</a><ul>
+<li><a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a9cf730f96784afdb8d783df8dacfab21">NCNTF_BASE_CFG_CHANGE</a><ul>
 <li><a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73" title="Enumeration of supported types of datastores defined by NETCONF.">NC_DATASTORE</a> <b>datastore</b> Specify which datastore has changed.</li>
-<li><a class="el" href="../../da/d54/group__notifications.html#ga4d93915553fcacdbee9d1031958018dd" title="Enumeration of possible source of events.">NC_NTF_EVENT_BY</a> <b>changed_by</b> Specify the source of the change.</li>
+<li><a class="el" href="../../da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d" title="Enumeration of possible source of events.">NCNTF_EVENT_BY</a> <b>changed_by</b> Specify the source of the change.<ul>
+<li>If the value is set to <a class="el" href="../../da/d54/group__notifications.html#gga1e9d948b3807d679482c737da720477dab20423755c56c213cd2567b2bbf1f9c2">NCNTF_EVENT_BY_USER</a>, following parameter is required:</li>
 </ul>
 </li>
-<li><a class="el" href="../../da/d54/group__notifications.html#gga3b304eeb9cb2627b14a2ab5ddc6108c7ad3665d0b6718127939546008fc9b5493">NC_NTF_BASE_CPBLT_CHANGE</a><ul>
+<li><b>const struct nc_session* session</b> Session required the configuration change.</li>
+</ul>
+</li>
+<li><a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977af6adea71e2edc918ae1f7ade6f11ca59">NCNTF_BASE_CPBLT_CHANGE</a><ul>
 <li><b>const struct nc_cpblts* old</b> Old list of capabilities.</li>
 <li><b>const struct nc_cpblts* new</b> New list of capabilities.</li>
-<li><a class="el" href="../../da/d54/group__notifications.html#ga4d93915553fcacdbee9d1031958018dd" title="Enumeration of possible source of events.">NC_NTF_EVENT_BY</a> <b>changed_by</b> Specify the source of the change.</li>
+<li><a class="el" href="../../da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d" title="Enumeration of possible source of events.">NCNTF_EVENT_BY</a> <b>changed_by</b> Specify the source of the change.<ul>
+<li>If the value is set to <a class="el" href="../../da/d54/group__notifications.html#gga1e9d948b3807d679482c737da720477dab20423755c56c213cd2567b2bbf1f9c2">NCNTF_EVENT_BY_USER</a>, following parameter is required:</li>
 </ul>
 </li>
-<li><a class="el" href="../../da/d54/group__notifications.html#gga3b304eeb9cb2627b14a2ab5ddc6108c7aca518a30d4b9913cc6a75206f0751098">NC_NTF_BASE_SESSION_START</a><ul>
-<li><b>const struct nc_session session</b> Started session (<a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca3a417a51dfb315ebb7d1427357a838b2">NC_SESSION_STATUS_DUMMY</a> session is also allowed).</li>
+<li><b>const struct nc_session* session</b> Session required the configuration change.</li>
 </ul>
 </li>
-<li><a class="el" href="../../da/d54/group__notifications.html#gga3b304eeb9cb2627b14a2ab5ddc6108c7abc873754ed0ad6d7f5d07f125e711ced">NC_NTF_BASE_SESSION_END</a><ul>
-<li><a class="el" href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2" title="Enumeration of reasonf of the NETCONF session termination as defined in RFC 6470.">NC_SESSION_TERM_REASON</a> <b>reason</b> Session termination reason.</li>
+<li><a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a7e0ecf6ec462565f5bc9a1edfd7d4c6c">NCNTF_BASE_SESSION_START</a><ul>
+<li><b>const struct nc_session* session</b> Started session (<a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca3a417a51dfb315ebb7d1427357a838b2">NC_SESSION_STATUS_DUMMY</a> session is also allowed).</li>
+</ul>
+</li>
+<li><a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1c06188153af81757d0ba8aac0768550">NCNTF_BASE_SESSION_END</a><ul>
+<li><b>const struct nc_session* session</b> Finnished session (<a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca3a417a51dfb315ebb7d1427357a838b2">NC_SESSION_STATUS_DUMMY</a> session is also allowed).</li>
+<li><a class="el" href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2" title="Enumeration of reasonf of the NETCONF session termination as defined in RFC 6470.">NC_SESSION_TERM_REASON</a> <b>reason</b> Session termination reason.<ul>
+<li>If the value is set to <a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2ad43b0471a6cc0e281bc7eb135a59da00">NC_SESSION_TERM_KILLED</a>, following parameter is required.</li>
+</ul>
+</li>
+<li><b>const char* killed-by-sid</b> The ID of the session that directly caused the session termination. If the session was terminated by a non-NETCONF process unknown to the server, use NULL as the value.</li>
 </ul>
 </li>
 </ul>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000003">Todo:</a></b></dt><dd>Implement this function. </dd></dl>
+<h3>Examples:</h3>
+<ul>
+<li>nc_ntf_event_new("mystream", -1, NCNTF_GENERIC, "&lt;event&gt;something happend&lt;/event&gt;");</li>
+<li>nc_ntf_event_new("netconf", -1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, my_session);</li>
+<li>nc_ntf_event_new("netconf", -1, NCNTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NCNTF_EVENT_BY_SERVER);</li>
+<li>nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_START, my_session);</li>
+<li>nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");</li>
+</ul>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">stream</td><td>Name of the stream where the event will be stored. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">time</td><td>Time of the event, if set to -1, current time is used. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">etime</td><td>Time of the event, if set to -1, current time is used. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">event</td><td>Event type to distinguish following parameters. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>Specific parameters for different event types as described above. </td></tr>
   </table>
@@ -555,12 +673,163 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gabf463ab5d4829f9c0e535015ba82f1b7"></a>
+<a class="anchor" id="ga999c0dc786381fe91f1158b76bcbdee9"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">long long int nc_ntf_dispatch </td>
+          <td class="memname">void ncntf_stream_iter_start </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>stream</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Start iteration on the events in the specified stream file. Iteration starts on the first event in the first part of the stream file. </p>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000002">Todo:</a></b></dt><dd>: thread safety (?thread-specific variables)</dd></dl>
+<dl class="params"><dt>Parameters:</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">stream</td><td>Name of the stream to iterate. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gae9e1a02911f865bbc0f2b4e702b82ed7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* ncntf_stream_iter_next </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>stream</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">time_t&#160;</td>
+          <td class="paramname"><em>start</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">time_t&#160;</td>
+          <td class="paramname"><em>stop</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">time_t *&#160;</td>
+          <td class="paramname"><em>event_time</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pop the next event record from the stream file. The iteration must be started by nc_ntf_stream_iter_start() function. </p>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000003">Todo:</a></b></dt><dd>: thread safety (?thread-specific variables)</dd></dl>
+<dl class="params"><dt>Parameters:</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">stream</td><td>Name of the stream to iterate. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start</td><td>Time of the first event caller is interested in. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">stop</td><td>Time of the last event caller is interested in. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">event_time</td><td>Time of the returned event, NULL if caller does not care. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>Content of the next event in the stream. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gabcc3eb5271d1247fc3472c7d7d97c2a4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ncntf_stream_iter_finnish </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>stream</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Clean all structures used for iteration in the specified stream. This function must be called as a closing function to nc_ntf_stream_iter_start() </p>
+<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000004">Todo:</a></b></dt><dd>: thread safety (?thread-specific variables)</dd></dl>
+<dl class="params"><dt>Parameters:</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">stream</td><td>Name of the iterated stream. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gab0ffc4133ed6b2c8cf39a0f69df776a5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">time_t ncntf_notif_get_time </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *&#160;</td>
+          <td class="paramname"><em>notif</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get Time of the event reported in the notification message. </p>
+<dl class="params"><dt>Parameters:</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">notif</td><td>Notification message. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>Time of the event (as number of seconds since epoch). </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga6e2a945082dc8cecd41c7d79a116442e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* ncntf_notif_get_content </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *&#160;</td>
+          <td class="paramname"><em>notif</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get description of the event reported in the notification message. </p>
+<dl class="params"><dt>Parameters:</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">notif</td><td>Notification message. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>Content of the event description (serialized XML). </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga9a085479245b4da6e20fd89892cc7bc1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">long long int ncntf_dispatch_send </td>
           <td>(</td>
           <td class="paramtype">struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em>, </td>
@@ -579,8 +848,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Start sending of notification according to the given &lt;create-subscription&gt; NETCONF RPC request. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated. </p>
-<dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000004">Todo:</a></b></dt><dd>Implement this function.</dd></dl>
+<p>Start sending notification according to the given &lt;create-subscription&gt; NETCONF RPC request. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session where the notifications will be sent. </td></tr>
@@ -592,12 +860,55 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga4aec749f99481d308e38c2f867932a98"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">long long int ncntf_dispatch_receive </td>
+          <td>(</td>
+          <td class="paramtype">struct nc_session *&#160;</td>
+          <td class="paramname"><em>session</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
+          <td class="paramname"><em>subscribe_rpc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void(*)(time_t eventtime, const char *content)&#160;</td>
+          <td class="paramname"><em>process_ntf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Subscribe for receiving notifications from the given session according to parameters in the given subscribtion RPC. Received notifications are processed by the given process_ntf callback function. Functions stops when the final notification &lt;notificationComplete&gt; is received or when the session is terminated. </p>
+<dl class="params"><dt>Parameters:</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session where the notifications will be sent. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">subscribe_rpc</td><td>&lt;create-subscription&gt; RPC, if any other RPC is given, -1 is returned. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">process_ntf</td><td>Callback function to process content of the notification. If NULL, content of the notification is printed on stdout.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>number of received notifications, -1 on error. </dd></dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Sep 25 2012 10:50:36 for libnetconf by
+    <li class="footer">Generated on Mon Oct 15 2012 15:24:41 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

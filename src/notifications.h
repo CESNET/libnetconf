@@ -242,7 +242,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
  * @brief Subscribe for receiving notifications from the given session
  * according to parameters in the given subscribtion RPC. Received notifications
  * are processed by the given process_ntf callback function. Functions stops
- * when the final notification <notificationComplete> is received or when the
+ * when the final notification \<notificationComplete\> is received or when the
  * session is terminated.
  *
  * @param[in] session NETCONF session where the notifications will be sent.

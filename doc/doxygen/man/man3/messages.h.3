@@ -1,4 +1,4 @@
-.TH "src/messages.h" 3 "Tue Sep 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "src/messages.h" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -124,6 +124,10 @@ Functions to create NETCONF messages\&.
 .br
 .RI "\fIAdd another error description into the existing rpc-reply with <rpc-error> content\&. \fP"
 .ti -1c
+.RI "\fBnc_reply\fP * \fBnc_reply_merge\fP (int count, \fBnc_reply\fP *msg1, \fBnc_reply\fP *msg2,\&.\&.\&.)"
+.br
+.RI "\fIMerge reply messages\&. All messages MUST be of the same type\&. \fP"
+.ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_copyconfig\fP (\fBNC_DATASTORE\fP source, \fBNC_DATASTORE\fP target, const char *data)"
 .br
 .RI "\fICreate <copy-config> NETCONF rpc message\&. \fP"
@@ -159,6 +163,14 @@ Functions to create NETCONF messages\&.
 .RI "\fBnc_rpc\fP * \fBnc_rpc_subscribe\fP (const char *stream, const struct nc_filter *filter, const time_t *start, const time_t *stop)"
 .br
 .RI "\fICreate <create-subsciption> NETCONF rpc message\&. \fP"
+.ti -1c
+.RI "\fBnc_rpc\fP * \fBnc_rpc_commit\fP (void)"
+.br
+.RI "\fICreate <commit> NETCONF rpc message\&. \fP"
+.ti -1c
+.RI "\fBnc_rpc\fP * \fBnc_rpc_discardchanges\fP (void)"
+.br
+.RI "\fICreate <discard-changes> NETCONF rpc message\&. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_generic\fP (const char *data)"
 .br

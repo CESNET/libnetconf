@@ -26,6 +26,7 @@ var messages_8h =
     [ "nc_reply_data", "d5/d48/messages_8h.html#ga4543351c89208bb06fa895be334d59ad", null ],
     [ "nc_reply_error", "d5/d48/messages_8h.html#ga12fd89263289491b84398279e0e449fd", null ],
     [ "nc_reply_error_add", "d5/d48/messages_8h.html#gafb04a6695650d05a07b571ac1410a681", null ],
+    [ "nc_reply_merge", "d5/d48/messages_8h.html#gab1dd4115fe039fe495713168f9b40d34", null ],
     [ "nc_rpc_copyconfig", "d5/d48/messages_8h.html#ga34e288de7d99df065f1e5866144af139", null ],
     [ "nc_rpc_deleteconfig", "d5/d48/messages_8h.html#ga629917bffa41d8c8714cfaa0c0630857", null ],
     [ "nc_rpc_editconfig", "d5/d48/messages_8h.html#ga4fd8840f089561622f01dbdf64ceca42", null ],
@@ -35,5 +36,7 @@ var messages_8h =
     [ "nc_rpc_lock", "d5/d48/messages_8h.html#ga6a03d40e00fbe019a34541a55f3f4a31", null ],
     [ "nc_rpc_unlock", "d5/d48/messages_8h.html#gad843551f9d1ff8be6a118d026e8b995a", null ],
     [ "nc_rpc_subscribe", "d5/d48/messages_8h.html#gafda56cbfe02d24877d0740618aa2de98", null ],
+    [ "nc_rpc_commit", "d5/d48/messages_8h.html#ga7977ca8b562643607b3c846ed36bbb23", null ],
+    [ "nc_rpc_discardchanges", "d5/d48/messages_8h.html#ga337ea7a9b006a79ee5ea615e9d9a5a6f", null ],
     [ "nc_rpc_generic", "d5/d48/messages_8h.html#gaa9ad7fac41fdef0063c2e2793fb19efd", null ]
 ];

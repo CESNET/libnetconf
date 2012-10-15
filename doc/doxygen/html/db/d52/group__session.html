@@ -85,7 +85,7 @@ $(document).ready(function(){initNavTree('db/d52/group__session.html','../../');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -156,8 +156,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gab5beccc3acd15a5ad6499992e24fbe59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to private and public key file used in case of SSH authentication via publickey mechanism.  <a href="#gab5beccc3acd15a5ad6499992e24fbe59"></a><br/></td></tr>
 <tr class="memitem:ga3868d5331db61a5d3a4df3ff5fa33851"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851">nc_session_dummy</a> (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)</td></tr>
 <tr class="memdesc:ga3868d5331db61a5d3a4df3ff5fa33851"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create disconnected session structure.  <a href="#ga3868d5331db61a5d3a4df3ff5fa33851"></a><br/></td></tr>
-<tr class="memitem:ga20b9940ed7af543a05b4bef6e871cedd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga20b9940ed7af543a05b4bef6e871cedd">nc_session_close</a> (struct nc_session *session, const char *msg)</td></tr>
-<tr class="memdesc:ga20b9940ed7af543a05b4bef6e871cedd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close NETCONF connection with the server.  <a href="#ga20b9940ed7af543a05b4bef6e871cedd"></a><br/></td></tr>
+<tr class="memitem:gab55a757ce7a1abc69a9866c96b125abc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gab55a757ce7a1abc69a9866c96b125abc">nc_session_close</a> (struct nc_session *session, <a class="el" href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2">NC_SESSION_TERM_REASON</a> reason)</td></tr>
+<tr class="memdesc:gab55a757ce7a1abc69a9866c96b125abc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close NETCONF connection with the server.  <a href="#gab55a757ce7a1abc69a9866c96b125abc"></a><br/></td></tr>
 <tr class="memitem:gaa5994f45a7031dc931bdf4a3acebedee"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee">nc_session_free</a> (struct nc_session *session)</td></tr>
 <tr class="memdesc:gaa5994f45a7031dc931bdf4a3acebedee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cleanup the session structure and free all allocated resources.  <a href="#gaa5994f45a7031dc931bdf4a3acebedee"></a><br/></td></tr>
 <tr class="memitem:gacebd018e30c3eeb0638bbb428a1741b4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">NC_SESSION_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacebd018e30c3eeb0638bbb428a1741b4">nc_session_get_status</a> (const struct nc_session *session)</td></tr>
@@ -520,7 +520,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga20b9940ed7af543a05b4bef6e871cedd"></a>
+<a class="anchor" id="gab55a757ce7a1abc69a9866c96b125abc"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -533,8 +533,8 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>msg</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2">NC_SESSION_TERM_REASON</a>&#160;</td>
+          <td class="paramname"><em>reason</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -549,7 +549,7 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>Session to close. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">msg</td><td>Human readable reason for SSH session disconnection. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">reason</td><td>Type of the session termination reason. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1241,7 +1241,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Sep 25 2012 10:50:36 for libnetconf by
+    <li class="footer">Generated on Mon Oct 15 2012 15:24:41 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

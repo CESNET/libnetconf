@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Tue Sep 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -81,6 +81,10 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .RI "int \fBnc_reply_error_add\fP (\fBnc_reply\fP *reply, struct nc_err *error)"
 .br
 .RI "\fIAdd another error description into the existing rpc-reply with <rpc-error> content\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBnc_reply_merge\fP (int count, \fBnc_reply\fP *msg1, \fBnc_reply\fP *msg2,\&.\&.\&.)"
+.br
+.RI "\fIMerge reply messages\&. All messages MUST be of the same type\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -333,6 +337,28 @@ Add another error description into the existing rpc-reply with <rpc-error> conte
 \fBReturns:\fP
 .RS 4
 0 on success, non-zero else\&. 
+.RE
+.PP
+
+.SS "\fBnc_reply\fP* nc_reply_merge (intcount, \fBnc_reply\fP *msg1, \fBnc_reply\fP *msg2, \&.\&.\&.)"
+
+.PP
+Merge reply messages\&. All messages MUST be of the same type\&. Function number of <rpc-reply> merges specified by count (at least 2) into one <rpc-reply> message which is returned as a result\&. When merge is successful all input messages are freed and MUST NOT be used after this call\&. When merge fails NULL is returned and input messages are left unchanged\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcount\fP Number of messages to merge 
+.br
+\fImsg1\fP 1st message to merge\&. 
+.br
+\fImsg2\fP 2nd message to merge\&. 
+.br
+\fI\&.\&.\&.\fP Other messages to merge\&. Total number of messages MUST be equal to count\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Pointer to merged reply or NULL in case of failure\&. 
 .RE
 .PP
 

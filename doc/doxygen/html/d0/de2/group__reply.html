@@ -85,7 +85,7 @@ $(document).ready(function(){initNavTree('d0/de2/group__reply.html','../../');})
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -155,6 +155,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga12fd89263289491b84398279e0e449fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create rpc-reply response with &lt;rpc-error&gt; content.  <a href="#ga12fd89263289491b84398279e0e449fd"></a><br/></td></tr>
 <tr class="memitem:gafb04a6695650d05a07b571ac1410a681"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gafb04a6695650d05a07b571ac1410a681">nc_reply_error_add</a> (<a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply, struct nc_err *error)</td></tr>
 <tr class="memdesc:gafb04a6695650d05a07b571ac1410a681"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add another error description into the existing rpc-reply with &lt;rpc-error&gt; content.  <a href="#gafb04a6695650d05a07b571ac1410a681"></a><br/></td></tr>
+<tr class="memitem:gab1dd4115fe039fe495713168f9b40d34"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gab1dd4115fe039fe495713168f9b40d34">nc_reply_merge</a> (int count, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *msg1, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *msg2,...)</td></tr>
+<tr class="memdesc:gab1dd4115fe039fe495713168f9b40d34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merge reply messages. All messages MUST be of the same type.  <a href="#gab1dd4115fe039fe495713168f9b40d34"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's functions for handling NETCONF &lt;rpc-reply&gt; messages. </p>
@@ -603,12 +605,63 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="gab1dd4115fe039fe495713168f9b40d34"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* nc_reply_merge </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td>
+          <td class="paramname"><em>msg1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td>
+          <td class="paramname"><em>msg2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Merge reply messages. All messages MUST be of the same type. </p>
+<p>Function number of &lt;rpc-reply&gt; merges specified by count (at least 2) into one &lt;rpc-reply&gt; message which is returned as a result. When merge is successful all input messages are freed and MUST NOT be used after this call. When merge fails NULL is returned and input messages are left unchanged.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of messages to merge </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">msg1</td><td>1st message to merge. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">msg2</td><td>2nd message to merge. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>Other messages to merge. Total number of messages MUST be equal to count.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>Pointer to merged reply or NULL in case of failure. </dd></dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Sep 25 2012 10:50:36 for libnetconf by
+    <li class="footer">Generated on Mon Oct 15 2012 15:24:41 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

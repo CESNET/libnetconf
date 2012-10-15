@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Tue Sep 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -22,7 +22,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIEnumeration of <rpc> operation types\&. \fP"
 .ti -1c
-.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP, \fBNC_OP_CREATESUBSCRIPTION\fP }"
+.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP, \fBNC_OP_COMMIT\fP, \fBNC_OP_DISCARDCHANGES\fP, \fBNC_OP_CREATESUBSCRIPTION\fP }"
 .br
 .RI "\fIEnumeration of supported <rpc> operations\&. \fP"
 .ti -1c
@@ -138,6 +138,14 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fICreate <unlock> NETCONF rpc message\&. \fP"
 .ti -1c
+.RI "\fBnc_rpc\fP * \fBnc_rpc_commit\fP (void)"
+.br
+.RI "\fICreate <commit> NETCONF rpc message\&. \fP"
+.ti -1c
+.RI "\fBnc_rpc\fP * \fBnc_rpc_discardchanges\fP (void)"
+.br
+.RI "\fICreate <discard-changes> NETCONF rpc message\&. \fP"
+.ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_generic\fP (const char *data)"
 .br
 .RI "\fICreate a generic NETCONF rpc message with specified content\&. \fP"
@@ -219,6 +227,12 @@ unknown/error value
 \fB\fINC_OP_UNLOCK \fP\fP
 <unlock> operation 
 .TP
+\fB\fINC_OP_COMMIT \fP\fP
+<commit> operation 
+.TP
+\fB\fINC_OP_DISCARDCHANGES \fP\fP
+<discard-changes> operation 
+.TP
 \fB\fINC_OP_CREATESUBSCRIPTION \fP\fP
 <create-subscription> operation (RFC 5277) 
 .PP
@@ -234,7 +248,7 @@ Enumeration of supported NETCONF filter types\&.
 \fB\fINC_FILTER_SUBTREE \fP\fP
 NC_FILTER_SUBTREE\&. 
 .PP
-Definition at line 243 of file netconf\&.h\&.
+Definition at line 245 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "const \fBnc_msgid\fP nc_session_send_rpc (struct nc_session *session, \fBnc_rpc\fP *rpc)"
@@ -618,6 +632,24 @@ Create <unlock> NETCONF rpc message\&. \fBParameters:\fP
 .RE
 .PP
 \fBReturns:\fP
+.RS 4
+Created rpc message\&. 
+.RE
+.PP
+
+.SS "\fBnc_rpc\fP* nc_rpc_commit (void)"
+
+.PP
+Create <commit> NETCONF rpc message\&. \fBReturns:\fP
+.RS 4
+Created rpc message\&. 
+.RE
+.PP
+
+.SS "\fBnc_rpc\fP* nc_rpc_discardchanges (void)"
+
+.PP
+Create <discard-changes> NETCONF rpc message\&. \fBReturns:\fP
 .RS 4
 Created rpc message\&. 
 .RE

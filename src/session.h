@@ -303,7 +303,7 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
  * @brief Send \<notification\> message from server to client
  *
  * @param[in] session NETCONF session to use.
- * @param[in[ ntf \<notification\> message to send.
+ * @param[in] ntf \<notification\> message to send.
  * @return 0 on success,\n non-zero on error.
  */
 int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf);

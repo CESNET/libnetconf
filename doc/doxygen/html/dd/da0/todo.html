@@ -85,7 +85,7 @@ $(document).ready(function(){initNavTree('dd/da0/todo.html','../../');});
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -100,16 +100,20 @@ $(document).ready(function(){initNavTree('dd/da0/todo.html','../../');});
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><dl class="reflist">
-<dt><a class="anchor" id="_todo000004"></a>Global <a class="el" href="../../da/d54/group__notifications.html#gabf463ab5d4829f9c0e535015ba82f1b7">nc_ntf_dispatch</a>  (struct nc_session *session, const nc_rpc *subscribe_rpc)</dt>
-<dd><p class="startdd">Implement this function.</p>
+<dt><a class="anchor" id="_todo000004"></a>Global <a class="el" href="../../da/d54/group__notifications.html#gabcc3eb5271d1247fc3472c7d7d97c2a4">ncntf_stream_iter_finnish</a>  (const char *stream)</dt>
+<dd><p class="startdd">: thread safety (?thread-specific variables)</p>
 <p class="enddd"></p>
 </dd>
-<dt><a class="anchor" id="_todo000003"></a>Global <a class="el" href="../../da/d54/group__notifications.html#ga275220a9ecfb3bef55166f68f1ff81de">nc_ntf_event_new</a>  (char *stream, time_t etime, NC_NTF_EVENT event,...)</dt>
-<dd>Implement this function.  </dd>
-<dt><a class="anchor" id="_todo000002"></a>Global <a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b">NCDS_TYPE_EMPTY</a>  </dt>
-<dd>Implement functions  </dd>
+<dt><a class="anchor" id="_todo000003"></a>Global <a class="el" href="../../da/d54/group__notifications.html#gae9e1a02911f865bbc0f2b4e702b82ed7">ncntf_stream_iter_next</a>  (const char *stream, time_t start, time_t stop, time_t *event_time)</dt>
+<dd><p class="startdd">: thread safety (?thread-specific variables)</p>
+<p class="enddd"></p>
+</dd>
+<dt><a class="anchor" id="_todo000002"></a>Global <a class="el" href="../../da/d54/group__notifications.html#ga999c0dc786381fe91f1158b76bcbdee9">ncntf_stream_iter_start</a>  (const char *stream)</dt>
+<dd><p class="startdd">: thread safety (?thread-specific variables)</p>
+<p class="enddd"></p>
+</dd>
 <dt><a class="anchor" id="_todo000001"></a>page <a class="el" href="../../index.html">NETCONF library - libnetconf</a>  </dt>
-<dd>some common function to performi this type of requests will be added.<br/>
+<dd>some common function to perform this type of requests will be added.<br/>
 </dd>
 </dl>
 </div></div><!-- contents -->
@@ -117,7 +121,7 @@ $(document).ready(function(){initNavTree('dd/da0/todo.html','../../');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Sep 25 2012 10:50:36 for libnetconf by
+    <li class="footer">Generated on Mon Oct 15 2012 15:24:41 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>
