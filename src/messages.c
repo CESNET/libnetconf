@@ -1088,7 +1088,7 @@ nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
 	nc_reply ** to_merge = NULL;
 	NC_REPLY_TYPE type;
 	va_list ap;
-	int i, len;
+	int i, len = 0;
 	char * tmp, * data = NULL;
 
 	/* minimal 2 massages */

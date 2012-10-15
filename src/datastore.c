@@ -388,12 +388,11 @@ int attrcmp(xmlNodePtr reference, xmlNodePtr node)
  * \return              1 if config is filter output, 0 otherelse
  */
 
-static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter, xmlDocPtr model)
+static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 {
 	xmlNodePtr config_node = config;
 	xmlNodePtr filter_node = filter;
 	xmlNodePtr delete = NULL, delete2 = NULL;
-	keyList keys;
 
 	int filter_in = 0, sibling_in = 0, end_node = 0, sibling_selection = 0;
 
@@ -473,7 +472,25 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter, xmlDocPtr 
 						xmlUnlinkNode(delete);
 						xmlFreeNode(delete);
 					} else {
-						config_node = config_node->next;
+						/* recursively process subtree filter */
+						if (filter_node && filter_node->children && (filter_node->children->type == XML_ELEMENT_NODE) &&
+								config_node->children && (config_node->children->type == XML_ELEMENT_NODE)) {
+							sibling_in = ncxml_subtree_filter(config_node->children, filter_node->children);
+						}
+						if (sibling_selection && sibling_in == 0) {
+							/* subtree is not a content of the filter output */
+							delete = config_node;
+
+							/* remeber where to go next */
+							config_node = config_node->next;
+
+							/* and remove unwanted subtree */
+							xmlUnlinkNode(delete);
+							xmlFreeNode(delete);
+						} else {
+							/* go to the next sibling */
+							config_node = config_node->next;
+						}
 					}
 				}
 			} else {
@@ -481,13 +498,11 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter, xmlDocPtr 
 			}
 		}
 	} else {
-		/* get all keys from data model */
-		keys = get_keynode_list(model);
-
 		/* this is containment node (no sibling node is content match node */
 		filter_node = filter;
 		while (filter_node) {
-			if (matching_elements(filter_node, config, keys) &&
+			if (!strcmp((char *)filter_node->name, (char *)config->name) &&
+					!nc_nscmp(filter_node, config) &&
 					!attrcmp(filter_node, config)) {
 				filter_in = 1;
 				break;
@@ -497,10 +512,11 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter, xmlDocPtr 
 
 		if (filter_in == 1) {
 			while (config->children && filter_node && filter_node->children &&
-					((filter_in = ncxml_subtree_filter(config->children, filter_node->children, model)) == 0)) {
+					((filter_in = ncxml_subtree_filter(config->children, filter_node->children)) == 0)) {
 				filter_node = filter_node->next;
 				while (filter_node) {
-					if (matching_elements(filter_node, config, keys) &&
+					if (!strcmp((char *)filter_node->name, (char *)config->name) &&
+							!nc_nscmp(filter_node, config) &&
 							!attrcmp(filter_node, config)) {
 						filter_in = 1;
 						break;
@@ -520,7 +536,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter, xmlDocPtr 
 		}
 		/* filter next sibling node */
 		if (config->next != NULL) {
-			if (ncxml_subtree_filter(config->next, filter, model) == 0) {
+			if (ncxml_subtree_filter(config->next, filter) == 0) {
 				delete = config->next;
 				xmlUnlinkNode(delete);
 				xmlFreeNode(delete);
@@ -537,7 +553,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter, xmlDocPtr 
 	return filter_in;
 }
 
-int ncxml_filter(xmlDocPtr data, const struct nc_filter * filter, xmlDocPtr model)
+int ncxml_filter(xmlDocPtr data, const struct nc_filter * filter)
 {
 	xmlDocPtr filter_doc;
 	int ret = EXIT_FAILURE;
@@ -551,7 +567,7 @@ int ncxml_filter(xmlDocPtr data, const struct nc_filter * filter, xmlDocPtr mode
 		if ((filter_doc = xmlReadDoc(BAD_CAST filter->content, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN)) == NULL) {
 			return EXIT_FAILURE;
 		}
-		ret = ncxml_subtree_filter(data->children, filter_doc->children, model);
+		ret = ncxml_subtree_filter(data->children, filter_doc->children);
 		xmlFreeDoc(filter_doc);
 		break;
 	default:
@@ -707,7 +723,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 
 		/* if filter specified, now is good time to apply it */
 		if ((filter = nc_rpc_get_filter(rpc)) != NULL) {
-			ncxml_filter(doc_merged, filter, ds->model);
+			ncxml_filter(doc_merged, filter);
 		}
 
 		/* dump the result */
@@ -746,7 +762,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 
 		/* if filter specified, now is good time to apply it */
 		if ((filter = nc_rpc_get_filter(rpc)) != NULL) {
-			ncxml_filter(doc_merged, filter, ds->model);
+			ncxml_filter(doc_merged, filter);
 		}
 
 		/* dump the result */
