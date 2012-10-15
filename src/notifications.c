@@ -1618,7 +1618,7 @@ time_t ncntf_notif_get_time(nc_ntf* notif)
 long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subscribe_rpc)
 {
 	long long int count = 0;
-	char* stream = NULL, *event = NULL;
+	char* stream = NULL, *event = NULL, *time_s = NULL;
 	xmlDocPtr eventDoc;
 	nc_ntf* ntf;
 
@@ -1666,7 +1666,8 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 		return (-1);
 	}
 	asprintf(&event, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
-			"<eventTime>%s</eventTime><notificationComplete/></notification>", nc_time2datetime(time(NULL)));
+			"<eventTime>%s</eventTime><notificationComplete/></notification>", time_s = nc_time2datetime(time(NULL)));
+	free (time_s);
 	ntf->doc = xmlReadMemory(event, strlen(event), NULL, NULL, 0);
 	ntf->msgid = NULL;
 	ntf->error = NULL;
