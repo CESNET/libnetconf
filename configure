@@ -2372,7 +2372,7 @@ USERMAIL=`git config --get user.email`
 CONFIGURE_PWD=`pwd`
 
 
-LIBS="-lutil"
+LIBS="-lrt -lutil"
 
 # Check for pkg-config.
 # Extract the first word of "pkg-config", so it can be a program name with args.
