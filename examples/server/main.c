@@ -41,6 +41,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <syslog.h>
+#include <pthread.h>
+
 #include <event2/event.h>
 
 #include "../../src/libnetconf.h"
@@ -52,6 +54,11 @@ struct srv_config {
 	ncds_id dsid;
 	struct event_base *event_base;
 	struct event *event_input;
+};
+
+struct ntf_thread_config {
+	struct nc_session *session;
+	nc_rpc *subscribe_rpc;
 };
 
 void clb_print(NC_VERB_LEVEL level, const char* msg)
@@ -79,13 +86,28 @@ void print_version()
 	fprintf(stdout, "compile time: %s, %s\n", __DATE__, __TIME__);
 }
 
+void* notification_thread(void* arg)
+{
+	struct ntf_thread_config *config = (struct ntf_thread_config*)arg;
+
+	ncntf_dispatch_send(config->session, config->subscribe_rpc);
+	nc_rpc_free(config->subscribe_rpc);
+	free(config);
+
+	return (NULL);
+}
+
 void process_rpc(evutil_socket_t in, short events, void *arg)
 {
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
 	NC_RPC_TYPE req_type;
 	NC_OP req_op;
+	struct nc_err *e;
+	int ret;
 	struct srv_config *config = (struct srv_config*)arg;
+	struct ntf_thread_config *ntf_config = NULL;
+	pthread_t thread;
 
 	/* receive incoming message */
 	if ((nc_session_recv_rpc(config->session, &rpc) == 0)
@@ -111,16 +133,27 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
 			break;
 		case NC_OP_CREATESUBSCRIPTION:
-			reply = nc_reply_ok();
-			nc_session_send_reply(config->session, rpc, reply);
-			nc_reply_free(reply);
+			if ((ntf_config = malloc(sizeof(struct ntf_thread_config))) == NULL) {
+				clb_print(NC_VERB_ERROR, "Memory allocation failed.\n");
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Memory allocation failed.");
+				reply = nc_reply_error(e);
+				e = NULL;
+				break;
+			}
+			ntf_config->session = config->session;
+			ntf_config->subscribe_rpc = nc_msg_dup((struct nc_msg*)rpc);
 
 			/* perform notification sending */
-			ncntf_dispatch_send(config->session, rpc);
-			nc_rpc_free(rpc);
-
-			return;
-
+			if ((ret = pthread_create(&thread, NULL, notification_thread, ntf_config)) != 0) {
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Creating thread for sending Notifications failed.");
+				reply = nc_reply_error(e);
+				e = NULL;
+			} else {
+				reply = nc_reply_ok();
+			}
+			pthread_detach(thread);
 			break;
 		default:
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
@@ -133,11 +166,6 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 		case NC_OP_GETCONFIG:
 			reply = ncds_apply_rpc(config->dsid, config->session, rpc);
 			break;
-/*
-		case NC_OP_GET:
-			reply = nc_reply_data("<libnetconf-server xmlns=\"urn:cesnet:tmc:libnetconf-server:0.1\"><version>" VERSION "</version></libnetconf-server>");
-			break;
-*/
 		default:
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
 			break;
@@ -243,6 +271,7 @@ int main(int argc, char *argv[])
 	}
 	nc_session_free(config.session);
 	ncntf_close();
+	ncds_free(datastore);
 
 	/* bye, bye */
 	return (EXIT_SUCCESS);
