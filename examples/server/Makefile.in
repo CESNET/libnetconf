@@ -60,11 +60,11 @@ OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 all: $(NAME) $(SUBDIRS)
 
 $(NAME): $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LIBS) $(OBJS) -o $(NAME)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OBJS) $(LIBS) -o $(NAME)
 
 .PHONY: static
 static: $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -levent ../../libnetconf.a $(OBJS) -o $(NAME)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OBJS) ../../libnetconf.a -levent -o $(NAME)
 
 $(OBJDIR)/%.o: %.c
 	@[ -d $$(dirname $@) ] || \

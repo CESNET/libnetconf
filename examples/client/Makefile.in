@@ -56,20 +56,20 @@ SRCS =  main.c \
 	configuration.c \
 	mreadline.c
 
-HDRS = commands.h \
+HDRS = 	commands.h \
 	configuration.h \
-       mreadline.h
+	mreadline.h
 
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LIBS) $(OBJS) -o $(NAME)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OBJS) $(LIBS) -o $(NAME)
 
 .PHONY: static
 static: $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -lreadline ../../libnetconf.a $(OBJS) -o $(NAME)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OBJS) ../../libnetconf.a -lreadline -o $(NAME)
 
 $(OBJDIR)/%.o: %.c
 	@[ -d $$(dirname $@) ] || \

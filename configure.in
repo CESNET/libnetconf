@@ -57,7 +57,7 @@ AC_SUBST(USERMAIL)
 CONFIGURE_PWD=`pwd`
 AC_SUBST(CONFIGURE_PWD)
 
-LIBS="-lutil"
+LIBS="-lrt -lutil"
 
 # Check for pkg-config.
 AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
