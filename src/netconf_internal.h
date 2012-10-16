@@ -412,4 +412,12 @@ time_t nc_datetime2time(const char* datetime);
  */
 struct nc_err* nc_err_parse(nc_reply* reply);
 
+/**
+ * @brief Apply filter on the given XML document.
+ * @param data XML document to be filtered.
+ * @param filter Filter to apply. Only 'subtree' filters are supported.
+ * @return 0 on success,\n non-zero else
+ */
+int ncxml_filter(xmlDocPtr data, const struct nc_filter *filter);
+
 #endif /* NETCONF_INTERNAL_H_ */

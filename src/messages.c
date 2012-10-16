@@ -578,14 +578,14 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 {
 	struct nc_filter * retval = NULL;
-	xmlNodePtr filter_node;
+	xmlNodePtr filter_node, filter_child;
 	xmlBufferPtr buf;
 
 	if (rpc != NULL && rpc->doc != NULL &&
 			rpc->doc->children != NULL &&
 			rpc->doc->children->children != NULL &&
 			rpc->doc->children->children->children != NULL) {
-		if (nc_rpc_get_op(rpc) == NC_OP_GET || nc_rpc_get_op(rpc) == NC_OP_GETCONFIG) {
+		if (nc_rpc_get_op(rpc) == NC_OP_GET || nc_rpc_get_op(rpc) == NC_OP_GETCONFIG || nc_rpc_get_op(rpc) == NC_OP_CREATESUBSCRIPTION) {
 			/* doc -> <rpc> -> <op> -> <param> */
 			filter_node = rpc->doc->children->children->children;
 			while (filter_node) {
@@ -599,7 +599,9 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 					if (xmlStrEqual(BAD_CAST retval->type_string, BAD_CAST "subtree")) {
 						retval->type = NC_FILTER_SUBTREE;
 						buf = xmlBufferCreate();
-						xmlNodeDump(buf, rpc->doc, filter_node->children, 1, 1);
+						for (filter_child = filter_node->children; filter_child != NULL; filter_child = filter_child->next) {
+							xmlNodeDump(buf, rpc->doc, filter_child, 1, 1);
+						}
 						retval->content = strdup((char*) xmlBufferContent(buf));
 						xmlBufferFree(buf);
 					} else {

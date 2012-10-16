@@ -1603,6 +1603,168 @@ time_t ncntf_notif_get_time(nc_ntf* notif)
 }
 
 /**
+ * @return 0 on success,\n -1 on general error (invalid rpc),\n -2 on filter error (filter set but it is invalid)
+ */
+static int get_subscription_params(const nc_rpc* subscribe_rpc, char **stream, time_t *start, time_t *stop, struct nc_filter** filter)
+{
+	xmlXPathContextPtr srpc_ctxt = NULL;
+	xmlXPathObjectPtr result = NULL;
+	xmlChar* datetime;
+
+	if (subscribe_rpc == NULL || nc_rpc_get_op(subscribe_rpc) != NC_OP_CREATESUBSCRIPTION) {
+		return (-1);
+	}
+
+	/* create xpath evaluation context */
+	if ((srpc_ctxt = xmlXPathNewContext(subscribe_rpc->doc)) == NULL) {
+		ERROR("%s: Creating XPath context failed.", __func__);
+		return (-1);
+	}
+	if (xmlXPathRegisterNs(srpc_ctxt, BAD_CAST "ntf", BAD_CAST NC_NS_CAP_NOTIFICATIONS) != 0) {
+		ERROR("%s: Registering namespace for XPath context failed.", __func__);
+		xmlXPathFreeContext(srpc_ctxt);
+		return (-1);
+	}
+
+	/* get stream name from subscription */
+	if (stream != NULL) {
+		result = xmlXPathEvalExpression(BAD_CAST "/ntf:create-subscription/ntf:stream", srpc_ctxt);
+		if (result == NULL || result->nodesetval == NULL || result->nodesetval->nodeNr != 1) {
+			/* use default stream 'netconf' */
+			*stream = strdup("netconf");
+		} else {
+			*stream = (char*) (xmlNodeGetContent(result->nodesetval->nodeTab[0]));
+		}
+		if (result != NULL) {
+			xmlXPathFreeObject(result);
+		}
+	}
+
+	/* get startTime from the subscription */
+	if (start != NULL) {
+		result = xmlXPathEvalExpression(BAD_CAST "//ntf:create-subscription/ntf:startTime", srpc_ctxt);
+		if (result == NULL || result->nodesetval == NULL || result->nodesetval->nodeNr != 1) {
+			*start = -1;
+		} else {
+			*start = nc_datetime2time((char*) (datetime = xmlNodeGetContent(result->nodesetval->nodeTab[0])));
+			if (datetime != NULL) {
+				xmlFree(datetime);
+			}
+		}
+		if (result != NULL) {
+			xmlXPathFreeObject(result);
+		}
+	}
+
+	/* get stopTime from the subscription */
+	if (stop != NULL) {
+		result = xmlXPathEvalExpression(BAD_CAST "//ntf:create-subscription/ntf:stopTime", srpc_ctxt);
+		if (result == NULL || result->nodesetval == NULL || result->nodesetval->nodeNr != 1) {
+			*stop = -1;
+		} else {
+			*stop = nc_datetime2time((char*) (datetime = xmlNodeGetContent(result->nodesetval->nodeTab[0])));
+			if (datetime != NULL) {
+				xmlFree(datetime);
+			}
+		}
+		if (result != NULL) {
+			xmlXPathFreeObject(result);
+		}
+	}
+
+	/* get filter from the subscription */
+	if (filter != NULL) {
+		result = xmlXPathEvalExpression(BAD_CAST "//ntf:create-subscription/ntf:filter", srpc_ctxt);
+		if (result == NULL || result->nodesetval == NULL || result->nodesetval->nodeNr != 1) {
+			/* do nothing - filter is not specified */
+		} else {
+			/* filter exist, check its correctness */
+			if ((*filter = nc_rpc_get_filter(subscribe_rpc)) == NULL) {
+				return (-2);
+			}
+		}
+		if (result != NULL) {
+			xmlXPathFreeObject(result);
+		}
+	}
+	xmlXPathFreeContext(srpc_ctxt);
+	return (0);
+}
+
+nc_reply *ncntf_check_subscription(const nc_rpc* subscribe_rpc)
+{
+	struct nc_err* e;
+	char *stream = NULL, *auxs = NULL;
+	struct nc_filter *filter = NULL;
+	time_t start, stop;
+
+	if (subscribe_rpc == NULL || nc_rpc_get_op(subscribe_rpc) != NC_OP_CREATESUBSCRIPTION) {
+		return (nc_reply_error(nc_err_new(NC_ERR_INVALID_VALUE)));
+	}
+
+	switch(get_subscription_params(subscribe_rpc, &stream, &start, &stop, &filter)) {
+	case 0:
+		/* everything ok */
+		break;
+	case -1:
+		/* rpc is invalid */
+		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
+		break;
+	case -2:
+		/* filter is invalid */
+		e = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
+		nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
+		return (nc_reply_error(e));
+		break;
+	default:
+		/* unknown error */
+		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
+		break;
+	}
+
+	/* check existence of the stream */
+	pthread_mutex_lock(streams_mut);
+	if (nc_ntf_stream_get(stream) == NULL) {
+		pthread_mutex_unlock(streams_mut);
+		e = nc_err_new(NC_ERR_INVALID_VALUE);
+		asprintf(&auxs, "Requested stream \'%s\' does not exist.", stream);
+		nc_err_set(e, NC_ERR_PARAM_MSG, auxs);
+		free(auxs);
+		return (nc_reply_error(e));
+	}
+	pthread_mutex_unlock(streams_mut);
+
+	/* check start and stop times */
+	if ((stop != -1) && (start == -1)) {
+		e = nc_err_new(NC_ERR_MISSING_ELEM);
+		nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
+		nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "startTime");
+		return (nc_reply_error(e));
+	}
+	if (stop != -1 && start != -1 && start < stop) {
+		e = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
+		nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "stopTime");
+		return (nc_reply_error(e));
+	}
+	if (start != -1 && start > time(NULL)) {
+		e = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
+		nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "startTime");
+		return (nc_reply_error(e));
+	}
+
+	/* free unnecessary values */
+	nc_filter_free(filter);
+	free (stream);
+
+	/* all is checked and correct */
+
+	return(nc_reply_ok());
+}
+
+/**
  * @ingroup notifications
  * @brief Start sending notification according to the given
  * \<create-subscription\> NETCONF RPC request. All events from the specified
@@ -1619,8 +1781,12 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 {
 	long long int count = 0;
 	char* stream = NULL, *event = NULL, *time_s = NULL;
-	xmlDocPtr eventDoc;
+	struct nc_filter *filter = NULL;
+	time_t start, stop;
+	xmlDocPtr event_doc, filter_doc;
+	xmlNodePtr event_node, aux_node, nodelist = NULL;
 	nc_ntf* ntf;
+	nc_reply *reply;
 
 	if (session == NULL ||
 			session->status != NC_SESSION_STATUS_WORKING ||
@@ -1630,22 +1796,87 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 		return (-1);
 	}
 
-	/* get stream name from subscription */
-	/* \todo */
-	stream = "netconf";
+	/* check subscription rpc */
+	reply = ncntf_check_subscription(subscribe_rpc);
+	if (nc_reply_get_type(reply) != NC_REPLY_OK) {
+		ERROR("%s: create-subscription check failed (%s).", __func__, nc_reply_get_errormsg(reply));
+		nc_reply_free(reply);
+		return (-1);
+	}
+	nc_reply_free(reply);
 
-	/* get time boundaries from subscription message */
-	/* \todo */
+	/* get parameters from subscription */
+	if (get_subscription_params(subscribe_rpc, &stream, &start, &stop, &filter) != 0 ) {
+		ERROR("Parsing create-subscription for parameters failed.");
+		return (-1);
+	}
+
+	/* prepare xml doc for filtering */
+	filter_doc = xmlNewDoc(BAD_CAST "1.0");
+	filter_doc->encoding = xmlStrdup(BAD_CAST UTF8);
 
 	ncntf_stream_iter_start(stream);
-	while((event = ncntf_stream_iter_next(stream, -1, -1, NULL)) != NULL) {
-		if ((eventDoc = xmlReadMemory(event, strlen(event), NULL, NULL, 0)) != NULL) {
+	while((event = ncntf_stream_iter_next(stream, start, stop, NULL)) != NULL) {
+		if ((event_doc = xmlReadMemory(event, strlen(event), NULL, NULL, 0)) != NULL) {
+			/* apply filter */
+			if (filter != NULL) {
+
+				/* filter all content nodes in notification */
+				event_node = event_doc->children->children; /* doc -> <notification> -> <something> */
+				while (event_node != NULL) {
+					/* skip invalid nodes */
+					if (event_node->name == NULL || event_node->ns == NULL || event_node->ns->href == NULL) {
+						event_node = event_node->next;
+						continue;
+					}
+
+					/* skip eventTime element */
+					if (xmlStrcmp(event_node->name, BAD_CAST "eventTime") == 0 &&
+							xmlStrcmp(event_node->ns->href, BAD_CAST NC_NS_CAP_NOTIFICATIONS) == 0) {
+						event_node = event_node->next;
+						continue;
+					}
+
+					/* filter notification content */
+					xmlDocSetRootElement(filter_doc, xmlCopyNode(event_node, 1));
+
+					/* detach and free currently filtered node from the original document */
+					aux_node = event_node;
+					event_node = event_node->next; /* find the next node to filter */
+					xmlUnlinkNode(aux_node);
+					xmlFreeNode(aux_node);
+
+					/* filter the data */
+					if (ncxml_filter(filter_doc, filter) != 0) {
+						ERROR("Filter failed.");
+						continue;
+					}
+
+					if (filter_doc->children != NULL) {
+						aux_node = filter_doc->children;
+						xmlUnlinkNode(aux_node);
+						aux_node->next = nodelist;
+						nodelist = aux_node;
+					}
+				}
+
+				if (nodelist != NULL) {
+					xmlAddChildList(event_doc->children, aux_node); /* into doc -> <notification> */
+					nodelist = NULL;
+				} else {
+					/* nothing to send */
+					xmlFreeDoc(event_doc);
+					free(event);
+					continue;
+				}
+			}
+
 			ntf = malloc(sizeof(nc_rpc));
 			if (ntf == NULL) {
 				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 				return (-1);
 			}
-			ntf->doc = eventDoc;
+			ntf->doc = event_doc;
 			ntf->msgid = NULL;
 			ntf->error = NULL;
 			ntf->with_defaults = NCDFLT_MODE_DISABLED;
@@ -1657,6 +1888,8 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 		}
 		free(event);
 	}
+	xmlFreeDoc(filter_doc);
+	nc_filter_free(filter);
 	ncntf_stream_iter_finnish(stream);
 
 	/* send notificationComplete Notification */
