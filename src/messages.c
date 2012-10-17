@@ -779,6 +779,16 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 	return (dupmsg);
 }
 
+nc_rpc *nc_rpc_dup(const nc_rpc* rpc)
+{
+	return ((nc_rpc*)nc_msg_dup((struct nc_msg*)rpc));
+}
+
+nc_reply *nc_reply_dup(const nc_reply* reply)
+{
+	return ((nc_reply*)nc_msg_dup((struct nc_msg*)reply));
+}
+
 nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
 {
 	nc_rpc *msg;

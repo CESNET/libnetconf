@@ -71,6 +71,22 @@ void nc_filter_free(struct nc_filter *filter);
 char* nc_reply_dump (const nc_reply *reply);
 
 /**
+ * @ingroup rpc
+ * @brief Duplicate \<rpc\> message.
+ * @param[in] rpc \<rpc\> message to replicate.
+ * @return Copy of the given \<rpc\> message.
+ */
+nc_rpc *nc_rpc_dup(const nc_rpc* rpc);
+
+/**
+ * @ingroup reply
+ * @brief Duplicate \<reply\> message.
+ * @param[in] reply \<reply\> message to replicate.
+ * @return Copy of the given \<reply\> message.
+ */
+nc_reply *nc_reply_dup(const nc_reply* reply);
+
+/**
  * @ingroup reply
  * @brief Build \<rpc-reply\> message from the string.
  * This is the reverse function of the nc_reply_dump().
