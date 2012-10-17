@@ -592,9 +592,16 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 				if (xmlStrEqual(filter_node->name, BAD_CAST "filter")) {
 					retval = malloc(sizeof(struct nc_filter));
 					retval->type_string = (char*) xmlGetProp(filter_node, BAD_CAST "type");
-					/* implicit filter type is NC_FILTER_SUBTREE */
+					/* set filter type */
 					if (retval->type_string == NULL) {
+						/* implicit filter type is NC_FILTER_SUBTREE */
 						retval->type_string = strdup("subtree");
+						retval->type = NC_FILTER_SUBTREE;
+					} else if (strcmp(retval->type_string, "subtree") == 0) {
+						retval->type = NC_FILTER_SUBTREE;
+					} else {
+						/* some uknown filter type */
+						retval->type = NC_FILTER_UNKNOWN;
 					}
 					if (xmlStrEqual(BAD_CAST retval->type_string, BAD_CAST "subtree")) {
 						retval->type = NC_FILTER_SUBTREE;

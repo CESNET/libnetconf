@@ -243,6 +243,7 @@ typedef enum NC_DATASTORE_TYPE {
  * @brief Enumeration of supported NETCONF filter types.
  */
 typedef enum NC_FILTER_TYPE {
+	NC_FILTER_UNKNOWN,
 	NC_FILTER_SUBTREE//!< NC_FILTER_SUBTREE
 } NC_FILTER_TYPE;
 
