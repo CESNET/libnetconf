@@ -803,6 +803,11 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 				break;
 			}
 			/* <copy-config> with specified source datastore */
+			if (target_ds == source_ds) {
+				e = nc_err_new(NC_ERR_INVALID_VALUE);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Both target and source identify the same datastore.");
+				break;
+			}
 			config = NULL;
 		} else {
 			/*
