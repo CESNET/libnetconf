@@ -361,14 +361,14 @@ static NC_DATASTORE nc_rpc_get_ds (const nc_rpc *rpc, char* ds_type)
 	xmlNodePtr root, ds_node;
 
 	if (rpc == NULL || rpc->doc == NULL) {
-		return NC_DATASTORE_NONE;
+		return NC_DATASTORE_ERROR;
 	}
 
 	if ((root = xmlDocGetRootElement (rpc->doc)) == NULL || !xmlStrEqual (root->name, BAD_CAST "rpc") || root->children == NULL) {
-		return NC_DATASTORE_NONE;
+		return NC_DATASTORE_ERROR;
 	}
 
-	ds_node = root->children->children;
+	ds_node = root->children->children; /* rpc -> op -> source/target */
 	while (ds_node) {
 		if (xmlStrEqual (ds_node->name, BAD_CAST ds_type)) {
 			break;
@@ -377,7 +377,7 @@ static NC_DATASTORE nc_rpc_get_ds (const nc_rpc *rpc, char* ds_type)
 	}
 
 	if (ds_node == NULL || ds_node->children == NULL) {
-		return NC_DATASTORE_NONE;
+		return NC_DATASTORE_ERROR;
 	}
 
 	if (xmlStrEqual (ds_node->children->name, BAD_CAST "candidate")) {
@@ -386,9 +386,11 @@ static NC_DATASTORE nc_rpc_get_ds (const nc_rpc *rpc, char* ds_type)
 		return NC_DATASTORE_RUNNING;
 	} else if (xmlStrEqual (ds_node->children->name, BAD_CAST "startup")) {
 		return NC_DATASTORE_STARTUP;
+	} else if (xmlStrEqual (ds_node->children->name, BAD_CAST "config")) {
+		return NC_DATASTORE_CONFIG;
 	}
 
-	return NC_DATASTORE_NONE;
+	return NC_DATASTORE_ERROR;
 }
 
 NC_DATASTORE nc_rpc_get_source (const nc_rpc *rpc)
@@ -1500,7 +1502,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 		case NC_DATASTORE_CANDIDATE:
 			datastores[i] = "candidate";
 			break;
-		case NC_DATASTORE_NONE:
+		case NC_DATASTORE_CONFIG:
 			if (i == 0) {
 				if (data != NULL) {
 					/* source configuration data are specified as given data */

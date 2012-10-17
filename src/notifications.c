@@ -878,7 +878,6 @@ int ncntf_event_new(char* stream, time_t etime, NCNTF_EVENT event, ...)
 			aux1 = "startup";
 			break;
 		case NC_DATASTORE_RUNNING:
-		case NC_DATASTORE_NONE: /* use default value -> running */
 			aux1 = "running";
 			break;
 		default:

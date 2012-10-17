@@ -748,7 +748,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 	case NC_DATASTORE_CANDIDATE:
 		source_ds = file_ds->candidate->children;
 		break;
-	case NC_DATASTORE_NONE:
+	case NC_DATASTORE_CONFIG:
 		if (config == NULL) {
 			UNLOCK(file_ds);
 			ERROR("%s: invalid source config.", __func__);
