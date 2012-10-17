@@ -845,6 +845,14 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			 * document
 			 */
 			config = nc_rpc_get_config(rpc);
+			if (strcmp(config, "") == 0) {
+				/* config is empty -> ignore rest of magic here,
+				 * go to application of the operation and do
+				 * delete of the datastore (including running)!
+				 */
+				goto apply_editcopyconfig;
+			}
+
 			asprintf(&data, "<config>%s</config>", config);
 			free(config);
 			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
@@ -917,7 +925,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 				xmlFreeDoc(doc1);
 			}
 		}
-
+apply_editcopyconfig:
 		/* perform the operation */
 		if (op == NC_OP_EDITCONFIG) {
 			ret = ds->func.editconfig(ds, session, nc_rpc_get_target(rpc), config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);

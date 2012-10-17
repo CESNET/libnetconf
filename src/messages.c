@@ -437,8 +437,11 @@ char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
 			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
 			return NULL;
 		}
-		for (aux_node = config->children; aux_node != NULL;
-		                aux_node = aux_node->next) {
+		if (config->children == NULL) {
+			/* config is empty */
+			return (strdup(""));
+		}
+		for (aux_node = config->children; aux_node != NULL; aux_node = aux_node->next) {
 			xmlNodeDump(resultbuffer, rpc->doc, aux_node, 2, 1);
 		}
 		retval = strdup((char *) xmlBufferContent(resultbuffer));
