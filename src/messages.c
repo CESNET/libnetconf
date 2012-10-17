@@ -603,19 +603,14 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 						/* some uknown filter type */
 						retval->type = NC_FILTER_UNKNOWN;
 					}
-					if (xmlStrEqual(BAD_CAST retval->type_string, BAD_CAST "subtree")) {
-						retval->type = NC_FILTER_SUBTREE;
-						buf = xmlBufferCreate();
-						for (filter_child = filter_node->children; filter_child != NULL; filter_child = filter_child->next) {
-							xmlNodeDump(buf, rpc->doc, filter_child, 1, 1);
-						}
-						retval->content = strdup((char*) xmlBufferContent(buf));
-						xmlBufferFree(buf);
-					} else {
-						free(retval->type_string);
-						free(retval);
-						retval = NULL;
+
+					buf = xmlBufferCreate();
+					for (filter_child = filter_node->children; filter_child != NULL; filter_child = filter_child->next) {
+						xmlNodeDump(buf, rpc->doc, filter_child, 1, 1);
 					}
+					retval->content = strdup((char*) xmlBufferContent(buf));
+					xmlBufferFree(buf);
+
 					break;
 				}
 				filter_node = filter_node->next;
