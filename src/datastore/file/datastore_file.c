@@ -656,7 +656,7 @@ char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* session,
 		UNLOCK(file_ds);
 		ERROR("%s: invalid target.", __func__);
 		*error = nc_err_new(NC_ERR_BAD_ELEM);
-		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
+		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "source");
 		return (NULL);
 		break;
 	}
