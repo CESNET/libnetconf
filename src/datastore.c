@@ -789,7 +789,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	case NC_OP_EDITCONFIG:
 	case NC_OP_COPYCONFIG:
 
-		if (op == NC_OP_COPYCONFIG && nc_rpc_get_source(rpc) != NC_DATASTORE_NONE) {
+		if (op == NC_OP_COPYCONFIG && nc_rpc_get_source(rpc) != NC_DATASTORE_CONFIG) {
 			/* <copy-config> with specified source datastore */
 			config = NULL;
 		} else {

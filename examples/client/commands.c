@@ -200,7 +200,7 @@ static NC_DATASTORE get_datastore(const char* paramtype, const char* operation, 
 {
 	int valid = 0;
 	char *datastore;
-	NC_DATASTORE retval = NC_DATASTORE_NONE;
+	NC_DATASTORE retval = NC_DATASTORE_ERROR;
 
 	if (index == cmd->count) {
 
@@ -209,7 +209,7 @@ userinput:
 		datastore = malloc (sizeof(char) * BUFFER_SIZE);
 		if (datastore == NULL) {
 			ERROR(operation, "memory allocation error (%s).", strerror (errno));
-			return (NC_DATASTORE_NONE);
+			return (NC_DATASTORE_ERROR);
 		}
 
 		/* repeat user input until valid datastore is selected */
@@ -267,7 +267,7 @@ userinput:
 		}
 	} else {
 		ERROR(operation, "invalid parameters, see \'%s --help\'.", operation);
-		return (NC_DATASTORE_NONE);
+		return (NC_DATASTORE_ERROR);
 	}
 
 	return (retval);
@@ -460,7 +460,7 @@ int cmd_editconfig (char *arg)
 	/* arglist is no more needed */
 	clear_arglist(&cmd);
 
-	if (target == NC_DATASTORE_NONE) {
+	if (target == NC_DATASTORE_ERROR) {
 		return (EXIT_FAILURE);
 	}
 
@@ -545,7 +545,7 @@ int cmd_copyconfig (char *arg)
 	struct stat config_stat;
 	char *config = NULL, *config_m = NULL;
 	NC_DATASTORE target;
-	NC_DATASTORE source = NC_DATASTORE_NONE;
+	NC_DATASTORE source = NC_DATASTORE_ERROR;
 	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
@@ -609,7 +609,7 @@ int cmd_copyconfig (char *arg)
 				source = NC_DATASTORE_CANDIDATE;
 			}
 
-			if (source == NC_DATASTORE_NONE) {
+			if (source == NC_DATASTORE_ERROR) {
 				ERROR("copy-config", "invalid source datastore specified (%s).", optarg);
 				clear_arglist(&cmd);
 				return (EXIT_FAILURE);
@@ -633,12 +633,12 @@ int cmd_copyconfig (char *arg)
 	/* arglist is no more needed */
 	clear_arglist(&cmd);
 
-	if (target == NC_DATASTORE_NONE) {
+	if (target == NC_DATASTORE_ERROR) {
 		return (EXIT_FAILURE);
 	}
 
 	/* check if edit configuration data were specified */
-	if (source == NC_DATASTORE_NONE && config == NULL) {
+	if (source == NC_DATASTORE_ERROR && config == NULL) {
 		/* let user write edit data interactively */
 		INSTRUCTION("Type the content of a configuration datastore (close editor by Ctrl-D):\n");
 		config = mreadline(NULL);
@@ -646,6 +646,7 @@ int cmd_copyconfig (char *arg)
 			ERROR("copy-config", "reading filter failed.");
 			return (EXIT_FAILURE);
 		}
+		source = NC_DATASTORE_CONFIG;
 	}
 
 	/* create requests */
@@ -867,7 +868,7 @@ int cmd_deleteconfig (char *arg)
 	/* arglist is no more needed */
 	clear_arglist(&cmd);
 
-	if (target == NC_DATASTORE_NONE) {
+	if (target == NC_DATASTORE_ERROR) {
 		return (EXIT_FAILURE);
 	}
 
@@ -1174,7 +1175,7 @@ int cmd_getconfig (char *arg)
 	/* arglist is no more needed */
 	clear_arglist(&cmd);
 
-	if (target == NC_DATASTORE_NONE) {
+	if (target == NC_DATASTORE_ERROR) {
 		return (EXIT_FAILURE);
 	}
 
@@ -1292,7 +1293,7 @@ int cmd_un_lock (int op, char *arg)
 	/* arglist is no more needed */
 	clear_arglist(&cmd);
 
-	if (target == NC_DATASTORE_NONE) {
+	if (target == NC_DATASTORE_ERROR) {
 		return (EXIT_FAILURE);
 	}
 

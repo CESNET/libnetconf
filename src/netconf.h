@@ -210,7 +210,8 @@ typedef enum {
  * @ingroup store
  */
 typedef enum NC_DATASTORE_TYPE {
-	NC_DATASTORE_NONE, /**< value describing that no datastore was selected, (usage similar to NULL) */
+	NC_DATASTORE_ERROR, /**< error state of functions returning datastore type */
+	NC_DATASTORE_CONFIG, /**< value describing that datastore is set as config */
 	NC_DATASTORE_RUNNING, /**< base NETCONF's datastore containing current device configuration */
 	NC_DATASTORE_STARTUP, /**< separated startup datastore as defined in Distinct Startup Capability */
 	NC_DATASTORE_CANDIDATE /**< separated working datastore as defined in Candidate Configuration Capability */
