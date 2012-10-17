@@ -742,7 +742,13 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 
 		break;
 	case NC_OP_GETCONFIG:
-		data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), &e);
+		if ((data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), &e)) == NULL) {
+			if (e == NULL) {
+				ERROR ("%s: Failed to get data from datastore (%s:%d).", __func__, __FILE__, __LINE__);
+				e = nc_err_new(NC_ERR_OP_FAILED);
+			}
+			break;
+		}
 		if (strcmp(data, "") == 0) {
 			doc_merged = xmlNewDoc(BAD_CAST "1.0");
 		} else {
