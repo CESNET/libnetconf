@@ -648,6 +648,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlBufferPtr resultbuffer;
 	xmlNodePtr aux_node;
 	NC_OP op;
+	NC_DATASTORE source_ds, target_ds;
 
 	if (rpc->type.rpc != NC_RPC_DATASTORE_READ && rpc->type.rpc != NC_RPC_DATASTORE_WRITE) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
@@ -788,8 +789,19 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		break;
 	case NC_OP_EDITCONFIG:
 	case NC_OP_COPYCONFIG:
+		/* check target element */
+		if ((target_ds = nc_rpc_get_target(rpc)) == NC_DATASTORE_ERROR) {
+			e = nc_err_new(NC_ERR_BAD_ELEM);
+			nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "target");
+			break;
+		}
 
-		if (op == NC_OP_COPYCONFIG && nc_rpc_get_source(rpc) != NC_DATASTORE_CONFIG) {
+		if (op == NC_OP_COPYCONFIG && ((source_ds = nc_rpc_get_source(rpc)) != NC_DATASTORE_CONFIG)) {
+			if (source_ds == NC_DATASTORE_ERROR) {
+				e = nc_err_new(NC_ERR_BAD_ELEM);
+				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "source");
+				break;
+			}
 			/* <copy-config> with specified source datastore */
 			config = NULL;
 		} else {
@@ -874,9 +886,9 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 
 		/* perform the operation */
 		if (op == NC_OP_EDITCONFIG) {
-			ret = ds->func.editconfig(ds, session, nc_rpc_get_target(rpc), config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
+			ret = ds->func.editconfig(ds, session, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 		} else if (op == NC_OP_COPYCONFIG) {
-			ret = ds->func.copyconfig(ds, session, nc_rpc_get_target(rpc), nc_rpc_get_source(rpc), config, &e);
+			ret = ds->func.copyconfig(ds, session, target_ds, source_ds, config, &e);
 		} else {
 			ret = EXIT_FAILURE;
 		}
