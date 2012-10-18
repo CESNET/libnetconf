@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
+#include <pthread.h>
 
 #include <libxml/parser.h>
 
@@ -1534,6 +1535,35 @@ generic_help:
 	return (0);
 }
 
+struct ntf_thread_config {
+	struct nc_session *session;
+	nc_rpc *subscribe_rpc;
+};
+
+FILE *ntf_file = NULL;
+static void notification_fileprint (time_t eventtime, const char* content)
+{
+	char t[128];
+
+	t[0] = 0;
+	if (ntf_file == NULL) {
+		ntf_file = stdout;
+	}
+	strftime(t, sizeof(t), "%c", localtime(&eventtime));
+	fprintf(ntf_file, "eventTime: %s\n%s\n", t, content);
+}
+
+void* notification_thread(void* arg)
+{
+	struct ntf_thread_config *config = (struct ntf_thread_config*)arg;
+
+	ncntf_dispatch_receive(config->session, config->subscribe_rpc, notification_fileprint);
+	nc_rpc_free(config->subscribe_rpc);
+	free(config);
+
+	return (NULL);
+}
+
 void cmd_subscribe_help()
 {
 	fprintf (stdout, "subscribe [--help] [--filter] [--begin <time>] [--end <time>] [<stream>]\n");
@@ -1550,8 +1580,6 @@ int cmd_subscribe(char *arg)
 	char *stream;
 	time_t t, start = -1, stop = -1;
 	nc_rpc *rpc = NULL;
-	nc_reply *reply = NULL;
-	NC_MSG_TYPE type;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"filter", 2, 0, 'f'},
@@ -1561,6 +1589,8 @@ int cmd_subscribe(char *arg)
 			{0, 0, 0, 0}
 	};
 	int option_index = 0;
+	pthread_t thread;
+	struct ntf_thread_config *tconfig;
 
 	/* set back to start to be able to use getopt() repeatedly */
 	optind = 0;
@@ -1640,52 +1670,16 @@ int cmd_subscribe(char *arg)
 		return (EXIT_FAILURE);
 	}
 
-	/* process notifications */
-	if (ncntf_dispatch_receive(session, rpc, NULL) != -1) {
-		return (EXIT_SUCCESS);
-	} else {
+	tconfig = malloc(sizeof(struct ntf_thread_config));
+	tconfig->session = session;
+	tconfig->subscribe_rpc = rpc;
+	if (pthread_create(&thread, NULL, notification_thread, tconfig) != 0) {
+		ERROR("create-subscription", "unexpected operation result.");
+		nc_rpc_free (rpc);
 		return (EXIT_FAILURE);
 	}
-	/* dead code - \todo use threads for notifications */
-
-
-	/* send the request and get the reply */
-	type = nc_session_send_recv(session, rpc, &reply);
-	switch (type) {
-	case NC_MSG_UNKNOWN:
-		nc_rpc_free (rpc);
-		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
-			ERROR("create-subscription", "receiving rpc-reply failed.");
-			INSTRUCTION("Closing the session.\n");
-			cmd_disconnect(NULL);
-			return (EXIT_FAILURE);
-		}
-		return (EXIT_SUCCESS);
-		break;
-	case NC_MSG_NONE:
-		/* NC_REPLY_ERROR was processed by callback function */
-		break;
-	default:
-		/* do nothing */
-		break;
-	}
-	nc_rpc_free (rpc);
-
-	/* parse result */
-	switch (nc_reply_get_type (reply)) {
-	case NC_REPLY_OK:
-		INSTRUCTION("Result OK\n");
-		break;
-	case NC_REPLY_ERROR:
-		/* wtf, you shouldn't be here !?!? */
-		ERROR("create-subscription", "operation failed, but rpc-error was not processed.");
-		break;
-	default:
-		ERROR("create-subscription", "unexpected operation result.");
-		break;
-	}
-	nc_reply_free(reply);
-
+	pthread_detach(thread);
+	INSTRUCTION("Result OK\n");
 	return (EXIT_SUCCESS);
 }
 
