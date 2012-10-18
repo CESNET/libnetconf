@@ -306,17 +306,20 @@ int main(int argc, char *argv[])
 	nc_session_free (dummy_session);
 	/* device initiation done */
 
+	/*
+	 * Initiate Notifications
+	 */
+	clb_print(NC_VERB_DEBUG, "Initiating notification system.");
+	if (ncntf_init() != 0) {
+		clb_print(NC_VERB_WARNING, "Notification system initialization failed.");
+	}
+
 	/* create the NETCONF session -- accept incoming connection */
 	config.session = nc_session_accept(NULL);
 	if (config.session == NULL) {
 		clb_print(NC_VERB_ERROR, "Session not established.\n");
 		return (EXIT_FAILURE);
 	}
-
-	/*
-	 * Initiate Notifications
-	 */
-	ncntf_init();
 
 	/* prepare event base (libevent) */
 	config.event_base = event_base_new();
