@@ -105,6 +105,7 @@ time_t nc_datetime2time(const char* datetime)
 
 	if (strlen(dt) < 20 || dt[4] != '-' || dt[7] != '-' || dt[13] != ':' || dt[16] != ':') {
 		ERROR("Wrong date time format not compliant to RFC 3339.");
+		free(dt);
 		return (-1);
 	}
 
@@ -129,6 +130,7 @@ time_t nc_datetime2time(const char* datetime)
 	} else if (dt[i+3] != ':') {
 		/* wrong format */
 		ERROR("Wrong date time shift format not compliant to RFC 3339.");
+		free(dt);
 		return (-1);
 	} else {
 		shift = strtol(&dt[i], NULL, 10);
@@ -144,6 +146,7 @@ time_t nc_datetime2time(const char* datetime)
 	/* we have to shift to the opposite way to correct the time */
 	retval -= shift;
 
+	free(dt);
 	return (retval);
 }
 
