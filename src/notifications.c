@@ -1749,7 +1749,7 @@ nc_reply *ncntf_check_subscription(const nc_rpc* subscribe_rpc)
 		nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "startTime");
 		return (nc_reply_error(e));
 	}
-	if (stop != -1 && start != -1 && start < stop) {
+	if ((stop != -1) && (start != -1) && (start > stop)) {
 		e = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 		nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "stopTime");
