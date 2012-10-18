@@ -141,17 +141,20 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 				e = NULL;
 				break;
 			}
+			reply = ncntf_check_subscription(rpc);
+			if (nc_reply_get_type (reply) != NC_REPLY_OK) {
+				break;
+			}
 			ntf_config->session = config->session;
 			ntf_config->subscribe_rpc = nc_rpc_dup(rpc);
 
 			/* perform notification sending */
 			if ((ret = pthread_create(&thread, NULL, notification_thread, ntf_config)) != 0) {
+				nc_reply_free(reply);
 				e = nc_err_new(NC_ERR_OP_FAILED);
 				nc_err_set(e, NC_ERR_PARAM_MSG, "Creating thread for sending Notifications failed.");
 				reply = nc_reply_error(e);
 				e = NULL;
-			} else {
-				reply = nc_reply_ok();
 			}
 			pthread_detach(thread);
 			break;
