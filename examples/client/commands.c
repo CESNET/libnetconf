@@ -1540,33 +1540,40 @@ struct ntf_thread_config {
 	nc_rpc *subscribe_rpc;
 };
 
-FILE *ntf_file = NULL;
+static FILE *ntf_file = NULL;
 static void notification_fileprint (time_t eventtime, const char* content)
 {
 	char t[128];
 
 	t[0] = 0;
-	if (ntf_file == NULL) {
-		ntf_file = stdout;
+	if (ntf_file != NULL) {
+		strftime(t, sizeof(t), "%c", localtime(&eventtime));
+		fprintf(ntf_file, "eventTime: %s\n%s\n", t, content);
+		fflush(ntf_file);
 	}
-	strftime(t, sizeof(t), "%c", localtime(&eventtime));
-	fprintf(ntf_file, "eventTime: %s\n%s\n", t, content);
 }
 
 void* notification_thread(void* arg)
 {
 	struct ntf_thread_config *config = (struct ntf_thread_config*)arg;
 
+	if (ntf_file == NULL) {
+		ntf_file = stdout;
+	}
 	ncntf_dispatch_receive(config->session, config->subscribe_rpc, notification_fileprint);
 	nc_rpc_free(config->subscribe_rpc);
 	free(config);
+	if (ntf_file != stdout) {
+		fclose(ntf_file);
+		ntf_file = NULL;
+	}
 
 	return (NULL);
 }
 
 void cmd_subscribe_help()
 {
-	fprintf (stdout, "subscribe [--help] [--filter] [--begin <time>] [--end <time>] [<stream>]\n");
+	fprintf (stdout, "subscribe [--help] [--filter] [--begin <time>] [--end <time>] [--output <file>] [<stream>]\n");
 	fprintf (stdout, "\t<time> has following format:\n");
 	fprintf (stdout, "\t\t+<num>  - current time plus given number of seconds.\n");
 	fprintf (stdout, "\t\t<num>   - absolute time as number of seconds since 1970-01-01.\n");
@@ -1586,6 +1593,7 @@ int cmd_subscribe(char *arg)
 			{"help", 0, 0, 'h'},
 			{"begin", 1, 0, 'b'},
 			{"end", 1, 0, 'e'},
+			{"output", 1, 0, 'o'},
 			{0, 0, 0, 0}
 	};
 	int option_index = 0;
@@ -1603,7 +1611,7 @@ int cmd_subscribe(char *arg)
 	init_arglist (&cmd);
 	addargs (&cmd, "%s", arg);
 
-	while ((c = getopt_long (cmd.count, cmd.list, "f:h", long_options, &option_index)) != -1) {
+	while ((c = getopt_long (cmd.count, cmd.list, "bef:ho:", long_options, &option_index)) != -1) {
 		switch (c) {
 		case 'b':
 		case 'e':
@@ -1634,6 +1642,15 @@ int cmd_subscribe(char *arg)
 			cmd_subscribe_help ();
 			clear_arglist(&cmd);
 			return (EXIT_SUCCESS);
+			break;
+		case 'o':
+			fprintf(stderr,"file: %s", optarg);
+			ntf_file = fopen(optarg, "w");
+			if (ntf_file == NULL) {
+				ERROR("create-subscription", "opening output file failed (%s).", strerror(errno));
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
 			break;
 		default:
 			ERROR("create-subscription", "unknown option -%c.", c);
