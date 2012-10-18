@@ -1823,7 +1823,16 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	filter_doc->encoding = xmlStrdup(BAD_CAST UTF8);
 
 	ncntf_stream_iter_start(stream);
-	while((event = ncntf_stream_iter_next(stream, start, stop, NULL)) != NULL) {
+	while(1) {
+		if ((event = ncntf_stream_iter_next(stream, start, stop, NULL)) == NULL) {
+			usleep(100);
+			if ((stop != -1) && (stop > time(NULL))) {
+				continue;
+			} else {
+				DBG("stream iter end: stop=%ld, time=%ld", stop, time(NULL));
+				break;
+			}
+		}
 		if ((event_doc = xmlReadMemory(event, strlen(event), NULL, NULL, 0)) != NULL) {
 			/* apply filter */
 			if (filter != NULL) {
