@@ -857,6 +857,7 @@ int ncntf_event_new(char* stream, time_t etime, NCNTF_EVENT event, ...)
 	va_start(params, event);
 
 	/* get the event description */
+	DBG("Adding new event (%d)", event);
 	switch (event) {
 	case NCNTF_GENERIC:
 		content = va_arg(params, char *);
@@ -1416,6 +1417,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 	}
 	return (text);
 }
+
 static void ncntf_stdoutprint (time_t eventtime, const char* content)
 {
 	char* t = NULL;
@@ -2073,6 +2075,8 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 			/* Parse XML to get parameters for callback function */
 			event_time = ncntf_notif_get_time(ntf);
 			content = ncntf_notif_get_content(ntf);
+			ncntf_notif_free(ntf);
+			ntf = NULL;
 			if (event_time == -1 || content == NULL) {
 				free(content);
 				WARN("Invalid notification received. Ignoring.");
