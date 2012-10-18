@@ -402,6 +402,7 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
 {
 	xmlNodePtr rpc_root, op, source, config, aux_node;
+	xmlDocPtr aux_doc;
 	xmlBufferPtr resultbuffer;
 	char * retval = NULL;
 
@@ -435,12 +436,16 @@ char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
 			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
 			return NULL;
 		}
-		for (aux_node = config->children; aux_node != NULL;
-		                aux_node = aux_node->next) {
-			xmlNodeDump(resultbuffer, rpc->doc, aux_node, 2, 1);
+		/* by copying nodelist, move all needed namespaces into the editing nodes */
+		aux_doc = xmlNewDoc(BAD_CAST "1.0");
+		xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
+		xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, config->children));
+		for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
+			xmlNodeDump(resultbuffer, aux_doc, aux_node, 2, 1);
 		}
 		retval = strdup((char *) xmlBufferContent(resultbuffer));
 		xmlBufferFree(resultbuffer);
+		xmlFreeDoc(aux_doc);
 	}
 
 	return retval;
@@ -449,6 +454,7 @@ char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
 char * nc_rpc_get_editconfig (const nc_rpc *rpc)
 {
 	xmlNodePtr rpc_root, op, config, aux_node;
+	xmlDocPtr aux_doc;
 	xmlBufferPtr resultbuffer;
 	char * retval = NULL;
 
@@ -473,12 +479,16 @@ char * nc_rpc_get_editconfig (const nc_rpc *rpc)
 			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
 			return NULL;
 		}
-		for (aux_node = config->children; aux_node != NULL;
-		                aux_node = aux_node->next) {
-			xmlNodeDump(resultbuffer, rpc->doc, aux_node, 2, 1);
+		/* by copying nodelist, move all needed namespaces into the editing nodes */
+		aux_doc = xmlNewDoc(BAD_CAST "1.0");
+		xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
+		xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, config->children));
+		for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
+			xmlNodeDump(resultbuffer, aux_doc, aux_node, 2, 1);
 		}
 		retval = strdup((char *) xmlBufferContent(resultbuffer));
 		xmlBufferFree(resultbuffer);
+		xmlFreeDoc(aux_doc);
 	}
 
 	return retval;
