@@ -224,6 +224,20 @@ char* ncntf_notif_get_content(nc_ntf* notif);
 
 /**
  * @ingroup notifications
+ * @brief Check validity of \<create-subscription\> message.
+ *
+ * This check is done by ncntf_dispatch_send() which returns -1 when test does
+ * not pass. However, it can be sometime useful to run this test before calling
+ * ncntf_dispatch_send().
+ *
+ * @param[in] subscribe_rpc \<create-subscription\> RPC.
+ * @return Reply message to the subscription - ok if tests passed and reply-error
+ * with problem description if any of the tests fails.
+ */
+nc_reply *ncntf_check_subscription(const nc_rpc* subscribe_rpc);
+
+/**
+ * @ingroup notifications
  * @brief Start sending notification according to the given
  * \<create-subscription\> NETCONF RPC request. All events from the specified
  * stream are processed and sent to the client until the stop time is reached
