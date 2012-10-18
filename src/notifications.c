@@ -1522,6 +1522,7 @@ char* ncntf_notif_get_content(nc_ntf* notif)
 {
 	char * retval;
 	xmlNodePtr root, node;
+	xmlDocPtr aux_doc;
 	xmlBufferPtr buffer;
 
 	if (notif == NULL || notif->doc == NULL) {
@@ -1538,8 +1539,12 @@ char* ncntf_notif_get_content(nc_ntf* notif)
 		return (NULL);
 	}
 
+	/* by copying node, move all needed namespaces into the content nodes */
+	aux_doc = xmlNewDoc(BAD_CAST "1.0");
+	xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "content"));
+	xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, root->children));
 	buffer = xmlBufferCreate ();
-	for (node = root->children; node != NULL; node = node->next) {
+	for (node = aux_doc->children->children; node != NULL; node = node->next) {
 		/* skip invalid nodes */
 		if (node->name == NULL || node->ns == NULL || node->ns->href == NULL) {
 			continue;
@@ -1552,10 +1557,11 @@ char* ncntf_notif_get_content(nc_ntf* notif)
 		}
 
 		/* dump content into the buffer */
-		xmlNodeDump(buffer, notif->doc, node, 1, 1);
+		xmlNodeDump(buffer, aux_doc, node, 1, 1);
 	}
 	retval = strdup((char *)xmlBufferContent (buffer));
 	xmlBufferFree (buffer);
+	xmlFreeDoc(aux_doc);
 
 	return retval;
 }

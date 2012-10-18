@@ -323,6 +323,7 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 char * nc_rpc_get_op_content (const nc_rpc * rpc)
 {
 	char * retval;
+	xmlDocPtr aux_doc;
 	xmlNodePtr root;
 	xmlBufferPtr buffer;
 
@@ -334,10 +335,14 @@ char * nc_rpc_get_op_content (const nc_rpc * rpc)
 		return NULL;
 	}
 
+	/* by copying node, move all needed namespaces into the content nodes */
+	aux_doc = xmlNewDoc(BAD_CAST "1.0");
+	xmlDocSetRootElement(aux_doc, xmlCopyNode(root->children, 1));
 	buffer = xmlBufferCreate ();
-	xmlNodeDump (buffer, rpc->doc, root->children, 1, 1);
+	xmlNodeDump (buffer, aux_doc, aux_doc->children, 1, 1);
 	retval = strdup((char *)xmlBufferContent (buffer));
 	xmlBufferFree (buffer);
+	xmlFreeDoc(aux_doc);
 
 	return retval;
 }
@@ -406,6 +411,7 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
 {
 	xmlNodePtr rpc_root, op, source, config, aux_node;
+	xmlDocPtr aux_doc;
 	xmlBufferPtr resultbuffer;
 	char * retval = NULL;
 
@@ -443,11 +449,16 @@ char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
 			/* config is empty */
 			return (strdup(""));
 		}
-		for (aux_node = config->children; aux_node != NULL; aux_node = aux_node->next) {
-			xmlNodeDump(resultbuffer, rpc->doc, aux_node, 2, 1);
+		/* by copying nodelist, move all needed namespaces into the editing nodes */
+		aux_doc = xmlNewDoc(BAD_CAST "1.0");
+		xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
+		xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, config->children));
+		for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
+			xmlNodeDump(resultbuffer, aux_doc, aux_node, 2, 1);
 		}
 		retval = strdup((char *) xmlBufferContent(resultbuffer));
 		xmlBufferFree(resultbuffer);
+		xmlFreeDoc(aux_doc);
 	}
 
 	return retval;
@@ -456,6 +467,7 @@ char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
 char * nc_rpc_get_editconfig (const nc_rpc *rpc)
 {
 	xmlNodePtr rpc_root, op, config, aux_node;
+	xmlDocPtr aux_doc;
 	xmlBufferPtr resultbuffer;
 	char * retval = NULL;
 
@@ -480,12 +492,20 @@ char * nc_rpc_get_editconfig (const nc_rpc *rpc)
 			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
 			return NULL;
 		}
-		for (aux_node = config->children; aux_node != NULL;
-		                aux_node = aux_node->next) {
-			xmlNodeDump(resultbuffer, rpc->doc, aux_node, 2, 1);
+		if (config->children == NULL) {
+			/* config is empty */
+			return (strdup(""));
+		}
+		/* by copying nodelist, move all needed namespaces into the editing nodes */
+		aux_doc = xmlNewDoc(BAD_CAST "1.0");
+		xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
+		xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, config->children));
+		for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
+			xmlNodeDump(resultbuffer, aux_doc, aux_node, 2, 1);
 		}
 		retval = strdup((char *) xmlBufferContent(resultbuffer));
 		xmlBufferFree(resultbuffer);
+		xmlFreeDoc(aux_doc);
 	}
 
 	return retval;
@@ -584,6 +604,7 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 {
 	struct nc_filter * retval = NULL;
 	xmlNodePtr filter_node, filter_child;
+	xmlDocPtr aux_doc;
 	xmlBufferPtr buf;
 
 	if (rpc != NULL && rpc->doc != NULL &&
@@ -609,13 +630,19 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 						retval->type = NC_FILTER_UNKNOWN;
 					}
 
+					/* by copying nodelist, move all needed namespaces into the editing nodes */
+					aux_doc = xmlNewDoc(BAD_CAST "1.0");
+					xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "filter"));
+					xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, filter_node->children));
 					buf = xmlBufferCreate();
-					for (filter_child = filter_node->children; filter_child != NULL; filter_child = filter_child->next) {
-						xmlNodeDump(buf, rpc->doc, filter_child, 1, 1);
+					for (filter_child = aux_doc->children->children; filter_child != NULL; filter_child = filter_child->next) {
+						xmlNodeDump(buf, aux_doc, filter_child, 1, 1);
 					}
 					retval->content = strdup((char*) xmlBufferContent(buf));
 					xmlBufferFree(buf);
+					xmlFreeDoc(aux_doc);
 
+					/* process only the first <filter> node, ignore the rest */
 					break;
 				}
 				filter_node = filter_node->next;
@@ -638,7 +665,8 @@ char *nc_reply_get_data(const nc_reply *reply)
 {
 	char *buf;
 	xmlBufferPtr data_buf;
-	xmlNodePtr inside_data;
+	xmlNodePtr inside_data, aux_data;
+	xmlDocPtr aux_doc;
 
 	if (reply == NULL ||
 			reply->type.reply != NC_REPLY_DATA ||
@@ -649,7 +677,8 @@ char *nc_reply_get_data(const nc_reply *reply)
 		ERROR("nc_reply_get_data: invalid input parameter.");
 		return (NULL);
 	}
-	if (reply->doc->children->children->children == NULL) { /* content */
+	inside_data = reply->doc->children->children->children;
+	if (inside_data == NULL) { /* content */
 		/*
 		 * Returned data content is empty, so return empty
 		 * string without any error message. This can be a valid
@@ -662,13 +691,15 @@ char *nc_reply_get_data(const nc_reply *reply)
 		return NULL;
 	}
 
-	inside_data = reply->doc->children->children->children;
-	while (inside_data) {
-		xmlNodeDump(data_buf, reply->doc, inside_data, 1, 1);
-		inside_data = inside_data->next;
+	aux_doc = xmlNewDoc(BAD_CAST "1.0");
+	xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "data"));
+	xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, inside_data));
+	for (aux_data = aux_doc->children->children; aux_data != NULL; aux_data = aux_data->next) {
+		xmlNodeDump(data_buf, aux_doc, inside_data, 1, 1);
 	}
 	buf = strdup((char*) xmlBufferContent(data_buf));
 	xmlBufferFree(data_buf);
+	xmlFreeDoc(aux_doc);
 
 	return ((char*) buf);
 }
