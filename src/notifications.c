@@ -1818,6 +1818,17 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 		return (-1);
 	}
 
+	/* check if there is another notification subscription */
+	pthread_mutex_lock(&(session->mut_session));
+	if (nc_session_notif_allowed(session) == 0) {
+		pthread_mutex_unlock(&(session->mut_session));
+		WARN("%s: Notification subscription is not allowed on the given session.", __func__);
+		return (-1);
+	}
+	/* set flag, notification subscription is now activated */
+	session->ntf_active = 1;
+	pthread_mutex_unlock(&(session->mut_session));
+
 	/* prepare xml doc for filtering */
 	filter_doc = xmlNewDoc(BAD_CAST "1.0");
 	filter_doc->encoding = xmlStrdup(BAD_CAST UTF8);
@@ -1890,6 +1901,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 			ntf = malloc(sizeof(nc_rpc));
 			if (ntf == NULL) {
 				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+				session->ntf_active = 0;
 				return (-1);
 			}
 			ntf->doc = event_doc;
@@ -1912,6 +1924,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	ntf = malloc(sizeof(nc_rpc));
 	if (ntf == NULL) {
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		session->ntf_active = 0;
 		return (-1);
 	}
 	asprintf(&event, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
@@ -1925,6 +1938,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	ncntf_notif_free(ntf);
 	free(event);
 
+	session->ntf_active = 0;
 	return (count);
 }
 
@@ -1971,6 +1985,14 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 		return (-1);
 	}
 
+	/* check if there is another notification subscription */
+	pthread_mutex_lock(&(session->mut_session));
+	if (nc_session_notif_allowed(session) == 0) {
+		pthread_mutex_unlock(&(session->mut_session));
+		WARN("%s: Notification subscription is not allowed on the given session.", __func__);
+		return (-1);
+	}
+
 	/* send subscription */
 	rpc = nc_msg_dup((struct nc_msg*)subscribe_rpc);
 	type = nc_session_send_recv(session, rpc, &reply);
@@ -1978,16 +2000,19 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 
 	switch (type) {
 	case NC_MSG_UNKNOWN:
+		pthread_mutex_unlock(&(session->mut_session));
 		ERROR("Subscribing for notifications failed (receiving rpc-reply failed).");
 		return (-1);
 		break;
 	case NC_MSG_NONE:
 		/* NC_REPLY_ERROR was processed by a caller's callback function */
+		pthread_mutex_unlock(&(session->mut_session));
 		return (-1);
 		break;
 	default:
 		switch (type_reply = nc_reply_get_type(reply)) {
 		case NC_REPLY_OK:
+			session->ntf_active = 1;
 			break;
 		case NC_REPLY_ERROR:
 			ERROR("create-subscription failed (%s)", nc_reply_get_errormsg(reply));
@@ -1996,6 +2021,7 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 			ERROR("create-subscription failed (unexpected operation result).");
 			break;
 		}
+		pthread_mutex_unlock(&(session->mut_session));
 		nc_reply_free(reply);
 		if (type_reply != NC_REPLY_OK) {
 			return (-1);
@@ -2100,5 +2126,6 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 		}
 	}
 
+	session->ntf_active = 0;
 	return (count);
 }

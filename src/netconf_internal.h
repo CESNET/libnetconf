@@ -87,6 +87,7 @@
 #define NC_CAP_BASE10_ID      	"urn:ietf:params:netconf:base:1.0"
 #define NC_CAP_BASE11_ID      	"urn:ietf:params:netconf:base:1.1"
 #define NC_CAP_NOTIFICATION_ID 	"urn:ietf:params:netconf:capability:notification:1.0"
+#define NC_CAP_INTERLEAVE_ID 	"urn:ietf:params:netconf:capability:interleave:1.0"
 #define NC_CAP_WRUNNING_ID  	"urn:ietf:params:netconf:capability:writable-running:1.0"
 #define NC_CAP_CANDIDATE_ID 	"urn:ietf:params:netconf:capability:candidate:1.0"
 #define NC_CAP_STARTUP_ID   	"urn:ietf:params:netconf:capability:startup:1.0"
@@ -233,6 +234,8 @@ struct nc_session {
 	struct nc_msg* queue_msg;
 	/**< @brief queue for received, but not processed, NETCONF Event Notifications */
 	struct nc_msg* queue_event;
+	/**< @brief flag for active notification subscription on the session */
+	int ntf_active;
 };
 
 /**

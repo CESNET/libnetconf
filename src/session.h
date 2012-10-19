@@ -150,6 +150,14 @@ const char* nc_session_get_user(const struct nc_session* session);
 
 /**
  * @ingroup session
+ * @brief Tell me if the notification subscription is allowed on the given session.
+ * @param[in] session NETCONF session structure
+ * @return 0 if not, 1 if subscription is currently allowed.
+ */
+int nc_session_notif_allowed (const struct nc_session *session);
+
+/**
+ * @ingroup session
  * @brief Get NULL terminated list of capabilities associated with the session.
  *
  * Returned list is a copy of the original list associated with the session.

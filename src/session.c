@@ -128,6 +128,23 @@ int nc_session_get_eventfd (const struct nc_session *session)
 	}
 }
 
+int nc_session_notif_allowed (const struct nc_session *session)
+{
+	if (session == NULL) {
+		/* notification subscription is not allowed */
+		return 0;
+	}
+
+	/* check capabilities */
+	if (nc_cpblts_enabled(session, NC_CAP_NOTIFICATION_ID) == 1) {
+		/* subscription is allowed only if another subscription is not active */
+		return ((session->ntf_active == 0) ? 1 : 0);
+	} else {
+		/* notifications are not supported at all */
+		return (0);
+	}
+}
+
 void nc_cpblts_free(struct nc_cpblts *c)
 {
 	int i;
