@@ -1723,7 +1723,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 				/* we have it! */
 				break;
 			}
-		} else if (replytype == NC_MSG_UNKNOWN) {
+		} else if (replytype == NC_MSG_UNKNOWN || replytype == NC_MSG_NONE) {
 			/* some error occured */
 			break;
 		}
