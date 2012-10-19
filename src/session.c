@@ -402,6 +402,7 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	nc_cpblts_add(retval, NC_CAP_CANDIDATE_ID);
 	nc_cpblts_add(retval, NC_CAP_STARTUP_ID);
 	nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
+	nc_cpblts_add(retval, NC_CAP_INTERLEAVE_ID);
 	if (ncdflt_get_basic_mode() != NCDFLT_MODE_DISABLED) {
 		nc_cpblts_add(retval, NC_CAP_WITHDEFAULTS_ID);
 	}
