@@ -53,6 +53,7 @@
 #include "messages.h"
 #include "error.h"
 #include "with_defaults.h"
+#include "notifications.h"
 #include "datastore.h"
 #include "datastore/edit_config.h"
 #include "datastore/datastore_internal.h"
@@ -952,6 +953,12 @@ apply_editcopyconfig:
 			ret = EXIT_FAILURE;
 		}
 		free(config);
+
+		/* log the event */
+		if (ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
+			ncntf_event_new(NCNTF_STREAM_BASE, -1, NCNTF_BASE_CFG_CHANGE, target_ds, NCNTF_EVENT_BY_USER, session);
+		}
+
 		break;
 	case NC_OP_DELETECONFIG:
 		if (nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING) {
@@ -960,11 +967,21 @@ apply_editcopyconfig:
 			nc_err_set(e, NC_ERR_PARAM_MSG, "Can not delete running datastore.");
 			break;
 		}
-		ret = ds->func.deleteconfig(ds, session, nc_rpc_get_target(rpc), &e);
+		ret = ds->func.deleteconfig(ds, session, target_ds = nc_rpc_get_target(rpc), &e);
+
+		/* log the event */
+		if (ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
+			ncntf_event_new(NCNTF_STREAM_BASE, -1, NCNTF_BASE_CFG_CHANGE, target_ds, NCNTF_EVENT_BY_USER, session);
+		}
 		break;
 	case NC_OP_COMMIT:
 		/* \todo check somehow, that candidate is not locked by another session */
 		ret = ds->func.copyconfig(ds, session, NC_DATASTORE_RUNNING, NC_DATASTORE_CANDIDATE, NULL, &e);
+
+		/* log the event */
+		if (ret == EXIT_SUCCESS) {
+			ncntf_event_new(NCNTF_STREAM_BASE, -1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, session);
+		}
 		break;
 	case NC_OP_DISCARDCHANGES:
 		ret = ds->func.copyconfig(ds, session, NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NULL, &e);
