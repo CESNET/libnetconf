@@ -133,8 +133,23 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
 			break;
 		case NC_OP_CREATESUBSCRIPTION:
+			if (nc_cpblts_enabled(config->session, "urn:ietf:params:netconf:capability:notification:1.0") == 0) {
+				reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
+				break;
+			}
+
+			/* check if notifications are allowed on this session */
+			if (nc_session_notif_allowed(config->session) == 0) {
+				clb_print(NC_VERB_ERROR, "Notification subscription is not allowed on this session.");
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Another notification subscription is currently active on this session.");
+				reply = nc_reply_error(e);
+				break;
+			}
+
 			if ((ntf_config = malloc(sizeof(struct ntf_thread_config))) == NULL) {
-				clb_print(NC_VERB_ERROR, "Memory allocation failed.\n");
+				clb_print(NC_VERB_ERROR, "Memory allocation failed.");
 				e = nc_err_new(NC_ERR_OP_FAILED);
 				nc_err_set(e, NC_ERR_PARAM_MSG, "Memory allocation failed.");
 				reply = nc_reply_error(e);
