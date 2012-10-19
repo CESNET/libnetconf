@@ -1538,18 +1538,21 @@ generic_help:
 struct ntf_thread_config {
 	struct nc_session *session;
 	nc_rpc *subscribe_rpc;
+	FILE* output;
 };
 
-static FILE *ntf_file = NULL;
+static pthread_key_t ntf_file;
+volatile static int ntf_file_flag = 0; /* flag if the thread specific key is already initiated */
 static void notification_fileprint (time_t eventtime, const char* content)
 {
+	FILE *f;
 	char t[128];
 
 	t[0] = 0;
-	if (ntf_file != NULL) {
+	if ((f = (FILE*) pthread_getspecific(ntf_file)) != NULL) {
 		strftime(t, sizeof(t), "%c", localtime(&eventtime));
-		fprintf(ntf_file, "eventTime: %s\n%s\n", t, content);
-		fflush(ntf_file);
+		fprintf(f, "eventTime: %s\n%s\n", t, content);
+		fflush(f);
 	}
 }
 
@@ -1557,16 +1560,13 @@ void* notification_thread(void* arg)
 {
 	struct ntf_thread_config *config = (struct ntf_thread_config*)arg;
 
-	if (ntf_file == NULL) {
-		ntf_file = stdout;
-	}
+	pthread_setspecific(ntf_file, (void*)config->output);
 	ncntf_dispatch_receive(config->session, config->subscribe_rpc, notification_fileprint);
 	nc_rpc_free(config->subscribe_rpc);
-	free(config);
-	if (ntf_file != stdout) {
-		fclose(ntf_file);
-		ntf_file = NULL;
+	if (config->output != stdout) {
+		fclose(config->output);
 	}
+	free(config);
 
 	return (NULL);
 }
@@ -1587,6 +1587,7 @@ int cmd_subscribe(char *arg)
 	char *stream;
 	time_t t, start = -1, stop = -1;
 	nc_rpc *rpc = NULL;
+	FILE *output = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"filter", 2, 0, 'f'},
@@ -1645,8 +1646,8 @@ int cmd_subscribe(char *arg)
 			break;
 		case 'o':
 			fprintf(stderr,"file: %s", optarg);
-			ntf_file = fopen(optarg, "w");
-			if (ntf_file == NULL) {
+			output = fopen(optarg, "w");
+			if (output == NULL) {
 				ERROR("create-subscription", "opening output file failed (%s).", strerror(errno));
 				clear_arglist(&cmd);
 				return (EXIT_FAILURE);
@@ -1687,9 +1688,16 @@ int cmd_subscribe(char *arg)
 		return (EXIT_FAILURE);
 	}
 
+	/* check thread specific variable */
+	if (ntf_file_flag == 0) {
+		ntf_file_flag = 1;
+		pthread_key_create(&ntf_file, NULL);
+	}
+
 	tconfig = malloc(sizeof(struct ntf_thread_config));
 	tconfig->session = session;
 	tconfig->subscribe_rpc = rpc;
+	tconfig->output = (output == NULL) ? stdout : output;
 	if (pthread_create(&thread, NULL, notification_thread, tconfig) != 0) {
 		ERROR("create-subscription", "unexpected operation result.");
 		nc_rpc_free (rpc);
