@@ -329,6 +329,57 @@ static struct nc_filter *set_filter(const char* operation, const char *file)
 	return (filter);
 }
 
+/* rpc parameter is freed after the function call */
+static int send_recv_process(const char* operation, nc_rpc* rpc)
+{
+	nc_reply *reply = NULL;
+	char *data = NULL;
+
+	/* send the request and get the reply */
+	switch (nc_session_send_recv(session, rpc, &reply)) {
+	case NC_MSG_UNKNOWN:
+		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
+			nc_rpc_free(rpc);
+			nc_reply_free(reply);
+			ERROR("kill-session", "receiving rpc-reply failed.");
+			INSTRUCTION("Closing the session.\n");
+			cmd_disconnect(NULL);
+			return (EXIT_FAILURE);
+		}
+		ERROR("kill-session", "Unknown error occurred.");
+		break;
+	case NC_MSG_NONE:
+		/* error occurred, but processed by callback */
+		break;
+	case NC_MSG_REPLY:
+		switch (nc_reply_get_type(reply)) {
+		case NC_REPLY_OK:
+			INSTRUCTION("Result OK\n");
+			break;
+		case NC_REPLY_DATA:
+			INSTRUCTION("Result:\n");
+			fprintf(stdout, "%s\n", data = nc_reply_get_data (reply));
+			free(data);
+			break;
+		case NC_REPLY_ERROR:
+			/* wtf, you shouldn't be here !?!? */
+			ERROR("kill-session", "operation failed, but rpc-error was not processed.");
+			break;
+		default:
+			ERROR("kill-session", "unexpected operation result.");
+			break;
+		}
+		break;
+	default:
+		ERROR("kill-session", "Unknown error occurred.");
+		break;
+	}
+	nc_rpc_free(rpc);
+	nc_reply_free(reply);
+
+	return (EXIT_FAILURE);
+}
+
 void cmd_editconfig_help()
 {
 	char *rollback;
@@ -360,7 +411,6 @@ int cmd_editconfig (char *arg)
 	NC_EDIT_DEFOP_TYPE defop = 0; /* do not set this parameter by default */
 	NC_EDIT_ERROPT_TYPE erropt = 0; /* do not set this parameter by default */
 	nc_rpc *rpc = NULL;
-	nc_reply *reply = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"config", 1, 0, 'c'},
@@ -485,36 +535,9 @@ int cmd_editconfig (char *arg)
 		ERROR("edit-config", "creating rpc request failed.");
 		return (EXIT_FAILURE);
 	}
+
 	/* send the request and get the reply */
-	nc_session_send_rpc (session, rpc);
-	if (nc_session_recv_reply (session, &reply) == 0) {
-		nc_rpc_free (rpc);
-		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
-			ERROR("edit-config", "receiving rpc-reply failed.");
-			INSTRUCTION("Closing the session.\n");
-			cmd_disconnect(NULL);
-			return (EXIT_FAILURE);
-		}
-		return (EXIT_SUCCESS);
-	}
-	nc_rpc_free (rpc);
-
-	/* parse result */
-	switch (nc_reply_get_type (reply)) {
-	case NC_REPLY_OK:
-		INSTRUCTION("Result OK\n");
-		break;
-	case NC_REPLY_ERROR:
-		/* wtf, you shouldn't be here !?!? */
-		ERROR("edit-config", "operation failed, but rpc-error was not processed.");
-		break;
-	default:
-		ERROR("edit-config", "unexpected operation result.");
-		break;
-	}
-	nc_reply_free(reply);
-
-	return (EXIT_SUCCESS);
+	return (send_recv_process("edit-config", rpc));
 }
 
 void cmd_copyconfig_help ()
@@ -551,7 +574,6 @@ int cmd_copyconfig (char *arg)
 	NC_DATASTORE source = NC_DATASTORE_ERROR;
 	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
-	nc_reply *reply = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"config", 1, 0, 'c'},
@@ -659,36 +681,9 @@ int cmd_copyconfig (char *arg)
 		ERROR("copy-config", "creating rpc request failed.");
 		return (EXIT_FAILURE);
 	}
+
 	/* send the request and get the reply */
-	nc_session_send_rpc (session, rpc);
-	if (nc_session_recv_reply (session, &reply) == 0) {
-		nc_rpc_free (rpc);
-		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
-			ERROR("copy-config", "receiving rpc-reply failed.");
-			INSTRUCTION("Closing the session.\n");
-			cmd_disconnect(NULL);
-			return (EXIT_FAILURE);
-		}
-		return (EXIT_SUCCESS);
-	}
-	nc_rpc_free (rpc);
-
-	/* parse result */
-	switch (nc_reply_get_type (reply)) {
-	case NC_REPLY_OK:
-		INSTRUCTION("Result OK\n");
-		break;
-	case NC_REPLY_ERROR:
-		/* wtf, you shouldn't be here !?!? */
-		ERROR("copy-config", "operation failed, but rpc-error was not processed.");
-		break;
-	default:
-		ERROR("copy-config", "unexpected operation result.");
-		break;
-	}
-	nc_reply_free(reply);
-
-	return (EXIT_SUCCESS);
+	return (send_recv_process("copy-config", rpc));
 }
 
 void cmd_get_help ()
@@ -700,10 +695,8 @@ void cmd_get_help ()
 int cmd_get (char *arg)
 {
 	int c;
-	char *data = NULL;
 	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
-	nc_reply *reply = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"filter", 2, 0, 'f'},
@@ -761,39 +754,9 @@ int cmd_get (char *arg)
 		ERROR("get", "creating rpc request failed.");
 		return (EXIT_FAILURE);
 	}
+
 	/* send the request and get the reply */
-	nc_session_send_rpc (session, rpc);
-	if (nc_session_recv_reply (session, &reply) == 0) {
-		nc_rpc_free (rpc);
-		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
-			ERROR("get", "receiving rpc-reply failed.");
-			INSTRUCTION("Closing the session.\n");
-			cmd_disconnect(NULL);
-			return (EXIT_FAILURE);
-		}
-		return (EXIT_SUCCESS);
-	}
-	nc_rpc_free (rpc);
-
-	switch (nc_reply_get_type (reply)) {
-	case NC_REPLY_DATA:
-		INSTRUCTION("Result:\n");
-		fprintf(stdout, "%s\n", data = nc_reply_get_data (reply));
-		break;
-	case NC_REPLY_ERROR:
-		/* wtf, you shouldn't be here !?!? */
-		ERROR("get", "operation failed, but rpc-error was not processed.");
-		break;
-	default:
-		ERROR("get", "unexpected operation result.");
-		break;
-	}
-	nc_reply_free(reply);
-	if (data) {
-		free (data);
-	}
-
-	return (EXIT_SUCCESS);
+	return (send_recv_process("get", rpc));
 }
 
 void cmd_deleteconfig_help ()
@@ -823,7 +786,6 @@ int cmd_deleteconfig (char *arg)
 	int c;
 	NC_DATASTORE target;
 	nc_rpc *rpc = NULL;
-	nc_reply *reply = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"help", 0, 0, 'h'},
@@ -881,36 +843,9 @@ int cmd_deleteconfig (char *arg)
 		ERROR("delete-config", "creating rpc request failed.");
 		return (EXIT_FAILURE);
 	}
+
 	/* send the request and get the reply */
-	nc_session_send_rpc (session, rpc);
-	if (nc_session_recv_reply (session, &reply) == 0) {
-		nc_rpc_free (rpc);
-		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
-			ERROR("delete-config", "receiving rpc-reply failed.");
-			INSTRUCTION("Closing the session.\n");
-			cmd_disconnect(NULL);
-			return (EXIT_FAILURE);
-		}
-		return (EXIT_SUCCESS);
-	}
-	nc_rpc_free (rpc);
-
-	/* parse result */
-	switch (nc_reply_get_type (reply)) {
-	case NC_REPLY_OK:
-		INSTRUCTION("Result OK\n");
-		break;
-	case NC_REPLY_ERROR:
-		/* wtf, you shouldn't be here !?!? */
-		ERROR("delete-config", "operation failed, but rpc-error was not processed.");
-		break;
-	default:
-		ERROR("delete-config", "unexpected operation result.");
-		break;
-	}
-	nc_reply_free(reply);
-
-	return (EXIT_SUCCESS);
+	return (send_recv_process("delete-config", rpc));
 }
 
 void cmd_killsession_help ()
@@ -923,7 +858,6 @@ int cmd_killsession (char *arg)
 	int c;
 	char *id;
 	nc_rpc *rpc = NULL;
-	nc_reply *reply = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"help", 0, 0, 'h'},
@@ -985,36 +919,9 @@ int cmd_killsession (char *arg)
 		ERROR("kill-session", "creating rpc request failed.");
 		return (EXIT_FAILURE);
 	}
+
 	/* send the request and get the reply */
-	nc_session_send_rpc (session, rpc);
-	if (nc_session_recv_reply (session, &reply) == 0) {
-		nc_rpc_free (rpc);
-		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
-			ERROR("kill-session", "receiving rpc-reply failed.");
-			INSTRUCTION("Closing the session.\n");
-			cmd_disconnect(NULL);
-			return (EXIT_FAILURE);
-		}
-		return (EXIT_SUCCESS);
-	}
-	nc_rpc_free (rpc);
-
-	/* parse result */
-	switch (nc_reply_get_type (reply)) {
-	case NC_REPLY_OK:
-		INSTRUCTION("Result OK\n");
-		break;
-	case NC_REPLY_ERROR:
-		/* wtf, you shouldn't be here !?!? */
-		ERROR("kill-session", "operation failed, but rpc-error was not processed.");
-		break;
-	default:
-		ERROR("kill-session", "unexpected operation result.");
-		break;
-	}
-	nc_reply_free(reply);
-
-	return (EXIT_SUCCESS);
+	return (send_recv_process("kell-session", rpc));
 }
 
 #define CAP_ADD 'a'
@@ -1127,11 +1034,9 @@ void cmd_getconfig_help ()
 int cmd_getconfig (char *arg)
 {
 	int c;
-	char *data = NULL;
 	NC_DATASTORE target;
 	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
-	nc_reply *reply = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"filter", 2, 0, 'f'},
@@ -1189,39 +1094,9 @@ int cmd_getconfig (char *arg)
 		ERROR("get-config", "creating rpc request failed.");
 		return (EXIT_FAILURE);
 	}
+
 	/* send the request and get the reply */
-	nc_session_send_rpc (session, rpc);
-	if (nc_session_recv_reply (session, &reply) == 0) {
-		nc_rpc_free (rpc);
-		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
-			ERROR("get-config", "receiving rpc-reply failed.");
-			INSTRUCTION("Closing the session.\n");
-			cmd_disconnect(NULL);
-			return (EXIT_FAILURE);
-		}
-		return (EXIT_SUCCESS);
-	}
-	nc_rpc_free (rpc);
-
-	switch (nc_reply_get_type (reply)) {
-	case NC_REPLY_DATA:
-		INSTRUCTION("Result:\n");
-		fprintf(stdout, "%s\n", data = nc_reply_get_data (reply));
-		break;
-	case NC_REPLY_ERROR:
-		/* wtf, you shouldn't be here !?!? */
-		ERROR("get-config", "operation failed, but rpc-error was not processed.");
-		break;
-	default:
-		ERROR("get-config", "unexpected operation result.");
-		break;
-	}
-	nc_reply_free(reply);
-	if (data) {
-		free (data);
-	}
-
-	return (EXIT_SUCCESS);
+	return (send_recv_process("get-config", rpc));
 }
 
 void cmd_un_lock_help (char* operation)
@@ -1244,7 +1119,6 @@ int cmd_un_lock (int op, char *arg)
 	int c;
 	NC_DATASTORE target;
 	nc_rpc *rpc = NULL;
-	nc_reply *reply = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"help", 0, 0, 'h'},
@@ -1313,36 +1187,9 @@ int cmd_un_lock (int op, char *arg)
 		ERROR(operation, "creating rpc request failed.");
 		return (EXIT_FAILURE);
 	}
+
 	/* send the request and get the reply */
-	nc_session_send_rpc (session, rpc);
-	if (nc_session_recv_reply (session, &reply) == 0) {
-		nc_rpc_free (rpc);
-		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
-			ERROR(operation, "receiving rpc-reply failed.");
-			INSTRUCTION("Closing the session.\n");
-			cmd_disconnect(NULL);
-			return (EXIT_FAILURE);
-		}
-		return (EXIT_SUCCESS);
-	}
-	nc_rpc_free (rpc);
-
-	/* parse result */
-	switch (nc_reply_get_type (reply)) {
-	case NC_REPLY_OK:
-		INSTRUCTION("Result OK\n");
-		break;
-	case NC_REPLY_ERROR:
-		/* wtf, you shouldn't be here !?!? */
-		ERROR(operation, "operation failed, but rpc-error was not processed.");
-		break;
-	default:
-		ERROR(operation, "unexpected operation result.");
-		break;
-	}
-	nc_reply_free(reply);
-
-	return (EXIT_SUCCESS);
+	return (send_recv_process(operation, rpc));
 }
 
 int cmd_lock (char *arg)
@@ -1609,6 +1456,12 @@ int cmd_subscribe(char *arg)
 		return (EXIT_FAILURE);
 	}
 
+	/* check if notifications are allowed on this session */
+	if (nc_session_notif_allowed(session) == 0) {
+		ERROR("subscribe", "Notification subscription is not allowed on this session.");
+		return (EXIT_FAILURE);
+	}
+
 	init_arglist (&cmd);
 	addargs (&cmd, "%s", arg);
 
@@ -1721,9 +1574,7 @@ int cmd_userrpc(char *arg)
 	int config_fd;
 	struct stat config_stat;
 	char *config = NULL, *config_m = NULL;
-	char *data = NULL;
 	nc_rpc *rpc = NULL;
-	nc_reply *reply = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"file", 1, 0, 'f'},
@@ -1803,43 +1654,9 @@ int cmd_userrpc(char *arg)
 		ERROR("user-rpc", "creating rpc request failed.");
 		return (EXIT_FAILURE);
 	}
+
 	/* send the request and get the reply */
-	nc_session_send_rpc (session, rpc);
-	if (nc_session_recv_reply (session, &reply) == 0) {
-		nc_rpc_free (rpc);
-		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
-			ERROR("user-rpc", "receiving rpc-reply failed.");
-			INSTRUCTION("Closing the session.\n");
-			cmd_disconnect(NULL);
-			return (EXIT_FAILURE);
-		}
-		return (EXIT_SUCCESS);
-	}
-	nc_rpc_free (rpc);
-
-	/* parse result */
-	switch (nc_reply_get_type (reply)) {
-	case NC_REPLY_OK:
-		INSTRUCTION("Result OK\n");
-		break;
-	case NC_REPLY_DATA:
-		INSTRUCTION("Result:\n");
-		fprintf(stdout, "%s\n", data = nc_reply_get_data (reply));
-		if (data) {
-			free (data);
-		}
-		break;
-	case NC_REPLY_ERROR:
-		/* wtf, you shouldn't be here !?!? */
-		ERROR("user-rpc", "operation failed, but rpc-error was not processed.");
-		break;
-	default:
-		ERROR("user-rpc", "unexpected operation result.");
-		break;
-	}
-	nc_reply_free (reply);
-
-	return (EXIT_SUCCESS);
+	return (send_recv_process("user-rpc", rpc));
 }
 
 void cmd_discardchanges_help()
@@ -1869,7 +1686,6 @@ int cmd_generic_op(GENERIC_OPS op, char *arg)
 	nc_rpc* (*op_func)(void);
 	void (*op_help)(void);
 	nc_rpc *rpc = NULL;
-	nc_reply *reply = NULL;
 
 	switch (op) {
 	case GO_COMMIT:
@@ -1903,35 +1719,8 @@ int cmd_generic_op(GENERIC_OPS op, char *arg)
 		ERROR(op_string, "creating rpc request failed.");
 		return (EXIT_FAILURE);
 	}
+
 	/* send the request and get the reply */
-	nc_session_send_rpc (session, rpc);
-	if (nc_session_recv_reply (session, &reply) == 0) {
-		nc_rpc_free (rpc);
-		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
-			ERROR(op_string, "receiving rpc-reply failed.");
-			INSTRUCTION("Closing the session.\n");
-			cmd_disconnect(NULL);
-			return (EXIT_FAILURE);
-		}
-		return (EXIT_SUCCESS);
-	}
-	nc_rpc_free (rpc);
-
-	/* parse result */
-	switch (nc_reply_get_type (reply)) {
-	case NC_REPLY_OK:
-		INSTRUCTION("Result OK\n");
-		break;
-	case NC_REPLY_ERROR:
-		/* wtf, you shouldn't be here !?!? */
-		ERROR(op_string, "operation failed, but rpc-error was not processed.");
-		break;
-	default:
-		ERROR(op_string, "unexpected operation result.");
-		break;
-	}
-	nc_reply_free (reply);
-
-	return (EXIT_SUCCESS);
+	return (send_recv_process(op_string, rpc));
 }
 
