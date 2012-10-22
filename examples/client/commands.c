@@ -1480,6 +1480,12 @@ int cmd_subscribe(char *arg)
 			}
 
 			if (c == 'b') {
+				if (t > time(NULL)) {
+					/* begin time is in future */
+					ERROR("subscribe", "Begin time can not be set to future.");
+					clear_arglist(&cmd);
+					return (EXIT_FAILURE);
+				}
 				start = t;
 			} else { /* c == 'e' */
 				stop = t;
