@@ -695,7 +695,7 @@ char *nc_reply_get_data(const nc_reply *reply)
 	xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "data"));
 	xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, inside_data));
 	for (aux_data = aux_doc->children->children; aux_data != NULL; aux_data = aux_data->next) {
-		xmlNodeDump(data_buf, aux_doc, inside_data, 1, 1);
+		xmlNodeDump(data_buf, aux_doc, aux_data, 1, 1);
 	}
 	buf = strdup((char*) xmlBufferContent(data_buf));
 	xmlBufferFree(data_buf);
