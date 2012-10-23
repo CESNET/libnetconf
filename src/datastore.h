@@ -141,7 +141,8 @@ void ncds_free2(ncds_id datastore_id);
 /**
  * @ingroup store
  * @brief Perform requested RPC operation on the datastore.
- * @param[in] id Datastore ID.
+ * @param[in] id Datastore ID. Use 0 to apply request (typically \<get\>) onto
+ * libnetconf's internal datastore.
  * @param[in] session NETCONF session (dummy session is acceptable) where the
  * \<rpc\> came from. Capabilities checks are done according to this session.
  * @param[in] rpc NETCONF \<rpc\> message specifying requested operation.

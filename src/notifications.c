@@ -807,6 +807,7 @@ void ncntf_close(void)
 int ncntf_stream_new(const char* name, const char* desc, int replay)
 {
 	struct stream *s;
+	xmlDocPtr oldconfig;
 
 	if (ncntf_config == NULL) {
 		return (EXIT_FAILURE);
@@ -847,6 +848,9 @@ int ncntf_stream_new(const char* name, const char* desc, int replay)
 		s->next = streams;
 		streams = s;
 		pthread_mutex_unlock(streams_mut);
+		oldconfig = ncntf_config;
+		ncntf_config = streams_to_xml();
+		xmlFreeDoc(oldconfig);
 		return (EXIT_SUCCESS);
 	}
 }

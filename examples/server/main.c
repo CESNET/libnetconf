@@ -181,6 +181,10 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 		/* process operations reading datastore */
 		switch (req_op) {
 		case NC_OP_GET:
+			reply = nc_reply_merge(2,
+					ncds_apply_rpc(config->dsid, config->session, rpc),
+					ncds_apply_rpc(0, config->session, rpc));
+			break;
 		case NC_OP_GETCONFIG:
 			reply = ncds_apply_rpc(config->dsid, config->session, rpc);
 			break;

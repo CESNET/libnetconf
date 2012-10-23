@@ -66,6 +66,28 @@ struct ncds_ds_list
 	struct ncds_ds_list* next;
 };
 
+char* get_internal_state(const char* model, const char* running, struct nc_err** e);
+/**
+ * @brief Special internal libnetconf's datastore
+ */
+struct ncds_ds internal_ds = {
+		NCDS_TYPE_EMPTY, /* datastore type */
+		0, /* datastore ID */
+		NULL, /* model path */
+		NULL, /* model (xmlDoc) */
+		get_internal_state, /* get_state function */
+		{
+				ncds_empty_init,
+				ncds_empty_free,
+				ncds_empty_lock,
+				ncds_empty_unlock,
+				ncds_empty_getconfig,
+				ncds_empty_copyconfig,
+				ncds_empty_deleteconfig,
+				ncds_empty_editconfig
+		}
+};
+
 /**
  * @brief Internal list of initiated datastores.
  */
@@ -82,6 +104,11 @@ static struct ncds_ds_list *datastores = NULL;
 static struct ncds_ds *datastores_get_ds(ncds_id id)
 {
 	struct ncds_ds_list *ds_iter;
+
+	if (id == 0) {
+		/* return special internal libnetconf's datastore */
+		return (&internal_ds);
+	}
 
 	for (ds_iter = datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
 		if (ds_iter->datastore != NULL && ds_iter->datastore->id == id) {
@@ -154,6 +181,17 @@ const char * ncds_get_model_path(ncds_id id)
 	}
 
 	return datastore->model_path;
+}
+
+char* get_internal_state(const char* model, const char* running, struct nc_err** e)
+{
+	char* retval;
+
+	retval = ncntf_status();
+	if (retval == NULL) {
+		retval = strdup("");
+	}
+	return (retval);
 }
 
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
