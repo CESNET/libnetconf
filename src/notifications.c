@@ -44,6 +44,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <assert.h>
@@ -67,6 +68,9 @@
 #include "netconf.h"
 #include "session.h"
 
+#define NCNTF_RULES_SIZE (1024*1024)
+#define NCNTF_STREAMS_NS "urn:ietf:params:xml:ns:netmod:notification"
+
 /* sleep time in dispatch loops in microseconds */
 #define NCNTF_DISPATCH_SLEEP 100
 
@@ -89,7 +93,7 @@ static char* streams_path = NULL;
  * uint16_t len2;
  * char[len2] description;
  * uint8_t replay;
- * uint16_t part_number;
+ * uint64_t (time_t meanings) created;
  * char[] records;
  *
  */
@@ -99,47 +103,75 @@ static char* streams_path = NULL;
 #define MAGIC_VERSION 0xFF01
 
 struct stream {
-	int fd;
+	int fd_events;
+	int fd_rules;
 	char* name;
 	char* desc;
 	uint8_t replay;
-	uint16_t part;
+	time_t created;
 	int locked;
+	char* rules;
 	unsigned int data;
 	struct stream *next;
 };
+
+/* status information of streams configuration */
+static xmlDocPtr ncntf_config = NULL;
 
 /* internal list of used streams with mutex to controll access into the list */
 static struct stream *streams = NULL;
 static pthread_mutex_t *streams_mut = NULL;
 
-/* internal flag if the notification structures are properly initialized */
-static int initialized = 0;
-
-void ncntf_notif_free(nc_ntf *ntf)
-{
-	nc_msg_free((struct nc_msg*) ntf);
-}
+/* local function declaration */
+static int ncntf_event_isallowed(const char* stream, const char* event);
 
 /*
- * free the stream structure
+ * Modify the given list of files in the specified directory to keep only
+ * regular files in the list. Parameter n specifies the number of items in the
+ * list. The list is ussually obtained using scandir().
+ *
  */
-static void nc_ntf_stream_free(struct stream *s)
+static void filter_reg_files(char* dirpath, struct dirent **filelist, int n)
 {
-	if (s == NULL) {
-		return;
-	}
+	char* filepath;
+	struct stat sb;
 
-	if (s->desc != NULL) {
-		free(s->desc);
+	assert(filelist != NULL);
+	assert(dirpath != NULL);
+
+	for(--n; n >= 0; n--) {
+		if (filelist[n] == NULL) {
+			continue;
+		}
+#ifdef _DIRENT_HAVE_D_TYPE
+		if (filelist[n]->d_type == DT_UNKNOWN) {
+			/* try another detection method -> use stat */
+#endif
+			/* d_type is not available -> use stat */
+			asprintf(&filepath, "%s/%s", dirpath, filelist[n]->d_name);
+			if (stat(filepath, &sb) == -1) {
+				ERROR("stat() failed on file %s - %s (%s:%d)", filepath, strerror(errno), __FILE__, __LINE__);
+				free(filelist[n]);
+				filelist[n] = NULL;
+				free(filepath);
+				continue;
+			}
+			free(filepath);
+			if (!S_ISREG(sb.st_mode)) {
+				/* the file is not a regular file containing stream events */
+				free(filelist[n]);
+				filelist[n] = NULL;
+				continue;
+			}
+#ifdef _DIRENT_HAVE_D_TYPE
+		} else if (filelist[n]->d_type != DT_REG) {
+			/* the file is not a regular file containing stream events */
+			free(filelist[n]);
+			filelist[n] = NULL;
+			continue;
+		}
+#endif
 	}
-	if (s->name != NULL) {
-		free(s->name);
-	}
-	if (s->fd != -1) {
-		close(s->fd);
-	}
-	free(s);
 }
 
 /*
@@ -215,6 +247,87 @@ static int set_streams_path()
 	}
 }
 
+static xmlDocPtr streams_to_xml(void)
+{
+	xmlDocPtr config;
+	xmlNodePtr node_streams, node_stream;
+	struct stream *s;
+	char* time;
+
+	/* create empty configuration */
+	config = xmlNewDoc(BAD_CAST "1.0");
+	xmlDocSetRootElement(config, xmlNewNode(NULL, BAD_CAST "netconf"));
+	xmlNewNs(config->children, BAD_CAST NCNTF_STREAMS_NS, NULL);
+	node_streams = xmlAddChild(config->children, xmlNewNode(NULL, BAD_CAST "streams"));
+
+	for (s = streams; s != NULL; s = s->next) {
+		node_stream = xmlAddChild(node_streams, xmlNewNode(NULL, BAD_CAST "stream"));
+		xmlNewChild(node_stream, NULL, BAD_CAST "name", BAD_CAST s->name);
+		xmlNewChild(node_stream, NULL, BAD_CAST "description", BAD_CAST s->desc);
+		xmlNewChild(node_stream, NULL, BAD_CAST "replaySupport", (s->replay == 1) ? BAD_CAST "true" : BAD_CAST "false");
+		if (s->replay == 1) {
+			time = nc_time2datetime(s->created);
+			xmlNewChild(node_stream, NULL, BAD_CAST "replayLogCreationTime", BAD_CAST time);
+			free (time);
+		}
+	}
+
+	return (config);
+}
+
+static int map_rules(struct stream *s)
+{
+	mode_t mask;
+	char* filepath = NULL;
+
+	assert(s != NULL);
+	assert(s->rules == NULL);
+
+	if (streams_path == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (s->fd_rules == -1) {
+		asprintf(&filepath, "%s/%s.rules", streams_path, s->name);
+		mask = umask(0000);
+		/* check if file with the rules exists */
+		if (access(filepath, F_OK) != 0) {
+			/* file does not exist, create it */
+			if ((s->fd_rules = open(filepath, O_CREAT|O_RDWR|O_EXCL, 0777)) == -1) {
+				if (errno != EEXIST) {
+					ERROR("Unable to open Events stream rules file %s (%s)", filepath, strerror(errno));
+					return (EXIT_FAILURE);
+				}
+				/* else file exists (someone already created it) just open it */
+			} else {
+				/* create sparse file */
+				lseek(s->fd_rules, NCNTF_RULES_SIZE -1, SEEK_END);
+				write(s->fd_rules, &"\0", 1);
+				lseek(s->fd_rules, 0, SEEK_SET);
+			}
+		}
+		if (s->fd_rules == -1) {
+			s->fd_rules = open(filepath, O_RDWR);
+		}
+		umask(mask);
+		if (s->fd_rules == -1) {
+			ERROR("Unable to open Events stream rules file %s (%s)", filepath, strerror(errno));
+			free(filepath);
+			return (EXIT_FAILURE);
+		}
+		free(filepath);
+	}
+
+	s->rules = mmap(NULL, NCNTF_RULES_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, s->fd_rules, 0);
+	if (s->rules == MAP_FAILED) {
+		/* something bad happend */
+		ERROR("mmapping Events stream rules file failed (%s)", strerror(errno));
+		return (EXIT_FAILURE);
+	} else {
+		return (EXIT_SUCCESS);
+	}
+}
+
 /*
  * Create a new stream file and write the header corresponding to the given
  * stream structure. If the file is already opened (stream structure has file
@@ -228,20 +341,24 @@ static int write_fileheader(struct stream *s)
 	char* filepath = NULL;
 	uint16_t len, version = MAGIC_VERSION;
 	mode_t mask;
+	uint64_t t;
 
 	/* check used variables */
-	if (s == NULL || s->name == NULL || streams_path == NULL) {
+	assert(s != NULL);
+	assert(s->name != NULL);
+
+	if (streams_path == NULL) {
 		return (EXIT_FAILURE);
 	}
 
 	/* check if the corresponding file is already opened */
-	if (s->fd == -1) {
+	if (s->fd_events == -1) {
 		/* open and create/truncate the file */
-		asprintf(&filepath, "%s/%s.%05d", streams_path, s->name, s->part);
+		asprintf(&filepath, "%s/%s.events", streams_path, s->name);
 		mask = umask(0000);
-		s->fd = open(filepath, O_RDWR | O_CREAT | O_TRUNC, 0777);
+		s->fd_events = open(filepath, O_RDWR | O_CREAT | O_TRUNC, 0777);
 		umask(mask);
-		if (s->fd == -1) {
+		if (s->fd_events == -1) {
 			ERROR("Unable to create Events stream file %s (%s)", filepath, strerror(errno));
 			free(filepath);
 			return (EXIT_FAILURE);
@@ -249,36 +366,37 @@ static int write_fileheader(struct stream *s)
 		free(filepath);
 	} else {
 		/* truncate the file */
-		ftruncate(s->fd, 0);
-		lseek(s->fd, 0, SEEK_SET);
+		ftruncate(s->fd_events, 0);
+		lseek(s->fd_events, 0, SEEK_SET);
 	}
 
 	/* write the header */
 	/* magic bytes */
-	write(s->fd, &MAGIC_NAME, strlen(MAGIC_NAME));
-	write(s->fd, &version, sizeof(uint16_t));
+	write(s->fd_events, &MAGIC_NAME, strlen(MAGIC_NAME));
+	write(s->fd_events, &version, sizeof(uint16_t));
 	/* stream name */
 	len = (uint16_t) strlen(s->name) + 1;
-	write(s->fd, &len, sizeof(uint16_t));
-	write(s->fd, s->name, len);
+	write(s->fd_events, &len, sizeof(uint16_t));
+	write(s->fd_events, s->name, len);
 	/* stream description */
 	if (s->desc != NULL) {
 		len = (uint16_t) strlen(s->desc) + 1;
-		write(s->fd, &len, sizeof(uint16_t));
-		write(s->fd, s->desc, len);
+		write(s->fd_events, &len, sizeof(uint16_t));
+		write(s->fd_events, s->desc, len);
 	} else {
 		/* no description */
 		len = 1;
-		write(s->fd, &len, sizeof(uint16_t));
-		write(s->fd, "", len);
+		write(s->fd_events, &len, sizeof(uint16_t));
+		write(s->fd_events, "", len);
 	}
 	/* replay flag */
-	write(s->fd, &(s->replay), sizeof(uint8_t));
-	/* part number */
-	write(s->fd, &(s->part), sizeof(uint16_t));
+	write(s->fd_events, &(s->replay), sizeof(uint8_t));
+	/* creation time */
+	t = (uint64_t) s->created;
+	write(s->fd_events, &t, sizeof(uint64_t));
 
 	/* set where the data starts */
-	s->data = lseek(s->fd, 0, SEEK_CUR);
+	s->data = lseek(s->fd_events, 0, SEEK_CUR);
 
 	return (EXIT_SUCCESS);
 }
@@ -295,6 +413,7 @@ static struct stream *read_fileheader(const char* filepath)
 	char magic_name[strlen(MAGIC_NAME)];
 	uint16_t magic_number;
 	uint16_t len;
+	uint64_t t;
 
 	/* open the file */
 	fd = open(filepath, O_RDWR);
@@ -305,205 +424,154 @@ static struct stream *read_fileheader(const char* filepath)
 
 	/* create and fill the stream structure according to the file header */
 	s = malloc(sizeof(struct stream));
-	s->fd = fd;
+	s->fd_events = fd;
 	/* check magic bytes */
-	read(s->fd, &magic_name, strlen(MAGIC_NAME));
+	read(s->fd_events, &magic_name, strlen(MAGIC_NAME));
 	if (strncmp(magic_name, MAGIC_NAME, strlen(MAGIC_NAME)) != 0) {
 		/* file is not of libnetconf's stream file format */
 		free(s);
 		return (NULL);
 	}
-	read(s->fd, &magic_number, sizeof(uint16_t));
+	read(s->fd_events, &magic_number, sizeof(uint16_t));
 	/* \todo: handle different endianity and versions */
 
 	/* read the stream name */
-	read(s->fd, &len, sizeof(uint16_t));
+	read(s->fd_events, &len, sizeof(uint16_t));
 	s->name = malloc(len * sizeof(char));
-	read(s->fd, s->name, len);
+	read(s->fd_events, s->name, len);
 	/* read the description of the stream */
-	read(s->fd, &len, sizeof(uint16_t));
+	read(s->fd_events, &len, sizeof(uint16_t));
 	s->desc = malloc(len * sizeof(char));
-	read(s->fd, s->desc, len);
+	read(s->fd_events, s->desc, len);
 	/* read the replay flag */
-	read(s->fd, &(s->replay), sizeof(uint8_t));
-	/* read the part number */
-	read(s->fd, &(s->part), sizeof(uint16_t));
+	read(s->fd_events, &(s->replay), sizeof(uint8_t));
+	/* read creation time */
+	read(s->fd_events, &(t), sizeof(uint64_t));
+	s->created = (time_t)t;
 
 	s->locked = 0;
+	s->rules = NULL;
+	s->fd_rules = -1;
 	s->next = NULL;
 
 	/* move to the end of the file */
-	s->data = lseek(s->fd, 0, SEEK_CUR);
+	s->data = lseek(s->fd_events, 0, SEEK_CUR);
 
 	return (s);
 }
 
 /*
- * close all opened streams in the global list
+ * free the stream structure
  */
-static void nc_ntf_streams_close(void)
+static void ncntf_stream_free(struct stream *s)
 {
-	struct stream *s;
-
-	pthread_mutex_lock(streams_mut);
-	s = streams;
-	while(s != NULL) {
-		streams = s->next;
-		nc_ntf_stream_free(s);
-		s = streams;
+	if (s == NULL) {
+		return;
 	}
-	pthread_mutex_unlock(streams_mut);
+
+	if (s->desc != NULL) {
+		free(s->desc);
+	}
+	if (s->name != NULL) {
+		free(s->name);
+	}
+	if (s->fd_events != -1) {
+		close(s->fd_events);
+	}
+	free(s);
 }
 
 /*
- * close D-Bus communication channel
+ * Get the stream structure according to the given stream name
  */
-static void nc_ntf_dbus_close(void)
+static struct stream* ncntf_stream_get(const char* stream)
 {
-	pthread_mutex_lock(dbus_mut);
-	if (dbus != NULL) {
-		dbus_connection_unref(dbus);
-		dbus = NULL;
-	}
-	pthread_mutex_unlock(dbus_mut);
-}
-
-void ncntf_close(void)
-{
-	if (initialized == 1) {
-		nc_ntf_dbus_close();
-		nc_ntf_streams_close();
-		pthread_mutex_destroy(streams_mut);
-		pthread_mutex_destroy(dbus_mut);
-		free(streams_mut);
-		streams_mut = NULL;
-		free(dbus_mut);
-		dbus_mut = NULL;
-		initialized = 0;
-	}
-}
-
-/*
- * Modify the given list of files in the specified directory to keep only
- * regular files in the list. Parameter n specifies the number of items in the
- * list. The list is ussually obtained using scandir().
- *
- */
-static void filter_reg_files(char* dirpath, struct dirent **filelist, int n)
-{
-	char* filepath;
-	struct stat sb;
-
-	assert(filelist != NULL);
-	assert(dirpath != NULL);
-
-	for(--n; n >= 0; n--) {
-		if (filelist[n] == NULL) {
-			continue;
-		}
-#ifdef _DIRENT_HAVE_D_TYPE
-		if (filelist[n]->d_type == DT_UNKNOWN) {
-			/* try another detection method -> use stat */
-#endif
-			/* d_type is not available -> use stat */
-			asprintf(&filepath, "%s/%s", dirpath, filelist[n]->d_name);
-			if (stat(filepath, &sb) == -1) {
-				ERROR("stat() failed on file %s - %s (%s:%d)", filepath, strerror(errno), __FILE__, __LINE__);
-				free(filelist[n]);
-				filelist[n] = NULL;
-				free(filepath);
-				continue;
-			}
-			free(filepath);
-			if (!S_ISREG(sb.st_mode)) {
-				/* the file is not a regular file containing stream events */
-				free(filelist[n]);
-				filelist[n] = NULL;
-				continue;
-			}
-#ifdef _DIRENT_HAVE_D_TYPE
-		} else if (filelist[n]->d_type != DT_REG) {
-			/* the file is not a regular file containing stream events */
-			free(filelist[n]);
-			filelist[n] = NULL;
-			continue;
-		}
-#endif
-	}
-}
-
-/*
- * Initiate the list of available streams. It opens all accessible stream files
- * from the stream directory.
- *
- * If the function is called repeatedly, stream files are closed and opened
- * again - current processing like iteration of the events in the stream must
- * start again.
- */
-static int nc_ntf_streams_init(void)
-{
-	int n;
-	struct dirent **filelist;
 	struct stream *s;
 	char* filepath;
 
-	/* check the streams path */
-	if (streams_path == NULL && set_streams_path() != 0) {
-		return (EXIT_FAILURE);
+	if (stream == NULL) {
+		return (NULL);
+	}
+
+	/* search for the specified stream in the list according to the name */
+	for (s = streams; s != NULL; s = s->next) {
+		if (strcmp(s->name, stream) == 0) {
+			/* the specified stream does exist */
+			return (s);
+		}
 	}
 
 	/*
-	 * lock the whole initialize operation, not only streams variable
-	 * manipulation since this starts a complete work with the streams
+	 * the stream was not found in the current list - try to look at the
+	 * stream directory if the stream file wasn't created meanwhile
 	 */
-	pthread_mutex_lock(streams_mut);
-
-	if (streams != NULL) {
-		/* streams already initiated - reinitialize the list */
-		nc_ntf_streams_close();
-	}
-
-	/* explore the stream directory */
-	n = scandir(streams_path, &filelist, NULL, alphasort);
-	if (n < 0) {
-		ERROR("Unable to read from Events streams directory %s (%s).", streams_path, strerror(errno));
-		pthread_mutex_unlock(streams_mut);
-		return (EXIT_FAILURE);
-	}
-	/* keep only regular files that could store the events stream */
-	filter_reg_files(streams_path, filelist, n);
-	/* and open all libnetconf's stream files - file's magic number is checked */
-	for(--n; n >= 0; n--) {
-		if (filelist[n] == NULL) { /* was not a regular file */
-			continue;
-		}
-
-		asprintf(&filepath, "%s/%s", streams_path, filelist[n]->d_name);
-		if ((s = read_fileheader(filepath)) != NULL) {
+	if (s == NULL) {
+		/* try to localize so far unrecognized stream file */
+		asprintf(&filepath, "%s/%s.events", streams_path, stream);
+		if (((s = read_fileheader(filepath)) != NULL) && (map_rules(s) == 0)) {
 			/* add the stream file into the stream list */
 			s->next = streams;
 			streams = s;
-		} /* else - not an event stream file */
+		} else if (s != NULL) {
+			ERROR("Unable to map Event stream rules file into memory.");
+			ncntf_stream_free(s);
+			s = NULL;
+		}
 		free(filepath);
-
-		/* free the directory entry information */
-		free(filelist[n]);
 	}
 
-	if (ncntf_stream_isavailable(NCNTF_STREAM_BASE) == 0) {
-		ncntf_stream_new(NCNTF_STREAM_BASE, "NETCONF Base Notifications", 1);
+	return (s);
+}
+
+/*
+ * lock the stream file to avoid concurrent writing/reading from different
+ * processes.
+ */
+static int ncntf_stream_lock(struct stream *s)
+{
+	off_t offset;
+
+	/* this will be blocking, but all these locks should be short-term */
+	offset = lseek(s->fd_events, 0, SEEK_CUR);
+	lseek(s->fd_events, 0, SEEK_SET);
+	if (lockf(s->fd_events, F_LOCK, 0) == -1) {
+		lseek(s->fd_events, offset, SEEK_SET);
+		ERROR("Stream file locking failed (%s).", strerror(errno));
+		return (EXIT_FAILURE);
+	}
+	lseek(s->fd_events, offset, SEEK_SET);
+	s->locked = 1;
+	return (EXIT_SUCCESS);
+}
+
+/*
+ * unlock the stream file after reading/writing
+ */
+static int ncntf_stream_unlock(struct stream *s)
+{
+	off_t offset;
+
+	if (s->locked == 0) {
+		/* nothing to do */
+		return (EXIT_SUCCESS);
 	}
 
-	pthread_mutex_unlock(streams_mut);
-	free(filelist);
-
+	offset = lseek(s->fd_events, 0, SEEK_CUR);
+	lseek(s->fd_events, 0, SEEK_SET);
+	if (lockf(s->fd_events, F_ULOCK, 0) == -1) {
+		lseek(s->fd_events, offset, SEEK_SET);
+		ERROR("Stream file unlocking failed (%s).", strerror(errno));
+		return (EXIT_FAILURE);
+	}
+	lseek(s->fd_events, offset, SEEK_SET);
+	s->locked = 0;
 	return (EXIT_SUCCESS);
 }
 
 /*
  * Initialize D-Bus communication
  */
-static int nc_ntf_dbus_init(void)
+static int ncntf_dbus_init(void)
 {
 	DBusError dbus_err;
 
@@ -529,13 +597,127 @@ static int nc_ntf_dbus_init(void)
 	return (EXIT_SUCCESS);
 }
 
+/*
+ * close D-Bus communication channel
+ */
+static void ncntf_dbus_close(void)
+{
+	pthread_mutex_lock(dbus_mut);
+	if (dbus != NULL) {
+		dbus_connection_unref(dbus);
+		dbus = NULL;
+	}
+	pthread_mutex_unlock(dbus_mut);
+}
+
+/*
+ * Initiate the list of available streams. It opens all accessible stream files
+ * from the stream directory.
+ *
+ * If the function is called repeatedly, stream files are closed and opened
+ * again - current processing like iteration of the events in the stream must
+ * start again.
+ */
+static int ncntf_streams_init(void)
+{
+	int n;
+	struct dirent **filelist;
+	struct stream *s = NULL;
+	char* filepath;
+
+	if (ncntf_config != NULL) {
+		/* we are already initialized */
+		return(EXIT_SUCCESS);
+	}
+
+	/* check the streams path */
+	if (streams_path == NULL && set_streams_path() != 0) {
+		return (EXIT_FAILURE);
+	}
+
+	/*
+	 * lock the whole initialize operation, not only streams variable
+	 * manipulation since this starts a complete work with the streams
+	 */
+	pthread_mutex_lock(streams_mut);
+
+	/* explore the stream directory */
+	n = scandir(streams_path, &filelist, NULL, alphasort);
+	if (n < 0) {
+		ERROR("Unable to read from Events streams directory %s (%s).", streams_path, strerror(errno));
+		pthread_mutex_unlock(streams_mut);
+		return (EXIT_FAILURE);
+	}
+	/* keep only regular files that could store the events stream */
+	filter_reg_files(streams_path, filelist, n);
+	/* and open all libnetconf's stream files - file's magic number is checked */
+	for(--n; n >= 0; n--) {
+		if (filelist[n] == NULL) { /* was not a regular file */
+			continue;
+		}
+
+		asprintf(&filepath, "%s/%s", streams_path, filelist[n]->d_name);
+		if ((s = read_fileheader(filepath)) != NULL && (map_rules(s) == 0)) {
+			/* add the stream file into the stream list */
+			s->next = streams;
+			streams = s;
+		} else if (s != NULL) {
+			ERROR("Unable to map Event stream rules file into memory.");
+			ncntf_stream_free(s);
+			s = NULL;
+		}/* else - not an event stream file */
+		free(filepath);
+
+		/* free the directory entry information */
+		free(filelist[n]);
+	}
+
+	pthread_mutex_unlock(streams_mut);
+	free(filelist);
+
+	/* dump streams into xml status data */
+	if ((ncntf_config = streams_to_xml()) == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (ncntf_stream_isavailable(NCNTF_STREAM_BASE) == 0) {
+		/* create default NETCONF stream if does not exist */
+		ncntf_stream_new(NCNTF_STREAM_BASE, "NETCONF Base Notifications", 1);
+		/* allow notifications defined in RFC 6470 */
+		ncntf_stream_allow_events(NCNTF_STREAM_BASE, "netconf-config-change");
+		ncntf_stream_allow_events(NCNTF_STREAM_BASE, "netconf-capability-change");
+		ncntf_stream_allow_events(NCNTF_STREAM_BASE, "netconf-session-start");
+		ncntf_stream_allow_events(NCNTF_STREAM_BASE, "netconf-session-end");
+		ncntf_stream_allow_events(NCNTF_STREAM_BASE, "netconf-confirmed-commit");
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+/*
+ * close all opened streams in the global list
+ */
+static void ncntf_streams_close(void)
+{
+	struct stream *s;
+
+	pthread_mutex_lock(streams_mut);
+	s = streams;
+	while(s != NULL) {
+		streams = s->next;
+		ncntf_stream_free(s);
+		s = streams;
+	}
+	pthread_mutex_unlock(streams_mut);
+}
+
 int ncntf_init(void)
 {
-	int ret;
+	int ret, r;
 	pthread_mutexattr_t mattr;
-	int r;
 
-	if (initialized == 1) {
+	if (ncntf_config != NULL) {
+		/* we are already initialized */
 		return(EXIT_SUCCESS);
 	}
 
@@ -586,27 +768,48 @@ int ncntf_init(void)
 		pthread_mutexattr_destroy(&mattr);
 	}
 
-	initialized = 1;
-	/* initiate streams */
-	if ((ret = nc_ntf_streams_init()) != 0) {
-		initialized = 0;
+	/* initiate DBus communication */
+	if ((ret = ncntf_dbus_init()) != 0) {
 		return (ret);
 	}
 
-	/* initiate DBus communication */
-	if ((ret = nc_ntf_dbus_init()) != 0) {
-		initialized = 0;
+	/* initiate streams */
+	if ((ret = ncntf_streams_init()) != 0) {
 		return (ret);
 	}
 
 	return (EXIT_SUCCESS);
 }
 
+char* ncntf_status(void)
+{
+	xmlChar* data;
+
+	xmlDocDumpFormatMemory(ncntf_config, &data, NULL, 1);
+	return ((char*)data);
+}
+
+void ncntf_close(void)
+{
+	if (ncntf_config != NULL) {
+		ncntf_dbus_close();
+		ncntf_streams_close();
+		pthread_mutex_destroy(streams_mut);
+		pthread_mutex_destroy(dbus_mut);
+		free(streams_mut);
+		streams_mut = NULL;
+		free(dbus_mut);
+		dbus_mut = NULL;
+		xmlFreeDoc(ncntf_config);
+		ncntf_config = NULL;
+	}
+}
+
 int ncntf_stream_new(const char* name, const char* desc, int replay)
 {
 	struct stream *s;
 
-	if (initialized == 0) {
+	if (ncntf_config == NULL) {
 		return (EXIT_FAILURE);
 	}
 
@@ -630,12 +833,14 @@ int ncntf_stream_new(const char* name, const char* desc, int replay)
 	s->name = strdup(name);
 	s->desc = strdup(desc);
 	s->replay = replay;
+	s->created = time(NULL);
 	s->locked = 0;
-	s->part = 1; /* the first part of the stream */
 	s->next = NULL;
-	s->fd = -1;
-	if (write_fileheader(s) != 0) {
-		nc_ntf_stream_free(s);
+	s->rules = NULL;
+	s->fd_events = -1;
+	s->fd_rules = -1;
+	if (write_fileheader(s) != 0 || map_rules(s) != 0) {
+		ncntf_stream_free(s);
 		pthread_mutex_unlock(streams_mut);
 		return (EXIT_FAILURE);
 	} else {
@@ -647,20 +852,49 @@ int ncntf_stream_new(const char* name, const char* desc, int replay)
 	}
 }
 
+int ncntf_stream_allow_events(const char* stream, const char* event)
+{
+	char* end;
+	struct stream* s;
+
+	if (stream == NULL || event == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (ncntf_event_isallowed(stream, event)) {
+		return (EXIT_SUCCESS);
+	}
+
+	if ((s = ncntf_stream_get(stream)) == NULL) {
+		/* stream does not exist or some error occurred */
+		return (EXIT_FAILURE);
+	}
+
+	/* create new rule */
+	end = strrchr(s->rules, '\n');
+	if (end == NULL) {
+		/* rules is empty */
+		end = s->rules;
+	} else {
+		end++;
+	}
+	strcpy(end, event);
+	strcpy(end + strlen(event), "\n");
+
+	return (EXIT_SUCCESS);
+}
+
 char** ncntf_stream_list(void)
 {
 	char** list;
 	struct stream *s;
 	int i;
 
-	if (initialized == 0) {
+	if (ncntf_config == NULL) {
 		return (NULL);
 	}
 
 	pthread_mutex_lock(streams_mut);
-	if (streams == NULL) {
-		nc_ntf_streams_init();
-	}
 
 	for (s = streams, i = 0; s != NULL; s = s->next, i++);
 	list = calloc(i + 1, sizeof(char*));
@@ -681,7 +915,7 @@ int ncntf_stream_isavailable(const char* name)
 {
 	struct stream *s;
 
-	if (initialized == 0 || name == NULL) {
+	if (ncntf_config == NULL || name == NULL) {
 		return(0);
 	}
 
@@ -698,90 +932,248 @@ int ncntf_stream_isavailable(const char* name)
 	return (0); /* the stream does not exist */
 }
 
-/*
- * Get the stream structure according to the given stream name
- */
-static struct stream* nc_ntf_stream_get(const char* stream)
+void ncntf_stream_iter_start(const char* stream)
 {
 	struct stream *s;
-	char* filepath;
+	char* dbus_filter = NULL;
+	DBusError err;
 
-	if (stream == NULL) {
+	if (ncntf_config == NULL) {
+		return;
+	}
+
+	pthread_mutex_lock(streams_mut);
+	if ((s = ncntf_stream_get(stream)) == NULL) {
+		pthread_mutex_unlock(streams_mut);
+		return;
+	}
+	lseek(s->fd_events, s->data, SEEK_SET);
+	pthread_mutex_unlock(streams_mut);
+
+	/* subscribe DBus signals for the stream */
+	asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
+			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream);
+	dbus_error_init(&err);
+
+	pthread_mutex_lock(dbus_mut);
+	dbus_bus_add_match(dbus, dbus_filter, &err);
+	dbus_connection_flush(dbus);
+	pthread_mutex_unlock(dbus_mut);
+
+	free(dbus_filter);
+
+	if (dbus_error_is_set(&err)) {
+		WARN("%s", err.message);
+		dbus_error_free(&err);
+	}
+}
+
+void ncntf_stream_iter_finnish(const char* stream)
+{
+	char* dbus_filter = NULL;
+	DBusError err;
+
+	/* unsubscribe DBus */
+	asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
+			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream);
+	dbus_error_init(&err);
+
+	pthread_mutex_lock(dbus_mut);
+	dbus_bus_remove_match(dbus, dbus_filter, &err);
+	dbus_connection_flush(dbus);
+	pthread_mutex_unlock(dbus_mut);
+
+	free(dbus_filter);
+
+	if (dbus_error_is_set(&err)) {
+		WARN("%s", err.message);
+		dbus_error_free(&err);
+	}
+}
+
+/*
+ * Pop the next event record from the stream file.
+ *
+ * \todo: thread safety (?thread-specific variables)
+ */
+char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time)
+{
+	struct stream *s;
+	int32_t len;
+	uint64_t t;
+	off_t offset;
+	char* text;
+	DBusMessage *signal;
+	DBusMessageIter signal_args;
+
+	if (ncntf_config == NULL) {
 		return (NULL);
 	}
 
-	if (streams == NULL) {
-		nc_ntf_streams_init();
+	/* check time boundaries */
+	if (start != -1 && stop != -1 && stop < start) {
+		return (NULL);
 	}
 
-	/* search for the specified stream in the list according to the name */
-	for (s = streams; s != NULL; s = s->next) {
-		if (strcmp(s->name, stream) == 0) {
-			/* the specified stream does exist */
-			return (s);
+	pthread_mutex_lock(streams_mut);
+	if ((s = ncntf_stream_get(stream)) == NULL) {
+		pthread_mutex_unlock(streams_mut);
+		return (NULL);
+	}
+
+	while (1) {
+		/* condition to read events from file (use replay):
+		 * 1) startTime is specified
+		 * 2) stream has replay option allowed
+		 * 3) there are still some data to read from stream file
+		 */
+		if ((start != -1) && (s->replay == 1) && (offset = lseek(s->fd_events, 0, SEEK_CUR)) < lseek(s->fd_events, 0, SEEK_END)) {
+			/* there are still some data to read */
+			lseek(s->fd_events, offset, SEEK_SET);
+		} else {
+			/* no more data */
+			pthread_mutex_unlock(streams_mut);
+
+			/* try DBus */
+			while (1) {
+				pthread_mutex_lock(dbus_mut);
+				signal = dbus_connection_pop_message(dbus);
+				pthread_mutex_unlock(dbus_mut);
+
+				if (signal != NULL && dbus_message_is_signal(signal, NC_NTF_DBUS_INTERFACE, "Event")) {
+					/* parse the message, according to the
+					 * filter set in nc_ntf_stream_iter_start(),
+					 * we have Event signal from the stream
+					 * interface of the specified stream
+					 */
+					/* read the parameters */
+					if (dbus_message_iter_init(signal, &signal_args)) {
+						if (DBUS_TYPE_UINT64 != dbus_message_iter_get_arg_type(&signal_args)) {
+							WARN("Unexpected DBus Event signal (timestamp is missing).");
+							dbus_message_unref(signal);
+							continue;
+						}
+						dbus_message_iter_get_basic(&signal_args, &t);
+						/* check boundaries */
+						if (start != -1 && start > t) {
+							/*
+							 * we're not interested in this event, it
+							 * happened before specified start time
+							 */
+							dbus_message_unref(signal);
+							continue; /* try next signal */
+						}
+						if (stop != -1 && stop < t) {
+							/*
+							 * we're not interested in this event, it
+							 * happened after specified stop time
+							 */
+							dbus_message_unref(signal);
+							continue; /* try next signal */
+						}
+						/* we're interested, read content */
+						if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(&signal_args)) {
+							WARN("Unexpected DBus Event signal (content is missing).");
+							dbus_message_unref(signal);
+							continue;
+						}
+						dbus_message_iter_get_basic(&signal_args, &text);
+						dbus_message_unref(signal);
+						if (event_time != NULL) {
+							*event_time = t;
+						}
+						return(text);
+					}
+				}
+				/* else signal == NULL */
+				break;
+			}
+
+			/* no more events */
+			return (NULL);
+		}
+
+		if (ncntf_stream_lock(s) == 0) {
+			read(s->fd_events, &len, sizeof(int32_t));
+			read(s->fd_events, &t, sizeof(uint64_t));
+
+			/* check boundaries */
+			if (start != -1 && start > t) {
+				/*
+				 * we're not interested in this event, it
+				 * happened before specified start time
+				 */
+				lseek(s->fd_events, len, SEEK_CUR);
+				/* read another event */
+				continue;
+			}
+			if (stop != -1 && stop < t) {
+				/*
+				 * we're not interested in this event, it
+				 * happened after specified stop time
+				 */
+				lseek(s->fd_events, len, SEEK_CUR);
+				/* read another event */
+				continue;
+			}
+
+			/* we're interested, read content */
+			text = malloc(len * sizeof(char));
+			read(s->fd_events, text, len);
+			ncntf_stream_unlock(s);
+			break; /* end the reading loop */
+		} else {
+			ERROR("Unable to read event from stream file %s (locking failed).", s->name);
+			pthread_mutex_unlock(streams_mut);
+			return (NULL);
 		}
 	}
 
-	/*
-	 * the stream was not found in the current list - try to look at the
-	 * stream directory if the stream file wasn't created meanwhile
-	 */
-	if (s == NULL) {
-		/* try to localize so far unrecognized stream file */
-		asprintf(&filepath, "%s/%s.%05d", streams_path, stream, 1);
-		if ((s = read_fileheader(filepath)) != NULL) {
-			/* add the stream file into the stream list */
-			s->next = streams;
-			streams = s;
+	pthread_mutex_unlock(streams_mut);
+
+	if (event_time != NULL) {
+		*event_time = t;
+	}
+	return (text);
+}
+
+
+static void ncntf_event_stdoutprint (time_t eventtime, const char* content)
+{
+	char* t = NULL;
+
+	fprintf(stdout, "eventTime: %s\n%s\n", t = nc_time2datetime(eventtime), content);
+	if (t != NULL) {
+		free(t);
+	}
+}
+
+static int ncntf_event_isallowed(const char* stream, const char* event)
+{
+	struct stream* s;
+	char* token;
+	char* rules;
+
+	if (stream == NULL || event == NULL) {
+		return (0);
+	}
+
+	if ((s = ncntf_stream_get(stream)) == NULL) {
+		/* stream does not exist or some error occurred */
+		return (0);
+	}
+
+	rules = strdup(s->rules);
+	for (token = strtok(rules, "\n"); token != NULL; token = strtok(NULL, "\n")) {
+		if (strcmp(event, token) == 0) {
+			free(rules);
+			return(1);
 		}
 	}
+	free(rules);
 
-	return (s);
-}
-
-/*
- * lock the stream file to avoid concurrent writing/reading from different
- * processes.
- */
-static int nc_ntf_stream_lock(struct stream *s)
-{
-	off_t offset;
-
-	/* this will be blocking, but all these locks should be short-term */
-	offset = lseek(s->fd, 0, SEEK_CUR);
-	lseek(s->fd, 0, SEEK_SET);
-	if (lockf(s->fd, F_LOCK, 0) == -1) {
-		lseek(s->fd, offset, SEEK_SET);
-		ERROR("Stream file locking failed (%s).", strerror(errno));
-		return (EXIT_FAILURE);
-	}
-	lseek(s->fd, offset, SEEK_SET);
-	s->locked = 1;
-	return (EXIT_SUCCESS);
-}
-
-/*
- * unlock the stream file after reading/writing
- */
-static int nc_ntf_stream_unlock(struct stream *s)
-{
-	off_t offset;
-
-	if (s->locked == 0) {
-		/* nothing to do */
-		return (EXIT_SUCCESS);
-	}
-
-	offset = lseek(s->fd, 0, SEEK_CUR);
-	lseek(s->fd, 0, SEEK_SET);
-	if (lockf(s->fd, F_ULOCK, 0) == -1) {
-		lseek(s->fd, offset, SEEK_SET);
-		ERROR("Stream file unlocking failed (%s).", strerror(errno));
-		return (EXIT_FAILURE);
-	}
-	lseek(s->fd, offset, SEEK_SET);
-	s->locked = 0;
-	return (EXIT_SUCCESS);
+	/* specified event is not allowed in the stream */
+	return (0);
 }
 
 /**
@@ -824,17 +1216,16 @@ static int nc_ntf_stream_unlock(struct stream *s)
  * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_START, my_session);
  * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");
  *
- * @param[in] stream Name of the stream where the event will be stored.
  * @param[in] etime Time of the event, if set to -1, current time is used.
  * @param[in] event Event type to distinguish following parameters.
  * @param[in] ... Specific parameters for different event types as described
  * above.
  * @return 0 for success, non-zero value else.
  */
-int ncntf_event_new(char* stream, time_t etime, NCNTF_EVENT event, ...)
+int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 {
 	char *event_time = NULL, *signal_object = NULL;
-	char *content = NULL, *record = NULL;
+	char *content = NULL, *record = NULL, *ename = NULL;
 	char *aux1 = NULL, *aux2 = NULL;
 	NC_DATASTORE ds;
 	NCNTF_EVENT_BY by;
@@ -848,9 +1239,11 @@ int ncntf_event_new(char* stream, time_t etime, NCNTF_EVENT event, ...)
 	va_list params;
 	DBusMessage *signal = NULL;
 	DBusMessageIter signal_args;
+	xmlDocPtr edoc;
+	int ret = EXIT_SUCCESS;
 
 	/* check the stream */
-	if (initialized == 0 || ncntf_stream_isavailable(stream) == 0) {
+	if (ncntf_config == NULL) {
 		return (EXIT_FAILURE);
 	}
 
@@ -1131,13 +1524,29 @@ int ncntf_event_new(char* stream, time_t etime, NCNTF_EVENT event, ...)
 	}
 	if (etime == -1) {
 		ERROR("Setting event time failed (%s).", strerror(errno));
-		return (EXIT_FAILURE);
+		ret = EXIT_FAILURE;
+		goto cleanup;
 	}
 	if ((event_time = nc_time2datetime(etime)) == NULL) {
 		ERROR("Internal error when converting time formats (%s:%d).", __FILE__, __LINE__);
-		return (EXIT_FAILURE);
+		ret = EXIT_FAILURE;
+		goto cleanup;
 	}
 	etime64 = (uint64_t)etime;
+
+	/* get event name string for filter on streams */
+	if ((edoc = xmlReadMemory(content, strlen(content), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING)) == NULL) {
+		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+		ret = EXIT_FAILURE;
+		goto cleanup;
+	}
+	if ((aux1 = (char*)((xmlDocGetRootElement(edoc))->name)) == NULL) {
+		ERROR("xmlDocGetRootElement failed (%s:%d)", __FILE__, __LINE__);
+		ret = EXIT_FAILURE;
+		goto cleanup;
+	}
+	ename = strdup(aux1);
+	xmlFreeDoc(edoc);
 
 	/* complete the event text */
 	len = (int32_t) asprintf(&record, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -1146,67 +1555,81 @@ int ncntf_event_new(char* stream, time_t etime, NCNTF_EVENT event, ...)
 			NC_NS_CAP_NOTIFICATIONS,
 			event_time,
 			content);
-	free(event_time);
-	free(content);
 	if (len == -1) {
 		ERROR("Creating event record failed.");
-		return (EXIT_FAILURE);
+		ret = EXIT_FAILURE;
+		goto cleanup;
 	}
 	len++; /* include termination null byte */
 
-	/* write the event into the stream file */
+	/* write the event into the stream file(s) */
 	pthread_mutex_lock(streams_mut);
-	s = nc_ntf_stream_get(stream);
-	if (nc_ntf_stream_lock(s) == 0) {
-		lseek(s->fd, 0, SEEK_END);
-		write(s->fd, &len, sizeof(int32_t)); /* length of the record */
-		write(s->fd, &etime64, sizeof(uint64_t)); /* event time in time_t format */
-		write(s->fd, record, len); /* event record - <notification> xml document */
-		nc_ntf_stream_unlock(s);
-	} else {
-		ERROR("Unable to write event into stream file %s (locking failed).", s->name);
-		free(record);
-		return (EXIT_FAILURE);
+	for (s = streams; s != NULL; s = s->next) {
+		if (s->replay == 0) {
+			continue;
+		}
+
+		if (ncntf_event_isallowed(s->name, ename) != 0) {
+			/* log the event to the stream file */
+			if (ncntf_stream_lock(s) == 0) {
+				lseek(s->fd_events, 0, SEEK_END);
+				write(s->fd_events, &len, sizeof(int32_t)); /* length of the record */
+				write(s->fd_events, &etime64, sizeof(uint64_t)); /* event time in time_t format */
+				write(s->fd_events, record, len); /* event record - <notification> xml document */
+				ncntf_stream_unlock(s);
+			} else {
+				WARN("Unable to write event %s into stream file %s (locking failed).", ename, s->name);
+			}
+		}
 	}
 	pthread_mutex_unlock(streams_mut);
 
 	/* announce event via DBus */
 	pthread_mutex_lock(dbus_mut);
 	if (dbus != NULL) {
-		/* create a signal and check for errors */
-		asprintf(&signal_object, "%s/%s", NC_NTF_DBUS_PATH, stream);
-		signal = dbus_message_new_signal(signal_object, NC_NTF_DBUS_INTERFACE, "Event");
-		free(signal_object);
-		if (signal == NULL) {
-			WARN("Announcing event via DBus failed (creating DBus signal failed).");
-			goto cleanup;
-			/* event already successfully stored, return SUCCESS */
-		}
-		/* append arguments onto signal */
-		dbus_message_iter_init_append(signal, &signal_args);
-		if (!dbus_message_iter_append_basic(&signal_args, DBUS_TYPE_UINT64, &etime64)) {
-			WARN("Announcing event via DBus failed (attaching event timestamp failed).");
-			goto cleanup;
-			/* event already successfully stored, return SUCCESS */
-		}
-		if (!dbus_message_iter_append_basic(&signal_args, DBUS_TYPE_STRING, &record)) {
-			WARN("Announcing event via DBus failed (attaching event content failed).");
-			goto cleanup;
-			/* event already successfully stored, return SUCCESS */
-		}
+		for (s = streams; s != NULL; s = s->next) {
+			if (ncntf_event_isallowed(s->name, ename) == 0) {
+				continue;
+			}
+			/* create a signal and check for errors */
+			asprintf(&signal_object, "%s/%s", NC_NTF_DBUS_PATH, s->name);
+			signal = dbus_message_new_signal(signal_object, NC_NTF_DBUS_INTERFACE, "Event");
+			free(signal_object);
+			if (signal == NULL) {
+				WARN("Announcing event via DBus failed (creating DBus signal failed).");
+				goto cleanup_dbus_mut;
+				/* event already successfully stored, return SUCCESS */
+				ret = EXIT_SUCCESS;
+			}
+			/* append arguments onto signal */
+			dbus_message_iter_init_append(signal, &signal_args);
+			if (!dbus_message_iter_append_basic(&signal_args, DBUS_TYPE_UINT64, &etime64)) {
+				WARN("Announcing event via DBus failed (attaching event timestamp failed).");
+				goto cleanup_dbus_mut;
+				/* event already successfully stored, return SUCCESS */
+				ret = EXIT_SUCCESS;
+			}
+			if (!dbus_message_iter_append_basic(&signal_args, DBUS_TYPE_STRING, &record)) {
+				WARN("Announcing event via DBus failed (attaching event content failed).");
+				goto cleanup_dbus_mut;
+				/* event already successfully stored, return SUCCESS */
+				ret = EXIT_SUCCESS;
+			}
 
-		/* send the message and flush the connection */
-		if (!dbus_connection_send(dbus, signal, NULL)) {
-			WARN("Announcing event via DBus failed (sending signal failed).");
-			goto cleanup;
-			/* event already successfully stored, return SUCCESS */
+			/* send the message and flush the connection */
+			if (!dbus_connection_send(dbus, signal, NULL)) {
+				WARN("Announcing event via DBus failed (sending signal failed).");
+				goto cleanup_dbus_mut;
+				/* event already successfully stored, return SUCCESS */
+				ret = EXIT_SUCCESS;
+			}
+			dbus_connection_flush(dbus);
 		}
-		dbus_connection_flush(dbus);
 	}
 
-cleanup:
+cleanup_dbus_mut:
 	pthread_mutex_unlock(dbus_mut);
-
+cleanup:
 	/* free DBus signal */
 	if (signal != NULL) {
 		dbus_message_unref(signal);
@@ -1214,218 +1637,11 @@ cleanup:
 
 	/* final cleanup */
 	free(record);
+	free(ename);
+	free(content);
+	free(event_time);
 
-	return (EXIT_SUCCESS);
-}
-
-void ncntf_stream_iter_start(const char* stream)
-{
-	struct stream *s;
-	char* dbus_filter = NULL;
-	DBusError err;
-
-	if (initialized == 0) {
-		return;
-	}
-
-	pthread_mutex_lock(streams_mut);
-	if ((s = nc_ntf_stream_get(stream)) == NULL) {
-		pthread_mutex_unlock(streams_mut);
-		return;
-	}
-	lseek(s->fd, s->data, SEEK_SET);
-	pthread_mutex_unlock(streams_mut);
-
-	/* subscribe DBus signals for the stream */
-	asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
-			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream);
-	dbus_error_init(&err);
-
-	pthread_mutex_lock(dbus_mut);
-	dbus_bus_add_match(dbus, dbus_filter, &err);
-	dbus_connection_flush(dbus);
-	pthread_mutex_unlock(dbus_mut);
-
-	free(dbus_filter);
-
-	if (dbus_error_is_set(&err)) {
-		WARN("%s", err.message);
-		dbus_error_free(&err);
-	}
-}
-
-void ncntf_stream_iter_finnish(const char* stream)
-{
-	char* dbus_filter = NULL;
-	DBusError err;
-
-	/* unsubscribe DBus */
-	asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
-			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream);
-	dbus_error_init(&err);
-
-	pthread_mutex_lock(dbus_mut);
-	dbus_bus_remove_match(dbus, dbus_filter, &err);
-	dbus_connection_flush(dbus);
-	pthread_mutex_unlock(dbus_mut);
-
-	free(dbus_filter);
-
-	if (dbus_error_is_set(&err)) {
-		WARN("%s", err.message);
-		dbus_error_free(&err);
-	}
-}
-
-/*
- * Pop the next event record from the stream file.
- *
- * \todo: thread safety (?thread-specific variables)
- */
-char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time)
-{
-	struct stream *s;
-	int32_t len;
-	uint64_t t;
-	off_t offset;
-	char* text;
-	DBusMessage *signal;
-	DBusMessageIter signal_args;
-
-	if (initialized == 0) {
-		return (NULL);
-	}
-
-	/* check time boundaries */
-	if (start != -1 && stop != -1 && stop < start) {
-		return (NULL);
-	}
-
-	pthread_mutex_lock(streams_mut);
-	if ((s = nc_ntf_stream_get(stream)) == NULL) {
-		pthread_mutex_unlock(streams_mut);
-		return (NULL);
-	}
-
-	while (1) {
-		if ((offset = lseek(s->fd, 0, SEEK_CUR)) < lseek(s->fd, 0, SEEK_END)) {
-			/* there are still some data to read */
-			lseek(s->fd, offset, SEEK_SET);
-		} else {
-			/* no more data */
-			pthread_mutex_unlock(streams_mut);
-
-			/* try DBus */
-			while (1) {
-				pthread_mutex_lock(dbus_mut);
-				signal = dbus_connection_pop_message(dbus);
-				pthread_mutex_unlock(dbus_mut);
-
-				if (signal != NULL && dbus_message_is_signal(signal, NC_NTF_DBUS_INTERFACE, "Event")) {
-					/* parse the message, according to the
-					 * filter set in nc_ntf_stream_iter_start(),
-					 * we have Event signal from the stream
-					 * interface of the specified stream
-					 */
-					/* read the parameters */
-					if (dbus_message_iter_init(signal, &signal_args)) {
-						if (DBUS_TYPE_UINT64 != dbus_message_iter_get_arg_type(&signal_args)) {
-							WARN("Unexpected DBus Event signal (timestamp is missing).");
-							dbus_message_unref(signal);
-							continue;
-						}
-						dbus_message_iter_get_basic(&signal_args, &t);
-						/* check boundaries */
-						if (start != -1 && start > t) {
-							/*
-							 * we're not interested in this event, it
-							 * happened before specified start time
-							 */
-							dbus_message_unref(signal);
-							continue; /* try next signal */
-						}
-						if (stop != -1 && stop < t) {
-							/*
-							 * we're not interested in this event, it
-							 * happened after specified stop time
-							 */
-							dbus_message_unref(signal);
-							continue; /* try next signal */
-						}
-						/* we're interested, read content */
-						if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(&signal_args)) {
-							WARN("Unexpected DBus Event signal (content is missing).");
-							dbus_message_unref(signal);
-							continue;
-						}
-						dbus_message_iter_get_basic(&signal_args, &text);
-						dbus_message_unref(signal);
-						if (event_time != NULL) {
-							*event_time = t;
-						}
-						return(text);
-					}
-				}
-				/* else signal == NULL */
-				break;
-			}
-
-			/* no more events */
-			return (NULL);
-		}
-
-		if (nc_ntf_stream_lock(s) == 0) {
-			read(s->fd, &len, sizeof(int32_t));
-			read(s->fd, &t, sizeof(uint64_t));
-
-			/* check boundaries */
-			if (start != -1 && start > t) {
-				/*
-				 * we're not interested in this event, it
-				 * happened before specified start time
-				 */
-				lseek(s->fd, len, SEEK_CUR);
-				/* read another event */
-				continue;
-			}
-			if (stop != -1 && stop < t) {
-				/*
-				 * we're not interested in this event, it
-				 * happened after specified stop time
-				 */
-				lseek(s->fd, len, SEEK_CUR);
-				/* read another event */
-				continue;
-			}
-
-			/* we're interested, read content */
-			text = malloc(len * sizeof(char));
-			read(s->fd, text, len);
-			nc_ntf_stream_unlock(s);
-			break; /* end the reading loop */
-		} else {
-			ERROR("Unable to read event from stream file %s (locking failed).", s->name);
-			pthread_mutex_unlock(streams_mut);
-			return (NULL);
-		}
-	}
-
-	pthread_mutex_unlock(streams_mut);
-
-	if (event_time != NULL) {
-		*event_time = t;
-	}
-	return (text);
-}
-
-static void ncntf_stdoutprint (time_t eventtime, const char* content)
-{
-	char* t = NULL;
-
-	fprintf(stdout, "eventTime: %s\n%s\n", t = nc_time2datetime(eventtime), content);
-	if (t != NULL) {
-		free(t);
-	}
+	return (ret);
 }
 
 nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
@@ -1470,7 +1686,12 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 	return (retval);
 }
 
-static NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif)
+void ncntf_notif_free(nc_ntf *ntf)
+{
+	nc_msg_free((struct nc_msg*) ntf);
+}
+
+NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif)
 {
 	xmlNodePtr root, node;
 
@@ -1612,7 +1833,7 @@ time_t ncntf_notif_get_time(nc_ntf* notif)
 /**
  * @return 0 on success,\n -1 on general error (invalid rpc),\n -2 on filter error (filter set but it is invalid)
  */
-static int get_subscription_params(const nc_rpc* subscribe_rpc, char **stream, time_t *start, time_t *stop, struct nc_filter** filter)
+static int ncntf_subscription_get_params(const nc_rpc* subscribe_rpc, char **stream, time_t *start, time_t *stop, struct nc_filter** filter)
 {
 	xmlXPathContextPtr srpc_ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;
@@ -1698,7 +1919,7 @@ static int get_subscription_params(const nc_rpc* subscribe_rpc, char **stream, t
 	return (0);
 }
 
-nc_reply *ncntf_check_subscription(const nc_rpc* subscribe_rpc)
+nc_reply *ncntf_subscription_check(const nc_rpc* subscribe_rpc)
 {
 	struct nc_err* e;
 	char *stream = NULL, *auxs = NULL;
@@ -1709,7 +1930,7 @@ nc_reply *ncntf_check_subscription(const nc_rpc* subscribe_rpc)
 		return (nc_reply_error(nc_err_new(NC_ERR_INVALID_VALUE)));
 	}
 
-	switch(get_subscription_params(subscribe_rpc, &stream, &start, &stop, &filter)) {
+	switch(ncntf_subscription_get_params(subscribe_rpc, &stream, &start, &stop, &filter)) {
 	case 0:
 		/* everything ok */
 		break;
@@ -1732,7 +1953,7 @@ nc_reply *ncntf_check_subscription(const nc_rpc* subscribe_rpc)
 
 	/* check existence of the stream */
 	pthread_mutex_lock(streams_mut);
-	if (nc_ntf_stream_get(stream) == NULL) {
+	if (ncntf_stream_get(stream) == NULL) {
 		pthread_mutex_unlock(streams_mut);
 		e = nc_err_new(NC_ERR_INVALID_VALUE);
 		asprintf(&auxs, "Requested stream \'%s\' does not exist.", stream);
@@ -1804,7 +2025,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	}
 
 	/* check subscription rpc */
-	reply = ncntf_check_subscription(subscribe_rpc);
+	reply = ncntf_subscription_check(subscribe_rpc);
 	if (nc_reply_get_type(reply) != NC_REPLY_OK) {
 		ERROR("%s: create-subscription check failed (%s).", __func__, nc_reply_get_errormsg(reply));
 		nc_reply_free(reply);
@@ -1813,7 +2034,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	nc_reply_free(reply);
 
 	/* get parameters from subscription */
-	if (get_subscription_params(subscribe_rpc, &stream, &start, &stop, &filter) != 0 ) {
+	if (ncntf_subscription_get_params(subscribe_rpc, &stream, &start, &stop, &filter) != 0 ) {
 		ERROR("Parsing create-subscription for parameters failed.");
 		return (-1);
 	}
@@ -2031,7 +2252,7 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 
 	/* check function for notifications processing */
 	if (process_ntf == NULL) {
-		process_ntf = ncntf_stdoutprint;
+		process_ntf = ncntf_event_stdoutprint;
 	}
 
 	/* main loop for receiving notifications */
@@ -2129,3 +2350,4 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 	session->ntf_active = 0;
 	return (count);
 }
+

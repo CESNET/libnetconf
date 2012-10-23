@@ -650,7 +650,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	nc_cpblts_free(server_cpblts);
 
 	/* log start of the session */
-	ncntf_event_new(NCNTF_STREAM_BASE, -1, NCNTF_BASE_SESSION_START, retval);
+	ncntf_event_new(-1, NCNTF_BASE_SESSION_START, retval);
 
 	return (retval);
 }

@@ -42,7 +42,7 @@
 
 #include "netconf.h"
 
-#define NCNTF_STREAM_BASE "netconf"
+#define NCNTF_STREAM_BASE "NETCONF"
 
 /**
  * @ingroup notifications
@@ -78,27 +78,18 @@ int ncntf_init(void);
 
 /**
  * @ingroup notifications
+ * @brief Get status data in xml form describing currently used streams.
+ * @return Text containing streams status data in xml form
+ * (urn:ietf:params:xml:ns:netmod:notification in RFC 5277).
+ */
+char* ncntf_status(void);
+
+/**
+ * @ingroup notifications
  * @brief Close all NETCONF Event Streams and other parts of the Notifications
  * environment.
  */
 void ncntf_close(void);
-
-/**
- * @ingroup notifications
- * @brief Create new \<notification\> message with givent eventTime and content.
- *
- * @param[in] event_time Time of the event.
- * @param[in] content Description of the event in the XML form.
- * @return Created notification message.
- */
-nc_ntf* ncntf_notif_create(time_t event_time, const char* content);
-
-/**
- * @ingroup notifications
- * @brief Free notification message.
- * @param[in] ntf notification message to free.
- */
-void ncntf_notif_free(nc_ntf *ntf);
 
 /**
  * @ingroup notifications
@@ -109,6 +100,16 @@ void ncntf_notif_free(nc_ntf *ntf);
  * @return 0 on success, non-zero value else.
  */
 int ncntf_stream_new(const char* name, const char* desc, int replay);
+
+/**
+ * @ingroup notifications
+ * @brief Set rule to allow loging of the specified event on the given
+ * Notification stream.
+ * @param[in] stream Name of the stream where to allow event logging
+ * @param[in] event Name of the event which to allow on given stream
+ * @return 0 on success, non-zero on error
+ */
+int ncntf_stream_allow_events(const char* stream, const char* event);
 
 /**
  * @ingroup notifications
@@ -125,6 +126,37 @@ char** ncntf_stream_list(void);
  * @return 0 - the stream is not present,<br/>1 - the stream is present
  */
 int ncntf_stream_isavailable(const char* name);
+
+/**
+ * \todo: thread safety (?thread-specific variables)
+ * @ingroup notifications
+ * @brief Start iteration on the events in the specified stream file. Iteration
+ * starts on the first event in the first part of the stream file.
+ * @param[in] stream Name of the stream to iterate.
+ */
+void ncntf_stream_iter_start(const char* stream);
+
+/**
+ * \todo: thread safety (?thread-specific variables)
+ * @ingroup notifications
+ * @brief Pop the next event record from the stream file. The iteration must be
+ * started by nc_ntf_stream_iter_start() function.
+ * @param[in] stream Name of the stream to iterate.
+ * @param[in] start Time of the first event caller is interested in.
+ * @param[in] stop Time of the last event caller is interested in.
+ * @param[out] event_time Time of the returned event, NULL if caller does not care.
+ * @return Content of the next event in the stream.
+ */
+char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time);
+
+/**
+ * \todo: thread safety (?thread-specific variables)
+ * @ingroup notifications
+ * @brief Clean all structures used for iteration in the specified stream. This
+ * function must be called as a closing function to nc_ntf_stream_iter_start()
+ * @param[in] stream Name of the iterated stream.
+ */
+void ncntf_stream_iter_finnish(const char* stream);
 
 /**
  * @ingroup notifications
@@ -166,53 +198,32 @@ int ncntf_stream_isavailable(const char* name);
  * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_START, my_session);
  * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");
  *
- * @param[in] stream Name of the stream where the event will be stored.
  * @param[in] etime Time of the event, if set to -1, current time is used.
  * @param[in] event Event type to distinguish following parameters.
  * @param[in] ... Specific parameters for different event types as described
  * above.
  * @return 0 for success, non-zero value else.
  */
-int ncntf_event_new(char* stream, time_t etime, NCNTF_EVENT event, ...);
-
-/**
- * \todo: thread safety (?thread-specific variables)
- * @ingroup notifications
- * @brief Start iteration on the events in the specified stream file. Iteration
- * starts on the first event in the first part of the stream file.
- * @param[in] stream Name of the stream to iterate.
- */
-void ncntf_stream_iter_start(const char* stream);
-
-/**
- * \todo: thread safety (?thread-specific variables)
- * @ingroup notifications
- * @brief Pop the next event record from the stream file. The iteration must be
- * started by nc_ntf_stream_iter_start() function.
- * @param[in] stream Name of the stream to iterate.
- * @param[in] start Time of the first event caller is interested in.
- * @param[in] stop Time of the last event caller is interested in.
- * @param[out] event_time Time of the returned event, NULL if caller does not care.
- * @return Content of the next event in the stream.
- */
-char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time);
-
-/**
- * \todo: thread safety (?thread-specific variables)
- * @ingroup notifications
- * @brief Clean all structures used for iteration in the specified stream. This
- * function must be called as a closing function to nc_ntf_stream_iter_start()
- * @param[in] stream Name of the iterated stream.
- */
-void ncntf_stream_iter_finnish(const char* stream);
+int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...);
 
 /**
  * @ingroup notifications
- * @brief Get Time of the event reported in the notification message.
- * @param[in] notif Notification message.
- * @return Time of the event (as number of seconds since epoch).
+ * @brief Create new \<notification\> message with givent eventTime and content.
+ *
+ * @param[in] event_time Time of the event.
+ * @param[in] content Description of the event in the XML form.
+ * @return Created notification message.
  */
-time_t ncntf_notif_get_time(nc_ntf* notif);
+nc_ntf* ncntf_notif_create(time_t event_time, const char* content);
+
+/**
+ * @ingroup notifications
+ * @brief Free notification message.
+ * @param[in] ntf notification message to free.
+ */
+void ncntf_notif_free(nc_ntf *ntf);
+
+NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif);
 
 /**
  * @ingroup notifications
@@ -221,6 +232,14 @@ time_t ncntf_notif_get_time(nc_ntf* notif);
  * @return Content of the event description (serialized XML).
  */
 char* ncntf_notif_get_content(nc_ntf* notif);
+
+/**
+ * @ingroup notifications
+ * @brief Get Time of the event reported in the notification message.
+ * @param[in] notif Notification message.
+ * @return Time of the event (as number of seconds since epoch).
+ */
+time_t ncntf_notif_get_time(nc_ntf* notif);
 
 /**
  * @ingroup notifications
@@ -234,7 +253,7 @@ char* ncntf_notif_get_content(nc_ntf* notif);
  * @return Reply message to the subscription - ok if tests passed and reply-error
  * with problem description if any of the tests fails.
  */
-nc_reply *ncntf_check_subscription(const nc_rpc* subscribe_rpc);
+nc_reply *ncntf_subscription_check(const nc_rpc* subscribe_rpc);
 
 /**
  * @ingroup notifications

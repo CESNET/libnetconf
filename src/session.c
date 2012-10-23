@@ -528,7 +528,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 
 		/* log closing of the session */
 		if (sstatus != NC_SESSION_STATUS_DUMMY) {
-			ncntf_event_new(NCNTF_STREAM_BASE, -1, NCNTF_BASE_SESSION_END, session, reason, NULL);
+			ncntf_event_new(-1, NCNTF_BASE_SESSION_END, session, reason, NULL);
 		}
 
 		if (strcmp(session->session_id, INTERNAL_DUMMY_ID) != 0) {

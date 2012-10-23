@@ -956,7 +956,7 @@ apply_editcopyconfig:
 
 		/* log the event */
 		if (ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
-			ncntf_event_new(NCNTF_STREAM_BASE, -1, NCNTF_BASE_CFG_CHANGE, target_ds, NCNTF_EVENT_BY_USER, session);
+			ncntf_event_new(-1, NCNTF_BASE_CFG_CHANGE, target_ds, NCNTF_EVENT_BY_USER, session);
 		}
 
 		break;
@@ -971,7 +971,7 @@ apply_editcopyconfig:
 
 		/* log the event */
 		if (ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
-			ncntf_event_new(NCNTF_STREAM_BASE, -1, NCNTF_BASE_CFG_CHANGE, target_ds, NCNTF_EVENT_BY_USER, session);
+			ncntf_event_new(-1, NCNTF_BASE_CFG_CHANGE, target_ds, NCNTF_EVENT_BY_USER, session);
 		}
 		break;
 	case NC_OP_COMMIT:
@@ -980,7 +980,7 @@ apply_editcopyconfig:
 
 		/* log the event */
 		if (ret == EXIT_SUCCESS) {
-			ncntf_event_new(NCNTF_STREAM_BASE, -1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, session);
+			ncntf_event_new(-1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, session);
 		}
 		break;
 	case NC_OP_DISCARDCHANGES:

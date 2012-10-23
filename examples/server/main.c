@@ -156,7 +156,7 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 				e = NULL;
 				break;
 			}
-			reply = ncntf_check_subscription(rpc);
+			reply = ncntf_subscription_check(rpc);
 			if (nc_reply_get_type (reply) != NC_REPLY_OK) {
 				break;
 			}
