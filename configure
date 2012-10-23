@@ -619,6 +619,7 @@ ac_includes_default="\
 #endif"
 
 ac_subst_vars='LTLIBOBJS
+STREAMS_PATH
 SUBDIRS
 DISTRO
 REQS
@@ -2488,6 +2489,8 @@ USERMAIL=`git config --get user.email`
 
 CONFIGURE_PWD=`pwd`
 
+
+STREAMS_PATH="/usr/share/$PACKAGE_NAME/streams/"
 
 LIBS="-lrt -lutil"
 
@@ -5243,6 +5246,7 @@ done
 
 
 ############################### Set output #####################################
+
 
 
 

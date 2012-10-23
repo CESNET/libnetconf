@@ -10,3 +10,10 @@
  * libssh2_session_set_timeout() is available since libssh2 1.2.9
  */
 #define LIBSSH2_SET_TIMEOUT(session,timeout) @LIBSSH2_SET_TIMEOUT@
+
+/*
+ * Path for storing libnetconf's Event stream files
+ */
+#define NCNTF_STREAMS_PATH "@STREAMS_PATH@"
+#define NCNTF_STREAMS_PATH_ENV "LIBNETCONF_STREAMS"
+

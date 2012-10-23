@@ -65,6 +65,7 @@ OBJDIR= .obj
 VERSION = $(shell cut -f1 ./VERSION | tr -d '\n')
 MAJOR_VER = $(shell echo $(VERSION) | cut -d. -f1)
 RELEASE = @RELEASE@
+STREAMS_PATH = @STREAMS_PATH@
 
 TOPDIR = @CONFIGURE_PWD@
 SUBDIRS = @SUBDIRS@
@@ -194,6 +195,8 @@ install: all install-devel install-doc
 	@[ ! -L $(DESTDIR)/$(libdir)/$(NAME).so.$(MAJOR_VER) ] || \
 	    rm -rf $(DESTDIR)/$(libdir)/$(NAME).so.$(MAJOR_VER);
 	$(LN_S) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/$(NAME).so.$(MAJOR_VER);
+	[ -d $(STREAMS_PATH) ] || \
+	    (mkdir -p $(STREAMS_PATH); chmod 777 $(STREAMS_PATH))
 
 .PHONY: install-devel
 install-devel:

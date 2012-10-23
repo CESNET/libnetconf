@@ -67,6 +67,7 @@
 #include "messages_internal.h"
 #include "netconf.h"
 #include "session.h"
+#include "config.h"
 
 #define NCNTF_RULES_SIZE (1024*1024)
 #define NCNTF_STREAMS_NS "urn:ietf:params:xml:ns:netmod:notification"
@@ -79,9 +80,7 @@
 static DBusConnection* dbus = NULL;
 static pthread_mutex_t *dbus_mut = NULL;
 
-/* name of the environment variable to change Events streams path */
-#define STREAMS_PATH_ENV "LIBNETCONF_STREAMS"
-#define STREAMS_PATH_DEF "/var/run/netconf_events"
+/* path to the Event stream files, default path is defined in config.h */
 static char* streams_path = NULL;
 
 /*
@@ -225,18 +224,18 @@ static int set_streams_path()
 	streams_path = NULL;
 
 	/* try to get path from the environment variable */
-	env = getenv(STREAMS_PATH_ENV);
+	env = getenv(NCNTF_STREAMS_PATH_ENV);
 	if (env != NULL) {
-		VERB("Checking Events stream path %s from %s environment variable.", env, STREAMS_PATH_ENV);
+		VERB("Checking Events stream path %s from %s environment variable.", env, NCNTF_STREAMS_PATH_ENV);
 		if (check_streams_path(env) == 0) {
 			streams_path = env;
 		}
 	}
 	if (streams_path == NULL) {
 		/* try to use default path */
-		VERB("Checking default Events stream path %s.", STREAMS_PATH_DEF);
-		if (check_streams_path(STREAMS_PATH_DEF) == 0) {
-			streams_path = STREAMS_PATH_DEF;
+		VERB("Checking default Events stream path %s.", NCNTF_STREAMS_PATH);
+		if (check_streams_path(NCNTF_STREAMS_PATH) == 0) {
+			streams_path = NCNTF_STREAMS_PATH;
 		}
 	}
 
