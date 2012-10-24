@@ -42,7 +42,8 @@
 
 #include "netconf.h"
 
-#define NCNTF_STREAM_BASE "NETCONF"
+#define NCNTF_STREAM_DEFAULT "NETCONF"
+#define NCNTF_STREAM_BASE NCNTF_STREAM_DEFAULT
 
 /**
  * @ingroup notifications

@@ -1859,10 +1859,10 @@ static int ncntf_subscription_get_params(const nc_rpc* subscribe_rpc, char **str
 
 	/* get stream name from subscription */
 	if (stream != NULL) {
-		result = xmlXPathEvalExpression(BAD_CAST "/ntf:create-subscription/ntf:stream", srpc_ctxt);
+		result = xmlXPathEvalExpression(BAD_CAST "//ntf:create-subscription/ntf:stream", srpc_ctxt);
 		if (result == NULL || result->nodesetval == NULL || result->nodesetval->nodeNr != 1) {
 			/* use default stream 'netconf' */
-			*stream = strdup("netconf");
+			*stream = strdup(NCNTF_STREAM_DEFAULT);
 		} else {
 			*stream = (char*) (xmlNodeGetContent(result->nodesetval->nodeTab[0]));
 		}
