@@ -1005,7 +1005,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 	int32_t len;
 	uint64_t t;
 	off_t offset;
-	char* text;
+	char* text = NULL;
 	DBusMessage *signal;
 	DBusMessageIter signal_args;
 
@@ -1014,7 +1014,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 	}
 
 	/* check time boundaries */
-	if (start != -1 && stop != -1 && stop < start) {
+	if ((start != -1) && (stop != -1) && (stop < start)) {
 		return (NULL);
 	}
 
@@ -1058,7 +1058,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 						}
 						dbus_message_iter_get_basic(&signal_args, &t);
 						/* check boundaries */
-						if (start != -1 && start > t) {
+						if ((start != -1) && (start > t)) {
 							/*
 							 * we're not interested in this event, it
 							 * happened before specified start time
@@ -1066,7 +1066,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 							dbus_message_unref(signal);
 							continue; /* try next signal */
 						}
-						if (stop != -1 && stop < t) {
+						if ((stop != -1) && (stop < t)) {
 							/*
 							 * we're not interested in this event, it
 							 * happened after specified stop time
@@ -1101,7 +1101,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 			read(s->fd_events, &t, sizeof(uint64_t));
 
 			/* check boundaries */
-			if (start != -1 && start > t) {
+			if ((start != -1) && (start > t)) {
 				/*
 				 * we're not interested in this event, it
 				 * happened before specified start time
@@ -1111,7 +1111,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 				ncntf_stream_unlock(s);
 				continue;
 			}
-			if (stop != -1 && stop < t) {
+			if ((stop != -1) && (stop < t)) {
 				/*
 				 * we're not interested in this event, it
 				 * happened after specified stop time
