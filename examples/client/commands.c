@@ -1514,7 +1514,7 @@ int cmd_subscribe(char *arg)
 			break;
 		default:
 			ERROR("create-subscription", "unknown option -%c.", c);
-			cmd_get_help ();
+			cmd_subscribe_help ();
 			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
