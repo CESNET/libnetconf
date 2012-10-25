@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Thu Oct 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -41,6 +41,10 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .RI "char * \fBnc_reply_dump\fP (const \fBnc_reply\fP *reply)"
 .br
 .RI "\fIDump the rpc-reply message into a string\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBnc_reply_dup\fP (const \fBnc_reply\fP *reply)"
+.br
+.RI "\fIDuplicate <reply> message\&. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_reply_build\fP (const char *reply_dump)"
 .br
@@ -206,6 +210,20 @@ Dump the rpc-reply message into a string\&. \fBParameters:\fP
 \fBReturns:\fP
 .RS 4
 String in XML format containing the NETCONF's <rpc-reply> element and all its content\&. Caller is responsible for free of returned string with free()\&. 
+.RE
+.PP
+
+.SS "\fBnc_reply\fP* nc_reply_dup (const \fBnc_reply\fP *reply)"
+
+.PP
+Duplicate <reply> message\&. \fBParameters:\fP
+.RS 4
+\fIreply\fP <reply> message to replicate\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Copy of the given <reply> message\&. 
 .RE
 .PP
 

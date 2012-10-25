@@ -1,7 +1,8 @@
 var searchData=
 [
   ['nc_5fdatastore_5fcandidate',['NC_DATASTORE_CANDIDATE',['../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830',1,'netconf.h']]],
-  ['nc_5fdatastore_5fnone',['NC_DATASTORE_NONE',['../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73ab1ee236a888fcffc100ec13b21c51ff1',1,'netconf.h']]],
+  ['nc_5fdatastore_5fconfig',['NC_DATASTORE_CONFIG',['../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e',1,'netconf.h']]],
+  ['nc_5fdatastore_5ferror',['NC_DATASTORE_ERROR',['../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b',1,'netconf.h']]],
   ['nc_5fdatastore_5frunning',['NC_DATASTORE_RUNNING',['../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a431a59cb5a2f00f50ab887ee0931156a',1,'netconf.h']]],
   ['nc_5fdatastore_5fstartup',['NC_DATASTORE_STARTUP',['../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73ab0fb14c1d3e587701536c288520d945b',1,'netconf.h']]],
   ['nc_5fedit_5fdefop_5ferror',['NC_EDIT_DEFOP_ERROR',['../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187',1,'netconf.h']]],
@@ -49,6 +50,7 @@ var searchData=
   ['nc_5ferr_5funknown_5felem',['NC_ERR_UNKNOWN_ELEM',['../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2a571f6dfaa6f3408e05cb1997f4fa6c52',1,'error.h']]],
   ['nc_5ferr_5funknown_5fns',['NC_ERR_UNKNOWN_NS',['../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2a91d62d72802133159ffdc111a771bf06',1,'error.h']]],
   ['nc_5ffilter_5fsubtree',['NC_FILTER_SUBTREE',['../db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706ab584539474b828102a0b7238b614abd4',1,'netconf.h']]],
+  ['nc_5ffilter_5funknown',['NC_FILTER_UNKNOWN',['../db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706a487f472296b31fcec26a2bef87d50178',1,'netconf.h']]],
   ['nc_5fmsg_5fhello',['NC_MSG_HELLO',['../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a7cd0f4a4edef33489e675b080645288d',1,'netconf.h']]],
   ['nc_5fmsg_5fnone',['NC_MSG_NONE',['../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a1272e268199e52e368957b6a3b288d50',1,'netconf.h']]],
   ['nc_5fmsg_5fnotification',['NC_MSG_NOTIFICATION',['../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057ab4e4b148e14bdf9f320331b0cbe1dc6d',1,'netconf.h']]],

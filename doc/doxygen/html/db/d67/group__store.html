@@ -114,10 +114,14 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a> { <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73ab1ee236a888fcffc100ec13b21c51ff1">NC_DATASTORE_NONE</a>, 
+<tr class="memitem:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a> { <br/>
+&#160;&#160;<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b">NC_DATASTORE_ERROR</a>, 
+<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e">NC_DATASTORE_CONFIG</a>, 
 <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a431a59cb5a2f00f50ab887ee0931156a">NC_DATASTORE_RUNNING</a>, 
 <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73ab0fb14c1d3e587701536c288520d945b">NC_DATASTORE_STARTUP</a>, 
-<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830">NC_DATASTORE_CANDIDATE</a>
+<br/>
+&#160;&#160;<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830">NC_DATASTORE_CANDIDATE</a>
+<br/>
  }</td></tr>
 <tr class="memdesc:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported types of datastores defined by NETCONF.  <a href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">More...</a><br/></td></tr>
 <tr class="memitem:gab0f0cbd5268577ec36fc76cf89c72a8f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> { <a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b">NCDS_TYPE_EMPTY</a>, 
@@ -179,8 +183,11 @@ Functions</h2></td></tr>
 
 <p>Enumeration of supported types of datastores defined by NETCONF. </p>
 <dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" id="gga5e4b9ee138b963e8ea2354fef2ebbe73ab1ee236a888fcffc100ec13b21c51ff1"></a>NC_DATASTORE_NONE</em>&nbsp;</td><td>
-<p>value describing that no datastore was selected, (usage similar to NULL) </p>
+<tr><td valign="top"><em><a class="anchor" id="gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b"></a>NC_DATASTORE_ERROR</em>&nbsp;</td><td>
+<p>error state of functions returning datastore type </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e"></a>NC_DATASTORE_CONFIG</em>&nbsp;</td><td>
+<p>value describing that datastore is set as config </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga5e4b9ee138b963e8ea2354fef2ebbe73a431a59cb5a2f00f50ab887ee0931156a"></a>NC_DATASTORE_RUNNING</em>&nbsp;</td><td>
 <p>base NETCONF's datastore containing current device configuration </p>
@@ -423,7 +430,7 @@ Functions</h2></td></tr>
 <p>Perform requested RPC operation on the datastore. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Datastore ID. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Datastore ID. Use 0 to apply request (typically &lt;get&gt;) onto libnetconf's internal datastore. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session (dummy session is acceptable) where the &lt;rpc&gt; came from. Capabilities checks are done according to this session. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>NETCONF &lt;rpc&gt; message specifying requested operation. </td></tr>
   </table>
@@ -512,7 +519,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon Oct 15 2012 15:24:41 for libnetconf by
+    <li class="footer">Generated on Thu Oct 25 2012 14:08:36 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

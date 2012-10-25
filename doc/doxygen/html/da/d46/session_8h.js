@@ -10,6 +10,7 @@ var session_8h =
     [ "nc_session_get_host", "da/d46/session_8h.html#ga6399681dfce6e139cc5707af25d20bb3", null ],
     [ "nc_session_get_port", "da/d46/session_8h.html#ga09bec340611b4b99c8c1bfb2ef3992d6", null ],
     [ "nc_session_get_user", "da/d46/session_8h.html#gabdd090cbc50a8f7db58e5be8062296d6", null ],
+    [ "nc_session_notif_allowed", "da/d46/session_8h.html#ga65786746e736c6c0d5b74cc0d816bf9e", null ],
     [ "nc_session_get_cpblts", "da/d46/session_8h.html#ga09bdf1d9eacf9f53bf3f05557ffe0821", null ],
     [ "nc_cpblts_new", "da/d46/session_8h.html#gae8220136acd191591ad25d6849f0b59c", null ],
     [ "nc_cpblts_free", "da/d46/session_8h.html#ga6465c58b3ca057b46655d5ffa90caff3", null ],

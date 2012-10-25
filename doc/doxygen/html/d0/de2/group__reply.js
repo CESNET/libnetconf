@@ -6,6 +6,7 @@ var group__reply =
     [ "nc_session_send_reply", "d0/de2/group__reply.html#ga0b344811af933d80615f0874650938cc", null ],
     [ "nc_session_recv_reply", "d0/de2/group__reply.html#ga4bbbfc4e648a74caffeeac0da41ab276", null ],
     [ "nc_reply_dump", "d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8", null ],
+    [ "nc_reply_dup", "d0/de2/group__reply.html#gaeb66eff28fdf195f564cb3d997d65b65", null ],
     [ "nc_reply_build", "d0/de2/group__reply.html#ga78b032942cee08721d51ea97acff68b5", null ],
     [ "nc_reply_get_msgid", "d0/de2/group__reply.html#gad6ed5b3e0b7d8fbeb81e80bc0a326d6c", null ],
     [ "nc_reply_get_type", "d0/de2/group__reply.html#gab12cdef82337060c425348dada7fe983", null ],

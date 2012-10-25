@@ -3,6 +3,8 @@ var messages_8h =
     [ "nc_filter_new", "d5/d48/messages_8h.html#ga3212b7af605b6bdf83b893979c3bcc79", null ],
     [ "nc_filter_free", "d5/d48/messages_8h.html#ga0dbfd598d6fd303819817370cdf63229", null ],
     [ "nc_reply_dump", "d5/d48/messages_8h.html#ga279c8b48bfdf590c15a043b7d385dfb8", null ],
+    [ "nc_rpc_dup", "d5/d48/messages_8h.html#gadab3d916540f79dd2b168134758fe3d1", null ],
+    [ "nc_reply_dup", "d5/d48/messages_8h.html#gaeb66eff28fdf195f564cb3d997d65b65", null ],
     [ "nc_reply_build", "d5/d48/messages_8h.html#ga78b032942cee08721d51ea97acff68b5", null ],
     [ "nc_reply_get_msgid", "d5/d48/messages_8h.html#gad6ed5b3e0b7d8fbeb81e80bc0a326d6c", null ],
     [ "nc_rpc_dump", "d5/d48/messages_8h.html#ga3e840368c40be2ea4d5201edbd3adaca", null ],

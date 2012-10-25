@@ -135,6 +135,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga4bbbfc4e648a74caffeeac0da41ab276"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;rpc-reply&gt; response from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="#ga4bbbfc4e648a74caffeeac0da41ab276"></a><br/></td></tr>
 <tr class="memitem:ga279c8b48bfdf590c15a043b7d385dfb8"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8">nc_reply_dump</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:ga279c8b48bfdf590c15a043b7d385dfb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the rpc-reply message into a string.  <a href="#ga279c8b48bfdf590c15a043b7d385dfb8"></a><br/></td></tr>
+<tr class="memitem:gaeb66eff28fdf195f564cb3d997d65b65"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gaeb66eff28fdf195f564cb3d997d65b65">nc_reply_dup</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
+<tr class="memdesc:gaeb66eff28fdf195f564cb3d997d65b65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Duplicate &lt;reply&gt; message.  <a href="#gaeb66eff28fdf195f564cb3d997d65b65"></a><br/></td></tr>
 <tr class="memitem:ga78b032942cee08721d51ea97acff68b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga78b032942cee08721d51ea97acff68b5">nc_reply_build</a> (const char *reply_dump)</td></tr>
 <tr class="memdesc:ga78b032942cee08721d51ea97acff68b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build &lt;rpc-reply&gt; message from the string. This is the reverse function of the <a class="el" href="../../d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8" title="Dump the rpc-reply message into a string.">nc_reply_dump()</a>.  <a href="#ga78b032942cee08721d51ea97acff68b5"></a><br/></td></tr>
 <tr class="memitem:gad6ed5b3e0b7d8fbeb81e80bc0a326d6c"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../db/d52/group__session.html#ga5a8be0030b2a521edad18d24b348a4aa">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gad6ed5b3e0b7d8fbeb81e80bc0a326d6c">nc_reply_get_msgid</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
@@ -353,6 +355,31 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns:</dt><dd>String in XML format containing the NETCONF's &lt;rpc-reply&gt; element and all its content. Caller is responsible for free of returned string with free(). </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gaeb66eff28fdf195f564cb3d997d65b65"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* nc_reply_dup </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td>
+          <td class="paramname"><em>reply</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Duplicate &lt;reply&gt; message. </p>
+<dl class="params"><dt>Parameters:</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">reply</td><td>&lt;reply&gt; message to replicate. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>Copy of the given &lt;reply&gt; message. </dd></dl>
 
 </div>
 </div>
@@ -661,7 +688,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon Oct 15 2012 15:24:41 for libnetconf by
+    <li class="footer">Generated on Thu Oct 25 2012 14:08:36 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

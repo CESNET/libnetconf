@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Thu Oct 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -93,6 +93,10 @@ libnetconf's functions for handling NETCONF sessions\&.
 .RI "const char * \fBnc_session_get_user\fP (const struct nc_session *session)"
 .br
 .RI "\fIGet NETCONF session username\&. \fP"
+.ti -1c
+.RI "int \fBnc_session_notif_allowed\fP (const struct nc_session *session)"
+.br
+.RI "\fITell me if the notification subscription is allowed on the given session\&. \fP"
 .ti -1c
 .RI "struct nc_cpblts * \fBnc_session_get_cpblts\fP (const struct nc_session *session)"
 .br
@@ -431,6 +435,20 @@ Get NETCONF session username\&. \fBParameters:\fP
 \fBReturns:\fP
 .RS 4
 Constant string identifying NETCONF session server host\&. 
+.RE
+.PP
+
+.SS "int nc_session_notif_allowed (const struct nc_session *session)"
+
+.PP
+Tell me if the notification subscription is allowed on the given session\&. \fBParameters:\fP
+.RS 4
+\fIsession\fP NETCONF session structure 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 if not, 1 if subscription is currently allowed\&. 
 .RE
 .PP
 

@@ -144,7 +144,8 @@ Enumerations</h2></td></tr>
 <br/>
  }</td></tr>
 <tr class="memdesc:ga3e6fc59e2d06c1c0edb36ee64ee9cc07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported &lt;rpc&gt; operations.  <a href="../../db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07">More...</a><br/></td></tr>
-<tr class="memitem:ga9e74498f9118686c7fb8dfe2c2459706"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706">NC_FILTER_TYPE</a> { <a class="el" href="../../db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706ab584539474b828102a0b7238b614abd4">NC_FILTER_SUBTREE</a>
+<tr class="memitem:ga9e74498f9118686c7fb8dfe2c2459706"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706">NC_FILTER_TYPE</a> { <a class="el" href="../../db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706a487f472296b31fcec26a2bef87d50178">NC_FILTER_UNKNOWN</a>, 
+<a class="el" href="../../db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706ab584539474b828102a0b7238b614abd4">NC_FILTER_SUBTREE</a>
  }</td></tr>
 <tr class="memdesc:ga9e74498f9118686c7fb8dfe2c2459706"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported NETCONF filter types.  <a href="../../db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706">More...</a><br/></td></tr>
 </table><table class="memberdecls">
@@ -160,6 +161,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga3212b7af605b6bdf83b893979c3bcc79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new NETCONF filter of the specified type.  <a href="#ga3212b7af605b6bdf83b893979c3bcc79"></a><br/></td></tr>
 <tr class="memitem:ga0dbfd598d6fd303819817370cdf63229"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga0dbfd598d6fd303819817370cdf63229">nc_filter_free</a> (struct nc_filter *filter)</td></tr>
 <tr class="memdesc:ga0dbfd598d6fd303819817370cdf63229"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy filter structure.  <a href="#ga0dbfd598d6fd303819817370cdf63229"></a><br/></td></tr>
+<tr class="memitem:gadab3d916540f79dd2b168134758fe3d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gadab3d916540f79dd2b168134758fe3d1">nc_rpc_dup</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
+<tr class="memdesc:gadab3d916540f79dd2b168134758fe3d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Duplicate &lt;rpc&gt; message.  <a href="#gadab3d916540f79dd2b168134758fe3d1"></a><br/></td></tr>
 <tr class="memitem:ga3e840368c40be2ea4d5201edbd3adaca"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga3e840368c40be2ea4d5201edbd3adaca">nc_rpc_dump</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:ga3e840368c40be2ea4d5201edbd3adaca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the rpc message into a string.  <a href="#ga3e840368c40be2ea4d5201edbd3adaca"></a><br/></td></tr>
 <tr class="memitem:ga16bda6ae6ad26653e8793abf58ebec2b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga16bda6ae6ad26653e8793abf58ebec2b">nc_rpc_build</a> (const char *rpc_dump)</td></tr>
@@ -335,6 +338,8 @@ Functions</h2></td></tr>
 
 <p>Enumeration of supported NETCONF filter types. </p>
 <dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="gga9e74498f9118686c7fb8dfe2c2459706a487f472296b31fcec26a2bef87d50178"></a>NC_FILTER_UNKNOWN</em>&nbsp;</td><td>
+</td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga9e74498f9118686c7fb8dfe2c2459706ab584539474b828102a0b7238b614abd4"></a>NC_FILTER_SUBTREE</em>&nbsp;</td><td>
 <p>NC_FILTER_SUBTREE. </p>
 </td></tr>
@@ -342,7 +347,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00245">245</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00246">246</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -529,6 +534,31 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a class="anchor" id="gadab3d916540f79dd2b168134758fe3d1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a>* nc_rpc_dup </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
+          <td class="paramname"><em>rpc</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Duplicate &lt;rpc&gt; message. </p>
+<dl class="params"><dt>Parameters:</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>&lt;rpc&gt; message to replicate. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns:</dt><dd>Copy of the given &lt;rpc&gt; message. </dd></dl>
 
 </div>
 </div>
@@ -1190,7 +1220,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon Oct 15 2012 15:24:41 for libnetconf by
+    <li class="footer">Generated on Thu Oct 25 2012 14:08:36 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

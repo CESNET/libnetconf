@@ -1,4 +1,4 @@
-.TH "src/notifications.h" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "src/notifications.h" 3 "Thu Oct 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -16,7 +16,10 @@ Functions to handle NETCONF Notifications\&.
 
 .in +1c
 .ti -1c
-.RI "#define \fBNCNTF_STREAM_BASE\fP   'netconf'"
+.RI "#define \fBNCNTF_STREAM_DEFAULT\fP   'NETCONF'"
+.br
+.ti -1c
+.RI "#define \fBNCNTF_STREAM_BASE\fP   \fBNCNTF_STREAM_DEFAULT\fP"
 .br
 .in -1c
 .SS "Enumerations"
@@ -39,21 +42,21 @@ Functions to handle NETCONF Notifications\&.
 .br
 .RI "\fIInitiate NETCONF Notifications environment\&. \fP"
 .ti -1c
+.RI "char * \fBncntf_status\fP (void)"
+.br
+.RI "\fIGet status data in xml form describing currently used streams\&. \fP"
+.ti -1c
 .RI "void \fBncntf_close\fP (void)"
 .br
 .RI "\fIClose all NETCONF Event Streams and other parts of the Notifications environment\&. \fP"
 .ti -1c
-.RI "\fBnc_ntf\fP * \fBncntf_notif_create\fP (time_t event_time, const char *content)"
-.br
-.RI "\fICreate new <notification> message with givent eventTime and content\&. \fP"
-.ti -1c
-.RI "void \fBncntf_notif_free\fP (\fBnc_ntf\fP *ntf)"
-.br
-.RI "\fIFree notification message\&. \fP"
-.ti -1c
 .RI "int \fBncntf_stream_new\fP (const char *name, const char *desc, int replay)"
 .br
 .RI "\fICreate new NETCONF event stream\&. \fP"
+.ti -1c
+.RI "int \fBncntf_stream_allow_events\fP (const char *stream, const char *event)"
+.br
+.RI "\fISet rule to allow loging of the specified event on the given Notification stream\&. \fP"
 .ti -1c
 .RI "char ** \fBncntf_stream_list\fP (void)"
 .br
@@ -62,10 +65,6 @@ Functions to handle NETCONF Notifications\&.
 .RI "int \fBncntf_stream_isavailable\fP (const char *name)"
 .br
 .RI "\fITest if the given stream is already created and available\&. \fP"
-.ti -1c
-.RI "int \fBncntf_event_new\fP (char *stream, time_t etime, \fBNCNTF_EVENT\fP event,\&.\&.\&.)"
-.br
-.RI "\fIStore new event into the specified stream\&. Parameters are specific for different events\&. \fP"
 .ti -1c
 .RI "void \fBncntf_stream_iter_start\fP (const char *stream)"
 .br
@@ -79,13 +78,32 @@ Functions to handle NETCONF Notifications\&.
 .br
 .RI "\fIClean all structures used for iteration in the specified stream\&. This function must be called as a closing function to nc_ntf_stream_iter_start() \fP"
 .ti -1c
-.RI "time_t \fBncntf_notif_get_time\fP (\fBnc_ntf\fP *notif)"
+.RI "int \fBncntf_event_new\fP (time_t etime, \fBNCNTF_EVENT\fP event,\&.\&.\&.)"
 .br
-.RI "\fIGet Time of the event reported in the notification message\&. \fP"
+.RI "\fIStore new event into the specified stream\&. Parameters are specific for different events\&. \fP"
+.ti -1c
+.RI "\fBnc_ntf\fP * \fBncntf_notif_create\fP (time_t event_time, const char *content)"
+.br
+.RI "\fICreate new <notification> message with givent eventTime and content\&. \fP"
+.ti -1c
+.RI "void \fBncntf_notif_free\fP (\fBnc_ntf\fP *ntf)"
+.br
+.RI "\fIFree notification message\&. \fP"
+.ti -1c
+.RI "\fBNCNTF_EVENT\fP \fBncntf_notif_get_type\fP (\fBnc_ntf\fP *notif)"
+.br
 .ti -1c
 .RI "char * \fBncntf_notif_get_content\fP (\fBnc_ntf\fP *notif)"
 .br
 .RI "\fIGet description of the event reported in the notification message\&. \fP"
+.ti -1c
+.RI "time_t \fBncntf_notif_get_time\fP (\fBnc_ntf\fP *notif)"
+.br
+.RI "\fIGet Time of the event reported in the notification message\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBncntf_subscription_check\fP (const \fBnc_rpc\fP *subscribe_rpc)"
+.br
+.RI "\fICheck validity of <create-subscription> message\&. \fP"
 .ti -1c
 .RI "long long int \fBncntf_dispatch_send\fP (struct nc_session *session, const \fBnc_rpc\fP *subscribe_rpc)"
 .br
@@ -120,10 +138,18 @@ This software is provided ``as is, and any express or implied warranties, includ
 Definition in file \fBnotifications\&.h\fP\&.
 .SH "Macro Definition Documentation"
 .PP 
-.SS "#define NCNTF_STREAM_BASE   'netconf'"
+.SS "#define NCNTF_STREAM_DEFAULT   'NETCONF'"
 
 .PP
 Definition at line 45 of file notifications\&.h\&.
+.SS "#define NCNTF_STREAM_BASE   \fBNCNTF_STREAM_DEFAULT\fP"
+
+.PP
+Definition at line 46 of file notifications\&.h\&.
+.SH "Function Documentation"
+.PP 
+.SS "\fBNCNTF_EVENT\fP ncntf_notif_get_type (\fBnc_ntf\fP *notif)"
+
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

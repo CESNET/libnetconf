@@ -1,4 +1,4 @@
-.TH "NETCONF Event Notifications" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Event Notifications" 3 "Thu Oct 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -46,21 +46,21 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 .br
 .RI "\fIInitiate NETCONF Notifications environment\&. \fP"
 .ti -1c
+.RI "char * \fBncntf_status\fP (void)"
+.br
+.RI "\fIGet status data in xml form describing currently used streams\&. \fP"
+.ti -1c
 .RI "void \fBncntf_close\fP (void)"
 .br
 .RI "\fIClose all NETCONF Event Streams and other parts of the Notifications environment\&. \fP"
 .ti -1c
-.RI "\fBnc_ntf\fP * \fBncntf_notif_create\fP (time_t event_time, const char *content)"
-.br
-.RI "\fICreate new <notification> message with givent eventTime and content\&. \fP"
-.ti -1c
-.RI "void \fBncntf_notif_free\fP (\fBnc_ntf\fP *ntf)"
-.br
-.RI "\fIFree notification message\&. \fP"
-.ti -1c
 .RI "int \fBncntf_stream_new\fP (const char *name, const char *desc, int replay)"
 .br
 .RI "\fICreate new NETCONF event stream\&. \fP"
+.ti -1c
+.RI "int \fBncntf_stream_allow_events\fP (const char *stream, const char *event)"
+.br
+.RI "\fISet rule to allow loging of the specified event on the given Notification stream\&. \fP"
 .ti -1c
 .RI "char ** \fBncntf_stream_list\fP (void)"
 .br
@@ -69,10 +69,6 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 .RI "int \fBncntf_stream_isavailable\fP (const char *name)"
 .br
 .RI "\fITest if the given stream is already created and available\&. \fP"
-.ti -1c
-.RI "int \fBncntf_event_new\fP (char *stream, time_t etime, \fBNCNTF_EVENT\fP event,\&.\&.\&.)"
-.br
-.RI "\fIStore new event into the specified stream\&. Parameters are specific for different events\&. \fP"
 .ti -1c
 .RI "void \fBncntf_stream_iter_start\fP (const char *stream)"
 .br
@@ -86,13 +82,29 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 .br
 .RI "\fIClean all structures used for iteration in the specified stream\&. This function must be called as a closing function to nc_ntf_stream_iter_start() \fP"
 .ti -1c
-.RI "time_t \fBncntf_notif_get_time\fP (\fBnc_ntf\fP *notif)"
+.RI "int \fBncntf_event_new\fP (time_t etime, \fBNCNTF_EVENT\fP event,\&.\&.\&.)"
 .br
-.RI "\fIGet Time of the event reported in the notification message\&. \fP"
+.RI "\fIStore new event into the specified stream\&. Parameters are specific for different events\&. \fP"
+.ti -1c
+.RI "\fBnc_ntf\fP * \fBncntf_notif_create\fP (time_t event_time, const char *content)"
+.br
+.RI "\fICreate new <notification> message with givent eventTime and content\&. \fP"
+.ti -1c
+.RI "void \fBncntf_notif_free\fP (\fBnc_ntf\fP *ntf)"
+.br
+.RI "\fIFree notification message\&. \fP"
 .ti -1c
 .RI "char * \fBncntf_notif_get_content\fP (\fBnc_ntf\fP *notif)"
 .br
 .RI "\fIGet description of the event reported in the notification message\&. \fP"
+.ti -1c
+.RI "time_t \fBncntf_notif_get_time\fP (\fBnc_ntf\fP *notif)"
+.br
+.RI "\fIGet Time of the event reported in the notification message\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBncntf_subscription_check\fP (const \fBnc_rpc\fP *subscribe_rpc)"
+.br
+.RI "\fICheck validity of <create-subscription> message\&. \fP"
 .ti -1c
 .RI "long long int \fBncntf_dispatch_send\fP (struct nc_session *session, const \fBnc_rpc\fP *subscribe_rpc)"
 .br
@@ -152,7 +164,7 @@ netconf-session-end (RFC 6470)
 \fB\fINCNTF_BASE_CONFIRMED_COMMIT \fP\fP
 netconf-configrmed-commit (RFC 6470) 
 .PP
-Definition at line 51 of file notifications\&.h\&.
+Definition at line 52 of file notifications\&.h\&.
 .SS "enum \fBNCNTF_EVENT_BY\fP"
 
 .PP
@@ -167,7 +179,7 @@ event is caused by server
 \fB\fINCNTF_EVENT_BY_USER \fP\fP
 event is caused by user's action 
 .PP
-Definition at line 67 of file notifications\&.h\&.
+Definition at line 68 of file notifications\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "int nc_session_send_notif (struct nc_session *session, const \fBnc_ntf\fP *ntf)"
@@ -235,35 +247,19 @@ Initiate NETCONF Notifications environment\&. \fBReturns:\fP
 .RE
 .PP
 
+.SS "char* ncntf_status (void)"
+
+.PP
+Get status data in xml form describing currently used streams\&. \fBReturns:\fP
+.RS 4
+Text containing streams status data in xml form (urn:ietf:params:xml:ns:netmod:notification in RFC 5277)\&. 
+.RE
+.PP
+
 .SS "void ncntf_close (void)"
 
 .PP
 Close all NETCONF Event Streams and other parts of the Notifications environment\&. 
-.SS "\fBnc_ntf\fP* ncntf_notif_create (time_tevent_time, const char *content)"
-
-.PP
-Create new <notification> message with givent eventTime and content\&. \fBParameters:\fP
-.RS 4
-\fIevent_time\fP Time of the event\&. 
-.br
-\fIcontent\fP Description of the event in the XML form\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-Created notification message\&. 
-.RE
-.PP
-
-.SS "void ncntf_notif_free (\fBnc_ntf\fP *ntf)"
-
-.PP
-Free notification message\&. \fBParameters:\fP
-.RS 4
-\fIntf\fP notification message to free\&. 
-.RE
-.PP
-
 .SS "int ncntf_stream_new (const char *name, const char *desc, intreplay)"
 
 .PP
@@ -279,6 +275,22 @@ Create new NETCONF event stream\&. \fBParameters:\fP
 \fBReturns:\fP
 .RS 4
 0 on success, non-zero value else\&. 
+.RE
+.PP
+
+.SS "int ncntf_stream_allow_events (const char *stream, const char *event)"
+
+.PP
+Set rule to allow loging of the specified event on the given Notification stream\&. \fBParameters:\fP
+.RS 4
+\fIstream\fP Name of the stream where to allow event logging 
+.br
+\fIevent\fP Name of the event which to allow on given stream 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success, non-zero on error 
 .RE
 .PP
 
@@ -307,7 +319,60 @@ Test if the given stream is already created and available\&. \fBParameters:\fP
 .RE
 .PP
 
-.SS "int ncntf_event_new (char *stream, time_tetime, \fBNCNTF_EVENT\fPevent, \&.\&.\&.)"
+.SS "void ncntf_stream_iter_start (const char *stream)"
+
+.PP
+Start iteration on the events in the specified stream file\&. Iteration starts on the first event in the first part of the stream file\&. \fBTodo\fP
+.RS 4
+: thread safety (?thread-specific variables)
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstream\fP Name of the stream to iterate\&. 
+.RE
+.PP
+
+.SS "char* ncntf_stream_iter_next (const char *stream, time_tstart, time_tstop, time_t *event_time)"
+
+.PP
+Pop the next event record from the stream file\&. The iteration must be started by nc_ntf_stream_iter_start() function\&. \fBTodo\fP
+.RS 4
+: thread safety (?thread-specific variables)
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstream\fP Name of the stream to iterate\&. 
+.br
+\fIstart\fP Time of the first event caller is interested in\&. 
+.br
+\fIstop\fP Time of the last event caller is interested in\&. 
+.br
+\fIevent_time\fP Time of the returned event, NULL if caller does not care\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Content of the next event in the stream\&. 
+.RE
+.PP
+
+.SS "void ncntf_stream_iter_finnish (const char *stream)"
+
+.PP
+Clean all structures used for iteration in the specified stream\&. This function must be called as a closing function to nc_ntf_stream_iter_start() \fBTodo\fP
+.RS 4
+: thread safety (?thread-specific variables)
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIstream\fP Name of the iterated stream\&. 
+.RE
+.PP
+
+.SS "int ncntf_event_new (time_tetime, \fBNCNTF_EVENT\fPevent, \&.\&.\&.)"
 
 .PP
 Store new event into the specified stream\&. Parameters are specific for different events\&. .SS "Event parameters:"
@@ -386,8 +451,6 @@ nc_ntf_event_new('netconf', -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_T
 .PP
 \fBParameters:\fP
 .RS 4
-\fIstream\fP Name of the stream where the event will be stored\&. 
-.br
 \fIetime\fP Time of the event, if set to -1, current time is used\&. 
 .br
 \fIevent\fP Event type to distinguish following parameters\&. 
@@ -401,56 +464,42 @@ nc_ntf_event_new('netconf', -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_T
 .RE
 .PP
 
-.SS "void ncntf_stream_iter_start (const char *stream)"
+.SS "\fBnc_ntf\fP* ncntf_notif_create (time_tevent_time, const char *content)"
 
 .PP
-Start iteration on the events in the specified stream file\&. Iteration starts on the first event in the first part of the stream file\&. \fBTodo\fP
+Create new <notification> message with givent eventTime and content\&. \fBParameters:\fP
 .RS 4
-: thread safety (?thread-specific variables)
-.RE
-.PP
-\fBParameters:\fP
-.RS 4
-\fIstream\fP Name of the stream to iterate\&. 
-.RE
-.PP
-
-.SS "char* ncntf_stream_iter_next (const char *stream, time_tstart, time_tstop, time_t *event_time)"
-
-.PP
-Pop the next event record from the stream file\&. The iteration must be started by nc_ntf_stream_iter_start() function\&. \fBTodo\fP
-.RS 4
-: thread safety (?thread-specific variables)
-.RE
-.PP
-\fBParameters:\fP
-.RS 4
-\fIstream\fP Name of the stream to iterate\&. 
+\fIevent_time\fP Time of the event\&. 
 .br
-\fIstart\fP Time of the first event caller is interested in\&. 
-.br
-\fIstop\fP Time of the last event caller is interested in\&. 
-.br
-\fIevent_time\fP Time of the returned event, NULL if caller does not care\&. 
+\fIcontent\fP Description of the event in the XML form\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Content of the next event in the stream\&. 
+Created notification message\&. 
 .RE
 .PP
 
-.SS "void ncntf_stream_iter_finnish (const char *stream)"
+.SS "void ncntf_notif_free (\fBnc_ntf\fP *ntf)"
 
 .PP
-Clean all structures used for iteration in the specified stream\&. This function must be called as a closing function to nc_ntf_stream_iter_start() \fBTodo\fP
+Free notification message\&. \fBParameters:\fP
 .RS 4
-: thread safety (?thread-specific variables)
+\fIntf\fP notification message to free\&. 
 .RE
 .PP
-\fBParameters:\fP
+
+.SS "char* ncntf_notif_get_content (\fBnc_ntf\fP *notif)"
+
+.PP
+Get description of the event reported in the notification message\&. \fBParameters:\fP
 .RS 4
-\fIstream\fP Name of the iterated stream\&. 
+\fInotif\fP Notification message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Content of the event description (serialized XML)\&. 
 .RE
 .PP
 
@@ -468,17 +517,19 @@ Time of the event (as number of seconds since epoch)\&.
 .RE
 .PP
 
-.SS "char* ncntf_notif_get_content (\fBnc_ntf\fP *notif)"
+.SS "\fBnc_reply\fP* ncntf_subscription_check (const \fBnc_rpc\fP *subscribe_rpc)"
 
 .PP
-Get description of the event reported in the notification message\&. \fBParameters:\fP
+Check validity of <create-subscription> message\&. This check is done by \fBncntf_dispatch_send()\fP which returns -1 when test does not pass\&. However, it can be sometime useful to run this test before calling \fBncntf_dispatch_send()\fP\&.
+.PP
+\fBParameters:\fP
 .RS 4
-\fInotif\fP Notification message\&. 
+\fIsubscribe_rpc\fP <create-subscription> RPC\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Content of the event description (serialized XML)\&. 
+Reply message to the subscription - ok if tests passed and reply-error with problem description if any of the tests fails\&. 
 .RE
 .PP
 

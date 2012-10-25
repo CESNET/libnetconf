@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Thu Oct 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -60,11 +60,11 @@ libnetconf's general public functions and structures definitions\&.
 .RI "enum \fBNC_ERR_PARAM\fP { \fBNC_ERR_PARAM_TYPE\fP, \fBNC_ERR_PARAM_TAG\fP, \fBNC_ERR_PARAM_SEVERITY\fP, \fBNC_ERR_PARAM_APPTAG\fP, \fBNC_ERR_PARAM_PATH\fP, \fBNC_ERR_PARAM_MSG\fP, \fBNC_ERR_PARAM_INFO_BADATTR\fP, \fBNC_ERR_PARAM_INFO_BADELEM\fP, \fBNC_ERR_PARAM_INFO_BADNS\fP, \fBNC_ERR_PARAM_INFO_SID\fP }"
 .br
 .ti -1c
-.RI "enum \fBNC_DATASTORE\fP { \fBNC_DATASTORE_NONE\fP, \fBNC_DATASTORE_RUNNING\fP, \fBNC_DATASTORE_STARTUP\fP, \fBNC_DATASTORE_CANDIDATE\fP }"
+.RI "enum \fBNC_DATASTORE\fP { \fBNC_DATASTORE_ERROR\fP, \fBNC_DATASTORE_CONFIG\fP, \fBNC_DATASTORE_RUNNING\fP, \fBNC_DATASTORE_STARTUP\fP, \fBNC_DATASTORE_CANDIDATE\fP }"
 .br
 .RI "\fIEnumeration of supported types of datastores defined by NETCONF\&. \fP"
 .ti -1c
-.RI "enum \fBNC_FILTER_TYPE\fP { \fBNC_FILTER_SUBTREE\fP }"
+.RI "enum \fBNC_FILTER_TYPE\fP { \fBNC_FILTER_UNKNOWN\fP, \fBNC_FILTER_SUBTREE\fP }"
 .br
 .RI "\fIEnumeration of supported NETCONF filter types\&. \fP"
 .ti -1c
@@ -170,7 +170,7 @@ Definition at line 171 of file netconf\&.h\&.
 \fB\fINC_EDIT_OP_REMOVE \fP\fP
 
 .PP
-Definition at line 250 of file netconf\&.h\&.
+Definition at line 252 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_DEFOP_TYPE\fP"
 
 .PP
@@ -186,7 +186,7 @@ Definition at line 250 of file netconf\&.h\&.
 \fB\fINC_EDIT_DEFOP_REPLACE \fP\fP
 
 .PP
-Definition at line 260 of file netconf\&.h\&.
+Definition at line 262 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_ERROPT_TYPE\fP"
 
 .PP
@@ -202,7 +202,7 @@ Definition at line 260 of file netconf\&.h\&.
 \fB\fINC_EDIT_ERROPT_ROLLBACK \fP\fP
 
 .PP
-Definition at line 267 of file netconf\&.h\&.
+Definition at line 269 of file netconf\&.h\&.
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

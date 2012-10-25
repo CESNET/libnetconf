@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Mon Oct 15 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Thu Oct 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -26,7 +26,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIEnumeration of supported <rpc> operations\&. \fP"
 .ti -1c
-.RI "enum \fBNC_FILTER_TYPE\fP { \fBNC_FILTER_SUBTREE\fP }"
+.RI "enum \fBNC_FILTER_TYPE\fP { \fBNC_FILTER_UNKNOWN\fP, \fBNC_FILTER_SUBTREE\fP }"
 .br
 .RI "\fIEnumeration of supported NETCONF filter types\&. \fP"
 .in -1c
@@ -53,6 +53,10 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .RI "void \fBnc_filter_free\fP (struct nc_filter *filter)"
 .br
 .RI "\fIDestroy filter structure\&. \fP"
+.ti -1c
+.RI "\fBnc_rpc\fP * \fBnc_rpc_dup\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIDuplicate <rpc> message\&. \fP"
 .ti -1c
 .RI "char * \fBnc_rpc_dump\fP (const \fBnc_rpc\fP *rpc)"
 .br
@@ -245,10 +249,12 @@ Enumeration of supported NETCONF filter types\&.
 \fBEnumerator: \fP
 .in +1c
 .TP
+\fB\fINC_FILTER_UNKNOWN \fP\fP
+.TP
 \fB\fINC_FILTER_SUBTREE \fP\fP
 NC_FILTER_SUBTREE\&. 
 .PP
-Definition at line 245 of file netconf\&.h\&.
+Definition at line 246 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "const \fBnc_msgid\fP nc_session_send_rpc (struct nc_session *session, \fBnc_rpc\fP *rpc)"
@@ -327,6 +333,20 @@ Created NETCONF filter structure\&.
 Destroy filter structure\&. \fBParameters:\fP
 .RS 4
 \fIfilter\fP Filter to destroy\&. 
+.RE
+.PP
+
+.SS "\fBnc_rpc\fP* nc_rpc_dup (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Duplicate <rpc> message\&. \fBParameters:\fP
+.RS 4
+\fIrpc\fP <rpc> message to replicate\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Copy of the given <rpc> message\&. 
 .RE
 .PP
 
