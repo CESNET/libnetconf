@@ -1108,6 +1108,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 				 */
 				lseek(s->fd_events, len, SEEK_CUR);
 				/* read another event */
+				ncntf_stream_unlock(s);
 				continue;
 			}
 			if (stop != -1 && stop < t) {
@@ -1117,6 +1118,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 				 */
 				lseek(s->fd_events, len, SEEK_CUR);
 				/* read another event */
+				ncntf_stream_unlock(s);
 				continue;
 			}
 
