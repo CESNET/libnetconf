@@ -1085,7 +1085,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 						if (event_time != NULL) {
 							*event_time = t;
 						}
-						return(text);
+						return(strdup(text));
 					}
 				}
 				/* else signal == NULL */
@@ -1926,7 +1926,7 @@ static int ncntf_subscription_get_params(const nc_rpc* subscribe_rpc, char **str
 
 nc_reply *ncntf_subscription_check(const nc_rpc* subscribe_rpc)
 {
-	struct nc_err* e;
+	struct nc_err* e = NULL;
 	char *stream = NULL, *auxs = NULL;
 	struct nc_filter *filter = NULL;
 	time_t start, stop;
@@ -1941,18 +1941,20 @@ nc_reply *ncntf_subscription_check(const nc_rpc* subscribe_rpc)
 		break;
 	case -1:
 		/* rpc is invalid */
-		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
+		e = nc_err_new(NC_ERR_OP_FAILED);
+		goto cleanup;
 		break;
 	case -2:
 		/* filter is invalid */
 		e = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 		nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
-		return (nc_reply_error(e));
+		goto cleanup;
 		break;
 	default:
 		/* unknown error */
-		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
+		e = nc_err_new(NC_ERR_OP_FAILED);
+		goto cleanup;
 		break;
 	}
 
@@ -1964,7 +1966,7 @@ nc_reply *ncntf_subscription_check(const nc_rpc* subscribe_rpc)
 		asprintf(&auxs, "Requested stream \'%s\' does not exist.", stream);
 		nc_err_set(e, NC_ERR_PARAM_MSG, auxs);
 		free(auxs);
-		return (nc_reply_error(e));
+		goto cleanup;
 	}
 	pthread_mutex_unlock(streams_mut);
 
@@ -1973,28 +1975,32 @@ nc_reply *ncntf_subscription_check(const nc_rpc* subscribe_rpc)
 		e = nc_err_new(NC_ERR_MISSING_ELEM);
 		nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 		nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "startTime");
-		return (nc_reply_error(e));
+		goto cleanup;
 	}
 	if ((stop != -1) && (start != -1) && (start > stop)) {
 		e = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 		nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "stopTime");
-		return (nc_reply_error(e));
+		goto cleanup;
 	}
 	if (start != -1 && start > time(NULL)) {
 		e = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 		nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "startTime");
-		return (nc_reply_error(e));
+		goto cleanup;
 	}
 
+cleanup:
 	/* free unnecessary values */
 	nc_filter_free(filter);
 	free (stream);
 
-	/* all is checked and correct */
-
-	return(nc_reply_ok());
+	if (e == NULL) {
+		/* all is checked and correct */
+		return (nc_reply_ok());
+	} else {
+		return (nc_reply_error(e));
+	}
 }
 
 /**
@@ -2049,6 +2055,8 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	if (nc_session_notif_allowed(session) == 0) {
 		pthread_mutex_unlock(&(session->mut_session));
 		WARN("%s: Notification subscription is not allowed on the given session.", __func__);
+		nc_filter_free(filter);
+		free(stream);
 		return (-1);
 	}
 	/* set flag, notification subscription is now activated */
@@ -2128,6 +2136,8 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 			if (ntf == NULL) {
 				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 				session->ntf_active = 0;
+				nc_filter_free(filter);
+				free(stream);
 				return (-1);
 			}
 			ntf->doc = event_doc;
@@ -2143,8 +2153,11 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 		free(event);
 	}
 	xmlFreeDoc(filter_doc);
-	nc_filter_free(filter);
 	ncntf_stream_iter_finnish(stream);
+
+	/* cleanup */
+	nc_filter_free(filter);
+	free(stream);
 
 	/* send notificationComplete Notification */
 	ntf = malloc(sizeof(nc_rpc));
