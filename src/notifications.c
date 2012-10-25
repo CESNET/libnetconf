@@ -1040,6 +1040,11 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 			/* try DBus */
 			while (1) {
 				pthread_mutex_lock(dbus_mut);
+				if (dbus_connection_read_write(dbus, 10) != 1) {
+					/* dbus connection is closed */
+					ERROR("DBus connection unexpectedly closed.");
+					break;
+				}
 				signal = dbus_connection_pop_message(dbus);
 				pthread_mutex_unlock(dbus_mut);
 
@@ -1075,6 +1080,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 							continue; /* try next signal */
 						}
 						/* we're interested, read content */
+						dbus_message_iter_next (&signal_args);
 						if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(&signal_args)) {
 							WARN("Unexpected DBus Event signal (content is missing).");
 							dbus_message_unref(signal);
