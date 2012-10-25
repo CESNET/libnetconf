@@ -619,6 +619,7 @@ ac_includes_default="\
 #endif"
 
 ac_subst_vars='LTLIBOBJS
+DBUS_CONFDIR
 STREAMS_PATH
 SUBDIRS
 DISTRO
@@ -4533,7 +4534,6 @@ done
 
 fi
 
-
 ### pthread ###
 
 
@@ -5025,6 +5025,7 @@ else
 $as_echo "yes" >&6; }
 
 fi
+DBUS_CONFDIR="`pkg-config --variable=sysconfdir dbus-1`/dbus-1/"
 # try to detect Linux distro to distinguish dbus RPM package name
 if test -f /etc/SuSE-release; then
 #	SUSE, including openSUSE
@@ -5246,6 +5247,7 @@ done
 
 
 ############################### Set output #####################################
+
 
 
 

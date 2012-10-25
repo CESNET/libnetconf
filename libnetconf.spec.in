@@ -42,6 +42,7 @@ ldconfig
 
 %files
 %{_libdir}/libnetconf.so.*
+@DBUS_CONFDIR@/system.d/libnetconf.notifications.conf
 
 %files devel
 %{_libdir}/pkgconfig/libnetconf.pc

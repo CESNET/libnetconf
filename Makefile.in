@@ -66,6 +66,7 @@ VERSION = $(shell cut -f1 ./VERSION | tr -d '\n')
 MAJOR_VER = $(shell echo $(VERSION) | cut -d. -f1)
 RELEASE = @RELEASE@
 STREAMS_PATH = @STREAMS_PATH@
+DBUS_CONFDIR = @DBUS_CONFDIR@
 
 TOPDIR = @CONFIGURE_PWD@
 SUBDIRS = @SUBDIRS@
@@ -163,8 +164,8 @@ tarball: $(SRCS) $(HEADERS)
 	@mkdir $(NAME)-$(VERSION);
 	@for i in $(SUBDIRS) ; do $(MAKE) -C $$i tarball-prepare; done; \
 	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) configure.in configure \
-	    Makefile.in VERSION $(NAME).spec.in $(NAME).pc.in install-sh \
-	    config.sub config.guess Doxyfile.in doc/img/*.png; do \
+	    Makefile.in libnetconf.notifications.conf VERSION $(NAME).spec.in $(NAME).pc.in \
+	    install-sh config.sub config.guess Doxyfile.in doc/img/*.png; do \
 	    [ -d $(NAME)-$(VERSION)/$$(dirname $$i) ] || (mkdir -p $(NAME)-$(VERSION)/$$(dirname $$i)); \
 		cp $$i $(NAME)-$(VERSION)/$$i; \
 	done;
@@ -197,6 +198,8 @@ install: all install-devel install-doc
 	$(LN_S) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/$(NAME).so.$(MAJOR_VER);
 	[ -d $(STREAMS_PATH) ] || \
 	    (mkdir -p $(STREAMS_PATH); chmod 777 $(STREAMS_PATH))
+	[ -d $(DESTDIR)/$(DBUS_CONFDIR)/system.d/ ] || (mkdir -p $(DESTDIR)/$(DBUS_CONFDIR)/system.d/);
+	@cp libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
 
 .PHONY: install-devel
 install-devel:

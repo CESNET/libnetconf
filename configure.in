@@ -144,7 +144,6 @@ if test -n "$SUBDIRS"; then
 	AC_CHECK_HEADERS(event2/event.h, [], AC_MSG_ERROR([Missing libevent headers.]))
 fi
 
-
 ### pthread ###
 AX_PTHREAD([
 	LIBS="$PTHREAD_LIBS $LIBS"
@@ -155,6 +154,7 @@ AX_PTHREAD([
 
 # libdbus-1
 PKG_CHECK_MODULES([DBUS], [dbus-1 >= 1.0.0])
+DBUS_CONFDIR="`pkg-config --variable=sysconfdir dbus-1`/dbus-1/"
 # try to detect Linux distro to distinguish dbus RPM package name
 if test -f /etc/SuSE-release; then
 #	SUSE, including openSUSE
@@ -194,6 +194,7 @@ AC_SUBST(REQS)
 AC_SUBST(DISTRO)
 AC_SUBST(SUBDIRS)
 AC_SUBST(STREAMS_PATH)
+AC_SUBST(DBUS_CONFDIR)
 
 AC_SUBST(DOXYGEN)
 if test -z "$DOXYGEN"; then
