@@ -613,6 +613,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 
 void nc_session_free (struct nc_session* session)
 {
+
 	nc_session_close(session, NC_SESSION_TERM_OTHER);
 
 	/* free items untouched by nc_session_close() */
@@ -654,12 +655,11 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 		return (EXIT_FAILURE);
 	}
 
+	/* lock the session for sending the data */
+	pthread_mutex_lock(&(session->mut_out));
 
 	xmlDocDumpFormatMemory (msg->doc, (xmlChar**) (&text), &len, NC_CONTENT_FORMATTED);
 	DBG("Writing message: %s", text);
-
-	/* lock the session for sending the data */
-	pthread_mutex_lock(&(session->mut_out));
 
 	/* if v1.1 send chunk information before message */
 	if (session->version == NETCONFV11) {
