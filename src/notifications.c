@@ -83,6 +83,8 @@ static pthread_mutex_t *dbus_mut = NULL;
 /* path to the Event stream files, default path is defined in config.h */
 static char* streams_path = NULL;
 
+static pthread_key_t ncntf_replay_done;
+
 /*
  * STREAM FILE FORMAT
  * char[8] == "NCSTREAM"
@@ -767,6 +769,8 @@ int ncntf_init(void)
 		pthread_mutexattr_destroy(&mattr);
 	}
 
+	pthread_key_create(&ncntf_replay_done, free);
+
 	/* initiate DBus communication */
 	if ((ret = ncntf_dbus_init()) != 0) {
 		return (ret);
@@ -940,6 +944,7 @@ void ncntf_stream_iter_start(const char* stream)
 	struct stream *s;
 	char* dbus_filter = NULL;
 	DBusError err;
+	int *replay_done;
 
 	if (ncntf_config == NULL) {
 		return;
@@ -969,12 +974,17 @@ void ncntf_stream_iter_start(const char* stream)
 		WARN("%s", err.message);
 		dbus_error_free(&err);
 	}
+
+	replay_done = malloc(sizeof(int));
+	*replay_done = 0;
+	pthread_setspecific(ncntf_replay_done, (void*)replay_done);
 }
 
 void ncntf_stream_iter_finnish(const char* stream)
 {
 	char* dbus_filter = NULL;
 	DBusError err;
+	int *replay_done;
 
 	/* unsubscribe DBus */
 	asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
@@ -992,6 +1002,8 @@ void ncntf_stream_iter_finnish(const char* stream)
 		WARN("%s", err.message);
 		dbus_error_free(&err);
 	}
+	replay_done = (int*) pthread_getspecific(ncntf_replay_done);
+	*replay_done = 0;
 }
 
 /*
@@ -1008,6 +1020,9 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 	char* text = NULL;
 	DBusMessage *signal;
 	DBusMessageIter signal_args;
+	int* replay_done;
+	char* time_s;
+	time_t time_t;
 
 	if (ncntf_config == NULL) {
 		return (NULL);
@@ -1024,18 +1039,34 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 		return (NULL);
 	}
 
+	replay_done = (int*) pthread_getspecific(ncntf_replay_done);
+	if (start == -1) {
+		*replay_done = 1;
+	}
+
 	while (1) {
 		/* condition to read events from file (use replay):
 		 * 1) startTime is specified
 		 * 2) stream has replay option allowed
 		 * 3) there are still some data to read from stream file
 		 */
-		if ((start != -1) && (s->replay == 1) && (offset = lseek(s->fd_events, 0, SEEK_CUR)) < lseek(s->fd_events, 0, SEEK_END)) {
+		if ((*replay_done == 0) && (start != -1) && (s->replay == 1) && (offset = lseek(s->fd_events, 0, SEEK_CUR)) < lseek(s->fd_events, 0, SEEK_END)) {
 			/* there are still some data to read */
 			lseek(s->fd_events, offset, SEEK_SET);
 		} else {
 			/* no more data */
 			pthread_mutex_unlock(streams_mut);
+			if (*replay_done == 0) {
+				/* send replayComplete notification */
+				*replay_done = 1;
+				asprintf(&text, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
+							"<eventTime>%s</eventTime><replayComplete/></notification>", time_s = nc_time2datetime(time_t = time(NULL)));
+				free(time_s);
+				if (event_time != NULL) {
+					*event_time = time_t;
+				}
+				return (text);
+			}
 
 			/* try DBus */
 			while (1) {
@@ -2076,8 +2107,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	ncntf_stream_iter_start(stream);
 	while(1) {
 		if ((event = ncntf_stream_iter_next(stream, start, stop, NULL)) == NULL) {
-			usleep(100);
-			if ((stop != -1) && (stop > time(NULL))) {
+			if ((stop == -1) || ((stop != -1) && (stop > time(NULL)))) {
 				continue;
 			} else {
 				DBG("stream iter end: stop=%ld, time=%ld", stop, time(NULL));
