@@ -322,11 +322,13 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf);
  * This function is supposed to be performed only by NETCONF servers.
  *
  * @param[in] session NETCONF session to use.
+ * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
+ * non-blocking
  * @param[out] rpc Received \<rpc\>
  * @return Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_RPC
  * means that *rpc points to the received \<rpc\> message.
  */
-NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc);
+NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, int timeout, nc_rpc** rpc);
 
 /**
  * @ingroup reply
@@ -334,11 +336,13 @@ NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc);
  * This function is supposed to be performed only by NETCONF clients.
  *
  * @param[in] session NETCONF session to use.
+ * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
+ * non-blocking
  * @param[out] reply Received \<rpc-reply\>
  * @return Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_REPLY
  * means that *reply points to the received \<rpc-reply\> message.
  */
-NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply);
+NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_reply** reply);
 
 /**
  * @ingroup notifications
@@ -346,12 +350,14 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
  * This function is supposed to be performed only by NETCONF clients.
  *
  * @param[in] session NETCONF session to use.
+ * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
+ * non-blocking
  * @param[out] ntf Received \<notification\> message
  * @return Type of received message. NC_MSG_UNKNOWN means error,
  * NC_MSG_NOTIFICATION means that *ntf points to the received \<notification\>
  * message.
  */
-NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, nc_ntf** ntf);
+NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, int timeout, nc_ntf** ntf);
 
 /**
  * @ingroup genAPI

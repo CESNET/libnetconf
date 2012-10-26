@@ -2242,8 +2242,6 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 	NC_MSG_TYPE type;
 	NC_REPLY_TYPE type_reply;
 	int eventfd = -1, dispatch = 1;
-	LIBSSH2_POLLFD fds;
-	int status;
 	time_t event_time;
 	char* content;
 
@@ -2307,67 +2305,9 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 	}
 
 	/* main loop for receiving notifications */
-	while(dispatch) {
-		pthread_mutex_lock(&(session->mut_session));
-		if (session->queue_event != NULL) {
-			type = nc_session_recv_notif(session, &ntf);
-			pthread_mutex_unlock(&(session->mut_session));
-
-		} else {
-
-			while (1) {
-				/* start polling on input socket */
-				fds.type = LIBSSH2_POLLFD_CHANNEL;
-				fds.fd.channel = session->ssh_channel;
-				fds.events = LIBSSH2_POLLFD_POLLIN;
-				fds.revents = LIBSSH2_POLLFD_POLLIN;
-				/*
-				 * According to libssh2 documentation, standard poll should work, but it does not.
-				 * It seems, that some data are stored in internal buffers and they are not seen
-				 * by poll, but libssh2_poll on the channel.
-				 */
-				/*
-				fds.fd = eventfd;
-				fds.events = POLLIN;
-				fds.revents = 0;
-				status = poll(&fds, 1, 100);
-				*/
-				status = libssh2_poll(&fds, 1, 100);
-				if (status == 0 || (status == -1 && errno == EINTR)) {
-					/* poll timed out or was interrupted */
-					continue;
-				} else if (status < 0) {
-					/* poll failed - something wrong happend, close this socket and wait for another request */
-					ERROR("Input channel error");
-					nc_session_close(session, NC_SESSION_TERM_DROPPED);
-					dispatch = 0;  /* set the dispatch loop to end */
-					break;
-				}
-				/* status > 0 */
-				/* check the status of the socket */
-				/* if nothing to read and POLLHUP (EOF) or POLLERR set */
-				if ((fds.revents & POLLHUP) || (fds.revents & POLLERR)) {
-					/* close client's socket (it's probably already closed by client */
-					ERROR("Input channel closed");
-					nc_session_close(session, NC_SESSION_TERM_DROPPED);
-					dispatch = 0;  /* set the dispatch loop to end */
-					break;
-				}
-
-				/* we have something to read, leave dispatch == 1 */
-				break;
-			}
-
-			if (dispatch == 0) {
-				pthread_mutex_unlock(&(session->mut_session));
-				break; /* end the dispatch loop */
-			}
-			type = nc_session_recv_notif(session, &ntf);
-			pthread_mutex_unlock(&(session->mut_session));
-		}
-
+	while(dispatch && session != NULL && session->status == NC_SESSION_STATUS_WORKING) {
 		/* process current notification */
-		switch (type) {
+		switch (type = nc_session_recv_notif(session, 0, &ntf)) {
 		case NC_MSG_UNKNOWN: /* error */
 			dispatch = 0;
 			continue; /* end the dispatch loop */
@@ -2393,7 +2333,9 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 			free(content);
 			break;
 		default:
-			/* no notification available, continue with polling */
+			/* no notification to read now */
+			usleep(100);
+			continue;
 			break;
 		}
 	}

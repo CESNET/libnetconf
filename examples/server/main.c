@@ -110,7 +110,7 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 	pthread_t thread;
 
 	/* receive incoming message */
-	if ((nc_session_recv_rpc(config->session, &rpc) == 0)
+	if ((nc_session_recv_rpc(config->session, -1, &rpc) == 0)
 			&& (nc_session_get_status(config->session) != NC_SESSION_STATUS_WORKING)) {
 		/* something really bad happend, and communication os not possible anymore */
 		event_base_loopbreak(config->event_base);

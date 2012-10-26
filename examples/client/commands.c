@@ -1293,6 +1293,7 @@ int cmd_disconnect (char* arg)
 		ERROR("disconnect", "not connected to any NETCONF server.");
 	} else {
 		nc_session_close (session, NC_SESSION_TERM_CLOSED);
+		usleep(300); /* let notification thread stop */
 		nc_session_free (session);
 		session = NULL;
 	}

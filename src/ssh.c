@@ -297,7 +297,7 @@ int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello)
 		return (EXIT_FAILURE);
 	}
 
-	nc_session_recv_reply(session, &recv_hello);
+	nc_session_recv_reply(session, -1, &recv_hello);
 	if (recv_hello == NULL) {
 		return (EXIT_FAILURE);
 	}

@@ -117,6 +117,7 @@ typedef enum {
  */
 typedef enum NC_MSG_TYPE {
 	NC_MSG_UNKNOWN, /**< error state */
+	NC_MSG_WOULDBLOCK, /**< waiting for another message timed out */
 	NC_MSG_NONE, /**< no message at input or message processed internally */
 	NC_MSG_HELLO, /**< \<hello\> message */
 	NC_MSG_RPC, /**< \<rpc\> message */

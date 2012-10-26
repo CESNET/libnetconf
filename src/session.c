@@ -549,7 +549,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 				rpc_close = nc_rpc_closesession();
 				if (rpc_close != NULL) {
 					if (nc_session_send_rpc(session, rpc_close) != 0) {
-						nc_session_recv_reply(session, &reply);
+						nc_session_recv_reply(session, 10000, &reply); /* wait max 10 seconds */
 						if (reply != NULL) {
 							nc_reply_free(reply);
 						}
@@ -737,7 +737,7 @@ int nc_session_read_len (struct nc_session* session, size_t chunk_length, char *
 		if (session->ssh_channel) {
 			/* read via libssh2 */
 			c = libssh2_channel_read(session->ssh_channel, &(buf[rd]), chunk_length - rd);
-			if (c == LIBSSH2_ERROR_EAGAIN) {
+			if (c == LIBSSH2_ERROR_EAGAIN || c == LIBSSH2_ERROR_TIMEOUT) {
 				usleep (NC_READ_SLEEP);
 				continue;
 			} else if (c < 0) {
@@ -825,7 +825,7 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 		if (session->ssh_channel) {
 			/* read via libssh2 */
 			c = libssh2_channel_read(session->ssh_channel, &(buf[rd]), 1);
-			if (c == LIBSSH2_ERROR_EAGAIN) {
+			if (c == LIBSSH2_ERROR_EAGAIN || c == LIBSSH2_ERROR_TIMEOUT) {
 				usleep (NC_READ_SLEEP);
 				continue;
 			} else if (c < 0) {
@@ -1031,7 +1031,7 @@ struct nc_err* nc_msg_parse_error(struct nc_msg* msg)
 	return (err);
 }
 
-NC_MSG_TYPE nc_session_receive (struct nc_session* session, struct nc_msg** msg)
+NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct nc_msg** msg)
 {
 	struct nc_msg *retval;
 	nc_reply* reply;
@@ -1041,7 +1041,9 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	unsigned long long int text_size = 0, total_len = 0;
 	size_t chunk_length;
 	struct pollfd fds;
+	LIBSSH2_POLLFD fds_ssh;
 	int status;
+	unsigned long int revents;
 	NC_MSG_TYPE msgtype;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
@@ -1053,14 +1055,44 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 	pthread_mutex_lock(&(session->mut_in));
 
 	/* use while for possibility of repeating test */
-	while (session->ssh_channel == NULL && session->fd_input != -1) {
-		/* check input state (only for file descriptor, not libssh2) via poll */
-		fds.fd = session->fd_input;
-		fds.events = POLLIN;
-		fds.revents = 0;
-		status = poll(&fds, 1, 100);
-		if (status == 0 ||  (status == -1 && errno == EINTR)) {
-			/* poll timed out or was interrupted */
+	while(1) {
+		if (session->ssh_channel == NULL && session->fd_input != -1) {
+			/* we are getting data from standard file descriptor */
+			fds.fd = session->fd_input;
+			fds.events = POLLIN;
+			fds.revents = 0;
+			status = poll(&fds, 1, timeout);
+
+			revents = (unsigned long int) fds.revents;
+		} else if (session->ssh_channel != NULL) {
+			/* we are getting data from libssh's channel */
+			fds_ssh.type = LIBSSH2_POLLFD_CHANNEL;
+			fds_ssh.fd.channel = session->ssh_channel;
+			fds_ssh.events = LIBSSH2_POLLFD_POLLIN;
+			fds_ssh.revents = LIBSSH2_POLLFD_POLLIN;
+			/*
+			 * According to libssh2 documentation, standard poll should work, but it does not.
+			 * It seems, that some data are stored in internal buffers and they are not seen
+			 * by poll, but libssh2_poll on the channel.
+			 */
+			/*
+			fds.fd = eventfd;
+			fds.events = POLLIN;
+			fds.revents = 0;
+			status = poll(&fds, 1, 100);
+			*/
+			status = libssh2_poll(&fds_ssh, 1, timeout);
+
+			revents = fds_ssh.revents;
+		}
+
+		/* process the result */
+		if (status == 0) {
+			/* timed out */
+			pthread_mutex_unlock(&(session->mut_in));
+			return (NC_MSG_WOULDBLOCK);
+		} else if ((status == -1) && (errno == EINTR)) {
+			/* poll was interrupted */
 			continue;
 		} else if (status < 0) {
 			/* poll failed - something wrong happend, close this socket and wait for another request */
@@ -1073,13 +1105,15 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, struct nc_msg** msg)
 		/* status > 0 */
 		/* check the status of the socket */
 		/* if nothing to read and POLLHUP (EOF) or POLLERR set */
-		if ((fds.revents & POLLHUP) || (fds.revents & POLLERR)) {
+		if ((revents & POLLHUP) || (revents & POLLERR)) {
 			/* close client's socket (it's probably already closed by client */
 			ERROR("Input channel closed");
 			nc_session_close(session, NC_SESSION_TERM_DROPPED);
 			pthread_mutex_unlock(&(session->mut_in));
 			return (NC_MSG_UNKNOWN);
 		}
+
+		/* we have something to read */
 		break;
 	}
 
@@ -1255,15 +1289,16 @@ malformed_msg:
 	return (NC_MSG_UNKNOWN);
 }
 
-NC_MSG_TYPE nc_session_recv_msg (struct nc_session* session, struct nc_msg** msg)
+NC_MSG_TYPE nc_session_recv_msg (struct nc_session* session, int timeout, struct nc_msg** msg)
 {
 	NC_MSG_TYPE ret;
 
-	ret = nc_session_receive (session, msg);
+	ret = nc_session_receive (session, timeout, msg);
 	switch (ret) {
 	case NC_MSG_REPLY: /* regular reply received */
 	case NC_MSG_HELLO:
 	case NC_MSG_NOTIFICATION:
+	case NC_MSG_WOULDBLOCK:
 		/* do nothing, just return the type */
 		break;
 	default:
@@ -1274,12 +1309,21 @@ NC_MSG_TYPE nc_session_recv_msg (struct nc_session* session, struct nc_msg** msg
 	return (ret);
 }
 
-NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
+NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_reply** reply)
 {
 	struct nc_msg *msg_aux, *msg;
 	NC_MSG_TYPE ret;
+	int local_timeout;
+
+	if (timeout == 0) {
+		local_timeout = 0;
+	} else {
+		local_timeout = 100;
+	}
 
 	pthread_mutex_lock(&(session->mut_mqueue));
+
+try_again:
 	if (session->queue_msg != NULL) {
 		/* pop the oldest reply from the queue */
 		*reply = (nc_reply*)(session->queue_msg);
@@ -1289,7 +1333,7 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 		return (NC_MSG_REPLY);
 	}
 
-	ret = nc_session_recv_msg(session, &msg);
+	ret = nc_session_recv_msg(session, local_timeout, &msg);
 
 	switch (ret) {
 	case NC_MSG_REPLY: /* regular reply received */
@@ -1319,6 +1363,11 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 		break;
 	case NC_MSG_NONE:
 		/* <rpc-reply> with error information was processed automatically */
+		break;
+	case NC_MSG_WOULDBLOCK:
+		if ((timeout == -1) || ((timeout > 0) && ((local_timeout = local_timeout - 100) > 0))) {
+			goto try_again;
+		}
 		break;
 	case NC_MSG_NOTIFICATION:
 		/* add event notification into the session's list of notification messages */
@@ -1366,12 +1415,21 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf)
 	return (ret);
 }
 
-NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, nc_ntf** ntf)
+NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, int timeout, nc_ntf** ntf)
 {
 	struct nc_msg *msg_aux, *msg;
 	NC_MSG_TYPE ret;
+	int local_timeout;
+
+	if (timeout == 0) {
+		local_timeout = 0;
+	} else {
+		local_timeout = 100;
+	}
 
 	pthread_mutex_lock(&(session->mut_equeue));
+
+try_again:
 	if (session->queue_event != NULL) {
 		/* pop the oldest reply from the queue */
 		*ntf = (nc_reply*)(session->queue_event);
@@ -1381,8 +1439,7 @@ NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, nc_ntf** ntf)
 		return (NC_MSG_NOTIFICATION);
 	}
 
-read_again:
-	ret = nc_session_recv_msg(session, &msg);
+	ret = nc_session_recv_msg(session, local_timeout, &msg);
 
 	switch (ret) {
 	case NC_MSG_REPLY: /* regular reply received */
@@ -1395,12 +1452,16 @@ read_again:
 			for (; msg_aux->next != NULL; msg_aux = msg_aux->next);
 			msg_aux->next = msg;
 		}
-		/* no break */
+		break;
 	case NC_MSG_NONE:
 		/* <rpc-reply> with error information was processed
 		 * automatically, but we are waiting for notification
 		 */
-		goto read_again;
+		break;
+	case NC_MSG_WOULDBLOCK:
+		if ((timeout == -1) || ((timeout > 0) && ((local_timeout = local_timeout - 100) > 0))) {
+			goto try_again;
+		}
 		break;
 	case NC_MSG_NOTIFICATION:
 		*ntf = (nc_reply*)msg;
@@ -1415,14 +1476,22 @@ read_again:
 	return (ret);
 }
 
-NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
+NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, int timeout, nc_rpc** rpc)
 {
 	NC_MSG_TYPE ret;
 	const char* wd;
 	struct nc_err* e = NULL;
 	nc_reply* reply;
+	int local_timeout;
 
-	ret = nc_session_receive (session, (struct nc_msg**) rpc);
+	if (timeout == 0) {
+		local_timeout = 0;
+	} else {
+		local_timeout = 100;
+	}
+
+try_again:
+	ret = nc_session_receive (session, local_timeout, (struct nc_msg**) rpc);
 	switch (ret) {
 	case NC_MSG_RPC:
 		(*rpc)->with_defaults = nc_rpc_parse_withdefaults(*rpc);
@@ -1490,6 +1559,11 @@ NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, nc_rpc** rpc)
 		break;
 	case NC_MSG_HELLO:
 		/* do nothing, just return the type */
+		break;
+	case NC_MSG_WOULDBLOCK:
+		if ((timeout == -1) || ((timeout > 0) && ((local_timeout = local_timeout - 100) > 0))) {
+			goto try_again;
+		}
 		break;
 	default:
 		ret = NC_MSG_UNKNOWN;
@@ -1713,7 +1787,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 	pthread_mutex_unlock(&(session->mut_mqueue));
 
 	while (1) {
-		replytype = nc_session_recv_reply(session, reply);
+		replytype = nc_session_recv_reply(session, -1, reply);
 		if (replytype == NC_MSG_REPLY) {
 			/* compare message ID */
 			if (nc_msgid_compare(msgid1, msgid2 = nc_reply_get_msgid(*reply)) != 0) {
