@@ -148,16 +148,17 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 				break;
 			}
 
+			reply = ncntf_subscription_check(rpc);
+			if (nc_reply_get_type (reply) != NC_REPLY_OK) {
+				break;
+			}
+
 			if ((ntf_config = malloc(sizeof(struct ntf_thread_config))) == NULL) {
 				clb_print(NC_VERB_ERROR, "Memory allocation failed.");
 				e = nc_err_new(NC_ERR_OP_FAILED);
 				nc_err_set(e, NC_ERR_PARAM_MSG, "Memory allocation failed.");
 				reply = nc_reply_error(e);
 				e = NULL;
-				break;
-			}
-			reply = ncntf_subscription_check(rpc);
-			if (nc_reply_get_type (reply) != NC_REPLY_OK) {
 				break;
 			}
 			ntf_config->session = config->session;
