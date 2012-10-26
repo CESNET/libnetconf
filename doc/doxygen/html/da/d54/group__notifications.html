@@ -176,8 +176,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gad1efe90aba028ffbb2b018b30f8e3a4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check validity of &lt;create-subscription&gt; message.  <a href="#gad1efe90aba028ffbb2b018b30f8e3a4b"></a><br/></td></tr>
 <tr class="memitem:ga9a085479245b4da6e20fd89892cc7bc1"><td class="memItemLeft" align="right" valign="top">long long int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga9a085479245b4da6e20fd89892cc7bc1">ncntf_dispatch_send</a> (struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *subscribe_rpc)</td></tr>
 <tr class="memdesc:ga9a085479245b4da6e20fd89892cc7bc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start sending notification according to the given &lt;create-subscription&gt; NETCONF RPC request. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated.  <a href="#ga9a085479245b4da6e20fd89892cc7bc1"></a><br/></td></tr>
-<tr class="memitem:ga4aec749f99481d308e38c2f867932a98"><td class="memItemLeft" align="right" valign="top">long long int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga4aec749f99481d308e38c2f867932a98">ncntf_dispatch_receive</a> (struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *subscribe_rpc, void(*process_ntf)(time_t eventtime, const char *content))</td></tr>
-<tr class="memdesc:ga4aec749f99481d308e38c2f867932a98"><td class="mdescLeft">&#160;</td><td class="mdescRight">Subscribe for receiving notifications from the given session according to parameters in the given subscribtion RPC. Received notifications are processed by the given process_ntf callback function. Functions stops when the final notification &lt;notificationComplete&gt; is received or when the session is terminated.  <a href="#ga4aec749f99481d308e38c2f867932a98"></a><br/></td></tr>
+<tr class="memitem:ga82da94949fd2d901c3abb2c82882346c"><td class="memItemLeft" align="right" valign="top">long long int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga82da94949fd2d901c3abb2c82882346c">ncntf_dispatch_receive</a> (struct nc_session *session, void(*process_ntf)(time_t eventtime, const char *content))</td></tr>
+<tr class="memdesc:ga82da94949fd2d901c3abb2c82882346c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Subscribe for receiving notifications from the given session according to parameters in the given subscribtion RPC. Received notifications are processed by the given process_ntf callback function. Functions stops when the final notification &lt;notificationComplete&gt; is received or when the session is terminated.  <a href="#ga82da94949fd2d901c3abb2c82882346c"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's implementation of NETCONF asynchronous message delivery as defined in RFC 5277. </p>
@@ -947,7 +947,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga4aec749f99481d308e38c2f867932a98"></a>
+<a class="anchor" id="ga82da94949fd2d901c3abb2c82882346c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -956,12 +956,6 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
-          <td class="paramname"><em>subscribe_rpc</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -981,7 +975,6 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session where the notifications will be sent. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">subscribe_rpc</td><td>&lt;create-subscription&gt; RPC, if any other RPC is given, -1 is returned. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">process_ntf</td><td>Callback function to process content of the notification. If NULL, content of the notification is printed on stdout.</td></tr>
   </table>
   </dd>
@@ -995,7 +988,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Oct 26 2012 14:07:32 for libnetconf by
+    <li class="footer">Generated on Fri Oct 26 2012 14:50:30 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

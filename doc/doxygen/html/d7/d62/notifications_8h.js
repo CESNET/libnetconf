@@ -22,5 +22,5 @@ var notifications_8h =
     [ "ncntf_notif_get_time", "d7/d62/notifications_8h.html#gab0ffc4133ed6b2c8cf39a0f69df776a5", null ],
     [ "ncntf_subscription_check", "d7/d62/notifications_8h.html#gad1efe90aba028ffbb2b018b30f8e3a4b", null ],
     [ "ncntf_dispatch_send", "d7/d62/notifications_8h.html#ga9a085479245b4da6e20fd89892cc7bc1", null ],
-    [ "ncntf_dispatch_receive", "d7/d62/notifications_8h.html#ga4aec749f99481d308e38c2f867932a98", null ]
+    [ "ncntf_dispatch_receive", "d7/d62/notifications_8h.html#ga82da94949fd2d901c3abb2c82882346c", null ]
 ];

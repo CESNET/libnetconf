@@ -104,7 +104,7 @@ var searchData=
   ['ncds_5finit',['ncds_init',['../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff',1,'datastore.h']]],
   ['ncds_5fnew',['ncds_new',['../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6',1,'datastore.h']]],
   ['ncntf_5fclose',['ncntf_close',['../da/d54/group__notifications.html#ga2acad5b75f7aaeee58cc6f46fbf9b139',1,'notifications.h']]],
-  ['ncntf_5fdispatch_5freceive',['ncntf_dispatch_receive',['../da/d54/group__notifications.html#ga4aec749f99481d308e38c2f867932a98',1,'notifications.h']]],
+  ['ncntf_5fdispatch_5freceive',['ncntf_dispatch_receive',['../da/d54/group__notifications.html#ga82da94949fd2d901c3abb2c82882346c',1,'notifications.h']]],
   ['ncntf_5fdispatch_5fsend',['ncntf_dispatch_send',['../da/d54/group__notifications.html#ga9a085479245b4da6e20fd89892cc7bc1',1,'notifications.h']]],
   ['ncntf_5fevent_5fnew',['ncntf_event_new',['../da/d54/group__notifications.html#ga9641deaca934bcd7ff66ac3ae60fc722',1,'notifications.h']]],
   ['ncntf_5finit',['ncntf_init',['../da/d54/group__notifications.html#ga7bfaffda6d2c087477935a810d0fef46',1,'notifications.h']]],

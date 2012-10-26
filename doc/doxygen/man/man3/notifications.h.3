@@ -109,7 +109,7 @@ Functions to handle NETCONF Notifications\&.
 .br
 .RI "\fIStart sending notification according to the given <create-subscription> NETCONF RPC request\&. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated\&. \fP"
 .ti -1c
-.RI "long long int \fBncntf_dispatch_receive\fP (struct nc_session *session, const \fBnc_rpc\fP *subscribe_rpc, void(*process_ntf)(time_t eventtime, const char *content))"
+.RI "long long int \fBncntf_dispatch_receive\fP (struct nc_session *session, void(*process_ntf)(time_t eventtime, const char *content))"
 .br
 .RI "\fISubscribe for receiving notifications from the given session according to parameters in the given subscribtion RPC\&. Received notifications are processed by the given process_ntf callback function\&. Functions stops when the final notification <notificationComplete> is received or when the session is terminated\&. \fP"
 .in -1c

@@ -110,7 +110,7 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 .br
 .RI "\fIStart sending notification according to the given <create-subscription> NETCONF RPC request\&. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated\&. \fP"
 .ti -1c
-.RI "long long int \fBncntf_dispatch_receive\fP (struct nc_session *session, const \fBnc_rpc\fP *subscribe_rpc, void(*process_ntf)(time_t eventtime, const char *content))"
+.RI "long long int \fBncntf_dispatch_receive\fP (struct nc_session *session, void(*process_ntf)(time_t eventtime, const char *content))"
 .br
 .RI "\fISubscribe for receiving notifications from the given session according to parameters in the given subscribtion RPC\&. Received notifications are processed by the given process_ntf callback function\&. Functions stops when the final notification <notificationComplete> is received or when the session is terminated\&. \fP"
 .in -1c
@@ -551,14 +551,12 @@ number of sent notifications (including 0), -1 on error\&.
 .RE
 .PP
 
-.SS "long long int ncntf_dispatch_receive (struct nc_session *session, const \fBnc_rpc\fP *subscribe_rpc, void(*)(time_t eventtime, const char *content)process_ntf)"
+.SS "long long int ncntf_dispatch_receive (struct nc_session *session, void(*)(time_t eventtime, const char *content)process_ntf)"
 
 .PP
 Subscribe for receiving notifications from the given session according to parameters in the given subscribtion RPC\&. Received notifications are processed by the given process_ntf callback function\&. Functions stops when the final notification <notificationComplete> is received or when the session is terminated\&. \fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session where the notifications will be sent\&. 
-.br
-\fIsubscribe_rpc\fP <create-subscription> RPC, if any other RPC is given, -1 is returned\&. 
 .br
 \fIprocess_ntf\fP Callback function to process content of the notification\&. If NULL, content of the notification is printed on stdout\&.
 .RE

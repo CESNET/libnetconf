@@ -75,9 +75,9 @@ var NAVTREEINDEX0 =
 "d7/d62/notifications_8h.html#ga226e6acf872c57ca4de3847718cfaafe":[3,0,0,6,15],
 "d7/d62/notifications_8h.html#ga2acad5b75f7aaeee58cc6f46fbf9b139":[3,0,0,6,6],
 "d7/d62/notifications_8h.html#ga30691c17b09e98c56d39c9ebfaba1ded":[3,0,0,6,7],
-"d7/d62/notifications_8h.html#ga4aec749f99481d308e38c2f867932a98":[3,0,0,6,22],
 "d7/d62/notifications_8h.html#ga6e2a945082dc8cecd41c7d79a116442e":[3,0,0,6,18],
 "d7/d62/notifications_8h.html#ga7bfaffda6d2c087477935a810d0fef46":[3,0,0,6,4],
+"d7/d62/notifications_8h.html#ga82da94949fd2d901c3abb2c82882346c":[3,0,0,6,22],
 "d7/d62/notifications_8h.html#ga8958e791e810dd07b9121d78c870e8c5":[3,0,0,6,10],
 "d7/d62/notifications_8h.html#ga8c116b8aae2fe13811ebbfd3ca6f1a44":[3,0,0,6,5],
 "d7/d62/notifications_8h.html#ga9641deaca934bcd7ff66ac3ae60fc722":[3,0,0,6,14],
@@ -176,8 +176,8 @@ var NAVTREEINDEX0 =
 "globals_eval.html":[3,1,4],
 "globals_func.html":[3,1,1],
 "globals_type.html":[3,1,2],
-"index.html":[0],
 "index.html":[],
+"index.html":[0],
 "modules.html":[2],
 "pages.html":[]
 };
