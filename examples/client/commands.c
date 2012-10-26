@@ -334,19 +334,20 @@ static int send_recv_process(const char* operation, nc_rpc* rpc)
 {
 	nc_reply *reply = NULL;
 	char *data = NULL;
+	int ret = EXIT_SUCCESS;
 
 	/* send the request and get the reply */
 	switch (nc_session_send_recv(session, rpc, &reply)) {
 	case NC_MSG_UNKNOWN:
 		if (nc_session_get_status(session) != NC_SESSION_STATUS_WORKING) {
-			nc_rpc_free(rpc);
-			nc_reply_free(reply);
-			ERROR("kill-session", "receiving rpc-reply failed.");
+			ERROR(operation, "receiving rpc-reply failed.");
 			INSTRUCTION("Closing the session.\n");
 			cmd_disconnect(NULL);
-			return (EXIT_FAILURE);
+			ret = EXIT_FAILURE;
+			break;
 		}
-		ERROR("kill-session", "Unknown error occurred.");
+		ERROR(operation, "Unknown error occurred.");
+		ret = EXIT_FAILURE;
 		break;
 	case NC_MSG_NONE:
 		/* error occurred, but processed by callback */
@@ -363,21 +364,24 @@ static int send_recv_process(const char* operation, nc_rpc* rpc)
 			break;
 		case NC_REPLY_ERROR:
 			/* wtf, you shouldn't be here !?!? */
-			ERROR("kill-session", "operation failed, but rpc-error was not processed.");
+			ERROR(operation, "operation failed, but rpc-error was not processed.");
+			ret = EXIT_FAILURE;
 			break;
 		default:
-			ERROR("kill-session", "unexpected operation result.");
+			ERROR(operation, "unexpected operation result.");
+			ret = EXIT_FAILURE;
 			break;
 		}
 		break;
 	default:
-		ERROR("kill-session", "Unknown error occurred.");
+		ERROR(operation, "Unknown error occurred.");
+		ret = EXIT_FAILURE;
 		break;
 	}
 	nc_rpc_free(rpc);
 	nc_reply_free(reply);
 
-	return (EXIT_FAILURE);
+	return (ret);
 }
 
 void cmd_editconfig_help()
@@ -1385,7 +1389,6 @@ generic_help:
 
 struct ntf_thread_config {
 	struct nc_session *session;
-	nc_rpc *subscribe_rpc;
 	FILE* output;
 };
 
@@ -1409,8 +1412,7 @@ void* notification_thread(void* arg)
 	struct ntf_thread_config *config = (struct ntf_thread_config*)arg;
 
 	pthread_setspecific(ntf_file, (void*)config->output);
-	ncntf_dispatch_receive(config->session, config->subscribe_rpc, notification_fileprint);
-	nc_rpc_free(config->subscribe_rpc);
+	ncntf_dispatch_receive(config->session, notification_fileprint);
 	if (config->output != stdout) {
 		fclose(config->output);
 	}
@@ -1548,6 +1550,14 @@ int cmd_subscribe(char *arg)
 		return (EXIT_FAILURE);
 	}
 
+	if (send_recv_process("subscribe", rpc) != 0) {
+		return (EXIT_FAILURE);
+	}
+	rpc = NULL; /* just note that rpc is already freed by send_recv_process() */
+
+	/*
+	 * create Notifications receiving thread
+	 */
 	/* check thread specific variable */
 	if (ntf_file_flag == 0) {
 		ntf_file_flag = 1;
@@ -1556,15 +1566,12 @@ int cmd_subscribe(char *arg)
 
 	tconfig = malloc(sizeof(struct ntf_thread_config));
 	tconfig->session = session;
-	tconfig->subscribe_rpc = rpc;
 	tconfig->output = (output == NULL) ? stdout : output;
 	if (pthread_create(&thread, NULL, notification_thread, tconfig) != 0) {
-		ERROR("create-subscription", "unexpected operation result.");
-		nc_rpc_free (rpc);
+		ERROR("create-subscription", "creating thread for receiving notifications failed");
 		return (EXIT_FAILURE);
 	}
 	pthread_detach(thread);
-	INSTRUCTION("Result OK\n");
 	return (EXIT_SUCCESS);
 }
 

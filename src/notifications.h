@@ -280,13 +280,11 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
  * session is terminated.
  *
  * @param[in] session NETCONF session where the notifications will be sent.
- * @param[in] subscribe_rpc \<create-subscription\> RPC, if any other RPC is
- * given, -1 is returned.
  * @param[in] process_ntf Callback function to process content of the
  * notification. If NULL, content of the notification is printed on stdout.
  *
  * @return number of received notifications, -1 on error.
  */
-long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* subscribe_rpc, void (*process_ntf)(time_t eventtime, const char* content));
+long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_ntf)(time_t eventtime, const char* content));
 
 #endif /* NOTIFICATIONS_H_ */

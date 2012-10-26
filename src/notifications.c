@@ -2279,22 +2279,16 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
  *
  * @return number of received notifications, -1 on error.
  */
-long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* subscribe_rpc, void (*process_ntf)(time_t eventtime, const char* content))
+long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_ntf)(time_t eventtime, const char* content))
 {
 	long long int count = 0;
-	nc_rpc *rpc;
-	nc_reply *reply = NULL;
 	nc_ntf* ntf = NULL;
 	NC_MSG_TYPE type;
-	NC_REPLY_TYPE type_reply;
 	int eventfd = -1, dispatch = 1;
 	time_t event_time;
 	char* content;
 
-	if (session == NULL ||
-			session->status != NC_SESSION_STATUS_WORKING ||
-			subscribe_rpc == NULL ||
-			nc_rpc_get_op(subscribe_rpc) != NC_OP_CREATESUBSCRIPTION) {
+	if (session == NULL || session->status != NC_SESSION_STATUS_WORKING ) {
 		ERROR("%s: Invalid parameters.", __func__);
 		return (-1);
 	}
@@ -2304,45 +2298,20 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 		return (-1);
 	}
 
-	DBG_LOCK("mut_session");
-	pthread_mutex_lock(&(session->mut_session));
-	/* check if there is another notification subscription */
-	if (nc_session_notif_allowed(session) == 0) {
-		WARN("%s: Notification subscription is not allowed on the given session.", __func__);
+	if (nc_cpblts_enabled(session, NC_CAP_NOTIFICATION_ID) == 0) {
+		ERROR("Given session does not support notifications capability.");
 		return (-1);
 	}
 
-	/* send subscription */
-	rpc = nc_msg_dup((struct nc_msg*)subscribe_rpc);
-	type = nc_session_send_recv(session, rpc, &reply);
-	nc_rpc_free(rpc);
-
-	switch (type) {
-	case NC_MSG_UNKNOWN:
-		ERROR("Subscribing for notifications failed (receiving rpc-reply failed).");
+	DBG_LOCK("mut_session");
+	pthread_mutex_lock(&(session->mut_session));
+	if (session->ntf_active == 0) {
+		session->ntf_active = 1;
+	} else {
+		DBG_UNLOCK("mut_session");
+		pthread_mutex_unlock(&(session->mut_session));
+		ERROR("Another ncntf_dispatch_receive() function active on the session.")
 		return (-1);
-		break;
-	case NC_MSG_NONE:
-		/* NC_REPLY_ERROR was processed by a caller's callback function */
-		return (-1);
-		break;
-	default:
-		switch (type_reply = nc_reply_get_type(reply)) {
-		case NC_REPLY_OK:
-			session->ntf_active = 1;
-			break;
-		case NC_REPLY_ERROR:
-			ERROR("create-subscription failed (%s)", nc_reply_get_errormsg(reply));
-			break;
-		default:
-			ERROR("create-subscription failed (unexpected operation result).");
-			break;
-		}
-		nc_reply_free(reply);
-		if (type_reply != NC_REPLY_OK) {
-			return (-1);
-		}
-		break;
 	}
 	DBG_UNLOCK("mut_session");
 	pthread_mutex_unlock(&(session->mut_session));
