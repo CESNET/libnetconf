@@ -2260,10 +2260,9 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 		return (-1);
 	}
 
-	/* check if there is another notification subscription */
 	pthread_mutex_lock(&(session->mut_session));
+	/* check if there is another notification subscription */
 	if (nc_session_notif_allowed(session) == 0) {
-		pthread_mutex_unlock(&(session->mut_session));
 		WARN("%s: Notification subscription is not allowed on the given session.", __func__);
 		return (-1);
 	}
@@ -2275,13 +2274,11 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 
 	switch (type) {
 	case NC_MSG_UNKNOWN:
-		pthread_mutex_unlock(&(session->mut_session));
 		ERROR("Subscribing for notifications failed (receiving rpc-reply failed).");
 		return (-1);
 		break;
 	case NC_MSG_NONE:
 		/* NC_REPLY_ERROR was processed by a caller's callback function */
-		pthread_mutex_unlock(&(session->mut_session));
 		return (-1);
 		break;
 	default:
@@ -2296,13 +2293,13 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 			ERROR("create-subscription failed (unexpected operation result).");
 			break;
 		}
-		pthread_mutex_unlock(&(session->mut_session));
 		nc_reply_free(reply);
 		if (type_reply != NC_REPLY_OK) {
 			return (-1);
 		}
 		break;
 	}
+	pthread_mutex_unlock(&(session->mut_session));
 
 	/* check function for notifications processing */
 	if (process_ntf == NULL) {

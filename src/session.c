@@ -591,23 +591,19 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			}
 		}
 
-		if (sstatus != NC_SESSION_STATUS_DUMMY) {
-			session->status = NC_SESSION_STATUS_CLOSED;
-			pthread_mutex_unlock(&(session->mut_session));
-			/* destroy mutexes */
-			pthread_mutex_destroy(&(session->mut_in));
-			pthread_mutex_destroy(&(session->mut_out));
-			pthread_mutex_destroy(&(session->mut_session));
-		} else {
-			session->status = NC_SESSION_STATUS_CLOSED;
-
-		}
-
 		/*
 		 * username, capabilities and session_id are untouched
 		 */
 
 		/* successfully closed */
+	}
+
+	if (sstatus != NC_SESSION_STATUS_DUMMY) {
+		session->status = NC_SESSION_STATUS_CLOSED;
+		pthread_mutex_unlock(&(session->mut_session));
+	} else {
+		session->status = NC_SESSION_STATUS_CLOSED;
+
 	}
 }
 
@@ -623,6 +619,14 @@ void nc_session_free (struct nc_session* session)
 	if (session->capabilities != NULL) {
 		nc_cpblts_free(session->capabilities);
 	}
+
+	/* destroy mutexes */
+	pthread_mutex_destroy(&(session->mut_in));
+	pthread_mutex_destroy(&(session->mut_out));
+	pthread_mutex_destroy(&(session->mut_mqueue));
+	pthread_mutex_destroy(&(session->mut_equeue));
+	pthread_mutex_destroy(&(session->mut_session));
+
 	free (session);
 }
 
@@ -1275,12 +1279,12 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 	struct nc_msg *msg_aux, *msg;
 	NC_MSG_TYPE ret;
 
-	pthread_mutex_lock(&(session->mut_session));
+	pthread_mutex_lock(&(session->mut_mqueue));
 	if (session->queue_msg != NULL) {
 		/* pop the oldest reply from the queue */
 		*reply = (nc_reply*)(session->queue_msg);
 		session->queue_msg = (*reply)->next;
-		pthread_mutex_unlock(&(session->mut_session));
+		pthread_mutex_unlock(&(session->mut_mqueue));
 		(*reply)->next = NULL;
 		return (NC_MSG_REPLY);
 	}
@@ -1334,7 +1338,7 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 	}
 
 	/* session lock is no more needed */
-	pthread_mutex_unlock(&(session->mut_session));
+	pthread_mutex_unlock(&(session->mut_mqueue));
 
 	return (ret);
 }
@@ -1367,12 +1371,12 @@ NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, nc_ntf** ntf)
 	struct nc_msg *msg_aux, *msg;
 	NC_MSG_TYPE ret;
 
-	pthread_mutex_lock(&(session->mut_session));
+	pthread_mutex_lock(&(session->mut_equeue));
 	if (session->queue_event != NULL) {
 		/* pop the oldest reply from the queue */
 		*ntf = (nc_reply*)(session->queue_event);
 		session->queue_event = (*ntf)->next;
-		pthread_mutex_unlock(&(session->mut_session));
+		pthread_mutex_unlock(&(session->mut_equeue));
 		(*ntf)->next = NULL;
 		return (NC_MSG_NOTIFICATION);
 	}
@@ -1406,8 +1410,7 @@ read_again:
 		break;
 	}
 
-	/* session lock is no more needed */
-	pthread_mutex_unlock(&(session->mut_session));
+	pthread_mutex_unlock(&(session->mut_equeue));
 
 	return (ret);
 }
@@ -1669,7 +1672,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 		return (NC_MSG_UNKNOWN);
 	}
 
-	pthread_mutex_lock(&(session->mut_session));
+	pthread_mutex_lock(&(session->mut_mqueue));
 
 	/* first, look into the session's list of previously received messages */
 	if ((queue = session->queue_msg) != NULL) {
@@ -1696,7 +1699,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 				p->next = msg->next;
 			}
 			msg->next = NULL;
-			pthread_mutex_unlock(&(session->mut_session));
+			pthread_mutex_unlock(&(session->mut_mqueue));
 			return (NC_MSG_REPLY);
 		} else {
 			/*
@@ -1707,6 +1710,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 			session->queue_msg = NULL;
 		}
 	}
+	pthread_mutex_unlock(&(session->mut_mqueue));
 
 	while (1) {
 		replytype = nc_session_recv_reply(session, reply);
@@ -1714,6 +1718,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 			/* compare message ID */
 			if (nc_msgid_compare(msgid1, msgid2 = nc_reply_get_msgid(*reply)) != 0) {
 				/* reply with different message ID is expected */
+				pthread_mutex_lock(&(session->mut_mqueue));
 				/* store this reply for the later use of someone else */
 				if (queue == NULL) {
 					queue = (struct nc_msg*) (*reply);
@@ -1721,6 +1726,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 					for (msg = queue; msg->next != NULL; msg = msg->next);
 					msg->next = (struct nc_msg*) (*reply);
 				}
+				pthread_mutex_unlock(&(session->mut_mqueue));
 			} else {
 				/* we have it! */
 				break;
@@ -1736,10 +1742,11 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 	}
 
 	if (queue != NULL) {
+		pthread_mutex_lock(&(session->mut_mqueue));
 		/* reconnect hidden queue back to the session */
 		session->queue_msg = queue;
+		pthread_mutex_unlock(&(session->mut_mqueue));
 	}
-	pthread_mutex_unlock(&(session->mut_session));
 
 	return (replytype);
 }

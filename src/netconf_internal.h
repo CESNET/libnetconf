@@ -230,6 +230,10 @@ struct nc_session {
 	pthread_mutex_t mut_out;
 	/**< @brief thread lock for accessing in */
 	pthread_mutex_t mut_in;
+	/**< @brief thread lock for accessing queue_event */
+	pthread_mutex_t mut_equeue;
+	/**< @brief thread lock for accessing queue_msg */
+	pthread_mutex_t mut_mqueue;
 	/**< @brief queue for received, but not processed, NETCONF messages */
 	struct nc_msg* queue_msg;
 	/**< @brief queue for received, but not processed, NETCONF Event Notifications */

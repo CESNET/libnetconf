@@ -524,6 +524,8 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
 	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
 		pthread_mutexattr_destroy(&mattr);
@@ -802,6 +804,8 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
 	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
 		pthread_mutexattr_destroy(&mattr);
