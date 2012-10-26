@@ -576,6 +576,7 @@ static int ncntf_dbus_init(void)
 {
 	DBusError dbus_err;
 
+	DBG_LOCK("dbus_mut");
 	pthread_mutex_lock(dbus_mut);
 	if (dbus == NULL) {
 		/* initialize the errors */
@@ -589,10 +590,12 @@ static int ncntf_dbus_init(void)
 		}
 		if (dbus == NULL) {
 			ERROR("Unable to connect to the D-Bus's system bus");
+			DBG_UNLOCK("dbus_mut");
 			pthread_mutex_unlock(dbus_mut);
 			return (EXIT_FAILURE);
 		}
 	}
+	DBG_UNLOCK("dbus_mut");
 	pthread_mutex_unlock(dbus_mut);
 
 	return (EXIT_SUCCESS);
@@ -603,11 +606,13 @@ static int ncntf_dbus_init(void)
  */
 static void ncntf_dbus_close(void)
 {
+	DBG_LOCK("dbus_mut");
 	pthread_mutex_lock(dbus_mut);
 	if (dbus != NULL) {
 		dbus_connection_unref(dbus);
 		dbus = NULL;
 	}
+	DBG_UNLOCK("dbus_mut");
 	pthread_mutex_unlock(dbus_mut);
 }
 
@@ -640,12 +645,14 @@ static int ncntf_streams_init(void)
 	 * lock the whole initialize operation, not only streams variable
 	 * manipulation since this starts a complete work with the streams
 	 */
+	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
 
 	/* explore the stream directory */
 	n = scandir(streams_path, &filelist, NULL, alphasort);
 	if (n < 0) {
 		ERROR("Unable to read from Events streams directory %s (%s).", streams_path, strerror(errno));
+		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		return (EXIT_FAILURE);
 	}
@@ -673,6 +680,7 @@ static int ncntf_streams_init(void)
 		free(filelist[n]);
 	}
 
+	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
 	free(filelist);
 
@@ -702,6 +710,7 @@ static void ncntf_streams_close(void)
 {
 	struct stream *s;
 
+	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
 	s = streams;
 	while(s != NULL) {
@@ -709,6 +718,7 @@ static void ncntf_streams_close(void)
 		ncntf_stream_free(s);
 		s = streams;
 	}
+	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
 }
 
@@ -818,12 +828,14 @@ int ncntf_stream_new(const char* name, const char* desc, int replay)
 		return (EXIT_FAILURE);
 	}
 
+	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
 
 	/* check the stream name if the requested stream already exists */
 	for (s = streams; s != NULL; s = s->next) {
 		if (strcmp(name, s->name) == 0) {
 			WARN("Requested new stream \'%s\' already exists.", name);
+			DBG_UNLOCK("streams_mut");
 			pthread_mutex_unlock(streams_mut);
 			return (EXIT_FAILURE);
 		}
@@ -832,6 +844,7 @@ int ncntf_stream_new(const char* name, const char* desc, int replay)
 	s = malloc(sizeof(struct stream));
 	if (s == NULL) {
 		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		return (EXIT_FAILURE);
 	}
@@ -846,12 +859,14 @@ int ncntf_stream_new(const char* name, const char* desc, int replay)
 	s->fd_rules = -1;
 	if (write_fileheader(s) != 0 || map_rules(s) != 0) {
 		ncntf_stream_free(s);
+		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		return (EXIT_FAILURE);
 	} else {
 		/* add created stream into the list */
 		s->next = streams;
 		streams = s;
+		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		oldconfig = ncntf_config;
 		ncntf_config = streams_to_xml();
@@ -902,18 +917,21 @@ char** ncntf_stream_list(void)
 		return (NULL);
 	}
 
+	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
 
 	for (s = streams, i = 0; s != NULL; s = s->next, i++);
 	list = calloc(i + 1, sizeof(char*));
 	if (list == NULL) {
 		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		return (NULL);
 	}
 	for (s = streams, i = 0; s != NULL; s = s->next, i++) {
 		list[i] = strdup(s->name);
 	}
+	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
 
 	return(list);
@@ -927,14 +945,17 @@ int ncntf_stream_isavailable(const char* name)
 		return(0);
 	}
 
+	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
 	for (s = streams; s != NULL; s = s->next) {
 		if (strcmp(s->name, name) == 0) {
 			/* the specified stream does exist */
+			DBG_UNLOCK("streams_mut");
 			pthread_mutex_unlock(streams_mut);
 			return (1);
 		}
 	}
+	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
 
 	return (0); /* the stream does not exist */
@@ -951,12 +972,15 @@ void ncntf_stream_iter_start(const char* stream)
 		return;
 	}
 
+	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
 	if ((s = ncntf_stream_get(stream)) == NULL) {
+		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		return;
 	}
 	lseek(s->fd_events, s->data, SEEK_SET);
+	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
 
 	/* subscribe DBus signals for the stream */
@@ -964,9 +988,11 @@ void ncntf_stream_iter_start(const char* stream)
 			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream);
 	dbus_error_init(&err);
 
+	DBG_LOCK("dbus_mut");
 	pthread_mutex_lock(dbus_mut);
 	dbus_bus_add_match(dbus, dbus_filter, &err);
 	dbus_connection_flush(dbus);
+	DBG_UNLOCK("dbus_mut");
 	pthread_mutex_unlock(dbus_mut);
 
 	free(dbus_filter);
@@ -992,9 +1018,11 @@ void ncntf_stream_iter_finnish(const char* stream)
 			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream);
 	dbus_error_init(&err);
 
+	DBG_LOCK("dbus_mut");
 	pthread_mutex_lock(dbus_mut);
 	dbus_bus_remove_match(dbus, dbus_filter, &err);
 	dbus_connection_flush(dbus);
+	DBG_UNLOCK("dbus_mut");
 	pthread_mutex_unlock(dbus_mut);
 
 	free(dbus_filter);
@@ -1034,8 +1062,10 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 		return (NULL);
 	}
 
+	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
 	if ((s = ncntf_stream_get(stream)) == NULL) {
+		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		return (NULL);
 	}
@@ -1056,6 +1086,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 			lseek(s->fd_events, offset, SEEK_SET);
 		} else {
 			/* no more data */
+			DBG_UNLOCK("streams_mut");
 			pthread_mutex_unlock(streams_mut);
 			if (*replay_done == 0) {
 				/* send replayComplete notification */
@@ -1071,6 +1102,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 
 			/* try DBus */
 			while (ncntf_config != NULL) {
+				DBG_LOCK("dbus_mut");
 				pthread_mutex_lock(dbus_mut);
 				if (dbus_connection_read_write(dbus, 10) != 1) {
 					/* dbus connection is closed */
@@ -1078,6 +1110,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 					break;
 				}
 				signal = dbus_connection_pop_message(dbus);
+				DBG_UNLOCK("dbus_mut");
 				pthread_mutex_unlock(dbus_mut);
 
 				if (signal != NULL && dbus_message_is_signal(signal, NC_NTF_DBUS_INTERFACE, "Event")) {
@@ -1167,11 +1200,13 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 			break; /* end the reading loop */
 		} else {
 			ERROR("Unable to read event from stream file %s (locking failed).", s->name);
+			DBG_UNLOCK("streams_mut");
 			pthread_mutex_unlock(streams_mut);
 			return (NULL);
 		}
 	}
 
+	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
 
 	if (event_time != NULL) {
@@ -1606,6 +1641,7 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 	len++; /* include termination null byte */
 
 	/* write the event into the stream file(s) */
+	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
 	for (s = streams; s != NULL; s = s->next) {
 		if (s->replay == 0) {
@@ -1625,9 +1661,11 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 			}
 		}
 	}
+	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
 
 	/* announce event via DBus */
+	DBG_LOCK("dbus_mut");
 	pthread_mutex_lock(dbus_mut);
 	if (dbus != NULL) {
 		for (s = streams; s != NULL; s = s->next) {
@@ -1671,6 +1709,7 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 	}
 
 cleanup_dbus_mut:
+	DBG_UNLOCK("dbus_mut");
 	pthread_mutex_unlock(dbus_mut);
 cleanup:
 	/* free DBus signal */
@@ -1997,8 +2036,10 @@ nc_reply *ncntf_subscription_check(const nc_rpc* subscribe_rpc)
 	}
 
 	/* check existence of the stream */
+	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
 	if (ncntf_stream_get(stream) == NULL) {
+		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		e = nc_err_new(NC_ERR_INVALID_VALUE);
 		asprintf(&auxs, "Requested stream \'%s\' does not exist.", stream);
@@ -2006,6 +2047,7 @@ nc_reply *ncntf_subscription_check(const nc_rpc* subscribe_rpc)
 		free(auxs);
 		goto cleanup;
 	}
+	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
 
 	/* check start and stop times */
@@ -2089,8 +2131,10 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	}
 
 	/* check if there is another notification subscription */
+	DBG_LOCK("mut_session");
 	pthread_mutex_lock(&(session->mut_session));
 	if (nc_session_notif_allowed(session) == 0) {
+		DBG_UNLOCK("mut_session");
 		pthread_mutex_unlock(&(session->mut_session));
 		WARN("%s: Notification subscription is not allowed on the given session.", __func__);
 		nc_filter_free(filter);
@@ -2099,6 +2143,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	}
 	/* set flag, notification subscription is now activated */
 	session->ntf_active = 1;
+	DBG_UNLOCK("mut_session");
 	pthread_mutex_unlock(&(session->mut_session));
 
 	/* prepare xml doc for filtering */
@@ -2259,6 +2304,7 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 		return (-1);
 	}
 
+	DBG_LOCK("mut_session");
 	pthread_mutex_lock(&(session->mut_session));
 	/* check if there is another notification subscription */
 	if (nc_session_notif_allowed(session) == 0) {
@@ -2298,6 +2344,7 @@ long long int ncntf_dispatch_receive(struct nc_session *session, const nc_rpc* s
 		}
 		break;
 	}
+	DBG_UNLOCK("mut_session");
 	pthread_mutex_unlock(&(session->mut_session));
 
 	/* check function for notifications processing */

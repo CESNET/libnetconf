@@ -520,6 +520,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 
 	/* lock session due to accessing its status and other items */
 	if (sstatus != NC_SESSION_STATUS_DUMMY) {
+		DBG_LOCK("mut_session");
 		pthread_mutex_lock(&(session->mut_session));
 	}
 
@@ -600,6 +601,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 
 	if (sstatus != NC_SESSION_STATUS_DUMMY) {
 		session->status = NC_SESSION_STATUS_CLOSED;
+		DBG_UNLOCK("mut_session");
 		pthread_mutex_unlock(&(session->mut_session));
 	} else {
 		session->status = NC_SESSION_STATUS_CLOSED;
@@ -660,6 +662,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	}
 
 	/* lock the session for sending the data */
+	DBG_LOCK("mut_out");
 	pthread_mutex_lock(&(session->mut_out));
 
 	xmlDocDumpFormatMemory (msg->doc, (xmlChar**) (&text), &len, NC_CONTENT_FORMATTED);
@@ -672,6 +675,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 		do {
 			NC_WRITE(session, &(buf[c]), c);
 			if (c == LIBSSH2_ERROR_TIMEOUT) {
+				DBG_UNLOCK("mut_out");
 				pthread_mutex_unlock(&(session->mut_out));
 				VERB("Writing data into the communication channel timeouted.");
 				return (EXIT_FAILURE);
@@ -684,6 +688,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	do {
 		NC_WRITE(session, &(text[c]), c);
 		if (c == LIBSSH2_ERROR_TIMEOUT) {
+			DBG_UNLOCK("mut_out");
 			pthread_mutex_unlock(&(session->mut_out));
 			VERB("Writing data into the communication channel timeouted.");
 			return (EXIT_FAILURE);
@@ -701,6 +706,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	do {
 		NC_WRITE(session, &(text[c]), c);
 		if (c == LIBSSH2_ERROR_TIMEOUT) {
+			DBG_UNLOCK("mut_out");
 			pthread_mutex_unlock(&(session->mut_out));
 			VERB("Writing data into the communication channel timeouted.");
 			return (EXIT_FAILURE);
@@ -708,6 +714,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	} while (c != strlen (text));
 
 	/* unlock the session's output */
+	DBG_UNLOCK("mut_out");
 	pthread_mutex_unlock(&(session->mut_out));
 
 	return (EXIT_SUCCESS);
@@ -1052,6 +1059,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct 
 	}
 
 	/* lock the session for receiving */
+	DBG_LOCK("mut_in");
 	pthread_mutex_lock(&(session->mut_in));
 
 	/* use while for possibility of repeating test */
@@ -1089,6 +1097,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct 
 		/* process the result */
 		if (status == 0) {
 			/* timed out */
+			DBG_UNLOCK("mut_in");
 			pthread_mutex_unlock(&(session->mut_in));
 			return (NC_MSG_WOULDBLOCK);
 		} else if ((status == -1) && (errno == EINTR)) {
@@ -1098,6 +1107,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct 
 			/* poll failed - something wrong happend, close this socket and wait for another request */
 			ERROR("Input channel error");
 			nc_session_close(session, NC_SESSION_TERM_DROPPED);
+			DBG_UNLOCK("mut_in");
 			pthread_mutex_unlock(&(session->mut_in));
 			return (NC_MSG_UNKNOWN);
 
@@ -1109,6 +1119,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct 
 			/* close client's socket (it's probably already closed by client */
 			ERROR("Input channel closed");
 			nc_session_close(session, NC_SESSION_TERM_DROPPED);
+			DBG_UNLOCK("mut_in");
 			pthread_mutex_unlock(&(session->mut_in));
 			return (NC_MSG_UNKNOWN);
 		}
@@ -1186,6 +1197,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct 
 		break;
 	}
 
+	DBG_UNLOCK("mut_in");
 	pthread_mutex_unlock(&(session->mut_in));
 
 	retval = malloc (sizeof(struct nc_msg));
@@ -1321,6 +1333,7 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_r
 		local_timeout = 100;
 	}
 
+	DBG_LOCK("mut_mqueue");
 	pthread_mutex_lock(&(session->mut_mqueue));
 
 try_again:
@@ -1328,6 +1341,7 @@ try_again:
 		/* pop the oldest reply from the queue */
 		*reply = (nc_reply*)(session->queue_msg);
 		session->queue_msg = (*reply)->next;
+		DBG_UNLOCK("mut_mqueue");
 		pthread_mutex_unlock(&(session->mut_mqueue));
 		(*reply)->next = NULL;
 		return (NC_MSG_REPLY);
@@ -1387,6 +1401,7 @@ try_again:
 	}
 
 	/* session lock is no more needed */
+	DBG_UNLOCK("mut_mqueue");
 	pthread_mutex_unlock(&(session->mut_mqueue));
 
 	return (ret);
@@ -1427,6 +1442,7 @@ NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, int timeout, nc_n
 		local_timeout = 100;
 	}
 
+	DBG_LOCK("mut_equeue");
 	pthread_mutex_lock(&(session->mut_equeue));
 
 try_again:
@@ -1434,6 +1450,7 @@ try_again:
 		/* pop the oldest reply from the queue */
 		*ntf = (nc_reply*)(session->queue_event);
 		session->queue_event = (*ntf)->next;
+		DBG_UNLOCK("mut_equeue");
 		pthread_mutex_unlock(&(session->mut_equeue));
 		(*ntf)->next = NULL;
 		return (NC_MSG_NOTIFICATION);
@@ -1471,6 +1488,7 @@ try_again:
 		break;
 	}
 
+	DBG_UNLOCK("mut_equeue");
 	pthread_mutex_unlock(&(session->mut_equeue));
 
 	return (ret);
@@ -1638,8 +1656,10 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 	/* set message id */
 	if (xmlStrcmp (msg->doc->children->name, BAD_CAST "rpc") == 0) {
 		/* lock the session due to accessing msgid item */
+		DBG_LOCK("mut_session");
 		pthread_mutex_lock(&(session->mut_session));
 		sprintf (msg_id_str, "%llu", session->msgid++);
+		DBG_UNLOCK("mut_session");
 		pthread_mutex_unlock(&(session->mut_session));
 		xmlSetProp (msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str);
 	} else {
@@ -1657,8 +1677,10 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 
 	if (ret != EXIT_SUCCESS) {
 		if (rpc->type.rpc != NC_RPC_HELLO) {
+			DBG_LOCK("mut_session");
 			pthread_mutex_lock(&(session->mut_session));
 			session->msgid--;
+			DBG_UNLOCK("mut_session");
 			pthread_mutex_unlock(&(session->mut_session));
 		}
 		return (NULL);
@@ -1746,6 +1768,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 		return (NC_MSG_UNKNOWN);
 	}
 
+	DBG_LOCK("mut_mqueue");
 	pthread_mutex_lock(&(session->mut_mqueue));
 
 	/* first, look into the session's list of previously received messages */
@@ -1773,6 +1796,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 				p->next = msg->next;
 			}
 			msg->next = NULL;
+			DBG_UNLOCK("mut_mqueue");
 			pthread_mutex_unlock(&(session->mut_mqueue));
 			return (NC_MSG_REPLY);
 		} else {
@@ -1784,6 +1808,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 			session->queue_msg = NULL;
 		}
 	}
+	DBG_UNLOCK("mut_mqueue");
 	pthread_mutex_unlock(&(session->mut_mqueue));
 
 	while (1) {
@@ -1792,6 +1817,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 			/* compare message ID */
 			if (nc_msgid_compare(msgid1, msgid2 = nc_reply_get_msgid(*reply)) != 0) {
 				/* reply with different message ID is expected */
+				DBG_LOCK("mut_mqueue");
 				pthread_mutex_lock(&(session->mut_mqueue));
 				/* store this reply for the later use of someone else */
 				if (queue == NULL) {
@@ -1800,6 +1826,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 					for (msg = queue; msg->next != NULL; msg = msg->next);
 					msg->next = (struct nc_msg*) (*reply);
 				}
+				DBG_UNLOCK("mut_mqueue");
 				pthread_mutex_unlock(&(session->mut_mqueue));
 			} else {
 				/* we have it! */
@@ -1816,9 +1843,11 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 	}
 
 	if (queue != NULL) {
+		DBG_LOCK("mut_mqueue");
 		pthread_mutex_lock(&(session->mut_mqueue));
 		/* reconnect hidden queue back to the session */
 		session->queue_msg = queue;
+		DBG_UNLOCK("mut_mqueue");
 		pthread_mutex_unlock(&(session->mut_mqueue));
 	}
 

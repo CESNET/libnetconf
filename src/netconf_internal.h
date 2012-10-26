@@ -136,6 +136,13 @@ extern int verbose_level;
 #define WARN(format,args...) if(verbose_level>=NC_VERB_WARNING){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_WARNING, prv_msg);}
 #define VERB(format,args...) if(verbose_level>=NC_VERB_VERBOSE){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_VERBOSE, prv_msg);}
 #define DBG(format,args...) if(verbose_level>=NC_VERB_DEBUG){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_DEBUG, prv_msg);}
+#ifdef DEBUG_THREADS
+#define DBG_UNLOCK(name) DBG("Unlocking %s in thread %lu (%s:%d)", name, pthread_self(), __FILE__, __LINE__)
+#define DBG_LOCK(name) DBG("Locking %s in thread %lu (%s:%d)", name, pthread_self(), __FILE__, __LINE__)
+#else
+#define DBG_UNLOCK(name)
+#define DBG_LOCK(name)
+#endif
 
 /**
  * @brief Callbacks structure for all callbacks functions that can be set by application

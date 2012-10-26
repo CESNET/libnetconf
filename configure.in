@@ -76,6 +76,10 @@ AC_ARG_ENABLE([debug],
 	CFLAGS="-g -DDEBUG",
 	CFLAGS="-O3"
 )
+AC_ARG_ENABLE([debug-threads],
+	AC_HELP_STRING([--enable-debug-threads],[Extend debug mode for threads]),
+	CPPFLAGS="$CPPFLAGS -DDEBUG_THREADS"
+)
 
 ############################ Check for programs ################################
 
