@@ -1258,26 +1258,6 @@ NC_MSG_TYPE nc_session_recv_msg (struct nc_session* session, struct nc_msg** msg
 	ret = nc_session_receive (session, msg);
 	switch (ret) {
 	case NC_MSG_REPLY: /* regular reply received */
-		/* if specified callback for processing rpc-error, use it */
-		if (nc_reply_get_type (*msg) == NC_REPLY_ERROR &&
-				callbacks.process_error_reply != NULL) {
-			/* process rpc-error msg */
-			callbacks.process_error_reply((*msg)->error->tag,
-					(*msg)->error->type,
-					(*msg)->error->severity,
-					(*msg)->error->apptag,
-					(*msg)->error->path,
-					(*msg)->error->message,
-					(*msg)->error->attribute,
-					(*msg)->error->element,
-					(*msg)->error->ns,
-					(*msg)->error->sid);
-			/* free the data */
-			nc_reply_free(*msg);
-			*msg = NULL;
-			ret = NC_MSG_NONE;
-		}
-		break;
 	case NC_MSG_HELLO:
 	case NC_MSG_NOTIFICATION:
 		/* do nothing, just return the type */
@@ -1309,6 +1289,27 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, nc_reply** reply)
 
 	switch (ret) {
 	case NC_MSG_REPLY: /* regular reply received */
+		/* if specified callback for processing rpc-error, use it */
+		if (nc_reply_get_type (msg) == NC_REPLY_ERROR &&
+				callbacks.process_error_reply != NULL) {
+			/* process rpc-error msg */
+			callbacks.process_error_reply(msg->error->tag,
+					msg->error->type,
+					msg->error->severity,
+					msg->error->apptag,
+					msg->error->path,
+					msg->error->message,
+					msg->error->attribute,
+					msg->error->element,
+					msg->error->ns,
+					msg->error->sid);
+			/* free the data */
+			nc_reply_free(msg);
+			ret = NC_MSG_NONE;
+		} else {
+			*reply = (nc_reply*)msg;
+		}
+		break;
 	case NC_MSG_HELLO: /* hello message received */
 		*reply = (nc_reply*)msg;
 		break;
