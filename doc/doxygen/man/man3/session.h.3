@@ -1,4 +1,4 @@
-.TH "src/session.h" 3 "Thu Oct 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "src/session.h" 3 "Fri Oct 26 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -118,15 +118,15 @@ Functions to handle NETCONF sessions\&.
 .br
 .RI "\fISend <notification> message from server to client\&. \fP"
 .ti -1c
-.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, int timeout, \fBnc_rpc\fP **rpc)"
 .br
 .RI "\fIReceive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
 .ti -1c
-.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_reply\fP (struct nc_session *session, \fBnc_reply\fP **reply)"
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_reply\fP (struct nc_session *session, int timeout, \fBnc_reply\fP **reply)"
 .br
 .RI "\fIReceive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
-.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_notif\fP (struct nc_session *session, \fBnc_ntf\fP **ntf)"
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_notif\fP (struct nc_session *session, int timeout, \fBnc_ntf\fP **ntf)"
 .br
 .RI "\fIReceive <notification> message from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c

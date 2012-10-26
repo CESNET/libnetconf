@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Thu Oct 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Fri Oct 26 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -38,7 +38,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fISend <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
-.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, \fBnc_rpc\fP **rpc)"
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, int timeout, \fBnc_rpc\fP **rpc)"
 .br
 .RI "\fIReceive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
 .ti -1c
@@ -192,7 +192,7 @@ value describing that no supported operation type was detected so far
 \fB\fINC_RPC_SESSION \fP\fP
 <rpc> contains operation affecting session 
 .PP
-Definition at line 143 of file netconf\&.h\&.
+Definition at line 144 of file netconf\&.h\&.
 .SS "enum \fBNC_OP\fP"
 
 .PP
@@ -240,7 +240,7 @@ unknown/error value
 \fB\fINC_OP_CREATESUBSCRIPTION \fP\fP
 <create-subscription> operation (RFC 5277) 
 .PP
-Definition at line 155 of file netconf\&.h\&.
+Definition at line 156 of file netconf\&.h\&.
 .SS "enum \fBNC_FILTER_TYPE\fP"
 
 .PP
@@ -254,7 +254,7 @@ Enumeration of supported NETCONF filter types\&.
 \fB\fINC_FILTER_SUBTREE \fP\fP
 NC_FILTER_SUBTREE\&. 
 .PP
-Definition at line 246 of file netconf\&.h\&.
+Definition at line 247 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "const \fBnc_msgid\fP nc_session_send_rpc (struct nc_session *session, \fBnc_rpc\fP *rpc)"
@@ -277,12 +277,14 @@ Send <rpc> request via specified NETCONF session\&. This function is supposed to
 .RE
 .PP
 
-.SS "\fBNC_MSG_TYPE\fP nc_session_recv_rpc (struct nc_session *session, \fBnc_rpc\fP **rpc)"
+.SS "\fBNC_MSG_TYPE\fP nc_session_recv_rpc (struct nc_session *session, inttimeout, \fBnc_rpc\fP **rpc)"
 
 .PP
 Receive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session to use\&. 
+.br
+\fItimeout\fP Timeout in milliseconds, -1 for infinite timeout, 0 for non-blocking 
 .br
 \fIrpc\fP Received <rpc> 
 .RE

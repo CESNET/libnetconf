@@ -4,7 +4,7 @@ var group__notifications =
     [ "NCNTF_EVENT", "da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977", null ],
     [ "NCNTF_EVENT_BY", "da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d", null ],
     [ "nc_session_send_notif", "da/d54/group__notifications.html#ga2a6cd8e0aaaaf4e1b84d3a498a2a710c", null ],
-    [ "nc_session_recv_notif", "da/d54/group__notifications.html#gae0cc31a11f3a6dc9d87bb4de18e2b9d8", null ],
+    [ "nc_session_recv_notif", "da/d54/group__notifications.html#gad7ffa424401e8004fb24f9f77f0bb5be", null ],
     [ "nc_rpc_subscribe", "da/d54/group__notifications.html#gafda56cbfe02d24877d0740618aa2de98", null ],
     [ "ncntf_init", "da/d54/group__notifications.html#ga7bfaffda6d2c087477935a810d0fef46", null ],
     [ "ncntf_status", "da/d54/group__notifications.html#ga8c116b8aae2fe13811ebbfd3ca6f1a44", null ],

@@ -153,8 +153,8 @@ Enumerations</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:gaeb0d93ea1b5ef0c22c9e5372425fb5c3"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../db/d52/group__session.html#ga5a8be0030b2a521edad18d24b348a4aa">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaeb0d93ea1b5ef0c22c9e5372425fb5c3">nc_session_send_rpc</a> (struct nc_session *session, <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gaeb0d93ea1b5ef0c22c9e5372425fb5c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc&gt; request via specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="#gaeb0d93ea1b5ef0c22c9e5372425fb5c3"></a><br/></td></tr>
-<tr class="memitem:gae7db211326df2358bde428f5e2a80605"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gae7db211326df2358bde428f5e2a80605">nc_session_recv_rpc</a> (struct nc_session *session, <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> **rpc)</td></tr>
-<tr class="memdesc:gae7db211326df2358bde428f5e2a80605"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;rpc&gt; request from the specified NETCONF session. This function is supposed to be performed only by NETCONF servers.  <a href="#gae7db211326df2358bde428f5e2a80605"></a><br/></td></tr>
+<tr class="memitem:ga214fcc2c0095d56f4aa0d90c11da25fc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga214fcc2c0095d56f4aa0d90c11da25fc">nc_session_recv_rpc</a> (struct nc_session *session, int timeout, <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> **rpc)</td></tr>
+<tr class="memdesc:ga214fcc2c0095d56f4aa0d90c11da25fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;rpc&gt; request from the specified NETCONF session. This function is supposed to be performed only by NETCONF servers.  <a href="#ga214fcc2c0095d56f4aa0d90c11da25fc"></a><br/></td></tr>
 <tr class="memitem:ga27d3fe78769630932a18c726df4fe6e6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga27d3fe78769630932a18c726df4fe6e6">nc_session_send_recv</a> (struct nc_session *session, <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> **reply)</td></tr>
 <tr class="memdesc:ga27d3fe78769630932a18c726df4fe6e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc&gt; and receive &lt;rpc-reply&gt; via the specified NETCONF session.  <a href="#ga27d3fe78769630932a18c726df4fe6e6"></a><br/></td></tr>
 <tr class="memitem:ga3212b7af605b6bdf83b893979c3bcc79"><td class="memItemLeft" align="right" valign="top">struct nc_filter *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga3212b7af605b6bdf83b893979c3bcc79">nc_filter_new</a> (<a class="el" href="../../db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706">NC_FILTER_TYPE</a> type, const char *filter)</td></tr>
@@ -263,7 +263,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00143">143</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00144">144</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -322,7 +322,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00155">155</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00156">156</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -347,7 +347,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00246">246</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00247">247</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -390,7 +390,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gae7db211326df2358bde428f5e2a80605"></a>
+<a class="anchor" id="ga214fcc2c0095d56f4aa0d90c11da25fc"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -399,6 +399,12 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>timeout</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -418,6 +424,7 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session to use. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">timeout</td><td>Timeout in milliseconds, -1 for infinite timeout, 0 for non-blocking </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">rpc</td><td>Received &lt;rpc&gt; </td></tr>
   </table>
   </dd>
@@ -1220,7 +1227,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Oct 25 2012 14:08:36 for libnetconf by
+    <li class="footer">Generated on Fri Oct 26 2012 14:07:32 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

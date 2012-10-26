@@ -1,4 +1,4 @@
-.TH "NETCONF Event Notifications" 3 "Thu Oct 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Event Notifications" 3 "Fri Oct 26 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -34,7 +34,7 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 .br
 .RI "\fISend <notification> message from server to client\&. \fP"
 .ti -1c
-.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_notif\fP (struct nc_session *session, \fBnc_ntf\fP **ntf)"
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_notif\fP (struct nc_session *session, int timeout, \fBnc_ntf\fP **ntf)"
 .br
 .RI "\fIReceive <notification> message from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
@@ -200,12 +200,14 @@ Send <notification> message from server to client\&. \fBParameters:\fP
 .RE
 .PP
 
-.SS "\fBNC_MSG_TYPE\fP nc_session_recv_notif (struct nc_session *session, \fBnc_ntf\fP **ntf)"
+.SS "\fBNC_MSG_TYPE\fP nc_session_recv_notif (struct nc_session *session, inttimeout, \fBnc_ntf\fP **ntf)"
 
 .PP
 Receive <notification> message from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session to use\&. 
+.br
+\fItimeout\fP Timeout in milliseconds, -1 for infinite timeout, 0 for non-blocking 
 .br
 \fIntf\fP Received <notification> message 
 .RE

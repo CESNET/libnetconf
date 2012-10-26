@@ -57,6 +57,7 @@ var searchData=
   ['nc_5fmsg_5freply',['NC_MSG_REPLY',['../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a827b3c9c898a48ec8e9f8f9af11f1bdd',1,'netconf.h']]],
   ['nc_5fmsg_5frpc',['NC_MSG_RPC',['../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a7f6951d98d30342a65e6b1d7ccca2df0',1,'netconf.h']]],
   ['nc_5fmsg_5funknown',['NC_MSG_UNKNOWN',['../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305',1,'netconf.h']]],
+  ['nc_5fmsg_5fwouldblock',['NC_MSG_WOULDBLOCK',['../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a5b0ce1ca54b15ef3ca1ef901263c1b72',1,'netconf.h']]],
   ['nc_5fop_5fclosesession',['NC_OP_CLOSESESSION',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07af5cc206ce4cd2b20cd562bb01e0a8da3',1,'netconf.h']]],
   ['nc_5fop_5fcommit',['NC_OP_COMMIT',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a350f96fd686eea971d1d9e087a9ff8f4',1,'netconf.h']]],
   ['nc_5fop_5fcopyconfig',['NC_OP_COPYCONFIG',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07abc36a612cfba2cf3462d99fae4ab4ac5',1,'netconf.h']]],

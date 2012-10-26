@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Thu Oct 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Fri Oct 26 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -10,7 +10,7 @@ libnetconf's miscellaneous functions\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP =  -5 }"
+.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP =  -5 }"
 .br
 .RI "\fIEnumeration of NETCONF message types\&. \fP"
 .ti -1c
@@ -72,6 +72,9 @@ Enumeration of NETCONF message types\&.
 \fB\fINC_MSG_UNKNOWN \fP\fP
 error state 
 .TP
+\fB\fINC_MSG_WOULDBLOCK \fP\fP
+waiting for another message timed out 
+.TP
 \fB\fINC_MSG_NONE \fP\fP
 no message at input or message processed internally 
 .TP
@@ -108,7 +111,7 @@ Besides errors and warnings, print some other verbose messages\&.
 \fB\fINC_VERB_DEBUG \fP\fP
 Print all messages including some development debug messages\&. 
 .PP
-Definition at line 280 of file netconf\&.h\&.
+Definition at line 281 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "void nc_verbosity (\fBNC_VERB_LEVEL\fPlevel)"

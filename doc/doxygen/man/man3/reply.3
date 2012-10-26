@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Thu Oct 25 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Fri Oct 26 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -34,7 +34,7 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .br
 .RI "\fISend <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
 .ti -1c
-.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_reply\fP (struct nc_session *session, \fBnc_reply\fP **reply)"
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_reply\fP (struct nc_session *session, int timeout, \fBnc_reply\fP **reply)"
 .br
 .RI "\fIReceive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
@@ -128,7 +128,7 @@ value describing that no rpc-reply type was detected so far
 \fB\fINC_REPLY_DATA \fP\fP
 rpc-reply message containing <data> 
 .PP
-Definition at line 131 of file netconf\&.h\&.
+Definition at line 132 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "void nc_callback_error_reply (void(*)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid)func)"
@@ -183,12 +183,14 @@ Send <rpc-reply> response via specified NETCONF session\&. This function is supp
 .RE
 .PP
 
-.SS "\fBNC_MSG_TYPE\fP nc_session_recv_reply (struct nc_session *session, \fBnc_reply\fP **reply)"
+.SS "\fBNC_MSG_TYPE\fP nc_session_recv_reply (struct nc_session *session, inttimeout, \fBnc_reply\fP **reply)"
 
 .PP
 Receive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session to use\&. 
+.br
+\fItimeout\fP Timeout in milliseconds, -1 for infinite timeout, 0 for non-blocking 
 .br
 \fIreply\fP Received <rpc-reply> 
 .RE

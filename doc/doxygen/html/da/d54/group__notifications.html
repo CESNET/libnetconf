@@ -138,8 +138,8 @@ Enumerations</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:ga2a6cd8e0aaaaf4e1b84d3a498a2a710c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga2a6cd8e0aaaaf4e1b84d3a498a2a710c">nc_session_send_notif</a> (struct nc_session *session, const <a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *ntf)</td></tr>
 <tr class="memdesc:ga2a6cd8e0aaaaf4e1b84d3a498a2a710c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;notification&gt; message from server to client.  <a href="#ga2a6cd8e0aaaaf4e1b84d3a498a2a710c"></a><br/></td></tr>
-<tr class="memitem:gae0cc31a11f3a6dc9d87bb4de18e2b9d8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gae0cc31a11f3a6dc9d87bb4de18e2b9d8">nc_session_recv_notif</a> (struct nc_session *session, <a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> **ntf)</td></tr>
-<tr class="memdesc:gae0cc31a11f3a6dc9d87bb4de18e2b9d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;notification&gt; message from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="#gae0cc31a11f3a6dc9d87bb4de18e2b9d8"></a><br/></td></tr>
+<tr class="memitem:gad7ffa424401e8004fb24f9f77f0bb5be"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gad7ffa424401e8004fb24f9f77f0bb5be">nc_session_recv_notif</a> (struct nc_session *session, int timeout, <a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> **ntf)</td></tr>
+<tr class="memdesc:gad7ffa424401e8004fb24f9f77f0bb5be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;notification&gt; message from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="#gad7ffa424401e8004fb24f9f77f0bb5be"></a><br/></td></tr>
 <tr class="memitem:gafda56cbfe02d24877d0740618aa2de98"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gafda56cbfe02d24877d0740618aa2de98">nc_rpc_subscribe</a> (const char *stream, const struct nc_filter *filter, const time_t *start, const time_t *stop)</td></tr>
 <tr class="memdesc:gafda56cbfe02d24877d0740618aa2de98"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;create-subsciption&gt; NETCONF rpc message.  <a href="#gafda56cbfe02d24877d0740618aa2de98"></a><br/></td></tr>
 <tr class="memitem:ga7bfaffda6d2c087477935a810d0fef46"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga7bfaffda6d2c087477935a810d0fef46">ncntf_init</a> (void)</td></tr>
@@ -310,7 +310,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gae0cc31a11f3a6dc9d87bb4de18e2b9d8"></a>
+<a class="anchor" id="gad7ffa424401e8004fb24f9f77f0bb5be"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -319,6 +319,12 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>timeout</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -338,6 +344,7 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session to use. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">timeout</td><td>Timeout in milliseconds, -1 for infinite timeout, 0 for non-blocking </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">ntf</td><td>Received &lt;notification&gt; message </td></tr>
   </table>
   </dd>
@@ -988,7 +995,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Oct 25 2012 14:08:36 for libnetconf by
+    <li class="footer">Generated on Fri Oct 26 2012 14:07:32 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

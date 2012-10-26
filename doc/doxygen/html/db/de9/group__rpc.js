@@ -5,7 +5,7 @@ var group__rpc =
     [ "NC_OP", "db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07", null ],
     [ "NC_FILTER_TYPE", "db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706", null ],
     [ "nc_session_send_rpc", "db/de9/group__rpc.html#gaeb0d93ea1b5ef0c22c9e5372425fb5c3", null ],
-    [ "nc_session_recv_rpc", "db/de9/group__rpc.html#gae7db211326df2358bde428f5e2a80605", null ],
+    [ "nc_session_recv_rpc", "db/de9/group__rpc.html#ga214fcc2c0095d56f4aa0d90c11da25fc", null ],
     [ "nc_session_send_recv", "db/de9/group__rpc.html#ga27d3fe78769630932a18c726df4fe6e6", null ],
     [ "nc_filter_new", "db/de9/group__rpc.html#ga3212b7af605b6bdf83b893979c3bcc79", null ],
     [ "nc_filter_free", "db/de9/group__rpc.html#ga0dbfd598d6fd303819817370cdf63229", null ],

@@ -131,8 +131,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga771a110143440bcd3b7d4c0e98388e80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set callback function to process (e.g. print) NETCONF &lt;rpc-error&gt; message items.  <a href="#ga771a110143440bcd3b7d4c0e98388e80"></a><br/></td></tr>
 <tr class="memitem:ga0b344811af933d80615f0874650938cc"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../db/d52/group__session.html#ga5a8be0030b2a521edad18d24b348a4aa">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga0b344811af933d80615f0874650938cc">nc_session_send_reply</a> (struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:ga0b344811af933d80615f0874650938cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc-reply&gt; response via specified NETCONF session. This function is supposed to be performed only by NETCONF servers.  <a href="#ga0b344811af933d80615f0874650938cc"></a><br/></td></tr>
-<tr class="memitem:ga4bbbfc4e648a74caffeeac0da41ab276"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga4bbbfc4e648a74caffeeac0da41ab276">nc_session_recv_reply</a> (struct nc_session *session, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> **reply)</td></tr>
-<tr class="memdesc:ga4bbbfc4e648a74caffeeac0da41ab276"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;rpc-reply&gt; response from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="#ga4bbbfc4e648a74caffeeac0da41ab276"></a><br/></td></tr>
+<tr class="memitem:ga1b8c8ca9516003938e8f647bd870beaa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga1b8c8ca9516003938e8f647bd870beaa">nc_session_recv_reply</a> (struct nc_session *session, int timeout, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> **reply)</td></tr>
+<tr class="memdesc:ga1b8c8ca9516003938e8f647bd870beaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;rpc-reply&gt; response from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="#ga1b8c8ca9516003938e8f647bd870beaa"></a><br/></td></tr>
 <tr class="memitem:ga279c8b48bfdf590c15a043b7d385dfb8"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8">nc_reply_dump</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:ga279c8b48bfdf590c15a043b7d385dfb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the rpc-reply message into a string.  <a href="#ga279c8b48bfdf590c15a043b7d385dfb8"></a><br/></td></tr>
 <tr class="memitem:gaeb66eff28fdf195f564cb3d997d65b65"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gaeb66eff28fdf195f564cb3d997d65b65">nc_reply_dup</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
@@ -211,7 +211,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00131">131</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00132">132</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -297,7 +297,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga4bbbfc4e648a74caffeeac0da41ab276"></a>
+<a class="anchor" id="ga1b8c8ca9516003938e8f647bd870beaa"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -306,6 +306,12 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>timeout</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -325,6 +331,7 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session to use. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">timeout</td><td>Timeout in milliseconds, -1 for infinite timeout, 0 for non-blocking </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">reply</td><td>Received &lt;rpc-reply&gt; </td></tr>
   </table>
   </dd>
@@ -688,7 +695,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Oct 25 2012 14:08:36 for libnetconf by
+    <li class="footer">Generated on Fri Oct 26 2012 14:07:32 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>
