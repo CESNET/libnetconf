@@ -795,6 +795,9 @@ char* ncntf_status(void)
 void ncntf_close(void)
 {
 	if (ncntf_config != NULL) {
+		xmlFreeDoc(ncntf_config);
+		ncntf_config = NULL;
+
 		ncntf_dbus_close();
 		ncntf_streams_close();
 		pthread_mutex_destroy(streams_mut);
@@ -803,8 +806,6 @@ void ncntf_close(void)
 		streams_mut = NULL;
 		free(dbus_mut);
 		dbus_mut = NULL;
-		xmlFreeDoc(ncntf_config);
-		ncntf_config = NULL;
 	}
 }
 
@@ -1069,7 +1070,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 			}
 
 			/* try DBus */
-			while (1) {
+			while (ncntf_config != NULL) {
 				pthread_mutex_lock(dbus_mut);
 				if (dbus_connection_read_write(dbus, 10) != 1) {
 					/* dbus connection is closed */
@@ -2105,7 +2106,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	filter_doc->encoding = xmlStrdup(BAD_CAST UTF8);
 
 	ncntf_stream_iter_start(stream);
-	while(1) {
+	while(ncntf_config != NULL) {
 		if ((event = ncntf_stream_iter_next(stream, start, stop, NULL)) == NULL) {
 			if ((stop == -1) || ((stop != -1) && (stop > time(NULL)))) {
 				continue;
