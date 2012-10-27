@@ -99,6 +99,7 @@
 
 #define NC_NS_CAP_WITHDEFAULTS 	"urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"
 #define NC_NS_CAP_NOTIFICATIONS "urn:ietf:params:xml:ns:netconf:notification:1.0"
+#define NC_NS_CAP_MONITORING 	"urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
 
 /* NETCONF versions identificators */
 #define NETCONFV10	0
@@ -223,6 +224,8 @@ struct nc_session {
 	char *username;
 	/**< @brief number of configrmed capabilities */
 	struct nc_cpblts *capabilities;
+	/**< @brief serialized original capabilities of the server/client */
+	char *capabilities_original;
 	/**< @brief NETCONF protocol version */
 	int version;
 	/**< @brief session's with-defaults basic mode */

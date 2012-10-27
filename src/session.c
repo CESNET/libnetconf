@@ -621,6 +621,7 @@ void nc_session_free (struct nc_session* session)
 	if (session->capabilities != NULL) {
 		nc_cpblts_free(session->capabilities);
 	}
+	free(session->capabilities_original);
 
 	/* destroy mutexes */
 	pthread_mutex_destroy(&(session->mut_in));

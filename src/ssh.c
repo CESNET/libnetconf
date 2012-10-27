@@ -491,6 +491,28 @@ int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_SESSION
 	return (EXIT_FAILURE);
 }
 
+static char* serialize_cpblts(const struct nc_cpblts *capabilities)
+{
+	char *aux = NULL, *retval = NULL;
+	int i;
+
+	if (capabilities == NULL) {
+		return (NULL);
+	}
+
+	for (i = 0; i < capabilities->items; i++) {
+		asprintf(&retval, "%s<capability>%s</capability>",
+				(aux == NULL) ? "" : aux,
+				capabilities->list[i]);
+		free(aux);
+		aux = retval;
+		retval = NULL;
+	}
+	asprintf(&retval, "<capabilities>%s</capabilities>", aux);
+	free(aux);
+	return(retval);
+}
+
 struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 {
 	int r;
@@ -601,7 +623,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 			free(wdc);
 		}
 	}
-
+	retval->capabilities_original = serialize_cpblts(server_cpblts);
 	retval->status = NC_SESSION_STATUS_WORKING;
 
 	if (nc_server_handshake(retval, server_cpblts->list) != 0) {
@@ -1010,6 +1032,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	} else {
 		client_cpblts = nc_cpblts_new(cpblts->list);
 	}
+	retval->capabilities_original = serialize_cpblts(client_cpblts);
 
 	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
 		goto shutdown;

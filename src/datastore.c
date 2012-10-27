@@ -54,6 +54,7 @@
 #include "error.h"
 #include "with_defaults.h"
 #include "notifications.h"
+#include "session.h"
 #include "datastore.h"
 #include "datastore/edit_config.h"
 #include "datastore/datastore_internal.h"
@@ -64,28 +65,6 @@ struct ncds_ds_list
 {
 	struct ncds_ds *datastore;
 	struct ncds_ds_list* next;
-};
-
-char* get_internal_state(const char* model, const char* running, struct nc_err** e);
-/**
- * @brief Special internal libnetconf's datastore
- */
-struct ncds_ds internal_ds = {
-		NCDS_TYPE_EMPTY, /* datastore type */
-		0, /* datastore ID */
-		NULL, /* model path */
-		NULL, /* model (xmlDoc) */
-		get_internal_state, /* get_state function */
-		{
-				ncds_empty_init,
-				ncds_empty_free,
-				ncds_empty_lock,
-				ncds_empty_unlock,
-				ncds_empty_getconfig,
-				ncds_empty_copyconfig,
-				ncds_empty_deleteconfig,
-				ncds_empty_editconfig
-		}
 };
 
 /**
@@ -104,11 +83,6 @@ static struct ncds_ds_list *datastores = NULL;
 static struct ncds_ds *datastores_get_ds(ncds_id id)
 {
 	struct ncds_ds_list *ds_iter;
-
-	if (id == 0) {
-		/* return special internal libnetconf's datastore */
-		return (&internal_ds);
-	}
 
 	for (ds_iter = datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
 		if (ds_iter->datastore != NULL && ds_iter->datastore->id == id) {
@@ -183,11 +157,29 @@ const char * ncds_get_model_path(ncds_id id)
 	return datastore->model_path;
 }
 
-char* get_internal_state(const char* model, const char* running, struct nc_err** e)
+char* get_internal_state(const struct nc_session *session)
 {
-	char* retval;
+	char *notifs = NULL, *retval = NULL;
+	xmlDocPtr doc;
+	xmlBufferPtr buf;
 
-	retval = ncntf_status();
+	if (nc_cpblts_enabled (session, NC_CAP_NOTIFICATION_ID)) {
+		notifs = ncntf_status ();
+		doc = xmlReadDoc (BAD_CAST notifs, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		free (notifs);
+		if (doc == NULL ) {
+			notifs = NULL;
+		} else {
+			buf = xmlBufferCreate ();
+			xmlNodeDump (buf, doc, doc->children, 1, 1);
+			notifs = strdup ((char*) xmlBufferContent (buf));
+			xmlFreeDoc (doc);
+			xmlBufferFree (buf);
+		}
+	}
+	asprintf(&retval, "<netconf-state xmlns=\"%s\">%s</netconf-state>%s", NC_NS_CAP_MONITORING,
+			(session->capabilities_original != NULL) ? session->capabilities_original : "",
+			(notifs != NULL) ? notifs : "");
 	if (retval == NULL) {
 		retval = strdup("");
 	}
@@ -725,6 +717,36 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 
 	if (rpc->type.rpc != NC_RPC_DATASTORE_READ && rpc->type.rpc != NC_RPC_DATASTORE_WRITE) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
+	}
+
+	/* request for internal datastore */
+	if (id == 0) {
+		switch (op = nc_rpc_get_op(rpc)) {
+		case NC_OP_LOCK:
+		case NC_OP_UNLOCK:
+		case NC_OP_COPYCONFIG:
+		case NC_OP_EDITCONFIG:
+		case NC_OP_DELETECONFIG:
+		case NC_OP_COMMIT:
+		case NC_OP_DISCARDCHANGES:
+			break;
+		case NC_OP_GET:
+			data = get_internal_state(session);
+			if (data != NULL) {
+				reply = nc_reply_data(data);
+				free(data);
+			} else {
+				reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
+			}
+			break;
+		case NC_OP_GETCONFIG:
+			reply = nc_reply_data("");
+			break;
+		default:
+			return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
+			break;
+		}
+		return (reply);
 	}
 
 	ds = datastores_get_ds(id);
