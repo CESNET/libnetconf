@@ -88,6 +88,8 @@ int ncds_empty_init (struct ncds_ds * ds);
  */
 void ncds_empty_free (struct ncds_ds * ds);
 
+const struct ncds_lockinfo *ncds_empty_lockinfo(struct ncds_ds* ds, NC_DATASTORE target);
+
 int ncds_empty_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 
 int ncds_empty_unlock(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);

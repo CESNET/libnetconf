@@ -129,6 +129,8 @@ int ncds_file_init (struct ncds_ds* ds);
 */
 char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, struct nc_err** error);
 
+const struct ncds_lockinfo *ncds_file_lockinfo(struct ncds_ds* ds, NC_DATASTORE target);
+
 /**
  * @brief Perform lock of specified datastore for specified session.
  *

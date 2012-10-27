@@ -53,6 +53,12 @@ void ncds_empty_free (struct ncds_ds * ds)
 	return;
 }
 
+struct ncds_lockinfo lockinfo = {NC_DATASTORE_ERROR, NULL, NULL};
+const struct ncds_lockinfo *ncds_empty_lockinfo(struct ncds_ds* ds, NC_DATASTORE target)
+{
+	return (&lockinfo);
+}
+
 int ncds_empty_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
 {
 	return EXIT_SUCCESS;

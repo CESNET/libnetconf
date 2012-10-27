@@ -42,9 +42,16 @@
 
 #include "../datastore.h"
 
+struct ncds_lockinfo {
+	NC_DATASTORE datastore;
+	char* sid;
+	char* time;
+};
+
 struct ncds_funcs {
 	int (*init) (struct ncds_ds* ds);
 	void (*free)(struct ncds_ds* ds);
+	const struct ncds_lockinfo* (*get_lockinfo)(struct ncds_ds* ds, NC_DATASTORE target);
 	int (*lock)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 	int (*unlock)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 	char* (*getconfig)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);

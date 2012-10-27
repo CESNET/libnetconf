@@ -159,9 +159,11 @@ const char * ncds_get_model_path(ncds_id id)
 
 char* get_internal_state(const struct nc_session *session)
 {
-	char *notifs = NULL, *retval = NULL;
+	char *notifs = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *aux = NULL;
 	xmlDocPtr doc;
 	xmlBufferPtr buf;
+	struct ncds_ds_list* ds = NULL;
+	const struct ncds_lockinfo *info;
 
 	if (nc_cpblts_enabled (session, NC_CAP_NOTIFICATION_ID)) {
 		notifs = ncntf_status ();
@@ -177,12 +179,62 @@ char* get_internal_state(const struct nc_session *session)
 			xmlBufferFree (buf);
 		}
 	}
-	asprintf(&retval, "<netconf-state xmlns=\"%s\">%s</netconf-state>%s", NC_NS_CAP_MONITORING,
+
+	/* find non-empty datastore implementation */
+	for (ds = datastores; ds != NULL ; ds = ds->next) {
+		if (ds->datastore && ds->datastore->type == NCDS_TYPE_FILE) {
+			break;
+		}
+	}
+
+	if (ds != NULL ) {
+		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) == 1) {
+			info = ds->datastore->func.get_lockinfo (ds->datastore, NC_DATASTORE_STARTUP);
+			if (info != NULL && info->sid != NULL ) {
+				asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
+						"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time);
+			}
+			asprintf (&ds_startup, "<datastore><name>startup</name>%s</datastore>",
+			        (aux != NULL )? aux : "");
+			free (aux);
+			aux = NULL;
+		}
+		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) == 1) {
+			info = ds->datastore->func.get_lockinfo (ds->datastore, NC_DATASTORE_CANDIDATE);
+			if (info != NULL && info->sid != NULL ) {
+				asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
+						"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time);
+			}
+			asprintf (&ds_cand, "<datastore><name>candidate</name>%s</datastore>",
+			        (aux != NULL )? aux : "");
+			free (aux);
+			aux = NULL;
+		}
+		info = ds->datastore->func.get_lockinfo (ds->datastore, NC_DATASTORE_RUNNING);
+		if (info != NULL && info->sid != NULL ) {
+			asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
+					"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time);
+		}
+		asprintf (&ds_stats, "<datastores><datastore><name>running</name>%s</datastore>%s%s</datastores>",
+		        (aux != NULL )? aux : "",
+		        (ds_startup != NULL) ? ds_startup : "",
+		        (ds_cand != NULL) ? ds_cand : "");
+		free (ds_startup);
+		free (ds_cand);
+		free (aux);
+	}
+
+	asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s</netconf-state>%s", NC_NS_CAP_MONITORING,
 			(session->capabilities_original != NULL) ? session->capabilities_original : "",
+			(ds_stats != NULL) ? ds_stats : "",
 			(notifs != NULL) ? notifs : "");
 	if (retval == NULL) {
 		retval = strdup("");
 	}
+
+	free(ds_stats);
+	free(notifs);
+
 	return (retval);
 }
 
@@ -200,6 +252,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file));
 		ds->func.init = ncds_file_init;
 		ds->func.free = ncds_file_free;
+		ds->func.get_lockinfo = ncds_file_lockinfo;
 		ds->func.lock = ncds_file_lock;
 		ds->func.unlock = ncds_file_unlock;
 		ds->func.getconfig = ncds_file_getconfig;
@@ -211,6 +264,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty));
 		ds->func.init = ncds_empty_init;
 		ds->func.free = ncds_empty_free;
+		ds->func.get_lockinfo = ncds_empty_lockinfo;
 		ds->func.lock = ncds_empty_lock;
 		ds->func.unlock = ncds_empty_unlock;
 		ds->func.getconfig = ncds_empty_getconfig;
@@ -729,6 +783,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		case NC_OP_DELETECONFIG:
 		case NC_OP_COMMIT:
 		case NC_OP_DISCARDCHANGES:
+			reply = nc_reply_ok();
 			break;
 		case NC_OP_GET:
 			data = get_internal_state(session);

@@ -295,7 +295,7 @@ invalid_ds:
  * @ingroup store
  * @brief Initialization of file datastore
  *
- * @file_ds File datastore structure 
+ * @file_ds File datastore structure
  *
  * @return 0 on success, non-zero else
  */
@@ -441,7 +441,7 @@ static int file_reload (struct ncds_ds_file* file_ds)
 		xmlFreeDoc (new.xml);
 		return EXIT_FAILURE;
 	}
-	
+
 	xmlFreeDoc (file_ds->xml);
 	memcpy (file_ds, &new, sizeof (struct ncds_ds_file));
 
@@ -472,6 +472,56 @@ static int file_sync(struct ncds_ds_file* file_ds)
 	return EXIT_SUCCESS;
 }
 
+struct ncds_lockinfo lockinfo_running = {NC_DATASTORE_RUNNING, NULL, NULL};
+struct ncds_lockinfo lockinfo_startup = {NC_DATASTORE_STARTUP, NULL, NULL};
+struct ncds_lockinfo lockinfo_candidate = {NC_DATASTORE_CANDIDATE, NULL, NULL};
+const struct ncds_lockinfo *ncds_file_lockinfo(struct ncds_ds* ds, NC_DATASTORE target)
+{
+	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
+	xmlNodePtr target_ds;
+	struct ncds_lockinfo *info;
+
+	LOCK(file_ds);
+
+	if (file_reload (file_ds)) {
+		UNLOCK(file_ds);
+		return (NULL);
+	}
+
+	/* check validity of function parameters */
+	switch(target) {
+	case NC_DATASTORE_RUNNING:
+		target_ds = file_ds->running;
+		info = &lockinfo_running;
+		break;
+	case NC_DATASTORE_STARTUP:
+		target_ds = file_ds->startup;
+		info = &lockinfo_startup;
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		target_ds = file_ds->candidate;
+		info = &lockinfo_candidate;
+		break;
+	default:
+		UNLOCK(file_ds);
+		return (NULL);
+		break;
+	}
+	free((*info).sid);
+	free((*info).time);
+	(*info).sid = (char*) xmlGetProp (target_ds, BAD_CAST "lock");
+	(*info).time = (char*) xmlGetProp (target_ds, BAD_CAST "locktime");
+	if (strlen((*info).sid) == 0) {
+		free((*info).sid);
+		free((*info).time);
+		(*info).sid = NULL;
+		(*info).time = NULL;
+	}
+
+	UNLOCK(file_ds);
+
+	return (info);
+}
 
 int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
 {
@@ -480,6 +530,7 @@ int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DAT
 	xmlNodePtr target_ds;
 	struct nc_session* no_session;
 	int retval = EXIT_SUCCESS;
+	char* t;
 
 	LOCK(file_ds);
 
@@ -526,6 +577,8 @@ int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DAT
 			retval = EXIT_FAILURE;
 		} else {
 			xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST session->session_id);
+			xmlSetProp (target_ds, BAD_CAST "locktime", BAD_CAST (t = nc_time2datetime(time(NULL))));
+			free(t);
 			if (file_sync(file_ds)) {
 				*error = nc_err_new(NC_ERR_OP_FAILED);
 				nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore file synchronisation failed.");
@@ -610,6 +663,7 @@ int ncds_file_unlock (struct ncds_ds* ds, const struct nc_session* session, NC_D
 
 		/* unlock datastore */
 		xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST "");
+		xmlSetProp (target_ds, BAD_CAST "locktime", BAD_CAST "");
 		if (file_sync(file_ds)) {
 			*error = nc_err_new(NC_ERR_OP_FAILED);
 			nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore file synchronisation failed.");
@@ -722,7 +776,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 		return EXIT_FAILURE;
 		break;
 	}
-	
+
 	/* isn't target locked? */
 	if (file_ds_access (file_ds, target, session) != 0) {
 		UNLOCK(file_ds);
@@ -871,7 +925,7 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
 		return EXIT_FAILURE;
 	}
 	UNLOCK(file_ds);
-		
+
 	return EXIT_SUCCESS;
 }
 
