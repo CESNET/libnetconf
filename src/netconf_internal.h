@@ -197,6 +197,17 @@ extern struct callbacks callbacks;
 
 /**
  * @ingroup internalAPI
+ * @brief NETCONF session statistics as defined in RFC 6022
+ */
+struct nc_session_stats {
+	unsigned int in_rpcs;
+	unsigned int in_bad_rpcs;
+	unsigned int out_rpc_errors;
+	unsigned int out_notifications;
+};
+
+/**
+ * @ingroup internalAPI
  * @brief NETCONF session description structure
  *
  * No one outside the libnetconf would access members of this structure.
@@ -222,7 +233,9 @@ struct nc_session {
 	char *port;
 	/**< @brief name of the user holding the session */
 	char *username;
-	/**< @brief number of configrmed capabilities */
+	/**< @brief login time in yang:date-and-time format */
+	char *logintime;
+	/**< @brief number of confirmed capabilities */
 	struct nc_cpblts *capabilities;
 	/**< @brief serialized original capabilities of the server/client */
 	char *capabilities_original;
@@ -250,6 +263,8 @@ struct nc_session {
 	struct nc_msg* queue_event;
 	/**< @brief flag for active notification subscription on the session */
 	int ntf_active;
+	/**< @brief NETCONF session statistics as defined in RFC 6022 */
+	struct nc_session_stats stats;
 };
 
 /**
@@ -436,5 +451,13 @@ struct nc_err* nc_err_parse(nc_reply* reply);
  * @return 0 on success,\n non-zero else
  */
 int ncxml_filter(xmlDocPtr data, const struct nc_filter *filter);
+
+/**
+ * @brief Get state information about sessions. Only information about monitored
+ * sessions added by nc_session_monitor() are provided.
+ * @return Serialized XML describing session as defined in RFC 6022, NULL on
+ * error (or if no session is monitored).
+ */
+char* nc_session_stats(void);
 
 #endif /* NETCONF_INTERNAL_H_ */

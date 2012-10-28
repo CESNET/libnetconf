@@ -159,7 +159,7 @@ const char * ncds_get_model_path(ncds_id id)
 
 char* get_internal_state(const struct nc_session *session)
 {
-	char *notifs = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *aux = NULL;
+	char *notifs = NULL, *sessions = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *aux = NULL;
 	xmlDocPtr doc;
 	xmlBufferPtr buf;
 	struct ncds_ds_list* ds = NULL;
@@ -179,6 +179,8 @@ char* get_internal_state(const struct nc_session *session)
 			xmlBufferFree (buf);
 		}
 	}
+
+	sessions = nc_session_stats();
 
 	/* find non-empty datastore implementation */
 	for (ds = datastores; ds != NULL ; ds = ds->next) {
@@ -224,15 +226,17 @@ char* get_internal_state(const struct nc_session *session)
 		free (aux);
 	}
 
-	asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s</netconf-state>%s", NC_NS_CAP_MONITORING,
+	asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s</netconf-state>%s", NC_NS_CAP_MONITORING,
 			(session->capabilities_original != NULL) ? session->capabilities_original : "",
 			(ds_stats != NULL) ? ds_stats : "",
+			(sessions != NULL) ? sessions : "",
 			(notifs != NULL) ? notifs : "");
 	if (retval == NULL) {
 		retval = strdup("");
 	}
 
 	free(ds_stats);
+	free(sessions);
 	free(notifs);
 
 	return (retval);

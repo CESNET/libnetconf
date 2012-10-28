@@ -67,6 +67,15 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 
 /**
  * @ingroup session
+ * @brief Add session into internal list of monitored sessions that are
+ * returned as part of netconf-state information defined in RFC 6022.
+ * @param session Session to be monitored;
+ * @return 0 on success, non-zero on error.
+ */
+int nc_session_monitor(struct nc_session* session);
+
+/**
+ * @ingroup session
  * @brief Close NETCONF connection with the server.
  *
  * Only nc_session_free() and nc_session_get_status() functions are allowed

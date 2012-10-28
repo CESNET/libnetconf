@@ -37,6 +37,8 @@
  *
  */
 
+#define _GNU_SOURCE
+#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -56,6 +58,13 @@
 #include "datastore.h"
 #include "notifications.h"
 
+struct session_list_s {
+	struct nc_session *session;
+	struct session_list_s *next;
+};
+
+struct session_list_s *session_list = NULL;
+
 /**
  * Sleep time in microseconds to wait between unsuccessful reading due to EAGAIN or EWOULDBLOCK
  */
@@ -72,6 +81,64 @@
 		c += libssh2_channel_write (session->ssh_channel, (buf), strlen(buf)); \
 	} else if (session->fd_output != -1) { \
 		c += write (session->fd_output, (buf), strlen(buf));}
+
+int nc_session_monitor(struct nc_session* session)
+{
+	struct session_list_s *list_item;
+
+	if (session != NULL) {
+		list_item = malloc (sizeof(struct session_list_s));
+		if (list_item == NULL) {
+			ERROR("Memory allocation failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+			return (EXIT_FAILURE);
+		}
+		list_item->session = session;
+		list_item->next = session_list;
+		session_list = list_item;
+
+		return (EXIT_SUCCESS);
+	} else {
+		return (EXIT_FAILURE);
+	}
+}
+
+char* nc_session_stats(void)
+{
+	char *aux, *sessions = NULL, *session = NULL;
+	struct session_list_s *list_item;
+
+	for (list_item = session_list; list_item != NULL; list_item = list_item->next) {
+		aux = NULL;
+		asprintf(&aux, "<session><session-id>%s</session-id>"
+				"<transport>netconf-ssh</transport>"
+				"<username>%s</username>"
+				"<source-host>%s</source-host>"
+				"<login-time>%s</login-time>"
+				"<in-rpcs>%u</in-rpcs><in-bad-rpcs>%u</in-bad-rpcs>"
+				"<out-rpc-errors>%u</out-rpc-errors>"
+				"<out-notifications>%u</out-notifications></session>",
+				list_item->session->session_id,
+				list_item->session->username,
+				list_item->session->hostname,
+				list_item->session->logintime,
+				list_item->session->stats.in_rpcs,
+				list_item->session->stats.in_bad_rpcs,
+				list_item->session->stats.out_rpc_errors,
+				list_item->session->stats.out_notifications);
+
+		if (session == NULL) {
+			session = aux;
+		} else {
+			session = realloc(session, strlen(session) + strlen(aux) + 1);
+			strcat(session, aux);
+		}
+	}
+	if (session != NULL) {
+		asprintf(&sessions, "<sessions>%s</sessions>", session);
+		free(session);
+	}
+	return (sessions);
+}
 
 const char* nc_session_get_id (const struct nc_session *session)
 {
@@ -478,6 +545,13 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	session->fd_output = -1;
 	session->libssh2_socket = -1;
 
+	/* init stats values */
+	session->logintime = nc_time2datetime(time(NULL));
+	session->stats.in_rpcs = 0;
+	session->stats.in_bad_rpcs = 0;
+	session->stats.out_rpc_errors = 0;
+	session->stats.out_notifications = 0;
+
 	/*
 	 * mutexes and queues fields are not initialized since dummy session
 	 * can not send or receive any data
@@ -570,14 +644,14 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			libssh2_session_free(session->ssh_session);
 			session->ssh_session = NULL;
 		}
-		if (session->hostname != NULL) {
-			free(session->hostname);
-			session->hostname = NULL;
-		}
-		if (session->port != NULL) {
-			free(session->port);
-			session->port = NULL;
-		}
+
+		free(session->hostname);
+		session->hostname = NULL;
+		free(session->logintime);
+		session->logintime = NULL;
+		free(session->port);
+		session->port = NULL;
+
 		if (session->libssh2_socket != -1) {
 			close(session->libssh2_socket);
 			session->libssh2_socket = -1;
@@ -611,6 +685,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 
 void nc_session_free (struct nc_session* session)
 {
+	struct session_list_s *sitem, *sitem_pre = NULL;
 
 	nc_session_close(session, NC_SESSION_TERM_OTHER);
 
@@ -629,6 +704,22 @@ void nc_session_free (struct nc_session* session)
 	pthread_mutex_destroy(&(session->mut_mqueue));
 	pthread_mutex_destroy(&(session->mut_equeue));
 	pthread_mutex_destroy(&(session->mut_session));
+
+	/* remove from internal list if session is monitored */
+	for(sitem = session_list; sitem != NULL; sitem = sitem->next) {
+		if (session == sitem->session) {
+			if (sitem_pre == NULL) {
+				/* matching session is in the first item of the list */
+				session_list = sitem->next;
+			} else {
+				/* we're somewhere in the middle of the list */
+				sitem_pre = sitem->next;
+			}
+			free(sitem);
+			break;
+		}
+		sitem_pre = sitem;
+	}
 
 	free (session);
 }
@@ -1428,6 +1519,11 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf)
 
 	nc_msg_free (msg);
 
+	if (ret == EXIT_SUCCESS) {
+		/* update stats */
+		session->stats.out_notifications++;
+	}
+
 	return (ret);
 }
 
@@ -1572,9 +1668,16 @@ try_again:
 				nc_rpc_free(*rpc);
 				*rpc = NULL;
 				nc_reply_free(reply);
+
+				/* update stats */
+				session->stats.in_bad_rpcs++;
+
 				return (0); /* failure */
 			}
 		}
+		/* update statistics */
+		session->stats.in_rpcs++;
+
 		break;
 	case NC_MSG_HELLO:
 		/* do nothing, just return the type */
@@ -1586,6 +1689,10 @@ try_again:
 		break;
 	default:
 		ret = NC_MSG_UNKNOWN;
+
+		/* update stats */
+		session->stats.in_bad_rpcs++;
+
 		break;
 	}
 
@@ -1745,6 +1852,10 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 	if (ret != EXIT_SUCCESS) {
 		return (0);
 	} else {
+		if (reply->type.reply == NC_REPLY_ERROR) {
+			/* update stats */
+			session->stats.out_rpc_errors++;
+		}
 		return (retval);
 	}
 }

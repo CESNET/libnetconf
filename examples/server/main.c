@@ -344,6 +344,9 @@ int main(int argc, char *argv[])
 		return (EXIT_FAILURE);
 	}
 
+	/* monitor the session */
+	nc_session_monitor(config.session);
+
 	/* prepare event base (libevent) */
 	config.event_base = event_base_new();
 	if (config.event_base == NULL) {

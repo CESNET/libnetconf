@@ -538,6 +538,10 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	retval->msgid = 1;
 	retval->queue_event = NULL;
 	retval->queue_msg = NULL;
+	retval->stats.in_rpcs = 0;
+	retval->stats.in_bad_rpcs = 0;
+	retval->stats.out_rpc_errors = 0;
+	retval->stats.out_notifications = 0;
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
@@ -675,6 +679,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 
 	/* log start of the session */
 	ncntf_event_new(-1, NCNTF_BASE_SESSION_START, retval);
+	retval->logintime = nc_time2datetime(time(NULL));
 
 	return (retval);
 }
@@ -818,6 +823,11 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->msgid = 1;
 	retval->queue_event = NULL;
 	retval->queue_msg = NULL;
+	retval->logintime = NULL;
+	retval->stats.in_rpcs = 0;
+	retval->stats.in_bad_rpcs = 0;
+	retval->stats.out_rpc_errors = 0;
+	retval->stats.out_notifications = 0;
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
