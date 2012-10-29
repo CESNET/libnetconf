@@ -245,6 +245,7 @@ int main(int argc, char *argv[])
 	struct nc_session* dummy_session;
 	struct nc_cpblts *def_cpblts;
 	char *startup_data, *running_data;
+	int init;
 
 	/* set verbosity and function to print libnetconf's messages */
 	nc_verbosity(NC_VERB_DEBUG);
@@ -252,6 +253,12 @@ int main(int argc, char *argv[])
 	/* set message printing into the system log */
 	openlog("ncserver", LOG_PID, LOG_DAEMON);
 	nc_callback_print(clb_print);
+
+	init = nc_init();
+	if (init == -1) {
+		clb_print(NC_VERB_ERROR, "libnetconf initiation failed.");
+		return (EXIT_FAILURE);
+	}
 
 	/* prepare configuration datastore */
 	datastore = ncds_new(NCDS_TYPE_FILE, "/tmp/model.yin", NULL);
@@ -270,64 +277,65 @@ int main(int argc, char *argv[])
 		return (EXIT_FAILURE);
 	}
 
-
 	/*
 	 * Device initiation
 	 * - in real, check a concurrent access to the controlled device
 	 * - use a dummy NETCONF session of the server
 	 */
-	def_cpblts = nc_session_get_cpblts_default();
-	dummy_session = nc_session_dummy("dummy", "netconf-server", "localhost", def_cpblts);
-	nc_cpblts_free (def_cpblts);
+	if (init == 0) {
+		def_cpblts = nc_session_get_cpblts_default ();
+		dummy_session = nc_session_dummy ("dummy", "netconf-server", "localhost", def_cpblts);
+		nc_cpblts_free (def_cpblts);
 
-	/* 1) load startup using get-config applied to the datastore */
-	if ((rpc = nc_rpc_getconfig(NC_DATASTORE_STARTUP, NULL)) == NULL) {
-		ncds_free(datastore);
-		clb_print(NC_VERB_ERROR, "Getting startup configuration failed (nc_rpc_getconfig()).");
-		return (EXIT_FAILURE);
-	}
-	reply = ncds_apply_rpc(config.dsid, dummy_session, rpc);
-	nc_rpc_free(rpc);
-	if (reply == NULL || nc_reply_get_type(reply) != NC_REPLY_DATA) {
-		ncds_free(datastore);
-		nc_reply_free(reply);
-		clb_print(NC_VERB_ERROR, "Getting startup configuration failed.");
-		return (EXIT_FAILURE);
-	}
-	if ((startup_data = nc_reply_get_data(reply)) == NULL) {
-		ncds_free(datastore);
-		nc_reply_free(reply);
-		clb_print(NC_VERB_ERROR, "Invalid startup configuration data.");
-		return (EXIT_FAILURE);
-	}
-	nc_reply_free(reply);
+		/* 1) load startup using get-config applied to the datastore */
+		if ((rpc = nc_rpc_getconfig (NC_DATASTORE_STARTUP, NULL )) == NULL ) {
+			ncds_free (datastore);
+			clb_print (NC_VERB_ERROR, "Getting startup configuration failed (nc_rpc_getconfig()).");
+			return (EXIT_FAILURE);
+		}
+		reply = ncds_apply_rpc (config.dsid, dummy_session, rpc);
+		nc_rpc_free (rpc);
+		if (reply == NULL || nc_reply_get_type (reply) != NC_REPLY_DATA) {
+			ncds_free (datastore);
+			nc_reply_free (reply);
+			clb_print (NC_VERB_ERROR, "Getting startup configuration failed.");
+			return (EXIT_FAILURE);
+		}
+		if ((startup_data = nc_reply_get_data (reply)) == NULL ) {
+			ncds_free (datastore);
+			nc_reply_free (reply);
+			clb_print (NC_VERB_ERROR, "Invalid startup configuration data.");
+			return (EXIT_FAILURE);
+		}
+		nc_reply_free (reply);
 
-	/* 2) apply loaded configuration to the device and change configuration
-	 *    data according to the real state of the device
-	 */
-	/* nothing to do in this example application, change startup_data to
-	 * the running_data */
-	running_data = startup_data;
+		/* 2) apply loaded configuration to the device and change configuration
+		 *    data according to the real state of the device
+		 */
+		/* nothing to do in this example application, change startup_data to
+		 * the running_data */
+		running_data = startup_data;
 
-	/* 3) store real state of the device as the running configuration */
-	if ((rpc = nc_rpc_copyconfig (NC_DATASTORE_CONFIG, NC_DATASTORE_RUNNING, running_data)) == NULL) {
-		ncds_free(datastore);
-		clb_print(NC_VERB_ERROR, "Setting up running configuration failed (nc_rpc_copyconfig()).");
-		return (EXIT_FAILURE);
-	}
-	free(running_data);
+		/* 3) store real state of the device as the running configuration */
+		if ((rpc = nc_rpc_copyconfig (NC_DATASTORE_CONFIG, NC_DATASTORE_RUNNING, running_data)) == NULL ) {
+			ncds_free (datastore);
+			clb_print (NC_VERB_ERROR, "Setting up running configuration failed (nc_rpc_copyconfig()).");
+			return (EXIT_FAILURE);
+		}
+		free (running_data);
 
-	reply = ncds_apply_rpc(config.dsid, dummy_session, rpc);
-	nc_rpc_free(rpc);
-	if (reply == NULL || nc_reply_get_type(reply) != NC_REPLY_OK) {
-		ncds_free(datastore);
-		nc_reply_free(reply);
-		clb_print(NC_VERB_ERROR, "Setting up running configuration failed.");
-		return (EXIT_FAILURE);
+		reply = ncds_apply_rpc (config.dsid, dummy_session, rpc);
+		nc_rpc_free (rpc);
+		if (reply == NULL || nc_reply_get_type (reply) != NC_REPLY_OK) {
+			ncds_free (datastore);
+			nc_reply_free (reply);
+			clb_print (NC_VERB_ERROR, "Setting up running configuration failed.");
+			return (EXIT_FAILURE);
+		}
+		nc_reply_free (reply);
+		nc_session_free (dummy_session);
+		/* device initiation done */
 	}
-	nc_reply_free(reply);
-	nc_session_free (dummy_session);
-	/* device initiation done */
 
 	/*
 	 * Initiate Notifications
@@ -368,6 +376,8 @@ int main(int argc, char *argv[])
 	nc_session_free(config.session);
 	ncntf_close();
 	ncds_free(datastore);
+
+	nc_close(0);
 
 	/* bye, bye */
 	return (EXIT_SUCCESS);

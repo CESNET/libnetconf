@@ -292,4 +292,27 @@ typedef enum {
  */
 void nc_verbosity(NC_VERB_LEVEL level);
 
+/**
+ * \todo Implement nc_init()
+ * @ingroup genAPI
+ * @brief Initialize libnetconf for system-wide usage. This initialization is
+ * shared across all processes using
+ * @return -1 on fatal error\n 0 if this is first init after previous
+ * system-wide nc_close() or system reboot\n 1 when someone else already called
+ * nc_init() since last system-wide nc_close() or system reboot.
+ */
+int nc_init();
+
+/**
+ * \todo Implement nc_close()
+ * @param[in] system Flag if close should be applied as a system-wide.
+ * System-wide nc_close() closes all shared structures if no other libnetconf
+ * participant is not currently running. Local release of the calling instance
+ * from the shared structures is done in both cases.
+ * @return -1 on error\n 0 on success\n 1 in case of system wide when there is
+ * other participant using shared structures and system-wide close cannot be
+ * done.
+ */
+int nc_close(int system);
+
 #endif /* NETCONF_H_ */

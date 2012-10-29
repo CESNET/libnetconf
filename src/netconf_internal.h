@@ -197,13 +197,27 @@ extern struct callbacks callbacks;
 
 /**
  * @ingroup internalAPI
- * @brief NETCONF session statistics as defined in RFC 6022
+ * @brief NETCONF session statistics as defined in RFC 6022 (as common-counters)
  */
 struct nc_session_stats {
 	unsigned int in_rpcs;
 	unsigned int in_bad_rpcs;
 	unsigned int out_rpc_errors;
 	unsigned int out_notifications;
+};
+
+/**
+ * @ingroup internalAPI
+ * @brief NETCONF statistics section as defined in RFC 6022
+ */
+struct nc_statistics {
+	unsigned int participants;
+#define TIME_LENGTH 21
+	char start_time[TIME_LENGTH];
+	unsigned int bad_hellos;
+	unsigned int sessions_in;
+	unsigned int sessions_dropped;
+	struct nc_session_stats counters;
 };
 
 /**

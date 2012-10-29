@@ -46,6 +46,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
 #include "netconf_internal.h"
 
@@ -61,6 +63,77 @@ void prv_print(NC_VERB_LEVEL level, const char* msg)
 	if (callbacks.print != NULL) {
 		callbacks.print(level, msg);
 	}
+}
+
+struct nc_statistics *nc_stats = NULL;
+static int shmid = -1;
+
+int nc_init(void)
+{
+	int retval = 0;
+	key_t key = -2;
+	int first = 1;
+	char* t;
+
+	DBG("Shared memory key: %d", key);
+	shmid = shmget(key, sizeof(struct nc_statistics), IPC_CREAT | IPC_EXCL | 0777 );
+	if (shmid == -1 && errno == EEXIST) {
+		shmid = shmget(key, sizeof(struct nc_statistics), 0777);
+		retval = 1;
+		first = 0;
+	}
+	if (shmid == -1) {
+		ERROR("Accessing shared memory failed (%s).", strerror(errno));
+		return (-1);
+	}
+	DBG("Shared memory ID: %d", shmid);
+
+	/* attach memory */
+	nc_stats = shmat(shmid, NULL, 0);
+	if (nc_stats == (void*) -1) {
+		ERROR("Attaching shared memory failed (%s).", strerror(errno));
+		nc_stats = NULL;
+		return (-1);
+	}
+
+	/* todo use locks */
+	if (first) {
+		memset(nc_stats, 0, sizeof(struct nc_statistics));
+		strncpy(nc_stats->start_time, t = nc_time2datetime(time(NULL)), TIME_LENGTH);
+		free(t);
+	}
+	nc_stats->participants++;
+
+	return (retval);
+}
+
+int nc_close(int system)
+{
+	struct shmid_ds ds;
+	int retval = 0;
+
+	if (shmid == -1 || nc_stats == NULL) {
+		/* we've not been initiated */
+		return (-1);
+	}
+
+	if (system) {
+		if (shmctl(shmid, IPC_STAT, &ds) == -1) {
+			ERROR("Unable to get status of shared memory (%s).", strerror(errno));
+			return (-1);
+		}
+		if (ds.shm_nattch == 1) {
+			shmctl(shmid, IPC_RMID, NULL);
+		} else {
+			retval = 1;
+		}
+	}
+
+	nc_stats->participants--;
+	shmdt(nc_stats);
+	nc_stats = NULL;
+
+	return (retval);
 }
 
 char* nc_clrwspace (const char* in)

@@ -61,6 +61,8 @@
 #include "datastore/file/datastore_file.h"
 #include "datastore/empty/datastore_empty.h"
 
+extern struct nc_statistics *nc_stats;
+
 struct ncds_ds_list
 {
 	struct ncds_ds *datastore;
@@ -159,7 +161,7 @@ const char * ncds_get_model_path(ncds_id id)
 
 char* get_internal_state(const struct nc_session *session)
 {
-	char *notifs = NULL, *sessions = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *aux = NULL;
+	char *notifs = NULL, *sessions = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *stats = NULL, *aux = NULL;
 	xmlDocPtr doc;
 	xmlBufferPtr buf;
 	struct ncds_ds_list* ds = NULL;
@@ -226,10 +228,30 @@ char* get_internal_state(const struct nc_session *session)
 		free (aux);
 	}
 
-	asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s</netconf-state>%s", NC_NS_CAP_MONITORING,
+	if (nc_stats != NULL) {
+		asprintf(&stats, "<statistics><netconf-start-time>%s</netconf-start-time>"
+				"<in-bad-hellos>%u</in-bad-hellos>"
+				"<in-sessions>%u</in-sessions>"
+				"<dropped-sessions>%u</dropped-sessions>"
+				"<in-rpcs>%u</in-rpcs>"
+				"<in-bad-rpcs>%u</in-bad-rpcs>"
+				"<out-rpc-errors>%u</out-rpc-errors>"
+				"<out-notifications>%u</out-notifications></statistics>",
+				nc_stats->start_time,
+				nc_stats->bad_hellos,
+				nc_stats->sessions_in,
+				nc_stats->sessions_dropped,
+				nc_stats->counters.in_rpcs,
+				nc_stats->counters.in_bad_rpcs,
+				nc_stats->counters.out_rpc_errors,
+				nc_stats->counters.out_notifications);
+	}
+
+	asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s</netconf-state>%s", NC_NS_CAP_MONITORING,
 			(session->capabilities_original != NULL) ? session->capabilities_original : "",
 			(ds_stats != NULL) ? ds_stats : "",
 			(sessions != NULL) ? sessions : "",
+			(stats != NULL) ? stats : "",
 			(notifs != NULL) ? notifs : "");
 	if (retval == NULL) {
 		retval = strdup("");
@@ -237,6 +259,7 @@ char* get_internal_state(const struct nc_session *session)
 
 	free(ds_stats);
 	free(sessions);
+	free(stats);
 	free(notifs);
 
 	return (retval);

@@ -58,6 +58,8 @@
 #include "datastore.h"
 #include "notifications.h"
 
+extern struct nc_statistics *nc_stats;
+
 struct session_list_s {
 	struct nc_session *session;
 	struct session_list_s *next;
@@ -1201,6 +1203,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct 
 			nc_session_close(session, NC_SESSION_TERM_DROPPED);
 			DBG_UNLOCK("mut_in");
 			pthread_mutex_unlock(&(session->mut_in));
+			if (nc_stats) {nc_stats->sessions_dropped++;}
 			return (NC_MSG_UNKNOWN);
 
 		}
@@ -1213,6 +1216,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct 
 			nc_session_close(session, NC_SESSION_TERM_DROPPED);
 			DBG_UNLOCK("mut_in");
 			pthread_mutex_unlock(&(session->mut_in));
+			if (nc_stats) {nc_stats->sessions_dropped++;}
 			return (NC_MSG_UNKNOWN);
 		}
 
@@ -1522,6 +1526,7 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf)
 	if (ret == EXIT_SUCCESS) {
 		/* update stats */
 		session->stats.out_notifications++;
+		if (nc_stats) {nc_stats->counters.out_notifications++;}
 	}
 
 	return (ret);
@@ -1671,12 +1676,14 @@ try_again:
 
 				/* update stats */
 				session->stats.in_bad_rpcs++;
+				if (nc_stats) {nc_stats->counters.in_bad_rpcs++;}
 
 				return (0); /* failure */
 			}
 		}
 		/* update statistics */
 		session->stats.in_rpcs++;
+		if (nc_stats) {nc_stats->counters.in_rpcs++;}
 
 		break;
 	case NC_MSG_HELLO:
@@ -1692,6 +1699,7 @@ try_again:
 
 		/* update stats */
 		session->stats.in_bad_rpcs++;
+		if (nc_stats) {nc_stats->counters.in_bad_rpcs++;}
 
 		break;
 	}
@@ -1855,6 +1863,7 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 		if (reply->type.reply == NC_REPLY_ERROR) {
 			/* update stats */
 			session->stats.out_rpc_errors++;
+			if (nc_stats) {nc_stats->counters.out_rpc_errors++;}
 		}
 		return (retval);
 	}

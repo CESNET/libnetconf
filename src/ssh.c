@@ -65,6 +65,8 @@
 
 #define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
 
+extern struct nc_statistics *nc_stats;
+
 struct auth_pref_couple
 {
 	NC_SSH_AUTH_TYPE type;
@@ -377,6 +379,10 @@ int nc_server_handshake(struct nc_session *session, char** cpblts)
 	retval = nc_handshake(session, cpblts, hello);
 	nc_rpc_free(hello);
 
+	if (retval != EXIT_SUCCESS) {
+		if (nc_stats) {nc_stats->bad_hellos++;}
+	}
+
 	return (retval);
 }
 
@@ -680,6 +686,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	/* log start of the session */
 	ncntf_event_new(-1, NCNTF_BASE_SESSION_START, retval);
 	retval->logintime = nc_time2datetime(time(NULL));
+	if (nc_stats) {nc_stats->sessions_in++;}
 
 	return (retval);
 }
