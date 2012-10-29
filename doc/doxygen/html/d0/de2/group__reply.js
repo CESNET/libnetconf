@@ -1,7 +1,13 @@
 var group__reply =
 [
     [ "nc_reply", "d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d", null ],
-    [ "NC_REPLY_TYPE", "d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29", null ],
+    [ "NC_REPLY_TYPE", "d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29", [
+      [ "NC_REPLY_UNKNOWN", "d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa4e871d4592173b6fff7a8d4815c8e29", null ],
+      [ "NC_REPLY_HELLO", "d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29a6d190ad4c3f0ecbaab7956227e606d27", null ],
+      [ "NC_REPLY_OK", "d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29ac65f86e9af3940dc910231afd07a70cf", null ],
+      [ "NC_REPLY_ERROR", "d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa47af543410586d8da28f02f099abce0", null ],
+      [ "NC_REPLY_DATA", "d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29acf47a744ed6a6b613d63f4a77aa7135e", null ]
+    ] ],
     [ "nc_callback_error_reply", "d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80", null ],
     [ "nc_session_send_reply", "d0/de2/group__reply.html#ga0b344811af933d80615f0874650938cc", null ],
     [ "nc_session_recv_reply", "d0/de2/group__reply.html#ga1b8c8ca9516003938e8f647bd870beaa", null ],

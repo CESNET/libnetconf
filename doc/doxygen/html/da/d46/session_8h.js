@@ -1,6 +1,7 @@
 var session_8h =
 [
     [ "nc_session_dummy", "da/d46/session_8h.html#ga3868d5331db61a5d3a4df3ff5fa33851", null ],
+    [ "nc_session_monitor", "da/d46/session_8h.html#ga023c9c813c59588ab938108f3f063d41", null ],
     [ "nc_session_close", "da/d46/session_8h.html#gab55a757ce7a1abc69a9866c96b125abc", null ],
     [ "nc_session_free", "da/d46/session_8h.html#gaa5994f45a7031dc931bdf4a3acebedee", null ],
     [ "nc_session_get_status", "da/d46/session_8h.html#gacebd018e30c3eeb0638bbb428a1741b4", null ],

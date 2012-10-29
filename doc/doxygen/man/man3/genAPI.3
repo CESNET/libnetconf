@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Fri Oct 26 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Mon Oct 29 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -10,7 +10,7 @@ libnetconf's miscellaneous functions\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP =  -5 }"
+.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP = -5 }"
 .br
 .RI "\fIEnumeration of NETCONF message types\&. \fP"
 .ti -1c
@@ -25,6 +25,10 @@ libnetconf's miscellaneous functions\&.
 .RI "void \fBnc_verbosity\fP (\fBNC_VERB_LEVEL\fP level)"
 .br
 .RI "\fISet libnetconf's verbosity level\&. \fP"
+.ti -1c
+.RI "int \fBnc_init\fP ()"
+.br
+.RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all processes using\&. \fP"
 .ti -1c
 .RI "void \fBnc_callback_print\fP (void(*func)(\fBNC_VERB_LEVEL\fP level, const char *msg))"
 .br
@@ -120,6 +124,24 @@ Definition at line 281 of file netconf\&.h\&.
 Set libnetconf's verbosity level\&. \fBParameters:\fP
 .RS 4
 \fIlevel\fP Enabled verbosity level (includes all levels with higher priority)\&. 
+.RE
+.PP
+
+.SS "int nc_init ()"
+
+.PP
+Initialize libnetconf for system-wide usage\&. This initialization is shared across all processes using\&. \fBTodo\fP
+.RS 4
+Implement \fBnc_init()\fP
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+-1 on fatal error
+.br
+ 0 if this is first init after previous system-wide \fBnc_close()\fP or system reboot
+.br
+ 1 when someone else already called \fBnc_init()\fP since last system-wide \fBnc_close()\fP or system reboot\&. 
 .RE
 .PP
 

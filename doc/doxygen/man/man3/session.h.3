@@ -1,4 +1,4 @@
-.TH "src/session.h" 3 "Fri Oct 26 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "src/session.h" 3 "Mon Oct 29 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -21,6 +21,10 @@ Functions to handle NETCONF sessions\&.
 .RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)"
 .br
 .RI "\fICreate disconnected session structure\&. \fP"
+.ti -1c
+.RI "int \fBnc_session_monitor\fP (struct nc_session *session)"
+.br
+.RI "\fIAdd session into internal list of monitored sessions that are returned as part of netconf-state information defined in RFC 6022\&. \fP"
 .ti -1c
 .RI "void \fBnc_session_close\fP (struct nc_session *session, \fBNC_SESSION_TERM_REASON\fP reason)"
 .br

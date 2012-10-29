@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Fri Oct 26 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Mon Oct 29 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,7 +18,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP =  -1, \fBNC_SESSION_STATUS_STARTUP\fP =  0, \fBNC_SESSION_STATUS_WORKING\fP =  1, \fBNC_SESSION_STATUS_CLOSING\fP =  2, \fBNC_SESSION_STATUS_CLOSED\fP =  3, \fBNC_SESSION_STATUS_DUMMY\fP =  4 }"
+.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP = -1, \fBNC_SESSION_STATUS_STARTUP\fP = 0, \fBNC_SESSION_STATUS_WORKING\fP = 1, \fBNC_SESSION_STATUS_CLOSING\fP = 2, \fBNC_SESSION_STATUS_CLOSED\fP = 3, \fBNC_SESSION_STATUS_DUMMY\fP = 4 }"
 .br
 .RI "\fIEnumeration of possible states of the NETCONF session\&. \fP"
 .ti -1c
@@ -26,7 +26,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .br
 .RI "\fIEnumeration of reasonf of the NETCONF session termination as defined in RFC 6470\&. \fP"
 .ti -1c
-.RI "enum \fBNC_SSH_AUTH_TYPE\fP { \fBNC_SSH_AUTH_PUBLIC_KEYS\fP =  1, \fBNC_SSH_AUTH_PASSWORD\fP =  2, \fBNC_SSH_AUTH_INTERACTIVE\fP =  4 }"
+.RI "enum \fBNC_SSH_AUTH_TYPE\fP { \fBNC_SSH_AUTH_PUBLIC_KEYS\fP = 1, \fBNC_SSH_AUTH_PASSWORD\fP = 2, \fBNC_SSH_AUTH_INTERACTIVE\fP = 4 }"
 .br
 .RI "\fIAvailable SSH authentication mechanisms\&. \fP"
 .in -1c
@@ -57,6 +57,10 @@ libnetconf's functions for handling NETCONF sessions\&.
 .RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)"
 .br
 .RI "\fICreate disconnected session structure\&. \fP"
+.ti -1c
+.RI "int \fBnc_session_monitor\fP (struct nc_session *session)"
+.br
+.RI "\fIAdd session into internal list of monitored sessions that are returned as part of netconf-state information defined in RFC 6022\&. \fP"
 .ti -1c
 .RI "void \fBnc_session_close\fP (struct nc_session *session, \fBNC_SESSION_TERM_REASON\fP reason)"
 .br
@@ -311,6 +315,20 @@ All required parameters can be obtained from the real session structure by the s
 \fBReturns:\fP
 .RS 4
 Structure describing a dummy NETCONF session or NULL in case of error\&. 
+.RE
+.PP
+
+.SS "int nc_session_monitor (struct nc_session *session)"
+
+.PP
+Add session into internal list of monitored sessions that are returned as part of netconf-state information defined in RFC 6022\&. \fBParameters:\fP
+.RS 4
+\fIsession\fP Session to be monitored; 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success, non-zero on error\&. 
 .RE
 .PP
 

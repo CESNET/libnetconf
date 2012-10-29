@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Fri Oct 26 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Mon Oct 29 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -33,7 +33,7 @@ libnetconf's general public functions and structures definitions\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP =  -1, \fBNC_SESSION_STATUS_STARTUP\fP =  0, \fBNC_SESSION_STATUS_WORKING\fP =  1, \fBNC_SESSION_STATUS_CLOSING\fP =  2, \fBNC_SESSION_STATUS_CLOSED\fP =  3, \fBNC_SESSION_STATUS_DUMMY\fP =  4 }"
+.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP = -1, \fBNC_SESSION_STATUS_STARTUP\fP = 0, \fBNC_SESSION_STATUS_WORKING\fP = 1, \fBNC_SESSION_STATUS_CLOSING\fP = 2, \fBNC_SESSION_STATUS_CLOSED\fP = 3, \fBNC_SESSION_STATUS_DUMMY\fP = 4 }"
 .br
 .RI "\fIEnumeration of possible states of the NETCONF session\&. \fP"
 .ti -1c
@@ -41,7 +41,7 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .RI "\fIEnumeration of reasonf of the NETCONF session termination as defined in RFC 6470\&. \fP"
 .ti -1c
-.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP =  -5 }"
+.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP = -5 }"
 .br
 .RI "\fIEnumeration of NETCONF message types\&. \fP"
 .ti -1c
@@ -68,13 +68,13 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .RI "\fIEnumeration of supported NETCONF filter types\&. \fP"
 .ti -1c
-.RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP =  -1, \fBNC_EDIT_OP_MERGE\fP =  1, \fBNC_EDIT_OP_REPLACE\fP =  2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
+.RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP = -1, \fBNC_EDIT_OP_MERGE\fP = 1, \fBNC_EDIT_OP_REPLACE\fP = 2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
 .br
 .ti -1c
-.RI "enum \fBNC_EDIT_DEFOP_TYPE\fP { \fBNC_EDIT_DEFOP_ERROR\fP =  -1, \fBNC_EDIT_DEFOP_NONE\fP =  0, \fBNC_EDIT_DEFOP_MERGE\fP =  1, \fBNC_EDIT_DEFOP_REPLACE\fP =  2 }"
+.RI "enum \fBNC_EDIT_DEFOP_TYPE\fP { \fBNC_EDIT_DEFOP_ERROR\fP = -1, \fBNC_EDIT_DEFOP_NONE\fP = 0, \fBNC_EDIT_DEFOP_MERGE\fP = 1, \fBNC_EDIT_DEFOP_REPLACE\fP = 2 }"
 .br
 .ti -1c
-.RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_ERROR\fP =  -1, \fBNC_EDIT_ERROPT_STOP\fP =  1, \fBNC_EDIT_ERROPT_CONT\fP =  2, \fBNC_EDIT_ERROPT_ROLLBACK\fP =  3 }"
+.RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_ERROR\fP = -1, \fBNC_EDIT_ERROPT_STOP\fP = 1, \fBNC_EDIT_ERROPT_CONT\fP = 2, \fBNC_EDIT_ERROPT_ROLLBACK\fP = 3 }"
 .br
 .ti -1c
 .RI "enum \fBNC_VERB_LEVEL\fP { \fBNC_VERB_ERROR\fP, \fBNC_VERB_WARNING\fP, \fBNC_VERB_VERBOSE\fP, \fBNC_VERB_DEBUG\fP }"
@@ -88,6 +88,13 @@ libnetconf's general public functions and structures definitions\&.
 .RI "void \fBnc_verbosity\fP (\fBNC_VERB_LEVEL\fP level)"
 .br
 .RI "\fISet libnetconf's verbosity level\&. \fP"
+.ti -1c
+.RI "int \fBnc_init\fP ()"
+.br
+.RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all processes using\&. \fP"
+.ti -1c
+.RI "int \fBnc_close\fP (int system)"
+.br
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -203,6 +210,29 @@ Definition at line 263 of file netconf\&.h\&.
 
 .PP
 Definition at line 270 of file netconf\&.h\&.
+.SH "Function Documentation"
+.PP 
+.SS "int nc_close (intsystem)"
+\fBTodo\fP
+.RS 4
+Implement \fBnc_close()\fP 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsystem\fP Flag if close should be applied as a system-wide\&. System-wide \fBnc_close()\fP closes all shared structures if no other libnetconf participant is not currently running\&. Local release of the calling instance from the shared structures is done in both cases\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+-1 on error
+.br
+ 0 on success
+.br
+ 1 in case of system wide when there is other participant using shared structures and system-wide close cannot be done\&. 
+.RE
+.PP
+
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.
