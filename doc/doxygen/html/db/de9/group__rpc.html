@@ -143,7 +143,8 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a350f96fd686eea971d1d9e087a9ff8f4">NC_OP_COMMIT</a>, 
 <a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a59fd75a1b96a307a2d87e327c7d9a695">NC_OP_DISCARDCHANGES</a>, 
 <br/>
-&#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aafc549220669ed05b9c043b09be496fe">NC_OP_CREATESUBSCRIPTION</a>
+&#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aafc549220669ed05b9c043b09be496fe">NC_OP_CREATESUBSCRIPTION</a>, 
+<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a213f30aeb2d0d09bc6de7d98015860c3">NC_OP_GETSCHEMA</a>
 <br/>
  }</td></tr>
 <tr class="memdesc:ga3e6fc59e2d06c1c0edb36ee64ee9cc07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported &lt;rpc&gt; operations.  <a href="../../db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07">More...</a><br/></td></tr>
@@ -243,6 +244,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga337ea7a9b006a79ee5ea615e9d9a5a6f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga337ea7a9b006a79ee5ea615e9d9a5a6f">nc_rpc_discardchanges</a> (void)</td></tr>
 <tr class="memdesc:ga337ea7a9b006a79ee5ea615e9d9a5a6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;discard-changes&gt; NETCONF rpc message.  <a href="#ga337ea7a9b006a79ee5ea615e9d9a5a6f"></a><br/></td></tr>
 <tr class="separator:ga337ea7a9b006a79ee5ea615e9d9a5a6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3b762dd881622eaa72b08c9b58d76a5e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga3b762dd881622eaa72b08c9b58d76a5e">nc_rpc_getschema</a> (const char *name, const char *version, const char *format)</td></tr>
+<tr class="memdesc:ga3b762dd881622eaa72b08c9b58d76a5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;get-schema&gt; NETCONF rpc message (RFC 6022).  <a href="#ga3b762dd881622eaa72b08c9b58d76a5e"></a><br/></td></tr>
+<tr class="separator:ga3b762dd881622eaa72b08c9b58d76a5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa9ad7fac41fdef0063c2e2793fb19efd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaa9ad7fac41fdef0063c2e2793fb19efd">nc_rpc_generic</a> (const char *data)</td></tr>
 <tr class="memdesc:gaa9ad7fac41fdef0063c2e2793fb19efd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a generic NETCONF rpc message with specified content.  <a href="#gaa9ad7fac41fdef0063c2e2793fb19efd"></a><br/></td></tr>
 <tr class="separator:gaa9ad7fac41fdef0063c2e2793fb19efd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -353,6 +357,9 @@ Functions</h2></td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga3e6fc59e2d06c1c0edb36ee64ee9cc07aafc549220669ed05b9c043b09be496fe"></a>NC_OP_CREATESUBSCRIPTION</em>&nbsp;</td><td>
 <p>&lt;create-subscription&gt; operation (RFC 5277) </p>
 </td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga3e6fc59e2d06c1c0edb36ee64ee9cc07a213f30aeb2d0d09bc6de7d98015860c3"></a>NC_OP_GETSCHEMA</em>&nbsp;</td><td>
+<p>&lt;get-schema&gt; operation (RFC 6022) </p>
+</td></tr>
 </table>
 </dd>
 </dl>
@@ -382,7 +389,7 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00247">247</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00248">248</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -1231,6 +1238,49 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga3b762dd881622eaa72b08c9b58d76a5e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a>* nc_rpc_getschema </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>version</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>format</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create &lt;get-schema&gt; NETCONF rpc message (RFC 6022). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Identifier for the schema list entry. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">version</td><td>Optional parameter specifying version of the requested schema. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>optional parameter specifying the data modeling language of the schema. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Created rpc message. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="gaa9ad7fac41fdef0063c2e2793fb19efd"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1262,7 +1312,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon Oct 29 2012 22:21:13 for libnetconf by
+    <li class="footer">Generated on Tue Oct 30 2012 14:58:46 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.2 </li>
   </ul>

@@ -56,7 +56,8 @@ var netconf_8h =
       [ "NC_OP_UNLOCK", "d3/d7a/netconf_8h.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aa4071db38c423865b24543cb504a4b42", null ],
       [ "NC_OP_COMMIT", "d3/d7a/netconf_8h.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a350f96fd686eea971d1d9e087a9ff8f4", null ],
       [ "NC_OP_DISCARDCHANGES", "d3/d7a/netconf_8h.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a59fd75a1b96a307a2d87e327c7d9a695", null ],
-      [ "NC_OP_CREATESUBSCRIPTION", "d3/d7a/netconf_8h.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aafc549220669ed05b9c043b09be496fe", null ]
+      [ "NC_OP_CREATESUBSCRIPTION", "d3/d7a/netconf_8h.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aafc549220669ed05b9c043b09be496fe", null ],
+      [ "NC_OP_GETSCHEMA", "d3/d7a/netconf_8h.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a213f30aeb2d0d09bc6de7d98015860c3", null ]
     ] ],
     [ "NC_ERR_PARAM", "d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73d", [
       [ "NC_ERR_PARAM_TYPE", "d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73daa777fcc6abf46387ccbf73ce7b1cdabc", null ],

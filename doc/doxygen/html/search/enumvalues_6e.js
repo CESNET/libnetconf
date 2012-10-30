@@ -67,6 +67,7 @@ var searchData=
   ['nc_5fop_5feditconfig',['NC_OP_EDITCONFIG',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a545f2b8ad13fc1cb449f078908312ef1',1,'netconf.h']]],
   ['nc_5fop_5fget',['NC_OP_GET',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07ae7c153c569fe9ca06532dadc41dce78f',1,'netconf.h']]],
   ['nc_5fop_5fgetconfig',['NC_OP_GETCONFIG',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a9f918e6ed1c58fb70ffe4cbd05882332',1,'netconf.h']]],
+  ['nc_5fop_5fgetschema',['NC_OP_GETSCHEMA',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a213f30aeb2d0d09bc6de7d98015860c3',1,'netconf.h']]],
   ['nc_5fop_5fkillsession',['NC_OP_KILLSESSION',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a01a1b829ca743ac8f8e8444d71f16d0d',1,'netconf.h']]],
   ['nc_5fop_5flock',['NC_OP_LOCK',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07af07ffd285bc743fcbdeace96f2b21d22',1,'netconf.h']]],
   ['nc_5fop_5funknown',['NC_OP_UNKNOWN',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a7ca4781a2c8644c3c15e3b0cd9116090',1,'netconf.h']]],

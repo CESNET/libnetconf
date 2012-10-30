@@ -40,5 +40,6 @@ var messages_8h =
     [ "nc_rpc_subscribe", "d5/d48/messages_8h.html#gafda56cbfe02d24877d0740618aa2de98", null ],
     [ "nc_rpc_commit", "d5/d48/messages_8h.html#ga7977ca8b562643607b3c846ed36bbb23", null ],
     [ "nc_rpc_discardchanges", "d5/d48/messages_8h.html#ga337ea7a9b006a79ee5ea615e9d9a5a6f", null ],
+    [ "nc_rpc_getschema", "d5/d48/messages_8h.html#ga3b762dd881622eaa72b08c9b58d76a5e", null ],
     [ "nc_rpc_generic", "d5/d48/messages_8h.html#gaa9ad7fac41fdef0063c2e2793fb19efd", null ]
 ];

@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Mon Oct 29 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Tue Oct 30 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -53,7 +53,7 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .RI "\fIEnumeration of <rpc> operation types\&. \fP"
 .ti -1c
-.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP, \fBNC_OP_COMMIT\fP, \fBNC_OP_DISCARDCHANGES\fP, \fBNC_OP_CREATESUBSCRIPTION\fP }"
+.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP, \fBNC_OP_COMMIT\fP, \fBNC_OP_DISCARDCHANGES\fP, \fBNC_OP_CREATESUBSCRIPTION\fP, \fBNC_OP_GETSCHEMA\fP }"
 .br
 .RI "\fIEnumeration of supported <rpc> operations\&. \fP"
 .ti -1c
@@ -157,7 +157,7 @@ bad-namespace in error-info - name of the unexpected namespace, contained in 'un
 \fB\fINC_ERR_PARAM_INFO_SID \fP\fP
 session-id in error-info - session ID of session holding the requested lock, contained in 'lock-denied' error\&. 
 .PP
-Definition at line 172 of file netconf\&.h\&.
+Definition at line 173 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_OP_TYPE\fP"
 
 .PP
@@ -177,7 +177,7 @@ Definition at line 172 of file netconf\&.h\&.
 \fB\fINC_EDIT_OP_REMOVE \fP\fP
 
 .PP
-Definition at line 253 of file netconf\&.h\&.
+Definition at line 254 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_DEFOP_TYPE\fP"
 
 .PP
@@ -193,7 +193,7 @@ Definition at line 253 of file netconf\&.h\&.
 \fB\fINC_EDIT_DEFOP_REPLACE \fP\fP
 
 .PP
-Definition at line 263 of file netconf\&.h\&.
+Definition at line 264 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_ERROPT_TYPE\fP"
 
 .PP
@@ -209,15 +209,10 @@ Definition at line 263 of file netconf\&.h\&.
 \fB\fINC_EDIT_ERROPT_ROLLBACK \fP\fP
 
 .PP
-Definition at line 270 of file netconf\&.h\&.
+Definition at line 271 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "int nc_close (intsystem)"
-\fBTodo\fP
-.RS 4
-Implement \fBnc_close()\fP 
-.RE
-.PP
 \fBParameters:\fP
 .RS 4
 \fIsystem\fP Flag if close should be applied as a system-wide\&. System-wide \fBnc_close()\fP closes all shared structures if no other libnetconf participant is not currently running\&. Local release of the calling instance from the shared structures is done in both cases\&. 

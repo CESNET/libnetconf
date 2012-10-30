@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Mon Oct 29 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Tue Oct 30 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -22,7 +22,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIEnumeration of <rpc> operation types\&. \fP"
 .ti -1c
-.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP, \fBNC_OP_COMMIT\fP, \fBNC_OP_DISCARDCHANGES\fP, \fBNC_OP_CREATESUBSCRIPTION\fP }"
+.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP, \fBNC_OP_COMMIT\fP, \fBNC_OP_DISCARDCHANGES\fP, \fBNC_OP_CREATESUBSCRIPTION\fP, \fBNC_OP_GETSCHEMA\fP }"
 .br
 .RI "\fIEnumeration of supported <rpc> operations\&. \fP"
 .ti -1c
@@ -150,6 +150,10 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fICreate <discard-changes> NETCONF rpc message\&. \fP"
 .ti -1c
+.RI "\fBnc_rpc\fP * \fBnc_rpc_getschema\fP (const char *name, const char *version, const char *format)"
+.br
+.RI "\fICreate <get-schema> NETCONF rpc message (RFC 6022)\&. \fP"
+.ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_generic\fP (const char *data)"
 .br
 .RI "\fICreate a generic NETCONF rpc message with specified content\&. \fP"
@@ -239,6 +243,9 @@ unknown/error value
 .TP
 \fB\fINC_OP_CREATESUBSCRIPTION \fP\fP
 <create-subscription> operation (RFC 5277) 
+.TP
+\fB\fINC_OP_GETSCHEMA \fP\fP
+<get-schema> operation (RFC 6022) 
 .PP
 Definition at line 156 of file netconf\&.h\&.
 .SS "enum \fBNC_FILTER_TYPE\fP"
@@ -254,7 +261,7 @@ Enumeration of supported NETCONF filter types\&.
 \fB\fINC_FILTER_SUBTREE \fP\fP
 NC_FILTER_SUBTREE\&. 
 .PP
-Definition at line 247 of file netconf\&.h\&.
+Definition at line 248 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "const \fBnc_msgid\fP nc_session_send_rpc (struct nc_session *session, \fBnc_rpc\fP *rpc)"
@@ -672,6 +679,24 @@ Created rpc message\&.
 
 .PP
 Create <discard-changes> NETCONF rpc message\&. \fBReturns:\fP
+.RS 4
+Created rpc message\&. 
+.RE
+.PP
+
+.SS "\fBnc_rpc\fP* nc_rpc_getschema (const char *name, const char *version, const char *format)"
+
+.PP
+Create <get-schema> NETCONF rpc message (RFC 6022)\&. \fBParameters:\fP
+.RS 4
+\fIname\fP Identifier for the schema list entry\&. 
+.br
+\fIversion\fP Optional parameter specifying version of the requested schema\&. 
+.br
+\fIformat\fP optional parameter specifying the data modeling language of the schema\&. 
+.RE
+.PP
+\fBReturns:\fP
 .RS 4
 Created rpc message\&. 
 .RE

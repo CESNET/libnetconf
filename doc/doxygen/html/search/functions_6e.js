@@ -60,6 +60,7 @@ var searchData=
   ['nc_5frpc_5fget_5ftarget',['nc_rpc_get_target',['../db/de9/group__rpc.html#gab240067d45d58c945cdfd61948751379',1,'messages.h']]],
   ['nc_5frpc_5fget_5ftype',['nc_rpc_get_type',['../db/de9/group__rpc.html#gaa502fb30575000775b29a764101c1bef',1,'messages.h']]],
   ['nc_5frpc_5fgetconfig',['nc_rpc_getconfig',['../db/de9/group__rpc.html#ga4ae747c4c96e1d3621745e122091ba11',1,'messages.h']]],
+  ['nc_5frpc_5fgetschema',['nc_rpc_getschema',['../db/de9/group__rpc.html#ga3b762dd881622eaa72b08c9b58d76a5e',1,'messages.h']]],
   ['nc_5frpc_5fkillsession',['nc_rpc_killsession',['../db/de9/group__rpc.html#gae9876e8d038eb81a376bd82a08c58b95',1,'messages.h']]],
   ['nc_5frpc_5flock',['nc_rpc_lock',['../db/de9/group__rpc.html#ga6a03d40e00fbe019a34541a55f3f4a31',1,'messages.h']]],
   ['nc_5frpc_5fsubscribe',['nc_rpc_subscribe',['../da/d54/group__notifications.html#gafda56cbfe02d24877d0740618aa2de98',1,'messages.h']]],
