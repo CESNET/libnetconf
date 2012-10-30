@@ -14,6 +14,6 @@
 /*
  * Path for storing libnetconf's Event stream files
  */
-#define NCNTF_STREAMS_PATH "@STREAMS_PATH@"
+//#define NCNTF_STREAMS_PATH "@STREAMS_PATH@"
 #define NCNTF_STREAMS_PATH_ENV "LIBNETCONF_STREAMS"
 
