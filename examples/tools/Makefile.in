@@ -60,7 +60,7 @@ OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LIBS) $(OBJS) -o $(NAME)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OBJS) $(LIBS) -o $(NAME)
 
 $(OBJDIR)/%.o: %.c
 	@[ -d $$(dirname $@) ] || \
