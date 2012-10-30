@@ -453,6 +453,18 @@ nc_rpc *nc_rpc_discardchanges(void);
 
 /**
  * @ingroup rpc
+ * @brief Create \<get-schema\> NETCONF rpc message (RFC 6022).
+ * @param[in] name Identifier for the schema list entry.
+ * @param[in] version Optional parameter specifying version of the requested
+ * schema.
+ * @param[in] format optional parameter specifying the data modeling language
+ * of the schema.
+ * @return Created rpc message.
+ */
+nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* format);
+
+/**
+ * @ingroup rpc
  * @brief Create a generic NETCONF rpc message with specified content.
  *
  * Function gets data parameter and envelope it into \<rpc\> container. Caller

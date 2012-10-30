@@ -48,6 +48,8 @@
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
 
 #include "netconf_internal.h"
 #include "messages.h"
@@ -159,14 +161,181 @@ const char * ncds_get_model_path(ncds_id id)
 	return datastore->model_path;
 }
 
+int get_model_info(xmlDocPtr model, char **name, char **version, char **namespace)
+{
+	xmlXPathContextPtr model_ctxt = NULL;
+	xmlXPathObjectPtr result = NULL;
+	xmlChar *xml_aux;
+	int i, j, l;
+
+	/* prepare xpath evaluation context of the model for XPath */
+	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
+		ERROR("%s: Creating XPath context failed.", __func__)
+		/* with-defaults cannot be found */
+		return (EXIT_FAILURE);
+	}
+	if (xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST "urn:ietf:params:xml:ns:yang:yin:1") != 0) {
+		xmlXPathFreeContext(model_ctxt);
+		return (EXIT_FAILURE);
+	}
+
+	/* get name of the schema */
+	if (name != NULL ) {
+		result = xmlXPathEvalExpression (BAD_CAST "/yin:module", model_ctxt);
+		if (result != NULL ) {
+			if (result->nodesetval->nodeNr < 1) {
+				xmlXPathFreeContext (model_ctxt);
+				return (EXIT_FAILURE);
+			} else {
+				*name = (char*) xmlGetProp (result->nodesetval->nodeTab[0], BAD_CAST "name");
+			}
+			xmlXPathFreeObject (result);
+			if (*name == NULL ) {
+				xmlXPathFreeContext (model_ctxt);
+				return (EXIT_FAILURE);
+			}
+		}
+	}
+
+	/* get version */
+	if (version != NULL ) {
+		result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:revision", model_ctxt);
+		if (result != NULL ) {
+			if (result->nodesetval->nodeNr < 1) {
+				xmlXPathFreeContext (model_ctxt);
+				if (name != NULL) {
+					xmlFree (*name);
+					*name = NULL;
+				}
+				return (EXIT_FAILURE);
+			} else {
+				for (i = 0; i < result->nodesetval->nodeNr; i++) {
+					xml_aux = xmlGetProp (result->nodesetval->nodeTab[i], BAD_CAST "date");
+					if (*version == NULL ) {
+						*version = (char*)xml_aux;
+					} else if (xml_aux != NULL ) {
+						l = strlen (*version); /* should be 10: YYYY-MM-DD */
+						if (l != xmlStrlen (xml_aux)) {
+							/* something strange happend ?!? - ignore this value */
+							continue;
+						}
+						for (j = 0; j < l; j++) {
+							if (xml_aux[j] > *version[j]) {
+								free (*version);
+								*version = (char*)xml_aux;
+								xml_aux = NULL;
+								break;
+							} else if (xml_aux[j] < *version[j]) {
+								break;
+							}
+						}
+						free (xml_aux);
+					}
+				}
+			}
+			xmlXPathFreeObject (result);
+			if (*version == NULL ) {
+				xmlXPathFreeContext (model_ctxt);
+				if (name != NULL) {
+					xmlFree (*name);
+					*name = NULL;
+				}
+				return (EXIT_FAILURE);
+			}
+		}
+	}
+
+	/* get namespace of the schema */
+	if (namespace != NULL ) {
+		result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:namespace", model_ctxt);
+		if (result != NULL ) {
+			if (result->nodesetval->nodeNr < 1) {
+				xmlXPathFreeContext (model_ctxt);
+				if (name != NULL ) {
+					xmlFree (*name);
+					*name = NULL;
+				}
+				if (version != NULL ) {
+					xmlFree (*version);
+					*version = NULL;
+				}
+				return (EXIT_FAILURE);
+			} else {
+				*namespace = (char*) xmlGetProp (result->nodesetval->nodeTab[0], BAD_CAST "uri");
+			}
+			xmlXPathFreeObject (result);
+			if (*namespace == NULL ) {
+				xmlXPathFreeContext (model_ctxt);
+				if (name != NULL ) {
+					xmlFree (*name);
+					*name = NULL;
+				}
+				if (version != NULL ) {
+					xmlFree (*version);
+					*version = NULL;
+				}
+				return (EXIT_FAILURE);
+			}
+		}
+	}
+
+	xmlXPathFreeContext(model_ctxt);
+
+	return (EXIT_SUCCESS);
+}
+
+char* get_schemas()
+{
+	char *schema_name, *version = NULL, *namespace = NULL;
+	struct ncds_ds_list* ds = NULL;
+	char *schema = NULL, *schemas = NULL, *aux = NULL;
+
+	for (ds = datastores; ds != NULL ; ds = ds->next) {
+		if (ds->datastore->model == NULL) {
+			continue;
+		}
+
+		if (get_model_info(ds->datastore->model, &schema_name, &version, &namespace) != 0) {
+			continue;
+		}
+		aux = NULL;
+		asprintf(&aux,"<schema><identifier>%s</identifier>"
+				"<version>%s</version>"
+				"<format>yin</format>"
+				"<namespace>%s</namespace>"
+				"<location>NETCONF</location>"
+				"</schema>",
+				schema_name, version, namespace);
+		free(schema_name);
+		free(version);
+		free(namespace);
+
+		if (schema == NULL) {
+			schema = aux;
+		} else {
+			schema = realloc(schema, strlen(schema) + strlen(aux) + 1);
+			strcat(schema, aux);
+		}
+	}
+
+	if (schema != NULL) {
+		asprintf(&schemas, "<schemas>%s</schemas>", schema);
+		free(schema);
+	}
+	return (schemas);
+}
+
 char* get_internal_state(const struct nc_session *session)
 {
-	char *notifs = NULL, *sessions = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *stats = NULL, *aux = NULL;
+	char *notifs = NULL, *schemas = NULL, *sessions = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *stats = NULL, *aux = NULL;
 	xmlDocPtr doc;
 	xmlBufferPtr buf;
 	struct ncds_ds_list* ds = NULL;
 	const struct ncds_lockinfo *info;
 
+	/*
+	 * capabilities
+	 */
 	if (nc_cpblts_enabled (session, NC_CAP_NOTIFICATION_ID)) {
 		notifs = ncntf_status ();
 		doc = xmlReadDoc (BAD_CAST notifs, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
@@ -182,8 +351,9 @@ char* get_internal_state(const struct nc_session *session)
 		}
 	}
 
-	sessions = nc_session_stats();
-
+	/*
+	 * datastores
+	 */
 	/* find non-empty datastore implementation */
 	for (ds = datastores; ds != NULL ; ds = ds->next) {
 		if (ds->datastore && ds->datastore->type == NCDS_TYPE_FILE) {
@@ -228,6 +398,19 @@ char* get_internal_state(const struct nc_session *session)
 		free (aux);
 	}
 
+	/*
+	 * schemas
+	 */
+	schemas = get_schemas();
+
+	/*
+	 * sessions
+	 */
+	sessions = nc_session_stats();
+
+	/*
+	 * statistics
+	 */
 	if (nc_stats != NULL) {
 		asprintf(&stats, "<statistics><netconf-start-time>%s</netconf-start-time>"
 				"<in-bad-hellos>%u</in-bad-hellos>"
@@ -247,10 +430,12 @@ char* get_internal_state(const struct nc_session *session)
 				nc_stats->counters.out_notifications);
 	}
 
-	asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s</netconf-state>%s", NC_NS_CAP_MONITORING,
+	/* get it all together */
+	asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s%s</netconf-state>%s", NC_NS_CAP_MONITORING,
 			(session->capabilities_original != NULL) ? session->capabilities_original : "",
 			(ds_stats != NULL) ? ds_stats : "",
 			(sessions != NULL) ? sessions : "",
+			(schemas != NULL) ? schemas : "",
 			(stats != NULL) ? stats : "",
 			(notifs != NULL) ? notifs : "");
 	if (retval == NULL) {
@@ -262,6 +447,92 @@ char* get_internal_state(const struct nc_session *session)
 	free(stats);
 	free(notifs);
 
+	return (retval);
+}
+
+char* get_schema(const nc_rpc* rpc, struct nc_err** e)
+{
+	struct ncds_ds_list* ds = NULL;
+	xmlNodePtr node;
+	char *name = NULL, *aux_name = NULL, *version = NULL, *aux_version = NULL, *format = NULL;
+	char *retval = NULL;
+	xmlBufferPtr resultbuffer;
+
+	if (rpc == NULL ||
+			rpc->doc == NULL ||
+			rpc->doc->children == NULL ||
+			rpc->doc->children->children == NULL ) {
+		return (NULL);
+	}
+
+	for (node = rpc->doc->children->children->children; node != NULL; node = node->next) {
+		if (xmlStrcmp(node->name, BAD_CAST "identifier") == 0) {
+			name = (char*) xmlNodeGetContent(node);
+		} else if(xmlStrcmp(node->name, BAD_CAST "version") == 0) {
+			version = (char*) xmlNodeGetContent(node);
+		} else if(xmlStrcmp(node->name, BAD_CAST "format") == 0) {
+			format = (char*) xmlNodeGetContent(node);
+			/* only yin format is supported now */
+			if (strcmp(format, "yin") != 0) {
+				if (e != NULL) {
+					*e = nc_err_new(NC_ERR_INVALID_VALUE);
+					nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "format");
+				}
+				free(format);
+				free(version);
+				free(name);
+				return(NULL);
+			}
+		}
+	}
+
+	if (name == NULL) {
+		if (e != NULL) {
+			*e = nc_err_new(NC_ERR_INVALID_VALUE);
+			nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "identifier");
+		}
+		free(format);
+		free(version);
+		free(name);
+		return(NULL);
+	}
+
+	for (ds = datastores; ds != NULL ; ds = ds->next) {
+		if (ds->datastore->model == NULL) {
+			continue;
+		}
+
+		if (get_model_info(ds->datastore->model, &aux_name, &aux_version, NULL) != 0) {
+			continue;
+		}
+
+		if (strcmp(name, aux_name) == 0) {
+			if (version == NULL || strcmp(version, aux_version) == 0) {
+				/* check for uniqness */
+				if (retval != NULL) {
+					free(retval);
+					free(format);
+					free(version);
+					free(name);
+					if (e != NULL) {
+						*e = nc_err_new(NC_ERR_OP_FAILED);
+						nc_err_set(*e, NC_ERR_PARAM_APPTAG, "data-not-unique");
+					}
+					return(NULL);
+				}
+				/* got the required model, dump it */
+
+				resultbuffer = xmlBufferCreate();
+				if (resultbuffer == NULL) {
+					ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+					return NULL;
+				}
+				xmlNodeDump(resultbuffer, ds->datastore->model, ds->datastore->model->children, 2, 1);
+				retval = strdup((char *) xmlBufferContent(resultbuffer));
+				xmlBufferFree(resultbuffer);
+			}
+		}
+	}
 	return (retval);
 }
 
@@ -808,9 +1079,15 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		case NC_OP_COPYCONFIG:
 		case NC_OP_EDITCONFIG:
 		case NC_OP_DELETECONFIG:
+			reply = nc_reply_ok();
+			break;
 		case NC_OP_COMMIT:
 		case NC_OP_DISCARDCHANGES:
-			reply = nc_reply_ok();
+			if (nc_cpblts_enabled(session, NC_CAP_CANDIDATE_ID)) {
+				reply = nc_reply_ok();
+			} else {
+				reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
+			}
 			break;
 		case NC_OP_GET:
 			data = get_internal_state(session);
@@ -824,8 +1101,26 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		case NC_OP_GETCONFIG:
 			reply = nc_reply_data("");
 			break;
+		case NC_OP_GETSCHEMA:
+			if (nc_cpblts_enabled (session, NC_CAP_MONITORING_ID)) {
+				data = get_schema (rpc, &e);
+
+				if (e != NULL ) {
+					/* operation failed and error is filled */
+					reply = nc_reply_error (e);
+				} else if (data == NULL ) {
+					/* operation failed, but no additional information is provided */
+					reply = nc_reply_error (nc_err_new (NC_ERR_OP_FAILED));
+				} else {
+					reply = nc_reply_data (data);
+					free (data);
+				}
+			} else {
+				reply = nc_reply_error (nc_err_new (NC_ERR_OP_NOT_SUPPORTED));
+			}
+			break;
 		default:
-			return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
+			return (nc_reply_error (nc_err_new (NC_ERR_OP_NOT_SUPPORTED)));
 			break;
 		}
 		return (reply);
@@ -1118,15 +1413,35 @@ apply_editcopyconfig:
 		break;
 	case NC_OP_COMMIT:
 		/* \todo check somehow, that candidate is not locked by another session */
-		ret = ds->func.copyconfig(ds, session, NC_DATASTORE_RUNNING, NC_DATASTORE_CANDIDATE, NULL, &e);
 
-		/* log the event */
-		if (ret == EXIT_SUCCESS) {
-			ncntf_event_new(-1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, session);
+		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+			ret = ds->func.copyconfig (ds, session, NC_DATASTORE_RUNNING, NC_DATASTORE_CANDIDATE, NULL, &e);
+
+			/* log the event */
+			if (ret == EXIT_SUCCESS) {
+				ncntf_event_new (-1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, session);
+			}
+		} else {
+			e = nc_err_new (NC_ERR_OP_NOT_SUPPORTED);
+			ret = EXIT_FAILURE;
 		}
 		break;
 	case NC_OP_DISCARDCHANGES:
-		ret = ds->func.copyconfig(ds, session, NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NULL, &e);
+		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+			ret = ds->func.copyconfig(ds, session, NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NULL, &e);
+		} else {
+			e = nc_err_new (NC_ERR_OP_NOT_SUPPORTED);
+			ret = EXIT_FAILURE;
+		}
+		break;
+	case NC_OP_GETSCHEMA:
+		if (nc_cpblts_enabled (session, NC_CAP_MONITORING_ID)) {
+			data = strdup("");
+			ret = EXIT_SUCCESS;
+		} else {
+			e = nc_err_new (NC_ERR_OP_NOT_SUPPORTED);
+			ret = EXIT_FAILURE;
+		}
 		break;
 	default:
 		ERROR("%s: unsupported basic NETCONF operation requested.", __func__);

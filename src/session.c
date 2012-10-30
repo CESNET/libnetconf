@@ -472,6 +472,7 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	nc_cpblts_add(retval, NC_CAP_STARTUP_ID);
 	nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
 	nc_cpblts_add(retval, NC_CAP_INTERLEAVE_ID);
+	nc_cpblts_add(retval, NC_CAP_MONITORING_ID);
 	if (ncdflt_get_basic_mode() != NCDFLT_MODE_DISABLED) {
 		nc_cpblts_add(retval, NC_CAP_WITHDEFAULTS_ID);
 	}
@@ -1332,6 +1333,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct 
 	} else if (xmlStrcmp (retval->doc->children->name, BAD_CAST "rpc") == 0) {
 		msgtype = NC_MSG_RPC;
 		if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get") == 0) ||
+				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get-schema") == 0) ||
 				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get-config") == 0)) {
 			retval->type.rpc = NC_RPC_DATASTORE_READ;
 		} else if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "copy-config") == 0) ||
@@ -1713,6 +1715,7 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 	char msg_id_str[16];
 	const char* wd;
 	struct nc_msg *msg;
+	NC_OP op;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to send <rpc>.");
@@ -1721,12 +1724,31 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 
 	if (rpc->type.rpc != NC_RPC_HELLO) {
 		/* check for capabilities operations */
+		op = nc_rpc_get_op(rpc);
 		/* :notifications */
-		if (nc_rpc_get_op(rpc) == NC_OP_CREATESUBSCRIPTION) {
+		switch (op) {
+		case NC_OP_CREATESUBSCRIPTION:
 			if (nc_cpblts_enabled(session, NC_CAP_NOTIFICATION_ID) == 0) {
 				ERROR("RPC requires :notifications capability, but session does not support it.");
 				return (NULL); /* failure */
 			}
+			break;
+		case NC_OP_COMMIT:
+		case NC_OP_DISCARDCHANGES:
+			if (nc_cpblts_enabled(session, NC_CAP_CANDIDATE_ID) == 0) {
+				ERROR("RPC requires :candidate capability, but session does not support it.");
+				return (NULL); /* failure */
+			}
+			break;
+		case NC_OP_GETSCHEMA:
+			if (nc_cpblts_enabled(session, NC_CAP_MONITORING_ID) == 0) {
+				ERROR("RPC requires :monitoring capability, but session does not support it.");
+				return (NULL); /* failure */
+			}
+			break;
+		default:
+			/* no check is needed */
+			break;
 		}
 
 		/* check for with-defaults capability */

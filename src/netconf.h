@@ -166,7 +166,8 @@ typedef enum NC_OP {
 	NC_OP_UNLOCK,		/**< \<unlock\> operation */
 	NC_OP_COMMIT,		/**< \<commit> operation */
 	NC_OP_DISCARDCHANGES,	/**< \<discard-changes> operation */
-	NC_OP_CREATESUBSCRIPTION/**< \<create-subscription\> operation (RFC 5277) */
+	NC_OP_CREATESUBSCRIPTION,	/**< \<create-subscription\> operation (RFC 5277) */
+	NC_OP_GETSCHEMA	/**< \<get-schema> operation (RFC 6022) */
 } NC_OP;
 
 typedef enum {
@@ -293,7 +294,6 @@ typedef enum {
 void nc_verbosity(NC_VERB_LEVEL level);
 
 /**
- * \todo Implement nc_init()
  * @ingroup genAPI
  * @brief Initialize libnetconf for system-wide usage. This initialization is
  * shared across all processes using
@@ -304,7 +304,6 @@ void nc_verbosity(NC_VERB_LEVEL level);
 int nc_init();
 
 /**
- * \todo Implement nc_close()
  * @param[in] system Flag if close should be applied as a system-wide.
  * System-wide nc_close() closes all shared structures if no other libnetconf
  * participant is not currently running. Local release of the calling instance

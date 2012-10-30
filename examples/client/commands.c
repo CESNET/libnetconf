@@ -45,6 +45,7 @@ COMMAND commands[] = {
 		{"edit-config", cmd_editconfig, "NETCONF <edit-config> operation"},
 		{"get", cmd_get, "NETCONF <get> operation"},
 		{"get-config", cmd_getconfig, "NETCONF <get-config> operation"},
+		{"get-schema", cmd_getschema, "NETCONF <get-schema> operation"},
 		{"kill-session", cmd_killsession, "NETCONF <kill-session> operation"},
 		{"lock", cmd_lock, "NETCONF <lock> operation"},
 		{"unlock", cmd_unlock, "NETCONF <unlock> operation"},
@@ -1101,6 +1102,92 @@ int cmd_getconfig (char *arg)
 
 	/* send the request and get the reply */
 	return (send_recv_process("get-config", rpc));
+}
+
+void cmd_getschema_help ()
+{
+	/* if session not established, print complete help for all capabilities */
+	fprintf (stdout, "get-schema [--help] [--version <version>] [--format <format>] <identifier>\n");
+}
+
+int cmd_getschema (char *arg)
+{
+	int c;
+	char *format = NULL, *version = NULL, *identifier = NULL;
+	nc_rpc *rpc = NULL;
+	struct arglist cmd;
+	struct option long_options[] ={
+			{"format", 1, 0, 'f'},
+			{"version", 1, 0, 'v'},
+			{"help", 0, 0, 'h'},
+			{0, 0, 0, 0}
+	};
+	int option_index = 0;
+
+	/* set back to start to be able to use getopt() repeatedly */
+	optind = 0;
+
+	if (session == NULL) {
+		ERROR("get-config", "NETCONF session not established, use \'connect\' command.");
+		return (EXIT_FAILURE);
+	}
+
+	init_arglist (&cmd);
+	addargs (&cmd, "%s", arg);
+
+	while ((c = getopt_long (cmd.count, cmd.list, "f:h", long_options, &option_index)) != -1) {
+		switch (c) {
+		case 'f':
+			format = optarg;
+			break;
+		case 'v':
+			version = optarg;
+			break;
+		case 'h':
+			cmd_getconfig_help ();
+			clear_arglist(&cmd);
+			return (EXIT_SUCCESS);
+			break;
+		default:
+			ERROR("get-config", "unknown option -%c.", c);
+			cmd_getconfig_help ();
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
+	}
+
+	if (optind == cmd.count) {
+		/* force input from user */
+		identifier = malloc (sizeof(char) * BUFFER_SIZE);
+		if (identifier == NULL) {
+			ERROR("get-schema", "memory allocation error (%s).", strerror (errno));
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
+
+		INSTRUCTION("Set identifier of the schema to retrieve: ");
+		scanf ("%1023s", identifier);
+	} else if ((optind + 1) == cmd.count) {
+		identifier = strdup(cmd.list[optind]);
+	} else {
+		ERROR("get-schema", "invalid parameters, see \'get-schema --help\'.");
+		clear_arglist(&cmd);
+		return (EXIT_FAILURE);
+	}
+
+	/* arglist is no more needed */
+	clear_arglist(&cmd);
+
+	/* create requests */
+	rpc = nc_rpc_getschema(identifier, version, format);
+	free(identifier);
+	if (rpc == NULL) {
+		ERROR("get-schema", "creating rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+
+	/* send the request and get the reply */
+	return (send_recv_process("get-schema", rpc));
 }
 
 void cmd_un_lock_help (char* operation)

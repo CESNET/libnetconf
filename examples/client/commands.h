@@ -26,6 +26,7 @@ int cmd_debug(char *arg);
 int cmd_verbose(char *arg);
 int cmd_userrpc(char *arg);
 int cmd_commit(char* arg);
+int cmd_getschema(char* arg);
 int cmd_discardchanges(char* arg);
 int cmd_capability(char *arg);
 

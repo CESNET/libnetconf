@@ -95,6 +95,7 @@
 #define NC_CAP_CONFIRMED_COMMIT_ID "urn:ietf:params:netconf:capability:confirmed-commit:1.1"
 #define NC_CAP_ROLLBACK_ID	"urn:ietf:params:netconf:capability:rollback-on-error:1.0"
 #define NC_CAP_VALIDATE_ID	"urn:ietf:params:netconf:capability:validate:1.1"
+#define NC_CAP_MONITORING_ID "urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
 #define NC_CAP_WITHDEFAULTS_ID 	"urn:ietf:params:netconf:capability:with-defaults:1.0"
 
 #define NC_NS_CAP_WITHDEFAULTS 	"urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"

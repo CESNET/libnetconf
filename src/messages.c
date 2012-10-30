@@ -138,7 +138,7 @@ struct nc_msg * nc_msg_build (const char * msg_dump)
 	}
 	msg->error = NULL;
 	msg->with_defaults = 0;
-	
+
 	return msg;
 }
 
@@ -209,13 +209,14 @@ nc_rpc * nc_rpc_build (const char * rpc_dump)
 	op = nc_rpc_get_op (rpc);
 	switch (op) {
 	case (NC_OP_GETCONFIG):
+	case (NC_OP_GETSCHEMA):
 	case (NC_OP_GET):
 		rpc->type.rpc = NC_RPC_DATASTORE_READ;
 		break;
 	case (NC_OP_EDITCONFIG):
 	case (NC_OP_COPYCONFIG):
 	case (NC_OP_DELETECONFIG):
-	case (NC_OP_LOCK): 
+	case (NC_OP_LOCK):
 	case (NC_OP_UNLOCK):
 	case (NC_OP_COMMIT):
 	case (NC_OP_DISCARDCHANGES):
@@ -246,7 +247,7 @@ nc_reply * nc_reply_build (const char * reply_dump)
 	}
 
 	root = xmlDocGetRootElement (reply->doc);
-	
+
 	if (xmlStrEqual (root->children->name, BAD_CAST "ok")) {
 		reply->type.reply = NC_REPLY_OK;
 	} else if (xmlStrEqual (root->children->name, BAD_CAST "data")) {
@@ -297,6 +298,8 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 			return (NC_OP_GET);
 		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "get-config") == 0) {
 			return (NC_OP_GETCONFIG);
+		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "get-schema") == 0) {
+			return (NC_OP_GETSCHEMA);
 		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "lock") == 0) {
 			return (NC_OP_LOCK);
 		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "unlock") == 0) {
@@ -1796,6 +1799,51 @@ nc_rpc *nc_rpc_killsession(const char *kill_sid)
 
 	rpc = nc_rpc_create(content);
 	rpc->type.rpc = NC_RPC_SESSION;
+	xmlFreeNode(content);
+
+	return (rpc);
+}
+
+nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* format)
+{
+	nc_rpc *rpc;
+	xmlNodePtr content;
+
+	/* check mandatory input parameter */
+	if (name == NULL) {
+		ERROR("Invalid schema name specified.");
+		return (NULL);
+	}
+
+	if ((content = xmlNewNode(NULL, BAD_CAST "get-schema")) == NULL) {
+		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	if (xmlNewChild(content, NULL, BAD_CAST "identifier", BAD_CAST name) == NULL) {
+		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+		xmlFreeNode(content);
+		return (NULL);
+	}
+
+	if (version != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "version", BAD_CAST version) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	if (format != NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "format", BAD_CAST format) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
+	}
+
+	rpc = nc_rpc_create(content);
+	rpc->type.rpc = NC_RPC_DATASTORE_READ;
 	xmlFreeNode(content);
 
 	return (rpc);
