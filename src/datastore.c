@@ -309,6 +309,9 @@ char* get_schemas()
 		free(schema_name);
 		free(version);
 		free(namespace);
+		version = NULL;
+		namespace = NULL;
+		schema_name = NULL;
 
 		if (schema == NULL) {
 			schema = aux;
