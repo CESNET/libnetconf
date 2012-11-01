@@ -168,30 +168,44 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE m
 		parents = fill_default(config, node->parent, mode);
 	} else {
 		/* we are in the root */
-		aux = xmlDocGetRootElement(config);
+		aux = config->children;
 		switch (mode) {
 		case NCDFLT_MODE_ALL:
 		case NCDFLT_MODE_ALL_TAGGED:
 			/* return root element, create it if it does not exist */
 			retvals = (xmlNodePtr*) malloc(2 * sizeof(xmlNodePtr));
 			retvals[1] = NULL;
+			/* create root element */
+			name = xmlGetProp(node, BAD_CAST "name");
+			/* search in all root elements */
+			for (; aux != NULL; aux = aux->next) {
+				if (xmlStrcmp(aux->name, name) == 0) {
+					break;
+				}
+			}
 			if (aux == NULL) {
-				/* create root element */
-				name = xmlGetProp(node, BAD_CAST "name");
 				aux = xmlNewDocNode(config, NULL, name, NULL);
 				xmlDocSetRootElement(config, aux);
-				xmlFree(name);
 			}
+			xmlFree(name);
 			retvals[0] = aux;
 			return (retvals);
 			break;
 		case NCDFLT_MODE_TRIM:
+			/* search in all root elements */
+			name = xmlGetProp(node, BAD_CAST "name");
+			for (; aux != NULL; aux = aux->next) {
+				if (xmlStrcmp(aux->name, name) == 0) {
+					break;
+				}
+			}
 			/* return root element, do not create it if it does not exist */
 			if (aux != NULL) {
 				retvals = (xmlNodePtr*) malloc(2 * sizeof(xmlNodePtr));
 				retvals[0] = aux;
 				retvals[1] = NULL;
 			}
+			xmlFree(name);
 			return (retvals);
 			break;
 		default:

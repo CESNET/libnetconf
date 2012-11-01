@@ -1601,7 +1601,6 @@ try_again:
 NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, int timeout, nc_rpc** rpc)
 {
 	NC_MSG_TYPE ret;
-	const char* wd;
 	struct nc_err* e = NULL;
 	nc_reply* reply;
 	int local_timeout;
@@ -1621,7 +1620,7 @@ try_again:
 		/* check for with-defaults capability */
 		if ((*rpc)->with_defaults != NCDFLT_MODE_DISABLED) {
 			/* check if the session support this */
-			if ((wd = nc_cpblts_get(session->capabilities, NC_CAP_WITHDEFAULTS_ID)) == NULL) {
+			if (session->wd_basic == NCDFLT_MODE_DISABLED) {
 				ERROR("rpc requires with-defaults capability, but session does not support it.");
 				e = nc_err_new(NC_ERR_INVALID_VALUE);
 				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
@@ -1629,7 +1628,7 @@ try_again:
 			} else {
 				switch ((*rpc)->with_defaults) {
 				case NCDFLT_MODE_ALL:
-					if (strstr(wd, "report-all") == NULL) {
+					if ((session->wd_modes & NCDFLT_MODE_ALL) == 0) {
 						ERROR("rpc requires with-defaults capability report-all mode, but session does not support it.");
 						e = nc_err_new(NC_ERR_INVALID_VALUE);
 						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
@@ -1637,7 +1636,7 @@ try_again:
 					}
 					break;
 				case NCDFLT_MODE_ALL_TAGGED:
-					if (strstr(wd, "report-all-tagged") == NULL) {
+					if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) == 0) {
 						ERROR("rpc requires with-defaults capability report-all-tagged mode, but session does not support it.");
 						e = nc_err_new(NC_ERR_INVALID_VALUE);
 						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
@@ -1645,7 +1644,7 @@ try_again:
 					}
 					break;
 				case NCDFLT_MODE_TRIM:
-					if (strstr(wd, "trim") == NULL) {
+					if ((session->wd_modes & NCDFLT_MODE_TRIM) == 0) {
 						ERROR("rpc requires with-defaults capability trim mode, but session does not support it.");
 						e = nc_err_new(NC_ERR_INVALID_VALUE);
 						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
@@ -1653,7 +1652,7 @@ try_again:
 					}
 					break;
 				case NCDFLT_MODE_EXPLICIT:
-					if (strstr(wd, "explicit") == NULL) {
+					if ((session->wd_modes & NCDFLT_MODE_EXPLICIT) == 0) {
 						ERROR("rpc requires with-defaults capability explicit mode, but session does not support it.");
 						e = nc_err_new(NC_ERR_INVALID_VALUE);
 						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");

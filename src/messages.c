@@ -168,9 +168,12 @@ NCDFLT_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc)
 	/* set with-defaults if any */
 	result = xmlXPathEvalExpression(BAD_CAST "//wd:with-defaults", rpc_ctxt);
 	if (result != NULL) {
-		if (result->nodesetval->nodeNr != 1) {
-			retval = NCDFLT_MODE_DISABLED;
-		} else {
+		switch(result->nodesetval->nodeNr) {
+		case 0:
+			/* set basic mode */
+			retval = ncdflt_get_basic_mode();
+			break;
+		case 1:
 			data = xmlNodeGetContent(result->nodesetval->nodeTab[0]);
 			if (xmlStrcmp(data, BAD_CAST "report-all") == 0) {
 				retval = NCDFLT_MODE_ALL;
@@ -185,6 +188,10 @@ NCDFLT_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc)
 				retval = NCDFLT_MODE_DISABLED;
 			}
 			xmlFree(data);
+			break;
+		default:
+			retval = NCDFLT_MODE_DISABLED;
+			break;
 		}
 		xmlXPathFreeObject(result);
 	} else {

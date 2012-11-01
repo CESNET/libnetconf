@@ -263,6 +263,8 @@ int main(int argc, char *argv[])
 		return (EXIT_FAILURE);
 	}
 
+	ncdflt_set_basic_mode(NCDFLT_MODE_ALL);
+
 	/* prepare configuration datastore */
 	datastore = ncds_new(NCDS_TYPE_FILE, "/tmp/model.yin", NULL);
 	if (datastore == NULL) {

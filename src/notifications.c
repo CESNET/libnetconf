@@ -2180,27 +2180,21 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 						continue;
 					}
 
-					/* filter notification content */
-					xmlDocSetRootElement(filter_doc, xmlCopyNode(event_node, 1));
+					/* filter the data */
+					if (ncxml_filter(event_node, filter, &aux_node) != 0) {
+						ERROR("Filter failed.");
+						continue;
+					}
+					if (aux_node != NULL) {
+						aux_node->next = nodelist;
+						nodelist = aux_node;
+					}
 
 					/* detach and free currently filtered node from the original document */
 					aux_node = event_node;
 					event_node = event_node->next; /* find the next node to filter */
 					xmlUnlinkNode(aux_node);
 					xmlFreeNode(aux_node);
-
-					/* filter the data */
-					if (ncxml_filter(filter_doc, filter) != 0) {
-						ERROR("Filter failed.");
-						continue;
-					}
-
-					if (filter_doc->children != NULL) {
-						aux_node = filter_doc->children;
-						xmlUnlinkNode(aux_node);
-						aux_node->next = nodelist;
-						nodelist = aux_node;
-					}
 				}
 
 				if (nodelist != NULL) {

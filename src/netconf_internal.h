@@ -465,7 +465,7 @@ struct nc_err* nc_err_parse(nc_reply* reply);
  * @param filter Filter to apply. Only 'subtree' filters are supported.
  * @return 0 on success,\n non-zero else
  */
-int ncxml_filter(xmlDocPtr data, const struct nc_filter *filter);
+int ncxml_filter(xmlNodePtr old, const struct nc_filter * filter, xmlNodePtr *new);
 
 /**
  * @brief Get state information about sessions. Only information about monitored

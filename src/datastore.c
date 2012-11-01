@@ -202,11 +202,12 @@ int get_model_info(xmlDocPtr model, char **name, char **version, char **namespac
 		result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:revision", model_ctxt);
 		if (result != NULL ) {
 			if (result->nodesetval->nodeNr < 1) {
-				xmlXPathFreeContext (model_ctxt);
 				if (name != NULL) {
 					xmlFree (*name);
 					*name = NULL;
 				}
+				xmlXPathFreeObject (result);
+				xmlXPathFreeContext (model_ctxt);
 				return (EXIT_FAILURE);
 			} else {
 				for (i = 0; i < result->nodesetval->nodeNr; i++) {
@@ -939,15 +940,15 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 	return filter_in;
 }
 
-int ncxml_filter(xmlDocPtr data, const struct nc_filter * filter)
+int ncxml_filter(xmlNodePtr old, const struct nc_filter * filter, xmlNodePtr *new)
 {
 	xmlDocPtr filter_doc, result, data_filtered[2] = {NULL, NULL};
 	xmlNodePtr filter_item, node;
 	char* filter_text = NULL;
 	int ret = EXIT_FAILURE;
 
-	if (data == NULL || data->children == NULL || filter == NULL) {
-		return EXIT_SUCCESS;
+	if (new == NULL || old == NULL || filter == NULL) {
+		return EXIT_FAILURE;
 	}
 
 	switch (filter->type) {
@@ -956,34 +957,38 @@ int ncxml_filter(xmlDocPtr data, const struct nc_filter * filter)
 		if ((filter_doc = xmlReadDoc(BAD_CAST filter_text, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN)) == NULL) {
 			return EXIT_FAILURE;
 		}
+		data_filtered[0] = xmlNewDoc(BAD_CAST "1.0");
+		data_filtered[1] = xmlNewDoc(BAD_CAST "1.0");
 		for (filter_item = filter_doc->children->children; filter_item != NULL; filter_item = filter_item->next) {
-			data_filtered[0] = xmlCopyDoc(data, 1);
+			xmlDocSetRootElement(data_filtered[0], xmlCopyNode(old, 1));
 			ncxml_subtree_filter(data_filtered[0]->children, filter_item);
-			if (data_filtered[1] == NULL) {
-				if (data_filtered[0]->children == NULL) {
-					/* empty result */
-					xmlFreeDoc(data_filtered[0]);
-					data_filtered[0] = NULL;
+			if (data_filtered[1]->children == NULL) {
+				if (data_filtered[0]->children != NULL) {
+					/* we have some result */
+					node = data_filtered[0]->children;
+					xmlUnlinkNode(node);
+					xmlDocSetRootElement(data_filtered[1], node);
 				}
-				data_filtered[1] = data_filtered[0];
 			} else {
 				result = ncxml_merge(data_filtered[0], data_filtered[1], NULL);
-				xmlFreeDoc(data_filtered[0]);
+				node = data_filtered[0]->children;
+				xmlUnlinkNode(node);
+				xmlFreeNode(node);
 				xmlFreeDoc(data_filtered[1]);
 				data_filtered[1] = result;
 			}
 		}
 		if (filter_doc->children->children != NULL) {
-			/* we have filtered at least one time */
-			node = data->children;
-			xmlUnlinkNode(node);
-			xmlFreeNode(node);
-			if (data_filtered[1] != NULL) {
-				xmlDocSetRootElement(data, xmlCopyNode(data_filtered[1]->children, 1));
-				xmlFreeDoc(data_filtered[1]);
+			if(data_filtered[1]->children != NULL) {
+				*new = xmlCopyNode(data_filtered[1]->children, 1);
+			} else {
+				*new = NULL;
 			}
-		} /* else empty filter -> original data doc is unchanged */
-
+		} else { /* empty filter -> original data doc is unchanged */
+			*new = xmlCopyNode(old, 1);
+		}
+		xmlFreeDoc(data_filtered[0]);
+		xmlFreeDoc(data_filtered[1]);
 		xmlFreeDoc(filter_doc);
 		ret = EXIT_SUCCESS;
 		break;
@@ -1058,12 +1063,12 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	struct ncds_ds* ds;
 	struct nc_filter * filter;
 	char* data = NULL, *config, *model = NULL, *data2;
-	xmlDocPtr doc1, doc2, doc_merged;
+	xmlDocPtr doc1, doc2, doc_merged = NULL, aux_doc;
 	int len;
 	int ret = EXIT_FAILURE;
 	nc_reply* reply;
 	xmlBufferPtr resultbuffer;
-	xmlNodePtr aux_node;
+	xmlNodePtr aux_node, node;
 	NC_OP op;
 	NC_DATASTORE source_ds, target_ds;
 
@@ -1180,7 +1185,21 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 				xmlFreeDoc(doc2);
 			}
 		} else {
-			doc_merged = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			data2 = data;
+			asprintf(&data, "<data>%s</data>", data2);
+			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			if (aux_doc && aux_doc->children) {
+				doc_merged = xmlNewDoc(BAD_CAST "1.0");
+				for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
+					if (doc_merged->children == NULL) {
+						xmlDocSetRootElement(doc_merged, xmlCopyNode(aux_node, 1));
+					} else {
+						xmlAddSibling(doc_merged->children, xmlCopyNode(aux_node, 1));
+					}
+				}
+				xmlFreeDoc(aux_doc);
+			}
+			free(data2);
 		}
 		free(data);
 
@@ -1194,17 +1213,6 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		/* process default values */
 		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
 
-		/* if filter specified, now is good time to apply it */
-		if ((filter = nc_rpc_get_filter(rpc)) != NULL) {
-			if (ncxml_filter(doc_merged, filter) != 0) {
-				ERROR("Filter failed.");
-				e = nc_err_new(NC_ERR_BAD_ELEM);
-				nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
-				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
-			}
-		}
-		nc_filter_free(filter);
-
 		/* dump the result */
 		resultbuffer = xmlBufferCreate();
 		if (resultbuffer == NULL) {
@@ -1212,9 +1220,27 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			e = nc_err_new(NC_ERR_OP_FAILED);
 			break;
 		}
+
+		/* if filter specified, now is good time to apply it */
 		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
-			xmlNodeDump(resultbuffer, doc_merged, aux_node, 2, 1);
+			if ((filter = nc_rpc_get_filter(rpc)) != NULL) {
+				if (ncxml_filter(aux_node, filter, &node) != 0) {
+					ERROR("Filter failed.");
+					e = nc_err_new(NC_ERR_BAD_ELEM);
+					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
+					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
+					break;
+				}
+			} else {
+				node = xmlCopyNode(aux_node, 1);
+			}
+			if (node != NULL) {
+				xmlNodeDump(resultbuffer, NULL, node, 2, 1);
+				xmlFreeNode(node);
+				node = NULL;
+			}
 		}
+		nc_filter_free(filter);
 		data = strdup((char *) xmlBufferContent(resultbuffer));
 		xmlBufferFree(resultbuffer);
 		xmlFreeDoc(doc_merged);
@@ -1231,7 +1257,21 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		if (strcmp(data, "") == 0) {
 			doc_merged = xmlNewDoc(BAD_CAST "1.0");
 		} else {
-			doc_merged = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			data2 = data;
+			asprintf(&data, "<data>%s</data>", data2);
+			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			if (aux_doc && aux_doc->children) {
+				doc_merged = xmlNewDoc(BAD_CAST "1.0");
+				for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
+					if (doc_merged->children == NULL) {
+						xmlDocSetRootElement(doc_merged, xmlCopyNode(aux_node, 1));
+					} else {
+						xmlAddSibling(doc_merged->children, xmlCopyNode(aux_node, 1));
+					}
+				}
+				xmlFreeDoc(aux_doc);
+			}
+			free(data2);
 		}
 		free(data);
 
@@ -1245,17 +1285,6 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		/* process default values */
 		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
 
-		/* if filter specified, now is good time to apply it */
-		if ((filter = nc_rpc_get_filter(rpc)) != NULL) {
-			if (ncxml_filter(doc_merged, filter) != 0) {
-				ERROR("Filter failed.");
-				e = nc_err_new(NC_ERR_BAD_ELEM);
-				nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
-				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
-			}
-		}
-		nc_filter_free(filter);
-
 		/* dump the result */
 		resultbuffer = xmlBufferCreate();
 		if (resultbuffer == NULL) {
@@ -1263,9 +1292,27 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			e = nc_err_new(NC_ERR_OP_FAILED);
 			break;
 		}
+
+		/* if filter specified, now is good time to apply it */
 		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
-			xmlNodeDump(resultbuffer, doc_merged, aux_node, 2, 1);
+			if ((filter = nc_rpc_get_filter(rpc)) != NULL) {
+				if (ncxml_filter(aux_node, filter, &node) != 0) {
+					ERROR("Filter failed.");
+					e = nc_err_new(NC_ERR_BAD_ELEM);
+					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
+					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
+					break;
+				}
+			} else {
+				node = xmlCopyNode(aux_node, 1);
+			}
+			if (node != NULL) {
+				xmlNodeDump(resultbuffer, NULL, node, 2, 1);
+				xmlFreeNode(node);
+				node = NULL;
+			}
 		}
+		nc_filter_free(filter);
 		data = strdup((char *) xmlBufferContent(resultbuffer));
 		xmlBufferFree(resultbuffer);
 		xmlFreeDoc(doc_merged);

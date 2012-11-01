@@ -182,6 +182,9 @@ char** nc_merge_capabilities(char ** cap_list_x, char ** cap_list_y, int *versio
 				}
 				break;
 			}
+			/* unhide parameters */
+			if (px != NULL) {*px = '?';}
+			if (py != NULL) {*py = '?';}
 		}
 	}
 	result[c] = NULL;
