@@ -48,23 +48,23 @@
 #include "with_defaults.h"
 #include "netconf_internal.h"
 
-static NCDFLT_MODE ncdflt_basic_mode = NCDFLT_MODE_EXPLICIT;
-static NCDFLT_MODE ncdflt_supported = (NCDFLT_MODE_ALL
-		| NCDFLT_MODE_ALL_TAGGED
-		| NCDFLT_MODE_TRIM
-		| NCDFLT_MODE_EXPLICIT);
+static NCWD_MODE ncdflt_basic_mode = NCWD_MODE_EXPLICIT;
+static NCWD_MODE ncdflt_supported = (NCWD_MODE_ALL
+		| NCWD_MODE_ALL_TAGGED
+		| NCWD_MODE_TRIM
+		| NCWD_MODE_EXPLICIT);
 
-NCDFLT_MODE ncdflt_get_basic_mode()
+NCWD_MODE ncdflt_get_basic_mode()
 {
 	return (ncdflt_basic_mode);
 }
 
-void ncdflt_set_basic_mode(NCDFLT_MODE mode)
+void ncdflt_set_basic_mode(NCWD_MODE mode)
 {
 	/* if one of valid values, change the value */
-	if (mode == NCDFLT_MODE_ALL
-			|| mode == NCDFLT_MODE_TRIM
-			|| mode == NCDFLT_MODE_EXPLICIT) {
+	if (mode == NCWD_MODE_ALL
+			|| mode == NCWD_MODE_TRIM
+			|| mode == NCWD_MODE_EXPLICIT) {
 		/* set basic mode */
 		ncdflt_basic_mode = mode;
 
@@ -75,21 +75,21 @@ void ncdflt_set_basic_mode(NCDFLT_MODE mode)
 	}
 }
 
-void ncdflt_set_supported(NCDFLT_MODE modes)
+void ncdflt_set_supported(NCWD_MODE modes)
 {
 	ncdflt_supported = ncdflt_basic_mode;
-	ncdflt_supported |= (modes & NCDFLT_MODE_ALL) ? NCDFLT_MODE_ALL : 0;
-	ncdflt_supported |= (modes & NCDFLT_MODE_ALL_TAGGED) ? NCDFLT_MODE_ALL_TAGGED : 0;
-	ncdflt_supported |= (modes & NCDFLT_MODE_TRIM) ? NCDFLT_MODE_TRIM : 0;
-	ncdflt_supported |= (modes & NCDFLT_MODE_EXPLICIT) ? NCDFLT_MODE_EXPLICIT : 0;
+	ncdflt_supported |= (modes & NCWD_MODE_ALL) ? NCWD_MODE_ALL : 0;
+	ncdflt_supported |= (modes & NCWD_MODE_ALL_TAGGED) ? NCWD_MODE_ALL_TAGGED : 0;
+	ncdflt_supported |= (modes & NCWD_MODE_TRIM) ? NCWD_MODE_TRIM : 0;
+	ncdflt_supported |= (modes & NCWD_MODE_EXPLICIT) ? NCWD_MODE_EXPLICIT : 0;
 }
 
-NCDFLT_MODE ncdflt_get_supported()
+NCWD_MODE ncdflt_get_supported()
 {
 	return (ncdflt_supported);
 }
 
-int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCDFLT_MODE mode)
+int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCWD_MODE mode)
 {
 	xmlNodePtr root, n;
 	char* mode_s;
@@ -98,16 +98,16 @@ int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCDFLT_MODE mode)
 		return (EXIT_FAILURE);
 	}
 	switch (mode) {
-	case NCDFLT_MODE_ALL:
+	case NCWD_MODE_ALL:
 		mode_s = "report-all";
 		break;
-	case NCDFLT_MODE_ALL_TAGGED:
+	case NCWD_MODE_ALL_TAGGED:
 		mode_s = "report-all-tagged";
 		break;
-	case NCDFLT_MODE_TRIM:
+	case NCWD_MODE_TRIM:
 		mode_s = "trim";
 		break;
-	case NCDFLT_MODE_EXPLICIT:
+	case NCWD_MODE_EXPLICIT:
 		mode_s = "explicit";
 		break;
 	default:
@@ -143,12 +143,12 @@ int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCDFLT_MODE mode)
 	return (EXIT_SUCCESS);
 }
 
-NCDFLT_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc)
+NCWD_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc)
 {
 	return (rpc->with_defaults);
 }
 
-static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE mode)
+static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mode)
 {
 	xmlNodePtr *parents = NULL, *retvals = NULL;
 	xmlNodePtr aux = NULL;
@@ -156,7 +156,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE m
 	xmlChar* value, *name, *value2;
 	int i, j, k, size = 0;
 
-	if (mode == NCDFLT_MODE_DISABLED || mode == NCDFLT_MODE_EXPLICIT) {
+	if (mode == NCWD_MODE_DISABLED || mode == NCWD_MODE_EXPLICIT) {
 		return (NULL);
 	}
 
@@ -170,8 +170,8 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE m
 		/* we are in the root */
 		aux = config->children;
 		switch (mode) {
-		case NCDFLT_MODE_ALL:
-		case NCDFLT_MODE_ALL_TAGGED:
+		case NCWD_MODE_ALL:
+		case NCWD_MODE_ALL_TAGGED:
 			/* return root element, create it if it does not exist */
 			retvals = (xmlNodePtr*) malloc(2 * sizeof(xmlNodePtr));
 			retvals[1] = NULL;
@@ -191,7 +191,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE m
 			retvals[0] = aux;
 			return (retvals);
 			break;
-		case NCDFLT_MODE_TRIM:
+		case NCWD_MODE_TRIM:
 			/* search in all root elements */
 			name = xmlGetProp(node, BAD_CAST "name");
 			for (; aux != NULL; aux = aux->next) {
@@ -220,8 +220,8 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE m
 	for (i = 0, j = 0; parents[i] != NULL; i++) {
 		if (xmlStrcmp(node->name, BAD_CAST "default") == 0) {
 			switch (mode) {
-			case NCDFLT_MODE_ALL:
-			case NCDFLT_MODE_ALL_TAGGED:
+			case NCWD_MODE_ALL:
+			case NCWD_MODE_ALL_TAGGED:
 				/* we are at the end - set default content if needed */
 				value = xmlGetProp(node, BAD_CAST "value");
 				if (parents[i]->children == NULL) {
@@ -229,7 +229,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE m
 					xmlNodeSetContent(parents[i], value);
 				} /* else do nothing, configuration data contain (non-)default value */
 
-				if (mode == NCDFLT_MODE_ALL_TAGGED) {
+				if (mode == NCWD_MODE_ALL_TAGGED) {
 					value2 = xmlNodeGetContent(parents[i]);
 					if (xmlStrcmp(value, value2) == 0) {
 						/* add default attribute if element has default value */
@@ -247,7 +247,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE m
 				xmlFree(value);
 				/* continue to another parent node in the list to process */
 				continue;
-			case NCDFLT_MODE_TRIM:
+			case NCWD_MODE_TRIM:
 				/* we are at the end - remove element if it contain default value */
 				if (parents[i]->children != NULL) {
 					value = xmlGetProp(node, BAD_CAST "value");
@@ -286,8 +286,8 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE m
 			}
 
 			switch (mode) {
-			case NCDFLT_MODE_ALL:
-			case NCDFLT_MODE_ALL_TAGGED:
+			case NCWD_MODE_ALL:
+			case NCWD_MODE_ALL_TAGGED:
 				if (k == j) {
 					/* no new equivalent node found */
 					if (size <= j + 1) {
@@ -301,7 +301,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE m
 					retvals[j] = NULL; /* list terminating NULL */
 				}
 				break;
-			case NCDFLT_MODE_TRIM:
+			case NCWD_MODE_TRIM:
 				/* nothing needed */
 				break;
 			default:
@@ -318,7 +318,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCDFLT_MODE m
 	return (retvals);
 }
 
-int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCDFLT_MODE mode)
+int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mode)
 {
 	xmlXPathContextPtr model_ctxt = NULL;
 	xmlXPathObjectPtr defaults = NULL;
@@ -328,7 +328,7 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCDFLT_MODE m
 		return (EXIT_FAILURE);
 	}
 
-	if (mode == NCDFLT_MODE_DISABLED || mode == NCDFLT_MODE_EXPLICIT) {
+	if (mode == NCWD_MODE_DISABLED || mode == NCWD_MODE_EXPLICIT) {
 		/* nothing to do */
 		return (EXIT_SUCCESS);
 	}
@@ -346,7 +346,7 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCDFLT_MODE m
 	defaults = xmlXPathEvalExpression(BAD_CAST "//yin:default", model_ctxt);
 	if (defaults != NULL) {
 		/* if report-all-tagged, add namespace for default attribute into the whole doc */
-		if (mode == NCDFLT_MODE_ALL_TAGGED) {
+		if (mode == NCWD_MODE_ALL_TAGGED) {
 			xmlNewNs(xmlDocGetRootElement(config), BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
 		}
 		/* process all defaults elements */

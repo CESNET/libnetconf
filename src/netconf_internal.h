@@ -257,7 +257,7 @@ struct nc_session {
 	/**< @brief NETCONF protocol version */
 	int version;
 	/**< @brief session's with-defaults basic mode */
-	NCDFLT_MODE wd_basic;
+	NCWD_MODE wd_basic;
 	/**< @brief session's with-defaults ORed supported modes */
 	int wd_modes;
 	/**< @brief status of the NETCONF session */
@@ -371,7 +371,7 @@ struct nc_msg {
 		NC_REPLY_TYPE reply;
 		NC_RPC_TYPE rpc;
 	} type;
-	NCDFLT_MODE with_defaults;
+	NCWD_MODE with_defaults;
 	struct nc_err* error;
 	struct nc_msg* next;
 };
@@ -406,7 +406,7 @@ char* nc_clrwspace (const char* in);
  * @param[in] mode With-defaults capability mode for configuration data modification.
  * @return 0 on success, non-zero else.
  */
-int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCDFLT_MODE mode);
+int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mode);
 
 /**
  * @breaf Remove defaults nodes from copy-config's and edit-config's config.

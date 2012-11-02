@@ -54,6 +54,7 @@
 #include "netconf_internal.h"
 #include "error.h"
 #include "messages_internal.h"
+#include "with_defaults.h"
 
 struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, const char* filter)
 {
@@ -142,27 +143,27 @@ struct nc_msg * nc_msg_build (const char * msg_dump)
 	return msg;
 }
 
-NCDFLT_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc)
+NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc)
 {
 	xmlXPathContextPtr rpc_ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;
 	xmlChar* data;
-	NCDFLT_MODE retval;
+	NCWD_MODE retval;
 
 
 	if (nc_rpc_get_type(rpc) == NC_RPC_HELLO) {
-		return (NCDFLT_MODE_DISABLED);
+		return (NCWD_MODE_DISABLED);
 	}
 
 	/* create xpath evaluation context */
 	if ((rpc_ctxt = xmlXPathNewContext(rpc->doc)) == NULL) {
 		WARN("%s: Creating XPath context failed.", __func__)
 		/* with-defaults cannot be found */
-		return (NCDFLT_MODE_DISABLED);
+		return (NCWD_MODE_DISABLED);
 	}
 	if (xmlXPathRegisterNs(rpc_ctxt, BAD_CAST "wd", BAD_CAST NC_NS_CAP_WITHDEFAULTS) != 0) {
 		xmlXPathFreeContext(rpc_ctxt);
-		return (NCDFLT_MODE_DISABLED);
+		return (NCWD_MODE_DISABLED);
 	}
 
 	/* set with-defaults if any */
@@ -176,21 +177,21 @@ NCDFLT_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc)
 		case 1:
 			data = xmlNodeGetContent(result->nodesetval->nodeTab[0]);
 			if (xmlStrcmp(data, BAD_CAST "report-all") == 0) {
-				retval = NCDFLT_MODE_ALL;
+				retval = NCWD_MODE_ALL;
 			} else if (xmlStrcmp(data, BAD_CAST "report-all-tagged") == 0) {
-				retval = NCDFLT_MODE_ALL_TAGGED;
+				retval = NCWD_MODE_ALL_TAGGED;
 			} else if (xmlStrcmp(data, BAD_CAST "trim") == 0) {
-				retval = NCDFLT_MODE_TRIM;
+				retval = NCWD_MODE_TRIM;
 			} else if (xmlStrcmp(data, BAD_CAST "explicit") == 0) {
-				retval = NCDFLT_MODE_EXPLICIT;
+				retval = NCWD_MODE_EXPLICIT;
 			} else {
 				WARN("%s: unknown with-defaults mode detected (%s), disabling with-defaults.", __func__, data);
-				retval = NCDFLT_MODE_DISABLED;
+				retval = NCWD_MODE_DISABLED;
 			}
 			xmlFree(data);
 			break;
 		default:
-			retval = NCDFLT_MODE_DISABLED;
+			retval = NCWD_MODE_DISABLED;
 			break;
 		}
 		xmlXPathFreeObject(result);
@@ -749,7 +750,7 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 	msg->doc = xmlNewDoc(BAD_CAST "1.0");
 	msg->doc->encoding = xmlStrdup(BAD_CAST UTF8);
 	msg->msgid = NULL;
-	msg->with_defaults = NCDFLT_MODE_DISABLED;
+	msg->with_defaults = NCWD_MODE_DISABLED;
 	msg->type.rpc = NC_RPC_HELLO;
 
 	/* create root element */
@@ -907,7 +908,7 @@ struct nc_msg* nc_msg_create(xmlNodePtr content, char* msgtype)
 	msg->doc = xmlmsg;
 	msg->msgid = NULL;
 	msg->error = NULL;
-	msg->with_defaults = NCDFLT_MODE_DISABLED;
+	msg->with_defaults = NCWD_MODE_DISABLED;
 
 	return (msg);
 }
@@ -1302,10 +1303,11 @@ static int process_filter_param (xmlNodePtr content, const struct nc_filter* fil
 	return (EXIT_SUCCESS);
 }
 
-nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
+nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter, NCWD_MODE withdefaults)
 {
 	nc_rpc *rpc;
-	xmlNodePtr content, node_source;
+	xmlNodePtr content, node;
+	char *wd_mode;
 	char* datastore;
 
 
@@ -1329,16 +1331,48 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
-	node_source = xmlNewChild(content, NULL, BAD_CAST "source", NULL);
-	if (node_source == NULL) {
+
+	/* source */
+	node = xmlNewChild(content, NULL, BAD_CAST "source", NULL);
+	if (node == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
 		return (NULL);
 	}
-	if (xmlNewChild(node_source, NULL, BAD_CAST datastore, NULL) == NULL) {
+	if (xmlNewChild(node, NULL, BAD_CAST datastore, NULL) == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
 		return (NULL);
+	}
+
+	/* with-defaults */
+	if (withdefaults != NCWD_MODE_DISABLED) {
+		switch (withdefaults) {
+		case NCWD_MODE_ALL:
+			wd_mode = "report-all";
+			break;
+		case NCWD_MODE_ALL_TAGGED:
+			wd_mode = "report-all-tagged";
+			break;
+		case NCWD_MODE_TRIM:
+			wd_mode = "trim";
+			break;
+		case NCWD_MODE_EXPLICIT:
+			wd_mode = "explicit";
+			break;
+		default:
+			ERROR("%s: Invalid with-defaults parameter.", __func__);
+			xmlFreeNode(content);
+			return(NULL);
+			break;
+		}
+
+		node = xmlNewChild (content, NULL, BAD_CAST "with-defaults", BAD_CAST wd_mode);
+		if (node == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode (content);
+			return (NULL);
+		}
 	}
 
 	/* add filter specification if any required */
@@ -1354,10 +1388,11 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_get(const struct nc_filter *filter)
+nc_rpc *nc_rpc_get(const struct nc_filter *filter, NCWD_MODE withdefaults)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
+	char* wd_mode;
 
 	if ((content = xmlNewNode(NULL, BAD_CAST "get")) == NULL) {
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
@@ -1368,6 +1403,35 @@ nc_rpc *nc_rpc_get(const struct nc_filter *filter)
 	if (process_filter_param(content, filter) != 0) {
 		xmlFreeNode(content);
 		return (NULL);
+	}
+
+	/* with-defaults */
+	if (withdefaults != NCWD_MODE_DISABLED) {
+		switch (withdefaults) {
+		case NCWD_MODE_ALL:
+			wd_mode = "report-all";
+			break;
+		case NCWD_MODE_ALL_TAGGED:
+			wd_mode = "report-all-tagged";
+			break;
+		case NCWD_MODE_TRIM:
+			wd_mode = "trim";
+			break;
+		case NCWD_MODE_EXPLICIT:
+			wd_mode = "explicit";
+			break;
+		default:
+			ERROR("%s: Invalid with-defaults parameter.", __func__);
+			xmlFreeNode(content);
+			return(NULL);
+			break;
+		}
+
+		if (xmlNewChild (content, NULL, BAD_CAST "with-defaults", BAD_CAST wd_mode) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode (content);
+			return (NULL);
+		}
 	}
 
 	rpc = nc_rpc_create(content);
@@ -1517,7 +1581,7 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE target)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *data)
+nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, NCWD_MODE withdefaults, const char *data)
 {
 	nc_rpc *rpc;
 	xmlDocPtr doc_data;
@@ -1525,6 +1589,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 	NC_DATASTORE params[2] = {source, target};
 	char *datastores[2]; /* 0 - source, 1 - target */
 	char *config;
+	char *wd_mode;
 	int i;
 
 	if (target == source) {
@@ -1634,6 +1699,35 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
 		return (NULL);
+	}
+
+	/* with-defaults */
+	if (withdefaults != NCWD_MODE_DISABLED) {
+		switch (withdefaults) {
+		case NCWD_MODE_ALL:
+			wd_mode = "report-all";
+			break;
+		case NCWD_MODE_ALL_TAGGED:
+			wd_mode = "report-all-tagged";
+			break;
+		case NCWD_MODE_TRIM:
+			wd_mode = "trim";
+			break;
+		case NCWD_MODE_EXPLICIT:
+			wd_mode = "explicit";
+			break;
+		default:
+			ERROR("%s: Invalid with-defaults parameter.", __func__);
+			xmlFreeNode(content);
+			return(NULL);
+			break;
+		}
+
+		if (xmlNewChild (content, NULL, BAD_CAST "with-defaults", BAD_CAST wd_mode) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode (content);
+			return (NULL);
+		}
 	}
 
 	rpc = nc_rpc_create(content);

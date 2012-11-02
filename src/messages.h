@@ -341,7 +341,7 @@ nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...);
  * source datastore, this parameter is ignored.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *data);
+nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, NCWD_MODE withdefaults, const char *data);
 
 /**
  * @ingroup rpc
@@ -373,9 +373,10 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
  * @brief Create \<get\> NETCONF rpc message.
  *
  * @param[in] filter NETCONF filter or NULL if no filter required.
+ * @param[in] withdefaults
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_get(const struct nc_filter *filter);
+nc_rpc *nc_rpc_get(const struct nc_filter *filter, NCWD_MODE withdefaults);
 
 /**
  * @ingroup rpc
@@ -385,7 +386,7 @@ nc_rpc *nc_rpc_get(const struct nc_filter *filter);
  * @param[in] filter NETCONF filter or NULL if no filter required.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter);
+nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter, NCWD_MODE withdefaults);
 
 /**
  * @ingroup rpc

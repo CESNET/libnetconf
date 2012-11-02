@@ -1410,7 +1410,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			}
 
 			/* do some work in case of used with-defaults capability */
-			if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) != 0) {
+			if ((session->wd_modes & NCWD_MODE_ALL_TAGGED) != 0) {
 				/* if report-all-tagged mode is supported, 'default'
 				 * attribute with 'true' or '1' value can appear and we
 				 * have to check that the element's value is equal to

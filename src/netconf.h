@@ -275,6 +275,14 @@ typedef enum NC_EEDIT_RROPT_TYPE {
 	NC_EDIT_ERROPT_ROLLBACK = 3
 } NC_EDIT_ERROPT_TYPE;
 
+typedef enum {
+	NCWD_MODE_DISABLED = 0,
+	NCWD_MODE_ALL = 1,
+	NCWD_MODE_TRIM = 2,
+	NCWD_MODE_EXPLICIT = 4,
+	NCWD_MODE_ALL_TAGGED = 8
+} NCWD_MODE;
+
 /**
  * @brief Verbosity levels.
  * @ingroup genAPI

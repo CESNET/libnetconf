@@ -756,7 +756,7 @@ static int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDoc
 		/* \todo namespace handlings */
 		n = find_element_equiv(orig, node_to_process, keys);
 		if (op == NC_CHECK_EDIT_DELETE && n == NULL) {
-			if (ncdflt_get_basic_mode() == NCDFLT_MODE_ALL) {
+			if (ncdflt_get_basic_mode() == NCWD_MODE_ALL) {
 				/* A valid 'delete' operation attribute for a
 				 * data node that contains its schema default
 				 * value MUST succeed, even though the data node
@@ -793,7 +793,7 @@ static int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDoc
 				break;
 			}
 		} else if (op == NC_CHECK_EDIT_CREATE  && n != NULL) {
-			if (ncdflt_get_basic_mode() == NCDFLT_MODE_TRIM) {
+			if (ncdflt_get_basic_mode() == NCWD_MODE_TRIM) {
 				/* A valid 'create' operation attribute for a
 				 * data node that has a schema default value
 				 * defined MUST succeed.
@@ -1330,11 +1330,11 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 	}
 
 	/* with defaults capability */
-	if (ncdflt_get_basic_mode() == NCDFLT_MODE_TRIM) {
+	if (ncdflt_get_basic_mode() == NCWD_MODE_TRIM) {
 		/* server work in trim basic mode and therefore all default
 		 * values must be removed from the datastore.
 		 */
-		ncdflt_default_values(repo, model, NCDFLT_MODE_TRIM);
+		ncdflt_default_values(repo, model, NCWD_MODE_TRIM);
 	}
 
 	if (keys != NULL) {

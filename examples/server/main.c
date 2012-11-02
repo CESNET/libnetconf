@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 		return (EXIT_FAILURE);
 	}
 
-	ncdflt_set_basic_mode(NCDFLT_MODE_ALL);
+	ncdflt_set_basic_mode(NCWD_MODE_ALL);
 
 	/* prepare configuration datastore */
 	datastore = ncds_new(NCDS_TYPE_FILE, "/tmp/model.yin", NULL);
@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
 		nc_cpblts_free (def_cpblts);
 
 		/* 1) load startup using get-config applied to the datastore */
-		if ((rpc = nc_rpc_getconfig (NC_DATASTORE_STARTUP, NULL )) == NULL ) {
+		if ((rpc = nc_rpc_getconfig (NC_DATASTORE_STARTUP, NULL, NCWD_MODE_DISABLED)) == NULL ) {
 			ncds_free (datastore);
 			clb_print (NC_VERB_ERROR, "Getting startup configuration failed (nc_rpc_getconfig()).");
 			return (EXIT_FAILURE);
@@ -322,7 +322,7 @@ int main(int argc, char *argv[])
 		running_data = startup_data;
 
 		/* 3) store real state of the device as the running configuration */
-		if ((rpc = nc_rpc_copyconfig (NC_DATASTORE_CONFIG, NC_DATASTORE_RUNNING, running_data)) == NULL ) {
+		if ((rpc = nc_rpc_copyconfig (NC_DATASTORE_CONFIG, NC_DATASTORE_RUNNING, NCWD_MODE_DISABLED, running_data)) == NULL ) {
 			ncds_free (datastore);
 			clb_print (NC_VERB_ERROR, "Setting up running configuration failed (nc_rpc_copyconfig()).");
 			return (EXIT_FAILURE);

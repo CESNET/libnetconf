@@ -473,7 +473,7 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
 	nc_cpblts_add(retval, NC_CAP_INTERLEAVE_ID);
 	nc_cpblts_add(retval, NC_CAP_MONITORING_ID);
-	if (ncdflt_get_basic_mode() != NCDFLT_MODE_DISABLED) {
+	if (ncdflt_get_basic_mode() != NCWD_MODE_DISABLED) {
 		nc_cpblts_add(retval, NC_CAP_WITHDEFAULTS_ID);
 	}
 
@@ -492,7 +492,7 @@ struct nc_cpblts* nc_session_get_cpblts (const struct nc_session* session)
 /**
  * @brief Parse with-defaults capability
  */
-void parse_wdcap(struct nc_cpblts *capabilities, NCDFLT_MODE *basic, int *supported)
+void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supported)
 {
 	const char* cpblt;
 	char* s;
@@ -501,29 +501,29 @@ void parse_wdcap(struct nc_cpblts *capabilities, NCDFLT_MODE *basic, int *suppor
 		if ((s = strstr(cpblt, "report-all")) != NULL) {
 			if (s[-1] == '=' && s[-2] == 'e') {
 				/* basic mode: basic-mode=report-all */
-				*basic = NCDFLT_MODE_ALL;
+				*basic = NCWD_MODE_ALL;
 			}
-			*supported = *supported | NCDFLT_MODE_ALL;
+			*supported = *supported | NCWD_MODE_ALL;
 		}
 		if ((s = strstr(cpblt, "trim")) != NULL) {
 			if (s[-1] == '=' && s[-2] == 'e') {
 				/* basic mode: basic-mode=trim */
-				*basic = NCDFLT_MODE_TRIM;
+				*basic = NCWD_MODE_TRIM;
 			}
-			*supported = *supported | NCDFLT_MODE_TRIM;
+			*supported = *supported | NCWD_MODE_TRIM;
 		}
 		if ((s = strstr(cpblt, "explicit")) != NULL) {
 			if (s[-1] == '=' && s[-2] == 'e') {
 				/* basic mode: basic-mode=explicit */
-				*basic = NCDFLT_MODE_EXPLICIT;
+				*basic = NCWD_MODE_EXPLICIT;
 			}
-			*supported = *supported | NCDFLT_MODE_EXPLICIT;
+			*supported = *supported | NCWD_MODE_EXPLICIT;
 		}
 		if ((s = strstr(cpblt, "report-all-tagged")) != NULL) {
-			*supported = *supported | NCDFLT_MODE_ALL_TAGGED;
+			*supported = *supported | NCWD_MODE_ALL_TAGGED;
 		}
 	} else {
-		*basic = NCDFLT_MODE_DISABLED;
+		*basic = NCWD_MODE_DISABLED;
 		*supported = 0;
 	}
 }
@@ -579,7 +579,7 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 		nc_cpblts_add (session->capabilities, cpblt);
 	}
 
-	session->wd_basic = NCDFLT_MODE_DISABLED;
+	session->wd_basic = NCWD_MODE_DISABLED;
 	session->wd_modes = 0;
 	/* set with defaults capability flags */
 	parse_wdcap(session->capabilities, &(session->wd_basic), &(session->wd_modes));
@@ -1618,41 +1618,41 @@ try_again:
 		(*rpc)->with_defaults = nc_rpc_parse_withdefaults(*rpc);
 
 		/* check for with-defaults capability */
-		if ((*rpc)->with_defaults != NCDFLT_MODE_DISABLED) {
+		if ((*rpc)->with_defaults != NCWD_MODE_DISABLED) {
 			/* check if the session support this */
-			if (session->wd_basic == NCDFLT_MODE_DISABLED) {
+			if (session->wd_basic == NCWD_MODE_DISABLED) {
 				ERROR("rpc requires with-defaults capability, but session does not support it.");
 				e = nc_err_new(NC_ERR_INVALID_VALUE);
 				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
 				nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability, but session does not support it.");
 			} else {
 				switch ((*rpc)->with_defaults) {
-				case NCDFLT_MODE_ALL:
-					if ((session->wd_modes & NCDFLT_MODE_ALL) == 0) {
+				case NCWD_MODE_ALL:
+					if ((session->wd_modes & NCWD_MODE_ALL) == 0) {
 						ERROR("rpc requires with-defaults capability report-all mode, but session does not support it.");
 						e = nc_err_new(NC_ERR_INVALID_VALUE);
 						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
 						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability report-all mode, but session does not support it.");
 					}
 					break;
-				case NCDFLT_MODE_ALL_TAGGED:
-					if ((session->wd_modes & NCDFLT_MODE_ALL_TAGGED) == 0) {
+				case NCWD_MODE_ALL_TAGGED:
+					if ((session->wd_modes & NCWD_MODE_ALL_TAGGED) == 0) {
 						ERROR("rpc requires with-defaults capability report-all-tagged mode, but session does not support it.");
 						e = nc_err_new(NC_ERR_INVALID_VALUE);
 						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
 						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability report-all-tagged mode, but session does not support it.");
 					}
 					break;
-				case NCDFLT_MODE_TRIM:
-					if ((session->wd_modes & NCDFLT_MODE_TRIM) == 0) {
+				case NCWD_MODE_TRIM:
+					if ((session->wd_modes & NCWD_MODE_TRIM) == 0) {
 						ERROR("rpc requires with-defaults capability trim mode, but session does not support it.");
 						e = nc_err_new(NC_ERR_INVALID_VALUE);
 						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
 						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability trim mode, but session does not support it.");
 					}
 					break;
-				case NCDFLT_MODE_EXPLICIT:
-					if ((session->wd_modes & NCDFLT_MODE_EXPLICIT) == 0) {
+				case NCWD_MODE_EXPLICIT:
+					if ((session->wd_modes & NCWD_MODE_EXPLICIT) == 0) {
 						ERROR("rpc requires with-defaults capability explicit mode, but session does not support it.");
 						e = nc_err_new(NC_ERR_INVALID_VALUE);
 						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
@@ -1751,32 +1751,32 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 		}
 
 		/* check for with-defaults capability */
-		if (rpc->with_defaults != NCDFLT_MODE_DISABLED) {
+		if (rpc->with_defaults != NCWD_MODE_DISABLED) {
 			/* check if the session support this */
 			if ((wd = nc_cpblts_get(session->capabilities, NC_CAP_WITHDEFAULTS_ID)) == NULL) {
 				ERROR("RPC requires :with-defaults capability, but session does not support it.");
 				return (NULL); /* failure */
 			}
 			switch (rpc->with_defaults) {
-			case NCDFLT_MODE_ALL:
+			case NCWD_MODE_ALL:
 				if (strstr(wd, "report-all") == NULL) {
 					ERROR("RPC requires with-defaults capability report-all mode, but session does not support it.");
 					return (NULL); /* failure */
 				}
 				break;
-			case NCDFLT_MODE_ALL_TAGGED:
+			case NCWD_MODE_ALL_TAGGED:
 				if (strstr(wd, "report-all-tagged") == NULL) {
 					ERROR("RPC requires with-defaults capability report-all-tagged mode, but session does not support it.");
 					return (NULL); /* failure */
 				}
 				break;
-			case NCDFLT_MODE_TRIM:
+			case NCWD_MODE_TRIM:
 				if (strstr(wd, "trim") == NULL) {
 					ERROR("RPC requires with-defaults capability trim mode, but session does not support it.");
 					return (NULL); /* failure */
 				}
 				break;
-			case NCDFLT_MODE_EXPLICIT:
+			case NCWD_MODE_EXPLICIT:
 				if (strstr(wd, "explicit") == NULL) {
 					ERROR("RPC requires with-defaults capability explicit mode, but session does not support it.");
 					return (NULL); /* failure */

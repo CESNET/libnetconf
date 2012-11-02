@@ -276,6 +276,37 @@ userinput:
 
 	return (retval);
 }
+static NCWD_MODE get_withdefaults(const char* operation, const char* mode)
+{
+	NCWD_MODE retval = NCWD_MODE_DISABLED;
+	char* mode_aux;
+	mode_aux = malloc(sizeof(char) * 128);
+
+	if (0) {
+userinput:
+		/* get mandatory argument */
+		INSTRUCTION("Select with-defaults mode (report-all|report-all-tagged|trim|explicit): ");
+		scanf ("%127s", mode_aux);
+		mode = mode_aux;
+	}
+
+	if (mode != NULL) {
+		if (strcmp(mode, "report-all") == 0) {
+			retval = NCWD_MODE_ALL;
+		} else if (strcmp(mode, "report-all-tagged") == 0) {
+			retval = NCWD_MODE_ALL_TAGGED;
+		} else if (strcmp(mode, "trim") == 0) {
+			retval = NCWD_MODE_TRIM;
+		} else if (strcmp(mode, "explicit") == 0) {
+			retval = NCWD_MODE_EXPLICIT;
+		} else {
+			goto userinput;
+		}
+	}
+
+	free(mode_aux);
+	return (retval);
+}
 
 static struct nc_filter *set_filter(const char* operation, const char *file)
 {
@@ -579,9 +610,11 @@ int cmd_copyconfig (char *arg)
 	NC_DATASTORE source = NC_DATASTORE_ERROR;
 	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
+	NCWD_MODE wd = NCWD_MODE_DISABLED;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"config", 1, 0, 'c'},
+			{"defaults", 1, 0, 'd'},
 			{"source", 1, 0, 's'},
 			{"help", 0, 0, 'h'},
 			{0, 0, 0, 0}
@@ -599,7 +632,7 @@ int cmd_copyconfig (char *arg)
 	init_arglist (&cmd);
 	addargs (&cmd, "%s", arg);
 
-	while ((c = getopt_long (cmd.count, cmd.list, "c:s:h", long_options, &option_index)) != -1) {
+	while ((c = getopt_long (cmd.count, cmd.list, "c:d:s:h", long_options, &option_index)) != -1) {
 		switch (c) {
 		case 'c':
 			/* open edit configuration data from the file */
@@ -626,6 +659,9 @@ int cmd_copyconfig (char *arg)
 			/* unmap local datastore file and close it */
 			munmap(config_m, config_stat.st_size);
 			close(config_fd);
+			break;
+		case 'd':
+			wd = get_withdefaults("get-config", optarg);
 			break;
 		case 's':
 			/* validate argument */
@@ -680,7 +716,7 @@ int cmd_copyconfig (char *arg)
 	}
 
 	/* create requests */
-	rpc = nc_rpc_copyconfig (source, target, config);
+	rpc = nc_rpc_copyconfig (source, target, wd, config);
 	nc_filter_free(filter);
 	if (rpc == NULL) {
 		ERROR("copy-config", "creating rpc request failed.");
@@ -702,8 +738,10 @@ int cmd_get (char *arg)
 	int c;
 	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
+	NCWD_MODE wd = NCWD_MODE_DISABLED;
 	struct arglist cmd;
 	struct option long_options[] ={
+			{"defaults", 1, 0, 'd'},
 			{"filter", 2, 0, 'f'},
 			{"help", 0, 0, 'h'},
 			{0, 0, 0, 0}
@@ -721,8 +759,11 @@ int cmd_get (char *arg)
 	init_arglist (&cmd);
 	addargs (&cmd, "%s", arg);
 
-	while ((c = getopt_long (cmd.count, cmd.list, "f:h", long_options, &option_index)) != -1) {
+	while ((c = getopt_long (cmd.count, cmd.list, "d:f:h", long_options, &option_index)) != -1) {
 		switch (c) {
+		case 'd':
+			wd = get_withdefaults("get-config", optarg);
+			break;
 		case 'f':
 			filter = set_filter("get", optarg);
 			if (filter == NULL) {
@@ -753,7 +794,7 @@ int cmd_get (char *arg)
 	clear_arglist(&cmd);
 
 	/* create requests */
-	rpc = nc_rpc_get (filter);
+	rpc = nc_rpc_get (filter, wd);
 	nc_filter_free(filter);
 	if (rpc == NULL) {
 		ERROR("get", "creating rpc request failed.");
@@ -1040,10 +1081,12 @@ int cmd_getconfig (char *arg)
 {
 	int c;
 	NC_DATASTORE target;
+	NCWD_MODE wd = NCWD_MODE_DISABLED;
 	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
+			{"defaults", 1, 0, 'd'},
 			{"filter", 2, 0, 'f'},
 			{"help", 0, 0, 'h'},
 			{0, 0, 0, 0}
@@ -1061,8 +1104,11 @@ int cmd_getconfig (char *arg)
 	init_arglist (&cmd);
 	addargs (&cmd, "%s", arg);
 
-	while ((c = getopt_long (cmd.count, cmd.list, "f:h", long_options, &option_index)) != -1) {
+	while ((c = getopt_long (cmd.count, cmd.list, "d:f:h", long_options, &option_index)) != -1) {
 		switch (c) {
+		case 'd':
+			wd = get_withdefaults("get-config", optarg);
+			break;
 		case 'f':
 			filter = set_filter("get-config", optarg);
 			if (filter == NULL) {
@@ -1093,7 +1139,7 @@ int cmd_getconfig (char *arg)
 	}
 
 	/* create requests */
-	rpc = nc_rpc_getconfig (target, filter);
+	rpc = nc_rpc_getconfig (target, filter, wd);
 	nc_filter_free(filter);
 	if (rpc == NULL) {
 		ERROR("get-config", "creating rpc request failed.");

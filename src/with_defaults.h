@@ -41,15 +41,8 @@
 #ifndef WITH_DEFAULTS_H_
 #define WITH_DEFAULTS_H_
 
+#include "netconf.h"
 #include "messages.h"
-
-typedef enum {
-	NCDFLT_MODE_DISABLED = 0,
-	NCDFLT_MODE_ALL = 1,
-	NCDFLT_MODE_TRIM = 2,
-	NCDFLT_MODE_EXPLICIT = 4,
-	NCDFLT_MODE_ALL_TAGGED = 8
-} NCDFLT_MODE;
 
 /**
  * @ingroup withdefaults
@@ -66,7 +59,7 @@ typedef enum {
  * @param[in] mode One of the with-defaults capability basic modes,
  * NCDFLT_MODE_ALL_TAGGED is not a basic mode and such value is ignored.
  */
-void ncdflt_set_basic_mode(NCDFLT_MODE mode);
+void ncdflt_set_basic_mode(NCWD_MODE mode);
 
 /**
  * @ingroup withdefaults
@@ -77,13 +70,13 @@ void ncdflt_set_basic_mode(NCDFLT_MODE mode);
  * with-defaults capability, use ncdflt_set_basic_mode() to set with-defaults'
  * basic mode.
  */
-#define NCDFLT_DISABLE ncdflt_set_basic_mode(NCDFLT_MODE_DISABLED)
+#define NCDFLT_DISABLE ncdflt_set_basic_mode(NCWD_MODE_DISABLED)
 /**
  * @ingroup withdefaults
  * @brief Get current set basic mode of the with-defaults capability.
  * @return Current value of the with-defaults' basic mode.
  */
-NCDFLT_MODE ncdflt_get_basic_mode();
+NCWD_MODE ncdflt_get_basic_mode();
 
 /**
  * @ingroup withdefaults
@@ -96,14 +89,14 @@ NCDFLT_MODE ncdflt_get_basic_mode();
  * @param[in] modes ORed set of supported NCDFLT_MODE modes. Basic mode
  * is always supported automatically.
  */
-void ncdflt_set_supported(NCDFLT_MODE modes);
+void ncdflt_set_supported(NCWD_MODE modes);
 
 /**
  * @ingroup withdefaults
  * @brief Get ORed value containing currently supported with-defaults modes.
  * @return ORed value containing currently supported with-defaults modes.
  */
-NCDFLT_MODE ncdflt_get_supported();
+NCWD_MODE ncdflt_get_supported();
 
 /**
  * @ingroup withdefaults
@@ -118,7 +111,7 @@ NCDFLT_MODE ncdflt_get_supported();
  * NCDFLT_MODE_DISABLED has no effect.
  * @return 0 on success, non-zero else.
  */
-int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCDFLT_MODE mode);
+int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCWD_MODE mode);
 
 /**
  * @ingroup withdefaults
@@ -126,6 +119,6 @@ int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCDFLT_MODE mode);
  * @param[in] rpc RPC message to be parsed.
  * @return with-defaults mode of the NETCONF rpc message.
  */
-NCDFLT_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc);
+NCWD_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc);
 
 #endif /* WITH_DEFAULTS_H_ */

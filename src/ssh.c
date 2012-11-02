@@ -84,7 +84,7 @@ static struct auth_pref_couple sshauth_pref[AUTH_COUNT] = {
 #define SHORT_INT_LENGTH 6
 
 /* definition in session.c */
-void parse_wdcap(struct nc_cpblts *capabilities, NCDFLT_MODE *basic, int *supported);
+void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supported);
 
 void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 {
@@ -531,7 +531,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	char *wdc, *wdc_aux, *straux;
 	struct utmpx protox, *utp;
 	char list[255];
-	NCDFLT_MODE mode;
+	NCWD_MODE mode;
 	pthread_mutexattr_t mattr;
 
 	/* allocate netconf session structure */
@@ -592,15 +592,15 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	}
 	/* set with-defaults capability announcement */
 	if ((nc_cpblts_get (server_cpblts, NC_CAP_WITHDEFAULTS_ID) != NULL)
-         && ((mode = ncdflt_get_basic_mode()) != NCDFLT_MODE_DISABLED)) {
+         && ((mode = ncdflt_get_basic_mode()) != NCWD_MODE_DISABLED)) {
 		switch(mode) {
-		case NCDFLT_MODE_ALL:
+		case NCWD_MODE_ALL:
 			wdc_aux = "?basic-mode=report-all";
 			break;
-		case NCDFLT_MODE_TRIM:
+		case NCWD_MODE_TRIM:
 			wdc_aux = "?basic-mode=trim";
 			break;
-		case NCDFLT_MODE_EXPLICIT:
+		case NCWD_MODE_EXPLICIT:
 			wdc_aux = "?basic-mode=explicit";
 			break;
 		default:
@@ -610,16 +610,16 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		if (wdc_aux != NULL) {
 			mode = ncdflt_get_supported();
 			list[0] = 0;
-			if ((mode & NCDFLT_MODE_ALL) != 0) {
+			if ((mode & NCWD_MODE_ALL) != 0) {
 				strcat(list, ",report-all");
 			}
-			if ((mode & NCDFLT_MODE_ALL_TAGGED) != 0) {
+			if ((mode & NCWD_MODE_ALL_TAGGED) != 0) {
 				strcat(list, ",report-all-tagged");
 			}
-			if ((mode & NCDFLT_MODE_TRIM) != 0) {
+			if ((mode & NCWD_MODE_TRIM) != 0) {
 				strcat(list, ",trim");
 			}
-			if ((mode & NCDFLT_MODE_EXPLICIT) != 0) {
+			if ((mode & NCWD_MODE_EXPLICIT) != 0) {
 				strcat(list, ",explicit");
 			}
 
