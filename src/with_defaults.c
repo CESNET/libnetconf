@@ -185,7 +185,11 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mod
 			}
 			if (aux == NULL) {
 				aux = xmlNewDocNode(config, NULL, name, NULL);
-				xmlDocSetRootElement(config, aux);
+				if (config->children == NULL) {
+					xmlDocSetRootElement(config, aux);
+				} else {
+					xmlAddSibling(config->children, aux);
+				}
 			}
 			xmlFree(name);
 			retvals[0] = aux;

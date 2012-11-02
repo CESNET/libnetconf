@@ -1373,6 +1373,7 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter, NC
 			xmlFreeNode (content);
 			return (NULL);
 		}
+		xmlNewNs(node, BAD_CAST NC_NS_CAP_WITHDEFAULTS, NULL);
 	}
 
 	/* add filter specification if any required */
@@ -1391,7 +1392,7 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter, NC
 nc_rpc *nc_rpc_get(const struct nc_filter *filter, NCWD_MODE withdefaults)
 {
 	nc_rpc *rpc;
-	xmlNodePtr content;
+	xmlNodePtr content, node;
 	char* wd_mode;
 
 	if ((content = xmlNewNode(NULL, BAD_CAST "get")) == NULL) {
@@ -1427,11 +1428,12 @@ nc_rpc *nc_rpc_get(const struct nc_filter *filter, NCWD_MODE withdefaults)
 			break;
 		}
 
-		if (xmlNewChild (content, NULL, BAD_CAST "with-defaults", BAD_CAST wd_mode) == NULL) {
+		if ((node = xmlNewChild (content, NULL, BAD_CAST "with-defaults", BAD_CAST wd_mode)) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode (content);
 			return (NULL);
 		}
+		xmlNewNs(node, BAD_CAST NC_NS_CAP_WITHDEFAULTS, NULL);
 	}
 
 	rpc = nc_rpc_create(content);
@@ -1585,7 +1587,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, NCWD_MODE wi
 {
 	nc_rpc *rpc;
 	xmlDocPtr doc_data;
-	xmlNodePtr content, node_target, node_source;
+	xmlNodePtr content, node_target, node_source, node;
 	NC_DATASTORE params[2] = {source, target};
 	char *datastores[2]; /* 0 - source, 1 - target */
 	char *config;
@@ -1723,11 +1725,12 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, NCWD_MODE wi
 			break;
 		}
 
-		if (xmlNewChild (content, NULL, BAD_CAST "with-defaults", BAD_CAST wd_mode) == NULL) {
+		if ((node = xmlNewChild (content, NULL, BAD_CAST "with-defaults", BAD_CAST wd_mode)) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode (content);
 			return (NULL);
 		}
+		xmlNewNs(node, BAD_CAST NC_NS_CAP_WITHDEFAULTS, NULL);
 	}
 
 	rpc = nc_rpc_create(content);
