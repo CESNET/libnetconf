@@ -887,7 +887,7 @@ int nc_session_read_len (struct nc_session* session, size_t chunk_length, char *
 	return (EXIT_SUCCESS);
 }
 
-int nc_session_read_until (struct nc_session* session, const char* endtag, char **text, size_t *len)
+int nc_session_read_until (struct nc_session* session, const char* endtag, int limit, char **text, size_t *len)
 {
 	char *err_msg;
 	size_t rd = 0;
@@ -917,6 +917,10 @@ int nc_session_read_until (struct nc_session* session, const char* endtag, char 
 	}
 
 	for (rd = 0;;) {
+		if (limit > 0 && rd > limit) {
+			WARN("%s: reading limit reached.", __func__);
+			return (EXIT_FAILURE);
+		}
 		if (session->ssh_channel) {
 			/* read via libssh2 */
 			c = libssh2_channel_read(session->ssh_channel, &(buf[rd]), 1);
@@ -1220,7 +1224,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct 
 
 	switch (session->version) {
 	case NETCONFV10:
-		if (nc_session_read_until (session, NC_V10_END_MSG, &text, &len) != 0) {
+		if (nc_session_read_until (session, NC_V10_END_MSG, 0, &text, &len) != 0) {
 			goto malformed_msg;
 		}
 		text[len - strlen (NC_V10_END_MSG)] = 0;
@@ -1228,13 +1232,13 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct 
 		break;
 	case NETCONFV11:
 		do {
-			if (nc_session_read_until (session, "\n#", NULL, NULL) != 0) {
+			if (nc_session_read_until (session, "\n#", 2, NULL, NULL) != 0) {
 				if (total_len > 0) {
 					free (text);
 				}
 				goto malformed_msg;
 			}
-			if (nc_session_read_until (session, "\n", &chunk, &len) != 0) {
+			if (nc_session_read_until (session, "\n", 0, &chunk, &len) != 0) {
 				if (total_len > 0) {
 					free (text);
 				}
