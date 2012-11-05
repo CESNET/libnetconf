@@ -189,22 +189,79 @@ char** nc_merge_capabilities(char ** cap_list_x, char ** cap_list_y, int *versio
 	}
 	result[c] = NULL;
 
-	for (i = 0; result[i] != NULL; i++) { /* Try to find netconf base capability 1.0 */
-		if (strcmp(NC_CAP_BASE10_ID, result[i]) == 0) {
-			(*version) = NETCONFV10;
-			break;
-		}
-	}
-
-	for (i = 0; result[i] != NULL; i++) { /* Try to find netconf base capability 1.1. Prefered. */
+	for (i = 0; result[i] != NULL; i++) { /* Try to find one of the netconf base capability */
 		if (strcmp(NC_CAP_BASE11_ID, result[i]) == 0) {
 			(*version) = NETCONFV11;
 			break;
+			/* v 1.1 is preferred */
+		}
+		if (strcmp(NC_CAP_BASE10_ID, result[i]) == 0) {
+			(*version) = NETCONFV10;
+			/* continue in searching for higher version */
 		}
 	}
 
 	if ((*version) == NETCONFVUNK) {
 		ERROR("No base capability found in capabilities intersection.");
+		return (NULL);
+	}
+
+	return (result);
+}
+
+static char** nc_accept_server_cpblts(char ** server_cpblts_list, char ** client_cpblts_list, int *version)
+{
+	int i, j, c;
+	char **result = NULL;
+
+	if (server_cpblts_list == NULL || client_cpblts_list == NULL) {
+		ERROR("%s: Invalid parameters.", __func__);
+		return (NULL);
+	}
+
+	if (version != NULL) {
+		(*version) = NETCONFVUNK;
+	}
+
+	/* count max size of the resulting list */
+	for (c = 0; server_cpblts_list[c] != NULL; c++);
+
+	if ((result = malloc((c + 1) * sizeof(char*))) == NULL) {
+		ERROR("Memory allocation failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	c = 0;
+	for (i = 0; server_cpblts_list[i] != NULL; i++) {
+		if (strstr(server_cpblts_list[i], "urn:ietf:params:netconf:base:") == NULL) {
+			result[c++] = strdup(server_cpblts_list[i]);
+		} else {
+			/* some of the base capability detected - check that both sides support it */
+			for (j = 0; client_cpblts_list[j] != NULL; j++) {
+				if (strcmp(server_cpblts_list[i], client_cpblts_list[j]) == 0) {
+					result[c++] = strdup(server_cpblts_list[i]);
+					break;
+				}
+			}
+		}
+	}
+	result[c] = NULL;
+
+	for (i = 0; result[i] != NULL; i++) { /* Try to find one of the netconf base capability */
+		if (strcmp(NC_CAP_BASE11_ID, result[i]) == 0) {
+			(*version) = NETCONFV11;
+			break;
+			/* v 1.1 is preferred */
+		}
+		if (strcmp(NC_CAP_BASE10_ID, result[i]) == 0) {
+			(*version) = NETCONFV10;
+			/* continue in searching for higher version */
+		}
+	}
+
+	if ((*version) == NETCONFVUNK) {
+		ERROR("No base capability found in capabilities intersection.");
+		free(result);
 		return (NULL);
 	}
 
@@ -291,7 +348,9 @@ char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 	return (capabilities);
 }
 
-int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello)
+#define HANDSHAKE_SIDE_SERVER 1
+#define HANDSHAKE_SIDE_CLIENT 2
+int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello, int side)
 {
 	int retval = EXIT_SUCCESS;
 	int i;
@@ -313,7 +372,12 @@ int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello)
 	}
 	nc_reply_free(recv_hello);
 
-	if ((merged_cpblts = nc_merge_capabilities(cpblts, recv_cpblts, &(session->version))) == NULL) {
+	if (side == HANDSHAKE_SIDE_CLIENT) {
+		merged_cpblts = nc_accept_server_cpblts(recv_cpblts, cpblts, &(session->version));
+	} else if (side == HANDSHAKE_SIDE_SERVER) {
+		merged_cpblts = nc_accept_server_cpblts(cpblts, recv_cpblts, &(session->version));
+	}
+	if (merged_cpblts == NULL) {
 		retval = EXIT_FAILURE;
 	} else if ((session->capabilities = nc_cpblts_new(merged_cpblts)) == NULL) {
 		retval = EXIT_FAILURE;
@@ -354,7 +418,7 @@ int nc_client_handshake(struct nc_session *session, char** cpblts)
 		return (EXIT_FAILURE);
 	}
 
-	retval = nc_handshake(session, cpblts, hello);
+	retval = nc_handshake(session, cpblts, hello, HANDSHAKE_SIDE_CLIENT);
 	nc_rpc_free(hello);
 
 	return (retval);
@@ -379,7 +443,7 @@ int nc_server_handshake(struct nc_session *session, char** cpblts)
 		return (EXIT_FAILURE);
 	}
 
-	retval = nc_handshake(session, cpblts, hello);
+	retval = nc_handshake(session, cpblts, hello, HANDSHAKE_SIDE_SERVER);
 	nc_rpc_free(hello);
 
 	if (retval != EXIT_SUCCESS) {
