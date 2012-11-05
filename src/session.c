@@ -71,13 +71,6 @@ struct session_list_s *session_list = NULL;
  * Sleep time in microseconds to wait between unsuccessful reading due to EAGAIN or EWOULDBLOCK
  */
 #define NC_READ_SLEEP 100
-/*
- #define NC_WRITE(session,buf,c) \
-	if(session->fd_output == STDOUT_FILENO){ \
-		c += write (STDOUT_FILENO, (buf), strlen(buf)); \
-	} else {\
-		c += libssh2_channel_write (session->ssh_channel, (buf), strlen(buf));}
- */
 #define NC_WRITE(session,buf,c) \
 	if(session->ssh_channel){ \
 		c += libssh2_channel_write (session->ssh_channel, (buf), strlen(buf)); \
