@@ -1192,7 +1192,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 
 		/* process default values */
 		if (ds && ds->model) {
-			ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
+			ncdflt_default_values(doc_merged, ds->model, rpc->with_defaults);
 		}
 
 		/* dump the result */
@@ -1266,7 +1266,9 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		}
 
 		/* process default values */
-		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
+		if (ds && ds->model) {
+			ncdflt_default_values(doc_merged, ds->model, rpc->with_defaults);
+		}
 
 		/* dump the result */
 		resultbuffer = xmlBufferCreate();
@@ -1391,7 +1393,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			}
 
 			/* do some work in case of used with-defaults capability */
-			if ((session->wd_modes & NCWD_MODE_ALL_TAGGED) != 0) {
+			if (rpc->with_defaults & NCWD_MODE_ALL_TAGGED) {
 				/* if report-all-tagged mode is supported, 'default'
 				 * attribute with 'true' or '1' value can appear and we
 				 * have to check that the element's value is equal to
