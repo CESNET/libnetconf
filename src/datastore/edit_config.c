@@ -1223,7 +1223,9 @@ static int edit_operations (xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFO
 			/* something to create */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
 				edit_node = nodes->nodesetval->nodeTab[i];
-				edit_merge(orig_doc, edit_node, keys);
+				if (edit_node != NULL) {
+					edit_merge(orig_doc, edit_node, keys);
+				}
 			}
 		}
 	}
@@ -1231,7 +1233,9 @@ static int edit_operations (xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFO
 	/* default merge */
 	if (defop == NC_EDIT_DEFOP_MERGE) {
 		/* replace whole document */
-		edit_merge(orig_doc, edit_doc->children, keys);
+		if (edit_doc->children != NULL) {
+			edit_merge(orig_doc, edit_doc->children, keys);
+		}
 	}
 
 
