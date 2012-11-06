@@ -73,8 +73,29 @@ struct ncds_ds_list
 
 /**
  * @brief Internal list of initiated datastores.
+ * By default, the list contains internal datastore with ID 0 to get libnetconf
+ * internal state information
  */
-static struct ncds_ds_list *datastores = NULL;
+static struct ncds_ds int_ds = {
+		NCDS_TYPE_EMPTY,
+		0,
+		NULL,
+		NULL,
+		NULL,
+		{
+				NULL,
+				NULL,
+				ncds_empty_lockinfo,
+				ncds_empty_lock,
+				ncds_empty_unlock,
+				ncds_empty_getconfig,
+				ncds_empty_copyconfig,
+				ncds_empty_deleteconfig,
+				ncds_empty_editconfig
+		}
+};
+static struct ncds_ds_list int_ds_list = {&int_ds, NULL};
+static struct ncds_ds_list *datastores = &int_ds_list;
 
 /**
  * @brief Get ncds_ds structure from datastore list containing storage
@@ -113,6 +134,11 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	struct ncds_ds_list *ds_iter;
 	struct ncds_ds_list *ds_prev = NULL;
 	struct ncds_ds * retval = NULL;
+
+	if (id == 0) {
+		/* ignore try to detach some uninitialized or internal datastore */
+		return (NULL);
+	}
 
 	for (ds_iter = datastores; ds_iter != NULL; ds_prev = ds_iter, ds_iter = ds_iter->next) {
 		if (ds_iter->datastore != NULL && ds_iter->datastore->id == id) {
@@ -1063,7 +1089,7 @@ xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
-	struct ncds_ds* ds;
+	struct ncds_ds* ds = NULL;
 	struct nc_filter * filter;
 	char* data = NULL, *config, *model = NULL, *data2;
 	xmlDocPtr doc1, doc2, doc_merged = NULL, aux_doc;
@@ -1077,61 +1103,6 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 
 	if (rpc->type.rpc != NC_RPC_DATASTORE_READ && rpc->type.rpc != NC_RPC_DATASTORE_WRITE) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
-	}
-
-	/* request for internal datastore */
-	if (id == 0) {
-		switch (op = nc_rpc_get_op(rpc)) {
-		case NC_OP_LOCK:
-		case NC_OP_UNLOCK:
-		case NC_OP_COPYCONFIG:
-		case NC_OP_EDITCONFIG:
-		case NC_OP_DELETECONFIG:
-			reply = nc_reply_ok();
-			break;
-		case NC_OP_COMMIT:
-		case NC_OP_DISCARDCHANGES:
-			if (nc_cpblts_enabled(session, NC_CAP_CANDIDATE_ID)) {
-				reply = nc_reply_ok();
-			} else {
-				reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
-			}
-			break;
-		case NC_OP_GET:
-			data = get_internal_state(session);
-			if (data != NULL) {
-				reply = nc_reply_data(data);
-				free(data);
-			} else {
-				reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
-			}
-			break;
-		case NC_OP_GETCONFIG:
-			reply = nc_reply_data("");
-			break;
-		case NC_OP_GETSCHEMA:
-			if (nc_cpblts_enabled (session, NC_CAP_MONITORING_ID)) {
-				data = get_schema (rpc, &e);
-
-				if (e != NULL ) {
-					/* operation failed and error is filled */
-					reply = nc_reply_error (e);
-				} else if (data == NULL ) {
-					/* operation failed, but no additional information is provided */
-					reply = nc_reply_error (nc_err_new (NC_ERR_OP_FAILED));
-				} else {
-					reply = nc_reply_data (data);
-					free (data);
-				}
-			} else {
-				reply = nc_reply_error (nc_err_new (NC_ERR_OP_NOT_SUPPORTED));
-			}
-			break;
-		default:
-			return (nc_reply_error (nc_err_new (NC_ERR_OP_NOT_SUPPORTED)));
-			break;
-		}
-		return (reply);
 	}
 
 	ds = datastores_get_ds(id);
@@ -1188,6 +1159,18 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 				xmlFreeDoc(doc2);
 			}
 		} else {
+			if (id == 0) {
+				/* ignore data - it is empty */
+				free(data);
+
+				/* get internal state data of the libnetconf */
+				if ((data = get_internal_state(session)) == NULL) {
+					ERROR("Getting internal libnetconf state data failed..");
+					e = nc_err_new(NC_ERR_OP_FAILED);
+					nc_err_set(e, NC_ERR_PARAM_MSG, "Unable to get internal libnetconf state data.");
+					break;
+				}
+			}
 			data2 = data;
 			asprintf(&data, "<data>%s</data>", data2);
 			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
@@ -1214,7 +1197,9 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		}
 
 		/* process default values */
-		ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
+		if (ds && ds->model) {
+			ncdflt_default_values(doc_merged, ds->model, ncdflt_rpc_get_withdefaults(rpc));
+		}
 
 		/* dump the result */
 		resultbuffer = xmlBufferCreate();
@@ -1486,8 +1471,16 @@ apply_editcopyconfig:
 		break;
 	case NC_OP_GETSCHEMA:
 		if (nc_cpblts_enabled (session, NC_CAP_MONITORING_ID)) {
-			data = strdup("");
-			ret = EXIT_SUCCESS;
+			if (id == 0) {
+				if ((data = get_schema (rpc, &e)) == NULL) {
+					ret = EXIT_FAILURE;
+				} else {
+					ret = EXIT_SUCCESS;
+				}
+			} else {
+				data = strdup ("");
+				ret = EXIT_SUCCESS;
+			}
 		} else {
 			e = nc_err_new (NC_ERR_OP_NOT_SUPPORTED);
 			ret = EXIT_FAILURE;
