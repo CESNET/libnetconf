@@ -1144,6 +1144,7 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct 
 	int status;
 	unsigned long int revents;
 	NC_MSG_TYPE msgtype;
+	xmlNodePtr root;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to receive data.");
@@ -1313,45 +1314,46 @@ NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct 
 	}
 	free (text);
 
+	root = xmlDocGetRootElement(retval->doc);
 	/* parse and store rpc-reply type */
-	if (xmlStrcmp (retval->doc->children->name, BAD_CAST "rpc-reply") == 0) {
+	if (xmlStrcmp (root->name, BAD_CAST "rpc-reply") == 0) {
 		msgtype = NC_MSG_REPLY;
-		if (xmlStrcmp (retval->doc->children->children->name, BAD_CAST "ok") == 0) {
+		if (xmlStrcmp (root->children->name, BAD_CAST "ok") == 0) {
 			retval->type.reply = NC_REPLY_OK;
-		} else if (xmlStrcmp (retval->doc->children->children->name, BAD_CAST "rpc-error") == 0) {
+		} else if (xmlStrcmp (root->children->name, BAD_CAST "rpc-error") == 0) {
 			retval->type.reply = NC_REPLY_ERROR;
 			retval->error = nc_msg_parse_error(retval);
-		} else if (xmlStrcmp (retval->doc->children->children->name, BAD_CAST "data") == 0) {
+		} else if (xmlStrcmp (root->children->name, BAD_CAST "data") == 0) {
 			retval->type.reply = NC_REPLY_DATA;
 		} else {
 			retval->type.reply = NC_REPLY_UNKNOWN;
 			WARN("Unknown type of received <rpc-reply> detected.");
 		}
-	} else if (xmlStrcmp (retval->doc->children->name, BAD_CAST "rpc") == 0) {
+	} else if (xmlStrcmp (root->name, BAD_CAST "rpc") == 0) {
 		msgtype = NC_MSG_RPC;
-		if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get-schema") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "get-config") == 0)) {
+		if ((xmlStrcmp (root->children->name, BAD_CAST "get") == 0) ||
+				(xmlStrcmp (root->children->name, BAD_CAST "get-schema") == 0) ||
+				(xmlStrcmp (root->children->name, BAD_CAST "get-config") == 0)) {
 			retval->type.rpc = NC_RPC_DATASTORE_READ;
-		} else if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "copy-config") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "delete-config") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "edit-config") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "lock") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "unlock") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "commit") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "discard-changes") == 0)) {
+		} else if ((xmlStrcmp (root->children->name, BAD_CAST "copy-config") == 0) ||
+				(xmlStrcmp (root->children->name, BAD_CAST "delete-config") == 0) ||
+				(xmlStrcmp (root->children->name, BAD_CAST "edit-config") == 0) ||
+				(xmlStrcmp (root->children->name, BAD_CAST "lock") == 0) ||
+				(xmlStrcmp (root->children->name, BAD_CAST "unlock") == 0) ||
+				(xmlStrcmp (root->children->name, BAD_CAST "commit") == 0) ||
+				(xmlStrcmp (root->children->name, BAD_CAST "discard-changes") == 0)) {
 			retval->type.rpc = NC_RPC_DATASTORE_WRITE;
-		} else if ((xmlStrcmp (retval->doc->children->children->name, BAD_CAST "kill-session") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "close-session") == 0) ||
-				(xmlStrcmp (retval->doc->children->children->name, BAD_CAST "create-subscription") == 0)){
+		} else if ((xmlStrcmp (root->children->name, BAD_CAST "kill-session") == 0) ||
+				(xmlStrcmp (root->children->name, BAD_CAST "close-session") == 0) ||
+				(xmlStrcmp (root->children->name, BAD_CAST "create-subscription") == 0)){
 			retval->type.rpc = NC_RPC_SESSION;
 		} else {
 			retval->type.rpc = NC_RPC_UNKNOWN;
 		}
-	} else if (xmlStrcmp (retval->doc->children->name, BAD_CAST "notification") == 0) {
+	} else if (xmlStrcmp (root->name, BAD_CAST "notification") == 0) {
 		/* we have notification */
 		msgtype = NC_MSG_NOTIFICATION;
-	} else if (xmlStrcmp (retval->doc->children->name, BAD_CAST "hello") == 0) {
+	} else if (xmlStrcmp (root->name, BAD_CAST "hello") == 0) {
 		/* set message type, we have <hello> message */
 		retval->type.reply = NC_REPLY_HELLO;
 		msgtype = NC_MSG_HELLO;
