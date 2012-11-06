@@ -228,13 +228,7 @@ int get_model_info(xmlDocPtr model, char **name, char **version, char **namespac
 		result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:revision", model_ctxt);
 		if (result != NULL ) {
 			if (result->nodesetval->nodeNr < 1) {
-				if (name != NULL) {
-					xmlFree (*name);
-					*name = NULL;
-				}
-				xmlXPathFreeObject (result);
-				xmlXPathFreeContext (model_ctxt);
-				return (EXIT_FAILURE);
+				*version = strdup("");
 			} else {
 				for (i = 0; i < result->nodesetval->nodeNr; i++) {
 					xml_aux = xmlGetProp (result->nodesetval->nodeTab[i], BAD_CAST "date");
