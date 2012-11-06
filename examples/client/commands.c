@@ -1181,7 +1181,7 @@ int cmd_getschema (char *arg)
 	init_arglist (&cmd);
 	addargs (&cmd, "%s", arg);
 
-	while ((c = getopt_long (cmd.count, cmd.list, "f:h", long_options, &option_index)) != -1) {
+	while ((c = getopt_long (cmd.count, cmd.list, "f:hv:", long_options, &option_index)) != -1) {
 		switch (c) {
 		case 'f':
 			format = optarg;
@@ -1221,12 +1221,13 @@ int cmd_getschema (char *arg)
 		return (EXIT_FAILURE);
 	}
 
-	/* arglist is no more needed */
-	clear_arglist(&cmd);
-
 	/* create requests */
 	rpc = nc_rpc_getschema(identifier, version, format);
+
+	/* arglist is no more needed */
+	clear_arglist(&cmd);
 	free(identifier);
+
 	if (rpc == NULL) {
 		ERROR("get-schema", "creating rpc request failed.");
 		return (EXIT_FAILURE);
