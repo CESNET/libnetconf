@@ -1084,7 +1084,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 {
 	struct nc_err* e = NULL;
 	struct ncds_ds* ds = NULL;
-	struct nc_filter * filter;
+	struct nc_filter * filter = NULL;
 	char* data = NULL, *config, *model = NULL, *data2;
 	xmlDocPtr doc1, doc2, doc_merged = NULL, aux_doc;
 	int len;
