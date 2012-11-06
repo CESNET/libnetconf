@@ -1614,7 +1614,7 @@ try_again:
 	ret = nc_session_receive (session, local_timeout, (struct nc_msg**) rpc);
 	switch (ret) {
 	case NC_MSG_RPC:
-		(*rpc)->with_defaults = nc_rpc_parse_withdefaults(*rpc);
+		(*rpc)->with_defaults = nc_rpc_parse_withdefaults(*rpc, session);
 
 		/* check for with-defaults capability */
 		if ((*rpc)->with_defaults != NCWD_MODE_DISABLED) {

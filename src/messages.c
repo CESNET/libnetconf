@@ -143,7 +143,7 @@ struct nc_msg * nc_msg_build (const char * msg_dump)
 	return msg;
 }
 
-NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc)
+NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc, struct nc_session *session)
 {
 	xmlXPathContextPtr rpc_ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;
@@ -172,7 +172,11 @@ NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc)
 		switch(result->nodesetval->nodeNr) {
 		case 0:
 			/* set basic mode */
-			retval = ncdflt_get_basic_mode();
+			if (session != NULL) {
+				retval = session->wd_basic;
+			} else {
+				retval = NCWD_MODE_DISABLED;
+			}
 			break;
 		case 1:
 			data = xmlNodeGetContent(result->nodesetval->nodeTab[0]);
@@ -240,7 +244,7 @@ nc_rpc * nc_rpc_build (const char * rpc_dump)
 	}
 
 	/* set with-defaults if any */
-	rpc->with_defaults = nc_rpc_parse_withdefaults(rpc);
+	rpc->with_defaults = nc_rpc_parse_withdefaults(rpc, NULL);
 
 	return rpc;
 }
