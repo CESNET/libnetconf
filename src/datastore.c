@@ -1204,8 +1204,9 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		}
 
 		/* if filter specified, now is good time to apply it */
+		filter = nc_rpc_get_filter(rpc);
 		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
-			if ((filter = nc_rpc_get_filter(rpc)) != NULL) {
+			if (filter != NULL) {
 				if (ncxml_filter(aux_node, filter, &node) != 0) {
 					ERROR("Filter failed.");
 					e = nc_err_new(NC_ERR_BAD_ELEM);
