@@ -101,11 +101,6 @@ var searchData=
   ['nc_5fverb_5ferror',['NC_VERB_ERROR',['../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a908c5d51b81e0ab37d2c57e569446d9b',1,'netconf.h']]],
   ['nc_5fverb_5fverbose',['NC_VERB_VERBOSE',['../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060ae023b386220c2337dc9a556f5c669172',1,'netconf.h']]],
   ['nc_5fverb_5fwarning',['NC_VERB_WARNING',['../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a4a0cbb6bc660d3a50c3dff6028185abf',1,'netconf.h']]],
-  ['ncdflt_5fmode_5fall',['NCDFLT_MODE_ALL',['../da/dbe/with__defaults_8h.html#ac70bef25cced39f6bab2ca5623ac57d9a4da74d3afdd3090b55999788a5e7771b',1,'with_defaults.h']]],
-  ['ncdflt_5fmode_5fall_5ftagged',['NCDFLT_MODE_ALL_TAGGED',['../da/dbe/with__defaults_8h.html#ac70bef25cced39f6bab2ca5623ac57d9abb76f4152e24036638a49ba38bed132e',1,'with_defaults.h']]],
-  ['ncdflt_5fmode_5fdisabled',['NCDFLT_MODE_DISABLED',['../da/dbe/with__defaults_8h.html#ac70bef25cced39f6bab2ca5623ac57d9a0d81a2784281ceef0b6f2cef0dc7a41a',1,'with_defaults.h']]],
-  ['ncdflt_5fmode_5fexplicit',['NCDFLT_MODE_EXPLICIT',['../da/dbe/with__defaults_8h.html#ac70bef25cced39f6bab2ca5623ac57d9a8da0ba967efdd6344aff3be995418479',1,'with_defaults.h']]],
-  ['ncdflt_5fmode_5ftrim',['NCDFLT_MODE_TRIM',['../da/dbe/with__defaults_8h.html#ac70bef25cced39f6bab2ca5623ac57d9aae3e0fec1727cbd3873f020673d477b2',1,'with_defaults.h']]],
   ['ncds_5ftype_5fempty',['NCDS_TYPE_EMPTY',['../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b',1,'datastore.h']]],
   ['ncds_5ftype_5ffile',['NCDS_TYPE_FILE',['../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629',1,'datastore.h']]],
   ['ncntf_5fbase_5fcfg_5fchange',['NCNTF_BASE_CFG_CHANGE',['../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a9cf730f96784afdb8d783df8dacfab21',1,'notifications.h']]],
@@ -118,5 +113,10 @@ var searchData=
   ['ncntf_5fevent_5fby_5fuser',['NCNTF_EVENT_BY_USER',['../da/d54/group__notifications.html#gga1e9d948b3807d679482c737da720477dab20423755c56c213cd2567b2bbf1f9c2',1,'notifications.h']]],
   ['ncntf_5fgeneric',['NCNTF_GENERIC',['../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1f1e3c2032baf2542b06052243bd42c9',1,'notifications.h']]],
   ['ncntf_5fntf_5fcomplete',['NCNTF_NTF_COMPLETE',['../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a0a0d2e20f15e710f1da3dace9a55fc67',1,'notifications.h']]],
-  ['ncntf_5freplay_5fcomplete',['NCNTF_REPLAY_COMPLETE',['../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977aa440351ba1c82a0dd9e5301a6d03c5ac',1,'notifications.h']]]
+  ['ncntf_5freplay_5fcomplete',['NCNTF_REPLAY_COMPLETE',['../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977aa440351ba1c82a0dd9e5301a6d03c5ac',1,'notifications.h']]],
+  ['ncwd_5fmode_5fall',['NCWD_MODE_ALL',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81a8b422cc5bcfa0ddd20d52ec6e71362db',1,'netconf.h']]],
+  ['ncwd_5fmode_5fall_5ftagged',['NCWD_MODE_ALL_TAGGED',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81a0bd005f27bf5b0dd51aa8d61656f8089',1,'netconf.h']]],
+  ['ncwd_5fmode_5fdisabled',['NCWD_MODE_DISABLED',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81add913a6a7fc4215684c88fd73720facd',1,'netconf.h']]],
+  ['ncwd_5fmode_5fexplicit',['NCWD_MODE_EXPLICIT',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81acf0be9f54f89bf4321478fb9030e4f8c',1,'netconf.h']]],
+  ['ncwd_5fmode_5ftrim',['NCWD_MODE_TRIM',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81af84df646ebc7d47ea9fd3ea0827f59b3',1,'netconf.h']]]
 ];

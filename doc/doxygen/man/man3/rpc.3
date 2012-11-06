@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Tue Oct 30 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Tue Nov 6 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -110,7 +110,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIFree rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_copyconfig\fP (\fBNC_DATASTORE\fP source, \fBNC_DATASTORE\fP target, const char *data)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_copyconfig\fP (\fBNC_DATASTORE\fP source, \fBNC_DATASTORE\fP target, \fBNCWD_MODE\fP withdefaults, const char *data)"
 .br
 .RI "\fICreate <copy-config> NETCONF rpc message\&. \fP"
 .ti -1c
@@ -122,11 +122,11 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fICreate <edit-config> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_get\fP (const struct nc_filter *filter)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_get\fP (const struct nc_filter *filter, \fBNCWD_MODE\fP withdefaults)"
 .br
 .RI "\fICreate <get> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE\fP source, const struct nc_filter *filter)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE\fP source, const struct nc_filter *filter, \fBNCWD_MODE\fP withdefaults)"
 .br
 .RI "\fICreate <get-config> NETCONF rpc message\&. \fP"
 .ti -1c
@@ -542,7 +542,7 @@ Free rpc message\&. \fBParameters:\fP
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* nc_rpc_copyconfig (\fBNC_DATASTORE\fPsource, \fBNC_DATASTORE\fPtarget, const char *data)"
+.SS "\fBnc_rpc\fP* nc_rpc_copyconfig (\fBNC_DATASTORE\fPsource, \fBNC_DATASTORE\fPtarget, \fBNCWD_MODE\fPwithdefaults, const char *data)"
 
 .PP
 Create <copy-config> NETCONF rpc message\&. \fBParameters:\fP
@@ -550,6 +550,8 @@ Create <copy-config> NETCONF rpc message\&. \fBParameters:\fP
 \fIsource\fP Source configuration datastore type\&. If the NC_DATASTORE_NONE is specified, data parameter is used as the complete configuration to copy\&. 
 .br
 \fItarget\fP Target configuration datastore type to be replaced\&. 
+.br
+\fIwithdefaults\fP with-defaults capability mode\&. 
 .br
 \fIdata\fP If the NC_DATASTORE_NONE is specified as the source, data parameter is used as the complete configuration to copy\&. For other types of source datastore, this parameter is ignored\&. 
 .RE
@@ -594,12 +596,14 @@ Created rpc message\&.
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* nc_rpc_get (const struct nc_filter *filter)"
+.SS "\fBnc_rpc\fP* nc_rpc_get (const struct nc_filter *filter, \fBNCWD_MODE\fPwithdefaults)"
 
 .PP
 Create <get> NETCONF rpc message\&. \fBParameters:\fP
 .RS 4
 \fIfilter\fP NETCONF filter or NULL if no filter required\&. 
+.br
+\fIwithdefaults\fP with-defaults capability mode\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -608,7 +612,7 @@ Created rpc message\&.
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* nc_rpc_getconfig (\fBNC_DATASTORE\fPsource, const struct nc_filter *filter)"
+.SS "\fBnc_rpc\fP* nc_rpc_getconfig (\fBNC_DATASTORE\fPsource, const struct nc_filter *filter, \fBNCWD_MODE\fPwithdefaults)"
 
 .PP
 Create <get-config> NETCONF rpc message\&. \fBParameters:\fP
@@ -616,6 +620,8 @@ Create <get-config> NETCONF rpc message\&. \fBParameters:\fP
 \fIsource\fP Source configuration datastore type being queried\&. 
 .br
 \fIfilter\fP NETCONF filter or NULL if no filter required\&. 
+.br
+\fIwithdefaults\fP with-defaults capability mode\&. 
 .RE
 .PP
 \fBReturns:\fP

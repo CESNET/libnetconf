@@ -15,8 +15,8 @@ var searchData=
   ['nc_5fsession_5fterm_5freason',['NC_SESSION_TERM_REASON',['../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2',1,'netconf.h']]],
   ['nc_5fssh_5fauth_5ftype',['NC_SSH_AUTH_TYPE',['../db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10',1,'ssh.h']]],
   ['nc_5fverb_5flevel',['NC_VERB_LEVEL',['../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060',1,'netconf.h']]],
-  ['ncdflt_5fmode',['NCDFLT_MODE',['../da/dbe/with__defaults_8h.html#ac70bef25cced39f6bab2ca5623ac57d9',1,'with_defaults.h']]],
   ['ncds_5ftype',['NCDS_TYPE',['../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f',1,'datastore.h']]],
   ['ncntf_5fevent',['NCNTF_EVENT',['../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977',1,'notifications.h']]],
-  ['ncntf_5fevent_5fby',['NCNTF_EVENT_BY',['../da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d',1,'notifications.h']]]
+  ['ncntf_5fevent_5fby',['NCNTF_EVENT_BY',['../da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d',1,'notifications.h']]],
+  ['ncwd_5fmode',['NCWD_MODE',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81',1,'netconf.h']]]
 ];

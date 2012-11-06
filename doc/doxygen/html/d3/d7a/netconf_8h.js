@@ -102,6 +102,13 @@ var netconf_8h =
       [ "NC_EDIT_ERROPT_CONT", "d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a69d82c66a324215010791718c1bc61f6", null ],
       [ "NC_EDIT_ERROPT_ROLLBACK", "d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a35128042558e32842f827be8c31d5b1a", null ]
     ] ],
+    [ "NCWD_MODE", "d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81", [
+      [ "NCWD_MODE_DISABLED", "d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81add913a6a7fc4215684c88fd73720facd", null ],
+      [ "NCWD_MODE_ALL", "d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81a8b422cc5bcfa0ddd20d52ec6e71362db", null ],
+      [ "NCWD_MODE_TRIM", "d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81af84df646ebc7d47ea9fd3ea0827f59b3", null ],
+      [ "NCWD_MODE_EXPLICIT", "d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81acf0be9f54f89bf4321478fb9030e4f8c", null ],
+      [ "NCWD_MODE_ALL_TAGGED", "d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81a0bd005f27bf5b0dd51aa8d61656f8089", null ]
+    ] ],
     [ "NC_VERB_LEVEL", "d3/d7a/netconf_8h.html#ga921d994eb69a9efd93ef85cf4a6cd060", [
       [ "NC_VERB_ERROR", "d3/d7a/netconf_8h.html#gga921d994eb69a9efd93ef85cf4a6cd060a908c5d51b81e0ab37d2c57e569446d9b", null ],
       [ "NC_VERB_WARNING", "d3/d7a/netconf_8h.html#gga921d994eb69a9efd93ef85cf4a6cd060a4a0cbb6bc660d3a50c3dff6028185abf", null ],

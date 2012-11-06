@@ -336,6 +336,7 @@ nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...);
  * NC_DATASTORE_NONE is specified, data parameter is used as the complete
  * configuration to copy.
  * @param[in] target Target configuration datastore type to be replaced.
+ * @param[in] withdefaults with-defaults capability mode.
  * @param[in] data If the NC_DATASTORE_NONE is specified as the source, data
  * parameter is used as the complete configuration to copy. For other types of
  * source datastore, this parameter is ignored.
@@ -373,7 +374,7 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
  * @brief Create \<get\> NETCONF rpc message.
  *
  * @param[in] filter NETCONF filter or NULL if no filter required.
- * @param[in] withdefaults
+ * @param[in] withdefaults with-defaults capability mode.
  * @return Created rpc message.
  */
 nc_rpc *nc_rpc_get(const struct nc_filter *filter, NCWD_MODE withdefaults);
@@ -384,6 +385,7 @@ nc_rpc *nc_rpc_get(const struct nc_filter *filter, NCWD_MODE withdefaults);
  *
  * @param[in] source Source configuration datastore type being queried.
  * @param[in] filter NETCONF filter or NULL if no filter required.
+ * @param[in] withdefaults with-defaults capability mode.
  * @return Created rpc message.
  */
 nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter, NCWD_MODE withdefaults);

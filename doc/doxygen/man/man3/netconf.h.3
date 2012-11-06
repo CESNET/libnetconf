@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Tue Oct 30 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Tue Nov 6 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -75,6 +75,9 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .ti -1c
 .RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_ERROR\fP = -1, \fBNC_EDIT_ERROPT_STOP\fP = 1, \fBNC_EDIT_ERROPT_CONT\fP = 2, \fBNC_EDIT_ERROPT_ROLLBACK\fP = 3 }"
+.br
+.ti -1c
+.RI "enum \fBNCWD_MODE\fP { \fBNCWD_MODE_DISABLED\fP = 0, \fBNCWD_MODE_ALL\fP = 1, \fBNCWD_MODE_TRIM\fP = 2, \fBNCWD_MODE_EXPLICIT\fP = 4, \fBNCWD_MODE_ALL_TAGGED\fP = 8 }"
 .br
 .ti -1c
 .RI "enum \fBNC_VERB_LEVEL\fP { \fBNC_VERB_ERROR\fP, \fBNC_VERB_WARNING\fP, \fBNC_VERB_VERBOSE\fP, \fBNC_VERB_DEBUG\fP }"
@@ -210,6 +213,24 @@ Definition at line 264 of file netconf\&.h\&.
 
 .PP
 Definition at line 271 of file netconf\&.h\&.
+.SS "enum \fBNCWD_MODE\fP"
+
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fINCWD_MODE_DISABLED \fP\fP
+.TP
+\fB\fINCWD_MODE_ALL \fP\fP
+.TP
+\fB\fINCWD_MODE_TRIM \fP\fP
+.TP
+\fB\fINCWD_MODE_EXPLICIT \fP\fP
+.TP
+\fB\fINCWD_MODE_ALL_TAGGED \fP\fP
+
+.PP
+Definition at line 278 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "int nc_close (intsystem)"
