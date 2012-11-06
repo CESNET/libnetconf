@@ -1340,6 +1340,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 
 			asprintf(&data, "<config>%s</config>", config);
 			free(config);
+			config = NULL;
 			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			free(data);
 			data = NULL;
