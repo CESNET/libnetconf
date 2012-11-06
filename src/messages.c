@@ -999,16 +999,16 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 			return (NULL);
 		}
 
-		if (error->tag != NULL) {
-			if (xmlNewChild(content, NULL, BAD_CAST "error-tag", BAD_CAST error->tag) == NULL) {
+		if (error->type != NULL) {
+			if (xmlNewChild(content, NULL, BAD_CAST "error-type", BAD_CAST error->type) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
 			}
 		}
 
-		if (error->type != NULL) {
-			if (xmlNewChild(content, NULL, BAD_CAST "error-type", BAD_CAST error->type) == NULL) {
+		if (error->tag != NULL) {
+			if (xmlNewChild(content, NULL, BAD_CAST "error-tag", BAD_CAST error->tag) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
@@ -1050,14 +1050,23 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 		/* error-info items */
 		if (error->sid != NULL || error->attribute != NULL || error->element != NULL || error->ns != NULL) {
 			/* prepare error-info */
+
 			if ((einfo = xmlNewChild(content, NULL, BAD_CAST "error-info", NULL)) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
 			}
 
+			if (error->sid != NULL) {
+				if (xmlNewChild(einfo, NULL, BAD_CAST "session-id", BAD_CAST error->sid) == NULL) {
+					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
+					xmlFreeNode(content);
+					return (NULL);
+				}
+			}
+
 			if (error->attribute != NULL) {
-				if (xmlNewChild(einfo, NULL, BAD_CAST "attribute", BAD_CAST error->attribute) == NULL) {
+				if (xmlNewChild(einfo, NULL, BAD_CAST "bad-attribute", BAD_CAST error->attribute) == NULL) {
 					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 					xmlFreeNode(content);
 					return (NULL);
@@ -1065,7 +1074,7 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 			}
 
 			if (error->element != NULL) {
-				if (xmlNewChild(einfo, NULL, BAD_CAST "element", BAD_CAST error->element) == NULL) {
+				if (xmlNewChild(einfo, NULL, BAD_CAST "bad-element", BAD_CAST error->element) == NULL) {
 					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 					xmlFreeNode(content);
 					return (NULL);
@@ -1073,15 +1082,7 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 			}
 
 			if (error->ns != NULL) {
-				if (xmlNewChild(einfo, NULL, BAD_CAST "ns", BAD_CAST error->ns) == NULL) {
-					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
-					xmlFreeNode(content);
-					return (NULL);
-				}
-			}
-
-			if (error->sid != NULL) {
-				if (xmlNewChild(einfo, NULL, BAD_CAST "session-id", BAD_CAST error->sid) == NULL) {
+				if (xmlNewChild(einfo, NULL, BAD_CAST "bad-namespace", BAD_CAST error->ns) == NULL) {
 					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 					xmlFreeNode(content);
 					return (NULL);
