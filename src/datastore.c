@@ -1128,7 +1128,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			free(model);
 
 			if (e != NULL) {
-				/* state data retrival error */
+				/* state data retrieval error */
 				free(data);
 				break;
 			}
@@ -1488,7 +1488,7 @@ apply_editcopyconfig:
 		break;
 	default:
 		ERROR("%s: unsupported basic NETCONF operation requested.", __func__);
-		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
+		return (nc_reply_error (nc_err_new (NC_ERR_OP_NOT_SUPPORTED)));
 		break;
 	}
 
