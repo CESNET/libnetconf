@@ -73,7 +73,7 @@ const nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg);
  * @param[in] rpc NETCONF rpc message to be parsed
  * @return one of the with-defaults mode, 0 (NCDFLT_MODE_DISABLED) if not set
  */
-NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc, struct nc_session* session);
+NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc, const struct nc_session* session);
 
 /**
  * @ingroup internalAPI

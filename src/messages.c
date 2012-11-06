@@ -94,7 +94,7 @@ void nc_filter_free(struct nc_filter *filter)
 	}
 }
 
-char* nc_msg_dump(const struct nc_msg *msg)
+static char* nc_msg_dump(const struct nc_msg *msg)
 {
 	xmlChar *buf;
 	int len;
@@ -118,7 +118,7 @@ char* nc_rpc_dump(const nc_rpc *rpc)
 	return (nc_msg_dump((struct nc_msg*)rpc));
 }
 
-struct nc_msg * nc_msg_build (const char * msg_dump)
+static struct nc_msg * nc_msg_build (const char * msg_dump)
 {
 	struct nc_msg * msg;
 	const char* id;
@@ -143,7 +143,7 @@ struct nc_msg * nc_msg_build (const char * msg_dump)
 	return msg;
 }
 
-NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc, struct nc_session *session)
+NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc, const struct nc_session *session)
 {
 	xmlXPathContextPtr rpc_ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;
@@ -376,7 +376,7 @@ NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc)
  * @param rpc RPC message
  * @param ds_type 'target' or 'source'
  */
-static NC_DATASTORE nc_rpc_get_ds (const nc_rpc *rpc, char* ds_type)
+static NC_DATASTORE nc_rpc_get_ds (const nc_rpc *rpc, const char* ds_type)
 {
 	xmlNodePtr root, ds_node;
 
@@ -423,7 +423,7 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 	return (nc_rpc_get_ds(rpc, "target"));
 }
 
-char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
+static char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
 {
 	xmlNodePtr rpc_root, op, source, config, aux_node;
 	xmlDocPtr aux_doc;
@@ -479,7 +479,7 @@ char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
 	return retval;
 }
 
-char * nc_rpc_get_editconfig (const nc_rpc *rpc)
+static char * nc_rpc_get_editconfig (const nc_rpc *rpc)
 {
 	xmlNodePtr rpc_root, op, config, aux_node;
 	xmlDocPtr aux_doc;
@@ -924,7 +924,7 @@ struct nc_msg* nc_msg_create(xmlNodePtr content, char* msgtype)
  *
  * @return Prepared nc_rpc structure.
  */
-nc_rpc* nc_rpc_create(xmlNodePtr content)
+static nc_rpc* nc_rpc_create(xmlNodePtr content)
 {
 	return ((nc_rpc*)nc_msg_create(content,"rpc"));
 }
@@ -936,7 +936,7 @@ nc_rpc* nc_rpc_create(xmlNodePtr content)
  *
  * @return Prepared nc_reply structure.
  */
-nc_reply* nc_reply_create(xmlNodePtr content)
+static nc_reply* nc_reply_create(xmlNodePtr content)
 {
 	return ((nc_reply*)nc_msg_create(content,"rpc-reply"));
 }

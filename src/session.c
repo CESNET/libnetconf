@@ -484,6 +484,7 @@ struct nc_cpblts* nc_session_get_cpblts (const struct nc_session* session)
 
 /**
  * @brief Parse with-defaults capability
+ * This function is used in ssh.c
  */
 void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supported)
 {
@@ -808,7 +809,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	return (EXIT_SUCCESS);
 }
 
-int nc_session_read_len (struct nc_session* session, size_t chunk_length, char **text, size_t *len)
+static int nc_session_read_len (struct nc_session* session, size_t chunk_length, char **text, size_t *len)
 {
 	char *buf, *err_msg;
 	ssize_t c;
@@ -887,7 +888,7 @@ int nc_session_read_len (struct nc_session* session, size_t chunk_length, char *
 	return (EXIT_SUCCESS);
 }
 
-int nc_session_read_until (struct nc_session* session, const char* endtag, int limit, char **text, size_t *len)
+static int nc_session_read_until (struct nc_session* session, const char* endtag, int limit, char **text, size_t *len)
 {
 	char *err_msg;
 	size_t rd = 0;
@@ -1130,7 +1131,7 @@ struct nc_err* nc_msg_parse_error(struct nc_msg* msg)
 	return (err);
 }
 
-NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct nc_msg** msg)
+static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct nc_msg** msg)
 {
 	struct nc_msg *retval;
 	nc_reply* reply;
@@ -1398,7 +1399,7 @@ malformed_msg:
 	return (NC_MSG_UNKNOWN);
 }
 
-NC_MSG_TYPE nc_session_recv_msg (struct nc_session* session, int timeout, struct nc_msg** msg)
+static NC_MSG_TYPE nc_session_recv_msg (struct nc_session* session, int timeout, struct nc_msg** msg)
 {
 	NC_MSG_TYPE ret;
 
@@ -2017,4 +2018,5 @@ const char* nc_session_term_string(NC_SESSION_TERM_REASON reason)
 		return ("other");
 		break;
 	}
+	return (NULL);
 }

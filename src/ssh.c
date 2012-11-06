@@ -131,84 +131,6 @@ void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 	}
 }
 
-/**
- * @brief Compare two sets of capabilities and return intersection
- *
- * cap_list_x should be the list from server, these capabilities have higher priority
- *
- * @param[in]	cap_list_x	array of strings idetifying X capabilities
- * @param[in]	cap_list_y	array of strings idetifying Y capabilities
- * @param[out]	version		accepted NETCONF version
- *
- * return		array of strings, identifying common capabilities
- */
-char** nc_merge_capabilities(char ** cap_list_x, char ** cap_list_y, int *version)
-{
-	int c = 0, i, j;
-	(*version) = NETCONFVUNK;
-	char ** result;
-	char *px, *py;
-
-	/* count max size of the resulting list */
-	for (i = 0; cap_list_x[i] != NULL; i++);
-	for (j = 0; cap_list_y[j] != NULL; j++);
-	c = (j > i) ? j : i;
-
-	if ((result = malloc((c + 1) * sizeof(char*))) == NULL) {
-		ERROR("Memory allocation failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-		return (NULL);
-	}
-
-	c = 0;
-	for (i = 0; cap_list_x[i] != NULL; i++) {
-		for (j = 0; cap_list_y[j] != NULL; j++) {
-			/* ignore parameters in comparison */
-			if ((px = strchr(cap_list_x[i], '?')) != NULL) {*px = 0;}
-			if ((py = strchr(cap_list_y[j], '?')) != NULL) {*py = 0;}
-
-			if (strcmp(cap_list_x[i], cap_list_y[j]) == 0) {
-				if (px != NULL) {
-					/* unhide parameters */
-					*px = '?';
-					/* and store string with parameters */
-					result[c++] = strdup(cap_list_x[i]);
-				} else {
-					/* unhide parameters if any */
-					if (py != NULL) {
-						*py = '?';
-					}
-					/* and store string */
-					result[c++] = strdup(cap_list_y[j]);
-				}
-				break;
-			}
-			/* unhide parameters */
-			if (px != NULL) {*px = '?';}
-			if (py != NULL) {*py = '?';}
-		}
-	}
-	result[c] = NULL;
-
-	for (i = 0; result[i] != NULL; i++) { /* Try to find one of the netconf base capability */
-		if (strcmp(NC_CAP_BASE11_ID, result[i]) == 0) {
-			(*version) = NETCONFV11;
-			break;
-			/* v 1.1 is preferred */
-		}
-		if (strcmp(NC_CAP_BASE10_ID, result[i]) == 0) {
-			(*version) = NETCONFV10;
-			/* continue in searching for higher version */
-		}
-	}
-
-	if ((*version) == NETCONFVUNK) {
-		ERROR("No base capability found in capabilities intersection.");
-		return (NULL);
-	}
-
-	return (result);
-}
-
 static char** nc_accept_server_cpblts(char ** server_cpblts_list, char ** client_cpblts_list, int *version)
 {
 	int i, j, c;
@@ -268,7 +190,7 @@ static char** nc_accept_server_cpblts(char ** server_cpblts_list, char ** client
 	return (result);
 }
 
-char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
+static char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 {
 	xmlNodePtr node, capnode;
 	char *cap = NULL, *str = NULL;
@@ -350,7 +272,7 @@ char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 
 #define HANDSHAKE_SIDE_SERVER 1
 #define HANDSHAKE_SIDE_CLIENT 2
-int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello, int side)
+static int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello, int side)
 {
 	int retval = EXIT_SUCCESS;
 	int i;
@@ -404,7 +326,7 @@ int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello, int s
 	return (retval);
 }
 
-int nc_client_handshake(struct nc_session *session, char** cpblts)
+static int nc_client_handshake(struct nc_session *session, char** cpblts)
 {
 	nc_rpc *hello;
 	int retval;
@@ -424,7 +346,7 @@ int nc_client_handshake(struct nc_session *session, char** cpblts)
 	return (retval);
 }
 
-int nc_server_handshake(struct nc_session *session, char** cpblts)
+static int nc_server_handshake(struct nc_session *session, char** cpblts)
 {
 	nc_rpc *hello;
 	int pid;
@@ -453,7 +375,7 @@ int nc_server_handshake(struct nc_session *session, char** cpblts)
 	return (retval);
 }
 
-int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_SESSION* ssh_session)
+static int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_SESSION* ssh_session)
 {
 	int ret, knownhost_check, i;
 	size_t len;
@@ -758,7 +680,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	return (retval);
 }
 
-int find_ssh_keys ()
+static int find_ssh_keys ()
 {
 	struct passwd *pw;
 	char * user_home, *key_pub_path, *key_priv_path;
