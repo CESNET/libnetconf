@@ -947,10 +947,11 @@ int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session,
 	xmlDocPtr config_doc, datastore_doc;
 	xmlNodePtr target_ds, tmp_target_ds;
 	int retval = EXIT_SUCCESS;
-	FILE * tmp = fopen ("/tmp/target.xml", "w");
 
+	/* lock the datastore */
 	LOCK(file_ds);
 
+	/* reload the datastore content */
 	if (file_reload (file_ds)) {
 		UNLOCK(file_ds);
 		return EXIT_FAILURE;
@@ -993,8 +994,6 @@ int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session,
 	xmlDocSetRootElement (datastore_doc, tmp_target_ds);
 	datastore_doc->children = tmp_target_ds;
 
-	xmlDocDump (tmp, datastore_doc);
-
 	/* preform edit config */
 	if (edit_config (datastore_doc, config_doc, file_ds->model, defop, errop, error)) {
 		retval = EXIT_FAILURE;
@@ -1021,7 +1020,6 @@ int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session,
 	}
 	UNLOCK(file_ds);
 
-	fclose (tmp);
 	xmlFreeDoc (datastore_doc);
 	xmlFreeDoc (config_doc);
 
