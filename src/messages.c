@@ -1927,6 +1927,7 @@ nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* form
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	xmlNewNs(content, BAD_CAST NC_NS_CAP_MONITORING, NULL);
 
 	if (xmlNewChild(content, NULL, BAD_CAST "identifier", BAD_CAST name) == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
