@@ -1630,7 +1630,7 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 	len = (int32_t) asprintf(&record, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 			"<notification xmlns=\"%s\"><eventTime>%s</eventTime>"
 			"%s</notification>",
-			NC_NS_CAP_NOTIFICATIONS,
+			NC_NS_NOTIFICATIONS,
 			event_time,
 			content);
 	if (len == -1) {
@@ -1857,7 +1857,7 @@ char* ncntf_notif_get_content(nc_ntf* notif)
 
 		/* skip eventTime element */
 		if (xmlStrcmp(node->name, BAD_CAST "eventTime") == 0 &&
-				xmlStrcmp(node->ns->href, BAD_CAST NC_NS_CAP_NOTIFICATIONS) == 0) {
+				xmlStrcmp(node->ns->href, BAD_CAST NC_NS_NOTIFICATIONS) == 0) {
 			continue;
 		}
 
@@ -1888,7 +1888,7 @@ time_t ncntf_notif_get_time(nc_ntf* notif)
 		/* with-defaults cannot be found */
 		return (-1);
 	}
-	if (xmlXPathRegisterNs(notif_ctxt, BAD_CAST "ntf", BAD_CAST NC_NS_CAP_NOTIFICATIONS) != 0) {
+	if (xmlXPathRegisterNs(notif_ctxt, BAD_CAST "ntf", BAD_CAST NC_NS_NOTIFICATIONS) != 0) {
 		xmlXPathFreeContext(notif_ctxt);
 		return (-1);
 	}
@@ -1930,7 +1930,7 @@ static int ncntf_subscription_get_params(const nc_rpc* subscribe_rpc, char **str
 		ERROR("%s: Creating XPath context failed.", __func__);
 		return (-1);
 	}
-	if (xmlXPathRegisterNs(srpc_ctxt, BAD_CAST "ntf", BAD_CAST NC_NS_CAP_NOTIFICATIONS) != 0) {
+	if (xmlXPathRegisterNs(srpc_ctxt, BAD_CAST "ntf", BAD_CAST NC_NS_NOTIFICATIONS) != 0) {
 		ERROR("%s: Registering namespace for XPath context failed.", __func__);
 		xmlXPathFreeContext(srpc_ctxt);
 		return (-1);
@@ -2175,7 +2175,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 
 					/* skip eventTime element */
 					if (xmlStrcmp(event_node->name, BAD_CAST "eventTime") == 0 &&
-							xmlStrcmp(event_node->ns->href, BAD_CAST NC_NS_CAP_NOTIFICATIONS) == 0) {
+							xmlStrcmp(event_node->ns->href, BAD_CAST NC_NS_NOTIFICATIONS) == 0) {
 						event_node = event_node->next;
 						continue;
 					}

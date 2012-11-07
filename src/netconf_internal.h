@@ -98,9 +98,9 @@
 #define NC_CAP_MONITORING_ID "urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
 #define NC_CAP_WITHDEFAULTS_ID 	"urn:ietf:params:netconf:capability:with-defaults:1.0"
 
-#define NC_NS_CAP_WITHDEFAULTS 	"urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"
-#define NC_NS_CAP_NOTIFICATIONS "urn:ietf:params:xml:ns:netconf:notification:1.0"
-#define NC_NS_CAP_MONITORING 	"urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
+#define NC_NS_WITHDEFAULTS 	"urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"
+#define NC_NS_NOTIFICATIONS "urn:ietf:params:xml:ns:netconf:notification:1.0"
+#define NC_NS_MONITORING 	"urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
 
 /* NETCONF versions identificators */
 #define NETCONFV10	0

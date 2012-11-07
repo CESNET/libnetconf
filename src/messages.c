@@ -161,7 +161,7 @@ NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc, const struct nc_session *
 		/* with-defaults cannot be found */
 		return (NCWD_MODE_DISABLED);
 	}
-	if (xmlXPathRegisterNs(rpc_ctxt, BAD_CAST "wd", BAD_CAST NC_NS_CAP_WITHDEFAULTS) != 0) {
+	if (xmlXPathRegisterNs(rpc_ctxt, BAD_CAST "wd", BAD_CAST NC_NS_WITHDEFAULTS) != 0) {
 		xmlXPathFreeContext(rpc_ctxt);
 		return (NCWD_MODE_DISABLED);
 	}
@@ -1378,7 +1378,7 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter, NC
 			xmlFreeNode (content);
 			return (NULL);
 		}
-		xmlNewNs(node, BAD_CAST NC_NS_CAP_WITHDEFAULTS, NULL);
+		xmlNewNs(node, BAD_CAST NC_NS_WITHDEFAULTS, NULL);
 	}
 
 	/* add filter specification if any required */
@@ -1438,7 +1438,7 @@ nc_rpc *nc_rpc_get(const struct nc_filter *filter, NCWD_MODE withdefaults)
 			xmlFreeNode (content);
 			return (NULL);
 		}
-		xmlNewNs(node, BAD_CAST NC_NS_CAP_WITHDEFAULTS, NULL);
+		xmlNewNs(node, BAD_CAST NC_NS_WITHDEFAULTS, NULL);
 	}
 
 	rpc = nc_rpc_create(content);
@@ -1735,7 +1735,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, NCWD_MODE wi
 			xmlFreeNode (content);
 			return (NULL);
 		}
-		xmlNewNs(node, BAD_CAST NC_NS_CAP_WITHDEFAULTS, NULL);
+		xmlNewNs(node, BAD_CAST NC_NS_WITHDEFAULTS, NULL);
 	}
 
 	rpc = nc_rpc_create(content);
@@ -1928,7 +1928,7 @@ nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* form
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
-	xmlNewNs(content, BAD_CAST NC_NS_CAP_MONITORING, NULL);
+	xmlNewNs(content, BAD_CAST NC_NS_MONITORING, NULL);
 
 	if (xmlNewChild(content, NULL, BAD_CAST "identifier", BAD_CAST name) == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
@@ -1972,7 +1972,7 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
-	xmlNewNs(content, BAD_CAST NC_NS_CAP_NOTIFICATIONS, NULL);
+	xmlNewNs(content, BAD_CAST NC_NS_NOTIFICATIONS, NULL);
 
 	/* add <stream> specification if set */
 	if (stream != NULL) {

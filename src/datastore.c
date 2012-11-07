@@ -455,7 +455,7 @@ char* get_internal_state(const struct nc_session *session)
 	}
 
 	/* get it all together */
-	asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s%s</netconf-state>%s", NC_NS_CAP_MONITORING,
+	asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s%s</netconf-state>%s", NC_NS_MONITORING,
 			(session->capabilities_original != NULL) ? session->capabilities_original : "",
 			(ds_stats != NULL) ? ds_stats : "",
 			(sessions != NULL) ? sessions : "",
