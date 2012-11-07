@@ -85,6 +85,8 @@ static struct auth_pref_couple sshauth_pref[AUTH_COUNT] = {
 
 /* definition in session.c */
 void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supported);
+/* definition in datastore.c */
+char **get_schemas_capabilities(void);
 
 void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 {
@@ -510,7 +512,7 @@ static char* serialize_cpblts(const struct nc_cpblts *capabilities)
 
 struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 {
-	int r;
+	int r, i;
 	struct nc_session *retval = NULL;
 	struct nc_cpblts *server_cpblts = NULL;
 	struct passwd *pw;
@@ -518,6 +520,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	struct utmpx protox, *utp;
 	char list[255];
 	NCWD_MODE mode;
+	char** nslist;
 	pthread_mutexattr_t mattr;
 
 	/* allocate netconf session structure */
@@ -624,6 +627,13 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	}
 	retval->capabilities_original = serialize_cpblts(server_cpblts);
 	retval->status = NC_SESSION_STATUS_WORKING;
+
+	/* add namespaces of used datastores as announced capabilities */
+	if ((nslist = get_schemas_capabilities()) != NULL) {
+		for(i = 0; nslist[i] != NULL; i++) {
+			nc_cpblts_add(server_cpblts, nslist[i]);
+		}
+	}
 
 	if (nc_server_handshake(retval, server_cpblts->list) != 0) {
 		nc_session_close(retval, NC_SESSION_TERM_BADHELLO);

@@ -63,6 +63,10 @@
 #include "datastore/file/datastore_file.h"
 #include "datastore/empty/datastore_empty.h"
 
+#include "../models/ietf-netconf-monitoring.xxd"
+#include "../models/ietf-netconf-notifications.xxd"
+#include "../models/ietf-netconf-with-defaults.xxd"
+
 extern struct nc_statistics *nc_stats;
 
 struct ncds_ds_list
@@ -96,6 +100,63 @@ static struct ncds_ds int_ds = {
 };
 static struct ncds_ds_list int_ds_list = {&int_ds, NULL};
 static struct ncds_ds_list *datastores = &int_ds_list;
+
+static struct ncds_ds *datastores_get_ds(ncds_id id);
+int ncds_sysinit(void)
+{
+	int i;
+	struct ncds_ds *ds;
+	struct ncds_ds_list *dsitem;
+	unsigned char* model[3] = {
+			ietf_netconf_monitoring_yin,
+			ietf_netconf_notifications_yin,
+			ietf_netconf_with_defaults_yin
+	};
+	unsigned int model_len[3] = {
+			ietf_netconf_monitoring_yin_len,
+			ietf_netconf_notifications_yin_len,
+			ietf_netconf_with_defaults_yin_len
+	};
+
+
+	for (i = 0; i < 3; i++) {
+		if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty))) == NULL) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			return (EXIT_FAILURE);
+		}
+		ds->func.init = ncds_empty_init;
+		ds->func.free = ncds_empty_free;
+		ds->func.get_lockinfo = ncds_empty_lockinfo;
+		ds->func.lock = ncds_empty_lock;
+		ds->func.unlock = ncds_empty_unlock;
+		ds->func.getconfig = ncds_empty_getconfig;
+		ds->func.copyconfig = ncds_empty_copyconfig;
+		ds->func.deleteconfig = ncds_empty_deleteconfig;
+		ds->func.editconfig = ncds_empty_editconfig;
+		ds->type = NCDS_TYPE_EMPTY;
+		ds->id = i;
+
+		ds->model = xmlReadMemory ((char*)model[i], model_len[i], NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
+		if (ds->model == NULL ) {
+			ERROR("Unable to read internal monitoring data model.");
+			free (ds);
+			return (EXIT_FAILURE);
+		}
+		ds->model_path = NULL;
+		ds->get_state = NULL;
+
+		/* add to list */
+		if ((dsitem = malloc (sizeof(struct ncds_ds_list))) == NULL ) {
+			return (EXIT_FAILURE);
+		}
+		dsitem->datastore = ds;
+		dsitem->next = datastores;
+		datastores = dsitem;
+		ds = NULL;
+	}
+
+	return (EXIT_FAILURE);
+}
 
 /**
  * @brief Get ncds_ds structure from datastore list containing storage
@@ -305,14 +366,58 @@ int get_model_info(xmlDocPtr model, char **name, char **version, char **namespac
 	return (EXIT_SUCCESS);
 }
 
+/* used in ssh.c */
+char **get_schemas_capabilities(void)
+{
+	struct ncds_ds_list* ds = NULL;
+	int i;
+	char *name, *version, *namespace;
+	char **retval = NULL;
+
+	/* get size of the output */
+	for (i = 0, ds = datastores; ds != NULL; ds = ds->next) {
+		if (ds->datastore == NULL || ds->datastore->model == NULL) {
+			continue;
+		} else {
+			i++;
+		}
+	}
+
+	if ((retval = malloc(sizeof(char*) * (i + 1))) == NULL) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+
+
+	for (i = 0, ds = datastores; ds != NULL; ds = ds->next) {
+		if (ds->datastore == NULL || ds->datastore->model == NULL) {
+			continue;
+		}
+
+		if (get_model_info(ds->datastore->model, &name, &version, &namespace) != 0) {
+			continue;
+		}
+		asprintf(&(retval[i]), "%s?module=%s%s%s", namespace, name,
+				(version != NULL && strlen(version) > 0) ? "&amp;revision=" : "",
+				(version != NULL && strlen(version) > 0) ? version : "");
+		free(namespace); namespace = NULL;
+		free(name); name = NULL;
+		free(version); version = NULL;
+
+		i++;
+	}
+	retval[i] = NULL;
+	return (retval);
+}
+
 char* get_schemas()
 {
 	char *schema_name, *version = NULL, *namespace = NULL;
 	struct ncds_ds_list* ds = NULL;
 	char *schema = NULL, *schemas = NULL, *aux = NULL;
 
-	for (ds = datastores; ds != NULL ; ds = ds->next) {
-		if (ds->datastore->model == NULL) {
+	for (ds = datastores; ds != NULL; ds = ds->next) {
+		if (ds->datastore == NULL || ds->datastore->model == NULL) {
 			continue;
 		}
 

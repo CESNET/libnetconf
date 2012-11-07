@@ -51,6 +51,9 @@
 
 #include "netconf_internal.h"
 
+/* defined in datastore.c */
+int ncds_sysinit(void);
+
 int verbose_level = 0;
 
 void nc_verbosity(NC_VERB_LEVEL level)
@@ -103,6 +106,9 @@ int nc_init(void)
 		free(t);
 	}
 	nc_stats->participants++;
+
+	/* init internal datastores */
+	retval = ncds_sysinit();
 
 	return (retval);
 }
