@@ -1616,30 +1616,66 @@ void ncds_break_locks(const struct nc_session* session)
 {
 	struct ncds_ds_list * ds;
 	struct nc_err * e = NULL;
+	/* maximum is 3 locks (one for every datastore type) */
+	struct nc_session * sessions[3];
+	const struct ncds_lockinfo * lockinfo;
+	int number_sessions = 0, i, j;
+	NC_DATASTORE ds_type[3] = {NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NC_DATASTORE_STARTUP};
+	struct nc_cpblts * cpblts;
 
-	ds = datastores;
 
-	while (ds) {
-		if (ds->datastore) {
-			ds->datastore->func.unlock(ds->datastore, session, NC_DATASTORE_CANDIDATE, &e);
-			if (e) {
-				nc_err_free(e);
-				e = NULL;
-			}
-
-			ds->datastore->func.unlock(ds->datastore, session, NC_DATASTORE_RUNNING, &e);
-			if (e) {
-				nc_err_free(e);
-				e = NULL;
-			}
-
-			ds->datastore->func.unlock(ds->datastore, session, NC_DATASTORE_STARTUP, &e);
-			if (e) {
-				nc_err_free(e);
-				e = NULL;
-			}
+	if (session == NULL) {
+		/* if session NULL, get all sessions that hold lock from first file datastore */
+		ds = datastores;
+		/* find first file datastore */
+		while (ds != NULL && ds->datastore != NULL && ds->datastore->type != NCDS_TYPE_FILE) {
+			ds = ds->next;
 		}
-		ds = ds->next;
+		if (ds != NULL) {
+			/* if there is one */
+			/* get default capabilities for dummy sessions */
+			cpblts = nc_session_get_cpblts_default();
+			for (i=0; i<3; i++) {
+				if ((lockinfo = ncds_file_lockinfo (ds->datastore, ds_type[i])) != NULL) {
+					if (lockinfo->sid != NULL && strcmp (lockinfo->sid, "") != 0) {
+						/* create dummy session with session ID used to lock datastore */
+						sessions[number_sessions++] = nc_session_dummy(lockinfo->sid, "dummy", NULL, cpblts);
+					}
+				}
+			}
+			nc_cpblts_free(cpblts);
+		}
+	} else {
+		/* plain old single session break locks */
+		number_sessions = 1;
+		sessions[0] = (struct nc_session*)session;
+	}
+
+	/* for all prepared sessions */
+	for (i=0; i<number_sessions; i++) {
+		ds = datastores;
+		/* every datastore */
+		while (ds) {
+			if (ds->datastore) {
+				/* and every datastore type */
+				for (j=0; j<3; j++) {
+					/* try to unlock datastore */
+					ds->datastore->func.unlock(ds->datastore, sessions[i], ds_type[j], &e);
+					if (e) {
+						nc_err_free(e);
+						e = NULL;
+					}
+				}
+			}
+			ds = ds->next;
+		}
+	}
+
+	/* clean created dummy sessions */
+	if (session == NULL) {
+		for (i=0; i<number_sessions; i++) {
+			nc_session_free(sessions[i]);
+		}
 	}
 
 	return;
