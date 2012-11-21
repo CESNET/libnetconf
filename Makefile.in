@@ -235,6 +235,34 @@ install-doc: doc
 	cp -r $(DOXYGEN_DIR)/* $(DESTDIR)/$(datadir)/$(NAME)/doxygen/;
 
 .PHONY: clean
+.PHONY: uninstall
+uninstall: uninstall-devel uninstall-doc
+	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(VERSION)
+	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(MAJOR_VER)
+	rmdir -p $(STREAMS_PATH) || rm -rf $(STREAMS_PATH)
+	rmdir -p $(STREAMS_PATH) || echo -n ""
+	@rm -f $(DESTDIR)/$(DBUS_CONFDIR)/system.d/libnetconf.notifications.conf
+
+.PHONY: uninstall-devel
+uninstall-devel:
+	rm -f $(DESTDIR)/$(libdir)/$(NAME).a;
+	@rm -f $(DESTDIR)/$(libdir)/$(NAME).so*; \
+	for i in $(HDRS_PUBL_ROOT); do \
+		rm -f $(DESTDIR)/$(includedir)/$$(basename $$i); \
+	done; \
+	for i in $(HDRS_PUBL_SUBDIR); do \
+		rm -f $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
+	done; \
+	rm $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
+	for i in $(SUBDIRS) ; do \
+		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i uninstall \
+		|| exit 1; \
+	done
+
+.PHONY: uninstall-doc
+uninstall-doc:
+	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/doxygen;
+
 clean:
 	for i in $(SUBDIRS) ; do $(MAKE) -C $$i clean ; done
 	rm -rf *.a *.so* $(OBJDIR) $(DOXYGEN_DIR); 
