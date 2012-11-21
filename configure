@@ -715,6 +715,7 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+with_libssh2
 with_examples
 enable_debug
 enable_debug_threads
@@ -1357,6 +1358,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-libssh2=DIR      Specifies libssh2 installation directory.
   --with-examples         enable building example applications
   --with-streamspath=path Path to the Notifications streams files, default
                           value is /usr/share/libnetconf/streams/
@@ -2547,13 +2549,25 @@ if test "x$PKG_CONFIG" = "xno"; then
 fi
 
 #AC_ARG_WITH([libxml2], AC_HELP_STRING([--with-libxml2], [specific libxml2 location]),[],[])
-#AC_ARG_WITH([libssh2], AC_HELP_STRING([--with-libssh2], [specific libssh2 location]),[],[])
+
+# Check whether --with-libssh2 was given.
+if test "${with_libssh2+set}" = set; then :
+  withval=$with_libssh2;
+		CFLAGS+=" -I$withval/include"
+		CXXFLAGS+=" -I$withval/include"
+		LDFLAGS+=" -L$withval/lib -Wl,-rpath,$withval/lib"
+
+
+fi
+
+
 
 # Check whether --with-examples was given.
 if test "${with_examples+set}" = set; then :
   withval=$with_examples; SUBDIRS="./examples/client/ ./examples/server/ ./examples/tools/"
 else
   SUBDIRS=""
+
 fi
 
 
