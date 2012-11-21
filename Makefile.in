@@ -181,13 +181,6 @@ rpm: tarball
 	$(RPMBUILD) -ba $(NAME).spec \
 		--define "_topdir `pwd`/$(RPMDIR)";
 
-.PHONY: cleanall
-cleanall: clean distclean
-
-.PHONY: distclean
-distclean:
-	rm -rf $(RPMDIR)
-
 .PHONY: install
 install: all install-devel install-doc
 	[ -d $(DESTDIR)/$(libdir) ] || \
@@ -234,7 +227,6 @@ install-doc: doc
 		chmod -R 755 $(DESTDIR)/$(datadir)/$(NAME))
 	cp -r $(DOXYGEN_DIR)/* $(DESTDIR)/$(datadir)/$(NAME)/doxygen/;
 
-.PHONY: clean
 .PHONY: uninstall
 uninstall: uninstall-devel uninstall-doc
 	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(VERSION)
@@ -263,6 +255,15 @@ uninstall-devel:
 uninstall-doc:
 	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/doxygen;
 
+.PHONY: clean clean-all clean-doc clean-rpm
 clean:
 	for i in $(SUBDIRS) ; do $(MAKE) -C $$i clean ; done
-	rm -rf *.a *.so* $(OBJDIR) $(DOXYGEN_DIR); 
+	rm -rf *.a *.so* $(OBJDIR); 
+
+clean-all: clean clean-doc clean-rpm
+
+clean-doc:
+	rm -rf $(DOXYGEN_DIR);
+
+clean-rpm:
+	rm -rf $(RPMDIR)
