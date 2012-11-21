@@ -2650,7 +2650,6 @@ case $host_cpu in
 $as_echo "$host_cpu is supported" >&6; }
 	;;
     x86_64 )
-	libdir='${exec_prefix}/lib64'
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $host_cpu is supported" >&5
 $as_echo "$host_cpu is supported" >&6; }
         ;;
@@ -2659,7 +2658,6 @@ $as_echo "$host_cpu is supported" >&6; }
 $as_echo "$as_me: WARNING: unsupported architecture $host_cpu" >&2;}
         ;;
 esac
-
 
 # Check for doxygen
 # Extract the first word of "doxygen", so it can be a program name with args.

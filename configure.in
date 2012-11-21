@@ -115,14 +115,12 @@ case $host_cpu in
 	AC_MSG_RESULT($host_cpu is supported)
 	;;
     x86_64 )
-	libdir='${exec_prefix}/lib64'
 	AC_MSG_RESULT($host_cpu is supported)
         ;;
     * )
         AC_MSG_WARN([unsupported architecture $host_cpu])
         ;;
 esac
-
 
 # Check for doxygen
 AC_CHECK_PROG(DOXYGEN, doxygen, doxygen)

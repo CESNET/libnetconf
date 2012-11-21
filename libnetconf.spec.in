@@ -30,7 +30,7 @@ if you want to develop your own NETCONF application.
 %setup
 
 %build
-./configure --prefix=%{_prefix};
+./configure --prefix=%{_prefix} --libdir=%{_libdir};
 make
 make doc
 
