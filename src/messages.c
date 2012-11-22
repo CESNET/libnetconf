@@ -966,9 +966,15 @@ nc_reply *nc_reply_data(const char* data)
 	struct nc_err* e;
 
 	if (data != NULL) {
-		asprintf(&data_env, "<data>%s</data>", data);
+		if (asprintf(&data_env, "<data>%s</data>", data) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
+		}
 	} else {
-		asprintf(&data_env, "<data/>");
+		if (asprintf(&data_env, "<data/>") == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
+		}
 	}
 
 	/* prepare XML structure from given data */
@@ -1283,7 +1289,10 @@ static int process_filter_param (xmlNodePtr content, const struct nc_filter* fil
 			 * Without this hack, libxml2 will not read given filter
 			 * correctly when it contains multiple root elements.
 			 */
-			asprintf (&aux_string, "<filter type=\"%s\">%s</filter>", filter->type_string, filter->content);
+			if (asprintf (&aux_string, "<filter type=\"%s\">%s</filter>", filter->type_string, filter->content) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				return (EXIT_FAILURE);
+			}
 
 			/* convert string to the libxml2 format */
 			doc_filter = xmlReadMemory(aux_string, strlen(aux_string), NULL, NULL, 0);
@@ -1657,7 +1666,11 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, NCWD_MODE wi
 		/* RFC 6241 defines \<config\> as anyxml and thus it can be empty */
 		if (strcmp(data, "") != 0) {
 			/* add covering <config> element to allow to specify multiple root elements */
-			asprintf(&config, "<config>%s</config>", data);
+			if (asprintf(&config, "<config>%s</config>", data) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				return (NULL);
+			}
 
 			/* prepare XML structure from given data */
 			doc_data = xmlReadMemory(config, strlen(config), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
@@ -1853,7 +1866,11 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
 
 	/* set <config> element */
 	/* add covering <config> element around the data to allow to specify multiple root elements */
-	asprintf(&config, "<config>%s</config>", data);
+	if (asprintf(&config, "<config>%s</config>", data) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		xmlFreeNode(content);
+		return (NULL);
+	}
 
 	/* prepare XML structure from given data */
 	doc_data = xmlReadMemory(config, strlen(config), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);

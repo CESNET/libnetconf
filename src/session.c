@@ -104,7 +104,7 @@ char* nc_session_stats(void)
 
 	for (list_item = session_list; list_item != NULL; list_item = list_item->next) {
 		aux = NULL;
-		asprintf(&aux, "<session><session-id>%s</session-id>"
+		if (asprintf(&aux, "<session><session-id>%s</session-id>"
 				"<transport>netconf-ssh</transport>"
 				"<username>%s</username>"
 				"<source-host>%s</source-host>"
@@ -119,7 +119,10 @@ char* nc_session_stats(void)
 				list_item->session->stats.in_rpcs,
 				list_item->session->stats.in_bad_rpcs,
 				list_item->session->stats.out_rpc_errors,
-				list_item->session->stats.out_notifications);
+				list_item->session->stats.out_notifications) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			continue;
+		}
 
 		if (session == NULL) {
 			session = aux;
@@ -129,7 +132,11 @@ char* nc_session_stats(void)
 		}
 	}
 	if (session != NULL) {
-		asprintf(&sessions, "<sessions>%s</sessions>", session);
+		if (asprintf(&sessions, "<sessions>%s</sessions>", session) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			free(session);
+			return (NULL);
+		}
 		free(session);
 	}
 	return (sessions);

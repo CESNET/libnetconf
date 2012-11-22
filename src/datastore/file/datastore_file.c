@@ -323,7 +323,10 @@ int ncds_file_init (struct ncds_ds* ds)
 			file_ds->xml = NULL;
 
 			/* Create file based on original name */
-			asprintf (&new_path, "%s.XXXXXX", file_ds->path);
+			if (asprintf (&new_path, "%s.XXXXXX", file_ds->path) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				return (EXIT_FAILURE);
+			}
 			fd = mkstemp (new_path);
 			if (fd == -1 || (file_ds->file = fdopen(fd, "r+")) == NULL) {
 				ERROR ("Can not create alternate file %s (%s).", new_path, strerror(errno));
@@ -361,7 +364,10 @@ int ncds_file_init (struct ncds_ds* ds)
 	 * datastore(set), so name it according to filepath with special prefix.
 	 * backslash in the path are replaced by underscore.
 	 */
-	asprintf(&sempath, "%s/%s", NCDS_LOCK, file_ds->path);
+	if (asprintf(&sempath, "%s/%s", NCDS_LOCK, file_ds->path) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		return (EXIT_FAILURE);
+	}
 	while((saux = strchr(sempath, '/')) != NULL) {
 		*saux = '_';
 	}
@@ -371,12 +377,12 @@ int ncds_file_init (struct ncds_ds* ds)
 	mask = umask(0000);
 	if ((file_ds->ds_lock.lock = sem_open (sempath, O_CREAT, S_IRWXU|S_IRWXG|S_IRWXO, 1)) == SEM_FAILED) {
 		umask(mask);
-		return EXIT_FAILURE;
+		return (EXIT_FAILURE);
 	}
 	umask(mask);
 	free (sempath);
 
-	return EXIT_SUCCESS;
+	return (EXIT_SUCCESS);
 }
 
 void ncds_file_free(struct ncds_ds* ds)
@@ -464,7 +470,10 @@ static int file_sync(struct ncds_ds_file* file_ds)
 	}
 
 	/* erase actual config */
-	truncate (file_ds->path, 0);
+	if (truncate (file_ds->path, 0) == -1) {
+		ERROR ("%s: truncate() of file %s failed (%s)", __func__, file_ds->path, strerror(errno));
+		return EXIT_FAILURE;
+	}
 	rewind (file_ds->file);
 
 	xmlDocFormatDump(file_ds->file, file_ds->xml, 1);

@@ -149,7 +149,12 @@ static void filter_reg_files(char* dirpath, struct dirent **filelist, int n)
 			/* try another detection method -> use stat */
 #endif
 			/* d_type is not available -> use stat */
-			asprintf(&filepath, "%s/%s", dirpath, filelist[n]->d_name);
+			if (asprintf(&filepath, "%s/%s", dirpath, filelist[n]->d_name) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				free(filelist[n]);
+				filelist[n] = NULL;
+				continue;
+			}
 			if (stat(filepath, &sb) == -1) {
 				ERROR("stat() failed on file %s - %s (%s:%d)", filepath, strerror(errno), __FILE__, __LINE__);
 				free(filelist[n]);
@@ -280,6 +285,7 @@ static int map_rules(struct stream *s)
 {
 	mode_t mask;
 	char* filepath = NULL;
+	ssize_t r;
 
 	assert(s != NULL);
 	assert(s->rules == NULL);
@@ -289,7 +295,10 @@ static int map_rules(struct stream *s)
 	}
 
 	if (s->fd_rules == -1) {
-		asprintf(&filepath, "%s/%s.rules", streams_path, s->name);
+		if (asprintf(&filepath, "%s/%s.rules", streams_path, s->name) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (EXIT_FAILURE);
+		}
 		mask = umask(0000);
 		/* check if file with the rules exists */
 		if (access(filepath, F_OK) != 0) {
@@ -303,7 +312,10 @@ static int map_rules(struct stream *s)
 			} else {
 				/* create sparse file */
 				lseek(s->fd_rules, NCNTF_RULES_SIZE -1, SEEK_END);
-				write(s->fd_rules, &"\0", 1);
+				while (((r = write(s->fd_rules, &"\0", 1)) == -1) && (errno == EAGAIN ||errno == EINTR));
+				if (r == -1) {
+					WARN("Creating sparse stream event rules file failed (%s).", strerror(errno));
+				}
 				lseek(s->fd_rules, 0, SEEK_SET);
 			}
 		}
@@ -339,10 +351,12 @@ static int map_rules(struct stream *s)
  */
 static int write_fileheader(struct stream *s)
 {
-	char* filepath = NULL;
+	char* filepath = NULL, *header;
 	uint16_t len, version = MAGIC_VERSION;
 	mode_t mask;
 	uint64_t t;
+	ssize_t r;
+	size_t hlen = 0, offset = 0;
 
 	/* check used variables */
 	assert(s != NULL);
@@ -355,7 +369,10 @@ static int write_fileheader(struct stream *s)
 	/* check if the corresponding file is already opened */
 	if (s->fd_events == -1) {
 		/* open and create/truncate the file */
-		asprintf(&filepath, "%s/%s.events", streams_path, s->name);
+		if (asprintf(&filepath, "%s/%s.events", streams_path, s->name) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (EXIT_FAILURE);
+		}
 		mask = umask(0000);
 		s->fd_events = open(filepath, O_RDWR | O_CREAT | O_TRUNC, 0777);
 		umask(mask);
@@ -367,34 +384,71 @@ static int write_fileheader(struct stream *s)
 		free(filepath);
 	} else {
 		/* truncate the file */
-		ftruncate(s->fd_events, 0);
+		if (ftruncate(s->fd_events, 0) == -1) {
+			ERROR("ftruncate() failed on stream file \'%s\' failed (%s).", s->name, strerror(errno));
+			return (EXIT_FAILURE);
+		}
 		lseek(s->fd_events, 0, SEEK_SET);
 	}
 
-	/* write the header */
+	/* prepare the header */
+	hlen = strlen(MAGIC_NAME) + ((s->desc == NULL) ? 0 : strlen(s->desc)) + strlen(s->name) + sizeof(uint8_t) + (4 * sizeof(uint16_t)) + sizeof(uint64_t) + 2;
+	header = malloc(hlen);
+
 	/* magic bytes */
-	write(s->fd_events, &MAGIC_NAME, strlen(MAGIC_NAME));
-	write(s->fd_events, &version, sizeof(uint16_t));
+	memcpy(header + offset, &MAGIC_NAME, strlen(MAGIC_NAME));
+	offset += strlen(MAGIC_NAME);
+
+	/* version */
+	memcpy(header + offset, &version, sizeof(uint16_t));
+	offset += sizeof(uint16_t);
+
 	/* stream name */
 	len = (uint16_t) strlen(s->name) + 1;
-	write(s->fd_events, &len, sizeof(uint16_t));
-	write(s->fd_events, s->name, len);
+	memcpy(header + offset, &len, sizeof(uint16_t));
+	offset += sizeof(uint16_t);
+	memcpy(header + offset, s->name, len);
+	offset += len;
+
 	/* stream description */
 	if (s->desc != NULL) {
 		len = (uint16_t) strlen(s->desc) + 1;
-		write(s->fd_events, &len, sizeof(uint16_t));
-		write(s->fd_events, s->desc, len);
+		memcpy(header + offset, &len, sizeof(uint16_t));
+		offset += sizeof(uint16_t);
+		memcpy(header + offset, s->desc, len);
+		offset += len;
 	} else {
 		/* no description */
 		len = 1;
-		write(s->fd_events, &len, sizeof(uint16_t));
-		write(s->fd_events, "", len);
+		memcpy(header + offset, &len, sizeof(uint16_t));
+		offset += sizeof(uint16_t);
+		memcpy(header + offset, "", len);
+		offset += len;
 	}
 	/* replay flag */
-	write(s->fd_events, &(s->replay), sizeof(uint8_t));
+	memcpy(header + offset, &(s->replay), sizeof(uint8_t));
+	offset += sizeof(uint8_t);
+
 	/* creation time */
-	t = (uint64_t) s->created;
-	write(s->fd_events, &t, sizeof(uint64_t));
+	memcpy(header + offset, &t, sizeof(uint64_t));
+	offset += sizeof(uint64_t);
+
+	/* check expected and prepared length */
+	if (offset != hlen) {
+		WARN("%s: prepared stream file header length differs expected length (%ld:%ld)", __func__, offset, hlen);
+	}
+
+	/* write the header */
+	while (((r = write(s->fd_events, &header, offset)) == -1) && (errno == EAGAIN ||errno == EINTR));
+	if (r == -1) {
+		WARN("Writing stream event file header failed (%s).", strerror(errno));
+		if (ftruncate(s->fd_events, 0) == -1) {
+			ERROR("ftruncate() failed on stream file \'%s\' failed (%s).", s->name, strerror(errno));
+		}
+		free(header);
+		return (EXIT_FAILURE);
+	}
+	free(header);
 
 	/* set where the data starts */
 	s->data = lseek(s->fd_events, 0, SEEK_CUR);
@@ -415,6 +469,7 @@ static struct stream *read_fileheader(const char* filepath)
 	uint16_t magic_number;
 	uint16_t len;
 	uint64_t t;
+	int r;
 
 	/* open the file */
 	fd = open(filepath, O_RDWR);
@@ -427,27 +482,43 @@ static struct stream *read_fileheader(const char* filepath)
 	s = malloc(sizeof(struct stream));
 	s->fd_events = fd;
 	/* check magic bytes */
-	read(s->fd_events, &magic_name, strlen(MAGIC_NAME));
+	if ((r = read(s->fd_events, &magic_name, strlen(MAGIC_NAME))) <= 0) {
+		goto read_fail;
+	}
 	if (strncmp(magic_name, MAGIC_NAME, strlen(MAGIC_NAME)) != 0) {
 		/* file is not of libnetconf's stream file format */
 		free(s);
 		return (NULL);
 	}
-	read(s->fd_events, &magic_number, sizeof(uint16_t));
+	if ((r = read(s->fd_events, &magic_number, sizeof(uint16_t))) <= 0) {
+		goto read_fail;
+	}
 	/* \todo: handle different endianity and versions */
 
 	/* read the stream name */
-	read(s->fd_events, &len, sizeof(uint16_t));
+	if ((r = read(s->fd_events, &len, sizeof(uint16_t))) <= 0) {
+		goto read_fail;
+	}
 	s->name = malloc(len * sizeof(char));
-	read(s->fd_events, s->name, len);
+	if ((r = read(s->fd_events, s->name, len)) <= 0) {
+		goto read_fail;
+	}
 	/* read the description of the stream */
-	read(s->fd_events, &len, sizeof(uint16_t));
+	if ((r = read(s->fd_events, &len, sizeof(uint16_t))) <= 0) {
+		goto read_fail;
+	}
 	s->desc = malloc(len * sizeof(char));
-	read(s->fd_events, s->desc, len);
+	if ((r = read(s->fd_events, s->desc, len)) <= 0) {
+		goto read_fail;
+	}
 	/* read the replay flag */
-	read(s->fd_events, &(s->replay), sizeof(uint8_t));
+	if ((r = read(s->fd_events, &(s->replay), sizeof(uint8_t))) <= 0) {
+		goto read_fail;
+	}
 	/* read creation time */
-	read(s->fd_events, &(t), sizeof(uint64_t));
+	if ((r = read(s->fd_events, &(t), sizeof(uint64_t))) <= 0) {
+		goto read_fail;
+	}
 	s->created = (time_t)t;
 
 	s->locked = 0;
@@ -459,6 +530,12 @@ static struct stream *read_fileheader(const char* filepath)
 	s->data = lseek(s->fd_events, 0, SEEK_CUR);
 
 	return (s);
+
+read_fail:
+	ERROR("Reading stream file header failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+	close (fd);
+	free(s);
+	return (NULL);
 }
 
 /*
@@ -508,7 +585,10 @@ static struct stream* ncntf_stream_get(const char* stream)
 	 */
 	if (s == NULL) {
 		/* try to localize so far unrecognized stream file */
-		asprintf(&filepath, "%s/%s.events", streams_path, stream);
+		if (asprintf(&filepath, "%s/%s.events", streams_path, stream) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
 		if (((s = read_fileheader(filepath)) != NULL) && (map_rules(s) == 0)) {
 			/* add the stream file into the stream list */
 			s->next = streams;
@@ -664,7 +744,11 @@ static int ncntf_streams_init(void)
 			continue;
 		}
 
-		asprintf(&filepath, "%s/%s", streams_path, filelist[n]->d_name);
+		if (asprintf(&filepath, "%s/%s", streams_path, filelist[n]->d_name) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			free(filelist[n]);
+			continue;
+		}
 		if ((s = read_fileheader(filepath)) != NULL && (map_rules(s) == 0)) {
 			/* add the stream file into the stream list */
 			s->next = streams;
@@ -984,8 +1068,10 @@ void ncntf_stream_iter_start(const char* stream)
 	pthread_mutex_unlock(streams_mut);
 
 	/* subscribe DBus signals for the stream */
-	asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
-			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream);
+	if (asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
+			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream) == -1) {
+		WARN("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+	}
 	dbus_error_init(&err);
 
 	DBG_LOCK("dbus_mut");
@@ -1014,8 +1100,10 @@ void ncntf_stream_iter_finnish(const char* stream)
 	int *replay_done;
 
 	/* unsubscribe DBus */
-	asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
-			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream);
+	if (asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
+			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream) == -1) {
+		WARN("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+	}
 	dbus_error_init(&err);
 
 	DBG_LOCK("dbus_mut");
@@ -1052,6 +1140,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 	int* replay_done;
 	char* time_s;
 	time_t time_t;
+	int r;
 
 	if (ncntf_config == NULL) {
 		return (NULL);
@@ -1091,8 +1180,12 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 			if (*replay_done == 0) {
 				/* send replayComplete notification */
 				*replay_done = 1;
-				asprintf(&text, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
-							"<eventTime>%s</eventTime><replayComplete/></notification>", time_s = nc_time2datetime(time_t = time(NULL)));
+				if (asprintf(&text, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
+							"<eventTime>%s</eventTime><replayComplete/></notification>", time_s = nc_time2datetime(time_t = time(NULL))) == -1) {
+					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+					WARN("Sending replayComplete failed due to previous error.");
+					text = NULL;
+				}
 				free(time_s);
 				if (event_time != NULL) {
 					*event_time = time_t;
@@ -1168,8 +1261,14 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 		}
 
 		if (ncntf_stream_lock(s) == 0) {
-			read(s->fd_events, &len, sizeof(int32_t));
-			read(s->fd_events, &t, sizeof(uint64_t));
+			if ((r = read(s->fd_events, &len, sizeof(int32_t))) <= 0) {
+				ERROR("Reading stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+				return (NULL);
+			}
+			if ((r = read(s->fd_events, &t, sizeof(uint64_t))) <= 0) {
+				ERROR("Reading stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+				return (NULL);
+			}
 
 			/* check boundaries */
 			if ((start != -1) && (start > t)) {
@@ -1195,7 +1294,10 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 
 			/* we're interested, read content */
 			text = malloc(len * sizeof(char));
-			read(s->fd_events, text, len);
+			if ((r = read(s->fd_events, text, len)) <= 0) {
+				ERROR("Reading stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+				return (NULL);
+			}
 			ncntf_stream_unlock(s);
 			break; /* end the reading loop */
 		} else {
@@ -1313,6 +1415,8 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 	struct stream* s;
 	int32_t len;
 	int poffset, i, j;
+	size_t r;
+	off_t offset;
 	uint64_t etime64;
 	va_list params;
 	DBusMessage *signal = NULL;
@@ -1376,21 +1480,28 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 				va_end(params);
 				return (EXIT_FAILURE);
 			}
-			asprintf(&aux2, "<username>%s</username>"
+			if (asprintf(&aux2, "<username>%s</username>"
 					"<session-id>%s</session-id>"
 					"<source-host>%s</source-host>",
 					session->username,
 					session->session_id,
-					session->hostname);
+					session->hostname) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				aux2 = NULL;
+			}
 			break;
 		}
 
 		/* no more parameters */
 		va_end(params);
 
-		asprintf(&content, "<netconf-config-change><datastore>%s</datastore>"
+		if (asprintf(&content, "<netconf-config-change><datastore>%s</datastore>"
 				"%s</netconf-config-change>",
-				aux1, aux2);
+				aux1, (aux2 == NULL) ? "" : aux2) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			free(aux2);
+			return (EXIT_FAILURE);
+		}
 		free(aux2);
 
 		break;
@@ -1434,11 +1545,17 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 				 */
 				if ((old->list[j][poffset] == '?' || old->list[j][poffset] == '\0')
 						&& (strcmp(new->list[i], old->list[j]) != 0)) {
-					asprintf(&aux1, "<modified-capability>%s</modified-capability>", new->list[i]);
+					if (asprintf(&aux1, "<modified-capability>%s</modified-capability>", new->list[i]) == -1) {
+						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+						aux1 = NULL;
+					}
 				}
 			} else {
 				/* aux1 is a new capability */
-				asprintf(&aux1, "<added-capability>%s</added-capability>", new->list[i]);
+				if (asprintf(&aux1, "<added-capability>%s</added-capability>", new->list[i]) == -1) {
+					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+					aux1 = NULL;
+				}
 			}
 
 			if (aux1 != NULL) {
@@ -1483,14 +1600,17 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 			if (new->list[j] == NULL) {
 				aux1 = NULL;
 				/* old->list[i] is deleted capability */
-				asprintf(&aux1, "<deleted-capability>%s</deleted-capability>", old->list[i]);
-				if (aux2 != NULL) {
-					aux2 = realloc(aux2, strlen(aux2) + strlen(aux1) + 1);
+				if (asprintf(&aux1, "<deleted-capability>%s</deleted-capability>", old->list[i]) == -1) {
+					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 				} else {
-					aux2 = calloc(strlen(aux1) + 1, sizeof(char));
+					if (aux2 != NULL) {
+						aux2 = realloc(aux2, strlen(aux2) + strlen(aux1) + 1);
+					} else {
+						aux2 = calloc(strlen(aux1) + 1, sizeof(char));
+					}
+					strncat(aux2, aux1, strlen(aux1));
+					free(aux1);
 				}
-				strncat(aux2, aux1, strlen(aux1));
-				free(aux1);
 			}
 		}
 
@@ -1510,24 +1630,29 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 				va_end(params);
 				return (EXIT_FAILURE);
 			}
-			asprintf(&aux1, "<username>%s</username>"
+			if (asprintf(&aux1, "<username>%s</username>"
 					"<session-id>%s</session-id>"
 					"<source-host>%s</source-host>",
 					session->username,
 					session->session_id,
-					session->hostname);
+					session->hostname) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				aux1 = NULL;
+			}
 			break;
 		}
 
 		/* no more parameters */
 		va_end(params);
 
-		if (aux2 == NULL) {
-			aux2 = strdup("");
+		if (asprintf(&content, "<netconf-capability-change>%s%s</netconf-capability-change>",
+				(aux1 == NULL) ? "" : aux1,
+				(aux2 == NULL) ? "" : aux2) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			free(aux1);
+			free(aux2);
+			return (EXIT_FAILURE);
 		}
-
-		asprintf(&content, "<netconf-capability-change>%s%s</netconf-capability-change>",
-				aux1, aux2);
 		free(aux1);
 		free(aux2);
 		break;
@@ -1538,14 +1663,18 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 			va_end(params);
 			return (EXIT_FAILURE);
 		}
-		asprintf(&content, "<netconf-session-start><username>%s</username>"
+		if (asprintf(&content, "<netconf-session-start><username>%s</username>"
 				"<session-id>%s</session-id>"
 				"<source-host>%s</source-host></netconf-session-start>",
 				session->username,
 				session->session_id,
-				session->hostname);
+				session->hostname) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			va_end(params);
+			return (EXIT_FAILURE);
+		}
 
-		/* no more parameters */
+		/* no more parameters - till here we need session parameter */
 		va_end(params);
 
 		break;
@@ -1564,27 +1693,34 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 		if (reason == NC_SESSION_TERM_KILLED) {
 			aux1 = va_arg(params, char*);
 			if (aux1 != NULL) {
-				asprintf(&aux2, "<killed-by>%s</killed-by>", aux1);
+				if (asprintf(&aux2, "<killed-by>%s</killed-by>", aux1) == -1) {
+					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+					aux2 = strdup("<killed-by/>");
+				}
 			}
-		}
-		/* if termination type is not kill, killed-by will not be used */
-		if (aux2 == NULL) {
-			/* aux2 have to be dynamically allocated */
-			aux2 = strdup("");
 		}
 
 		/* prepare part of the content for the specific termination reason */
-		asprintf(&aux1, "<termination-reason>%s</termination-reason>", nc_session_term_string(reason));
+		if (asprintf(&aux1, "<termination-reason>%s</termination-reason>", nc_session_term_string(reason)) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			aux1 = strdup("<termination-reason/>");
+		}
 
 		/* compound the event content */
-		asprintf(&content, "<netconf-session-end><username>%s</username>"
+		if (asprintf(&content, "<netconf-session-end><username>%s</username>"
 				"<session-id>%s</session-id>"
 				"<source-host>%s</source-host>"
 				"%s%s</netconf-session-end>",
 				session->username,
 				session->session_id,
 				session->hostname,
-				aux2, aux1);
+				(aux2 == NULL) ? "" : aux2,
+				(aux1 == NULL) ? "" : aux1) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			free(aux2);
+			free(aux1);
+			return (EXIT_FAILURE);
+		}
 		free(aux2);
 		free(aux1);
 
@@ -1651,10 +1787,23 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 		if (ncntf_event_isallowed(s->name, ename) != 0) {
 			/* log the event to the stream file */
 			if (ncntf_stream_lock(s) == 0) {
-				lseek(s->fd_events, 0, SEEK_END);
-				write(s->fd_events, &len, sizeof(int32_t)); /* length of the record */
-				write(s->fd_events, &etime64, sizeof(uint64_t)); /* event time in time_t format */
-				write(s->fd_events, record, len); /* event record - <notification> xml document */
+				offset = lseek(s->fd_events, 0, SEEK_END);
+				while (((r = write(s->fd_events, &len, sizeof(int32_t))) == -1) && (errno == EAGAIN ||errno == EINTR));
+				if (r == -1) { goto write_failed; }
+				while (((r = write(s->fd_events, &etime64, sizeof(uint64_t))) == -1) && (errno == EAGAIN ||errno == EINTR));
+				if (r == -1) { goto write_failed; }
+				while (((r = write(s->fd_events, record, len)) == -1) && (errno == EAGAIN ||errno == EINTR));
+				if (r == -1) { goto write_failed; }
+
+write_failed:
+				if (r == -1) {
+					WARN("Writing event into stream file failed (%s).", strerror(errno));
+					/* revert changes */
+					if (ftruncate(s->fd_events, offset) == -1) {
+						ERROR("ftruncate() failed on stream file \'%s\' failed (%s).", s->name, strerror(errno));
+					}
+					lseek(s->fd_events, offset, SEEK_SET);
+				}
 				ncntf_stream_unlock(s);
 			} else {
 				WARN("Unable to write event %s into stream file %s (locking failed).", ename, s->name);
@@ -1673,7 +1822,13 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 				continue;
 			}
 			/* create a signal and check for errors */
-			asprintf(&signal_object, "%s/%s", NC_NTF_DBUS_PATH, s->name);
+			if (asprintf(&signal_object, "%s/%s", NC_NTF_DBUS_PATH, s->name) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				WARN("Announcing event via DBus failed due to previous error.");
+				goto cleanup_dbus_mut;
+				/* event already successfully stored, return SUCCESS */
+				ret = EXIT_SUCCESS;
+			}
 			signal = dbus_message_new_signal(signal_object, NC_NTF_DBUS_INTERFACE, "Event");
 			free(signal_object);
 			if (signal == NULL) {
@@ -1737,7 +1892,11 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 		return (NULL);
 	}
 
-	asprintf(&notif_data, "<notification>%s</notification>", content);
+	if (asprintf(&notif_data, "<notification>%s</notification>", content) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		free(etime);
+		return (NULL);
+	}
 	notif_doc = xmlReadMemory(notif_data, strlen(notif_data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	if (notif_doc == NULL) {
 		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
@@ -2042,7 +2201,9 @@ nc_reply *ncntf_subscription_check(const nc_rpc* subscribe_rpc)
 		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		e = nc_err_new(NC_ERR_INVALID_VALUE);
-		asprintf(&auxs, "Requested stream \'%s\' does not exist.", stream);
+		if (asprintf(&auxs, "Requested stream \'%s\' does not exist.", stream) == -1) {
+			auxs = strdup("Requested stream does not exist");
+		}
 		nc_err_set(e, NC_ERR_PARAM_MSG, auxs);
 		free(auxs);
 		goto cleanup;
@@ -2236,14 +2397,20 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	free(stream);
 
 	/* send notificationComplete Notification */
-	ntf = malloc(sizeof(nc_rpc));
+	ntf = calloc(1, sizeof(nc_rpc));
 	if (ntf == NULL) {
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 		session->ntf_active = 0;
 		return (-1);
 	}
-	asprintf(&event, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
-			"<eventTime>%s</eventTime><notificationComplete/></notification>", time_s = nc_time2datetime(time(NULL)));
+	if (asprintf(&event, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
+			"<eventTime>%s</eventTime><notificationComplete/></notification>", time_s = nc_time2datetime(time(NULL))) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		WARN("Sending notificationComplete failed due to previous error.");
+		ncntf_notif_free(ntf);
+		session->ntf_active = 0;
+		return(count);
+	}
 	free (time_s);
 	ntf->doc = xmlReadMemory(event, strlen(event), NULL, NULL, 0);
 	ntf->msgid = NULL;

@@ -397,9 +397,13 @@ char **get_schemas_capabilities(void)
 		if (get_model_info(ds->datastore->model, &name, &version, &namespace) != 0) {
 			continue;
 		}
-		asprintf(&(retval[i]), "%s?module=%s%s%s", namespace, name,
+		if (asprintf(&(retval[i]), "%s?module=%s%s%s", namespace, name,
 				(version != NULL && strlen(version) > 0) ? "&amp;revision=" : "",
-				(version != NULL && strlen(version) > 0) ? version : "");
+				(version != NULL && strlen(version) > 0) ? version : "") == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			/* move iterator back, then variables will be freed and iterator will go back to the current value */
+			i--;
+		}
 		free(namespace); namespace = NULL;
 		free(name); name = NULL;
 		free(version); version = NULL;
@@ -425,13 +429,16 @@ char* get_schemas()
 			continue;
 		}
 		aux = NULL;
-		asprintf(&aux,"<schema><identifier>%s</identifier>"
+		if (asprintf(&aux,"<schema><identifier>%s</identifier>"
 				"<version>%s</version>"
 				"<format>yin</format>"
 				"<namespace>%s</namespace>"
 				"<location>NETCONF</location>"
 				"</schema>",
-				schema_name, version, namespace);
+				schema_name, version, namespace) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			aux = NULL;
+		}
 		free(schema_name);
 		free(version);
 		free(namespace);
@@ -441,14 +448,17 @@ char* get_schemas()
 
 		if (schema == NULL) {
 			schema = aux;
-		} else {
+		} else if (aux != NULL) {
 			schema = realloc(schema, strlen(schema) + strlen(aux) + 1);
 			strcat(schema, aux);
 		}
 	}
 
 	if (schema != NULL) {
-		asprintf(&schemas, "<schemas>%s</schemas>", schema);
+		if (asprintf(&schemas, "<schemas>%s</schemas>", schema) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			schemas = NULL;
+		}
 		free(schema);
 	}
 	return (schemas);
@@ -494,34 +504,52 @@ char* get_internal_state(const struct nc_session *session)
 		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) == 1) {
 			info = ds->datastore->func.get_lockinfo (ds->datastore, NC_DATASTORE_STARTUP);
 			if (info != NULL && info->sid != NULL ) {
-				asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
-						"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time);
+				if (asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
+						"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time) == -1) {
+					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+					aux = NULL;
+				}
 			}
-			asprintf (&ds_startup, "<datastore><name>startup</name>%s</datastore>",
-			        (aux != NULL )? aux : "");
+			if (asprintf (&ds_startup, "<datastore><name>startup</name>%s</datastore>",
+			        (aux != NULL )? aux : "") == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				ds_startup = NULL;
+			}
 			free (aux);
 			aux = NULL;
 		}
 		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) == 1) {
 			info = ds->datastore->func.get_lockinfo (ds->datastore, NC_DATASTORE_CANDIDATE);
 			if (info != NULL && info->sid != NULL ) {
-				asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
-						"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time);
+				if (asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
+						"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time) == -1) {
+					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+					aux = NULL;
+				}
 			}
-			asprintf (&ds_cand, "<datastore><name>candidate</name>%s</datastore>",
-			        (aux != NULL )? aux : "");
+			if (asprintf (&ds_cand, "<datastore><name>candidate</name>%s</datastore>",
+			        (aux != NULL )? aux : "") == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				ds_cand = NULL;
+			}
 			free (aux);
 			aux = NULL;
 		}
 		info = ds->datastore->func.get_lockinfo (ds->datastore, NC_DATASTORE_RUNNING);
 		if (info != NULL && info->sid != NULL ) {
-			asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
-					"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time);
+			if (asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
+					"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				aux = NULL;
+			}
 		}
-		asprintf (&ds_stats, "<datastores><datastore><name>running</name>%s</datastore>%s%s</datastores>",
+		if (asprintf (&ds_stats, "<datastores><datastore><name>running</name>%s</datastore>%s%s</datastores>",
 		        (aux != NULL )? aux : "",
 		        (ds_startup != NULL) ? ds_startup : "",
-		        (ds_cand != NULL) ? ds_cand : "");
+		        (ds_cand != NULL) ? ds_cand : "") == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			ds_stats = NULL;
+		}
 		free (ds_startup);
 		free (ds_cand);
 		free (aux);
@@ -541,7 +569,7 @@ char* get_internal_state(const struct nc_session *session)
 	 * statistics
 	 */
 	if (nc_stats != NULL) {
-		asprintf(&stats, "<statistics><netconf-start-time>%s</netconf-start-time>"
+		if (asprintf(&stats, "<statistics><netconf-start-time>%s</netconf-start-time>"
 				"<in-bad-hellos>%u</in-bad-hellos>"
 				"<in-sessions>%u</in-sessions>"
 				"<dropped-sessions>%u</dropped-sessions>"
@@ -556,17 +584,23 @@ char* get_internal_state(const struct nc_session *session)
 				nc_stats->counters.in_rpcs,
 				nc_stats->counters.in_bad_rpcs,
 				nc_stats->counters.out_rpc_errors,
-				nc_stats->counters.out_notifications);
+				nc_stats->counters.out_notifications) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			stats = NULL;
+		}
 	}
 
 	/* get it all together */
-	asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s%s</netconf-state>%s", NC_NS_MONITORING,
+	if (asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s%s</netconf-state>%s", NC_NS_MONITORING,
 			(session->capabilities_original != NULL) ? session->capabilities_original : "",
 			(ds_stats != NULL) ? ds_stats : "",
 			(sessions != NULL) ? sessions : "",
 			(schemas != NULL) ? schemas : "",
 			(stats != NULL) ? stats : "",
-			(notifs != NULL) ? notifs : "");
+			(notifs != NULL) ? notifs : "") == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		retval = NULL;
+	}
 	if (retval == NULL) {
 		retval = strdup("");
 	}
@@ -1081,7 +1115,10 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter * filter, xmlNodePtr *ne
 
 	switch (filter->type) {
 	case NC_FILTER_SUBTREE:
-		asprintf(&filter_text, "<filter>%s</filter>", filter->content);
+		if (asprintf(&filter_text, "<filter>%s</filter>", filter->content) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return EXIT_FAILURE;
+		}
 		if ((filter_doc = xmlReadDoc(BAD_CAST filter_text, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN)) == NULL) {
 			return EXIT_FAILURE;
 		}
@@ -1271,7 +1308,11 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 				}
 			}
 			data2 = data;
-			asprintf(&data, "<data>%s</data>", data2);
+			if (asprintf(&data, "<data>%s</data>", data2) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				break;
+			}
 			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			if (aux_doc && aux_doc->children) {
 				doc_merged = xmlNewDoc(BAD_CAST "1.0");
@@ -1346,7 +1387,11 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			doc_merged = xmlNewDoc(BAD_CAST "1.0");
 		} else {
 			data2 = data;
-			asprintf(&data, "<data>%s</data>", data2);
+			if (asprintf(&data, "<data>%s</data>", data2) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				break;
+			}
 			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			if (aux_doc && aux_doc->children) {
 				doc_merged = xmlNewDoc(BAD_CAST "1.0");
@@ -1445,7 +1490,11 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 				goto apply_editcopyconfig;
 			}
 
-			asprintf(&data, "<config>%s</config>", config);
+			if (asprintf(&data, "<config>%s</config>", config) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				break;
+			}
 			free(config);
 			config = NULL;
 			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);

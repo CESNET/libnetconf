@@ -205,7 +205,10 @@ void callback_sshauth_interactive_default (const char* name,
 	}
 
 	for (i=0; i<num_prompts; i++) {
-		fwrite (prompts[i].text, sizeof(char), prompts[i].length, stdout);
+		if (fwrite (prompts[i].text, sizeof(char), prompts[i].length, stdout) == 0) {
+			ERROR("Writing authentication prompt into stdout failed.");
+			return;
+		}
 		fflush(stdout);
 		if (prompts[i].echo == 0) {
 			/* system("stty -echo"); */
@@ -254,7 +257,10 @@ char* callback_sshauth_publickey_default (const char* username,
 	}
 
 	fprintf(stdout, "Enter passphrase for key '%s':", privatekey_filepath);
-	system("stty -echo");
+	if (system("stty -echo") == -1) {
+		ERROR("system() call failed (stty -echo).");
+		return (NULL);
+	}
 	fflush(stdin);
 
 	while ((c = getchar ()) != '\n') {
@@ -265,7 +271,10 @@ char* callback_sshauth_publickey_default (const char* username,
 		buf[len++] = (char)c;
 	}
 	buf[len++] = 0; /* terminating null byte */
-	system ("stty echo");
+	if (system ("stty echo") == -1) {
+		ERROR("system() call failed (stty echo).");
+		return (NULL);
+	}
 	fprintf(stdout, "\n");
 
 	return (buf);
@@ -281,7 +290,10 @@ int callback_ssh_hostkey_check_default (const char* hostname, int keytype, const
 	fprintf(stdout, "Are you sure you want to continue connecting (yes/no)? ");
 
 again:
-	fscanf(stdin, "%4s", answer);
+	if (fscanf(stdin, "%4s", answer) == EOF) {
+		ERROR("fscanf() failed (%s).", strerror(errno));
+		return (EXIT_FAILURE);
+	}
 	while ((c = getchar ()) != EOF && c != '\n');
 
 	fflush(stdin);
@@ -312,9 +324,15 @@ void nc_set_privatekey_path (const char* path)
 	if (path != NULL) {
 		if ((key = fopen (path, "r")) != NULL) {
 			/* Key type line */
-			fgets(line, sizeof(line), key);
+			if (fgets(line, sizeof(line), key) == NULL) {
+				ERROR("fgets() on %s failed.", path);
+				return; /* error */
+			}
 			/* encryption information or key */
-			fgets(line, sizeof(line), key);
+			if (fgets(line, sizeof(line), key) == NULL) {
+				ERROR("fgets() on %s failed.", path);
+				return; /* error */
+			}
 			if (strcasestr (line, "encrypted") != NULL) {
 				callbacks.key_protected[i] = 1;
 			}

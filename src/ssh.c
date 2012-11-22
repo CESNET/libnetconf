@@ -498,14 +498,20 @@ static char* serialize_cpblts(const struct nc_cpblts *capabilities)
 	}
 
 	for (i = 0; i < capabilities->items; i++) {
-		asprintf(&retval, "%s<capability>%s</capability>",
+		if (asprintf(&retval, "%s<capability>%s</capability>",
 				(aux == NULL) ? "" : aux,
-				capabilities->list[i]);
+				capabilities->list[i]) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			continue;
+		}
 		free(aux);
 		aux = retval;
 		retval = NULL;
 	}
-	asprintf(&retval, "<capabilities>%s</capabilities>", aux);
+	if (asprintf(&retval, "<capabilities>%s</capabilities>", aux) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		retval = NULL;
+	}
 	free(aux);
 	return(retval);
 }
@@ -614,15 +620,19 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 
 			if (strlen(list) > 0) {
 				list[0] = '='; /* replace initial comma */
-				asprintf(&wdc, "urn:ietf:params:netconf:capability:with-defaults:1.0%s&amp;also-supported%s", wdc_aux, list);
+				r = asprintf(&wdc, "urn:ietf:params:netconf:capability:with-defaults:1.0%s&amp;also-supported%s", wdc_aux, list);
 			} else {
 				/* no also-supported */
-				asprintf(&wdc, "urn:ietf:params:netconf:capability:with-defaults:1.0%s", wdc_aux);
+				r = asprintf(&wdc, "urn:ietf:params:netconf:capability:with-defaults:1.0%s", wdc_aux);
 			}
 
-			/* add/update capabilities list */
-			nc_cpblts_add(server_cpblts, wdc);
-			free(wdc);
+			if (r != -1) {
+				/* add/update capabilities list */
+				nc_cpblts_add(server_cpblts, wdc);
+				free(wdc);
+			} else {
+				WARN("asprintf() failed - with-defaults capability parameters may not be set properly (%s:%d).", __FILE__, __LINE__);
+			}
 		}
 	}
 	retval->capabilities_original = serialize_cpblts(server_cpblts);
@@ -693,9 +703,9 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 static int find_ssh_keys ()
 {
 	struct passwd *pw;
-	char * user_home, *key_pub_path, *key_priv_path;
+	char * user_home, *key_pub_path = NULL, *key_priv_path = NULL;
 	char * key_names[SSH2_KEYS] = {"id_rsa", "id_dsa", "id_ecdsa"};
-	int i, retval = EXIT_FAILURE;
+	int i, x, y, retval = EXIT_FAILURE;
 
 	if ((user_home = getenv("HOME")) == NULL) {
 		if ((pw = getpwuid(getuid())) == NULL) {
@@ -707,8 +717,12 @@ static int find_ssh_keys ()
 	/* search in the same location as ssh do (~/.ssh/) */
 	VERB ("Searching for key pairs in standard ssh directory.");
 	for (i=0; i<SSH2_KEYS; i++) {
-		asprintf (&key_priv_path, "%s/.ssh/%s", user_home, key_names[i]);
-		asprintf (&key_pub_path, "%s/.ssh/%s.pub", user_home, key_names[i]);
+		x = asprintf (&key_priv_path, "%s/.ssh/%s", user_home, key_names[i]);
+		y = asprintf (&key_pub_path, "%s/.ssh/%s.pub", user_home, key_names[i]);
+		if (x == -1 || y == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			continue;
+		}
 		if (access(key_priv_path, R_OK) == 0 && access(key_pub_path, R_OK) == 0) {
 			VERB ("Found pair %s[.pub]", key_priv_path);
 			nc_set_keypair_path (key_priv_path, key_pub_path);
@@ -756,7 +770,10 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		if (username == NULL) {
 			username = pw->pw_name;
 		}
-		asprintf(&knownhosts_file, "%s/.ssh/known_hosts", pw->pw_dir);
+		if (asprintf(&knownhosts_file, "%s/.ssh/known_hosts", pw->pw_dir) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				knownhosts_file = NULL;
+			}
 
 		/* check the existence of the known_hosts file */
 		if (knownhosts_file != NULL && access(knownhosts_file, F_OK) == 0) {

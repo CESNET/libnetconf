@@ -147,7 +147,7 @@ char* nc_clrwspace (const char* in)
 	int i, j = 0, len = strlen(in);
 	char* retval = strdup(in);
 	if (retval == NULL) {
-		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
 
@@ -245,25 +245,35 @@ char* nc_time2datetime(time_t time)
 	} else {
 		if (tm.tm_gmtoff == 0) {
 			/* time is Zulu (UTC) */
-			asprintf(&zoneshift, "Z");
+			if (asprintf(&zoneshift, "Z") == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				return (NULL);
+			}
 		} else {
 			zonediff = tm.tm_gmtoff;
 			zonediff_h = zonediff / 60 / 60;
 			zonediff_m = zonediff / 60 % 60;
-			asprintf(&zoneshift, "%s%02d:%02d",
+			if (asprintf(&zoneshift, "%s%02d:%02d",
 			                (zonediff < 0) ? "-" : "+",
 			                zonediff_h,
-			                zonediff_m);
+			                zonediff_m) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				return (NULL);
+			}
 		}
 	}
-	asprintf(&date, "%04d-%02d-%02dT%02d:%02d:%02d%s",
+	if (asprintf(&date, "%04d-%02d-%02dT%02d:%02d:%02d%s",
 			tm.tm_year + 1900,
 			tm.tm_mon + 1,
 			tm.tm_mday,
 			tm.tm_hour,
 			tm.tm_min,
 			tm.tm_sec,
-			(zoneshift == NULL)?"":zoneshift);
+	                (zoneshift == NULL) ? "" : zoneshift) == -1) {
+		free(zoneshift);
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
 	free (zoneshift);
 
 	return (date);
