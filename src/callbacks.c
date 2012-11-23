@@ -186,14 +186,14 @@ char* callback_sshauth_password_default (const char* username,
  *
  * called by libssh2, see libssh2 doc for details
  */
-void callback_sshauth_interactive_default (const char* name,
-		int name_len,
-		const char* instruction,
-		int instruction_len,
+void callback_sshauth_interactive_default (const char*  UNUSED(name),
+		int  UNUSED(name_len),
+		const char*  UNUSED(instruction),
+		int  UNUSED(instruction_len),
 		int num_prompts,
 		const LIBSSH2_USERAUTH_KBDINT_PROMPT* prompts,
 		LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
-		void** abstract)
+		void**  UNUSED(abstract))
 {
 	int i;
 	unsigned int buflen = 8;
@@ -242,8 +242,8 @@ void callback_sshauth_interactive_default (const char* name,
 	return;
 }
 
-char* callback_sshauth_publickey_default (const char* username,
-		const char* hostname,
+char* callback_sshauth_publickey_default (const char*  UNUSED(username),
+		const char*  UNUSED(hostname),
 		const char* privatekey_filepath)
 {
 	int c;

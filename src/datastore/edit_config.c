@@ -1303,7 +1303,7 @@ static int compact_edit_operations (xmlDocPtr edit_doc)
  * \return On error, non-zero is returned and err structure is filled. Zero is
  * returned on success.
  */
-int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
+int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE UNUSED(errop), struct nc_err **error)
 {
 	if (repo == NULL || edit == NULL) {
 		return (EXIT_FAILURE);

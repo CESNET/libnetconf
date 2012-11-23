@@ -130,6 +130,12 @@
  */
 #define NC_CONTENT_FORMATTED 1
 
+#ifdef __GNUC__
+#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+#else
+#  define UNUSED(x) UNUSED_ ## x
+#endif
+
 /* libnetconf's message printing */
 char prv_msg[4096];
 void prv_print(NC_VERB_LEVEL level, const char* msg);

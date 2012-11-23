@@ -37,10 +37,12 @@
  *
  */
 
-#include "datastore_empty.h"
 #include <stdlib.h>
 
-int ncds_empty_init (struct ncds_ds * ds)
+#include "../../netconf_internal.h"
+#include "datastore_empty.h"
+
+int ncds_empty_init (struct ncds_ds * UNUSED(ds))
 {
 	/* nothing to do (for now) */
 	return EXIT_SUCCESS;
@@ -54,37 +56,37 @@ void ncds_empty_free (struct ncds_ds * ds)
 }
 
 struct ncds_lockinfo lockinfo = {NC_DATASTORE_ERROR, NULL, NULL};
-const struct ncds_lockinfo *ncds_empty_lockinfo(struct ncds_ds* ds, NC_DATASTORE target)
+const struct ncds_lockinfo *ncds_empty_lockinfo(struct ncds_ds* UNUSED(ds), NC_DATASTORE UNUSED(target))
 {
 	return (&lockinfo);
 }
 
-int ncds_empty_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
+int ncds_empty_lock(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), NC_DATASTORE UNUSED(target), struct nc_err** UNUSED(error))
 {
 	return EXIT_SUCCESS;
 }
 
-int ncds_empty_unlock(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
+int ncds_empty_unlock(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), NC_DATASTORE UNUSED(target), struct nc_err** UNUSED(error))
 {
 	return EXIT_SUCCESS;
 }
 
-char* ncds_empty_getconfig(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
+char* ncds_empty_getconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), NC_DATASTORE UNUSED(target), struct nc_err** UNUSED(error))
 {
 	return strdup ("");
 }
 
-int ncds_empty_copyconfig(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, NC_DATASTORE source, char* config, struct nc_err** error)
+int ncds_empty_copyconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), NC_DATASTORE UNUSED(target), NC_DATASTORE UNUSED(source), char*  UNUSED(config), struct nc_err** UNUSED(error))
 {
 	return EXIT_SUCCESS;
 }
 
-int ncds_empty_deleteconfig(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error)
+int ncds_empty_deleteconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), NC_DATASTORE UNUSED(target), struct nc_err** UNUSED(error))
 {
 	return EXIT_SUCCESS;
 }
 
-int ncds_empty_editconfig(struct ncds_ds *ds, const struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
+int ncds_empty_editconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), NC_DATASTORE UNUSED(target), const char *  UNUSED(config), NC_EDIT_DEFOP_TYPE  UNUSED(defop), NC_EDIT_ERROPT_TYPE  UNUSED(errop), struct nc_err **UNUSED(error))
 {
 	return EXIT_SUCCESS;
 }
