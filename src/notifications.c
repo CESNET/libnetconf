@@ -1139,7 +1139,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 	DBusMessageIter signal_args;
 	int* replay_done;
 	char* time_s;
-	time_t time_t;
+	time_t tnow;
 	int r;
 
 	if (ncntf_config == NULL) {
@@ -1181,14 +1181,14 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 				/* send replayComplete notification */
 				*replay_done = 1;
 				if (asprintf(&text, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
-							"<eventTime>%s</eventTime><replayComplete/></notification>", time_s = nc_time2datetime(time_t = time(NULL))) == -1) {
+							"<eventTime>%s</eventTime><replayComplete/></notification>", time_s = nc_time2datetime(tnow = time(NULL))) == -1) {
 					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 					WARN("Sending replayComplete failed due to previous error.");
 					text = NULL;
 				}
 				free(time_s);
 				if (event_time != NULL) {
-					*event_time = time_t;
+					*event_time = tnow;
 				}
 				return (text);
 			}
@@ -1221,7 +1221,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 						}
 						dbus_message_iter_get_basic(&signal_args, &t);
 						/* check boundaries */
-						if ((start != -1) && (start > t)) {
+						if ((start != -1) && (start > (time_t)t)) {
 							/*
 							 * we're not interested in this event, it
 							 * happened before specified start time
@@ -1229,7 +1229,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 							dbus_message_unref(signal);
 							continue; /* try next signal */
 						}
-						if ((stop != -1) && (stop < t)) {
+						if ((stop != -1) && (stop < (time_t)t)) {
 							/*
 							 * we're not interested in this event, it
 							 * happened after specified stop time
@@ -1247,7 +1247,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 						dbus_message_iter_get_basic(&signal_args, &text);
 						dbus_message_unref(signal);
 						if (event_time != NULL) {
-							*event_time = t;
+							*event_time = (time_t)t;
 						}
 						return(strdup(text));
 					}
@@ -1271,7 +1271,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 			}
 
 			/* check boundaries */
-			if ((start != -1) && (start > t)) {
+			if ((start != -1) && (start > (time_t)t)) {
 				/*
 				 * we're not interested in this event, it
 				 * happened before specified start time
@@ -1281,7 +1281,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 				ncntf_stream_unlock(s);
 				continue;
 			}
-			if ((stop != -1) && (stop < t)) {
+			if ((stop != -1) && (stop < (time_t)t)) {
 				/*
 				 * we're not interested in this event, it
 				 * happened after specified stop time
@@ -1312,7 +1312,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 	pthread_mutex_unlock(streams_mut);
 
 	if (event_time != NULL) {
-		*event_time = t;
+		*event_time = (time_t)t;
 	}
 	return (text);
 }
@@ -1415,7 +1415,7 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 	struct stream* s;
 	int32_t len;
 	int poffset, i, j;
-	size_t r;
+	ssize_t r;
 	off_t offset;
 	uint64_t etime64;
 	va_list params;

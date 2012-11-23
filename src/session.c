@@ -776,7 +776,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 				VERB("Writing data into the communication channel timeouted.");
 				return (EXIT_FAILURE);
 			}
-		} while (c != strlen (buf));
+		} while (c != (ssize_t) strlen (buf));
 	}
 
 	/* write the message */
@@ -789,7 +789,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 			VERB("Writing data into the communication channel timeouted.");
 			return (EXIT_FAILURE);
 		}
-	} while (c != strlen (text));
+	} while (c != (ssize_t) strlen (text));
 	free (text);
 
 	/* close message */
@@ -807,7 +807,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 			VERB("Writing data into the communication channel timeouted.");
 			return (EXIT_FAILURE);
 		}
-	} while (c != strlen (text));
+	} while (c != (ssize_t) strlen (text));
 
 	/* unlock the session's output */
 	DBG_UNLOCK("mut_out");
@@ -895,13 +895,13 @@ static int nc_session_read_len (struct nc_session* session, size_t chunk_length,
 	return (EXIT_SUCCESS);
 }
 
-static int nc_session_read_until (struct nc_session* session, const char* endtag, int limit, char **text, size_t *len)
+static int nc_session_read_until (struct nc_session* session, const char* endtag, unsigned int limit, char **text, size_t *len)
 {
 	char *err_msg;
 	size_t rd = 0;
 	ssize_t c;
 	static char *buf = NULL;
-	static int buflen = 0;
+	static size_t buflen = 0;
 
 	/* check if we can work with the session */
 	if (session->status != NC_SESSION_STATUS_WORKING &&
