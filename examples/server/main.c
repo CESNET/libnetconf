@@ -49,6 +49,12 @@
 
 #define VERSION "0.1"
 
+#ifdef __GNUC__
+#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+#else
+#  define UNUSED(x) UNUSED_ ## x
+#endif
+
 struct srv_config {
 	struct nc_session *session;
 	ncds_id dsid;
@@ -97,7 +103,7 @@ void* notification_thread(void* arg)
 	return (NULL);
 }
 
-void process_rpc(evutil_socket_t in, short events, void *arg)
+void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 {
 	nc_rpc *rpc = NULL;
 	nc_reply *reply = NULL;
@@ -239,7 +245,7 @@ void process_rpc(evutil_socket_t in, short events, void *arg)
 	/* and run again when a next message comes */
 }
 
-int main(int argc, char *argv[])
+int main(int UNUSED(argc), char** UNUSED(argv))
 {
 	struct srv_config config;
 	struct ncds_ds* datastore;
