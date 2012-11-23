@@ -220,7 +220,8 @@ static int get_keys(keyList keys, xmlNodePtr node, xmlNodePtr **result)
 {
 	xmlChar *str = NULL;
 	char* s, *token;
-	int i, j, c;
+	unsigned int i, c;
+	int j;
 
 	assert(keys != NULL);
 	assert(node != NULL);
