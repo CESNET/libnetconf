@@ -228,7 +228,7 @@ userinput:
 			}
 			fprintf (stdout, "): ");
 			if (scanf ("%1023s", datastore) == EOF) {
-				ERROR("Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+				ERROR(operation, "Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
 				return (NC_DATASTORE_ERROR);
 			}
 
@@ -290,7 +290,7 @@ userinput:
 		/* get mandatory argument */
 		INSTRUCTION("Select with-defaults mode (report-all|report-all-tagged|trim|explicit): ");
 		if (scanf ("%127s", mode_aux) == EOF) {
-			ERROR("Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+			ERROR(operation, "Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
 			return (NCWD_MODE_DISABLED);
 		}
 		mode = mode_aux;
@@ -958,7 +958,7 @@ int cmd_killsession (char *arg)
 			/* get mandatory argument */
 			INSTRUCTION("Set session ID to kill: ");
 			if (scanf ("%1023s", id) == EOF) {
-				ERROR("Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+				ERROR("kill-session", "Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
 				clear_arglist(&cmd);
 				return (EXIT_FAILURE);
 			}
@@ -1223,7 +1223,7 @@ int cmd_getschema (char *arg)
 
 		INSTRUCTION("Set identifier of the schema to retrieve: ");
 		if (scanf ("%1023s", identifier) == EOF) {
-			ERROR("Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+			ERROR("get-schema", "Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
 			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
@@ -1417,7 +1417,7 @@ int cmd_connect (char* arg)
 		hostfree = 1;
 		INSTRUCTION("Hostname to connect to: ");
 		if (scanf ("%1023s", host) == EOF) {
-			ERROR("Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+			ERROR("connect", "Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
 			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
