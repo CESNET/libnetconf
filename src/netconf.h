@@ -157,7 +157,7 @@ typedef enum NC_RPC_TYPE {
 	NC_RPC_HELLO, /**< \<hello\> message type, same as NC_REPLY_HELLO */
 	NC_RPC_DATASTORE_READ, /**< \<rpc\> contains operation reading datastore */
 	NC_RPC_DATASTORE_WRITE, /**< \<rpc\> contains operation modifying datastore */
-	NC_RPC_SESSION, /**< \<rpc\> contains operation affecting session */
+	NC_RPC_SESSION /**< \<rpc\> contains operation affecting session */
 } NC_RPC_TYPE;
 
 /**
@@ -237,7 +237,7 @@ typedef enum {
 	 * session-id in error-info - session ID of session holding the
 	 * requested lock, contained in 'lock-denied' error.
 	 */
-	NC_ERR_PARAM_INFO_SID,
+	NC_ERR_PARAM_INFO_SID
 } NC_ERR_PARAM;
 
 /**
@@ -258,7 +258,7 @@ typedef enum NC_DATASTORE_TYPE {
  */
 typedef enum NC_FILTER_TYPE {
 	NC_FILTER_UNKNOWN,
-	NC_FILTER_SUBTREE//!< NC_FILTER_SUBTREE
+	NC_FILTER_SUBTREE /**< NC_FILTER_SUBTREE */
 } NC_FILTER_TYPE;
 
 /* default operations IDs for edit-config */
@@ -299,10 +299,10 @@ typedef enum {
  * @ingroup genAPI
  */
 typedef enum {
-	NC_VERB_ERROR,  //!< Print only error messages.
-	NC_VERB_WARNING,//!< Print error and warning messages.
-	NC_VERB_VERBOSE,//!< Besides errors and warnings, print some other verbose messages.
-	NC_VERB_DEBUG   //!< Print all messages including some development debug messages.
+	NC_VERB_ERROR,  /**< Print only error messages. */
+	NC_VERB_WARNING,/**< Print error and warning messages. */
+	NC_VERB_VERBOSE,/**< Besides errors and warnings, print some other verbose messages. */
+	NC_VERB_DEBUG   /**< Print all messages including some development debug messages. */
 } NC_VERB_LEVEL;
 
 /**
