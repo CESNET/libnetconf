@@ -1838,7 +1838,7 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 {
 	int ret;
 	struct nc_msg *msg;
-	nc_msgid retval = NULL;
+	const nc_msgid retval = NULL;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to send <rpc-reply>.");
@@ -1908,12 +1908,12 @@ int nc_msgid_compare (const nc_msgid id1, const nc_msgid id2)
 
 NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_reply** reply)
 {
-	nc_msgid msgid1, msgid2;
+	const nc_msgid msgid;
 	NC_MSG_TYPE replytype;
 	struct nc_msg* queue = NULL, *msg, *p = NULL;
 
-	msgid1 = nc_session_send_rpc(session, rpc);
-	if (msgid1 == NULL) {
+	msgid = nc_session_send_rpc(session, rpc);
+	if (msgid == NULL) {
 		return (NC_MSG_UNKNOWN);
 	}
 
@@ -1925,7 +1925,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 		/* search in the queue for the reply with required message ID */
 		for (msg = queue; msg != NULL; msg = msg->next) {
 			/* test message IDs */
-			if (nc_msgid_compare(msgid1, nc_reply_get_msgid((nc_reply*) msg)) == 0) {
+			if (nc_msgid_compare(msgid, nc_reply_get_msgid((nc_reply*) msg)) == 0) {
 				break;
 			}
 
@@ -1964,7 +1964,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 		replytype = nc_session_recv_reply(session, -1, reply);
 		if (replytype == NC_MSG_REPLY) {
 			/* compare message ID */
-			if (nc_msgid_compare(msgid1, msgid2 = nc_reply_get_msgid(*reply)) != 0) {
+			if (nc_msgid_compare(msgid, nc_reply_get_msgid(*reply)) != 0) {
 				/* reply with different message ID is expected */
 				DBG_LOCK("mut_mqueue");
 				pthread_mutex_lock(&(session->mut_mqueue));

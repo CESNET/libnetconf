@@ -69,8 +69,19 @@ struct nc_cpblts;
 /**
  * @ingroup session
  * @brief Type representing NETCONF message-id attribute.
+ *
+ * It corresponds to the following typedef:
+ * typedef char* nc_msgid;
+ *
+ * We use macro to avoid compiler warning of 'const nc_msgid' as return type
+ * of functions (because const is applied as 'char* const funct()' which is
+ * meaningless).
+ *
+ * Yes, I know that const char* means "pointer to constant character (not
+ * string)", but I want to be clear from the API, that function returns pointer
+ * to something that should not be changed.
  */
-typedef char* nc_msgid;
+#define nc_msgid char*
 
 /**
  * @brief NETCONF session description structure
