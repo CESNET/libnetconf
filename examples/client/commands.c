@@ -227,7 +227,10 @@ userinput:
 				fprintf (stdout, "|candidate");
 			}
 			fprintf (stdout, "): ");
-			scanf ("%1023s", datastore);
+			if (scanf ("%1023s", datastore) == EOF) {
+				ERROR("Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+				return (NC_DATASTORE_ERROR);
+			}
 
 			/* validate argument */
 			if (strcmp (datastore, "running") == 0) {
@@ -286,7 +289,10 @@ static NCWD_MODE get_withdefaults(const char* operation, const char* mode)
 userinput:
 		/* get mandatory argument */
 		INSTRUCTION("Select with-defaults mode (report-all|report-all-tagged|trim|explicit): ");
-		scanf ("%127s", mode_aux);
+		if (scanf ("%127s", mode_aux) == EOF) {
+			ERROR("Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+			return (NCWD_MODE_DISABLED);
+		}
 		mode = mode_aux;
 	}
 
@@ -951,7 +957,11 @@ int cmd_killsession (char *arg)
 		while (strlen(id) == 0) {
 			/* get mandatory argument */
 			INSTRUCTION("Set session ID to kill: ");
-			scanf ("%1023s", id);
+			if (scanf ("%1023s", id) == EOF) {
+				ERROR("Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
 		}
 	}
 
@@ -1212,7 +1222,11 @@ int cmd_getschema (char *arg)
 		}
 
 		INSTRUCTION("Set identifier of the schema to retrieve: ");
-		scanf ("%1023s", identifier);
+		if (scanf ("%1023s", identifier) == EOF) {
+			ERROR("Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
 	} else if ((optind + 1) == cmd.count) {
 		identifier = strdup(cmd.list[optind]);
 	} else {
@@ -1402,7 +1416,11 @@ int cmd_connect (char* arg)
 		}
 		hostfree = 1;
 		INSTRUCTION("Hostname to connect to: ");
-		scanf ("%1023s", host);
+		if (scanf ("%1023s", host) == EOF) {
+			ERROR("Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
 	} else if ((optind + 1) == cmd.count) {
 		host = cmd.list[optind];
 	}
