@@ -430,6 +430,7 @@ static int write_fileheader(struct stream *s)
 	offset += sizeof(uint8_t);
 
 	/* creation time */
+	t = (uint64_t) s->created;
 	memcpy(header + offset, &t, sizeof(uint64_t));
 	offset += sizeof(uint64_t);
 
