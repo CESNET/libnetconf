@@ -435,7 +435,7 @@ static int write_fileheader(struct stream *s)
 
 	/* check expected and prepared length */
 	if (offset != hlen) {
-		WARN("%s: prepared stream file header length differs expected length (%ld:%ld)", __func__, offset, hlen);
+		WARN("%s: prepared stream file header length differs expected length (%zd:%zd)", __func__, offset, hlen);
 	}
 
 	/* write the header */

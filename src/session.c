@@ -845,7 +845,7 @@ static int nc_session_read_len (struct nc_session* session, size_t chunk_length,
 				continue;
 			} else if (c < 0) {
 				libssh2_session_last_error (session->ssh_session, &err_msg, NULL, 0);
-				ERROR("Reading from SSH channel failed (%ld: %s)", c, err_msg);
+				ERROR("Reading from SSH channel failed (%zd: %s)", c, err_msg);
 				free (buf);
 				*len = 0;
 				*text = NULL;
@@ -937,7 +937,7 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 				continue;
 			} else if (c < 0) {
 				libssh2_session_last_error (session->ssh_session, &err_msg, NULL, 0);
-				ERROR("Reading from SSH channel failed (%ld: %s)", c, err_msg);
+				ERROR("Reading from SSH channel failed (%zd: %s)", c, err_msg);
 				free (buf);
 				buflen = 0;
 				if (len != NULL) {
