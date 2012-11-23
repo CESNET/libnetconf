@@ -174,7 +174,7 @@ void addargs (struct arglist *args, char *format, ...)
 	free(aux1);
 }
 
-int cmd_status (char* arg)
+int cmd_status (char* UNUSED(arg))
 {
 	const char *s;
 	struct nc_cpblts* cpblts;
@@ -1443,7 +1443,7 @@ int cmd_connect (char* arg)
 	return (EXIT_SUCCESS);
 }
 
-int cmd_disconnect (char* arg)
+int cmd_disconnect (char* UNUSED(arg))
 {
 	if (session == NULL) {
 		ERROR("disconnect", "not connected to any NETCONF server.");
@@ -1457,7 +1457,7 @@ int cmd_disconnect (char* arg)
 	return (EXIT_SUCCESS);
 }
 
-int cmd_quit (char* arg)
+int cmd_quit (char* UNUSED(arg))
 {
 	done = 1;
 	if (session != NULL) {
@@ -1466,7 +1466,7 @@ int cmd_quit (char* arg)
 	return (0);
 }
 
-int cmd_verbose (char *arg)
+int cmd_verbose (char *UNUSED(arg))
 {
 	if (verb_level != 1) {
 		verb_level = 1;
@@ -1481,7 +1481,7 @@ int cmd_verbose (char *arg)
 	return (EXIT_SUCCESS);
 }
 
-int cmd_debug (char *arg)
+int cmd_debug (char *UNUSED(arg))
 {
 	if (verb_level != 2) {
 		verb_level = 2;
@@ -1545,7 +1545,7 @@ struct ntf_thread_config {
 };
 
 static pthread_key_t ntf_file;
-volatile static int ntf_file_flag = 0; /* flag if the thread specific key is already initiated */
+static volatile int ntf_file_flag = 0; /* flag if the thread specific key is already initiated */
 static void notification_fileprint (time_t eventtime, const char* content)
 {
 	FILE *f;

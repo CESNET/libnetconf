@@ -36,13 +36,13 @@ void clb_print(NC_VERB_LEVEL level, const char* msg)
 void clb_error_print(const char* tag,
 		const char* type,
 		const char* severity,
-		const char* apptag,
-		const char* path,
+		const char* UNUSED(apptag),
+		const char* UNUSED(path),
 		const char* message,
-		const char* attribute,
-		const char* element,
-		const char* ns,
-		const char* sid)
+		const char* UNUSED(attribute),
+		const char* UNUSED(element),
+		const char* UNUSED(ns),
+		const char* UNUSED(sid))
 {
 	fprintf(stderr, "NETCONF %s: %s (%s) - %s\n", severity, tag, type, message);
 }
@@ -53,7 +53,7 @@ void print_version()
 	fprintf(stdout, "compile time: %s, %s\n", __DATE__, __TIME__);
 }
 
-int main(int argc, char *argv[])
+int main(int UNUSED(argc), char** UNUSED(argv))
 {
 	char *cmdline, *cmdstart;
 	int i, j;

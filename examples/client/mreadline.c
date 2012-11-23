@@ -85,7 +85,7 @@ char * cmd_generator(const char *text, int state)
  *
  * \return The array of matches, or NULL if there aren't any.
  */
-char ** cmd_completion(const char *text, int start, int end)
+char ** cmd_completion(const char *text, int start, int UNUSED(end))
 {
 	char **matches;
 
@@ -101,7 +101,7 @@ char ** cmd_completion(const char *text, int start, int end)
 	return (matches);
 }
 
-int my_bind_cr(int count, int key)
+int my_bind_cr(int UNUSED(count), int UNUSED(key))
 {
 	  if (multiline == 0) {
 		  rl_point = rl_end;
@@ -113,7 +113,7 @@ int my_bind_cr(int count, int key)
 	  return (0);
 }
 
-int my_bind_esc(int count, int key)
+int my_bind_esc(int UNUSED(count), int UNUSED(key))
 {
 	  if (multiline == 1) {
 		  rl_point = rl_end;
