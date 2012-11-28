@@ -59,7 +59,7 @@ AC_SUBST(CONFIGURE_PWD)
 
 STREAMS_PATH="/usr/share/$PACKAGE_NAME/streams/"
 
-LIBS="-lrt -lutil"
+LIBS="$LIBS -lrt -lutil"
 
 # Check for pkg-config.
 AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
@@ -71,9 +71,8 @@ fi
 AC_ARG_WITH([libssh2],
 	[AS_HELP_STRING([--with-libssh2=DIR], [Specifies libssh2 installation directory.])],
 	[
-		CFLAGS+=" -I$withval/include"
-		CXXFLAGS+=" -I$withval/include"
-		LDFLAGS+=" -L$withval/lib -Wl,-rpath,$withval/lib"
+		CFLAGS="$CFLAGS -I$withval/include"
+		LDFLAGS="$LDFLAGS -L$withval/lib -Wl,-rpath,$withval/lib"
 	]
 )
 
@@ -85,8 +84,8 @@ AC_ARG_WITH([examples],
 
 AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],[Compile with debug options]),
-	CFLAGS="-g -DDEBUG",
-	CFLAGS="-O3"
+	CFLAGS="$CFLAGS -g -DDEBUG",
+	CFLAGS="$CFLAGS -O3"
 )
 AC_ARG_ENABLE([debug-threads],
 	AC_HELP_STRING([--enable-debug-threads],[Extend debug mode for threads]),

@@ -2500,7 +2500,7 @@ CONFIGURE_PWD=`pwd`
 
 STREAMS_PATH="/usr/share/$PACKAGE_NAME/streams/"
 
-LIBS="-lrt -lutil"
+LIBS="$LIBS -lrt -lutil"
 
 # Check for pkg-config.
 # Extract the first word of "pkg-config", so it can be a program name with args.
@@ -2553,9 +2553,8 @@ fi
 # Check whether --with-libssh2 was given.
 if test "${with_libssh2+set}" = set; then :
   withval=$with_libssh2;
-		CFLAGS+=" -I$withval/include"
-		CXXFLAGS+=" -I$withval/include"
-		LDFLAGS+=" -L$withval/lib -Wl,-rpath,$withval/lib"
+		CFLAGS="$CFLAGS -I$withval/include"
+		LDFLAGS="$LDFLAGS -L$withval/lib -Wl,-rpath,$withval/lib"
 
 
 fi
@@ -2573,9 +2572,9 @@ fi
 
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
-  enableval=$enable_debug; CFLAGS="-g -DDEBUG"
+  enableval=$enable_debug; CFLAGS="$CFLAGS -g -DDEBUG"
 else
-  CFLAGS="-O3"
+  CFLAGS="$CFLAGS -O3"
 
 fi
 
