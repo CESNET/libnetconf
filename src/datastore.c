@@ -255,6 +255,10 @@ int get_model_info(xmlDocPtr model, char **name, char **version, char **namespac
 	xmlChar *xml_aux;
 	int i, j, l;
 
+	*namespace = NULL;
+	*name = NULL;
+	*version = NULL;
+
 	/* prepare xpath evaluation context of the model for XPath */
 	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
 		ERROR("%s: Creating XPath context failed.", __func__)
@@ -371,7 +375,7 @@ char **get_schemas_capabilities(void)
 {
 	struct ncds_ds_list* ds = NULL;
 	int i;
-	char *name, *version, *namespace;
+	char *name = NULL, *version = NULL, *namespace = NULL;
 	char **retval = NULL;
 
 	/* get size of the output */
@@ -395,6 +399,9 @@ char **get_schemas_capabilities(void)
 		}
 
 		if (get_model_info(ds->datastore->model, &name, &version, &namespace) != 0) {
+			free(namespace); namespace = NULL;
+			free(name); name = NULL;
+			free(version); version = NULL;
 			continue;
 		}
 		if (asprintf(&(retval[i]), "%s?module=%s%s%s", namespace, name,
