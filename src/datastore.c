@@ -255,9 +255,9 @@ int get_model_info(xmlDocPtr model, char **name, char **version, char **namespac
 	xmlChar *xml_aux;
 	int i, j, l;
 
-	*namespace = NULL;
-	*name = NULL;
-	*version = NULL;
+	if (namespace) { *namespace = NULL;}
+	if (name) {*name = NULL;}
+	if (version) {*version = NULL;}
 
 	/* prepare xpath evaluation context of the model for XPath */
 	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
@@ -655,13 +655,13 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 			}
 		}
 	}
+	free(format);
 
 	if (name == NULL) {
 		if (e != NULL) {
 			*e = nc_err_new(NC_ERR_INVALID_VALUE);
 			nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "identifier");
 		}
-		free(format);
 		free(version);
 		free(name);
 		return(NULL);
@@ -673,6 +673,8 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 		}
 
 		if (get_model_info(ds->datastore->model, &aux_name, &aux_version, NULL) != 0) {
+			free(aux_name);
+			free(aux_version);
 			continue;
 		}
 
@@ -681,9 +683,10 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 				/* check for uniqness */
 				if (retval != NULL) {
 					free(retval);
-					free(format);
 					free(version);
+					free(aux_version);
 					free(name);
+					free(aux_name);
 					if (e != NULL) {
 						*e = nc_err_new(NC_ERR_OP_FAILED);
 						nc_err_set(*e, NC_ERR_PARAM_APPTAG, "data-not-unique");
@@ -695,6 +698,12 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 				resultbuffer = xmlBufferCreate();
 				if (resultbuffer == NULL) {
 					ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+					free(retval);
+					free(version);
+					free(aux_version);
+					free(name);
+					free(aux_name);
+					if (e != NULL) {*e = nc_err_new(NC_ERR_OP_FAILED);}
 					return NULL;
 				}
 				xmlNodeDump(resultbuffer, ds->datastore->model, ds->datastore->model->children, 2, 1);
@@ -702,7 +711,14 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 				xmlBufferFree(resultbuffer);
 			}
 		}
+		free(aux_version);
+		free(aux_name);
 	}
+
+	/* cleanup */
+	free(version);
+	free(name);
+
 	return (retval);
 }
 

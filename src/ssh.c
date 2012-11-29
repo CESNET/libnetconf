@@ -642,7 +642,9 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	if ((nslist = get_schemas_capabilities()) != NULL) {
 		for(i = 0; nslist[i] != NULL; i++) {
 			nc_cpblts_add(server_cpblts, nslist[i]);
+			free(nslist[i]);
 		}
+		free(nslist);
 	}
 
 	if (nc_server_handshake(retval, server_cpblts->list) != 0) {
