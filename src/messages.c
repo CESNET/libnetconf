@@ -76,7 +76,7 @@ struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, const char* filter)
 		return (NULL);
 	}
 	retval->type = type;
-	retval->content = strdup(filter);
+	retval->content = (filter != NULL) ? strdup(filter) : NULL;
 
 	return (retval);
 }
@@ -646,16 +646,21 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 					}
 
 					/* by copying nodelist, move all needed namespaces into the editing nodes */
-					aux_doc = xmlNewDoc(BAD_CAST "1.0");
-					xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "filter"));
-					xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, filter_node->children));
-					buf = xmlBufferCreate();
-					for (filter_child = aux_doc->children->children; filter_child != NULL; filter_child = filter_child->next) {
-						xmlNodeDump(buf, aux_doc, filter_child, 1, 1);
+					if (filter_node->children != NULL) {
+						aux_doc = xmlNewDoc(BAD_CAST "1.0");
+						xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "filter"));
+						xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, filter_node->children));
+						buf = xmlBufferCreate();
+						for (filter_child = aux_doc->children->children; filter_child != NULL; filter_child = filter_child->next) {
+							xmlNodeDump(buf, aux_doc, filter_child, 1, 1);
+						}
+						retval->content = strdup((char*) xmlBufferContent(buf));
+						xmlBufferFree(buf);
+						xmlFreeDoc(aux_doc);
+					} else {
+						/* empty filter */
+						retval->content = NULL;
 					}
-					retval->content = strdup((char*) xmlBufferContent(buf));
-					xmlBufferFree(buf);
-					xmlFreeDoc(aux_doc);
 
 					/* process only the first <filter> node, ignore the rest */
 					break;
@@ -1289,13 +1294,16 @@ static int process_filter_param (xmlNodePtr content, const struct nc_filter* fil
 			 * Without this hack, libxml2 will not read given filter
 			 * correctly when it contains multiple root elements.
 			 */
-			if (asprintf (&aux_string, "<filter type=\"%s\">%s</filter>", filter->type_string, filter->content) == -1) {
+			if (asprintf (&aux_string, "<filter type=\"%s\">%s</filter>",
+					filter->type_string,
+					(filter->content != NULL) ? filter->content : "") == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 				return (EXIT_FAILURE);
 			}
 
 			/* convert string to the libxml2 format */
 			doc_filter = xmlReadMemory(aux_string, strlen(aux_string), NULL, NULL, 0);
+			free(aux_string);
 			if (doc_filter == NULL) {
 				ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
 				return (EXIT_FAILURE);

@@ -1109,7 +1109,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 	return filter_in;
 }
 
-int ncxml_filter(xmlNodePtr old, const struct nc_filter * filter, xmlNodePtr *new)
+int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new)
 {
 	xmlDocPtr filter_doc, result, data_filtered[2] = {NULL, NULL};
 	xmlNodePtr filter_item, node;
@@ -1156,8 +1156,8 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter * filter, xmlNodePtr *ne
 			} else {
 				*new = NULL;
 			}
-		} else { /* empty filter -> original data doc is unchanged */
-			*new = xmlCopyNode(old, 1);
+		} else { /* empty filter -> RFC 6241, sec. 6.4.2 - result is empty */
+			*new = NULL;
 		}
 		xmlFreeDoc(data_filtered[0]);
 		xmlFreeDoc(data_filtered[1]);

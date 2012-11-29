@@ -352,10 +352,6 @@ static struct nc_filter *set_filter(const char* operation, const char *file)
 		/* let user write filter interactively */
 		INSTRUCTION("Type the filter (close editor by Ctrl-D):\n");
 		filter_s = mreadline(NULL);
-		if (filter_s == NULL) {
-			ERROR(operation, "reading filter failed.");
-			return (NULL);
-		}
 
 		/* create the filter according to the file content */
 		filter = nc_filter_new(NC_FILTER_SUBTREE, filter_s);
