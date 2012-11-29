@@ -641,6 +641,13 @@ int cmd_copyconfig (char *arg)
 	while ((c = getopt_long (cmd.count, cmd.list, "c:d:s:h", long_options, &option_index)) != -1) {
 		switch (c) {
 		case 'c':
+			/* check if -s was not used */
+			if (source != NC_DATASTORE_ERROR) {
+				ERROR("copy-config", "mixing --source and --config parameters is not allowed.");
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+
 			/* open edit configuration data from the file */
 			config_fd = open(optarg, O_RDONLY);
 			if (config_fd == -1) {
@@ -661,6 +668,7 @@ int cmd_copyconfig (char *arg)
 
 			/* make a copy of the content to allow closing the file */
 			config = strdup(config_m);
+			source = NC_DATASTORE_CONFIG;
 
 			/* unmap local datastore file and close it */
 			munmap(config_m, config_stat.st_size);
@@ -670,6 +678,13 @@ int cmd_copyconfig (char *arg)
 			wd = get_withdefaults("get-config", optarg);
 			break;
 		case 's':
+			/* check if -c was not used */
+			if (source != NC_DATASTORE_ERROR) {
+				ERROR("copy-config", "mixing --source and --config parameters is not allowed.");
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+
 			/* validate argument */
 			if (strcmp (optarg, "running") == 0) {
 				source = NC_DATASTORE_RUNNING;
