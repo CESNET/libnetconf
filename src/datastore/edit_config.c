@@ -1259,7 +1259,10 @@ static int compact_edit_operations_recursively (xmlNodePtr node, NC_EDIT_OP_TYPE
 		return EXIT_FAILURE;
 		break;
 	case 0:
-		/* no operation defined -> go recursively */
+		/* no operation defined -> go recursively, but use supreme
+		 * operation, it may be the default operation and in such case,
+		 * remove it */
+		op = supreme_op;
 		break;
 	default:
 		/* any operation specified */
@@ -1281,14 +1284,14 @@ static int compact_edit_operations_recursively (xmlNodePtr node, NC_EDIT_OP_TYPE
 	return EXIT_SUCCESS;
 }
 
-static int compact_edit_operations (xmlDocPtr edit_doc)
+static int compact_edit_operations (xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
 {
 	if (edit_doc == NULL) {
 		return EXIT_FAILURE;
 	}
 
-	/* to start recursive check, use 0 as NC_OP_TYPE_NONE which actually does not exist */
-	return compact_edit_operations_recursively(edit_doc->children, 0);
+	/* to start recursive check, use defop as root's supreme operation */
+	return compact_edit_operations_recursively(edit_doc->children, (NC_EDIT_OP_TYPE) defop);
 }
 
 /**
@@ -1321,7 +1324,7 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 		goto error_cleanup;
 	}
 
-	if (compact_edit_operations(edit) != EXIT_SUCCESS) {
+	if (compact_edit_operations(edit, defop) != EXIT_SUCCESS) {
 		ERROR("Compacting edit-config operations failed.");
 		if (error != NULL) {
 			*error = nc_err_new (NC_ERR_OP_FAILED);
