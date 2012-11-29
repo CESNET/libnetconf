@@ -1211,13 +1211,13 @@ int cmd_getschema (char *arg)
 			version = optarg;
 			break;
 		case 'h':
-			cmd_getconfig_help ();
+			cmd_getschema_help ();
 			clear_arglist(&cmd);
 			return (EXIT_SUCCESS);
 			break;
 		default:
 			ERROR("get-config", "unknown option -%c.", c);
-			cmd_getconfig_help ();
+			cmd_getschema_help ();
 			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
