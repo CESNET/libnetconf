@@ -965,6 +965,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 	xmlNodePtr config_node = config;
 	xmlNodePtr filter_node = filter;
 	xmlNodePtr delete = NULL, delete2 = NULL;
+	char *content1 = NULL, *content2 = NULL;
 
 	int filter_in = 0, sibling_in = 0, end_node = 0, sibling_selection = 0;
 
@@ -993,19 +994,44 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 
 		/* if required node is present, decide about removing sibling nodes */
 		if (filter_in) {
+			/* 0 means that all sibling nodes will be in the filter result - this is a default
+			 * behavior when there are no selection or containment nodes in the filter sibling set.
+			 * If 1 is set, sibling nodes for the filter result will be selected according to the
+			 * rules in RFC 6242, sec. 6.2.5
+			 */
+			sibling_selection = 0;
+
 			/* choose kind of used filter node */
-			if (config_node->children && (config_node->children->type == XML_TEXT_NODE) &&
-					(strcmp((char *) filter_node->children->content, (char *) config_node->children->content))) {
-				/* content match node doesn't match */
-				return 0;
+			if (config_node->children && (config_node->children->type == XML_TEXT_NODE)) {
+				/* get filter's text node content ignoring whitespaces */
+				if ((content1 = nc_clrwspace((char *) filter_node->children->content)) == NULL ||
+						(content2 = nc_clrwspace((char *) config_node->children->content)) == NULL) {
+					free(content1);
+					free(content2);
+					/* internal error - memory allocation failed, do not continue! */
+					return 0;
+				}
+				if (strlen(content1) == 0) {
+					/* we have an empty content match node, so interpret it as a selection node,
+					 * which means that we will be selecting sibling nodes that will be in the
+					 * filter result
+					 */
+					sibling_selection = 1;
+				} else if (strcmp(content1, content2) != 0) {
+					free(content1);
+					free(content2);
+					/* content match node doesn't match */
+					return 0;
+				}
+				free(content1);
+				free(content2);
 			}
-			if (filter_node->next || filter_node->prev) {
+			if (filter_node->next || filter_node->prev || sibling_selection == 1) {
 				/* check if all filter sibling nodes are content match nodes -> then no config sibling node will be removed */
-				sibling_selection = 0; /* 0 means that all sibling nodes will be in the filter result */
 				/*go to the first filter sibling node */
 				filter_node = filter;
 				/* pass all filter sibling nodes */
-				while (filter_node) {
+				while (sibling_selection == 0 && filter_node) {
 					if (!filter_node->children || (filter_node->children->type != XML_TEXT_NODE)) {
 						sibling_selection = 1; /* filter result will be selected */
 						break;
@@ -1027,10 +1053,27 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 							/* content match node check */
 							if (filter_node->children && (filter_node->children->type == XML_TEXT_NODE) &&
 									config_node->children && (config_node->children->type == XML_TEXT_NODE)) {
-								if (strcmp((char *) filter_node->children->content, (char *) config_node->children->content)) {
+
+								/* get filter's text node content ignoring whitespaces */
+								if ((content1 = nc_clrwspace((char *) filter_node->children->content)) == NULL ||
+										(content2 = nc_clrwspace((char *) config_node->children->content)) == NULL) {
+									free(content1);
+									free(content2);
+									/* internal error - memory allocation failed, do not continue! */
+									return 0;
+								}
+								if (strlen(content1) == 0) {
+									/* we have an empty content match node, so interpret it as a selection node,
+									 * which means that it will be included in the filter result
+									 */
+								} else if (strcmp(content1, content2) != 0) {
+									free(content1);
+									free(content2);
 									/* content match node doesn't match */
 									return 0;
 								}
+								free(content1);
+								free(content2);
 							}
 							sibling_in = 1;
 							break;
