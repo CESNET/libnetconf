@@ -213,10 +213,12 @@ keyList get_keynode_list(xmlDocPtr model)
  *
  * \param[in] keys List of key elements from configuration data model.
  * \param[in] node Node for which the key elements are needed.
+ * \param[in] all If set to 1, all keys must be found in node, non-zero is
+ * returned otherwise.
  * \param[out] result List of pointers to the key elements from node's children.
  * \return Zero on success, non-zero otherwise.
  */
-static int get_keys(keyList keys, xmlNodePtr node, xmlNodePtr **result)
+static int get_keys(keyList keys, xmlNodePtr node, int all, xmlNodePtr **result)
 {
 	xmlChar *str = NULL;
 	char* s, *token;
@@ -274,10 +276,14 @@ static int get_keys(keyList keys, xmlNodePtr node, xmlNodePtr **result)
 				(*result)[i] = ((*result)[i])->next;
 			}
 			if ((*result)[i] == NULL) {
-				xmlFree (str);
-				free(*result);
-				*result = NULL;
-				return (EXIT_FAILURE);
+				if (all) {
+					xmlFree(str);
+					free(*result);
+					*result = NULL;
+					return (EXIT_FAILURE);
+				} else {
+					i--;
+				}
 			}
 		}
 
@@ -356,7 +362,7 @@ static int is_key(xmlNodePtr parent, xmlNodePtr children, keyList keys)
  * \param[in] node2 Second node to compare.
  * \param[in] keys List of key elements from configuration data model.
  *
- * \return 0 - false, 1 - true (matching elements).
+ * \return 0 - false, 1 - true (matching elements), -1 - error.
  */
 int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 {
@@ -400,9 +406,8 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 
 
 	if (keys != NULL) {
-		if (get_keys(keys, node1, &keynode_list) != EXIT_SUCCESS) {
-			/* names matches and it is enough now - TODO namespaces */
-			return 1;
+		if (get_keys(keys, node1, 0, &keynode_list) != EXIT_SUCCESS) {
+			return 0;
 		}
 
 		if (keynode_list != NULL) {
@@ -419,12 +424,8 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 							/* value matches, go for next key if any */
 							break; /* while loop */
 						} else {
-							/* value does not match, go for next element */
-							/* this probably would not be necessary, since
-							 * there will be no same key element with
-							 * different value
-							 */
-							key = key->next;
+							/* key value does not match, this is always bad */
+							return 0;
 						}
 					} else {
 						/* this was not the key element, try the next one */
@@ -1001,7 +1002,6 @@ static int edit_replace (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, keyList keys)
 {
 	xmlNodePtr children, aux;
-	int retval;
 
 	/* process leaf text nodes - even if we are merging, leaf text nodes are
 	 * actually replaced by data specified by the edit configuration data
@@ -1039,7 +1039,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 
 			/* find matching element to children */
 			aux = orig_node->children;
-			while (aux != NULL && matching_elements(aux, children, keys) == 0) {
+			while (aux != NULL && matching_elements(children, aux, keys) == 0) {
 				aux = aux->next;
 			}
 		}
@@ -1056,10 +1056,25 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 			VERB("Adding missing node %s while merging (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 		} else {
 			VERB("Merging node %s (%s:%d)", (char*)children->name, __FILE__, __LINE__);
-			/* go recursive */
-			retval = edit_merge_recursively(aux, children, keys);
-			if (retval != EXIT_SUCCESS) {
-				return EXIT_FAILURE;
+			/* go recursive through all matching elements */
+			if (children->type == XML_TEXT_NODE) {
+				while (aux != NULL) {
+					if (aux->type == XML_TEXT_NODE) {
+						if (edit_merge_recursively(aux, children, keys) != EXIT_SUCCESS) {
+							return EXIT_FAILURE;
+						}
+					}
+					aux = aux->next;
+				}
+			} else {
+				while (aux != NULL) {
+					if (matching_elements(children, aux, keys) != 0) {
+						if (edit_merge_recursively(aux, children, keys) != EXIT_SUCCESS) {
+							return EXIT_FAILURE;
+						}
+					}
+					aux = aux->next;
+				}
 			}
 		}
 
