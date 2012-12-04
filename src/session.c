@@ -303,7 +303,7 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 
 	/* find duplicities */
 	for (i = 0; i < capabilities->items; i++) {
-		if (strcmp(capabilities->list[i], s) == 0) {
+		if (strncmp(capabilities->list[i], s, strlen(s)) == 0) {
 			/* capability is already in the capabilities list, but
 			 * parameters can differ, so substitute current instance
 			 * with the new one
