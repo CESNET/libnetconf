@@ -370,7 +370,7 @@ int get_model_info(xmlDocPtr model, char **name, char **version, char **namespac
 	return (EXIT_SUCCESS);
 }
 
-/* used in ssh.c */
+/* used in ssh.c and session.c */
 char **get_schemas_capabilities(void)
 {
 	struct ncds_ds_list* ds = NULL;

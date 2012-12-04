@@ -67,6 +67,9 @@ struct session_list_s {
 
 struct session_list_s *session_list = NULL;
 
+/* definition in datastore.c */
+char **get_schemas_capabilities(void);
+
 /**
  * Sleep time in microseconds to wait between unsuccessful reading due to EAGAIN or EWOULDBLOCK
  */
@@ -459,6 +462,8 @@ int nc_cpblts_count(const struct nc_cpblts *c)
 struct nc_cpblts *nc_session_get_cpblts_default ()
 {
 	struct nc_cpblts *retval;
+	char** nslist;
+	int i;
 
 	retval = nc_cpblts_new(NULL);
 	if (retval == NULL) {
@@ -475,6 +480,15 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	nc_cpblts_add(retval, NC_CAP_MONITORING_ID);
 	if (ncdflt_get_basic_mode() != NCWD_MODE_DISABLED) {
 		nc_cpblts_add(retval, NC_CAP_WITHDEFAULTS_ID);
+	}
+
+	/* add namespaces of used datastores as announced capabilities */
+	if ((nslist = get_schemas_capabilities()) != NULL) {
+		for(i = 0; nslist[i] != NULL; i++) {
+			nc_cpblts_add(retval, nslist[i]);
+			free(nslist[i]);
+		}
+		free(nslist);
 	}
 
 	return (retval);
