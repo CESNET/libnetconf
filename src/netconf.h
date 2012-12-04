@@ -323,6 +323,7 @@ void nc_verbosity(NC_VERB_LEVEL level);
 int nc_init();
 
 /**
+ * @ingroup genAPI
  * @param[in] system Flag if close should be applied as a system-wide.
  * System-wide nc_close() closes all shared structures if no other libnetconf
  * participant is not currently running. Local release of the calling instance
