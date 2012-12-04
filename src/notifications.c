@@ -69,6 +69,8 @@
 #include "session.h"
 #include "config.h"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 #define NCNTF_RULES_SIZE (1024*1024)
 #define NCNTF_STREAMS_NS "urn:ietf:params:xml:ns:netmod:notification"
 

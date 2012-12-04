@@ -63,6 +63,8 @@
 #include "with_defaults.h"
 #include "notifications.h"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 #define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
 
 extern struct nc_statistics *nc_stats;

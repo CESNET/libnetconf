@@ -35,6 +35,9 @@
 #
 
 NAME = netconf-server
+VERSION = 0.2
+IDGIT = "built from git $(shell git show --pretty=oneline | head -1 | cut -c -20)"
+IDNOGIT = "released as version $(VERSION)"
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -43,7 +46,7 @@ bindir = @bindir@
 CC = @CC@
 LIBS = -L../../ -lnetconf -levent
 CFLAGS = -Wall @CFLAGS@
-CPPFLAGS = @CPPFLAGS@ -I../../src/
+CPPFLAGS = @CPPFLAGS@ -I../../src/ -DVERSION=\"$(VERSION)\"
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 

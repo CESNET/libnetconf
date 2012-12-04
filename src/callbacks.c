@@ -48,6 +48,8 @@
 
 #include "netconf_internal.h"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 void callback_sshauth_interactive_default (const char* name,
 		int name_len,
 		const char* instruction,

@@ -67,6 +67,8 @@
 #include "../models/ietf-netconf-notifications.xxd"
 #include "../models/ietf-netconf-with-defaults.xxd"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 extern struct nc_statistics *nc_stats;
 
 struct ncds_ds_list

@@ -48,6 +48,8 @@
 #include "with_defaults.h"
 #include "netconf_internal.h"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 static NCWD_MODE ncdflt_basic_mode = NCWD_MODE_EXPLICIT;
 static NCWD_MODE ncdflt_supported = (NCWD_MODE_ALL
 		| NCWD_MODE_ALL_TAGGED

@@ -48,7 +48,8 @@
 #include "configuration.h"
 #include "../../src/libnetconf.h"
 
-#define VERSION "0.1"
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 #define PROMPT "netconf> "
 
 volatile int done = 0;

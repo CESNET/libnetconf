@@ -60,6 +60,8 @@
 #include "configuration.h"
 #include "mreadline.h"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 #define NC_CAP_CANDIDATE_ID "urn:ietf:params:netconf:capability:candidate:1.0"
 #define NC_CAP_STARTUP_ID   "urn:ietf:params:netconf:capability:startup:1.0"
 #define NC_CAP_ROLLBACK_ID  "urn:ietf:params:netconf:capability:rollback-on-error:1.0"

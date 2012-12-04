@@ -56,6 +56,8 @@
 #include "messages_internal.h"
 #include "with_defaults.h"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, const char* filter)
 {
 	struct nc_filter *retval;

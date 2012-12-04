@@ -46,6 +46,10 @@ includedir = @includedir@
 libdir =  @libdir@
 mandir = @mandir@
 
+VERSION = $(shell cut -f1 ./VERSION | tr -d '\n')
+MAJOR_VER = $(shell echo $(VERSION) | cut -d. -f1)
+RELEASE = @RELEASE@
+
 CC = @CC@
 LN_S = @LN_S@
 DOXYGEN = @DOXYGEN@
@@ -58,15 +62,14 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 RPMDIR = RPMBUILD
 STREAMS_PATH = $(DESTDIR)/@STREAMS_PATH@
+IDGIT = "built from git $(shell git show --pretty=oneline | head -1 | cut -c -20)"
+IDNOGIT = "released as version $(VERSION)"
 LIBS = @LDFLAGS@ @LIBS@
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = -DNCNTF_STREAMS_PATH=\"$(STREAMS_PATH)\" @CPPFLAGS@
 
 OBJDIR= .obj
-VERSION = $(shell cut -f1 ./VERSION | tr -d '\n')
-MAJOR_VER = $(shell echo $(VERSION) | cut -d. -f1)
-RELEASE = @RELEASE@
-DBUS_CONFDIR = @DBUS_CONFDIR@
+BUS_CONFDIR = @DBUS_CONFDIR@
 
 TOPDIR = @CONFIGURE_PWD@
 SUBDIRS = @SUBDIRS@

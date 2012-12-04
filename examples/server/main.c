@@ -1,5 +1,5 @@
 /*
- * netconf-server
+ * netconf-server (main.c)
  * Author Radek Krejci <rkrejci@cesnet.cz>
  *
  * Example implementation of event-driven NETCONF server using libnetconf.
@@ -47,7 +47,7 @@
 
 #include "../../src/libnetconf.h"
 
-#define VERSION "0.1"
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 #ifdef __GNUC__
 #  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))

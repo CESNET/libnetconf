@@ -42,6 +42,8 @@
 #include "../../netconf_internal.h"
 #include "datastore_empty.h"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 int ncds_empty_init (struct ncds_ds * UNUSED(ds))
 {
 	/* nothing to do (for now) */

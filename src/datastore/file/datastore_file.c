@@ -57,6 +57,8 @@
 #include "datastore_file.h"
 #include "../edit_config.h"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 /* ncds lock path */
 #define NCDS_LOCK "/NCDS_FLOCK"
 

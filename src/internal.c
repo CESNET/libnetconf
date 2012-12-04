@@ -51,6 +51,8 @@
 
 #include "netconf_internal.h"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 /* defined in datastore.c */
 int ncds_sysinit(void);
 

@@ -58,6 +58,8 @@
 #include "configuration.h"
 #include "commands.h"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 /* NetConf Client home */
 #define NCC_DIR ".netconf_client"
 

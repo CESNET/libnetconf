@@ -52,6 +52,8 @@
 #include "../netconf.h"
 #include "../netconf_internal.h"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 #define XPATH_BUFFER 1024
 
 #define NC_EDIT_OP_MERGE_STRING "merge"

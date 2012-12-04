@@ -49,6 +49,8 @@
 #include "netconf.h"
 #include "netconf_internal.h"
 
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
 struct nc_err* nc_err_new(NC_ERR error)
 {
 	struct nc_err* err = NULL;
