@@ -1001,7 +1001,7 @@ static int edit_replace (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 
 static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, keyList keys)
 {
-	xmlNodePtr children, aux;
+	xmlNodePtr children, aux, next;
 
 	/* process leaf text nodes - even if we are merging, leaf text nodes are
 	 * actually replaced by data specified by the edit configuration data
@@ -1059,21 +1059,23 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 			/* go recursive through all matching elements */
 			if (children->type == XML_TEXT_NODE) {
 				while (aux != NULL) {
+					next = aux->next;
 					if (aux->type == XML_TEXT_NODE) {
 						if (edit_merge_recursively(aux, children, keys) != EXIT_SUCCESS) {
 							return EXIT_FAILURE;
 						}
 					}
-					aux = aux->next;
+					aux = next;
 				}
 			} else {
 				while (aux != NULL) {
+					next = aux->next;
 					if (matching_elements(children, aux, keys) != 0) {
 						if (edit_merge_recursively(aux, children, keys) != EXIT_SUCCESS) {
 							return EXIT_FAILURE;
 						}
 					}
-					aux = aux->next;
+					aux = next;
 				}
 			}
 		}
