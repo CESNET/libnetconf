@@ -249,6 +249,13 @@ static int get_keys(keyList keys, xmlNodePtr node, int all, xmlNodePtr **result)
 			continue;
 		}
 
+		/*
+		 * now we have key values for the appropriate node which was
+		 * specified as function parameter, so there will be no other
+		 * run in this for loop - no continue command is allowed from
+		 * now to the end of the loop
+		 */
+
 		/* attribute have the form of space-separated list of key nodes */
 		/* get the number of keys */
 		for (i = 0, c = 1; i < strlen((char*)str); i++) {
@@ -288,6 +295,7 @@ static int get_keys(keyList keys, xmlNodePtr node, int all, xmlNodePtr **result)
 		}
 
 		xmlFree (str);
+		break;
 	}
 
 	return (EXIT_SUCCESS);
@@ -425,6 +433,8 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 							break; /* while loop */
 						} else {
 							/* key value does not match, this is always bad */
+							xmlFree(key_value);
+							xmlFree(keynode_value);
 							return 0;
 						}
 					} else {
@@ -434,12 +444,8 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 				}
 
 				/* cleanup for next round */
-				if (key_value != NULL) {
-					xmlFree(key_value);
-				}
-				if (keynode_value != NULL) {
-					xmlFree(keynode_value);
-				}
+				xmlFree(key_value);
+				xmlFree(keynode_value);
 
 				if (key == NULL) {
 					/* there is no matching node */

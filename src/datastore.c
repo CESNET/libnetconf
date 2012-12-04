@@ -458,6 +458,7 @@ char* get_schemas()
 		} else if (aux != NULL) {
 			schema = realloc(schema, strlen(schema) + strlen(aux) + 1);
 			strcat(schema, aux);
+			free(aux);
 		}
 	}
 
@@ -614,6 +615,7 @@ char* get_internal_state(const struct nc_session *session)
 
 	free(ds_stats);
 	free(sessions);
+	free(schemas);
 	free(stats);
 	free(notifs);
 
