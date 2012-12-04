@@ -1,7 +1,8 @@
-/**
- * \file mreadline.c
- * \author <name> <email>
- * \brief <Idea of what it does>
+/*
+ * mreadline.c
+ * Author Radek Krejci <rkrejci@cesnet.cz>
+ *
+ * Modification of the libreadline functions for NETCONF client.
  *
  * Copyright (C) 2012 CESNET, z.s.p.o.
  *
