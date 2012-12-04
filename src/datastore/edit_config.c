@@ -435,6 +435,7 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 							/* key value does not match, this is always bad */
 							xmlFree(key_value);
 							xmlFree(keynode_value);
+							free(keynode_list);
 							return 0;
 						}
 					} else {
