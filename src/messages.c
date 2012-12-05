@@ -888,25 +888,19 @@ struct nc_msg* nc_msg_create(xmlNodePtr content, char* msgtype)
 	xmlDocPtr xmlmsg = NULL;
 
 	if ((xmlmsg = xmlNewDoc(BAD_CAST XML_VERSION)) == NULL) {
-		ERROR("xmlNewDoc failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		ERROR("xmlNewDoc failed (%s:%d).", __FILE__, __LINE__);
 		return NULL;
 	}
 	xmlmsg->encoding = xmlStrdup(BAD_CAST UTF8);
 
 	if ((xmlmsg->children = xmlNewDocNode(xmlmsg, NULL, BAD_CAST msgtype, NULL)) == NULL) {
-		ERROR("xmlNewDocNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-		xmlFreeDoc(xmlmsg);
-		return NULL;
-	}
-
-	if (xmlNewProp(xmlmsg->children, BAD_CAST "message-id", BAD_CAST "") == NULL) {
-		ERROR("xmlNewProp failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		ERROR("xmlNewDocNode failed (%s:%d).", __FILE__, __LINE__);
 		xmlFreeDoc(xmlmsg);
 		return NULL;
 	}
 
 	if (xmlAddChild(xmlmsg->children, xmlCopyNode(content, 1)) == NULL) {
-		ERROR("xmlAddChild failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		ERROR("xmlAddChild failed (%s:%d).", __FILE__, __LINE__);
 		xmlFreeDoc(xmlmsg);
 		return NULL;
 	}

@@ -1821,7 +1821,11 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 		sprintf (msg_id_str, "%llu", session->msgid++);
 		DBG_UNLOCK("mut_session");
 		pthread_mutex_unlock(&(session->mut_session));
-		xmlSetProp (msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str);
+		if (xmlNewProp(msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str) == NULL) {
+			ERROR("xmlNewProp failed (%s:%d).", __FILE__, __LINE__);
+			nc_msg_free (msg);
+			return (NULL);
+		}
 	} else {
 		/* hello message */
 		sprintf (msg_id_str, "hello");
@@ -1855,6 +1859,7 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 	int ret;
 	struct nc_msg *msg;
 	const nc_msgid retval = NULL;
+	xmlNsPtr ns;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to send <rpc-reply>.");
@@ -1884,7 +1889,20 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 		/* set message id */
 		msg->msgid = strdup(retval);
 		if (xmlStrcmp(msg->doc->children->name, BAD_CAST "rpc-reply") == 0) {
-			xmlSetProp(msg->doc->children, BAD_CAST "message-id", BAD_CAST msg->msgid);
+			/* copy attributes from the rpc */
+			msg->doc->children->properties = xmlCopyPropList(msg->doc->children, rpc->doc->children->properties);
+			if ((msg->doc->children->properties) == NULL) {
+				xmlNewProp(msg->doc->children, BAD_CAST "message-id", BAD_CAST msg->msgid);
+			}
+			/* copy additional namespace definitions from rpc */
+			for (ns = rpc->doc->children->nsDef; ns != NULL; ns = ns->next) {
+				if (ns->prefix == NULL) {
+					/* skip default namespace */
+					continue;
+				}
+				xmlNewNs(msg->doc->children, ns->href, ns->prefix);
+			}
+
 		}
 	} else {
 		/* unknown message ID, send reply without it */
