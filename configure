@@ -1364,7 +1364,8 @@ Optional Packages:
   --with-examples         enable building example applications
   --with-streamspath=path Path to the Notifications streams files, default
                           value is /usr/share/libnetconf/streams/
-  --with-servercfg=path   Path to the example server configuration files,
+  --with-servercfgpath=path
+                          Path to the example server configuration files,
                           default value is /usr/share/libnetconf/server/
 
 Some influential environment variables:

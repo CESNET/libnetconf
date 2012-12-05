@@ -103,7 +103,7 @@ AC_ARG_WITH([streamspath],
 	STREAMS_PATH="$withval"
 )
 AC_ARG_WITH([servercfgpath],
-	AC_HELP_STRING([--with-servercfg=path],[Path to the example server configuration files, default value is /usr/share/libnetconf/server/]),
+	AC_HELP_STRING([--with-servercfgpath=path],[Path to the example server configuration files, default value is /usr/share/libnetconf/server/]),
 	SERVERCFG_PATH="$withval"
 )
 

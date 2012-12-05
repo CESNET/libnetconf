@@ -43,9 +43,12 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
 
+# Set path to search for libnetconf if installed into other than default location.
+LIBNETCONF_SEARCH = "-Wl,-rpath,$(prefix)/lib"
+
 SERVERCFG_PATH = $(DESTDIR)/@SERVERCFG_PATH@
 CC = @CC@
-LIBS = -L../../ -lnetconf -levent
+LIBS = -L../../ $(LIBNETCONF_SEARCH) -lnetconf -levent
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ -I../../src/ -DSERVERCFG_PATH=\"$(SERVERCFG_PATH)\" -DVERSION=\"$(VERSION)\"
 INSTALL = @INSTALL@

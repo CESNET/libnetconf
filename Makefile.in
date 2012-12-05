@@ -194,12 +194,12 @@ install: all install-devel install-doc
 	$(LN_S) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/$(NAME).so.$(MAJOR_VER);
 	[ -d $(STREAMS_PATH) ] || \
 	    (mkdir -p $(STREAMS_PATH); chmod 777 $(STREAMS_PATH))
-	[ -d $(DESTDIR)/$(DBUS_CONFDIR)/system.d/ ] || (mkdir -p $(DESTDIR)/$(DBUS_CONFDIR)/system.d/);
-	$(INSTALL_DATA) libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
 	for i in $(SUBDIRS) ; do \
 		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i install \
 		|| exit 1; \
 	done
+	[ -d $(DESTDIR)/$(DBUS_CONFDIR)/system.d/ ] || (mkdir -p $(DESTDIR)/$(DBUS_CONFDIR)/system.d/);
+	$(INSTALL_DATA) libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
 
 .PHONY: install-devel
 install-devel:
@@ -236,11 +236,11 @@ uninstall: uninstall-devel uninstall-doc
 	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(MAJOR_VER)
 	rmdir -p $(STREAMS_PATH) || rm -rf $(STREAMS_PATH)
 	rmdir -p $(STREAMS_PATH) || echo -n ""
-	rm -f $(DESTDIR)/$(DBUS_CONFDIR)/system.d/libnetconf.notifications.conf
 	for i in $(SUBDIRS) ; do \
 		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i uninstall \
 		|| exit 1; \
 	done
+	rm -f $(DESTDIR)/$(DBUS_CONFDIR)/system.d/libnetconf.notifications.conf
 
 .PHONY: uninstall-devel
 uninstall-devel:
