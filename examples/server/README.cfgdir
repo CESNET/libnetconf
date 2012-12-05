@@ -1,0 +1,8 @@
+libnetconf's Example Server Configuration
+=========================================
+
+netconf-server(1) expects a configuration data model (model.yin) in this
+directory. The file is expected to contain configuration data in YIN
+format. This directory also contain datastore.xml file with the content
+of the configuration datastores. If the file does not exist, it is
+automatically created with no content. 

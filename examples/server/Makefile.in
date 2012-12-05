@@ -43,12 +43,14 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
 
+SERVERCFG_PATH = $(DESTDIR)/@SERVERCFG_PATH@
 CC = @CC@
 LIBS = -L../../ -lnetconf -levent
 CFLAGS = -Wall @CFLAGS@
-CPPFLAGS = @CPPFLAGS@ -I../../src/ -DVERSION=\"$(VERSION)\"
+CPPFLAGS = @CPPFLAGS@ -I../../src/ -DSERVERCFG_PATH=\"$(SERVERCFG_PATH)\" -DVERSION=\"$(VERSION)\"
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
 
 OBJDIR= .obj
 
@@ -80,7 +82,11 @@ clean:
 	rm -rf $(NAME) $(OBJDIR); 
 
 install: $(NAME)
-	[ -d $(DESTDIR)/$(bindir) ] || \
+	@[ -d $(DESTDIR)/$(bindir) ] || \
 		(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir))
 	$(INSTALL_PROGRAM) $(NAME) $(DESTDIR)/$(bindir)/;
+	@[ -d $(SERVERCFG_PATH) ] || \
+		(mkdir -p $(SERVERCFG_PATH); \
+		chmod -R 777 $(SERVERCFG_PATH))
+	$(INSTALL_DATA) README.cfgdir $(SERVERCFG_PATH)/README
 

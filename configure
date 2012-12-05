@@ -620,6 +620,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 DBUS_CONFDIR
+SERVERCFG_PATH
 STREAMS_PATH
 SUBDIRS
 DISTRO
@@ -720,6 +721,7 @@ with_examples
 enable_debug
 enable_debug_threads
 with_streamspath
+with_servercfgpath
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1362,6 +1364,8 @@ Optional Packages:
   --with-examples         enable building example applications
   --with-streamspath=path Path to the Notifications streams files, default
                           value is /usr/share/libnetconf/streams/
+  --with-servercfg=path   Path to the example server configuration files,
+                          default value is /usr/share/libnetconf/server/
 
 Some influential environment variables:
   CC          C compiler command
@@ -2505,6 +2509,7 @@ CONFIGURE_PWD=`pwd`
 
 
 STREAMS_PATH="/usr/share/$PACKAGE_NAME/streams/"
+SERVERCFG_PATH="/usr/share/$PACKAGE_NAME/server/"
 
 LIBS="$LIBS -lrt -lutil"
 
@@ -2594,6 +2599,13 @@ fi
 # Check whether --with-streamspath was given.
 if test "${with_streamspath+set}" = set; then :
   withval=$with_streamspath; STREAMS_PATH="$withval"
+
+fi
+
+
+# Check whether --with-servercfgpath was given.
+if test "${with_servercfgpath+set}" = set; then :
+  withval=$with_servercfgpath; SERVERCFG_PATH="$withval"
 
 fi
 
@@ -5282,6 +5294,7 @@ done
 
 
 ############################### Set output #####################################
+
 
 
 

@@ -64,6 +64,7 @@ CONFIGURE_PWD=`pwd`
 AC_SUBST(CONFIGURE_PWD)
 
 STREAMS_PATH="/usr/share/$PACKAGE_NAME/streams/"
+SERVERCFG_PATH="/usr/share/$PACKAGE_NAME/server/"
 
 LIBS="$LIBS -lrt -lutil"
 
@@ -100,6 +101,10 @@ AC_ARG_ENABLE([debug-threads],
 AC_ARG_WITH([streamspath],
 	AC_HELP_STRING([--with-streamspath=path],[Path to the Notifications streams files, default value is /usr/share/libnetconf/streams/]),
 	STREAMS_PATH="$withval"
+)
+AC_ARG_WITH([servercfgpath],
+	AC_HELP_STRING([--with-servercfg=path],[Path to the example server configuration files, default value is /usr/share/libnetconf/server/]),
+	SERVERCFG_PATH="$withval"
 )
 
 ############################ Check for programs ################################
@@ -217,6 +222,7 @@ AC_SUBST(REQS)
 AC_SUBST(DISTRO)
 AC_SUBST(SUBDIRS)
 AC_SUBST(STREAMS_PATH)
+AC_SUBST(SERVERCFG_PATH)
 AC_SUBST(DBUS_CONFDIR)
 
 AC_SUBST(DOXYGEN)

@@ -275,12 +275,12 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 	 */
 
 	/* prepare configuration datastore */
-	datastore = ncds_new(NCDS_TYPE_FILE, "/tmp/model.yin", NULL);
+	datastore = ncds_new(NCDS_TYPE_FILE, SERVERCFG_PATH"model.yin", NULL);
 	if (datastore == NULL) {
 		clb_print(NC_VERB_ERROR, "Datastore preparing failed.");
 		return (EXIT_FAILURE);
 	}
-	if (ncds_file_set_path(datastore, "/tmp/datastore.xml") != 0) {
+	if (ncds_file_set_path(datastore, SERVERCFG_PATH"/datastore.xml") != 0) {
 		clb_print(NC_VERB_ERROR, "Linking datastore to a file failed.");
 		return (EXIT_FAILURE);
 	}

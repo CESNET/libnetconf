@@ -69,7 +69,7 @@ CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = -DNCNTF_STREAMS_PATH=\"$(STREAMS_PATH)\" @CPPFLAGS@
 
 OBJDIR= .obj
-BUS_CONFDIR = @DBUS_CONFDIR@
+DBUS_CONFDIR = @DBUS_CONFDIR@
 
 TOPDIR = @CONFIGURE_PWD@
 SUBDIRS = @SUBDIRS@
@@ -195,7 +195,11 @@ install: all install-devel install-doc
 	[ -d $(STREAMS_PATH) ] || \
 	    (mkdir -p $(STREAMS_PATH); chmod 777 $(STREAMS_PATH))
 	[ -d $(DESTDIR)/$(DBUS_CONFDIR)/system.d/ ] || (mkdir -p $(DESTDIR)/$(DBUS_CONFDIR)/system.d/);
-	@cp libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
+	$(INSTALL_DATA) libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
+	for i in $(SUBDIRS) ; do \
+		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i install \
+		|| exit 1; \
+	done
 
 .PHONY: install-devel
 install-devel:
@@ -218,10 +222,6 @@ install-devel:
 		$(INSTALL_DATA) $$i $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
 	done; \
 	$(INSTALL_DATA) $(NAME).pc $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
-	for i in $(SUBDIRS) ; do \
-		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i install \
-		|| exit 1; \
-	done
 
 .PHONY: install-doc
 install-doc: doc
@@ -236,7 +236,11 @@ uninstall: uninstall-devel uninstall-doc
 	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(MAJOR_VER)
 	rmdir -p $(STREAMS_PATH) || rm -rf $(STREAMS_PATH)
 	rmdir -p $(STREAMS_PATH) || echo -n ""
-	@rm -f $(DESTDIR)/$(DBUS_CONFDIR)/system.d/libnetconf.notifications.conf
+	rm -f $(DESTDIR)/$(DBUS_CONFDIR)/system.d/libnetconf.notifications.conf
+	for i in $(SUBDIRS) ; do \
+		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i uninstall \
+		|| exit 1; \
+	done
 
 .PHONY: uninstall-devel
 uninstall-devel:
@@ -249,10 +253,6 @@ uninstall-devel:
 		rm -f $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
 	done; \
 	rm $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
-	for i in $(SUBDIRS) ; do \
-		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i uninstall \
-		|| exit 1; \
-	done
 
 .PHONY: uninstall-doc
 uninstall-doc:
