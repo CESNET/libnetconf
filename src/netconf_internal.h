@@ -481,4 +481,16 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter * filter, xmlNodePtr *ne
  */
 char* nc_session_stats(void);
 
+/**
+ * @brief Initiate NETCONF Notifications environment
+ * @return 0 on success, non-zero value else
+ */
+int ncntf_init(void);
+
+/**
+ * @brief Close all NETCONF Event Streams and other parts of the Notifications
+ * environment.
+ */
+void ncntf_close(void);
+
 #endif /* NETCONF_INTERNAL_H_ */

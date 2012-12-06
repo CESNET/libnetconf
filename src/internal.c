@@ -73,12 +73,20 @@ void prv_print(NC_VERB_LEVEL level, const char* msg)
 struct nc_statistics *nc_stats = NULL;
 static int shmid = -1;
 
-int nc_init(void)
+#define NC_INIT_DONE  0x00000001
+static int init_flags = 0;
+
+int nc_init(int flags)
 {
 	int retval = 0;
 	key_t key = -2;
 	int first = 1;
 	char* t;
+
+	if (init_flags & NC_INIT_DONE) {
+		ERROR("libnetconf already initiated!");
+		return (-1);
+	}
 
 	DBG("Shared memory key: %d", key);
 	shmid = shmget(key, sizeof(struct nc_statistics), IPC_CREAT | IPC_EXCL | 0777 );
@@ -110,8 +118,19 @@ int nc_init(void)
 	nc_stats->participants++;
 
 	/* init internal datastores */
-	retval = ncds_sysinit();
+	if (ncds_sysinit() != EXIT_SUCCESS) {
+		return (-1);
+	}
 
+	/* init Notification subsystem */
+	if (flags & NC_INIT_NOTIF) {
+		if (ncntf_init() != EXIT_SUCCESS) {
+			return (-1);
+		}
+		init_flags |= NC_INIT_NOTIF;
+	}
+
+	init_flags |= NC_INIT_DONE;
 	return (retval);
 }
 
@@ -141,6 +160,12 @@ int nc_close(int system)
 	shmdt(nc_stats);
 	nc_stats = NULL;
 
+	/* close Notification subsystem */
+	if (init_flags & NC_INIT_NOTIF) {
+		ncntf_close();
+	}
+
+	init_flags = 0;
 	return (retval);
 }
 
