@@ -70,7 +70,7 @@ void prv_print(NC_VERB_LEVEL level, const char* msg)
 	}
 }
 
-struct nc_statistics *nc_stats = NULL;
+struct nc_shared_info *nc_info = NULL;
 static int shmid = -1;
 
 #define NC_INIT_DONE  0x00000001
@@ -78,10 +78,11 @@ static int init_flags = 0;
 
 int nc_init(int flags)
 {
-	int retval = 0;
+	int retval = 0, r;
 	key_t key = -2;
 	int first = 1;
 	char* t;
+	pthread_rwlockattr_t rwlockattr;
 
 	if (init_flags & NC_INIT_DONE) {
 		ERROR("libnetconf already initiated!");
@@ -89,9 +90,9 @@ int nc_init(int flags)
 	}
 
 	DBG("Shared memory key: %d", key);
-	shmid = shmget(key, sizeof(struct nc_statistics), IPC_CREAT | IPC_EXCL | 0777 );
+	shmid = shmget(key, sizeof(struct nc_shared_info), IPC_CREAT | IPC_EXCL | 0777 );
 	if (shmid == -1 && errno == EEXIST) {
-		shmid = shmget(key, sizeof(struct nc_statistics), 0777);
+		shmid = shmget(key, sizeof(struct nc_shared_info), 0777);
 		retval = 1;
 		first = 0;
 	}
@@ -102,29 +103,49 @@ int nc_init(int flags)
 	DBG("Shared memory ID: %d", shmid);
 
 	/* attach memory */
-	nc_stats = shmat(shmid, NULL, 0);
-	if (nc_stats == (void*) -1) {
+	nc_info = shmat(shmid, NULL, 0);
+	if (nc_info == (void*) -1) {
 		ERROR("Attaching shared memory failed (%s).", strerror(errno));
-		nc_stats = NULL;
+		nc_info = NULL;
 		return (-1);
 	}
 
 	/* todo use locks */
 	if (first) {
-		memset(nc_stats, 0, sizeof(struct nc_statistics));
-		strncpy(nc_stats->start_time, t = nc_time2datetime(time(NULL)), TIME_LENGTH);
+		/* lock */
+		pthread_rwlockattr_init(&rwlockattr);
+		pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
+		if ((r = pthread_rwlock_init(&(nc_info->lock), &rwlockattr)) != 0) {
+			ERROR("Shared information lock initialization failed (%s)", strerror(r));
+			shmdt(nc_info);
+			return (-1);
+		}
+		pthread_rwlockattr_destroy(&rwlockattr);
+		memset(nc_info, 0, sizeof(struct nc_shared_info));
+
+		/* init the information structure */
+		pthread_rwlock_wrlock(&(nc_info->lock));
+		strncpy(nc_info->stats.start_time, t = nc_time2datetime(time(NULL)), TIME_LENGTH);
 		free(t);
+	} else {
+		pthread_rwlock_wrlock(&(nc_info->lock));
 	}
-	nc_stats->participants++;
+	nc_info->stats.participants++;
+	pthread_rwlock_unlock(&(nc_info->lock));
 
 	/* init internal datastores */
 	if (ncds_sysinit() != EXIT_SUCCESS) {
+		shmdt(nc_info);
 		return (-1);
 	}
+
+	/* init NETCONF sessions statistics */
+	nc_session_monitoring_init();
 
 	/* init Notification subsystem */
 	if (flags & NC_INIT_NOTIF) {
 		if (ncntf_init() != EXIT_SUCCESS) {
+			shmdt(nc_info);
 			return (-1);
 		}
 		init_flags |= NC_INIT_NOTIF;
@@ -139,7 +160,7 @@ int nc_close(int system)
 	struct shmid_ds ds;
 	int retval = 0;
 
-	if (shmid == -1 || nc_stats == NULL) {
+	if (shmid == -1 || nc_info == NULL) {
 		/* we've not been initiated */
 		return (-1);
 	}
@@ -156,9 +177,14 @@ int nc_close(int system)
 		}
 	}
 
-	nc_stats->participants--;
-	shmdt(nc_stats);
-	nc_stats = NULL;
+	pthread_rwlock_wrlock(&(nc_info->lock));
+	nc_info->stats.participants--;
+	pthread_rwlock_unlock(&(nc_info->lock));
+	shmdt(nc_info);
+	nc_info = NULL;
+
+	/* close NETCONF session statistics */
+	nc_session_monitoring_close();
 
 	/* close Notification subsystem */
 	if (init_flags & NC_INIT_NOTIF) {

@@ -69,7 +69,7 @@
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
-extern struct nc_statistics *nc_stats;
+extern struct nc_shared_info *nc_info;
 
 struct ncds_ds_list
 {
@@ -157,7 +157,7 @@ int ncds_sysinit(void)
 		ds = NULL;
 	}
 
-	return (EXIT_FAILURE);
+	return (EXIT_SUCCESS);
 }
 
 /**
@@ -578,7 +578,8 @@ char* get_internal_state(const struct nc_session *session)
 	/*
 	 * statistics
 	 */
-	if (nc_stats != NULL) {
+	if (nc_info != NULL) {
+		pthread_rwlock_rdlock(&(nc_info->lock));
 		if (asprintf(&stats, "<statistics><netconf-start-time>%s</netconf-start-time>"
 				"<in-bad-hellos>%u</in-bad-hellos>"
 				"<in-sessions>%u</in-sessions>"
@@ -587,17 +588,18 @@ char* get_internal_state(const struct nc_session *session)
 				"<in-bad-rpcs>%u</in-bad-rpcs>"
 				"<out-rpc-errors>%u</out-rpc-errors>"
 				"<out-notifications>%u</out-notifications></statistics>",
-				nc_stats->start_time,
-				nc_stats->bad_hellos,
-				nc_stats->sessions_in,
-				nc_stats->sessions_dropped,
-				nc_stats->counters.in_rpcs,
-				nc_stats->counters.in_bad_rpcs,
-				nc_stats->counters.out_rpc_errors,
-				nc_stats->counters.out_notifications) == -1) {
+				nc_info->stats.start_time,
+				nc_info->stats.bad_hellos,
+				nc_info->stats.sessions_in,
+				nc_info->stats.sessions_dropped,
+				nc_info->stats.counters.in_rpcs,
+				nc_info->stats.counters.in_bad_rpcs,
+				nc_info->stats.counters.out_rpc_errors,
+				nc_info->stats.counters.out_notifications) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			stats = NULL;
 		}
+		pthread_rwlock_unlock(&(nc_info->lock));
 	}
 
 	/* get it all together */

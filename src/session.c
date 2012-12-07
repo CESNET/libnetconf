@@ -43,6 +43,10 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <poll.h>
 #include <pthread.h>
@@ -60,17 +64,45 @@
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
-extern struct nc_statistics *nc_stats;
-
-struct session_list_s {
-	struct nc_session *session;
-	struct session_list_s *next;
-};
-
-struct session_list_s *session_list = NULL;
-
 /* definition in datastore.c */
 char **get_schemas_capabilities(void);
+
+extern struct nc_shared_info *nc_info;
+
+/**
+ * @brief List of possible NETCONF transportation supported by libnetconf
+ */
+enum nc_transport {
+	NC_TRTANSPORT_SSH /* netconf-ssh */
+};
+
+struct session_list_item {
+	int offset_prev;
+	int offset_next;
+	int size;
+	char session_id[SID_SIZE];
+	enum nc_transport transport;
+	struct nc_session_stats stats;
+	char login_time[TIME_LENGTH];
+	 /*
+	  * variable length part - data actually contain 2 strings (username and
+	  * source-host which lengths can differ for each session
+	  */
+	pthread_rwlock_t lock;
+	char data[1];
+};
+
+struct session_list_map {
+	/* start of the mapped file with session list */
+	int size; /* current file size (may include gaps */
+	int count; /* current number of sessions */
+	int first_offset;
+	pthread_rwlock_t lock; /* lock for the all file - for resizing */
+	struct session_list_item record[1]; /* first record of the session records list */
+};
+
+static int session_list_fd = -1;
+static struct session_list_map *session_list = NULL;
 
 /**
  * Sleep time in microseconds to wait between unsuccessful reading due to EAGAIN or EWOULDBLOCK
@@ -82,32 +114,150 @@ char **get_schemas_capabilities(void);
 	} else if (session->fd_output != -1) { \
 		c += write (session->fd_output, (buf), strlen(buf));}
 
-int nc_session_monitor(struct nc_session* session)
+#define SIZE_STEP (1024*16)
+int nc_session_monitoring_init(void)
 {
-	struct session_list_s *list_item;
+	struct stat fdinfo;
+	int first = 0;
+	size_t size;
+	pthread_rwlockattr_t rwlockattr;
 
-	if (session != NULL) {
-		list_item = malloc (sizeof(struct session_list_s));
-		if (list_item == NULL) {
-			ERROR("Memory allocation failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-			return (EXIT_FAILURE);
-		}
-		list_item->session = session;
-		list_item->next = session_list;
-		session_list = list_item;
-
-		return (EXIT_SUCCESS);
-	} else {
+	if (session_list != NULL) {
+		ERROR("%s: session list already exists.", __func__);
 		return (EXIT_FAILURE);
 	}
+
+	if (session_list_fd != -1) {
+		close(session_list_fd);
+	}
+
+	session_list_fd = open("/tmp/libnetconf_sessions.bin", O_CREAT | O_RDWR, 0777);
+	if (session_list_fd == -1) {
+		ERROR("Opening sessions monitoring file failed (%s).", strerror(errno));
+		return (EXIT_FAILURE);
+	}
+
+	/* get the file size */
+	if (fstat(session_list_fd, &fdinfo) == -1) {
+		ERROR("Unable to get sessions monitoring file information (%s)", strerror(errno));
+		close(session_list_fd);
+		session_list_fd = -1;
+		return (EXIT_FAILURE);
+	}
+
+	if (fdinfo.st_size == 0) {
+		/* we have new file, create some initial size using file gaps */
+		first = 1;
+		lseek(session_list_fd, SIZE_STEP - 1, SEEK_SET);
+		write(session_list_fd, "", 1);
+		lseek(session_list_fd, 0, SEEK_SET);
+		size = SIZE_STEP;
+	} else {
+		size = fdinfo.st_size;
+	}
+
+	session_list = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, session_list_fd, 0);
+	if (session_list == MAP_FAILED) {
+		ERROR("Accessing shared sessions monitoring file failed (%s)", strerror(errno));
+		close(session_list_fd);
+		session_list = NULL;
+		session_list_fd = -1;
+		return (EXIT_FAILURE);
+	}
+
+	if (first) {
+		pthread_rwlockattr_init(&rwlockattr);
+		pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
+		pthread_rwlock_init(&(session_list->lock), &rwlockattr);
+		pthread_rwlockattr_destroy(&rwlockattr);
+		pthread_rwlock_wrlock(&(session_list->lock));
+		session_list->size = SIZE_STEP;
+		session_list->count = 0;
+		pthread_rwlock_unlock(&(session_list->lock));
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+void nc_session_monitoring_close(void)
+{
+	if (session_list) {
+		munmap(session_list, session_list->size);
+		close(session_list_fd);
+		session_list = NULL;
+		session_list_fd = -1;
+	}
+}
+
+int nc_session_monitor(struct nc_session* session)
+{
+	struct session_list_item *litem = NULL;
+	pthread_rwlockattr_t rwlockattr;
+	int prev;
+
+	if (session == NULL || session_list == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	/* critical section */
+	pthread_rwlock_wrlock(&(session_list->lock));
+	if (session_list->count > 0) {
+		for(litem = (struct session_list_item*)((char*)(session_list->record) + session_list->first_offset);
+				litem && litem->offset_next != 0;
+				litem = (struct session_list_item*)((char*)litem + litem->offset_next));
+		if (litem == NULL) {
+			ERROR("%s: passing through the sessions list failed", __func__);
+			pthread_rwlock_unlock(&(session_list->lock));
+			return (EXIT_FAILURE);
+		}
+		prev = litem->size;
+		litem->offset_next = litem->size;
+		litem = (struct session_list_item*)((char*)litem + litem->size);
+		litem->offset_prev = prev;
+	} else {
+		session_list->record[0].offset_prev = 0;
+		litem = &(session_list->record[0]);
+	}
+	session_list->count++;
+
+	/* fill new structure */
+	litem->offset_next = 0;
+	litem->size = (sizeof(struct session_list_item) - 1) + (
+	                (session->username != NULL) ? (strlen(session->username) + 1) : 1) + (
+	                (session->hostname != NULL) ? (strlen(session->hostname) + 1) : 1);
+	strncpy(litem->session_id, session->session_id, SID_SIZE);
+	litem->transport = NC_TRTANSPORT_SSH;
+	memcpy(&(litem->stats), session->stats, sizeof(struct nc_session_stats));
+	free(session->stats);
+	session->stats = &(litem->stats);
+	strncpy(litem->login_time, session->logintime, TIME_LENGTH);
+	litem->login_time[TIME_LENGTH - 1] = 0; /* terminating null byte */
+
+	strcpy(litem->data, session->username);
+	strcpy(litem->data + 1 + strlen(session->username), session->hostname);
+
+	pthread_rwlockattr_init(&rwlockattr);
+	pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
+	pthread_rwlock_init(&(litem->lock), &rwlockattr);
+	pthread_rwlockattr_destroy(&rwlockattr);
+
+	/* end of critical section, other processes now can access new record */
+	pthread_rwlock_unlock(&(session_list->lock));
+
+	return (EXIT_SUCCESS);
 }
 
 char* nc_session_stats(void)
 {
 	char *aux, *sessions = NULL, *session = NULL;
-	struct session_list_s *list_item;
+	struct session_list_item *litem;
 
-	for (list_item = session_list; list_item != NULL; list_item = list_item->next) {
+	if (session_list == NULL) {
+		return (NULL);
+	}
+
+	pthread_rwlock_rdlock(&(session_list->lock));
+	for (litem = (struct session_list_item*)((char*)(session_list->record) + session_list->first_offset); litem != NULL;) {
 		aux = NULL;
 		if (asprintf(&aux, "<session><session-id>%s</session-id>"
 				"<transport>netconf-ssh</transport>"
@@ -117,25 +267,33 @@ char* nc_session_stats(void)
 				"<in-rpcs>%u</in-rpcs><in-bad-rpcs>%u</in-bad-rpcs>"
 				"<out-rpc-errors>%u</out-rpc-errors>"
 				"<out-notifications>%u</out-notifications></session>",
-				list_item->session->session_id,
-				list_item->session->username,
-				list_item->session->hostname,
-				list_item->session->logintime,
-				list_item->session->stats.in_rpcs,
-				list_item->session->stats.in_bad_rpcs,
-				list_item->session->stats.out_rpc_errors,
-				list_item->session->stats.out_notifications) == -1) {
+				litem->session_id,
+				litem->data, /* username */
+				litem->data + (strlen(litem->data) + 1), /* hostname */
+				litem->login_time,
+				litem->stats.in_rpcs,
+				litem->stats.in_bad_rpcs,
+				litem->stats.out_rpc_errors,
+				litem->stats.out_notifications) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-			continue;
+		} else {
+			if (session == NULL) {
+				session = aux;
+			} else {
+				session = realloc(session, strlen(session) + strlen(aux) + 1);
+				strcat(session, aux);
+			}
 		}
 
-		if (session == NULL) {
-			session = aux;
+		/* move to the next record */
+		if (litem->offset_next == 0) {
+			litem = NULL;
 		} else {
-			session = realloc(session, strlen(session) + strlen(aux) + 1);
-			strcat(session, aux);
+			litem = (struct session_list_item*)((char*)litem + litem->offset_next);
 		}
 	}
+	pthread_rwlock_unlock(&(session_list->lock));
+
 	if (session != NULL) {
 		if (asprintf(&sessions, "<sessions>%s</sessions>", session) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
@@ -555,10 +713,15 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	}
 
 	if ((session = malloc (sizeof (struct nc_session))) == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
 		return NULL;
 	}
-
 	memset (session, 0, sizeof (struct nc_session));
+	if ((session->stats = malloc (sizeof (struct nc_session_stats))) == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
+		free(session);
+		return NULL;
+	}
 
 	/* set invalid fd values to prevent comunication */
 	session->fd_input = -1;
@@ -567,10 +730,10 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 
 	/* init stats values */
 	session->logintime = nc_time2datetime(time(NULL));
-	session->stats.in_rpcs = 0;
-	session->stats.in_bad_rpcs = 0;
-	session->stats.out_rpc_errors = 0;
-	session->stats.out_notifications = 0;
+	session->stats->in_rpcs = 0;
+	session->stats->in_bad_rpcs = 0;
+	session->stats->out_rpc_errors = 0;
+	session->stats->out_notifications = 0;
 
 	/*
 	 * mutexes and queues fields are not initialized since dummy session
@@ -705,7 +868,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 
 void nc_session_free (struct nc_session* session)
 {
-	struct session_list_s *sitem, *sitem_pre = NULL;
+	struct session_list_item *litem, *aux;
 
 	nc_session_close(session, NC_SESSION_TERM_OTHER);
 
@@ -725,20 +888,55 @@ void nc_session_free (struct nc_session* session)
 	pthread_mutex_destroy(&(session->mut_equeue));
 	pthread_mutex_destroy(&(session->mut_session));
 
-	/* remove from internal list if session is monitored */
-	for(sitem = session_list; sitem != NULL; sitem = sitem->next) {
-		if (session == sitem->session) {
-			if (sitem_pre == NULL) {
-				/* matching session is in the first item of the list */
-				session_list = sitem->next;
-			} else {
-				/* we're somewhere in the middle of the list */
-				sitem_pre = sitem->next;
+	if (session_list != NULL) {
+		/* remove from internal list if session is monitored */
+		pthread_rwlock_wrlock(&(session_list->lock));
+		if (session_list->count > 0) {
+			for (litem = (struct session_list_item*)((char*)(session_list->record) + session_list->first_offset);
+					;
+					litem = (struct session_list_item*)((char*)litem + litem->offset_next)) {
+				if (strcmp(litem->session_id, session->session_id) == 0) {
+					/* we have matching record */
+
+					/* reconnect the list */
+					if (litem->offset_prev == 0) { /* first item in the list */
+						session_list->first_offset = litem->offset_next;
+					} else {
+						aux = (struct session_list_item*)((char*)litem - litem->offset_prev);
+						aux->offset_next = (litem->offset_next == 0) ? 0 : (aux->offset_next + litem->offset_next);
+					}
+					aux = (struct session_list_item*)((char*)litem + litem->offset_next);
+					aux->offset_prev = (litem->offset_prev == 0) ? 0 : (aux->offset_prev + litem->offset_prev);
+
+					/* remove link from session statistics into the mapped file */
+					session->stats = NULL;
+
+					/* we are done */
+					session_list->count--;
+					break;
+				}
+
+				/* end loop condition */
+				if (litem->offset_next == 0) {
+					/* no other item in the list */
+
+					/* the session's stats were not connected
+					 * with internal monitoring list, so free it
+					 */
+					free(session->stats);
+
+					/* end the loop */
+					break; /* for loop */
+				}
 			}
-			free(sitem);
-			break;
 		}
-		sitem_pre = sitem;
+		pthread_rwlock_unlock(&(session_list->lock));
+	} else {
+		/* there is no internal session monitoring list so session's
+		 * stats cannot be connected with it - free the structure
+		 * directly from the session structure
+		 */
+		free(session->stats);
 	}
 
 	free (session);
@@ -1226,7 +1424,11 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 			nc_session_close(session, NC_SESSION_TERM_DROPPED);
 			DBG_UNLOCK("mut_in");
 			pthread_mutex_unlock(&(session->mut_in));
-			if (nc_stats) {nc_stats->sessions_dropped++;}
+			if (nc_info) {
+				pthread_rwlock_wrlock(&(nc_info->lock));
+				nc_info->stats.sessions_dropped++;
+				pthread_rwlock_unlock(&(nc_info->lock));
+			}
 			return (NC_MSG_UNKNOWN);
 
 		}
@@ -1239,7 +1441,11 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 			nc_session_close(session, NC_SESSION_TERM_DROPPED);
 			DBG_UNLOCK("mut_in");
 			pthread_mutex_unlock(&(session->mut_in));
-			if (nc_stats) {nc_stats->sessions_dropped++;}
+			if (nc_info) {
+				pthread_rwlock_wrlock(&(nc_info->lock));
+				nc_info->stats.sessions_dropped++;
+				pthread_rwlock_unlock(&(nc_info->lock));
+			}
 			return (NC_MSG_UNKNOWN);
 		}
 
@@ -1550,8 +1756,12 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf)
 
 	if (ret == EXIT_SUCCESS) {
 		/* update stats */
-		session->stats.out_notifications++;
-		if (nc_stats) {nc_stats->counters.out_notifications++;}
+		session->stats->out_notifications++;
+		if (nc_info) {
+			pthread_rwlock_wrlock(&(nc_info->lock));
+			nc_info->stats.counters.out_notifications++;
+			pthread_rwlock_unlock(&(nc_info->lock));
+		}
 	}
 
 	return (ret);
@@ -1699,15 +1909,23 @@ try_again:
 				nc_reply_free(reply);
 
 				/* update stats */
-				session->stats.in_bad_rpcs++;
-				if (nc_stats) {nc_stats->counters.in_bad_rpcs++;}
+				session->stats->in_bad_rpcs++;
+				if (nc_info) {
+					pthread_rwlock_wrlock(&(nc_info->lock));
+					nc_info->stats.counters.in_bad_rpcs++;
+					pthread_rwlock_unlock(&(nc_info->lock));
+				}
 
 				return (0); /* failure */
 			}
 		}
 		/* update statistics */
-		session->stats.in_rpcs++;
-		if (nc_stats) {nc_stats->counters.in_rpcs++;}
+		session->stats->in_rpcs++;
+		if (nc_info) {
+			pthread_rwlock_wrlock(&(nc_info->lock));
+			nc_info->stats.counters.in_rpcs++;
+			pthread_rwlock_unlock(&(nc_info->lock));
+		}
 
 		break;
 	case NC_MSG_HELLO:
@@ -1722,8 +1940,12 @@ try_again:
 		ret = NC_MSG_UNKNOWN;
 
 		/* update stats */
-		session->stats.in_bad_rpcs++;
-		if (nc_stats) {nc_stats->counters.in_bad_rpcs++;}
+		session->stats->in_bad_rpcs++;
+		if (nc_info) {
+			pthread_rwlock_wrlock(&(nc_info->lock));
+			nc_info->stats.counters.in_bad_rpcs++;
+			pthread_rwlock_unlock(&(nc_info->lock));
+		}
 
 		break;
 	}
@@ -1924,8 +2146,12 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 	} else {
 		if (reply->type.reply == NC_REPLY_ERROR) {
 			/* update stats */
-			session->stats.out_rpc_errors++;
-			if (nc_stats) {nc_stats->counters.out_rpc_errors++;}
+			session->stats->out_rpc_errors++;
+			if (nc_info) {
+				pthread_rwlock_wrlock(&(nc_info->lock));
+				nc_info->stats.counters.out_rpc_errors++;
+				pthread_rwlock_unlock(&(nc_info->lock));
+			}
 		}
 		return (retval);
 	}
