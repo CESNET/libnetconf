@@ -72,25 +72,11 @@ typedef enum {
 
 /**
  * @ingroup notifications
- * @brief Initiate NETCONF Notifications environment
- * @return 0 on success, non-zero value else
- */
-int ncntf_init(void);
-
-/**
- * @ingroup notifications
  * @brief Get status data in xml form describing currently used streams.
  * @return Text containing streams status data in xml form
  * (urn:ietf:params:xml:ns:netmod:notification in RFC 5277).
  */
 char* ncntf_status(void);
-
-/**
- * @ingroup notifications
- * @brief Close all NETCONF Event Streams and other parts of the Notifications
- * environment.
- */
-void ncntf_close(void);
 
 /**
  * @ingroup notifications

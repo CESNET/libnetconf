@@ -263,7 +263,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 	openlog("ncserver", LOG_PID, LOG_DAEMON);
 	nc_callback_print(clb_print);
 
-	init = nc_init();
+	init = nc_init(NC_INIT_NOTIF);
 	if (init == -1) {
 		clb_print(NC_VERB_ERROR, "libnetconf initiation failed.");
 		return (EXIT_FAILURE);
@@ -351,14 +351,6 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 		/* device initiation done */
 	}
 
-	/*
-	 * Initiate Notifications
-	 */
-	clb_print(NC_VERB_DEBUG, "Initiating notification system.");
-	if (ncntf_init() != 0) {
-		clb_print(NC_VERB_WARNING, "Notification system initialization failed.");
-	}
-
 	/* create the NETCONF session -- accept incoming connection */
 	config.session = nc_session_accept(NULL);
 	if (config.session == NULL) {
@@ -388,7 +380,6 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 		nc_session_close(config.session, NC_SESSION_TERM_CLOSED);
 	}
 	nc_session_free(config.session);
-	ncntf_close();
 	ncds_free(datastore);
 
 	nc_close(0);

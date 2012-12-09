@@ -67,7 +67,7 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 #define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
 
-extern struct nc_statistics *nc_stats;
+extern struct nc_shared_info *nc_info;
 
 struct auth_pref_couple
 {
@@ -373,7 +373,11 @@ static int nc_server_handshake(struct nc_session *session, char** cpblts)
 	nc_rpc_free(hello);
 
 	if (retval != EXIT_SUCCESS) {
-		if (nc_stats) {nc_stats->bad_hellos++;}
+		if (nc_info) {
+			pthread_rwlock_wrlock(&(nc_info->lock));
+			nc_info->stats.bad_hellos++;
+			pthread_rwlock_unlock(&(nc_info->lock));
+		}
 	}
 
 	return (retval);
@@ -538,16 +542,21 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		return (NULL);
 	}
 	memset(retval, 0, sizeof(struct nc_session));
+	if ((retval->stats = malloc (sizeof (struct nc_session_stats))) == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
+		free(retval);
+		return NULL;
+	}
 	retval->libssh2_socket = -1;
 	retval->fd_input = STDIN_FILENO;
 	retval->fd_output = STDOUT_FILENO;
 	retval->msgid = 1;
 	retval->queue_event = NULL;
 	retval->queue_msg = NULL;
-	retval->stats.in_rpcs = 0;
-	retval->stats.in_bad_rpcs = 0;
-	retval->stats.out_rpc_errors = 0;
-	retval->stats.out_notifications = 0;
+	retval->stats->in_rpcs = 0;
+	retval->stats->in_bad_rpcs = 0;
+	retval->stats->out_rpc_errors = 0;
+	retval->stats->out_notifications = 0;
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
@@ -699,7 +708,11 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	/* log start of the session */
 	ncntf_event_new(-1, NCNTF_BASE_SESSION_START, retval);
 	retval->logintime = nc_time2datetime(time(NULL));
-	if (nc_stats) {nc_stats->sessions_in++;}
+	if (nc_info) {
+		pthread_rwlock_wrlock(&(nc_info->lock));
+		nc_info->stats.sessions_in++;
+		pthread_rwlock_unlock(&(nc_info->lock));
+	}
 
 	return (retval);
 }
@@ -841,6 +854,11 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		return (NULL);
 	}
 	memset(retval, 0, sizeof(struct nc_session));
+	if ((retval->stats = malloc (sizeof (struct nc_session_stats))) == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
+		free(retval);
+		return NULL;
+	}
 	retval->libssh2_socket = sock;
 	retval->fd_input = -1;
 	retval->fd_output = -1;
@@ -851,10 +869,10 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->queue_event = NULL;
 	retval->queue_msg = NULL;
 	retval->logintime = NULL;
-	retval->stats.in_rpcs = 0;
-	retval->stats.in_bad_rpcs = 0;
-	retval->stats.out_rpc_errors = 0;
-	retval->stats.out_notifications = 0;
+	retval->stats->in_rpcs = 0;
+	retval->stats->in_bad_rpcs = 0;
+	retval->stats->out_rpc_errors = 0;
+	retval->stats->out_notifications = 0;
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);

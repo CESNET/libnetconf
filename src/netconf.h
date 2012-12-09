@@ -316,11 +316,15 @@ void nc_verbosity(NC_VERB_LEVEL level);
  * @ingroup genAPI
  * @brief Initialize libnetconf for system-wide usage. This initialization is
  * shared across all processes using
+ * @param[in] flags ORed flags for libnetconf initialization. Accepted values
+ * include:
+ *    - *NC_INIT_NOTIF* Enable Notification subsystem
  * @return -1 on fatal error\n 0 if this is first init after previous
  * system-wide nc_close() or system reboot\n 1 when someone else already called
  * nc_init() since last system-wide nc_close() or system reboot.
  */
-int nc_init();
+int nc_init(int flags);
+#define NC_INIT_NOTIF 0x00000002 /**< nc_init()'s flag to enable Notification subsystem. */
 
 /**
  * @ingroup genAPI

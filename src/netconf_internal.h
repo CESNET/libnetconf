@@ -229,6 +229,15 @@ struct nc_statistics {
 
 /**
  * @ingroup internalAPI
+ * @brief Information structure shared between all libnetconf's processes.
+ */
+struct nc_shared_info {
+	pthread_rwlock_t lock;
+	struct nc_statistics stats;
+};
+
+/**
+ * @ingroup internalAPI
  * @brief NETCONF session description structure
  *
  * No one outside the libnetconf would access members of this structure.
@@ -285,7 +294,7 @@ struct nc_session {
 	/**< @brief flag for active notification subscription on the session */
 	int ntf_active;
 	/**< @brief NETCONF session statistics as defined in RFC 6022 */
-	struct nc_session_stats stats;
+	struct nc_session_stats *stats;
 };
 
 /**
@@ -480,5 +489,21 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter * filter, xmlNodePtr *ne
  * error (or if no session is monitored).
  */
 char* nc_session_stats(void);
+
+/**
+ * @brief Initiate NETCONF Notifications environment
+ * @return 0 on success, non-zero value else
+ */
+int ncntf_init(void);
+
+/**
+ * @brief Close all NETCONF Event Streams and other parts of the Notifications
+ * environment.
+ */
+void ncntf_close(void);
+
+
+int nc_session_monitoring_init(void);
+void nc_session_monitoring_close(void);
 
 #endif /* NETCONF_INTERNAL_H_ */

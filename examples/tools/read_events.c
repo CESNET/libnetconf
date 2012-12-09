@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <libnetconf.h>
+#include "../../src/netconf_internal.h"
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
@@ -36,7 +37,6 @@ int main(int argc, char* argv[])
 
 	nc_verbosity(NC_VERB_VERBOSE);
 	nc_callback_print(clb_print);
-
 
 	ncntf_init();
 	ncntf_stream_iter_start(argv[1]);
