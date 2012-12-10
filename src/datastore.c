@@ -66,6 +66,7 @@
 #include "../models/ietf-netconf-monitoring.xxd"
 #include "../models/ietf-netconf-notifications.xxd"
 #include "../models/ietf-netconf-with-defaults.xxd"
+#include "../models/nc-notifications.xxd"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -104,24 +105,27 @@ static struct ncds_ds_list int_ds_list = {&int_ds, NULL};
 static struct ncds_ds_list *datastores = &int_ds_list;
 
 static struct ncds_ds *datastores_get_ds(ncds_id id);
+#define INTERNAL_DS_COUNT 4
 int ncds_sysinit(void)
 {
 	int i;
 	struct ncds_ds *ds;
 	struct ncds_ds_list *dsitem;
-	unsigned char* model[3] = {
+	unsigned char* model[INTERNAL_DS_COUNT] = {
 			ietf_netconf_monitoring_yin,
 			ietf_netconf_notifications_yin,
-			ietf_netconf_with_defaults_yin
+			ietf_netconf_with_defaults_yin,
+			nc_notifications_yin
 	};
-	unsigned int model_len[3] = {
+	unsigned int model_len[INTERNAL_DS_COUNT] = {
 			ietf_netconf_monitoring_yin_len,
 			ietf_netconf_notifications_yin_len,
-			ietf_netconf_with_defaults_yin_len
+			ietf_netconf_with_defaults_yin_len,
+			nc_notifications_yin_len
 	};
 
 
-	for (i = 0; i < 3; i++) {
+	for (i = 0; i < INTERNAL_DS_COUNT; i++) {
 		if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty))) == NULL) {
 			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 			return (EXIT_FAILURE);
