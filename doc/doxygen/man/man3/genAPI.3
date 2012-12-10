@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Tue Nov 6 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Mon Dec 10 2012" "Version 0.2.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -10,7 +10,7 @@ libnetconf's miscellaneous functions\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP = -5 }"
+.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP =  -5 }"
 .br
 .RI "\fIEnumeration of NETCONF message types\&. \fP"
 .ti -1c
@@ -26,9 +26,12 @@ libnetconf's miscellaneous functions\&.
 .br
 .RI "\fISet libnetconf's verbosity level\&. \fP"
 .ti -1c
-.RI "int \fBnc_init\fP ()"
+.RI "int \fBnc_init\fP (int flags)"
 .br
 .RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all processes using\&. \fP"
+.ti -1c
+.RI "int \fBnc_close\fP (int system)"
+.br
 .ti -1c
 .RI "void \fBnc_callback_print\fP (void(*func)(\fBNC_VERB_LEVEL\fP level, const char *msg))"
 .br
@@ -94,7 +97,7 @@ no message at input or message processed internally
 \fB\fINC_MSG_NOTIFICATION \fP\fP
 <notification> message 
 .PP
-Definition at line 118 of file netconf\&.h\&.
+Definition at line 129 of file netconf\&.h\&.
 .SS "enum \fBNC_VERB_LEVEL\fP"
 
 .PP
@@ -115,7 +118,7 @@ Besides errors and warnings, print some other verbose messages\&.
 \fB\fINC_VERB_DEBUG \fP\fP
 Print all messages including some development debug messages\&. 
 .PP
-Definition at line 290 of file netconf\&.h\&.
+Definition at line 301 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "void nc_verbosity (\fBNC_VERB_LEVEL\fPlevel)"
@@ -127,16 +130,40 @@ Set libnetconf's verbosity level\&. \fBParameters:\fP
 .RE
 .PP
 
-.SS "int nc_init ()"
+.SS "int nc_init (intflags)"
 
 .PP
-Initialize libnetconf for system-wide usage\&. This initialization is shared across all processes using\&. \fBReturns:\fP
+Initialize libnetconf for system-wide usage\&. This initialization is shared across all processes using\&. \fBParameters:\fP
+.RS 4
+\fIflags\fP ORed flags for libnetconf initialization\&. Accepted values include:
+.IP "\(bu" 2
+\fINC_INIT_NOTIF\fP Enable Notification subsystem 
+.PP
+.RE
+.PP
+\fBReturns:\fP
 .RS 4
 -1 on fatal error
 .br
  0 if this is first init after previous system-wide \fBnc_close()\fP or system reboot
 .br
  1 when someone else already called \fBnc_init()\fP since last system-wide \fBnc_close()\fP or system reboot\&. 
+.RE
+.PP
+
+.SS "int nc_close (intsystem)"
+\fBParameters:\fP
+.RS 4
+\fIsystem\fP Flag if close should be applied as a system-wide\&. System-wide \fBnc_close()\fP closes all shared structures if no other libnetconf participant is not currently running\&. Local release of the calling instance from the shared structures is done in both cases\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+-1 on error
+.br
+ 0 on success
+.br
+ 1 in case of system wide when there is other participant using shared structures and system-wide close cannot be done\&. 
 .RE
 .PP
 

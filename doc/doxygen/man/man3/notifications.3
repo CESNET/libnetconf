@@ -1,4 +1,4 @@
-.TH "NETCONF Event Notifications" 3 "Tue Nov 6 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Event Notifications" 3 "Mon Dec 10 2012" "Version 0.2.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,7 +18,7 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 
 .in +1c
 .ti -1c
-.RI "enum \fBNCNTF_EVENT\fP { \fBNCNTF_ERROR\fP = -1, \fBNCNTF_GENERIC\fP = 0, \fBNCNTF_REPLAY_COMPLETE\fP = 1, \fBNCNTF_NTF_COMPLETE\fP = 2, \fBNCNTF_BASE_CFG_CHANGE\fP = 3, \fBNCNTF_BASE_CPBLT_CHANGE\fP = 4, \fBNCNTF_BASE_SESSION_START\fP = 5, \fBNCNTF_BASE_SESSION_END\fP = 6, \fBNCNTF_BASE_CONFIRMED_COMMIT\fP = 7 }"
+.RI "enum \fBNCNTF_EVENT\fP { \fBNCNTF_ERROR\fP =  -1, \fBNCNTF_GENERIC\fP =  0, \fBNCNTF_REPLAY_COMPLETE\fP =  1, \fBNCNTF_NTF_COMPLETE\fP =  2, \fBNCNTF_BASE_CFG_CHANGE\fP =  3, \fBNCNTF_BASE_CPBLT_CHANGE\fP =  4, \fBNCNTF_BASE_SESSION_START\fP =  5, \fBNCNTF_BASE_SESSION_END\fP =  6, \fBNCNTF_BASE_CONFIRMED_COMMIT\fP =  7 }"
 .br
 .RI "\fIEnumeration of supported NETCONF event notifications\&. \fP"
 .ti -1c
@@ -42,17 +42,9 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 .br
 .RI "\fICreate <create-subsciption> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "int \fBncntf_init\fP (void)"
-.br
-.RI "\fIInitiate NETCONF Notifications environment\&. \fP"
-.ti -1c
 .RI "char * \fBncntf_status\fP (void)"
 .br
 .RI "\fIGet status data in xml form describing currently used streams\&. \fP"
-.ti -1c
-.RI "void \fBncntf_close\fP (void)"
-.br
-.RI "\fIClose all NETCONF Event Streams and other parts of the Notifications environment\&. \fP"
 .ti -1c
 .RI "int \fBncntf_stream_new\fP (const char *name, const char *desc, int replay)"
 .br
@@ -240,15 +232,6 @@ Created rpc message\&.
 .RE
 .PP
 
-.SS "int ncntf_init (void)"
-
-.PP
-Initiate NETCONF Notifications environment\&. \fBReturns:\fP
-.RS 4
-0 on success, non-zero value else 
-.RE
-.PP
-
 .SS "char* ncntf_status (void)"
 
 .PP
@@ -258,10 +241,6 @@ Text containing streams status data in xml form (urn:ietf:params:xml:ns:netmod:n
 .RE
 .PP
 
-.SS "void ncntf_close (void)"
-
-.PP
-Close all NETCONF Event Streams and other parts of the Notifications environment\&. 
 .SS "int ncntf_stream_new (const char *name, const char *desc, intreplay)"
 
 .PP

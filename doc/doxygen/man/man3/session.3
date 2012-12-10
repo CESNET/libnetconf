@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Tue Nov 6 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Mon Dec 10 2012" "Version 0.2.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -6,11 +6,11 @@ NETCONF Session \-
 .PP
 libnetconf's functions for handling NETCONF sessions\&.  
 
-.SS "Typedefs"
+.SS "Macros"
 
 .in +1c
 .ti -1c
-.RI "typedef char * \fBnc_msgid\fP"
+.RI "#define \fBnc_msgid\fP   char*"
 .br
 .RI "\fIType representing NETCONF message-id attribute\&. \fP"
 .in -1c
@@ -18,7 +18,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP = -1, \fBNC_SESSION_STATUS_STARTUP\fP = 0, \fBNC_SESSION_STATUS_WORKING\fP = 1, \fBNC_SESSION_STATUS_CLOSING\fP = 2, \fBNC_SESSION_STATUS_CLOSED\fP = 3, \fBNC_SESSION_STATUS_DUMMY\fP = 4 }"
+.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP =  -1, \fBNC_SESSION_STATUS_STARTUP\fP =  0, \fBNC_SESSION_STATUS_WORKING\fP =  1, \fBNC_SESSION_STATUS_CLOSING\fP =  2, \fBNC_SESSION_STATUS_CLOSED\fP =  3, \fBNC_SESSION_STATUS_DUMMY\fP =  4 }"
 .br
 .RI "\fIEnumeration of possible states of the NETCONF session\&. \fP"
 .ti -1c
@@ -26,7 +26,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .br
 .RI "\fIEnumeration of reasonf of the NETCONF session termination as defined in RFC 6470\&. \fP"
 .ti -1c
-.RI "enum \fBNC_SSH_AUTH_TYPE\fP { \fBNC_SSH_AUTH_PUBLIC_KEYS\fP = 1, \fBNC_SSH_AUTH_PASSWORD\fP = 2, \fBNC_SSH_AUTH_INTERACTIVE\fP = 4 }"
+.RI "enum \fBNC_SSH_AUTH_TYPE\fP { \fBNC_SSH_AUTH_PUBLIC_KEYS\fP =  1, \fBNC_SSH_AUTH_PASSWORD\fP =  2, \fBNC_SSH_AUTH_INTERACTIVE\fP =  4 }"
 .br
 .RI "\fIAvailable SSH authentication mechanisms\&. \fP"
 .in -1c
@@ -163,14 +163,19 @@ libnetconf's functions for handling NETCONF sessions\&.
 libnetconf's functions for handling NETCONF sessions\&. 
 
 
-.SH "Typedef Documentation"
+.SH "Macro Definition Documentation"
 .PP 
-.SS "typedef char* \fBnc_msgid\fP"
+.SS "#define nc_msgid   char*"
 
 .PP
-Type representing NETCONF message-id attribute\&. 
+Type representing NETCONF message-id attribute\&. It corresponds to the following typedef: typedef char* nc_msgid;
 .PP
-Definition at line 67 of file netconf\&.h\&.
+We use macro to avoid compiler warning of 'const nc_msgid' as return type of functions (because const is applied as 'char* const funct()' which is meaningless)\&.
+.PP
+Yes, I know that const char* means 'pointer to constant character (not
+ string)', but I want to be clear from the API, that function returns pointer to something that should not be changed\&. 
+.PP
+Definition at line 84 of file netconf\&.h\&.
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_SESSION_STATUS\fP"
@@ -199,7 +204,7 @@ session was closed and could not be used to communication
 \fB\fINC_SESSION_STATUS_DUMMY \fP\fP
 session is DUMMY, only holds information, does not provide connection 
 .PP
-Definition at line 91 of file netconf\&.h\&.
+Definition at line 102 of file netconf\&.h\&.
 .SS "enum \fBNC_SESSION_TERM_REASON\fP"
 
 .PP
@@ -226,7 +231,7 @@ terminated because of inactivity
 \fB\fINC_SESSION_TERM_OTHER \fP\fP
 terminated for some other reason 
 .PP
-Definition at line 105 of file netconf\&.h\&.
+Definition at line 116 of file netconf\&.h\&.
 .SS "enum \fBNC_SSH_AUTH_TYPE\fP"
 
 .PP

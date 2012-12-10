@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Tue Nov 6 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Mon Dec 10 2012" "Version 0.2.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -9,6 +9,17 @@ libnetconf's general public functions and structures definitions\&.
 .SH SYNOPSIS
 .br
 .PP
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBnc_msgid\fP   char*"
+.br
+.RI "\fIType representing NETCONF message-id attribute\&. \fP"
+.ti -1c
+.RI "#define \fBNC_INIT_NOTIF\fP   0x00000002"
+.br
+.in -1c
 .SS "Typedefs"
 
 .in +1c
@@ -24,16 +35,12 @@ libnetconf's general public functions and structures definitions\&.
 .RI "typedef struct nc_msg \fBnc_ntf\fP"
 .br
 .RI "\fIEvent notification message\&. \fP"
-.ti -1c
-.RI "typedef char * \fBnc_msgid\fP"
-.br
-.RI "\fIType representing NETCONF message-id attribute\&. \fP"
 .in -1c
 .SS "Enumerations"
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP = -1, \fBNC_SESSION_STATUS_STARTUP\fP = 0, \fBNC_SESSION_STATUS_WORKING\fP = 1, \fBNC_SESSION_STATUS_CLOSING\fP = 2, \fBNC_SESSION_STATUS_CLOSED\fP = 3, \fBNC_SESSION_STATUS_DUMMY\fP = 4 }"
+.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP =  -1, \fBNC_SESSION_STATUS_STARTUP\fP =  0, \fBNC_SESSION_STATUS_WORKING\fP =  1, \fBNC_SESSION_STATUS_CLOSING\fP =  2, \fBNC_SESSION_STATUS_CLOSED\fP =  3, \fBNC_SESSION_STATUS_DUMMY\fP =  4 }"
 .br
 .RI "\fIEnumeration of possible states of the NETCONF session\&. \fP"
 .ti -1c
@@ -41,7 +48,7 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .RI "\fIEnumeration of reasonf of the NETCONF session termination as defined in RFC 6470\&. \fP"
 .ti -1c
-.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP = -5 }"
+.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP =  -5 }"
 .br
 .RI "\fIEnumeration of NETCONF message types\&. \fP"
 .ti -1c
@@ -68,16 +75,16 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .RI "\fIEnumeration of supported NETCONF filter types\&. \fP"
 .ti -1c
-.RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP = -1, \fBNC_EDIT_OP_MERGE\fP = 1, \fBNC_EDIT_OP_REPLACE\fP = 2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
+.RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP =  -1, \fBNC_EDIT_OP_MERGE\fP =  1, \fBNC_EDIT_OP_REPLACE\fP =  2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
 .br
 .ti -1c
-.RI "enum \fBNC_EDIT_DEFOP_TYPE\fP { \fBNC_EDIT_DEFOP_ERROR\fP = -1, \fBNC_EDIT_DEFOP_NONE\fP = 0, \fBNC_EDIT_DEFOP_MERGE\fP = 1, \fBNC_EDIT_DEFOP_REPLACE\fP = 2 }"
+.RI "enum \fBNC_EDIT_DEFOP_TYPE\fP { \fBNC_EDIT_DEFOP_ERROR\fP =  -1, \fBNC_EDIT_DEFOP_NONE\fP =  0, \fBNC_EDIT_DEFOP_MERGE\fP =  1, \fBNC_EDIT_DEFOP_REPLACE\fP =  2 }"
 .br
 .ti -1c
-.RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_ERROR\fP = -1, \fBNC_EDIT_ERROPT_STOP\fP = 1, \fBNC_EDIT_ERROPT_CONT\fP = 2, \fBNC_EDIT_ERROPT_ROLLBACK\fP = 3 }"
+.RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_ERROR\fP =  -1, \fBNC_EDIT_ERROPT_STOP\fP =  1, \fBNC_EDIT_ERROPT_CONT\fP =  2, \fBNC_EDIT_ERROPT_ROLLBACK\fP =  3 }"
 .br
 .ti -1c
-.RI "enum \fBNCWD_MODE\fP { \fBNCWD_MODE_DISABLED\fP = 0, \fBNCWD_MODE_ALL\fP = 1, \fBNCWD_MODE_TRIM\fP = 2, \fBNCWD_MODE_EXPLICIT\fP = 4, \fBNCWD_MODE_ALL_TAGGED\fP = 8 }"
+.RI "enum \fBNCWD_MODE\fP { \fBNCWD_MODE_DISABLED\fP =  0, \fBNCWD_MODE_ALL\fP =  1, \fBNCWD_MODE_TRIM\fP =  2, \fBNCWD_MODE_EXPLICIT\fP =  4, \fBNCWD_MODE_ALL_TAGGED\fP =  8 }"
 .br
 .ti -1c
 .RI "enum \fBNC_VERB_LEVEL\fP { \fBNC_VERB_ERROR\fP, \fBNC_VERB_WARNING\fP, \fBNC_VERB_VERBOSE\fP, \fBNC_VERB_DEBUG\fP }"
@@ -92,7 +99,7 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .RI "\fISet libnetconf's verbosity level\&. \fP"
 .ti -1c
-.RI "int \fBnc_init\fP ()"
+.RI "int \fBnc_init\fP (int flags)"
 .br
 .RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all processes using\&. \fP"
 .ti -1c
@@ -122,6 +129,12 @@ ALTERNATIVELY, provided that this notice is retained in full, this product may b
 This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
 .PP
 Definition in file \fBnetconf\&.h\fP\&.
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define NC_INIT_NOTIF   0x00000002"
+\fBnc_init()\fP's flag to enable Notification subsystem\&. 
+.PP
+Definition at line 327 of file netconf\&.h\&.
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_ERR_PARAM\fP"
@@ -160,7 +173,7 @@ bad-namespace in error-info - name of the unexpected namespace, contained in 'un
 \fB\fINC_ERR_PARAM_INFO_SID \fP\fP
 session-id in error-info - session ID of session holding the requested lock, contained in 'lock-denied' error\&. 
 .PP
-Definition at line 173 of file netconf\&.h\&.
+Definition at line 184 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_OP_TYPE\fP"
 
 .PP
@@ -180,7 +193,7 @@ Definition at line 173 of file netconf\&.h\&.
 \fB\fINC_EDIT_OP_REMOVE \fP\fP
 
 .PP
-Definition at line 254 of file netconf\&.h\&.
+Definition at line 265 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_DEFOP_TYPE\fP"
 
 .PP
@@ -196,7 +209,7 @@ Definition at line 254 of file netconf\&.h\&.
 \fB\fINC_EDIT_DEFOP_REPLACE \fP\fP
 
 .PP
-Definition at line 264 of file netconf\&.h\&.
+Definition at line 275 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_ERROPT_TYPE\fP"
 
 .PP
@@ -212,7 +225,7 @@ Definition at line 264 of file netconf\&.h\&.
 \fB\fINC_EDIT_ERROPT_ROLLBACK \fP\fP
 
 .PP
-Definition at line 271 of file netconf\&.h\&.
+Definition at line 282 of file netconf\&.h\&.
 .SS "enum \fBNCWD_MODE\fP"
 
 .PP
@@ -230,25 +243,7 @@ Definition at line 271 of file netconf\&.h\&.
 \fB\fINCWD_MODE_ALL_TAGGED \fP\fP
 
 .PP
-Definition at line 278 of file netconf\&.h\&.
-.SH "Function Documentation"
-.PP 
-.SS "int nc_close (intsystem)"
-\fBParameters:\fP
-.RS 4
-\fIsystem\fP Flag if close should be applied as a system-wide\&. System-wide \fBnc_close()\fP closes all shared structures if no other libnetconf participant is not currently running\&. Local release of the calling instance from the shared structures is done in both cases\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
--1 on error
-.br
- 0 on success
-.br
- 1 in case of system wide when there is other participant using shared structures and system-wide close cannot be done\&. 
-.RE
-.PP
-
+Definition at line 289 of file netconf\&.h\&.
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

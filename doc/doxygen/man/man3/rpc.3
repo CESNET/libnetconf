@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Tue Nov 6 2012" "Version 0.2.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Mon Dec 10 2012" "Version 0.2.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -196,7 +196,7 @@ value describing that no supported operation type was detected so far
 \fB\fINC_RPC_SESSION \fP\fP
 <rpc> contains operation affecting session 
 .PP
-Definition at line 144 of file netconf\&.h\&.
+Definition at line 155 of file netconf\&.h\&.
 .SS "enum \fBNC_OP\fP"
 
 .PP
@@ -247,7 +247,7 @@ unknown/error value
 \fB\fINC_OP_GETSCHEMA \fP\fP
 <get-schema> operation (RFC 6022) 
 .PP
-Definition at line 156 of file netconf\&.h\&.
+Definition at line 167 of file netconf\&.h\&.
 .SS "enum \fBNC_FILTER_TYPE\fP"
 
 .PP
@@ -259,9 +259,9 @@ Enumeration of supported NETCONF filter types\&.
 \fB\fINC_FILTER_UNKNOWN \fP\fP
 .TP
 \fB\fINC_FILTER_SUBTREE \fP\fP
-NC_FILTER_SUBTREE\&. 
+NC_FILTER_SUBTREE 
 .PP
-Definition at line 248 of file netconf\&.h\&.
+Definition at line 259 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "const \fBnc_msgid\fP nc_session_send_rpc (struct nc_session *session, \fBnc_rpc\fP *rpc)"
