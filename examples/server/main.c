@@ -275,7 +275,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 	 */
 
 	/* prepare configuration datastore */
-	datastore = ncds_new(NCDS_TYPE_FILE, SERVERCFG_PATH"model.yin", NULL);
+	datastore = ncds_new(NCDS_TYPE_FILE, SERVERCFG_PATH"/model.yin", NULL);
 	if (datastore == NULL) {
 		clb_print(NC_VERB_ERROR, "Datastore preparing failed.");
 		return (EXIT_FAILURE);
