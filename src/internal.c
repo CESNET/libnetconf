@@ -79,7 +79,7 @@ static int init_flags = 0;
 int nc_init(int flags)
 {
 	int retval = 0, r;
-	key_t key = -2;
+	key_t key = -3;
 	int first = 1;
 	char* t;
 	pthread_rwlockattr_t rwlockattr;
