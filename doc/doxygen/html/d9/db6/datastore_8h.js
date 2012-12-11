@@ -1,5 +1,6 @@
 var datastore_8h =
 [
+    [ "NCDS_RPC_NOT_APPLICABLE", "d9/db6/datastore_8h.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6", null ],
     [ "ncds_id", "d9/db6/datastore_8h.html#ga8e6ae05c400975ba4d3f038c6d174c19", null ],
     [ "NCDS_TYPE", "d9/db6/datastore_8h.html#gab0f0cbd5268577ec36fc76cf89c72a8f", null ],
     [ "ncds_new", "d9/db6/datastore_8h.html#ga69009c5985f9eec3a6920f98a6a1a5e6", null ],

@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Mon Dec 10 2012" "Version 0.2.2" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Tue Dec 11 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -12,6 +12,14 @@ NETCONF datastore handling function prototypes and structures\&.
 \fC#include 'netconf\&.h'\fP
 .br
 
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBNCDS_RPC_NOT_APPLICABLE\fP   ((void *) -1)"
+.br
+.RI "\fIReturn value of \fBncds_apply_rpc()\fP when the requested operation is not applicable to the specified datastore\&. \fP"
+.in -1c
 .SS "Typedefs"
 
 .in +1c

@@ -1,5 +1,6 @@
 var group__store =
 [
+    [ "NCDS_RPC_NOT_APPLICABLE", "db/d67/group__store.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6", null ],
     [ "ncds_id", "db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19", null ],
     [ "NC_DATASTORE", "db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73", null ],
     [ "NCDS_TYPE", "db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f", null ],

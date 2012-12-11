@@ -228,6 +228,7 @@ var searchData=
   ['ncds_5fid',['ncds_id',['../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19',1,'datastore.h']]],
   ['ncds_5finit',['ncds_init',['../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff',1,'datastore.h']]],
   ['ncds_5fnew',['ncds_new',['../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6',1,'datastore.h']]],
+  ['ncds_5frpc_5fnot_5fapplicable',['NCDS_RPC_NOT_APPLICABLE',['../db/d67/group__store.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6',1,'datastore.h']]],
   ['ncds_5ftype',['NCDS_TYPE',['../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f',1,'datastore.h']]],
   ['ncds_5ftype_5fempty',['NCDS_TYPE_EMPTY',['../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b',1,'datastore.h']]],
   ['ncds_5ftype_5ffile',['NCDS_TYPE_FILE',['../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629',1,'datastore.h']]],

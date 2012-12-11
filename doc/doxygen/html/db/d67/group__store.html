@@ -29,7 +29,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../cesnet-logo-125.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.2.2</span>
+   &#160;<span id="projectnumber">0.2.3</span>
    </div>
    <div id="projectbrief">NETCONF library</div>
   </td>
@@ -96,6 +96,7 @@ $(document).ready(function(){initNavTree('db/d67/group__store.html','../../');})
 
 <div class="header">
   <div class="summary">
+<a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
@@ -107,6 +108,11 @@ $(document).ready(function(){initNavTree('db/d67/group__store.html','../../');})
 <p>libnetconf's functions for handling NETCONF datastores.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6">NCDS_RPC_NOT_APPLICABLE</a>&#160;&#160;&#160;((void *) -1)</td></tr>
+<tr class="memdesc:ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return value of <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform requested RPC operation on the datastore.">ncds_apply_rpc()</a> when the requested operation is not applicable to the specified datastore.  <a href="#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"></a><br/></td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:ga8e6ae05c400975ba4d3f038c6d174c19"><td class="memItemLeft" align="right" valign="top">typedef int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a></td></tr>
@@ -152,6 +158,23 @@ Functions</h2></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's functions for handling NETCONF datastores. </p>
+<hr/><h2>Macro Definition Documentation</h2>
+<a class="anchor" id="ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NCDS_RPC_NOT_APPLICABLE&#160;&#160;&#160;((void *) -1)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return value of <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform requested RPC operation on the datastore.">ncds_apply_rpc()</a> when the requested operation is not applicable to the specified datastore. </p>
+
+<p>Definition at line <a class="el" href="../../d9/db6/datastore_8h_source.html#l00146">146</a> of file <a class="el" href="../../d9/db6/datastore_8h_source.html">datastore.h</a>.</p>
+
+</div>
+</div>
 <hr/><h2>Typedef Documentation</h2>
 <a class="anchor" id="ga8e6ae05c400975ba4d3f038c6d174c19"></a>
 <div class="memitem">
@@ -436,7 +459,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>NULL in case of non NC_RPC_DATASTORE_* operation type, else &lt;rpc-reply&gt; with &lt;ok&gt;, &lt;data&gt; or &lt;rpc-error&gt; according to the type and the result of the requested operation. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>NULL in case of non NC_RPC_DATASTORE_* operation type, else &lt;rpc-reply&gt; with &lt;ok&gt;, &lt;data&gt; or &lt;rpc-error&gt; according to the type and the result of the requested operation. When the requested operation is not applicable to the specified datastore (e.g. namespace does not match), NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned. </dd></dl>
 
 </div>
 </div>
@@ -519,7 +542,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon Dec 10 2012 16:34:26 for libnetconf by
+    <li class="footer">Generated on Tue Dec 11 2012 11:11:16 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>
