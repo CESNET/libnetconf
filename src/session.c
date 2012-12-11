@@ -346,6 +346,7 @@ char* nc_session_stats(void)
 			} else {
 				session = realloc(session, strlen(session) + strlen(aux) + 1);
 				strcat(session, aux);
+				free(aux);
 			}
 		}
 
