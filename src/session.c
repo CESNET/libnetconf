@@ -274,14 +274,16 @@ int nc_session_monitor(struct nc_session* session)
 	                (session->hostname != NULL) ? (strlen(session->hostname) + 1) : 1);
 	strncpy(litem->session_id, session->session_id, SID_SIZE);
 	litem->transport = NC_TRTANSPORT_SSH;
-	memcpy(&(litem->stats), session->stats, sizeof(struct nc_session_stats));
-	free(session->stats);
+	if (session->stats != NULL) {
+		memcpy(&(litem->stats), session->stats, sizeof(struct nc_session_stats));
+		free(session->stats);
+	}
 	session->stats = &(litem->stats);
-	strncpy(litem->login_time, session->logintime, TIME_LENGTH);
+	strncpy(litem->login_time, (session->logintime == NULL) ? "" : session->logintime, TIME_LENGTH);
 	litem->login_time[TIME_LENGTH - 1] = 0; /* terminating null byte */
 
-	strcpy(litem->data, session->username);
-	strcpy(litem->data + 1 + strlen(session->username), session->hostname);
+	strcpy(litem->data, (session->username == NULL) ? "" : session->username);
+	strcpy(litem->data + 1 + strlen(litem->data), (session->hostname == NULL) ? "" : session->hostname);
 
 	pthread_rwlockattr_init(&rwlockattr);
 	pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
