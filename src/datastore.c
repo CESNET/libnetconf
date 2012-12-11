@@ -1298,6 +1298,7 @@ xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
 	return retval;
 }
 
+#define EXIT_RPC_NOT_APPLICABLE -2
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
@@ -1617,7 +1618,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			} else {
 				xmlFreeDoc(doc1);
 				/* request is not intended for this device */
-				ret = EXIT_SUCCESS;
+				ret = EXIT_RPC_NOT_APPLICABLE;
 				data = NULL;
 				break;
 			}
@@ -1724,8 +1725,13 @@ apply_editcopyconfig:
 		/* operation failed and error is filled */
 		reply = nc_reply_error(e);
 	} else if (data == NULL && ret != EXIT_SUCCESS) {
-		/* operation failed, but no additional information is provided */
-		reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
+		if (ret == EXIT_RPC_NOT_APPLICABLE) {
+			/* operation can not be performed on this datastore */
+			reply = NCDS_RPC_NOT_APPLICABLE;
+		} else {
+			/* operation failed, but no additional information is provided */
+			reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
+		}
 	} else {
 		if (data != NULL) {
 			reply = nc_reply_data(data);

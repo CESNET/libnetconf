@@ -140,6 +140,13 @@ void ncds_free2(ncds_id datastore_id);
 
 /**
  * @ingroup store
+ * @brief Return value of ncds_apply_rpc() when the requested operation is
+ * not applicable to the specified datastore.
+ */
+#define NCDS_RPC_NOT_APPLICABLE ((void *) -1)
+
+/**
+ * @ingroup store
  * @brief Perform requested RPC operation on the datastore.
  * @param[in] id Datastore ID. Use 0 to apply request (typically \<get\>) onto
  * libnetconf's internal datastore.
@@ -148,7 +155,9 @@ void ncds_free2(ncds_id datastore_id);
  * @param[in] rpc NETCONF \<rpc\> message specifying requested operation.
  * @return NULL in case of non NC_RPC_DATASTORE_* operation type, else
  * \<rpc-reply\> with \<ok\>, \<data\> or \<rpc-error\> according to the type
- * and the result of the requested operation.
+ * and the result of the requested operation. When the requested operation is
+ * not applicable to the specified datastore (e.g. namespace does not match),
+ * NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned.
  */
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc);
 
