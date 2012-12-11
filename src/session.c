@@ -213,7 +213,7 @@ int nc_session_monitor(struct nc_session* session)
 	pthread_rwlock_wrlock(&(session_list->lock));
 	if (session_list->count > 0) {
 		for(litem = (struct session_list_item*)((char*)(session_list->record) + session_list->first_offset);
-				litem && litem->offset_next != 0;
+				litem != NULL;
 				litem = (struct session_list_item*)((char*)litem + litem->offset_next)) {
 			if (strcmp(session->session_id, litem->session_id) == 0) {
 				/* session is already monitored */
@@ -253,6 +253,11 @@ int nc_session_monitor(struct nc_session* session)
 					}
 					return (EXIT_FAILURE);
 				}
+			}
+
+			if (litem->offset_next == 0) {
+				/* we are on the end of the list */
+				break;
 			}
 		}
 		if (litem == NULL) {
