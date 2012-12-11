@@ -553,6 +553,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	retval->msgid = 1;
 	retval->queue_event = NULL;
 	retval->queue_msg = NULL;
+	retval->monitored = 0;
 	retval->stats->in_rpcs = 0;
 	retval->stats->in_bad_rpcs = 0;
 	retval->stats->out_rpc_errors = 0;
@@ -869,6 +870,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->queue_event = NULL;
 	retval->queue_msg = NULL;
 	retval->logintime = NULL;
+	retval->monitored = 0;
 	retval->stats->in_rpcs = 0;
 	retval->stats->in_bad_rpcs = 0;
 	retval->stats->out_rpc_errors = 0;

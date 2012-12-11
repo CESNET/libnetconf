@@ -80,6 +80,8 @@ struct session_list_item {
 	int offset_prev;
 	int offset_next;
 	int size;
+	int active; /* flag if the non-dummy session is connected to this record */
+	int scounter; /* number of sessions connected with this record */
 	char session_id[SID_SIZE];
 	enum nc_transport transport;
 	struct nc_session_stats stats;
@@ -195,7 +197,12 @@ int nc_session_monitor(struct nc_session* session)
 	pthread_rwlockattr_t rwlockattr;
 	int prev;
 
-	if (session == NULL || session_list == NULL) {
+	if (session == NULL || session->monitored || session_list == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_DUMMY) {
+		ERROR("%s: specified session is in invalid state and can not be monitored.", __func__);
 		return (EXIT_FAILURE);
 	}
 
@@ -204,7 +211,47 @@ int nc_session_monitor(struct nc_session* session)
 	if (session_list->count > 0) {
 		for(litem = (struct session_list_item*)((char*)(session_list->record) + session_list->first_offset);
 				litem && litem->offset_next != 0;
-				litem = (struct session_list_item*)((char*)litem + litem->offset_next));
+				litem = (struct session_list_item*)((char*)litem + litem->offset_next)) {
+			if (strcmp(session->session_id, litem->session_id) == 0) {
+				/* session is already monitored */
+
+				/*
+				 * allow to add the session only if the connecting
+				 * session is dummy or if there is no real session
+				 * connected with this record
+				 */
+				if (session->status == NC_SESSION_STATUS_DUMMY) {
+					litem->scounter++;
+					pthread_rwlock_unlock(&(session_list->lock));
+
+					/* connect session statistics to the shared memory segment */
+					free(session->stats);
+					session->stats = &(litem->stats);
+					session->monitored = 1;
+					return (EXIT_SUCCESS);
+				} else if (session->status == NC_SESSION_STATUS_WORKING && litem->active == 0) {
+					litem->scounter++;
+					litem->active = 1;
+					pthread_rwlock_unlock(&(session_list->lock));
+
+					/* connect session statistics to the shared memory segment */
+					free(session->stats);
+					session->stats = &(litem->stats);
+					session->monitored = 1;
+					return (EXIT_SUCCESS);
+				} else {
+					litem->scounter++;
+					pthread_rwlock_unlock(&(session_list->lock));
+
+					if (litem->active == 1) {
+						ERROR("%s: specified session is already monitored.", __func__);
+					} else {
+						ERROR("%s: specified session is in invalid state and can not be monitored.", __func__);
+					}
+					return (EXIT_FAILURE);
+				}
+			}
+		}
 		if (litem == NULL) {
 			ERROR("%s: passing through the sessions list failed", __func__);
 			pthread_rwlock_unlock(&(session_list->lock));
@@ -240,6 +287,13 @@ int nc_session_monitor(struct nc_session* session)
 	pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
 	pthread_rwlock_init(&(litem->lock), &rwlockattr);
 	pthread_rwlockattr_destroy(&rwlockattr);
+
+	if (session->status == NC_SESSION_STATUS_WORKING) {
+		litem->active = 1;
+	}
+
+	litem->scounter = 1;
+	session->monitored = 1;
 
 	/* end of critical section, other processes now can access new record */
 	pthread_rwlock_unlock(&(session_list->lock));
@@ -730,6 +784,7 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 
 	/* init stats values */
 	session->logintime = nc_time2datetime(time(NULL));
+	session->monitored = 0;
 	session->stats->in_rpcs = 0;
 	session->stats->in_bad_rpcs = 0;
 	session->stats->out_rpc_errors = 0;
@@ -888,7 +943,7 @@ void nc_session_free (struct nc_session* session)
 	pthread_mutex_destroy(&(session->mut_equeue));
 	pthread_mutex_destroy(&(session->mut_session));
 
-	if (session_list != NULL) {
+	if (session_list != NULL && session->monitored == 1) {
 		/* remove from internal list if session is monitored */
 		pthread_rwlock_wrlock(&(session_list->lock));
 		if (session_list->count > 0) {
@@ -897,22 +952,26 @@ void nc_session_free (struct nc_session* session)
 					litem = (struct session_list_item*)((char*)litem + litem->offset_next)) {
 				if (strcmp(litem->session_id, session->session_id) == 0) {
 					/* we have matching record */
+					litem->scounter--;
 
-					/* reconnect the list */
-					if (litem->offset_prev == 0) { /* first item in the list */
-						session_list->first_offset = litem->offset_next;
-					} else {
-						aux = (struct session_list_item*)((char*)litem - litem->offset_prev);
-						aux->offset_next = (litem->offset_next == 0) ? 0 : (aux->offset_next + litem->offset_next);
+					if (litem->scounter == 0) {
+						/* reconnect the list */
+						if (litem->offset_prev == 0) { /* first item in the list */
+							session_list->first_offset = litem->offset_next;
+						} else {
+							aux = (struct session_list_item*) ((char*) litem - litem->offset_prev);
+							aux->offset_next = (litem->offset_next == 0) ? 0 : (aux->offset_next + litem->offset_next);
+						}
+						aux = (struct session_list_item*) ((char*) litem + litem->offset_next);
+						aux->offset_prev = (litem->offset_prev == 0) ? 0 : (aux->offset_prev + litem->offset_prev);
+
+						session_list->count--;
 					}
-					aux = (struct session_list_item*)((char*)litem + litem->offset_next);
-					aux->offset_prev = (litem->offset_prev == 0) ? 0 : (aux->offset_prev + litem->offset_prev);
 
 					/* remove link from session statistics into the mapped file */
 					session->stats = NULL;
 
 					/* we are done */
-					session_list->count--;
 					break;
 				}
 

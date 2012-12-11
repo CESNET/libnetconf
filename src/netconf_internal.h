@@ -293,6 +293,8 @@ struct nc_session {
 	struct nc_msg* queue_event;
 	/**< @brief flag for active notification subscription on the session */
 	int ntf_active;
+	/**< @brief Flag if the session is monitored and connected to the shared memory segment */
+	int monitored;
 	/**< @brief NETCONF session statistics as defined in RFC 6022 */
 	struct nc_session_stats *stats;
 };
