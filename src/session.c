@@ -196,9 +196,9 @@ void nc_session_monitoring_close(void)
 
 int nc_session_monitor(struct nc_session* session)
 {
-	struct session_list_item *litem = NULL;
+	struct session_list_item *litem = NULL, *litem_aux;
 	pthread_rwlockattr_t rwlockattr;
-	int prev;
+	int prev, next, size, totalsize = 0;
 
 	if (session == NULL || session->monitored || session_list == NULL) {
 		return (EXIT_FAILURE);
@@ -212,6 +212,7 @@ int nc_session_monitor(struct nc_session* session)
 	/* critical section */
 	pthread_rwlock_wrlock(&(session_list->lock));
 	if (session_list->count > 0) {
+		/* find possible duplicity of the record */
 		for(litem = (struct session_list_item*)((char*)(session_list->record) + session_list->first_offset);
 				litem != NULL;
 				litem = (struct session_list_item*)((char*)litem + litem->offset_next)) {
@@ -260,26 +261,75 @@ int nc_session_monitor(struct nc_session* session)
 				break;
 			}
 		}
-		if (litem == NULL) {
-			ERROR("%s: passing through the sessions list failed", __func__);
-			pthread_rwlock_unlock(&(session_list->lock));
-			return (EXIT_FAILURE);
-		}
-		prev = litem->size;
-		litem->offset_next = litem->size;
-		litem = (struct session_list_item*)((char*)litem + litem->size);
-		litem->offset_prev = prev;
-	} else {
-		session_list->record[0].offset_prev = 0;
+	}
+
+	/* find the place for a new record, try to place it into some gap */
+	size = (sizeof(struct session_list_item) - 1) + (
+	                (session->username != NULL) ? (strlen(session->username) + 1) : 1) + (
+	                (session->hostname != NULL) ? (strlen(session->hostname) + 1) : 1);
+	if (session_list->count == 0) {
+		/* we add the first item into the list */
 		litem = &(session_list->record[0]);
+		litem->offset_prev = 0;
+		litem->offset_next = 0;
+		session_list->first_offset = 0;
+	} else if (session_list->first_offset >= size) {
+		/* the gap is in the beginning of the list */
+		litem = &(session_list->record[0]);
+		litem->offset_prev = 0;
+		litem->offset_next = session_list->first_offset;
+		session_list->first_offset = 0;
+	} else {
+		totalsize = session_list->first_offset;
+
+		/* search for a gap inside the list */
+		for (litem = (struct session_list_item*) ((char*) (session_list->record) + session_list->first_offset);
+		                ;
+		                litem = (struct session_list_item*) ((char*) litem + litem->offset_next)) {
+			/* check if there is enough space to add new record */
+			if ((totalsize + litem->size + size) > session_list->size) {
+				ERROR("There is not enough space to monitor another NETCONF session.");
+				pthread_rwlock_unlock(&(session_list->lock));
+				return (EXIT_FAILURE);
+			} else {
+				totalsize += litem->offset_next;
+			}
+
+			if (litem->offset_next >= (size + litem->size)) {
+				/* we have the efficient gap */
+
+				/* correct links from predecessor */
+				prev = litem->size;
+				next = litem->offset_next - litem->size;
+				litem->offset_next = litem->size;
+
+				/* now go into the new record and create connection with sibling records */
+				litem = (struct session_list_item*)((char*)litem + litem->offset_next);
+				litem->offset_prev = prev;
+				litem->offset_next = next;
+
+				/* also correct links in successor */
+				litem_aux = (struct session_list_item*)((char*)litem + litem->offset_next);
+				litem_aux->offset_prev = litem->offset_next;
+				break;
+			} else if (litem->offset_next == 0) {
+				/* we are on the end of the list */
+				prev = litem->size;
+				litem->offset_next = litem->size;
+
+				/* now go into the new record */
+				litem = (struct session_list_item*)((char*)litem + litem->offset_next);
+				litem->offset_prev = prev;
+				litem->offset_next = 0;
+				break;
+			}
+			/* move to another item in the list */
+		}
 	}
 	session_list->count++;
 
 	/* fill new structure */
-	litem->offset_next = 0;
-	litem->size = (sizeof(struct session_list_item) - 1) + (
-	                (session->username != NULL) ? (strlen(session->username) + 1) : 1) + (
-	                (session->hostname != NULL) ? (strlen(session->hostname) + 1) : 1);
+	litem->size = size;
 	strncpy(litem->session_id, session->session_id, SID_SIZE);
 	litem->transport = NC_TRTANSPORT_SSH;
 	if (session->stats != NULL) {
@@ -968,7 +1018,7 @@ void nc_session_free (struct nc_session* session)
 					if (litem->scounter == 0) {
 						/* reconnect the list */
 						if (litem->offset_prev == 0) { /* first item in the list */
-							session_list->first_offset = litem->offset_next;
+							session_list->first_offset += litem->offset_next;
 						} else {
 							aux = (struct session_list_item*) ((char*) litem - litem->offset_prev);
 							aux->offset_next = (litem->offset_next == 0) ? 0 : (aux->offset_next + litem->offset_next);
