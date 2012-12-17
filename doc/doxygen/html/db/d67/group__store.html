@@ -31,7 +31,7 @@
    <div id="projectname">libnetconf
    &#160;<span id="projectnumber">0.2.3</span>
    </div>
-   <div id="projectbrief">NETCONF library</div>
+   <div id="projectbrief">NETCONF Library</div>
   </td>
  </tr>
  </tbody>
@@ -123,10 +123,11 @@ Enumerations</h2></td></tr>
 <tr class="memitem:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a> { <br/>
 &#160;&#160;<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b">NC_DATASTORE_ERROR</a>, 
 <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e">NC_DATASTORE_CONFIG</a>, 
+<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a8507d8c0a99ba9da1cb38287b26b911c">NC_DATASTORE_URL</a>, 
 <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a431a59cb5a2f00f50ab887ee0931156a">NC_DATASTORE_RUNNING</a>, 
-<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73ab0fb14c1d3e587701536c288520d945b">NC_DATASTORE_STARTUP</a>, 
 <br/>
-&#160;&#160;<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830">NC_DATASTORE_CANDIDATE</a>
+&#160;&#160;<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73ab0fb14c1d3e587701536c288520d945b">NC_DATASTORE_STARTUP</a>, 
+<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830">NC_DATASTORE_CANDIDATE</a>
 <br/>
  }</td></tr>
 <tr class="memdesc:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported types of datastores defined by NETCONF.  <a href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">More...</a><br/></td></tr>
@@ -171,8 +172,6 @@ Functions</h2></td></tr>
 
 <p>Return value of <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform requested RPC operation on the datastore.">ncds_apply_rpc()</a> when the requested operation is not applicable to the specified datastore. </p>
 
-<p>Definition at line <a class="el" href="../../d9/db6/datastore_8h_source.html#l00146">146</a> of file <a class="el" href="../../d9/db6/datastore_8h_source.html">datastore.h</a>.</p>
-
 </div>
 </div>
 <hr/><h2>Typedef Documentation</h2>
@@ -188,8 +187,6 @@ Functions</h2></td></tr>
 
 <p>Datastore ID. </p>
 <p>Each datastore gets its ID after initialisation (<a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>). Only initialised datstores can be used to access configuration data. </p>
-
-<p>Definition at line <a class="el" href="../../d9/db6/datastore_8h_source.html#l00061">61</a> of file <a class="el" href="../../d9/db6/datastore_8h_source.html">datastore.h</a>.</p>
 
 </div>
 </div>
@@ -212,6 +209,9 @@ Functions</h2></td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e"></a>NC_DATASTORE_CONFIG</em>&nbsp;</td><td>
 <p>value describing that datastore is set as config </p>
 </td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga5e4b9ee138b963e8ea2354fef2ebbe73a8507d8c0a99ba9da1cb38287b26b911c"></a>NC_DATASTORE_URL</em>&nbsp;</td><td>
+<p>value describing that the datastore data should be given from the URL </p>
+</td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga5e4b9ee138b963e8ea2354fef2ebbe73a431a59cb5a2f00f50ab887ee0931156a"></a>NC_DATASTORE_RUNNING</em>&nbsp;</td><td>
 <p>base NETCONF's datastore containing current device configuration </p>
 </td></tr>
@@ -224,8 +224,6 @@ Functions</h2></td></tr>
 </table>
 </dd>
 </dl>
-
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00247">247</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -250,8 +248,6 @@ Functions</h2></td></tr>
 </table>
 </dd>
 </dl>
-
-<p>Definition at line <a class="el" href="../../d9/db6/datastore_8h_source.html#l00049">49</a> of file <a class="el" href="../../d9/db6/datastore_8h_source.html">datastore.h</a>.</p>
 
 </div>
 </div>
@@ -542,7 +538,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Dec 11 2012 11:11:16 for libnetconf by
+    <li class="footer">Generated on Mon Dec 17 2012 13:59:12 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

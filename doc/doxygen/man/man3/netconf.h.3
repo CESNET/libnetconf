@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Tue Dec 11 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Mon Dec 17 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -67,7 +67,7 @@ libnetconf's general public functions and structures definitions\&.
 .RI "enum \fBNC_ERR_PARAM\fP { \fBNC_ERR_PARAM_TYPE\fP, \fBNC_ERR_PARAM_TAG\fP, \fBNC_ERR_PARAM_SEVERITY\fP, \fBNC_ERR_PARAM_APPTAG\fP, \fBNC_ERR_PARAM_PATH\fP, \fBNC_ERR_PARAM_MSG\fP, \fBNC_ERR_PARAM_INFO_BADATTR\fP, \fBNC_ERR_PARAM_INFO_BADELEM\fP, \fBNC_ERR_PARAM_INFO_BADNS\fP, \fBNC_ERR_PARAM_INFO_SID\fP }"
 .br
 .ti -1c
-.RI "enum \fBNC_DATASTORE\fP { \fBNC_DATASTORE_ERROR\fP, \fBNC_DATASTORE_CONFIG\fP, \fBNC_DATASTORE_RUNNING\fP, \fBNC_DATASTORE_STARTUP\fP, \fBNC_DATASTORE_CANDIDATE\fP }"
+.RI "enum \fBNC_DATASTORE\fP { \fBNC_DATASTORE_ERROR\fP, \fBNC_DATASTORE_CONFIG\fP, \fBNC_DATASTORE_URL\fP, \fBNC_DATASTORE_RUNNING\fP, \fBNC_DATASTORE_STARTUP\fP, \fBNC_DATASTORE_CANDIDATE\fP }"
 .br
 .RI "\fIEnumeration of supported types of datastores defined by NETCONF\&. \fP"
 .ti -1c
@@ -84,7 +84,13 @@ libnetconf's general public functions and structures definitions\&.
 .RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_ERROR\fP =  -1, \fBNC_EDIT_ERROPT_STOP\fP =  1, \fBNC_EDIT_ERROPT_CONT\fP =  2, \fBNC_EDIT_ERROPT_ROLLBACK\fP =  3 }"
 .br
 .ti -1c
+.RI "enum \fBNC_EDIT_TESTOPT_TYPE\fP { \fBNC_EDIT_TESTOPT_ERROR\fP =  -1, \fBNC_EDIT_TESTOPT_TESTSET\fP =  1, \fBNC_EDIT_TESTOPT_SET\fP =  2, \fBNC_EDIT_TESTOPT_TEST\fP =  3 }"
+.br
+.ti -1c
 .RI "enum \fBNCWD_MODE\fP { \fBNCWD_MODE_DISABLED\fP =  0, \fBNCWD_MODE_ALL\fP =  1, \fBNCWD_MODE_TRIM\fP =  2, \fBNCWD_MODE_EXPLICIT\fP =  4, \fBNCWD_MODE_ALL_TAGGED\fP =  8 }"
+.br
+.ti -1c
+.RI "enum \fBNC_CAP_ATTR\fP { \fBNC_CAP_ATTR_WITHDEFAULTS_MODE\fP =  1, \fBNC_CAP_ATTR_VALIDATE_TESTOPT\fP }"
 .br
 .ti -1c
 .RI "enum \fBNC_VERB_LEVEL\fP { \fBNC_VERB_ERROR\fP, \fBNC_VERB_WARNING\fP, \fBNC_VERB_VERBOSE\fP, \fBNC_VERB_DEBUG\fP }"
@@ -127,14 +133,10 @@ Neither the name of the Company nor the names of its contributors may be used to
 ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above\&.
 .PP
 This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
-.PP
-Definition in file \fBnetconf\&.h\fP\&.
 .SH "Macro Definition Documentation"
 .PP 
 .SS "#define NC_INIT_NOTIF   0x00000002"
 \fBnc_init()\fP's flag to enable Notification subsystem\&. 
-.PP
-Definition at line 327 of file netconf\&.h\&.
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_ERR_PARAM\fP"
@@ -172,8 +174,6 @@ bad-namespace in error-info - name of the unexpected namespace, contained in 'un
 .TP
 \fB\fINC_ERR_PARAM_INFO_SID \fP\fP
 session-id in error-info - session ID of session holding the requested lock, contained in 'lock-denied' error\&. 
-.PP
-Definition at line 184 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_OP_TYPE\fP"
 
 .PP
@@ -192,8 +192,6 @@ Definition at line 184 of file netconf\&.h\&.
 .TP
 \fB\fINC_EDIT_OP_REMOVE \fP\fP
 
-.PP
-Definition at line 265 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_DEFOP_TYPE\fP"
 
 .PP
@@ -208,8 +206,6 @@ Definition at line 265 of file netconf\&.h\&.
 .TP
 \fB\fINC_EDIT_DEFOP_REPLACE \fP\fP
 
-.PP
-Definition at line 275 of file netconf\&.h\&.
 .SS "enum \fBNC_EDIT_ERROPT_TYPE\fP"
 
 .PP
@@ -224,8 +220,20 @@ Definition at line 275 of file netconf\&.h\&.
 .TP
 \fB\fINC_EDIT_ERROPT_ROLLBACK \fP\fP
 
+.SS "enum \fBNC_EDIT_TESTOPT_TYPE\fP"
+
 .PP
-Definition at line 282 of file netconf\&.h\&.
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fINC_EDIT_TESTOPT_ERROR \fP\fP
+.TP
+\fB\fINC_EDIT_TESTOPT_TESTSET \fP\fP
+.TP
+\fB\fINC_EDIT_TESTOPT_SET \fP\fP
+.TP
+\fB\fINC_EDIT_TESTOPT_TEST \fP\fP
+
 .SS "enum \fBNCWD_MODE\fP"
 
 .PP
@@ -242,8 +250,16 @@ Definition at line 282 of file netconf\&.h\&.
 .TP
 \fB\fINCWD_MODE_ALL_TAGGED \fP\fP
 
+.SS "enum \fBNC_CAP_ATTR\fP"
+
 .PP
-Definition at line 289 of file netconf\&.h\&.
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fINC_CAP_ATTR_WITHDEFAULTS_MODE \fP\fP
+.TP
+\fB\fINC_CAP_ATTR_VALIDATE_TESTOPT \fP\fP
+
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

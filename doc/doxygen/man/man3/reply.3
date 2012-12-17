@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Tue Dec 11 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Mon Dec 17 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -101,8 +101,6 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 
 .PP
 reply message\&. 
-.PP
-Definition at line 55 of file netconf\&.h\&.
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_REPLY_TYPE\fP"
@@ -127,8 +125,6 @@ value describing that no rpc-reply type was detected so far
 .TP
 \fB\fINC_REPLY_DATA \fP\fP
 rpc-reply message containing <data> 
-.PP
-Definition at line 143 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "void nc_callback_error_reply (void(*)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid)func)"

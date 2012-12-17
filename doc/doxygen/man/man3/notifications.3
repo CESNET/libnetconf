@@ -1,4 +1,4 @@
-.TH "NETCONF Event Notifications" 3 "Tue Dec 11 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Event Notifications" 3 "Mon Dec 17 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -117,8 +117,6 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 
 .PP
 Event notification message\&. 
-.PP
-Definition at line 61 of file netconf\&.h\&.
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNCNTF_EVENT\fP"
@@ -155,8 +153,6 @@ netconf-session-end (RFC 6470)
 .TP
 \fB\fINCNTF_BASE_CONFIRMED_COMMIT \fP\fP
 netconf-configrmed-commit (RFC 6470) 
-.PP
-Definition at line 52 of file notifications\&.h\&.
 .SS "enum \fBNCNTF_EVENT_BY\fP"
 
 .PP
@@ -170,8 +166,6 @@ event is caused by server
 .TP
 \fB\fINCNTF_EVENT_BY_USER \fP\fP
 event is caused by user's action 
-.PP
-Definition at line 68 of file notifications\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "int nc_session_send_notif (struct nc_session *session, const \fBnc_ntf\fP *ntf)"

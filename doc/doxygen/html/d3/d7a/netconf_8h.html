@@ -31,7 +31,7 @@
    <div id="projectname">libnetconf
    &#160;<span id="projectnumber">0.2.3</span>
    </div>
-   <div id="projectbrief">NETCONF library</div>
+   <div id="projectbrief">NETCONF Library</div>
   </td>
  </tr>
  </tbody>
@@ -226,10 +226,11 @@ Enumerations</h2></td></tr>
 <tr class="memitem:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a> { <br/>
 &#160;&#160;<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b">NC_DATASTORE_ERROR</a>, 
 <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e">NC_DATASTORE_CONFIG</a>, 
+<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a8507d8c0a99ba9da1cb38287b26b911c">NC_DATASTORE_URL</a>, 
 <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a431a59cb5a2f00f50ab887ee0931156a">NC_DATASTORE_RUNNING</a>, 
-<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73ab0fb14c1d3e587701536c288520d945b">NC_DATASTORE_STARTUP</a>, 
 <br/>
-&#160;&#160;<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830">NC_DATASTORE_CANDIDATE</a>
+&#160;&#160;<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73ab0fb14c1d3e587701536c288520d945b">NC_DATASTORE_STARTUP</a>, 
+<a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830">NC_DATASTORE_CANDIDATE</a>
 <br/>
  }</td></tr>
 <tr class="memdesc:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported types of datastores defined by NETCONF.  <a href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">More...</a><br/></td></tr>
@@ -257,6 +258,11 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a69d82c66a324215010791718c1bc61f6">NC_EDIT_ERROPT_CONT</a> =  2, 
 <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a35128042558e32842f827be8c31d5b1a">NC_EDIT_ERROPT_ROLLBACK</a> =  3
  }</td></tr>
+<tr class="memitem:aca86efe74fc9a26cc30e33a8e9772579"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a> { <a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a1770ae5b90495ca720f60ca76ab029b4">NC_EDIT_TESTOPT_ERROR</a> =  -1, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579aae2180fb26e03b4c1ea184abb463056c">NC_EDIT_TESTOPT_TESTSET</a> =  1, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a56b353b9c45d7eed3373e41feb509294">NC_EDIT_TESTOPT_SET</a> =  2, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a7f8086cbfcc1c1811b33e2d681f77072">NC_EDIT_TESTOPT_TEST</a> =  3
+ }</td></tr>
 <tr class="memitem:a3d13afb72bb0c0098f47e8b612cdeb81"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81">NCWD_MODE</a> { <br/>
 &#160;&#160;<a class="el" href="../../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81add913a6a7fc4215684c88fd73720facd">NCWD_MODE_DISABLED</a> =  0, 
 <a class="el" href="../../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81a8b422cc5bcfa0ddd20d52ec6e71362db">NCWD_MODE_ALL</a> =  1, 
@@ -265,6 +271,9 @@ Enumerations</h2></td></tr>
 <br/>
 &#160;&#160;<a class="el" href="../../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81a0bd005f27bf5b0dd51aa8d61656f8089">NCWD_MODE_ALL_TAGGED</a> =  8
 <br/>
+ }</td></tr>
+<tr class="memitem:a06a2c29efc74abd4d0c88e7abb5e914d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914d">NC_CAP_ATTR</a> { <a class="el" href="../../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba">NC_CAP_ATTR_WITHDEFAULTS_MODE</a> =  1, 
+<a class="el" href="../../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914daac7f841bf48a77e747f38d31468d53d1">NC_CAP_ATTR_VALIDATE_TESTOPT</a>
  }</td></tr>
 <tr class="memitem:ga921d994eb69a9efd93ef85cf4a6cd060"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060">NC_VERB_LEVEL</a> { <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a908c5d51b81e0ab37d2c57e569446d9b">NC_VERB_ERROR</a>, 
 <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a4a0cbb6bc660d3a50c3dff6028185abf">NC_VERB_WARNING</a>, 
@@ -292,8 +301,6 @@ Functions</h2></td></tr>
 </ol>
 <p>ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above.</p>
 <p>This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage. </p>
-
-<p>Definition in file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 </div><hr/><h2>Macro Definition Documentation</h2>
 <a class="anchor" id="ae2518fb60d22a54179a25195bb7a5a6e"></a>
 <div class="memitem">
@@ -305,8 +312,6 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all processes using...">nc_init()</a>'s flag to enable Notification subsystem. </p>
-
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00327">327</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -355,8 +360,6 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00184">184</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
-
 </div>
 </div>
 <a class="anchor" id="aff232fd4280e385c8e45fcca033e58fd"></a>
@@ -385,8 +388,6 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00265">265</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
-
 </div>
 </div>
 <a class="anchor" id="a5852fd110198481afb37cc8dcf0bf454"></a>
@@ -410,8 +411,6 @@ Functions</h2></td></tr>
 </table>
 </dd>
 </dl>
-
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00275">275</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
 
 </div>
 </div>
@@ -437,7 +436,29 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00282">282</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+</div>
+</div>
+<a class="anchor" id="aca86efe74fc9a26cc30e33a8e9772579"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="aca86efe74fc9a26cc30e33a8e9772579a1770ae5b90495ca720f60ca76ab029b4"></a>NC_EDIT_TESTOPT_ERROR</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="aca86efe74fc9a26cc30e33a8e9772579aae2180fb26e03b4c1ea184abb463056c"></a>NC_EDIT_TESTOPT_TESTSET</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="aca86efe74fc9a26cc30e33a8e9772579a56b353b9c45d7eed3373e41feb509294"></a>NC_EDIT_TESTOPT_SET</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="aca86efe74fc9a26cc30e33a8e9772579a7f8086cbfcc1c1811b33e2d681f77072"></a>NC_EDIT_TESTOPT_TEST</em>&nbsp;</td><td>
+</td></tr>
+</table>
+</dd>
+</dl>
 
 </div>
 </div>
@@ -465,7 +486,25 @@ Functions</h2></td></tr>
 </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d7a/netconf_8h_source.html#l00289">289</a> of file <a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>.</p>
+</div>
+</div>
+<a class="anchor" id="a06a2c29efc74abd4d0c88e7abb5e914d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="../../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914d">NC_CAP_ATTR</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="a06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba"></a>NC_CAP_ATTR_WITHDEFAULTS_MODE</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a06a2c29efc74abd4d0c88e7abb5e914daac7f841bf48a77e747f38d31468d53d1"></a>NC_CAP_ATTR_VALIDATE_TESTOPT</em>&nbsp;</td><td>
+</td></tr>
+</table>
+</dd>
+</dl>
 
 </div>
 </div>
@@ -475,7 +514,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="d3/d7a/netconf_8h.html">netconf.h</a></li>
-    <li class="footer">Generated on Tue Dec 11 2012 11:11:16 for libnetconf by
+    <li class="footer">Generated on Mon Dec 17 2012 13:59:11 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

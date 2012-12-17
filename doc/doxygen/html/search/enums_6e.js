@@ -1,9 +1,11 @@
 var searchData=
 [
+  ['nc_5fcap_5fattr',['NC_CAP_ATTR',['../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914d',1,'netconf.h']]],
   ['nc_5fdatastore',['NC_DATASTORE',['../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73',1,'netconf.h']]],
   ['nc_5fedit_5fdefop_5ftype',['NC_EDIT_DEFOP_TYPE',['../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454',1,'netconf.h']]],
   ['nc_5fedit_5ferropt_5ftype',['NC_EDIT_ERROPT_TYPE',['../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32',1,'netconf.h']]],
   ['nc_5fedit_5fop_5ftype',['NC_EDIT_OP_TYPE',['../d3/d7a/netconf_8h.html#aff232fd4280e385c8e45fcca033e58fd',1,'netconf.h']]],
+  ['nc_5fedit_5ftestopt_5ftype',['NC_EDIT_TESTOPT_TYPE',['../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579',1,'netconf.h']]],
   ['nc_5ferr',['NC_ERR',['../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2',1,'error.h']]],
   ['nc_5ferr_5fparam',['NC_ERR_PARAM',['../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73d',1,'netconf.h']]],
   ['nc_5ffilter_5ftype',['NC_FILTER_TYPE',['../db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706',1,'netconf.h']]],

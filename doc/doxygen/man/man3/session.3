@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Tue Dec 11 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Mon Dec 17 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -174,8 +174,6 @@ We use macro to avoid compiler warning of 'const nc_msgid' as return type of fun
 .PP
 Yes, I know that const char* means 'pointer to constant character (not
  string)', but I want to be clear from the API, that function returns pointer to something that should not be changed\&. 
-.PP
-Definition at line 84 of file netconf\&.h\&.
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_SESSION_STATUS\fP"
@@ -203,8 +201,6 @@ session was closed and could not be used to communication
 .TP
 \fB\fINC_SESSION_STATUS_DUMMY \fP\fP
 session is DUMMY, only holds information, does not provide connection 
-.PP
-Definition at line 102 of file netconf\&.h\&.
 .SS "enum \fBNC_SESSION_TERM_REASON\fP"
 
 .PP
@@ -230,8 +226,6 @@ terminated because of inactivity
 .TP
 \fB\fINC_SESSION_TERM_OTHER \fP\fP
 terminated for some other reason 
-.PP
-Definition at line 116 of file netconf\&.h\&.
 .SS "enum \fBNC_SSH_AUTH_TYPE\fP"
 
 .PP
@@ -248,8 +242,6 @@ SSH user authorization via password
 .TP
 \fB\fINC_SSH_AUTH_INTERACTIVE \fP\fP
 interactive SSH user authorization 
-.PP
-Definition at line 49 of file ssh\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "void nc_callback_sshauth_interactive (void(*)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract)func)"

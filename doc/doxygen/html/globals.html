@@ -31,7 +31,7 @@
    <div id="projectname">libnetconf
    &#160;<span id="projectnumber">0.2.3</span>
    </div>
-   <div id="projectbrief">NETCONF library</div>
+   <div id="projectbrief">NETCONF Library</div>
   </td>
  </tr>
  </tbody>
@@ -137,6 +137,15 @@ $(document).ready(function(){initNavTree('globals.html','');});
 <li>nc_callback_sshauth_password()
 : <a class="el" href="db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb">callbacks.h</a>
 </li>
+<li>NC_CAP_ATTR
+: <a class="el" href="d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914d">netconf.h</a>
+</li>
+<li>NC_CAP_ATTR_VALIDATE_TESTOPT
+: <a class="el" href="d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914daac7f841bf48a77e747f38d31468d53d1">netconf.h</a>
+</li>
+<li>NC_CAP_ATTR_WITHDEFAULTS_MODE
+: <a class="el" href="d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba">netconf.h</a>
+</li>
 <li>nc_close()
 : <a class="el" href="d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">netconf.h</a>
 </li>
@@ -184,6 +193,9 @@ $(document).ready(function(){initNavTree('globals.html','');});
 </li>
 <li>NC_DATASTORE_STARTUP
 : <a class="el" href="db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73ab0fb14c1d3e587701536c288520d945b">netconf.h</a>
+</li>
+<li>NC_DATASTORE_URL
+: <a class="el" href="db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a8507d8c0a99ba9da1cb38287b26b911c">netconf.h</a>
 </li>
 <li>NC_EDIT_DEFOP_ERROR
 : <a class="el" href="d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187">netconf.h</a>
@@ -235,6 +247,21 @@ $(document).ready(function(){initNavTree('globals.html','');});
 </li>
 <li>NC_EDIT_OP_TYPE
 : <a class="el" href="d3/d7a/netconf_8h.html#aff232fd4280e385c8e45fcca033e58fd">netconf.h</a>
+</li>
+<li>NC_EDIT_TESTOPT_ERROR
+: <a class="el" href="d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a1770ae5b90495ca720f60ca76ab029b4">netconf.h</a>
+</li>
+<li>NC_EDIT_TESTOPT_SET
+: <a class="el" href="d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a56b353b9c45d7eed3373e41feb509294">netconf.h</a>
+</li>
+<li>NC_EDIT_TESTOPT_TEST
+: <a class="el" href="d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a7f8086cbfcc1c1811b33e2d681f77072">netconf.h</a>
+</li>
+<li>NC_EDIT_TESTOPT_TESTSET
+: <a class="el" href="d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579aae2180fb26e03b4c1ea184abb463056c">netconf.h</a>
+</li>
+<li>NC_EDIT_TESTOPT_TYPE
+: <a class="el" href="d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579">netconf.h</a>
 </li>
 <li>NC_ERR
 : <a class="el" href="da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2">error.h</a>
@@ -512,11 +539,14 @@ $(document).ready(function(){initNavTree('globals.html','');});
 <li>nc_rpc_build()
 : <a class="el" href="db/de9/group__rpc.html#ga16bda6ae6ad26653e8793abf58ebec2b">messages.h</a>
 </li>
+<li>nc_rpc_capability_attr()
+: <a class="el" href="db/de9/group__rpc.html#ga14f5e170cbc9acd9a146eee2fb6b796f">messages.h</a>
+</li>
 <li>nc_rpc_commit()
 : <a class="el" href="db/de9/group__rpc.html#ga7977ca8b562643607b3c846ed36bbb23">messages.h</a>
 </li>
 <li>nc_rpc_copyconfig()
-: <a class="el" href="db/de9/group__rpc.html#gacc0a221a251727b06b576ae9cf5d1320">messages.h</a>
+: <a class="el" href="db/de9/group__rpc.html#gaf7b76c1243dc218cf1dc8b17876e319c">messages.h</a>
 </li>
 <li>NC_RPC_DATASTORE_READ
 : <a class="el" href="db/de9/group__rpc.html#gga4088fac1dd592062b27ff5b0e1708d00ab9542d7955d9821f23b5909f3dbec7bb">netconf.h</a>
@@ -525,7 +555,7 @@ $(document).ready(function(){initNavTree('globals.html','');});
 : <a class="el" href="db/de9/group__rpc.html#gga4088fac1dd592062b27ff5b0e1708d00ab283d1c39df65fe56607329bc3c946f9">netconf.h</a>
 </li>
 <li>nc_rpc_deleteconfig()
-: <a class="el" href="db/de9/group__rpc.html#ga629917bffa41d8c8714cfaa0c0630857">messages.h</a>
+: <a class="el" href="db/de9/group__rpc.html#gae1faa46f5048f21dc580d44836d848e8">messages.h</a>
 </li>
 <li>nc_rpc_discardchanges()
 : <a class="el" href="db/de9/group__rpc.html#ga337ea7a9b006a79ee5ea615e9d9a5a6f">messages.h</a>
@@ -537,7 +567,7 @@ $(document).ready(function(){initNavTree('globals.html','');});
 : <a class="el" href="db/de9/group__rpc.html#gadab3d916540f79dd2b168134758fe3d1">messages.h</a>
 </li>
 <li>nc_rpc_editconfig()
-: <a class="el" href="db/de9/group__rpc.html#ga4fd8840f089561622f01dbdf64ceca42">messages.h</a>
+: <a class="el" href="db/de9/group__rpc.html#ga0d48313d18047f959697bb610675af88">messages.h</a>
 </li>
 <li>nc_rpc_free()
 : <a class="el" href="db/de9/group__rpc.html#ga4041bda37caa9eedb7a1e2534280f3df">messages.h</a>
@@ -546,7 +576,7 @@ $(document).ready(function(){initNavTree('globals.html','');});
 : <a class="el" href="db/de9/group__rpc.html#gaa9ad7fac41fdef0063c2e2793fb19efd">messages.h</a>
 </li>
 <li>nc_rpc_get()
-: <a class="el" href="db/de9/group__rpc.html#ga373024a534d4a18f1fb6e6a51a222255">messages.h</a>
+: <a class="el" href="db/de9/group__rpc.html#ga6818afbecf7fedf78f620162de78b4fd">messages.h</a>
 </li>
 <li>nc_rpc_get_config()
 : <a class="el" href="db/de9/group__rpc.html#ga05a10e0b6c89ac04426410f399b87257">messages.h</a>
@@ -579,7 +609,7 @@ $(document).ready(function(){initNavTree('globals.html','');});
 : <a class="el" href="db/de9/group__rpc.html#gaa502fb30575000775b29a764101c1bef">messages.h</a>
 </li>
 <li>nc_rpc_getconfig()
-: <a class="el" href="db/de9/group__rpc.html#ga00f9ee33e1706935e4d8fd17aab9167e">messages.h</a>
+: <a class="el" href="db/de9/group__rpc.html#ga4ae747c4c96e1d3621745e122091ba11">messages.h</a>
 </li>
 <li>nc_rpc_getschema()
 : <a class="el" href="db/de9/group__rpc.html#ga3b762dd881622eaa72b08c9b58d76a5e">messages.h</a>
@@ -941,7 +971,7 @@ $(document).ready(function(){initNavTree('globals.html','');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Dec 11 2012 11:11:16 for libnetconf by
+    <li class="footer">Generated on Mon Dec 17 2012 13:59:12 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

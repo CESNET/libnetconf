@@ -29,11 +29,11 @@ var messages_8h =
     [ "nc_reply_error", "d5/d48/messages_8h.html#ga12fd89263289491b84398279e0e449fd", null ],
     [ "nc_reply_error_add", "d5/d48/messages_8h.html#gafb04a6695650d05a07b571ac1410a681", null ],
     [ "nc_reply_merge", "d5/d48/messages_8h.html#gab1dd4115fe039fe495713168f9b40d34", null ],
-    [ "nc_rpc_copyconfig", "d5/d48/messages_8h.html#gacc0a221a251727b06b576ae9cf5d1320", null ],
-    [ "nc_rpc_deleteconfig", "d5/d48/messages_8h.html#ga629917bffa41d8c8714cfaa0c0630857", null ],
-    [ "nc_rpc_editconfig", "d5/d48/messages_8h.html#ga4fd8840f089561622f01dbdf64ceca42", null ],
-    [ "nc_rpc_get", "d5/d48/messages_8h.html#ga373024a534d4a18f1fb6e6a51a222255", null ],
-    [ "nc_rpc_getconfig", "d5/d48/messages_8h.html#ga00f9ee33e1706935e4d8fd17aab9167e", null ],
+    [ "nc_rpc_copyconfig", "d5/d48/messages_8h.html#gaf7b76c1243dc218cf1dc8b17876e319c", null ],
+    [ "nc_rpc_deleteconfig", "d5/d48/messages_8h.html#gae1faa46f5048f21dc580d44836d848e8", null ],
+    [ "nc_rpc_editconfig", "d5/d48/messages_8h.html#ga0d48313d18047f959697bb610675af88", null ],
+    [ "nc_rpc_get", "d5/d48/messages_8h.html#ga6818afbecf7fedf78f620162de78b4fd", null ],
+    [ "nc_rpc_getconfig", "d5/d48/messages_8h.html#ga4ae747c4c96e1d3621745e122091ba11", null ],
     [ "nc_rpc_killsession", "d5/d48/messages_8h.html#gae9876e8d038eb81a376bd82a08c58b95", null ],
     [ "nc_rpc_lock", "d5/d48/messages_8h.html#ga6a03d40e00fbe019a34541a55f3f4a31", null ],
     [ "nc_rpc_unlock", "d5/d48/messages_8h.html#gad843551f9d1ff8be6a118d026e8b995a", null ],
@@ -41,5 +41,6 @@ var messages_8h =
     [ "nc_rpc_commit", "d5/d48/messages_8h.html#ga7977ca8b562643607b3c846ed36bbb23", null ],
     [ "nc_rpc_discardchanges", "d5/d48/messages_8h.html#ga337ea7a9b006a79ee5ea615e9d9a5a6f", null ],
     [ "nc_rpc_getschema", "d5/d48/messages_8h.html#ga3b762dd881622eaa72b08c9b58d76a5e", null ],
-    [ "nc_rpc_generic", "d5/d48/messages_8h.html#gaa9ad7fac41fdef0063c2e2793fb19efd", null ]
+    [ "nc_rpc_generic", "d5/d48/messages_8h.html#gaa9ad7fac41fdef0063c2e2793fb19efd", null ],
+    [ "nc_rpc_capability_attr", "d5/d48/messages_8h.html#ga14f5e170cbc9acd9a146eee2fb6b796f", null ]
 ];

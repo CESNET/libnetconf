@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Tue Dec 11 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Mon Dec 17 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -26,7 +26,7 @@ libnetconf's functions for handling NETCONF datastores\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_DATASTORE\fP { \fBNC_DATASTORE_ERROR\fP, \fBNC_DATASTORE_CONFIG\fP, \fBNC_DATASTORE_RUNNING\fP, \fBNC_DATASTORE_STARTUP\fP, \fBNC_DATASTORE_CANDIDATE\fP }"
+.RI "enum \fBNC_DATASTORE\fP { \fBNC_DATASTORE_ERROR\fP, \fBNC_DATASTORE_CONFIG\fP, \fBNC_DATASTORE_URL\fP, \fBNC_DATASTORE_RUNNING\fP, \fBNC_DATASTORE_STARTUP\fP, \fBNC_DATASTORE_CANDIDATE\fP }"
 .br
 .RI "\fIEnumeration of supported types of datastores defined by NETCONF\&. \fP"
 .ti -1c
@@ -85,16 +85,12 @@ libnetconf's functions for handling NETCONF datastores\&.
 
 .PP
 Return value of \fBncds_apply_rpc()\fP when the requested operation is not applicable to the specified datastore\&. 
-.PP
-Definition at line 146 of file datastore\&.h\&.
 .SH "Typedef Documentation"
 .PP 
 .SS "typedef int \fBncds_id\fP"
 
 .PP
 Datastore ID\&. Each datastore gets its ID after initialisation (\fBncds_init()\fP)\&. Only initialised datstores can be used to access configuration data\&. 
-.PP
-Definition at line 61 of file datastore\&.h\&.
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_DATASTORE\fP"
@@ -111,6 +107,9 @@ error state of functions returning datastore type
 \fB\fINC_DATASTORE_CONFIG \fP\fP
 value describing that datastore is set as config 
 .TP
+\fB\fINC_DATASTORE_URL \fP\fP
+value describing that the datastore data should be given from the URL 
+.TP
 \fB\fINC_DATASTORE_RUNNING \fP\fP
 base NETCONF's datastore containing current device configuration 
 .TP
@@ -119,8 +118,6 @@ separated startup datastore as defined in Distinct Startup Capability
 .TP
 \fB\fINC_DATASTORE_CANDIDATE \fP\fP
 separated working datastore as defined in Candidate Configuration Capability 
-.PP
-Definition at line 247 of file netconf\&.h\&.
 .SS "enum \fBNCDS_TYPE\fP"
 
 .PP
@@ -134,8 +131,6 @@ No datastore\&. For read-only devices\&.
 .TP
 \fB\fINCDS_TYPE_FILE \fP\fP
 Datastores implemented as files 
-.PP
-Definition at line 49 of file datastore\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "struct ncds_ds* ncds_new (\fBNCDS_TYPE\fPtype, const char *model_path, char *(*)(const char *model, const char *running, struct nc_err **e)get_state)\fC [read]\fP"

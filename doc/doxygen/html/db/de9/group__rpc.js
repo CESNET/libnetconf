@@ -23,16 +23,17 @@ var group__rpc =
     [ "nc_rpc_get_erropt", "db/de9/group__rpc.html#ga488f894b9fa4866326837a9ed0575e36", null ],
     [ "nc_rpc_get_filter", "db/de9/group__rpc.html#ga05705bba8345c15637bc54cf6b9a4b3d", null ],
     [ "nc_rpc_free", "db/de9/group__rpc.html#ga4041bda37caa9eedb7a1e2534280f3df", null ],
-    [ "nc_rpc_copyconfig", "db/de9/group__rpc.html#gacc0a221a251727b06b576ae9cf5d1320", null ],
-    [ "nc_rpc_deleteconfig", "db/de9/group__rpc.html#ga629917bffa41d8c8714cfaa0c0630857", null ],
-    [ "nc_rpc_editconfig", "db/de9/group__rpc.html#ga4fd8840f089561622f01dbdf64ceca42", null ],
-    [ "nc_rpc_get", "db/de9/group__rpc.html#ga373024a534d4a18f1fb6e6a51a222255", null ],
-    [ "nc_rpc_getconfig", "db/de9/group__rpc.html#ga00f9ee33e1706935e4d8fd17aab9167e", null ],
+    [ "nc_rpc_copyconfig", "db/de9/group__rpc.html#gaf7b76c1243dc218cf1dc8b17876e319c", null ],
+    [ "nc_rpc_deleteconfig", "db/de9/group__rpc.html#gae1faa46f5048f21dc580d44836d848e8", null ],
+    [ "nc_rpc_editconfig", "db/de9/group__rpc.html#ga0d48313d18047f959697bb610675af88", null ],
+    [ "nc_rpc_get", "db/de9/group__rpc.html#ga6818afbecf7fedf78f620162de78b4fd", null ],
+    [ "nc_rpc_getconfig", "db/de9/group__rpc.html#ga4ae747c4c96e1d3621745e122091ba11", null ],
     [ "nc_rpc_killsession", "db/de9/group__rpc.html#gae9876e8d038eb81a376bd82a08c58b95", null ],
     [ "nc_rpc_lock", "db/de9/group__rpc.html#ga6a03d40e00fbe019a34541a55f3f4a31", null ],
     [ "nc_rpc_unlock", "db/de9/group__rpc.html#gad843551f9d1ff8be6a118d026e8b995a", null ],
     [ "nc_rpc_commit", "db/de9/group__rpc.html#ga7977ca8b562643607b3c846ed36bbb23", null ],
     [ "nc_rpc_discardchanges", "db/de9/group__rpc.html#ga337ea7a9b006a79ee5ea615e9d9a5a6f", null ],
     [ "nc_rpc_getschema", "db/de9/group__rpc.html#ga3b762dd881622eaa72b08c9b58d76a5e", null ],
-    [ "nc_rpc_generic", "db/de9/group__rpc.html#gaa9ad7fac41fdef0063c2e2793fb19efd", null ]
+    [ "nc_rpc_generic", "db/de9/group__rpc.html#gaa9ad7fac41fdef0063c2e2793fb19efd", null ],
+    [ "nc_rpc_capability_attr", "db/de9/group__rpc.html#ga14f5e170cbc9acd9a146eee2fb6b796f", null ]
 ];

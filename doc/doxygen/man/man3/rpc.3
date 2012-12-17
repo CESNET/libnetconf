@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Tue Dec 11 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Mon Dec 17 2012" "Version 0.2.3" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -110,23 +110,23 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIFree rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_copyconfig\fP (\fBNC_DATASTORE\fP source, \fBNC_DATASTORE\fP target, \fBNCWD_MODE\fP withdefaults, const char *data)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_copyconfig\fP (\fBNC_DATASTORE\fP source, \fBNC_DATASTORE\fP target,\&.\&.\&.)"
 .br
 .RI "\fICreate <copy-config> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_deleteconfig\fP (\fBNC_DATASTORE\fP target)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_deleteconfig\fP (\fBNC_DATASTORE\fP target,\&.\&.\&.)"
 .br
 .RI "\fICreate <delete-config> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_editconfig\fP (\fBNC_DATASTORE\fP target, \fBNC_EDIT_DEFOP_TYPE\fP default_operation, \fBNC_EDIT_ERROPT_TYPE\fP error_option, const char *data)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_editconfig\fP (\fBNC_DATASTORE\fP target, \fBNC_DATASTORE\fP source, \fBNC_EDIT_DEFOP_TYPE\fP default_operation, \fBNC_EDIT_ERROPT_TYPE\fP error_option,\&.\&.\&.)"
 .br
 .RI "\fICreate <edit-config> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_get\fP (const struct nc_filter *filter, \fBNCWD_MODE\fP withdefaults)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_get\fP (const struct nc_filter *filter)"
 .br
 .RI "\fICreate <get> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE\fP source, const struct nc_filter *filter, \fBNCWD_MODE\fP withdefaults)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_getconfig\fP (\fBNC_DATASTORE\fP source, const struct nc_filter *filter)"
 .br
 .RI "\fICreate <get-config> NETCONF rpc message\&. \fP"
 .ti -1c
@@ -157,6 +157,10 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .RI "\fBnc_rpc\fP * \fBnc_rpc_generic\fP (const char *data)"
 .br
 .RI "\fICreate a generic NETCONF rpc message with specified content\&. \fP"
+.ti -1c
+.RI "int \fBnc_rpc_capability_attr\fP (\fBnc_rpc\fP *rpc, \fBNC_CAP_ATTR\fP attr,\&.\&.\&.)"
+.br
+.RI "\fISet attribute of the given <rpc> specific for some NETCONF capability\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -169,8 +173,6 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 
 .PP
 rpc message\&. 
-.PP
-Definition at line 49 of file netconf\&.h\&.
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_RPC_TYPE\fP"
@@ -195,8 +197,6 @@ value describing that no supported operation type was detected so far
 .TP
 \fB\fINC_RPC_SESSION \fP\fP
 <rpc> contains operation affecting session 
-.PP
-Definition at line 155 of file netconf\&.h\&.
 .SS "enum \fBNC_OP\fP"
 
 .PP
@@ -246,8 +246,6 @@ unknown/error value
 .TP
 \fB\fINC_OP_GETSCHEMA \fP\fP
 <get-schema> operation (RFC 6022) 
-.PP
-Definition at line 167 of file netconf\&.h\&.
 .SS "enum \fBNC_FILTER_TYPE\fP"
 
 .PP
@@ -260,8 +258,6 @@ Enumeration of supported NETCONF filter types\&.
 .TP
 \fB\fINC_FILTER_SUBTREE \fP\fP
 NC_FILTER_SUBTREE 
-.PP
-Definition at line 259 of file netconf\&.h\&.
 .SH "Function Documentation"
 .PP 
 .SS "const \fBnc_msgid\fP nc_session_send_rpc (struct nc_session *session, \fBnc_rpc\fP *rpc)"
@@ -542,18 +538,40 @@ Free rpc message\&. \fBParameters:\fP
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* nc_rpc_copyconfig (\fBNC_DATASTORE\fPsource, \fBNC_DATASTORE\fPtarget, \fBNCWD_MODE\fPwithdefaults, const char *data)"
+.SS "\fBnc_rpc\fP* nc_rpc_copyconfig (\fBNC_DATASTORE\fPsource, \fBNC_DATASTORE\fPtarget, \&.\&.\&.)"
 
 .PP
-Create <copy-config> NETCONF rpc message\&. \fBParameters:\fP
+Create <copy-config> NETCONF rpc message\&. .SS "Variadic parameters:"
+.PP
+.IP "\(bu" 2
+source is specified as \fBNC_DATASTORE_CONFIG\fP:
+.IP "  \(bu" 4
+\fBnc_rpc_copyconfig()\fP accepts as the first variadic parameter \fBconst char* source_config\fP providing the complete configuration data to copy\&.
+.PP
+
+.IP "\(bu" 2
+source is specified as \fBNC_DATASTORE_URL\fP:
+.IP "  \(bu" 4
+\fBnc_rpc_copyconfig()\fP accepts as the first variadic parameter \fBconst char* source_url\fP providing the URL to the file
+.PP
+
+.IP "\(bu" 2
+target is specified as \fBNC_DATASTORE_URL\fP:
+.IP "  \(bu" 4
+\fBnc_rpc_copyconfig()\fP accepts as another (first or second according to eventual previous variadic parameter) variadic parameter \fBconst char* target_url\fP providing the URL to the target file\&.
+.PP
+
+.PP
+.PP
+The file that the url refers to contains the complete datastore, encoded in XML under the element <config> in the 'urn:ietf:params:xml:ns:netconf:base:1\&.0' namespace\&.
+.PP
+\fBParameters:\fP
 .RS 4
 \fIsource\fP Source configuration datastore type\&. If the NC_DATASTORE_NONE is specified, data parameter is used as the complete configuration to copy\&. 
 .br
 \fItarget\fP Target configuration datastore type to be replaced\&. 
 .br
-\fIwithdefaults\fP with-defaults capability mode\&. 
-.br
-\fIdata\fP If the NC_DATASTORE_NONE is specified as the source, data parameter is used as the complete configuration to copy\&. For other types of source datastore, this parameter is ignored\&. 
+\fI\&.\&.\&.\fP Specific parameters according to the source and target parameters\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -562,12 +580,14 @@ Created rpc message\&.
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* nc_rpc_deleteconfig (\fBNC_DATASTORE\fPtarget)"
+.SS "\fBnc_rpc\fP* nc_rpc_deleteconfig (\fBNC_DATASTORE\fPtarget, \&.\&.\&.)"
 
 .PP
 Create <delete-config> NETCONF rpc message\&. \fBParameters:\fP
 .RS 4
 \fItarget\fP Target configuration datastore type to be deleted\&. 
+.br
+\fI\&.\&.\&.\fP URL as \fBconst char* url\fP if the target parameter is specified as \fBNC_DATASTORE_URL\fP\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -576,18 +596,25 @@ Created rpc message\&.
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* nc_rpc_editconfig (\fBNC_DATASTORE\fPtarget, \fBNC_EDIT_DEFOP_TYPE\fPdefault_operation, \fBNC_EDIT_ERROPT_TYPE\fPerror_option, const char *data)"
+.SS "\fBnc_rpc\fP* nc_rpc_editconfig (\fBNC_DATASTORE\fPtarget, \fBNC_DATASTORE\fPsource, \fBNC_EDIT_DEFOP_TYPE\fPdefault_operation, \fBNC_EDIT_ERROPT_TYPE\fPerror_option, \&.\&.\&.)"
 
 .PP
 Create <edit-config> NETCONF rpc message\&. \fBParameters:\fP
 .RS 4
 \fItarget\fP Target configuration datastore type to be edited\&. 
 .br
+\fIsource\fP Specifies the type of the source data taken from the sourcedata parameter\&. Only \fBNC_DATASTORE_CONFIG\fP (sourcedata contains the <config> data) and \fBNC_DATASTORE_URL\fP (sourcedata contains URL for <url> element) values are accepted\&. 
+.br
 \fIdefault_operation\fP Default operation for this request, 0 to skip setting this parameter and use default server's ('merge') behavior\&. 
 .br
 \fIerror_option\fP Set reaction to an error, 0 for the server's default behavior\&. 
 .br
-\fIdata\fP edit-config operation request description\&. The content of this parameter is sent to server as a content of the <config> element\&.
+\fI\&.\&.\&.\fP According to the source parameter, variadic parameter can be one of the following:
+.IP "\(bu" 2
+\fBconst char* config\fP defining the content of the <config> element in case the source parameter is specified as \fBNC_DATASTORE_CONFIG\fP
+.IP "\(bu" 2
+\fBconst char* source_url\fP specifying URL, in case the source parameter is specified as \fBNC_DATASTORE_URL\fP\&. The URL must refer to the file containing configuration data hierarchy to be modified, encoded in XML under the element <config> in the 'urn:ietf:params:xml:ns:netconf:base:1\&.0' namespace\&.
+.PP
 .RE
 .PP
 \fBReturns:\fP
@@ -596,14 +623,12 @@ Created rpc message\&.
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* nc_rpc_get (const struct nc_filter *filter, \fBNCWD_MODE\fPwithdefaults)"
+.SS "\fBnc_rpc\fP* nc_rpc_get (const struct nc_filter *filter)"
 
 .PP
 Create <get> NETCONF rpc message\&. \fBParameters:\fP
 .RS 4
 \fIfilter\fP NETCONF filter or NULL if no filter required\&. 
-.br
-\fIwithdefaults\fP with-defaults capability mode\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -612,7 +637,7 @@ Created rpc message\&.
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* nc_rpc_getconfig (\fBNC_DATASTORE\fPsource, const struct nc_filter *filter, \fBNCWD_MODE\fPwithdefaults)"
+.SS "\fBnc_rpc\fP* nc_rpc_getconfig (\fBNC_DATASTORE\fPsource, const struct nc_filter *filter)"
 
 .PP
 Create <get-config> NETCONF rpc message\&. \fBParameters:\fP
@@ -620,8 +645,6 @@ Create <get-config> NETCONF rpc message\&. \fBParameters:\fP
 \fIsource\fP Source configuration datastore type being queried\&. 
 .br
 \fIfilter\fP NETCONF filter or NULL if no filter required\&. 
-.br
-\fIwithdefaults\fP with-defaults capability mode\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -721,6 +744,57 @@ Create a generic NETCONF rpc message with specified content\&. Function gets dat
 \fBReturns:\fP
 .RS 4
 Created rpc message\&. 
+.RE
+.PP
+
+.SS "int nc_rpc_capability_attr (\fBnc_rpc\fP *rpc, \fBNC_CAP_ATTR\fPattr, \&.\&.\&.)"
+
+.PP
+Set attribute of the given <rpc> specific for some NETCONF capability\&. .SS "Parameters for specific capability attributes:"
+.PP
+.IP "\(bu" 2
+\fBNC_CAP_ATTR_WITHDEFAULTS_MODE\fP
+.IP "  \(bu" 4
+applicable to <get>, <get-config> and <copy-config> operations\&.
+.IP "  \(bu" 4
+Accepts one parameter of \fBNCWD_MODE\fP type, specifying mode of the :with-defaults capability (RFC 6243)\&.
+.PP
+
+.IP "\(bu" 2
+\fBNC_CAP_ATTR_VALIDATE_TESTOPT\fP
+.IP "  \(bu" 4
+applicable only to <edit-config> operation\&.
+.IP "  \(bu" 4
+Accepts one parameter of \fBNC_EDIT_TESTOPT_TYPE\fP type, specifying value for the <test-option> element defined in :validate capability (RFC 6241)\&.
+.PP
+
+.PP
+.PP
+.SS "Examples:"
+.PP
+.IP "\(bu" 2
+nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, NCWD_MODE_ALL);
+.IP "\(bu" 2
+nc_rpc_capability_attr(rpc, NC_CAP_ATTR_VALIDATE_TESTOPT, NC_EDIT_TESTOPT_TESTSET);
+.PP
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrpc\fP RPC to be modified\&. This RPC must be created by one of the nc_rpc* functions\&. RPC received by the server side's \fBnc_session_recv_rpc()\fP is not accepted\&. 
+.br
+\fIattr\fP RPC's attribute defined by a capability to be set or changed\&. List of accepted operations can be found in the description of this function\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success,
+.br
+ non-zero on error\&.
+.RE
+.PP
+\fBTodo\fP
+.RS 4
+Implement this function 
 .RE
 .PP
 
