@@ -247,6 +247,7 @@ typedef enum {
 typedef enum NC_DATASTORE_TYPE {
 	NC_DATASTORE_ERROR, /**< error state of functions returning datastore type */
 	NC_DATASTORE_CONFIG, /**< value describing that datastore is set as config */
+	NC_DATASTORE_URL, /**< value describing that the datastore data should be given from the URL */
 	NC_DATASTORE_RUNNING, /**< base NETCONF's datastore containing current device configuration */
 	NC_DATASTORE_STARTUP, /**< separated startup datastore as defined in Distinct Startup Capability */
 	NC_DATASTORE_CANDIDATE /**< separated working datastore as defined in Candidate Configuration Capability */
@@ -273,18 +274,25 @@ typedef enum NC_EDIT_OP_TYPE {
 } NC_EDIT_OP_TYPE;
 
 typedef enum NC_EDIT_DEFOP_TYPE {
-	NC_EDIT_DEFOP_ERROR = -1,
+	NC_EDIT_DEFOP_ERROR = -1, /* for internal purposes, not defined by NETCONF */
 	NC_EDIT_DEFOP_NONE = 0,
 	NC_EDIT_DEFOP_MERGE = 1,
 	NC_EDIT_DEFOP_REPLACE = 2
 } NC_EDIT_DEFOP_TYPE;
 
 typedef enum NC_EEDIT_RROPT_TYPE {
-	NC_EDIT_ERROPT_ERROR = -1,
+	NC_EDIT_ERROPT_ERROR = -1, /* for internal purposes, not defined by NETCONF */
 	NC_EDIT_ERROPT_STOP = 1,
 	NC_EDIT_ERROPT_CONT = 2,
 	NC_EDIT_ERROPT_ROLLBACK = 3
 } NC_EDIT_ERROPT_TYPE;
+
+typedef enum {
+	NC_EDIT_TESTOPT_ERROR = -1, /* for internal purposes, not defined by NETCONF */
+	NC_EDIT_TESTOPT_TESTSET = 1, /* test-then-set */
+	NC_EDIT_TESTOPT_SET = 2, /* set */
+	NC_EDIT_TESTOPT_TEST = 3 /* test-only */
+} NC_EDIT_TESTOPT_TYPE;
 
 typedef enum {
 	NCWD_MODE_DISABLED = 0,
@@ -293,6 +301,11 @@ typedef enum {
 	NCWD_MODE_EXPLICIT = 4,
 	NCWD_MODE_ALL_TAGGED = 8
 } NCWD_MODE;
+
+typedef enum {
+	NC_CAP_ATTR_WITHDEFAULTS_MODE = 1,
+	NC_CAP_ATTR_VALIDATE_TESTOPT
+} NC_CAP_ATTR;
 
 /**
  * @brief Verbosity levels.

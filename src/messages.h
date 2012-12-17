@@ -332,52 +332,76 @@ nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...);
  * @ingroup rpc
  * @brief Create \<copy-config\> NETCONF rpc message.
  *
+ * ### Variadic parameters:
+ * - source is specified as #NC_DATASTORE_CONFIG:
+ *  - nc_rpc_copyconfig() accepts as the first variadic parameter
+ *  **const char* source_config** providing the complete configuration data to copy.
+ * - source is specified as #NC_DATASTORE_URL:
+ *  - nc_rpc_copyconfig() accepts as the first variadic parameter
+ *  **const char* source_url** providing the URL to the file
+ * - target is specified as #NC_DATASTORE_URL:
+ *  - nc_rpc_copyconfig() accepts as another (first or second according to
+ *  eventual previous variadic parameter) variadic parameter
+ *  **const char* target_url** providing the URL to the target file.
+ *
+ * The file that the url refers to contains the complete datastore, encoded in
+ * XML under the element \<config\> in the
+ * "urn:ietf:params:xml:ns:netconf:base:1.0" namespace.
+ *
  * @param[in] source Source configuration datastore type. If the
  * NC_DATASTORE_NONE is specified, data parameter is used as the complete
  * configuration to copy.
  * @param[in] target Target configuration datastore type to be replaced.
- * @param[in] withdefaults with-defaults capability mode.
- * @param[in] data If the NC_DATASTORE_NONE is specified as the source, data
- * parameter is used as the complete configuration to copy. For other types of
- * source datastore, this parameter is ignored.
+ * @param[in] ... Specific parameters according to the source and target parameters.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, NCWD_MODE withdefaults, const char *data);
+nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...);
 
 /**
  * @ingroup rpc
  * @brief Create \<delete-config\> NETCONF rpc message.
  *
  * @param[in] target Target configuration datastore type to be deleted.
+ * @param[in] ... URL as **const char* url** if the target parameter is
+ * specified as #NC_DATASTORE_URL.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target);
+nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...);
 
 /**
  * @ingroup rpc
  * @brief Create \<edit-config\> NETCONF rpc message.
  *
  * @param[in] target Target configuration datastore type to be edited.
+ * @param[in] source Specifies the type of the source data taken from the
+ * sourcedata parameter. Only #NC_DATASTORE_CONFIG (sourcedata contains the
+ * \<config\> data) and #NC_DATASTORE_URL (sourcedata contains URL for \<url\>
+ * element) values are accepted.
  * @param[in] default_operation Default operation for this request, 0 to skip
  * setting this parameter and use default server's ('merge') behavior.
  * @param[in] error_option Set reaction to an error, 0 for the server's default
  * behavior.
- * @param[in] data edit-config operation request description. The content of
- * this parameter is sent to server as a content of the \<config\> element.
+ * @param[in] ... According to the source parameter, variadic parameter can be
+ * one of the following:
+ * - **const char* config** defining the content of the \<config\> element
+ * in case the source parameter is specified as #NC_DATASTORE_CONFIG
+ * - **const char* source_url** specifying URL, in case the source parameter is
+ * specified as #NC_DATASTORE_URL. The URL must refer to the file containing
+ * configuration data hierarchy to be modified, encoded in XML under the element
+ * \<config\> in the "urn:ietf:params:xml:ns:netconf:base:1.0" namespace.
  *
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, const char *data);
+nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, ...);
 
 /**
  * @ingroup rpc
  * @brief Create \<get\> NETCONF rpc message.
  *
  * @param[in] filter NETCONF filter or NULL if no filter required.
- * @param[in] withdefaults with-defaults capability mode.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_get(const struct nc_filter *filter, NCWD_MODE withdefaults);
+nc_rpc *nc_rpc_get(const struct nc_filter *filter);
 
 /**
  * @ingroup rpc
@@ -385,10 +409,9 @@ nc_rpc *nc_rpc_get(const struct nc_filter *filter, NCWD_MODE withdefaults);
  *
  * @param[in] source Source configuration datastore type being queried.
  * @param[in] filter NETCONF filter or NULL if no filter required.
- * @param[in] withdefaults with-defaults capability mode.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter, NCWD_MODE withdefaults);
+nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter);
 
 /**
  * @ingroup rpc
@@ -477,5 +500,35 @@ nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* form
  * @return Created rpc message.
  */
 nc_rpc *nc_rpc_generic(const char* data);
+
+/**
+ * @ingroup rpc
+ * @brief Set attribute of the given \<rpc\> specific for some NETCONF capability.
+ *
+ * ### Parameters for specific capability attributes:
+ * - #NC_CAP_ATTR_WITHDEFAULTS_MODE
+ *  - applicable to \<get\>, \<get-config\> and \<copy-config\> operations.
+ *  - Accepts one parameter of #NCWD_MODE type, specifying mode of the
+ *  :with-defaults capability (RFC 6243).
+ * - #NC_CAP_ATTR_VALIDATE_TESTOPT
+ *  - applicable only to \<edit-config\> operation.
+ *  - Accepts one parameter of #NC_EDIT_TESTOPT_TYPE type, specifying
+ *  value for the \<test-option\> element defined in :validate capability
+ *  (RFC 6241).
+ *
+ * ### Examples:
+ * - nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, NCWD_MODE_ALL);
+ * - nc_rpc_capability_attr(rpc, NC_CAP_ATTR_VALIDATE_TESTOPT, NC_EDIT_TESTOPT_TESTSET);
+ *
+ * @param[in] rpc RPC to be modified. This RPC must be created by one of the
+ * nc_rpc* functions. RPC received by the server side's nc_session_recv_rpc() is
+ * not accepted.
+ * @param[in] attr RPC's attribute defined by a capability to be set or changed.
+ * List of accepted operations can be found in the description of this function.
+ * @return 0 on success,\n non-zero on error.
+ *
+ * \todo Implement this function
+ */
+int nc_rpc_capability_attr(nc_rpc* rpc, NC_CAP_ATTR attr, ...);
 
 #endif /* MESSAGES_H_ */
