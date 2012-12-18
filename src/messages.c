@@ -1816,17 +1816,14 @@ cleanup:
 
 }
 
-nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, const char *data)
+nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, ...)
 {
-	nc_rpc *rpc;
+	va_list argp;
+	nc_rpc *rpc = NULL;
 	xmlDocPtr doc_data;
 	xmlNodePtr content, node_target, node_defop, node_erropt;
 	char* datastore, *defop = NULL, *erropt = NULL, *config;
-
-	if (data == NULL || strlen(data) == 0) {
-		ERROR("Invalid configuration data for <edit-config>");
-		return (NULL);
-	}
+	const char* url = NULL, *data = NULL;
 
 	/* detect target datastore */
 	switch (target) {
@@ -1844,6 +1841,7 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
 		return (NULL);
 		break;
 	}
+
 
 	/* detect default-operation parameter */
 	if (default_operation != 0) {
@@ -1883,6 +1881,21 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
 		}
 	}
 
+	va_start(argp, error_option);
+	switch (source) {
+	case NC_DATASTORE_CONFIG:
+		data = va_arg(argp, const char*);
+		break;
+	case NC_DATASTORE_URL:
+		url = va_arg(argp, const char*);
+		break;
+	default:
+		ERROR("Unknown (or prohibited) source for <edit-config>.");
+		va_end(argp);
+		return (NULL);
+		break;
+	}
+
 	/* create edit-config envelope */
 	if ((content = xmlNewNode(NULL, BAD_CAST "edit-config")) == NULL) {
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
@@ -1893,13 +1906,11 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
 	node_target = xmlNewChild(content, NULL, BAD_CAST "target", NULL);
 	if (node_target == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-		xmlFreeNode(content);
-		return (NULL);
+		goto cleanup;
 	}
 	if (xmlNewChild(node_target, NULL, BAD_CAST datastore, NULL) == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-		xmlFreeNode(content);
-		return (NULL);
+		goto cleanup;
 	}
 
 	/* set <default-operation> element */
@@ -1907,8 +1918,7 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
 		node_defop = xmlNewChild(content, NULL, BAD_CAST "default-operation", BAD_CAST defop);
 		if (node_defop == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			return (NULL);
+			goto cleanup;
 		}
 	}
 
@@ -1917,43 +1927,51 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operat
 		node_erropt = xmlNewChild(content, NULL, BAD_CAST "error-option", BAD_CAST erropt);
 		if (node_erropt == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			return (NULL);
+			goto cleanup;
 		}
 	}
 
-	/* set <config> element */
-	/* add covering <config> element around the data to allow to specify multiple root elements */
-	if (asprintf(&config, "<config>%s</config>", data) == -1) {
-		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		xmlFreeNode(content);
-		return (NULL);
-	}
+	if (data != NULL) {
+		/* set <config> element */
+		/* add covering <config> element around the data to allow to specify multiple root elements */
+		if (asprintf(&config, "<config>%s</config>", data) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			goto cleanup;
+		}
 
-	/* prepare XML structure from given data */
-	doc_data = xmlReadMemory(config, strlen(config), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-	free(config);
-	if (doc_data == NULL) {
-		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
-		xmlFreeNode(content);
-		return (NULL);
-	}
+		/* prepare XML structure from given data */
+		doc_data = xmlReadMemory(config, strlen(config), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		free(config);
+		if (doc_data == NULL) {
+			ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+			goto cleanup;
+		}
 
-	/* connect given configuration data with the rpc request */
-	if (xmlAddChild(content, xmlCopyNode(doc_data->children, 1)) == NULL) {
-		ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
-		xmlFreeNode(content);
+		/* connect given configuration data with the rpc request */
+		if (xmlAddChild(content, xmlCopyNode(doc_data->children, 1)) == NULL) {
+			ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeDoc(doc_data);
+			goto cleanup;
+		}
+
+		/* free no more needed structure */
 		xmlFreeDoc(doc_data);
-		return (NULL);
+	} else if (url != NULL) {
+		/* set <url> instead of <config> */
+		if (xmlNewChild(content, NULL, BAD_CAST "url", BAD_CAST url) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			goto cleanup;
+		}
+	} else {
+		ERROR("%s: invalid parameters - one of the config or url must be specified.", __func__);
+		goto cleanup;
 	}
-
-	/* free no more needed structure */
-	xmlFreeDoc(doc_data);
 
 	rpc = nc_rpc_create(content);
 	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+cleanup:
 	xmlFreeNode(content);
-
+	va_end(argp);
 	return (rpc);
 }
 
