@@ -48,10 +48,12 @@
  * @ingroup rpc
  * @brief Create new NETCONF filter of the specified type.
  * @param[in] type Type of the filter.
- * @param[in] filter Filter content.
+ * @param[in] ... Filter content:
+ * - for #NC_FILTER_SUBTREE type, single variadic parameter
+ * **const char* filter** is accepted.
  * @return Created NETCONF filter structure.
  */
-struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, const char* filter);
+struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, ...);
 
 /**
  * @ingroup rpc
@@ -283,6 +285,8 @@ nc_reply *nc_reply_ok();
 /**
  * @ingroup reply
  * @brief Create rpc-reply response with \<data\> content.
+ * @param[in] data Serialized XML content of the \<data\> element for the
+ * \<rpc-reply\> message being created.
  * @return Created \<rpc-reply\> message.
  */
 nc_reply *nc_reply_data(const char* data);
@@ -374,9 +378,9 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...);
  *
  * @param[in] target Target configuration datastore type to be edited.
  * @param[in] source Specifies the type of the source data taken from the
- * sourcedata parameter. Only #NC_DATASTORE_CONFIG (sourcedata contains the
- * \<config\> data) and #NC_DATASTORE_URL (sourcedata contains URL for \<url\>
- * element) values are accepted.
+ * variadic parameter. Only #NC_DATASTORE_CONFIG (variadic parameter contains
+ * the \<config\> data) and #NC_DATASTORE_URL (variadic parameter contains URL
+ * for \<url\> element) values are accepted.
  * @param[in] default_operation Default operation for this request, 0 to skip
  * setting this parameter and use default server's ('merge') behavior.
  * @param[in] error_option Set reaction to an error, 0 for the server's default
