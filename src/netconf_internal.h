@@ -395,8 +395,7 @@ struct nc_msg {
 
 struct nc_filter {
 	NC_FILTER_TYPE type;
-	char *type_string;
-	char *content;
+	xmlNodePtr subtree_filter;
 };
 
 struct nc_cpblts {

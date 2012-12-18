@@ -58,7 +58,8 @@
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
-struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, const char* filter)
+
+static struct nc_filter *nc_filter_new_subtree(const xmlNodePtr filter)
 {
 	struct nc_filter *retval;
 
@@ -67,18 +68,86 @@ struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, const char* filter)
 		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	retval->type = NC_FILTER_SUBTREE;
+	retval->subtree_filter = xmlNewNode(NULL, BAD_CAST "filter");
+	if (retval->subtree_filter == NULL) {
+		ERROR("xmlNewNode failed (%s:%d).", __FILE__, __LINE__);
+		nc_filter_free(retval);
+		return (NULL);
+	}
+
+	if (filter != NULL) {
+		if (xmlAddChildList(retval->subtree_filter, xmlCopyNodeList(filter)) == NULL) {
+			ERROR("xmlAddChildList failed (%s:%d).", __FILE__, __LINE__);
+			nc_filter_free(retval);
+			return (NULL);
+		}
+	} /* else Empty filter as defined in RFC 6241 sec. 6.4.2 is returned */
+
+	return (retval);
+}
+
+struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, ...)
+{
+	struct nc_filter *retval;
+	char* filter_s = NULL;
+	const char* arg;
+	xmlDocPtr filter;
+	va_list argp;
+
+	/* init variadic arguments list */
+	va_start(argp, type);
 
 	switch (type) {
 	case NC_FILTER_SUBTREE:
-		retval->type_string = strdup("subtree");
+		/* convert string representation into libxml2 structure */
+		arg = va_arg(argp, const char*);
+		if (asprintf(&filter_s, "<filter type=\"subtree\">%s</filter>", (arg == NULL) ? "" : arg) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			va_end(argp);
+			return (NULL);
+		}
+		filter = xmlReadDoc(BAD_CAST filter_s, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN);
+		free(filter_s);
+		if (filter == NULL) {
+			ERROR("xmlReadDoc() failed (%s:%d).", __FILE__, __LINE__);
+			va_end(argp);
+			return (NULL);
+		}
+		retval = nc_filter_new_subtree(filter->children->children);
+		xmlFreeDoc(filter);
 		break;
 	default:
-		ERROR("nc_filter_new: Invalid filter type specified.");
-		free(retval);
+		ERROR("%s: Invalid filter type specified.", __func__);
+		va_end(argp);
 		return (NULL);
 	}
-	retval->type = type;
-	retval->content = (filter != NULL) ? strdup(filter) : NULL;
+
+	va_end(argp);
+	return (retval);
+}
+
+struct nc_filter *ncxml_filter_new(NC_FILTER_TYPE type, ...)
+{
+	struct nc_filter *retval;
+	xmlNodePtr filter;
+	va_list argp;
+
+	/* init variadic arguments list */
+	va_start(argp, type);
+
+	switch (type) {
+	case NC_FILTER_SUBTREE:
+		filter = va_arg(argp, const xmlNodePtr);
+		retval = nc_filter_new_subtree(filter);
+		break;
+	default:
+		ERROR("%s: Invalid filter type specified.", __func__);
+		va_end(argp);
+		return (NULL);
+	}
+
+	va_end(argp);
 
 	return (retval);
 }
@@ -86,11 +155,8 @@ struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, const char* filter)
 void nc_filter_free(struct nc_filter *filter)
 {
 	if (filter != NULL) {
-		if (filter->content != NULL) {
-			free(filter->content);
-		}
-		if (filter->type_string != NULL) {
-			free(filter->type_string);
+		if (filter->subtree_filter) {
+			xmlFreeNode(filter->subtree_filter);
 		}
 		free(filter);
 	}
@@ -620,9 +686,8 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 {
 	struct nc_filter * retval = NULL;
-	xmlNodePtr filter_node, filter_child;
-	xmlDocPtr aux_doc;
-	xmlBufferPtr buf;
+	xmlNodePtr filter_node;
+	xmlChar *type_string;
 
 	if (rpc != NULL && rpc->doc != NULL &&
 			rpc->doc->children != NULL &&
@@ -632,36 +697,20 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 			/* doc -> <rpc> -> <op> -> <param> */
 			filter_node = rpc->doc->children->children->children;
 			while (filter_node) {
+				/* \todo Check the namespace */
 				if (xmlStrEqual(filter_node->name, BAD_CAST "filter")) {
 					retval = malloc(sizeof(struct nc_filter));
-					retval->type_string = (char*) xmlGetProp(filter_node, BAD_CAST "type");
+					type_string = xmlGetProp(filter_node, BAD_CAST "type");
 					/* set filter type */
-					if (retval->type_string == NULL) {
+					if (type_string == NULL) {
 						/* implicit filter type is NC_FILTER_SUBTREE */
-						retval->type_string = strdup("subtree");
 						retval->type = NC_FILTER_SUBTREE;
-					} else if (strcmp(retval->type_string, "subtree") == 0) {
+					} else if (xmlStrcmp(type_string, BAD_CAST "subtree") == 0) {
 						retval->type = NC_FILTER_SUBTREE;
+						retval->subtree_filter = xmlCopyNode(filter_node, 1);
 					} else {
 						/* some uknown filter type */
 						retval->type = NC_FILTER_UNKNOWN;
-					}
-
-					/* by copying nodelist, move all needed namespaces into the editing nodes */
-					if (filter_node->children != NULL) {
-						aux_doc = xmlNewDoc(BAD_CAST "1.0");
-						xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "filter"));
-						xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, filter_node->children));
-						buf = xmlBufferCreate();
-						for (filter_child = aux_doc->children->children; filter_child != NULL; filter_child = filter_child->next) {
-							xmlNodeDump(buf, aux_doc, filter_child, 1, 1);
-						}
-						retval->content = strdup((char*) xmlBufferContent(buf));
-						xmlBufferFree(buf);
-						xmlFreeDoc(aux_doc);
-					} else {
-						/* empty filter */
-						retval->content = NULL;
 					}
 
 					/* process only the first <filter> node, ignore the rest */
@@ -1275,47 +1324,19 @@ nc_rpc *nc_rpc_closesession()
 
 static int process_filter_param (xmlNodePtr content, const struct nc_filter* filter)
 {
-	char* aux_string;
 	xmlDocPtr doc_filter = NULL;
 
 	if (filter != NULL) {
-		if (filter->type == NC_FILTER_SUBTREE) {
+		if (filter->type == NC_FILTER_SUBTREE && filter->subtree_filter != NULL) {
 			/* process Subtree filter type */
 
-			/*
-			 * prepare the filter specification - the filter content
-			 * given by caller is enveloped by <filter> element to
-			 * allow setting multiple filter elements corresponding
-			 * to the configuration data model's root elements.
-			 * Without this hack, libxml2 will not read given filter
-			 * correctly when it contains multiple root elements.
-			 */
-			if (asprintf (&aux_string, "<filter type=\"%s\">%s</filter>",
-					filter->type_string,
-					(filter->content != NULL) ? filter->content : "") == -1) {
-				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				return (EXIT_FAILURE);
-			}
-
-			/* convert string to the libxml2 format */
-			doc_filter = xmlReadMemory(aux_string, strlen(aux_string), NULL, NULL, 0);
-			free(aux_string);
-			if (doc_filter == NULL) {
-				ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
-				return (EXIT_FAILURE);
-			}
-			if (xmlAddChild(content, xmlCopyNode(doc_filter->children, 1)) == NULL) {
+			if (xmlAddChild(content, xmlCopyNode(filter->subtree_filter, 1)) == NULL) {
 				ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
 				xmlFreeDoc(doc_filter);
 				return (EXIT_FAILURE);
 			}
-		}
-
-		/* check that the filter was processed correctly */
-		if (doc_filter != NULL) {
-			xmlFreeDoc(doc_filter);
 		} else {
-			WARN("Unknown filter type used - skipping filter.");
+			WARN("%s: unknown filter type used - skipping filter.", __func__);
 		}
 	}
 	return (EXIT_SUCCESS);

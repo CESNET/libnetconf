@@ -54,7 +54,7 @@
  * @param[in] ... Filter content:
  * - for #NC_FILTER_SUBTREE type, single variadic parameter
  * **const xmlNodePtr filter** with the content for the \<filter\> element is
- * accepted.
+ * accepted. If NULL is specified, Empty filter (RFC 6241 sec 6.4.2) is created.
  * @return Created NETCONF filter structure.
  */
 struct nc_filter *ncxml_filter_new(NC_FILTER_TYPE type, ...);
