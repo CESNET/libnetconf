@@ -1660,20 +1660,24 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE target)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *data)
+nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
 {
-	nc_rpc *rpc;
+	nc_rpc *rpc = NULL;
 	xmlDocPtr doc_data;
 	xmlNodePtr content, node_target, node_source;
 	NC_DATASTORE params[2] = {source, target};
 	char *datastores[2]; /* 0 - source, 1 - target */
 	char *config;
+	const char *source_config = NULL, *source_url = NULL, *target_url = NULL;
 	int i;
+	va_list argp;
 
 	if (target == source) {
 		ERROR("<copy-config>'s source and target parameters identify the same datastore.");
 		return (NULL);
 	}
+
+	va_start(argp, target);
 
 	for (i = 0; i < 2; i++) {
 		switch (params[i]) {
@@ -1688,20 +1692,31 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 			break;
 		case NC_DATASTORE_CONFIG:
 			if (i == 0) {
-				if (data != NULL) {
+				source_config = va_arg(argp, const char*);
+				if (source_config != NULL) {
 					/* source configuration data are specified as given data */
 					datastores[i] = NULL;
 				} else {
 					ERROR("Missing source configuration data for <copy-config>.");
+					va_end(argp);
 					return (NULL);
 				}
 			} else {
 				ERROR("Unknown target datastore for <copy-config>.");
+				va_end(argp);
 				return (NULL);
+			}
+			break;
+		case NC_DATASTORE_URL:
+			if (i == 0) {
+				source_url = va_arg(argp, const char*);
+			} else { /* i == 1 */
+				target_url = va_arg(argp, const char*);
 			}
 			break;
 		default:
 			ERROR("Unknown %s datastore for <copy-config>.", (i == 0) ? "source" : "target");
+			va_end(argp);
 			return (NULL);
 			break;
 		}
@@ -1709,6 +1724,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 
 	if ((content = xmlNewNode(NULL, BAD_CAST "copy-config")) == NULL) {
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		va_end(argp);
 		return (NULL);
 	}
 
@@ -1716,8 +1732,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 	node_source = xmlNewChild(content, NULL, BAD_CAST "source", NULL);
 	if (node_source == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-		xmlFreeNode(content);
-		return (NULL);
+		goto cleanup;
 	}
 	if (datastores[0] == NULL) {
 		/* source configuration is given as data parameter */
@@ -1726,12 +1741,11 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 		/* if data empty string, create \<copy-config\> with empty \<config\> */
 		/* only if data is not empty string, fill \<config\> */
 		/* RFC 6241 defines \<config\> as anyxml and thus it can be empty */
-		if (strcmp(data, "") != 0) {
+		if (strcmp(source_config, "") != 0) {
 			/* add covering <config> element to allow to specify multiple root elements */
-			if (asprintf(&config, "<config>%s</config>", data) == -1) {
+			if (asprintf(&config, "<config>%s</config>", source_config) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				xmlFreeNode(content);
-				return (NULL);
+				goto cleanup;
 			}
 
 			/* prepare XML structure from given data */
@@ -1739,16 +1753,14 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 			free(config);
 			if (doc_data == NULL) {
 				ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
-				xmlFreeNode(content);
-				return (NULL);
+				goto cleanup;
 			}
 
 			/* connect given configuration data with the rpc request */
 			if (xmlAddChild(node_source, xmlCopyNode(doc_data->children, 1)) == NULL) {
 				ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
-				xmlFreeNode(content);
 				xmlFreeDoc(doc_data);
-				return (NULL);
+				goto cleanup;
 			}
 
 			/* free no more needed structure */
@@ -1757,16 +1769,20 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 			/* create empty config element in rpc request */
 			if (xmlNewChild(node_source, NULL, BAD_CAST "config", NULL) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-				xmlFreeNode(content);
-				return (NULL);
+				goto cleanup;
 			}
+		}
+	} else if (source_url != NULL) {
+		/* source is specified as URL */
+		if (xmlNewChild(node_source, NULL, BAD_CAST "url", BAD_CAST source_url) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			goto cleanup;
 		}
 	} else {
 		/* source is one of the standard datastores */
 		if (xmlNewChild(node_source, NULL, BAD_CAST datastores[0], NULL) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-			xmlFreeNode(content);
-			return (NULL);
+			goto cleanup;
 		}
 	}
 
@@ -1774,20 +1790,30 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const char *
 	node_target = xmlNewChild(content, NULL, BAD_CAST "target", NULL);
 	if (node_target == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-		xmlFreeNode(content);
-		return (NULL);
+		goto cleanup;
 	}
-	if (xmlNewChild(node_target, NULL, BAD_CAST datastores[1], NULL) == NULL) {
-		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-		xmlFreeNode(content);
-		return (NULL);
+	if (target_url != NULL) {
+		/* source is specified as URL */
+		if (xmlNewChild(node_source, NULL, BAD_CAST "url", BAD_CAST target_url) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			goto cleanup;
+		}
+	} else {
+		/* standard datastore */
+		if (xmlNewChild(node_target, NULL, BAD_CAST datastores[1], NULL) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			goto cleanup;
+		}
 	}
 
 	rpc = nc_rpc_create(content);
 	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
-	xmlFreeNode(content);
 
+cleanup:
+	xmlFreeNode(content);
+	va_end(argp);
 	return (rpc);
+
 }
 
 nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, const char *data)
