@@ -195,7 +195,7 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...);
 
 /**
  * @ingroup notifications
- * @brief Create new \<notification\> message with givent eventTime and content.
+ * @brief Create new \<notification\> message with given eventTime and content.
  *
  * @param[in] event_time Time of the event.
  * @param[in] content Description of the event in the XML form.
@@ -210,6 +210,13 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content);
  */
 void ncntf_notif_free(nc_ntf *ntf);
 
+/**
+ * @ingroup notifications
+ * @brief Get specific notification type.
+ * @param[in] notif Notification message to explore.
+ * @return The same types as for ncntf_event_new() can be returned. If the
+ * notification is unknown, the #NCNTF_GENERIC is returned.
+ */
 NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif);
 
 /**
