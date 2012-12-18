@@ -164,10 +164,11 @@ Functions</h2></td></tr>
 <tr class="memitem:ga9641deaca934bcd7ff66ac3ae60fc722"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga9641deaca934bcd7ff66ac3ae60fc722">ncntf_event_new</a> (time_t etime, <a class="el" href="../../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977">NCNTF_EVENT</a> event,...)</td></tr>
 <tr class="memdesc:ga9641deaca934bcd7ff66ac3ae60fc722"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store new event into the specified stream. Parameters are specific for different events.  <a href="../../da/d54/group__notifications.html#ga9641deaca934bcd7ff66ac3ae60fc722"></a><br/></td></tr>
 <tr class="memitem:ga226e6acf872c57ca4de3847718cfaafe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga226e6acf872c57ca4de3847718cfaafe">ncntf_notif_create</a> (time_t event_time, const char *content)</td></tr>
-<tr class="memdesc:ga226e6acf872c57ca4de3847718cfaafe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new &lt;notification&gt; message with givent eventTime and content.  <a href="../../da/d54/group__notifications.html#ga226e6acf872c57ca4de3847718cfaafe"></a><br/></td></tr>
+<tr class="memdesc:ga226e6acf872c57ca4de3847718cfaafe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new &lt;notification&gt; message with given eventTime and content.  <a href="../../da/d54/group__notifications.html#ga226e6acf872c57ca4de3847718cfaafe"></a><br/></td></tr>
 <tr class="memitem:gabc56c72fca74236e9c96f694cf521b67"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gabc56c72fca74236e9c96f694cf521b67">ncntf_notif_free</a> (<a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *ntf)</td></tr>
 <tr class="memdesc:gabc56c72fca74236e9c96f694cf521b67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free notification message.  <a href="../../da/d54/group__notifications.html#gabc56c72fca74236e9c96f694cf521b67"></a><br/></td></tr>
-<tr class="memitem:a65557537053bd2a256aa6320141354b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977">NCNTF_EVENT</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d62/notifications_8h.html#a65557537053bd2a256aa6320141354b5">ncntf_notif_get_type</a> (<a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *notif)</td></tr>
+<tr class="memitem:ga65557537053bd2a256aa6320141354b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977">NCNTF_EVENT</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga65557537053bd2a256aa6320141354b5">ncntf_notif_get_type</a> (<a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *notif)</td></tr>
+<tr class="memdesc:ga65557537053bd2a256aa6320141354b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get specific notification type.  <a href="../../da/d54/group__notifications.html#ga65557537053bd2a256aa6320141354b5"></a><br/></td></tr>
 <tr class="memitem:ga6e2a945082dc8cecd41c7d79a116442e"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga6e2a945082dc8cecd41c7d79a116442e">ncntf_notif_get_content</a> (<a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *notif)</td></tr>
 <tr class="memdesc:ga6e2a945082dc8cecd41c7d79a116442e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get description of the event reported in the notification message.  <a href="../../da/d54/group__notifications.html#ga6e2a945082dc8cecd41c7d79a116442e"></a><br/></td></tr>
 <tr class="memitem:gab0ffc4133ed6b2c8cf39a0f69df776a5"><td class="memItemLeft" align="right" valign="top">time_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gab0ffc4133ed6b2c8cf39a0f69df776a5">ncntf_notif_get_time</a> (<a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *notif)</td></tr>
@@ -215,30 +216,13 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<hr/><h2>Function Documentation</h2>
-<a class="anchor" id="a65557537053bd2a256aa6320141354b5"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977">NCNTF_EVENT</a> ncntf_notif_get_type </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *&#160;</td>
-          <td class="paramname"><em>notif</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="d7/d62/notifications_8h.html">notifications.h</a></li>
-    <li class="footer">Generated on Mon Dec 17 2012 14:21:46 for libnetconf by
+    <li class="footer">Generated on Tue Dec 18 2012 13:48:07 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

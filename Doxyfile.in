@@ -666,14 +666,17 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = src/libnetconf.h \
+                         src/libnetconf_xml.h \
                          src/netconf.h \
                          src/callbacks.h \
                          src/error.h \
                          src/session.h \
                          src/ssh.h \
                          src/messages.h \
+                         src/messages_xml.h \
                          src/datastore.h \
                          src/notifications.h \
+                         src/notifications_xml.h \
                          src/with_defaults.h
 
 # This tag can be used to specify the character encoding of the source files 

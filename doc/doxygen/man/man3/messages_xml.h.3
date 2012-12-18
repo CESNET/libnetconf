@@ -1,0 +1,72 @@
+.TH "src/messages_xml.h" 3 "Tue Dec 18 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+src/messages_xml.h \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <time\&.h>\fP
+.br
+\fC#include <libxml/tree\&.h>\fP
+.br
+\fC#include 'netconf\&.h'\fP
+.br
+\fC#include 'error\&.h'\fP
+.br
+
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "struct nc_filter * \fBncxml_filter_new\fP (\fBNC_FILTER_TYPE\fP type,\&.\&.\&.)"
+.br
+.RI "\fICreate new NETCONF filter of the specified type\&. \fP"
+.ti -1c
+.RI "xmlDocPtr \fBncxml_reply_dump\fP (const \fBnc_reply\fP *reply)"
+.br
+.RI "\fIDump the rpc-reply message into a libxml2 document structure\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBncxml_reply_build\fP (xmlDocPtr reply_dump)"
+.br
+.RI "\fIBuild <rpc-reply> message from the libxml2 document structure\&. This is the reverse function of the \fBncxml_reply_dump()\fP\&. \fP"
+.ti -1c
+.RI "xmlDocPtr \fBncxml_rpc_dump\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIDump the rpc message into a libxml2 document structure\&. \fP"
+.ti -1c
+.RI "\fBnc_rpc\fP * \fBncxml_rpc_build\fP (xmlDocPtr rpc_dump)"
+.br
+.RI "\fIBuild <rpc> message from the libxml2 document structure\&. This is the reverse function of the \fBncxml_rpc_dump()\fP\&. \fP"
+.ti -1c
+.RI "xmlNodePtr \fBncxml_rpc_get_op_content\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet content of the operation specification from the given rpc\&. \fP"
+.ti -1c
+.RI "xmlNodePtr \fBncxml_rpc_get_config\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet node (list) with the operation config parameter content (<config> itself is not a part of the returned data)\&. This function is valid only for <copy-config> and <edit-config> RPCs\&. \fP"
+.ti -1c
+.RI "xmlNodePtr \fBncxml_reply_get_data\fP (const \fBnc_reply\fP *reply)"
+.br
+.RI "\fIGet content of the <data> element in <rpc-reply>\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBncxml_reply_data\fP (const xmlNodePtr data)"
+.br
+.RI "\fICreate rpc-reply response with <data> content\&. \fP"
+.ti -1c
+.RI "\fBnc_rpc\fP * \fBncxml_rpc_copyconfig\fP (\fBNC_DATASTORE\fP source, \fBNC_DATASTORE\fP target,\&.\&.\&.)"
+.br
+.RI "\fICreate <copy-config> NETCONF rpc message\&. \fP"
+.ti -1c
+.RI "\fBnc_rpc\fP * \fBncxml_rpc_editconfig\fP (\fBNC_DATASTORE\fP target, \fBNC_DATASTORE\fP source, \fBNC_EDIT_DEFOP_TYPE\fP default_operation, \fBNC_EDIT_ERROPT_TYPE\fP error_option,\&.\&.\&.)"
+.br
+.RI "\fICreate <edit-config> NETCONF rpc message\&. \fP"
+.ti -1c
+.RI "\fBnc_rpc\fP * \fBncxml_rpc_generic\fP (xmlNodePtr data)"
+.br
+.RI "\fICreate a generic NETCONF rpc message with specified content\&. \fP"
+.in -1c
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.

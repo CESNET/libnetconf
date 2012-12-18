@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Mon Dec 17 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Tue Dec 18 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -318,7 +318,12 @@ Created <rpc-reply> message\&.
 .SS "\fBnc_reply\fP* nc_reply_data (const char *data)"
 
 .PP
-Create rpc-reply response with <data> content\&. \fBReturns:\fP
+Create rpc-reply response with <data> content\&. \fBParameters:\fP
+.RS 4
+\fIdata\fP Serialized XML content of the <data> element for the <rpc-reply> message being created\&. 
+.RE
+.PP
+\fBReturns:\fP
 .RS 4
 Created <rpc-reply> message\&. 
 .RE

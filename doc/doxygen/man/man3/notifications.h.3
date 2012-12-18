@@ -1,4 +1,4 @@
-.TH "src/notifications.h" 3 "Mon Dec 17 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "src/notifications.h" 3 "Tue Dec 18 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -76,7 +76,7 @@ Functions to handle NETCONF Notifications\&.
 .ti -1c
 .RI "\fBnc_ntf\fP * \fBncntf_notif_create\fP (time_t event_time, const char *content)"
 .br
-.RI "\fICreate new <notification> message with givent eventTime and content\&. \fP"
+.RI "\fICreate new <notification> message with given eventTime and content\&. \fP"
 .ti -1c
 .RI "void \fBncntf_notif_free\fP (\fBnc_ntf\fP *ntf)"
 .br
@@ -84,6 +84,7 @@ Functions to handle NETCONF Notifications\&.
 .ti -1c
 .RI "\fBNCNTF_EVENT\fP \fBncntf_notif_get_type\fP (\fBnc_ntf\fP *notif)"
 .br
+.RI "\fIGet specific notification type\&. \fP"
 .ti -1c
 .RI "char * \fBncntf_notif_get_content\fP (\fBnc_ntf\fP *notif)"
 .br
@@ -131,10 +132,6 @@ This software is provided ``as is, and any express or implied warranties, includ
 .SS "#define NCNTF_STREAM_DEFAULT   'NETCONF'"
 
 .SS "#define NCNTF_STREAM_BASE   \fBNCNTF_STREAM_DEFAULT\fP"
-
-.SH "Function Documentation"
-.PP 
-.SS "\fBNCNTF_EVENT\fP ncntf_notif_get_type (\fBnc_ntf\fP *notif)"
 
 .SH "Author"
 .PP 

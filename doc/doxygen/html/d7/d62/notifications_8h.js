@@ -15,7 +15,7 @@ var notifications_8h =
     [ "ncntf_event_new", "d7/d62/notifications_8h.html#ga9641deaca934bcd7ff66ac3ae60fc722", null ],
     [ "ncntf_notif_create", "d7/d62/notifications_8h.html#ga226e6acf872c57ca4de3847718cfaafe", null ],
     [ "ncntf_notif_free", "d7/d62/notifications_8h.html#gabc56c72fca74236e9c96f694cf521b67", null ],
-    [ "ncntf_notif_get_type", "d7/d62/notifications_8h.html#a65557537053bd2a256aa6320141354b5", null ],
+    [ "ncntf_notif_get_type", "d7/d62/notifications_8h.html#ga65557537053bd2a256aa6320141354b5", null ],
     [ "ncntf_notif_get_content", "d7/d62/notifications_8h.html#ga6e2a945082dc8cecd41c7d79a116442e", null ],
     [ "ncntf_notif_get_time", "d7/d62/notifications_8h.html#gab0ffc4133ed6b2c8cf39a0f69df776a5", null ],
     [ "ncntf_subscription_check", "d7/d62/notifications_8h.html#gad1efe90aba028ffbb2b018b30f8e3a4b", null ],

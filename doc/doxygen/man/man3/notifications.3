@@ -1,4 +1,4 @@
-.TH "NETCONF Event Notifications" 3 "Mon Dec 17 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Event Notifications" 3 "Tue Dec 18 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -80,11 +80,15 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 .ti -1c
 .RI "\fBnc_ntf\fP * \fBncntf_notif_create\fP (time_t event_time, const char *content)"
 .br
-.RI "\fICreate new <notification> message with givent eventTime and content\&. \fP"
+.RI "\fICreate new <notification> message with given eventTime and content\&. \fP"
 .ti -1c
 .RI "void \fBncntf_notif_free\fP (\fBnc_ntf\fP *ntf)"
 .br
 .RI "\fIFree notification message\&. \fP"
+.ti -1c
+.RI "\fBNCNTF_EVENT\fP \fBncntf_notif_get_type\fP (\fBnc_ntf\fP *notif)"
+.br
+.RI "\fIGet specific notification type\&. \fP"
 .ti -1c
 .RI "char * \fBncntf_notif_get_content\fP (\fBnc_ntf\fP *notif)"
 .br
@@ -442,7 +446,7 @@ nc_ntf_event_new('netconf', -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_T
 .SS "\fBnc_ntf\fP* ncntf_notif_create (time_tevent_time, const char *content)"
 
 .PP
-Create new <notification> message with givent eventTime and content\&. \fBParameters:\fP
+Create new <notification> message with given eventTime and content\&. \fBParameters:\fP
 .RS 4
 \fIevent_time\fP Time of the event\&. 
 .br
@@ -461,6 +465,20 @@ Created notification message\&.
 Free notification message\&. \fBParameters:\fP
 .RS 4
 \fIntf\fP notification message to free\&. 
+.RE
+.PP
+
+.SS "\fBNCNTF_EVENT\fP ncntf_notif_get_type (\fBnc_ntf\fP *notif)"
+
+.PP
+Get specific notification type\&. \fBParameters:\fP
+.RS 4
+\fInotif\fP Notification message to explore\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The same types as for \fBncntf_event_new()\fP can be returned\&. If the notification is unknown, the \fBNCNTF_GENERIC\fP is returned\&. 
 .RE
 .PP
 

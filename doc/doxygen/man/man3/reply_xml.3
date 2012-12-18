@@ -1,0 +1,94 @@
+.TH "NETCONF rpc-reply (libxml2)" 3 "Tue Dec 18 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+NETCONF rpc-reply (libxml2) \- 
+.PP
+libnetconf's functions for handling NETCONF <rpc-reply> messages\&. These functions accepts parameters as libxml2 structures\&.  
+
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "xmlDocPtr \fBncxml_reply_dump\fP (const \fBnc_reply\fP *reply)"
+.br
+.RI "\fIDump the rpc-reply message into a libxml2 document structure\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBncxml_reply_build\fP (xmlDocPtr reply_dump)"
+.br
+.RI "\fIBuild <rpc-reply> message from the libxml2 document structure\&. This is the reverse function of the \fBncxml_reply_dump()\fP\&. \fP"
+.ti -1c
+.RI "xmlNodePtr \fBncxml_reply_get_data\fP (const \fBnc_reply\fP *reply)"
+.br
+.RI "\fIGet content of the <data> element in <rpc-reply>\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBncxml_reply_data\fP (const xmlNodePtr data)"
+.br
+.RI "\fICreate rpc-reply response with <data> content\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+libnetconf's functions for handling NETCONF <rpc-reply> messages\&. These functions accepts parameters as libxml2 structures\&. 
+
+
+.SH "Function Documentation"
+.PP 
+.SS "xmlDocPtr ncxml_reply_dump (const \fBnc_reply\fP *reply)"
+
+.PP
+Dump the rpc-reply message into a libxml2 document structure\&. \fBParameters:\fP
+.RS 4
+\fIreply\fP rpc-reply message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+XML document of the NETCONF's <rpc-reply> message\&. Caller is supposed to free the returned structure with xmlFreeDoc()\&. 
+.RE
+.PP
+
+.SS "\fBnc_reply\fP* ncxml_reply_build (xmlDocPtrreply_dump)"
+
+.PP
+Build <rpc-reply> message from the libxml2 document structure\&. This is the reverse function of the \fBncxml_reply_dump()\fP\&. \fBParameters:\fP
+.RS 4
+\fIreply_dump\fP XML document structure with the NETCONF <rpc-reply> message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Complete reply structure used by libnetconf's functions\&. 
+.RE
+.PP
+
+.SS "xmlNodePtr ncxml_reply_get_data (const \fBnc_reply\fP *reply)"
+
+.PP
+Get content of the <data> element in <rpc-reply>\&. \fBParameters:\fP
+.RS 4
+\fIreply\fP rpc-reply message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+XML node (with possible siblings) with the content of the <data> element\&. Caller is supposed to free (the whole list) the returned structure with xmlFreeNodeList()\&. 
+.RE
+.PP
+
+.SS "\fBnc_reply\fP* ncxml_reply_data (const xmlNodePtrdata)"
+
+.PP
+Create rpc-reply response with <data> content\&. \fBParameters:\fP
+.RS 4
+\fIdata\fP Content (possible a node list) for the <rpc-reply>'s <data> element\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Created <rpc-reply> message\&. 
+.RE
+.PP
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.

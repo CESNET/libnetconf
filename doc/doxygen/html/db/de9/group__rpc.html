@@ -158,8 +158,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga214fcc2c0095d56f4aa0d90c11da25fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;rpc&gt; request from the specified NETCONF session. This function is supposed to be performed only by NETCONF servers.  <a href="#ga214fcc2c0095d56f4aa0d90c11da25fc"></a><br/></td></tr>
 <tr class="memitem:ga27d3fe78769630932a18c726df4fe6e6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga27d3fe78769630932a18c726df4fe6e6">nc_session_send_recv</a> (struct nc_session *session, <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> **reply)</td></tr>
 <tr class="memdesc:ga27d3fe78769630932a18c726df4fe6e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc&gt; and receive &lt;rpc-reply&gt; via the specified NETCONF session.  <a href="#ga27d3fe78769630932a18c726df4fe6e6"></a><br/></td></tr>
-<tr class="memitem:ga3212b7af605b6bdf83b893979c3bcc79"><td class="memItemLeft" align="right" valign="top">struct nc_filter *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga3212b7af605b6bdf83b893979c3bcc79">nc_filter_new</a> (<a class="el" href="../../db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706">NC_FILTER_TYPE</a> type, const char *filter)</td></tr>
-<tr class="memdesc:ga3212b7af605b6bdf83b893979c3bcc79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new NETCONF filter of the specified type.  <a href="#ga3212b7af605b6bdf83b893979c3bcc79"></a><br/></td></tr>
+<tr class="memitem:ga599c715b0aee0f1f2ed231ce1d78e5bd"><td class="memItemLeft" align="right" valign="top">struct nc_filter *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga599c715b0aee0f1f2ed231ce1d78e5bd">nc_filter_new</a> (<a class="el" href="../../db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706">NC_FILTER_TYPE</a> type,...)</td></tr>
+<tr class="memdesc:ga599c715b0aee0f1f2ed231ce1d78e5bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new NETCONF filter of the specified type.  <a href="#ga599c715b0aee0f1f2ed231ce1d78e5bd"></a><br/></td></tr>
 <tr class="memitem:ga0dbfd598d6fd303819817370cdf63229"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga0dbfd598d6fd303819817370cdf63229">nc_filter_free</a> (struct nc_filter *filter)</td></tr>
 <tr class="memdesc:ga0dbfd598d6fd303819817370cdf63229"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy filter structure.  <a href="#ga0dbfd598d6fd303819817370cdf63229"></a><br/></td></tr>
 <tr class="memitem:gadab3d916540f79dd2b168134758fe3d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gadab3d916540f79dd2b168134758fe3d1">nc_rpc_dup</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
@@ -476,7 +476,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga3212b7af605b6bdf83b893979c3bcc79"></a>
+<a class="anchor" id="ga599c715b0aee0f1f2ed231ce1d78e5bd"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -492,8 +492,8 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>filter</em>&#160;</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -512,7 +512,10 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Type of the filter. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">filter</td><td>Filter content. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>Filter content:<ul>
+<li>for <a class="el" href="../../db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706ab584539474b828102a0b7238b614abd4">NC_FILTER_SUBTREE</a> type, single variadic parameter <b>const char* filter</b> is accepted. </li>
+</ul>
+</td></tr>
   </table>
   </dd>
 </dl>
@@ -1045,7 +1048,7 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">target</td><td>Target configuration datastore type to be edited. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">source</td><td>Specifies the type of the source data taken from the sourcedata parameter. Only <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e">NC_DATASTORE_CONFIG</a> (sourcedata contains the &lt;config&gt; data) and <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a8507d8c0a99ba9da1cb38287b26b911c">NC_DATASTORE_URL</a> (sourcedata contains URL for &lt;url&gt; element) values are accepted. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">source</td><td>Specifies the type of the source data taken from the variadic parameter. Only <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e">NC_DATASTORE_CONFIG</a> (variadic parameter contains the &lt;config&gt; data) and <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a8507d8c0a99ba9da1cb38287b26b911c">NC_DATASTORE_URL</a> (variadic parameter contains URL for &lt;url&gt; element) values are accepted. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">default_operation</td><td>Default operation for this request, 0 to skip setting this parameter and use default server's ('merge') behavior. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">error_option</td><td>Set reaction to an error, 0 for the server's default behavior. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>According to the source parameter, variadic parameter can be one of the following:<ul>
@@ -1370,7 +1373,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon Dec 17 2012 14:21:46 for libnetconf by
+    <li class="footer">Generated on Tue Dec 18 2012 13:48:07 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

@@ -1,0 +1,156 @@
+.TH "NETCONF Event Notifications (libxml2)" 3 "Tue Dec 18 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+NETCONF Event Notifications (libxml2) \- 
+.PP
+libnetconf's implementation of NETCONF asynchronous message delivery as defined in RFC 5277\&. These functions accepts selected parameters as libxml2 structures\&.  
+
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "int \fBncxmlntf_event_new\fP (time_t etime, \fBNCNTF_EVENT\fP event,\&.\&.\&.)"
+.br
+.RI "\fIStore new event into the specified stream\&. Parameters are specific for different events\&. \fP"
+.ti -1c
+.RI "\fBnc_ntf\fP * \fBncxmlntf_notif_create\fP (time_t event_time, xmlNodePtr content)"
+.br
+.RI "\fICreate new <notification> message with the given eventTime and content\&. \fP"
+.ti -1c
+.RI "xmlNodePtr \fBncxmlntf_notif_get_content\fP (\fBnc_ntf\fP *notif)"
+.br
+.RI "\fIGet description of the event reported in the notification message\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+libnetconf's implementation of NETCONF asynchronous message delivery as defined in RFC 5277\&. These functions accepts selected parameters as libxml2 structures\&. 
+
+
+.SH "Function Documentation"
+.PP 
+.SS "int ncxmlntf_event_new (time_tetime, \fBNCNTF_EVENT\fPevent, \&.\&.\&.)"
+
+.PP
+Store new event into the specified stream\&. Parameters are specific for different events\&. .SS "Event parameters:"
+.PP
+.IP "\(bu" 2
+\fBNCNTF_GENERIC\fP
+.IP "  \(bu" 4
+\fBxmlNodePtr content\fP Content of the notification as defined in RFC 5277\&. eventTime is added automatically\&. The parameter can be a single XML node as well as a node list\&.
+.PP
+
+.IP "\(bu" 2
+\fBNCNTF_BASE_CFG_CHANGE\fP
+.IP "  \(bu" 4
+\fBNC_DATASTORE\fP \fBdatastore\fP Specify which datastore has changed\&.
+.IP "  \(bu" 4
+\fBNCNTF_EVENT_BY\fP \fBchanged_by\fP Specify the source of the change\&.
+.IP "    \(bu" 6
+If the value is set to \fBNCNTF_EVENT_BY_USER\fP, following parameter is required:
+.PP
+
+.IP "  \(bu" 4
+\fBconst struct nc_session* session\fP Session required the configuration change\&.
+.PP
+
+.IP "\(bu" 2
+\fBNCNTF_BASE_CPBLT_CHANGE\fP
+.IP "  \(bu" 4
+\fBconst struct nc_cpblts* old\fP Old list of capabilities\&.
+.IP "  \(bu" 4
+\fBconst struct nc_cpblts* new\fP New list of capabilities\&.
+.IP "  \(bu" 4
+\fBNCNTF_EVENT_BY\fP \fBchanged_by\fP Specify the source of the change\&.
+.IP "    \(bu" 6
+If the value is set to \fBNCNTF_EVENT_BY_USER\fP, following parameter is required:
+.PP
+
+.IP "  \(bu" 4
+\fBconst struct nc_session* session\fP Session required the configuration change\&.
+.PP
+
+.IP "\(bu" 2
+\fBNCNTF_BASE_SESSION_START\fP
+.IP "  \(bu" 4
+\fBconst struct nc_session* session\fP Started session (\fBNC_SESSION_STATUS_DUMMY\fP session is also allowed)\&.
+.PP
+
+.IP "\(bu" 2
+\fBNCNTF_BASE_SESSION_END\fP
+.IP "  \(bu" 4
+\fBconst struct nc_session* session\fP Finnished session (\fBNC_SESSION_STATUS_DUMMY\fP session is also allowed)\&.
+.IP "  \(bu" 4
+\fBNC_SESSION_TERM_REASON\fP \fBreason\fP Session termination reason\&.
+.IP "    \(bu" 6
+If the value is set to \fBNC_SESSION_TERM_KILLED\fP, following parameter is required\&.
+.PP
+
+.IP "  \(bu" 4
+\fBconst char* killed-by-sid\fP The ID of the session that directly caused the session termination\&. If the session was terminated by a non-NETCONF process unknown to the server, use NULL as the value\&.
+.PP
+
+.PP
+.PP
+.SS "Examples:"
+.PP
+.IP "\(bu" 2
+nc_ntf_event_new('mystream', -1, NCNTF_GENERIC, '<event>something happend</event>');
+.IP "\(bu" 2
+nc_ntf_event_new('netconf', -1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, my_session);
+.IP "\(bu" 2
+nc_ntf_event_new('netconf', -1, NCNTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NCNTF_EVENT_BY_SERVER);
+.IP "\(bu" 2
+nc_ntf_event_new('netconf', -1, NCNTF_BASE_SESSION_START, my_session);
+.IP "\(bu" 2
+nc_ntf_event_new('netconf', -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, '123456');
+.PP
+.PP
+\fBParameters:\fP
+.RS 4
+\fIetime\fP Time of the event, if set to -1, current time is used\&. 
+.br
+\fIevent\fP Event type to distinguish following parameters\&. 
+.br
+\fI\&.\&.\&.\fP Specific parameters for different event types as described above\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 for success, non-zero value else\&. 
+.RE
+.PP
+
+.SS "\fBnc_ntf\fP* ncxmlntf_notif_create (time_tevent_time, xmlNodePtrcontent)"
+
+.PP
+Create new <notification> message with the given eventTime and content\&. \fBParameters:\fP
+.RS 4
+\fIevent_time\fP Time of the event\&. 
+.br
+\fIcontent\fP Description of the event in XML\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Created notification message\&. 
+.RE
+.PP
+
+.SS "xmlNodePtr ncxmlntf_notif_get_content (\fBnc_ntf\fP *notif)"
+
+.PP
+Get description of the event reported in the notification message\&. \fBParameters:\fP
+.RS 4
+\fInotif\fP Notification message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Content of the event description\&. 
+.RE
+.PP
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.

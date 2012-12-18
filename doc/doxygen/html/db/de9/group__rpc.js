@@ -7,7 +7,7 @@ var group__rpc =
     [ "nc_session_send_rpc", "db/de9/group__rpc.html#gaeb0d93ea1b5ef0c22c9e5372425fb5c3", null ],
     [ "nc_session_recv_rpc", "db/de9/group__rpc.html#ga214fcc2c0095d56f4aa0d90c11da25fc", null ],
     [ "nc_session_send_recv", "db/de9/group__rpc.html#ga27d3fe78769630932a18c726df4fe6e6", null ],
-    [ "nc_filter_new", "db/de9/group__rpc.html#ga3212b7af605b6bdf83b893979c3bcc79", null ],
+    [ "nc_filter_new", "db/de9/group__rpc.html#ga599c715b0aee0f1f2ed231ce1d78e5bd", null ],
     [ "nc_filter_free", "db/de9/group__rpc.html#ga0dbfd598d6fd303819817370cdf63229", null ],
     [ "nc_rpc_dup", "db/de9/group__rpc.html#gadab3d916540f79dd2b168134758fe3d1", null ],
     [ "nc_rpc_dump", "db/de9/group__rpc.html#ga3e840368c40be2ea4d5201edbd3adaca", null ],

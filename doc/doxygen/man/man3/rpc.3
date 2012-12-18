@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Mon Dec 17 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Tue Dec 18 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -46,7 +46,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fISend <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fP"
 .ti -1c
-.RI "struct nc_filter * \fBnc_filter_new\fP (\fBNC_FILTER_TYPE\fP type, const char *filter)"
+.RI "struct nc_filter * \fBnc_filter_new\fP (\fBNC_FILTER_TYPE\fP type,\&.\&.\&.)"
 .br
 .RI "\fICreate new NETCONF filter of the specified type\&. \fP"
 .ti -1c
@@ -316,14 +316,17 @@ Type of received message\&. NC_MSG_UNKNOWN means error, NC_MSG_REPLY means that 
 .RE
 .PP
 
-.SS "struct nc_filter* nc_filter_new (\fBNC_FILTER_TYPE\fPtype, const char *filter)\fC [read]\fP"
+.SS "struct nc_filter* nc_filter_new (\fBNC_FILTER_TYPE\fPtype, \&.\&.\&.)\fC [read]\fP"
 
 .PP
 Create new NETCONF filter of the specified type\&. \fBParameters:\fP
 .RS 4
 \fItype\fP Type of the filter\&. 
 .br
-\fIfilter\fP Filter content\&. 
+\fI\&.\&.\&.\fP Filter content:
+.IP "\(bu" 2
+for \fBNC_FILTER_SUBTREE\fP type, single variadic parameter \fBconst char* filter\fP is accepted\&. 
+.PP
 .RE
 .PP
 \fBReturns:\fP
@@ -603,7 +606,7 @@ Create <edit-config> NETCONF rpc message\&. \fBParameters:\fP
 .RS 4
 \fItarget\fP Target configuration datastore type to be edited\&. 
 .br
-\fIsource\fP Specifies the type of the source data taken from the sourcedata parameter\&. Only \fBNC_DATASTORE_CONFIG\fP (sourcedata contains the <config> data) and \fBNC_DATASTORE_URL\fP (sourcedata contains URL for <url> element) values are accepted\&. 
+\fIsource\fP Specifies the type of the source data taken from the variadic parameter\&. Only \fBNC_DATASTORE_CONFIG\fP (variadic parameter contains the <config> data) and \fBNC_DATASTORE_URL\fP (variadic parameter contains URL for <url> element) values are accepted\&. 
 .br
 \fIdefault_operation\fP Default operation for this request, 0 to skip setting this parameter and use default server's ('merge') behavior\&. 
 .br
