@@ -87,15 +87,18 @@ SRCS =  src/callbacks.c \
 	src/datastore/empty/datastore_empty.c \
 	src/datastore/file/datastore_file.c
 
-HDRS_PUBL_ROOT = headers/libnetconf.h
+HDRS_PUBL_ROOT = headers/libnetconf.h \
+		 headers/libnetconf_xml.h
 
 HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/callbacks.h \
 	src/error.h \
 	src/session.h \
 	src/messages.h \
+	src/messages_xml.h \
 	src/ssh.h \
 	src/notifications.h \
+	src/notifications_xml.h \
 	src/with_defaults.h \
 	src/datastore.h
 		
@@ -104,15 +107,18 @@ SUBHEADERS_DIR = libnetconf
 
 HDRS_PRIV = src/config.h.in \
 	src/libnetconf.h \
+	src/libnetconf_xml.h \
 	src/callbacks.h \
 	src/error.h \
 	src/messages.h \
 	src/messages_internal.h \
+	src/messages_xml.h \
 	src/netconf.h \
 	src/netconf_internal.h \
 	src/session.h \
 	src/ssh.h \
 	src/notifications.h \
+	src/notifications_xml.h \
 	src/with_defaults.h \
 	src/datastore.h \
 	src/datastore/datastore_internal.h \
