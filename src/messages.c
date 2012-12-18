@@ -1501,11 +1501,13 @@ nc_rpc *nc_rpc_get(const struct nc_filter *filter)
 
 }
 
-nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target)
+nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 {
 	nc_rpc *rpc;
+	va_list argp;
 	xmlNodePtr content, node_target;
-	char* datastore;
+	char* datastore = NULL;
+	const char* url;
 
 	switch (target) {
 	case NC_DATASTORE_RUNNING:
@@ -1517,6 +1519,9 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target)
 		break;
 	case NC_DATASTORE_CANDIDATE:
 		datastore = "candidate";
+		break;
+	case NC_DATASTORE_URL:
+		/* work is done later */
 		break;
 	default:
 		ERROR("Unknown target datastore for <delete-config>.");
@@ -1535,10 +1540,25 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target)
 		xmlFreeNode(content);
 		return (NULL);
 	}
-	if (xmlNewChild(node_target, NULL, BAD_CAST datastore, NULL) == NULL) {
-		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-		xmlFreeNode(content);
-		return (NULL);
+
+	if (target == NC_DATASTORE_URL) {
+		/* url */
+		va_start(argp, target);
+		url = va_arg(argp, const char*);
+		if (xmlNewChild(node_target, NULL, BAD_CAST "url", BAD_CAST url) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			va_end(argp);
+			return (NULL);
+		}
+		va_end(argp);
+	} else {
+		/* running, startup, candidate */
+		if (xmlNewChild(node_target, NULL, BAD_CAST datastore, NULL) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			return (NULL);
+		}
 	}
 
 	rpc = nc_rpc_create(content);
