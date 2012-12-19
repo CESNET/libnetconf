@@ -306,7 +306,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 		nc_cpblts_free (def_cpblts);
 
 		/* 1) load startup using get-config applied to the datastore */
-		if ((rpc = nc_rpc_getconfig (NC_DATASTORE_STARTUP, NULL, NCWD_MODE_DISABLED)) == NULL ) {
+		if ((rpc = nc_rpc_getconfig (NC_DATASTORE_STARTUP, NULL)) == NULL ) {
 			ncds_free (datastore);
 			clb_print (NC_VERB_ERROR, "Getting startup configuration failed (nc_rpc_getconfig()).");
 			return (EXIT_FAILURE);

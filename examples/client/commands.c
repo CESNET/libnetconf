@@ -609,7 +609,7 @@ int cmd_editconfig (char *arg)
 	}
 
 	/* create requests */
-	rpc = nc_rpc_editconfig(target, defop, erropt, config);
+	rpc = nc_rpc_editconfig(target, NC_DATASTORE_CONFIG, defop, erropt, config);
 	free(config);
 	if (rpc == NULL) {
 		ERROR("edit-config", "creating rpc request failed.");
@@ -853,10 +853,16 @@ int cmd_get (char *arg)
 	clear_arglist(&cmd);
 
 	/* create requests */
-	rpc = nc_rpc_get (filter, wd);
+	rpc = nc_rpc_get (filter);
 	nc_filter_free(filter);
 	if (rpc == NULL) {
 		ERROR("get", "creating rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+	/* set with defaults settings */
+	if (nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, wd) != EXIT_SUCCESS) {
+		ERROR("get", "setting up with-defaults mode failed.");
+		nc_rpc_free(rpc);
 		return (EXIT_FAILURE);
 	}
 
@@ -1202,10 +1208,16 @@ int cmd_getconfig (char *arg)
 	}
 
 	/* create requests */
-	rpc = nc_rpc_getconfig (target, filter, wd);
+	rpc = nc_rpc_getconfig (target, filter);
 	nc_filter_free(filter);
 	if (rpc == NULL) {
-		ERROR("get-config", "creating rpc request failed.");
+		ERROR("get-config", "creating rpc request failed.");;
+		return (EXIT_FAILURE);
+	}
+	/* set with defaults settings */
+	if (nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, wd) != EXIT_SUCCESS) {
+		ERROR("get-config", "setting up with-defaults mode failed.");
+		nc_rpc_free(rpc);
 		return (EXIT_FAILURE);
 	}
 
