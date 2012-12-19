@@ -54,8 +54,6 @@
 #include <time.h>
 #include <pthread.h>
 
-#include <libxml/parser.h>
-
 #include "commands.h"
 #include "configuration.h"
 #include "mreadline.h"
