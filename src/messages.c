@@ -1545,8 +1545,9 @@ nc_rpc *nc_rpc_closesession()
 		return (NULL);
 	}
 
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_SESSION;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_SESSION;
+	}
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -1700,8 +1701,9 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
 		return (NULL);
 	}
 
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_READ;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_DATASTORE_READ;
+	}
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -1723,8 +1725,9 @@ nc_rpc *nc_rpc_get(const struct nc_filter *filter)
 		return (NULL);
 	}
 
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_READ;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_DATASTORE_READ;
+	}
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -1791,8 +1794,9 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 		}
 	}
 
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	}
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -1837,8 +1841,9 @@ nc_rpc *nc_rpc_lock(NC_DATASTORE target)
 		return (NULL);
 	}
 
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	}
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -1883,8 +1888,9 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE target)
 		return (NULL);
 	}
 
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	}
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -2005,8 +2011,9 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 		}
 	}
 
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	}
 
 cleanup:
 	xmlFreeNode(content);
@@ -2205,8 +2212,9 @@ static nc_rpc *_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT
 		goto cleanup;
 	}
 
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	}
 cleanup:
 	xmlFreeNode(content);
 	return (rpc);
@@ -2308,8 +2316,9 @@ nc_rpc *nc_rpc_killsession(const char *kill_sid)
 		return (NULL);
 	}
 
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_SESSION;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_SESSION;
+	}
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -2354,8 +2363,9 @@ nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* form
 		}
 	}
 
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_READ;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_DATASTORE_READ;
+	}
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -2420,8 +2430,9 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 	}
 
 	/* finnish the message building */
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_SESSION;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_SESSION;
+	}
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -2437,8 +2448,9 @@ nc_rpc *nc_rpc_commit(void)
 		return (NULL);
 	}
 
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	}
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -2454,8 +2466,9 @@ nc_rpc *nc_rpc_discardchanges(void)
 		return (NULL);
 	}
 
-	rpc = nc_rpc_create(content);
-	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	}
 	xmlFreeNode(content);
 
 	return (rpc);
@@ -2469,8 +2482,9 @@ nc_rpc *ncxml_rpc_generic(xmlNodePtr data)
 		ERROR("%s: parameter \'data\' can not be NULL.", __func__);
 		return (NULL);
 	}
-	rpc = nc_rpc_create(data);
-	rpc->type.rpc = NC_RPC_UNKNOWN;
+	if ((rpc = nc_rpc_create(data)) != NULL) {
+		rpc->type.rpc = NC_RPC_UNKNOWN;
+	}
 
 	return (rpc);
 }
@@ -2492,8 +2506,9 @@ nc_rpc *nc_rpc_generic(const char* data)
 		return (NULL);
 	}
 
-	rpc = nc_rpc_create(xmlDocGetRootElement(doc_data));
-	rpc->type.rpc = NC_RPC_UNKNOWN;
+	if ((rpc = nc_rpc_create(xmlDocGetRootElement(doc_data))) != NULL) {
+		rpc->type.rpc = NC_RPC_UNKNOWN;
+	}
 	xmlFreeDoc(doc_data);
 
 	return (rpc);
