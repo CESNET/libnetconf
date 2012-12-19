@@ -417,15 +417,15 @@ If the value is set to \fBNC_SESSION_TERM_KILLED\fP, following parameter is requ
 .SS "Examples:"
 .PP
 .IP "\(bu" 2
-nc_ntf_event_new('mystream', -1, NCNTF_GENERIC, '<event>something happend</event>');
+ncntf_event_new('mystream', -1, NCNTF_GENERIC, '<event>something happened</event>');
 .IP "\(bu" 2
-nc_ntf_event_new('netconf', -1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, my_session);
+ncntf_event_new('netconf', -1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, my_session);
 .IP "\(bu" 2
-nc_ntf_event_new('netconf', -1, NCNTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NCNTF_EVENT_BY_SERVER);
+ncntf_event_new('netconf', -1, NCNTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NCNTF_EVENT_BY_SERVER);
 .IP "\(bu" 2
-nc_ntf_event_new('netconf', -1, NCNTF_BASE_SESSION_START, my_session);
+ncntf_event_new('netconf', -1, NCNTF_BASE_SESSION_START, my_session);
 .IP "\(bu" 2
-nc_ntf_event_new('netconf', -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, '123456');
+ncntf_event_new('netconf', -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, '123456');
 .PP
 .PP
 \fBParameters:\fP

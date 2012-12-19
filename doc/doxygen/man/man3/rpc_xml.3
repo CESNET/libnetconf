@@ -58,7 +58,7 @@ Create new NETCONF filter of the specified type\&. \fBParameters:\fP
 .br
 \fI\&.\&.\&.\fP Filter content:
 .IP "\(bu" 2
-for \fBNC_FILTER_SUBTREE\fP type, single variadic parameter \fBconst xmlNodePtr filter\fP with the content for the <filter> element is accepted\&. If NULL is specified, Empty filter (RFC 6241 sec 6\&.4\&.2) is created\&. 
+for \fBNC_FILTER_SUBTREE\fP type, single variadic parameter \fBconst xmlNodePtr filter\fP with the content for the <filter> element is accepted\&. The filter parameter is not supposed to contain <filter> element, but only its content\&. The node is taken as a node list, so the sibling nodes are also added into the filter definition\&. If NULL is specified, Empty filter (RFC 6241 sec 6\&.4\&.2) is created\&. 
 .PP
 .RE
 .PP
@@ -78,7 +78,7 @@ Dump the rpc message into a libxml2 document structure\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-XML document of the NETCONF's <rpc> message\&. Caller is supposed to free the returned structure with xmlFreeDoc()\&. free()\&. 
+XML document of the NETCONF's <rpc> message\&. Caller is supposed to free the returned structure with xmlFreeDoc()\&. 
 .RE
 .PP
 

@@ -189,11 +189,11 @@ Functions</h2></td></tr>
 </ul>
 <h3>Examples:</h3>
 <ul>
-<li>nc_ntf_event_new("mystream", -1, NCNTF_GENERIC, "&lt;event&gt;something happend&lt;/event&gt;");</li>
-<li>nc_ntf_event_new("netconf", -1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, my_session);</li>
-<li>nc_ntf_event_new("netconf", -1, NCNTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NCNTF_EVENT_BY_SERVER);</li>
-<li>nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_START, my_session);</li>
-<li>nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");</li>
+<li>ncxmlntf_event_new("mystream", -1, NCNTF_GENERIC, my_xml_data);</li>
+<li>ncxmlntf_event_new("netconf", -1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, my_session);</li>
+<li>ncxmlntf_event_new("netconf", -1, NCNTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NCNTF_EVENT_BY_SERVER);</li>
+<li>ncxmlntf_event_new("netconf", -1, NCNTF_BASE_SESSION_START, my_session);</li>
+<li>ncxmlntf_event_new("netconf", -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");</li>
 </ul>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
@@ -273,7 +273,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Dec 19 2012 14:30:23 for libnetconf by
+    <li class="footer">Generated on Wed Dec 19 2012 15:33:42 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

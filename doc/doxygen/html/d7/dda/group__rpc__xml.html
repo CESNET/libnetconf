@@ -164,7 +164,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Type of the filter. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>Filter content:<ul>
-<li>for <a class="el" href="../../db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706ab584539474b828102a0b7238b614abd4">NC_FILTER_SUBTREE</a> type, single variadic parameter <b>const xmlNodePtr filter</b> with the content for the &lt;filter&gt; element is accepted. If NULL is specified, Empty filter (RFC 6241 sec 6.4.2) is created. </li>
+<li>for <a class="el" href="../../db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706ab584539474b828102a0b7238b614abd4">NC_FILTER_SUBTREE</a> type, single variadic parameter <b>const xmlNodePtr filter</b> with the content for the &lt;filter&gt; element is accepted. The filter parameter is not supposed to contain &lt;filter&gt; element, but only its content. The node is taken as a node list, so the sibling nodes are also added into the filter definition. If NULL is specified, Empty filter (RFC 6241 sec 6.4.2) is created. </li>
 </ul>
 </td></tr>
   </table>
@@ -195,7 +195,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>XML document of the NETCONF's &lt;rpc&gt; message. Caller is supposed to free the returned structure with xmlFreeDoc(). free(). </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>XML document of the NETCONF's &lt;rpc&gt; message. Caller is supposed to free the returned structure with xmlFreeDoc(). </dd></dl>
 
 </div>
 </div>
@@ -425,7 +425,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Dec 19 2012 14:30:23 for libnetconf by
+    <li class="footer">Generated on Wed Dec 19 2012 15:33:42 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>
