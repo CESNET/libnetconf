@@ -181,12 +181,22 @@ char* nc_reply_dump(const nc_reply *reply)
 	return (nc_msg_dump((struct nc_msg*)reply));
 }
 
+xmlDocPtr ncxml_reply_dump(const nc_reply *reply)
+{
+	return (xmlCopyDoc(reply->doc, 1));
+}
+
 char* nc_rpc_dump(const nc_rpc *rpc)
 {
 	return (nc_msg_dump((struct nc_msg*)rpc));
 }
 
-static struct nc_msg * nc_msg_build (const char * msg_dump)
+xmlDocPtr ncxml_rpc_dump(const nc_rpc *rpc)
+{
+	return (xmlCopyDoc(rpc->doc, 1));
+}
+
+static struct nc_msg* nc_msg_build (const char * msg_dump)
 {
 	struct nc_msg * msg;
 	const char* id;
@@ -206,9 +216,31 @@ static struct nc_msg * nc_msg_build (const char * msg_dump)
 		msg->msgid = NULL;
 	}
 	msg->error = NULL;
-	msg->with_defaults = 0;
+	msg->with_defaults = NCWD_MODE_DISABLED;
 
 	return msg;
+}
+
+static struct nc_msg* ncxml_msg_build(xmlDocPtr msg_dump)
+{
+	struct nc_msg* msg;
+	const char* id;
+
+	if ((msg = malloc (sizeof(struct nc_msg))) == NULL) {
+		return NULL;
+	}
+
+	msg->doc = msg_dump;
+
+	if ((id = nc_msg_parse_msgid (msg)) != NULL) {
+		msg->msgid = strdup(id);
+	} else {
+		msg->msgid = NULL;
+	}
+	msg->error = NULL;
+	msg->with_defaults = NCWD_MODE_DISABLED;
+
+	return (msg);
 }
 
 NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc, const struct nc_session *session)
@@ -284,6 +316,46 @@ nc_rpc * nc_rpc_build (const char * rpc_dump)
 		return NULL;
 	}
 
+	/* operation type */
+	op = nc_rpc_get_op (rpc);
+	switch (op) {
+	case (NC_OP_GETCONFIG):
+	case (NC_OP_GETSCHEMA):
+	case (NC_OP_GET):
+		rpc->type.rpc = NC_RPC_DATASTORE_READ;
+		break;
+	case (NC_OP_EDITCONFIG):
+	case (NC_OP_COPYCONFIG):
+	case (NC_OP_DELETECONFIG):
+	case (NC_OP_LOCK):
+	case (NC_OP_UNLOCK):
+	case (NC_OP_COMMIT):
+	case (NC_OP_DISCARDCHANGES):
+		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+		break;
+	case (NC_OP_CLOSESESSION):
+	case (NC_OP_KILLSESSION):
+		rpc->type.rpc = NC_RPC_SESSION;
+		break;
+	default:
+		rpc->type.rpc = NC_RPC_UNKNOWN;
+		break;
+	}
+
+	/* set with-defaults if any */
+	rpc->with_defaults = nc_rpc_parse_withdefaults(rpc, NULL);
+
+	return rpc;
+}
+
+nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump)
+{
+	nc_rpc * rpc;
+	NC_OP op;
+
+	if ((rpc = ncxml_msg_build (rpc_dump)) == NULL) {
+		return NULL;
+	}
 
 	/* operation type */
 	op = nc_rpc_get_op (rpc);
@@ -323,6 +395,30 @@ nc_reply * nc_reply_build (const char * reply_dump)
 	xmlNodePtr root;
 
 	if ((reply = nc_msg_build (reply_dump)) == NULL) {
+		return NULL;
+	}
+
+	root = xmlDocGetRootElement (reply->doc);
+
+	if (xmlStrEqual (root->children->name, BAD_CAST "ok")) {
+		reply->type.reply = NC_REPLY_OK;
+	} else if (xmlStrEqual (root->children->name, BAD_CAST "data")) {
+		reply->type.reply = NC_REPLY_DATA;
+	} else if (xmlStrEqual (root->children->name, BAD_CAST "error")) {
+		reply->type.reply = NC_REPLY_ERROR;
+	} else {
+		reply->type.reply = NC_REPLY_UNKNOWN;
+	}
+
+	return reply;
+}
+
+nc_reply* ncxml_reply_build(xmlDocPtr reply_dump)
+{
+	nc_reply * reply;
+	xmlNodePtr root;
+
+	if ((reply = ncxml_msg_build (reply_dump)) == NULL) {
 		return NULL;
 	}
 

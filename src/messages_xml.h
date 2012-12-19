@@ -74,7 +74,8 @@ xmlDocPtr ncxml_reply_dump(const nc_reply *reply);
  * This is the reverse function of the ncxml_reply_dump().
  *
  * @param[in] reply_dump XML document structure with the NETCONF \<rpc-reply\>
- * message.
+ * message. The structure is integrated into the internal rpc structure and
+ * caller should not access (or free) given XML document anymore.
  * @return Complete reply structure used by libnetconf's functions.
  */
 nc_reply* ncxml_reply_build(xmlDocPtr reply_dump);
@@ -95,6 +96,8 @@ xmlDocPtr ncxml_rpc_dump(const nc_rpc *rpc);
  * This is the reverse function of the ncxml_rpc_dump().
  *
  * @param[in] rpc_dump XML document structure with the NETCONF \<rpc\> message.
+ * The structure is integrated into the internal rpc structure and caller should
+ * not access (or free) given XML document anymore.
  * @return Complete rpc structure used by libnetconf's functions.
  */
 nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump);
