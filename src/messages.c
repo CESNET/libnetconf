@@ -201,12 +201,26 @@ static struct nc_msg* nc_msg_build (const char * msg_dump)
 	struct nc_msg * msg;
 	const char* id;
 
-	if ((msg = malloc (sizeof(struct nc_msg))) == NULL) {
+	if ((msg = calloc (1, sizeof(struct nc_msg))) == NULL) {
 		return NULL;
 	}
 
 	if ((msg->doc = xmlReadMemory (msg_dump, strlen(msg_dump), NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN)) == NULL) {
 		free (msg);
+		return NULL;
+	}
+
+	/* create xpath evaluation context */
+	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
+		ERROR("%s: rpc message XPath context can not be created.", __func__);
+		nc_msg_free(msg);
+		return NULL;
+	}
+
+	/* register base namespace for the rpc */
+	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_BASE10_ID, BAD_CAST NC_NS_BASE10) != 0) {
+		ERROR("Registering base namespace for the message xpath context failed.");
+		nc_msg_free(msg);
 		return NULL;
 	}
 
@@ -231,6 +245,20 @@ static struct nc_msg* ncxml_msg_build(xmlDocPtr msg_dump)
 	}
 
 	msg->doc = msg_dump;
+
+	/* create xpath evaluation context */
+	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
+		ERROR("%s: rpc message XPath context can not be created.", __func__);
+		nc_msg_free(msg);
+		return NULL;
+	}
+
+	/* register base namespace for the rpc */
+	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_BASE10_ID, BAD_CAST NC_NS_BASE10) != 0) {
+		ERROR("Registering base namespace for the message xpath context failed.");
+		nc_msg_free(msg);
+		return NULL;
+	}
 
 	if ((id = nc_msg_parse_msgid (msg)) != NULL) {
 		msg->msgid = strdup(id);
@@ -262,6 +290,7 @@ NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc, const struct nc_session *
 		return (NCWD_MODE_DISABLED);
 	}
 	if (xmlXPathRegisterNs(rpc_ctxt, BAD_CAST "wd", BAD_CAST NC_NS_WITHDEFAULTS) != 0) {
+		ERROR("Registering with-defaults capability namespace for the xpath context failed.");
 		xmlXPathFreeContext(rpc_ctxt);
 		return (NCWD_MODE_DISABLED);
 	}
@@ -1001,7 +1030,7 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 		return (NULL);
 	}
 
-	msg = malloc(sizeof(nc_rpc));
+	msg = calloc(1, sizeof(nc_rpc));
 	if (msg == NULL) {
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
@@ -1026,6 +1055,20 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 		xmlNewChild(node, NULL, BAD_CAST "capability", BAD_CAST cpblts[i]);
 	}
 
+	/* create xpath evaluation context */
+	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
+		ERROR("%s: rpc message XPath context can not be created.", __func__);
+		nc_msg_free(msg);
+		return NULL;
+	}
+
+	/* register base namespace for the rpc */
+	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_BASE10_ID, BAD_CAST NC_NS_BASE10) != 0) {
+		ERROR("Registering base namespace for the message xpath context failed.");
+		nc_msg_free(msg);
+		return NULL;
+	}
+
 	return (msg);
 }
 
@@ -1036,6 +1079,9 @@ void nc_msg_free(struct nc_msg *msg)
 	if (msg != NULL) {
 		if (msg->doc != NULL) {
 			xmlFreeDoc(msg->doc);
+		}
+		if (msg->ctxt != NULL) {
+			xmlXPathFreeContext(msg->ctxt);
 		}
 		if ((e = msg->error) != NULL) {
 			while(e != NULL) {
@@ -1069,7 +1115,7 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 		return (NULL);
 	}
 
-	dupmsg = malloc(sizeof(struct nc_msg));
+	dupmsg = calloc(1, sizeof(struct nc_msg));
 	dupmsg->doc = xmlCopyDoc(msg->doc, 1);
 	dupmsg->type = msg->type;
 	dupmsg->with_defaults = msg->with_defaults;
@@ -1082,6 +1128,20 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 		dupmsg->error = nc_err_dup(msg->error);
 	} else {
 		dupmsg->error = NULL;
+	}
+
+	/* create xpath evaluation context */
+	if ((dupmsg->ctxt = xmlXPathNewContext(dupmsg->doc)) == NULL) {
+		ERROR("%s: rpc message XPath context can not be created.", __func__);
+		nc_msg_free(dupmsg);
+		return NULL;
+	}
+
+	/* register base namespace for the rpc */
+	if (xmlXPathRegisterNs(dupmsg->ctxt, BAD_CAST NC_NS_BASE10_ID, BAD_CAST NC_NS_BASE10) != 0) {
+		ERROR("Registering base namespace for the message xpath context failed.");
+		nc_msg_free(dupmsg);
+		return NULL;
 	}
 
 	return (dupmsg);
@@ -1160,7 +1220,7 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 		return NULL;
 	}
 
-	msg = malloc(sizeof(nc_rpc));
+	msg = calloc(1, sizeof(nc_rpc));
 	if (msg == NULL) {
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
@@ -1169,6 +1229,20 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 	msg->msgid = NULL;
 	msg->error = NULL;
 	msg->with_defaults = NCWD_MODE_DISABLED;
+
+	/* create xpath evaluation context */
+	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
+		ERROR("%s: rpc message XPath context can not be created.", __func__);
+		nc_msg_free(msg);
+		return NULL;
+	}
+
+	/* register base namespace for the rpc */
+	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_BASE10_ID, BAD_CAST NC_NS_BASE10) != 0) {
+		ERROR("Registering base namespace for the message xpath context failed.");
+		nc_msg_free(msg);
+		return NULL;
+	}
 
 	return (msg);
 }

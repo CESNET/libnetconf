@@ -45,6 +45,7 @@
 
 #include <libssh2.h>
 #include <libxml/tree.h>
+#include <libxml/xpath.h>
 
 #include "netconf.h"
 #include "callbacks.h"
@@ -383,6 +384,7 @@ struct nc_err {
  */
 struct nc_msg {
 	xmlDocPtr doc;
+	xmlXPathContextPtr ctxt;
 	char* msgid;
 	union {
 		NC_REPLY_TYPE reply;
