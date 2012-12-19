@@ -51,7 +51,7 @@
  *
  * ### Event parameters:
  * - #NCNTF_GENERIC
- *  - **xmlNodePtr content** Content of the notification as defined in RFC 5277.
+ *  - **const xmlNodePtr content** Content of the notification as defined in RFC 5277.
  *  eventTime is added automatically. The parameter can be a single XML node as
  *  well as a node list.
  * - #NCNTF_BASE_CFG_CHANGE
