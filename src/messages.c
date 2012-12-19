@@ -2474,7 +2474,7 @@ nc_rpc *nc_rpc_discardchanges(void)
 	return (rpc);
 }
 
-nc_rpc *ncxml_rpc_generic(xmlNodePtr data)
+nc_rpc *ncxml_rpc_generic(const xmlNodePtr data)
 {
 	nc_rpc *rpc;
 

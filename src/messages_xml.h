@@ -151,7 +151,7 @@ nc_reply *ncxml_reply_data(const xmlNodePtr data);
  * ### Variadic parameters:
  * - source is specified as #NC_DATASTORE_CONFIG:
  *  - nc_rpc_copyconfig() accepts as the first variadic parameter
- *  **xmlNodePtr source_config** providing the complete configuration data
+ *  **const xmlNodePtr source_config** providing the complete configuration data
  *  to copy.
  * - source is specified as #NC_DATASTORE_URL:
  *  - nc_rpc_copyconfig() accepts as the first variadic parameter
@@ -189,7 +189,7 @@ nc_rpc *ncxml_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...);
  * behavior.
  * @param[in] ... According to the source parameter, variadic parameter can be
  * one of the following:
- * - **xmlNodePtr config** defining the content of the \<config\> element
+ * - **const xmlNodePtr config** defining the content of the \<config\> element
  * in case the source parameter is specified as #NC_DATASTORE_CONFIG. The config
  * parameter can points to the node list.
  * - **const char* source_url** specifying URL, in case the source parameter is
@@ -211,6 +211,6 @@ nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_D
  * @param[in] data XML content of the \<rpc\> request to be sent.
  * @return Created rpc message.
  */
-nc_rpc *ncxml_rpc_generic(xmlNodePtr data);
+nc_rpc *ncxml_rpc_generic(const xmlNodePtr data);
 
 #endif /* MESSAGES_XML_H_ */
