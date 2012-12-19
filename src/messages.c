@@ -1131,7 +1131,7 @@ nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
  *
  * @return Prepared nc_msg structure.
  */
-struct nc_msg* nc_msg_create(xmlNodePtr content, char* msgtype)
+struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 {
 	struct nc_msg* msg;
 
@@ -1175,7 +1175,7 @@ struct nc_msg* nc_msg_create(xmlNodePtr content, char* msgtype)
  *
  * @return Prepared nc_rpc structure.
  */
-static nc_rpc* nc_rpc_create(xmlNodePtr content)
+static nc_rpc* nc_rpc_create(const xmlNodePtr content)
 {
 	return ((nc_rpc*)nc_msg_create(content,"rpc"));
 }
@@ -1187,7 +1187,7 @@ static nc_rpc* nc_rpc_create(xmlNodePtr content)
  *
  * @return Prepared nc_reply structure.
  */
-static nc_reply* nc_reply_create(xmlNodePtr content)
+static nc_reply* nc_reply_create(const xmlNodePtr content)
 {
 	return ((nc_reply*)nc_msg_create(content,"rpc-reply"));
 }
@@ -1242,6 +1242,30 @@ nc_reply *nc_reply_data(const char* data)
 	reply->type.reply = NC_REPLY_DATA;
 	xmlFreeDoc(doc_data);
 	free(data_env);
+
+	return (reply);
+}
+
+nc_reply *ncxml_reply_data(const xmlNodePtr data)
+{
+	nc_reply *reply;
+	xmlNodePtr content;
+
+	content = xmlNewNode(NULL, BAD_CAST "data");
+	if (content == NULL) {
+		ERROR("xmlNewNode failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	if (xmlAddChildList(content, xmlCopyNodeList(data)) == NULL) {
+		ERROR("xmlAddChildList failed (%s:%d).", __FILE__, __LINE__);
+		xmlFreeNode(content);
+		return (NULL);
+	}
+
+	reply = nc_reply_create(content);
+	reply->type.reply = NC_REPLY_DATA;
+	xmlFreeNode(content);
 
 	return (reply);
 }
