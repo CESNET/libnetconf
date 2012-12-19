@@ -1137,6 +1137,11 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 
 	xmlDocPtr xmlmsg = NULL;
 
+	if (content == NULL) {
+		ERROR("%s: Invalid \'content\' parameter.", __func__);
+		return (NULL);
+	}
+
 	if ((xmlmsg = xmlNewDoc(BAD_CAST XML_VERSION)) == NULL) {
 		ERROR("xmlNewDoc failed (%s:%d).", __FILE__, __LINE__);
 		return NULL;
@@ -1177,7 +1182,7 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
  */
 static nc_rpc* nc_rpc_create(const xmlNodePtr content)
 {
-	return ((nc_rpc*)nc_msg_create(content,"rpc"));
+	return ((nc_rpc*)nc_msg_create(content, "rpc"));
 }
 
 /**
@@ -2456,22 +2461,27 @@ nc_rpc *nc_rpc_discardchanges(void)
 	return (rpc);
 }
 
-/**
- * @ingroup rpc
- * @brief Create a generic NETCONF rpc message with specified content.
- *
- * Function gets data parameter and envelope it into \<rpc\> container. Caller
- * is fully responsible for the correctness of the given data.
- *
- * @param[in] data XML content of the \<rpc\> request to be sent.
- * @return Created rpc message.
- */
+nc_rpc *ncxml_rpc_generic(xmlNodePtr data)
+{
+	nc_rpc *rpc;
+
+	if (data == NULL) {
+		ERROR("%s: parameter \'data\' can not be NULL.", __func__);
+		return (NULL);
+	}
+	rpc = nc_rpc_create(data);
+	rpc->type.rpc = NC_RPC_SESSION;
+
+	return (rpc);
+}
+
 nc_rpc *nc_rpc_generic(const char* data)
 {
 	nc_rpc *rpc;
 	xmlDocPtr doc_data;
 
 	if (data == NULL) {
+		ERROR("%s: parameter \'data\' can not be NULL.", __func__);
 		return (NULL);
 	}
 
@@ -2482,7 +2492,7 @@ nc_rpc *nc_rpc_generic(const char* data)
 		return (NULL);
 	}
 
-	rpc = nc_rpc_create(xmlCopyNode(xmlDocGetRootElement(doc_data), 1));
+	rpc = nc_rpc_create(xmlDocGetRootElement(doc_data));
 	rpc->type.rpc = NC_RPC_SESSION;
 	xmlFreeDoc(doc_data);
 
