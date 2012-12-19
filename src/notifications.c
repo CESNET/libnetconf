@@ -1872,6 +1872,7 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 	}
 
 	ret = ncntf_event_store(etime, content);
+	free(content);
 	return (ret);
 }
 
@@ -1906,7 +1907,7 @@ int ncxmlntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 			return (EXIT_FAILURE);
 		}
 		retval = ncntf_event_store(etime, content);
-
+		free(content);
 	} else {
 		retval = _event_new(etime, event, argp);
 	}
