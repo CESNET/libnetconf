@@ -179,11 +179,11 @@ void ncntf_stream_iter_finnish(const char* stream);
  *  process unknown to the server, use NULL as the value.
  *
  * ### Examples:
- * - nc_ntf_event_new("mystream", -1, NCNTF_GENERIC, "<event>something happend</event>");
- * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, my_session);
- * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NCNTF_EVENT_BY_SERVER);
- * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_START, my_session);
- * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");
+ * - ncntf_event_new("mystream", -1, NCNTF_GENERIC, "<event>something happened</event>");
+ * - ncntf_event_new("netconf", -1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, my_session);
+ * - ncntf_event_new("netconf", -1, NCNTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NCNTF_EVENT_BY_SERVER);
+ * - ncntf_event_new("netconf", -1, NCNTF_BASE_SESSION_START, my_session);
+ * - ncntf_event_new("netconf", -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");
  *
  * @param[in] etime Time of the event, if set to -1, current time is used.
  * @param[in] event Event type to distinguish following parameters.
