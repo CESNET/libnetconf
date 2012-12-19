@@ -2030,7 +2030,44 @@ char* ncntf_notif_get_content(nc_ntf* notif)
 	xmlBufferFree (buffer);
 	xmlFreeDoc(aux_doc);
 
-	return retval;
+	return (retval);
+}
+
+xmlNodePtr ncxmlntf_notif_get_content(nc_ntf* notif)
+{
+	xmlNodePtr root, retval = NULL, aux;
+
+	if (notif == NULL || notif->doc == NULL) {
+		ERROR("%s: Invalid input parameter.", __func__);
+		return (NULL);
+	}
+
+	if ((root = xmlDocGetRootElement (notif->doc)) == NULL) {
+		ERROR("%s: Invalid message format, root element is missing.", __func__);
+		return (NULL);
+	}
+	if (xmlStrcmp(root->name, BAD_CAST "notification") != 0) {
+		ERROR("%s: Invalid message format, missing notification element.", __func__);
+		return (NULL);
+	}
+
+	for (aux = root->children; aux != NULL; aux = aux->next) {
+		if (aux->type == XML_ELEMENT_NODE) {
+			/* skip eventTime element */
+			if (xmlStrcmp(aux->name, BAD_CAST "eventTime") == 0 &&
+					xmlStrcmp(aux->ns->href, BAD_CAST NC_NS_NOTIFICATIONS) == 0) {
+				continue;
+			}
+
+			if (retval == NULL) {
+				retval = xmlCopyNode(aux, 1);
+			} else {
+				xmlAddSibling(retval, xmlCopyNode(aux, 1));
+			}
+		}
+	}
+
+	return (retval);
 }
 
 time_t ncntf_notif_get_time(nc_ntf* notif)

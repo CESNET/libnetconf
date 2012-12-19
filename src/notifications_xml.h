@@ -107,7 +107,9 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, xmlNodePtr content);
  * @ingroup notifications_xml
  * @brief Get description of the event reported in the notification message.
  * @param[in] notif Notification message.
- * @return Content of the event description.
+ * @return Copy of the event description content (single node or node list,
+ * eventTime is not included). Caller is supposed to free the returned structure
+ * with xmlFreeNodeList().
  */
 xmlNodePtr ncxmlntf_notif_get_content(nc_ntf* notif);
 
