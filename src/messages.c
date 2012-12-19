@@ -2077,14 +2077,11 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
 	return (retval);
 }
 
-nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, ...)
+static nc_rpc *_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, const xmlNodePtr config, const char* source_url)
 {
-	va_list argp;
 	nc_rpc *rpc = NULL;
-	xmlDocPtr doc_data;
-	xmlNodePtr content, node_target, node_defop, node_erropt;
-	char* datastore, *defop = NULL, *erropt = NULL, *config;
-	const char* url = NULL, *data = NULL;
+	xmlNodePtr content, node_target, node_defop, node_erropt, node_config;
+	char* datastore, *defop = NULL, *erropt = NULL;
 
 	/* detect target datastore */
 	switch (target) {
@@ -2142,21 +2139,6 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFO
 		}
 	}
 
-	va_start(argp, error_option);
-	switch (source) {
-	case NC_DATASTORE_CONFIG:
-		data = va_arg(argp, const char*);
-		break;
-	case NC_DATASTORE_URL:
-		url = va_arg(argp, const char*);
-		break;
-	default:
-		ERROR("Unknown (or prohibited) source for <edit-config>.");
-		va_end(argp);
-		return (NULL);
-		break;
-	}
-
 	/* create edit-config envelope */
 	if ((content = xmlNewNode(NULL, BAD_CAST "edit-config")) == NULL) {
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
@@ -2192,39 +2174,29 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFO
 		}
 	}
 
-	if (data != NULL) {
+	if (source == NC_DATASTORE_CONFIG) {
 		/* set <config> element */
-		/* add covering <config> element around the data to allow to specify multiple root elements */
-		if (asprintf(&config, "<config>%s</config>", data) == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+
+		/* create empty config element in rpc request */
+		if ((node_config = xmlNewChild(content, NULL, BAD_CAST "config", NULL)) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
 		}
-
-		/* prepare XML structure from given data */
-		doc_data = xmlReadMemory(config, strlen(config), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-		free(config);
-		if (doc_data == NULL) {
-			ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
-			goto cleanup;
+		if (config != NULL) {
+			/* connect given configuration data with the rpc request */
+			if (xmlAddChildList(node_config, xmlCopyNodeList(config)) == NULL) {
+				ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
+				goto cleanup;
+			}
 		}
-
-		/* connect given configuration data with the rpc request */
-		if (xmlAddChild(content, xmlCopyNode(doc_data->children, 1)) == NULL) {
-			ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
-			xmlFreeDoc(doc_data);
-			goto cleanup;
-		}
-
-		/* free no more needed structure */
-		xmlFreeDoc(doc_data);
-	} else if (url != NULL) {
+	} else if (source == NC_DATASTORE_URL) {
 		/* set <url> instead of <config> */
-		if (xmlNewChild(content, NULL, BAD_CAST "url", BAD_CAST url) == NULL) {
+		if (xmlNewChild(content, NULL, BAD_CAST "url", BAD_CAST source_url) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
 		}
 	} else {
-		ERROR("%s: invalid parameters - one of the config or url must be specified.", __func__);
+		ERROR("%s: unknown (or prohibited) source for <edit-config>.", __func__);
 		goto cleanup;
 	}
 
@@ -2232,10 +2204,81 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFO
 	rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
 cleanup:
 	xmlFreeNode(content);
-	va_end(argp);
 	return (rpc);
 }
 
+nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, ...)
+{
+	xmlNodePtr config = NULL;
+	const char* url = NULL;
+	nc_rpc* retval;
+	va_list argp;
+
+	va_start(argp, error_option);
+	switch (source) {
+	case NC_DATASTORE_CONFIG:
+		config = va_arg(argp, xmlNodePtr);
+		break;
+	case NC_DATASTORE_URL:
+		url = va_arg(argp, const char*);
+		break;
+	default:
+		ERROR("Unknown (or prohibited) source for <edit-config>.");
+		va_end(argp);
+		return (NULL);
+		break;
+	}
+
+	retval = _rpc_editconfig(target, source, default_operation, error_option, config, url);
+	va_end(argp);
+	return(retval);
+}
+
+nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, ...)
+{
+	xmlDocPtr config = NULL;
+	const char* url = NULL, *config_s = NULL;
+	char* config_S;
+	nc_rpc* retval;
+	va_list argp;
+
+	va_start(argp, error_option);
+	switch (source) {
+	case NC_DATASTORE_CONFIG:
+		config_s = va_arg(argp, const char*);
+		break;
+	case NC_DATASTORE_URL:
+		url = va_arg(argp, const char*);
+		break;
+	default:
+		ERROR("Unknown (or prohibited) source for <edit-config>.");
+		va_end(argp);
+		return (NULL);
+		break;
+	}
+
+	/* transform string to the xmlNodePtr */
+	/* add covering <config> element to allow to specify multiple root elements */
+	if (asprintf(&config_S, "<config>%s</config>", config_s) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		va_end(argp);
+		return (NULL);
+	}
+
+	/* prepare XML structure from given data */
+	config = xmlReadMemory(config_S, strlen(config_S), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	free(config_S);
+	if (config == NULL) {
+		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+		va_end(argp);
+		return (NULL);
+	}
+
+	retval = _rpc_editconfig(target, source, default_operation, error_option, config->children->children, url);
+	xmlFreeDoc(config);
+	va_end(argp);
+	return(retval);
+}
 
 nc_rpc *nc_rpc_killsession(const char *kill_sid)
 {
