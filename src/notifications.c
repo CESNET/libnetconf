@@ -1917,7 +1917,7 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 	}
 	free(etime);
 
-	retval = malloc(sizeof(nc_rpc));
+	retval = malloc(sizeof(nc_ntf));
 	if (retval == NULL) {
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
@@ -1928,6 +1928,50 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 	retval->with_defaults = NCWD_MODE_DISABLED;
 
 	return (retval);
+}
+
+nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
+{
+	char* etime = NULL;
+	xmlDocPtr notif_doc;
+	nc_ntf* retval;
+
+	if ((etime = nc_time2datetime(event_time)) == NULL) {
+		ERROR("Converting time to string failed (%s:%d)", __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	notif_doc = xmlNewDoc(BAD_CAST "1.0");
+	xmlDocSetRootElement(notif_doc, xmlNewNode(NULL, BAD_CAST "notification"));
+
+	/* connect the event time */
+	if (xmlNewChild(notif_doc->children, NULL, BAD_CAST "eventTime", BAD_CAST etime) == NULL) {
+		ERROR("xmlAddChild failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		xmlFreeDoc(notif_doc);
+		free(etime);
+		return NULL;
+	}
+	free(etime);
+
+	/* connect the required content */
+	if (xmlAddChildList(notif_doc->children, xmlCopyNodeList(content)) == NULL) {
+		ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
+		xmlFreeDoc(notif_doc);
+		return NULL;
+	}
+
+	retval = malloc(sizeof(nc_ntf));
+	if (retval == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+	retval->doc = notif_doc;
+	retval->msgid = NULL;
+	retval->error = NULL;
+	retval->with_defaults = NCWD_MODE_DISABLED;
+
+	return (retval);
+
 }
 
 void ncntf_notif_free(nc_ntf *ntf)

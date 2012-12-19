@@ -98,10 +98,11 @@ int ncxmlntf_event_new(time_t etime, NCNTF_EVENT event, ...);
  * @brief Create new \<notification\> message with the given eventTime and content.
  *
  * @param[in] event_time Time of the event.
- * @param[in] content Description of the event in XML.
+ * @param[in] content Description of the event in XML. This parameter is taken
+ * as a node list, so the sibling nodes will be also included.
  * @return Created notification message.
  */
-nc_ntf* ncxmlntf_notif_create(time_t event_time, xmlNodePtr content);
+nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content);
 
 /**
  * @ingroup notifications_xml
