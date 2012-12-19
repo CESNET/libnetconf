@@ -1,4 +1,4 @@
-.TH "src/notifications_xml.h" 3 "Tue Dec 18 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "src/notifications_xml.h" 3 "Wed Dec 19 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -22,7 +22,7 @@ NETCONF Notifications functions with libxml2 support\&.
 .br
 .RI "\fIStore new event into the specified stream\&. Parameters are specific for different events\&. \fP"
 .ti -1c
-.RI "\fBnc_ntf\fP * \fBncxmlntf_notif_create\fP (time_t event_time, xmlNodePtr content)"
+.RI "\fBnc_ntf\fP * \fBncxmlntf_notif_create\fP (time_t event_time, const xmlNodePtr content)"
 .br
 .RI "\fICreate new <notification> message with the given eventTime and content\&. \fP"
 .ti -1c

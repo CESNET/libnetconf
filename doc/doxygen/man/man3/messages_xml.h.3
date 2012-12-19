@@ -1,4 +1,4 @@
-.TH "src/messages_xml.h" 3 "Tue Dec 18 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "src/messages_xml.h" 3 "Wed Dec 19 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -45,11 +45,11 @@ src/messages_xml.h \-
 .ti -1c
 .RI "xmlNodePtr \fBncxml_rpc_get_config\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet node (list) with the operation config parameter content (<config> itself is not a part of the returned data)\&. This function is valid only for <copy-config> and <edit-config> RPCs\&. \fP"
+.RI "\fIGet <config> element from the RPC operation including its content\&. This function is valid only for <copy-config> and <edit-config> RPCs\&. \fP"
 .ti -1c
 .RI "xmlNodePtr \fBncxml_reply_get_data\fP (const \fBnc_reply\fP *reply)"
 .br
-.RI "\fIGet content of the <data> element in <rpc-reply>\&. \fP"
+.RI "\fIGet <data> element in <rpc-reply> including its content\&. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBncxml_reply_data\fP (const xmlNodePtr data)"
 .br
@@ -63,7 +63,7 @@ src/messages_xml.h \-
 .br
 .RI "\fICreate <edit-config> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBncxml_rpc_generic\fP (xmlNodePtr data)"
+.RI "\fBnc_rpc\fP * \fBncxml_rpc_generic\fP (const xmlNodePtr data)"
 .br
 .RI "\fICreate a generic NETCONF rpc message with specified content\&. \fP"
 .in -1c

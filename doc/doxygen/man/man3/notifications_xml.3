@@ -1,4 +1,4 @@
-.TH "NETCONF Event Notifications (libxml2)" 3 "Tue Dec 18 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Event Notifications (libxml2)" 3 "Wed Dec 19 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -14,7 +14,7 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 .br
 .RI "\fIStore new event into the specified stream\&. Parameters are specific for different events\&. \fP"
 .ti -1c
-.RI "\fBnc_ntf\fP * \fBncxmlntf_notif_create\fP (time_t event_time, xmlNodePtr content)"
+.RI "\fBnc_ntf\fP * \fBncxmlntf_notif_create\fP (time_t event_time, const xmlNodePtr content)"
 .br
 .RI "\fICreate new <notification> message with the given eventTime and content\&. \fP"
 .ti -1c
@@ -37,7 +37,7 @@ Store new event into the specified stream\&. Parameters are specific for differe
 .IP "\(bu" 2
 \fBNCNTF_GENERIC\fP
 .IP "  \(bu" 4
-\fBxmlNodePtr content\fP Content of the notification as defined in RFC 5277\&. eventTime is added automatically\&. The parameter can be a single XML node as well as a node list\&.
+\fBconst xmlNodePtr content\fP Content of the notification as defined in RFC 5277\&. eventTime is added automatically\&. The parameter can be a single XML node as well as a node list\&.
 .PP
 
 .IP "\(bu" 2
@@ -121,14 +121,14 @@ nc_ntf_event_new('netconf', -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_T
 .RE
 .PP
 
-.SS "\fBnc_ntf\fP* ncxmlntf_notif_create (time_tevent_time, xmlNodePtrcontent)"
+.SS "\fBnc_ntf\fP* ncxmlntf_notif_create (time_tevent_time, const xmlNodePtrcontent)"
 
 .PP
 Create new <notification> message with the given eventTime and content\&. \fBParameters:\fP
 .RS 4
 \fIevent_time\fP Time of the event\&. 
 .br
-\fIcontent\fP Description of the event in XML\&. 
+\fIcontent\fP Description of the event in XML\&. This parameter is taken as a node list, so the sibling nodes will be also included\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -147,7 +147,7 @@ Get description of the event reported in the notification message\&. \fBParamete
 .PP
 \fBReturns:\fP
 .RS 4
-Content of the event description\&. 
+Copy of the event description content (single node or node list, eventTime is not included)\&. Caller is supposed to free the returned structure with xmlFreeNodeList()\&. 
 .RE
 .PP
 

@@ -11,5 +11,5 @@ var messages__xml_8h =
     [ "ncxml_reply_data", "d9/de5/messages__xml_8h.html#ga1ce60f5416d4f75586836c1429c37149", null ],
     [ "ncxml_rpc_copyconfig", "d9/de5/messages__xml_8h.html#gae7ab635ff3bb76089e372f3d22ebaf3c", null ],
     [ "ncxml_rpc_editconfig", "d9/de5/messages__xml_8h.html#gac9dde3b276e97b2d7a88784cb3a4ab3c", null ],
-    [ "ncxml_rpc_generic", "d9/de5/messages__xml_8h.html#ga6002d6006576f31e2705508cda62757c", null ]
+    [ "ncxml_rpc_generic", "d9/de5/messages__xml_8h.html#gaad5d888e8c4a07a5f59b31555f7413bb", null ]
 ];

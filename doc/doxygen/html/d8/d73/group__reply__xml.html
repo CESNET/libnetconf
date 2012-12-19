@@ -112,7 +112,7 @@ Functions</h2></td></tr>
 <tr class="memitem:gaaaf53b5a839be6935059fdf2818a5a42"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d73/group__reply__xml.html#gaaaf53b5a839be6935059fdf2818a5a42">ncxml_reply_build</a> (xmlDocPtr reply_dump)</td></tr>
 <tr class="memdesc:gaaaf53b5a839be6935059fdf2818a5a42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build &lt;rpc-reply&gt; message from the libxml2 document structure. This is the reverse function of the <a class="el" href="../../d8/d73/group__reply__xml.html#ga68ec8a0daf54f584339924bca5b5a682" title="Dump the rpc-reply message into a libxml2 document structure.">ncxml_reply_dump()</a>.  <a href="#gaaaf53b5a839be6935059fdf2818a5a42"></a><br/></td></tr>
 <tr class="memitem:ga7878bc6bc6b6d1ca002044d7edf85943"><td class="memItemLeft" align="right" valign="top">xmlNodePtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d73/group__reply__xml.html#ga7878bc6bc6b6d1ca002044d7edf85943">ncxml_reply_get_data</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
-<tr class="memdesc:ga7878bc6bc6b6d1ca002044d7edf85943"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get content of the &lt;data&gt; element in &lt;rpc-reply&gt;.  <a href="#ga7878bc6bc6b6d1ca002044d7edf85943"></a><br/></td></tr>
+<tr class="memdesc:ga7878bc6bc6b6d1ca002044d7edf85943"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get &lt;data&gt; element in &lt;rpc-reply&gt; including its content.  <a href="#ga7878bc6bc6b6d1ca002044d7edf85943"></a><br/></td></tr>
 <tr class="memitem:ga1ce60f5416d4f75586836c1429c37149"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d73/group__reply__xml.html#ga1ce60f5416d4f75586836c1429c37149">ncxml_reply_data</a> (const xmlNodePtr data)</td></tr>
 <tr class="memdesc:ga1ce60f5416d4f75586836c1429c37149"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create rpc-reply response with &lt;data&gt; content.  <a href="#ga1ce60f5416d4f75586836c1429c37149"></a><br/></td></tr>
 </table>
@@ -161,7 +161,7 @@ Functions</h2></td></tr>
 <p>Build &lt;rpc-reply&gt; message from the libxml2 document structure. This is the reverse function of the <a class="el" href="../../d8/d73/group__reply__xml.html#ga68ec8a0daf54f584339924bca5b5a682" title="Dump the rpc-reply message into a libxml2 document structure.">ncxml_reply_dump()</a>. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">reply_dump</td><td>XML document structure with the NETCONF &lt;rpc-reply&gt; message. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">reply_dump</td><td>XML document structure with the NETCONF &lt;rpc-reply&gt; message. The structure is integrated into the internal rpc structure and caller should not access (or free) given XML document anymore. </td></tr>
   </table>
   </dd>
 </dl>
@@ -183,14 +183,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get content of the &lt;data&gt; element in &lt;rpc-reply&gt;. </p>
+<p>Get &lt;data&gt; element in &lt;rpc-reply&gt; including its content. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">reply</td><td>rpc-reply message. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>XML node (with possible siblings) with the content of the &lt;data&gt; element. Caller is supposed to free (the whole list) the returned structure with xmlFreeNodeList(). </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>XML node &lt;data&gt; with its content. &lt;data&gt; is included to provide valid (non-NULL) output in case of empty data returned (e.g. when all data are filterred out). Caller is supposed to free the returned structure with xmlFreeNode(). </dd></dl>
 
 </div>
 </div>
@@ -224,7 +224,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Dec 18 2012 13:48:07 for libnetconf by
+    <li class="footer">Generated on Wed Dec 19 2012 14:30:23 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>
