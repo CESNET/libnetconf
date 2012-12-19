@@ -956,7 +956,24 @@ char *nc_reply_get_data(const nc_reply *reply)
 	xmlBufferFree(data_buf);
 	xmlFreeDoc(aux_doc);
 
-	return ((char*) buf);
+	return (buf);
+}
+
+xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
+{
+	/* \todo use xPath */
+
+	if (reply == NULL ||
+			reply->type.reply != NC_REPLY_DATA ||
+			reply->doc == NULL ||
+			reply->doc->children == NULL || /* <rpc-reply> */
+			reply->doc->children->children == NULL /* <data> */) {
+		/* some part of the reply is corrupted */
+		ERROR("nc_reply_get_data: invalid input parameter.");
+		return (NULL);
+	}
+
+	return (xmlCopyNode(reply->doc->children->children, 1));
 }
 
 const char *nc_reply_get_errormsg(nc_reply *reply)
