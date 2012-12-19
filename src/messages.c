@@ -2470,7 +2470,7 @@ nc_rpc *ncxml_rpc_generic(xmlNodePtr data)
 		return (NULL);
 	}
 	rpc = nc_rpc_create(data);
-	rpc->type.rpc = NC_RPC_SESSION;
+	rpc->type.rpc = NC_RPC_UNKNOWN;
 
 	return (rpc);
 }
@@ -2493,7 +2493,7 @@ nc_rpc *nc_rpc_generic(const char* data)
 	}
 
 	rpc = nc_rpc_create(xmlDocGetRootElement(doc_data));
-	rpc->type.rpc = NC_RPC_SESSION;
+	rpc->type.rpc = NC_RPC_UNKNOWN;
 	xmlFreeDoc(doc_data);
 
 	return (rpc);
