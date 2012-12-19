@@ -605,7 +605,7 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 	return (nc_rpc_get_ds(rpc, "target"));
 }
 
-static char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
+static char* nc_rpc_get_copyconfig(const nc_rpc* rpc)
 {
 	xmlNodePtr rpc_root, op, source, config, aux_node;
 	xmlDocPtr aux_doc;
@@ -661,7 +661,39 @@ static char * nc_rpc_get_copyconfig (const nc_rpc *rpc)
 	return retval;
 }
 
-static char * nc_rpc_get_editconfig (const nc_rpc *rpc)
+static xmlNodePtr ncxml_rpc_get_copyconfig(const nc_rpc* rpc)
+{
+	xmlNodePtr rpc_root, op, source, config;
+
+	rpc_root = xmlDocGetRootElement (rpc->doc);
+	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
+		return NULL;
+	}
+
+	/* \todo Use xPath */
+
+	if ((op = rpc_root->children) == NULL) {
+		return NULL;
+	}
+
+	source = op->children;
+	while (source != NULL && !xmlStrEqual(source->name, BAD_CAST "source")) {
+		source = source->next;
+	}
+
+	if (source == NULL) {
+		return NULL;
+	}
+
+	config = source->children;
+	while (config != NULL && !xmlStrEqual(config->name, BAD_CAST "config")) {
+		config = config->next;
+	}
+
+	return (xmlCopyNode(config, 1));
+}
+
+static char* nc_rpc_get_editconfig(const nc_rpc* rpc)
 {
 	xmlNodePtr rpc_root, op, config, aux_node;
 	xmlDocPtr aux_doc;
@@ -708,7 +740,30 @@ static char * nc_rpc_get_editconfig (const nc_rpc *rpc)
 	return retval;
 }
 
-char * nc_rpc_get_config (const nc_rpc *rpc)
+static xmlNodePtr ncxml_rpc_get_editconfig(const nc_rpc* rpc)
+{
+	xmlNodePtr rpc_root, op, config;
+
+	rpc_root = xmlDocGetRootElement (rpc->doc);
+	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
+		return NULL;
+	}
+
+	/* \todo Use xPath */
+
+	if ((op = rpc_root->children) == NULL) {
+		return NULL;
+	}
+
+	config = op->children;
+	while (config != NULL && !xmlStrEqual(config->name, BAD_CAST "config")) {
+		config = config->next;
+	}
+
+	return (xmlCopyNode(config, 1));
+}
+
+char* nc_rpc_get_config(const nc_rpc *rpc)
 {
 	switch(nc_rpc_get_op(rpc)) {
 	case NC_OP_COPYCONFIG:
@@ -716,6 +771,21 @@ char * nc_rpc_get_config (const nc_rpc *rpc)
 		break;
 	case NC_OP_EDITCONFIG:
 		return (nc_rpc_get_editconfig(rpc));
+		break;
+	default:
+		/* other operations do not have config parameter */
+		return (NULL);
+	}
+}
+
+xmlNodePtr ncxml_rpc_get_config(const nc_rpc *rpc)
+{
+	switch(nc_rpc_get_op(rpc)) {
+	case NC_OP_COPYCONFIG:
+		return (ncxml_rpc_get_copyconfig(rpc));
+		break;
+	case NC_OP_EDITCONFIG:
+		return (ncxml_rpc_get_editconfig(rpc));
 		break;
 	default:
 		/* other operations do not have config parameter */

@@ -113,25 +113,25 @@ xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc *rpc);
 
 /**
  * @ingroup rpc_xml
- * @brief Get node (list) with the operation config parameter content (\<config\>
- * itself is not a part of the returned data). This function is valid only for
- * \<copy-config\> and \<edit-config\> RPCs.
+ * @brief Get \<config\> element from the RPC operation including its content.
+ * This function is valid only for \<copy-config\> and \<edit-config\> RPCs.
  *
  * @param[in] rpc \<copy-config\> or \<edit-config\> rpc message.
  *
- * @return XML node (with possible siblings) or NULL if no content is available.
- * Caller is supposed to free (the whole list of) the returned structure with
- * xmlFreeNodeList().
+ * @return XML node \<config\> with its content or NULL on error. Note that
+ * \<config\> can contain no data. Caller is supposed to free the returned
+ * structure with xmlFreeNode().
  */
 xmlNodePtr ncxml_rpc_get_config(const nc_rpc *rpc);
 
 /**
  * @ingroup reply_xml
- * @brief Get content of the \<data\> element in \<rpc-reply\>.
+ * @brief Get \<data\> element in \<rpc-reply\> including its content.
  * @param reply rpc-reply message.
- * @return XML node (with possible siblings) with the content of the \<data\>
- * element. Caller is supposed to free (the whole list) the returned
- * structure with xmlFreeNodeList().
+ * @return XML node \<data\> with its content. \<data\> is included to provide
+ * valid (non-NULL) output in case of empty data returned (e.g. when all data
+ * are filterred out). Caller is supposed to free the returned structure with
+ * xmlFreeNode().
  */
 xmlNodePtr ncxml_reply_get_data(const nc_reply *reply);
 
