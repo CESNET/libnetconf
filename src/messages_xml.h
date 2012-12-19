@@ -54,7 +54,10 @@
  * @param[in] ... Filter content:
  * - for #NC_FILTER_SUBTREE type, single variadic parameter
  * **const xmlNodePtr filter** with the content for the \<filter\> element is
- * accepted. If NULL is specified, Empty filter (RFC 6241 sec 6.4.2) is created.
+ * accepted. The filter parameter is not supposed to contain \<filter\> element,
+ * but only its content. The node is taken as a node list, so the sibling nodes
+ * are also added into the filter definition. If NULL is specified, Empty filter
+ * (RFC 6241 sec 6.4.2) is created.
  * @return Created NETCONF filter structure.
  */
 struct nc_filter *ncxml_filter_new(NC_FILTER_TYPE type, ...);
@@ -86,7 +89,6 @@ nc_reply* ncxml_reply_build(xmlDocPtr reply_dump);
  * @param[in] rpc rpc message.
  * @return XML document of the NETCONF's \<rpc\> message. Caller is supposed
  * to free the returned structure with xmlFreeDoc().
- * free().
  */
 xmlDocPtr ncxml_rpc_dump(const nc_rpc *rpc);
 
