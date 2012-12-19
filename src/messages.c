@@ -526,6 +526,24 @@ char * nc_rpc_get_op_content (const nc_rpc * rpc)
 	return retval;
 }
 
+xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc *rpc)
+{
+	xmlNodePtr root, opnode;
+
+	if (rpc == NULL || rpc->doc == NULL) {
+		return NULL;
+	}
+
+	if ((root = xmlDocGetRootElement (rpc->doc)) == NULL) {
+		return NULL;
+	}
+
+	/* ignore comments */
+	for (opnode = root->children; (opnode != NULL) && (opnode->type != XML_ELEMENT_NODE); opnode = opnode->next);
+
+	return (xmlCopyNode(opnode, 1));
+}
+
 NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc)
 {
 	if (rpc != NULL) {
