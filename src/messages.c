@@ -2058,6 +2058,23 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
 
 	if (source == NC_DATASTORE_CONFIG) {
 		config_s = va_arg(argp, const char*);
+
+		/* transform string to the xmlNodePtr */
+		/* add covering <config> element to allow to specify multiple root elements */
+		if (asprintf(&config_S, "<config>%s</config>", config_s) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			va_end(argp);
+			return (NULL);
+		}
+
+		/* prepare XML structure from given data */
+		config = xmlReadMemory(config_S, strlen(config_S), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		free(config_S);
+		if (config == NULL) {
+			ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+			va_end(argp);
+			return (NULL);
+		}
 	} else if (source == NC_DATASTORE_URL) {
 		source_url = va_arg(argp, const char*);
 	}
@@ -2066,24 +2083,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
 		target_url = va_arg(argp, const char*);
 	}
 
-	/* transform string to the xmlNodePtr */
-	/* add covering <config> element to allow to specify multiple root elements */
-	if (asprintf(&config_S, "<config>%s</config>", config_s) == -1) {
-		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		va_end(argp);
-		return (NULL);
-	}
-
-	/* prepare XML structure from given data */
-	config = xmlReadMemory(config_S, strlen(config_S), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-	free(config_S);
-	if (config == NULL) {
-		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
-		va_end(argp);
-		return (NULL);
-	}
-
-	retval = _rpc_copyconfig(source, target, config->children->children, source_url, target_url);
+	retval = _rpc_copyconfig(source, target, (config != NULL) ? config->children->children : NULL, source_url, target_url);
 	va_end(argp);
 	xmlFreeDoc(config);
 	return (retval);
