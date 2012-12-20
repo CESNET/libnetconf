@@ -421,17 +421,18 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 {
 	xmlNodePtr root, auxnode;
 
-	if (rpc == NULL || rpc->doc == NULL || rpc->doc->children == NULL || rpc->doc->children->children == NULL) {
-		WARN("Invalid parameter for nc_rpc_get_operation().")
+	if (rpc == NULL || rpc->doc == NULL) {
+		ERROR("%s: Invalid parameter (missing message or message document).", __func__);
 		return (NC_OP_UNKNOWN);
 	}
 
-	if ((root = xmlDocGetRootElement (rpc->doc)) == NULL) {
+	if ((root = xmlDocGetRootElement (rpc->doc)) == NULL || root->children == NULL) {
+		ERROR("%s: Invalid parameter (invalid message structure).", __func__);
 		return (NC_OP_UNKNOWN);
 	}
 
-	if (xmlStrcmp(root->name, BAD_CAST "rpc") == 0) {
-		WARN("Invalid rpc message for %s - not an <rpc> message.", __func__);
+	if (xmlStrcmp(root->name, BAD_CAST "rpc") != 0) {
+		ERROR("%s: Invalid rpc message - not an <rpc> message.", __func__);
 		return (NC_OP_UNKNOWN);
 	}
 
