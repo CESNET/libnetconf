@@ -484,36 +484,48 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 	return (NC_OP_UNKNOWN);
 }
 
-char * nc_rpc_get_op_content (const nc_rpc * rpc)
+char* nc_rpc_get_op_content (const nc_rpc* rpc)
 {
-	char * retval;
+	char *retval = NULL;
 	xmlDocPtr aux_doc;
 	xmlNodePtr root;
 	xmlBufferPtr buffer;
+	xmlXPathObjectPtr result = NULL;
+	int i;
 
 	if (rpc == NULL || rpc->doc == NULL) {
 		return NULL;
 	}
 
-	if ((root = xmlDocGetRootElement (rpc->doc)) == NULL) {
-		return NULL;
-	}
+	result = xmlXPathEvalExpression(BAD_CAST  "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":*", rpc->ctxt);
+	if (result != NULL && !xmlXPathNodeSetIsEmpty(result->nodesetval) ) {
+		buffer = xmlBufferCreate();
+		if (buffer == NULL) {
+			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+			return NULL;
+		}
+		if ((root = xmlDocGetRootElement (rpc->doc)) == NULL) {
+			return NULL;
+		}
 
-	/* by copying node, move all needed namespaces into the content nodes */
-	aux_doc = xmlNewDoc(BAD_CAST "1.0");
-	xmlDocSetRootElement(aux_doc, xmlCopyNode(root->children, 1));
-	buffer = xmlBufferCreate ();
-	xmlNodeDump (buffer, aux_doc, aux_doc->children, 1, 1);
-	retval = strdup((char *)xmlBufferContent (buffer));
-	xmlBufferFree (buffer);
-	xmlFreeDoc(aux_doc);
+		/* by copying node, move all needed namespaces into the content nodes */
+		aux_doc = xmlNewDoc(BAD_CAST "1.0");
+		xmlDocSetRootElement(aux_doc, xmlCopyNodeList(root->children));
+		for (i = 0; i < result->nodesetval->nodeNr; i++) {
+			xmlNodeDump (buffer, aux_doc, result->nodesetval->nodeTab[i], 1, 1);
+		}
+		retval = strdup((char *)xmlBufferContent (buffer));
+		xmlXPathFreeObject(result);
+		xmlBufferFree (buffer);
+		xmlFreeDoc(aux_doc);
+	}
 
 	return retval;
 }
 
 xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc *rpc)
 {
-	xmlNodePtr root, opnode;
+	xmlNodePtr root;
 
 	if (rpc == NULL || rpc->doc == NULL) {
 		return NULL;
@@ -523,10 +535,7 @@ xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc *rpc)
 		return NULL;
 	}
 
-	/* ignore comments */
-	for (opnode = root->children; (opnode != NULL) && (opnode->type != XML_ELEMENT_NODE); opnode = opnode->next);
-
-	return (xmlCopyNode(opnode, 1));
+	return (xmlCopyNodeList(root->children));
 }
 
 NC_RPC_TYPE nc_rpc_get_type(nc_rpc *rpc)

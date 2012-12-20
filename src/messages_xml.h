@@ -108,8 +108,8 @@ nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump);
  * @ingroup rpc_xml
  * @brief Get content of the operation specification from the given rpc.
  * @param[in] rpc rpc message.
- * @return libxml2 node structure with the NETCONF operation element and its
- * content. Caller is supposed to free the returned structure with xmlFreeNode().
+ * @return libxml2 node structure with the NETCONF operation element(s) and its
+ * content. Caller is supposed to free the returned structure with xmlFreeNodeList().
  */
 xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc *rpc);
 
