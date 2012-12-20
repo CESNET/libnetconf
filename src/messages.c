@@ -271,16 +271,20 @@ static struct nc_msg* ncxml_msg_build(xmlDocPtr msg_dump)
 	return (msg);
 }
 
-NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc, const struct nc_session *session)
+NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *session)
 {
 	xmlXPathContextPtr rpc_ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;
 	xmlChar* data;
 	NCWD_MODE retval;
 
-
-	if (nc_rpc_get_type(rpc) == NC_RPC_HELLO) {
+	if (rpc == NULL || nc_rpc_get_type(rpc) == NC_RPC_HELLO) {
 		return (NCWD_MODE_DISABLED);
+	}
+
+	if (rpc->with_defaults != NCWD_MODE_DISABLED) {
+		/* already known */
+		return (rpc->with_defaults);
 	}
 
 	/* create xpath evaluation context */
@@ -333,137 +337,66 @@ NCWD_MODE nc_rpc_parse_withdefaults(const nc_rpc* rpc, const struct nc_session *
 		retval = ncdflt_get_basic_mode();
 	}
 	xmlXPathFreeContext(rpc_ctxt);
+
+	rpc->with_defaults = retval;
 	return (retval);
 }
 
 nc_rpc * nc_rpc_build (const char * rpc_dump)
 {
-	nc_rpc * rpc;
-	NC_OP op;
+	nc_rpc* rpc;
 
 	if ((rpc = nc_msg_build (rpc_dump)) == NULL) {
 		return NULL;
 	}
-
-	/* operation type */
-	op = nc_rpc_get_op (rpc);
-	switch (op) {
-	case (NC_OP_GETCONFIG):
-	case (NC_OP_GETSCHEMA):
-	case (NC_OP_GET):
-		rpc->type.rpc = NC_RPC_DATASTORE_READ;
-		break;
-	case (NC_OP_EDITCONFIG):
-	case (NC_OP_COPYCONFIG):
-	case (NC_OP_DELETECONFIG):
-	case (NC_OP_LOCK):
-	case (NC_OP_UNLOCK):
-	case (NC_OP_COMMIT):
-	case (NC_OP_DISCARDCHANGES):
-		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
-		break;
-	case (NC_OP_CLOSESESSION):
-	case (NC_OP_KILLSESSION):
-		rpc->type.rpc = NC_RPC_SESSION;
-		break;
-	default:
-		rpc->type.rpc = NC_RPC_UNKNOWN;
-		break;
-	}
+	/* set rpc type flag */
+	nc_rpc_get_type(rpc);
 
 	/* set with-defaults if any */
-	rpc->with_defaults = nc_rpc_parse_withdefaults(rpc, NULL);
+	nc_rpc_parse_withdefaults(rpc, NULL);
 
 	return rpc;
 }
 
 nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump)
 {
-	nc_rpc * rpc;
-	NC_OP op;
+	nc_rpc* rpc;
 
 	if ((rpc = ncxml_msg_build (rpc_dump)) == NULL) {
 		return NULL;
 	}
 
-	/* operation type */
-	op = nc_rpc_get_op (rpc);
-	switch (op) {
-	case (NC_OP_GETCONFIG):
-	case (NC_OP_GETSCHEMA):
-	case (NC_OP_GET):
-		rpc->type.rpc = NC_RPC_DATASTORE_READ;
-		break;
-	case (NC_OP_EDITCONFIG):
-	case (NC_OP_COPYCONFIG):
-	case (NC_OP_DELETECONFIG):
-	case (NC_OP_LOCK):
-	case (NC_OP_UNLOCK):
-	case (NC_OP_COMMIT):
-	case (NC_OP_DISCARDCHANGES):
-		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
-		break;
-	case (NC_OP_CLOSESESSION):
-	case (NC_OP_KILLSESSION):
-		rpc->type.rpc = NC_RPC_SESSION;
-		break;
-	default:
-		rpc->type.rpc = NC_RPC_UNKNOWN;
-		break;
-	}
+	/* set rpc type flag */
+	nc_rpc_get_type(rpc);
 
 	/* set with-defaults if any */
-	rpc->with_defaults = nc_rpc_parse_withdefaults(rpc, NULL);
+	nc_rpc_parse_withdefaults(rpc, NULL);
 
 	return rpc;
 }
 
-nc_reply * nc_reply_build (const char * reply_dump)
+nc_reply * nc_reply_build (const char* reply_dump)
 {
 	nc_reply * reply;
-	xmlNodePtr root;
 
 	if ((reply = nc_msg_build (reply_dump)) == NULL) {
-		return NULL;
+		return (NULL);
 	}
+	reply->type.reply = nc_reply_get_type(reply);
 
-	root = xmlDocGetRootElement (reply->doc);
-
-	if (xmlStrEqual (root->children->name, BAD_CAST "ok")) {
-		reply->type.reply = NC_REPLY_OK;
-	} else if (xmlStrEqual (root->children->name, BAD_CAST "data")) {
-		reply->type.reply = NC_REPLY_DATA;
-	} else if (xmlStrEqual (root->children->name, BAD_CAST "error")) {
-		reply->type.reply = NC_REPLY_ERROR;
-	} else {
-		reply->type.reply = NC_REPLY_UNKNOWN;
-	}
-
-	return reply;
+	return (reply);
 }
 
 nc_reply* ncxml_reply_build(xmlDocPtr reply_dump)
 {
 	nc_reply * reply;
-	xmlNodePtr root;
 
 	if ((reply = ncxml_msg_build (reply_dump)) == NULL) {
 		return NULL;
 	}
+	reply->type.reply = nc_reply_get_type(reply);
 
-	root = xmlDocGetRootElement (reply->doc);
-
-	if (xmlStrEqual (root->children->name, BAD_CAST "ok")) {
-		reply->type.reply = NC_REPLY_OK;
-	} else if (xmlStrEqual (root->children->name, BAD_CAST "data")) {
-		reply->type.reply = NC_REPLY_DATA;
-	} else if (xmlStrEqual (root->children->name, BAD_CAST "error")) {
-		reply->type.reply = NC_REPLY_ERROR;
-	} else {
-		reply->type.reply = NC_REPLY_UNKNOWN;
-	}
-
-	return reply;
+	return (reply);
 }
 
 const nc_msgid nc_reply_get_msgid(const nc_reply *reply)
@@ -486,46 +419,68 @@ const nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc)
 
 NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 {
+	xmlNodePtr root, auxnode;
+
 	if (rpc == NULL || rpc->doc == NULL || rpc->doc->children == NULL || rpc->doc->children->children == NULL) {
 		WARN("Invalid parameter for nc_rpc_get_operation().")
 		return (NC_OP_UNKNOWN);
 	}
 
-	if (rpc->doc->children->name && rpc->doc->children->children->name &&
-			xmlStrcmp(rpc->doc->children->name, BAD_CAST "rpc") == 0) {
-		if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "copy-config") == 0) {
-			return (NC_OP_COPYCONFIG);
-		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "delete-config") == 0) {
-			return (NC_OP_DELETECONFIG);
-		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "edit-config") == 0) {
-			return (NC_OP_EDITCONFIG);
-		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "get") == 0) {
-			return (NC_OP_GET);
-		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "get-config") == 0) {
-			return (NC_OP_GETCONFIG);
-		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "get-schema") == 0) {
-			return (NC_OP_GETSCHEMA);
-		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "lock") == 0) {
-			return (NC_OP_LOCK);
-		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "unlock") == 0) {
-			return (NC_OP_UNLOCK);
-		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "commit") == 0) {
-			return (NC_OP_COMMIT);
-		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "discard-changes") == 0) {
-			return (NC_OP_DISCARDCHANGES);
-		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "kill-session") == 0) {
-			return (NC_OP_KILLSESSION);
-		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "close-session") == 0) {
-			return (NC_OP_CLOSESESSION);
-		} else if (xmlStrcmp(rpc->doc->children->children->name, BAD_CAST "create-subscription") == 0) {
-			return (NC_OP_CREATESUBSCRIPTION);
-		} else {
-			return (NC_OP_UNKNOWN);
-		}
-	} else {
-		WARN("Invalid rpc message for nc_rpc_get_op - not a <rpc> message.");
+	if ((root = xmlDocGetRootElement (rpc->doc)) == NULL) {
 		return (NC_OP_UNKNOWN);
 	}
+
+	if (xmlStrcmp(root->name, BAD_CAST "rpc") == 0) {
+		WARN("Invalid rpc message for %s - not an <rpc> message.", __func__);
+		return (NC_OP_UNKNOWN);
+	}
+
+	auxnode = root->children;
+	while(1) {
+		if (auxnode == NULL) {
+			/* valid rpc operation not found */
+			return (NC_OP_UNKNOWN);
+			break;
+		}
+		if (auxnode->type != XML_ELEMENT_NODE) {
+			/* not interesting node, go to another */
+			auxnode = auxnode->next;
+			continue;
+		}
+		/* check known rpc operations */
+		if (xmlStrcmp(auxnode->name, BAD_CAST "copy-config") == 0) {
+			return (NC_OP_COPYCONFIG);
+		} else if (xmlStrcmp(auxnode->name, BAD_CAST "delete-config") == 0) {
+			return (NC_OP_DELETECONFIG);
+		} else if (xmlStrcmp(auxnode->name, BAD_CAST "edit-config") == 0) {
+			return (NC_OP_EDITCONFIG);
+		} else if (xmlStrcmp(auxnode->name, BAD_CAST "get") == 0) {
+			return (NC_OP_GET);
+		} else if (xmlStrcmp(auxnode->name, BAD_CAST "get-config") == 0) {
+			return (NC_OP_GETCONFIG);
+		} else if (xmlStrcmp(auxnode->name, BAD_CAST "get-schema") == 0) {
+			return (NC_OP_GETSCHEMA);
+		} else if (xmlStrcmp(auxnode->name, BAD_CAST "lock") == 0) {
+			return (NC_OP_LOCK);
+		} else if (xmlStrcmp(auxnode->name, BAD_CAST "unlock") == 0) {
+			return (NC_OP_UNLOCK);
+		} else if (xmlStrcmp(auxnode->name, BAD_CAST "commit") == 0) {
+			return (NC_OP_COMMIT);
+		} else if (xmlStrcmp(auxnode->name, BAD_CAST "discard-changes") == 0) {
+			return (NC_OP_DISCARDCHANGES);
+		} else if (xmlStrcmp(auxnode->name, BAD_CAST "kill-session") == 0) {
+			return (NC_OP_KILLSESSION);
+		} else if (xmlStrcmp(auxnode->name, BAD_CAST "close-session") == 0) {
+			return (NC_OP_CLOSESESSION);
+		} else if (xmlStrcmp(auxnode->name, BAD_CAST "create-subscription") == 0) {
+			return (NC_OP_CREATESUBSCRIPTION);
+		} else {
+			/* try another one */
+			auxnode = auxnode->next;
+			continue;
+		}
+	}
+	return (NC_OP_UNKNOWN);
 }
 
 char * nc_rpc_get_op_content (const nc_rpc * rpc)
@@ -573,9 +528,38 @@ xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc *rpc)
 	return (xmlCopyNode(opnode, 1));
 }
 
-NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc)
+NC_RPC_TYPE nc_rpc_get_type(nc_rpc *rpc)
 {
+	NC_OP op;
+
 	if (rpc != NULL) {
+		if (rpc->type.rpc == NC_RPC_UNKNOWN && rpc->doc != NULL) {
+			/* try to detect the type from the message body (according to the operation) */
+			op = nc_rpc_get_op (rpc);
+			switch (op) {
+			case (NC_OP_GETCONFIG):
+			case (NC_OP_GETSCHEMA):
+			case (NC_OP_GET):
+				rpc->type.rpc = NC_RPC_DATASTORE_READ;
+				break;
+			case (NC_OP_EDITCONFIG):
+			case (NC_OP_COPYCONFIG):
+			case (NC_OP_DELETECONFIG):
+			case (NC_OP_LOCK):
+			case (NC_OP_UNLOCK):
+			case (NC_OP_COMMIT):
+			case (NC_OP_DISCARDCHANGES):
+				rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+				break;
+			case (NC_OP_CLOSESESSION):
+			case (NC_OP_KILLSESSION):
+				rpc->type.rpc = NC_RPC_SESSION;
+				break;
+			default:
+				rpc->type.rpc = NC_RPC_UNKNOWN;
+				break;
+			}
+		}
 		return (rpc->type.rpc);
 	} else {
 		return (NC_RPC_UNKNOWN);
@@ -901,12 +885,14 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 	struct nc_filter * retval = NULL;
 	xmlNodePtr filter_node;
 	xmlChar *type_string;
+	NC_OP op;
 
 	if (rpc != NULL && rpc->doc != NULL &&
 			rpc->doc->children != NULL &&
 			rpc->doc->children->children != NULL &&
 			rpc->doc->children->children->children != NULL) {
-		if (nc_rpc_get_op(rpc) == NC_OP_GET || nc_rpc_get_op(rpc) == NC_OP_GETCONFIG || nc_rpc_get_op(rpc) == NC_OP_CREATESUBSCRIPTION) {
+		op = nc_rpc_get_op(rpc);
+		if (op == NC_OP_GET || op == NC_OP_GETCONFIG || op == NC_OP_CREATESUBSCRIPTION) {
 			/* doc -> <rpc> -> <op> -> <param> */
 			filter_node = rpc->doc->children->children->children;
 			while (filter_node) {
@@ -936,9 +922,47 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 	return retval;
 }
 
-NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
+NC_REPLY_TYPE nc_reply_get_type(nc_reply *reply)
 {
+	xmlNodePtr root, auxnode;
+
 	if (reply != NULL) {
+		if (reply->type.reply == NC_REPLY_UNKNOWN && reply->doc != NULL) {
+			/* try to detect the type from the message body */
+			if ((root = xmlDocGetRootElement (reply->doc)) == NULL) {
+				return (NC_REPLY_UNKNOWN);
+			}
+			auxnode = root->children;
+			while(1) {
+				if (auxnode == NULL) {
+					/* valid rpc-reply type not found */
+					reply->type.reply = NC_REPLY_UNKNOWN;
+					break;
+				}
+				if (auxnode->type != XML_ELEMENT_NODE) {
+					/* not interesting node, go to another */
+					auxnode = auxnode->next;
+					continue;
+				}
+				/* check known rpc-reply types */
+				if (xmlStrcmp (auxnode->name, BAD_CAST "ok") == 0) {
+					reply->type.reply = NC_REPLY_OK;
+					break;
+				} else if (xmlStrcmp (auxnode->name, BAD_CAST "rpc-error") == 0) {
+					reply->type.reply = NC_REPLY_ERROR;
+					reply->error = nc_msg_parse_error(reply);
+					break;
+				} else if (xmlStrcmp (auxnode->name, BAD_CAST "data") == 0) {
+					reply->type.reply = NC_REPLY_DATA;
+					break;
+				} else {
+					/* try another one */
+					auxnode = auxnode->next;
+					continue;
+				}
+			}
+		}
+
 		return (reply->type.reply);
 	} else {
 		return (NC_REPLY_UNKNOWN);

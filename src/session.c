@@ -1488,7 +1488,7 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 	int status;
 	unsigned long int revents;
 	NC_MSG_TYPE msgtype;
-	xmlNodePtr root, auxnode;
+	xmlNodePtr root;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to receive data.");
@@ -1680,80 +1680,20 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		goto malformed_msg;
 	}
 
+	/* parse and store message type */
 	root = xmlDocGetRootElement(retval->doc);
-	/* parse and store rpc-reply type */
 	if (xmlStrcmp (root->name, BAD_CAST "rpc-reply") == 0) {
 		msgtype = NC_MSG_REPLY;
-		auxnode = root->children;
-		while(1) {
-			if (auxnode == NULL) {
-				/* valid rpc-reply type not found */
-				retval->type.reply = NC_REPLY_UNKNOWN;
-				WARN("Unknown type of received <rpc-reply> detected.");
-				break;
-			}
-			if (auxnode->type != XML_ELEMENT_NODE) {
-				/* not interesting node, go to another */
-				auxnode = auxnode->next;
-				continue;
-			}
-			/* check known rpc-reply types */
-			if (xmlStrcmp (auxnode->name, BAD_CAST "ok") == 0) {
-				retval->type.reply = NC_REPLY_OK;
-				break;
-			} else if (xmlStrcmp (auxnode->name, BAD_CAST "rpc-error") == 0) {
-				retval->type.reply = NC_REPLY_ERROR;
-				retval->error = nc_msg_parse_error(retval);
-				break;
-			} else if (xmlStrcmp (auxnode->name, BAD_CAST "data") == 0) {
-				retval->type.reply = NC_REPLY_DATA;
-				break;
-			} else {
-				/* try another one */
-				auxnode = auxnode->next;
-				continue;
-			}
-		}
+		/* set reply type flag */
+		nc_reply_get_type(retval);
 	} else if (xmlStrcmp (root->name, BAD_CAST "rpc") == 0) {
 		msgtype = NC_MSG_RPC;
-		auxnode = root->children;
-		while(1) {
-			if (auxnode == NULL) {
-				/* valid rpc type not found */
-				retval->type.rpc = NC_RPC_UNKNOWN;
-				break;
-			}
-			if (auxnode->type != XML_ELEMENT_NODE) {
-				/* not interesting node, go to another */
-				auxnode = auxnode->next;
-				continue;
-			}
-			/* check known rpc types according to the rpc operation */
-			if ((xmlStrcmp (auxnode->name, BAD_CAST "get") == 0) ||
-					(xmlStrcmp (auxnode->name, BAD_CAST "get-schema") == 0) ||
-					(xmlStrcmp (auxnode->name, BAD_CAST "get-config") == 0)) {
-				retval->type.rpc = NC_RPC_DATASTORE_READ;
-				break;
-			} else if ((xmlStrcmp (auxnode->name, BAD_CAST "copy-config") == 0) ||
-					(xmlStrcmp (auxnode->name, BAD_CAST "delete-config") == 0) ||
-					(xmlStrcmp (auxnode->name, BAD_CAST "edit-config") == 0) ||
-					(xmlStrcmp (auxnode->name, BAD_CAST "lock") == 0) ||
-					(xmlStrcmp (auxnode->name, BAD_CAST "unlock") == 0) ||
-					(xmlStrcmp (auxnode->name, BAD_CAST "commit") == 0) ||
-					(xmlStrcmp (auxnode->name, BAD_CAST "discard-changes") == 0)) {
-				retval->type.rpc = NC_RPC_DATASTORE_WRITE;
-				break;
-			} else if ((xmlStrcmp (auxnode->name, BAD_CAST "kill-session") == 0) ||
-					(xmlStrcmp (auxnode->name, BAD_CAST "close-session") == 0) ||
-					(xmlStrcmp (auxnode->name, BAD_CAST "create-subscription") == 0)){
-				retval->type.rpc = NC_RPC_SESSION;
-				break;
-			} else {
-				/* try another one */
-				auxnode = auxnode->next;
-				continue;
-			}
-		}
+
+		/* set rpc type flag */
+		nc_rpc_get_type(retval);
+
+		/* set with-defaults if any */
+		nc_rpc_parse_withdefaults(retval, NULL);
 	} else if (xmlStrcmp (root->name, BAD_CAST "notification") == 0) {
 		/* we have notification */
 		msgtype = NC_MSG_NOTIFICATION;
