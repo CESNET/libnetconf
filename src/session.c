@@ -2010,7 +2010,7 @@ try_again:
 					ERROR("rpc requires with-defaults capability with unknown mode.");
 					e = nc_err_new(NC_ERR_INVALID_VALUE);
 					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
-					nc_err_set(e, NC_ERR_PARAM_MSG, "pc requires with-defaults capability with unknown mode.");
+					nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability with unknown mode.");
 					break;
 				}
 			}
