@@ -450,33 +450,45 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 			auxnode = auxnode->next;
 			continue;
 		}
-		/* \todo check namespaces */
 		/* check known rpc operations */
-		if (xmlStrcmp(auxnode->name, BAD_CAST "copy-config") == 0) {
+		if ((xmlStrcmp(auxnode->name, BAD_CAST "copy-config") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_COPYCONFIG);
-		} else if (xmlStrcmp(auxnode->name, BAD_CAST "delete-config") == 0) {
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "delete-config") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_DELETECONFIG);
-		} else if (xmlStrcmp(auxnode->name, BAD_CAST "edit-config") == 0) {
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "edit-config") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_EDITCONFIG);
-		} else if (xmlStrcmp(auxnode->name, BAD_CAST "get") == 0) {
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "get") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_GET);
-		} else if (xmlStrcmp(auxnode->name, BAD_CAST "get-config") == 0) {
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "get-config") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_GETCONFIG);
-		} else if (xmlStrcmp(auxnode->name, BAD_CAST "get-schema") == 0) {
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "get-schema") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_MONITORING) == 0)) {
 			return (NC_OP_GETSCHEMA);
-		} else if (xmlStrcmp(auxnode->name, BAD_CAST "lock") == 0) {
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "lock") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_LOCK);
-		} else if (xmlStrcmp(auxnode->name, BAD_CAST "unlock") == 0) {
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "unlock") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_UNLOCK);
-		} else if (xmlStrcmp(auxnode->name, BAD_CAST "commit") == 0) {
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "commit") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_COMMIT);
-		} else if (xmlStrcmp(auxnode->name, BAD_CAST "discard-changes") == 0) {
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "discard-changes") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_DISCARDCHANGES);
-		} else if (xmlStrcmp(auxnode->name, BAD_CAST "kill-session") == 0) {
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "kill-session") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_KILLSESSION);
-		} else if (xmlStrcmp(auxnode->name, BAD_CAST "close-session") == 0) {
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "close-session") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_CLOSESESSION);
-		} else if (xmlStrcmp(auxnode->name, BAD_CAST "create-subscription") == 0) {
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "create-subscription") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_NOTIFICATIONS) == 0)) {
 			return (NC_OP_CREATESUBSCRIPTION);
 		} else {
 			/* try another one */
