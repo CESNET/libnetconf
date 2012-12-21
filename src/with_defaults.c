@@ -94,6 +94,7 @@ NCWD_MODE ncdflt_get_supported()
 int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCWD_MODE mode)
 {
 	xmlNodePtr root, n;
+	xmlNsPtr ns;
 	char* mode_s;
 
 	if (rpc == NULL) {
@@ -130,7 +131,8 @@ int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCWD_MODE mode)
 		root = xmlDocGetRootElement(rpc->doc);
 		if (root != NULL && root->children != NULL) {
 			n = xmlNewChild(root->children, NULL, BAD_CAST "with-defaults", BAD_CAST mode_s);
-			xmlNewNs(n, BAD_CAST "urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults", NULL);
+			ns = xmlNewNs(n, BAD_CAST "urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults", NULL);
+			xmlSetNs(n, ns);
 		} else {
 			ERROR("%s: Invalid RPC format.", __func__);
 			return (EXIT_FAILURE);
@@ -328,6 +330,8 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 {
 	xmlXPathContextPtr model_ctxt = NULL;
 	xmlXPathObjectPtr defaults = NULL;
+	xmlNodePtr root;
+	xmlNsPtr ns;
 	int i;
 
 	if (config == NULL || model == NULL) {
@@ -353,7 +357,8 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 	if (defaults != NULL) {
 		/* if report-all-tagged, add namespace for default attribute into the whole doc */
 		if (mode == NCWD_MODE_ALL_TAGGED) {
-			xmlNewNs(xmlDocGetRootElement(config), BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
+			ns = xmlNewNs(root = xmlDocGetRootElement(config), BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
+			xmlSetNs(root, ns);
 		}
 		/* process all defaults elements */
 		for (i = 0; i < defaults->nodesetval->nodeNr; i++) {

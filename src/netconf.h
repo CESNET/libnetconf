@@ -160,6 +160,11 @@ typedef enum NC_RPC_TYPE {
 	NC_RPC_SESSION /**< \<rpc\> contains operation affecting session */
 } NC_RPC_TYPE;
 
+typedef enum NC_NOTIF_TYPE {
+	NC_NTF_UNKNOWN,
+	NC_NTF_BASE
+} NC_NOTIF_TYPE;
+
 /**
  * @brief Enumeration of supported \<rpc\> operations
  * @ingroup rpc

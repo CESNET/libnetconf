@@ -240,11 +240,21 @@ static struct nc_msg* ncxml_msg_build(xmlDocPtr msg_dump)
 	struct nc_msg* msg;
 	const char* id;
 
-	if ((msg = malloc (sizeof(struct nc_msg))) == NULL) {
+	if ((msg = malloc(sizeof(struct nc_msg))) == NULL) {
 		return NULL;
 	}
 
 	msg->doc = msg_dump;
+	msg->next = NULL;
+	msg->error = NULL;
+	msg->with_defaults = NCWD_MODE_DISABLED;
+	msg->type.rpc = 0;
+
+	if ((id = nc_msg_parse_msgid (msg)) != NULL) {
+		msg->msgid = strdup(id);
+	} else {
+		msg->msgid = NULL;
+	}
 
 	/* create xpath evaluation context */
 	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
@@ -259,14 +269,6 @@ static struct nc_msg* ncxml_msg_build(xmlDocPtr msg_dump)
 		nc_msg_free(msg);
 		return NULL;
 	}
-
-	if ((id = nc_msg_parse_msgid (msg)) != NULL) {
-		msg->msgid = strdup(id);
-	} else {
-		msg->msgid = NULL;
-	}
-	msg->error = NULL;
-	msg->with_defaults = NCWD_MODE_DISABLED;
 
 	return (msg);
 }
@@ -448,6 +450,7 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 			auxnode = auxnode->next;
 			continue;
 		}
+		/* \todo check namespaces */
 		/* check known rpc operations */
 		if (xmlStrcmp(auxnode->name, BAD_CAST "copy-config") == 0) {
 			return (NC_OP_COPYCONFIG);
@@ -497,7 +500,7 @@ char* nc_rpc_get_op_content (const nc_rpc* rpc)
 		return NULL;
 	}
 
-	result = xmlXPathEvalExpression(BAD_CAST  "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":*", rpc->ctxt);
+	result = xmlXPathEvalExpression(BAD_CAST  "/"NC_NS_BASE10_ID":rpc/*", rpc->ctxt);
 	if (result != NULL && !xmlXPathNodeSetIsEmpty(result->nodesetval) ) {
 		buffer = xmlBufferCreate();
 		if (buffer == NULL) {
@@ -563,6 +566,7 @@ NC_RPC_TYPE nc_rpc_get_type(nc_rpc *rpc)
 				break;
 			case (NC_OP_CLOSESESSION):
 			case (NC_OP_KILLSESSION):
+			case (NC_OP_CREATESUBSCRIPTION):
 				rpc->type.rpc = NC_RPC_SESSION;
 				break;
 			default:
@@ -1058,6 +1062,7 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 	nc_rpc *msg;
 	xmlNodePtr node;
 	int i;
+	xmlNsPtr ns;
 
 	if (cpblts == NULL || cpblts[0] == NULL) {
 		ERROR("hello: no capability specified");
@@ -1081,7 +1086,8 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 	msg->doc->children = xmlNewDocNode(msg->doc, NULL, BAD_CAST NC_HELLO_MSG, NULL);
 
 	/* set namespace */
-	xmlNewNs(msg->doc->children, (xmlChar *) NC_NS_BASE10, NULL);
+	ns = xmlNewNs(msg->doc->children, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(msg->doc->children, ns);
 
 	/* create capabilities node */
 	node = xmlNewChild(msg->doc->children, NULL, BAD_CAST "capabilities", NULL);
@@ -1230,6 +1236,7 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 	struct nc_msg* msg;
 
 	xmlDocPtr xmlmsg = NULL;
+	xmlNsPtr ns;
 
 	if (content == NULL) {
 		ERROR("%s: Invalid \'content\' parameter.", __func__);
@@ -1247,6 +1254,10 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 		xmlFreeDoc(xmlmsg);
 		return NULL;
 	}
+
+	/* set namespace */
+	ns = xmlNewNs(xmlmsg->children, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(xmlmsg->children, ns);
 
 	if (xmlAddChild(xmlmsg->children, xmlCopyNode(content, 1)) == NULL) {
 		ERROR("xmlAddChild failed (%s:%d).", __FILE__, __LINE__);
@@ -1277,6 +1288,9 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 		nc_msg_free(msg);
 		return NULL;
 	}
+
+	/* remove duplicated namespace definitions */
+	xmlDOMWrapReconcileNamespaces(NULL, msg->doc->children, 1);
 
 	return (msg);
 }
@@ -1309,11 +1323,16 @@ nc_reply *nc_reply_ok()
 {
 	nc_reply *reply;
 	xmlNodePtr content;
+	xmlNsPtr ns;
 
 	if ((content = xmlNewNode(NULL, BAD_CAST "ok")) == NULL) {
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
 
 	reply = nc_reply_create(content);
 	reply->type.reply = NC_REPLY_OK;
@@ -1330,12 +1349,12 @@ nc_reply *nc_reply_data(const char* data)
 	struct nc_err* e;
 
 	if (data != NULL) {
-		if (asprintf(&data_env, "<data>%s</data>", data) == -1) {
+		if (asprintf(&data_env, "<data xmlns=\"%s\">%s</data>", NC_NS_BASE10, data) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 		}
 	} else {
-		if (asprintf(&data_env, "<data/>") == -1) {
+		if (asprintf(&data_env, "<data xmlns=\"%s\"/>", NC_NS_BASE10) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 		}
@@ -1363,6 +1382,7 @@ nc_reply *ncxml_reply_data(const xmlNodePtr data)
 {
 	nc_reply *reply;
 	xmlNodePtr content;
+	xmlNsPtr ns;
 
 	content = xmlNewNode(NULL, BAD_CAST "data");
 	if (content == NULL) {
@@ -1376,6 +1396,10 @@ nc_reply *ncxml_reply_data(const xmlNodePtr data)
 		return (NULL);
 	}
 
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
+
 	reply = nc_reply_create(content);
 	reply->type.reply = NC_REPLY_DATA;
 	xmlFreeNode(content);
@@ -1386,15 +1410,21 @@ nc_reply *ncxml_reply_data(const xmlNodePtr data)
 static xmlNodePtr new_reply_error_content(struct nc_err* error)
 {
 	xmlNodePtr content, einfo = NULL, first = NULL;
+	xmlNsPtr ns = NULL;
 
 	while (error != NULL) {
 		if ((content = xmlNewNode(NULL, BAD_CAST "rpc-error")) == NULL) {
 			ERROR("xmlNewNode failed (%s:%d).", __FILE__, __LINE__);
 			return (NULL);
 		}
+		if (ns == NULL) {
+			/* set namespace */
+			ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+		}
+		xmlSetNs(content, ns);
 
 		if (error->type != NULL) {
-			if (xmlNewChild(content, NULL, BAD_CAST "error-type", BAD_CAST error->type) == NULL) {
+			if (xmlNewChild(content, ns, BAD_CAST "error-type", BAD_CAST error->type) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
@@ -1402,7 +1432,7 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 		}
 
 		if (error->tag != NULL) {
-			if (xmlNewChild(content, NULL, BAD_CAST "error-tag", BAD_CAST error->tag) == NULL) {
+			if (xmlNewChild(content, ns, BAD_CAST "error-tag", BAD_CAST error->tag) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
@@ -1410,7 +1440,7 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 		}
 
 		if (error->severity != NULL) {
-			if (xmlNewChild(content, NULL, BAD_CAST "error-severity", BAD_CAST error->severity) == NULL) {
+			if (xmlNewChild(content, ns, BAD_CAST "error-severity", BAD_CAST error->severity) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
@@ -1418,7 +1448,7 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 		}
 
 		if (error->apptag != NULL) {
-			if (xmlNewChild(content, NULL, BAD_CAST "error-app-tag", BAD_CAST error->apptag) == NULL) {
+			if (xmlNewChild(content, ns, BAD_CAST "error-app-tag", BAD_CAST error->apptag) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
@@ -1426,7 +1456,7 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 		}
 
 		if (error->path != NULL) {
-			if (xmlNewChild(content, NULL, BAD_CAST "error-path", BAD_CAST error->path) == NULL) {
+			if (xmlNewChild(content, ns, BAD_CAST "error-path", BAD_CAST error->path) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
@@ -1434,7 +1464,7 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 		}
 
 		if (error->message != NULL) {
-			if (xmlNewChild(content, NULL, BAD_CAST "error-message", BAD_CAST error->message) == NULL) {
+			if (xmlNewChild(content, ns, BAD_CAST "error-message", BAD_CAST error->message) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
@@ -1445,14 +1475,14 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 		if (error->sid != NULL || error->attribute != NULL || error->element != NULL || error->ns != NULL) {
 			/* prepare error-info */
 
-			if ((einfo = xmlNewChild(content, NULL, BAD_CAST "error-info", NULL)) == NULL) {
+			if ((einfo = xmlNewChild(content, ns, BAD_CAST "error-info", NULL)) == NULL) {
 				ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 				xmlFreeNode(content);
 				return (NULL);
 			}
 
 			if (error->sid != NULL) {
-				if (xmlNewChild(einfo, NULL, BAD_CAST "session-id", BAD_CAST error->sid) == NULL) {
+				if (xmlNewChild(einfo, ns, BAD_CAST "session-id", BAD_CAST error->sid) == NULL) {
 					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 					xmlFreeNode(content);
 					return (NULL);
@@ -1460,7 +1490,7 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 			}
 
 			if (error->attribute != NULL) {
-				if (xmlNewChild(einfo, NULL, BAD_CAST "bad-attribute", BAD_CAST error->attribute) == NULL) {
+				if (xmlNewChild(einfo, ns, BAD_CAST "bad-attribute", BAD_CAST error->attribute) == NULL) {
 					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 					xmlFreeNode(content);
 					return (NULL);
@@ -1468,7 +1498,7 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 			}
 
 			if (error->element != NULL) {
-				if (xmlNewChild(einfo, NULL, BAD_CAST "bad-element", BAD_CAST error->element) == NULL) {
+				if (xmlNewChild(einfo, ns, BAD_CAST "bad-element", BAD_CAST error->element) == NULL) {
 					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 					xmlFreeNode(content);
 					return (NULL);
@@ -1476,7 +1506,7 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 			}
 
 			if (error->ns != NULL) {
-				if (xmlNewChild(einfo, NULL, BAD_CAST "bad-namespace", BAD_CAST error->ns) == NULL) {
+				if (xmlNewChild(einfo, ns, BAD_CAST "bad-namespace", BAD_CAST error->ns) == NULL) {
 					ERROR("xmlNewChild failed (%s:%d).", __FILE__, __LINE__);
 					xmlFreeNode(content);
 					return (NULL);
@@ -1647,11 +1677,15 @@ nc_rpc *nc_rpc_closesession()
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
+	xmlNsPtr ns;
 
 	if ((content = xmlNewNode(NULL, BAD_CAST "close-session")) == NULL) {
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
 
 	if ((rpc = nc_rpc_create(content)) != NULL) {
 		rpc->type.rpc = NC_RPC_SESSION;
@@ -1685,6 +1719,7 @@ int nc_rpc_capability_attr(nc_rpc* rpc, NC_CAP_ATTR attr, ...)
 {
 	va_list argp;
 	xmlNodePtr root, newnode;
+	xmlNsPtr ns;
 	NCWD_MODE mode;
 	char *wd_mode;
 
@@ -1744,7 +1779,8 @@ int nc_rpc_capability_attr(nc_rpc* rpc, NC_CAP_ATTR attr, ...)
 				va_end(argp);
 				return (EXIT_FAILURE);
 			}
-			xmlNewNs(newnode, BAD_CAST NC_NS_WITHDEFAULTS, NULL);
+			ns = xmlNewNs(newnode, BAD_CAST NC_NS_WITHDEFAULTS, NULL);
+			xmlSetNs(newnode, ns);
 		} else {
 			/* \todo remove \<with-defaults\> element if exists */
 		}
@@ -1766,6 +1802,7 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node;
+	xmlNsPtr ns;
 	char* datastore;
 
 
@@ -1797,7 +1834,11 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
 		xmlFreeNode(content);
 		return (NULL);
 	}
-	if (xmlNewChild(node, NULL, BAD_CAST datastore, NULL) == NULL) {
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
+
+	if (xmlNewChild(node, ns, BAD_CAST datastore, NULL) == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
 		return (NULL);
@@ -1821,11 +1862,15 @@ nc_rpc *nc_rpc_get(const struct nc_filter *filter)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
+	xmlNsPtr ns;
 
 	if ((content = xmlNewNode(NULL, BAD_CAST "get")) == NULL) {
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
 
 	/* add filter specification if any required */
 	if (process_filter_param(content, filter) != 0) {
@@ -1847,6 +1892,7 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 	nc_rpc *rpc;
 	va_list argp;
 	xmlNodePtr content, node_target;
+	xmlNsPtr ns;
 	char* datastore = NULL;
 	const char* url;
 
@@ -1874,8 +1920,11 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
 
-	node_target = xmlNewChild(content, NULL, BAD_CAST "target", NULL);
+	node_target = xmlNewChild(content, ns, BAD_CAST "target", NULL);
 	if (node_target == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
@@ -1886,7 +1935,7 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 		/* url */
 		va_start(argp, target);
 		url = va_arg(argp, const char*);
-		if (xmlNewChild(node_target, NULL, BAD_CAST "url", BAD_CAST url) == NULL) {
+		if (xmlNewChild(node_target, ns, BAD_CAST "url", BAD_CAST url) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			va_end(argp);
@@ -1895,7 +1944,7 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 		va_end(argp);
 	} else {
 		/* running, startup, candidate */
-		if (xmlNewChild(node_target, NULL, BAD_CAST datastore, NULL) == NULL) {
+		if (xmlNewChild(node_target, ns, BAD_CAST datastore, NULL) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
@@ -1914,6 +1963,7 @@ nc_rpc *nc_rpc_lock(NC_DATASTORE target)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_target;
+	xmlNsPtr ns;
 	char* datastore;
 
 	switch (target) {
@@ -1936,14 +1986,17 @@ nc_rpc *nc_rpc_lock(NC_DATASTORE target)
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
 
-	node_target = xmlNewChild(content, NULL, BAD_CAST "target", NULL);
+	node_target = xmlNewChild(content, ns, BAD_CAST "target", NULL);
 	if (node_target == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
 		return (NULL);
 	}
-	if (xmlNewChild(node_target, NULL, BAD_CAST datastore, NULL) == NULL) {
+	if (xmlNewChild(node_target, ns, BAD_CAST datastore, NULL) == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
 		return (NULL);
@@ -1961,6 +2014,7 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE target)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_target;
+	xmlNsPtr ns;
 	char* datastore;
 
 	switch (target) {
@@ -1983,14 +2037,17 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE target)
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
 
-	node_target = xmlNewChild(content, NULL, BAD_CAST "target", NULL);
+	node_target = xmlNewChild(content, ns, BAD_CAST "target", NULL);
 	if (node_target == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
 		return (NULL);
 	}
-	if (xmlNewChild(node_target, NULL, BAD_CAST datastore, NULL) == NULL) {
+	if (xmlNewChild(node_target, ns, BAD_CAST datastore, NULL) == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
 		return (NULL);
@@ -2008,6 +2065,7 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 {
 	nc_rpc *rpc = NULL;
 	xmlNodePtr content, node_target, node_source, node_config;
+	xmlNsPtr ns;
 	NC_DATASTORE params[2] = {source, target};
 	char *datastores[2]; /* 0 - source, 1 - target */
 	int i;
@@ -2058,9 +2116,12 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
 
 	/* <source> */
-	node_source = xmlNewChild(content, NULL, BAD_CAST "source", NULL);
+	node_source = xmlNewChild(content, ns, BAD_CAST "source", NULL);
 	if (node_source == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		goto cleanup;
@@ -2074,7 +2135,7 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 		/* RFC 6241 defines \<config\> as anyxml and thus it can be empty */
 
 		/* create empty config element in rpc request */
-		if ((node_config = xmlNewChild(node_source, NULL, BAD_CAST "config", NULL)) == NULL) {
+		if ((node_config = xmlNewChild(node_source, ns, BAD_CAST "config", NULL)) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
 		}
@@ -2087,33 +2148,33 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 		}
 	} else if (source_url != NULL) {
 		/* source is specified as URL */
-		if (xmlNewChild(node_source, NULL, BAD_CAST "url", BAD_CAST source_url) == NULL) {
+		if (xmlNewChild(node_source, ns, BAD_CAST "url", BAD_CAST source_url) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
 		}
 	} else {
 		/* source is one of the standard datastores */
-		if (xmlNewChild(node_source, NULL, BAD_CAST datastores[0], NULL) == NULL) {
+		if (xmlNewChild(node_source, ns, BAD_CAST datastores[0], NULL) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
 		}
 	}
 
 	/* <target> */
-	node_target = xmlNewChild(content, NULL, BAD_CAST "target", NULL);
+	node_target = xmlNewChild(content, ns, BAD_CAST "target", NULL);
 	if (node_target == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		goto cleanup;
 	}
 	if (target_url != NULL) {
 		/* source is specified as URL */
-		if (xmlNewChild(node_source, NULL, BAD_CAST "url", BAD_CAST target_url) == NULL) {
+		if (xmlNewChild(node_source, ns, BAD_CAST "url", BAD_CAST target_url) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
 		}
 	} else {
 		/* standard datastore */
-		if (xmlNewChild(node_target, NULL, BAD_CAST datastores[1], NULL) == NULL) {
+		if (xmlNewChild(node_target, ns, BAD_CAST datastores[1], NULL) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
 		}
@@ -2201,6 +2262,7 @@ static nc_rpc *_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT
 {
 	nc_rpc *rpc = NULL;
 	xmlNodePtr content, node_target, node_defop, node_erropt, node_config;
+	xmlNsPtr ns;
 	char* datastore, *defop = NULL, *erropt = NULL;
 
 	/* detect target datastore */
@@ -2264,9 +2326,12 @@ static nc_rpc *_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
 
 	/* set <target> element */
-	node_target = xmlNewChild(content, NULL, BAD_CAST "target", NULL);
+	node_target = xmlNewChild(content, ns, BAD_CAST "target", NULL);
 	if (node_target == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		goto cleanup;
@@ -2278,7 +2343,7 @@ static nc_rpc *_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT
 
 	/* set <default-operation> element */
 	if (default_operation != 0) {
-		node_defop = xmlNewChild(content, NULL, BAD_CAST "default-operation", BAD_CAST defop);
+		node_defop = xmlNewChild(content, ns, BAD_CAST "default-operation", BAD_CAST defop);
 		if (node_defop == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
@@ -2287,7 +2352,7 @@ static nc_rpc *_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT
 
 	/* set <error-option> element */
 	if (error_option != 0) {
-		node_erropt = xmlNewChild(content, NULL, BAD_CAST "error-option", BAD_CAST erropt);
+		node_erropt = xmlNewChild(content, ns, BAD_CAST "error-option", BAD_CAST erropt);
 		if (node_erropt == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
@@ -2298,7 +2363,7 @@ static nc_rpc *_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT
 		/* set <config> element */
 
 		/* create empty config element in rpc request */
-		if ((node_config = xmlNewChild(content, NULL, BAD_CAST "config", NULL)) == NULL) {
+		if ((node_config = xmlNewChild(content, ns, BAD_CAST "config", NULL)) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
 		}
@@ -2311,7 +2376,7 @@ static nc_rpc *_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT
 		}
 	} else if (source == NC_DATASTORE_URL) {
 		/* set <url> instead of <config> */
-		if (xmlNewChild(content, NULL, BAD_CAST "url", BAD_CAST source_url) == NULL) {
+		if (xmlNewChild(content, ns, BAD_CAST "url", BAD_CAST source_url) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
 		}
@@ -2405,6 +2470,7 @@ nc_rpc *nc_rpc_killsession(const char *kill_sid)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_sid;
+	xmlNsPtr ns;
 
 	/* check input parameter */
 	if (kill_sid == NULL || strlen(kill_sid) == 0) {
@@ -2416,8 +2482,11 @@ nc_rpc *nc_rpc_killsession(const char *kill_sid)
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
 
-	node_sid = xmlNewChild(content, NULL, BAD_CAST "session-id", BAD_CAST kill_sid);
+	node_sid = xmlNewChild(content, ns, BAD_CAST "session-id", BAD_CAST kill_sid);
 	if (node_sid == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
@@ -2436,6 +2505,7 @@ nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* form
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
+	xmlNsPtr ns;
 
 	/* check mandatory input parameter */
 	if (name == NULL) {
@@ -2447,16 +2517,17 @@ nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* form
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
-	xmlNewNs(content, BAD_CAST NC_NS_MONITORING, NULL);
+	ns = xmlNewNs(content, BAD_CAST NC_NS_MONITORING, NULL);
+	xmlSetNs(content, ns);
 
-	if (xmlNewChild(content, NULL, BAD_CAST "identifier", BAD_CAST name) == NULL) {
+	if (xmlNewChild(content, ns, BAD_CAST "identifier", BAD_CAST name) == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
 		return (NULL);
 	}
 
 	if (version != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "version", BAD_CAST version) == NULL) {
+		if (xmlNewChild(content, ns, BAD_CAST "version", BAD_CAST version) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
@@ -2464,7 +2535,7 @@ nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* form
 	}
 
 	if (format != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "format", BAD_CAST format) == NULL) {
+		if (xmlNewChild(content, ns, BAD_CAST "format", BAD_CAST format) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
@@ -2483,6 +2554,7 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 {
 	nc_rpc *rpc = NULL;
 	xmlNodePtr content;
+	xmlNsPtr ns;
 	char* time;
 
 	/* prepare notification namespace */
@@ -2492,11 +2564,12 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
-	xmlNewNs(content, BAD_CAST NC_NS_NOTIFICATIONS, NULL);
+	ns = xmlNewNs(content, BAD_CAST NC_NS_NOTIFICATIONS, NULL);
+	xmlSetNs(content, ns);
 
 	/* add <stream> specification if set */
 	if (stream != NULL) {
-		if (xmlNewChild(content, NULL, BAD_CAST "stream", BAD_CAST stream) == NULL) {
+		if (xmlNewChild(content, ns, BAD_CAST "stream", BAD_CAST stream) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			return (NULL);
@@ -2512,7 +2585,7 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 	/* add <startTime> specification if set */
 	if (start != NULL) {
 		time = nc_time2datetime(*start);
-		if (time == NULL || xmlNewChild(content, NULL, BAD_CAST "startTime", BAD_CAST time) == NULL) {
+		if (time == NULL || xmlNewChild(content, ns, BAD_CAST "startTime", BAD_CAST time) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			if (time != NULL) {
@@ -2526,7 +2599,7 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 	/* add <stopTime> specification if set */
 	if (stop != NULL) {
 		time = nc_time2datetime(*stop);
-		if (time == NULL || xmlNewChild(content, NULL, BAD_CAST "stopTime", BAD_CAST time) == NULL) {
+		if (time == NULL || xmlNewChild(content, ns, BAD_CAST "stopTime", BAD_CAST time) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode(content);
 			if (time != NULL) {
@@ -2550,11 +2623,15 @@ nc_rpc *nc_rpc_commit(void)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
+	xmlNsPtr ns;
 
 	if ((content = xmlNewNode(NULL, BAD_CAST "commit")) == NULL) {
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
 
 	if ((rpc = nc_rpc_create(content)) != NULL) {
 		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
@@ -2568,11 +2645,15 @@ nc_rpc *nc_rpc_discardchanges(void)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
+	xmlNsPtr ns;
 
 	if ((content = xmlNewNode(NULL, BAD_CAST "discard-changes")) == NULL) {
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
 
 	if ((rpc = nc_rpc_create(content)) != NULL) {
 		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;

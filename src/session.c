@@ -1647,14 +1647,12 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 	DBG_UNLOCK("mut_in");
 	pthread_mutex_unlock(&(session->mut_in));
 
-	retval = malloc (sizeof(struct nc_msg));
+	retval = calloc (1, sizeof(struct nc_msg));
 	if (retval == NULL) {
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 		free (text);
 		goto malformed_msg;
 	}
-	retval->error = NULL;
-	retval->next = NULL;
 
 	/* store the received message in libxml2 format */
 	retval->doc = xmlReadDoc (BAD_CAST text, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
@@ -1859,9 +1857,6 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf)
 	}
 
 	msg = nc_msg_dup ((struct nc_msg*) ntf);
-
-	/* set proper namespace according to NETCONF version */
-	xmlNewNs (msg->doc->children, BAD_CAST NC_NS_BASE10, NULL);
 
 	/* send message */
 	ret = nc_session_send (session, msg);
@@ -2167,9 +2162,6 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 		sprintf (msg_id_str, "hello");
 	}
 
-	/* set proper namespace according to NETCONF version */
-	xmlNewNs (msg->doc->children, BAD_CAST NC_NS_BASE10, NULL);
-
 	/* send message */
 	ret = nc_session_send (session, msg);
 
@@ -2195,7 +2187,7 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 	int ret;
 	struct nc_msg *msg;
 	const nc_msgid retval = NULL;
-	xmlNsPtr ns;
+	xmlNsPtr ns, ns_aux;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to send <rpc-reply>.");
@@ -2236,7 +2228,8 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 					/* skip default namespace */
 					continue;
 				}
-				xmlNewNs(msg->doc->children, ns->href, ns->prefix);
+				ns_aux = xmlNewNs(msg->doc->children, ns->href, ns->prefix);
+				xmlSetNs(msg->doc->children, ns_aux);
 			}
 
 		}
@@ -2246,9 +2239,6 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 			xmlRemoveProp(xmlHasProp(msg->doc->children, BAD_CAST "message-id"));
 		}
 	}
-
-	/* set proper namespace according to NETCONF version */
-	xmlNewNs (msg->doc->children, BAD_CAST NC_NS_BASE10, NULL);
 
 	/* send message */
 	ret = nc_session_send (session, msg);

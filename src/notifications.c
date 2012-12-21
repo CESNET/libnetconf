@@ -259,13 +259,15 @@ static xmlDocPtr streams_to_xml(void)
 {
 	xmlDocPtr config;
 	xmlNodePtr node_streams, node_stream;
+	xmlNsPtr ns;
 	struct stream *s;
 	char* time;
 
 	/* create empty configuration */
 	config = xmlNewDoc(BAD_CAST "1.0");
 	xmlDocSetRootElement(config, xmlNewNode(NULL, BAD_CAST "netconf"));
-	xmlNewNs(config->children, BAD_CAST NCNTF_STREAMS_NS, NULL);
+	ns = xmlNewNs(config->children, BAD_CAST NCNTF_STREAMS_NS, NULL);
+	xmlSetNs(config->children, ns);
 	node_streams = xmlAddChild(config->children, xmlNewNode(NULL, BAD_CAST "streams"));
 
 	for (s = streams; s != NULL; s = s->next) {
@@ -1939,7 +1941,7 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 		return (NULL);
 	}
 
-	if (asprintf(&notif_data, "<notification>%s</notification>", content) == -1) {
+	if (asprintf(&notif_data, "<notification xmlns=\"%s\">%s</notification>", NC_NS_NOTIFICATIONS, content) == -1) {
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		free(etime);
 		return (NULL);
@@ -1953,7 +1955,7 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 	}
 	free(notif_data);
 
-	if (xmlNewChild(notif_doc->children, NULL, BAD_CAST "eventTime", BAD_CAST etime) == NULL) {
+	if (xmlNewChild(notif_doc->children, notif_doc->children->ns, BAD_CAST "eventTime", BAD_CAST etime) == NULL) {
 		ERROR("xmlAddChild failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		xmlFreeDoc(notif_doc);
 		free(etime);
@@ -1969,7 +1971,23 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 	retval->doc = notif_doc;
 	retval->msgid = NULL;
 	retval->error = NULL;
+	retval->next = NULL;
 	retval->with_defaults = NCWD_MODE_DISABLED;
+	retval->type.ntf = NC_NTF_UNKNOWN;
+
+	/* create xpath evaluation context */
+	if ((retval->ctxt = xmlXPathNewContext(retval->doc)) == NULL) {
+		ERROR("%s: notification message XPath context can not be created.", __func__);
+		nc_msg_free(retval);
+		return NULL;
+	}
+
+	/* register base namespace for the rpc */
+	if (xmlXPathRegisterNs(retval->ctxt, BAD_CAST NC_NS_NOTIFICATIONS_ID, BAD_CAST NC_NS_NOTIFICATIONS) != 0) {
+		ERROR("Registering notification namespace for the message xpath context failed.");
+		nc_msg_free(retval);
+		return NULL;
+	}
 
 	return (retval);
 }
@@ -1978,6 +1996,7 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 {
 	char* etime = NULL;
 	xmlDocPtr notif_doc;
+	xmlNsPtr ns;
 	nc_ntf* retval;
 
 	if ((etime = nc_time2datetime(event_time)) == NULL) {
@@ -1987,9 +2006,11 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 
 	notif_doc = xmlNewDoc(BAD_CAST "1.0");
 	xmlDocSetRootElement(notif_doc, xmlNewNode(NULL, BAD_CAST "notification"));
+	ns = xmlNewNs(notif_doc->children, BAD_CAST NC_NS_NOTIFICATIONS, NULL);
+	xmlSetNs(notif_doc->children, ns);
 
 	/* connect the event time */
-	if (xmlNewChild(notif_doc->children, NULL, BAD_CAST "eventTime", BAD_CAST etime) == NULL) {
+	if (xmlNewChild(notif_doc->children, ns, BAD_CAST "eventTime", BAD_CAST etime) == NULL) {
 		ERROR("xmlAddChild failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		xmlFreeDoc(notif_doc);
 		free(etime);
@@ -2012,7 +2033,23 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 	retval->doc = notif_doc;
 	retval->msgid = NULL;
 	retval->error = NULL;
+	retval->next = NULL;
 	retval->with_defaults = NCWD_MODE_DISABLED;
+	retval->type.ntf = NC_NTF_UNKNOWN;
+
+	/* create xpath evaluation context */
+	if ((retval->ctxt = xmlXPathNewContext(retval->doc)) == NULL) {
+		ERROR("%s: notification message XPath context can not be created.", __func__);
+		nc_msg_free(retval);
+		return NULL;
+	}
+
+	/* register base namespace for the rpc */
+	if (xmlXPathRegisterNs(retval->ctxt, BAD_CAST NC_NS_NOTIFICATIONS_ID, BAD_CAST NC_NS_NOTIFICATIONS) != 0) {
+		ERROR("Registering notification namespace for the message xpath context failed.");
+		nc_msg_free(retval);
+		return NULL;
+	}
 
 	return (retval);
 
@@ -2508,7 +2545,27 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 			ntf->doc = event_doc;
 			ntf->msgid = NULL;
 			ntf->error = NULL;
+			ntf->next = NULL;
 			ntf->with_defaults = NCWD_MODE_DISABLED;
+			ntf->type.ntf = NC_NTF_UNKNOWN;
+
+			/* create xpath evaluation context */
+			if ((ntf->ctxt = xmlXPathNewContext(ntf->doc)) == NULL) {
+				ERROR("%s: notification message XPath context can not be created.", __func__);
+				session->ntf_active = 0;
+				nc_filter_free(filter);
+				free(stream);
+				return (-1);
+			}
+
+			/* register base namespace for the rpc */
+			if (xmlXPathRegisterNs(ntf->ctxt, BAD_CAST NC_NS_NOTIFICATIONS_ID, BAD_CAST NC_NS_NOTIFICATIONS) != 0) {
+				ERROR("Registering notification namespace for the message xpath context failed.");
+				session->ntf_active = 0;
+				nc_filter_free(filter);
+				free(stream);
+				return (-1);
+			}
 
 			nc_session_send_notif(session, ntf);
 			ncntf_notif_free(ntf);

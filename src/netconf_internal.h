@@ -101,6 +101,7 @@
 
 #define NC_NS_WITHDEFAULTS 	"urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"
 #define NC_NS_NOTIFICATIONS "urn:ietf:params:xml:ns:netconf:notification:1.0"
+#define NC_NS_NOTIFICATIONS_ID 	"ntf"
 #define NC_NS_MONITORING 	"urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
 
 /* NETCONF versions identificators */
@@ -389,6 +390,7 @@ struct nc_msg {
 	union {
 		NC_REPLY_TYPE reply;
 		NC_RPC_TYPE rpc;
+		NC_NOTIF_TYPE ntf;
 	} type;
 	NCWD_MODE with_defaults;
 	struct nc_err* error;
