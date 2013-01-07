@@ -1838,17 +1838,17 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
 
 	/* source */
-	node = xmlNewChild(content, NULL, BAD_CAST "source", NULL);
+	node = xmlNewChild(content, ns, BAD_CAST "source", NULL);
 	if (node == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeNode(content);
 		return (NULL);
 	}
-	/* set namespace */
-	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
-	xmlSetNs(content, ns);
 
 	if (xmlNewChild(node, ns, BAD_CAST datastore, NULL) == NULL) {
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
