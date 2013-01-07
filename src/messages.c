@@ -2084,7 +2084,7 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 	xmlNodePtr content, node_target, node_source, node_config;
 	xmlNsPtr ns;
 	NC_DATASTORE params[2] = {source, target};
-	char *datastores[2]; /* 0 - source, 1 - target */
+	char *datastores[2] = {NULL, NULL}; /* 0 - source, 1 - target */
 	int i;
 
 	if (target == source) {
