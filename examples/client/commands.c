@@ -773,10 +773,16 @@ int cmd_copyconfig (char *arg)
 	}
 
 	/* create requests */
-	rpc = nc_rpc_copyconfig (source, target, wd, config);
+	rpc = nc_rpc_copyconfig (source, target, config);
 	nc_filter_free(filter);
 	if (rpc == NULL) {
 		ERROR("copy-config", "creating rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+	/* set with defaults settings */
+	if (nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, wd) != EXIT_SUCCESS) {
+		ERROR("copy-config", "setting up with-defaults mode failed.");
+		nc_rpc_free(rpc);
 		return (EXIT_FAILURE);
 	}
 

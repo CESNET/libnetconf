@@ -338,7 +338,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 		running_data = startup_data;
 
 		/* 3) store real state of the device as the running configuration */
-		if ((rpc = nc_rpc_copyconfig (NC_DATASTORE_CONFIG, NC_DATASTORE_RUNNING, NCWD_MODE_DISABLED, running_data)) == NULL ) {
+		if ((rpc = nc_rpc_copyconfig (NC_DATASTORE_CONFIG, NC_DATASTORE_RUNNING, running_data)) == NULL ) {
 			ncds_free (datastore);
 			nc_session_free (dummy_session);
 			clb_print (NC_VERB_ERROR, "Setting up running configuration failed (nc_rpc_copyconfig()).");
