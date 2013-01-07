@@ -604,39 +604,59 @@ NC_RPC_TYPE nc_rpc_get_type(nc_rpc *rpc)
  */
 static NC_DATASTORE nc_rpc_get_ds (const nc_rpc *rpc, const char* ds_type)
 {
-	xmlNodePtr root, ds_node;
+	xmlXPathObjectPtr query_result = NULL;
+	NC_DATASTORE retval = NC_DATASTORE_ERROR;
+	int i;
+	char** queries = NULL;
+	static char* srcs[] = {
+			"/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":candidate",
+			"/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":running",
+			"/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":startup",
+			"/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":url",
+			"/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":config"
+	};
+	static char* trgs[] = {
+			"/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":candidate",
+			"/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":running",
+			"/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":startup",
+			"/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url",
+			"/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":config"
+	};
+	static NC_DATASTORE retvals[] = {
+			NC_DATASTORE_CANDIDATE,
+			NC_DATASTORE_RUNNING,
+			NC_DATASTORE_STARTUP,
+			NC_DATASTORE_URL,
+			NC_DATASTORE_CONFIG
+	};
+#define nc_rpc_get_ds_RETVALS_COUNT 5
 
-	if (rpc == NULL || rpc->doc == NULL) {
+	if (rpc == NULL || rpc->doc == NULL || rpc->ctxt == NULL) {
+		ERROR("%s: invalid rpc parameter", __func__);
 		return NC_DATASTORE_ERROR;
 	}
 
-	if ((root = xmlDocGetRootElement (rpc->doc)) == NULL || !xmlStrEqual (root->name, BAD_CAST "rpc") || root->children == NULL) {
+	if (strcmp(ds_type, "source") == 0) {
+		queries = srcs;
+	} else if (strcmp(ds_type, "target") == 0) {
+		queries = trgs;
+	} else {
+		ERROR("%s: invalid ds_type parameter (%s)", __func__, ds_type);
 		return NC_DATASTORE_ERROR;
 	}
 
-	ds_node = root->children->children; /* rpc -> op -> source/target */
-	while (ds_node) {
-		if (xmlStrEqual (ds_node->name, BAD_CAST ds_type)) {
-			break;
+	for (i = 0; i < nc_rpc_get_ds_RETVALS_COUNT; i++) {
+		if ((query_result = xmlXPathEvalExpression(BAD_CAST queries[i], rpc->ctxt)) != NULL) {
+			if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
+				retval = retvals[i];
+				xmlXPathFreeObject(query_result);
+				break;
+			}
+			xmlXPathFreeObject(query_result);
 		}
-		ds_node = ds_node->next;
 	}
 
-	if (ds_node == NULL || ds_node->children == NULL) {
-		return NC_DATASTORE_ERROR;
-	}
-
-	if (xmlStrEqual (ds_node->children->name, BAD_CAST "candidate")) {
-		return NC_DATASTORE_CANDIDATE;
-	} else if (xmlStrEqual (ds_node->children->name, BAD_CAST "running")) {
-		return NC_DATASTORE_RUNNING;
-	} else if (xmlStrEqual (ds_node->children->name, BAD_CAST "startup")) {
-		return NC_DATASTORE_STARTUP;
-	} else if (xmlStrEqual (ds_node->children->name, BAD_CAST "config")) {
-		return NC_DATASTORE_CONFIG;
-	}
-
-	return NC_DATASTORE_ERROR;
+	return(retval);
 }
 
 NC_DATASTORE nc_rpc_get_source (const nc_rpc *rpc)
