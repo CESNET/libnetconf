@@ -2146,7 +2146,6 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 	if (datastores[0] == NULL) {
 		/* source configuration is given as data parameter */
 
-
 		/* if data empty string, create \<copy-config\> with empty \<config\> */
 		/* only if data is not empty string, fill \<config\> */
 		/* RFC 6241 defines \<config\> as anyxml and thus it can be empty */
