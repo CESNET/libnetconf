@@ -308,6 +308,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 		/* 1) load startup using get-config applied to the datastore */
 		if ((rpc = nc_rpc_getconfig (NC_DATASTORE_STARTUP, NULL)) == NULL ) {
 			ncds_free (datastore);
+			nc_session_free (dummy_session);
 			clb_print (NC_VERB_ERROR, "Getting startup configuration failed (nc_rpc_getconfig()).");
 			return (EXIT_FAILURE);
 		}
@@ -316,12 +317,14 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 		if (reply == NULL || nc_reply_get_type (reply) != NC_REPLY_DATA) {
 			ncds_free (datastore);
 			nc_reply_free (reply);
+			nc_session_free (dummy_session);
 			clb_print (NC_VERB_ERROR, "Getting startup configuration failed.");
 			return (EXIT_FAILURE);
 		}
 		if ((startup_data = nc_reply_get_data (reply)) == NULL ) {
 			ncds_free (datastore);
 			nc_reply_free (reply);
+			nc_session_free (dummy_session);
 			clb_print (NC_VERB_ERROR, "Invalid startup configuration data.");
 			return (EXIT_FAILURE);
 		}
@@ -337,6 +340,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 		/* 3) store real state of the device as the running configuration */
 		if ((rpc = nc_rpc_copyconfig (NC_DATASTORE_CONFIG, NC_DATASTORE_RUNNING, NCWD_MODE_DISABLED, running_data)) == NULL ) {
 			ncds_free (datastore);
+			nc_session_free (dummy_session);
 			clb_print (NC_VERB_ERROR, "Setting up running configuration failed (nc_rpc_copyconfig()).");
 			return (EXIT_FAILURE);
 		}
@@ -347,6 +351,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 		if (reply == NULL || nc_reply_get_type (reply) != NC_REPLY_OK) {
 			ncds_free (datastore);
 			nc_reply_free (reply);
+			nc_session_free (dummy_session);
 			clb_print (NC_VERB_ERROR, "Setting up running configuration failed.");
 			return (EXIT_FAILURE);
 		}
