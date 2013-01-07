@@ -167,7 +167,7 @@ static char* nc_msg_dump(const struct nc_msg *msg)
 	xmlChar *buf;
 	int len;
 
-	if (msg == NULL || msg->doc == NULL) {
+	if (msg == NULL || msg == ((void *) -1) || msg->doc == NULL) {
 		ERROR("%s: invalid input parameter.", __func__);
 		return (NULL);
 	}
@@ -183,6 +183,11 @@ char* nc_reply_dump(const nc_reply *reply)
 
 xmlDocPtr ncxml_reply_dump(const nc_reply *reply)
 {
+	if (reply == NULL || reply == ((void *) -1) || reply->doc == NULL) {
+		ERROR("%s: invalid input parameter.", __func__);
+		return (NULL);
+	}
+
 	return (xmlCopyDoc(reply->doc, 1));
 }
 
@@ -403,7 +408,7 @@ nc_reply* ncxml_reply_build(xmlDocPtr reply_dump)
 
 const nc_msgid nc_reply_get_msgid(const nc_reply *reply)
 {
-	if (reply != NULL) {
+	if (reply != NULL && reply != ((void *) -1)) {
 		return (reply->msgid);
 	} else {
 		return (0);
@@ -952,7 +957,7 @@ NC_REPLY_TYPE nc_reply_get_type(nc_reply *reply)
 {
 	xmlNodePtr root, auxnode;
 
-	if (reply != NULL) {
+	if (reply != NULL && reply != ((void *) -1)) {
 		if (reply->type.reply == NC_REPLY_UNKNOWN && reply->doc != NULL) {
 			/* try to detect the type from the message body */
 			if ((root = xmlDocGetRootElement (reply->doc)) == NULL) {
@@ -1002,7 +1007,7 @@ char *nc_reply_get_data(const nc_reply *reply)
 	xmlNodePtr inside_data, aux_data;
 	xmlDocPtr aux_doc;
 
-	if (reply == NULL ||
+	if (reply == NULL || reply == ((void *) -1) ||
 			reply->type.reply != NC_REPLY_DATA ||
 			reply->doc == NULL ||
 			reply->doc->children == NULL || /* <rpc-reply> */
@@ -1042,7 +1047,7 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 {
 	/* \todo use xPath */
 
-	if (reply == NULL ||
+	if (reply == NULL || reply == ((void *) -1) ||
 			reply->type.reply != NC_REPLY_DATA ||
 			reply->doc == NULL ||
 			reply->doc->children == NULL || /* <rpc-reply> */
@@ -1057,7 +1062,7 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 
 const char *nc_reply_get_errormsg(nc_reply *reply)
 {
-	if (reply == NULL || reply->type.reply != NC_REPLY_ERROR) {
+	if (reply == NULL || reply == ((void *) -1) || reply->type.reply != NC_REPLY_ERROR) {
 		return (NULL);
 	}
 
@@ -1128,7 +1133,7 @@ void nc_msg_free(struct nc_msg *msg)
 {
 	struct nc_err* e, *efree;
 
-	if (msg != NULL) {
+	if (msg != NULL && msg != ((void *) -1)) {
 		if (msg->doc != NULL) {
 			xmlFreeDoc(msg->doc);
 		}
@@ -1163,7 +1168,7 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 {
 	struct nc_msg *dupmsg;
 
-	if (msg == NULL || msg->doc == NULL) {
+	if (msg == NULL || msg == ((void *) -1) || msg->doc == NULL) {
 		return (NULL);
 	}
 
@@ -1565,7 +1570,7 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 {
 	xmlNodePtr content;
 
-	if (error == NULL || reply == NULL || reply->type.reply != NC_REPLY_ERROR) {
+	if (error == NULL || reply == NULL || reply == ((void *) -1) || reply->type.reply != NC_REPLY_ERROR) {
 		return (EXIT_FAILURE);
 	}
 	if (reply->doc == NULL || reply->doc->children == NULL) {
@@ -1614,7 +1619,7 @@ nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
 	}
 
 	/* get type and check that first two have the same type */
-	if ((type = nc_reply_get_type(msg1)) != nc_reply_get_type(msg2)) {
+	if ((type = nc_reply_get_type(msg1)) != nc_reply_get_type(msg2) && type == NC_REPLY_UNKNOWN) {
 		VERB("All messages to merge must be of the same type.");
 		return NULL;
 	}
