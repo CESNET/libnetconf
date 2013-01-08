@@ -298,7 +298,7 @@ Receive <rpc> request from the specified NETCONF session\&. This function is sup
 .PP
 \fBReturns:\fP
 .RS 4
-Type of received message\&. NC_MSG_UNKNOWN means error, NC_MSG_RPC means that *rpc points to the received <rpc> message\&. 
+Type of received message\&. \fBNC_MSG_UNKNOWN\fP means error, \fBNC_MSG_RPC\fP means that *rpc points to the received <rpc> message\&. 
 .RE
 .PP
 
@@ -316,7 +316,7 @@ Send <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fBParam
 .PP
 \fBReturns:\fP
 .RS 4
-Type of received message\&. NC_MSG_UNKNOWN means error, NC_MSG_REPLY means that *reply points to the received <rpc-reply> message\&. 
+Type of received message\&. \fBNC_MSG_UNKNOWN\fP means error, \fBNC_MSG_REPLY\fP means that *reply points to the received <rpc-reply> message\&. 
 .RE
 .PP
 
@@ -444,14 +444,14 @@ Get type of the rpc message\&. <rpc> message can affect datastore, session or it
 .PP
 \fBReturns:\fP
 .RS 4
-One of the NC_RPC_TYPE\&. 
+One of the \fBNC_RPC_TYPE\fP\&. 
 .RE
 .PP
 
 .SS "\fBNC_DATASTORE\fP nc_rpc_get_target (const \fBnc_rpc\fP *rpc)"
 
 .PP
-Get target datastore type (running, startup, candidate) of the rpc request\&. For <rpc> message that does not affect datastore (e\&.g\&. kill-session), the NC_DATASTORE_NONE is returned\&.
+Get target datastore type (running, startup, candidate) of the rpc request\&. For <rpc> message that does not affect datastore (e\&.g\&. kill-session), the \fBNC_DATASTORE_ERROR\fP is returned\&.
 .PP
 \fBParameters:\fP
 .RS 4
@@ -460,14 +460,14 @@ Get target datastore type (running, startup, candidate) of the rpc request\&. Fo
 .PP
 \fBReturns:\fP
 .RS 4
-One of the NC_DATASTORE\&. 
+One of the \fBNC_DATASTORE\fP\&. 
 .RE
 .PP
 
 .SS "\fBNC_DATASTORE\fP nc_rpc_get_source (const \fBnc_rpc\fP *rpc)"
 
 .PP
-Get source datastore type (running, startup, candidate) of the rpc request\&. For <rpc> message that does not affect datastore (e\&.g\&. kill-session), the NC_DATASTORE_NONE is returned\&.
+Get source datastore type (running, startup, candidate) of the rpc request\&. For <rpc> message that does not affect datastore (e\&.g\&. kill-session), the \fBNC_DATASTORE_ERROR\fP is returned\&.
 .PP
 \fBParameters:\fP
 .RS 4
@@ -476,7 +476,7 @@ Get source datastore type (running, startup, candidate) of the rpc request\&. Fo
 .PP
 \fBReturns:\fP
 .RS 4
-One of the NC_DATASTORE\&. 
+One of the \fBNC_DATASTORE\fP\&. 
 .RE
 .PP
 
@@ -504,7 +504,7 @@ Get default-operation type, valid only for <edit-config> RPCs\&. \fBParameters:\
 .PP
 \fBReturns:\fP
 .RS 4
-One of the NC_EDIT_DEFOP_TYPE, NC_EDIT_DEFOP_ERROR in case of error\&. 
+One of the \fBNC_EDIT_DEFOP_TYPE\fP, \fBNC_EDIT_DEFOP_ERROR\fP in case of error\&. 
 .RE
 .PP
 
@@ -518,7 +518,7 @@ Get error-option type, valid only for <edit-config> RPCs\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-One of the NC_EDIT_ERROPT_TYPE, NC_EDIT_ERROPT_ERROR in case of error 
+One of the \fBNC_EDIT_ERROPT_TYPE\fP, \fBNC_EDIT_ERROPT_ERROR\fP in case of error 
 .RE
 .PP
 
@@ -532,7 +532,7 @@ Get test-option type, valid only for <edit-config> RPCs supporting :validate:1\&
 .PP
 \fBReturns:\fP
 .RS 4
-One of the NC_EDIT_TESTOPT_TYPE, NC_EDIT_TESTOPT_ERROR in case of error 
+One of the \fBNC_EDIT_TESTOPT_TYPE\fP, \fBNC_EDIT_TESTOPT_ERROR\fP in case of error 
 .RE
 .PP
 
@@ -588,7 +588,7 @@ The file that the url refers to contains the complete datastore, encoded in XML 
 .PP
 \fBParameters:\fP
 .RS 4
-\fIsource\fP Source configuration datastore type\&. If the NC_DATASTORE_NONE is specified, data parameter is used as the complete configuration to copy\&. 
+\fIsource\fP Source configuration datastore type\&. If the \fBNC_DATASTORE_CONFIG\fP is specified, data parameter is used as the complete configuration to copy\&. 
 .br
 \fItarget\fP Target configuration datastore type to be replaced\&. 
 .br
@@ -788,7 +788,7 @@ Accepts one parameter of \fBNCWD_MODE\fP type, specifying mode of the :with-defa
 .SS "Examples:"
 .PP
 .IP "\(bu" 2
-nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, NCWD_MODE_ALL);
+nc_rpc_capability_attr(rpc, \fBNC_CAP_ATTR_WITHDEFAULTS_MODE\fP, \fBNCWD_MODE_ALL\fP);
 .PP
 .PP
 \fBParameters:\fP

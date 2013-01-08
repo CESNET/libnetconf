@@ -334,7 +334,7 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf);
  * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
  * non-blocking
  * @param[out] rpc Received \<rpc\>
- * @return Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_RPC
+ * @return Type of received message. #NC_MSG_UNKNOWN means error, #NC_MSG_RPC
  * means that *rpc points to the received \<rpc\> message.
  */
 NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, int timeout, nc_rpc** rpc);
@@ -348,7 +348,7 @@ NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, int timeout, nc_rpc
  * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
  * non-blocking
  * @param[out] reply Received \<rpc-reply\>
- * @return Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_REPLY
+ * @return Type of received message. #NC_MSG_UNKNOWN means error, #NC_MSG_REPLY
  * means that *reply points to the received \<rpc-reply\> message.
  */
 NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_reply** reply);
@@ -362,8 +362,8 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_r
  * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
  * non-blocking
  * @param[out] ntf Received \<notification\> message
- * @return Type of received message. NC_MSG_UNKNOWN means error,
- * NC_MSG_NOTIFICATION means that *ntf points to the received \<notification\>
+ * @return Type of received message. #NC_MSG_UNKNOWN means error,
+ * #NC_MSG_NOTIFICATION means that *ntf points to the received \<notification\>
  * message.
  */
 NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, int timeout, nc_ntf** ntf);
@@ -384,7 +384,7 @@ int nc_msgid_compare (const nc_msgid id1, const nc_msgid id2);
  * @param[in] session NETCONF session to use.
  * @param[in] rpc RPC message to send.
  * @param[out] reply Received \<rpc-reply\>
- * @return Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_REPLY
+ * @return Type of received message. #NC_MSG_UNKNOWN means error, #NC_MSG_REPLY
  * means that *reply points to the received \<rpc-reply\> message.
  */
 NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_reply** reply);

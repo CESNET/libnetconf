@@ -431,7 +431,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_RPC means that *rpc points to the received &lt;rpc&gt; message. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Type of received message. <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a> means error, <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a7f6951d98d30342a65e6b1d7ccca2df0">NC_MSG_RPC</a> means that *rpc points to the received &lt;rpc&gt; message. </dd></dl>
 
 </div>
 </div>
@@ -474,7 +474,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Type of received message. NC_MSG_UNKNOWN means error, NC_MSG_REPLY means that *reply points to the received &lt;rpc-reply&gt; message. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Type of received message. <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a> means error, <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a827b3c9c898a48ec8e9f8f9af11f1bdd">NC_MSG_REPLY</a> means that *reply points to the received &lt;rpc-reply&gt; message. </dd></dl>
 
 </div>
 </div>
@@ -721,7 +721,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>One of the NC_RPC_TYPE. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00" title="Enumeration of &lt;rpc&gt; operation types.">NC_RPC_TYPE</a>. </dd></dl>
 
 </div>
 </div>
@@ -740,14 +740,14 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Get target datastore type (running, startup, candidate) of the rpc request. </p>
-<p>For &lt;rpc&gt; message that does not affect datastore (e.g. kill-session), the NC_DATASTORE_NONE is returned.</p>
+<p>For &lt;rpc&gt; message that does not affect datastore (e.g. kill-session), the <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b">NC_DATASTORE_ERROR</a> is returned.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>rpc message </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>One of the NC_DATASTORE. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73" title="Enumeration of supported types of datastores defined by NETCONF.">NC_DATASTORE</a>. </dd></dl>
 
 </div>
 </div>
@@ -766,14 +766,14 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Get source datastore type (running, startup, candidate) of the rpc request. </p>
-<p>For &lt;rpc&gt; message that does not affect datastore (e.g. kill-session), the NC_DATASTORE_NONE is returned.</p>
+<p>For &lt;rpc&gt; message that does not affect datastore (e.g. kill-session), the <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b">NC_DATASTORE_ERROR</a> is returned.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>rpc message </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>One of the NC_DATASTORE. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73" title="Enumeration of supported types of datastores defined by NETCONF.">NC_DATASTORE</a>. </dd></dl>
 
 </div>
 </div>
@@ -823,7 +823,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>One of the NC_EDIT_DEFOP_TYPE, NC_EDIT_DEFOP_ERROR in case of error. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a>, <a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187">NC_EDIT_DEFOP_ERROR</a> in case of error. </dd></dl>
 
 </div>
 </div>
@@ -848,7 +848,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>One of the NC_EDIT_ERROPT_TYPE, NC_EDIT_ERROPT_ERROR in case of error </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a>, <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4">NC_EDIT_ERROPT_ERROR</a> in case of error </dd></dl>
 
 </div>
 </div>
@@ -873,7 +873,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>One of the NC_EDIT_TESTOPT_TYPE, NC_EDIT_TESTOPT_ERROR in case of error </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a>, <a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a1770ae5b90495ca720f60ca76ab029b4">NC_EDIT_TESTOPT_ERROR</a> in case of error </dd></dl>
 
 </div>
 </div>
@@ -983,7 +983,7 @@ Functions</h2></td></tr>
 <p>The file that the url refers to contains the complete datastore, encoded in XML under the element &lt;config&gt; in the "urn:ietf:params:xml:ns:netconf:base:1.0" namespace.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">source</td><td>Source configuration datastore type. If the NC_DATASTORE_NONE is specified, data parameter is used as the complete configuration to copy. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">source</td><td>Source configuration datastore type. If the <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e">NC_DATASTORE_CONFIG</a> is specified, data parameter is used as the complete configuration to copy. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">target</td><td>Target configuration datastore type to be replaced. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>Specific parameters according to the source and target parameters. </td></tr>
   </table>
@@ -1381,7 +1381,7 @@ Functions</h2></td></tr>
 </ul>
 <h3>Examples:</h3>
 <ul>
-<li>nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, NCWD_MODE_ALL);</li>
+<li>nc_rpc_capability_attr(rpc, <a class="el" href="../../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba">NC_CAP_ATTR_WITHDEFAULTS_MODE</a>, <a class="el" href="../../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81a8b422cc5bcfa0ddd20d52ec6e71362db">NCWD_MODE_ALL</a>);</li>
 </ul>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
@@ -1400,7 +1400,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Jan 8 2013 10:29:40 for libnetconf by
+    <li class="footer">Generated on Tue Jan 8 2013 15:41:37 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

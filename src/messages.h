@@ -160,7 +160,7 @@ char* nc_rpc_get_op_content(const nc_rpc *rpc);
  * model)
  *
  * @param[in] rpc rpc message
- * @return One of the NC_RPC_TYPE.
+ * @return One of the #NC_RPC_TYPE.
  */
 NC_RPC_TYPE nc_rpc_get_type(nc_rpc *rpc);
 
@@ -169,10 +169,10 @@ NC_RPC_TYPE nc_rpc_get_type(nc_rpc *rpc);
  * @brief Get target datastore type (running, startup, candidate) of the rpc request.
  *
  * For \<rpc\> message that does not affect datastore (e.g. kill-session), the
- * NC_DATASTORE_NONE is returned.
+ * #NC_DATASTORE_ERROR is returned.
  *
  * @param[in] rpc rpc message
- * @return One of the NC_DATASTORE.
+ * @return One of the #NC_DATASTORE.
  */
 NC_DATASTORE nc_rpc_get_target(const nc_rpc *rpc);
 
@@ -181,10 +181,10 @@ NC_DATASTORE nc_rpc_get_target(const nc_rpc *rpc);
  * @brief Get source datastore type (running, startup, candidate) of the rpc request.
  *
  * For \<rpc\> message that does not affect datastore (e.g. kill-session), the
- * NC_DATASTORE_NONE is returned.
+ * #NC_DATASTORE_ERROR is returned.
  *
  * @param[in] rpc rpc message
- * @return One of the NC_DATASTORE.
+ * @return One of the #NC_DATASTORE.
  */
 NC_DATASTORE nc_rpc_get_source(const nc_rpc *rpc);
 
@@ -208,7 +208,7 @@ char * nc_rpc_get_config (const nc_rpc *rpc);
  *
  * @param[in] rpc \<edit-config\> rpc message
  *
- * @return One of the NC_EDIT_DEFOP_TYPE, NC_EDIT_DEFOP_ERROR in case of error.
+ * @return One of the #NC_EDIT_DEFOP_TYPE, #NC_EDIT_DEFOP_ERROR in case of error.
  */
 NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc);
 
@@ -217,7 +217,7 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc);
  * @brief Get error-option type, valid only for \<edit-config\> RPCs.
  * @param[in] rpc \<edit-config\> rpc message
  *
- * @return One of the NC_EDIT_ERROPT_TYPE, NC_EDIT_ERROPT_ERROR in case of error
+ * @return One of the #NC_EDIT_ERROPT_TYPE, #NC_EDIT_ERROPT_ERROR in case of error
  */
 NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc);
 
@@ -227,7 +227,7 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc);
  * :validate:1.1 capability.
  * @param[in] rpc \<edit-config\> rpc message
  *
- * @return One of the NC_EDIT_TESTOPT_TYPE, NC_EDIT_TESTOPT_ERROR in case of
+ * @return One of the #NC_EDIT_TESTOPT_TYPE, #NC_EDIT_TESTOPT_ERROR in case of
  * error
  */
 NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc);
@@ -249,7 +249,7 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc);
  * \<rpc-reply\> message can contain \<ok\>, \<rpc-error\> or \<data\>
  *
  * @param[in] reply rpc-reply message
- * @return One of the NC_REPLY_TYPE.
+ * @return One of the #NC_REPLY_TYPE.
  */
 NC_REPLY_TYPE nc_reply_get_type(nc_reply *reply);
 
@@ -364,7 +364,7 @@ nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...);
  * "urn:ietf:params:xml:ns:netconf:base:1.0" namespace.
  *
  * @param[in] source Source configuration datastore type. If the
- * NC_DATASTORE_NONE is specified, data parameter is used as the complete
+ * #NC_DATASTORE_CONFIG is specified, data parameter is used as the complete
  * configuration to copy.
  * @param[in] target Target configuration datastore type to be replaced.
  * @param[in] ... Specific parameters according to the source and target parameters.
@@ -529,7 +529,7 @@ nc_rpc *nc_rpc_generic(const char* data);
  *  :with-defaults capability (RFC 6243).
  *
  * ### Examples:
- * - nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, NCWD_MODE_ALL);
+ * - nc_rpc_capability_attr(rpc, #NC_CAP_ATTR_WITHDEFAULTS_MODE, #NCWD_MODE_ALL);
  *
  * @param[in] rpc RPC to be modified. This RPC must be created by one of the
  * nc_rpc* functions. RPC received by the server side's nc_session_recv_rpc() is
