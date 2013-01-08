@@ -285,8 +285,9 @@ typedef enum NC_EDIT_DEFOP_TYPE {
 	NC_EDIT_DEFOP_REPLACE = 2
 } NC_EDIT_DEFOP_TYPE;
 
-typedef enum NC_EEDIT_RROPT_TYPE {
+typedef enum NC_EDIT_RROPT_TYPE {
 	NC_EDIT_ERROPT_ERROR = -1, /* for internal purposes, not defined by NETCONF */
+	NC_EDIT_ERROPT_NOTSET = 0,
 	NC_EDIT_ERROPT_STOP = 1,
 	NC_EDIT_ERROPT_CONT = 2,
 	NC_EDIT_ERROPT_ROLLBACK = 3
@@ -294,13 +295,14 @@ typedef enum NC_EEDIT_RROPT_TYPE {
 
 typedef enum {
 	NC_EDIT_TESTOPT_ERROR = -1, /* for internal purposes, not defined by NETCONF */
+	NC_EDIT_TESTOPT_NOTSET = 0,
 	NC_EDIT_TESTOPT_TESTSET = 1, /* test-then-set */
 	NC_EDIT_TESTOPT_SET = 2, /* set */
 	NC_EDIT_TESTOPT_TEST = 3 /* test-only */
 } NC_EDIT_TESTOPT_TYPE;
 
 typedef enum {
-	NCWD_MODE_DISABLED = 0,
+	NCWD_MODE_NOTSET = 0,
 	NCWD_MODE_ALL = 1,
 	NCWD_MODE_TRIM = 2,
 	NCWD_MODE_EXPLICIT = 4,
@@ -308,8 +310,7 @@ typedef enum {
 } NCWD_MODE;
 
 typedef enum {
-	NC_CAP_ATTR_WITHDEFAULTS_MODE = 1,
-	NC_CAP_ATTR_VALIDATE_TESTOPT
+	NC_CAP_ATTR_WITHDEFAULTS_MODE = 1
 } NC_CAP_ATTR;
 
 /**

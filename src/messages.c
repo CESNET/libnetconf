@@ -235,7 +235,7 @@ static struct nc_msg* nc_msg_build (const char * msg_dump)
 		msg->msgid = NULL;
 	}
 	msg->error = NULL;
-	msg->with_defaults = NCWD_MODE_DISABLED;
+	msg->with_defaults = NCWD_MODE_NOTSET;
 
 	return msg;
 }
@@ -252,7 +252,7 @@ static struct nc_msg* ncxml_msg_build(xmlDocPtr msg_dump)
 	msg->doc = msg_dump;
 	msg->next = NULL;
 	msg->error = NULL;
-	msg->with_defaults = NCWD_MODE_DISABLED;
+	msg->with_defaults = NCWD_MODE_NOTSET;
 	msg->type.rpc = 0;
 
 	if ((id = nc_msg_parse_msgid (msg)) != NULL) {
@@ -286,10 +286,10 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 	NCWD_MODE retval;
 
 	if (rpc == NULL || nc_rpc_get_type(rpc) == NC_RPC_HELLO) {
-		return (NCWD_MODE_DISABLED);
+		return (NCWD_MODE_NOTSET);
 	}
 
-	if (rpc->with_defaults != NCWD_MODE_DISABLED) {
+	if (rpc->with_defaults != NCWD_MODE_NOTSET) {
 		/* already known */
 		return (rpc->with_defaults);
 	}
@@ -298,12 +298,12 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 	if ((rpc_ctxt = xmlXPathNewContext(rpc->doc)) == NULL) {
 		WARN("%s: Creating XPath context failed.", __func__)
 		/* with-defaults cannot be found */
-		return (NCWD_MODE_DISABLED);
+		return (NCWD_MODE_NOTSET);
 	}
 	if (xmlXPathRegisterNs(rpc_ctxt, BAD_CAST "wd", BAD_CAST NC_NS_WITHDEFAULTS) != 0) {
 		ERROR("Registering with-defaults capability namespace for the xpath context failed.");
 		xmlXPathFreeContext(rpc_ctxt);
-		return (NCWD_MODE_DISABLED);
+		return (NCWD_MODE_NOTSET);
 	}
 
 	/* set with-defaults if any */
@@ -315,7 +315,7 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 			if (session != NULL) {
 				retval = session->wd_basic;
 			} else {
-				retval = NCWD_MODE_DISABLED;
+				retval = NCWD_MODE_NOTSET;
 			}
 			break;
 		case 1:
@@ -330,12 +330,12 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 				retval = NCWD_MODE_EXPLICIT;
 			} else {
 				WARN("%s: unknown with-defaults mode detected (%s), disabling with-defaults.", __func__, data);
-				retval = NCWD_MODE_DISABLED;
+				retval = NCWD_MODE_NOTSET;
 			}
 			xmlFree(data);
 			break;
 		default:
-			retval = NCWD_MODE_DISABLED;
+			retval = NCWD_MODE_NOTSET;
 			break;
 		}
 		xmlXPathFreeObject(result);
@@ -1116,7 +1116,7 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 	msg->doc = xmlNewDoc(BAD_CAST "1.0");
 	msg->doc->encoding = xmlStrdup(BAD_CAST UTF8);
 	msg->msgid = NULL;
-	msg->with_defaults = NCWD_MODE_DISABLED;
+	msg->with_defaults = NCWD_MODE_NOTSET;
 	msg->type.rpc = NC_RPC_HELLO;
 
 	/* create root element */
@@ -1310,7 +1310,7 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 	msg->doc = xmlmsg;
 	msg->msgid = NULL;
 	msg->error = NULL;
-	msg->with_defaults = NCWD_MODE_DISABLED;
+	msg->with_defaults = NCWD_MODE_NOTSET;
 
 	/* create xpath evaluation context */
 	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
@@ -1785,7 +1785,7 @@ int nc_rpc_capability_attr(nc_rpc* rpc, NC_CAP_ATTR attr, ...)
 		/* get variadic argument */
 		mode = va_arg(argp, NCWD_MODE);
 
-		if (mode != NCWD_MODE_DISABLED) {
+		if (mode != NCWD_MODE_NOTSET) {
 			switch (mode) {
 			case NCWD_MODE_ALL:
 				wd_mode = "report-all";

@@ -1972,7 +1972,7 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 	retval->msgid = NULL;
 	retval->error = NULL;
 	retval->next = NULL;
-	retval->with_defaults = NCWD_MODE_DISABLED;
+	retval->with_defaults = NCWD_MODE_NOTSET;
 	retval->type.ntf = NC_NTF_UNKNOWN;
 
 	/* create xpath evaluation context */
@@ -2034,7 +2034,7 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 	retval->msgid = NULL;
 	retval->error = NULL;
 	retval->next = NULL;
-	retval->with_defaults = NCWD_MODE_DISABLED;
+	retval->with_defaults = NCWD_MODE_NOTSET;
 	retval->type.ntf = NC_NTF_UNKNOWN;
 
 	/* create xpath evaluation context */
@@ -2546,7 +2546,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 			ntf->msgid = NULL;
 			ntf->error = NULL;
 			ntf->next = NULL;
-			ntf->with_defaults = NCWD_MODE_DISABLED;
+			ntf->with_defaults = NCWD_MODE_NOTSET;
 			ntf->type.ntf = NC_NTF_UNKNOWN;
 
 			/* create xpath evaluation context */
@@ -2600,7 +2600,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	ntf->doc = xmlReadMemory(event, strlen(event), NULL, NULL, 0);
 	ntf->msgid = NULL;
 	ntf->error = NULL;
-	ntf->with_defaults = NCWD_MODE_DISABLED;
+	ntf->with_defaults = NCWD_MODE_NOTSET;
 	nc_session_send_notif(session, ntf);
 	ncntf_notif_free(ntf);
 	free(event);

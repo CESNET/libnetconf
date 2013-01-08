@@ -160,7 +160,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mod
 	xmlChar* value, *name, *value2;
 	int i, j, k, size = 0;
 
-	if (mode == NCWD_MODE_DISABLED || mode == NCWD_MODE_EXPLICIT) {
+	if (mode == NCWD_MODE_NOTSET || mode == NCWD_MODE_EXPLICIT) {
 		return (NULL);
 	}
 
@@ -338,7 +338,7 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 		return (EXIT_FAILURE);
 	}
 
-	if (mode == NCWD_MODE_DISABLED || mode == NCWD_MODE_EXPLICIT) {
+	if (mode == NCWD_MODE_NOTSET || mode == NCWD_MODE_EXPLICIT) {
 		/* nothing to do */
 		return (EXIT_SUCCESS);
 	}

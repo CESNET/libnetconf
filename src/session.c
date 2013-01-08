@@ -755,7 +755,7 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
 	nc_cpblts_add(retval, NC_CAP_INTERLEAVE_ID);
 	nc_cpblts_add(retval, NC_CAP_MONITORING_ID);
-	if (ncdflt_get_basic_mode() != NCWD_MODE_DISABLED) {
+	if (ncdflt_get_basic_mode() != NCWD_MODE_NOTSET) {
 		nc_cpblts_add(retval, NC_CAP_WITHDEFAULTS_ID);
 	}
 
@@ -815,7 +815,7 @@ void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supporte
 			*supported = *supported | NCWD_MODE_ALL_TAGGED;
 		}
 	} else {
-		*basic = NCWD_MODE_DISABLED;
+		*basic = NCWD_MODE_NOTSET;
 		*supported = 0;
 	}
 }
@@ -877,7 +877,7 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 		nc_cpblts_add (session->capabilities, cpblt);
 	}
 
-	session->wd_basic = NCWD_MODE_DISABLED;
+	session->wd_basic = NCWD_MODE_NOTSET;
 	session->wd_modes = 0;
 	/* set with defaults capability flags */
 	parse_wdcap(session->capabilities, &(session->wd_basic), &(session->wd_modes));
@@ -1960,9 +1960,9 @@ try_again:
 		(*rpc)->with_defaults = nc_rpc_parse_withdefaults(*rpc, session);
 
 		/* check for with-defaults capability */
-		if ((*rpc)->with_defaults != NCWD_MODE_DISABLED) {
+		if ((*rpc)->with_defaults != NCWD_MODE_NOTSET) {
 			/* check if the session support this */
-			if (session->wd_basic == NCWD_MODE_DISABLED) {
+			if (session->wd_basic == NCWD_MODE_NOTSET) {
 				ERROR("rpc requires with-defaults capability, but session does not support it.");
 				e = nc_err_new(NC_ERR_INVALID_VALUE);
 				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
@@ -2105,7 +2105,7 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 		}
 
 		/* check for with-defaults capability */
-		if (rpc->with_defaults != NCWD_MODE_DISABLED) {
+		if (rpc->with_defaults != NCWD_MODE_NOTSET) {
 			/* check if the session support this */
 			if ((wd = nc_cpblts_get(session->capabilities, NC_CAP_WITHDEFAULTS_ID)) == NULL) {
 				ERROR("RPC requires :with-defaults capability, but session does not support it.");

@@ -321,7 +321,7 @@ userinput:
 }
 static NCWD_MODE get_withdefaults(const char* operation, const char* mode)
 {
-	NCWD_MODE retval = NCWD_MODE_DISABLED;
+	NCWD_MODE retval = NCWD_MODE_NOTSET;
 	char* mode_aux;
 	mode_aux = malloc(sizeof(char) * 128);
 
@@ -331,7 +331,7 @@ userinput:
 		INSTRUCTION("Select with-defaults mode (report-all|report-all-tagged|trim|explicit): ");
 		if (scanf ("%127s", mode_aux) == EOF) {
 			ERROR(operation, "Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
-			return (NCWD_MODE_DISABLED);
+			return (NCWD_MODE_NOTSET);
 		}
 		mode = mode_aux;
 	}
@@ -652,7 +652,7 @@ int cmd_copyconfig (char *arg)
 	NC_DATASTORE source = NC_DATASTORE_ERROR;
 	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
-	NCWD_MODE wd = NCWD_MODE_DISABLED;
+	NCWD_MODE wd = NCWD_MODE_NOTSET;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"config", 1, 0, 'c'},
@@ -801,7 +801,7 @@ int cmd_get (char *arg)
 	int c;
 	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
-	NCWD_MODE wd = NCWD_MODE_DISABLED;
+	NCWD_MODE wd = NCWD_MODE_NOTSET;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"defaults", 1, 0, 'd'},
@@ -1154,7 +1154,7 @@ int cmd_getconfig (char *arg)
 {
 	int c;
 	NC_DATASTORE target;
-	NCWD_MODE wd = NCWD_MODE_DISABLED;
+	NCWD_MODE wd = NCWD_MODE_NOTSET;
 	struct nc_filter *filter = NULL;
 	nc_rpc *rpc = NULL;
 	struct arglist cmd;
