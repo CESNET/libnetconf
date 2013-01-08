@@ -223,6 +223,17 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
+ * @brief Get test-option type, valid only for \<edit-config\> RPCs supporting
+ * :validate:1.1 capability.
+ * @param[in] rpc \<edit-config\> rpc message
+ *
+ * @return One of the NC_EDIT_TESTOPT_TYPE, NC_EDIT_TESTOPT_ERROR in case of
+ * error
+ */
+NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc);
+
+/**
+ * @ingroup rpc
  * @brief Get filter from \<get\> or \<get-config\> RPC
  *
  * @param[in] rpc \<get\> or \<get-config\> rpc message
@@ -385,6 +396,8 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...);
  * setting this parameter and use default server's ('merge') behavior.
  * @param[in] error_option Set reaction to an error, 0 for the server's default
  * behavior.
+ * @param[in] test_option Set test-option element according to :validate:1.1
+ * capability specified in RFC 6241.
  * @param[in] ... According to the source parameter, variadic parameter can be
  * one of the following:
  * - **const char* config** defining the content of the \<config\> element
@@ -396,7 +409,7 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...);
  *
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, ...);
+nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...);
 
 /**
  * @ingroup rpc
@@ -514,15 +527,9 @@ nc_rpc *nc_rpc_generic(const char* data);
  *  - applicable to \<get\>, \<get-config\> and \<copy-config\> operations.
  *  - Accepts one parameter of #NCWD_MODE type, specifying mode of the
  *  :with-defaults capability (RFC 6243).
- * - #NC_CAP_ATTR_VALIDATE_TESTOPT
- *  - applicable only to \<edit-config\> operation.
- *  - Accepts one parameter of #NC_EDIT_TESTOPT_TYPE type, specifying
- *  value for the \<test-option\> element defined in :validate capability
- *  (RFC 6241).
  *
  * ### Examples:
  * - nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, NCWD_MODE_ALL);
- * - nc_rpc_capability_attr(rpc, NC_CAP_ATTR_VALIDATE_TESTOPT, NC_EDIT_TESTOPT_TESTSET);
  *
  * @param[in] rpc RPC to be modified. This RPC must be created by one of the
  * nc_rpc* functions. RPC received by the server side's nc_session_recv_rpc() is
@@ -531,7 +538,6 @@ nc_rpc *nc_rpc_generic(const char* data);
  * List of accepted operations can be found in the description of this function.
  * @return 0 on success,\n non-zero on error.
  *
- * \todo Implement this function
  */
 int nc_rpc_capability_attr(nc_rpc* rpc, NC_CAP_ATTR attr, ...);
 

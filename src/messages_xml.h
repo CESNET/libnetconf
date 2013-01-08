@@ -189,6 +189,8 @@ nc_rpc *ncxml_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...);
  * setting this parameter and use default server's ('merge') behavior.
  * @param[in] error_option Set reaction to an error, 0 for the server's default
  * behavior.
+ * @param[in] test_option Set test-option element according to :validate:1.1
+ * capability specified in RFC 6241.
  * @param[in] ... According to the source parameter, variadic parameter can be
  * one of the following:
  * - **const xmlNodePtr config** defining the content of the \<config\> element
@@ -201,7 +203,7 @@ nc_rpc *ncxml_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...);
  *
  * @return Created rpc message.
  */
-nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, ...);
+nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...);
 
 /**
  * @ingroup rpc_xml

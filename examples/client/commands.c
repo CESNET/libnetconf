@@ -63,6 +63,8 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define NC_CAP_CANDIDATE_ID "urn:ietf:params:netconf:capability:candidate:1.0"
 #define NC_CAP_STARTUP_ID   "urn:ietf:params:netconf:capability:startup:1.0"
 #define NC_CAP_ROLLBACK_ID  "urn:ietf:params:netconf:capability:rollback-on-error:1.0"
+#define NC_CAP_VALIDATE_ID  "urn:ietf:params:netconf:capability:validate:1.0"
+#define NC_CAP_VALIDATE1_ID  "urn:ietf:params:netconf:capability:validate:1.1"
 
 extern int done;
 extern struct nc_cpblts * client_supported_cpblts;
@@ -461,6 +463,7 @@ static int send_recv_process(const char* operation, nc_rpc* rpc)
 void cmd_editconfig_help()
 {
 	char *rollback;
+	char *validate;
 
 	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_ROLLBACK_ID)) {
 		rollback = "|rollback";
@@ -468,8 +471,16 @@ void cmd_editconfig_help()
 		rollback = "";
 	}
 
+	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_VALIDATE_ID)) {
+		validate = "[--test <set|test-then-set>] ";
+	} else if (session == NULL || nc_cpblts_enabled (session, NC_CAP_VALIDATE1_ID)) {
+		validate = "[--test <set|test-only|test-then-set>] ";
+	} else {
+		validate = "";
+	}
+
 	/* if session not established, print complete help for all capabilities */
-	fprintf (stdout, "edit-config [--help] [--defop <merge|replace|none>] [--error <stop|continue%s>] [--config <file>] running", rollback);
+	fprintf (stdout, "edit-config [--help] [--defop <merge|replace|none>] [--error <stop|continue%s>] %s[--config <file>] running", rollback, validate);
 	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
 		fprintf (stdout, "|startup");
 	}
@@ -488,6 +499,7 @@ int cmd_editconfig (char *arg)
 	NC_DATASTORE target;
 	NC_EDIT_DEFOP_TYPE defop = 0; /* do not set this parameter by default */
 	NC_EDIT_ERROPT_TYPE erropt = 0; /* do not set this parameter by default */
+	NC_EDIT_TESTOPT_TYPE testopt = 0;
 	nc_rpc *rpc = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
@@ -495,6 +507,7 @@ int cmd_editconfig (char *arg)
 			{"defop", 1, 0, 'd'},
 			{"error", 1, 0, 'e'},
 			{"help", 0, 0, 'h'},
+			{"test", 1, 0, 't'},
 			{0, 0, 0, 0}
 	};
 	int option_index = 0;
@@ -577,6 +590,28 @@ int cmd_editconfig (char *arg)
 			clear_arglist(&cmd);
 			return (EXIT_SUCCESS);
 			break;
+		case 't':
+			if (!(nc_cpblts_enabled (session, NC_CAP_VALIDATE1_ID) || nc_cpblts_enabled (session, NC_CAP_VALIDATE_ID))) {
+				ERROR("edit-config", "test-option is not allowed by the current session");
+				cmd_editconfig_help ();
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+			/* validate test option */
+			if (strcmp (optarg, "set") == 0) {
+				testopt = NC_EDIT_TESTOPT_SET;
+			} else if (nc_cpblts_enabled (session, NC_CAP_VALIDATE1_ID) && strcmp (optarg, "test-only") == 0) {
+				testopt = NC_EDIT_TESTOPT_TEST;
+			} else if (strcmp (optarg, "test-then-set") == 0) {
+				testopt = NC_EDIT_TESTOPT_TESTSET;
+			} else {
+				ERROR("edit-config", "invalid test-option %s.", optarg);
+				cmd_editconfig_help ();
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+
+			break;
 		default:
 			ERROR("edit-config", "unknown option -%c.", c);
 			cmd_editconfig_help ();
@@ -607,7 +642,7 @@ int cmd_editconfig (char *arg)
 	}
 
 	/* create requests */
-	rpc = nc_rpc_editconfig(target, NC_DATASTORE_CONFIG, defop, erropt, config);
+	rpc = nc_rpc_editconfig(target, NC_DATASTORE_CONFIG, defop, erropt, testopt, config);
 	free(config);
 	if (rpc == NULL) {
 		ERROR("edit-config", "creating rpc request failed.");

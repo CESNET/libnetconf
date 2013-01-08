@@ -931,6 +931,48 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 	return retval;
 }
 
+NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
+{
+	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr node;
+	NC_EDIT_TESTOPT_TYPE retval = NC_EDIT_TESTOPT_NOTSET;
+
+	/* only applicable on edit-config */
+	if (nc_rpc_get_op(rpc) != NC_OP_EDITCONFIG) {
+		return NC_EDIT_TESTOPT_ERROR;
+	}
+
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":test-option", rpc->ctxt)) != NULL) {
+		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			retval = NC_EDIT_TESTOPT_NOTSET;
+		} else if (query_result->nodesetval->nodeNr > 1) {
+			ERROR("%s: invalid rpc message (multiple test-option elements)", __func__);
+			retval = NC_EDIT_TESTOPT_ERROR;
+		} else {
+			for (node = query_result->nodesetval->nodeTab[0]->children; node != NULL && node->type != XML_TEXT_NODE; node = node->next);
+
+			if (node != NULL) {
+				if (xmlStrcmp(node->content, BAD_CAST "set") == 0) {
+					retval = NC_EDIT_TESTOPT_SET;
+				} else if (xmlStrcmp(node->content, BAD_CAST "test-only") == 0) {
+					retval = NC_EDIT_TESTOPT_TEST;
+				} else if (xmlStrcmp(node->content, BAD_CAST "test-then-set") == 0) {
+					retval = NC_EDIT_TESTOPT_TESTSET;
+				} else {
+					ERROR("%s: invalid value of test-option element (%s)", __func__, node->content);
+					retval = NC_EDIT_TESTOPT_ERROR;
+				}
+			} else {
+				ERROR("%s: invalid content of test-option element", __func__);
+				retval = NC_EDIT_TESTOPT_ERROR;
+			}
+		}
+		xmlXPathFreeObject(query_result);
+	}
+
+	return (retval);
+}
+
 struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 {
 	struct nc_filter * retval = NULL;
@@ -2294,12 +2336,12 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
 	return (retval);
 }
 
-static nc_rpc *_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, const xmlNodePtr config, const char* source_url)
+static nc_rpc *_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, const xmlNodePtr config, const char* source_url)
 {
 	nc_rpc *rpc = NULL;
-	xmlNodePtr content, node_target, node_defop, node_erropt, node_config;
+	xmlNodePtr content, node_target, node_defop, node_config;
 	xmlNsPtr ns;
-	char* datastore, *defop = NULL, *erropt = NULL;
+	char* datastore, *defop = NULL, *erropt = NULL, *testopt = NULL;
 
 	/* detect target datastore */
 	switch (target) {
@@ -2357,6 +2399,25 @@ static nc_rpc *_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT
 		}
 	}
 
+	/* detect test-option parameter */
+	if (test_option != 0) {
+		switch (test_option) {
+		case NC_EDIT_TESTOPT_SET:
+			testopt = "set";
+			break;
+		case NC_EDIT_TESTOPT_TEST:
+			testopt = "test-only";
+			break;
+		case NC_EDIT_TESTOPT_TESTSET:
+			testopt = "test-then-set";
+			break;
+		default:
+			ERROR("Unknown test-option parameter for <edit-config>.");
+			return (NULL);
+			break;
+		}
+	}
+
 	/* create edit-config envelope */
 	if ((content = xmlNewNode(NULL, BAD_CAST "edit-config")) == NULL) {
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
@@ -2388,8 +2449,15 @@ static nc_rpc *_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT
 
 	/* set <error-option> element */
 	if (error_option != 0) {
-		node_erropt = xmlNewChild(content, ns, BAD_CAST "error-option", BAD_CAST erropt);
-		if (node_erropt == NULL) {
+		if (xmlNewChild(content, ns, BAD_CAST "error-option", BAD_CAST erropt) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			goto cleanup;
+		}
+	}
+
+	/* set <test-option> element */
+	if (test_option != 0) {
+		if (xmlNewChild(content, ns, BAD_CAST "test-option", BAD_CAST testopt) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
 		}
@@ -2429,14 +2497,14 @@ cleanup:
 	return (rpc);
 }
 
-nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, ...)
+nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...)
 {
 	xmlNodePtr config = NULL;
 	const char* url = NULL;
 	nc_rpc* retval;
 	va_list argp;
 
-	va_start(argp, error_option);
+	va_start(argp, test_option);
 	switch (source) {
 	case NC_DATASTORE_CONFIG:
 		config = va_arg(argp, xmlNodePtr);
@@ -2451,12 +2519,12 @@ nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_D
 		break;
 	}
 
-	retval = _rpc_editconfig(target, source, default_operation, error_option, config, url);
+	retval = _rpc_editconfig(target, source, default_operation, error_option, test_option, config, url);
 	va_end(argp);
 	return(retval);
 }
 
-nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, ...)
+nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...)
 {
 	xmlDocPtr config = NULL;
 	const char* url = NULL, *config_s = NULL;
@@ -2464,7 +2532,7 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFO
 	nc_rpc* retval;
 	va_list argp;
 
-	va_start(argp, error_option);
+	va_start(argp, test_option);
 	switch (source) {
 	case NC_DATASTORE_CONFIG:
 		config_s = va_arg(argp, const char*);
@@ -2496,7 +2564,7 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFO
 		return (NULL);
 	}
 
-	retval = _rpc_editconfig(target, source, default_operation, error_option, config->children->children, url);
+	retval = _rpc_editconfig(target, source, default_operation, error_option, test_option, config->children->children, url);
 	xmlFreeDoc(config);
 	va_end(argp);
 	return(retval);
