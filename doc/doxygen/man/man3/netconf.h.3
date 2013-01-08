@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Wed Dec 19 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Tue Jan 8 2013" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -60,6 +60,9 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .RI "\fIEnumeration of <rpc> operation types\&. \fP"
 .ti -1c
+.RI "enum \fBNC_NOTIF_TYPE\fP { \fBNC_NTF_UNKNOWN\fP, \fBNC_NTF_BASE\fP }"
+.br
+.ti -1c
 .RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP, \fBNC_OP_COMMIT\fP, \fBNC_OP_DISCARDCHANGES\fP, \fBNC_OP_CREATESUBSCRIPTION\fP, \fBNC_OP_GETSCHEMA\fP }"
 .br
 .RI "\fIEnumeration of supported <rpc> operations\&. \fP"
@@ -81,16 +84,16 @@ libnetconf's general public functions and structures definitions\&.
 .RI "enum \fBNC_EDIT_DEFOP_TYPE\fP { \fBNC_EDIT_DEFOP_ERROR\fP =  -1, \fBNC_EDIT_DEFOP_NONE\fP =  0, \fBNC_EDIT_DEFOP_MERGE\fP =  1, \fBNC_EDIT_DEFOP_REPLACE\fP =  2 }"
 .br
 .ti -1c
-.RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_ERROR\fP =  -1, \fBNC_EDIT_ERROPT_STOP\fP =  1, \fBNC_EDIT_ERROPT_CONT\fP =  2, \fBNC_EDIT_ERROPT_ROLLBACK\fP =  3 }"
+.RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_ERROR\fP =  -1, \fBNC_EDIT_ERROPT_NOTSET\fP =  0, \fBNC_EDIT_ERROPT_STOP\fP =  1, \fBNC_EDIT_ERROPT_CONT\fP =  2, \fBNC_EDIT_ERROPT_ROLLBACK\fP =  3 }"
 .br
 .ti -1c
-.RI "enum \fBNC_EDIT_TESTOPT_TYPE\fP { \fBNC_EDIT_TESTOPT_ERROR\fP =  -1, \fBNC_EDIT_TESTOPT_TESTSET\fP =  1, \fBNC_EDIT_TESTOPT_SET\fP =  2, \fBNC_EDIT_TESTOPT_TEST\fP =  3 }"
+.RI "enum \fBNC_EDIT_TESTOPT_TYPE\fP { \fBNC_EDIT_TESTOPT_ERROR\fP =  -1, \fBNC_EDIT_TESTOPT_NOTSET\fP =  0, \fBNC_EDIT_TESTOPT_TESTSET\fP =  1, \fBNC_EDIT_TESTOPT_SET\fP =  2, \fBNC_EDIT_TESTOPT_TEST\fP =  3 }"
 .br
 .ti -1c
-.RI "enum \fBNCWD_MODE\fP { \fBNCWD_MODE_DISABLED\fP =  0, \fBNCWD_MODE_ALL\fP =  1, \fBNCWD_MODE_TRIM\fP =  2, \fBNCWD_MODE_EXPLICIT\fP =  4, \fBNCWD_MODE_ALL_TAGGED\fP =  8 }"
+.RI "enum \fBNCWD_MODE\fP { \fBNCWD_MODE_NOTSET\fP =  0, \fBNCWD_MODE_ALL\fP =  1, \fBNCWD_MODE_TRIM\fP =  2, \fBNCWD_MODE_EXPLICIT\fP =  4, \fBNCWD_MODE_ALL_TAGGED\fP =  8 }"
 .br
 .ti -1c
-.RI "enum \fBNC_CAP_ATTR\fP { \fBNC_CAP_ATTR_WITHDEFAULTS_MODE\fP =  1, \fBNC_CAP_ATTR_VALIDATE_TESTOPT\fP }"
+.RI "enum \fBNC_CAP_ATTR\fP { \fBNC_CAP_ATTR_WITHDEFAULTS_MODE\fP =  1 }"
 .br
 .ti -1c
 .RI "enum \fBNC_VERB_LEVEL\fP { \fBNC_VERB_ERROR\fP, \fBNC_VERB_WARNING\fP, \fBNC_VERB_VERBOSE\fP, \fBNC_VERB_DEBUG\fP }"
@@ -139,6 +142,16 @@ This software is provided ``as is, and any express or implied warranties, includ
 \fBnc_init()\fP's flag to enable Notification subsystem\&. 
 .SH "Enumeration Type Documentation"
 .PP 
+.SS "enum \fBNC_NOTIF_TYPE\fP"
+
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fINC_NTF_UNKNOWN \fP\fP
+.TP
+\fB\fINC_NTF_BASE \fP\fP
+
 .SS "enum \fBNC_ERR_PARAM\fP"
 
 .PP
@@ -214,6 +227,8 @@ session-id in error-info - session ID of session holding the requested lock, con
 .TP
 \fB\fINC_EDIT_ERROPT_ERROR \fP\fP
 .TP
+\fB\fINC_EDIT_ERROPT_NOTSET \fP\fP
+.TP
 \fB\fINC_EDIT_ERROPT_STOP \fP\fP
 .TP
 \fB\fINC_EDIT_ERROPT_CONT \fP\fP
@@ -228,6 +243,8 @@ session-id in error-info - session ID of session holding the requested lock, con
 .TP
 \fB\fINC_EDIT_TESTOPT_ERROR \fP\fP
 .TP
+\fB\fINC_EDIT_TESTOPT_NOTSET \fP\fP
+.TP
 \fB\fINC_EDIT_TESTOPT_TESTSET \fP\fP
 .TP
 \fB\fINC_EDIT_TESTOPT_SET \fP\fP
@@ -240,7 +257,7 @@ session-id in error-info - session ID of session holding the requested lock, con
 \fBEnumerator: \fP
 .in +1c
 .TP
-\fB\fINCWD_MODE_DISABLED \fP\fP
+\fB\fINCWD_MODE_NOTSET \fP\fP
 .TP
 \fB\fINCWD_MODE_ALL \fP\fP
 .TP
@@ -257,8 +274,6 @@ session-id in error-info - session ID of session holding the requested lock, con
 .in +1c
 .TP
 \fB\fINC_CAP_ATTR_WITHDEFAULTS_MODE \fP\fP
-.TP
-\fB\fINC_CAP_ATTR_VALIDATE_TESTOPT \fP\fP
 
 .SH "Author"
 .PP 

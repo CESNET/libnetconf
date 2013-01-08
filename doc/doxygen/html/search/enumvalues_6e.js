@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['nc_5fcap_5fattr_5fvalidate_5ftestopt',['NC_CAP_ATTR_VALIDATE_TESTOPT',['../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914daac7f841bf48a77e747f38d31468d53d1',1,'netconf.h']]],
   ['nc_5fcap_5fattr_5fwithdefaults_5fmode',['NC_CAP_ATTR_WITHDEFAULTS_MODE',['../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba',1,'netconf.h']]],
   ['nc_5fdatastore_5fcandidate',['NC_DATASTORE_CANDIDATE',['../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830',1,'netconf.h']]],
   ['nc_5fdatastore_5fconfig',['NC_DATASTORE_CONFIG',['../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e',1,'netconf.h']]],
@@ -14,6 +13,7 @@ var searchData=
   ['nc_5fedit_5fdefop_5freplace',['NC_EDIT_DEFOP_REPLACE',['../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a80cda5b10ba3ff7f819c08508be9237c',1,'netconf.h']]],
   ['nc_5fedit_5ferropt_5fcont',['NC_EDIT_ERROPT_CONT',['../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a69d82c66a324215010791718c1bc61f6',1,'netconf.h']]],
   ['nc_5fedit_5ferropt_5ferror',['NC_EDIT_ERROPT_ERROR',['../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4',1,'netconf.h']]],
+  ['nc_5fedit_5ferropt_5fnotset',['NC_EDIT_ERROPT_NOTSET',['../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a8f01a1f484abf78c8c0ea3f2d369306e',1,'netconf.h']]],
   ['nc_5fedit_5ferropt_5frollback',['NC_EDIT_ERROPT_ROLLBACK',['../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a35128042558e32842f827be8c31d5b1a',1,'netconf.h']]],
   ['nc_5fedit_5ferropt_5fstop',['NC_EDIT_ERROPT_STOP',['../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32ae3322bea978cea2d2a7c0818680bd721',1,'netconf.h']]],
   ['nc_5fedit_5fop_5fcreate',['NC_EDIT_OP_CREATE',['../d3/d7a/netconf_8h.html#aff232fd4280e385c8e45fcca033e58fdaa7f202a2d5f43e094946b1361da93f40',1,'netconf.h']]],
@@ -23,6 +23,7 @@ var searchData=
   ['nc_5fedit_5fop_5fremove',['NC_EDIT_OP_REMOVE',['../d3/d7a/netconf_8h.html#aff232fd4280e385c8e45fcca033e58fda5c6473715392eb03614abc6d7e62bdf9',1,'netconf.h']]],
   ['nc_5fedit_5fop_5freplace',['NC_EDIT_OP_REPLACE',['../d3/d7a/netconf_8h.html#aff232fd4280e385c8e45fcca033e58fda5d2ca68f21babd6220538a1e3eac2356',1,'netconf.h']]],
   ['nc_5fedit_5ftestopt_5ferror',['NC_EDIT_TESTOPT_ERROR',['../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a1770ae5b90495ca720f60ca76ab029b4',1,'netconf.h']]],
+  ['nc_5fedit_5ftestopt_5fnotset',['NC_EDIT_TESTOPT_NOTSET',['../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579acb24b46f501c50f2a78b87da73322bc7',1,'netconf.h']]],
   ['nc_5fedit_5ftestopt_5fset',['NC_EDIT_TESTOPT_SET',['../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a56b353b9c45d7eed3373e41feb509294',1,'netconf.h']]],
   ['nc_5fedit_5ftestopt_5ftest',['NC_EDIT_TESTOPT_TEST',['../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a7f8086cbfcc1c1811b33e2d681f77072',1,'netconf.h']]],
   ['nc_5fedit_5ftestopt_5ftestset',['NC_EDIT_TESTOPT_TESTSET',['../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579aae2180fb26e03b4c1ea184abb463056c',1,'netconf.h']]],
@@ -65,6 +66,8 @@ var searchData=
   ['nc_5fmsg_5frpc',['NC_MSG_RPC',['../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a7f6951d98d30342a65e6b1d7ccca2df0',1,'netconf.h']]],
   ['nc_5fmsg_5funknown',['NC_MSG_UNKNOWN',['../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305',1,'netconf.h']]],
   ['nc_5fmsg_5fwouldblock',['NC_MSG_WOULDBLOCK',['../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a5b0ce1ca54b15ef3ca1ef901263c1b72',1,'netconf.h']]],
+  ['nc_5fntf_5fbase',['NC_NTF_BASE',['../d3/d7a/netconf_8h.html#a1c31d345663d3147461f3c613e3de0bda8e66b0389f9288666a59d139fef92d41',1,'netconf.h']]],
+  ['nc_5fntf_5funknown',['NC_NTF_UNKNOWN',['../d3/d7a/netconf_8h.html#a1c31d345663d3147461f3c613e3de0bda5f80195691ebd98f88cbd16b155813f2',1,'netconf.h']]],
   ['nc_5fop_5fclosesession',['NC_OP_CLOSESESSION',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07af5cc206ce4cd2b20cd562bb01e0a8da3',1,'netconf.h']]],
   ['nc_5fop_5fcommit',['NC_OP_COMMIT',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a350f96fd686eea971d1d9e087a9ff8f4',1,'netconf.h']]],
   ['nc_5fop_5fcopyconfig',['NC_OP_COPYCONFIG',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07abc36a612cfba2cf3462d99fae4ab4ac5',1,'netconf.h']]],
@@ -123,7 +126,7 @@ var searchData=
   ['ncntf_5freplay_5fcomplete',['NCNTF_REPLAY_COMPLETE',['../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977aa440351ba1c82a0dd9e5301a6d03c5ac',1,'notifications.h']]],
   ['ncwd_5fmode_5fall',['NCWD_MODE_ALL',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81a8b422cc5bcfa0ddd20d52ec6e71362db',1,'netconf.h']]],
   ['ncwd_5fmode_5fall_5ftagged',['NCWD_MODE_ALL_TAGGED',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81a0bd005f27bf5b0dd51aa8d61656f8089',1,'netconf.h']]],
-  ['ncwd_5fmode_5fdisabled',['NCWD_MODE_DISABLED',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81add913a6a7fc4215684c88fd73720facd',1,'netconf.h']]],
   ['ncwd_5fmode_5fexplicit',['NCWD_MODE_EXPLICIT',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81acf0be9f54f89bf4321478fb9030e4f8c',1,'netconf.h']]],
+  ['ncwd_5fmode_5fnotset',['NCWD_MODE_NOTSET',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81aa1b9b1a955b894632ed97b2bfe1aa43b',1,'netconf.h']]],
   ['ncwd_5fmode_5ftrim',['NCWD_MODE_TRIM',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81af84df646ebc7d47ea9fd3ea0827f59b3',1,'netconf.h']]]
 ];

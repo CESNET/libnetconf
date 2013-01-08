@@ -1,4 +1,4 @@
-.TH "With-defaults capability" 3 "Wed Dec 19 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "With-defaults capability" 3 "Tue Jan 8 2013" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -10,7 +10,7 @@ libnetconf's implementation of NETCONF with-defaults capability as defined in RF
 
 .in +1c
 .ti -1c
-.RI "#define \fBNCDFLT_DISABLE\fP   \fBncdflt_set_basic_mode\fP(\fBNCWD_MODE_DISABLED\fP)"
+.RI "#define \fBNCDFLT_DISABLE\fP   \fBncdflt_set_basic_mode\fP(NCWD_MODE_DISABLED)"
 .br
 .RI "\fIDisable support for with-defaults capability\&. This can be done on both client and server\&. \fP"
 .in -1c
@@ -49,7 +49,7 @@ libnetconf's implementation of NETCONF with-defaults capability as defined in RF
 
 .SH "Macro Definition Documentation"
 .PP 
-.SS "#define NCDFLT_DISABLE   \fBncdflt_set_basic_mode\fP(\fBNCWD_MODE_DISABLED\fP)"
+.SS "#define NCDFLT_DISABLE   \fBncdflt_set_basic_mode\fP(NCWD_MODE_DISABLED)"
 
 .PP
 Disable support for with-defaults capability\&. This can be done on both client and server\&. This is alternative for ncdflt_set_basic_mode(NCDFLT_MODE_DISABLED)\&. To enable with-defaults capability, use \fBncdflt_set_basic_mode()\fP to set with-defaults' basic mode\&. 

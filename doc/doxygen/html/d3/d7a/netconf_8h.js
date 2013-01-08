@@ -10,6 +10,7 @@ var netconf_8h =
     [ "NC_MSG_TYPE", "d3/d7a/netconf_8h.html#ga298c7a4ad5cc76169a211f86df90f057", null ],
     [ "NC_REPLY_TYPE", "d3/d7a/netconf_8h.html#gad31ee5df47d5671ebdf1b06f785e6c29", null ],
     [ "NC_RPC_TYPE", "d3/d7a/netconf_8h.html#ga4088fac1dd592062b27ff5b0e1708d00", null ],
+    [ "NC_NOTIF_TYPE", "d3/d7a/netconf_8h.html#a1c31d345663d3147461f3c613e3de0bd", null ],
     [ "NC_OP", "d3/d7a/netconf_8h.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07", null ],
     [ "NC_ERR_PARAM", "d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73d", null ],
     [ "NC_DATASTORE", "d3/d7a/netconf_8h.html#ga5e4b9ee138b963e8ea2354fef2ebbe73", null ],

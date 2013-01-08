@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Wed Dec 19 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Tue Jan 8 2013" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -78,7 +78,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIGet content of the operation specification from the given rpc\&. \fP"
 .ti -1c
-.RI "\fBNC_RPC_TYPE\fP \fBnc_rpc_get_type\fP (const \fBnc_rpc\fP *rpc)"
+.RI "\fBNC_RPC_TYPE\fP \fBnc_rpc_get_type\fP (\fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet type of the rpc message\&. \fP"
 .ti -1c
@@ -102,6 +102,10 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIGet error-option type, valid only for <edit-config> RPCs\&. \fP"
 .ti -1c
+.RI "\fBNC_EDIT_TESTOPT_TYPE\fP \fBnc_rpc_get_testopt\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet test-option type, valid only for <edit-config> RPCs supporting :validate:1\&.1 capability\&. \fP"
+.ti -1c
 .RI "struct nc_filter * \fBnc_rpc_get_filter\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet filter from <get> or <get-config> RPC\&. \fP"
@@ -118,7 +122,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fICreate <delete-config> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_editconfig\fP (\fBNC_DATASTORE\fP target, \fBNC_DATASTORE\fP source, \fBNC_EDIT_DEFOP_TYPE\fP default_operation, \fBNC_EDIT_ERROPT_TYPE\fP error_option,\&.\&.\&.)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_editconfig\fP (\fBNC_DATASTORE\fP target, \fBNC_DATASTORE\fP source, \fBNC_EDIT_DEFOP_TYPE\fP default_operation, \fBNC_EDIT_ERROPT_TYPE\fP error_option, \fBNC_EDIT_TESTOPT_TYPE\fP test_option,\&.\&.\&.)"
 .br
 .RI "\fICreate <edit-config> NETCONF rpc message\&. \fP"
 .ti -1c
@@ -428,7 +432,7 @@ String in XML form starting with the operation name element\&. Caller is respons
 .RE
 .PP
 
-.SS "\fBNC_RPC_TYPE\fP nc_rpc_get_type (const \fBnc_rpc\fP *rpc)"
+.SS "\fBNC_RPC_TYPE\fP nc_rpc_get_type (\fBnc_rpc\fP *rpc)"
 
 .PP
 Get type of the rpc message\&. <rpc> message can affect datastore, session or it can be unknown for the libnetconf (defined by some of unsupported capability or device configuration model)
@@ -518,6 +522,20 @@ One of the NC_EDIT_ERROPT_TYPE, NC_EDIT_ERROPT_ERROR in case of error
 .RE
 .PP
 
+.SS "\fBNC_EDIT_TESTOPT_TYPE\fP nc_rpc_get_testopt (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Get test-option type, valid only for <edit-config> RPCs supporting :validate:1\&.1 capability\&. \fBParameters:\fP
+.RS 4
+\fIrpc\fP <edit-config> rpc message
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+One of the NC_EDIT_TESTOPT_TYPE, NC_EDIT_TESTOPT_ERROR in case of error 
+.RE
+.PP
+
 .SS "struct nc_filter* nc_rpc_get_filter (const \fBnc_rpc\fP *rpc)\fC [read]\fP"
 
 .PP
@@ -599,7 +617,7 @@ Created rpc message\&.
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* nc_rpc_editconfig (\fBNC_DATASTORE\fPtarget, \fBNC_DATASTORE\fPsource, \fBNC_EDIT_DEFOP_TYPE\fPdefault_operation, \fBNC_EDIT_ERROPT_TYPE\fPerror_option, \&.\&.\&.)"
+.SS "\fBnc_rpc\fP* nc_rpc_editconfig (\fBNC_DATASTORE\fPtarget, \fBNC_DATASTORE\fPsource, \fBNC_EDIT_DEFOP_TYPE\fPdefault_operation, \fBNC_EDIT_ERROPT_TYPE\fPerror_option, \fBNC_EDIT_TESTOPT_TYPE\fPtest_option, \&.\&.\&.)"
 
 .PP
 Create <edit-config> NETCONF rpc message\&. \fBParameters:\fP
@@ -611,6 +629,8 @@ Create <edit-config> NETCONF rpc message\&. \fBParameters:\fP
 \fIdefault_operation\fP Default operation for this request, 0 to skip setting this parameter and use default server's ('merge') behavior\&. 
 .br
 \fIerror_option\fP Set reaction to an error, 0 for the server's default behavior\&. 
+.br
+\fItest_option\fP Set test-option element according to :validate:1\&.1 capability specified in RFC 6241\&. 
 .br
 \fI\&.\&.\&.\fP According to the source parameter, variadic parameter can be one of the following:
 .IP "\(bu" 2
@@ -763,22 +783,12 @@ applicable to <get>, <get-config> and <copy-config> operations\&.
 Accepts one parameter of \fBNCWD_MODE\fP type, specifying mode of the :with-defaults capability (RFC 6243)\&.
 .PP
 
-.IP "\(bu" 2
-\fBNC_CAP_ATTR_VALIDATE_TESTOPT\fP
-.IP "  \(bu" 4
-applicable only to <edit-config> operation\&.
-.IP "  \(bu" 4
-Accepts one parameter of \fBNC_EDIT_TESTOPT_TYPE\fP type, specifying value for the <test-option> element defined in :validate capability (RFC 6241)\&.
-.PP
-
 .PP
 .PP
 .SS "Examples:"
 .PP
 .IP "\(bu" 2
 nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, NCWD_MODE_ALL);
-.IP "\(bu" 2
-nc_rpc_capability_attr(rpc, NC_CAP_ATTR_VALIDATE_TESTOPT, NC_EDIT_TESTOPT_TESTSET);
 .PP
 .PP
 \fBParameters:\fP
@@ -792,12 +802,7 @@ nc_rpc_capability_attr(rpc, NC_CAP_ATTR_VALIDATE_TESTOPT, NC_EDIT_TESTOPT_TESTSE
 .RS 4
 0 on success,
 .br
- non-zero on error\&.
-.RE
-.PP
-\fBTodo\fP
-.RS 4
-Implement this function 
+ non-zero on error\&. 
 .RE
 .PP
 

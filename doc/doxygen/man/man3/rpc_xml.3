@@ -1,4 +1,4 @@
-.TH "NETCONF rpc (libxml2)" 3 "Wed Dec 19 2012" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc (libxml2)" 3 "Tue Jan 8 2013" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -34,7 +34,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&. These functions ac
 .br
 .RI "\fICreate <copy-config> NETCONF rpc message\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBncxml_rpc_editconfig\fP (\fBNC_DATASTORE\fP target, \fBNC_DATASTORE\fP source, \fBNC_EDIT_DEFOP_TYPE\fP default_operation, \fBNC_EDIT_ERROPT_TYPE\fP error_option,\&.\&.\&.)"
+.RI "\fBnc_rpc\fP * \fBncxml_rpc_editconfig\fP (\fBNC_DATASTORE\fP target, \fBNC_DATASTORE\fP source, \fBNC_EDIT_DEFOP_TYPE\fP default_operation, \fBNC_EDIT_ERROPT_TYPE\fP error_option, \fBNC_EDIT_TESTOPT_TYPE\fP test_option,\&.\&.\&.)"
 .br
 .RI "\fICreate <edit-config> NETCONF rpc message\&. \fP"
 .ti -1c
@@ -106,7 +106,7 @@ Get content of the operation specification from the given rpc\&. \fBParameters:\
 .PP
 \fBReturns:\fP
 .RS 4
-libxml2 node structure with the NETCONF operation element and its content\&. Caller is supposed to free the returned structure with xmlFreeNode()\&. 
+libxml2 node structure with the NETCONF operation element(s) and its content\&. Caller is supposed to free the returned structure with xmlFreeNodeList()\&. 
 .RE
 .PP
 
@@ -166,7 +166,7 @@ Created rpc message\&.
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* ncxml_rpc_editconfig (\fBNC_DATASTORE\fPtarget, \fBNC_DATASTORE\fPsource, \fBNC_EDIT_DEFOP_TYPE\fPdefault_operation, \fBNC_EDIT_ERROPT_TYPE\fPerror_option, \&.\&.\&.)"
+.SS "\fBnc_rpc\fP* ncxml_rpc_editconfig (\fBNC_DATASTORE\fPtarget, \fBNC_DATASTORE\fPsource, \fBNC_EDIT_DEFOP_TYPE\fPdefault_operation, \fBNC_EDIT_ERROPT_TYPE\fPerror_option, \fBNC_EDIT_TESTOPT_TYPE\fPtest_option, \&.\&.\&.)"
 
 .PP
 Create <edit-config> NETCONF rpc message\&. \fBParameters:\fP
@@ -178,6 +178,8 @@ Create <edit-config> NETCONF rpc message\&. \fBParameters:\fP
 \fIdefault_operation\fP Default operation for this request, 0 to skip setting this parameter and use default server's ('merge') behavior\&. 
 .br
 \fIerror_option\fP Set reaction to an error, 0 for the server's default behavior\&. 
+.br
+\fItest_option\fP Set test-option element according to :validate:1\&.1 capability specified in RFC 6241\&. 
 .br
 \fI\&.\&.\&.\fP According to the source parameter, variadic parameter can be one of the following:
 .IP "\(bu" 2
