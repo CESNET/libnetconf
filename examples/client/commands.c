@@ -559,11 +559,11 @@ int cmd_editconfig (char *arg)
 		case 'e':
 			/* validate error option */
 			if (strcmp (optarg, "stop") == 0) {
-				defop = NC_EDIT_ERROPT_STOP;
+				erropt = NC_EDIT_ERROPT_STOP;
 			} else if (strcmp (optarg, "continue") == 0) {
-				defop = NC_EDIT_ERROPT_CONT;
+				erropt = NC_EDIT_ERROPT_CONT;
 			} else if (nc_cpblts_enabled (session, NC_CAP_ROLLBACK_ID) && strcmp (optarg, "rollback") == 0) {
-				defop = NC_EDIT_ERROPT_ROLLBACK;
+				erropt = NC_EDIT_ERROPT_ROLLBACK;
 			} else {
 				ERROR("edit-config", "invalid error-option %s.", optarg);
 				cmd_editconfig_help ();
