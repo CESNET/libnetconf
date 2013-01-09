@@ -1196,13 +1196,13 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 
 	switch (filter->type) {
 	case NC_FILTER_SUBTREE:
-		if (filter->subtree_filter == NULL || filter->subtree_filter->children == NULL) {
+		if (filter->subtree_filter == NULL) {
 			ERROR("%s: invalid filter (%s:%d).", __func__, __FILE__, __LINE__);
 			return EXIT_FAILURE;
 		}
 		data_filtered[0] = xmlNewDoc(BAD_CAST "1.0");
 		data_filtered[1] = xmlNewDoc(BAD_CAST "1.0");
-		for (filter_item = filter->subtree_filter->children->children; filter_item != NULL; filter_item = filter_item->next) {
+		for (filter_item = filter->subtree_filter->children; filter_item != NULL; filter_item = filter_item->next) {
 			xmlDocSetRootElement(data_filtered[0], xmlCopyNode(old, 1));
 			ncxml_subtree_filter(data_filtered[0]->children, filter_item);
 			if (data_filtered[1]->children == NULL) {
@@ -1221,7 +1221,7 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 				data_filtered[1] = result;
 			}
 		}
-		if (filter->subtree_filter->children->children != NULL) {
+		if (filter->subtree_filter->children != NULL) {
 			if(data_filtered[1]->children != NULL) {
 				*new = xmlCopyNode(data_filtered[1]->children, 1);
 			} else {
