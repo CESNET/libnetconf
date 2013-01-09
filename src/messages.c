@@ -68,6 +68,7 @@ static struct nc_filter *nc_filter_new_subtree(const xmlNodePtr filter)
 		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
+
 	retval->type = NC_FILTER_SUBTREE;
 	retval->subtree_filter = xmlNewNode(NULL, BAD_CAST "filter");
 	if (retval->subtree_filter == NULL) {
@@ -2667,9 +2668,6 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 	xmlNodePtr content;
 	xmlNsPtr ns;
 	char* time;
-
-	/* prepare notification namespace */
-
 
 	if ((content = xmlNewNode(NULL, BAD_CAST "create-subscription")) == NULL) {
 		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
