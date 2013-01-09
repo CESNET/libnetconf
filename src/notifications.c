@@ -2523,7 +2523,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 				}
 
 				if (nodelist != NULL) {
-					xmlAddChildList(event_doc->children, aux_node); /* into doc -> <notification> */
+					xmlAddChildList(event_doc->children, nodelist); /* into doc -> <notification> */
 					nodelist = NULL;
 				} else {
 					/* nothing to send */
