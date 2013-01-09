@@ -851,35 +851,35 @@ xmlNodePtr ncxml_rpc_get_config(const nc_rpc *rpc)
 
 NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 {
-	xmlNodePtr rpc_root, op, defop;
+	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr defop;
 	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_DEFOP_MERGE;
 
-	/* only applicable on edit-config */
-	if (nc_rpc_get_op(rpc) != NC_OP_EDITCONFIG) {
-		return NC_EDIT_DEFOP_ERROR;
-	}
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":default-operation", rpc->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			if (query_result->nodesetval->nodeNr > 1) {
+				ERROR("%s: multiple default-operation elements found in edit-config request", __func__);
+				return (NC_EDIT_DEFOP_ERROR);
+			}
+		}
 
-	rpc_root = xmlDocGetRootElement (rpc->doc);
-	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
-		return NC_EDIT_DEFOP_ERROR;
-	}
-
-	if ((op = rpc_root->children) == NULL) {
-		return NC_EDIT_DEFOP_ERROR;
-	}
-
-	defop = op->children;
-	while (defop != NULL && !xmlStrEqual(defop->name, BAD_CAST "default-operation")) {
-		defop = defop->next;
+		defop = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
+		xmlXPathFreeObject(query_result);
 	}
 
 	if (defop != NULL) {
-		if (xmlStrEqual(defop->children->content, BAD_CAST "merge")) {
+		if (defop->children == NULL || defop->children->type != XML_TEXT_NODE || defop->children->content == NULL) {
+			ERROR("%s: invalid format of edit-config's default-operation parameter", __func__);
+			retval = NC_EDIT_DEFOP_ERROR;
+		} else if (xmlStrEqual(defop->children->content, BAD_CAST "merge")) {
 			retval = NC_EDIT_DEFOP_MERGE;
 		} else if (xmlStrEqual(defop->children->content, BAD_CAST "replace")) {
 			retval = NC_EDIT_DEFOP_REPLACE;
 		} else if (xmlStrEqual(defop->children->content, BAD_CAST "none")) {
 			retval = NC_EDIT_DEFOP_NONE;
+		} else {
+			ERROR("%s: unknown default-operation specified (%s)", __func__, defop->children->content)
+			retval = NC_EDIT_DEFOP_ERROR;
 		}
 	}
 
@@ -888,35 +888,35 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 
 NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 {
-	xmlNodePtr rpc_root, op, erropt;
-	NC_EDIT_ERROPT_TYPE retval = NC_EDIT_ERROPT_STOP;
+	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr erropt;
+	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_DEFOP_MERGE;
 
-	/* only applicable on edit-config */
-	if (nc_rpc_get_op(rpc) != NC_OP_EDITCONFIG) {
-		return NC_EDIT_ERROPT_ERROR;
-	}
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":error-option", rpc->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			if (query_result->nodesetval->nodeNr > 1) {
+				ERROR("%s: multiple error-option elements found in edit-config request", __func__);
+				return (NC_EDIT_ERROPT_ERROR);
+			}
+		}
 
-	rpc_root = xmlDocGetRootElement (rpc->doc);
-	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
-		return NC_EDIT_ERROPT_ERROR;
-	}
-
-	if ((op = rpc_root->children) == NULL) {
-		return NC_EDIT_ERROPT_ERROR;
-	}
-
-	erropt = op->children;
-	while (erropt != NULL && !xmlStrEqual(erropt->name, BAD_CAST "error-option")) {
-		erropt = erropt->next;
+		erropt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
+		xmlXPathFreeObject(query_result);
 	}
 
 	if (erropt != NULL) {
-		if (xmlStrEqual(erropt->children->content, BAD_CAST "stop-on-error")) {
+		if (erropt->children == NULL || erropt->children->type != XML_TEXT_NODE || erropt->children->content == NULL) {
+			ERROR("%s: invalid format of edit-config's error-option parameter", __func__);
+			retval = NC_EDIT_ERROPT_ERROR;
+		} else if (xmlStrEqual(erropt->children->content, BAD_CAST "stop-on-error")) {
 			retval = NC_EDIT_ERROPT_STOP;
 		} else if (xmlStrEqual(erropt->children->content, BAD_CAST "continue-on-error")) {
 			retval = NC_EDIT_ERROPT_CONT;
 		} else if (xmlStrEqual(erropt->children->content, BAD_CAST "rollback-on-error")) {
 			retval = NC_EDIT_ERROPT_ROLLBACK;
+		} else {
+			ERROR("%s: unknown error-option specified (%s)", __func__, erropt->children->content)
+			retval = NC_EDIT_ERROPT_ERROR;
 		}
 	}
 
@@ -926,40 +926,35 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
-	xmlNodePtr node;
-	NC_EDIT_TESTOPT_TYPE retval = NC_EDIT_TESTOPT_NOTSET;
-
-	/* only applicable on edit-config */
-	if (nc_rpc_get_op(rpc) != NC_OP_EDITCONFIG) {
-		return NC_EDIT_TESTOPT_ERROR;
-	}
+	xmlNodePtr testopt;
+	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_DEFOP_MERGE;
 
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":test-option", rpc->ctxt)) != NULL) {
-		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			retval = NC_EDIT_TESTOPT_NOTSET;
-		} else if (query_result->nodesetval->nodeNr > 1) {
-			ERROR("%s: invalid rpc message (multiple test-option elements)", __func__);
-			retval = NC_EDIT_TESTOPT_ERROR;
-		} else {
-			for (node = query_result->nodesetval->nodeTab[0]->children; node != NULL && node->type != XML_TEXT_NODE; node = node->next);
-
-			if (node != NULL) {
-				if (xmlStrcmp(node->content, BAD_CAST "set") == 0) {
-					retval = NC_EDIT_TESTOPT_SET;
-				} else if (xmlStrcmp(node->content, BAD_CAST "test-only") == 0) {
-					retval = NC_EDIT_TESTOPT_TEST;
-				} else if (xmlStrcmp(node->content, BAD_CAST "test-then-set") == 0) {
-					retval = NC_EDIT_TESTOPT_TESTSET;
-				} else {
-					ERROR("%s: invalid value of test-option element (%s)", __func__, node->content);
-					retval = NC_EDIT_TESTOPT_ERROR;
-				}
-			} else {
-				ERROR("%s: invalid content of test-option element", __func__);
-				retval = NC_EDIT_TESTOPT_ERROR;
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			if (query_result->nodesetval->nodeNr > 1) {
+				ERROR("%s: multiple test-option elements found in edit-config request", __func__);
+				return (NC_EDIT_TESTOPT_ERROR);
 			}
 		}
+
+		testopt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
 		xmlXPathFreeObject(query_result);
+	}
+
+	if (testopt != NULL) {
+		if (testopt->children == NULL || testopt->children->type != XML_TEXT_NODE || testopt->children->content == NULL) {
+			ERROR("%s: invalid format of edit-config's test-option parameter", __func__);
+			retval = NC_EDIT_TESTOPT_ERROR;
+		} else if (xmlStrcmp(testopt->children->content, BAD_CAST "set") == 0) {
+			retval = NC_EDIT_TESTOPT_SET;
+		} else if (xmlStrcmp(testopt->children->content, BAD_CAST "test-only") == 0) {
+			retval = NC_EDIT_TESTOPT_TEST;
+		} else if (xmlStrcmp(testopt->children->content, BAD_CAST "test-then-set") == 0) {
+			retval = NC_EDIT_TESTOPT_TESTSET;
+		} else {
+			ERROR("%s: unknown test-option specified (%s)", __func__, testopt->children->content)
+			retval = NC_EDIT_TESTOPT_ERROR;
+		}
 	}
 
 	return (retval);
