@@ -1677,6 +1677,11 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		nc_msg_free(retval);
 		goto malformed_msg;
 	}
+	if (xmlXPathRegisterNs(retval->ctxt, BAD_CAST NC_NS_NOTIFICATIONS_ID, BAD_CAST NC_NS_NOTIFICATIONS) != 0) {
+		ERROR("Registering notifications namespace for the message xpath context failed.");
+		nc_msg_free(retval);
+		goto malformed_msg;
+	}
 
 	/* parse and store message type */
 	root = xmlDocGetRootElement(retval->doc);
