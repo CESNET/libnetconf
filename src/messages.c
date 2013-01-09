@@ -62,6 +62,7 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 static struct nc_filter *nc_filter_new_subtree(const xmlNodePtr filter)
 {
 	struct nc_filter *retval;
+	xmlNsPtr ns;
 
 	retval = malloc(sizeof(struct nc_filter));
 	if (retval == NULL) {
@@ -76,6 +77,12 @@ static struct nc_filter *nc_filter_new_subtree(const xmlNodePtr filter)
 		nc_filter_free(retval);
 		return (NULL);
 	}
+
+	/* set namespace */
+	ns = xmlNewNs(retval->subtree_filter, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(retval->subtree_filter, ns);
+
+	xmlNewNsProp(retval->subtree_filter, ns, BAD_CAST "type", BAD_CAST "subtree");
 
 	if (filter != NULL) {
 		if (xmlAddChildList(retval->subtree_filter, xmlCopyNodeList(filter)) == NULL) {
@@ -103,7 +110,7 @@ struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, ...)
 	case NC_FILTER_SUBTREE:
 		/* convert string representation into libxml2 structure */
 		arg = va_arg(argp, const char*);
-		if (asprintf(&filter_s, "<filter type=\"subtree\">%s</filter>", (arg == NULL) ? "" : arg) == -1) {
+		if (asprintf(&filter_s, "<filter>%s</filter>", (arg == NULL) ? "" : arg) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			va_end(argp);
 			return (NULL);
@@ -1782,15 +1789,46 @@ nc_rpc *nc_rpc_closesession()
 	return (rpc);
 }
 
+static xmlNodePtr _xmlReplaceNode(xmlNodePtr old, xmlNodePtr cur)
+{
+	xmlNodePtr child;
+
+	cur->children = old->children;
+	cur->last = old->last;
+	for (child = old->children; child != NULL; child = child->next) {
+		child->parent = cur;
+		/* todo copy necessary namespace declaration from old to cur */
+	}
+	old->children = NULL;
+	old->last = NULL;
+	return (old);
+}
+
 static int process_filter_param (xmlNodePtr content, const struct nc_filter* filter)
 {
 	xmlDocPtr doc_filter = NULL;
+	xmlNodePtr node, ntf_filter;
+	xmlNsPtr ns;
 
 	if (filter != NULL) {
 		if (filter->type == NC_FILTER_SUBTREE && filter->subtree_filter != NULL) {
-			/* process Subtree filter type */
+			/*
+			 * if the operation is create-subscription, change the
+			 * namespace of filter element, but type has still the
+			 * BASE10 namespace
+			 */
+			node = xmlCopyNode(filter->subtree_filter, 1);
+			if (xmlStrcmp(content->name, BAD_CAST "create-subscription") == 0 &&
+					xmlStrcmp(content->ns->href, BAD_CAST NC_NS_NOTIFICATIONS) == 0) {
+				ntf_filter = xmlNewNode(content->ns, BAD_CAST "filter");
+				ns = xmlNewNs(ntf_filter, BAD_CAST NC_NS_BASE10, BAD_CAST NC_NS_BASE10_ID);
+				xmlNewNsProp(ntf_filter, ns, BAD_CAST "type", BAD_CAST "subtree");
+				xmlFreeNode(_xmlReplaceNode(node, ntf_filter));
+				node = ntf_filter;
+			}
 
-			if (xmlAddChild(content, xmlCopyNode(filter->subtree_filter, 1)) == NULL) {
+			/* process Subtree filter type */
+			if (xmlAddChild(content, node) == NULL) {
 				ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
 				xmlFreeDoc(doc_filter);
 				return (EXIT_FAILURE);
