@@ -671,160 +671,152 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 
 static char* nc_rpc_get_copyconfig(const nc_rpc* rpc)
 {
-	xmlNodePtr rpc_root, op, source, config, aux_node;
+	xmlXPathObjectPtr query_result = NULL;
 	xmlDocPtr aux_doc;
+	xmlNodePtr config = NULL, aux_node;
 	xmlBufferPtr resultbuffer;
 	char * retval = NULL;
 
-	rpc_root = xmlDocGetRootElement (rpc->doc);
-	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":copy-config/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
+		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			ERROR("%s: no source config data in copy-config request", __func__);
+			xmlXPathFreeObject(query_result);
+			return (NULL);
+		} else if (query_result->nodesetval->nodeNr > 1) {
+			ERROR("%s: multiple source config data in copy-config request", __func__);
+			xmlXPathFreeObject(query_result);
+			return (NULL);
+		}
+
+		config = query_result->nodesetval->nodeTab[0];
+		xmlXPathFreeObject(query_result);
+	} else {
+		ERROR("%s: source config data not found in copy-config request", __func__);
+		return (NULL);
+	}
+
+	/* dump the result */
+	resultbuffer = xmlBufferCreate();
+	if (resultbuffer == NULL) {
+		ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
 		return NULL;
 	}
-
-	if ((op = rpc_root->children) == NULL) {
-		return NULL;
+	if (config->children == NULL) {
+		/* config is empty */
+		return (strdup(""));
 	}
-
-	source = op->children;
-	while (source != NULL && !xmlStrEqual(source->name, BAD_CAST "source")) {
-		source = source->next;
+	/* by copying nodelist, move all needed namespaces into the editing nodes */
+	aux_doc = xmlNewDoc(BAD_CAST "1.0");
+	xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
+	xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, config->children));
+	for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
+		xmlNodeDump(resultbuffer, aux_doc, aux_node, 2, 1);
 	}
-
-	if (source == NULL) {
-		return NULL;
-	}
-
-	config = source->children;
-	while (config != NULL && !xmlStrEqual(config->name, BAD_CAST "config")) {
-		config = config->next;
-	}
-
-	if (config != NULL) {
-		/* dump the result */
-		resultbuffer = xmlBufferCreate();
-		if (resultbuffer == NULL) {
-			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
-			return NULL;
-		}
-		if (config->children == NULL) {
-			/* config is empty */
-			return (strdup(""));
-		}
-		/* by copying nodelist, move all needed namespaces into the editing nodes */
-		aux_doc = xmlNewDoc(BAD_CAST "1.0");
-		xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
-		xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, config->children));
-		for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
-			xmlNodeDump(resultbuffer, aux_doc, aux_node, 2, 1);
-		}
-		retval = strdup((char *) xmlBufferContent(resultbuffer));
-		xmlBufferFree(resultbuffer);
-		xmlFreeDoc(aux_doc);
-	}
+	retval = strdup((char *) xmlBufferContent(resultbuffer));
+	xmlBufferFree(resultbuffer);
+	xmlFreeDoc(aux_doc);
 
 	return retval;
 }
 
 static xmlNodePtr ncxml_rpc_get_copyconfig(const nc_rpc* rpc)
 {
-	xmlNodePtr rpc_root, op, source, config;
+	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr retval;
 
-	rpc_root = xmlDocGetRootElement (rpc->doc);
-	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
-		return NULL;
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":copy-config/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
+		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			ERROR("%s: no source config data in copy-config request", __func__);
+			xmlXPathFreeObject(query_result);
+			return (NULL);
+		} else if (query_result->nodesetval->nodeNr > 1) {
+			ERROR("%s: multiple source config data in copy-config request", __func__);
+			xmlXPathFreeObject(query_result);
+			return (NULL);
+		}
+
+		retval = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
+		xmlXPathFreeObject(query_result);
+		return (retval);
+	} else {
+		ERROR("%s: source config data not found in copy-config request", __func__);
+		return (NULL);
 	}
-
-	/* \todo Use xPath */
-
-	if ((op = rpc_root->children) == NULL) {
-		return NULL;
-	}
-
-	source = op->children;
-	while (source != NULL && !xmlStrEqual(source->name, BAD_CAST "source")) {
-		source = source->next;
-	}
-
-	if (source == NULL) {
-		return NULL;
-	}
-
-	config = source->children;
-	while (config != NULL && !xmlStrEqual(config->name, BAD_CAST "config")) {
-		config = config->next;
-	}
-
-	return (xmlCopyNode(config, 1));
 }
 
 static char* nc_rpc_get_editconfig(const nc_rpc* rpc)
 {
-	xmlNodePtr rpc_root, op, config, aux_node;
+	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr config, aux_node;
 	xmlDocPtr aux_doc;
 	xmlBufferPtr resultbuffer;
 	char * retval = NULL;
 
-	rpc_root = xmlDocGetRootElement (rpc->doc);
-	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
+		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			ERROR("%s: no config data in edit-config request", __func__);
+			xmlXPathFreeObject(query_result);
+			return (NULL);
+		} else if (query_result->nodesetval->nodeNr > 1) {
+			ERROR("%s: multiple config data in edit-config request", __func__);
+			xmlXPathFreeObject(query_result);
+			return (NULL);
+		}
+
+		config = query_result->nodesetval->nodeTab[0];
+		xmlXPathFreeObject(query_result);
+	} else {
+		ERROR("%s: config data not found in edit-config request", __func__);
+		return (NULL);
+	}
+
+	/* dump the result */
+	resultbuffer = xmlBufferCreate();
+	if (resultbuffer == NULL) {
+		ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
 		return NULL;
 	}
-
-	if ((op = rpc_root->children) == NULL) {
-		return NULL;
+	if (config->children == NULL) {
+		/* config is empty */
+		return (strdup(""));
 	}
-
-	config = op->children;
-	while (config != NULL && !xmlStrEqual(config->name, BAD_CAST "config")) {
-		config = config->next;
+	/* by copying nodelist, move all needed namespaces into the editing nodes */
+	aux_doc = xmlNewDoc(BAD_CAST "1.0");
+	xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
+	xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, config->children));
+	for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
+		xmlNodeDump(resultbuffer, aux_doc, aux_node, 2, 1);
 	}
-
-	if (config != NULL) {
-		/* dump the result */
-		resultbuffer = xmlBufferCreate();
-		if (resultbuffer == NULL) {
-			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
-			return NULL;
-		}
-		if (config->children == NULL) {
-			/* config is empty */
-			return (strdup(""));
-		}
-		/* by copying nodelist, move all needed namespaces into the editing nodes */
-		aux_doc = xmlNewDoc(BAD_CAST "1.0");
-		xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
-		xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, config->children));
-		for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
-			xmlNodeDump(resultbuffer, aux_doc, aux_node, 2, 1);
-		}
-		retval = strdup((char *) xmlBufferContent(resultbuffer));
-		xmlBufferFree(resultbuffer);
-		xmlFreeDoc(aux_doc);
-	}
+	retval = strdup((char *) xmlBufferContent(resultbuffer));
+	xmlBufferFree(resultbuffer);
+	xmlFreeDoc(aux_doc);
 
 	return retval;
 }
 
 static xmlNodePtr ncxml_rpc_get_editconfig(const nc_rpc* rpc)
 {
-	xmlNodePtr rpc_root, op, config;
+	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr retval;
 
-	rpc_root = xmlDocGetRootElement (rpc->doc);
-	if (rpc_root == NULL || !xmlStrEqual(rpc_root->name, BAD_CAST "rpc")) {
-		return NULL;
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
+		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			ERROR("%s: no config data in edit-config request", __func__);
+			xmlXPathFreeObject(query_result);
+			return (NULL);
+		} else if (query_result->nodesetval->nodeNr > 1) {
+			ERROR("%s: multiple config data in edit-config request", __func__);
+			xmlXPathFreeObject(query_result);
+			return (NULL);
+		}
+
+		retval = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
+		xmlXPathFreeObject(query_result);
+		return (retval);
+	} else {
+		ERROR("%s: config data not found in edit-config request", __func__);
+		return (NULL);
 	}
-
-	/* \todo Use xPath */
-
-	if ((op = rpc_root->children) == NULL) {
-		return NULL;
-	}
-
-	config = op->children;
-	while (config != NULL && !xmlStrEqual(config->name, BAD_CAST "config")) {
-		config = config->next;
-	}
-
-	return (xmlCopyNode(config, 1));
 }
 
 char* nc_rpc_get_config(const nc_rpc *rpc)
