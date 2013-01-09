@@ -725,6 +725,12 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 		free(aux_name);
 	}
 
+	if (retval == NULL) {
+		*e = nc_err_new(NC_ERR_INVALID_VALUE);
+		nc_err_set(*e, NC_ERR_PARAM_TYPE, "protocol");
+		nc_err_set(*e, NC_ERR_PARAM_MSG, "Requested schema does not exist.");
+	}
+
 	/* cleanup */
 	free(version);
 	free(name);
