@@ -1658,7 +1658,6 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 
 		break;
 	case NCNTF_BASE_CPBLT_CHANGE:
-		/* \todo */
 		old = va_arg(params, const struct nc_cpblts*);
 		new = va_arg(params, const struct nc_cpblts*);
 		by = va_arg(params, NCNTF_EVENT_BY);
