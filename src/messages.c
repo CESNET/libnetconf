@@ -980,43 +980,40 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 
 struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 {
+	xmlXPathObjectPtr query_result = NULL;
 	struct nc_filter * retval = NULL;
-	xmlNodePtr filter_node;
+	xmlNodePtr filter_node = NULL;
 	xmlChar *type_string;
-	NC_OP op;
+	char* query;
 
-	if (rpc != NULL && rpc->doc != NULL &&
-			rpc->doc->children != NULL &&
-			rpc->doc->children->children != NULL &&
-			rpc->doc->children->children->children != NULL) {
-		op = nc_rpc_get_op(rpc);
-		if (op == NC_OP_GET || op == NC_OP_GETCONFIG || op == NC_OP_CREATESUBSCRIPTION) {
-			/* doc -> <rpc> -> <op> -> <param> */
-			filter_node = rpc->doc->children->children->children;
-			while (filter_node) {
-				/* \todo Check the namespace */
-				if (xmlStrEqual(filter_node->name, BAD_CAST "filter")) {
-					retval = malloc(sizeof(struct nc_filter));
-					type_string = xmlGetProp(filter_node, BAD_CAST "type");
-					/* set filter type */
-					if (type_string == NULL) {
-						/* implicit filter type is NC_FILTER_SUBTREE */
-						retval->type = NC_FILTER_SUBTREE;
-					} else if (xmlStrcmp(type_string, BAD_CAST "subtree") == 0) {
-						retval->type = NC_FILTER_SUBTREE;
-						retval->subtree_filter = xmlCopyNode(filter_node, 1);
-					} else {
-						/* some uknown filter type */
-						retval->type = NC_FILTER_UNKNOWN;
-					}
-
-					/* process only the first <filter> node, ignore the rest */
-					break;
-				}
-				filter_node = filter_node->next;
+	query = "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":get/"NC_NS_BASE10_ID":filter | /"
+			NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":get-config/"NC_NS_BASE10_ID":filter | /"
+			NC_NS_BASE10_ID":rpc/"NC_NS_NOTIFICATIONS_ID":create-subscription/"NC_NS_NOTIFICATIONS_ID":filter";
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST query, rpc->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			if (query_result->nodesetval->nodeNr > 1) {
+				ERROR("%s: multiple filter elements found", __func__);
+				return (NULL);
 			}
+			filter_node = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
+			xmlXPathFreeObject(query_result);
 		}
 	}
+
+	if (filter_node != NULL) {
+		retval = malloc(sizeof(struct nc_filter));
+		type_string = xmlGetProp(filter_node, BAD_CAST "type");
+		/* set filter type */
+		if (type_string == NULL || xmlStrcmp(type_string, BAD_CAST "subtree") == 0) {
+			/* includes implicit filter type (type property is not set) */
+			retval->type = NC_FILTER_SUBTREE;
+			retval->subtree_filter = xmlCopyNode(filter_node, 1);
+		} else {
+			/* some uknown filter type */
+			retval->type = NC_FILTER_UNKNOWN;
+		}
+	}
+
 	return retval;
 }
 
