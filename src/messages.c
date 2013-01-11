@@ -1857,10 +1857,12 @@ static int process_filter_param (xmlNodePtr content, const struct nc_filter* fil
 int nc_rpc_capability_attr(nc_rpc* rpc, NC_CAP_ATTR attr, ...)
 {
 	va_list argp;
+	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr root, newnode;
 	xmlNsPtr ns;
 	NCWD_MODE mode;
 	char *wd_mode;
+	int i;
 
 	if (rpc == NULL) {
 		ERROR("%s: invalid RPC to modify.", __func__);
@@ -1908,20 +1910,51 @@ int nc_rpc_capability_attr(nc_rpc* rpc, NC_CAP_ATTR attr, ...)
 				break;
 			}
 
-			/* go ot the operation element*/
-			root = xmlDocGetRootElement(rpc->doc);
-			/* \todo access required node via xpath */
+			if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_WITHDEFAULTS_ID":with-defaults", rpc->ctxt)) != NULL) {
+				if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+					/* there is currently no with-defaults element */
+					xmlXPathFreeObject(query_result);
 
-			newnode = xmlNewChild (root->children, NULL, BAD_CAST "with-defaults", BAD_CAST wd_mode);
-			if (newnode == NULL) {
-				ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-				va_end(argp);
-				return (EXIT_FAILURE);
+					/* go to the part creating the new with-defaults element */
+					goto nc_rpc_capability_attr_new_elem;
+				}
+				/* there is currently some with-defaults element, use it, but set required value */
+				xmlNodeSetContent(query_result->nodesetval->nodeTab[0], BAD_CAST wd_mode);
+
+				/* remove other with-defaults elements if exist - correcting the message */
+				for (i = 1; i < query_result->nodesetval->nodeNr; i++) {
+					xmlUnlinkNode(query_result->nodesetval->nodeTab[i]);
+					xmlFreeNode(query_result->nodesetval->nodeTab[i]);
+				}
+
+				xmlXPathFreeObject(query_result);
+			} else {
+nc_rpc_capability_attr_new_elem:
+				/* there is currently no with-defaults element */
+				/* create a new with-defaults element in the operation element */
+				root = xmlDocGetRootElement(rpc->doc);
+				newnode = xmlNewChild(root->children, NULL, BAD_CAST "with-defaults", BAD_CAST wd_mode);
+				if (newnode == NULL) {
+					ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+					va_end(argp);
+					return (EXIT_FAILURE);
+				}
+				ns = xmlNewNs(newnode, BAD_CAST NC_NS_WITHDEFAULTS, NULL);
+				xmlSetNs(newnode, ns);
 			}
-			ns = xmlNewNs(newnode, BAD_CAST NC_NS_WITHDEFAULTS, NULL);
-			xmlSetNs(newnode, ns);
 		} else {
-			/* \todo remove \<with-defaults\> element if exists */
+			/* requested NCWD_MODE_NOTSET -> remove \<with-defaults\> element if exists */
+			if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_WITHDEFAULTS_ID":with-defaults", rpc->ctxt)) != NULL) {
+				if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+					WARN("%s: removing with-defaults elements from the rpc", __func__);
+					for (i = 0; i < query_result->nodesetval->nodeNr; i++) {
+						xmlUnlinkNode(query_result->nodesetval->nodeTab[i]);
+						xmlFreeNode(query_result->nodesetval->nodeTab[i]);
+					}
+					xmlXPathFreeObject(query_result);
+				}
+			}
+
 		}
 		rpc->with_defaults = mode;
 
