@@ -241,6 +241,11 @@ static struct nc_msg* nc_msg_build (const char * msg_dump)
 		nc_msg_free(msg);
 		return NULL;
 	}
+	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_WITHDEFAULTS_ID, BAD_CAST NC_NS_WITHDEFAULTS) != 0) {
+		ERROR("Registering with-defaults namespace for the message xpath context failed.");
+		nc_msg_free(msg);
+		return NULL;
+	}
 
 	if ((id = nc_msg_parse_msgid (msg)) != NULL) {
 		msg->msgid = strdup(id);
@@ -289,6 +294,11 @@ static struct nc_msg* ncxml_msg_build(xmlDocPtr msg_dump)
 	}
 	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_NOTIFICATIONS_ID, BAD_CAST NC_NS_NOTIFICATIONS) != 0) {
 		ERROR("Registering notifications namespace for the message xpath context failed.");
+		nc_msg_free(msg);
+		return NULL;
+	}
+	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_WITHDEFAULTS_ID, BAD_CAST NC_NS_WITHDEFAULTS) != 0) {
+		ERROR("Registering with-defaults namespace for the message xpath context failed.");
 		nc_msg_free(msg);
 		return NULL;
 	}
@@ -1273,6 +1283,11 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 		nc_msg_free(dupmsg);
 		return NULL;
 	}
+	if (xmlXPathRegisterNs(dupmsg->ctxt, BAD_CAST NC_NS_WITHDEFAULTS_ID, BAD_CAST NC_NS_WITHDEFAULTS) != 0) {
+		ERROR("Registering with-defaults namespace for the message xpath context failed.");
+		nc_msg_free(dupmsg);
+		return NULL;
+	}
 
 	return (dupmsg);
 }
@@ -1380,6 +1395,11 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 	}
 	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_NOTIFICATIONS_ID, BAD_CAST NC_NS_NOTIFICATIONS) != 0) {
 		ERROR("Registering notifications namespace for the message xpath context failed.");
+		nc_msg_free(msg);
+		return NULL;
+	}
+	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_WITHDEFAULTS_ID, BAD_CAST NC_NS_WITHDEFAULTS) != 0) {
+		ERROR("Registering with-defaults namespace for the message xpath context failed.");
 		nc_msg_free(msg);
 		return NULL;
 	}
