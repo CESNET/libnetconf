@@ -1053,28 +1053,27 @@ NC_REPLY_TYPE nc_reply_get_type(nc_reply *reply)
 
 char *nc_reply_get_data(const nc_reply *reply)
 {
+	xmlXPathObjectPtr query_result = NULL;
 	char *buf;
 	xmlBufferPtr data_buf;
-	xmlNodePtr inside_data, aux_data;
+	xmlNodePtr data = NULL, aux_data;
 	xmlDocPtr aux_doc;
+	int gotdata = 0;
 
-	if (reply == NULL || reply == ((void *) -1) ||
-			reply->type.reply != NC_REPLY_DATA ||
-			reply->doc == NULL ||
-			reply->doc->children == NULL || /* <rpc-reply> */
-			reply->doc->children->children == NULL /* <data> */) {
-		/* some part of the reply is corrupted */
-		ERROR("nc_reply_get_data: invalid input parameter.");
-		return (NULL);
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":data", reply->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			if (query_result->nodesetval->nodeNr > 1) {
+				ERROR("%s: multiple data elements found", __func__);
+				return (NULL);
+			}
+			data = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
+			xmlXPathFreeObject(query_result);
+		}
 	}
-	inside_data = reply->doc->children->children->children;
-	if (inside_data == NULL) { /* content */
-		/*
-		 * Returned data content is empty, so return empty
-		 * string without any error message. This can be a valid
-		 * content of the reply, e.g. in case of filtering.
-		 */
-		return (strdup(""));
+
+	if (data == NULL) {
+		ERROR("%s: parsing reply to get data failed. No data found.", __func__);
+		return(NULL);
 	}
 
 	if ((data_buf = xmlBufferCreate()) == NULL) {
@@ -1082,12 +1081,23 @@ char *nc_reply_get_data(const nc_reply *reply)
 	}
 
 	aux_doc = xmlNewDoc(BAD_CAST "1.0");
-	xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "data"));
-	xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, inside_data));
+	xmlDocSetRootElement(aux_doc, xmlCopyNode(data, 1));
 	for (aux_data = aux_doc->children->children; aux_data != NULL; aux_data = aux_data->next) {
-		xmlNodeDump(data_buf, aux_doc, aux_data, 1, 1);
+		if (aux_data->type == XML_ELEMENT_NODE) {
+			xmlNodeDump(data_buf, aux_doc, aux_data, 1, 1);
+			gotdata = 1;
+		}
 	}
-	buf = strdup((char*) xmlBufferContent(data_buf));
+	if (gotdata == 1) {
+		buf = strdup((char*) xmlBufferContent(data_buf));
+	} else {
+		/*
+		 * Returned data content is empty, so return empty
+		 * string without any error message. This can be a valid
+		 * content of the reply, e.g. in case of filtering.
+		 */
+		buf = strdup("");
+	}
 	xmlBufferFree(data_buf);
 	xmlFreeDoc(aux_doc);
 
@@ -1096,19 +1106,26 @@ char *nc_reply_get_data(const nc_reply *reply)
 
 xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 {
-	/* \todo use xPath */
+	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr data = NULL;
 
-	if (reply == NULL || reply == ((void *) -1) ||
-			reply->type.reply != NC_REPLY_DATA ||
-			reply->doc == NULL ||
-			reply->doc->children == NULL || /* <rpc-reply> */
-			reply->doc->children->children == NULL /* <data> */) {
-		/* some part of the reply is corrupted */
-		ERROR("nc_reply_get_data: invalid input parameter.");
-		return (NULL);
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":data", reply->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			if (query_result->nodesetval->nodeNr > 1) {
+				ERROR("%s: multiple data elements found", __func__);
+				return (NULL);
+			}
+			data = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
+			xmlXPathFreeObject(query_result);
+		}
 	}
 
-	return (xmlCopyNode(reply->doc->children->children, 1));
+	if (data == NULL) {
+		ERROR("%s: parsing reply to get data failed. No data found.", __func__);
+		return(NULL);
+	}
+
+	return (xmlCopyNode(data, 1));
 }
 
 const char *nc_reply_get_errormsg(nc_reply *reply)
