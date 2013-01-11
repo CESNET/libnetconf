@@ -1443,16 +1443,9 @@ nc_reply *nc_reply_data(const char* data)
 	char* data_env;
 	struct nc_err* e;
 
-	if (data != NULL) {
-		if (asprintf(&data_env, "<data xmlns=\"%s\">%s</data>", NC_NS_BASE10, data) == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-			return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
-		}
-	} else {
-		if (asprintf(&data_env, "<data xmlns=\"%s\"/>", NC_NS_BASE10) == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-			return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
-		}
+	if (asprintf(&data_env, "<data xmlns=\"%s\">%s</data>", NC_NS_BASE10, (data == NULL) ? "" : data) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 	}
 
 	/* prepare XML structure from given data */
