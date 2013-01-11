@@ -1175,9 +1175,9 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 	xmlSetNs(msg->doc->children, ns);
 
 	/* create capabilities node */
-	node = xmlNewChild(msg->doc->children, NULL, BAD_CAST "capabilities", NULL);
+	node = xmlNewChild(msg->doc->children, ns, BAD_CAST "capabilities", NULL);
 	for (i = 0; cpblts[i] != NULL; i++) {
-		xmlNewChild(node, NULL, BAD_CAST "capability", BAD_CAST cpblts[i]);
+		xmlNewChild(node, ns, BAD_CAST "capability", BAD_CAST cpblts[i]);
 	}
 
 	/* create xpath evaluation context */
@@ -1308,7 +1308,7 @@ nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
 	}
 
 	/* create <session-id> node */
-	xmlNewChild(msg->doc->children, NULL, BAD_CAST "session-id", BAD_CAST session_id);
+	xmlNewChild(msg->doc->children, msg->doc->children->ns, BAD_CAST "session-id", BAD_CAST session_id);
 
 	return (msg);
 }
