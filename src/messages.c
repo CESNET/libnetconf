@@ -1019,42 +1019,29 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 
 NC_REPLY_TYPE nc_reply_get_type(nc_reply *reply)
 {
-	xmlNodePtr root, auxnode;
+	xmlXPathObjectPtr query_result = NULL;
 
 	if (reply != NULL && reply != ((void *) -1)) {
 		if (reply->type.reply == NC_REPLY_UNKNOWN && reply->doc != NULL) {
 			/* try to detect the type from the message body */
-			if ((root = xmlDocGetRootElement (reply->doc)) == NULL) {
-				return (NC_REPLY_UNKNOWN);
-			}
-			auxnode = root->children;
-			while(1) {
-				if (auxnode == NULL) {
-					/* valid rpc-reply type not found */
-					reply->type.reply = NC_REPLY_UNKNOWN;
-					break;
-				}
-				if (auxnode->type != XML_ELEMENT_NODE) {
-					/* not interesting node, go to another */
-					auxnode = auxnode->next;
-					continue;
-				}
-				/* check known rpc-reply types */
-				if (xmlStrcmp (auxnode->name, BAD_CAST "ok") == 0) {
+			if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":ok", reply->ctxt)) != NULL) {
+				if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
 					reply->type.reply = NC_REPLY_OK;
-					break;
-				} else if (xmlStrcmp (auxnode->name, BAD_CAST "rpc-error") == 0) {
+				}
+				xmlXPathFreeObject(query_result);
+			}
+			if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":rpc-error", reply->ctxt)) != NULL) {
+				if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
 					reply->type.reply = NC_REPLY_ERROR;
 					reply->error = nc_msg_parse_error(reply);
-					break;
-				} else if (xmlStrcmp (auxnode->name, BAD_CAST "data") == 0) {
-					reply->type.reply = NC_REPLY_DATA;
-					break;
-				} else {
-					/* try another one */
-					auxnode = auxnode->next;
-					continue;
 				}
+				xmlXPathFreeObject(query_result);
+			}
+			if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":data", reply->ctxt)) != NULL) {
+				if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
+					reply->type.reply = NC_REPLY_DATA;
+				}
+				xmlXPathFreeObject(query_result);
 			}
 		}
 
