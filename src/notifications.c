@@ -258,17 +258,17 @@ static int set_streams_path()
 static xmlDocPtr streams_to_xml(void)
 {
 	xmlDocPtr config;
-	xmlNodePtr node_streams, node_stream;
+	xmlNodePtr node_streams, node_stream, root;
 	xmlNsPtr ns;
 	struct stream *s;
 	char* time;
 
 	/* create empty configuration */
 	config = xmlNewDoc(BAD_CAST "1.0");
-	xmlDocSetRootElement(config, xmlNewNode(NULL, BAD_CAST "netconf"));
-	ns = xmlNewNs(config->children, BAD_CAST NCNTF_STREAMS_NS, NULL);
-	xmlSetNs(config->children, ns);
-	node_streams = xmlAddChild(config->children, xmlNewNode(NULL, BAD_CAST "streams"));
+	root = xmlDocSetRootElement(config, xmlNewNode(NULL, BAD_CAST "netconf"));
+	ns = xmlNewNs(root, BAD_CAST NCNTF_STREAMS_NS, NULL);
+	xmlSetNs(root, ns);
+	node_streams = xmlAddChild(root, xmlNewNode(NULL, BAD_CAST "streams"));
 
 	for (s = streams; s != NULL; s = s->next) {
 		node_stream = xmlAddChild(node_streams, xmlNewNode(NULL, BAD_CAST "stream"));
@@ -1954,7 +1954,7 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 	}
 	free(notif_data);
 
-	if (xmlNewChild(notif_doc->children, notif_doc->children->ns, BAD_CAST "eventTime", BAD_CAST etime) == NULL) {
+	if (xmlNewChild(xmlDocGetRootElement(notif_doc), xmlDocGetRootElement(notif_doc)->ns, BAD_CAST "eventTime", BAD_CAST etime) == NULL) {
 		ERROR("xmlAddChild failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		xmlFreeDoc(notif_doc);
 		free(etime);
@@ -1995,6 +1995,7 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 {
 	char* etime = NULL;
 	xmlDocPtr notif_doc;
+	xmlNodePtr root;
 	xmlNsPtr ns;
 	nc_ntf* retval;
 
@@ -2004,12 +2005,12 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 	}
 
 	notif_doc = xmlNewDoc(BAD_CAST "1.0");
-	xmlDocSetRootElement(notif_doc, xmlNewNode(NULL, BAD_CAST "notification"));
-	ns = xmlNewNs(notif_doc->children, BAD_CAST NC_NS_NOTIFICATIONS, NULL);
-	xmlSetNs(notif_doc->children, ns);
+	root = xmlDocSetRootElement(notif_doc, xmlNewNode(NULL, BAD_CAST "notification"));
+	ns = xmlNewNs(root, BAD_CAST NC_NS_NOTIFICATIONS, NULL);
+	xmlSetNs(root, ns);
 
 	/* connect the event time */
-	if (xmlNewChild(notif_doc->children, ns, BAD_CAST "eventTime", BAD_CAST etime) == NULL) {
+	if (xmlNewChild(root, ns, BAD_CAST "eventTime", BAD_CAST etime) == NULL) {
 		ERROR("xmlAddChild failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		xmlFreeDoc(notif_doc);
 		free(etime);
@@ -2018,7 +2019,7 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 	free(etime);
 
 	/* connect the required content */
-	if (xmlAddChildList(notif_doc->children, xmlCopyNodeList(content)) == NULL) {
+	if (xmlAddChildList(root, xmlCopyNodeList(content)) == NULL) {
 		ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
 		xmlFreeDoc(notif_doc);
 		return NULL;
@@ -2075,7 +2076,7 @@ NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif)
 
 	if (xmlStrcmp(root->name, BAD_CAST "notification") == 0) {
 		for (node = root->children; node != NULL; node = node->next) {
-			if (node->name == NULL || xmlStrcmp(node->name, BAD_CAST "eventTime") == 0) {
+			if (node->name == NULL || (xmlStrEqual(node->name, BAD_CAST "eventTime") && node->ns != NULL && xmlStrEqual(node->ns->href, BAD_CAST NC_NS_NOTIFICATIONS))) {
 				continue;
 			}
 			/* use first not eventTime element */
@@ -2112,7 +2113,7 @@ NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif)
 char* ncntf_notif_get_content(nc_ntf* notif)
 {
 	char * retval;
-	xmlNodePtr root, node;
+	xmlNodePtr root, aux_root, node;
 	xmlDocPtr aux_doc;
 	xmlBufferPtr buffer;
 
@@ -2132,10 +2133,10 @@ char* ncntf_notif_get_content(nc_ntf* notif)
 
 	/* by copying node, move all needed namespaces into the content nodes */
 	aux_doc = xmlNewDoc(BAD_CAST "1.0");
-	xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "content"));
-	xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, root->children));
+	aux_root = xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "content"));
+	xmlAddChildList(aux_root, xmlDocCopyNodeList(aux_doc, root->children));
 	buffer = xmlBufferCreate ();
-	for (node = aux_doc->children->children; node != NULL; node = node->next) {
+	for (node = aux_root->children; node != NULL; node = node->next) {
 		/* skip invalid nodes */
 		if (node->name == NULL || node->ns == NULL || node->ns->href == NULL) {
 			continue;
