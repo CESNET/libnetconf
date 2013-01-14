@@ -1687,6 +1687,11 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		nc_msg_free(retval);
 		goto malformed_msg;
 	}
+	if (xmlXPathRegisterNs(retval->ctxt, BAD_CAST NC_NS_MONITORING_ID, BAD_CAST NC_NS_MONITORING) != 0) {
+		ERROR("Registering monitoring namespace for the message xpath context failed.");
+		nc_msg_free(retval);
+		goto malformed_msg;
+	}
 
 	/* parse and store message type */
 	root = xmlDocGetRootElement(retval->doc);

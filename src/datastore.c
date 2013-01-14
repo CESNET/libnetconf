@@ -632,26 +632,63 @@ char* get_internal_state(const struct nc_session *session)
 
 char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 {
+	xmlXPathObjectPtr query_result = NULL;
 	struct ncds_ds_list* ds = NULL;
-	xmlNodePtr node;
 	char *name = NULL, *aux_name = NULL, *version = NULL, *aux_version = NULL, *format = NULL;
 	char *retval = NULL;
 	xmlBufferPtr resultbuffer;
 
-	if (rpc == NULL ||
-			rpc->doc == NULL ||
-			rpc->doc->children == NULL ||
-			rpc->doc->children->children == NULL ) {
+	/* get name of the schema */
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_MONITORING_ID":get-schema/"NC_NS_MONITORING_ID":identifier", rpc->ctxt)) != NULL &&
+			!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+		if (query_result->nodesetval->nodeNr > 1) {
+			ERROR("%s: multiple identifier elements found", __func__);
+			*e = nc_err_new(NC_ERR_BAD_ELEM);
+			nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "identifier");
+			nc_err_set(*e, NC_ERR_PARAM_MSG, "Multiple \'identifier\' elements found.");
+			return (NULL);
+		}
+		name = (char*) xmlNodeGetContent(query_result->nodesetval->nodeTab[0]);
+		xmlXPathFreeObject(query_result);
+	} else {
+		if (query_result != NULL) {
+			xmlXPathFreeObject(query_result);
+		}
+		ERROR("%s: missing mandatory identifier element", __func__);
+		*e = nc_err_new(NC_ERR_INVALID_VALUE);
+		nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "identifier");
+		nc_err_set(*e, NC_ERR_PARAM_MSG, "Missing mandatory \'identifier\' element.");
 		return (NULL);
 	}
 
-	for (node = rpc->doc->children->children->children; node != NULL; node = node->next) {
-		if (xmlStrcmp(node->name, BAD_CAST "identifier") == 0) {
-			name = (char*) xmlNodeGetContent(node);
-		} else if(xmlStrcmp(node->name, BAD_CAST "version") == 0) {
-			version = (char*) xmlNodeGetContent(node);
-		} else if(xmlStrcmp(node->name, BAD_CAST "format") == 0) {
-			format = (char*) xmlNodeGetContent(node);
+	/* get version of the schema */
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_MONITORING_ID":get-schema/"NC_NS_MONITORING_ID":version", rpc->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			if (query_result->nodesetval->nodeNr > 1) {
+				ERROR("%s: multiple version elements found", __func__);
+				*e = nc_err_new(NC_ERR_BAD_ELEM);
+				nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "version");
+				nc_err_set(*e, NC_ERR_PARAM_MSG, "Multiple \'version\' elements found.");
+				return (NULL);
+			}
+			version = (char*) xmlNodeGetContent(query_result->nodesetval->nodeTab[0]);
+			xmlXPathFreeObject(query_result);
+		}
+	}
+
+	/* get format of the schema */
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_MONITORING_ID":get-schema/"NC_NS_MONITORING_ID":format", rpc->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			if (query_result->nodesetval->nodeNr > 1) {
+				ERROR("%s: multiple version elements found", __func__);
+				*e = nc_err_new(NC_ERR_BAD_ELEM);
+				nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "version");
+				nc_err_set(*e, NC_ERR_PARAM_MSG, "Multiple \'version\' elements found.");
+				return (NULL);
+			}
+			format = (char*) xmlNodeGetContent(query_result->nodesetval->nodeTab[0]);
+			xmlXPathFreeObject(query_result);
+
 			/* only yin format is supported now */
 			if (strcmp(format, "yin") != 0) {
 				if (e != NULL) {
@@ -663,18 +700,11 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 				free(name);
 				return(NULL);
 			}
-		}
-	}
-	free(format);
 
-	if (name == NULL) {
-		if (e != NULL) {
-			*e = nc_err_new(NC_ERR_INVALID_VALUE);
-			nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "identifier");
+			/* only yin is supported now, so we do not use this parametes now */
+			free(format);
+			format = NULL;
 		}
-		free(version);
-		free(name);
-		return(NULL);
 	}
 
 	for (ds = datastores; ds != NULL ; ds = ds->next) {

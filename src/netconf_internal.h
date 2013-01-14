@@ -104,6 +104,7 @@
 #define NC_NS_NOTIFICATIONS "urn:ietf:params:xml:ns:netconf:notification:1.0"
 #define NC_NS_NOTIFICATIONS_ID 	"ntf"
 #define NC_NS_MONITORING 	"urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
+#define NC_NS_MONITORING_ID 	"monitor"
 
 /* NETCONF versions identificators */
 #define NETCONFV10	0
