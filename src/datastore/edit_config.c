@@ -951,6 +951,7 @@ static int edit_create (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 	}
 	/* remove operation attribute */
 	xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST NC_EDIT_ATTR_OP, BAD_CAST NC_NS_BASE));
+	nc_clear_namespaces(edit_node);
 
 	/* create new element in configuration data as a copy of the element from the edit-config */
 	VERB("Creating node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
@@ -965,6 +966,7 @@ static int edit_create (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 			return EXIT_FAILURE;
 		}
 	}
+
 
 	/* remove the node from the edit document */
 	edit_delete(edit_node);
@@ -993,6 +995,7 @@ static int edit_replace (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 	} else {
 		/* remove operation attribute */
 		xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST NC_EDIT_ATTR_OP, BAD_CAST NC_NS_BASE));
+		nc_clear_namespaces(edit_node);
 
 		/* replace old configuration data with new data */
 		VERB("Replacing node %s (%s:%d)", (char*)old->name, __FILE__, __LINE__);
@@ -1296,6 +1299,7 @@ static int compact_edit_operations_recursively (xmlNodePtr node, NC_EDIT_OP_TYPE
 			/* operation duplicity -> remove subordinate duplicated operation */
 			/* remove operation attribute */
 			xmlRemoveProp(xmlHasNsProp(node, BAD_CAST NC_EDIT_ATTR_OP, BAD_CAST NC_NS_BASE));
+			nc_clear_namespaces(node);
 		}
 		break;
 	}

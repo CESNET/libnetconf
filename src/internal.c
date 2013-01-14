@@ -46,6 +46,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <assert.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
@@ -330,4 +331,69 @@ char* nc_time2datetime(time_t time)
 	free (zoneshift);
 
 	return (date);
+}
+
+/**
+ * @brief Get know if the namespace definition is used as namespace in the
+ * subtree.
+ * @param[in] node Node where to start checking.
+ * @param[in] ns Namespace to find.
+ * @return 0 if the namespace is not used, 1 if the usage of the namespace found
+ */
+static int nc_find_namespace_usage(xmlNodePtr node, xmlNsPtr ns)
+{
+	xmlNodePtr child;
+	xmlAttrPtr prop;
+
+	/* check the element itself */
+	if (node->ns == ns) {
+		return 1;
+	} else {
+		/* check attributes of the element */
+		for (prop = node->properties; prop != NULL; prop = prop->next) {
+			if (prop->ns == ns) {
+				return 1;
+			}
+		}
+
+		/* go recursive into children */
+		for (child = node->children; child != NULL; child = child->next) {
+			if (child->type == XML_ELEMENT_NODE && nc_find_namespace_usage(child, ns) == 1) {
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * @brief Remove namespace definition from the node which are no more used.
+ * @param[in] node XML element node where to check namespace definitions
+ */
+void nc_clear_namespaces(xmlNodePtr node)
+{
+	xmlNsPtr ns, prev = NULL;
+
+	assert(node != NULL);
+	assert(node->type == XML_ELEMENT_NODE);
+
+	for (ns = node->nsDef; ns != NULL; ) {
+		if (nc_find_namespace_usage(node, ns) == 0) {
+			/* no one use the namespace - remove it */
+			if (prev == NULL) {
+				node->nsDef = ns->next;
+				xmlFreeNs(ns);
+				ns = node->nsDef;
+			} else {
+				prev->next = ns->next;
+				xmlFreeNs(ns);
+				ns = prev->next;
+			}
+		} else {
+			/* check another namespace definition */
+			prev = ns;
+			ns = ns->next;
+		}
+	}
 }

@@ -513,4 +513,11 @@ void ncntf_close(void);
 int nc_session_monitoring_init(void);
 void nc_session_monitoring_close(void);
 
+
+/**
+ * @brief Remove namespace definition from the node which are no more used.
+ * @param[in] node XML element node where to check namespace definitions
+ */
+void nc_clear_namespaces(xmlNodePtr node);
+
 #endif /* NETCONF_INTERNAL_H_ */
