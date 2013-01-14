@@ -65,6 +65,7 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define NC_CAP_ROLLBACK_ID  "urn:ietf:params:netconf:capability:rollback-on-error:1.0"
 #define NC_CAP_VALIDATE_ID  "urn:ietf:params:netconf:capability:validate:1.0"
 #define NC_CAP_VALIDATE1_ID  "urn:ietf:params:netconf:capability:validate:1.1"
+#define NC_CAP_WITHDEFAULTS_ID 	"urn:ietf:params:netconf:capability:with-defaults:1.0"
 
 extern int done;
 extern struct nc_cpblts * client_supported_cpblts;
@@ -656,10 +657,12 @@ int cmd_editconfig (char *arg)
 void cmd_copyconfig_help ()
 {
 	char *datastores;
+	char *defaults;
 
 	if (session == NULL) {
 		/* if session not established, print complete help for all capabilities */
 		datastores = "running|startup|candidate";
+		defaults = "[--defaults report-all|report-all-tagged|trim|explicit] ";
 	} else {
 		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
 			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
@@ -672,9 +675,15 @@ void cmd_copyconfig_help ()
 		} else {
 			datastores = "running";
 		}
+
+		if (nc_cpblts_enabled (session, NC_CAP_WITHDEFAULTS_ID)) {
+			defaults = "[--defaults report-all|report-all-tagged|trim|explicit] ";
+		} else {
+			defaults = "";
+		}
 	}
 
-	fprintf (stdout, "copy-config [--help] [--source %s | --config <file>] %s\n", datastores, datastores);
+	fprintf (stdout, "copy-config [--help] %s[--source %s | --config <file>] %s\n", defaults, datastores, datastores);
 }
 
 int cmd_copyconfig (char *arg)
@@ -827,7 +836,14 @@ int cmd_copyconfig (char *arg)
 
 void cmd_get_help ()
 {
-	fprintf (stdout, "get [--help] [--filter[=file]]\n");
+	char *defaults;
+
+	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_WITHDEFAULTS_ID)) {
+		defaults = "[--defaults report-all|report-all-tagged|trim|explicit] ";
+	} else {
+		defaults = "";
+	}
+	fprintf (stdout, "get [--help] %s[--filter[=file]]\n", defaults);
 }
 
 
@@ -1174,8 +1190,15 @@ int cmd_capability (char * arg)
 
 void cmd_getconfig_help ()
 {
+	char *defaults;
+
 	/* if session not established, print complete help for all capabilities */
-	fprintf (stdout, "get-config [--help] [--filter[=file]] running");
+	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_WITHDEFAULTS_ID)) {
+		defaults = "[--defaults report-all|report-all-tagged|trim|explicit] ";
+	} else {
+		defaults = "";
+	}
+	fprintf (stdout, "get-config [--help] %s[--filter[=file]] running", defaults);
 	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
 		fprintf (stdout, "|startup");
 	}
