@@ -377,7 +377,6 @@ int nc_err_set(struct nc_err* err, NC_ERR_PARAM param, const char* value)
  */
 struct nc_err* nc_err_parse(nc_reply* reply)
 {
-	xmlXPathContextPtr reply_ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;
 	xmlNodePtr node, subnode;
 	int i;
@@ -388,21 +387,11 @@ struct nc_err* nc_err_parse(nc_reply* reply)
 	}
 	if (reply->error != NULL) {
 		/* error structure is already created */
-		return (nc_err_dup(reply->error));
-	}
-
-	/* create xpath evaluation context */
-	if ((reply_ctxt = xmlXPathNewContext(reply->doc)) == NULL) {
-		WARN("%s: Creating XPath context failed.", __func__)
-		return (NULL);
-	}
-	if (xmlXPathRegisterNs(reply_ctxt, BAD_CAST "base10", BAD_CAST NC_NS_BASE10) != 0) {
-		xmlXPathFreeContext(reply_ctxt);
-		return (NULL);
+		return (reply->error);
 	}
 
 	/* find all <rpc-error>s */
-	result = xmlXPathEvalExpression(BAD_CAST "//base10:rpc-error", reply_ctxt);
+	result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":rpc-error", reply->ctxt);
 	if (result != NULL) {
 		for (i = 0; i < result->nodesetval->nodeNr; i++) {
 			/* error structure is not yet created */
@@ -411,7 +400,7 @@ struct nc_err* nc_err_parse(nc_reply* reply)
 			/* parse the content of the message */
 			for (node = result->nodesetval->nodeTab[i]->children;
 			                node != NULL; node = node->next) {
-				if (node->type != XML_ELEMENT_NODE) {
+				if (node->type != XML_ELEMENT_NODE || node->ns == NULL || strcmp(NC_NS_BASE10, (char*)(node->ns->href)) != 0) {
 					continue;
 				}
 				if (xmlStrcmp(node->name, BAD_CAST "error-tag") == 0) {
@@ -429,7 +418,7 @@ struct nc_err* nc_err_parse(nc_reply* reply)
 				} else if (xmlStrcmp(node->name, BAD_CAST "error-info") == 0) {
 					subnode = node->children;
 					while (subnode != NULL) {
-						if (subnode->type != XML_ELEMENT_NODE) {
+						if (subnode->type != XML_ELEMENT_NODE || subnode->ns == NULL || strcmp(NC_NS_BASE10, (char*)(subnode->ns->href)) != 0) {
 							subnode = subnode->next;
 							continue;
 						}
@@ -461,7 +450,6 @@ struct nc_err* nc_err_parse(nc_reply* reply)
 		ERROR("No error information in reply message to parse.");
 		/* NULL, which is default e's value, will be returned */
 	}
-	xmlXPathFreeContext(reply_ctxt);
 
 	/* store the result for the further use */
 	//reply->error = nc_err_dup(e);
