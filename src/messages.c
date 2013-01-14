@@ -1050,7 +1050,7 @@ NC_REPLY_TYPE nc_reply_get_type(nc_reply *reply)
 			if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":rpc-error", reply->ctxt)) != NULL) {
 				if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
 					reply->type.reply = NC_REPLY_ERROR;
-					reply->error = nc_msg_parse_error(reply);
+					nc_err_parse(reply);
 				}
 				xmlXPathFreeObject(query_result);
 			}

@@ -76,13 +76,6 @@ const nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg);
 NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session* session);
 
 /**
- * @brief Create NETCONF error structure from the error rpc-reply message
- * @param[in] msg \<rpc-error\> reply message to process.
- * @return Built NETCONF error structure or NULL in case of error.
- */
-struct nc_err* nc_msg_parse_error(struct nc_msg* msg);
-
-/**
  * @ingroup internalAPI
  * @brief Create <close-session> NETCONF rpc message.
  *

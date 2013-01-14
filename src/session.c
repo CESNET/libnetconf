@@ -1413,67 +1413,6 @@ const nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg)
 	return (ret);
 }
 
-struct nc_err* nc_msg_parse_error(struct nc_msg* msg)
-{
-	struct nc_err* err;
-	xmlNodePtr node, tmp;
-
-	if (msg == NULL || msg->doc == NULL) {
-		ERROR ("libnetconf internal error, invalid NETCONF message structure to parse.");
-		return (NULL);
-	}
-
-	err = calloc(1, sizeof(struct nc_err));
-	if (err == NULL) {
-		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
-		return (NULL);
-	}
-
-	if (xmlStrcmp (msg->doc->children->children->name, BAD_CAST "rpc-error") != 0) {
-		ERROR("%s: Given message is not rpc-error.", __func__);
-		return (NULL);
-	}
-
-	for (node = msg->doc->children->children->children; node != NULL; node = node->next) {
-		if (node->type != XML_ELEMENT_NODE) {
-			/* skip comment nodes and others */
-			continue;
-		}
-
-		if (xmlStrEqual(node->name, BAD_CAST "error-tag")) {
-			err->tag = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrEqual(node->name, BAD_CAST "error-type")) {
-			err->type = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrEqual(node->name, BAD_CAST "error-severity")) {
-			err->severity = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrEqual(node->name, BAD_CAST "error-app-tag")) {
-			err->apptag = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrEqual(node->name, BAD_CAST "error-path")) {
-			err->path = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrEqual(node->name, BAD_CAST "error-message")) {
-			err->message = (char*)xmlNodeGetContent(node);
-		} else if (xmlStrEqual (node->name, BAD_CAST "error-info")) {
-			tmp = node->children;
-			while (tmp) {
-				if (xmlStrEqual(tmp->name, BAD_CAST "bad-attribute")) {
-					err->attribute = (char*)xmlNodeGetContent(tmp);
-				} else if (xmlStrEqual(tmp->name, BAD_CAST "bad-element")) {
-					err->element = (char*)xmlNodeGetContent(tmp);
-				} else if (xmlStrEqual(tmp->name, BAD_CAST "session-id")) {
-					err->sid = (char*)xmlNodeGetContent(tmp);
-				} else if (xmlStrEqual(tmp->name, BAD_CAST "bad-namespace")) {
-					err->ns = (char*)xmlNodeGetContent(tmp);
-				}
-				tmp = tmp->next;
-			}
-		} else {
-			WARN("Unknown element %s while parsing rpc-error.", (char*)(node->name));
-		}
-	}
-
-	return (err);
-}
-
 static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, struct nc_msg** msg)
 {
 	struct nc_msg *retval;
