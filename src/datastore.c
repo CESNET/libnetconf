@@ -1283,33 +1283,40 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
  */
 xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
 {
-	xmlNodePtr retval, aux;
+	xmlXPathContextPtr model_ctxt;
+	xmlXPathObjectPtr query_result;
+	xmlNodePtr retval;
 	xmlChar *root_name = NULL, *ns = NULL;
 
 	assert(roots != NULL);
 	assert(model != NULL);
 
-	if (model->children == NULL || xmlStrcmp(model->children->name, BAD_CAST "module") != 0) {
-		return NULL;
+	/* prepare xpath evaluation context of the model for XPath */
+	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
+		ERROR("%s: Creating XPath context failed.", __func__)
+		return (NULL);
+	}
+	if (xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST "urn:ietf:params:xml:ns:yang:yin:1") != 0) {
+		xmlXPathFreeContext(model_ctxt);
+		return (NULL);
 	}
 
-	aux = model->children->children;
-	while (aux != NULL) {
-		if (root_name == NULL && xmlStrcmp(aux->name, BAD_CAST "container") == 0) {
-			//root_name = xmlGetNsProp(aux, BAD_CAST "name", BAD_CAST NC_NS_YIN);
-			root_name = xmlGetProp(aux, BAD_CAST "name");
-			if (ns != NULL) {
-				break;
-			}
-		} else if (ns == NULL && xmlStrcmp(aux->name, BAD_CAST "namespace") == 0) {
-			//ns = xmlGetNsProp(aux, BAD_CAST "uri", BAD_CAST NC_NS_YIN);
-			ns = xmlGetProp(aux, BAD_CAST "uri");
-			if (root_name != NULL) {
-				break;
-			}
+	if ((query_result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:container", model_ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			//root_name = xmlGetNsProp(query_result->nodesetval->nodeTab[0], BAD_CAST "name", BAD_CAST NC_NS_YIN);
+			root_name = xmlGetProp(query_result->nodesetval->nodeTab[0], BAD_CAST "name");
 		}
-		aux = aux->next;
+		xmlXPathFreeObject(query_result);
 	}
+	if ((query_result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:namespace", model_ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			//ns = xmlGetNsProp(query_result->nodesetval->nodeTab[0], BAD_CAST "uri", BAD_CAST NC_NS_YIN);
+			ns = xmlGetProp(query_result->nodesetval->nodeTab[0], BAD_CAST "uri");
+		}
+		xmlXPathFreeObject(query_result);
+	}
+	xmlXPathFreeContext(model_ctxt);
+
 	if (root_name == NULL || ns == NULL) {
 		ERROR("Invalid configuration data model - root container or namespace missing (%s:%d).", __FILE__, __LINE__);
 		return NULL;
