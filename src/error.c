@@ -453,8 +453,8 @@ struct nc_err* nc_err_parse(nc_reply* reply)
 			if (e != NULL) {
 				/* concatenate multiple rpc-errors in repl-reply */
 				eaux->next = e;
-				e = eaux;
 			}
+			e = eaux;
 		}
 		xmlXPathFreeObject(result);
 	} else {
