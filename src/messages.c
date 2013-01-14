@@ -890,7 +890,7 @@ xmlNodePtr ncxml_rpc_get_config(const nc_rpc *rpc)
 NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
-	xmlNodePtr defop;
+	xmlNodePtr defop = NULL;
 	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_DEFOP_MERGE;
 
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":default-operation", rpc->ctxt)) != NULL) {
@@ -899,9 +899,8 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 				ERROR("%s: multiple default-operation elements found in edit-config request", __func__);
 				return (NC_EDIT_DEFOP_ERROR);
 			}
+			defop = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
 		}
-
-		defop = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
 		xmlXPathFreeObject(query_result);
 	}
 
@@ -927,7 +926,7 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
-	xmlNodePtr erropt;
+	xmlNodePtr erropt = NULL;
 	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_DEFOP_MERGE;
 
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":error-option", rpc->ctxt)) != NULL) {
@@ -936,9 +935,8 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 				ERROR("%s: multiple error-option elements found in edit-config request", __func__);
 				return (NC_EDIT_ERROPT_ERROR);
 			}
+			erropt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
 		}
-
-		erropt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
 		xmlXPathFreeObject(query_result);
 	}
 
@@ -964,7 +962,7 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
-	xmlNodePtr testopt;
+	xmlNodePtr testopt = NULL;
 	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_DEFOP_MERGE;
 
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":test-option", rpc->ctxt)) != NULL) {
@@ -973,9 +971,8 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 				ERROR("%s: multiple test-option elements found in edit-config request", __func__);
 				return (NC_EDIT_TESTOPT_ERROR);
 			}
+			testopt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
 		}
-
-		testopt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
 		xmlXPathFreeObject(query_result);
 	}
 
