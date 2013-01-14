@@ -1321,7 +1321,7 @@ static int compact_edit_operations (xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop
 	}
 
 	/* to start recursive check, use defop as root's supreme operation */
-	return compact_edit_operations_recursively(edit_doc->children, (NC_EDIT_OP_TYPE) defop);
+	return compact_edit_operations_recursively(xmlDocGetRootElement(edit_doc), (NC_EDIT_OP_TYPE) defop);
 }
 
 /**

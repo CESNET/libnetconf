@@ -1397,13 +1397,13 @@ const nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg)
 	xmlAttrPtr prop;
 
 	/* parse and store message-id */
-	prop = xmlHasProp(msg->doc->children, BAD_CAST "message-id");
+	prop = xmlHasProp(xmlDocGetRootElement(msg->doc), BAD_CAST "message-id");
 	if (prop != NULL && prop->children != NULL && prop->children->content != NULL) {
 		ret = (char*)prop->children->content;
 	}
 	if (ret == NULL) {
-		if (xmlStrcmp (msg->doc->children->name, BAD_CAST "hello") != 0) {
-			WARN("Missing message-id in %s.", (char*)msg->doc->children->name);
+		if (xmlStrcmp (xmlDocGetRootElement(msg->doc)->name, BAD_CAST "hello") != 0) {
+			WARN("Missing message-id in %s.", (char*)xmlDocGetRootElement(msg->doc)->name);
 			ret = NULL;
 		} else {
 			ret = "hello";
@@ -2160,14 +2160,14 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 
 	msg = nc_msg_dup ((struct nc_msg*) rpc);
 	/* set message id */
-	if (xmlStrcmp (msg->doc->children->name, BAD_CAST "rpc") == 0) {
+	if (xmlStrcmp (xmlDocGetRootElement(msg->doc)->name, BAD_CAST "rpc") == 0) {
 		/* lock the session due to accessing msgid item */
 		DBG_LOCK("mut_session");
 		pthread_mutex_lock(&(session->mut_session));
 		sprintf (msg_id_str, "%llu", session->msgid++);
 		DBG_UNLOCK("mut_session");
 		pthread_mutex_unlock(&(session->mut_session));
-		if (xmlNewProp(msg->doc->children, BAD_CAST "message-id", BAD_CAST msg_id_str) == NULL) {
+		if (xmlNewProp(xmlDocGetRootElement(msg->doc), BAD_CAST "message-id", BAD_CAST msg_id_str) == NULL) {
 			ERROR("xmlNewProp failed (%s:%d).", __FILE__, __LINE__);
 			nc_msg_free (msg);
 			return (NULL);
@@ -2203,6 +2203,7 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 	struct nc_msg *msg;
 	const nc_msgid retval = NULL;
 	xmlNsPtr ns, ns_aux;
+	xmlNodePtr msg_root, rpc_root;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to send <rpc-reply>.");
@@ -2231,27 +2232,31 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 	if (rpc != NULL) {
 		/* set message id */
 		msg->msgid = strdup(retval);
-		if (xmlStrcmp(msg->doc->children->name, BAD_CAST "rpc-reply") == 0) {
+		msg_root = xmlDocGetRootElement(msg->doc);
+		rpc_root = xmlDocGetRootElement(rpc->doc);
+		if (xmlStrEqual(msg_root->name, BAD_CAST "rpc-reply") &&
+				xmlStrEqual(msg_root->ns->href, BAD_CAST NC_NS_BASE10)) {
 			/* copy attributes from the rpc */
-			msg->doc->children->properties = xmlCopyPropList(msg->doc->children, rpc->doc->children->properties);
-			if ((msg->doc->children->properties) == NULL) {
-				xmlNewProp(msg->doc->children, BAD_CAST "message-id", BAD_CAST msg->msgid);
+			msg_root->properties = xmlCopyPropList(msg_root, rpc_root->properties);
+			if (msg_root->properties == NULL) {
+				xmlNewProp(msg_root, BAD_CAST "message-id", BAD_CAST msg->msgid);
 			}
 			/* copy additional namespace definitions from rpc */
-			for (ns = rpc->doc->children->nsDef; ns != NULL; ns = ns->next) {
+			for (ns = rpc_root->nsDef; ns != NULL; ns = ns->next) {
 				if (ns->prefix == NULL) {
 					/* skip default namespace */
 					continue;
 				}
-				ns_aux = xmlNewNs(msg->doc->children, ns->href, ns->prefix);
-				xmlSetNs(msg->doc->children, ns_aux);
+				ns_aux = xmlNewNs(msg_root, ns->href, ns->prefix);
+				xmlSetNs(msg_root, ns_aux);
 			}
 
 		}
 	} else {
+		msg_root = xmlDocGetRootElement(msg->doc);
 		/* unknown message ID, send reply without it */
-		if (xmlStrcmp(msg->doc->children->name, BAD_CAST "rpc-reply") == 0) {
-			xmlRemoveProp(xmlHasProp(msg->doc->children, BAD_CAST "message-id"));
+		if (xmlStrcmp(msg_root->name, BAD_CAST "rpc-reply") == 0) {
+			xmlRemoveProp(xmlHasProp(msg_root, BAD_CAST "message-id"));
 		}
 	}
 
