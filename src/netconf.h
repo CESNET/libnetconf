@@ -285,7 +285,7 @@ typedef enum NC_EDIT_DEFOP_TYPE {
 	NC_EDIT_DEFOP_REPLACE = 2
 } NC_EDIT_DEFOP_TYPE;
 
-typedef enum NC_EDIT_RROPT_TYPE {
+typedef enum NC_EDIT_ERROPT_TYPE {
 	NC_EDIT_ERROPT_ERROR = -1, /* for internal purposes, not defined by NETCONF */
 	NC_EDIT_ERROPT_NOTSET = 0,
 	NC_EDIT_ERROPT_STOP = 1,
