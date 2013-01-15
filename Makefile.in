@@ -47,7 +47,8 @@ libdir =  @libdir@
 mandir = @mandir@
 
 VERSION = $(shell cut -f1 ./VERSION | tr -d '\n')
-MAJOR_VER = $(shell echo $(VERSION) | cut -d. -f1)
+# version for soname:
+ABICOMPAT_VER = $(shell echo $(VERSION) | cut -d. -f1,2)
 RELEASE = @RELEASE@
 
 CC = @CC@
@@ -144,9 +145,9 @@ $(NAME).a: $(OBJS)
 
 $(NAME).so: $(OBJS)
 	@rm -f $@;
-	$(CC) -shared $(OBJS) $(LIBS) -Wl,-soname -Wl,$@.$(MAJOR_VER) -o $@.$(VERSION);
-	@[ ! -L $@.$(MAJOR_VER) ] || rm -rf $@.$(MAJOR_VER);
-	$(LN_S) $@.$(VERSION) $@.$(MAJOR_VER);
+	$(CC) -shared $(OBJS) $(LIBS) -Wl,-soname -Wl,$@.$(ABICOMPAT_VER) -o $@.$(VERSION);
+	@[ ! -L $@.$(ABICOMPAT_VER) ] || rm -rf $@.$(ABICOMPAT_VER);
+	$(LN_S) $@.$(VERSION) $@.$(ABICOMPAT_VER);
 	@[ ! -L $@ ] || rm -rf $@;
 	$(LN_S) $@.$(VERSION) $@;
 
@@ -195,9 +196,9 @@ install: all install-devel install-doc
 	[ -d $(DESTDIR)/$(libdir) ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir))
 	$(INSTALL_PROGRAM) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/;
-	@[ ! -L $(DESTDIR)/$(libdir)/$(NAME).so.$(MAJOR_VER) ] || \
-	    rm -rf $(DESTDIR)/$(libdir)/$(NAME).so.$(MAJOR_VER);
-	$(LN_S) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/$(NAME).so.$(MAJOR_VER);
+	@[ ! -L $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER) ] || \
+	    rm -rf $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER);
+	$(LN_S) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER);
 	[ -d $(STREAMS_PATH) ] || \
 	    (mkdir -p $(STREAMS_PATH); chmod 777 $(STREAMS_PATH))
 	for i in $(SUBDIRS) ; do \
@@ -239,7 +240,7 @@ install-doc: doc
 .PHONY: uninstall
 uninstall: uninstall-devel uninstall-doc
 	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(VERSION)
-	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(MAJOR_VER)
+	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER)
 	rmdir -p $(STREAMS_PATH) || rm -rf $(STREAMS_PATH)
 	rmdir -p $(STREAMS_PATH) || echo -n ""
 	for i in $(SUBDIRS) ; do \
