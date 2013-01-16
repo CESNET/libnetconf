@@ -69,6 +69,24 @@ nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id);
 const nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg);
 
 /**
+ * @brief Parse RPC message to get the type of RPC. The resulted value is also
+ * stored into internal rpc structure.
+ *
+ * @param[in] rpc RPC message to parse.
+ * @return The type of the RPC.
+ */
+NC_RPC_TYPE nc_rpc_parse_type(nc_rpc* rpc);
+
+/**
+ * @brief Parse RPC-reply message to get the type of RPC-reply. The resulted
+ * value is also stored into internal rpc-reply structure.
+ *
+ * @param[in] reply RPC-reply message to parse.
+ * @return The type of the RPC-reply.
+ */
+NC_REPLY_TYPE nc_reply_parse_type(nc_reply* reply);
+
+/**
  * @brief Parse rpc and get with-defaults mode
  * @param[in] rpc NETCONF rpc message to be parsed
  * @return one of the with-defaults mode, 0 (NCDFLT_MODE_DISABLED) if not set

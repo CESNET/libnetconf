@@ -162,7 +162,7 @@ char* nc_rpc_get_op_content(const nc_rpc *rpc);
  * @param[in] rpc rpc message
  * @return One of the #NC_RPC_TYPE.
  */
-NC_RPC_TYPE nc_rpc_get_type(nc_rpc *rpc);
+NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
@@ -251,7 +251,7 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc);
  * @param[in] reply rpc-reply message
  * @return One of the #NC_REPLY_TYPE.
  */
-NC_REPLY_TYPE nc_reply_get_type(nc_reply *reply);
+NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply);
 
 /**
  * @ingroup reply
@@ -270,7 +270,7 @@ char *nc_reply_get_data(const nc_reply *reply);
  * string is a part of the reply, so it can not be used after freeing the
  * given reply.
  */
-const char *nc_reply_get_errormsg(nc_reply *reply);
+const char *nc_reply_get_errormsg(const nc_reply *reply);
 
 /**
  * @brief Free rpc message.

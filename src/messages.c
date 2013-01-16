@@ -387,6 +387,44 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 	return (retval);
 }
 
+NC_RPC_TYPE nc_rpc_parse_type(nc_rpc* rpc)
+{
+	NC_OP op;
+
+	if (rpc == NULL) {
+		return (NC_RPC_UNKNOWN);
+	}
+
+	/* try to detect the type from the message body (according to the operation) */
+	op = nc_rpc_get_op(rpc);
+	switch (op) {
+	case (NC_OP_GETCONFIG):
+	case (NC_OP_GETSCHEMA):
+	case (NC_OP_GET):
+		rpc->type.rpc = NC_RPC_DATASTORE_READ;
+		break;
+	case (NC_OP_EDITCONFIG):
+	case (NC_OP_COPYCONFIG):
+	case (NC_OP_DELETECONFIG):
+	case (NC_OP_LOCK):
+	case (NC_OP_UNLOCK):
+	case (NC_OP_COMMIT):
+	case (NC_OP_DISCARDCHANGES):
+		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+		break;
+	case (NC_OP_CLOSESESSION):
+	case (NC_OP_KILLSESSION):
+	case (NC_OP_CREATESUBSCRIPTION):
+		rpc->type.rpc = NC_RPC_SESSION;
+		break;
+	default:
+		rpc->type.rpc = NC_RPC_UNKNOWN;
+		break;
+	}
+
+	return (rpc->type.rpc);
+}
+
 nc_rpc * nc_rpc_build (const char * rpc_dump)
 {
 	nc_rpc* rpc;
@@ -394,8 +432,9 @@ nc_rpc * nc_rpc_build (const char * rpc_dump)
 	if ((rpc = nc_msg_build (rpc_dump)) == NULL) {
 		return NULL;
 	}
+
 	/* set rpc type flag */
-	nc_rpc_get_type(rpc);
+	nc_rpc_parse_type(rpc);
 
 	/* set with-defaults if any */
 	nc_rpc_parse_withdefaults(rpc, NULL);
@@ -412,12 +451,47 @@ nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump)
 	}
 
 	/* set rpc type flag */
-	nc_rpc_get_type(rpc);
+	nc_rpc_parse_type(rpc);
 
 	/* set with-defaults if any */
 	nc_rpc_parse_withdefaults(rpc, NULL);
 
 	return rpc;
+}
+
+NC_REPLY_TYPE nc_reply_parse_type(nc_reply* reply)
+{
+	xmlXPathObjectPtr query_result = NULL;
+
+	if (reply == NULL) {
+		return (NC_REPLY_UNKNOWN);
+	}
+
+	/* set default value */
+	reply->type.reply = NC_REPLY_UNKNOWN;
+
+	/* try to detect the type from the message body */
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":ok", reply->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
+			reply->type.reply = NC_REPLY_OK;
+		}
+		xmlXPathFreeObject(query_result);
+	}
+	if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":rpc-error", reply->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
+			reply->type.reply = NC_REPLY_ERROR;
+			nc_err_parse(reply);
+		}
+		xmlXPathFreeObject(query_result);
+	}
+	if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":data", reply->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
+			reply->type.reply = NC_REPLY_DATA;
+		}
+		xmlXPathFreeObject(query_result);
+	}
+
+	return (reply->type.reply);
 }
 
 nc_reply * nc_reply_build (const char* reply_dump)
@@ -427,7 +501,9 @@ nc_reply * nc_reply_build (const char* reply_dump)
 	if ((reply = nc_msg_build (reply_dump)) == NULL) {
 		return (NULL);
 	}
-	reply->type.reply = nc_reply_get_type(reply);
+
+	/* set reply type flag */
+	nc_reply_parse_type(reply);
 
 	return (reply);
 }
@@ -439,7 +515,9 @@ nc_reply* ncxml_reply_build(xmlDocPtr reply_dump)
 	if ((reply = ncxml_msg_build (reply_dump)) == NULL) {
 		return NULL;
 	}
-	reply->type.reply = nc_reply_get_type(reply);
+
+	/* set reply type flag */
+	nc_reply_parse_type(reply);
 
 	return (reply);
 }
@@ -596,39 +674,9 @@ xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc *rpc)
 	return (xmlCopyNodeList(root->children));
 }
 
-NC_RPC_TYPE nc_rpc_get_type(nc_rpc *rpc)
+NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc)
 {
-	NC_OP op;
-
 	if (rpc != NULL) {
-		if (rpc->type.rpc == NC_RPC_UNKNOWN && rpc->doc != NULL) {
-			/* try to detect the type from the message body (according to the operation) */
-			op = nc_rpc_get_op (rpc);
-			switch (op) {
-			case (NC_OP_GETCONFIG):
-			case (NC_OP_GETSCHEMA):
-			case (NC_OP_GET):
-				rpc->type.rpc = NC_RPC_DATASTORE_READ;
-				break;
-			case (NC_OP_EDITCONFIG):
-			case (NC_OP_COPYCONFIG):
-			case (NC_OP_DELETECONFIG):
-			case (NC_OP_LOCK):
-			case (NC_OP_UNLOCK):
-			case (NC_OP_COMMIT):
-			case (NC_OP_DISCARDCHANGES):
-				rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
-				break;
-			case (NC_OP_CLOSESESSION):
-			case (NC_OP_KILLSESSION):
-			case (NC_OP_CREATESUBSCRIPTION):
-				rpc->type.rpc = NC_RPC_SESSION;
-				break;
-			default:
-				rpc->type.rpc = NC_RPC_UNKNOWN;
-				break;
-			}
-		}
 		return (rpc->type.rpc);
 	} else {
 		return (NC_RPC_UNKNOWN);
@@ -1034,37 +1082,13 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 	return retval;
 }
 
-NC_REPLY_TYPE nc_reply_get_type(nc_reply *reply)
+NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
 {
-	xmlXPathObjectPtr query_result = NULL;
 
-	if (reply != NULL && reply != ((void *) -1)) {
-		if (reply->type.reply == NC_REPLY_UNKNOWN && reply->doc != NULL) {
-			/* try to detect the type from the message body */
-			if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":ok", reply->ctxt)) != NULL) {
-				if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
-					reply->type.reply = NC_REPLY_OK;
-				}
-				xmlXPathFreeObject(query_result);
-			}
-			if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":rpc-error", reply->ctxt)) != NULL) {
-				if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
-					reply->type.reply = NC_REPLY_ERROR;
-					nc_err_parse(reply);
-				}
-				xmlXPathFreeObject(query_result);
-			}
-			if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":data", reply->ctxt)) != NULL) {
-				if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
-					reply->type.reply = NC_REPLY_DATA;
-				}
-				xmlXPathFreeObject(query_result);
-			}
-		}
-
-		return (reply->type.reply);
-	} else {
+	if (reply == NULL || reply == ((void *) -1)) {
 		return (NC_REPLY_UNKNOWN);
+	} else {
+		return (reply->type.reply);
 	}
 }
 
@@ -1145,15 +1169,10 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 	return (xmlCopyNode(data, 1));
 }
 
-const char *nc_reply_get_errormsg(nc_reply *reply)
+const char *nc_reply_get_errormsg(const nc_reply *reply)
 {
 	if (reply == NULL || reply == ((void *) -1) || reply->type.reply != NC_REPLY_ERROR) {
 		return (NULL);
-	}
-
-	if (reply->error == NULL) {
-		/* parse all error information */
-		nc_err_parse(reply);
 	}
 
 	return ((reply->error == NULL) ? NULL : reply->error->message);
@@ -1436,7 +1455,17 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
  */
 static nc_rpc* nc_rpc_create(const xmlNodePtr content)
 {
-	return ((nc_rpc*)nc_msg_create(content, "rpc"));
+	nc_rpc* rpc;
+
+	rpc =  (nc_rpc*)nc_msg_create(content, "rpc");
+
+	/* set rpc type flag */
+	nc_rpc_parse_type(rpc);
+
+	/* set with-defaults if any */
+	nc_rpc_parse_withdefaults(rpc, NULL);
+
+	return (rpc);
 }
 
 /**
@@ -1448,7 +1477,14 @@ static nc_rpc* nc_rpc_create(const xmlNodePtr content)
  */
 static nc_reply* nc_reply_create(const xmlNodePtr content)
 {
-	return ((nc_reply*)nc_msg_create(content,"rpc-reply"));
+	nc_reply *reply;
+
+	reply = (nc_reply*)nc_msg_create(content,"rpc-reply");
+
+	/* set reply type flag */
+	nc_reply_parse_type(reply);
+
+	return (reply);
 }
 
 nc_reply *nc_reply_ok()

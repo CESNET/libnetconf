@@ -1636,13 +1636,15 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 	root = xmlDocGetRootElement(retval->doc);
 	if (xmlStrcmp (root->name, BAD_CAST "rpc-reply") == 0) {
 		msgtype = NC_MSG_REPLY;
+
 		/* set reply type flag */
-		nc_reply_get_type(retval);
+		nc_reply_parse_type(retval);
+
 	} else if (xmlStrcmp (root->name, BAD_CAST "rpc") == 0) {
 		msgtype = NC_MSG_RPC;
 
 		/* set rpc type flag */
-		nc_rpc_get_type(retval);
+		nc_rpc_parse_type(retval);
 
 		/* set with-defaults if any */
 		nc_rpc_parse_withdefaults(retval, NULL);
