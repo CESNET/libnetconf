@@ -270,7 +270,6 @@ typedef enum NC_FILTER_TYPE {
 /* default operations IDs for edit-config */
 typedef enum NC_EDIT_OP_TYPE {
 	NC_EDIT_OP_ERROR = -1, /* for internal purposes, not defined by NETCONF */
-	/* NC_EDIT_OP_TYPE_NONE for compatibility with NC_DEFOP_TYPE we start with value 1 */
 	NC_EDIT_OP_MERGE = 1,
 	NC_EDIT_OP_REPLACE = 2,
 	NC_EDIT_OP_CREATE,
@@ -280,9 +279,10 @@ typedef enum NC_EDIT_OP_TYPE {
 
 typedef enum NC_EDIT_DEFOP_TYPE {
 	NC_EDIT_DEFOP_ERROR = -1, /* for internal purposes, not defined by NETCONF */
-	NC_EDIT_DEFOP_NONE = 0,
+	NC_EDIT_DEFOP_NOTSET = 0, /* do not set the value, default value will be used by server */
 	NC_EDIT_DEFOP_MERGE = 1,
-	NC_EDIT_DEFOP_REPLACE = 2
+	NC_EDIT_DEFOP_REPLACE = 2,
+	NC_EDIT_DEFOP_NONE = 3
 } NC_EDIT_DEFOP_TYPE;
 
 typedef enum NC_EDIT_ERROPT_TYPE {

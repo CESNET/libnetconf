@@ -665,8 +665,8 @@ static int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, s
 
 	assert(error != NULL);
 
-	op = get_operation(edit, NC_EDIT_DEFOP_NONE, error);
-	if (op == (NC_EDIT_OP_TYPE)NC_EDIT_DEFOP_NONE) {
+	op = get_operation(edit, NC_EDIT_DEFOP_NOTSET, error);
+	if (op == (NC_EDIT_OP_TYPE)NC_EDIT_DEFOP_NOTSET) {
 		/* no operation defined for this node */
 		return EXIT_SUCCESS;
 	} else if (op == NC_EDIT_OP_ERROR) {
@@ -680,7 +680,7 @@ static int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, s
 		/* check parent elements for operation compatibility */
 		parent = edit->parent;
 		while (parent->type != XML_DOCUMENT_NODE) {
-			parent_op = get_operation(parent, NC_EDIT_DEFOP_NONE, error);
+			parent_op = get_operation(parent, NC_EDIT_DEFOP_NOTSET, error);
 			if (parent_op == NC_EDIT_OP_ERROR) {
 				return EXIT_FAILURE;
 			} else if (parent_op == NC_EDIT_OP_CREATE || parent_op == NC_EDIT_OP_REPLACE) {
@@ -693,7 +693,7 @@ static int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, s
 		/* check parent elements for operation compatibility */
 		parent = edit->parent;
 		while (parent->type != XML_DOCUMENT_NODE) {
-			parent_op = get_operation(parent, NC_EDIT_DEFOP_NONE, error);
+			parent_op = get_operation(parent, NC_EDIT_DEFOP_NOTSET, error);
 			if (parent_op == NC_EDIT_OP_ERROR) {
 				return EXIT_FAILURE;
 			} else if (parent_op == NC_EDIT_OP_DELETE || parent_op == NC_EDIT_OP_REMOVE) {
@@ -1282,7 +1282,7 @@ static int compact_edit_operations_recursively (xmlNodePtr node, NC_EDIT_OP_TYPE
 	xmlNodePtr children;
 	int ret;
 
-	op = get_operation(node, NC_EDIT_DEFOP_NONE, NULL);
+	op = get_operation(node, NC_EDIT_DEFOP_NOTSET, NULL);
 	switch((int)op) {
 	case NC_EDIT_OP_ERROR:
 		return EXIT_FAILURE;
