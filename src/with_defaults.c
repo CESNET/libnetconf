@@ -353,7 +353,7 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 		xmlXPathFreeContext(model_ctxt);
 		return (EXIT_FAILURE);
 	}
-	defaults = xmlXPathEvalExpression(BAD_CAST "//yin:default", model_ctxt);
+	defaults = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:container//yin:default", model_ctxt);
 	if (defaults != NULL) {
 		/* if report-all-tagged, add namespace for default attribute into the whole doc */
 		if (mode == NCWD_MODE_ALL_TAGGED) {
