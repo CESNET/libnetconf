@@ -43,6 +43,7 @@
 #include <libxml/tree.h>
 
 #include "netconf.h"
+#include "notifications.h"
 
 /**
  * @ingroup notifications_xml
