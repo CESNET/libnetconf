@@ -29,7 +29,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.3.0</span>
+   &#160;<span id="projectnumber">0.3.1</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -137,7 +137,7 @@ $(document).ready(function(){initNavTree('d5/d48/messages_8h.html','../../');});
 <div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;</div>
 <div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;<span class="keywordtype">char</span>* <a class="code" href="../../db/de9/group__rpc.html#gade3f111e7c7727d512313b4875fd8f50" title="Get content of the operation specification from the given rpc.">nc_rpc_get_op_content</a>(<span class="keyword">const</span> <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);</div>
 <div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;<a class="code" href="../../db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00" title="Enumeration of &lt;rpc&gt; operation types.">NC_RPC_TYPE</a> <a class="code" href="../../db/de9/group__rpc.html#ga3fece249b2cbdc5a8de8fb229a4c20e8" title="Get type of the rpc message.">nc_rpc_get_type</a>(<a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;<a class="code" href="../../db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00" title="Enumeration of &lt;rpc&gt; operation types.">NC_RPC_TYPE</a> <a class="code" href="../../db/de9/group__rpc.html#gaa502fb30575000775b29a764101c1bef" title="Get type of the rpc message.">nc_rpc_get_type</a>(<span class="keyword">const</span> <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);</div>
 <div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;</div>
 <div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;<a class="code" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73" title="Enumeration of supported types of datastores defined by NETCONF.">NC_DATASTORE</a> <a class="code" href="../../db/de9/group__rpc.html#gab240067d45d58c945cdfd61948751379" title="Get target datastore type (running, startup, candidate) of the rpc request.">nc_rpc_get_target</a>(<span class="keyword">const</span> <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);</div>
 <div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;</div>
@@ -153,11 +153,11 @@ $(document).ready(function(){initNavTree('d5/d48/messages_8h.html','../../');});
 <div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;</div>
 <div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;<span class="keyword">struct </span>nc_filter * <a class="code" href="../../db/de9/group__rpc.html#ga05705bba8345c15637bc54cf6b9a4b3d" title="Get filter from &lt;get&gt; or &lt;get-config&gt; RPC.">nc_rpc_get_filter</a> (<span class="keyword">const</span> <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> * rpc);</div>
 <div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;</div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<a class="code" href="../../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29" title="Enumeration of &lt;rpc-reply&gt; types.">NC_REPLY_TYPE</a> <a class="code" href="../../d0/de2/group__reply.html#gae5e5ceef4d1265deb9336398115f430e" title="Get type of the rpc-reply message.">nc_reply_get_type</a>(<a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d" title="reply message.">nc_reply</a> *reply);</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<a class="code" href="../../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29" title="Enumeration of &lt;rpc-reply&gt; types.">NC_REPLY_TYPE</a> <a class="code" href="../../d0/de2/group__reply.html#gab12cdef82337060c425348dada7fe983" title="Get type of the rpc-reply message.">nc_reply_get_type</a>(<span class="keyword">const</span> <a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d" title="reply message.">nc_reply</a> *reply);</div>
 <div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;</div>
 <div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;<span class="keywordtype">char</span> *<a class="code" href="../../d0/de2/group__reply.html#gaac62fb3d427985311cf71a2c3ab8d424" title="Get content of the &lt;data&gt; element in &lt;rpc-reply&gt;.">nc_reply_get_data</a>(<span class="keyword">const</span> <a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d" title="reply message.">nc_reply</a> *reply);</div>
 <div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;<span class="keyword">const</span> <span class="keywordtype">char</span> *<a class="code" href="../../d0/de2/group__reply.html#ga8386b0cdfcd27f958147598a75ad311a" title="Get error-message from the server&#39;s &lt;rpc-error&gt; reply.">nc_reply_get_errormsg</a>(<a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d" title="reply message.">nc_reply</a> *reply);</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;<span class="keyword">const</span> <span class="keywordtype">char</span> *<a class="code" href="../../d0/de2/group__reply.html#ga121d66d8f7437d87a995b82187e7e7ff" title="Get error-message from the server&#39;s &lt;rpc-error&gt; reply.">nc_reply_get_errormsg</a>(<span class="keyword">const</span> <a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d" title="reply message.">nc_reply</a> *reply);</div>
 <div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;</div>
 <div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="keywordtype">void</span> <a class="code" href="../../db/de9/group__rpc.html#ga4041bda37caa9eedb7a1e2534280f3df" title="Free rpc message.">nc_rpc_free</a>(<a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262" title="rpc message.">nc_rpc</a> *rpc);</div>
 <div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;</div>
@@ -209,7 +209,7 @@ $(document).ready(function(){initNavTree('d5/d48/messages_8h.html','../../');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="d5/d48/messages_8h.html">messages.h</a></li>
-    <li class="footer">Generated on Tue Jan 8 2013 15:41:36 for libnetconf by
+    <li class="footer">Generated on Thu Jan 17 2013 08:23:43 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

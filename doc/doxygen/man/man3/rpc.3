@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Tue Jan 8 2013" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Thu Jan 17 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -78,7 +78,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIGet content of the operation specification from the given rpc\&. \fP"
 .ti -1c
-.RI "\fBNC_RPC_TYPE\fP \fBnc_rpc_get_type\fP (\fBnc_rpc\fP *rpc)"
+.RI "\fBNC_RPC_TYPE\fP \fBnc_rpc_get_type\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet type of the rpc message\&. \fP"
 .ti -1c
@@ -432,7 +432,7 @@ String in XML form starting with the operation name element\&. Caller is respons
 .RE
 .PP
 
-.SS "\fBNC_RPC_TYPE\fP nc_rpc_get_type (\fBnc_rpc\fP *rpc)"
+.SS "\fBNC_RPC_TYPE\fP nc_rpc_get_type (const \fBnc_rpc\fP *rpc)"
 
 .PP
 Get type of the rpc message\&. <rpc> message can affect datastore, session or it can be unknown for the libnetconf (defined by some of unsupported capability or device configuration model)

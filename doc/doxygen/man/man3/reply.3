@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Tue Jan 8 2013" "Version 0.3.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Thu Jan 17 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -54,7 +54,7 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .br
 .RI "\fIGet message-id of the given rpc-reply\&. \fP"
 .ti -1c
-.RI "\fBNC_REPLY_TYPE\fP \fBnc_reply_get_type\fP (\fBnc_reply\fP *reply)"
+.RI "\fBNC_REPLY_TYPE\fP \fBnc_reply_get_type\fP (const \fBnc_reply\fP *reply)"
 .br
 .RI "\fIGet type of the rpc-reply message\&. \fP"
 .ti -1c
@@ -62,7 +62,7 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .br
 .RI "\fIGet content of the <data> element in <rpc-reply>\&. \fP"
 .ti -1c
-.RI "const char * \fBnc_reply_get_errormsg\fP (\fBnc_reply\fP *reply)"
+.RI "const char * \fBnc_reply_get_errormsg\fP (const \fBnc_reply\fP *reply)"
 .br
 .RI "\fIGet error-message from the server's <rpc-error> reply\&. \fP"
 .ti -1c
@@ -253,7 +253,7 @@ message-id of the given rpc-reply message\&.
 .RE
 .PP
 
-.SS "\fBNC_REPLY_TYPE\fP nc_reply_get_type (\fBnc_reply\fP *reply)"
+.SS "\fBNC_REPLY_TYPE\fP nc_reply_get_type (const \fBnc_reply\fP *reply)"
 
 .PP
 Get type of the rpc-reply message\&. <rpc-reply> message can contain <ok>, <rpc-error> or <data>
@@ -283,7 +283,7 @@ String with the content of the <data> element\&. Caller is responsible for free 
 .RE
 .PP
 
-.SS "const char* nc_reply_get_errormsg (\fBnc_reply\fP *reply)"
+.SS "const char* nc_reply_get_errormsg (const \fBnc_reply\fP *reply)"
 
 .PP
 Get error-message from the server's <rpc-error> reply\&. \fBParameters:\fP

@@ -10,6 +10,7 @@ var searchData=
   ['nc_5fedit_5fdefop_5ferror',['NC_EDIT_DEFOP_ERROR',['../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187',1,'netconf.h']]],
   ['nc_5fedit_5fdefop_5fmerge',['NC_EDIT_DEFOP_MERGE',['../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a5242dcc6a090887ef8b3f6c96b1b4931',1,'netconf.h']]],
   ['nc_5fedit_5fdefop_5fnone',['NC_EDIT_DEFOP_NONE',['../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a37dd969ad73f6ac990785d9802672946',1,'netconf.h']]],
+  ['nc_5fedit_5fdefop_5fnotset',['NC_EDIT_DEFOP_NOTSET',['../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454ae959e6f9ed31a8e4441ad84eae8b43d2',1,'netconf.h']]],
   ['nc_5fedit_5fdefop_5freplace',['NC_EDIT_DEFOP_REPLACE',['../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454a80cda5b10ba3ff7f819c08508be9237c',1,'netconf.h']]],
   ['nc_5fedit_5ferropt_5fcont',['NC_EDIT_ERROPT_CONT',['../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a69d82c66a324215010791718c1bc61f6',1,'netconf.h']]],
   ['nc_5fedit_5ferropt_5ferror',['NC_EDIT_ERROPT_ERROR',['../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4',1,'netconf.h']]],
