@@ -72,6 +72,8 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 extern struct nc_shared_info *nc_info;
 
+char* server_capabilities = NULL;
+
 struct ncds_ds_list
 {
 	struct ncds_ds *datastore;
@@ -104,6 +106,9 @@ static struct ncds_ds int_ds = {
 static struct ncds_ds_list int_ds_list = {&int_ds, NULL};
 static struct ncds_ds_list *datastores = &int_ds_list;
 
+char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
+char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
+
 static struct ncds_ds *datastores_get_ds(ncds_id id);
 #define INTERNAL_DS_COUNT 4
 int ncds_sysinit(void)
@@ -123,7 +128,12 @@ int ncds_sysinit(void)
 			ietf_netconf_with_defaults_yin_len,
 			nc_notifications_yin_len
 	};
-
+	char* (*get_state_funcs[INTERNAL_DS_COUNT])(const char* model, const char* running, struct nc_err ** e) = {
+			get_state_monitoring,
+			get_state_notifications,
+			NULL,
+			NULL
+	};
 
 	for (i = 0; i < INTERNAL_DS_COUNT; i++) {
 		if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty))) == NULL) {
@@ -149,7 +159,7 @@ int ncds_sysinit(void)
 			return (EXIT_FAILURE);
 		}
 		ds->model_path = NULL;
-		ds->get_state = NULL;
+		ds->get_state = get_state_funcs[i];
 
 		/* add to list */
 		if ((dsitem = malloc (sizeof(struct ncds_ds_list))) == NULL ) {
@@ -477,32 +487,25 @@ char* get_schemas()
 	}
 	return (schemas);
 }
-
-char* get_internal_state(const struct nc_session *session)
+char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e))
 {
-	char *notifs = NULL, *schemas = NULL, *sessions = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *stats = NULL, *aux = NULL;
-	xmlDocPtr doc;
-	xmlBufferPtr buf;
-	struct ncds_ds_list* ds = NULL;
-	const struct ncds_lockinfo *info;
+	char *retval = NULL;
 
 	/*
 	 * notifications streams
 	 */
-	if (nc_cpblts_enabled (session, NC_CAP_NOTIFICATION_ID)) {
-		notifs = ncntf_status ();
-		doc = xmlReadDoc (BAD_CAST notifs, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-		free (notifs);
-		if (doc == NULL ) {
-			notifs = NULL;
-		} else {
-			buf = xmlBufferCreate ();
-			xmlNodeDump (buf, doc, doc->children, 1, 1);
-			notifs = strdup ((char*) xmlBufferContent (buf));
-			xmlFreeDoc (doc);
-			xmlBufferFree (buf);
-		}
+	retval = ncntf_status ();
+	if (retval == NULL ) {
+		retval = strdup("");
 	}
+	return (retval);
+}
+
+char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e))
+{
+	char *schemas = NULL, *sessions = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *stats = NULL, *aux = NULL;
+	struct ncds_ds_list* ds = NULL;
+	const struct ncds_lockinfo *info;
 
 	/*
 	 * datastores
@@ -514,41 +517,42 @@ char* get_internal_state(const struct nc_session *session)
 		}
 	}
 
-	if (ds != NULL ) {
-		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) == 1) {
-			info = ds->datastore->func.get_lockinfo (ds->datastore, NC_DATASTORE_STARTUP);
-			if (info != NULL && info->sid != NULL ) {
-				if (asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
-						"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time) == -1) {
-					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-					aux = NULL;
-				}
-			}
-			if (asprintf (&ds_startup, "<datastore><name>startup</name>%s</datastore>",
-			        (aux != NULL )? aux : "") == -1) {
+	if (ds != NULL) {
+		/* startup datastore */
+		info = ds->datastore->func.get_lockinfo(ds->datastore, NC_DATASTORE_STARTUP);
+		if (info != NULL && info->sid != NULL) {
+			if (asprintf(&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
+					"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				ds_startup = NULL;
+				aux = NULL;
 			}
-			free (aux);
-			aux = NULL;
 		}
-		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) == 1) {
-			info = ds->datastore->func.get_lockinfo (ds->datastore, NC_DATASTORE_CANDIDATE);
-			if (info != NULL && info->sid != NULL ) {
-				if (asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
-						"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time) == -1) {
-					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-					aux = NULL;
-				}
-			}
-			if (asprintf (&ds_cand, "<datastore><name>candidate</name>%s</datastore>",
-			        (aux != NULL )? aux : "") == -1) {
+		if (asprintf(&ds_startup, "<datastore><name>startup</name>%s</datastore>",
+		                (aux != NULL) ? aux : "") == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			ds_startup = NULL;
+		}
+		free(aux);
+		aux = NULL;
+
+		/* candidate datastore */
+		info = ds->datastore->func.get_lockinfo(ds->datastore, NC_DATASTORE_CANDIDATE);
+		if (info != NULL && info->sid != NULL) {
+			if (asprintf(&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
+					"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				ds_cand = NULL;
+				aux = NULL;
 			}
-			free (aux);
-			aux = NULL;
 		}
+		if (asprintf(&ds_cand, "<datastore><name>candidate</name>%s</datastore>",
+		                (aux != NULL) ? aux : "") == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			ds_cand = NULL;
+		}
+		free(aux);
+		aux = NULL;
+
+		/* running datastore */
 		info = ds->datastore->func.get_lockinfo (ds->datastore, NC_DATASTORE_RUNNING);
 		if (info != NULL && info->sid != NULL ) {
 			if (asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
@@ -607,13 +611,12 @@ char* get_internal_state(const struct nc_session *session)
 	}
 
 	/* get it all together */
-	if (asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s%s</netconf-state>%s", NC_NS_MONITORING,
-			(session->capabilities_original != NULL) ? session->capabilities_original : "",
+	if (asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s%s</netconf-state>", NC_NS_MONITORING,
+			(server_capabilities != NULL) ? server_capabilities : "",
 			(ds_stats != NULL) ? ds_stats : "",
 			(sessions != NULL) ? sessions : "",
 			(schemas != NULL) ? schemas : "",
-			(stats != NULL) ? stats : "",
-			(notifs != NULL) ? notifs : "") == -1) {
+			(stats != NULL) ? stats : "") == -1) {
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		retval = NULL;
 	}
@@ -625,7 +628,6 @@ char* get_internal_state(const struct nc_session *session)
 	free(sessions);
 	free(schemas);
 	free(stats);
-	free(notifs);
 
 	return (retval);
 }
@@ -1344,9 +1346,9 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	struct nc_filter * filter = NULL;
 	char* data = NULL, *config, *model = NULL, *data2;
 	xmlDocPtr doc1, doc2, doc_merged = NULL, aux_doc;
-	int len;
+	int len, dsid;
 	int ret = EXIT_FAILURE;
-	nc_reply* reply;
+	nc_reply* reply, *old_reply = NULL, *new_reply;
 	xmlBufferPtr resultbuffer;
 	xmlNodePtr aux_node, node;
 	NC_OP op;
@@ -1356,7 +1358,11 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
 	}
 
-	ds = datastores_get_ds(id);
+	dsid = id;
+
+process_datastore:
+
+	ds = datastores_get_ds(dsid);
 	if (ds == NULL) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 	}
@@ -1410,18 +1416,6 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 				xmlFreeDoc(doc2);
 			}
 		} else {
-			if (id == NCDS_INTERNAL_ID) {
-				/* ignore data - it is empty */
-				free(data);
-
-				/* get internal state data of the libnetconf */
-				if ((data = get_internal_state(session)) == NULL) {
-					ERROR("Getting internal libnetconf state data failed..");
-					e = nc_err_new(NC_ERR_OP_FAILED);
-					nc_err_set(e, NC_ERR_PARAM_MSG, "Unable to get internal libnetconf state data.");
-					break;
-				}
-			}
 			data2 = data;
 			if (asprintf(&data, "<data>%s</data>", data2) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
@@ -1738,7 +1732,7 @@ apply_editcopyconfig:
 		break;
 	case NC_OP_GETSCHEMA:
 		if (nc_cpblts_enabled (session, NC_CAP_MONITORING_ID)) {
-			if (id == NCDS_INTERNAL_ID) {
+			if (dsid == NCDS_INTERNAL_ID) {
 				if ((data = get_schema (rpc, &e)) == NULL) {
 					ret = EXIT_FAILURE;
 				} else {
@@ -1778,6 +1772,29 @@ apply_editcopyconfig:
 			reply = nc_reply_ok();
 		}
 	}
+
+	if (id == NCDS_INTERNAL_ID) {
+		if (old_reply == NULL) {
+			old_reply = reply;
+		} else {
+			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
+				if (nc_reply_get_type(old_reply) == NC_REPLY_ERROR) {
+					return (old_reply);
+				} else if (nc_reply_get_type(reply) == NC_REPLY_ERROR) {
+					return (reply);
+				} else {
+					return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
+				}
+			}
+			old_reply = reply = new_reply;
+
+		}
+		dsid++;
+		if (dsid < INTERNAL_DS_COUNT) {
+			goto process_datastore;
+		}
+	}
+
 	return (reply);
 }
 

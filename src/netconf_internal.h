@@ -271,8 +271,6 @@ struct nc_session {
 	char *logintime;
 	/**< @brief number of confirmed capabilities */
 	struct nc_cpblts *capabilities;
-	/**< @brief serialized original capabilities of the server/client */
-	char *capabilities_original;
 	/**< @brief NETCONF protocol version */
 	int version;
 	/**< @brief session's with-defaults basic mode */

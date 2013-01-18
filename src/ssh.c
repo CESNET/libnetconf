@@ -68,6 +68,7 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
 
 extern struct nc_shared_info *nc_info;
+extern char* server_capabilities;
 
 struct auth_pref_couple
 {
@@ -647,7 +648,12 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 			}
 		}
 	}
-	retval->capabilities_original = serialize_cpblts(server_cpblts);
+
+	if (server_capabilities != NULL) {
+		free (server_capabilities);
+		server_capabilities = serialize_cpblts(server_cpblts);
+	}
+
 	retval->status = NC_SESSION_STATUS_WORKING;
 
 	/* add namespaces of used datastores as announced capabilities */
@@ -1089,7 +1095,11 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	} else {
 		client_cpblts = nc_cpblts_new(cpblts->list);
 	}
-	retval->capabilities_original = serialize_cpblts(client_cpblts);
+
+	if (server_capabilities != NULL) {
+		free (server_capabilities);
+		server_capabilities = serialize_cpblts(client_cpblts);
+	}
 
 	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
 		goto shutdown;
