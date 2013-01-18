@@ -1763,7 +1763,7 @@ nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
 	}
 
 	/* get type and check that first two have the same type */
-	if ((type = nc_reply_get_type(msg1)) != nc_reply_get_type(msg2) && type == NC_REPLY_UNKNOWN) {
+	if ((type = nc_reply_get_type(msg1)) != nc_reply_get_type(msg2) || type == NC_REPLY_UNKNOWN) {
 		VERB("All messages to merge must be of the same type.");
 		return NULL;
 	}
