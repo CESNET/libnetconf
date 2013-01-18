@@ -487,7 +487,7 @@ char* get_internal_state(const struct nc_session *session)
 	const struct ncds_lockinfo *info;
 
 	/*
-	 * capabilities
+	 * notifications streams
 	 */
 	if (nc_cpblts_enabled (session, NC_CAP_NOTIFICATION_ID)) {
 		notifs = ncntf_status ();
