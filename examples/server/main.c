@@ -116,11 +116,21 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 	pthread_t thread;
 
 	/* receive incoming message */
-	if ((nc_session_recv_rpc(config->session, -1, &rpc) == 0)
-			&& (nc_session_get_status(config->session) != NC_SESSION_STATUS_WORKING)) {
-		/* something really bad happend, and communication os not possible anymore */
-		event_base_loopbreak(config->event_base);
-		return;
+	ret = nc_session_recv_rpc(config->session, -1, &rpc);
+	if (ret != NC_MSG_RPC) {
+		switch(ret) {
+		case NC_MSG_NONE:
+			/* the request was already processed by libnetconf or no message available */
+			return;
+		case NC_MSG_UNKNOWN:
+			if (nc_session_get_status(config->session) != NC_SESSION_STATUS_WORKING) {
+				/* something really bad happend, and communication os not possible anymore */
+				event_base_loopbreak(config->event_base);
+			}
+			return;
+		default:
+			return;
+		}
 	}
 
 	/* process it */
