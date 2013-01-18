@@ -62,6 +62,13 @@ typedef int ncds_id;
 
 /**
  * @ingroup store
+ * @brief Datastore ID to access libnetconf's internal datasotres such as
+ * notifications, monitoring, etc.
+ */
+#define NCDS_INTERNAL_ID 0
+
+/**
+ * @ingroup store
  * @brief Datastore structure
  */
 struct ncds_ds;

@@ -200,13 +200,13 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		case NC_OP_GET:
 			reply = nc_reply_merge(2,
 					ncds_apply_rpc(config->dsid, config->session, rpc),
-					ncds_apply_rpc(0, config->session, rpc));
+					ncds_apply_rpc(NCDS_INTERNAL_ID, config->session, rpc));
 			break;
 		case NC_OP_GETCONFIG:
 			reply = ncds_apply_rpc(config->dsid, config->session, rpc);
 			break;
 		case NC_OP_GETSCHEMA:
-			reply = ncds_apply_rpc(0, config->session, rpc);
+			reply = ncds_apply_rpc(NCDS_INTERNAL_ID, config->session, rpc);
 			break;
 		default:
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
