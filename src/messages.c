@@ -571,6 +571,13 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 			auxnode = auxnode->next;
 			continue;
 		}
+		/* If operation is outside of any namespace it's treated as unknown.
+		 * This check is after check for node type to assure that commentary
+		 * node won't cause failure. */
+		if (auxnode->ns == NULL) {
+			return (NC_OP_UNKNOWN);
+		}
+
 		/* check known rpc operations */
 		if ((xmlStrcmp(auxnode->name, BAD_CAST "copy-config") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
