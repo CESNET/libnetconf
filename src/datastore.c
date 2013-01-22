@@ -487,7 +487,7 @@ char* get_internal_state(const struct nc_session *session)
 	const struct ncds_lockinfo *info;
 
 	/*
-	 * capabilities
+	 * notifications streams
 	 */
 	if (nc_cpblts_enabled (session, NC_CAP_NOTIFICATION_ID)) {
 		notifs = ncntf_status ();
@@ -1410,7 +1410,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 				xmlFreeDoc(doc2);
 			}
 		} else {
-			if (id == 0) {
+			if (id == NCDS_INTERNAL_ID) {
 				/* ignore data - it is empty */
 				free(data);
 
@@ -1738,7 +1738,7 @@ apply_editcopyconfig:
 		break;
 	case NC_OP_GETSCHEMA:
 		if (nc_cpblts_enabled (session, NC_CAP_MONITORING_ID)) {
-			if (id == 0) {
+			if (id == NCDS_INTERNAL_ID) {
 				if ((data = get_schema (rpc, &e)) == NULL) {
 					ret = EXIT_FAILURE;
 				} else {

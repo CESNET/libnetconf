@@ -265,7 +265,7 @@ static xmlDocPtr streams_to_xml(void)
 
 	/* create empty configuration */
 	config = xmlNewDoc(BAD_CAST "1.0");
-	root = xmlDocSetRootElement(config, xmlNewNode(NULL, BAD_CAST "netconf"));
+	xmlDocSetRootElement(config, root = xmlNewNode(NULL, BAD_CAST "netconf"));
 	ns = xmlNewNs(root, BAD_CAST NCNTF_STREAMS_NS, NULL);
 	xmlSetNs(root, ns);
 	node_streams = xmlAddChild(root, xmlNewNode(NULL, BAD_CAST "streams"));
@@ -2005,7 +2005,7 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 	}
 
 	notif_doc = xmlNewDoc(BAD_CAST "1.0");
-	root = xmlDocSetRootElement(notif_doc, xmlNewNode(NULL, BAD_CAST "notification"));
+	xmlDocSetRootElement(notif_doc, root = xmlNewNode(NULL, BAD_CAST "notification"));
 	ns = xmlNewNs(root, BAD_CAST NC_NS_NOTIFICATIONS, NULL);
 	xmlSetNs(root, ns);
 
@@ -2133,7 +2133,7 @@ char* ncntf_notif_get_content(nc_ntf* notif)
 
 	/* by copying node, move all needed namespaces into the content nodes */
 	aux_doc = xmlNewDoc(BAD_CAST "1.0");
-	aux_root = xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "content"));
+	xmlDocSetRootElement(aux_doc, aux_root = xmlNewNode(NULL, BAD_CAST "content"));
 	xmlAddChildList(aux_root, xmlDocCopyNodeList(aux_doc, root->children));
 	buffer = xmlBufferCreate ();
 	for (node = aux_root->children; node != NULL; node = node->next) {

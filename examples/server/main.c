@@ -116,11 +116,21 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 	pthread_t thread;
 
 	/* receive incoming message */
-	if ((nc_session_recv_rpc(config->session, -1, &rpc) == 0)
-			&& (nc_session_get_status(config->session) != NC_SESSION_STATUS_WORKING)) {
-		/* something really bad happend, and communication os not possible anymore */
-		event_base_loopbreak(config->event_base);
-		return;
+	ret = nc_session_recv_rpc(config->session, -1, &rpc);
+	if (ret != NC_MSG_RPC) {
+		switch(ret) {
+		case NC_MSG_NONE:
+			/* the request was already processed by libnetconf or no message available */
+			return;
+		case NC_MSG_UNKNOWN:
+			if (nc_session_get_status(config->session) != NC_SESSION_STATUS_WORKING) {
+				/* something really bad happend, and communication os not possible anymore */
+				event_base_loopbreak(config->event_base);
+			}
+			return;
+		default:
+			return;
+		}
 	}
 
 	/* process it */
@@ -190,13 +200,13 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		case NC_OP_GET:
 			reply = nc_reply_merge(2,
 					ncds_apply_rpc(config->dsid, config->session, rpc),
-					ncds_apply_rpc(0, config->session, rpc));
+					ncds_apply_rpc(NCDS_INTERNAL_ID, config->session, rpc));
 			break;
 		case NC_OP_GETCONFIG:
 			reply = ncds_apply_rpc(config->dsid, config->session, rpc);
 			break;
 		case NC_OP_GETSCHEMA:
-			reply = ncds_apply_rpc(0, config->session, rpc);
+			reply = ncds_apply_rpc(NCDS_INTERNAL_ID, config->session, rpc);
 			break;
 		default:
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
