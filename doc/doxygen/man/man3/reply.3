@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Thu Jan 17 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -364,7 +364,7 @@ Add another error description into the existing rpc-reply with <rpc-error> conte
 .SS "\fBnc_reply\fP* nc_reply_merge (intcount, \fBnc_reply\fP *msg1, \fBnc_reply\fP *msg2, \&.\&.\&.)"
 
 .PP
-Merge reply messages\&. All messages MUST be of the same type\&. Function number of <rpc-reply> merges specified by count (at least 2) into one <rpc-reply> message which is returned as a result\&. When merge is successful all input messages are freed and MUST NOT be used after this call\&. When merge fails NULL is returned and input messages are left unchanged\&.
+Merge reply messages\&. All messages MUST be of the same type\&. Function merges number of <rpc-reply> specified by count parameter (at least 2) into one <rpc-reply> message which is returned as a result\&. When the merge is successful, all input messages are freed and MUST NOT be used after this call\&. Merge can fail only due to an invalid input parameter\&. In such a case, NULL is returned and input messages are left unchanged\&.
 .PP
 \fBParameters:\fP
 .RS 4
@@ -379,7 +379,7 @@ Merge reply messages\&. All messages MUST be of the same type\&. Function number
 .PP
 \fBReturns:\fP
 .RS 4
-Pointer to merged reply or NULL in case of failure\&. 
+Pointer to a new reply message with merged content of messages to merge\&. If the error occurs (due to the invalid input parameters), NULL is returned and messages to merge are not freed\&. 
 .RE
 .PP
 

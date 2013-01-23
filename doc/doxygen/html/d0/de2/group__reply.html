@@ -678,7 +678,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Merge reply messages. All messages MUST be of the same type. </p>
-<p>Function number of &lt;rpc-reply&gt; merges specified by count (at least 2) into one &lt;rpc-reply&gt; message which is returned as a result. When merge is successful all input messages are freed and MUST NOT be used after this call. When merge fails NULL is returned and input messages are left unchanged.</p>
+<p>Function merges number of &lt;rpc-reply&gt; specified by count parameter (at least 2) into one &lt;rpc-reply&gt; message which is returned as a result. When the merge is successful, all input messages are freed and MUST NOT be used after this call. Merge can fail only due to an invalid input parameter. In such a case, NULL is returned and input messages are left unchanged.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of messages to merge </td></tr>
@@ -688,7 +688,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Pointer to merged reply or NULL in case of failure. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Pointer to a new reply message with merged content of messages to merge. If the error occurs (due to the invalid input parameters), NULL is returned and messages to merge are not freed. </dd></dl>
 
 </div>
 </div>
@@ -697,7 +697,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Jan 17 2013 08:23:43 for libnetconf by
+    <li class="footer">Generated on Wed Jan 23 2013 16:06:49 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

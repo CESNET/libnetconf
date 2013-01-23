@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Thu Jan 17 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -15,6 +15,10 @@ NETCONF datastore handling function prototypes and structures\&.
 .SS "Macros"
 
 .in +1c
+.ti -1c
+.RI "#define \fBNCDS_INTERNAL_ID\fP   0"
+.br
+.RI "\fIDatastore ID to access libnetconf's internal datasotres such as notifications, monitoring, etc\&. \fP"
 .ti -1c
 .RI "#define \fBNCDS_RPC_NOT_APPLICABLE\fP   ((void *) -1)"
 .br

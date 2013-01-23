@@ -571,6 +571,13 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 			auxnode = auxnode->next;
 			continue;
 		}
+		/* If operation is outside of any namespace it's treated as unknown.
+		 * This check is after check for node type to assure that commentary
+		 * node won't cause failure. */
+		if (auxnode->ns == NULL) {
+			return (NC_OP_UNKNOWN);
+		}
+
 		/* check known rpc operations */
 		if ((xmlStrcmp(auxnode->name, BAD_CAST "copy-config") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
@@ -1751,20 +1758,25 @@ nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
 {
 	nc_reply *merged_reply = NULL;
 	nc_reply ** to_merge = NULL;
-	NC_REPLY_TYPE type;
+	NC_REPLY_TYPE type, type_aux;
 	va_list ap;
 	int i, len = 0;
 	char * tmp, * data = NULL;
 
-	/* minimal 2 massages */
+	/* params check */
 	if (count < 2) {
-		VERB("Number of messages must be at least 2 (was %d)", count);
+		ERROR("%s: count must be >= 2 (was %d)", __func__, count);
+		return NULL;
+	}
+
+	if (msg1 == NULL || msg2 == NULL) {
+		ERROR("%s: Invalid input messages to merge.", __func__);
 		return NULL;
 	}
 
 	/* get type and check that first two have the same type */
-	if ((type = nc_reply_get_type(msg1)) != nc_reply_get_type(msg2) || type == NC_REPLY_UNKNOWN) {
-		VERB("All messages to merge must be of the same type.");
+	if (((type = nc_reply_get_type(msg1)) != (type_aux = nc_reply_get_type(msg2))) || type == NC_REPLY_UNKNOWN) {
+		ERROR("%s: the type of the second reply message differs (%d:%d)", __func__, type, type_aux);
 		return NULL;
 	}
 
@@ -1777,46 +1789,47 @@ nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
 	to_merge[1] = msg2;
 
 	/* get all messages and check their type */
-	for (i=2; i<count; i++) {
-		to_merge[i] = va_arg(ap,nc_reply*);
-		if (type != nc_reply_get_type(to_merge[i])) {
-			VERB("All messages to merge must be of the same type.");
-			free (to_merge);
-			va_end (ap);
+	for (i = 2; i < count; i++) {
+		if ((to_merge[i] = va_arg(ap, nc_reply*)) == NULL) {
+			ERROR("%s: invalid input message %d", __func__, i+1);
+			free(to_merge);
+			va_end(ap);
+			return NULL;
+		}
+		if (type != (type_aux = nc_reply_get_type(to_merge[i]))) {
+			ERROR("%s: the type of the message %d differs (%d:%d)", __func__, i+1, type, type_aux);
+			free(to_merge);
+			va_end(ap);
 			return NULL;
 		}
 	}
 
-	/* finalize argument vector */
-	va_end (ap);
-
 	switch (type) {
 	case NC_REPLY_OK:
 		/* just OK */
-		merged_reply = msg1;
+		merged_reply = nc_reply_ok();
 		break;
 	case NC_REPLY_DATA:
 		/* join <data/> */
-		for (i=0; i<count; i++) {
-			tmp = nc_reply_get_data (to_merge[i]);
+		for (i = 0; i < count; i++) {
+			tmp = nc_reply_get_data(to_merge[i]);
 			if (data == NULL) {
-				len = strlen (tmp);
-				data = strdup (tmp);
+				len = strlen(tmp);
+				data = strdup(tmp);
 			} else {
-				len += strlen (tmp);
-				data = realloc (data, sizeof(char)*(len+1));
-				strcat (data, tmp);
+				len += strlen(tmp);
+				data = realloc(data, sizeof(char) * (len + 1));
+				strcat(data, tmp);
 			}
-			free (tmp);
+			free(tmp);
 		}
-		nc_reply_free(msg1);
 		merged_reply = nc_reply_data(data);
 		free(data);
 		break;
 	case NC_REPLY_ERROR:
 		/* join all errors */
-		merged_reply = msg1;
-		for (i=1; i<count; i++) {
+		merged_reply = nc_reply_dup(to_merge[0]);
+		for (i = 1; i < count; i++) {
 			nc_reply_error_add(merged_reply, to_merge[i]->error);
 			to_merge[i]->error = NULL;
 		}
@@ -1826,10 +1839,13 @@ nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
 	}
 
 	/* clean all merged messages */
-	for (i=1; i<count; i++) {
-		nc_reply_free (to_merge[i]);
+	for (i = 0; i < count; i++) {
+		nc_reply_free(to_merge[i]);
 	}
-	free (to_merge);
+	free(to_merge);
+
+	/* finalize argument vector */
+	va_end(ap);
 
 	return merged_reply;
 }
