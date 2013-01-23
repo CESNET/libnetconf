@@ -329,16 +329,20 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error);
  * @ingroup reply
  * @brief Merge reply messages. All messages MUST be of the same type.
  *
- * Function number of \<rpc-reply\> merges specified by count (at least 2) into one \<rpc-reply\>
- * message which is returned as a result. When merge is successful all input messages are freed
- * and MUST NOT be used after this call. When merge fails NULL is returned and input messages are left unchanged.
+ * Function merges number of \<rpc-reply\> specified by count parameter (at
+ * least 2) into one \<rpc-reply\> message which is returned as a result. When
+ * the merge is successful, all input messages are freed and MUST NOT be used
+ * after this call. Merge can fail only due to an invalid input parameter. In
+ * such a case, NULL is returned and input messages are left unchanged.
  *
  * @param[in] count Number of messages to merge
  * @param[in] msg1	1st message to merge.
  * @param[in] msg2	2nd message to merge.
  * @param[in] ...	Other messages to merge. Total number of messages MUST be equal to count.
  *
- * @return Pointer to merged reply or NULL in case of failure.
+ * @return Pointer to a new reply message with merged content of messages to
+ * merge. If the error occurs (due to the invalid input parameters), NULL is
+ * returned and messages to merge are not freed.
  */
 nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...);
 
