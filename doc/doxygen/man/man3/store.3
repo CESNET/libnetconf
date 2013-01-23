@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Thu Jan 17 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -9,6 +9,10 @@ libnetconf's functions for handling NETCONF datastores\&.
 .SS "Macros"
 
 .in +1c
+.ti -1c
+.RI "#define \fBNCDS_INTERNAL_ID\fP   0"
+.br
+.RI "\fIDatastore ID to access libnetconf's internal datasotres such as notifications, monitoring, etc\&. \fP"
 .ti -1c
 .RI "#define \fBNCDS_RPC_NOT_APPLICABLE\fP   ((void *) -1)"
 .br
@@ -81,6 +85,10 @@ libnetconf's functions for handling NETCONF datastores\&.
 
 .SH "Macro Definition Documentation"
 .PP 
+.SS "#define NCDS_INTERNAL_ID   0"
+
+.PP
+Datastore ID to access libnetconf's internal datasotres such as notifications, monitoring, etc\&. 
 .SS "#define NCDS_RPC_NOT_APPLICABLE   ((void *) -1)"
 
 .PP
