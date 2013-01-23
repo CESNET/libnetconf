@@ -67,6 +67,7 @@
 #include "../models/ietf-netconf-notifications.xxd"
 #include "../models/ietf-netconf-with-defaults.xxd"
 #include "../models/nc-notifications.xxd"
+#include "../models/ietf-netconf-acm.xxd"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -74,10 +75,14 @@ extern struct nc_shared_info *nc_info;
 
 char* server_capabilities = NULL;
 
-struct ncds_ds_list
-{
+struct ncds_ds_list {
 	struct ncds_ds *datastore;
 	struct ncds_ds_list* next;
+};
+
+struct ds_desc {
+	NCDS_TYPE type;
+	char* filename;
 };
 
 /**
@@ -110,7 +115,7 @@ char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running
 char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 
 static struct ncds_ds *datastores_get_ds(ncds_id id);
-#define INTERNAL_DS_COUNT 4
+#define INTERNAL_DS_COUNT 5
 int ncds_sysinit(void)
 {
 	int i;
@@ -120,36 +125,70 @@ int ncds_sysinit(void)
 			ietf_netconf_monitoring_yin,
 			ietf_netconf_notifications_yin,
 			ietf_netconf_with_defaults_yin,
-			nc_notifications_yin
+			nc_notifications_yin,
+			ietf_netconf_acm_yin
 	};
 	unsigned int model_len[INTERNAL_DS_COUNT] = {
 			ietf_netconf_monitoring_yin_len,
 			ietf_netconf_notifications_yin_len,
 			ietf_netconf_with_defaults_yin_len,
-			nc_notifications_yin_len
+			nc_notifications_yin_len,
+			ietf_netconf_acm_yin_len
 	};
 	char* (*get_state_funcs[INTERNAL_DS_COUNT])(const char* model, const char* running, struct nc_err ** e) = {
 			get_state_monitoring,
 			get_state_notifications,
 			NULL,
-			NULL
+			NULL,
+			NULL /* \todo: add function to get NACM status data */
+	};
+	struct ds_desc internal_ds_desc[INTERNAL_DS_COUNT] = {
+			{NCDS_TYPE_EMPTY, NULL},
+			{NCDS_TYPE_EMPTY, NULL},
+			{NCDS_TYPE_EMPTY, NULL},
+			{NCDS_TYPE_EMPTY, NULL},
+			{NCDS_TYPE_FILE, "/usr/share/libnetconf/datastore-acm.xml"}
 	};
 
 	for (i = 0; i < INTERNAL_DS_COUNT; i++) {
-		if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty))) == NULL) {
-			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-			return (EXIT_FAILURE);
+		switch(internal_ds_desc[i].type) {
+		case NCDS_TYPE_EMPTY:
+			if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty))) == NULL) {
+				ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+				return (EXIT_FAILURE);
+			}
+			ds->func.init = ncds_empty_init;
+			ds->func.free = ncds_empty_free;
+			ds->func.get_lockinfo = ncds_empty_lockinfo;
+			ds->func.lock = ncds_empty_lock;
+			ds->func.unlock = ncds_empty_unlock;
+			ds->func.getconfig = ncds_empty_getconfig;
+			ds->func.copyconfig = ncds_empty_copyconfig;
+			ds->func.deleteconfig = ncds_empty_deleteconfig;
+			ds->func.editconfig = ncds_empty_editconfig;
+			ds->type = NCDS_TYPE_EMPTY;
+			break;
+		case NCDS_TYPE_FILE:
+			if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file))) == NULL) {
+				ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+				return (EXIT_FAILURE);
+			}
+			ds->func.init = ncds_file_init;
+			ds->func.free = ncds_file_free;
+			ds->func.get_lockinfo = ncds_file_lockinfo;
+			ds->func.lock = ncds_file_lock;
+			ds->func.unlock = ncds_file_unlock;
+			ds->func.getconfig = ncds_file_getconfig;
+			ds->func.copyconfig = ncds_file_copyconfig;
+			ds->func.deleteconfig = ncds_file_deleteconfig;
+			ds->func.editconfig = ncds_file_editconfig;
+			ds->type = NCDS_TYPE_FILE;
+			if (ncds_file_set_path(ds, internal_ds_desc[i].filename) != 0) {
+				ERROR("Linking internal datastore to a file (%s) failed.", internal_ds_desc[i].filename);
+				return (EXIT_FAILURE);
+			}
+			break;
 		}
-		ds->func.init = ncds_empty_init;
-		ds->func.free = ncds_empty_free;
-		ds->func.get_lockinfo = ncds_empty_lockinfo;
-		ds->func.lock = ncds_empty_lock;
-		ds->func.unlock = ncds_empty_unlock;
-		ds->func.getconfig = ncds_empty_getconfig;
-		ds->func.copyconfig = ncds_empty_copyconfig;
-		ds->func.deleteconfig = ncds_empty_deleteconfig;
-		ds->func.editconfig = ncds_empty_editconfig;
-		ds->type = NCDS_TYPE_EMPTY;
 		ds->id = i;
 
 		ds->model = xmlReadMemory ((char*)model[i], model_len[i], NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
@@ -160,6 +199,9 @@ int ncds_sysinit(void)
 		}
 		ds->model_path = NULL;
 		ds->get_state = get_state_funcs[i];
+
+		/* init */
+		ds->func.init(ds);
 
 		/* add to list */
 		if ((dsitem = malloc (sizeof(struct ncds_ds_list))) == NULL ) {
@@ -1352,7 +1394,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlBufferPtr resultbuffer;
 	xmlNodePtr aux_node, node;
 	NC_OP op;
-	NC_DATASTORE source_ds, target_ds;
+	NC_DATASTORE source_ds = 0, target_ds = 0;
 
 	if (rpc->type.rpc != NC_RPC_DATASTORE_READ && rpc->type.rpc != NC_RPC_DATASTORE_WRITE) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
