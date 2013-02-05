@@ -378,7 +378,7 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 {
 	xmlNodePtr *keynode_list;
 	xmlNodePtr keynode, key;
-	xmlChar *key_value = NULL, *keynode_value = NULL;
+	xmlChar *key_value = NULL, *keynode_value = NULL, *key_value2 = NULL, *keynode_value2 = NULL;
 	char *aux1, *aux2;
 	int i, ret;
 
@@ -427,16 +427,21 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 				key = node2->children;
 				while (key != NULL) {
 					if (xmlStrcmp(key->name, keynode->name) == 0) {
-						/* got key element, now check its value */
+						/* got key element, now check its value without leading/trailing whitespaces */
 						key_value = xmlNodeGetContent(key);
+						key_value2 = (xmlChar*) nc_clrwspace((char*) key_value);
+						xmlFree(key_value);
+						
 						keynode_value = xmlNodeGetContent(keynode);
-						if (xmlStrcmp(keynode_value, key_value) == 0) {
+						keynode_value2 = (xmlChar*) nc_clrwspace((char*) keynode_value);
+						xmlFree(keynode_value);
+						if (xmlStrcmp(keynode_value2, key_value2) == 0) {
 							/* value matches, go for next key if any */
 							break; /* while loop */
 						} else {
 							/* key value does not match, this is always bad */
-							xmlFree(key_value);
-							xmlFree(keynode_value);
+							xmlFree(key_value2);
+							xmlFree(keynode_value2);
 							free(keynode_list);
 							return 0;
 						}
@@ -447,8 +452,8 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 				}
 
 				/* cleanup for next round */
-				xmlFree(key_value);
-				xmlFree(keynode_value);
+				xmlFree(key_value2);
+				xmlFree(keynode_value2);
 
 				if (key == NULL) {
 					/* there is no matching node */
