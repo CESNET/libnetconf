@@ -127,7 +127,7 @@ static struct session_list_map *session_list = NULL;
 int nc_session_monitoring_init(void)
 {
 	struct stat fdinfo;
-	int first = 0;
+	int first = 0, c;
 	size_t size;
 	pthread_rwlockattr_t rwlockattr;
 	mode_t um;
@@ -161,7 +161,10 @@ int nc_session_monitoring_init(void)
 		/* we have new file, create some initial size using file gaps */
 		first = 1;
 		lseek(session_list_fd, SIZE_STEP - 1, SEEK_SET);
-		write(session_list_fd, "", 1);
+		while (((c = write(session_list_fd, "", 1)) == -1) && (errno == EAGAIN || errno == EINTR));
+		if (c == -1) {
+			WARN("%s: Preparing session list file failed (%s).", __func__, strerror(errno));
+		}
 		lseek(session_list_fd, 0, SEEK_SET);
 		size = SIZE_STEP;
 	} else {
