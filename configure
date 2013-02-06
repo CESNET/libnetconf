@@ -4541,14 +4541,11 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_readline_readline" >&5
 $as_echo "$ac_cv_lib_readline_readline" >&6; }
 if test "x$ac_cv_lib_readline_readline" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBREADLINE 1
-_ACEOF
-
-  LIBS="-lreadline $LIBS"
-
+  LIBS="$LIBS"
 else
-  as_fn_error $? "Missing libreadline" "$LINENO" 5
+  # prevent adding -lreadline to LIBS
+		as_fn_error $? "Missing libreadline" "$LINENO" 5
+
 fi
 
 	for ac_header in readline/readline.h readline/history.h
@@ -4605,14 +4602,11 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_event_event_base_dispatch" >&5
 $as_echo "$ac_cv_lib_event_event_base_dispatch" >&6; }
 if test "x$ac_cv_lib_event_event_base_dispatch" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBEVENT 1
-_ACEOF
-
-  LIBS="-levent $LIBS"
-
+  LIBS="$LIBS"
 else
-  as_fn_error $? "Missing libevent" "$LINENO" 5
+  # prevent adding -levent to LIBS
+		as_fn_error $? "Missing libevent" "$LINENO" 5
+
 fi
 
 	for ac_header in event2/event.h

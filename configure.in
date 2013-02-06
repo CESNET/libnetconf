@@ -200,11 +200,17 @@ AC_SUBST(LIBSSH2_SET_TIMEOUT)
 
 if test -n "$SUBDIRS"; then
 	### libreadline ###
-	AC_CHECK_LIB([readline], [readline], [], AC_MSG_ERROR([Missing libreadline]))
+	AC_CHECK_LIB([readline], [readline], 
+		LIBS="$LIBS", # prevent adding -lreadline to LIBS
+		AC_MSG_ERROR([Missing libreadline])
+	)
 	AC_CHECK_HEADERS(readline/readline.h readline/history.h, [], AC_MSG_ERROR([Missing libreadline headers.]))
 
 	### libevent ###
-	AC_CHECK_LIB([event], [event_base_dispatch], [], AC_MSG_ERROR([Missing libevent]))
+	AC_CHECK_LIB([event], [event_base_dispatch],
+		LIBS="$LIBS", # prevent adding -levent to LIBS
+		AC_MSG_ERROR([Missing libevent])
+	)
 	AC_CHECK_HEADERS(event2/event.h, [], AC_MSG_ERROR([Missing libevent headers.]))
 fi
 
