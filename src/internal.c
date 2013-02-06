@@ -143,6 +143,7 @@ int nc_init(int flags)
 	/* init NETCONF sessions statistics */
 	nc_session_monitoring_init();
 
+#ifndef DISABLE_NOTIFICATIONS
 	/* init Notification subsystem */
 	if (flags & NC_INIT_NOTIF) {
 		if (ncntf_init() != EXIT_SUCCESS) {
@@ -151,6 +152,7 @@ int nc_init(int flags)
 		}
 		init_flags |= NC_INIT_NOTIF;
 	}
+#endif
 
 	init_flags |= NC_INIT_DONE;
 	return (retval);
@@ -187,10 +189,12 @@ int nc_close(int system)
 	/* close NETCONF session statistics */
 	nc_session_monitoring_close();
 
+#ifndef DISABLE_NOTIFICATIONS
 	/* close Notification subsystem */
 	if (init_flags & NC_INIT_NOTIF) {
 		ncntf_close();
 	}
+#endif
 
 	init_flags = 0;
 	return (retval);

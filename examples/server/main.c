@@ -92,6 +92,7 @@ void print_version()
 	fprintf(stdout, "compile time: %s, %s\n", __DATE__, __TIME__);
 }
 
+#ifndef DISABLE_NOTIFICATIONS
 void* notification_thread(void* arg)
 {
 	struct ntf_thread_config *config = (struct ntf_thread_config*)arg;
@@ -102,6 +103,7 @@ void* notification_thread(void* arg)
 
 	return (NULL);
 }
+#endif /* DISABLE_NOTIFICATIONS */
 
 void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 {
@@ -112,8 +114,11 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 	struct nc_err *e;
 	int ret;
 	struct srv_config *config = (struct srv_config*)arg;
+
+#ifndef DISABLE_NOTIFICATIONS
 	struct ntf_thread_config *ntf_config = NULL;
 	pthread_t thread;
+#endif
 
 	/* receive incoming message */
 	ret = nc_session_recv_rpc(config->session, -1, &rpc);
@@ -148,6 +153,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 			/* todo: kill the requested session */
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
 			break;
+#ifndef DISABLE_NOTIFICATIONS
 		case NC_OP_CREATESUBSCRIPTION:
 			if (nc_cpblts_enabled(config->session, "urn:ietf:params:netconf:capability:notification:1.0") == 0) {
 				reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
@@ -190,6 +196,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 			}
 			pthread_detach(thread);
 			break;
+#endif
 		default:
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
 			break;

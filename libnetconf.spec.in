@@ -10,7 +10,8 @@ Vendor: CESNET, z.s.p.o.
 Packager: @USERNAME@ <@USERMAIL@>
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
 
-BuildRequires: gcc make doxygen pkgconfig
+BuildRequires: gcc make doxygen pkgconfig 
+Provides: libnetconf @PROVIDES@
 
 %description
 Library provides NETCONF protocol functionality for both client as well as
@@ -21,6 +22,7 @@ configuration data repositories.
 Summary: libnetconf development package
 Group: Liberouter
 Requires: libnetconf = %{version}-%{release}
+Provides: libnetconf-devel @PROVIDES@
 
 %description devel
 This package contains header files for libnetconf library. Install this package
@@ -30,7 +32,7 @@ if you want to develop your own NETCONF application.
 %setup
 
 %build
-./configure --prefix=%{_prefix} --libdir=%{_libdir};
+./configure --prefix=%{_prefix} --libdir=%{_libdir} @CONFIGURE_PARAMS@;
 make
 make doc
 
@@ -42,7 +44,7 @@ ldconfig
 
 %files
 %{_libdir}/libnetconf.so.*
-@DBUS_CONFDIR@/system.d/libnetconf.notifications.conf
+@DBUS_NOTIFICATION_CONF@
 
 %files devel
 %{_libdir}/pkgconfig/libnetconf.pc

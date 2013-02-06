@@ -240,13 +240,18 @@
  * \brief libnetconf's functions, structures and macros for internal usage.
  */
 
+#include "config.h"
+
 #include "netconf.h"
 #include "callbacks.h"
 #include "session.h"
 #include "messages.h"
 #include "error.h"
 #include "datastore.h"
-#include "notifications.h"
 #include "with_defaults.h"
+
+#ifndef DISABLE_NOTIFICATIONS
+#  include "notifications.h"
+#endif
 
 #endif /* LIBNETCONF_H_ */

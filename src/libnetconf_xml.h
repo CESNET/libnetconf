@@ -87,7 +87,9 @@
  */
 
 #include "messages_xml.h"
-#include "notifications_xml.h"
+#ifndef DISABLE_NOTIFICATIONS
+#  include "notifications.h"
+#endif
 
 #include "libnetconf.h"
 

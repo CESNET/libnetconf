@@ -92,7 +92,9 @@ COMMAND commands[] = {
 		{"kill-session", cmd_killsession, "NETCONF <kill-session> operation"},
 		{"lock", cmd_lock, "NETCONF <lock> operation"},
 		{"unlock", cmd_unlock, "NETCONF <unlock> operation"},
+#ifndef DISABLE_NOTIFICATIONS
 		{"subscribe", cmd_subscribe, "NETCONF Event Notifications <create-subscription> operation"},
+#endif
 		{"status", cmd_status, "Print information about current NETCONF session"},
 		{"user-rpc", cmd_userrpc, "Send own content in RPC envelop (for DEBUG purpose)"},
 		{"verbose", cmd_verbose, "Enable/disable verbose messages"},
@@ -1671,6 +1673,8 @@ struct ntf_thread_config {
 	FILE* output;
 };
 
+#ifndef DISABLE_NOTIFICATIONS
+
 static pthread_key_t ntf_file;
 static volatile int ntf_file_flag = 0; /* flag if the thread specific key is already initiated */
 static void notification_fileprint (time_t eventtime, const char* content)
@@ -1853,6 +1857,7 @@ int cmd_subscribe(char *arg)
 	pthread_detach(thread);
 	return (EXIT_SUCCESS);
 }
+#endif /* DISABLE_NOTIFICATIONS */
 
 void cmd_userrpc_help()
 {

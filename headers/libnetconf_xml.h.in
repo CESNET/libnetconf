@@ -40,8 +40,8 @@
 #ifndef LIBNETCONF_XML_H_
 #define LIBNETCONF_XML_H_
 
+@INCLUDE_NOTIFICATIONS_XML@
 #include "libnetconf/messages_xml.h"
-#include "libnetconf/notifications_xml.h"
 #include "libnetconf.h"
 
 #endif /* LIBNETCONF_XML_H_ */

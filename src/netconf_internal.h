@@ -495,6 +495,8 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter * filter, xmlNodePtr *ne
  */
 char* nc_session_stats(void);
 
+#ifndef DISABLE_NOTIFICATIONS
+
 /**
  * @brief Initiate NETCONF Notifications environment
  * @return 0 on success, non-zero value else
@@ -507,6 +509,7 @@ int ncntf_init(void);
  */
 void ncntf_close(void);
 
+#endif /* DISABLE_NOTIFICATIONS */
 
 int nc_session_monitoring_init(void);
 void nc_session_monitoring_close(void);
