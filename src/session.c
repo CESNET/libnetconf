@@ -57,12 +57,17 @@
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 
+#include "config.h"
+
 #include "netconf_internal.h"
 #include "messages.h"
 #include "messages_internal.h"
 #include "session.h"
 #include "datastore.h"
-#include "notifications.h"
+
+#ifndef DISABLE_NOTIFICATIONS
+#  include "notifications.h"
+#endif
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -484,11 +489,14 @@ int nc_session_notif_allowed (const struct nc_session *session)
 		return 0;
 	}
 
+#ifndef DISABLE_NOTIFICATIONS
 	/* check capabilities */
 	if (nc_cpblts_enabled(session, NC_CAP_NOTIFICATION_ID) == 1) {
 		/* subscription is allowed only if another subscription is not active */
 		return ((session->ntf_active == 0) ? 1 : 0);
-	} else {
+	} else
+#endif
+	{
 		/* notifications are not supported at all */
 		return (0);
 	}
@@ -752,9 +760,11 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	nc_cpblts_add(retval, NC_CAP_WRUNNING_ID);
 	nc_cpblts_add(retval, NC_CAP_CANDIDATE_ID);
 	nc_cpblts_add(retval, NC_CAP_STARTUP_ID);
-	nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
 	nc_cpblts_add(retval, NC_CAP_INTERLEAVE_ID);
 	nc_cpblts_add(retval, NC_CAP_MONITORING_ID);
+#ifndef DISABLE_NOTIFICATIONS
+	nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
+#endif
 	if (ncdflt_get_basic_mode() != NCWD_MODE_NOTSET) {
 		nc_cpblts_add(retval, NC_CAP_WITHDEFAULTS_ID);
 	}
@@ -902,10 +912,12 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 	/* close the SSH session */
 	if (session != NULL && session->status != NC_SESSION_STATUS_CLOSING && session->status != NC_SESSION_STATUS_CLOSED) {
 
+#ifndef DISABLE_NOTIFICATIONS
 		/* log closing of the session */
 		if (sstatus != NC_SESSION_STATUS_DUMMY) {
 			ncntf_event_new(-1, NCNTF_BASE_SESSION_END, session, reason, NULL);
 		}
+#endif
 
 		if (strcmp(session->session_id, INTERNAL_DUMMY_ID) != 0) {
 			/*
@@ -2036,12 +2048,14 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 		op = nc_rpc_get_op(rpc);
 		/* :notifications */
 		switch (op) {
+#ifndef DISABLE_NOTIFICATIONS
 		case NC_OP_CREATESUBSCRIPTION:
 			if (nc_cpblts_enabled(session, NC_CAP_NOTIFICATION_ID) == 0) {
 				ERROR("RPC requires :notifications capability, but session does not support it.");
 				return (NULL); /* failure */
 			}
 			break;
+#endif
 		case NC_OP_COMMIT:
 		case NC_OP_DISCARDCHANGES:
 			if (nc_cpblts_enabled(session, NC_CAP_CANDIDATE_ID) == 0) {

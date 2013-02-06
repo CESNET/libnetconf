@@ -619,11 +619,19 @@ ac_includes_default="\
 #endif"
 
 ac_subst_vars='LTLIBOBJS
+CONFIGURE_PARAMS
+INCLUDE_NOTIFICATIONS_XML
+INCLUDE_NOTIFICATIONS
+SRCS_NOTIFICATIONS
+HDRS_PRIV_NOTIFICATIONS
+HDRS_PUBL_SUBDIR_NOTIFICATIONS
+DBUS_NOTIFICATION_CONF
 DBUS_CONFDIR
 SERVERCFG_PATH
 STREAMS_PATH
 SUBDIRS
 DISTRO
+PROVIDES
 REQS
 BUILDREQS
 V_SONAME_OPT
@@ -717,6 +725,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_libssh2
+enable_notifications
 with_examples
 enable_debug
 enable_debug_threads
@@ -1354,6 +1363,7 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --disable-notifications Disable support of NETCONF Notifications (RFC 5277)
   --enable-debug          Compile with debug options
   --enable-debug-threads  Extend debug mode for threads
 
@@ -2572,10 +2582,49 @@ if test "${with_libssh2+set}" = set; then :
 fi
 
 
+# Check whether --enable-notifications was given.
+if test "${enable_notifications+set}" = set; then :
+  enableval=$enable_notifications;
+	if test "$enableval" = "no"; then
+		notif="no"
+	else
+		notif="yes"
+	fi
+
+else
+  # notifications are supported by default
+	notif="yes"
+
+fi
+
+
+if test "$notif" = "yes"; then
+	HDRS_PUBL_SUBDIR_NOTIFICATIONS="src/notifications.h src/notifications_xml.h"
+	HDRS_PRIV_NOTIFICATIONS="src/notifications.h src/notifications_xml.h"
+	SRCS_NOTIFICATIONS="src/notifications.c"
+	INCLUDE_NOTIFICATIONS="#include \"libnetconf/notifications.h\""
+	INCLUDE_NOTIFICATIONS_XML="#include \"libnetconf/notifications_xml.h\""
+	PROVIDES="$PROVIDES libnetconf-notifications"
+else
+	CONFIGURE_PARAMS="$CONFIGURE_PARAMS --disable-notifications"
+	CFLAGS="$CFLAGS -DDISABLE_NOTIFICATIONS"
+	HDRS_PUBL_SUBDIR_NOTIFICATIONS=""
+	HDRS_PRIV_NOTIFICATIONS=""
+	SRCS_NOTIFICATIONS=""
+	INCLUDE_NOTIFICATIONS="#define DISABLE_NOTIFICATIONS"
+	INCLUDE_NOTIFICATIONS_XML="#define DISABLE_NOTIFICATIONS"
+fi
+
 
 # Check whether --with-examples was given.
 if test "${with_examples+set}" = set; then :
-  withval=$with_examples; SUBDIRS="./examples/client/ ./examples/server/ ./examples/tools/"
+  withval=$with_examples;
+		SUBDIRS="./examples/client/ ./examples/server/"
+		if test "$notif" = "yes"; then
+			# enable compilation of netconf-events tool
+			SUBDIRS="$SUBDIRS ./examples/tools/"
+		fi
+
 else
   SUBDIRS=""
 
@@ -3734,7 +3783,7 @@ if test "$XML2_CONFIG" = "no"; then
 fi
 CFLAGS="$CFLAGS `xml2-config --cflags`"
 
-# libssh2
+### libssh2 ###
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libssh2_version in -lssh2" >&5
 $as_echo_n "checking for libssh2_version in -lssh2... " >&6; }
 if ${ac_cv_lib_ssh2_libssh2_version+:} false; then :
@@ -4983,7 +5032,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #AC_CHECK_LIB([pthread], [pthread_create], [], AC_MSG_ERROR([Missing POSIX threads library.]))
 #AC_CHECK_HEADERS([pthread.h], [], AC_MSG_ERROR([Missing POSIX threads headers.]))
 
-# libdbus-1
+if test "$notif" = "yes"; then
+	### libdbus ###
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for DBUS" >&5
@@ -5073,21 +5123,12 @@ else
 $as_echo "yes" >&6; }
 
 fi
-DBUS_CONFDIR="`pkg-config --variable=sysconfdir dbus-1`/dbus-1/"
-# try to detect Linux distro to distinguish dbus RPM package name
-if test -f /etc/SuSE-release; then
-#	SUSE, including openSUSE
-	BUILDREQS="$BUILDREQS dbus-1-devel >= 1.0.0"
-	REQS="$REQS dbus-1 >= 1.0.0"
-elif test -f /etc/redhat-release; then
-#	RedHat including RHEL, CentOS, ScientificLinux
-	BUILDREQS="$BUILDREQS dbus-devel >= 1.0.0"
-	REQS="$REQS dbus >= 1.0.0"
-fi
-# if you are using other distro, DBUS requirements are not included in spec file
+	DBUS_CONFDIR="`pkg-config --variable=sysconfdir dbus-1`/dbus-1/"
+	DBUS_NOTIFICATION_CONF="$DBUS_CONFDIR/system.d/libnetconf.notifications.conf"
 
-CFLAGS="$CFLAGS $DBUS_CFLAGS"
-LIBS="$LIBS $DBUS_LIBS"
+	CFLAGS="$CFLAGS $DBUS_CFLAGS"
+	LIBS="$LIBS $DBUS_LIBS"
+fi
 
 ###################### Check for configure parameters ##########################
 
@@ -5307,6 +5348,14 @@ done
 
 
 
+
+
+
+
+
+
+
+
 if test -z "$DOXYGEN"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Due to missing doxygen you will not able to generate Doxygen documentation." >&5
 $as_echo "$as_me: WARNING: Due to missing doxygen you will not able to generate Doxygen documentation." >&2;}
@@ -5319,6 +5368,8 @@ $as_echo "$as_me: WARNING: Due to missing rpmbuild you will not able to generate
 fi
 
 ac_config_files="$ac_config_files Makefile src/config.h libnetconf.spec libnetconf.pc Doxyfile"
+
+ac_config_files="$ac_config_files headers/libnetconf.h headers/libnetconf_xml.h"
 
 if test -n "$SUBDIRS"; then
 	ac_config_files="$ac_config_files examples/client/Makefile examples/server/Makefile examples/tools/Makefile"
@@ -6036,6 +6087,8 @@ do
     "libnetconf.spec") CONFIG_FILES="$CONFIG_FILES libnetconf.spec" ;;
     "libnetconf.pc") CONFIG_FILES="$CONFIG_FILES libnetconf.pc" ;;
     "Doxyfile") CONFIG_FILES="$CONFIG_FILES Doxyfile" ;;
+    "headers/libnetconf.h") CONFIG_FILES="$CONFIG_FILES headers/libnetconf.h" ;;
+    "headers/libnetconf_xml.h") CONFIG_FILES="$CONFIG_FILES headers/libnetconf_xml.h" ;;
     "examples/client/Makefile") CONFIG_FILES="$CONFIG_FILES examples/client/Makefile" ;;
     "examples/server/Makefile") CONFIG_FILES="$CONFIG_FILES examples/server/Makefile" ;;
     "examples/tools/Makefile") CONFIG_FILES="$CONFIG_FILES examples/tools/Makefile" ;;

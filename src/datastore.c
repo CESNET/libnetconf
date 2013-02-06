@@ -55,13 +55,16 @@
 #include "messages.h"
 #include "error.h"
 #include "with_defaults.h"
-#include "notifications.h"
 #include "session.h"
 #include "datastore.h"
 #include "datastore/edit_config.h"
 #include "datastore/datastore_internal.h"
 #include "datastore/file/datastore_file.h"
 #include "datastore/empty/datastore_empty.h"
+
+#ifndef DISABLE_NOTIFICATIONS
+#  include "notifications.h"
+#endif
 
 #include "../models/ietf-netconf-monitoring.xxd"
 #include "../models/ietf-netconf-notifications.xxd"
@@ -481,10 +484,12 @@ char* get_schemas()
 char* get_internal_state(const struct nc_session *session)
 {
 	char *notifs = NULL, *schemas = NULL, *sessions = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *stats = NULL, *aux = NULL;
-	xmlDocPtr doc;
-	xmlBufferPtr buf;
 	struct ncds_ds_list* ds = NULL;
 	const struct ncds_lockinfo *info;
+
+#ifndef DISABLE_NOTIFICATIONS
+	xmlDocPtr doc;
+	xmlBufferPtr buf;
 
 	/*
 	 * notifications streams
@@ -503,6 +508,7 @@ char* get_internal_state(const struct nc_session *session)
 			xmlBufferFree (buf);
 		}
 	}
+#endif
 
 	/*
 	 * datastores
@@ -1693,10 +1699,12 @@ apply_editcopyconfig:
 		}
 		free(config);
 
+#ifndef DISABLE_NOTIFICATIONS
 		/* log the event */
 		if (ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
 			ncntf_event_new(-1, NCNTF_BASE_CFG_CHANGE, target_ds, NCNTF_EVENT_BY_USER, session);
 		}
+#endif /* DISABLE_NOTIFICATIONS */
 
 		break;
 	case NC_OP_DELETECONFIG:
@@ -1708,10 +1716,13 @@ apply_editcopyconfig:
 		}
 		ret = ds->func.deleteconfig(ds, session, target_ds = nc_rpc_get_target(rpc), &e);
 
+#ifndef DISABLE_NOTIFICATIONS
 		/* log the event */
 		if (ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
 			ncntf_event_new(-1, NCNTF_BASE_CFG_CHANGE, target_ds, NCNTF_EVENT_BY_USER, session);
 		}
+#endif /* DISABLE_NOTIFICATIONS */
+
 		break;
 	case NC_OP_COMMIT:
 		/* \todo check somehow, that candidate is not locked by another session */
@@ -1719,10 +1730,13 @@ apply_editcopyconfig:
 		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
 			ret = ds->func.copyconfig (ds, session, NC_DATASTORE_RUNNING, NC_DATASTORE_CANDIDATE, NULL, &e);
 
+#ifndef DISABLE_NOTIFICATIONS
 			/* log the event */
 			if (ret == EXIT_SUCCESS) {
 				ncntf_event_new (-1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, session);
 			}
+#endif /* DISABLE_NOTIFICATIONS */
+
 		} else {
 			e = nc_err_new (NC_ERR_OP_NOT_SUPPORTED);
 			ret = EXIT_FAILURE;

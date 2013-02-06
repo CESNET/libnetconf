@@ -61,7 +61,10 @@
 #include "netconf_internal.h"
 #include "messages_internal.h"
 #include "with_defaults.h"
-#include "notifications.h"
+
+#ifndef DISABLE_NOTIFICATIONS
+#  include "notifications.h"
+#endif
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -706,8 +709,11 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	/* cleanup */
 	nc_cpblts_free(server_cpblts);
 
+#ifndef DISABLE_NOTIFICATIONS
 	/* log start of the session */
 	ncntf_event_new(-1, NCNTF_BASE_SESSION_START, retval);
+#endif
+
 	retval->logintime = nc_time2datetime(time(NULL));
 	if (nc_info) {
 		pthread_rwlock_wrlock(&(nc_info->lock));

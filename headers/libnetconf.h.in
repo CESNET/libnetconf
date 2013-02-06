@@ -40,11 +40,11 @@
 #ifndef LIBNETCONF_H_
 #define LIBNETCONF_H_
 
+@INCLUDE_NOTIFICATIONS@
 #include "libnetconf/netconf.h"
 #include "libnetconf/callbacks.h"
 #include "libnetconf/session.h"
 #include "libnetconf/messages.h"
-#include "libnetconf/notifications.h"
 #include "libnetconf/with_defaults.h"
 
 #endif /* LIBNETCONF_H_ */

@@ -83,9 +83,45 @@ AC_ARG_WITH([libssh2],
 	]
 )
 
+AC_ARG_ENABLE([notifications],
+	AC_HELP_STRING([--disable-notifications], [Disable support of NETCONF Notifications (RFC 5277)]),
+	[
+	if test "$enableval" = "no"; then
+		notif="no"	
+	else
+		notif="yes"
+	fi
+	],
+	# notifications are supported by default
+	notif="yes"
+)
+
+if test "$notif" = "yes"; then
+	HDRS_PUBL_SUBDIR_NOTIFICATIONS="src/notifications.h src/notifications_xml.h"
+	HDRS_PRIV_NOTIFICATIONS="src/notifications.h src/notifications_xml.h"
+	SRCS_NOTIFICATIONS="src/notifications.c"
+	INCLUDE_NOTIFICATIONS="#include \"libnetconf/notifications.h\""
+	INCLUDE_NOTIFICATIONS_XML="#include \"libnetconf/notifications_xml.h\""
+	PROVIDES="$PROVIDES libnetconf-notifications"
+else
+	CONFIGURE_PARAMS="$CONFIGURE_PARAMS --disable-notifications"
+	CFLAGS="$CFLAGS -DDISABLE_NOTIFICATIONS"
+	HDRS_PUBL_SUBDIR_NOTIFICATIONS=""
+	HDRS_PRIV_NOTIFICATIONS=""
+	SRCS_NOTIFICATIONS=""	
+	INCLUDE_NOTIFICATIONS="#define DISABLE_NOTIFICATIONS"
+	INCLUDE_NOTIFICATIONS_XML="#define DISABLE_NOTIFICATIONS"
+fi
+
 AC_ARG_WITH([examples],
 	[AC_HELP_STRING([--with-examples], [enable building example applications])],
-	[SUBDIRS="./examples/client/ ./examples/server/ ./examples/tools/"],
+	[
+		SUBDIRS="./examples/client/ ./examples/server/"
+		if test "$notif" = "yes"; then
+			# enable compilation of netconf-events tool
+			SUBDIRS="$SUBDIRS ./examples/tools/"
+		fi
+	],
 	[SUBDIRS=""]
 )
 
@@ -154,7 +190,7 @@ if test "$XML2_CONFIG" = "no"; then
 fi
 CFLAGS="$CFLAGS `xml2-config --cflags`"
 
-# libssh2
+### libssh2 ###
 AC_CHECK_LIB([ssh2], [libssh2_version], [], AC_MSG_ERROR([Missing libssh2.]))
 AC_CHECK_HEADERS([libssh2.h], [], AC_MSG_ERROR([Missing libssh2 headers.]))
 PKG_CHECK_MODULES([LIBSSH2_HANDSHAKE], [libssh2 >= "1.2.8"], [LIBSSH2_SESSION_HANDSHAKE="libssh2_session_handshake"],[LIBSSH2_SESSION_HANDSHAKE="libssh2_session_startup"])
@@ -179,24 +215,16 @@ AX_PTHREAD([
 	CC="$PTHREAD_CC"], AC_MSG_ERROR([Missing POSIX threads support.]))
 #AC_CHECK_LIB([pthread], [pthread_create], [], AC_MSG_ERROR([Missing POSIX threads library.]))
 #AC_CHECK_HEADERS([pthread.h], [], AC_MSG_ERROR([Missing POSIX threads headers.]))
-
-# libdbus-1
-PKG_CHECK_MODULES([DBUS], [dbus-1 >= 1.0.0])
-DBUS_CONFDIR="`pkg-config --variable=sysconfdir dbus-1`/dbus-1/"
-# try to detect Linux distro to distinguish dbus RPM package name
-if test -f /etc/SuSE-release; then
-#	SUSE, including openSUSE
-	BUILDREQS="$BUILDREQS dbus-1-devel >= 1.0.0"
-	REQS="$REQS dbus-1 >= 1.0.0"
-elif test -f /etc/redhat-release; then
-#	RedHat including RHEL, CentOS, ScientificLinux
-	BUILDREQS="$BUILDREQS dbus-devel >= 1.0.0"
-	REQS="$REQS dbus >= 1.0.0"
+	
+if test "$notif" = "yes"; then
+	### libdbus ###
+	PKG_CHECK_MODULES([DBUS], [dbus-1 >= 1.0.0])
+	DBUS_CONFDIR="`pkg-config --variable=sysconfdir dbus-1`/dbus-1/"
+	DBUS_NOTIFICATION_CONF="$DBUS_CONFDIR/system.d/libnetconf.notifications.conf"
+	
+	CFLAGS="$CFLAGS $DBUS_CFLAGS"
+	LIBS="$LIBS $DBUS_LIBS"
 fi
-# if you are using other distro, DBUS requirements are not included in spec file
-
-CFLAGS="$CFLAGS $DBUS_CFLAGS"
-LIBS="$LIBS $DBUS_LIBS"
 
 ###################### Check for configure parameters ##########################
 
@@ -219,11 +247,19 @@ AC_SUBST(V_SHLIB_OPT)
 AC_SUBST(V_SONAME_OPT)
 AC_SUBST(BUILDREQS)
 AC_SUBST(REQS)
+AC_SUBST(PROVIDES)
 AC_SUBST(DISTRO)
 AC_SUBST(SUBDIRS)
 AC_SUBST(STREAMS_PATH)
 AC_SUBST(SERVERCFG_PATH)
 AC_SUBST(DBUS_CONFDIR)
+AC_SUBST(DBUS_NOTIFICATION_CONF)
+AC_SUBST(HDRS_PUBL_SUBDIR_NOTIFICATIONS)
+AC_SUBST(HDRS_PRIV_NOTIFICATIONS)
+AC_SUBST(SRCS_NOTIFICATIONS)
+AC_SUBST(INCLUDE_NOTIFICATIONS)
+AC_SUBST(INCLUDE_NOTIFICATIONS_XML)
+AC_SUBST(CONFIGURE_PARAMS)	
 
 AC_SUBST(DOXYGEN)
 if test -z "$DOXYGEN"; then
@@ -236,6 +272,7 @@ if test -z "$RPMBUILD"; then
 fi
 
 AC_CONFIG_FILES(Makefile src/config.h libnetconf.spec libnetconf.pc Doxyfile)
+AC_CONFIG_FILES(headers/libnetconf.h headers/libnetconf_xml.h)
 if test -n "$SUBDIRS"; then
 	AC_CONFIG_FILES(examples/client/Makefile examples/server/Makefile examples/tools/Makefile)
 fi
