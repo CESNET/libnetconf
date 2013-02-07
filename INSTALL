@@ -79,23 +79,7 @@ then copy them to /usr/local/bin/ as netconf-server, netconf-client
 and netconf-events. Also, the directories /usr/share/libnetconf/server/
 and /usr/share/libnetconf/streams/ are created because they are
 required by netconf-server. For more information about the examples
-refer to README in ./examples.
-
-
-SSH Server Settings
--------------------
-
-By default, libnetconf connects to a NETCONF server via port 830.
-To allow this connection, you should set SSH server to listen on
-port 830 (it listens on port 22 by default) and add apropriate rule
-to your firewall.
-
-On the server side, libnetconf expects that the application is 
-invoked as an SSH Subsystem by the SSH server. In case of the OpenSSH
-SSH daemon, user have to add following line to the sshd configuration
-(/etc/ssh/sshd_config):
-
-Subsystem netconf <path to the NETCONF agent application>
+refer to the README in ./examples.
 
 
 Contact
