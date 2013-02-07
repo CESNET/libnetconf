@@ -1,0 +1,119 @@
+Prerequisites
+=============
+
+You will need to have installed the following software. Header
+files (-dev or -devel packages) of the following libraries are
+also needed to compile libnetconf.
+
+- libxml2
+  http://xmlsoft.org
+
+- libssh2
+  Version 1.2.9 or greater is recomended.
+  http://www.libssh2.org
+
+  To disable usage of the libssh2, use:
+
+  $ ./configure --disable-libssh2
+
+  In such a case, libnetconf will use standalone ssh(1) client
+  application to connect NETCONF client to the NETCONF server.
+  ssh(1) is available as a part of the OpenSSH.
+
+- DBus
+  libdbus version 1.0.0 or greater
+  http://dbus.freedesktop.org
+
+  DBus is required by the NETCONF Notifications subsystem. If the
+  Notifications support is switched off, DBus is no more needed:
+
+  $ ./configure --disable-notifications
+
+
+If compiling including the example implementations of a server
+and a client you will also need:
+
+- libevent
+  version 2.0.x
+  http://libevent.org
+
+- libreadline
+  http://www.gnu.org/software/readline/
+
+
+The remaining items are optional.
+
+- doxygen
+  Used to generate documentation from the source code.
+  Version 1.8.0 or greater is recommended.
+  http://www.doxygen.org
+
+- rpmbuild
+  Used to build RPM package.
+  http://www.rpm.org
+
+
+Building / Installation
+=======================
+
+To install libnetconf with default options:
+
+$ ./configure
+$ make
+# make install
+
+This way the library will be installed in /usr/local/lib and
+/usr/local/include respectively. Configure can have many
+options specified, to show them all use:
+
+$ ./configure --help
+
+For instance, to build and install libnetconf with the examples:
+
+$ ./configure --with-examples
+$ make
+# make install
+
+This will include all the examples in the build process and
+then copy them to /usr/local/bin/ as netconf-server, netconf-client
+and netconf-events. Also, the directories /usr/share/libnetconf/server/
+and /usr/share/libnetconf/streams/ are created because they are
+required by netconf-server. For more information about the examples
+refer to README in ./examples.
+
+
+SSH Server Settings
+-------------------
+
+By default, libnetconf connects to a NETCONF server via port 830.
+To allow this connection, you should set SSH server to listen on
+port 830 (it listens on port 22 by default) and add apropriate rule
+to your firewall.
+
+On the server side, libnetconf expects that the application is 
+invoked as an SSH Subsystem by the SSH server. In case of the OpenSSH
+SSH daemon, user have to add following line to the sshd configuration
+(/etc/ssh/sshd_config):
+
+Subsystem netconf <path to the NETCONF agent application>
+
+
+Contact
+=======
+
+The homepage is at
+
+  http://libnetconf.googlecode.com
+
+
+To get the very latest source code from the GIT repository, use:
+
+  $ git clone https://code.google.com/p/libnetconf/
+
+
+Problem reports, questions, suggestions as well as success stories
+are welcome.
+
+  Radek Krejci <rkrejci@cesnet.cz>
+  CESNET, z.s.p.o.
+
