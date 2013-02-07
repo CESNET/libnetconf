@@ -396,7 +396,7 @@ static int write_fileheader(struct stream *s)
 	}
 
 	/* prepare the header */
-	hlen = strlen(MAGIC_NAME) + ((s->desc == NULL) ? 0 : strlen(s->desc)) + strlen(s->name) + sizeof(uint8_t) + (4 * sizeof(uint16_t)) + sizeof(uint64_t) + 2;
+	hlen = strlen(MAGIC_NAME) + ((s->desc == NULL) ? 0 : strlen(s->desc)) + strlen(s->name) + sizeof(uint8_t) + (3 * sizeof(uint16_t)) + sizeof(uint64_t) + 2;
 	header = malloc(hlen);
 
 	/* magic bytes */
