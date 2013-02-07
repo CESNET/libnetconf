@@ -444,7 +444,7 @@ static int write_fileheader(struct stream *s)
 	}
 
 	/* write the header */
-	while (((r = write(s->fd_events, &header, offset)) == -1) && (errno == EAGAIN ||errno == EINTR));
+	while (((r = write(s->fd_events, header, offset)) == -1) && (errno == EAGAIN ||errno == EINTR));
 	if (r == -1) {
 		WARN("Writing stream event file header failed (%s).", strerror(errno));
 		if (ftruncate(s->fd_events, 0) == -1) {
