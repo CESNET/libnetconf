@@ -67,10 +67,15 @@ void load_config (struct nc_cpblts **cpblts)
 {
 	struct passwd * pw;
 	char * user_home, *netconf_dir, * history_file, *config_file;
-	char * tmp_cap, * prio, * key_priv, * key_pub;
+	char * tmp_cap;
 	int ret, history_fd, config_fd;
 	xmlDocPtr config_doc;
-	xmlNodePtr config_cap, tmp_node, tmp_auth, tmp_pref, tmp_key;
+	xmlNodePtr config_cap, tmp_node;
+
+#ifndef DISABLE_LIBSSH
+	char * key_priv, * key_pub, *prio;
+	xmlNodePtr tmp_auth, tmp_pref, tmp_key;
+#endif
 
 	(*cpblts) = nc_session_get_cpblts_default();
 
@@ -151,8 +156,8 @@ void load_config (struct nc_cpblts **cpblts)
 				if (config_doc->children != NULL && xmlStrEqual(config_doc->children->name, BAD_CAST "netconf-client")) {
 					tmp_node = config_doc->children->children;
 					while (tmp_node) {
-						/* doc -> <netconf-client> -> <capabilities> */
 						if (xmlStrEqual(tmp_node->name, BAD_CAST "capabilities")) {
+							/* doc -> <netconf-client> -> <capabilities> */
 							nc_cpblts_free(*cpblts);
 							(*cpblts) = nc_cpblts_new(NULL);
 							config_cap = tmp_node->children;
@@ -162,8 +167,10 @@ void load_config (struct nc_cpblts **cpblts)
 								free(tmp_cap);
 								config_cap = config_cap->next;
 							}
+						}
+#ifndef DISABLE_LIBSSH
+						else if (xmlStrEqual(tmp_node->name, BAD_CAST "authentication")) {
 							/* doc -> <netconf-client> -> <authentication> */
-						} else if (xmlStrEqual(tmp_node->name, BAD_CAST "authentication")) {
 							tmp_auth = tmp_node->children;
 							while (tmp_auth) {
 								if (xmlStrEqual(tmp_auth->name, BAD_CAST "pref")) {
@@ -202,6 +209,7 @@ void load_config (struct nc_cpblts **cpblts)
 								tmp_auth = tmp_auth->next;
 							}
 						}
+#endif /* not DISABLE_LIBSSH */
 						tmp_node = tmp_node->next;
 					}
 				}

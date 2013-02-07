@@ -51,7 +51,10 @@
 #include <poll.h>
 #include <pthread.h>
 
-#include <libssh2.h>
+#ifndef DISABLE_LIBSSH
+#	include <libssh2.h>
+#endif
+
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
@@ -117,11 +120,16 @@ static struct session_list_map *session_list = NULL;
  * Sleep time in microseconds to wait between unsuccessful reading due to EAGAIN or EWOULDBLOCK
  */
 #define NC_READ_SLEEP 100
+#ifdef DISABLE_LIBSSH
+#define NC_WRITE(session,buf,c) \
+	if (session->fd_output != -1) {c += write (session->fd_output, (buf), strlen(buf));}
+#else
 #define NC_WRITE(session,buf,c) \
 	if(session->ssh_channel){ \
 		c += libssh2_channel_write (session->ssh_channel, (buf), strlen(buf)); \
 	} else if (session->fd_output != -1) { \
 		c += write (session->fd_output, (buf), strlen(buf));}
+#endif
 
 #define SIZE_STEP (1024*16)
 int nc_session_monitoring_init(void)
@@ -931,6 +939,23 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 		}
 
 		/* close ssh session */
+#ifdef DISABLE_LIBSSH
+		if (session->status == NC_SESSION_STATUS_WORKING) {
+			/* close NETCONF session */
+			rpc_close = nc_rpc_closesession();
+			if (rpc_close != NULL) {
+				if (nc_session_send_rpc(session, rpc_close) != 0) {
+					nc_session_recv_reply(session, 10000, &reply); /* wait max 10 seconds */
+					if (reply != NULL) {
+						nc_reply_free(reply);
+					}
+				}
+				if (rpc_close != NULL) {
+					nc_rpc_free(rpc_close);
+				}
+			}
+		}
+#else
 		if (session->ssh_channel != NULL) {
 			if (session->status == NC_SESSION_STATUS_WORKING && libssh2_channel_eof(session->ssh_channel) == 0) {
 				/* prevent infinite recursion when socket is corrupted -> stack overflow */
@@ -960,6 +985,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			libssh2_session_free(session->ssh_session);
 			session->ssh_session = NULL;
 		}
+#endif
 
 		free(session->hostname);
 		session->hostname = NULL;
@@ -1121,12 +1147,14 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 		c = 0;
 		do {
 			NC_WRITE(session, &(buf[c]), c);
+#ifndef DISABLE_LIBSSH
 			if (c == LIBSSH2_ERROR_TIMEOUT) {
 				DBG_UNLOCK("mut_out");
 				pthread_mutex_unlock(&(session->mut_out));
 				VERB("Writing data into the communication channel timeouted.");
 				return (EXIT_FAILURE);
 			}
+#endif
 		} while (c != (ssize_t) strlen (buf));
 	}
 
@@ -1134,12 +1162,14 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	c = 0;
 	do {
 		NC_WRITE(session, &(text[c]), c);
+#ifndef DISABLE_LIBSSH
 		if (c == LIBSSH2_ERROR_TIMEOUT) {
 			DBG_UNLOCK("mut_out");
 			pthread_mutex_unlock(&(session->mut_out));
 			VERB("Writing data into the communication channel timeouted.");
 			return (EXIT_FAILURE);
 		}
+#endif
 	} while (c != (ssize_t) strlen (text));
 	free (text);
 
@@ -1152,12 +1182,14 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	c = 0;
 	do {
 		NC_WRITE(session, &(text[c]), c);
+#ifndef DISABLE_LIBSSH
 		if (c == LIBSSH2_ERROR_TIMEOUT) {
 			DBG_UNLOCK("mut_out");
 			pthread_mutex_unlock(&(session->mut_out));
 			VERB("Writing data into the communication channel timeouted.");
 			return (EXIT_FAILURE);
 		}
+#endif
 	} while (c != (ssize_t) strlen (text));
 
 	/* unlock the session's output */
@@ -1169,7 +1201,10 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 
 static int nc_session_read_len (struct nc_session* session, size_t chunk_length, char **text, size_t *len)
 {
-	char *buf, *err_msg;
+#ifndef DISABLE_LIBSSH
+	char *err_msg;
+#endif
+	char *buf;
 	ssize_t c;
 	size_t rd = 0;
 
@@ -1188,6 +1223,7 @@ static int nc_session_read_len (struct nc_session* session, size_t chunk_length,
 	}
 
 	while (rd < chunk_length) {
+#ifndef DISABLE_LIBSSH
 		if (session->ssh_channel) {
 			/* read via libssh2 */
 			c = libssh2_channel_read(session->ssh_channel, &(buf[rd]), chunk_length - rd);
@@ -1212,7 +1248,9 @@ static int nc_session_read_len (struct nc_session* session, size_t chunk_length,
 				usleep (NC_READ_SLEEP);
 				continue;
 			}
-		} else if (session->fd_input != -1) {
+		} else
+#endif
+		if (session->fd_input != -1) {
 			/* read via file descriptor */
 			c = read (session->fd_input, &(buf[rd]), chunk_length - rd);
 			if (c == -1) {
@@ -1248,7 +1286,9 @@ static int nc_session_read_len (struct nc_session* session, size_t chunk_length,
 
 static int nc_session_read_until (struct nc_session* session, const char* endtag, unsigned int limit, char **text, size_t *len)
 {
+#ifndef DISABLE_LIBSSH
 	char *err_msg;
+#endif
 	size_t rd = 0;
 	ssize_t c;
 	static char *buf = NULL;
@@ -1280,6 +1320,7 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 			WARN("%s: reading limit reached.", __func__);
 			return (EXIT_FAILURE);
 		}
+#ifndef DISABLE_LIBSSH
 		if (session->ssh_channel) {
 			/* read via libssh2 */
 			c = libssh2_channel_read(session->ssh_channel, &(buf[rd]), 1);
@@ -1314,7 +1355,9 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 				usleep (NC_READ_SLEEP);
 				continue;
 			}
-		} else if (session->fd_input != -1) {
+		} else
+#endif
+		if (session->fd_input != -1) {
 			/* read via file descriptor */
 			c = read (session->fd_input, &(buf[rd]), 1);
 			if (c == -1) {
@@ -1438,11 +1481,14 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 	unsigned long long int text_size = 0, total_len = 0;
 	size_t chunk_length;
 	struct pollfd fds;
-	LIBSSH2_POLLFD fds_ssh;
 	int status;
 	unsigned long int revents;
 	NC_MSG_TYPE msgtype;
 	xmlNodePtr root;
+
+#ifndef DISABLE_LIBSSH
+	LIBSSH2_POLLFD fds_ssh;
+#endif
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to receive data.");
@@ -1463,7 +1509,9 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 			status = poll(&fds, 1, timeout);
 
 			revents = (unsigned long int) fds.revents;
-		} else if (session->ssh_channel != NULL) {
+		}
+#ifndef DISABLE_LIBSSH
+		else if (session->ssh_channel != NULL) {
 			/* we are getting data from libssh's channel */
 			fds_ssh.type = LIBSSH2_POLLFD_CHANNEL;
 			fds_ssh.fd.channel = session->ssh_channel;
@@ -1484,6 +1532,7 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 
 			revents = fds_ssh.revents;
 		}
+#endif
 
 		/* process the result */
 		if (status == 0) {

@@ -50,6 +50,7 @@
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
+#ifndef DISABLE_LIBSSH
 void callback_sshauth_interactive_default (const char* name,
 		int name_len,
 		const char* instruction,
@@ -65,10 +66,12 @@ char* callback_sshauth_publickey_default (const char* username,
 
 char* callback_sshauth_password_default (const char* username, const char* hostname);
 int callback_ssh_hostkey_check_default (const char* hostname, int keytype, const char* fingerprint);
+#endif
 
 struct callbacks callbacks = {
 		NULL, /* message printing callback */
 		NULL, /* process_error_reply callback */
+#ifndef DISABLE_LIBSSH
 		callback_sshauth_interactive_default, /* default keyboard_interactive callback */
 		callback_sshauth_password_default, /* default password callback */
 		callback_sshauth_publickey_default, /* default publickey (get passphrase) callback */
@@ -76,6 +79,7 @@ struct callbacks callbacks = {
 		{ NULL }, /* publickey file path */
 		{ NULL },  /* privatekey file path */
 		{ 0 }
+#endif
 };
 
 void nc_callback_print(void (*func)(NC_VERB_LEVEL level, const char* msg))
@@ -97,6 +101,7 @@ void nc_callback_error_reply(void (*func)(const char* tag,
 	callbacks.process_error_reply = func;
 }
 
+#ifndef DISABLE_LIBSSH
 void nc_callback_sshauth_interactive(void (*func)(const char* name,
 		int name_len,
 		const char* instruction,
@@ -349,3 +354,4 @@ void nc_set_keypair_path (const char * private, const char * public)
 	nc_set_publickey_path(public);
 }
 
+#endif /* not DISABLE_LIBSSH */
