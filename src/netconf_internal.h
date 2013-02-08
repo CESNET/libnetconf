@@ -43,7 +43,10 @@
 #include <time.h>
 #include <pthread.h>
 
-#include <libssh2.h>
+#ifndef DISABLE_LIBSSH
+#	include <libssh2.h>
+#endif
+
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 
@@ -174,6 +177,7 @@ struct callbacks {
 			const char* element,
 			const char* ns,
 			const char* sid);
+#ifndef DISABLE_LIBSSH
 	/**< @brief Callback for libssh2's 'keyboard-interactive' authentication method */
 	void (*sshauth_interactive)(const char* name,
 			int name_len,
@@ -195,6 +199,7 @@ struct callbacks {
 	char *privatekey_filename[SSH2_KEYS];
 	/**< @brief is private key protected by password */
 	int key_protected[SSH2_KEYS];
+#endif
 };
 
 /**
@@ -255,12 +260,21 @@ struct nc_session {
 	int libssh2_socket;
 	/**< @brief Input file descriptor for communication with (reading from) the other side of the NETCONF session */
 	int fd_input;
+#ifdef DISABLE_LIBSSH
+	/**< @brief FILE structure for the fd_input file descriptor. This is used only if the libssh2 is not used */
+	FILE *f_input;
+#endif
 	/**< @brief Output file descriptor for communication with (writing to) the other side of the NETCONF session */
 	int fd_output;
+#ifndef DISABLE_LIBSSH
 	/**< @brief */
 	LIBSSH2_SESSION * ssh_session;
 	/**< @brief */
 	LIBSSH2_CHANNEL * ssh_channel;
+#else
+	void *ssh_session;
+	void *ssh_channel;
+#endif
 	/**< @brief netopeer-agent's hostname */
 	char *hostname;
 	/**< @brief netopeer-agent's port */

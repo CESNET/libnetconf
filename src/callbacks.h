@@ -40,7 +40,9 @@
 #ifndef CALLBACKS_H_
 #define CALLBACKS_H_
 
-#include <libssh2.h>
+#ifndef DISABLE_LIBSSH
+#	include <libssh2.h>
+#endif
 
 #include "netconf.h"
 
@@ -76,6 +78,8 @@ void nc_callback_error_reply(void (*func)(const char* tag,
 		const char* element,
 		const char* ns,
 		const char* sid));
+
+#ifndef DISABLE_LIBSSH
 
 /**
  * @brief Set callback function for passing user credentials into libssh2's
@@ -126,5 +130,7 @@ void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
  * @param[in] public
  */
 void nc_set_keypair_path(const char* private, const char * public);
+
+#endif /* not DISABLE_LIBSSH */
 
 #endif /* CALLBACKS_H_ */

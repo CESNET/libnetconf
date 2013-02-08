@@ -83,11 +83,24 @@ AC_ARG_WITH([libssh2],
 	]
 )
 
+AC_ARG_ENABLE([libssh2],
+	AC_HELP_STRING([--disable-libssh2], [Use ssh client program instead of libssh2.]),
+	if test "$enableval" = "no"; then
+		libssh2="no"
+		CPPFLAGS="$CPPFLAGS -DDISABLE_LIBSSH"
+	else
+		libssh2="yes"
+	fi
+	,
+	# use libssh2 by default
+	libssh2="yes"
+)
+
 AC_ARG_ENABLE([notifications],
 	AC_HELP_STRING([--disable-notifications], [Disable support of NETCONF Notifications (RFC 5277)]),
 	[
 	if test "$enableval" = "no"; then
-		notif="no"	
+		notif="no"
 	else
 		notif="yes"
 	fi
@@ -105,7 +118,7 @@ if test "$notif" = "yes"; then
 	PROVIDES="$PROVIDES libnetconf-notifications"
 else
 	CONFIGURE_PARAMS="$CONFIGURE_PARAMS --disable-notifications"
-	CFLAGS="$CFLAGS -DDISABLE_NOTIFICATIONS"
+	CPPFLAGS="$CPPFLAGS -DDISABLE_NOTIFICATIONS"
 	HDRS_PUBL_SUBDIR_NOTIFICATIONS=""
 	HDRS_PRIV_NOTIFICATIONS=""
 	SRCS_NOTIFICATIONS=""	
@@ -168,6 +181,13 @@ case $host_cpu in
         ;;
 esac
 
+if test "$libssh2" = "no"; then
+	AC_CHECK_PROG(SSH, ssh, ssh)
+	if test -z "$SSH"; then
+		AC_MSG_ERROR([Missing ssh client (install OpenSSH)])
+	fi
+fi
+
 # Check for doxygen
 AC_CHECK_PROG(DOXYGEN, doxygen, doxygen)
 
@@ -176,6 +196,7 @@ AC_CHECK_PROG(RPMBUILD, rpmbuild, rpmbuild)
 
 # Check for standard programs
 AC_PROG_CC
+AC_PROG_CPP
 AC_PROG_LN_S
 AC_PROG_INSTALL
 
@@ -190,21 +211,29 @@ if test "$XML2_CONFIG" = "no"; then
 fi
 CFLAGS="$CFLAGS `xml2-config --cflags`"
 
-### libssh2 ###
-AC_CHECK_LIB([ssh2], [libssh2_version], [], AC_MSG_ERROR([Missing libssh2.]))
-AC_CHECK_HEADERS([libssh2.h], [], AC_MSG_ERROR([Missing libssh2 headers.]))
-PKG_CHECK_MODULES([LIBSSH2_HANDSHAKE], [libssh2 >= "1.2.8"], [LIBSSH2_SESSION_HANDSHAKE="libssh2_session_handshake"],[LIBSSH2_SESSION_HANDSHAKE="libssh2_session_startup"])
-PKG_CHECK_MODULES([LIBSSH2_TIMEOUT], [libssh2 >= "1.2.9"], [LIBSSH2_SET_TIMEOUT="libssh2_session_set_timeout(session,timeout)"],[LIBSSH2_SET_TIMEOUT=""])
-AC_SUBST(LIBSSH2_SESSION_HANDSHAKE)
-AC_SUBST(LIBSSH2_SET_TIMEOUT)
+if test "$libssh2" = "yes"; then
+	### libssh2 ###
+	AC_CHECK_LIB([ssh2], [libssh2_version], [], AC_MSG_ERROR([Missing libssh2.]))
+	AC_CHECK_HEADERS([libssh2.h], [], AC_MSG_ERROR([Missing libssh2 headers.]))
+	PKG_CHECK_MODULES([LIBSSH2_HANDSHAKE], [libssh2 >= "1.2.8"], [LIBSSH2_SESSION_HANDSHAKE="libssh2_session_handshake"],[LIBSSH2_SESSION_HANDSHAKE="libssh2_session_startup"])
+	PKG_CHECK_MODULES([LIBSSH2_TIMEOUT], [libssh2 >= "1.2.9"], [LIBSSH2_SET_TIMEOUT="libssh2_session_set_timeout(session,timeout)"],[LIBSSH2_SET_TIMEOUT=""])
+	AC_SUBST(LIBSSH2_SESSION_HANDSHAKE)
+	AC_SUBST(LIBSSH2_SET_TIMEOUT)
+fi
 
 if test -n "$SUBDIRS"; then
 	### libreadline ###
-	AC_CHECK_LIB([readline], [readline], [], AC_MSG_ERROR([Missing libreadline]))
+	AC_CHECK_LIB([readline], [readline], 
+		LIBS="$LIBS", # prevent adding -lreadline to LIBS
+		AC_MSG_ERROR([Missing libreadline])
+	)
 	AC_CHECK_HEADERS(readline/readline.h readline/history.h, [], AC_MSG_ERROR([Missing libreadline headers.]))
 
 	### libevent ###
-	AC_CHECK_LIB([event], [event_base_dispatch], [], AC_MSG_ERROR([Missing libevent]))
+	AC_CHECK_LIB([event], [event_base_dispatch],
+		LIBS="$LIBS", # prevent adding -levent to LIBS
+		AC_MSG_ERROR([Missing libevent])
+	)
 	AC_CHECK_HEADERS(event2/event.h, [], AC_MSG_ERROR([Missing libevent headers.]))
 fi
 

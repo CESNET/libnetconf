@@ -38,6 +38,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "../../netconf_internal.h"
 #include "datastore_empty.h"

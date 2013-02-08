@@ -1,3 +1,4 @@
+#ifndef DISABLE_LIBSSH
 /*
  * libssh2_session_startup() is deprecated in libssh2 >= 1.2.8 and replaced by
  * libssh2_session_handshake(). This macro is automatically set by configure
@@ -10,6 +11,7 @@
  * libssh2_session_set_timeout() is available since libssh2 1.2.9
  */
 #define LIBSSH2_SET_TIMEOUT(session,timeout) @LIBSSH2_SET_TIMEOUT@
+#endif /* not DISABLE_LIBSSH */
 
 /*
  * Path for storing libnetconf's Event stream files

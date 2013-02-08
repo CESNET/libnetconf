@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <libnetconf.h>
 #include "../../src/netconf_internal.h"
 
