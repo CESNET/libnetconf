@@ -353,18 +353,18 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 		xmlXPathFreeContext(model_ctxt);
 		return (EXIT_FAILURE);
 	}
-	defaults = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:container//yin:default", model_ctxt);
-	if (defaults != NULL) {
-		/* if report-all-tagged, add namespace for default attribute into the whole doc */
-		if (mode == NCWD_MODE_ALL_TAGGED) {
-			ns = xmlNewNs(root = xmlDocGetRootElement(config), BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
-			xmlSetNs(root, ns);
+	if ((defaults = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:container//yin:default", model_ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(defaults->nodesetval)) {
+			/* if report-all-tagged, add namespace for default attribute into the whole doc */
+			if (mode == NCWD_MODE_ALL_TAGGED) {
+				ns = xmlNewNs(root = xmlDocGetRootElement(config), BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
+				xmlSetNs(root, ns);
+			}
+			/* process all defaults elements */
+			for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
+				fill_default(config, defaults->nodesetval->nodeTab[i], mode);
+			}
 		}
-		/* process all defaults elements */
-		for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
-			fill_default(config, defaults->nodesetval->nodeTab[i], mode);
-		}
-
 		xmlXPathFreeObject(defaults);
 	}
 	xmlXPathFreeContext(model_ctxt);

@@ -345,36 +345,37 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 	}
 
 	/* set with-defaults if any */
-	result = xmlXPathEvalExpression(BAD_CAST "//wd:with-defaults", rpc_ctxt);
-	if (result != NULL) {
-		switch(result->nodesetval->nodeNr) {
-		case 0:
-			/* set basic mode */
-			if (session != NULL) {
-				retval = session->wd_basic;
-			} else {
+	if ((result = xmlXPathEvalExpression(BAD_CAST "//wd:with-defaults", rpc_ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
+			switch (result->nodesetval->nodeNr) {
+			case 0:
+				/* set basic mode */
+				if (session != NULL) {
+					retval = session->wd_basic;
+				} else {
+					retval = NCWD_MODE_NOTSET;
+				}
+				break;
+			case 1:
+				data = xmlNodeGetContent(result->nodesetval->nodeTab[0]);
+				if (xmlStrcmp(data, BAD_CAST "report-all") == 0) {
+					retval = NCWD_MODE_ALL;
+				} else if (xmlStrcmp(data, BAD_CAST "report-all-tagged") == 0) {
+					retval = NCWD_MODE_ALL_TAGGED;
+				} else if (xmlStrcmp(data, BAD_CAST "trim") == 0) {
+					retval = NCWD_MODE_TRIM;
+				} else if (xmlStrcmp(data, BAD_CAST "explicit") == 0) {
+					retval = NCWD_MODE_EXPLICIT;
+				} else {
+					WARN("%s: unknown with-defaults mode detected (%s), disabling with-defaults.", __func__, data);
+					retval = NCWD_MODE_NOTSET;
+				}
+				xmlFree(data);
+				break;
+			default:
 				retval = NCWD_MODE_NOTSET;
+				break;
 			}
-			break;
-		case 1:
-			data = xmlNodeGetContent(result->nodesetval->nodeTab[0]);
-			if (xmlStrcmp(data, BAD_CAST "report-all") == 0) {
-				retval = NCWD_MODE_ALL;
-			} else if (xmlStrcmp(data, BAD_CAST "report-all-tagged") == 0) {
-				retval = NCWD_MODE_ALL_TAGGED;
-			} else if (xmlStrcmp(data, BAD_CAST "trim") == 0) {
-				retval = NCWD_MODE_TRIM;
-			} else if (xmlStrcmp(data, BAD_CAST "explicit") == 0) {
-				retval = NCWD_MODE_EXPLICIT;
-			} else {
-				WARN("%s: unknown with-defaults mode detected (%s), disabling with-defaults.", __func__, data);
-				retval = NCWD_MODE_NOTSET;
-			}
-			xmlFree(data);
-			break;
-		default:
-			retval = NCWD_MODE_NOTSET;
-			break;
 		}
 		xmlXPathFreeObject(result);
 	} else {
@@ -640,27 +641,28 @@ char* nc_rpc_get_op_content (const nc_rpc* rpc)
 		return NULL;
 	}
 
-	result = xmlXPathEvalExpression(BAD_CAST  "/"NC_NS_BASE10_ID":rpc/*", rpc->ctxt);
-	if (result != NULL && !xmlXPathNodeSetIsEmpty(result->nodesetval) ) {
-		buffer = xmlBufferCreate();
-		if (buffer == NULL) {
-			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
-			return NULL;
-		}
-		if ((root = xmlDocGetRootElement (rpc->doc)) == NULL) {
-			return NULL;
-		}
+	if ((result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*", rpc->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
+			buffer = xmlBufferCreate();
+			if (buffer == NULL) {
+				ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+				return NULL;
+			}
+			if ((root = xmlDocGetRootElement(rpc->doc)) == NULL) {
+				return NULL;
+			}
 
-		/* by copying node, move all needed namespaces into the content nodes */
-		aux_doc = xmlNewDoc(BAD_CAST "1.0");
-		xmlDocSetRootElement(aux_doc, xmlCopyNodeList(root->children));
-		for (i = 0; i < result->nodesetval->nodeNr; i++) {
-			xmlNodeDump (buffer, aux_doc, result->nodesetval->nodeTab[i], 1, 1);
+			/* by copying node, move all needed namespaces into the content nodes */
+			aux_doc = xmlNewDoc(BAD_CAST "1.0");
+			xmlDocSetRootElement(aux_doc, xmlCopyNodeList(root->children));
+			for (i = 0; i < result->nodesetval->nodeNr; i++) {
+				xmlNodeDump(buffer, aux_doc, result->nodesetval->nodeTab[i], 1, 1);
+			}
+			retval = strdup((char *) xmlBufferContent(buffer));
+			xmlBufferFree(buffer);
+			xmlFreeDoc(aux_doc);
 		}
-		retval = strdup((char *)xmlBufferContent (buffer));
 		xmlXPathFreeObject(result);
-		xmlBufferFree (buffer);
-		xmlFreeDoc(aux_doc);
 	}
 
 	return retval;
@@ -952,6 +954,7 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
 				ERROR("%s: multiple default-operation elements found in edit-config request", __func__);
+				xmlXPathFreeObject(query_result);
 				return (NC_EDIT_DEFOP_ERROR);
 			}
 			defop = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
@@ -988,6 +991,7 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
 				ERROR("%s: multiple error-option elements found in edit-config request", __func__);
+				xmlXPathFreeObject(query_result);
 				return (NC_EDIT_ERROPT_ERROR);
 			}
 			erropt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
@@ -1024,6 +1028,7 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
 				ERROR("%s: multiple test-option elements found in edit-config request", __func__);
+				xmlXPathFreeObject(query_result);
 				return (NC_EDIT_TESTOPT_ERROR);
 			}
 			testopt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
@@ -1065,11 +1070,12 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
 				ERROR("%s: multiple filter elements found", __func__);
+				xmlXPathFreeObject(query_result);
 				return (NULL);
 			}
 			filter_node = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
-			xmlXPathFreeObject(query_result);
 		}
+		xmlXPathFreeObject(query_result);
 	}
 
 	if (filter_node != NULL) {
@@ -1112,11 +1118,12 @@ char *nc_reply_get_data(const nc_reply *reply)
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
 				ERROR("%s: multiple data elements found", __func__);
+				xmlXPathFreeObject(query_result);
 				return (NULL);
 			}
 			data = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
-			xmlXPathFreeObject(query_result);
 		}
+		xmlXPathFreeObject(query_result);
 	}
 
 	if (data == NULL) {
@@ -1129,7 +1136,7 @@ char *nc_reply_get_data(const nc_reply *reply)
 	}
 
 	aux_doc = xmlNewDoc(BAD_CAST "1.0");
-	xmlDocSetRootElement(aux_doc, xmlCopyNode(data, 1));
+	xmlDocSetRootElement(aux_doc, data);
 	for (aux_data = aux_doc->children->children; aux_data != NULL; aux_data = aux_data->next) {
 		if (aux_data->type == XML_ELEMENT_NODE) {
 			xmlNodeDump(data_buf, aux_doc, aux_data, 1, 1);
@@ -1161,11 +1168,12 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
 				ERROR("%s: multiple data elements found", __func__);
+				xmlXPathFreeObject(query_result);
 				return (NULL);
 			}
 			data = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
-			xmlXPathFreeObject(query_result);
 		}
+		xmlXPathFreeObject(query_result);
 	}
 
 	if (data == NULL) {
@@ -2020,8 +2028,8 @@ nc_rpc_capability_attr_new_elem:
 						xmlUnlinkNode(query_result->nodesetval->nodeTab[i]);
 						xmlFreeNode(query_result->nodesetval->nodeTab[i]);
 					}
-					xmlXPathFreeObject(query_result);
 				}
+				xmlXPathFreeObject(query_result);
 			}
 
 		}
