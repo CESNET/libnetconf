@@ -1,7 +1,7 @@
 /**
  * \file callbacks.c
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief Default callbacks and functions to set application's callbacks.
+ * \brief Default callbacks and functions to set the application's callbacks.
  *
  * Copyright (C) 2012 CESNET, z.s.p.o.
  *
@@ -189,7 +189,7 @@ char* callback_sshauth_password_default (const char* username,
 }
 
 /**
- * @brief Default callback for \"keyboard-interactive\" authentication method
+ * @brief Default callback for the \"keyboard-interactive\" authentication method
  *
  * called by libssh2, see libssh2 doc for details
  */

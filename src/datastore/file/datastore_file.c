@@ -83,16 +83,16 @@ static sigset_t fullsigset;
 }
 
 /**
- * @brief Determine if datastore is accessible (is not NETCONF locked) for the
+ * @brief Determine if the datastore is accessible (is not NETCONF locked) for the
  * specified session. This function MUST be called between LOCK and UNLOCK
  * macros, which serialize access to the datastore.
  *
  * @param ds Datastore to verify
  * @param target Datastore type
- * @param session session to test accessibility for
+ * @param session Session to test accessibility for
  *
- * @return 0 when all tests passed and caller session can work with target
- * datastore, non-zero elsewhere.
+ * @return 0 when all the tests passed and the caller session can work with the target
+ * datastore, non-zero else.
  */
 static int file_ds_access (struct ncds_ds_file* file_ds, NC_DATASTORE target, const struct nc_session* session)
 {
@@ -176,7 +176,7 @@ int ncds_file_set_path (struct ncds_ds* datastore, const char* path)
 }
 
 /**
- * @brief Checks if structure of XML is matches the expected one
+ * @brief Checks if the structure of an XML matches the expected one
  * @param[in] doc Document to check.
  * @return non-zero if matches zero if not.
  */
@@ -229,7 +229,7 @@ static int file_structure_check (xmlDocPtr doc)
 
 /**
  * @brief Create xml frame of the file datastore
- * @return xml document holding basic structure
+ * @return xml document holding the basic structure
  */
 static xmlDocPtr file_create_xmlframe ()
 {
@@ -295,7 +295,7 @@ invalid_ds:
 
 /**
  * @ingroup store
- * @brief Initialization of file datastore
+ * @brief Initialization of the file datastore
  *
  * @file_ds File datastore structure
  *
@@ -360,11 +360,11 @@ int ncds_file_init (struct ncds_ds* ds)
 	xmlSetProp (file_ds->candidate, BAD_CAST "lock", BAD_CAST "");
 
 	/*
-	 * open and eventually create lock
+	 * open and eventually create a lock
 	 */
-	/* first - prepare path, there must be separate lock for each
-	 * datastore(set), so name it according to filepath with special prefix.
-	 * backslash in the path are replaced by underscore.
+	/* first - prepare the path, there must be a separate lock for each
+	 * datastore(set), so name it according to the filepath with a special prefix.
+	 * backslashes in the path are replaced by underscores.
 	 */
 	if (asprintf(&sempath, "%s/%s", NCDS_LOCK, file_ds->path) == -1) {
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
@@ -420,14 +420,14 @@ void ncds_file_free(struct ncds_ds* ds)
 }
 
 /**
- * @brief Reloads xml configuration from datastorage file. This function MUST be
+ * @brief Reloads xml configuration from the datastorage file. This function MUST be
  * called ONLY between file_ds_lock() and file_ds_unlock().
  *
- * Tries to read datastore and find datastore root elements.
- * If succeed old xml is freed and replaced with new one.
- * If fail structure is preserved as it was.
+ * Tries to read from the datastore and find the datastore root elements.
+ * If succussfully, the old xml is freed and replaced with a new one.
+ * If it fails, the structure is preserved as it was.
  *
- * @param file_ds Pointer to datastorage structure
+ * @param file_ds Pointer to the datastorage structure
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
@@ -458,7 +458,7 @@ static int file_reload (struct ncds_ds_file* file_ds)
 }
 
 /**
- * @brief Write current version of configuration to file. This function MUST be
+ * @brief Write the current version of the configuration to a file. This function MUST be
  * called ONLY between file_ds_lock() and file_ds_unlock().
  *
  * @param file_ds Datastore to sync.
@@ -744,13 +744,15 @@ char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* UNUSED(s
 }
 
 /**
- * @brief Copy content of datastore or externally send configuration to other datastore
+ * @brief Copy the content of the datastore or externally send
+ * the configuration to another datastore
  *
- * @param ds Pointer to datastore structure
- * @param session Session of which the request is part of
+ * @param ds Pointer to a datastore structure
+ * @param session Session which the request is a part of
  * @param target Target datastore.
- * @param source Source datastore, if the value is NC_DATASTORE_NONE then next parametr holds configration to copy
- * @param config Configuration to use as source in form of serialized XML.
+ * @param source Source datastore, if the value is NC_DATASTORE_NONE
+ * then the next parameter holds the configration to copy
+ * @param config Configuration to be used as the source in the form of a serialized XML.
  * @param error	 Netconf error structure.
  *
  * @return EXIT_SUCCESS when done without problems
@@ -870,7 +872,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
  * @brief Delete target datastore
  *
  * @param ds Datastore to delete
- * @param session Session requesting deletition
+ * @param session Session requesting the deletion
  * @param target Datastore type
  * @param error Netconf error structure
  *
@@ -921,7 +923,7 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
 	xmlFreeNode (del);
 
 	/*
-	 * if we are changing candidate, mark it as modified, since we need
+	 * if we are changing the candidate, mark it as modified, since we need
 	 * this information for locking - according to RFC, candidate cannot
 	 * be locked since it has been modified and not committed.
 	 */
@@ -941,10 +943,10 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
 }
 
 /**
- * @brief Perform edit config operation
+ * @brief Perform the edit-config operation
  *
  * @param ds Datastore to edit
- * @param session Session sending edit request
+ * @param session Session sending the edit request
  * @param target Datastore type
  * @param config Edit configuration.
  * @param defop Default edit operation.
@@ -999,7 +1001,7 @@ int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session,
 		return EXIT_FAILURE;
 	}
 
-	/* create XML doc with copy of datastore configuration */
+	/* create an XML doc with a copy of the datastore configuration */
 	datastore_doc = xmlNewDoc (BAD_CAST "1.0");
 	tmp_target_ds = xmlDocCopyNode (target_ds->children, datastore_doc, 1);
 	xmlDocSetRootElement (datastore_doc, tmp_target_ds);

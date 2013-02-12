@@ -51,9 +51,9 @@
  */
 typedef enum {
 	NCNTF_ERROR = -1, /**< error return code */
-	NCNTF_GENERIC = 0, /**< generic notification not directly supported by libnetconf */
-	NCNTF_REPLAY_COMPLETE = 1, /**< \<replayComplete\> notification announcing end of Replaying the stream */
-	NCNTF_NTF_COMPLETE = 2, /**< \<notificationComplete\> notification announcing end of Notification stream */
+	NCNTF_GENERIC = 0, /**< a generic notification not directly supported by libnetconf */
+	NCNTF_REPLAY_COMPLETE = 1, /**< \<replayComplete\> notification announcing the end of Replaying the stream */
+	NCNTF_NTF_COMPLETE = 2, /**< \<notificationComplete\> notification announcing the end of Notification stream */
 	NCNTF_BASE_CFG_CHANGE = 3, /**< netconf-config-change (RFC 6470) */
 	NCNTF_BASE_CPBLT_CHANGE = 4, /**< netconf-capability-change (RFC 6470) */
 	NCNTF_BASE_SESSION_START = 5, /**< netconf-session-start (RFC 6470) */
@@ -63,16 +63,16 @@ typedef enum {
 
 /**
  * @ingroup notifications
- * @brief Enumeration of possible source of events
+ * @brief Enumeration of the possible source of events
  */
 typedef enum {
-	NCNTF_EVENT_BY_SERVER, /**< event is caused by server */
-	NCNTF_EVENT_BY_USER /**< event is caused by user's action */
+	NCNTF_EVENT_BY_SERVER, /**< event is caused by a server */
+	NCNTF_EVENT_BY_USER /**< event is caused by the user's action */
 }NCNTF_EVENT_BY;
 
 /**
  * @ingroup notifications
- * @brief Get status data in xml form describing currently used streams.
+ * @brief Get the status data in xml form describing the currently used streams.
  * @return Text containing streams status data in xml form
  * (urn:ietf:params:xml:ns:netmod:notification in RFC 5277).
  */
@@ -80,7 +80,7 @@ char* ncntf_status(void);
 
 /**
  * @ingroup notifications
- * @brief Create new NETCONF event stream.
+ * @brief Create a new NETCONF event stream.
  * @param[in] name Name of the stream.
  * @param[in] desc Description of the stream.
  * @param[in] replay Specify if the replay is allowed (1 for yes, 0 for no).
@@ -90,10 +90,10 @@ int ncntf_stream_new(const char* name, const char* desc, int replay);
 
 /**
  * @ingroup notifications
- * @brief Set rule to allow loging of the specified event on the given
+ * @brief Set the rule to allow logging of the specified event on the given
  * Notification stream.
  * @param[in] stream Name of the stream where to allow event logging
- * @param[in] event Name of the event which to allow on given stream
+ * @param[in] event Name of the event which to allow on the given stream
  * @return 0 on success, non-zero on error
  */
 int ncntf_stream_allow_events(const char* stream, const char* event);
@@ -101,7 +101,7 @@ int ncntf_stream_allow_events(const char* stream, const char* event);
 /**
  * @ingroup notifications
  * @brief Get the list of NETCONF event notifications streams.
- * @return NULL terminated list of stream names. It is up to caller to free the
+ * @return NULL terminated list of stream names. It is up to the caller to free the
  * list
  */
 char** ncntf_stream_list(void);
@@ -129,8 +129,8 @@ void ncntf_stream_iter_start(const char* stream);
  * @brief Pop the next event record from the stream file. The iteration must be
  * started by nc_ntf_stream_iter_start() function.
  * @param[in] stream Name of the stream to iterate.
- * @param[in] start Time of the first event caller is interested in.
- * @param[in] stop Time of the last event caller is interested in.
+ * @param[in] start Time of the first event the caller is interested in.
+ * @param[in] stop Time of the last event the caller is interested in.
  * @param[out] event_time Time of the returned event, NULL if caller does not care.
  * @return Content of the next event in the stream.
  */
@@ -139,7 +139,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 /**
  * \todo: thread safety (?thread-specific variables)
  * @ingroup notifications
- * @brief Clean all structures used for iteration in the specified stream. This
+ * @brief Clean all the structures used for iteration in the specified stream. This
  * function must be called as a closing function to nc_ntf_stream_iter_start()
  * @param[in] stream Name of the iterated stream.
  */
@@ -147,32 +147,32 @@ void ncntf_stream_iter_finnish(const char* stream);
 
 /**
  * @ingroup notifications
- * @brief Store new event into the specified stream. Parameters are specific
+ * @brief Store a new event in the specified stream. Parameters are specific
  * for different events.
  *
  * ### Event parameters:
  * - #NCNTF_GENERIC
  *  - **const char* content** Content of the notification as defined in RFC 5277.
- *  eventTime is added automatically. The string should be XML formatted.
+ *  eventTime is added automatically. The string should be XML-formatted.
  * - #NCNTF_BASE_CFG_CHANGE
  *  - #NC_DATASTORE **datastore** Specify which datastore has changed.
  *  - #NCNTF_EVENT_BY **changed_by** Specify the source of the change.
- *   - If the value is set to #NCNTF_EVENT_BY_USER, following parameter is
+ *   - If the value is set to #NCNTF_EVENT_BY_USER, the following parameter is
  *   required:
- *  - **const struct nc_session* session** Session required the configuration change.
+ *  - **const struct nc_session* session** Session that required the configuration change.
  * - #NCNTF_BASE_CPBLT_CHANGE
  *  - **const struct nc_cpblts* old** Old list of capabilities.
  *  - **const struct nc_cpblts* new** New list of capabilities.
  *  - #NCNTF_EVENT_BY **changed_by** Specify the source of the change.
- *   - If the value is set to #NCNTF_EVENT_BY_USER, following parameter is
+ *   - If the value is set to #NCNTF_EVENT_BY_USER, the following parameter is
  *   required:
- *  - **const struct nc_session* session** Session required the configuration change.
+ *  - **const struct nc_session* session** Session that required the configuration change.
  * - #NCNTF_BASE_SESSION_START
  *  - **const struct nc_session* session** Started session (#NC_SESSION_STATUS_DUMMY session is also allowed).
  * - #NCNTF_BASE_SESSION_END
- *  - **const struct nc_session* session** Finnished session (#NC_SESSION_STATUS_DUMMY session is also allowed).
+ *  - **const struct nc_session* session** Finished session (#NC_SESSION_STATUS_DUMMY session is also allowed).
  *  - #NC_SESSION_TERM_REASON **reason** Session termination reason.
- *   - If the value is set to #NC_SESSION_TERM_KILLED, following parameter is
+ *   - If the value is set to #NC_SESSION_TERM_KILLED, the following parameter is
  *   required.
  *  - **const char* killed-by-sid** The ID of the session that directly caused
  *  the session termination. If the session was terminated by a non-NETCONF
@@ -185,8 +185,8 @@ void ncntf_stream_iter_finnish(const char* stream);
  * - ncntf_event_new("netconf", -1, NCNTF_BASE_SESSION_START, my_session);
  * - ncntf_event_new("netconf", -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");
  *
- * @param[in] etime Time of the event, if set to -1, current time is used.
- * @param[in] event Event type to distinguish following parameters.
+ * @param[in] etime Time of the event, if set to -1, the current time is used.
+ * @param[in] event Event type to distinguish the following parameters.
  * @param[in] ... Specific parameters for different event types as described
  * above.
  * @return 0 for success, non-zero value else.
@@ -195,7 +195,7 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...);
 
 /**
  * @ingroup notifications
- * @brief Create new \<notification\> message with given eventTime and content.
+ * @brief Create a new \<notification\> message with the given eventTime and content.
  *
  * @param[in] event_time Time of the event.
  * @param[in] content Description of the event in the XML form.
@@ -205,14 +205,14 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content);
 
 /**
  * @ingroup notifications
- * @brief Free notification message.
+ * @brief Free the notification message.
  * @param[in] ntf notification message to free.
  */
 void ncntf_notif_free(nc_ntf *ntf);
 
 /**
  * @ingroup notifications
- * @brief Get specific notification type.
+ * @brief Get a specific notification type.
  * @param[in] notif Notification message to explore.
  * @return The same types as for ncntf_event_new() can be returned. If the
  * notification is unknown, the #NCNTF_GENERIC is returned.
@@ -231,7 +231,7 @@ char* ncntf_notif_get_content(nc_ntf* notif);
  * @ingroup notifications
  * @brief Get Time of the event reported in the notification message.
  * @param[in] notif Notification message.
- * @return Time of the event (as number of seconds since epoch).
+ * @return Time of the event (as number of seconds since the epoch).
  */
 time_t ncntf_notif_get_time(nc_ntf* notif);
 
@@ -240,7 +240,7 @@ time_t ncntf_notif_get_time(nc_ntf* notif);
  * @brief Check validity of \<create-subscription\> message.
  *
  * This check is done by ncntf_dispatch_send() which returns -1 when test does
- * not pass. However, it can be sometime useful to run this test before calling
+ * not pass. However, it can be sometimes useful to run this test before calling
  * ncntf_dispatch_send().
  *
  * @param[in] subscribe_rpc \<create-subscription\> RPC.
@@ -251,7 +251,7 @@ nc_reply *ncntf_subscription_check(const nc_rpc* subscribe_rpc);
 
 /**
  * @ingroup notifications
- * @brief Start sending notification according to the given
+ * @brief Start sending notifications according to the given
  * \<create-subscription\> NETCONF RPC request. All events from the specified
  * stream are processed and sent to the client until the stop time is reached
  * or until the session is terminated.

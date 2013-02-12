@@ -45,7 +45,7 @@
 #include <semaphore.h>
 
 /**
- * @brief File datastore implementation specific ncds_ds structure.
+ * @brief File datastore implementation-specific ncds_ds structure.
  */
 struct ncds_ds_file {
 	/**
@@ -57,7 +57,7 @@ struct ncds_ds_file {
 	 */
 	ncds_id id;
 	/**
-	 * @brief Path to file containing YIN configuration data model
+	 * @brief Path to file containing the YIN configuration data model
 	 */
 	char* model_path;
 	/**
@@ -65,7 +65,7 @@ struct ncds_ds_file {
 	 */
 	xmlDocPtr model;
 	/**
-	 * @brief Pointer to a callback function implementing retrieving of the
+	 * @brief Pointer to a callback function implementing the retrieval of the
 	 * device status data.
 	 */
 	char* (*get_state)(const char* model, const char* running);
@@ -74,12 +74,12 @@ struct ncds_ds_file {
 	 */
 	struct ncds_funcs func;
 	/**
-	 * @brief Path to file containing configuration data, single file is
-	 * used for all datastore types (running, startup, candidate).
+	 * @brief Path to the file containing the configuration data, a single file is
+	 * used for all the datastore types (running, startup, candidate).
 	 */
 	char* path;
 	/**
-	 * @brief File descriptor of opened file containing configuration data
+	 * @brief File descriptor of an opened file containing the configuration data
 	 */
 	FILE* file;
 	/**
@@ -118,13 +118,13 @@ struct ncds_ds_file {
 int ncds_file_init (struct ncds_ds* ds);
 
 /**
- * @brief Perform get-config on specified repository.
+ * @brief Perform get-config on the specified repository.
  *
- * @param[in] file_ds File datastore structure from where the data will be obtained.
+ * @param[in] file_ds File datastore structure from which the data will be obtained.
  * @param[in] session Session originating the request.
- * @param[in] source Datastore (runnign, startup, candidate) to get data from.
- * @param[in] filter NETCONF filter to apply on resulting data.
- * @param[out] error NETCONF error structure describing arised error.
+ * @param[in] source Datastore (runnign, startup, candidate) to get the data from.
+ * @param[in] filter NETCONF filter to apply on the resulting data.
+ * @param[out] error NETCONF error structure describing the experienced error.
  * @return NULL on error, resulting data on success.
 */
 char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, struct nc_err** error);
@@ -132,41 +132,42 @@ char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* session,
 const struct ncds_lockinfo *ncds_file_lockinfo(struct ncds_ds* ds, NC_DATASTORE target);
 
 /**
- * @brief Perform lock of specified datastore for specified session.
+ * @brief Perform locking of the specified datastore for the specified session.
  *
  * @param[in] file_ds File datastore structure where the lock should be applied.
  * @param[in] session Session originating the request.
  * @param[in] target Datastore (runnign, startup, candidate) to lock.
- * @param[out] error NETCONF error structure describing arised error.
+ * @param[out] error NETCONF error structure describing the experienced error.
  * @return 0 on success, non-zero on error and error structure is filled.
  */
 int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 
 /**
- * @brief Perform unlock of specified datastore for specified session.
+ * @brief Perform unlocking of the specified datastore for the specified session.
  *
  * @param[in] file_ds File datastore structure where the unlock should be applied.
  * @param[in] session Session originating the request.
  * @param[in] target Datastore (runnign, startup, candidate) to unlock.
- * @param[out] error NETCONF error structure describing arised error.
+ * @param[out] error NETCONF error structure describing the experienced error.
  * @return 0 on success, non-zero on error and error structure is filled.
  */
 int ncds_file_unlock (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 
 /**
- * @brief Close specified datastore and free all resources.
+ * @brief Close the specified datastore and free all the resources.
  * @param[in] datastore Datastore to be closed.
  */
 void ncds_file_free(struct ncds_ds* ds);
 
 /**
- * @brief Copy content of datastore or externally send configuration to other datastore
+ * @brief Copy the content of a datastore or externally send the configuration to another datastore
  *
- * @param ds Pointer to datastore structure
- * @param session Session of which the request is part of
- * @param target Target datastore.
- * @param source Source datastore, if the value is NC_DATASTORE_NONE then next parametr holds configration to copy
- * @param config Configuration to use as source in form of serialized XML.
+ * @param ds Pointer to the datastore structure
+ * @param session Session which the request is a part of
+ * @param target Target datastore
+ * @param source Source datastore, if the value is NC_DATASTORE_NONE then the next
+ * parameter holds the configration to copy
+ * @param config Configuration to be used as the source in the form of a serialized XML.
  * @param error	 Netconf error structure.
  *
  * @return EXIT_SUCCESS when done without problems
@@ -175,10 +176,10 @@ void ncds_file_free(struct ncds_ds* ds);
 int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error);
 
 /**
- * @brief Delete target datastore
+ * @brief Delete the target datastore
  *
  * @param ds Datastore to delete
- * @param session Session requesting deletition
+ * @param session Session requesting the deletion
  * @param target Datastore type
  * @param error Netconf error structure
  *
@@ -187,10 +188,10 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * session, NC_DATASTORE target, struct nc_err **error);
 
 /**
- * @brief Perform edit config operation
+ * @brief Perform the edit-config operation
  *
  * @param ds Datastore to edit
- * @param session Session sending edit request
+ * @param session Session sending the edit request
  * @param target Datastore type
  * @param config Edit configuration.
  * @param defop Default edit operation.

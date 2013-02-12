@@ -45,14 +45,14 @@
 
 /**
  * @ingroup session
- * @brief Create disconnected session structure.
+ * @brief Create a disconnected session structure.
  *
- * This creates dummy session structure which is not supposed to pass NETCONF
+ * This creates a dummy session structure which is not supposed to exchange NETCONF
  * messages between client and server. Instead, it can be successfully used by
  * server (e.g. detached process that doesn't hold the real session structure)
  * to access NETCONF datastores via libnetconf.
  *
- * All required parameters can be obtained from the real session structure by
+ * All the required parameters can be obtained from the real session structure by
  * the session getter functions (nc_session_get_id(), nc_session_get_user() and
  * nc_session_get_cpblts()). NULL values are not allowed.
  *
@@ -61,13 +61,13 @@
  * @param[in] hostname Name (domain name, IP) of the opposite communication side
  * (optional parameter, can be NULL).
  * @param[in] capabilities List of capabilities supported by the session.
- * @return Structure describing a dummy NETCONF session or NULL in case of error.
+ * @return Structure describing a dummy NETCONF session or NULL in case of an error.
  */
 struct nc_session* nc_session_dummy(const char* sid, const char* username, const char* hostname, struct nc_cpblts *capabilities);
 
 /**
  * @ingroup session
- * @brief Add session into internal list of monitored sessions that are
+ * @brief Add the session into the internal list of monitored sessions that are
  * returned as part of netconf-state information defined in RFC 6022.
  * @param session Session to be monitored;
  * @return 0 on success, non-zero on error.
@@ -88,9 +88,9 @@ void nc_session_close (struct nc_session* session, NC_SESSION_TERM_REASON reason
 
 /**
  * @ingroup session
- * @brief Cleanup the session structure and free all allocated resources.
+ * @brief Cleanup the session structure and free all the allocated resources.
  *
- * Do not use given session structure after this call.
+ * Do not use the given session structure after this call.
  *
  * @param[in] session Session to free.
  */
@@ -114,9 +114,9 @@ int nc_session_get_version(const struct nc_session* session);
 
 /**
  * @ingroup session
- * @brief Get input file descriptor to asynchronous control of input events.
+ * @brief Get the input file descriptor to asynchronous control of input events.
  *
- * Caller must avoid direct reading from the returned file descriptor. It is
+ * The caller must avoid direct reading from the returned file descriptor. It is
  * supposed to be used only by select, poll, epoll or an event library (e.g.
  * libevent).
  *
@@ -170,7 +170,7 @@ int nc_session_notif_allowed (const struct nc_session *session);
  * @brief Get NULL terminated list of capabilities associated with the session.
  *
  * Returned list is a copy of the original list associated with the session.
- * Caller is supposed to free all returned strings.
+ * The caller is supposed to free all the returned strings.
  *
  * @param[in] session NETCONF session structure
  * @return NETCONF capabilities structure containing capabilities associated
@@ -180,7 +180,7 @@ struct nc_cpblts* nc_session_get_cpblts(const struct nc_session* session);
 
 /**
  * @ingroup session
- * @brief Create new NETCONF capabilities structure.
+ * @brief Create a new NETCONF capabilities structure.
  * @param list NULL terminated list of capabilities strings to initially add
  * into the NETCONF capabilities structure.
  * @return Created NETCONF capabilities structure.
@@ -199,7 +199,7 @@ void nc_cpblts_free(struct nc_cpblts *c);
 
 /**
  * @ingroup session
- * @brief Add another one capability string into the NETCONF capabilities structure.
+ * @brief Add another capability string into the NETCONF capabilities structure.
  *
  * This function is NOT thread safe.
  *
@@ -211,7 +211,7 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 
 /**
  * @ingroup session
- * @brief Remove specified capability string from the NETCONF capabilities structure.
+ * @brief Remove the specified capability string from the NETCONF capabilities structure.
  *
  * This function is NOT thread safe.
  *
@@ -268,9 +268,9 @@ const char *nc_cpblts_iter_next(struct nc_cpblts *c);
 
 /**
  * @ingroup session
- * @brief Get number of capabilities in structure.
+ * @brief Get the number of capabilities in the structure.
  *
- * Use this function to get count of capabilities held by nc_cpblts structure.
+ * Use this function to get the count of capabilities held by nc_cpblts structure.
  *
  * @param c NETCONF capabilities structure.
  * @return Number of capabilities held by structure c.
@@ -279,9 +279,9 @@ int nc_cpblts_count(const struct nc_cpblts *c);
 
 /**
  * @ingroup session
- * @brief Get NULL terminated list of default capabilities supported by libnetconf.
+ * @brief Get NULL terminated list of the default capabilities supported by libnetconf.
  *
- * Caller is supposed to free all returned strings.
+ * The caller is supposed to free all the returned strings.
  *
  * @return NETCONF capabilities structure containing capabilities supported by
  * libnetconf.
@@ -334,7 +334,7 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf);
  * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
  * non-blocking
  * @param[out] rpc Received \<rpc\>
- * @return Type of received message. #NC_MSG_UNKNOWN means error, #NC_MSG_RPC
+ * @return Type of the received message. #NC_MSG_UNKNOWN means error, #NC_MSG_RPC
  * means that *rpc points to the received \<rpc\> message.
  */
 NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, int timeout, nc_rpc** rpc);
@@ -348,7 +348,7 @@ NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, int timeout, nc_rpc
  * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
  * non-blocking
  * @param[out] reply Received \<rpc-reply\>
- * @return Type of received message. #NC_MSG_UNKNOWN means error, #NC_MSG_REPLY
+ * @return Type of the received message. #NC_MSG_UNKNOWN means error, #NC_MSG_REPLY
  * means that *reply points to the received \<rpc-reply\> message.
  */
 NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_reply** reply);
@@ -362,7 +362,7 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_r
  * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
  * non-blocking
  * @param[out] ntf Received \<notification\> message
- * @return Type of received message. #NC_MSG_UNKNOWN means error,
+ * @return Type of the received message. #NC_MSG_UNKNOWN means error,
  * #NC_MSG_NOTIFICATION means that *ntf points to the received \<notification\>
  * message.
  */
@@ -384,14 +384,14 @@ int nc_msgid_compare (const nc_msgid id1, const nc_msgid id2);
  * @param[in] session NETCONF session to use.
  * @param[in] rpc RPC message to send.
  * @param[out] reply Received \<rpc-reply\>
- * @return Type of received message. #NC_MSG_UNKNOWN means error, #NC_MSG_REPLY
+ * @return Type of the received message. #NC_MSG_UNKNOWN means error, #NC_MSG_REPLY
  * means that *reply points to the received \<rpc-reply\> message.
  */
 NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_reply** reply);
 
 /**
  * ingroup session
- * @brief Get human readable description to the specific type of the session
+ * @brief Get human-readable description to the specific type of the session
  * termination reason.
  * @param[in] reason Type of the session termination reason.
  * @return String describing the given termination reason value.

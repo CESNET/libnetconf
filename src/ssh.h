@@ -55,10 +55,10 @@ typedef enum
 
 /**
  * @ingroup session
- * @brief Set preference of the SSH authentication methods.
+ * @brief Set the preference of the SSH authentication methods.
  *
  * Allowed authentication types are defined as NC_SSH_AUTH_TYPE type.
- * Default preferences are:
+ * The default preferences are:
  * 1. interactive (3)
  * 2. password (2)
  * 3. public keys (1)
@@ -74,12 +74,12 @@ void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference);
  * @ingroup session
  * @brief Create NETCONF session to the specified server.
  *
- * This function internally can use various callbacks set by client to perform
+ * This function can internally use various callbacks set by the client to perform
  * SSH authentication. It selects authentication mechanism from the list
- * provided by the SSH server and according to preferences set by client via
+ * provided by the SSH server and based on the preferences set by the client via
  * nc_ssh_pref(). Then, appropriate callback function (set by
  * nc_callback_sshauth_password(), nc_callback_sshauth_passphrase(),
- * nc_set_publickey_path() or nc_set_privatekey_path()) is used to perform
+ * nc_set_publickey_path() or nc_set_privatekey_path()) is used to perform the
  * authentication.
  *
  * @param[in] host Hostname or address (both Ipv4 and IPv6 are accepted). 'localhost'
@@ -90,9 +90,9 @@ void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference);
  * application (detected from the effective UID) is used if NULL is specified.
  * @param[in] cpblts NETCONF capabilities structure with capabilities supported
  * by the client. Client can use nc_session_get_cpblts_default() to get the
- * structure with the list of all capabilities supported by libnetconf (this is
- * used in case of NULL parameter).
- * @return Structure describing the NETCONF session or NULL in case of error.
+ * structure with the list of all the capabilities supported by libnetconf (this is
+ * used in case of a NULL parameter).
+ * @return Structure describing the NETCONF session or NULL in case of an error.
  */
 struct nc_session *nc_session_connect(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts);
 
@@ -103,13 +103,13 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
  * The caller process of this function is supposed to run as SSH Subsystem
  * application launched automatically by SSH server when the NETCONF subsystem
  * request comes to the SSH server. Only one NETCONF session can be accepted in
- * the single SSH Subsystem.
+ * a single SSH Subsystem.
  *
- * @param[in] capabilities NETCONF capabilities structure with capabilities supported
- * by the server. Caller can use nc_session_get_cpblts_default() to get the
- * structure with the list of all capabilities supported by libnetconf (this is
- * used in case of NULL parameter).
- * @return Structure describing the accepted NETCONF session or NULL in case of error.
+ * @param[in] capabilities NETCONF capabilities structure with the capabilities supported
+ * by the server. The caller can use nc_session_get_cpblts_default() to get the
+ * structure with the list of all the capabilities supported by libnetconf (this is
+ * used in case of a NULL parameter).
+ * @return Structure describing the accepted NETCONF session or NULL in case of an error.
  */
 struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities);
 

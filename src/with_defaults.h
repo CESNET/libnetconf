@@ -46,13 +46,13 @@
 
 /**
  * @ingroup withdefaults
- * @brief Set basic mode of the with-defaults capability for the NETCONF server.
+ * @brief Set the basic mode of the with-defaults capability for a NETCONF server.
  *
- * Default basic mode used by libnetconf is 'explicit'. This function should be
- * used before establishing a NETCONF session and settle common set of
- * capabilities between client and server.
+ * The default basic mode used by libnetconf is 'explicit'. This function should be
+ * used before establishing a NETCONF session to settle on a common set of
+ * capabilities between a client and a server.
  *
- * On the client side, this function doesn't have effect of setting up the
+ * On the client side, this function does not have any effect of setting up a
  * specific mode. It only disables (NCDFLT_MODE_DISABLED) or enables (any other
  * valid value) support for the with-defaults capability.
  *
@@ -63,17 +63,17 @@ void ncdflt_set_basic_mode(NCWD_MODE mode);
 
 /**
  * @ingroup withdefaults
- * @brief Disable support for with-defaults capability. This can be done on
- * both client and server.
+ * @brief Disable support for the with-defaults capability. This can be done on
+ * either a client or a server.
  *
- * This is alternative for ncdflt_set_basic_mode(NCDFLT_MODE_DISABLED). To enable
- * with-defaults capability, use ncdflt_set_basic_mode() to set with-defaults'
+ * This is an alternative for ncdflt_set_basic_mode(NCDFLT_MODE_DISABLED). To enable
+ * the with-defaults capability, use ncdflt_set_basic_mode() to set the with-defaults'
  * basic mode.
  */
 #define NCDFLT_DISABLE ncdflt_set_basic_mode(NCWD_MODE_DISABLED)
 /**
  * @ingroup withdefaults
- * @brief Get current set basic mode of the with-defaults capability.
+ * @brief Get the current set basic mode of the with-defaults capability.
  * @return Current value of the with-defaults' basic mode.
  */
 NCWD_MODE ncdflt_get_basic_mode();
@@ -82,28 +82,28 @@ NCWD_MODE ncdflt_get_basic_mode();
  * @ingroup withdefaults
  * @brief Set with-defaults modes that are supported.
  *
- * This function should be used before establishing a NETCONF session and settle
- * common set of capabilities between client and server. On the client side,
+ * This function should be used before establishing a NETCONF session to settle
+ * on a common set of capabilities between a client and a server. On the client side,
  * this function has no effect.
  *
- * @param[in] modes ORed set of supported NCDFLT_MODE modes. Basic mode
+ * @param[in] modes ORed set of the supported NCDFLT_MODE modes. The basic mode
  * is always supported automatically.
  */
 void ncdflt_set_supported(NCWD_MODE modes);
 
 /**
  * @ingroup withdefaults
- * @brief Get ORed value containing currently supported with-defaults modes.
- * @return ORed value containing currently supported with-defaults modes.
+ * @brief Get ORed value containing the currently supported with-defaults modes.
+ * @return ORed value containing the currently supported with-defaults modes.
  */
 NCWD_MODE ncdflt_get_supported();
 
 /**
  * @ingroup withdefaults
- * @brief Set \<with-defaults\> parameter for the given NETCONF RPC message.
+ * @brief Set the \<with-defaults\> parameter for the given NETCONF RPC message.
  *
- * Sending RPC message withe set \<with-default\> parameter via the session
- * which doesn't support specified value or with-defaults capability at all
+ * Sending RPC message with the \<with-default\> parameter set via a session
+ * which does not support the specified value or the with-defaults capability
  * will fail.
  *
  * @param[in] rpc RPC message where \<with-defaults\> will be added.

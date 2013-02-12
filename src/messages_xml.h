@@ -49,14 +49,14 @@
 
 /**
  * @ingroup rpc_xml
- * @brief Create new NETCONF filter of the specified type.
+ * @brief Create a new NETCONF filter of the specified type.
  * @param[in] type Type of the filter.
  * @param[in] ... Filter content:
  * - for #NC_FILTER_SUBTREE type, single variadic parameter
  * **const xmlNodePtr filter** with the content for the \<filter\> element is
  * accepted. The filter parameter is not supposed to contain \<filter\> element,
  * but only its content. The node is taken as a node list, so the sibling nodes
- * are also added into the filter definition. If NULL is specified, Empty filter
+ * are also added into the filter definition. If NULL is specified, the Empty filter
  * (RFC 6241 sec 6.4.2) is created.
  * @return Created NETCONF filter structure.
  */
@@ -78,7 +78,7 @@ xmlDocPtr ncxml_reply_dump(const nc_reply *reply);
  *
  * @param[in] reply_dump XML document structure with the NETCONF \<rpc-reply\>
  * message. The structure is integrated into the internal rpc structure and
- * caller should not access (or free) given XML document anymore.
+ * caller should not access (or free) the given XML document anymore.
  * @return Complete reply structure used by libnetconf's functions.
  */
 nc_reply* ncxml_reply_build(xmlDocPtr reply_dump);
@@ -106,7 +106,7 @@ nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump);
 
 /**
  * @ingroup rpc_xml
- * @brief Get content of the operation specification from the given rpc.
+ * @brief Get the content of the operation specification from the given rpc.
  * @param[in] rpc rpc message.
  * @return libxml2 node structure with the NETCONF operation element(s) and its
  * content. Caller is supposed to free the returned structure with xmlFreeNodeList().
@@ -131,7 +131,7 @@ xmlNodePtr ncxml_rpc_get_config(const nc_rpc *rpc);
  * @brief Get \<data\> element in \<rpc-reply\> including its content.
  * @param reply rpc-reply message.
  * @return XML node \<data\> with its content. \<data\> is included to provide
- * valid (non-NULL) output in case of empty data returned (e.g. when all data
+ * a valid (non-NULL) output in case of empty data returned (e.g. when all the data
  * are filterred out). Caller is supposed to free the returned structure with
  * xmlFreeNode().
  */
@@ -140,7 +140,7 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply);
 /**
  * @ingroup reply_xml
  * @brief Create rpc-reply response with \<data\> content.
- * @param data Content (possible a node list) for the \<rpc-reply\>'s \<data\>
+ * @param data Content (possibly a node list) for the \<rpc-reply\>'s \<data\>
  * element.
  * @return Created \<rpc-reply\> message.
  */
@@ -151,11 +151,11 @@ nc_reply *ncxml_reply_data(const xmlNodePtr data);
  * @brief Create \<copy-config\> NETCONF rpc message.
  *
  * ### Variadic parameters:
- * - source is specified as #NC_DATASTORE_CONFIG:
+ * - the source is specified as #NC_DATASTORE_CONFIG:
  *  - nc_rpc_copyconfig() accepts as the first variadic parameter
  *  **const xmlNodePtr source_config** providing the complete configuration data
  *  to copy.
- * - source is specified as #NC_DATASTORE_URL:
+ * - the source is specified as #NC_DATASTORE_URL:
  *  - nc_rpc_copyconfig() accepts as the first variadic parameter
  *  **const char* source_url** providing the URL to the file
  * - target is specified as #NC_DATASTORE_URL:
@@ -186,8 +186,8 @@ nc_rpc *ncxml_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...);
  * the \<config\> data) and #NC_DATASTORE_URL (variadic parameter contains URL
  * for \<url\> element) values are accepted.
  * @param[in] default_operation Default operation for this request, 0 to skip
- * setting this parameter and use default server's ('merge') behavior.
- * @param[in] error_option Set reaction to an error, 0 for the server's default
+ * the setting of this parameter and use default server ('merge') behavior.
+ * @param[in] error_option Set the response to an error, 0 for the server default
  * behavior.
  * @param[in] test_option Set test-option element according to :validate:1.1
  * capability specified in RFC 6241.
@@ -207,9 +207,9 @@ nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_D
 
 /**
  * @ingroup rpc_xml
- * @brief Create a generic NETCONF rpc message with specified content.
+ * @brief Create a generic NETCONF rpc message with the specified content.
  *
- * Function gets data parameter and envelope it into \<rpc\> container. Caller
+ * The function recieves the data parameter and envelopes it into an \<rpc\> container. Caller
  * is fully responsible for the correctness of the given data.
  *
  * @param[in] data XML content of the \<rpc\> request to be sent.

@@ -98,7 +98,7 @@ int nc_nscmp(xmlNodePtr reference, xmlNodePtr node)
  *
  * \param[in] node XML element to analyse
  * \param[in] defop Default operation to use if no specific operation is present
- * \param[out] err NETCONF error structure to store error description
+ * \param[out] err NETCONF error structure to store the error description in
  *
  * \return NC_OP_TYPE_ERROR on error, valid NC_OP_TYPE values otherwise
  */
@@ -135,7 +135,7 @@ static NC_EDIT_OP_TYPE get_operation(xmlNodePtr node, NC_EDIT_DEFOP_TYPE defop, 
 }
 
 /**
- * @brief Get all nodes that have default value defined in the model.
+ * @brief Get all the nodes that have a default value defined in the model.
  * @param[in] model Configuration data model to search for nodes with defined
  * default values.
  * @return The list of found nodes with default value definitions.
@@ -172,11 +172,11 @@ xmlXPathObjectPtr get_defaults_list(xmlDocPtr model)
 }
 
 /**
- * \brief Get all key elements from configuration data model
+ * \brief Get all the key elements from the configuration data model
  *
  * \param model         XML form (YIN) of the configuration data model.
  *
- * \return              keyList with references to all keys in data model.
+ * \return              keyList with references to all the keys in the data model.
  */
 keyList get_keynode_list(xmlDocPtr model)
 {
@@ -211,11 +211,11 @@ keyList get_keynode_list(xmlDocPtr model)
 }
 
 /**
- * \brief Get all key nodes for the specific element.
+ * \brief Get all the key nodes for the specific element.
  *
- * \param[in] keys List of key elements from configuration data model.
+ * \param[in] keys List of key elements from the configuration data model.
  * \param[in] node Node for which the key elements are needed.
- * \param[in] all If set to 1, all keys must be found in node, non-zero is
+ * \param[in] all If set to 1, all the keys must be found in the node, non-zero is
  * returned otherwise.
  * \param[out] result List of pointers to the key elements from node's children.
  * \return Zero on success, non-zero otherwise.
@@ -304,21 +304,21 @@ static int get_keys(keyList keys, xmlNodePtr node, int all, xmlNodePtr **result)
 }
 
 /**
- * \brief Decide if the given children is a key element of the parent.
+ * \brief Decide if the given child is a key element of the parent.
  *
  * \param[in] parent Parent element which key node is checked.
- * \param[in] children Element to decide if it is a key element of the parent
- * \param[in] keys List of key elements from configuration data model.
- * \return Zero if the given children is NOT the key element of the parent.
+ * \param[in] child Element to decide if it is a key element of the parent
+ * \param[in] keys List of key elements from the configuration data model.
+ * \return Zero if the given child is NOT the key element of the parent.
  */
-static int is_key(xmlNodePtr parent, xmlNodePtr children, keyList keys)
+static int is_key(xmlNodePtr parent, xmlNodePtr child, keyList keys)
 {
 	xmlChar *str = NULL;
 	char *s, *token;
 	int i;
 
 	assert(parent != NULL);
-	assert(children != NULL);
+	assert(child != NULL);
 
 	if (keys == NULL) {
 		/* there are no keys */
@@ -326,7 +326,7 @@ static int is_key(xmlNodePtr parent, xmlNodePtr children, keyList keys)
 	}
 
 	for (i = 0; i < keys->nodesetval->nodeNr; i++) {
-		/* get corresponding key definition from the data model */
+		/* get the corresponding key definition from the data model */
 		// name = xmlGetNsProp (keys->nodesetval->nodeTab[i]->parent, BAD_CAST "name", BAD_CAST NC_NS_YIN);
 		if ((str = xmlGetProp(keys->nodesetval->nodeTab[i]->parent, BAD_CAST "name")) == NULL) {
 			continue;
@@ -343,14 +343,14 @@ static int is_key(xmlNodePtr parent, xmlNodePtr children, keyList keys)
 		}
 
 		/* attribute have the form of space-separated list of key nodes */
-		/* compare all key node names with specified children */
+		/* compare all the key node names with the specified child */
 		for (token = s = (char*) str; token != NULL; s = NULL) {
 			token = strtok(s, " ");
 			if (token == NULL) {
 				break;
 			}
 
-			if (xmlStrcmp(BAD_CAST token, children->name) == 0) {
+			if (xmlStrcmp(BAD_CAST token, child->name) == 0) {
 				xmlFree(str);
 				return 1;
 			}
@@ -361,9 +361,9 @@ static int is_key(xmlNodePtr parent, xmlNodePtr children, keyList keys)
 }
 
 /**
- * \brief Match 2 elements each other if they are equivalent for NETCONF.
+ * \brief Compare 2 elements and decide if they are equal for NETCONF.
  *
- * Match does not include attributes and children match (only key children are
+ * Matching does not include attributes and children match (only key children are
  * checked). Furthemore, XML node types and namespaces are also checked.
  *
  * Supported XML node types are XML_TEXT_NODE and XML_ELEMENT_NODE.
@@ -472,10 +472,10 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 }
 
 /**
- * @brief Go recursively in YIN model and find model's equivalent of the node
- * @param[in] node XML element which we want to find in model
+ * @brief Go recursively in the YIN model and find model's equivalent of the node
+ * @param[in] node XML element which we want to find in the model
  * @param[in] model Configuration data model (YIN format)
- * @return model's equivalent of the node, NULL if no such element found.
+ * @return model's equivalent of the node, NULL if no such element is found.
  */
 static xmlNodePtr model_recursion(xmlNodePtr node, xmlDocPtr model)
 {
@@ -508,10 +508,10 @@ static xmlNodePtr model_recursion(xmlNodePtr node, xmlDocPtr model)
 }
 
 /**
- * @brief Get default value of the node if a default value defined in the model
+ * @brief Get the default value of the node if a default value is defined in the model
  * @param[in] node XML element whose default value we want to get
  * @param[in] model Configuration data model for the document of the given node.
- * @return Default value of the node, NULL if no default value defined or found.
+ * @return Default value of the node, NULL if no default value is defined or found.
  */
 static xmlChar* get_default_value(xmlNodePtr node, xmlDocPtr model)
 {
@@ -534,12 +534,12 @@ static xmlChar* get_default_value(xmlNodePtr node, xmlDocPtr model)
 }
 
 /**
- * \brief Find corresponding equivalent of the given edit node on orig_doc document.
+ * \brief Find an equivalent of the given edit node on orig_doc document.
  *
  * \param[in] orig_doc Original configuration document to edit.
  * \param[in] edit Element from the edit-config's \<config\>. Its equivalent in
  *                 orig_doc should be found.
- * \param[in] keys List of key elements from configuration data model.
+ * \param[in] keys List of the key elements from the configuration data model.
  * \return Found equivalent element, NULL if no such element exists.
  */
 static xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, keyList keys)
@@ -582,7 +582,7 @@ static xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, keyLis
 }
 
 /**
- * \brief Get the list of elements with specified selected edit-config's operation.
+ * \brief Get the list of elements with the specified selected edit-config's operation.
  *
  * \param[in] op edit-config's operation type to search for.
  * \param[in] edit XML document covering edit-config's \<config\> element. The
@@ -649,14 +649,14 @@ static xmlXPathObjectPtr get_operation_elements(NC_EDIT_OP_TYPE op, xmlDocPtr ed
 /**
  * \brief Check edit-config's node operations hierarchy.
  *
- * In case of removing ("remove" and "delete") operations, the supreme operation
- * (including the default operation) cannot be a creating ("create or "replace")
+ * In case of the removal ("remove" and "delete") operations, the supreme operation
+ * (including the default operation) cannot be the creation ("create or "replace")
  * operation.
  *
- * In case of creating operations, the supreme operation cannot be a removing
+ * In case of the creation operations, the supreme operation cannot be a removal
  * operation.
  *
- * \param[in] edit XML node from edit-config's \<config\> which hierarchy
+ * \param[in] edit XML node from edit-config's \<config\> whose hierarchy
  *                 (supreme operations) will be checked.
  * \param[in] defop Default edit-config's operation for this edit-config call.
  * \param[out] err NETCONF error structure.
@@ -715,24 +715,24 @@ static int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, s
 /**
  * \brief Check edit-config's operation rules.
  *
- * In case of "create" operation, if the configuration data exists, an
+ * In case of the "create" operation, if the configuration data exists, the
  * "data-exists" error is generated.
  *
- * In case of "delete" operation, if the configuration data does not exist, an
+ * In case of the "delete" operation, if the configuration data does not exist, the
  * "data-missing" error is generated.
  *
  * Operation hierarchy check check_edit_ops_hierarchy() is also applied.
  *
- * \param[in] op Operation type to check (only "delete" and "create" operation
+ * \param[in] op Operation type to check (only the "delete" and "create" operation
  * types are valid).
  * \param[in] defop Default edit-config's operation for this edit-config call.
  * \param[in] orig Original configuration document to edit.
  * \param[in] edit XML document covering edit-config's \<config\> element
- * supposed to edit orig configuration data.
+ * supposed to edit the orig configuration data.
  * \param[in] model XML form (YIN) of the configuration data model appropriate
  * to the given repo.
  * \param[out] err NETCONF error structure.
- * \return On error, non-zero is returned and err structure is filled. Zero is
+ * \return On error, non-zero is returned and an err structure is filled. Zero is
  * returned on success.
  */
 static int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr orig, xmlDocPtr edit, xmlDocPtr model, struct nc_err **error)
@@ -881,8 +881,8 @@ static int edit_delete (xmlNodePtr node)
  *
  * \param[in] orig_doc Original configuration document to edit.
  * \param[in] edit_node Node from the edit-config's \<config\> element with
- * specified "remove" operation.
- * \param[in] keys  List of key elements from configuration data model.
+ * the specified "remove" operation.
+ * \param[in] keys  List of the key elements from the configuration data model.
  *
  * \return Zero on success, non-zero otherwise.
  */
@@ -904,7 +904,7 @@ static int edit_remove (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 }
 
 /**
- * \brief Recursive variant of edit_create() function to create missing parent path of the node to be created.
+ * \brief Recursive variant of edit_create() function to create the missing parent path of the node to be created.
  *
  * \param[in] orig_doc Original configuration document to edit.
  * \param[in] edit_node Node from the missing parent chain of the element to
@@ -958,7 +958,7 @@ static int edit_create (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 	xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST NC_EDIT_ATTR_OP, BAD_CAST NC_NS_BASE));
 	nc_clear_namespaces(edit_node);
 
-	/* create new element in configuration data as a copy of the element from the edit-config */
+	/* create a new element in the configuration data as a copy of the element from the edit-config */
 	VERB("Creating node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
 	if (parent == NULL) {
 		if (orig_doc->children == NULL) {
@@ -984,8 +984,8 @@ static int edit_create (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
  *
  * \param[in] orig_doc Original configuration document to edit.
  * \param[in] edit_node Node from the edit-config's \<config\> element with
- * specified "replace" operation.
- * \param[in] keys  List of key elements from configuration data model.
+ * the specified "replace" operation.
+ * \param[in] keys  List of the key elements from the configuration data model.
  *
  * \return Zero on success, non-zero otherwise.
  */
@@ -1002,7 +1002,7 @@ static int edit_replace (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 		xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST NC_EDIT_ATTR_OP, BAD_CAST NC_NS_BASE));
 		nc_clear_namespaces(edit_node);
 
-		/* replace old configuration data with new data */
+		/* replace old configuration data with the new data */
 		VERB("Replacing node %s (%s:%d)", (char*)old->name, __FILE__, __LINE__);
 		if (xmlReplaceNode(old, xmlCopyNode(edit_node, 1)) == NULL) {
 			return EXIT_FAILURE;
@@ -1156,13 +1156,13 @@ int edit_merge (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 }
 
 /**
- * \brief Perform all edit-config's operations specified in edit_doc document.
+ * \brief Perform all the edit-config's operations specified in the edit_doc document.
  *
  * \param[in] orig_doc Original configuration document to edit.
  * \param[in] edit_doc XML document covering edit-config's \<config\> element
  *                     supposed to edit orig_doc configuration data.
  * \param[in] defop Default edit-config's operation for this edit-config call.
- * \param[in] keys  List of key elements from configuration data model.
+ * \param[in] keys  List of the key elements from the configuration data model.
  * \param[out] err NETCONF error structure.
  *
  * \return On error, non-zero is returned and err structure is filled. Zero is
@@ -1294,7 +1294,7 @@ static int compact_edit_operations_recursively (xmlNodePtr node, NC_EDIT_OP_TYPE
 		break;
 	case 0:
 		/* no operation defined -> go recursively, but use supreme
-		 * operation, it may be the default operation and in such case,
+		 * operation, it may be the default operation and in such a case
 		 * remove it */
 		op = supreme_op;
 		break;
@@ -1330,11 +1330,11 @@ static int compact_edit_operations (xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop
 }
 
 /**
- * \brief Perform edit-config changes according to given parameters
+ * \brief Perform edit-config changes according to the given parameters
  *
  * \param[in] repo XML document to change (target NETCONF repository).
- * \param[in] edit content of the edit-config's \<config\> element as XML
- * document defining changes to perform.
+ * \param[in] edit Content of the edit-config's \<config\> element as an XML
+ * document defining the changes to perform.
  * \param[in] model XML form (YIN) of the configuration data model appropriate to the given repo.
  * \param[in] defop Default edit-config's operation for this edit-config call.
  * \param[in] errop NETCONF edit-config's error option defining reactions to an error.

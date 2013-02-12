@@ -52,26 +52,26 @@ typedef xmlXPathObjectPtr keyList;
 keyList get_keynode_list(xmlDocPtr model);
 
 /**
- * \brief Match 2 elements each other if they are equivalent for NETCONF.
+ * \brief Compare 2 elements and decide if they are equal for NETCONF.
  *
- * Match does not include attributes and children match (only key children are
+ * Matching does not include attributes and children match (only key children are
  * checked). Furthemore, XML node types and namespaces are also checked.
  *
  * Supported XML node types are XML_TEXT_NODE and XML_ELEMENT_NODE.
  *
  * \param[in] node1 First node to compare.
  * \param[in] node2 Second node to compare.
- * \param[in] keys List of key elements from configuration data model.
+ * \param[in] keys List of the key elements from the configuration data model.
  *
  * \return 0 - false, 1 - true (matching elements).
  */
 int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys);
 
 /**
- * \brief Perform edit-config changes according to given parameters
+ * \brief Perform edit-config changes according to the given parameters
  *
  * \param[in] repo XML document to change (target NETCONF repository).
- * \param[in] edit edit-config's \<config\> element as XML document defining changes to perform.
+ * \param[in] edit edit-config's \<config\> element as an XML document defining the changes to perform.
  * \param[in] model XML form (YIN) of the configuration data model appropriate to the given repo.
  * \param[in] defop Default edit-config's operation for this edit-config call.
  * \param[in] errop NETCONF edit-config's error option defining reactions to an error.
@@ -85,13 +85,13 @@ int edit_merge (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys);
 
 /**
  * \todo: stolen from old netopeer, verify function
- * \brief compare node namespace against reference node namespace
+ * \brief compare the node namespace against the reference node namespace
  *
- * \param reference     reference node, compared node must has got same namespace as reference node
+ * \param reference     reference node, compared node must have the same namespace as the reference node
  * \param node          compared node
  *
- * \return              0 if compared node is in same namespace as reference
- *                      node, 1 otherelse
+ * \return              0 if compared node is in the same namespace as the reference
+ *                      node, 1 otherwise
  */
 int nc_nscmp(xmlNodePtr reference, xmlNodePtr node);
 

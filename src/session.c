@@ -98,7 +98,7 @@ struct session_list_item {
 	char login_time[TIME_LENGTH];
 	 /*
 	  * variable length part - data actually contain 2 strings (username and
-	  * source-host which lengths can differ for each session
+	  * source-host whose lengths can differ for each session)
 	  */
 	pthread_rwlock_t lock;
 	char data[1];
@@ -106,7 +106,7 @@ struct session_list_item {
 
 struct session_list_map {
 	/* start of the mapped file with session list */
-	int size; /* current file size (may include gaps */
+	int size; /* current file size (may include gaps) */
 	int count; /* current number of sessions */
 	int first_offset;
 	pthread_rwlock_t lock; /* lock for the all file - for resizing */
@@ -166,7 +166,7 @@ int nc_session_monitoring_init(void)
 	}
 
 	if (fdinfo.st_size == 0) {
-		/* we have new file, create some initial size using file gaps */
+		/* we have a new file, create some initial size using file gaps */
 		first = 1;
 		lseek(session_list_fd, SIZE_STEP - 1, SEEK_SET);
 		while (((c = write(session_list_fd, "", 1)) == -1) && (errno == EAGAIN || errno == EINTR));
@@ -604,7 +604,7 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 	for (i = 0; i < capabilities->items; i++) {
 		if (strncmp(capabilities->list[i], s, strlen(s)) == 0) {
 			/* capability is already in the capabilities list, but
-			 * parameters can differ, so substitute current instance
+			 * parameters can differ, so substitute the current instance
 			 * with the new one
 			 */
 			free(capabilities->list[i]);
@@ -876,7 +876,7 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 
 	/*
 	 * mutexes and queues fields are not initialized since dummy session
-	 * can not send or receive any data
+	 * cannot send or receive any data
 	 */
 
 	/* session is DUMMY */
@@ -1444,7 +1444,7 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 }
 
 /**
- * @brief Get message id string from the NETCONF message
+ * @brief Get the message id string from the NETCONF message
  *
  * @param[in] msg NETCONF message to parse.
  * @return 0 on error,\n message-id of the message on success.
@@ -1938,7 +1938,7 @@ try_again:
 		break;
 	case NC_MSG_NONE:
 		/* <rpc-reply> with error information was processed
-		 * automatically, but we are waiting for notification
+		 * automatically, but we are waiting for a notification
 		 */
 		break;
 	case NC_MSG_WOULDBLOCK:
@@ -2377,7 +2377,7 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
 			break;
 		}
 		/*
-		 * else (e.g. Notification or not expected reply was received)
+		 * else (e.g. Notification or an unexpected reply was received)
 		 * read another message in the loop
 		 */
 	}

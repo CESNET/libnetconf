@@ -62,7 +62,7 @@ struct ncds_ds_empty {
 	 */
 	xmlDocPtr model;
 	/**
-	 * @brief Pointer to a callback function implementing retrieving of the
+	 * @brief Pointer to a callback function implementing the retrieval of the
 	 * device status data.
 	 */
 	char* (*get_state)(const char* model, const char* running);
@@ -73,7 +73,7 @@ struct ncds_ds_empty {
 };
 
 /**
- * @brief Initialization of empty datastore
+ * @brief Initialization of an empty datastore
  *
  * @param ds Datastore to initialize
  *
@@ -82,7 +82,7 @@ struct ncds_ds_empty {
 int ncds_empty_init (struct ncds_ds * ds);
 
 /**
- * @brief Closes and removes datastore
+ * @brief Closes and removes the datastore
  *
  * @param ds Datastore to close
  */
