@@ -49,8 +49,12 @@
 #include <assert.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <sys/types.h>
+#include <grp.h>
+#include <pwd.h>
 
 #include "netconf_internal.h"
+#include "nacm.h"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -80,7 +84,7 @@ static int init_flags = 0;
 int nc_init(int flags)
 {
 	int retval = 0, r;
-	key_t key = -3;
+	key_t key = -4;
 	int first = 1;
 	char* t;
 	pthread_rwlockattr_t rwlockattr;
@@ -154,6 +158,15 @@ int nc_init(int flags)
 	}
 #endif
 
+	/* init Access Control subsystem */
+	if (flags & NC_INIT_NACM) {
+		if (nacm_init() != EXIT_SUCCESS) {
+			shmdt(nc_info);
+			return (-1);
+		}
+		init_flags |= NC_INIT_NACM;
+	}
+
 	init_flags |= NC_INIT_DONE;
 	return (retval);
 }
@@ -195,6 +208,10 @@ int nc_close(int system)
 		ncntf_close();
 	}
 #endif
+	/* close Access Control subsystem */
+	if (init_flags & NC_INIT_NACM) {
+		nacm_close();
+	}
 
 	init_flags = 0;
 	return (retval);
@@ -221,6 +238,45 @@ char* nc_clrwspace (const char* in)
 	while (j >= 0 && isspace(retval[j])) {
 		retval[j] = '\0';
 		j--;
+	}
+
+	return (retval);
+}
+
+char** nc_get_grouplist(const char* username)
+{
+	struct passwd* p;
+	struct group* g;
+	int i, j;
+	gid_t *glist;
+	char** retval = NULL;
+
+	/* get system groups for the username */
+	if (username != NULL && (p = getpwnam(username)) != NULL) {
+		i = 0;
+		/* this call end with -1, but sets i to contain count of groups */
+		getgrouplist(username, p->pw_gid, NULL, &i);
+		if (i != 0) {
+			glist = malloc(i * sizeof (gid_t));
+			retval = malloc((i+1) * sizeof(char*));
+			if (glist == NULL || retval == NULL) {
+				ERROR("Memory reallocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+				free(retval);
+				free(glist);
+				return NULL;
+			}
+
+			if (getgrouplist(username, p->pw_gid, glist, &i) != -1) {
+				for (j = 0; j < i; j++) {
+					g = getgrgid(glist[j]);
+					retval[j] = strdup(g->gr_name);
+				}
+				retval[j] = NULL; /* list termination */
+			} else {
+				WARN("%s: unable to get list of groups (getgrouplist() failed)", __func__);
+			}
+			free(glist);
+		}
 	}
 
 	return (retval);

@@ -82,6 +82,7 @@ SRCS =  src/callbacks.c \
 	src/session.c \
 	src/ssh.c @SRCS_NOTIFICATIONS@ \
 	src/with_defaults.c \
+	src/nacm.c \
 	src/datastore.c \
 	src/datastore/edit_config.c \
 	src/datastore/empty/datastore_empty.c \
@@ -116,6 +117,7 @@ HDRS_PRIV = src/config.h.in \
 	src/session.h \
 	src/ssh.h @HDRS_PRIV_NOTIFICATIONS@ \
 	src/with_defaults.h \
+	src/nacm.h \
 	src/datastore.h \
 	src/datastore/datastore_internal.h \
 	src/datastore/edit_config.h \

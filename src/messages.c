@@ -55,6 +55,7 @@
 #include "error.h"
 #include "messages_internal.h"
 #include "with_defaults.h"
+#include "nacm.h"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -181,6 +182,7 @@ static char* nc_msg_dump(const struct nc_msg *msg)
 	}
 
 	xmlDocDumpFormatMemory(msg->doc, &buf, &len, 1);
+	/* \todo dump NACM info */
 	return ((char*) buf);
 }
 
@@ -259,6 +261,7 @@ static struct nc_msg* nc_msg_build (const char * msg_dump)
 	}
 	msg->error = NULL;
 	msg->with_defaults = NCWD_MODE_NOTSET;
+	/* \todo build NACM info */
 
 	return msg;
 }
@@ -321,7 +324,7 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 	xmlXPathContextPtr rpc_ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;
 	xmlChar* data;
-	NCWD_MODE retval;
+	NCWD_MODE retval = NCWD_MODE_NOTSET;
 
 	if (rpc == NULL || nc_rpc_get_type(rpc) == NC_RPC_HELLO) {
 		return (NCWD_MODE_NOTSET);
@@ -373,7 +376,7 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 				xmlFree(data);
 				break;
 			default:
-				retval = NCWD_MODE_NOTSET;
+				/* retval = NCWD_MODE_NOTSET; */
 				break;
 			}
 		}
@@ -1181,7 +1184,7 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 		return(NULL);
 	}
 
-	return (xmlCopyNode(data, 1));
+	return (data);
 }
 
 const char *nc_reply_get_errormsg(const nc_reply *reply)
@@ -1251,6 +1254,7 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 void nc_msg_free(struct nc_msg *msg)
 {
 	struct nc_err* e, *efree;
+	int i;
 
 	if (msg != NULL && msg != ((void *) -1)) {
 		if (msg->doc != NULL) {
@@ -1268,6 +1272,13 @@ void nc_msg_free(struct nc_msg *msg)
 		}
 		if (msg->msgid != NULL) {
 			free(msg->msgid);
+		}
+		if (msg->nacm != NULL) {
+			for (i = 0; msg->nacm->rule_lists != NULL && msg->nacm->rule_lists[i] != NULL; i++) {
+				nacm_rule_list_free(msg->nacm->rule_lists[i]);
+			}
+			free(msg->nacm->rule_lists);
+			free(msg->nacm);
 		}
 		free(msg);
 	}
@@ -1295,6 +1306,15 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 	dupmsg->doc = xmlCopyDoc(msg->doc, 1);
 	dupmsg->type = msg->type;
 	dupmsg->with_defaults = msg->with_defaults;
+	if (msg->nacm != NULL) {
+		dupmsg->nacm = malloc(sizeof(struct nacm_rpc));
+		dupmsg->nacm->default_exec = msg->nacm->default_exec;
+		dupmsg->nacm->default_read = msg->nacm->default_read;
+		dupmsg->nacm->default_write = msg->nacm->default_write;
+		dupmsg->nacm->rule_lists = nacm_rule_lists_dup(msg->nacm->rule_lists);
+	} else {
+		dupmsg->nacm = NULL;
+	}
 	if (msg->msgid != NULL) {
 		dupmsg->msgid = strdup(msg->msgid);
 	} else {
@@ -1425,6 +1445,7 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 	msg->msgid = NULL;
 	msg->error = NULL;
 	msg->with_defaults = NCWD_MODE_NOTSET;
+	msg->nacm = NULL;
 
 	/* create xpath evaluation context */
 	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {

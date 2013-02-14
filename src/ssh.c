@@ -738,6 +738,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		return (NULL);
 	}
 	retval->username = strdup(pw->pw_name);
+	retval->groups = nc_get_grouplist(retval->username);
 
 	if (capabilities == NULL) {
 		if ((server_cpblts = nc_session_get_cpblts_default()) == NULL) {
@@ -979,6 +980,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->ssh_session = NULL;
 	retval->hostname = strdup(host);
 	retval->username = strdup(username);
+	retval->groups = NULL; /* client side does not need this information */
 	retval->port = strdup(port_s);
 	retval->msgid = 1;
 	retval->queue_event = NULL;
@@ -1236,6 +1238,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->fd_output = -1;
 	retval->hostname = strdup(host);
 	retval->username = strdup(username);
+	retval->groups = NULL; /* client side does not need this information */
 	retval->port = strdup(port_s);
 	retval->msgid = 1;
 	retval->queue_event = NULL;

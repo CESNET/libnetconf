@@ -41,6 +41,7 @@
 #define NETCONF_INTERNAL_H_
 
 #include <time.h>
+#include <stdbool.h>
 #include <pthread.h>
 
 #ifndef DISABLE_LIBSSH
@@ -108,6 +109,8 @@
 #define NC_NS_NOTIFICATIONS_ID 	"ntf"
 #define NC_NS_MONITORING 	"urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
 #define NC_NS_MONITORING_ID 	"monitor"
+#define NC_NS_NACM              "urn:ietf:params:xml:ns:yang:ietf-netconf-acm"
+#define NC_NS_NACM_ID           "nacm"
 
 /* NETCONF versions identificators */
 #define NETCONFV10	0
@@ -236,6 +239,12 @@ struct nc_statistics {
 	struct nc_session_stats counters;
 };
 
+struct nacm_stats {
+	unsigned int denied_ops;
+	unsigned int denied_data;
+	unsigned int denied_notifs;
+};
+
 /**
  * @ingroup internalAPI
  * @brief Information structure shared between all libnetconf's processes.
@@ -243,6 +252,7 @@ struct nc_statistics {
 struct nc_shared_info {
 	pthread_rwlock_t lock;
 	struct nc_statistics stats;
+	struct nacm_stats stats_nacm;
 };
 
 /**
@@ -281,6 +291,8 @@ struct nc_session {
 	char *port;
 	/**< @brief name of the user holding the session */
 	char *username;
+	/**< @brief NULL-terminated list of external (system) groups for NACM */
+	char **groups;
 	/**< @brief login time in yang:date-and-time format */
 	char *logintime;
 	/**< @brief number of confirmed capabilities */
@@ -393,6 +405,13 @@ struct nc_err {
 	struct nc_err* next;
 };
 
+struct nacm_rpc {
+	bool default_read; /* false (0) for permit, true (1) for deny */
+	bool default_write; /* false (0) for permit, true (1) for deny */
+	bool default_exec; /* false (0) for permit, true (1) for deny */
+	struct rule_list** rule_lists;
+};
+
 /**
  * @brief generic message structure covering both rpc and reply.
  * @ingroup internalAPI
@@ -407,6 +426,7 @@ struct nc_msg {
 		NC_NOTIF_TYPE ntf;
 	} type;
 	NCWD_MODE with_defaults;
+	struct nacm_rpc *nacm;
 	struct nc_err* error;
 	struct nc_msg* next;
 };
@@ -534,5 +554,8 @@ void nc_session_monitoring_close(void);
  * @param[in] node XML element node where to check namespace definitions
  */
 void nc_clear_namespaces(xmlNodePtr node);
+
+
+char** nc_get_grouplist(const char* username);
 
 #endif /* NETCONF_INTERNAL_H_ */

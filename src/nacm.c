@@ -1,0 +1,794 @@
+/**
+ * \file nacm.c
+ * \author Radek Krejci <rkrejci@cesnet.cz>
+ * \brief Implementation of NETCONF Access Control Module defined in RFC 6536
+ *
+ * Copyright (C) 2012-2013 CESNET, z.s.p.o.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ * 3. Neither the name of the Company nor the names of its contributors
+ *    may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * ALTERNATIVELY, provided that this notice is retained in full, this
+ * product may be distributed under the terms of the GNU General Public
+ * License (GPL) version 2 or later, in which case the provisions
+ * of the GPL apply INSTEAD OF those given above.
+ *
+ * This software is provided ``as is, and any express or implied
+ * warranties, including, but not limited to, the implied warranties of
+ * merchantability and fitness for a particular purpose are disclaimed.
+ * In no event shall the company or contributors be liable for any
+ * direct, indirect, incidental, special, exemplary, or consequential
+ * damages (including, but not limited to, procurement of substitute
+ * goods or services; loss of use, data, or profits; or business
+ * interruption) however caused and on any theory of liability, whether
+ * in contract, strict liability, or tort (including negligence or
+ * otherwise) arising in any way out of the use of this software, even
+ * if advised of the possibility of such damage.
+ *
+ */
+
+#include <stdlib.h>
+#include <stdbool.h>
+#include <stdint.h>
+
+#include <libxml/tree.h>
+#include <libxml/parser.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
+
+#include "session.h"
+#include "messages.h"
+#include "messages_xml.h"
+#include "netconf_internal.h"
+#include "nacm.h"
+#include "datastore.h"
+
+static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
+typedef enum {
+	NACM_RULE_OPERATION = 1,
+	NACM_RULE_NOTIF = 2,
+	NACM_RULE_DATA = 3
+} NACM_RULE_TYPE;
+
+struct nacm_group {
+	char* name;
+	char** users;
+};
+
+struct nacm_rule {
+	char* module;
+	NACM_RULE_TYPE type;
+	/*
+	 * data item contains:
+	 * - rpc-name for NACM_RULE_OPERATION type
+	 * - notification-name for NACM_RULE_NOTIF type
+	 * - path for NACM_RULE_DATA type
+	 */
+	char* data;
+#define NACM_ACCESS_CREATE 0x01
+#define NACM_ACCESS_READ   0x02
+#define NACM_ACCESS_UPDATE 0x04
+#define NACM_ACCESS_DELETE 0x08
+#define NACM_ACCESS_EXEC   0x10
+#define NACM_ACCESS_ALL    0xff
+	uint8_t access;
+	bool action; /* false (0) for permit, true (1) for deny */
+};
+
+struct rule_list {
+	char** groups;
+	struct nacm_rule** rules;
+};
+
+struct nacm_config {
+	bool enabled;
+	bool default_read; /* false (0) for permit, true (1) for deny */
+	bool default_write; /* false (0) for permit, true (1) for deny */
+	bool default_exec; /* false (0) for permit, true (1) for deny */
+	bool external_groups;
+	struct nacm_group** groups;
+	struct rule_list** rule_lists;
+} nacm_config;
+
+/* access to the NACM statistics */
+extern struct nc_shared_info *nc_info;
+
+static nc_rpc* get_config_rpc = NULL;
+static struct nc_session* nacm_session = NULL;
+
+int nacm_config_refresh(void);
+
+void nacm_group_free(struct nacm_group* g)
+{
+	char* s;
+	int i;
+
+	if (g != NULL) {
+		free(g->name);
+		for (i = 0, s = g->users[i]; s != NULL; i++, s = g->users[i]) {
+			free(s);
+		}
+		free(g->users);
+		free(g);
+	}
+}
+
+void nacm_rule_free(struct nacm_rule* r)
+{
+	if (r != NULL) {
+		free(r->data);
+		free(r->module);
+		free(r);
+	}
+}
+
+void nacm_rule_list_free(struct rule_list* rl)
+{
+	int i;
+
+	if (rl != NULL) {
+		if (rl->groups != NULL) {
+			for(i = 0; rl->groups[i] != NULL; i++) {
+				free(rl->groups[i]);
+			}
+			free(rl->groups);
+		}
+		if (rl->rules != NULL) {
+			for(i = 0; rl->rules[i] != NULL; i++) {
+				nacm_rule_free(rl->rules[i]);
+			}
+			free(rl->rules);
+		}
+		free(rl);
+	}
+}
+
+struct rule_list* nacm_rule_list_dup(struct rule_list* r)
+{
+	struct rule_list *new = NULL;
+	int i;
+
+	if (r != NULL) {
+		new = malloc(sizeof(struct rule_list));
+		if (new != NULL) {
+			if (r->groups != NULL) {
+				for(i = 0; r->groups[i] != NULL; i++);
+				new->groups = malloc((i+1) * sizeof(char*));
+				if (new->groups == NULL) {
+					free(new);
+					return (NULL);
+				}
+				for(i = 0; r->groups[i] != NULL; i++) {
+					new->groups[i] = strdup(r->groups[i]);
+				}
+				new->groups[i] = NULL;
+			} else {
+				new->groups = NULL;
+			}
+
+			if (r->rules != NULL) {
+				for(i = 0; r->rules[i] != NULL; i++);
+				new->rules = malloc((i+1) * sizeof(char*));
+				if (new->rules == NULL) {
+					nacm_rule_list_free(new);
+					return (NULL);
+				}
+				for(i = 0; r->rules[i] != NULL; i++) {
+					new->rules[i] = malloc(sizeof(struct nacm_rule));
+					if (new->rules[i] == NULL) {
+						nacm_rule_list_free(new);
+						return (NULL);
+					}
+					new->rules[i]->access = r->rules[i]->access;
+					new->rules[i]->action = r->rules[i]->action;
+					new->rules[i]->data = (r->rules[i]->data == NULL) ? NULL : strdup(r->rules[i]->data);
+					new->rules[i]->module = (r->rules[i]->module == NULL) ? NULL : strdup(r->rules[i]->module);
+					new->rules[i]->type = r->rules[i]->type;
+				}
+				new->rules[i] = NULL;
+			} else {
+				new->rules = NULL;
+			}
+		}
+	}
+
+	return (new);
+}
+
+struct rule_list** nacm_rule_lists_dup(struct rule_list** list)
+{
+	int i;
+	struct rule_list** new;
+
+	if (list == NULL) {
+		return (NULL);
+	}
+
+	for(i = 0; list[i] != NULL; i++);
+	new = malloc((i+1) * sizeof(struct rule_list*));
+	if (new == NULL) {
+		return (NULL);
+	}
+	for(i = 0; list[i] != NULL; i++) {
+		new[i] = nacm_rule_list_dup(list[i]);
+		if (new[i] == NULL) {
+			for(i--; i >= 0; i--) {
+				nacm_rule_list_free(new[i]);
+			}
+			return (NULL);
+		}
+	}
+	new[i] = NULL; /* list terminating NULL byte */
+
+	return (new);
+}
+
+static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
+{
+	xmlNodePtr node;
+	struct nacm_rule* rule;
+	char* s;
+	bool action = false;
+
+	/* many checks for rule element are done in nacm_config_refresh() before calling this function */
+
+	rule = malloc(sizeof(struct nacm_rule));
+	if (rule == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+	rule->type = 0;
+	rule->data = NULL;
+	rule->module = NULL;
+	rule->access = 0;
+
+	for (node = rulenode->children; node != NULL; node = node->next) {
+		if (node->type == XML_ELEMENT_NODE && node->ns != NULL && xmlStrcmp(node->ns->href, BAD_CAST NC_NS_NACM) == 0 &&
+				node->children != NULL && node->children->type == XML_TEXT_NODE) {
+			if (xmlStrcmp(node->name, BAD_CAST "module-name") == 0) {
+				rule->module = nc_clrwspace((char*)node->children->content);
+			} else if (xmlStrcmp(node->name, BAD_CAST "rpc-name") == 0) {
+				if (rule->type != 0) {
+					ERROR("%s: invalid rule definition (multiple cases from rule-type choice)", __func__);
+					nacm_rule_free(rule);
+					return (NULL);
+				}
+				rule->type = NACM_RULE_OPERATION;
+				rule->data = nc_clrwspace((char*)node->children->content);
+			} else if (xmlStrcmp(node->name, BAD_CAST "notification-name") == 0) {
+				if (rule->type != 0) {
+					ERROR("%s: invalid rule definition (multiple cases from rule-type choice)", __func__);
+					nacm_rule_free(rule);
+					return (NULL);
+				}
+				rule->type = NACM_RULE_NOTIF;
+				rule->data = nc_clrwspace((char*)node->children->content);
+			} else if (xmlStrcmp(node->name, BAD_CAST "path") == 0) {
+				if (rule->type != 0) {
+					ERROR("%s: invalid rule definition (multiple cases from rule-type choice)", __func__);
+					nacm_rule_free(rule);
+					return (NULL);
+				}
+				rule->type = NACM_RULE_DATA;
+				rule->data = nc_clrwspace((char*)node->children->content);
+			} else if (xmlStrcmp(node->name, BAD_CAST "access-operations") == 0) {
+				if (xmlStrstr(node->children->content, BAD_CAST "*")) {
+					rule->access = NACM_ACCESS_ALL;
+				} else {
+					if (xmlStrstr(node->children->content, BAD_CAST "create")) {
+						rule->access |= NACM_ACCESS_CREATE;
+					} else if (xmlStrstr(node->children->content, BAD_CAST "read")) {
+						rule->access |= NACM_ACCESS_READ;
+					} else if (xmlStrstr(node->children->content, BAD_CAST "update")) {
+						rule->access |= NACM_ACCESS_UPDATE;
+					} else if (xmlStrstr(node->children->content, BAD_CAST "delete")) {
+						rule->access |= NACM_ACCESS_DELETE;
+					} else if (xmlStrstr(node->children->content, BAD_CAST "exec")) {
+						rule->access |= NACM_ACCESS_EXEC;
+					}
+				}
+			} else if (xmlStrcmp(node->name, BAD_CAST "action") == 0) {
+				action = true;
+				s = nc_clrwspace((char*) node->children->content);
+				if (strcmp(s, "permit") == 0) {
+					rule->action = NACM_PERMIT;
+				} else if (strcmp(s, "deny") == 0) {
+					rule->action = NACM_DENY;
+				} else {
+					ERROR("%s: Invalid /nacm/rule-list/rule/action value (%s).", __func__, s);
+					nacm_rule_free(rule);
+					return (NULL);
+				}
+				free(s);
+			}
+		}
+	}
+
+	if (!action || rule->access == 0) {
+		WARN("%s: Invalid /nacm/rule-list/rule - missing some mandatory elements, skipping the rule.", __func__);
+		nacm_rule_free(rule);
+		return (NULL);
+	}
+
+	return (rule);
+}
+
+int nacm_init(void)
+{
+	struct nc_cpblts *def_cpblts;
+
+	if (get_config_rpc == NULL) {
+		if ((get_config_rpc = nc_rpc_getconfig(NC_DATASTORE_RUNNING, NULL)) == NULL) {
+			return (EXIT_FAILURE);
+		}
+		/* set with defaults settings */
+		if (nc_rpc_capability_attr(get_config_rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, NCWD_MODE_ALL) != EXIT_SUCCESS) {
+			nc_rpc_free(get_config_rpc);
+			get_config_rpc = NULL;
+			return (EXIT_FAILURE);
+		}
+	}
+
+	if (nacm_session == NULL) {
+		def_cpblts = nc_session_get_cpblts_default ();
+		nacm_session = nc_session_dummy ("nacm", "libnetconf", "localhost", def_cpblts);
+		nc_cpblts_free (def_cpblts);
+	}
+
+	if (nacm_config_refresh() != EXIT_SUCCESS) {
+		return (EXIT_FAILURE);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+void nacm_close(void)
+{
+	nc_rpc_free(get_config_rpc);
+	get_config_rpc = NULL;
+}
+
+static int check_query_result(xmlXPathObjectPtr query_result, const char* object, int multiple, int textnode)
+{
+	if (query_result != NULL) {
+		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			ERROR("%s: No %s value in configuration data.", __func__, object);
+			return (EXIT_FAILURE);
+		} else if (!multiple && query_result->nodesetval->nodeNr > 1) {
+			ERROR("%s: Multiple %s values in configuration data.", __func__, object);
+			return (EXIT_FAILURE);
+		} else if (textnode && (query_result->nodesetval->nodeTab[0]->children == NULL || query_result->nodesetval->nodeTab[0]->children->type != XML_TEXT_NODE)) {
+			ERROR("%s: Invalid %s object - missing content.", __func__, object);
+			return (EXIT_FAILURE);
+		}
+	} else {
+		ERROR("%s: Unable to get value of %s configuration data", __func__, object);
+		return (EXIT_FAILURE);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+int nacm_config_refresh(void)
+{
+	xmlXPathContextPtr data_ctxt = NULL;
+	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr data, node;
+	xmlChar* content = NULL;
+	xmlDocPtr data_doc;
+	nc_reply* reply;
+	int i, j, gl, rl, gc, rc;
+	bool allgroups;
+	struct nacm_group* gr;
+	struct rule_list* rlist;
+
+	if (nacm_session == NULL || get_config_rpc == NULL) {
+		ERROR("%s: NACM Subsystem not initialized.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	reply = ncds_apply_rpc(NCDS_INTERNAL_ID, nacm_session, get_config_rpc);
+	if (reply == NULL || nc_reply_get_type (reply) != NC_REPLY_DATA) {
+		nc_reply_free (reply);
+		ERROR("%s: getting NACM configuration data from the datastore failed.", __func__);
+		return (EXIT_FAILURE);
+	}
+	if ((data = ncxml_reply_get_data (reply)) == NULL ) {
+		nc_reply_free (reply);
+		ERROR("%s: invalid NACM configuration data.", __func__);
+		return (EXIT_FAILURE);
+	}
+	nc_reply_free (reply);
+
+	if ((data_doc = xmlNewDoc(BAD_CAST XML_VERSION)) == NULL) {
+		ERROR("xmlNewDoc failed (%s:%d).", __FILE__, __LINE__);
+		xmlFreeNode(data);
+		return (EXIT_FAILURE);
+	}
+	data_doc->encoding = xmlStrdup(BAD_CAST UTF8);
+	xmlDocSetRootElement(data_doc, data);
+
+	/* create xpath evaluation context */
+	if ((data_ctxt = xmlXPathNewContext(data_doc)) == NULL) {
+		ERROR("%s: NACM configuration data XPath context can not be created.", __func__);
+		goto errorcleanup;
+	}
+	/* register NACM namespace for the rpc */
+	if (xmlXPathRegisterNs(data_ctxt, BAD_CAST NC_NS_NACM_ID, BAD_CAST NC_NS_NACM) != 0) {
+		ERROR("Registering base namespace for the message xpath context failed.");
+		goto errorcleanup;
+	}
+
+	/* fill the structure */
+	/* /nacm/enable-nacm */
+	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":enable-nacm", data_ctxt);
+	if (check_query_result(query_result, "/nacm/enable-nacm", 0, 1) != 0) {
+		goto errorcleanup;
+	}
+	content = (xmlChar*) nc_clrwspace((char*)query_result->nodesetval->nodeTab[0]->children->content);
+	if (xmlStrcmp(content, BAD_CAST "true") == 0) {
+		nacm_config.enabled = true;
+	} else if (xmlStrcmp(BAD_CAST content, BAD_CAST "false") == 0) {
+		nacm_config.enabled = false;
+	} else {
+		ERROR("%s: Invalid /nacm/enable-nacm value (%s).", __func__, content);
+		goto errorcleanup;
+	}
+	xmlFree(content);
+	content = NULL;
+	xmlXPathFreeObject(query_result);
+
+	/* /nacm/read-default */
+	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":read-default", data_ctxt);
+	if (check_query_result(query_result, "/nacm/read-default", 0, 1) != 0) {
+		goto errorcleanup;
+	}
+	content = (xmlChar*) nc_clrwspace((char*)query_result->nodesetval->nodeTab[0]->children->content);
+	if (xmlStrcmp(content, BAD_CAST "permit") == 0) {
+		nacm_config.default_read = NACM_PERMIT;
+	} else if (xmlStrcmp(BAD_CAST content, BAD_CAST "deny") == 0) {
+		nacm_config.default_read = NACM_DENY;
+	} else {
+		ERROR("%s: Invalid /nacm/read-default value (%s).", __func__, content);
+		goto errorcleanup;
+	}
+	xmlFree(content);
+	content = NULL;
+	xmlXPathFreeObject(query_result);
+
+	/* /nacm/write-default */
+	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":write-default", data_ctxt);
+	if (check_query_result(query_result, "/nacm/write-default", 0 ,1) != 0) {
+		goto errorcleanup;
+	}
+	content = (xmlChar*) nc_clrwspace((char*)query_result->nodesetval->nodeTab[0]->children->content);
+	if (xmlStrcmp(content, BAD_CAST "permit") == 0) {
+		nacm_config.default_write = NACM_PERMIT;
+	} else if (xmlStrcmp(BAD_CAST content, BAD_CAST "deny") == 0) {
+		nacm_config.default_write = NACM_DENY;
+	} else {
+		ERROR("%s: Invalid /nacm/write-default value (%s).", __func__, content);
+		goto errorcleanup;
+	}
+	xmlFree(content);
+	content = NULL;
+	xmlXPathFreeObject(query_result);
+
+	/* /nacm/exec-default */
+	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":exec-default", data_ctxt);
+	if (check_query_result(query_result, "/nacm/exec-default", 0, 1) != 0) {
+		goto errorcleanup;
+	}
+	content = (xmlChar*) nc_clrwspace((char*)query_result->nodesetval->nodeTab[0]->children->content);
+	if (xmlStrcmp(content, BAD_CAST "permit") == 0) {
+		nacm_config.default_exec = NACM_PERMIT;
+	} else if (xmlStrcmp(BAD_CAST content, BAD_CAST "deny") == 0) {
+		nacm_config.default_exec = NACM_DENY;
+	} else {
+		ERROR("%s: Invalid /nacm/exec-default value (%s).", __func__, content);
+		goto errorcleanup;
+	}
+	xmlFree(content);
+	content = NULL;
+	xmlXPathFreeObject(query_result);
+
+	/* /nacm/enable-external-groups */
+	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":enable-external-groups", data_ctxt);
+	if (check_query_result(query_result, "/nacm/enable-external-groups", 0, 1) != 0) {
+		goto errorcleanup;
+	}
+	content = (xmlChar*) nc_clrwspace((char*)query_result->nodesetval->nodeTab[0]->children->content);
+	if (xmlStrcmp(content, BAD_CAST "true") == 0) {
+		nacm_config.external_groups = true;
+	} else if (xmlStrcmp(BAD_CAST content, BAD_CAST "false") == 0) {
+		nacm_config.external_groups = false;
+	} else {
+		ERROR("%s: Invalid /nacm/enable-external-groups value (%s).", __func__, content);
+		goto errorcleanup;
+	}
+	xmlFree(content);
+	content = NULL;
+	xmlXPathFreeObject(query_result);
+
+	/* /nacm/groups/group */
+	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":groups/"NC_NS_NACM_ID":group", data_ctxt);
+	if (query_result != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			nacm_config.groups = malloc((query_result->nodesetval->nodeNr + 1) * sizeof(struct nacm_group*));
+			if (nacm_config.groups == NULL) {
+				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+				goto errorcleanup;
+			}
+			for (i = j = 0; i < query_result->nodesetval->nodeNr; i++) {
+				gr = malloc(sizeof(struct nacm_group));
+				if (gr == NULL) {
+					ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+					goto errorcleanup;
+				}
+				gl = gc = 0;
+				gr->users = NULL;
+				gr->name = NULL;
+				for (node = query_result->nodesetval->nodeTab[i]->children; node != NULL; node = node->next) {
+					if (node->type == XML_ELEMENT_NODE && node->ns != NULL && xmlStrcmp(node->ns->href, BAD_CAST NC_NS_NACM) == 0 &&
+							node->children != NULL && node->children->type == XML_TEXT_NODE) {
+						if (xmlStrcmp(node->name, BAD_CAST "name") == 0) {
+							gr->name = nc_clrwspace((char*)node->children->content);
+						} else if (xmlStrcmp(node->name, BAD_CAST "user-name") == 0) {
+							if (gc == gl) {
+								gl += 10;
+								gr->users = realloc(gr->users, gl * sizeof(char*));
+								if (gr->users == NULL) {
+									ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+									goto errorcleanup;
+								}
+							}
+							gr->users[gc] = nc_clrwspace((char*)node->children->content);
+							if (gr->users[gc] != NULL) {
+								gc++;
+								gr->users[gc] = NULL; /* list terminating NULL */
+							}
+						}
+					}
+				}
+				if (gr->name == NULL || gr->users == NULL) {
+					nacm_group_free(gr);
+				} else {
+					nacm_config.groups[j++] = gr;
+					nacm_config.groups[j] = NULL; /* list terminating NULL */
+				}
+			}
+		}
+	} else {
+		ERROR("%s: Unable to get information about NACM groups", __func__);
+		return (EXIT_FAILURE);
+	}
+	xmlXPathFreeObject(query_result);
+
+	/* /nacm/rule-list */
+	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":rule-list", data_ctxt);
+	if (query_result != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			nacm_config.rule_lists = malloc((query_result->nodesetval->nodeNr + 1) * sizeof(struct rule_list*));
+			if (nacm_config.rule_lists == NULL) {
+				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+				goto errorcleanup;
+			}
+			for (i = j = 0; i < query_result->nodesetval->nodeNr; i++) {
+				rlist = malloc(sizeof(struct rule_list));
+				if (rlist == NULL) {
+					ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+					goto errorcleanup;
+				}
+				rl = rc = gl = gc = 0;
+				rlist->rules = NULL;
+				rlist->groups = NULL;
+				allgroups = false;
+				for (node = query_result->nodesetval->nodeTab[i]->children; node != NULL; node = node->next) {
+					if (node->type == XML_ELEMENT_NODE && node->ns != NULL && xmlStrcmp(node->ns->href, BAD_CAST NC_NS_NACM) == 0) {
+						if (!allgroups && node->children != NULL && node->children->type == XML_TEXT_NODE && xmlStrcmp(node->name, BAD_CAST "group") == 0) {
+							if (gc == gl) {
+								gl += 10;
+								rlist->groups = realloc(rlist->groups, gl * sizeof(char*));
+								if (rlist->groups == NULL) {
+									ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+									goto errorcleanup;
+								}
+							}
+							rlist->groups[gc] = nc_clrwspace((char*) node->children->content);
+							if (rlist->groups[gc] != NULL) {
+								gc++;
+								rlist->groups[gc] = NULL; /* list terminating NULL */
+
+								if (strcmp(rlist->groups[gc-1], "*") == 0) {
+									/* matchall string - store only single value and free the rest of group list (if any) */
+									rlist->groups[0] = strdup("*");
+									for (gc = 1; rlist->groups[gc] != NULL; gc++) {
+										free(rlist->groups[gc]);
+									}
+									/* ignore rest of group elements in this rule-list */
+									allgroups = true;
+								}
+							}
+						} else if (node->children != NULL && xmlStrcmp(node->name, BAD_CAST "rule") == 0) {
+							if (rc == rl) {
+								rl += 10;
+								rlist->rules = realloc(rlist->rules, rl * sizeof(struct nacm_rule*));
+								if (rlist->rules == NULL) {
+									ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+									goto errorcleanup;
+								}
+							}
+							rlist->rules[rc] = nacm_get_rule(node);
+							if (rlist->rules[rc] != NULL) {
+								rc++;
+								rlist->rules[rc] = NULL; /* list terminating NULL */
+							}
+						}
+					}
+				}
+				if (rlist->groups == NULL || rlist->rules == NULL) {
+					nacm_rule_list_free(rlist);
+				} else {
+					nacm_config.rule_lists[j++] = rlist;
+					nacm_config.rule_lists[j] = NULL; /* list terminating NULL */
+				}
+			}
+		}
+	} else {
+		ERROR("%s: Unable to get information about NACM's lists of rules", __func__);
+		return (EXIT_FAILURE);
+	}
+	xmlXPathFreeObject(query_result);
+
+
+
+
+	xmlXPathFreeContext(data_ctxt);
+	xmlFreeDoc(data_doc);
+
+	return (EXIT_SUCCESS);
+
+errorcleanup:
+
+	xmlXPathFreeObject(query_result);
+	xmlXPathFreeContext(data_ctxt);
+	xmlFreeDoc(data_doc);
+	xmlFree(content);
+
+	return (EXIT_FAILURE);
+}
+
+int nacm_start(nc_rpc* rpc, const struct nc_session* session)
+{
+	struct nacm_rpc* nacm_rpc;
+	char** groups = NULL;
+	int l, c, i, j, k;
+
+	if (rpc == NULL || session == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (nacm_session == NULL || nacm_config.enabled == false) {
+		/* NACM subsystem not initiated or switched off */
+		/*
+		 * do not add NACM structure to the RPC, which means that
+		 * NACM is not applied to the RPC
+		 */
+		return (EXIT_SUCCESS);
+	}
+
+	if (nc_rpc_get_op(rpc) == NC_OP_CLOSESESSION) {
+		/* close-session is always permitted */
+		/*
+		 * do not add NACM structure to the RPC, which means that
+		 * NACM is not applied to the RPC
+		 */
+		return (EXIT_SUCCESS);
+	}
+
+	nacm_rpc = malloc(sizeof(struct nacm_rpc));
+	if (nacm_rpc == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (EXIT_FAILURE);
+	}
+	nacm_rpc->default_exec = nacm_config.default_exec;
+	nacm_rpc->default_read = nacm_config.default_read;
+	nacm_rpc->default_write = nacm_config.default_write;
+	nacm_rpc->rule_lists = NULL;
+
+	l = c = 0;
+	/* get list of user's groups specified in NACM configuration */
+	for (i = 0; nacm_config.groups != NULL && nacm_config.groups[i] != NULL; i++) {
+		for (j = 0; nacm_config.groups[i]->users != NULL && nacm_config.groups[i]->users[j] != NULL; j++) {
+			if (strcmp(nacm_config.groups[i]->users[j], session->username) == 0) {
+				if (c == l) {
+					l += 10;
+					groups = realloc(groups, l * sizeof(char*));
+					if (groups == NULL) {
+						ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+						free(nacm_rpc);
+						return (EXIT_FAILURE);
+					}
+				}
+				groups[c] = strdup(nacm_config.groups[i]->name);
+				c++;
+			}
+		}
+	}
+	/* if enabled, add a list of system groups for the user */
+	if (nacm_config.external_groups == true && session->groups != NULL) {
+		for (i = 0; session->groups[i] != NULL; i++) {
+			if (c == l) {
+				l += 10;
+				groups = realloc(groups, l * sizeof(char*));
+				if (groups == NULL) {
+					ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+					free(nacm_rpc);
+					return (EXIT_FAILURE);
+				}
+			}
+			groups[c] = strdup(session->groups[i]);
+			c++;
+		}
+	}
+	if (groups != NULL) {
+		groups[c] = NULL; /* list terminating NULL */
+
+		l = c = 0;
+		/* select rules for the groups associated with the user */
+		for (i = 0; nacm_config.rule_lists != NULL && nacm_config.rule_lists[i] != NULL; i++) {
+			for (j = 0; nacm_config.rule_lists[i]->groups != NULL && nacm_config.rule_lists[i]->groups[j] != NULL; j++) {
+				for (k = 0; groups[k] != NULL; k++) {
+					if (strcmp(nacm_config.rule_lists[i]->groups[j], groups[k]) == 0 ||
+							strcmp(nacm_config.rule_lists[i]->groups[j], "*") == 0) {
+						break;
+					}
+				}
+				if (groups[k] != NULL) {
+					/* we have found matching groups - add rule list to the rpc */
+					if (c == l) {
+						l += 10;
+						nacm_rpc->rule_lists = realloc(nacm_rpc->rule_lists, l * sizeof(struct rule_list*));
+						if (nacm_rpc->rule_lists == NULL) {
+							ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+							for(k = 0; groups[k] != NULL; k++) {
+								free(groups[k]);
+							}
+							free(groups);
+							free(nacm_rpc);
+							return (EXIT_FAILURE);
+						}
+					}
+					nacm_rpc->rule_lists[c] = nacm_rule_list_dup(nacm_config.rule_lists[i]);
+					if (nacm_rpc->rule_lists[c] != NULL) {
+						c++;
+						nacm_rpc->rule_lists[c] = NULL;  /* list terminating NULL */
+					}
+					break;
+				}
+			}
+		}
+
+		/* free groups */
+		for(k = 0; groups[k] != NULL; k++) {
+			free(groups[k]);
+		}
+		free(groups);
+	}
+
+	/* connect NACM structure with RPC */
+	rpc->nacm = nacm_rpc;
+
+	return (EXIT_SUCCESS);
+}

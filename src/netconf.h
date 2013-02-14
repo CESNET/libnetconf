@@ -344,6 +344,7 @@ void nc_verbosity(NC_VERB_LEVEL level);
  */
 int nc_init(int flags);
 #define NC_INIT_NOTIF 0x00000002 /**< nc_init()'s flag to enable Notification subsystem. */
+#define NC_INIT_NACM 0x00000004 /**< nc_init()'s flag to enable Acccess Control subsystem */
 
 /**
  * @ingroup genAPI

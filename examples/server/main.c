@@ -282,7 +282,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 	openlog("ncserver", LOG_PID, LOG_DAEMON);
 	nc_callback_print(clb_print);
 
-	init = nc_init(NC_INIT_NOTIF);
+	init = nc_init(NC_INIT_NOTIF | NC_INIT_NACM);
 	if (init == -1) {
 		clb_print(NC_VERB_ERROR, "libnetconf initiation failed.");
 		return (EXIT_FAILURE);

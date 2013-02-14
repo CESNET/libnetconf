@@ -67,6 +67,7 @@
 #include "messages_internal.h"
 #include "session.h"
 #include "datastore.h"
+#include "nacm.h"
 
 #ifndef DISABLE_NOTIFICATIONS
 #  include "notifications.h"
@@ -883,12 +884,14 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	session->status = NC_SESSION_STATUS_DUMMY;
 	/* copy session id */
 	strncpy (session->session_id, sid, SID_SIZE);
-	/* copy user name */
-	session->username = strdup (username);
+	/* get system groups for the username */
+	session->groups = nc_get_grouplist(username);
 	/* if specified, copy hostname */
 	if (hostname != NULL) {
 		session->hostname = strdup (hostname);
 	}
+	/* copy user name */
+	session->username = strdup (username);
 	/* create empty capabilities list */
 	session->capabilities = nc_cpblts_new (NULL);
 	/* initialize capabilities iterator */
@@ -1028,12 +1031,19 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 void nc_session_free (struct nc_session* session)
 {
 	struct session_list_item *litem, *aux;
+	int i;
 
 	nc_session_close(session, NC_SESSION_TERM_OTHER);
 
 	/* free items untouched by nc_session_close() */
 	if (session->username != NULL) {
 		free (session->username);
+	}
+	if (session->groups != NULL) {
+		for (i = 0; session->groups[i] != NULL; i++) {
+			free(session->groups[i]);
+		}
+		free(session->groups);
 	}
 	if (session->capabilities != NULL) {
 		nc_cpblts_free(session->capabilities);
@@ -2044,7 +2054,7 @@ try_again:
 					pthread_rwlock_unlock(&(nc_info->lock));
 				}
 
-				return (0); /* failure */
+				return (NC_MSG_NONE); /* message processed internally */
 			}
 		}
 		/* update statistics */
@@ -2054,6 +2064,9 @@ try_again:
 			nc_info->stats.counters.in_rpcs++;
 			pthread_rwlock_unlock(&(nc_info->lock));
 		}
+
+		/* NACM init */
+		nacm_start(*rpc, session);
 
 		break;
 	case NC_MSG_HELLO:
