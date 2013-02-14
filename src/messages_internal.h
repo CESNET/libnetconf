@@ -44,24 +44,24 @@
 #include "with_defaults.h"
 
 /**
- * @brief Create client's \<hello\> message.
+ * @brief Create the client \<hello\> message.
  * @ingroup internalAPI
- * @param caps List of client's capabilities.
- * @return rpc structure with the created client's \<hello\> message.
+ * @param caps List of client capabilities.
+ * @return rpc structure with the created client \<hello\> message.
  */
 nc_rpc *nc_msg_client_hello(char **caps);
 
 /**
- * @brief Create server's \<hello\> message.
+ * @brief Create the server \<hello\> message.
  * @ingroup internalAPI
- * @param caps List of server's capabilities.
- * @param session_id Generated the NETCONF session ID string.
- * @return rpc structure with the created server's \<hello\> message.
+ * @param caps List of server capabilities.
+ * @param session_id Generated NETCONF session ID string.
+ * @return rpc structure with the created server \<hello\> message.
  */
 nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id);
 
 /**
- * @brief Get message id string from the NETCONF message
+ * @brief Get the message id string from the NETCONF message
  *
  * @param[in] msg NETCONF message to parse.
  * @return 0 on error,\n message-id of the message on success.
@@ -69,8 +69,8 @@ nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id);
 const nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg);
 
 /**
- * @brief Parse RPC message to get the type of RPC. The resulted value is also
- * stored into internal rpc structure.
+ * @brief Parse a RPC message to get the type of RPC. The result value is also
+ * stored in an internal RPC structure.
  *
  * @param[in] rpc RPC message to parse.
  * @return The type of the RPC.
@@ -78,8 +78,8 @@ const nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg);
 NC_RPC_TYPE nc_rpc_parse_type(nc_rpc* rpc);
 
 /**
- * @brief Parse RPC-reply message to get the type of RPC-reply. The resulted
- * value is also stored into internal rpc-reply structure.
+ * @brief Parse RPC-reply message to get the type of RPC-reply. The result
+ * value is also stored in an internal rpc-reply structure.
  *
  * @param[in] reply RPC-reply message to parse.
  * @return The type of the RPC-reply.
@@ -95,16 +95,17 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session* sessio
 
 /**
  * @ingroup internalAPI
- * @brief Create <close-session> NETCONF rpc message.
+ * @brief Create the <close-session> NETCONF rpc message.
  *
  * @return Created rpc message.
  */
 nc_rpc *nc_rpc_closesession();
 
 /**
- * @brief Create generic NETCONF message envelope according to given type (rpc or rpc-reply) and insert given data
+ * @brief Create a generic NETCONF message envelope according to the given type
+ * (rpc or rpc-reply) and insert the given data
  *
- * @param[in] content pointer to xml node containing data
+ * @param[in] content pointer to the xml node containing data
  * @param[in] msgtype string of the envelope element (rpc, rpc-reply)
  *
  * @return Prepared nc_msg structure.
@@ -118,7 +119,7 @@ struct nc_msg* nc_msg_create(xmlNodePtr content, char* msgtype);
 void nc_msg_free(struct nc_msg *msg);
 
 /**
- * @brief Duplicate the message.
+ * @brief Duplicate a message.
  * @param[in] msg Message to duplicate.
  * @return The copy of the given NETCONF message.
  */

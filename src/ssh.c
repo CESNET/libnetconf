@@ -259,7 +259,7 @@ static char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 			if (session->session_id[0] == '\0') {
 				str = (char*) xmlNodeGetContent(node);
 				if (strlen(str) >= (size_t) SID_SIZE) {
-					/* Session ID is too long and we can not store it */
+					/* Session ID is too long and we cannot store it */
 					ERROR("Received <session-id> is too long - terminating the session.");
 					return (NULL);
 				}
@@ -271,7 +271,7 @@ static char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 				return (NULL);
 			}
 		} else {
-			/* something unknown - log it now, maybe in future we will more strict and will be returning error */
+			/* something unknown - log it now, maybe in the future we will be more strict and will be returning error */
 			WARN("Unknown content of the <hello> message (%s), ignoring and trying to continue.", (char*) node->name);
 		}
 	}
@@ -282,7 +282,7 @@ static char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 		return (NULL);
 	}
 
-	/* everything OK, return received list of supported capabilities */
+	/* everything OK, return the received list of supported capabilities */
 	return (capabilities);
 }
 
@@ -484,7 +484,7 @@ static int nc_client_handshake(struct nc_session *session, char** cpblts)
 	nc_rpc *hello;
 	int retval;
 
-	/* just for sure, it should be already done */
+	/* just to be sure, it should be already done */
 	memset(session->session_id, '\0', SID_SIZE);
 
 	/* create client's <hello> message */
@@ -563,7 +563,7 @@ static int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_
 		}
 		hostkey_typebit = (hostkey_type == LIBSSH2_HOSTKEY_TYPE_RSA) ? LIBSSH2_KNOWNHOST_KEY_SSHRSA : LIBSSH2_KNOWNHOST_KEY_SSHDSS;
 
-		/* get all hosts */
+		/* get all the hosts */
 		if (knownhosts_file != NULL && access(knownhosts_file, F_OK) == 0) {
 			ret = libssh2_knownhost_readfile(knownhosts,
 					knownhosts_file,

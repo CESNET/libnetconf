@@ -394,11 +394,11 @@ char* nc_time2datetime(time_t time)
 }
 
 /**
- * @brief Get know if the namespace definition is used as namespace in the
+ * @brief Learn whether the namespace definition is used as namespace in the
  * subtree.
  * @param[in] node Node where to start checking.
  * @param[in] ns Namespace to find.
- * @return 0 if the namespace is not used, 1 if the usage of the namespace found
+ * @return 0 if the namespace is not used, 1 if the usage of the namespace was found
  */
 static int nc_find_namespace_usage(xmlNodePtr node, xmlNsPtr ns)
 {
@@ -428,8 +428,8 @@ static int nc_find_namespace_usage(xmlNodePtr node, xmlNsPtr ns)
 }
 
 /**
- * @brief Remove namespace definition from the node which are no more used.
- * @param[in] node XML element node where to check namespace definitions
+ * @brief Remove namespace definition from the node which are no longer used.
+ * @param[in] node XML element node where to check for namespace definitions
  */
 void nc_clear_namespaces(xmlNodePtr node)
 {

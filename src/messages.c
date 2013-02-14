@@ -575,9 +575,9 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 			auxnode = auxnode->next;
 			continue;
 		}
-		/* If operation is outside of any namespace it's treated as unknown.
-		 * This check is after check for node type to assure that commentary
-		 * node won't cause failure. */
+		/* If the operation is outside any namespace then it's treated as unknown.
+		 * This check is done after the check for the node type to assure that
+		 * commentary node won't cause a failure. */
 		if (auxnode->ns == NULL) {
 			return (NC_OP_UNKNOWN);
 		}
@@ -696,7 +696,7 @@ NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc)
 }
 
 /**
- * @brief Get source or target datastore type
+ * @brief Get the source or the target datastore type
  * @param rpc RPC message
  * @param ds_type 'target' or 'source'
  */
@@ -1395,9 +1395,10 @@ nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
 }
 
 /**
- * @brief Create generic NETCONF message envelope according to given type (rpc or rpc-reply) and insert given data
+ * @brief Create a generic NETCONF message envelope according to the given
+ * type (rpc or rpc-reply) and insert the given data
  *
- * @param[in] content pointer to xml node containing data
+ * @param[in] content pointer to the xml node containing the data
  * @param[in] msgtype string of the envelope element (rpc, rpc-reply)
  *
  * @return Prepared nc_msg structure.
@@ -1483,9 +1484,9 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 }
 
 /**
- * @brief Create \<rpc\> envelope and insert given data
+ * @brief Create \<rpc\> envelope and insert the given data
  *
- * @param[in] content pointer to xml node containing data
+ * @param[in] content pointer to the xml node containing data
  *
  * @return Prepared nc_rpc structure.
  */
@@ -1505,9 +1506,9 @@ static nc_rpc* nc_rpc_create(const xmlNodePtr content)
 }
 
 /**
- * @brief Create \<rpc-reply\> envelope and insert given data
+ * @brief Create \<rpc-reply\> envelope and insert the given data
  *
- * @param[in] content pointer to xml node containing data
+ * @param[in] content pointer to the xml node containing data
  *
  * @return Prepared nc_reply structure.
  */
@@ -1517,7 +1518,7 @@ static nc_reply* nc_reply_create(const xmlNodePtr content)
 
 	reply = (nc_reply*)nc_msg_create(content,"rpc-reply");
 
-	/* set reply type flag */
+	/* set the reply type flag */
 	nc_reply_parse_type(reply);
 
 	return (reply);
@@ -1534,7 +1535,7 @@ nc_reply *nc_reply_ok()
 		return (NULL);
 	}
 
-	/* set namespace */
+	/* set the namespace */
 	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
 	xmlSetNs(content, ns);
 
@@ -2399,9 +2400,9 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 	if (datastores[0] == NULL) {
 		/* source configuration is given as data parameter */
 
-		/* if data empty string, create \<copy-config\> with empty \<config\> */
-		/* only if data is not empty string, fill \<config\> */
-		/* RFC 6241 defines \<config\> as anyxml and thus it can be empty */
+		/* if data is an empty string, create \<copy-config\> with empty \<config\> */
+		/* only if the data is not an empty string fill \<config\> */
+		/* RFC 6241 defines \<config\> as any xml and thus it can be empty */
 
 		/* create empty config element in rpc request */
 		if ((node_config = xmlNewChild(node_source, ns, BAD_CAST "config", NULL)) == NULL) {

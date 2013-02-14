@@ -73,17 +73,17 @@ typedef enum {
 
 /**
  * @ingroup genAPI
- * @brief Create new error description structure.
+ * @brief Create a new error description structure.
  * @param[in] error Predefined NETCONF error (according to RFC 6241 Appendix A).
- * @return Created NETCONF error structure on success, NULL on error.
+ * @return Created NETCONF error structure on success, NULL on an error.
  */
 struct nc_err* nc_err_new(NC_ERR error);
 
 /**
  * @ingroup genAPI
- * @brief Duplicate error description structure.
+ * @brief Duplicate an error description structure.
  * @param[in] error Existing NETCONF error description structure to be duplicated.
- * @return Duplicated NETCONF error structure on success, NULL on error.
+ * @return Duplicated NETCONF error structure on success, NULL on an error.
  */
 struct nc_err* nc_err_dup(const struct nc_err* error);
 

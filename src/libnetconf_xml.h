@@ -42,13 +42,13 @@
 
 /**
  * \defgroup rpc_xml NETCONF rpc (libxml2)
- * \brief libnetconf's functions for handling NETCONF \<rpc\> messages. These
+ * \brief libnetconf's functions for handling the NETCONF \<rpc\> messages. These
  * functions accepts parameters as libxml2 structures.
  */
 
 /**
  * \defgroup reply_xml NETCONF rpc-reply (libxml2)
- * \brief libnetconf's functions for handling NETCONF \<rpc-reply\> messages.
+ * \brief libnetconf's functions for handling the NETCONF \<rpc-reply\> messages.
  * These functions accepts parameters as libxml2 structures.
  */
 

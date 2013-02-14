@@ -1,7 +1,7 @@
 /**
  * \file datastore.c
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief Implementation of NETCONF datastore handling functions.
+ * \brief Implementation of the NETCONF datastore handling functions.
  *
  * Copyright (C) 2012 CESNET, z.s.p.o.
  *
@@ -89,8 +89,8 @@ struct ds_desc {
 };
 
 /**
- * @brief Internal list of initiated datastores.
- * By default, the list contains internal datastore with ID 0 to get libnetconf
+ * @brief Internal list of the initiated datastores.
+ * By default, the list contains an internal datastore with ID 0 to get libnetconf
  * internal state information
  */
 static struct ncds_ds int_ds = {
@@ -236,8 +236,8 @@ int ncds_sysinit(void)
 }
 
 /**
- * @brief Get ncds_ds structure from datastore list containing storage
- * information with specified ID.
+ * @brief Get ncds_ds structure from the datastore list containing storage
+ * information with the specified ID.
  *
  * @param[in] id ID of the storage.
  * @return Pointer to the required ncds_ds structure inside internal
@@ -261,7 +261,7 @@ static struct ncds_ds *datastores_get_ds(ncds_id id)
 }
 
 /**
- * @brief Remove datastore with specified ID from the internal datastore list.
+ * @brief Remove datastore with the specified ID from the internal datastore list.
  *
  * @param[in] id ID of the storage.
  * @return Pointer to the required ncds_ds structure detached from the internal
@@ -274,7 +274,7 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	struct ncds_ds * retval = NULL;
 
 	if (id == 0) {
-		/* ignore try to detach some uninitialized or internal datastore */
+		/* ignore a try to detach some uninitialized or internal datastore */
 		return (NULL);
 	}
 
@@ -987,7 +987,7 @@ void ncds_free2(ncds_id datastore_id)
 	if (del != NULL) {
 		/*
 		 * ncds_free() detaches the item from the internal datastores
-		 * list, also the whole list item (del variable here) is freed
+		 * list and also the whole list item (del variable here) is freed
 		 * by ncds_free(), so do not do it here!
 		 */
 		ncds_free(del);
@@ -1031,14 +1031,14 @@ xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDo
 }
 
 /**
- * \brief compare node properties against reference node properties
+ * \brief compare the node properties against the reference node properties
  *
- * \param reference     reference node, compared node must has got all
- *                      properties (and same values) as reference node
+ * \param reference     reference node, compared node must have all the
+ *                      properties (and the same values) as reference node
  * \param node          compared node
  *
- * \return              0 if compared node contain all properties (with same
- *                      values) as reference node, 1 otherelse
+ * \return              0 if compared node contains all the properties (with
+ *						the same values) as reference node, 1 otherwise
  */
 int attrcmp(xmlNodePtr reference, xmlNodePtr node)
 {
@@ -1070,7 +1070,7 @@ int attrcmp(xmlNodePtr reference, xmlNodePtr node)
  * \param config        pointer to xmlNode tree to filter
  * \param filter        pointer to NETCONF filter xml tree
  *
- * \return              1 if config is filter output, 0 otherelse
+ * \return              1 if config satisfies the output filter, 0 otherwise
  */
 
 static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
@@ -1107,7 +1107,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 
 		/* if required node is present, decide about removing sibling nodes */
 		if (filter_in) {
-			/* 0 means that all sibling nodes will be in the filter result - this is a default
+			/* 0 means that all the sibling nodes will be in the filter result - this is a default
 			 * behavior when there are no selection or containment nodes in the filter sibling set.
 			 * If 1 is set, sibling nodes for the filter result will be selected according to the
 			 * rules in RFC 6242, sec. 6.2.5
@@ -1340,13 +1340,13 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 }
 
 /**
- * \brief Get appropriate root node from edit-config's \<config\> element according to the specified data model
+ * \brief Get an appropriate root node from edit-config's \<config\> element according to the specified data model
  *
  * \param[in] roots First of the root elements in edit-config's \<config\>
  *                  (first children of this element).
  * \param[in] model XML form (YIN) of the configuration data model.
  *
- * \return Root element matching specified configuration data model.
+ * \return Root element matching the specified configuration data model.
  */
 xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
 {
@@ -1652,7 +1652,7 @@ process_datastore:
 		} else {
 			/*
 			 * config can contain multiple elements on the root level, so
-			 * cover it with the <config> element to allow creation of xml
+			 * cover it with the <config> element to allow the creation of xml
 			 * document
 			 */
 			config = nc_rpc_get_config(rpc);
@@ -1724,9 +1724,9 @@ process_datastore:
 			if (rpc->with_defaults & NCWD_MODE_ALL_TAGGED) {
 				/* if report-all-tagged mode is supported, 'default'
 				 * attribute with 'true' or '1' value can appear and we
-				 * have to check that the element's value is equal to
-				 * default value. If does, the element is removed and
-				 * it is supposed to be default, otherwise the
+				 * have to check that the element's value is equal to the
+				 * default value. If it is, the element is removed and
+				 * is supposed to be default, otherwise the
 				 * invalid-value error reply must be returned.
 				 */
 				doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);

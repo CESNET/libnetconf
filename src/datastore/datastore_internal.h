@@ -70,7 +70,7 @@ struct ncds_ds {
 	 */
 	ncds_id id;
 	/**
-	 * @brief Path to file containing YIN configuration data model
+	 * @brief Path to the file containing YIN configuration data model
 	 */
 	char* model_path;
 	/**
@@ -78,7 +78,7 @@ struct ncds_ds {
 	 */
 	xmlDocPtr model;
 	/**
-	 * @brief Pointer to a callback function implementing retrieving of the
+	 * @brief Pointer to a callback function implementing the retrieval of the
 	 * device status data.
 	 */
 	char* (*get_state)(const char* model, const char* running, struct nc_err ** e);
@@ -89,7 +89,7 @@ struct ncds_ds {
 };
 
 /**
- * @brief Generate unique datastore id
+ * @brief Generate a unique datastore id
  * @return unique datastore id
  */
 ncds_id generate_id (void);
@@ -98,9 +98,9 @@ ncds_id generate_id (void);
  * @brief Merge two XML documents with a common data model.
  * @param first First XML document to merge.
  * @param second Second XML document to merge.
- * @param data_model XML document containing data model of the merged documents
- * in YIN format.
- * @return Resulting XML document merged from input documents. It is up to the
+ * @param data_model XML document containing the data model of the merged documents
+ * in the YIN format.
+ * @return Resulting XML document merged from the input documents. It is up to the
  * caller to free the memory with xmlFreeDoc().
  */
 xmlDocPtr ncxml_merge (const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model);

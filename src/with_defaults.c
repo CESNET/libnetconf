@@ -70,7 +70,7 @@ void ncdflt_set_basic_mode(NCWD_MODE mode)
 		/* set basic mode */
 		ncdflt_basic_mode = mode;
 
-		/* if current basic mode is not in supported set, add it */
+		/* if current basic mode is not in the supported set, add it */
 		if ((ncdflt_supported & ncdflt_basic_mode) == 0) {
 			ncdflt_supported |= ncdflt_basic_mode;
 		}
@@ -181,7 +181,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 			retvals[1] = NULL;
 			/* create root element */
 			name = xmlGetProp(node, BAD_CAST "name");
-			/* search in all root elements */
+			/* search in all the root elements */
 			for (; aux != NULL; aux = aux->next) {
 				if (xmlStrcmp(aux->name, name) == 0) {
 					break;
@@ -203,7 +203,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 			return (retvals);
 			break;
 		case NCWD_MODE_TRIM:
-			/* search in all root elements */
+			/* search in all the root elements */
 			name = xmlGetProp(node, BAD_CAST "name");
 			for (; aux != NULL; aux = aux->next) {
 				if (xmlStrcmp(aux->name, name) == 0) {
@@ -259,12 +259,12 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 				/* continue to another parent node in the list to process */
 				continue;
 			case NCWD_MODE_TRIM:
-				/* we are at the end - remove element if it contain default value */
+				/* we are at the end - remove element if it contains default value */
 				if (parents[i]->children != NULL) {
 					value = xmlGetProp(node, BAD_CAST "value");
 					value2 = xmlNodeGetContent(parents[i]);
 					if (xmlStrcmp(value, value2) == 0) {
-						/* element contain default value, remove it */
+						/* element contains default value, remove it */
 						xmlUnlinkNode(parents[i]);
 						xmlFreeNode(parents[i]);
 					}
@@ -405,7 +405,7 @@ static xmlNodePtr* remove_default_node(xmlDocPtr config, xmlNodePtr node)
 	if (node->parent == NULL) {
 		return (NULL);
 	} else if (xmlStrcmp(node->parent->name, BAD_CAST "module") != 0) {
-		/* we will get parent of the config's equivalent of the node */
+		/* we will get the parent of the config's equivalent of the node */
 		parents = remove_default_node(config, node->parent);
 		if (parents == NULL) {
 			return (NULL);
@@ -413,7 +413,7 @@ static xmlNodePtr* remove_default_node(xmlDocPtr config, xmlNodePtr node)
 	} else {
 		/* we are in the root */
 		aux = xmlDocGetRootElement(config);
-		/* return root element, do not create it if it does not exist */
+		/* return the root element, do not create it if it does not exist */
 		if (aux != NULL) {
 			retvals = (xmlNodePtr*) malloc(2 * sizeof(xmlNodePtr));
 			retvals[0] = aux;

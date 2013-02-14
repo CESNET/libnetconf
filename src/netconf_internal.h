@@ -67,7 +67,7 @@
 #define NC_V10_END_MSG      "]]>]]>"
 
 /**
- * @brief NETCONF v1.1 message separator (part of chunked framing mechanism).
+ * @brief NETCONF v1.1 message separator (part of the chunked framing mechanism).
  * @ingroup internalAPI
  */
 #define NC_V11_END_MSG      "\n##\n"
@@ -125,18 +125,18 @@
 #define NC_RPC_OK           "ok"
 #define NC_RPC_DATA         "data"
 
-#define SSH2_KEYS 3 /* number of supported keys */
+#define SSH2_KEYS 3 /* the number of supported keys */
 
 /*
- * Special session ID for used by libnetconf's internal dummy sessions. This
- * kind of dummy sessions does not break datastore locks on session closing.
+ * Special session ID to be used by libnetconf's internal dummy sessions. This
+ * kind of dummy sessions does not break datastore locks on a session close.
  */
 #define INTERNAL_DUMMY_ID "0"
 
 /*
  * how to send NETCONF XML content:
  * 1 - formatted, i.e. with new lines and spaces
- * 0 - unformatted, only content without any unnecessary white space formatting characters
+ * 0 - unformatted, only the content without any unnecessary white space formatting characters
  */
 #define NC_CONTENT_FORMATTED 1
 
@@ -163,13 +163,13 @@ extern int verbose_level;
 #endif
 
 /**
- * @brief Callbacks structure for all callbacks functions that can be set by application
+ * @brief Callbacks structure for all the callback functions that can be set by an application
  * @ingroup internalAPI
  */
 struct callbacks {
-	/**< @brief Message printing function, if not set, messages are suppressed */
+	/**< @brief Message printing function, if not set, all the messages are suppressed */
 	void (*print)(NC_VERB_LEVEL level, const char* msg);
-	/**< @brief Function processing \<rpc-error\> replies on a client side. If no callback function is set, error details are ignored */
+	/**< @brief Function processing \<rpc-error\> replies on the client side. If no callback function is set, the error details are ignored */
 	void (*process_error_reply)(const char* tag,
 			const char* type,
 			const char* severity,
@@ -190,11 +190,11 @@ struct callbacks {
 			const LIBSSH2_USERAUTH_KBDINT_PROMPT* prompts,
 			LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
 			void** abstract);
-	/**< @brief Callback for passing password for libssh2's 'password' authentication method */
+	/**< @brief Callback for passing the password for libssh2's 'password' authentication method */
 	char* (*sshauth_password)(const char* username, const char* hostname);
-	/**< @brief Callback for passing passphrase for libssh2's 'publickey' authentication method */
+	/**< @brief Callback for passing the passphrase for libssh2's 'publickey' authentication method */
 	char* (*sshauth_passphrase)(const char* username, const char* hostname, const char* privatekey_filepath);
-	/**< @brief Callback to get answer to the host authenticity: 0 ok, 1 failed */
+	/**< @brief Callback to check the host authenticity: 0 ok, 1 failed */
 	int (*hostkey_check)(const char* hostname, int keytype, const char* fingerprint);
 	/**< @brief */
 	char *publickey_filename[SSH2_KEYS];
@@ -207,10 +207,10 @@ struct callbacks {
 
 /**
  * @ingroup internalAPI
- * @brief Header instance of the callbacks structure storing all callbacks set by application
+ * @brief Header instance of a callback structure storing all the callbacks set by the application
  *
  * Real instance of the callbacks structure is placed in callbacks.c where
- * also default values are set.
+ * the default values are also set.
  */
 extern struct callbacks callbacks;
 
@@ -259,7 +259,7 @@ struct nc_shared_info {
  * @ingroup internalAPI
  * @brief NETCONF session description structure
  *
- * No one outside the libnetconf would access members of this structure.
+ * No one outside libnetconf can access members of this structure.
  */
 struct nc_session {
 	/**< @brief Session ID */
@@ -271,7 +271,7 @@ struct nc_session {
 	/**< @brief Input file descriptor for communication with (reading from) the other side of the NETCONF session */
 	int fd_input;
 #ifdef DISABLE_LIBSSH
-	/**< @brief FILE structure for the fd_input file descriptor. This is used only if the libssh2 is not used */
+	/**< @brief FILE structure for the fd_input file descriptor. This is used only if libssh2 is not used */
 	FILE *f_input;
 #endif
 	/**< @brief Output file descriptor for communication with (writing to) the other side of the NETCONF session */
@@ -293,10 +293,12 @@ struct nc_session {
 	char *username;
 	/**< @brief NULL-terminated list of external (system) groups for NACM */
 	char **groups;
-	/**< @brief login time in yang:date-and-time format */
+	/**< @brief login time in the yang:date-and-time format */
 	char *logintime;
 	/**< @brief number of confirmed capabilities */
 	struct nc_cpblts *capabilities;
+	/**< @brief serialized original capabilities of a server/client */
+	char *capabilities_original;
 	/**< @brief NETCONF protocol version */
 	int version;
 	/**< @brief session's with-defaults basic mode */
@@ -368,35 +370,35 @@ struct nc_err {
 	 */
 	char *apptag;
 	/**
-	 * @brief XPATH expression identifying element with error.
+	 * @brief XPATH expression identifying the element with the error.
 	 */
 	char *path;
 	/**
-	 * @brief Human description of the error.
+	 * @brief Human-readable description of the error.
 	 */
 	char *message;
 	/**
 	 * @brief Name of the data-model-specific XML attribute that caused the error.
 	 * \todo: The model defines this as a sequence, so we have to support storing of multiple values for this
-	 * This information is part of error-info element.
+	 * This information is a part of the error-info element.
 	 */
 	char *attribute;
 	/**
 	 * @brief Name of the data-model-specific XML element that caused the error.
 	 * \todo: The model defines this as a sequence, so we have to support storing of multiple values for this
-	 * This information is part of error-info element.
+	 * This information is a part of the error-info element.
 	 */
 	char *element;
 	/**
 	 * @brief Name of the unexpected XML namespace that caused the error.
 	 * \todo: The model defines this as a sequence, so we have to support storing of multiple values for this
-	 * This information is part of error-info element.
+	 * This information is a part of the error-info element.
 	 */
 	char *ns;
 	/**
-	 * @brief Session ID of session holding requested lock.
+	 * @brief Session ID of the session holding the requested lock.
 	 *
-	 * This information is part of error-info element.
+	 * This information is a part of the error-info element.
 	 */
 	char *sid;
 	/**
@@ -413,7 +415,7 @@ struct nacm_rpc {
 };
 
 /**
- * @brief generic message structure covering both rpc and reply.
+ * @brief generic message structure covering both a rpc and a reply.
  * @ingroup internalAPI
  */
 struct nc_msg {
@@ -444,42 +446,42 @@ struct nc_cpblts {
 };
 
 /**
- * @brief Get copy of the given string without whitespaces.
+ * @brief Get a copy of the given string without whitespaces.
  *
  * @param[in] in string to clear.
  *
- * return Copy of the given string without whitespaces. Caller is supposed to free it.
+ * return Copy of the given string without whitespaces. The caller is supposed to free it.
  */
 char* nc_clrwspace (const char* in);
 
 /**
  * @brief Process config data according to with-defaults' mode and data model
- * @param[in] config XML configuretion data document where default values will
+ * @param[in] config XML configuration data document in which the default values will
  * be modified (added for report-all and removed for trim mode).
- * @param[in] model Configuration data model for data given in config parameter.
- * @param[in] mode With-defaults capability mode for configuration data modification.
+ * @param[in] model Configuration data model for the data given in the config parameter.
+ * @param[in] mode With-defaults capability mode for the configuration data modification.
  * @return 0 on success, non-zero else.
  */
 int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mode);
 
 /**
- * @breaf Remove defaults nodes from copy-config's and edit-config's config.
+ * @breaf Remove the defaults nodes from copy-config and edit-config config.
  *
  * This function should be used only if report-all-tagged mode is supported.
  *
- * @param[in] config XML configuretion data document where default node will
- * be checked if they contain 'default' attribute and also correct default value
+ * @param[in] config XML configuration data document in which the default node will
+ * be checked if it contains 'default' attribute and also the correct default value
  * according to the model and in such case the node will be returned to its
  * default value (i.e. removed from the config where it can be again added by
- * following input operation).
- * @param[in] model Configuration data model for data given in config parameter.
+ * a following input operation).
+ * @param[in] model Configuration data model for the data given in the config parameter.
  * @return 0 on success, non-zero else.
  */
 int ncdflt_default_clear(xmlDocPtr config, const xmlDocPtr model);
 
 /**
  * @ingroup internalAPI
- * @brief Transform given time_t (seconds since epoch) into the RFC 3339 format
+ * @brief Transform given time_t (seconds since the epoch) into the RFC 3339 format
  * accepted by NETCONF functions.
  *
  * This is a reverse function to nc_datetime2time().
@@ -493,22 +495,22 @@ char* nc_time2datetime(time_t time);
 /**
  * @ingroup internalAPI
  * @brief Transform given string in RFC 3339 compliant format to the time_t
- * (seconds since epoch) accepted by the most Linux functions.
+ * (seconds since the epoch) accepted by most Linux functions.
  *
  * This is a reverse function to nc_time2datetime().
  *
  * @param[in] time Time structure returned e.g. by localtime().
- * @return time_t value of given string.
+ * @return time_t value of the given string.
  */
 time_t nc_datetime2time(const char* datetime);
 
 /**
- * @brief Parse given reply message and create NETCONF error structure
- * describing the error from the reply. Reply must be of #NC_REPLY_ERROR type.
+ * @brief Parse the given reply message and create a NETCONF error structure
+ * describing the error from the reply. The reply must be of #NC_REPLY_ERROR type.
  * @param[in] reply \<rpc-reply\> message to be parsed.
  * @return Filled error structure according to given rpc-reply, returned value
  * is automatically connected with the given rpc-reply and should not be freed
- * separatedly. This behaviour should be changed when this function will be part
+ * separately. This behaviour should be changed when this function will be a part
  * of the public API and used by applications.
  */
 struct nc_err* nc_err_parse(nc_reply* reply);
@@ -523,7 +525,7 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter * filter, xmlNodePtr *ne
 
 /**
  * @brief Get state information about sessions. Only information about monitored
- * sessions added by nc_session_monitor() are provided.
+ * sessions added by nc_session_monitor() is provided.
  * @return Serialized XML describing session as defined in RFC 6022, NULL on
  * error (or if no session is monitored).
  */
@@ -532,13 +534,13 @@ char* nc_session_stats(void);
 #ifndef DISABLE_NOTIFICATIONS
 
 /**
- * @brief Initiate NETCONF Notifications environment
+ * @brief Initiate the NETCONF Notifications environment
  * @return 0 on success, non-zero value else
  */
 int ncntf_init(void);
 
 /**
- * @brief Close all NETCONF Event Streams and other parts of the Notifications
+ * @brief Close all the NETCONF Event Streams and other parts of the Notification
  * environment.
  */
 void ncntf_close(void);
@@ -548,10 +550,9 @@ void ncntf_close(void);
 int nc_session_monitoring_init(void);
 void nc_session_monitoring_close(void);
 
-
 /**
- * @brief Remove namespace definition from the node which are no more used.
- * @param[in] node XML element node where to check namespace definitions
+ * @brief Remove namespace definitions from the node which are no longer used.
+ * @param[in] node XML element node which is to be checked for namespace definitions
  */
 void nc_clear_namespaces(xmlNodePtr node);
 

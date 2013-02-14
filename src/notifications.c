@@ -82,7 +82,7 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 static DBusConnection* dbus = NULL;
 static pthread_mutex_t *dbus_mut = NULL;
 
-/* path to the Event stream files, default path is defined in config.h */
+/* path to the Event stream files, the default path is defined in config.h */
 static char* streams_path = NULL;
 
 static pthread_key_t ncntf_replay_done;
@@ -90,13 +90,13 @@ static pthread_key_t ncntf_replay_done;
 /*
  * STREAM FILE FORMAT
  * char[8] == "NCSTREAM"
- * uint16_t 0xffxx - magic number to detect byte order and file format version (xx)
+ * uint16_t 0xffxx - magic number to detect byte order and the file format version (xx)
  * uint16_t len1;
  * char[len1] name; - this must correspond with the file name
  * uint16_t len2;
  * char[len2] description;
  * uint8_t replay;
- * uint64_t (time_t meanings) created;
+ * uint64_t (time_t meaning) created;
  * char[] records;
  *
  */
@@ -118,10 +118,10 @@ struct stream {
 	struct stream *next;
 };
 
-/* status information of streams configuration */
+/* status information of the stream configuration */
 static xmlDocPtr ncntf_config = NULL;
 
-/* internal list of used streams with mutex to controll access into the list */
+/* internal list of used streams with a mutex to control access to the list */
 static struct stream *streams = NULL;
 static pthread_mutex_t *streams_mut = NULL;
 
@@ -131,7 +131,7 @@ static int ncntf_event_isallowed(const char* stream, const char* event);
 /*
  * Modify the given list of files in the specified directory to keep only
  * regular files in the list. Parameter n specifies the number of items in the
- * list. The list is ussually obtained using scandir().
+ * list. The list is usually obtained using scandir().
  *
  */
 static void filter_reg_files(char* dirpath, struct dirent **filelist, int n)
@@ -347,7 +347,7 @@ static int map_rules(struct stream *s)
 
 /*
  * Create a new stream file and write the header corresponding to the given
- * stream structure. If the file is already opened (stream structure has file
+ * stream structure. If the file is already opened (the stream structure has a file
  * descriptor), it only rewrites the header of the file. All data from the
  * existing file are lost!
  *
@@ -462,8 +462,8 @@ static int write_fileheader(struct stream *s)
 }
 
 /*
- * Read file header and fill the stream structure of the stream file specified
- * as filepath. If file is not proper libnetconf's stream file, NULL is
+ * Read the file header and fill in the stream structure of the stream file specified
+ * as filepath. If the file is not a proper libnetconf's stream file, NULL is
  * returned.
  */
 static struct stream *read_fileheader(const char* filepath)
@@ -544,7 +544,7 @@ read_fail:
 }
 
 /*
- * free the stream structure
+ * Free the stream structure
  */
 static void ncntf_stream_free(struct stream *s)
 {
@@ -565,7 +565,7 @@ static void ncntf_stream_free(struct stream *s)
 }
 
 /*
- * Get the stream structure according to the given stream name
+ * Get the stream structure based on the given stream name
  */
 static struct stream* ncntf_stream_get(const char* stream)
 {
@@ -610,7 +610,7 @@ static struct stream* ncntf_stream_get(const char* stream)
 }
 
 /*
- * lock the stream file to avoid concurrent writing/reading from different
+ * Lock the stream file to avoid concurrent writing/reading from different
  * processes.
  */
 static int ncntf_stream_lock(struct stream *s)
@@ -631,7 +631,7 @@ static int ncntf_stream_lock(struct stream *s)
 }
 
 /*
- * unlock the stream file after reading/writing
+ * Unlock the stream file after reading/writing
  */
 static int ncntf_stream_unlock(struct stream *s)
 {
@@ -687,7 +687,7 @@ static int ncntf_dbus_init(void)
 }
 
 /*
- * close D-Bus communication channel
+ * Close the D-Bus communication channel
  */
 static void ncntf_dbus_close(void)
 {
@@ -702,7 +702,7 @@ static void ncntf_dbus_close(void)
 }
 
 /*
- * Initiate the list of available streams. It opens all accessible stream files
+ * Initiate the list of the available streams. It opens all the accessible stream files
  * from the stream directory.
  *
  * If the function is called repeatedly, stream files are closed and opened
@@ -793,7 +793,7 @@ static int ncntf_streams_init(void)
 }
 
 /*
- * close all opened streams in the global list
+ * Close all the opened streams in the global list
  */
 static void ncntf_streams_close(void)
 {
@@ -1172,8 +1172,8 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 	while (1) {
 		/* condition to read events from file (use replay):
 		 * 1) startTime is specified
-		 * 2) stream has replay option allowed
-		 * 3) there are still some data to read from stream file
+		 * 2) stream has a replay option allowed
+		 * 3) there are still some data to be read from the stream file
 		 */
 		if ((*replay_done == 0) && (start != -1) && (s->replay == 1) && (offset = lseek(s->fd_events, 0, SEEK_CUR)) < lseek(s->fd_events, 0, SEEK_END)) {
 			/* there are still some data to read */
@@ -1212,7 +1212,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 				pthread_mutex_unlock(dbus_mut);
 
 				if (signal != NULL && dbus_message_is_signal(signal, NC_NTF_DBUS_INTERFACE, "Event")) {
-					/* parse the message, according to the
+					/* parse the message according to the
 					 * filter set in nc_ntf_stream_iter_start(),
 					 * we have Event signal from the stream
 					 * interface of the specified stream
@@ -1528,26 +1528,26 @@ cleanup:
 }
 
 /*
- * @brief Store new event into the specified stream. Parameters are specific
+ * @brief Store a new event into the specified stream. Parameters are specific
  * for different events.
  *
  * ### Event parameters:
  * - #NCNTF_GENERIC
  *  - **const char* content** Content of the notification as defined in RFC 5277.
- *  eventTime is added automatically. The string should be XML formatted.
+ *  eventTime is added automatically. The string should be XML-formatted.
  * - #NCNTF_BASE_CFG_CHANGE
  *  - #NC_DATASTORE **datastore** Specify which datastore has changed.
  *  - #NCNTF_EVENT_BY **changed_by** Specify the source of the change.
- *   - If the value is set to #NCNTF_EVENT_BY_USER, following parameter is
+ *   - If the value is set to #NCNTF_EVENT_BY_USER, the following parameter is
  *   required:
- *  - **const struct nc_session* session** Session required the configuration change.
+ *  - **const struct nc_session* session** Session that required the configuration change.
  * - #NCNTF_BASE_CPBLT_CHANGE
  *  - **const struct nc_cpblts* old** Old list of capabilities.
  *  - **const struct nc_cpblts* new** New list of capabilities.
  *  - #NCNTF_EVENT_BY **changed_by** Specify the source of the change.
- *   - If the value is set to #NCNTF_EVENT_BY_USER, following parameter is
+ *   - If the value is set to #NCNTF_EVENT_BY_USER, the following parameter is
  *   required:
- *  - **const struct nc_session* session** Session required the configuration change.
+ *  - **const struct nc_session* session** Session that required the configuration change.
  * - #NCNTF_BASE_SESSION_START
  *  - **const struct nc_session* session** Started session (#NC_SESSION_STATUS_DUMMY session is also allowed).
  * - #NCNTF_BASE_SESSION_END
@@ -1560,14 +1560,14 @@ cleanup:
  *  process unknown to the server, use NULL as the value.
  *
  * ### Examples:
- * - nc_ntf_event_new("mystream", -1, NCNTF_GENERIC, "<event>something happend</event>");
+ * - nc_ntf_event_new("mystream", -1, NCNTF_GENERIC, "<event>something happened</event>");
  * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, my_session);
  * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_CPBLT_CHANGE, old_cpblts, new_cpblts, NCNTF_EVENT_BY_SERVER);
  * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_START, my_session);
  * - nc_ntf_event_new("netconf", -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");
  *
- * @param[in] etime Time of the event, if set to -1, current time is used.
- * @param[in] event Event type to distinguish following parameters.
+ * @param[in] etime Time of the event, if set to -1, the current time is used.
+ * @param[in] event Event type to distinguish the following parameters.
  * @param[in] ... Specific parameters for different event types as described
  * above.
  * @return 0 for success, non-zero value else.
@@ -2237,7 +2237,7 @@ time_t ncntf_notif_get_time(nc_ntf* notif)
 }
 
 /**
- * @return 0 on success,\n -1 on general error (invalid rpc),\n -2 on filter error (filter set but it is invalid)
+ * @return 0 on success,\n -1 on a general error (invalid rpc),\n -2 on a filter error (filter set but is invalid)
  */
 static int ncntf_subscription_get_params(const nc_rpc* subscribe_rpc, char **stream, time_t *start, time_t *stop, struct nc_filter** filter)
 {
@@ -2411,7 +2411,7 @@ cleanup:
 
 /**
  * @ingroup notifications
- * @brief Start sending notification according to the given
+ * @brief Start sending notifications according to the given
  * \<create-subscription\> NETCONF RPC request. All events from the specified
  * stream are processed and sent to the client until the stop time is reached
  * or until the session is terminated.
@@ -2617,16 +2617,16 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 /**
  * @ingroup notifications
  * @brief Subscribe for receiving notifications from the given session
- * according to parameters in the given subscribtion RPC. Received notifications
+ * according to the parameters in the given subscribtion RPC. Received notifications
  * are processed by the given process_ntf callback function. Functions stops
  * when the final notification <notificationComplete> is received or when the
  * session is terminated.
  *
- * @param[in] session NETCONF session where the notifications will be sent.
+ * @param[in] session NETCONF session to which the notifications will be sent.
  * @param[in] subscribe_rpc \<create-subscription\> RPC, if any other RPC is
  * given, -1 is returned.
- * @param[in] process_ntf Callback function to process content of the
- * notification. If NULL, content of the notification is printed on stdout.
+ * @param[in] process_ntf Callback function to process the content of the
+ * notification. If NULL, the content of the notification is printed on stdout.
  *
  * @return number of received notifications, -1 on error.
  */

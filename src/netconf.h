@@ -73,7 +73,7 @@ struct nc_cpblts;
  * It corresponds to the following typedef:
  * typedef char* nc_msgid;
  *
- * We use macro to avoid compiler warning of 'const nc_msgid' as return type
+ * We use a macro to avoid compiler warning of 'const nc_msgid' as return type
  * of functions (because const is applied as 'char* const funct()' which is
  * meaningless).
  *
@@ -97,14 +97,14 @@ struct nc_filter;
 
 /**
  * @ingroup session
- * @brief Enumeration of possible states of the NETCONF session.
+ * @brief Enumeration of the possible states of a NETCONF session.
  */
 typedef enum {
-	NC_SESSION_STATUS_ERROR = -1, /**< undefined status or error return code */
+	NC_SESSION_STATUS_ERROR = -1, /**< undefined status or the error return code */
 	NC_SESSION_STATUS_STARTUP = 0, /**< session is setting up */
 	NC_SESSION_STATUS_WORKING = 1, /**< session is established and ready to work */
 	NC_SESSION_STATUS_CLOSING = 2, /**< session is being closed */
-	NC_SESSION_STATUS_CLOSED = 3, /**< session was closed and could not be used to communication */
+	NC_SESSION_STATUS_CLOSED = 3, /**< session was closed and could not be used for communication */
 	NC_SESSION_STATUS_DUMMY = 4 /**< session is DUMMY, only holds information, does not provide connection */
 } NC_SESSION_STATUS;
 
@@ -114,11 +114,11 @@ typedef enum {
  * in RFC 6470.
  */
 typedef enum {
-	NC_SESSION_TERM_CLOSED, /**< closed by client in normal fashion */
+	NC_SESSION_TERM_CLOSED, /**< closed by client in a normal fashion */
 	NC_SESSION_TERM_KILLED, /**< session was terminated by \<kill-session\> operation */
 	NC_SESSION_TERM_DROPPED, /**< transport layer connection was unexpectedly closed */
 	NC_SESSION_TERM_TIMEOUT, /**< terminated because of inactivity */
-	NC_SESSION_TERM_BADHELLO, /**< \<hello\> message was invalid. */
+	NC_SESSION_TERM_BADHELLO, /**< \<hello\> message was invalid */
 	NC_SESSION_TERM_OTHER /**< terminated for some other reason */
 } NC_SESSION_TERM_REASON;
 
@@ -129,7 +129,7 @@ typedef enum {
 typedef enum NC_MSG_TYPE {
 	NC_MSG_UNKNOWN, /**< error state */
 	NC_MSG_WOULDBLOCK, /**< waiting for another message timed out */
-	NC_MSG_NONE, /**< no message at input or message processed internally */
+	NC_MSG_NONE, /**< no message at input or message was processed internally */
 	NC_MSG_HELLO, /**< \<hello\> message */
 	NC_MSG_RPC, /**< \<rpc\> message */
 	NC_MSG_REPLY, /**< \<rpc-reply\> message */
@@ -157,7 +157,7 @@ typedef enum NC_RPC_TYPE {
 	NC_RPC_HELLO, /**< \<hello\> message type, same as NC_REPLY_HELLO */
 	NC_RPC_DATASTORE_READ, /**< \<rpc\> contains operation reading datastore */
 	NC_RPC_DATASTORE_WRITE, /**< \<rpc\> contains operation modifying datastore */
-	NC_RPC_SESSION /**< \<rpc\> contains operation affecting session */
+	NC_RPC_SESSION /**< \<rpc\> contains operation affecting the session */
 } NC_RPC_TYPE;
 
 typedef enum NC_NOTIF_TYPE {
@@ -203,16 +203,16 @@ typedef enum {
 	NC_ERR_PARAM_SEVERITY,
 	/**
 	 * error-app-tag - Contains a string identifying the data-model-specific
-	 * or implementation-specific error condition, if one exists.  This
+	 * or implementation-specific error condition, if one exists. This
 	 * element will not be present if no appropriate application error-tag
-	 * can be associated with a particular error condition.  If a
+	 * can be associated with a particular error condition. If both a
 	 * data-model-specific and an implementation-specific error-app-tag
-	 * both exist, then the data-model-specific value MUST be used by the
+	 * exist then the data-model-specific value MUST be used by the
 	 * server.
 	 */
 	NC_ERR_PARAM_APPTAG,
 	/**
-	 * error-path - Contains the absolute XPath expression identifying the
+	 * error-path - Contains an absolute XPath expression identifying the
 	 * element path to the node that is associated with the error being
 	 * reported.
 	 */
@@ -223,7 +223,7 @@ typedef enum {
 	NC_ERR_PARAM_MSG,
 	/**
 	 * bad-attribute in error-info - name of the attribute, contained in
-	 * 'bad-attribute', 'missing-attribute' and 'unknown-attribute' errors.
+	 * the 'bad-attribute', 'missing-attribute' and 'unknown-attribute' errors.
 	 */
 	NC_ERR_PARAM_INFO_BADATTR,
 	/**
@@ -234,26 +234,26 @@ typedef enum {
 	 */
 	NC_ERR_PARAM_INFO_BADELEM,
 	/**
-	 * bad-namespace in error-info - name of the unexpected namespace,
-	 * contained in 'unknown-namespace' error.
+	 * bad-namespace in error-info - name of an unexpected namespace,
+	 * contained in the 'unknown-namespace' error.
 	 */
 	NC_ERR_PARAM_INFO_BADNS,
 	/**
-	 * session-id in error-info - session ID of session holding the
+	 * session-id in error-info - session ID of the session holding the
 	 * requested lock, contained in 'lock-denied' error.
 	 */
 	NC_ERR_PARAM_INFO_SID
 } NC_ERR_PARAM;
 
 /**
- * @brief Enumeration of supported types of datastores defined by NETCONF
+ * @brief Enumeration of the supported types of datastores defined by NETCONF
  * @ingroup store
  */
 typedef enum NC_DATASTORE_TYPE {
-	NC_DATASTORE_ERROR, /**< error state of functions returning datastore type */
-	NC_DATASTORE_CONFIG, /**< value describing that datastore is set as config */
+	NC_DATASTORE_ERROR, /**< error state of functions returning the datastore type */
+	NC_DATASTORE_CONFIG, /**< value describing that the datastore is set as config */
 	NC_DATASTORE_URL, /**< value describing that the datastore data should be given from the URL */
-	NC_DATASTORE_RUNNING, /**< base NETCONF's datastore containing current device configuration */
+	NC_DATASTORE_RUNNING, /**< base NETCONF's datastore containing the current device configuration */
 	NC_DATASTORE_STARTUP, /**< separated startup datastore as defined in Distinct Startup Capability */
 	NC_DATASTORE_CANDIDATE /**< separated working datastore as defined in Candidate Configuration Capability */
 } NC_DATASTORE;
@@ -326,7 +326,7 @@ typedef enum {
 
 /**
  * @brief Set libnetconf's verbosity level.
- * @param[in] level Enabled verbosity level (includes all levels with higher priority).
+ * @param[in] level Enabled verbosity level (includes all the levels with higher priority).
  * @ingroup genAPI
  */
 void nc_verbosity(NC_VERB_LEVEL level);
@@ -334,11 +334,11 @@ void nc_verbosity(NC_VERB_LEVEL level);
 /**
  * @ingroup genAPI
  * @brief Initialize libnetconf for system-wide usage. This initialization is
- * shared across all processes using
+ * shared across all the processes
  * @param[in] flags ORed flags for libnetconf initialization. Accepted values
  * include:
  *    - *NC_INIT_NOTIF* Enable Notification subsystem
- * @return -1 on fatal error\n 0 if this is first init after previous
+ * @return -1 on fatal error\n 0 if this is the first init after previous
  * system-wide nc_close() or system reboot\n 1 when someone else already called
  * nc_init() since last system-wide nc_close() or system reboot.
  */
@@ -348,12 +348,12 @@ int nc_init(int flags);
 
 /**
  * @ingroup genAPI
- * @param[in] system Flag if close should be applied as a system-wide.
- * System-wide nc_close() closes all shared structures if no other libnetconf
- * participant is not currently running. Local release of the calling instance
+ * @param[in] system Flag if close should be applied as system-wide.
+ * System-wide nc_close() closes all the shared structures if no other libnetconf
+ * participant is currently running. Local release of the calling instance
  * from the shared structures is done in both cases.
- * @return -1 on error\n 0 on success\n 1 in case of system wide when there is
- * other participant using shared structures and system-wide close cannot be
+ * @return -1 on error\n 0 on success\n 1 in case of system-wide when there is
+ * another participant using shared structures and system-wide close cannot be
  * done.
  */
 int nc_close(int system);

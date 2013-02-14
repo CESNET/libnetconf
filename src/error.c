@@ -369,10 +369,10 @@ int nc_err_set(struct nc_err* err, NC_ERR_PARAM param, const char* value)
 }
 
 /**
- * @brief Parse given reply message and create NETCONF error structure
- * describing the error from the reply. Reply must be of #NC_REPLY_ERROR type.
+ * @brief Parse the given reply message and create a NETCONF error structure
+ * describing the error from the reply. Reply must be of the #NC_REPLY_ERROR type.
  * @param[in] reply \<rpc-reply\> message to be parsed.
- * @return Filled error structure according to given rpc-reply, it is up to
+ * @return Filled error structure according to the given rpc-reply, it is up to the
  * caller to free the structure using nc_err_free().
  */
 struct nc_err* nc_err_parse(nc_reply* reply)

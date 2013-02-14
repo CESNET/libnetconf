@@ -47,7 +47,7 @@
 
 /**
  * @ingroup notifications_xml
- * @brief Store new event into the specified stream. Parameters are specific
+ * @brief Store a new event into the specified stream. Parameters are specific
  * for different events.
  *
  * ### Event parameters:
@@ -58,22 +58,22 @@
  * - #NCNTF_BASE_CFG_CHANGE
  *  - #NC_DATASTORE **datastore** Specify which datastore has changed.
  *  - #NCNTF_EVENT_BY **changed_by** Specify the source of the change.
- *   - If the value is set to #NCNTF_EVENT_BY_USER, following parameter is
+ *   - If the value is set to #NCNTF_EVENT_BY_USER, the following parameter is
  *   required:
- *  - **const struct nc_session* session** Session required the configuration change.
+ *  - **const struct nc_session* session** Session that required the configuration change.
  * - #NCNTF_BASE_CPBLT_CHANGE
  *  - **const struct nc_cpblts* old** Old list of capabilities.
  *  - **const struct nc_cpblts* new** New list of capabilities.
  *  - #NCNTF_EVENT_BY **changed_by** Specify the source of the change.
- *   - If the value is set to #NCNTF_EVENT_BY_USER, following parameter is
+ *   - If the value is set to #NCNTF_EVENT_BY_USER, the following parameter is
  *   required:
- *  - **const struct nc_session* session** Session required the configuration change.
+ *  - **const struct nc_session* session** Session that required the configuration change.
  * - #NCNTF_BASE_SESSION_START
  *  - **const struct nc_session* session** Started session (#NC_SESSION_STATUS_DUMMY session is also allowed).
  * - #NCNTF_BASE_SESSION_END
- *  - **const struct nc_session* session** Finnished session (#NC_SESSION_STATUS_DUMMY session is also allowed).
+ *  - **const struct nc_session* session** Finished session (#NC_SESSION_STATUS_DUMMY session is also allowed).
  *  - #NC_SESSION_TERM_REASON **reason** Session termination reason.
- *   - If the value is set to #NC_SESSION_TERM_KILLED, following parameter is
+ *   - If the value is set to #NC_SESSION_TERM_KILLED, the following parameter is
  *   required.
  *  - **const char* killed-by-sid** The ID of the session that directly caused
  *  the session termination. If the session was terminated by a non-NETCONF
@@ -86,8 +86,8 @@
  * - ncxmlntf_event_new("netconf", -1, NCNTF_BASE_SESSION_START, my_session);
  * - ncxmlntf_event_new("netconf", -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, "123456");
  *
- * @param[in] etime Time of the event, if set to -1, current time is used.
- * @param[in] event Event type to distinguish following parameters.
+ * @param[in] etime Time of the event, if set to -1, the current time is used.
+ * @param[in] event Event type to distinguish the following parameters.
  * @param[in] ... Specific parameters for different event types as described
  * above.
  * @return 0 for success, non-zero value else.
@@ -96,7 +96,7 @@ int ncxmlntf_event_new(time_t etime, NCNTF_EVENT event, ...);
 
 /**
  * @ingroup notifications_xml
- * @brief Create new \<notification\> message with the given eventTime and content.
+ * @brief Create a new \<notification\> message with the given eventTime and content.
  *
  * @param[in] event_time Time of the event.
  * @param[in] content Description of the event in XML. This parameter is taken
@@ -107,10 +107,10 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content);
 
 /**
  * @ingroup notifications_xml
- * @brief Get description of the event reported in the notification message.
+ * @brief Get the description of the event reported in the notification message.
  * @param[in] notif Notification message.
  * @return Copy of the event description content (single node or node list,
- * eventTime is not included). Caller is supposed to free the returned structure
+ * eventTime is not included). The caller is supposed to free the returned structure
  * with xmlFreeNodeList().
  */
 xmlNodePtr ncxmlntf_notif_get_content(nc_ntf* notif);
