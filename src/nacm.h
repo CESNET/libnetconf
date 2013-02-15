@@ -80,8 +80,8 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session);
  * @brief Check if there is a permission to invoke requested protocol operation.
  *
  * @param[in] rpc RPC specifying requested operation
- * @return 0 if the check passed<br/>
- *         1 if the operation is prohibited<br/>
+ * @return 0 for permit the operation<br/>
+ *         1 for deny the operation<br/>
  *        -1 in case of error
  */
 int nacm_check_operation(const nc_rpc* rpc);

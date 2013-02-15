@@ -56,6 +56,7 @@
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 typedef enum {
+	NACM_RULE_NOTSET = 0,
 	NACM_RULE_OPERATION = 1,
 	NACM_RULE_NOTIF = 2,
 	NACM_RULE_DATA = 3
@@ -355,8 +356,22 @@ int nacm_init(void)
 
 void nacm_close(void)
 {
+	int i;
+
 	nc_rpc_free(get_config_rpc);
 	get_config_rpc = NULL;
+	if (nacm_config.groups != NULL) {
+		for (i = 0; nacm_config.groups[i] != NULL; i++) {
+			nacm_group_free(nacm_config.groups[i]);
+		}
+		free(nacm_config.groups);
+	}
+	if (nacm_config.rule_lists != NULL) {
+		for (i = 0; nacm_config.rule_lists[i] != NULL; i++) {
+			nacm_rule_list_free(nacm_config.rule_lists[i]);
+		}
+		free(nacm_config.rule_lists);
+	}
 }
 
 static int check_query_result(xmlXPathObjectPtr query_result, const char* object, int multiple, int textnode)
@@ -612,10 +627,10 @@ int nacm_config_refresh(void)
 
 								if (strcmp(rlist->groups[gc-1], "*") == 0) {
 									/* matchall string - store only single value and free the rest of group list (if any) */
-									rlist->groups[0] = strdup("*");
-									for (gc = 1; rlist->groups[gc] != NULL; gc++) {
+									for (gc = 0; rlist->groups[gc] != NULL; gc++) {
 										free(rlist->groups[gc]);
 									}
+									rlist->groups[0] = strdup("*");
 									/* ignore rest of group elements in this rule-list */
 									allgroups = true;
 								}
@@ -791,4 +806,27 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session)
 	rpc->nacm = nacm_rpc;
 
 	return (EXIT_SUCCESS);
+}
+
+int nacm_check_operation(const nc_rpc* rpc)
+{
+	if (rpc == NULL) {
+		/* invalid input parameter */
+		return (-1);
+	}
+
+	if (rpc->nacm == NULL) {
+		/* NACM will not affect this RPC */
+		return (NACM_PERMIT);
+	}
+
+	/*
+	 * check rules (all must be met):
+	 * - module-name matches "*" or the name of the module where the operation is defined
+	 * - type is NACM_RULE_OPERATION or type is NACM_RULE_OPERATION and data contain "*" or the operation name
+	 * - access has set NACM_ACCESS_EXEC bit
+	 */
+
+
+	return (-1);
 }

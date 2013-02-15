@@ -74,6 +74,26 @@ struct ncds_ds {
 	 */
 	char* model_path;
 	/**
+	 * @brief Name of the model
+	 */
+	char* model_name;
+	/**
+	 * @brief Revision of the model
+	 */
+	char* model_version;
+	/**
+	 * @brief Namespace of the model
+	 */
+	char* model_namespace;
+	/**
+	 * @brief List of defined RPCs
+	 */
+	char** rpcs;
+	/**
+	 * @brief List of defined notifications
+	 */
+	char** notifs;
+	/**
 	 * @brief YIN configuration data model in the libxml2's document form.
 	 */
 	xmlDocPtr model;

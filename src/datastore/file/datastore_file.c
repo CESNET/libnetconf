@@ -389,12 +389,26 @@ int ncds_file_init (struct ncds_ds* ds)
 
 void ncds_file_free(struct ncds_ds* ds)
 {
+	int i;
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
 	if (file_ds != NULL) {
 		/* generic ncds_ds part */
-		if (file_ds->model_path != NULL) {
-			free(file_ds->model_path);
+		free(file_ds->model_path);
+		free(file_ds->model_name);
+		free(file_ds->model_version);
+		free(file_ds->model_namespace);
+		if (file_ds->rpcs != NULL) {
+			for (i = 0; file_ds->rpcs[i] != NULL; i++) {
+				free(file_ds->rpcs[i]);
+			}
+			free(file_ds->rpcs);
+		}
+		if (file_ds->notifs != NULL) {
+			for (i = 0; file_ds->notifs[i] != NULL; i++) {
+				free(file_ds->notifs[i]);
+			}
+			free(file_ds->notifs);
 		}
 		if (file_ds->model != NULL) {
 			xmlFreeDoc(file_ds->model);
@@ -415,6 +429,7 @@ void ncds_file_free(struct ncds_ds* ds)
 			}
 			sem_close(file_ds->ds_lock.lock);
 		}
+
 		free(file_ds);
 	}
 }
