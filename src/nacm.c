@@ -666,9 +666,6 @@ int nacm_config_refresh(void)
 	}
 	xmlXPathFreeObject(query_result);
 
-
-
-
 	xmlXPathFreeContext(data_ctxt);
 	xmlFreeDoc(data_doc);
 
@@ -810,6 +807,12 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session)
 
 int nacm_check_operation(const nc_rpc* rpc)
 {
+	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr opnode;
+	const char* opmodule;
+	NC_OP op;
+	int i, j;
+
 	if (rpc == NULL) {
 		/* invalid input parameter */
 		return (-1);
@@ -820,13 +823,66 @@ int nacm_check_operation(const nc_rpc* rpc)
 		return (NACM_PERMIT);
 	}
 
-	/*
-	 * check rules (all must be met):
-	 * - module-name matches "*" or the name of the module where the operation is defined
-	 * - type is NACM_RULE_OPERATION or type is NACM_RULE_OPERATION and data contain "*" or the operation name
-	 * - access has set NACM_ACCESS_EXEC bit
-	 */
+	/* get the operation name from the rpc */
+	query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE_ID":rpc", rpc->ctxt);
+	if (check_query_result(query_result, "/rpc", 0, 0) != 0) {
+		return (-1);
+	}
+	opnode = query_result->nodesetval->nodeTab[0];
+	xmlXPathFreeObject(query_result);
 
+	/* get module name where the operation is defined */
+	opmodule = ncds_get_model_operation((char*)(opnode->name), (opnode->ns != NULL) ? (char*)(opnode->ns->href) : NULL);
 
-	return (-1);
+	if (opmodule != NULL) {
+		for (i = 0; rpc->nacm->rule_lists != NULL && rpc->nacm->rule_lists[i] != NULL; i++) {
+			for (j = 0; rpc->nacm->rule_lists[i]->rules != NULL && rpc->nacm->rule_lists[i]->rules[j] != NULL; j++) {
+				/*
+				 * check rules (all must be met):
+				 * - module-name matches "*" or the name of the module where the operation is defined
+				 * - type is NACM_RULE_NOTSET or type is NACM_RULE_OPERATION and data contain "*" or the operation name
+				 * - access has set NACM_ACCESS_EXEC bit
+				 */
+
+				/* 1) module name */
+				if (!(strcmp(rpc->nacm->rule_lists[i]->rules[j]->module, "*") == 0 ||
+				    strcmp(rpc->nacm->rule_lists[i]->rules[j]->module, opmodule) == 0)) {
+					/* rule does not match */
+					continue;
+				}
+
+				/* 2) type */
+				if (!(rpc->nacm->rule_lists[i]->rules[j]->type == NACM_RULE_NOTSET ||
+				    (rpc->nacm->rule_lists[i]->rules[j]->type == NACM_RULE_OPERATION &&
+				     (strcmp(rpc->nacm->rule_lists[i]->rules[j]->data, "*") == 0 ||
+				      strcmp(rpc->nacm->rule_lists[i]->rules[j]->data, (char*)opnode->name) == 0
+				     )
+				    )
+				   )) {
+					/* rule does not match */
+					continue;
+				}
+
+				/* 3) access */
+				if ((rpc->nacm->rule_lists[i]->rules[j]->access & NACM_ACCESS_EXEC) == 0) {
+					/* rule does not match */
+				}
+				/* rule matches */
+				return (rpc->nacm->rule_lists[i]->rules[j]->action);
+			}
+		}
+		/* no matching rule found */
+
+		/* \todo check nacm:default-deny-all */
+	}
+	/* no matching rule found */
+
+	/* deny delete-config and kill-session */
+	op = nc_rpc_get_op(rpc);
+	if (op == NC_OP_DELETECONFIG || op == NC_OP_KILLSESSION) {
+		return (NACM_DENY);
+	}
+
+	/* default action */
+	return (rpc->nacm->default_exec);
 }

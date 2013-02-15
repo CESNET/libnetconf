@@ -1962,3 +1962,65 @@ void ncds_break_locks(const struct nc_session* session)
 
 	return;
 }
+
+const char* ncds_get_model_operation(const char* operation, const char* namespace)
+{
+	struct ncds_ds_list *ds;
+	int i;
+
+	if (operation == NULL || namespace == NULL) {
+		return (NULL);
+	}
+
+	for (ds = datastores; ds != NULL; ds = ds->next) {
+		if (ds->datastore == NULL) {
+			continue;
+		}
+		if (ds->datastore->model_namespace == NULL || strcmp(ds->datastore->model_namespace, namespace) != 0) {
+			/* namespace does not match */
+			continue;
+		}
+		if (ds->datastore->rpcs != NULL) {
+			for (i = 0; ds->datastore->rpcs[i] != NULL; i++) {
+				if (strcmp(ds->datastore->rpcs[i], operation) == 0) {
+					/* operation definition found */
+					return (ds->datastore->model_name);
+				}
+			}
+		}
+	}
+
+	/* oepration definition not found */
+	return (NULL);
+}
+
+const char* ncds_get_model_notification(const char* notification, const char* namespace)
+{
+	struct ncds_ds_list *ds;
+	int i;
+
+	if (notification == NULL || namespace == NULL) {
+		return (NULL);
+	}
+
+	for (ds = datastores; ds != NULL; ds = ds->next) {
+		if (ds->datastore == NULL) {
+			continue;
+		}
+		if (ds->datastore->model_namespace == NULL || strcmp(ds->datastore->model_namespace, namespace) != 0) {
+			/* namespace does not match */
+			continue;
+		}
+		if (ds->datastore->notifs != NULL) {
+			for (i = 0; ds->datastore->notifs[i] != NULL; i++) {
+				if (strcmp(ds->datastore->notifs[i], notification) == 0) {
+					/* notification definition found */
+					return (ds->datastore->model_name);
+				}
+			}
+		}
+	}
+
+	/* notification definition not found */
+	return (NULL);
+}
