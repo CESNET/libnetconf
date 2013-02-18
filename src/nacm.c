@@ -691,6 +691,16 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session)
 		return (EXIT_FAILURE);
 	}
 
+	/*
+	 * \todo
+	 * refresh internal structures according to the current content of the
+	 * configuration data - when the changes in configuration data will
+	 * be detected automatically, remove this refresh for optimizations
+	 */
+	if (nacm_config_refresh() != EXIT_SUCCESS) {
+		return (EXIT_FAILURE);
+	}
+
 	if (nacm_session == NULL || nacm_config.enabled == false) {
 		/* NACM subsystem not initiated or switched off */
 		/*
