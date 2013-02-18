@@ -95,7 +95,7 @@
  * communication channel can be checked by poll(), select(), ... This descriptor
  * can be obtained via nc_session_get_eventfd() function.
  * -# **Close the NETCONF session**.\n
- * When the communication is finnished, the NETCONF session is closed by
+ * When the communication is finished, the NETCONF session is closed by
  * nc_session_close() and all the used structures are freed by nc_session_free().
  * -# **Free all created objects**.\n
  * Do not forget to free created rpc messages (nc_rpc_free()),
@@ -105,8 +105,13 @@
  * SERVER ARCHITECTURE
  * -------------------
  *
- * There are two basic approaches how to implement NETCONF server using
- * libnetconf.
+ * It is [strongly] advised to set SUID (or SGID) bit on every application that is
+ * built on libnetconf, as several internal functions behave based on this precondition.
+ * libnetconf uses a number of files which pose a security risk if they are accessible
+ * by untrustworthy users. This way it is possible not to restrict the use of
+ * an application but only the access to its files, so keep this in mind when creating
+ * any directories or files that are used. Generally, there are two basic approaches of how
+ * to implement a NETCONF server using libnetconf.
  *
  * ###Single-level Architecture###
  *
@@ -115,7 +120,7 @@
  * In this case, all the server functionality is implemented as a single process.
  * It is started by SSH daemon as its Subsystem for each incoming NETCONF
  * session connection. The main issue of this approach is a simultaneous access
- * to shared resources. Device manager has to solve concurrent access to the
+ * to shared resources. The device manager has to solve concurrent access to the
  * controlled device from its multiple instances. libnetconf itself has to deal
  * with simultaneous access to a shared configuration datastore.
  *
