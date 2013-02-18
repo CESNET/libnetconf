@@ -828,8 +828,15 @@ int nacm_check_operation(const nc_rpc* rpc)
 	if (check_query_result(query_result, "/rpc", 0, 0) != 0) {
 		return (-1);
 	}
-	opnode = query_result->nodesetval->nodeTab[0];
+	opnode = query_result->nodesetval->nodeTab[0]->children;
+	while(opnode != NULL && opnode->type != XML_ELEMENT_NODE) {
+		opnode = opnode->next;
+	}
 	xmlXPathFreeObject(query_result);
+	if (opnode == NULL) {
+		/* invalid message with missing operation */
+		return (-1);
+	}
 
 	/* get module name where the operation is defined */
 	opmodule = ncds_get_model_operation((char*)(opnode->name), (opnode->ns != NULL) ? (char*)(opnode->ns->href) : NULL);
@@ -854,8 +861,8 @@ int nacm_check_operation(const nc_rpc* rpc)
 				/* 2) type */
 				if (!(rpc->nacm->rule_lists[i]->rules[j]->type == NACM_RULE_NOTSET ||
 				    (rpc->nacm->rule_lists[i]->rules[j]->type == NACM_RULE_OPERATION &&
-				     (strcmp(rpc->nacm->rule_lists[i]->rules[j]->data, "*") == 0 ||
-				      strcmp(rpc->nacm->rule_lists[i]->rules[j]->data, (char*)opnode->name) == 0
+				     (strstr(rpc->nacm->rule_lists[i]->rules[j]->data, "*") != NULL ||
+				      strstr(rpc->nacm->rule_lists[i]->rules[j]->data, (char*)opnode->name) != NULL
 				     )
 				    )
 				   )) {
