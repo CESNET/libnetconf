@@ -739,6 +739,12 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	}
 	retval->username = strdup(pw->pw_name);
 	retval->groups = nc_get_grouplist(retval->username);
+	/* detect if user ID is 0 -> then the session is recovery */
+	if (pw->pw_uid == 0) {
+		retval->nacm_recovery = 1;
+	} else {
+		retval->nacm_recovery = 0;
+	}
 
 	if (capabilities == NULL) {
 		if ((server_cpblts = nc_session_get_cpblts_default()) == NULL) {
@@ -987,6 +993,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->queue_msg = NULL;
 	retval->logintime = NULL;
 	retval->monitored = 0;
+	retval->nacm_recovery = 0; /* not needed/decidable on the client side */
 	retval->stats->in_rpcs = 0;
 	retval->stats->in_bad_rpcs = 0;
 	retval->stats->out_rpc_errors = 0;
@@ -1245,6 +1252,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->queue_msg = NULL;
 	retval->logintime = NULL;
 	retval->monitored = 0;
+	retval->nacm_recovery = 0; /* not needed/decidable on the client side */
 	retval->stats->in_rpcs = 0;
 	retval->stats->in_bad_rpcs = 0;
 	retval->stats->out_rpc_errors = 0;

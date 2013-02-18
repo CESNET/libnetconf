@@ -50,6 +50,7 @@
 #include <errno.h>
 #include <poll.h>
 #include <pthread.h>
+#include <pwd.h>
 
 #ifndef DISABLE_LIBSSH
 #	include <libssh2.h>
@@ -845,6 +846,7 @@ void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supporte
 struct nc_session* nc_session_dummy(const char* sid, const char* username, const char* hostname, struct nc_cpblts *capabilities)
 {
 	struct nc_session * session;
+	struct passwd* p;
 	const char* cpblt;
 
 	if (sid == NULL || username == NULL || capabilities == NULL) {
@@ -892,6 +894,13 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	}
 	/* copy user name */
 	session->username = strdup (username);
+	/* detect if user ID is 0 -> then the session is recovery */
+	session->nacm_recovery = 0;
+	if ((p = getpwnam(username)) != NULL) {
+		if (p->pw_uid == 0) {
+			session->nacm_recovery = 1;
+		}
+	}
 	/* create empty capabilities list */
 	session->capabilities = nc_cpblts_new (NULL);
 	/* initialize capabilities iterator */

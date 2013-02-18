@@ -323,6 +323,8 @@ struct nc_session {
 	struct nc_msg* queue_event;
 	/**< @brief flag for active notification subscription on the session */
 	int ntf_active;
+	/**< @brief flag for NACM Recovery session - set if session user ID is 0 */
+	int nacm_recovery;
 	/**< @brief Flag if the session is monitored and connected to the shared memory segment */
 	int monitored;
 	/**< @brief NETCONF session statistics as defined in RFC 6022 */
