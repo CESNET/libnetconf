@@ -94,3 +94,11 @@ install: $(NAME)
 		chmod -R 777 $(SERVERCFG_PATH))
 	$(INSTALL_DATA) README.cfgdir $(SERVERCFG_PATH)/README
 
+.PHONY: uninstall
+uninstall:
+	rm -f $(DESTDIR)/$(bindir)/$(NAME);
+	rm -f $(SERVERCFG_PATH)/README;
+
+.PHONY: clean
+clean:
+	rm -rf $(NAME) $(OBJDIR); 

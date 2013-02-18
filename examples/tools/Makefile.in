@@ -76,6 +76,10 @@ install: $(NAME)
 		(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir))
 	$(INSTALL_PROGRAM) $(NAME) $(DESTDIR)/$(bindir)/;
 
+.PHONY: uninstall
+uninstall:
+	rm -f $(DESTDIR)/$(bindir)/$(NAME);
+
 .PHONY: clean
 clean:
 	rm -rf $(NAME) $(OBJDIR); 
