@@ -76,7 +76,11 @@ struct nacm_rule {
 	 * - notification-name for NACM_RULE_NOTIF type
 	 * - path for NACM_RULE_DATA type
 	 */
-	char* data;
+	union {
+		char* path;
+		char** rpc_names;
+		char** ntf_names;
+	} type_data;
 #define NACM_ACCESS_CREATE 0x01
 #define NACM_ACCESS_READ   0x02
 #define NACM_ACCESS_UPDATE 0x04
@@ -127,8 +131,26 @@ void nacm_group_free(struct nacm_group* g)
 
 void nacm_rule_free(struct nacm_rule* r)
 {
+	int i;
+
 	if (r != NULL) {
-		free(r->data);
+		if (r->type == NACM_RULE_NOTIF) {
+			if (r->type_data.ntf_names != NULL) {
+				for(i = 0; r->type_data.ntf_names[i] != NULL; i++) {
+					free(r->type_data.ntf_names[i]);
+				}
+				free(r->type_data.ntf_names);
+			}
+		} else if (r->type == NACM_RULE_OPERATION) {
+			if (r->type_data.rpc_names != NULL) {
+				for(i = 0; r->type_data.rpc_names[i] != NULL; i++) {
+					free(r->type_data.rpc_names[i]);
+				}
+				free(r->type_data.rpc_names);
+			}
+		} else if (r->type == NACM_RULE_DATA) {
+			free(r->type_data.path);
+		}
 		free(r->module);
 		free(r);
 	}
@@ -158,7 +180,7 @@ void nacm_rule_list_free(struct rule_list* rl)
 struct rule_list* nacm_rule_list_dup(struct rule_list* r)
 {
 	struct rule_list *new = NULL;
-	int i;
+	int i, j;
 
 	if (r != NULL) {
 		new = malloc(sizeof(struct rule_list));
@@ -191,11 +213,46 @@ struct rule_list* nacm_rule_list_dup(struct rule_list* r)
 						nacm_rule_list_free(new);
 						return (NULL);
 					}
-					new->rules[i]->access = r->rules[i]->access;
-					new->rules[i]->action = r->rules[i]->action;
-					new->rules[i]->data = (r->rules[i]->data == NULL) ? NULL : strdup(r->rules[i]->data);
-					new->rules[i]->module = (r->rules[i]->module == NULL) ? NULL : strdup(r->rules[i]->module);
 					new->rules[i]->type = r->rules[i]->type;
+					switch(new->rules[i]->type) {
+					case NACM_RULE_NOTIF:
+						for (j = 0; r->rules[i]->type_data.ntf_names != NULL && r->rules[i]->type_data.ntf_names[j] != NULL; j++) ;
+						if (j > 0) {
+							new->rules[i]->type_data.ntf_names = malloc((j + 1) * sizeof(char*));
+							if (new->rules[i]->type_data.ntf_names == NULL) {
+								nacm_rule_list_free(new);
+								return (NULL);
+							}
+							for (j = 0; r->rules[i]->type_data.ntf_names[j] != NULL; j++) {
+								new->rules[i]->type_data.ntf_names[j] = strdup(r->rules[i]->type_data.ntf_names[j]);
+							}
+							new->rules[i]->type_data.ntf_names[j] = NULL; /* list terminating NULL byte */
+						}
+						break;
+					case NACM_RULE_OPERATION:
+						for (j = 0; r->rules[i]->type_data.rpc_names != NULL && r->rules[i]->type_data.rpc_names[j] != NULL; j++);
+						if (j > 0) {
+							new->rules[i]->type_data.rpc_names = malloc((j + 1) * sizeof(char*));
+							if (new->rules[i]->type_data.rpc_names == NULL) {
+								nacm_rule_list_free(new);
+								return (NULL);
+							}
+							for (j = 0; r->rules[i]->type_data.rpc_names[j] != NULL; j++) {
+								new->rules[i]->type_data.rpc_names[j] = strdup(r->rules[i]->type_data.rpc_names[j]);
+							}
+							new->rules[i]->type_data.rpc_names[j] = NULL; /* list terminating NULL byte */
+						}
+						break;
+					case NACM_RULE_DATA:
+						new->rules[i]->type_data.path = (r->rules[i]->type_data.path == NULL) ? NULL : strdup(r->rules[i]->type_data.path);
+						break;
+					default:
+						new->rules[i]->type_data.path = NULL; /* covers also type_data.rpc_names and type_data.ntf_names */
+						break;
+					}
+					new->rules[i]->action = r->rules[i]->action;
+					new->rules[i]->access = r->rules[i]->access;
+					new->rules[i]->module = (r->rules[i]->module == NULL) ? NULL : strdup(r->rules[i]->module);
 				}
 				new->rules[i] = NULL;
 			} else {
@@ -239,7 +296,8 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 {
 	xmlNodePtr node;
 	struct nacm_rule* rule;
-	char* s;
+	char *s, *s_orig, *t;
+	int c, l;
 	bool action = false;
 
 	/* many checks for rule element are done in nacm_config_refresh() before calling this function */
@@ -249,8 +307,8 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
-	rule->type = 0;
-	rule->data = NULL;
+	rule->type = NACM_RULE_NOTSET;
+	rule->type_data.path = NULL; /* also sets rpc_names and ntf_names to NULL */
 	rule->module = NULL;
 	rule->access = 0;
 
@@ -266,7 +324,26 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 					return (NULL);
 				}
 				rule->type = NACM_RULE_OPERATION;
-				rule->data = nc_clrwspace((char*)node->children->content);
+				s_orig = s = nc_clrwspace((char*) node->children->content);
+				for (c = l = 0; (t = strsep(&s, " \n\t")) != NULL; ) {
+					if (strlen(t) == 0) {
+						/* empty string (double delimiter) */
+						continue;
+					}
+					if (c == l) {
+						l += 10;
+						rule->type_data.rpc_names = realloc(rule->type_data.rpc_names, l * sizeof(char*));
+						if (rule->type_data.rpc_names == NULL) {
+							ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+							nacm_rule_free(rule);
+							free(s_orig);
+							return (NULL);
+						}
+					}
+					rule->type_data.rpc_names[c++] = strdup(t);
+					rule->type_data.rpc_names[c] = NULL; /* list terminating NULL byte */
+				}
+				free(s_orig);
 			} else if (xmlStrcmp(node->name, BAD_CAST "notification-name") == 0) {
 				if (rule->type != 0) {
 					ERROR("%s: invalid rule definition (multiple cases from rule-type choice)", __func__);
@@ -274,7 +351,26 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 					return (NULL);
 				}
 				rule->type = NACM_RULE_NOTIF;
-				rule->data = nc_clrwspace((char*)node->children->content);
+				s_orig = s = nc_clrwspace((char*) node->children->content);
+				for (c = l = 0; (t = strsep(&s, " \n\t")) != NULL; ) {
+					if (strlen(t) == 0) {
+						/* empty string (double delimiter) */
+						continue;
+					}
+					if (c == l) {
+						l += 10;
+						rule->type_data.ntf_names = realloc(rule->type_data.ntf_names, l * sizeof(char*));
+						if (rule->type_data.ntf_names == NULL) {
+							ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+							nacm_rule_free(rule);
+							free(s_orig);
+							return (NULL);
+						}
+					}
+					rule->type_data.ntf_names[c++] = strdup(t);
+					rule->type_data.ntf_names[c] = NULL; /* list terminating NULL byte */
+				}
+				free(s_orig);
 			} else if (xmlStrcmp(node->name, BAD_CAST "path") == 0) {
 				if (rule->type != 0) {
 					ERROR("%s: invalid rule definition (multiple cases from rule-type choice)", __func__);
@@ -282,7 +378,7 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 					return (NULL);
 				}
 				rule->type = NACM_RULE_DATA;
-				rule->data = nc_clrwspace((char*)node->children->content);
+				rule->type_data.path = nc_clrwspace((char*)node->children->content);
 			} else if (xmlStrcmp(node->name, BAD_CAST "access-operations") == 0) {
 				if (xmlStrstr(node->children->content, BAD_CAST "*")) {
 					rule->access = NACM_ACCESS_ALL;
@@ -309,6 +405,7 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 				} else {
 					ERROR("%s: Invalid /nacm/rule-list/rule/action value (%s).", __func__, s);
 					nacm_rule_free(rule);
+					free(s);
 					return (NULL);
 				}
 				free(s);
@@ -836,7 +933,7 @@ int nacm_check_operation(const nc_rpc* rpc)
 	xmlNodePtr opnode;
 	const char* opmodule;
 	NC_OP op;
-	int i, j;
+	int i, j, k;
 
 	if (rpc == NULL) {
 		/* invalid input parameter */
@@ -883,16 +980,24 @@ int nacm_check_operation(const nc_rpc* rpc)
 					continue;
 				}
 
-				/* 2) type */
-				if (!(rpc->nacm->rule_lists[i]->rules[j]->type == NACM_RULE_NOTSET ||
-				    (rpc->nacm->rule_lists[i]->rules[j]->type == NACM_RULE_OPERATION &&
-				     (strstr(rpc->nacm->rule_lists[i]->rules[j]->data, "*") != NULL ||
-				      strstr(rpc->nacm->rule_lists[i]->rules[j]->data, (char*)opnode->name) != NULL
-				     )
-				    )
-				   )) {
-					/* rule does not match */
-					continue;
+				/* 2) type and operation name */
+				if (rpc->nacm->rule_lists[i]->rules[j]->type != NACM_RULE_NOTSET) {
+					if (rpc->nacm->rule_lists[i]->rules[j]->type == NACM_RULE_OPERATION &&
+					    rpc->nacm->rule_lists[i]->rules[j]->type_data.rpc_names != NULL) {
+						for (k = 0; rpc->nacm->rule_lists[i]->rules[j]->type_data.rpc_names[k] != NULL; k++) {
+							if (strcmp(rpc->nacm->rule_lists[i]->rules[j]->type_data.rpc_names[k], "*") == 0 ||
+							    strcmp(rpc->nacm->rule_lists[i]->rules[j]->type_data.rpc_names[k], (char*)(opnode->name)) == 0) {
+								break;
+							}
+						}
+						if (rpc->nacm->rule_lists[i]->rules[j]->type_data.rpc_names[k] == NULL) {
+							/* rule does not match - operation names do not match */
+							continue;
+						}
+					} else {
+						/* rule does not match - another type of rule */
+						continue;
+					}
 				}
 
 				/* 3) access */
