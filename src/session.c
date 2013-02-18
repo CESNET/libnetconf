@@ -2068,6 +2068,26 @@ try_again:
 		/* NACM init */
 		nacm_start(*rpc, session);
 
+		/* NACM - check operation access */
+		if (nacm_check_operation(*rpc) != NACM_PERMIT) {
+			e = nc_err_new(NC_ERR_ACCESS_DENIED);
+			nc_err_set(e, NC_ERR_PARAM_MSG, "Operation not permitted.");
+			reply = nc_reply_error(e);
+			nc_session_send_reply(session, *rpc, reply);
+			nc_rpc_free(*rpc);
+			*rpc = NULL;
+			nc_reply_free(reply);
+
+			/* update stats */
+			if (nc_info) {
+				pthread_rwlock_wrlock(&(nc_info->lock));
+				nc_info->stats_nacm.denied_ops++;
+				pthread_rwlock_unlock(&(nc_info->lock));
+			}
+
+			return (NC_MSG_NONE); /* message processed internally */
+		}
+
 		break;
 	case NC_MSG_HELLO:
 		/* do nothing, just return the type */
