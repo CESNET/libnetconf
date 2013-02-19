@@ -84,6 +84,7 @@ $(OBJDIR)/%.o: %.c
 clean:
 	rm -rf $(NAME) $(OBJDIR); 
 
+.PHONY: install
 install: $(NAME)
 	@[ -d $(DESTDIR)/$(bindir) ] || \
 		(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir))
