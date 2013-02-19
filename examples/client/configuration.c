@@ -89,6 +89,8 @@ void load_config (struct nc_cpblts **cpblts)
 		free (user_home);
 		return;
 	}
+	free (user_home);
+
 	ret = access (netconf_dir, R_OK|X_OK);
 	if (ret == -1) {
 		if (errno == ENOENT) {
@@ -96,13 +98,11 @@ void load_config (struct nc_cpblts **cpblts)
 			if (mkdir (netconf_dir, 0777)) {
 				ERROR ("load_config", "Directory can not be created");
 				free (netconf_dir);
-				free (user_home);
 				return;
 			}
 		} else {
 			ERROR ("load_config", "Directory (%s) exist but cannot be accessed", netconf_dir);
 			free (netconf_dir);
-			free (user_home);
 			return;
 		}
 	}
@@ -220,7 +220,6 @@ void load_config (struct nc_cpblts **cpblts)
 
 	free (config_file);
 	free (history_file);
-	free (user_home);
 	free (netconf_dir);
 }
 
