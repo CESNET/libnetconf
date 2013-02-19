@@ -94,14 +94,15 @@ void load_config (struct nc_cpblts **cpblts)
 	ret = access (netconf_dir, R_OK|X_OK);
 	if (ret == -1) {
 		if (errno == ENOENT) {
-			ERROR ("load_config", "Configuration directory (%s) does not exist, create it.", netconf_dir);
-			if (mkdir (netconf_dir, 0777)) {
-				ERROR ("load_config", "Directory can not be created");
+			/* directory does not exist */
+			ERROR ("load_config", "Configuration directory (%s) does not exist, creating it.", netconf_dir);
+			if (mkdir (netconf_dir, 0777) != 0) {
+				ERROR ("load_config", "Configuration directory (%s) can not be created (%s)", netconf_dir, strerror(errno));
 				free (netconf_dir);
 				return;
 			}
 		} else {
-			ERROR ("load_config", "Directory (%s) exist but cannot be accessed", netconf_dir);
+			ERROR ("load_config", "Configuration directory (%s) exist but something else failed (%s)", netconf_dir, strerror(errno));
 			free (netconf_dir);
 			return;
 		}
@@ -115,17 +116,19 @@ void load_config (struct nc_cpblts **cpblts)
 		ret = access(history_file, R_OK);
 		if (ret == -1) {
 			if (errno == ENOENT) {
-				ERROR("load_config", "History file (%s) does not exit, create it", history_file);
+				ERROR("load_config", "History file (%s) does not exit, creating it", history_file);
 				if ((history_fd = creat(history_file, 0666)) == -1) {
-					ERROR("load_config", "History file can not be created");
+					ERROR("load_config", "History file can not be created (%s)", strerror(errno));
 				} else {
 					close(history_fd);
 				}
+			} else {
+				ERROR("load_config", "Accessing history file failed (%s)", strerror(errno));
 			}
 		} else {
 			/* file exist and is accessible */
 			if (read_history(history_file)) {
-				ERROR("load_config", "Failed to load history from previous runs.");
+				ERROR("load_config", "Failed to load history.");
 			}
 		}
 	}
@@ -138,19 +141,19 @@ void load_config (struct nc_cpblts **cpblts)
 		ret = access(config_file, R_OK);
 		if (ret == -1) {
 			if (errno == ENOENT) {
-				ERROR("load_config", "Configuration file (%s) does not exit, create it", config_file);
+				ERROR("load_config", "Configuration file (%s) does not exit, creating it", config_file);
 				if ((config_fd = creat(config_file, 0666)) == -1) {
-					ERROR("load_config", "Configuration file can not be created");
+					ERROR("load_config", "Configuration file can not be created (%s)", strerror(errno));
 				} else {
 					close(config_fd);
 				}
 			} else {
-				ERROR("load_config", "Configuration file can not accessed: %s", strerror(errno));
+				ERROR("load_config", "Configuration file can not accessed (%s)", strerror(errno));
 			}
 		} else {
 			/* file exist and is accessible */
 			if ((config_doc = xmlReadFile(config_file, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN)) == NULL) {
-				ERROR("load_config", "Failed to load configuration of NETCONF client.");
+				ERROR("load_config", "Failed to load configuration of NETCONF client (xmlReadFile failed).");
 			} else {
 				/* doc -> <netconf-client/>*/
 				if (config_doc->children != NULL && xmlStrEqual(config_doc->children->name, BAD_CAST "netconf-client")) {
@@ -255,11 +258,13 @@ void store_config (struct nc_cpblts * cpblts)
 			if (mkdir (netconf_dir, 0777)) {
 				/* directory can not be created */
 				free (netconf_dir);
+				ERROR("store_config", "Storing history failed (mkdir(): %s)", strerror(errno));
 				return;
 			}
 		} else {
 			/* directory exist but cannot be accessed */
 			free (netconf_dir);
+			ERROR("store_config", "Accessing directory for storing the history failed (%s)", strerror(errno));
 			return;
 		}
 	}
@@ -279,6 +284,7 @@ void store_config (struct nc_cpblts * cpblts)
 					close(history_fd);
 				}
 			}
+			ERROR("store_config", "Accessing history file failed (%s)", strerror(errno));
 		}
 
 		if (write_history(history_file)) {
