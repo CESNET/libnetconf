@@ -106,12 +106,15 @@
  * -------------------
  *
  * It is [strongly] advised to set SUID (or SGID) bit on every application that is
- * built on libnetconf, as several internal functions behave based on this precondition.
- * libnetconf uses a number of files which pose a security risk if they are accessible
- * by untrustworthy users. This way it is possible not to restrict the use of
- * an application but only the access to its files, so keep this in mind when creating
- * any directories or files that are used. Generally, there are two basic approaches of how
- * to implement a NETCONF server using libnetconf.
+ * built on libnetconf for a user (or group) created for this purpose, as several
+ * internal functions behave based on this precondition. libnetconf uses a number
+ * of files which pose a security risk if they are accessible by untrustworthy users.
+ * This way it is possible not to restrict the use of an application but only the
+ * access to its files, so keep this in mind when creating any directories or files
+ * that are used.
+ *
+ * Generally, there are two basic approaches of how to implement
+ * a NETCONF server using libnetconf.
  *
  * ###Single-level Architecture###
  *
