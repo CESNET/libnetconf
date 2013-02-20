@@ -819,7 +819,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	ds->type = type;
 
 	/* get configuration data model */
-	if (access(model_path, R_OK) == -1) {
+	if (eaccess(model_path, R_OK) == -1) {
 		ERROR("Unable to access configuration data model %s (%s).", model_path, strerror(errno));
 		free(ds);
 		return (NULL);

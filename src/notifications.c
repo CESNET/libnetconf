@@ -192,10 +192,10 @@ static int check_streams_path(char* path)
 	struct stat sb;
 
 	/* check accessibility of the path */
-	if (access(path, F_OK|R_OK|W_OK) != 0) {
+	if (eaccess(path, F_OK | R_OK | W_OK) != 0) {
 		if (errno == ENOENT) {
 			/* path does not exist -> create it */
-			if (mkdir(path, 0777) == -1) {
+			if (mkdir(path, DIR_PERM) == -1) {
 				WARN("Unable to create Events streams directory %s (%s).", path, strerror(errno));
 				return (EXIT_FAILURE);
 			}
@@ -213,6 +213,7 @@ static int check_streams_path(char* path)
 			WARN("Events streams directory path %s exists, but it is not a directory.", path);
 			return (EXIT_FAILURE);
 		}
+
 		return (EXIT_SUCCESS);
 	}
 }
@@ -307,7 +308,7 @@ static int map_rules(struct stream *s)
 		/* check if file with the rules exists */
 		if (access(filepath, F_OK) != 0) {
 			/* file does not exist, create it */
-			if ((s->fd_rules = open(filepath, O_CREAT|O_RDWR|O_EXCL, 0777)) == -1) {
+			if ((s->fd_rules = open(filepath, O_CREAT|O_RDWR|O_EXCL, FILE_PERM)) == -1) {
 				if (errno != EEXIST) {
 					ERROR("Unable to open Events stream rules file %s (%s)", filepath, strerror(errno));
 					return (EXIT_FAILURE);
@@ -378,7 +379,7 @@ static int write_fileheader(struct stream *s)
 			return (EXIT_FAILURE);
 		}
 		mask = umask(0000);
-		s->fd_events = open(filepath, O_RDWR | O_CREAT | O_TRUNC, 0777);
+		s->fd_events = open(filepath, O_RDWR | O_CREAT | O_TRUNC, FILE_PERM);
 		umask(mask);
 		if (s->fd_events == -1) {
 			ERROR("Unable to create Events stream file %s (%s)", filepath, strerror(errno));

@@ -150,7 +150,7 @@ int nc_session_monitoring_init(void)
 	}
 
 	um = umask(0000);
-	session_list_fd = open("/tmp/libnetconf_sessions.bin", O_CREAT | O_RDWR, 0666);
+	session_list_fd = open("/tmp/libnetconf_sessions.bin", O_CREAT | O_RDWR, 0600);
 	umask(um);
 	if (session_list_fd == -1) {
 		ERROR("Opening sessions monitoring file failed (%s).", strerror(errno));

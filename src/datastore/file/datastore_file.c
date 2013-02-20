@@ -137,6 +137,7 @@ static int file_ds_access (struct ncds_ds_file* file_ds, NC_DATASTORE target, co
 int ncds_file_set_path (struct ncds_ds* datastore, const char* path)
 {
 	struct ncds_ds_file * file_ds = (struct ncds_ds_file*)datastore;
+	mode_t mask;
 
 	if (datastore == NULL) {
 		ERROR ("Invalid datastore.");
@@ -148,18 +149,20 @@ int ncds_file_set_path (struct ncds_ds* datastore, const char* path)
 		return -2;
 	}
 
-	/* file does not exist */
-	if (access (path, F_OK) != 0) {
+	if (eaccess (path, F_OK) != 0) {
+		/* file does not exist */
 		WARN ("Datastore file %s does not exist, creating it.", path);
 		/* try to create it */
+		mask = umask(MASK_PERM);
 		file_ds->file = fopen (path, "w+");
+		umask(mask);
 		if (file_ds->file == NULL) {
 			ERROR ("Datastore file %s can not be created (%s).", path, strerror(errno));
 			return (-2);
 		} else {
 			VERB ("Datastore file %s was created.", path);
 		}
-	} else if (access (path, W_OK|R_OK)) {
+	} else if (eaccess (path, W_OK|R_OK)) {
 		ERROR ("Insufficient rights for manipulation with the datastore file %s.", path);
 		return (-2);
 	} else {
@@ -375,9 +378,9 @@ int ncds_file_init (struct ncds_ds* ds)
 	}
 	/* recreate initial backslash in the semaphore name */
 	sempath[0] = '/';
-	/* and then create the lock (actually it is a semaphore */
+	/* and then create the lock (actually it is a semaphore) */
 	mask = umask(0000);
-	if ((file_ds->ds_lock.lock = sem_open (sempath, O_CREAT, S_IRWXU|S_IRWXG|S_IRWXO, 1)) == SEM_FAILED) {
+	if ((file_ds->ds_lock.lock = sem_open (sempath, O_CREAT, FILE_PERM, 1)) == SEM_FAILED) {
 		umask(mask);
 		return (EXIT_FAILURE);
 	}

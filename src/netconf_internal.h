@@ -98,7 +98,8 @@
 #define NC_CAP_POWERCTL_ID 	"urn:liberouter:params:netconf:capability:power-control:1.0"
 #define NC_CAP_CONFIRMED_COMMIT_ID "urn:ietf:params:netconf:capability:confirmed-commit:1.1"
 #define NC_CAP_ROLLBACK_ID	"urn:ietf:params:netconf:capability:rollback-on-error:1.0"
-#define NC_CAP_VALIDATE_ID	"urn:ietf:params:netconf:capability:validate:1.1"
+#define NC_CAP_VALIDATE10_ID	"urn:ietf:params:netconf:capability:validate:1.0"
+#define NC_CAP_VALIDATE11_ID	"urn:ietf:params:netconf:capability:validate:1.1"
 #define NC_CAP_MONITORING_ID "urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
 #define NC_CAP_WITHDEFAULTS_ID 	"urn:ietf:params:netconf:capability:with-defaults:1.0"
 
@@ -142,6 +143,16 @@
 #else
 #  define UNUSED(x) UNUSED_ ## x
 #endif
+
+/*
+ * libnetconf permissions for every file or dir creation, process mask used with special cases
+ * such as fopen()
+ */
+
+/* safe permissions - only reading and writing performed by the owner allowed */
+#define FILE_PERM 0600
+#define DIR_PERM 0700
+#define MASK_PERM 0066
 
 /* libnetconf's message printing */
 char prv_msg[4096];

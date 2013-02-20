@@ -563,13 +563,14 @@ static int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_
 		hostkey_typebit = (hostkey_type == LIBSSH2_HOSTKEY_TYPE_RSA) ? LIBSSH2_KNOWNHOST_KEY_SSHRSA : LIBSSH2_KNOWNHOST_KEY_SSHDSS;
 
 		/* get all the hosts */
-		if (knownhosts_file != NULL && access(knownhosts_file, F_OK) == 0) {
+		if (knownhosts_file != NULL && eaccess(knownhosts_file, F_OK) == 0) {
 			ret = libssh2_knownhost_readfile(knownhosts,
 					knownhosts_file,
 					LIBSSH2_KNOWNHOST_FILE_OPENSSH);
 		} else {
 			ret = 0;
 		}
+
 		if (ret < 0) {
 			WARN("Unable to check against knownhost file.");
 			if (callbacks.hostkey_check(host, hostkey_type, fingerprint_md5) == 0) {
@@ -729,7 +730,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	 * get username - we are running as SSH Subsystem which was started
 	 * under the user which was connecting to NETCONF server
 	 */
-	pw = getpwuid(geteuid());
+	pw = getpwuid(getuid());
 	if (pw == NULL) {
 		/* unable to get correct username */
 		ERROR("Unable to set username for SSH connection (%s).", strerror(errno));
@@ -886,23 +887,25 @@ static int find_ssh_keys ()
 		user_home = pw->pw_dir;
 	}
 
+
 	/* search in the same location as ssh do (~/.ssh/) */
 	VERB ("Searching for key pairs in standard ssh directory.");
-	for (i=0; i<SSH2_KEYS; i++) {
+	for (i = 0; i < SSH2_KEYS; i++) {
 		x = asprintf (&key_priv_path, "%s/.ssh/%s", user_home, key_names[i]);
 		y = asprintf (&key_pub_path, "%s/.ssh/%s.pub", user_home, key_names[i]);
 		if (x == -1 || y == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			continue;
 		}
-		if (access(key_priv_path, R_OK) == 0 && access(key_pub_path, R_OK) == 0) {
-			VERB ("Found pair %s[.pub]", key_priv_path);
-			nc_set_keypair_path (key_priv_path, key_pub_path);
+		if (eaccess(key_priv_path, R_OK) == 0 && eaccess(key_pub_path, R_OK) == 0) {
+			VERB("Found pair %s[.pub]", key_priv_path);
+			nc_set_keypair_path(key_priv_path, key_pub_path);
 			retval = EXIT_SUCCESS;
 		}
 		free (key_priv_path);
 		free (key_pub_path);
 	}
+
 
 	return retval;
 }
@@ -947,7 +950,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 	/* get current user if not specified */
 	if (username == NULL) {
-		pw = getpwuid(geteuid());
+		pw = getpwuid(getuid());
 		if (pw == NULL) {
 			/* unable to get correct username (errno from getpwuid) */
 			ERROR("Unable to set username for SSH connection (%s).", strerror(errno));
@@ -1141,15 +1144,16 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		}
 	}
 #else
-	int i, j;
+	int i, j, fd;
 	int sock = -1;
 	int auth = 0;
 	struct addrinfo hints, *res_list, *res;
+	uid_t uid;
 	char *userauthlist;
 	char *err_msg;
 
 	/* get current user to locate SSH known_hosts file */
-	pw = getpwuid(geteuid());
+	pw = getpwuid(getuid());
 	if (pw == NULL) {
 		if (username == NULL || strlen(username) == 0) {
 			/* unable to get correct username (errno from getpwuid) */
@@ -1161,14 +1165,14 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			username = pw->pw_name;
 		}
 		if (asprintf(&knownhosts_file, "%s/.ssh/known_hosts", pw->pw_dir) == -1) {
-				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				knownhosts_file = NULL;
-			}
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			knownhosts_file = NULL;
+		}
 
 		/* check the existence of the known_hosts file */
-		if (knownhosts_file != NULL && access(knownhosts_file, F_OK) == 0) {
+		if (knownhosts_file != NULL && eaccess(knownhosts_file, F_OK) == 0) {
 			/* check needed access rights */
-			if (access(knownhosts_file, R_OK | W_OK) == -1) {
+			if (eaccess(knownhosts_file, R_OK | W_OK) == -1) {
 				WARN("Unable to access known host file (%s).", knownhosts_file);
 				free(knownhosts_file);
 				knownhosts_file = NULL;
