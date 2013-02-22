@@ -1099,7 +1099,7 @@ void ncntf_stream_iter_start(const char* stream)
 	pthread_setspecific(ncntf_replay_done, (void*)replay_done);
 }
 
-void ncntf_stream_iter_finnish(const char* stream)
+void ncntf_stream_iter_finish(const char* stream)
 {
 	char* dbus_filter = NULL;
 	DBusError err;
@@ -2581,7 +2581,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 		free(event);
 	}
 	xmlFreeDoc(filter_doc);
-	ncntf_stream_iter_finnish(stream);
+	ncntf_stream_iter_finish(stream);
 
 	/* cleanup */
 	nc_filter_free(filter);

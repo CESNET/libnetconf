@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 		}
 		free(event);
 	}
-	ncntf_stream_iter_finnish(argv[1]);
+	ncntf_stream_iter_finish(argv[1]);
 
 	ncntf_close();
 

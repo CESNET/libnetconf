@@ -143,7 +143,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
  * function must be called as a closing function to nc_ntf_stream_iter_start()
  * @param[in] stream Name of the iterated stream.
  */
-void ncntf_stream_iter_finnish(const char* stream);
+void ncntf_stream_iter_finish(const char* stream);
 
 /**
  * @ingroup notifications
