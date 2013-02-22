@@ -1144,11 +1144,10 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		}
 	}
 #else
-	int i, j, fd;
+	int i, j;
 	int sock = -1;
 	int auth = 0;
 	struct addrinfo hints, *res_list, *res;
-	uid_t uid;
 	char *userauthlist;
 	char *err_msg;
 
