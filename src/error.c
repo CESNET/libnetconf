@@ -70,7 +70,7 @@ struct nc_err* nc_err_new(NC_ERR error)
 		nc_err_set(err, NC_ERR_PARAM_TAG, "in-use");
 		nc_err_set(err, NC_ERR_PARAM_TYPE, "application");
 		nc_err_set(err, NC_ERR_PARAM_SEVERITY, "error");
-		nc_err_set(err, NC_ERR_PARAM_MSG, "The request requires a resource that already is in use.");
+		nc_err_set(err, NC_ERR_PARAM_MSG, "The request requires a resource that is already in use.");
 		break;
 	case NC_ERR_INVALID_VALUE:
 		nc_err_set(err, NC_ERR_PARAM_TAG, "invalid-value");
@@ -130,7 +130,7 @@ struct nc_err* nc_err_new(NC_ERR error)
 		nc_err_set(err, NC_ERR_PARAM_TAG, "access-denied");
 		nc_err_set(err, NC_ERR_PARAM_TYPE, "application");
 		nc_err_set(err, NC_ERR_PARAM_SEVERITY, "error");
-		nc_err_set(err, NC_ERR_PARAM_MSG, "Access to the requested protocol operation or data model is denied because authorization failed.");
+		nc_err_set(err, NC_ERR_PARAM_MSG, "Access to the requested protocol operation or data model is denied because the authorization failed.");
 		break;
 	case NC_ERR_LOCK_DENIED:
 		nc_err_set(err, NC_ERR_PARAM_TAG, "lock-denied");
@@ -172,7 +172,7 @@ struct nc_err* nc_err_new(NC_ERR error)
 		nc_err_set(err, NC_ERR_PARAM_TAG, "operation-failed");
 		nc_err_set(err, NC_ERR_PARAM_TYPE, "application");
 		nc_err_set(err, NC_ERR_PARAM_SEVERITY, "error");
-		nc_err_set(err, NC_ERR_PARAM_MSG, "Some not specified error occurred.");
+		nc_err_set(err, NC_ERR_PARAM_MSG, "Some unspecified error occurred.");
 		break;
 	case NC_ERR_MALFORMED_MSG:
 		nc_err_set(err, NC_ERR_PARAM_TAG, "malformed-message");
@@ -447,7 +447,7 @@ struct nc_err* nc_err_parse(nc_reply* reply)
 		}
 		xmlXPathFreeObject(result);
 	} else {
-		ERROR("No error information in reply message to parse.");
+		ERROR("No error information in the reply message to parse.");
 		/* NULL, which is default e's value, will be returned */
 	}
 

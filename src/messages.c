@@ -225,7 +225,7 @@ static struct nc_msg* nc_msg_build (const char * msg_dump)
 
 	/* create xpath evaluation context */
 	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
-		ERROR("%s: rpc message XPath context can not be created.", __func__);
+		ERROR("%s: rpc message XPath context cannot be created.", __func__);
 		nc_msg_free(msg);
 		return NULL;
 	}
@@ -286,7 +286,7 @@ static struct nc_msg* ncxml_msg_build(xmlDocPtr msg_dump)
 
 	/* create xpath evaluation context */
 	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
-		ERROR("%s: rpc message XPath context can not be created.", __func__);
+		ERROR("%s: rpc message XPath context cannot be created.", __func__);
 		nc_msg_free(msg);
 		return NULL;
 	}
@@ -334,7 +334,7 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 
 	/* create xpath evaluation context */
 	if ((rpc_ctxt = xmlXPathNewContext(rpc->doc)) == NULL) {
-		WARN("%s: Creating XPath context failed.", __func__)
+		WARN("%s: Creating the XPath context failed.", __func__)
 		/* with-defaults cannot be found */
 		return (NCWD_MODE_NOTSET);
 	}
@@ -772,11 +772,11 @@ static char* nc_rpc_get_copyconfig(const nc_rpc* rpc)
 
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":copy-config/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
 		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			ERROR("%s: no source config data in copy-config request", __func__);
+			ERROR("%s: no source config data in the copy-config request", __func__);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
 		} else if (query_result->nodesetval->nodeNr > 1) {
-			ERROR("%s: multiple source config data in copy-config request", __func__);
+			ERROR("%s: multiple source config data in the copy-config request", __func__);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
 		}
@@ -784,7 +784,7 @@ static char* nc_rpc_get_copyconfig(const nc_rpc* rpc)
 		config = query_result->nodesetval->nodeTab[0];
 		xmlXPathFreeObject(query_result);
 	} else {
-		ERROR("%s: source config data not found in copy-config request", __func__);
+		ERROR("%s: source config data not found in the copy-config request", __func__);
 		return (NULL);
 	}
 
@@ -819,11 +819,11 @@ static xmlNodePtr ncxml_rpc_get_copyconfig(const nc_rpc* rpc)
 
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":copy-config/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
 		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			ERROR("%s: no source config data in copy-config request", __func__);
+			ERROR("%s: no source config data in the copy-config request", __func__);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
 		} else if (query_result->nodesetval->nodeNr > 1) {
-			ERROR("%s: multiple source config data in copy-config request", __func__);
+			ERROR("%s: multiple source config data in the copy-config request", __func__);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
 		}
@@ -832,7 +832,7 @@ static xmlNodePtr ncxml_rpc_get_copyconfig(const nc_rpc* rpc)
 		xmlXPathFreeObject(query_result);
 		return (retval);
 	} else {
-		ERROR("%s: source config data not found in copy-config request", __func__);
+		ERROR("%s: source config data not found in the copy-config request", __func__);
 		return (NULL);
 	}
 }
@@ -847,11 +847,11 @@ static char* nc_rpc_get_editconfig(const nc_rpc* rpc)
 
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
 		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			ERROR("%s: no config data in edit-config request", __func__);
+			ERROR("%s: no config data in the edit-config request", __func__);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
 		} else if (query_result->nodesetval->nodeNr > 1) {
-			ERROR("%s: multiple config data in edit-config request", __func__);
+			ERROR("%s: multiple config data in the edit-config request", __func__);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
 		}
@@ -859,7 +859,7 @@ static char* nc_rpc_get_editconfig(const nc_rpc* rpc)
 		config = query_result->nodesetval->nodeTab[0];
 		xmlXPathFreeObject(query_result);
 	} else {
-		ERROR("%s: config data not found in edit-config request", __func__);
+		ERROR("%s: config data not found in the edit-config request", __func__);
 		return (NULL);
 	}
 
@@ -894,11 +894,11 @@ static xmlNodePtr ncxml_rpc_get_editconfig(const nc_rpc* rpc)
 
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
 		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			ERROR("%s: no config data in edit-config request", __func__);
+			ERROR("%s: no config data in the edit-config request", __func__);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
 		} else if (query_result->nodesetval->nodeNr > 1) {
-			ERROR("%s: multiple config data in edit-config request", __func__);
+			ERROR("%s: multiple config data in the edit-config request", __func__);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
 		}
@@ -907,7 +907,7 @@ static xmlNodePtr ncxml_rpc_get_editconfig(const nc_rpc* rpc)
 		xmlXPathFreeObject(query_result);
 		return (retval);
 	} else {
-		ERROR("%s: config data not found in edit-config request", __func__);
+		ERROR("%s: config data not found in the edit-config request", __func__);
 		return (NULL);
 	}
 }
@@ -961,7 +961,7 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 
 	if (defop != NULL) {
 		if (defop->children == NULL || defop->children->type != XML_TEXT_NODE || defop->children->content == NULL) {
-			ERROR("%s: invalid format of edit-config's default-operation parameter", __func__);
+			ERROR("%s: invalid format of the edit-config's default-operation parameter", __func__);
 			retval = NC_EDIT_DEFOP_ERROR;
 		} else if (xmlStrEqual(defop->children->content, BAD_CAST "merge")) {
 			retval = NC_EDIT_DEFOP_MERGE;
@@ -987,7 +987,7 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":error-option", rpc->ctxt)) != NULL) {
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
-				ERROR("%s: multiple error-option elements found in edit-config request", __func__);
+				ERROR("%s: multiple error-option elements found in the edit-config request", __func__);
 				return (NC_EDIT_ERROPT_ERROR);
 			}
 			erropt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
@@ -997,7 +997,7 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 
 	if (erropt != NULL) {
 		if (erropt->children == NULL || erropt->children->type != XML_TEXT_NODE || erropt->children->content == NULL) {
-			ERROR("%s: invalid format of edit-config's error-option parameter", __func__);
+			ERROR("%s: invalid format of the edit-config's error-option parameter", __func__);
 			retval = NC_EDIT_ERROPT_ERROR;
 		} else if (xmlStrEqual(erropt->children->content, BAD_CAST "stop-on-error")) {
 			retval = NC_EDIT_ERROPT_STOP;
@@ -1023,7 +1023,7 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":test-option", rpc->ctxt)) != NULL) {
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
-				ERROR("%s: multiple test-option elements found in edit-config request", __func__);
+				ERROR("%s: multiple test-option elements found in the edit-config request", __func__);
 				return (NC_EDIT_TESTOPT_ERROR);
 			}
 			testopt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
@@ -1033,7 +1033,7 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 
 	if (testopt != NULL) {
 		if (testopt->children == NULL || testopt->children->type != XML_TEXT_NODE || testopt->children->content == NULL) {
-			ERROR("%s: invalid format of edit-config's test-option parameter", __func__);
+			ERROR("%s: invalid format of the edit-config's test-option parameter", __func__);
 			retval = NC_EDIT_TESTOPT_ERROR;
 		} else if (xmlStrcmp(testopt->children->content, BAD_CAST "set") == 0) {
 			retval = NC_EDIT_TESTOPT_SET;
@@ -1225,7 +1225,7 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 
 	/* create xpath evaluation context */
 	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
-		ERROR("%s: rpc message XPath context can not be created.", __func__);
+		ERROR("%s: rpc message XPath context cannot be created.", __func__);
 		nc_msg_free(msg);
 		return NULL;
 	}
@@ -1300,7 +1300,7 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 
 	/* create xpath evaluation context */
 	if ((dupmsg->ctxt = xmlXPathNewContext(dupmsg->doc)) == NULL) {
-		ERROR("%s: rpc message XPath context can not be created.", __func__);
+		ERROR("%s: rpc message XPath context cannot be created.", __func__);
 		nc_msg_free(dupmsg);
 		return NULL;
 	}
@@ -1421,7 +1421,7 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 
 	/* create xpath evaluation context */
 	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
-		ERROR("%s: rpc message XPath context can not be created.", __func__);
+		ERROR("%s: rpc message XPath context cannot be created.", __func__);
 		nc_msg_free(msg);
 		return NULL;
 	}
@@ -1701,7 +1701,7 @@ nc_reply *nc_reply_error(struct nc_err* error)
 	xmlNodePtr content;
 
 	if (error == NULL) {
-		ERROR("Empty error structure to create rpc-error reply.");
+		ERROR("Empty error structure to create the rpc-error reply.");
 		return (NULL);
 	}
 
@@ -2140,7 +2140,7 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 
 	switch (target) {
 	case NC_DATASTORE_RUNNING:
-		ERROR("Running datastore cannot be deleted.");
+		ERROR("A running datastore cannot be deleted.");
 		return (NULL);
 		break;
 	case NC_DATASTORE_STARTUP:
@@ -2337,12 +2337,12 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 		case NC_DATASTORE_URL:
 			if (i == 0) {
 				if (source_url == NULL) {
-					ERROR("Missing URL specification for <copy-config>'s source.");
+					ERROR("Missing the URL specification for the <copy-config>'s source.");
 					return (NULL);
 				}
 			} else { /* i == 1 */
 				if (target_url == NULL) {
-					ERROR("Missing URL specification for <copy-config>'s target.");
+					ERROR("Missing the URL specification for the <copy-config>'s target.");
 					return (NULL);
 				}
 			}
@@ -2741,7 +2741,7 @@ nc_rpc *nc_rpc_killsession(const char *kill_sid)
 
 	/* check input parameter */
 	if (kill_sid == NULL || strlen(kill_sid) == 0) {
-		ERROR("Invalid session id for <kill-session> rpc message specified.");
+		ERROR("Invalid session id for the <kill-session> rpc message specified.");
 		return (NULL);
 	}
 
@@ -2932,7 +2932,7 @@ nc_rpc *ncxml_rpc_generic(const xmlNodePtr data)
 	nc_rpc *rpc;
 
 	if (data == NULL) {
-		ERROR("%s: parameter \'data\' can not be NULL.", __func__);
+		ERROR("%s: parameter \'data\' cannot be NULL.", __func__);
 		return (NULL);
 	}
 	if ((rpc = nc_rpc_create(data)) != NULL) {
@@ -2948,7 +2948,7 @@ nc_rpc *nc_rpc_generic(const char* data)
 	xmlDocPtr doc_data;
 
 	if (data == NULL) {
-		ERROR("%s: parameter \'data\' can not be NULL.", __func__);
+		ERROR("%s: parameter \'data\' cannot be NULL.", __func__);
 		return (NULL);
 	}
 

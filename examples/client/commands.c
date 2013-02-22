@@ -79,8 +79,8 @@ struct nc_session* session = NULL;
 
 COMMAND commands[] = {
 		{"help", cmd_help, "Display this text"},
-		{"connect", cmd_connect, "Connect to the NETCONF server"},
-		{"disconnect", cmd_disconnect, "Disconnect from the NETCONF server"},
+		{"connect", cmd_connect, "Connect to a NETCONF server"},
+		{"disconnect", cmd_disconnect, "Disconnect from a NETCONF server"},
 		{"commit", cmd_commit, "NETCONF <commit> operation"},
 		{"copy-config", cmd_copyconfig, "NETCONF <copy-config> operation"},
 		{"delete-config", cmd_deleteconfig, "NETCONF <delete-config> operation"},
@@ -95,11 +95,11 @@ COMMAND commands[] = {
 #ifndef DISABLE_NOTIFICATIONS
 		{"subscribe", cmd_subscribe, "NETCONF Event Notifications <create-subscription> operation"},
 #endif
-		{"status", cmd_status, "Print information about current NETCONF session"},
-		{"user-rpc", cmd_userrpc, "Send own content in RPC envelop (for DEBUG purpose)"},
+		{"status", cmd_status, "Print information about the current NETCONF session"},
+		{"user-rpc", cmd_userrpc, "Send your own content in an RPC envelope (for DEBUG purposes)"},
 		{"verbose", cmd_verbose, "Enable/disable verbose messages"},
 		{"quit", cmd_quit, "Quit the program"},
-		{"capability", cmd_capability, "Add/remove capability to/from list of supported capabilities"},
+		{"capability", cmd_capability, "Add/remove capability to/from the list of supported capabilities"},
 /* synonyms for previous commands */
 		{"debug", cmd_debug, NULL},
 		{"?", cmd_help, NULL},
@@ -198,7 +198,7 @@ void addargs (struct arglist *args, char *format, ...)
 
 		if (args->list == NULL) { /* initial memory allocation */
 			if ((args->list = (char **) malloc(8 * sizeof(char *))) == NULL)
-			perror("Fatal error while allocating memmory");
+			perror("Fatal error while allocating memory");
 			args->size = 8;
 			args->count = 0;
 		} else if (args->count + 2 >= args->size) {
@@ -211,7 +211,7 @@ void addargs (struct arglist *args, char *format, ...)
 		}
 		/* add word in the end of the list */
 		if ((args->list[args->count] = (char *) malloc((strlen(aux) + 1) * sizeof(char))) == NULL)
-		perror("Fatal error while allocating memmory");
+		perror("Fatal error while allocating memory");
 		strcpy(args->list[args->count], aux);
 		args->list[++args->count] = NULL; /* last argument */
 	}
@@ -273,7 +273,7 @@ userinput:
 			}
 			fprintf (stdout, "): ");
 			if (scanf ("%1023s", datastore) == EOF) {
-				ERROR(operation, "Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+				ERROR(operation, "Reading the user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
 				return (NC_DATASTORE_ERROR);
 			}
 
@@ -333,7 +333,7 @@ static NCWD_MODE get_withdefaults(const char* operation, const char* mode)
 	if (0) {
 userinput:
 		/* get mandatory argument */
-		INSTRUCTION("Select with-defaults mode (report-all|report-all-tagged|trim|explicit): ");
+		INSTRUCTION("Select a with-defaults mode (report-all|report-all-tagged|trim|explicit): ");
 		if (scanf ("%127s", mode_aux) == EOF) {
 			ERROR(operation, "Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
 			return (NCWD_MODE_NOTSET);
@@ -374,7 +374,7 @@ static struct nc_filter *set_filter(const char* operation, const char *file)
 		/* open filter from the file */
 		filter_fd = open(optarg, O_RDONLY);
 		if (filter_fd == -1) {
-			ERROR(operation, "unable to open filter file (%s).", strerror(errno));
+			ERROR(operation, "unable to open the filter file (%s).", strerror(errno));
 			return (NULL);
 		}
 
@@ -382,7 +382,7 @@ static struct nc_filter *set_filter(const char* operation, const char *file)
 		fstat(filter_fd, &filter_stat);
 		filter_s = (char*) mmap(NULL, filter_stat.st_size, PROT_READ, MAP_PRIVATE, filter_fd, 0);
 		if (filter_s == MAP_FAILED) {
-			ERROR(operation, "mmapping filter file failed (%s).", strerror(errno));
+			ERROR(operation, "mmapping of the filter file failed (%s).", strerror(errno));
 			close(filter_fd);
 			return (NULL);
 		}
@@ -533,7 +533,7 @@ int cmd_editconfig (char *arg)
 			/* open edit configuration data from the file */
 			config_fd = open(optarg, O_RDONLY);
 			if (config_fd == -1) {
-				ERROR("edit-config", "unable to open edit data file (%s).", strerror(errno));
+				ERROR("edit-config", "unable to open the edit data file (%s).", strerror(errno));
 				clear_arglist(&cmd);
 				return (EXIT_FAILURE);
 			}
@@ -542,7 +542,7 @@ int cmd_editconfig (char *arg)
 			fstat(config_fd, &config_stat);
 			config_m = (char*) mmap(NULL, config_stat.st_size, PROT_READ, MAP_PRIVATE, config_fd, 0);
 			if (config_m == MAP_FAILED) {
-				ERROR("edit-config", "mmapping edit data file failed (%s).", strerror(errno));
+				ERROR("edit-config", "mmapping of the edit data file failed (%s).", strerror(errno));
 				clear_arglist(&cmd);
 				close(config_fd);
 				return (EXIT_FAILURE);
@@ -733,7 +733,7 @@ int cmd_copyconfig (char *arg)
 			/* open edit configuration data from the file */
 			config_fd = open(optarg, O_RDONLY);
 			if (config_fd == -1) {
-				ERROR("copy-config", "unable to open local datastore file (%s).", strerror(errno));
+				ERROR("copy-config", "unable to open the local datastore file (%s).", strerror(errno));
 				clear_arglist(&cmd);
 				return (EXIT_FAILURE);
 			}
@@ -742,7 +742,7 @@ int cmd_copyconfig (char *arg)
 			fstat(config_fd, &config_stat);
 			config_m = (char*) mmap(NULL, config_stat.st_size, PROT_READ, MAP_PRIVATE, config_fd, 0);
 			if (config_m == MAP_FAILED) {
-				ERROR("copy-config", "mmapping local datastore file failed (%s).", strerror(errno));
+				ERROR("copy-config", "mmapping of the local datastore file failed (%s).", strerror(errno));
 				clear_arglist(&cmd);
 				close(config_fd);
 				return (EXIT_FAILURE);
@@ -822,12 +822,12 @@ int cmd_copyconfig (char *arg)
 	rpc = nc_rpc_copyconfig (source, target, config);
 	nc_filter_free(filter);
 	if (rpc == NULL) {
-		ERROR("copy-config", "creating rpc request failed.");
+		ERROR("copy-config", "creating an rpc request failed.");
 		return (EXIT_FAILURE);
 	}
 	/* set with defaults settings */
 	if (nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, wd) != EXIT_SUCCESS) {
-		ERROR("copy-config", "setting up with-defaults mode failed.");
+		ERROR("copy-config", "setting up the with-defaults mode failed.");
 		nc_rpc_free(rpc);
 		return (EXIT_FAILURE);
 	}
@@ -913,7 +913,7 @@ int cmd_get (char *arg)
 	rpc = nc_rpc_get (filter);
 	nc_filter_free(filter);
 	if (rpc == NULL) {
-		ERROR("get", "creating rpc request failed.");
+		ERROR("get", "creating an rpc request failed.");
 		return (EXIT_FAILURE);
 	}
 	/* set with defaults settings */
@@ -942,7 +942,7 @@ void cmd_deleteconfig_help ()
 	} else if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
 		datastores = "candidate";
 	} else {
-		fprintf (stdout, "delete-config can not be used in the current session.\n");
+		fprintf (stdout, "delete-config cannot be used in the current session.\n");
 		return;
 	}
 
@@ -970,7 +970,7 @@ int cmd_deleteconfig (char *arg)
 	}
 
 	if (!nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) && !nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-		ERROR ("delete-config", "operation can not be used in the current session.");
+		ERROR ("delete-config", "operation cannot be used in the current session.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1008,7 +1008,7 @@ int cmd_deleteconfig (char *arg)
 	/* create requests */
 	rpc = nc_rpc_deleteconfig(target);
 	if (rpc == NULL) {
-		ERROR("delete-config", "creating rpc request failed.");
+		ERROR("delete-config", "creating an rpc request failed.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1074,7 +1074,7 @@ int cmd_killsession (char *arg)
 			/* get mandatory argument */
 			INSTRUCTION("Set session ID to kill: ");
 			if (scanf ("%1023s", id) == EOF) {
-				ERROR("kill-session", "Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+				ERROR("kill-session", "Reading the user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
 				clear_arglist(&cmd);
 				return (EXIT_FAILURE);
 			}
@@ -1088,7 +1088,7 @@ int cmd_killsession (char *arg)
 	rpc = nc_rpc_killsession(id);
 	free(id);
 	if (rpc == NULL) {
-		ERROR("kill-session", "creating rpc request failed.");
+		ERROR("kill-session", "creating an rpc request failed.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1122,7 +1122,7 @@ int cmd_capability (char * arg)
 	optind = 0;
 
 	if (session != NULL) {
-		ERROR ("capability", "NETCONF session already established. Changes to supported capability list will take effect after reconnection.");
+		ERROR ("capability", "NETCONF session already established. Any changes to the supported capability list will take effect after reconnection.");
 	}
 
 	init_arglist (&cmd);
@@ -1144,7 +1144,7 @@ int cmd_capability (char * arg)
 				client_supported_cpblts = nc_cpblts_new (NULL);
 			}
 			if (nc_cpblts_add (client_supported_cpblts, optarg)) {
-				ERROR ("capability", "Can not add capability \"%s\" to client supported list.", optarg);
+				ERROR ("capability", "Cannot add the capability \"%s\" to the client supported list.", optarg);
 				return EXIT_FAILURE;
 			}
 			store_config (client_supported_cpblts);
@@ -1155,18 +1155,18 @@ int cmd_capability (char * arg)
 				client_supported_cpblts = nc_cpblts_new(NULL);
 			} else {
 				if (nc_cpblts_remove (client_supported_cpblts, optarg)) {
-					ERROR ("capability", "Can not remove capability %s from client supported list.", optarg);
+					ERROR ("capability", "Cannot remove the capability \"%s\" from the client supported list.", optarg);
 					return EXIT_FAILURE;
 				}
 			}
 			if (nc_cpblts_get(client_supported_cpblts, "urn:ietf:params:netconf:base:1.0") == NULL &&
 					nc_cpblts_get(client_supported_cpblts, "urn:ietf:params:netconf:base:1.1") == NULL) {
-				ERROR ("capability", "No base capability left in supported list. Connection to any server will be impossible.");
+				ERROR ("capability", "No base capability left in the supported list. Connection to a server will be impossible.");
 			}
 			store_config (client_supported_cpblts);
 			break;
 		case CAP_LIST:
-			fprintf (stdout, "Client claims support of folowing capabilities:\n");
+			fprintf (stdout, "Client claims support of the following capabilities:\n");
 			nc_cpblts_iter_start (client_supported_cpblts);
 			while ((uri = nc_cpblts_iter_next (client_supported_cpblts)) != NULL) {
 				fprintf (stdout, "%s\n", uri);
@@ -1230,7 +1230,7 @@ int cmd_getconfig (char *arg)
 	optind = 0;
 
 	if (session == NULL) {
-		ERROR("get-config", "NETCONF session not established, use \'connect\' command.");
+		ERROR("get-config", "NETCONF session not established, use the \'connect\' command.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1275,12 +1275,12 @@ int cmd_getconfig (char *arg)
 	rpc = nc_rpc_getconfig (target, filter);
 	nc_filter_free(filter);
 	if (rpc == NULL) {
-		ERROR("get-config", "creating rpc request failed.");;
+		ERROR("get-config", "creating an rpc request failed.");;
 		return (EXIT_FAILURE);
 	}
 	/* set with defaults settings */
 	if (nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, wd) != EXIT_SUCCESS) {
-		ERROR("get-config", "setting up with-defaults mode failed.");
+		ERROR("get-config", "setting up the with-defaults mode failed.");
 		nc_rpc_free(rpc);
 		return (EXIT_FAILURE);
 	}
@@ -1313,7 +1313,7 @@ int cmd_getschema (char *arg)
 	optind = 0;
 
 	if (session == NULL) {
-		ERROR("get-config", "NETCONF session not established, use \'connect\' command.");
+		ERROR("get-config", "NETCONF session not established, use the \'connect\' command.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1352,7 +1352,7 @@ int cmd_getschema (char *arg)
 
 		INSTRUCTION("Set identifier of the schema to retrieve: ");
 		if (scanf ("%1023s", identifier) == EOF) {
-			ERROR("get-schema", "Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+			ERROR("get-schema", "Reading the user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
 			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
@@ -1372,7 +1372,7 @@ int cmd_getschema (char *arg)
 	free(identifier);
 
 	if (rpc == NULL) {
-		ERROR("get-schema", "creating rpc request failed.");
+		ERROR("get-schema", "creating an rpc request failed.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1416,7 +1416,7 @@ int cmd_un_lock (int op, char *arg)
 		operation = "unlock";
 		break;
 	default:
-		ERROR("cmd_un_lock()", "Wrong use of internal function (Invalid parameter)");
+		ERROR("cmd_un_lock()", "Wrong use of an internal function (Invalid parameter)");
 		return (EXIT_FAILURE);
 	}
 
@@ -1424,7 +1424,7 @@ int cmd_un_lock (int op, char *arg)
 	optind = 0;
 
 	if (session == NULL) {
-		ERROR(operation, "NETCONF session not established, use \'connect\' command.");
+		ERROR(operation, "NETCONF session not established, use the \'connect\' command.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1465,7 +1465,7 @@ int cmd_un_lock (int op, char *arg)
 		break;
 	}
 	if (rpc == NULL) {
-		ERROR(operation, "creating rpc request failed.");
+		ERROR(operation, "creating an rpc request failed.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1546,7 +1546,7 @@ int cmd_connect (char* arg)
 		hostfree = 1;
 		INSTRUCTION("Hostname to connect to: ");
 		if (scanf ("%1023s", host) == EOF) {
-			ERROR("connect", "Reading user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
+			ERROR("connect", "Reading the user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
 			clear_arglist(&cmd);
 			return (EXIT_FAILURE);
 		}
@@ -1708,9 +1708,9 @@ void cmd_subscribe_help()
 {
 	fprintf (stdout, "subscribe [--help] [--filter] [--begin <time>] [--end <time>] [--output <file>] [<stream>]\n");
 	fprintf (stdout, "\t<time> has following format:\n");
-	fprintf (stdout, "\t\t+<num>  - current time plus given number of seconds.\n");
+	fprintf (stdout, "\t\t+<num>  - current time plus the given number of seconds.\n");
 	fprintf (stdout, "\t\t<num>   - absolute time as number of seconds since 1970-01-01.\n");
-	fprintf (stdout, "\t\t-<num>  - current time minus given number of seconds.\n");
+	fprintf (stdout, "\t\t-<num>  - current time minus the given number of seconds.\n");
 }
 
 int cmd_subscribe(char *arg)
@@ -1738,7 +1738,7 @@ int cmd_subscribe(char *arg)
 	optind = 0;
 
 	if (session == NULL) {
-		ERROR("subscribe", "NETCONF session not established, use \'connect\' command.");
+		ERROR("subscribe", "NETCONF session not established, use the \'connect\' command.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1757,7 +1757,7 @@ int cmd_subscribe(char *arg)
 		case 'e':
 			if (optarg[0] == '-' || optarg[0] == '+') {
 				if ((t = time(NULL)) == -1) {
-					ERROR("subscribe", "Getting current time failed (%s)", strerror(errno));
+					ERROR("subscribe", "Getting the current time failed (%s)", strerror(errno));
 					return (EXIT_FAILURE);
 				}
 				t = t + strtol(optarg, NULL, 10);
@@ -1768,7 +1768,7 @@ int cmd_subscribe(char *arg)
 			if (c == 'b') {
 				if (t > time(NULL)) {
 					/* begin time is in future */
-					ERROR("subscribe", "Begin time can not be set to future.");
+					ERROR("subscribe", "Begin time cannot be set to future.");
 					clear_arglist(&cmd);
 					return (EXIT_FAILURE);
 				}
@@ -1793,7 +1793,7 @@ int cmd_subscribe(char *arg)
 			fprintf(stderr,"file: %s", optarg);
 			output = fopen(optarg, "w");
 			if (output == NULL) {
-				ERROR("create-subscription", "opening output file failed (%s).", strerror(errno));
+				ERROR("create-subscription", "opening the output file failed (%s).", strerror(errno));
 				clear_arglist(&cmd);
 				return (EXIT_FAILURE);
 			}
@@ -1808,7 +1808,7 @@ int cmd_subscribe(char *arg)
 
 	/* check times */
 	if (start != -1 && stop != -1 && start > stop) {
-		ERROR("subscribe", "Subscription start time must be lower than end time.");
+		ERROR("subscribe", "Subscription start time must be lower than the end time.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1829,7 +1829,7 @@ int cmd_subscribe(char *arg)
 	nc_filter_free(filter);
 	clear_arglist(&cmd);
 	if (rpc == NULL) {
-		ERROR("create-subscription", "creating rpc request failed.");
+		ERROR("create-subscription", "creating an rpc request failed.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1851,7 +1851,7 @@ int cmd_subscribe(char *arg)
 	tconfig->session = session;
 	tconfig->output = (output == NULL) ? stdout : output;
 	if (pthread_create(&thread, NULL, notification_thread, tconfig) != 0) {
-		ERROR("create-subscription", "creating thread for receiving notifications failed");
+		ERROR("create-subscription", "creating a thread for receiving notifications failed");
 		return (EXIT_FAILURE);
 	}
 	pthread_detach(thread);
@@ -1885,7 +1885,7 @@ int cmd_userrpc(char *arg)
 	optind = 0;
 
 	if (session == NULL) {
-		ERROR("user-rpc", "NETCONF session not established, use \'connect\' command.");
+		ERROR("user-rpc", "NETCONF session not established, use the \'connect\' command.");
 		return (EXIT_FAILURE);
 	}
 
@@ -1898,7 +1898,7 @@ int cmd_userrpc(char *arg)
 			/* open edit configuration data from the file */
 			config_fd = open(optarg, O_RDONLY);
 			if (config_fd == -1) {
-				ERROR("user-rpc", "unable to open local file (%s).", strerror(errno));
+				ERROR("user-rpc", "unable to open a local file (%s).", strerror(errno));
 				clear_arglist(&cmd);
 				return (EXIT_FAILURE);
 			}
@@ -1907,7 +1907,7 @@ int cmd_userrpc(char *arg)
 			fstat(config_fd, &config_stat);
 			config_m = (char*) mmap(NULL, config_stat.st_size, PROT_READ, MAP_PRIVATE, config_fd, 0);
 			if (config_m == MAP_FAILED) {
-				ERROR("user-rpc", "mmapping local datastore file failed (%s).", strerror(errno));
+				ERROR("user-rpc", "mmapping of a local datastore file failed (%s).", strerror(errno));
 				clear_arglist(&cmd);
 				close(config_fd);
 				return (EXIT_FAILURE);
@@ -1949,7 +1949,7 @@ int cmd_userrpc(char *arg)
 	rpc = nc_rpc_generic (config);
 	free(config);
 	if (rpc == NULL) {
-		ERROR("user-rpc", "creating rpc request failed.");
+		ERROR("user-rpc", "creating an rpc request failed.");
 		return (EXIT_FAILURE);
 	}
 
@@ -2014,7 +2014,7 @@ int cmd_generic_op(GENERIC_OPS op, char *arg)
 	/* create requests */
 	rpc = op_func();
 	if (rpc == NULL) {
-		ERROR(op_string, "creating rpc request failed.");
+		ERROR(op_string, "creating an rpc request failed.");
 		return (EXIT_FAILURE);
 	}
 

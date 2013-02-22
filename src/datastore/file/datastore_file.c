@@ -157,7 +157,7 @@ int ncds_file_set_path (struct ncds_ds* datastore, const char* path)
 		file_ds->file = fopen (path, "w+");
 		umask(mask);
 		if (file_ds->file == NULL) {
-			ERROR ("Datastore file %s can not be created (%s).", path, strerror(errno));
+			ERROR ("Datastore file %s cannot be created (%s).", path, strerror(errno));
 			return (-2);
 		} else {
 			VERB ("Datastore file %s was created.", path);
@@ -169,7 +169,7 @@ int ncds_file_set_path (struct ncds_ds* datastore, const char* path)
 		/* file exists and it is accessible */
 		file_ds->file = fopen (path, "r+");
 		if (file_ds->file == NULL) {
-			ERROR ("Datastore file %s can not be opened (%s).", path, strerror(errno));
+			ERROR ("Datastore file %s cannot be opened (%s).", path, strerror(errno));
 			return -2;
 		}
 	}
@@ -240,7 +240,7 @@ static xmlDocPtr file_create_xmlframe ()
 
 	doc = xmlReadDoc(BAD_CAST FILEDSFRAME, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
 	if (doc == NULL) {
-		ERROR ("%s: creating empty file datastore failed.", __func__);
+		ERROR ("%s: creating an empty file datastore failed.", __func__);
 		return (NULL);
 	}
 
@@ -314,7 +314,7 @@ int ncds_file_init (struct ncds_ds* ds)
 
 	file_ds->xml = xmlReadFile (file_ds->path, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
 	if (file_ds->xml == NULL || file_structure_check (file_ds->xml) == 0) {
-		WARN ("Failed to parse XML in file.");
+		WARN ("Failed to parse XML in the file.");
 		if (stat(file_ds->path, &st) || st.st_size > 0) {
 			/* Unable to determine size or size bigger than 0 */
 			WARN ("File %s contains some unknown data.", file_ds->path);
@@ -334,7 +334,7 @@ int ncds_file_init (struct ncds_ds* ds)
 			}
 			fd = mkstemp (new_path);
 			if (fd == -1 || (file_ds->file = fdopen(fd, "r+")) == NULL) {
-				ERROR ("Can not create alternate file %s (%s).", new_path, strerror(errno));
+				ERROR ("Cannot create an alternate file %s (%s).", new_path, strerror(errno));
 				free (new_path);
 				return (EXIT_FAILURE);
 			}
@@ -342,7 +342,7 @@ int ncds_file_init (struct ncds_ds* ds)
 			/* store new path */
 			free (file_ds->path);
 			file_ds->path = new_path;
-			WARN("Using file %s to prevent data loss.", file_ds->path);
+			WARN("Using a file %s to prevent data loss.", file_ds->path);
 		}
 		file_ds->xml = file_create_xmlframe();
 		if (file_ds->xml == NULL) {
@@ -897,7 +897,7 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
 	case NC_DATASTORE_RUNNING:
 		UNLOCK(file_ds);
 		*error = nc_err_new (NC_ERR_OP_FAILED);
-		nc_err_set (*error, NC_ERR_PARAM_MSG, "Can not delete running datastore.");
+		nc_err_set (*error, NC_ERR_PARAM_MSG, "Cannot delete a running datastore.");
 		return EXIT_FAILURE;
 		break;
 	case NC_DATASTORE_STARTUP:

@@ -153,13 +153,13 @@ int nc_session_monitoring_init(void)
 	session_list_fd = open("/tmp/libnetconf_sessions.bin", O_CREAT | O_RDWR, 0600);
 	umask(um);
 	if (session_list_fd == -1) {
-		ERROR("Opening sessions monitoring file failed (%s).", strerror(errno));
+		ERROR("Opening the sessions monitoring file failed (%s).", strerror(errno));
 		return (EXIT_FAILURE);
 	}
 
 	/* get the file size */
 	if (fstat(session_list_fd, &fdinfo) == -1) {
-		ERROR("Unable to get sessions monitoring file information (%s)", strerror(errno));
+		ERROR("Unable to get the sessions monitoring file information (%s)", strerror(errno));
 		close(session_list_fd);
 		session_list_fd = -1;
 		return (EXIT_FAILURE);
@@ -171,7 +171,7 @@ int nc_session_monitoring_init(void)
 		lseek(session_list_fd, SIZE_STEP - 1, SEEK_SET);
 		while (((c = write(session_list_fd, "", 1)) == -1) && (errno == EAGAIN || errno == EINTR));
 		if (c == -1) {
-			WARN("%s: Preparing session list file failed (%s).", __func__, strerror(errno));
+			WARN("%s: Preparing the session list file failed (%s).", __func__, strerror(errno));
 		}
 		lseek(session_list_fd, 0, SEEK_SET);
 		size = SIZE_STEP;
@@ -181,7 +181,7 @@ int nc_session_monitoring_init(void)
 
 	session_list = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, session_list_fd, 0);
 	if (session_list == MAP_FAILED) {
-		ERROR("Accessing shared sessions monitoring file failed (%s)", strerror(errno));
+		ERROR("Accessing the shared sessions monitoring file failed (%s)", strerror(errno));
 		close(session_list_fd);
 		session_list = NULL;
 		session_list_fd = -1;
@@ -223,7 +223,7 @@ int nc_session_monitor(struct nc_session* session)
 	}
 
 	if (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_DUMMY) {
-		ERROR("%s: specified session is in invalid state and can not be monitored.", __func__);
+		ERROR("%s: specified session is in invalid state and cannot be monitored.", __func__);
 		return (EXIT_FAILURE);
 	}
 
@@ -268,7 +268,7 @@ int nc_session_monitor(struct nc_session* session)
 					if (litem->active == 1) {
 						ERROR("%s: specified session is already monitored.", __func__);
 					} else {
-						ERROR("%s: specified session is in invalid state and can not be monitored.", __func__);
+						ERROR("%s: specified session is in invalid state and cannot be monitored.", __func__);
 					}
 					return (EXIT_FAILURE);
 				}
@@ -1232,7 +1232,7 @@ static int nc_session_read_len (struct nc_session* session, size_t chunk_length,
 				continue;
 			} else if (c < 0) {
 				libssh2_session_last_error (session->ssh_session, &err_msg, NULL, 0);
-				ERROR("Reading from SSH channel failed (%zd: %s)", c, err_msg);
+				ERROR("Reading from the SSH channel failed (%zd: %s)", c, err_msg);
 				free (buf);
 				*len = 0;
 				*text = NULL;
@@ -1258,7 +1258,7 @@ static int nc_session_read_len (struct nc_session* session, size_t chunk_length,
 					usleep (NC_READ_SLEEP);
 					continue;
 				} else {
-					ERROR("Reading from input file descriptor failed (%s)", strerror(errno));
+					ERROR("Reading from an input file descriptor failed (%s)", strerror(errno));
 					free (buf);
 					*len = 0;
 					*text = NULL;
@@ -1266,7 +1266,7 @@ static int nc_session_read_len (struct nc_session* session, size_t chunk_length,
 				}
 			}
 		} else {
-			ERROR("No way to read input, fatal error.");
+			ERROR("No way to read the input, fatal error.");
 			free (buf);
 			*len = 0;
 			*text = NULL;
@@ -1329,7 +1329,7 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 				continue;
 			} else if (c < 0) {
 				libssh2_session_last_error (session->ssh_session, &err_msg, NULL, 0);
-				ERROR("Reading from SSH channel failed (%zd: %s)", c, err_msg);
+				ERROR("Reading from the SSH channel failed (%zd: %s)", c, err_msg);
 				free (buf);
 				buflen = 0;
 				if (len != NULL) {
@@ -1365,7 +1365,7 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 					usleep (NC_READ_SLEEP);
 					continue;
 				} else {
-					ERROR("Reading from input file descriptor failed (%s)", strerror(errno));
+					ERROR("Reading from an input file descriptor failed (%s)", strerror(errno));
 					free (buf);
 					buflen = 0;
 					if (len != NULL) {
@@ -1378,7 +1378,7 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 				}
 			}
 		} else {
-			ERROR("No way to read input, fatal error.");
+			ERROR("No way to read the input, fatal error.");
 			free (buf);
 			buflen = 0;
 			if (len != NULL) {
@@ -1669,7 +1669,7 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 
 	/* create xpath evaluation context */
 	if ((retval->ctxt = xmlXPathNewContext(retval->doc)) == NULL) {
-		ERROR("%s: rpc message XPath context can not be created.", __func__);
+		ERROR("%s: rpc message XPath context cannot be created.", __func__);
 		nc_msg_free(retval);
 		goto malformed_msg;
 	}
@@ -1745,7 +1745,7 @@ malformed_msg:
 		/* NETCONF version 1.1 define sending error reply from the server */
 		reply = nc_reply_error(nc_err_new(NC_ERR_MALFORMED_MSG));
 		if (reply == NULL) {
-			ERROR("Unable to create \'Malformed message\' reply");
+			ERROR("Unable to create the \'Malformed message\' reply");
 			nc_session_close(session, NC_SESSION_TERM_OTHER);
 			return (NC_MSG_UNKNOWN);
 		}
@@ -1983,49 +1983,49 @@ try_again:
 		if ((*rpc)->with_defaults != NCWD_MODE_NOTSET) {
 			/* check if the session support this */
 			if (session->wd_basic == NCWD_MODE_NOTSET) {
-				ERROR("rpc requires with-defaults capability, but session does not support it.");
+				ERROR("rpc requires the with-defaults capability, but the session does not support it.");
 				e = nc_err_new(NC_ERR_INVALID_VALUE);
 				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
-				nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability, but session does not support it.");
+				nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires the with-defaults capability, but the session does not support it.");
 			} else {
 				switch ((*rpc)->with_defaults) {
 				case NCWD_MODE_ALL:
 					if ((session->wd_modes & NCWD_MODE_ALL) == 0) {
-						ERROR("rpc requires with-defaults capability report-all mode, but session does not support it.");
+						ERROR("rpc requires the with-defaults capability report-all mode, but the session does not support it.");
 						e = nc_err_new(NC_ERR_INVALID_VALUE);
 						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
-						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability report-all mode, but session does not support it.");
+						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires the with-defaults capability report-all mode, but the session does not support it.");
 					}
 					break;
 				case NCWD_MODE_ALL_TAGGED:
 					if ((session->wd_modes & NCWD_MODE_ALL_TAGGED) == 0) {
-						ERROR("rpc requires with-defaults capability report-all-tagged mode, but session does not support it.");
+						ERROR("rpc requires the with-defaults capability report-all-tagged mode, but the session does not support it.");
 						e = nc_err_new(NC_ERR_INVALID_VALUE);
 						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
-						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability report-all-tagged mode, but session does not support it.");
+						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires the with-defaults capability report-all-tagged mode, but the session does not support it.");
 					}
 					break;
 				case NCWD_MODE_TRIM:
 					if ((session->wd_modes & NCWD_MODE_TRIM) == 0) {
-						ERROR("rpc requires with-defaults capability trim mode, but session does not support it.");
+						ERROR("rpc requires the with-defaults capability trim mode, but the session does not support it.");
 						e = nc_err_new(NC_ERR_INVALID_VALUE);
 						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
-						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability trim mode, but session does not support it.");
+						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc the requires with-defaults capability trim mode, but the session does not support it.");
 					}
 					break;
 				case NCWD_MODE_EXPLICIT:
 					if ((session->wd_modes & NCWD_MODE_EXPLICIT) == 0) {
-						ERROR("rpc requires with-defaults capability explicit mode, but session does not support it.");
+						ERROR("rpc requires the with-defaults capability explicit mode, but the session does not support it.");
 						e = nc_err_new(NC_ERR_INVALID_VALUE);
 						nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
-						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability explicit mode, but session does not support it.");
+						nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires the with-defaults capability explicit mode, but the session does not support it.");
 					}
 					break;
 				default: /* something weird */
-					ERROR("rpc requires with-defaults capability with unknown mode.");
+					ERROR("rpc requires the with-defaults capability with an unknown mode.");
 					e = nc_err_new(NC_ERR_INVALID_VALUE);
 					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "with-defaults");
-					nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires with-defaults capability with unknown mode.");
+					nc_err_set(e, NC_ERR_PARAM_MSG, "rpc requires the with-defaults capability with an unknown mode.");
 					break;
 				}
 			}
@@ -2103,7 +2103,7 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 #ifndef DISABLE_NOTIFICATIONS
 		case NC_OP_CREATESUBSCRIPTION:
 			if (nc_cpblts_enabled(session, NC_CAP_NOTIFICATION_ID) == 0) {
-				ERROR("RPC requires :notifications capability, but session does not support it.");
+				ERROR("RPC requires :notifications capability, but the session does not support it.");
 				return (NULL); /* failure */
 			}
 			break;
@@ -2111,13 +2111,13 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 		case NC_OP_COMMIT:
 		case NC_OP_DISCARDCHANGES:
 			if (nc_cpblts_enabled(session, NC_CAP_CANDIDATE_ID) == 0) {
-				ERROR("RPC requires :candidate capability, but session does not support it.");
+				ERROR("RPC requires :candidate capability, but the session does not support it.");
 				return (NULL); /* failure */
 			}
 			break;
 		case NC_OP_GETSCHEMA:
 			if (nc_cpblts_enabled(session, NC_CAP_MONITORING_ID) == 0) {
-				ERROR("RPC requires :monitoring capability, but session does not support it.");
+				ERROR("RPC requires :monitoring capability, but the session does not support it.");
 				return (NULL); /* failure */
 			}
 			break;
@@ -2130,31 +2130,31 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc)
 		if (rpc->with_defaults != NCWD_MODE_NOTSET) {
 			/* check if the session support this */
 			if ((wd = nc_cpblts_get(session->capabilities, NC_CAP_WITHDEFAULTS_ID)) == NULL) {
-				ERROR("RPC requires :with-defaults capability, but session does not support it.");
+				ERROR("RPC requires :with-defaults capability, but the session does not support it.");
 				return (NULL); /* failure */
 			}
 			switch (rpc->with_defaults) {
 			case NCWD_MODE_ALL:
 				if (strstr(wd, "report-all") == NULL) {
-					ERROR("RPC requires with-defaults capability report-all mode, but session does not support it.");
+					ERROR("RPC requires the with-defaults capability report-all mode, but the session does not support it.");
 					return (NULL); /* failure */
 				}
 				break;
 			case NCWD_MODE_ALL_TAGGED:
 				if (strstr(wd, "report-all-tagged") == NULL) {
-					ERROR("RPC requires with-defaults capability report-all-tagged mode, but session does not support it.");
+					ERROR("RPC requires the with-defaults capability report-all-tagged mode, but the session does not support it.");
 					return (NULL); /* failure */
 				}
 				break;
 			case NCWD_MODE_TRIM:
 				if (strstr(wd, "trim") == NULL) {
-					ERROR("RPC requires with-defaults capability trim mode, but session does not support it.");
+					ERROR("RPC requires the with-defaults capability trim mode, but the session does not support it.");
 					return (NULL); /* failure */
 				}
 				break;
 			case NCWD_MODE_EXPLICIT:
 				if (strstr(wd, "explicit") == NULL) {
-					ERROR("RPC requires with-defaults capability explicit mode, but session does not support it.");
+					ERROR("RPC requires the with-defaults capability explicit mode, but the session does not support it.");
 					return (NULL); /* failure */
 				}
 				break;

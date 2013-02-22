@@ -623,19 +623,19 @@ static xmlXPathObjectPtr get_operation_elements(NC_EDIT_OP_TYPE op, xmlDocPtr ed
 	edit_ctxt = xmlXPathNewContext(edit);
 	if (edit_ctxt == NULL) {
 		if (edit_ctxt != NULL) { xmlXPathFreeContext(edit_ctxt);}
-		ERROR("Creating XPath evaluation context failed (%s:%d).", __FILE__, __LINE__);
+		ERROR("Creating the XPath evaluation context failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
 
 	if (xmlXPathRegisterNs(edit_ctxt, BAD_CAST NC_NS_BASE_ID, BAD_CAST NC_NS_BASE) != 0) {
 		xmlXPathFreeContext(edit_ctxt);
-		ERROR("Registering namespace for XPath failed (%s:%d).", __FILE__, __LINE__);
+		ERROR("Registering a namespace for XPath failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
 
 	if (snprintf((char*) xpath, XPATH_BUFFER, "//*[@%s:operation='%s']", NC_NS_BASE_ID, opstring) <= 0) {
 		xmlXPathFreeContext(edit_ctxt);
-		ERROR("Preparing XPath query failed (%s:%d).", __FILE__, __LINE__);
+		ERROR("Preparing the XPath query failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
 	operation_nodes = xmlXPathEvalExpression(BAD_CAST xpath, edit_ctxt);
@@ -867,7 +867,7 @@ static int edit_delete (xmlNodePtr node)
 {
 	assert(node != NULL);
 
-	VERB("Deleting node %s (%s:%d)", (char*)node->name, __FILE__, __LINE__);
+	VERB("Deleting the node %s (%s:%d)", (char*)node->name, __FILE__, __LINE__);
 	if (node != NULL) {
 		xmlUnlinkNode(node);
 		xmlFreeNode(node);
@@ -925,7 +925,7 @@ static xmlNodePtr edit_create_recursively (xmlDocPtr orig_doc, xmlNodePtr edit_n
 		if (parent == NULL) {
 			return NULL;
 		}
-		VERB("Creating parent %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
+		VERB("Creating the parent %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
 		retval = xmlAddChild(parent, xmlCopyNode(edit_node, 0));
 	}
 	return retval;
@@ -959,7 +959,7 @@ static int edit_create (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 	nc_clear_namespaces(edit_node);
 
 	/* create a new element in the configuration data as a copy of the element from the edit-config */
-	VERB("Creating node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
+	VERB("Creating the node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
 	if (parent == NULL) {
 		if (orig_doc->children == NULL) {
 			xmlDocSetRootElement(orig_doc, xmlCopyNode(edit_node, 1));
@@ -1003,7 +1003,7 @@ static int edit_replace (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 		nc_clear_namespaces(edit_node);
 
 		/* replace old configuration data with the new data */
-		VERB("Replacing node %s (%s:%d)", (char*)old->name, __FILE__, __LINE__);
+		VERB("Replacing the node %s (%s:%d)", (char*)old->name, __FILE__, __LINE__);
 		if (xmlReplaceNode(old, xmlCopyNode(edit_node, 1)) == NULL) {
 			return EXIT_FAILURE;
 		}
@@ -1070,9 +1070,9 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 				ERROR("Adding missing nodes when merging failed (%s:%d)", __FILE__, __LINE__);
 				return EXIT_FAILURE;
 			}
-			VERB("Adding missing node %s while merging (%s:%d)", (char*)children->name, __FILE__, __LINE__);
+			VERB("Adding a missing node %s while merging (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 		} else {
-			VERB("Merging node %s (%s:%d)", (char*)children->name, __FILE__, __LINE__);
+			VERB("Merging the node %s (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 			/* go recursive through all matching elements */
 			if (children->type == XML_TEXT_NODE) {
 				while (aux != NULL) {
@@ -1116,7 +1116,7 @@ int edit_merge (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 		return EXIT_FAILURE;
 	}
 
-	VERB("Merging node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
+	VERB("Merging the node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
 	orig_node = find_element_equiv(orig_doc, edit_node, keys);
 	if (orig_node == NULL) {
 		return edit_create(orig_doc, edit_node, keys);

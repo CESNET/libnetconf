@@ -190,7 +190,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 			if ((ret = pthread_create(&thread, NULL, notification_thread, ntf_config)) != 0) {
 				nc_reply_free(reply);
 				e = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Creating thread for sending Notifications failed.");
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Creating a thread for sending Notifications failed.");
 				reply = nc_reply_error(e);
 				e = NULL;
 			}
@@ -254,7 +254,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		reply = nc_reply_ok();
 	} else if (reply == NCDS_RPC_NOT_APPLICABLE) {
 		e = nc_err_new(NC_ERR_OP_FAILED);
-		nc_err_set(e, NC_ERR_PARAM_MSG, "Requested operation can not be performed on the managed datastore, invalid configuration data.");
+		nc_err_set(e, NC_ERR_PARAM_MSG, "Requested operation cannot be performed on the managed datastore, invalid configuration data.");
 		reply = nc_reply_error(e);
 	}
 

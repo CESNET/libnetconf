@@ -170,7 +170,7 @@ int nc_close(int system)
 
 	if (system) {
 		if (shmctl(shmid, IPC_STAT, &ds) == -1) {
-			ERROR("Unable to get status of shared memory (%s).", strerror(errno));
+			ERROR("Unable to get the status of shared memory (%s).", strerror(errno));
 			return (-1);
 		}
 		if (ds.shm_nattch == 1) {

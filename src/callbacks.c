@@ -213,7 +213,7 @@ void callback_sshauth_interactive_default (const char*  UNUSED(name),
 
 	for (i=0; i<num_prompts; i++) {
 		if (fwrite (prompts[i].text, sizeof(char), prompts[i].length, stdout) == 0) {
-			ERROR("Writing authentication prompt into stdout failed.");
+			ERROR("Writing the authentication prompt into stdout failed.");
 			return;
 		}
 		fflush(stdout);
@@ -263,7 +263,7 @@ char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 		return (NULL);
 	}
 
-	fprintf(stdout, "Enter passphrase for key '%s':", privatekey_filepath);
+	fprintf(stdout, "Enter passphrase for the key '%s':", privatekey_filepath);
 	if (system("stty -echo") == -1) {
 		ERROR("system() call failed (stty -echo).");
 		return (NULL);
@@ -292,7 +292,7 @@ int callback_ssh_hostkey_check_default (const char* hostname, int keytype, const
 	int c;
 	char answer[5];
 
-	fprintf(stdout, "The authenticity of host \'%s\' can't be established.\n", hostname);
+	fprintf(stdout, "The authenticity of the host \'%s\' cannot be established.\n", hostname);
 	fprintf(stdout, "%s key fingerprint is %s.\n", (keytype == 2) ? "DSS" : "RSA", fingerprint);
 	fprintf(stdout, "Are you sure you want to continue connecting (yes/no)? ");
 
