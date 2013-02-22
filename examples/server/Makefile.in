@@ -79,11 +79,6 @@ $(OBJDIR)/%.o: %.c
 		(mkdir -p $$(dirname $@))
 	$(CC) $(CFLAGS) $(CPPFLAGS) -fPIC -c $< -o $@
 
-
-.PHONY: clean
-clean:
-	rm -rf $(NAME) $(OBJDIR); 
-
 .PHONY: install
 install: $(NAME)
 	@[ -d $(DESTDIR)/$(bindir) ] || \
