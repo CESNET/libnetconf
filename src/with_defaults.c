@@ -152,24 +152,52 @@ NCWD_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc)
 	return (rpc->with_defaults);
 }
 
-static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mode)
+static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mode, xmlNodePtr** created)
 {
-	xmlNodePtr *parents = NULL, *retvals = NULL;
-	xmlNodePtr aux = NULL;
+	xmlNodePtr *parents = NULL, *retvals = NULL, *created_local = NULL;
+	xmlNodePtr aux = NULL, aux2 = NULL;
 	xmlNsPtr ns;
 	xmlChar* value, *name, *value2;
 	int i, j, k, size = 0;
+	static int created_count = 0;
+	static int created_size = 0;
 
 	if (mode == NCWD_MODE_NOTSET || mode == NCWD_MODE_EXPLICIT) {
 		return (NULL);
 	}
 
+	if (created == NULL) {
+		/* initial (not recursive) call */
+		created_count = 0;
+		created_size = 32;
+		created_local = malloc(created_size * sizeof(xmlNodePtr));
+		created_local[created_count] = NULL; /* list terminating byte */
+	} else {
+		created_local = *created;
+	}
+
 	/* do recursion */
 	if (node->parent == NULL) {
+		if (created == NULL) {
+			if (retvals == NULL) {
+				for(i = created_count-1; i > 0; i--) {
+					if (created_local[i]->children == NULL) {
+						/* created parent element, but default value was not finally
+						 * created and no other children element exists -> remove
+						 * the created element
+						 */
+						xmlUnlinkNode(created_local[i]);
+						xmlFreeNode(created_local[i]);
+					}
+				}
+			}
+			/* free in last recursion call */
+			free(created_local);
+		}
 		return (NULL);
 	} else if (xmlStrcmp(node->parent->name, BAD_CAST "module") != 0) {
 		/* we will get parent of the config's equivalent of the node */
-		parents = fill_default(config, node->parent, mode);
+		parents = fill_default(config, node->parent, mode, &created_local);
 	} else {
 		/* we are in the root */
 		aux = config->children;
@@ -194,8 +222,38 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mod
 				} else {
 					xmlAddSibling(config->children, aux);
 				}
+				/* set namespace */
+				if (node->doc != NULL) {
+					for (aux2 = xmlDocGetRootElement(node->doc)->children; aux2 != NULL; aux2 = aux2->next) {
+						if (aux2->type != XML_ELEMENT_NODE) {
+							continue;
+						}
+						if (xmlStrcmp(aux2->name, BAD_CAST "namespace") != 0) {
+							continue;
+						}
+						value = xmlGetProp(aux2, BAD_CAST "uri");
+						break;
+					}
+					ns = xmlNewNs(aux, BAD_CAST value, NULL);
+					xmlSetNs(aux, ns);
+				}
+
+				/* remember created node, for later remove if no default child will be created */
+				if (created_count == created_size-1) {
+					/* (re)allocate created list */
+					created_size += 32;
+					created_local = realloc(created_local, created_size * sizeof(xmlNodePtr));
+				}
+				created_local[created_count++] = aux;
+				created_local[created_count] = NULL; /* list terminating byte */
 			}
 			xmlFree(name);
+
+			/* if report-all-tagged, add namespace for default attribute into the whole doc */
+			if (mode == NCWD_MODE_ALL_TAGGED) {
+				xmlNewNs(aux, BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
+			}
+
 			retvals[0] = aux;
 			return (retvals);
 			break;
@@ -222,6 +280,22 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mod
 		}
 	}
 	if (parents == NULL) {
+		if (created == NULL) {
+			if (retvals == NULL) {
+				for(i = created_count-1; i > 0; i--) {
+					if (created_local[i]->children == NULL) {
+						/* created parent element, but default value was not finally
+						 * created and no other children element exists -> remove
+						 * the created element
+						 */
+						xmlUnlinkNode(created_local[i]);
+						xmlFreeNode(created_local[i]);
+					}
+				}
+			}
+			/* free in last recursion call */
+			free(created_local);
+		}
 		return (NULL);
 	}
 
@@ -296,17 +370,35 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mod
 			switch (mode) {
 			case NCWD_MODE_ALL:
 			case NCWD_MODE_ALL_TAGGED:
-				if (k == j) {
-					/* no new equivalent node found */
+				if (k == j && xmlStrcmp(node->name, BAD_CAST "list") != 0) {
+					/* check, that new node is not a "presence" element */
+					for (aux = node->children; aux != NULL; aux = aux->next) {
+						if (xmlStrcmp(aux->name, BAD_CAST "presence") == 0) {
+							break;
+						}
+					}
+					if (aux != NULL) {
+						/* presence definition found -> leave the case */
+						break;
+					}
+					/* no new equivalent node found -> create one, but only if it is not supposed to be list */
 					if (size <= j + 1) {
 						/* (re)allocate retvals list */
 						size += 32;
 						retvals = (xmlNodePtr*) realloc(retvals, size * sizeof(xmlNodePtr));
 					}
-					/* no new equivalent node found -> create one */
-					retvals[j] = xmlNewChild(parents[i], NULL, name, NULL);
+					retvals[j] = xmlNewChild(parents[i], parents[i]->ns, name, NULL);
 					j++;
 					retvals[j] = NULL; /* list terminating NULL */
+
+					/* remember created node, for later remove if no default child will be created */
+					if (created_count == created_size-1) {
+						/* (re)allocate created list */
+						created_size += 32;
+						created_local = realloc(created_local, created_size * sizeof(xmlNodePtr));
+					}
+					created_local[created_count++] = retvals[j-1];
+					created_local[created_count] = NULL; /* list terminating byte */
 				}
 				break;
 			case NCWD_MODE_TRIM:
@@ -322,6 +414,22 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mod
 	if (parents != NULL) {
 		free(parents);
 	}
+	if (created == NULL) {
+		if (retvals == NULL) {
+			for(i = created_count-1; i > 0; i--) {
+				if (created_local[i]->children == NULL) {
+					/* created parent element, but default value was not finally
+					 * created and no other children element exists -> remove
+					 * the created element
+					 */
+					xmlUnlinkNode(created_local[i]);
+					xmlFreeNode(created_local[i]);
+				}
+			}
+		}
+		/* free in last recursion call */
+		free(created_local);
+	}
 
 	return (retvals);
 }
@@ -330,8 +438,6 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 {
 	xmlXPathContextPtr model_ctxt = NULL;
 	xmlXPathObjectPtr defaults = NULL;
-	xmlNodePtr root;
-	xmlNsPtr ns;
 	int i;
 
 	if (config == NULL || model == NULL) {
@@ -355,14 +461,9 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 	}
 	defaults = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:container//yin:default", model_ctxt);
 	if (defaults != NULL) {
-		/* if report-all-tagged, add namespace for default attribute into the whole doc */
-		if (mode == NCWD_MODE_ALL_TAGGED) {
-			ns = xmlNewNs(root = xmlDocGetRootElement(config), BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
-			xmlSetNs(root, ns);
-		}
 		/* process all defaults elements */
 		for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
-			fill_default(config, defaults->nodesetval->nodeTab[i], mode);
+			fill_default(config, defaults->nodesetval->nodeTab[i], mode, NULL);
 		}
 
 		xmlXPathFreeObject(defaults);
