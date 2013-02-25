@@ -104,7 +104,7 @@ struct nacm_config {
 	bool external_groups;
 	struct nacm_group** groups;
 	struct rule_list** rule_lists;
-} nacm_config;
+} nacm_config = {false, false, true, false, true, NULL, NULL};
 
 /* access to the NACM statistics */
 extern struct nc_shared_info *nc_info;
@@ -462,12 +462,14 @@ void nacm_close(void)
 			nacm_group_free(nacm_config.groups[i]);
 		}
 		free(nacm_config.groups);
+		nacm_config.groups = NULL;
 	}
 	if (nacm_config.rule_lists != NULL) {
 		for (i = 0; nacm_config.rule_lists[i] != NULL; i++) {
 			nacm_rule_list_free(nacm_config.rule_lists[i]);
 		}
 		free(nacm_config.rule_lists);
+		nacm_config.rule_lists = NULL;
 	}
 }
 
@@ -648,6 +650,7 @@ int nacm_config_refresh(void)
 				ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 				goto errorcleanup;
 			}
+			nacm_config.groups[0] = NULL; /* list terminating NULL byte */
 			for (i = j = 0; i < query_result->nodesetval->nodeNr; i++) {
 				gr = malloc(sizeof(struct nacm_group));
 				if (gr == NULL) {
@@ -708,6 +711,7 @@ int nacm_config_refresh(void)
 				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 				goto errorcleanup;
 			}
+			nacm_config.rule_lists[0] = NULL; /* list terminating NULL byte */
 			for (i = j = 0; i < query_result->nodesetval->nodeNr; i++) {
 				rlist = malloc(sizeof(struct rule_list));
 				if (rlist == NULL) {
