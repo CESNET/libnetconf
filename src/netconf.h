@@ -99,7 +99,7 @@ struct nc_filter;
  * @ingroup session
  * @brief Enumeration of the possible states of a NETCONF session.
  */
-typedef enum {
+typedef enum NC_SESSION_STATUS {
 	NC_SESSION_STATUS_ERROR = -1, /**< undefined status or the error return code */
 	NC_SESSION_STATUS_STARTUP = 0, /**< session is setting up */
 	NC_SESSION_STATUS_WORKING = 1, /**< session is established and ready to work */
@@ -113,7 +113,7 @@ typedef enum {
  * @brief Enumeration of reasonf of the NETCONF session termination as defined
  * in RFC 6470.
  */
-typedef enum {
+typedef enum NC_SESSION_TERM_REASON {
 	NC_SESSION_TERM_CLOSED, /**< closed by client in a normal fashion */
 	NC_SESSION_TERM_KILLED, /**< session was terminated by \<kill-session\> operation */
 	NC_SESSION_TERM_DROPPED, /**< transport layer connection was unexpectedly closed */
@@ -186,7 +186,7 @@ typedef enum NC_OP {
 	NC_OP_GETSCHEMA	/**< \<get-schema> operation (RFC 6022) */
 } NC_OP;
 
-typedef enum {
+typedef enum NC_ERR_PARAM {
 	/**
 	 * error-type - The conceptual layer that the error occurred, accepted
 	 * values include 'transport', 'rpc', 'protocol', 'application'.
@@ -293,7 +293,7 @@ typedef enum NC_EDIT_ERROPT_TYPE {
 	NC_EDIT_ERROPT_ROLLBACK = 3
 } NC_EDIT_ERROPT_TYPE;
 
-typedef enum {
+typedef enum NC_EDIT_TESTOPT_TYPE {
 	NC_EDIT_TESTOPT_ERROR = -1, /* for internal purposes, not defined by NETCONF */
 	NC_EDIT_TESTOPT_NOTSET = 0,
 	NC_EDIT_TESTOPT_TESTSET = 1, /* test-then-set */
@@ -301,7 +301,7 @@ typedef enum {
 	NC_EDIT_TESTOPT_TEST = 3 /* test-only */
 } NC_EDIT_TESTOPT_TYPE;
 
-typedef enum {
+typedef enum NCWD_MODE {
 	NCWD_MODE_NOTSET = 0,
 	NCWD_MODE_ALL = 1,
 	NCWD_MODE_TRIM = 2,
@@ -309,7 +309,7 @@ typedef enum {
 	NCWD_MODE_ALL_TAGGED = 8
 } NCWD_MODE;
 
-typedef enum {
+typedef enum NC_CAP_ATTR {
 	NC_CAP_ATTR_WITHDEFAULTS_MODE = 1
 } NC_CAP_ATTR;
 
@@ -317,7 +317,7 @@ typedef enum {
  * @brief Verbosity levels.
  * @ingroup genAPI
  */
-typedef enum {
+typedef enum NC_VERB_LEVEL {
 	NC_VERB_ERROR,  /**< Print only error messages. */
 	NC_VERB_WARNING,/**< Print error and warning messages. */
 	NC_VERB_VERBOSE,/**< Besides errors and warnings, print some other verbose messages. */
