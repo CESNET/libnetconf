@@ -42,6 +42,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <stddef.h>
 #include <string.h>
 #include <ctype.h>
@@ -113,6 +114,13 @@ int nc_init(int flags)
 
 	/* todo use locks */
 	if (first) {
+		/* remove the global session information file if left over a previous libnetconf instance */
+		if ((unlink(SESSIONSFILE_PATH) == -1) && (errno != ENOENT)) {
+			ERROR("Unable to remove the session information file (%s)", strerror(errno));
+			shmdt(nc_info);
+			return (-1);
+		}
+		
 		/* lock */
 		pthread_rwlockattr_init(&rwlockattr);
 		pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
