@@ -62,7 +62,7 @@ INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 RPMDIR = RPMBUILD
-STREAMS_PATH = $(DESTDIR)/@STREAMS_PATH@
+STREAMS_PATH = $(DESTDIR)/@NC_WORKINGDIR_PATH@/streams/
 IDGIT = "built from git $(shell git show --pretty=oneline | head -1 | cut -c -20)"
 IDNOGIT = "released as version $(VERSION)"
 LIBS = @LDFLAGS@ @LIBS@
