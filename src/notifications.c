@@ -2553,6 +2553,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 			ntf->next = NULL;
 			ntf->with_defaults = NCWD_MODE_NOTSET;
 			ntf->type.ntf = NC_NTF_UNKNOWN;
+			ntf->nacm = NULL;
 
 			/* create xpath evaluation context */
 			if ((ntf->ctxt = xmlXPathNewContext(ntf->doc)) == NULL) {
@@ -2606,6 +2607,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	ntf->msgid = NULL;
 	ntf->error = NULL;
 	ntf->with_defaults = NCWD_MODE_NOTSET;
+	ntf->nacm = NULL;
 	nc_session_send_notif(session, ntf);
 	ncntf_notif_free(ntf);
 	free(event);
