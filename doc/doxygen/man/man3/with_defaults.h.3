@@ -1,4 +1,4 @@
-.TH "src/with_defaults.h" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "src/with_defaults.h" 3 "Mon Feb 25 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -20,7 +20,7 @@ Implementation of NETCONF's with-defaults capability defined in RFC 6243\&.
 .ti -1c
 .RI "#define \fBNCDFLT_DISABLE\fP   \fBncdflt_set_basic_mode\fP(NCWD_MODE_DISABLED)"
 .br
-.RI "\fIDisable support for with-defaults capability\&. This can be done on both client and server\&. \fP"
+.RI "\fIDisable support for the with-defaults capability\&. This can be done on either a client or a server\&. \fP"
 .in -1c
 .SS "Functions"
 
@@ -28,11 +28,11 @@ Implementation of NETCONF's with-defaults capability defined in RFC 6243\&.
 .ti -1c
 .RI "void \fBncdflt_set_basic_mode\fP (\fBNCWD_MODE\fP mode)"
 .br
-.RI "\fISet basic mode of the with-defaults capability for the NETCONF server\&. \fP"
+.RI "\fISet the basic mode of the with-defaults capability for a NETCONF server\&. \fP"
 .ti -1c
 .RI "\fBNCWD_MODE\fP \fBncdflt_get_basic_mode\fP ()"
 .br
-.RI "\fIGet current set basic mode of the with-defaults capability\&. \fP"
+.RI "\fIGet the current set basic mode of the with-defaults capability\&. \fP"
 .ti -1c
 .RI "void \fBncdflt_set_supported\fP (\fBNCWD_MODE\fP modes)"
 .br
@@ -40,11 +40,11 @@ Implementation of NETCONF's with-defaults capability defined in RFC 6243\&.
 .ti -1c
 .RI "\fBNCWD_MODE\fP \fBncdflt_get_supported\fP ()"
 .br
-.RI "\fIGet ORed value containing currently supported with-defaults modes\&. \fP"
+.RI "\fIGet ORed value containing the currently supported with-defaults modes\&. \fP"
 .ti -1c
 .RI "int \fBncdflt_rpc_withdefaults\fP (\fBnc_rpc\fP *rpc, \fBNCWD_MODE\fP mode)"
 .br
-.RI "\fISet <with-defaults> parameter for the given NETCONF RPC message\&. \fP"
+.RI "\fISet the <with-defaults> parameter for the given NETCONF RPC message\&. \fP"
 .ti -1c
 .RI "\fBNCWD_MODE\fP \fBncdflt_rpc_get_withdefaults\fP (const \fBnc_rpc\fP *rpc)"
 .br

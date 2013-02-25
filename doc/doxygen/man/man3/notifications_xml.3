@@ -1,4 +1,4 @@
-.TH "NETCONF Event Notifications (libxml2)" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Event Notifications (libxml2)" 3 "Mon Feb 25 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -12,15 +12,15 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 .ti -1c
 .RI "int \fBncxmlntf_event_new\fP (time_t etime, \fBNCNTF_EVENT\fP event,\&.\&.\&.)"
 .br
-.RI "\fIStore new event into the specified stream\&. Parameters are specific for different events\&. \fP"
+.RI "\fIStore a new event into the specified stream\&. Parameters are specific for different events\&. \fP"
 .ti -1c
 .RI "\fBnc_ntf\fP * \fBncxmlntf_notif_create\fP (time_t event_time, const xmlNodePtr content)"
 .br
-.RI "\fICreate new <notification> message with the given eventTime and content\&. \fP"
+.RI "\fICreate a new <notification> message with the given eventTime and content\&. \fP"
 .ti -1c
 .RI "xmlNodePtr \fBncxmlntf_notif_get_content\fP (\fBnc_ntf\fP *notif)"
 .br
-.RI "\fIGet description of the event reported in the notification message\&. \fP"
+.RI "\fIGet the description of the event reported in the notification message\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -32,7 +32,7 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 .SS "int ncxmlntf_event_new (time_tetime, \fBNCNTF_EVENT\fPevent, \&.\&.\&.)"
 
 .PP
-Store new event into the specified stream\&. Parameters are specific for different events\&. .SS "Event parameters:"
+Store a new event into the specified stream\&. Parameters are specific for different events\&. .SS "Event parameters:"
 .PP
 .IP "\(bu" 2
 \fBNCNTF_GENERIC\fP
@@ -47,11 +47,11 @@ Store new event into the specified stream\&. Parameters are specific for differe
 .IP "  \(bu" 4
 \fBNCNTF_EVENT_BY\fP \fBchanged_by\fP Specify the source of the change\&.
 .IP "    \(bu" 6
-If the value is set to \fBNCNTF_EVENT_BY_USER\fP, following parameter is required:
+If the value is set to \fBNCNTF_EVENT_BY_USER\fP, the following parameter is required:
 .PP
 
 .IP "  \(bu" 4
-\fBconst struct nc_session* session\fP Session required the configuration change\&.
+\fBconst struct nc_session* session\fP Session that required the configuration change\&.
 .PP
 
 .IP "\(bu" 2
@@ -63,11 +63,11 @@ If the value is set to \fBNCNTF_EVENT_BY_USER\fP, following parameter is require
 .IP "  \(bu" 4
 \fBNCNTF_EVENT_BY\fP \fBchanged_by\fP Specify the source of the change\&.
 .IP "    \(bu" 6
-If the value is set to \fBNCNTF_EVENT_BY_USER\fP, following parameter is required:
+If the value is set to \fBNCNTF_EVENT_BY_USER\fP, the following parameter is required:
 .PP
 
 .IP "  \(bu" 4
-\fBconst struct nc_session* session\fP Session required the configuration change\&.
+\fBconst struct nc_session* session\fP Session that required the configuration change\&.
 .PP
 
 .IP "\(bu" 2
@@ -79,11 +79,11 @@ If the value is set to \fBNCNTF_EVENT_BY_USER\fP, following parameter is require
 .IP "\(bu" 2
 \fBNCNTF_BASE_SESSION_END\fP
 .IP "  \(bu" 4
-\fBconst struct nc_session* session\fP Finnished session (\fBNC_SESSION_STATUS_DUMMY\fP session is also allowed)\&.
+\fBconst struct nc_session* session\fP Finished session (\fBNC_SESSION_STATUS_DUMMY\fP session is also allowed)\&.
 .IP "  \(bu" 4
 \fBNC_SESSION_TERM_REASON\fP \fBreason\fP Session termination reason\&.
 .IP "    \(bu" 6
-If the value is set to \fBNC_SESSION_TERM_KILLED\fP, following parameter is required\&.
+If the value is set to \fBNC_SESSION_TERM_KILLED\fP, the following parameter is required\&.
 .PP
 
 .IP "  \(bu" 4
@@ -108,9 +108,9 @@ ncxmlntf_event_new('netconf', -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION
 .PP
 \fBParameters:\fP
 .RS 4
-\fIetime\fP Time of the event, if set to -1, current time is used\&. 
+\fIetime\fP Time of the event, if set to -1, the current time is used\&. 
 .br
-\fIevent\fP Event type to distinguish following parameters\&. 
+\fIevent\fP Event type to distinguish the following parameters\&. 
 .br
 \fI\&.\&.\&.\fP Specific parameters for different event types as described above\&. 
 .RE
@@ -124,7 +124,7 @@ ncxmlntf_event_new('netconf', -1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION
 .SS "\fBnc_ntf\fP* ncxmlntf_notif_create (time_tevent_time, const xmlNodePtrcontent)"
 
 .PP
-Create new <notification> message with the given eventTime and content\&. \fBParameters:\fP
+Create a new <notification> message with the given eventTime and content\&. \fBParameters:\fP
 .RS 4
 \fIevent_time\fP Time of the event\&. 
 .br
@@ -140,14 +140,14 @@ Created notification message\&.
 .SS "xmlNodePtr ncxmlntf_notif_get_content (\fBnc_ntf\fP *notif)"
 
 .PP
-Get description of the event reported in the notification message\&. \fBParameters:\fP
+Get the description of the event reported in the notification message\&. \fBParameters:\fP
 .RS 4
 \fInotif\fP Notification message\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Copy of the event description content (single node or node list, eventTime is not included)\&. Caller is supposed to free the returned structure with xmlFreeNodeList()\&. 
+Copy of the event description content (single node or node list, eventTime is not included)\&. The caller is supposed to free the returned structure with xmlFreeNodeList()\&. 
 .RE
 .PP
 

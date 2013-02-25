@@ -1,4 +1,4 @@
-.TH "src/notifications_xml.h" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "src/notifications_xml.h" 3 "Mon Feb 25 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -22,15 +22,15 @@ NETCONF Notifications functions with libxml2 support\&.
 .ti -1c
 .RI "int \fBncxmlntf_event_new\fP (time_t etime, \fBNCNTF_EVENT\fP event,\&.\&.\&.)"
 .br
-.RI "\fIStore new event into the specified stream\&. Parameters are specific for different events\&. \fP"
+.RI "\fIStore a new event into the specified stream\&. Parameters are specific for different events\&. \fP"
 .ti -1c
 .RI "\fBnc_ntf\fP * \fBncxmlntf_notif_create\fP (time_t event_time, const xmlNodePtr content)"
 .br
-.RI "\fICreate new <notification> message with the given eventTime and content\&. \fP"
+.RI "\fICreate a new <notification> message with the given eventTime and content\&. \fP"
 .ti -1c
 .RI "xmlNodePtr \fBncxmlntf_notif_get_content\fP (\fBnc_ntf\fP *notif)"
 .br
-.RI "\fIGet description of the event reported in the notification message\&. \fP"
+.RI "\fIGet the description of the event reported in the notification message\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 

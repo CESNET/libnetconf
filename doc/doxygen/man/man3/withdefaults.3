@@ -1,4 +1,4 @@
-.TH "With-defaults capability" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "With-defaults capability" 3 "Mon Feb 25 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -12,7 +12,7 @@ libnetconf's implementation of NETCONF with-defaults capability as defined in RF
 .ti -1c
 .RI "#define \fBNCDFLT_DISABLE\fP   \fBncdflt_set_basic_mode\fP(NCWD_MODE_DISABLED)"
 .br
-.RI "\fIDisable support for with-defaults capability\&. This can be done on both client and server\&. \fP"
+.RI "\fIDisable support for the with-defaults capability\&. This can be done on either a client or a server\&. \fP"
 .in -1c
 .SS "Functions"
 
@@ -20,11 +20,11 @@ libnetconf's implementation of NETCONF with-defaults capability as defined in RF
 .ti -1c
 .RI "void \fBncdflt_set_basic_mode\fP (\fBNCWD_MODE\fP mode)"
 .br
-.RI "\fISet basic mode of the with-defaults capability for the NETCONF server\&. \fP"
+.RI "\fISet the basic mode of the with-defaults capability for a NETCONF server\&. \fP"
 .ti -1c
 .RI "\fBNCWD_MODE\fP \fBncdflt_get_basic_mode\fP ()"
 .br
-.RI "\fIGet current set basic mode of the with-defaults capability\&. \fP"
+.RI "\fIGet the current set basic mode of the with-defaults capability\&. \fP"
 .ti -1c
 .RI "void \fBncdflt_set_supported\fP (\fBNCWD_MODE\fP modes)"
 .br
@@ -32,11 +32,11 @@ libnetconf's implementation of NETCONF with-defaults capability as defined in RF
 .ti -1c
 .RI "\fBNCWD_MODE\fP \fBncdflt_get_supported\fP ()"
 .br
-.RI "\fIGet ORed value containing currently supported with-defaults modes\&. \fP"
+.RI "\fIGet ORed value containing the currently supported with-defaults modes\&. \fP"
 .ti -1c
 .RI "int \fBncdflt_rpc_withdefaults\fP (\fBnc_rpc\fP *rpc, \fBNCWD_MODE\fP mode)"
 .br
-.RI "\fISet <with-defaults> parameter for the given NETCONF RPC message\&. \fP"
+.RI "\fISet the <with-defaults> parameter for the given NETCONF RPC message\&. \fP"
 .ti -1c
 .RI "\fBNCWD_MODE\fP \fBncdflt_rpc_get_withdefaults\fP (const \fBnc_rpc\fP *rpc)"
 .br
@@ -52,15 +52,15 @@ libnetconf's implementation of NETCONF with-defaults capability as defined in RF
 .SS "#define NCDFLT_DISABLE   \fBncdflt_set_basic_mode\fP(NCWD_MODE_DISABLED)"
 
 .PP
-Disable support for with-defaults capability\&. This can be done on both client and server\&. This is alternative for ncdflt_set_basic_mode(NCDFLT_MODE_DISABLED)\&. To enable with-defaults capability, use \fBncdflt_set_basic_mode()\fP to set with-defaults' basic mode\&. 
+Disable support for the with-defaults capability\&. This can be done on either a client or a server\&. This is an alternative for ncdflt_set_basic_mode(NCDFLT_MODE_DISABLED)\&. To enable the with-defaults capability, use \fBncdflt_set_basic_mode()\fP to set the with-defaults' basic mode\&. 
 .SH "Function Documentation"
 .PP 
 .SS "void ncdflt_set_basic_mode (\fBNCWD_MODE\fPmode)"
 
 .PP
-Set basic mode of the with-defaults capability for the NETCONF server\&. Default basic mode used by libnetconf is 'explicit'\&. This function should be used before establishing a NETCONF session and settle common set of capabilities between client and server\&.
+Set the basic mode of the with-defaults capability for a NETCONF server\&. The default basic mode used by libnetconf is 'explicit'\&. This function should be used before establishing a NETCONF session to settle on a common set of capabilities between a client and a server\&.
 .PP
-On the client side, this function doesn't have effect of setting up the specific mode\&. It only disables (NCDFLT_MODE_DISABLED) or enables (any other valid value) support for the with-defaults capability\&.
+On the client side, this function does not have any effect of setting up a specific mode\&. It only disables (NCDFLT_MODE_DISABLED) or enables (any other valid value) support for the with-defaults capability\&.
 .PP
 \fBParameters:\fP
 .RS 4
@@ -71,7 +71,7 @@ On the client side, this function doesn't have effect of setting up the specific
 .SS "\fBNCWD_MODE\fP ncdflt_get_basic_mode ()"
 
 .PP
-Get current set basic mode of the with-defaults capability\&. \fBReturns:\fP
+Get the current set basic mode of the with-defaults capability\&. \fBReturns:\fP
 .RS 4
 Current value of the with-defaults' basic mode\&. 
 .RE
@@ -80,27 +80,27 @@ Current value of the with-defaults' basic mode\&.
 .SS "void ncdflt_set_supported (\fBNCWD_MODE\fPmodes)"
 
 .PP
-Set with-defaults modes that are supported\&. This function should be used before establishing a NETCONF session and settle common set of capabilities between client and server\&. On the client side, this function has no effect\&.
+Set with-defaults modes that are supported\&. This function should be used before establishing a NETCONF session to settle on a common set of capabilities between a client and a server\&. On the client side, this function has no effect\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fImodes\fP ORed set of supported NCDFLT_MODE modes\&. Basic mode is always supported automatically\&. 
+\fImodes\fP ORed set of the supported NCDFLT_MODE modes\&. The basic mode is always supported automatically\&. 
 .RE
 .PP
 
 .SS "\fBNCWD_MODE\fP ncdflt_get_supported ()"
 
 .PP
-Get ORed value containing currently supported with-defaults modes\&. \fBReturns:\fP
+Get ORed value containing the currently supported with-defaults modes\&. \fBReturns:\fP
 .RS 4
-ORed value containing currently supported with-defaults modes\&. 
+ORed value containing the currently supported with-defaults modes\&. 
 .RE
 .PP
 
 .SS "int ncdflt_rpc_withdefaults (\fBnc_rpc\fP *rpc, \fBNCWD_MODE\fPmode)"
 
 .PP
-Set <with-defaults> parameter for the given NETCONF RPC message\&. Sending RPC message withe set <with-default> parameter via the session which doesn't support specified value or with-defaults capability at all will fail\&.
+Set the <with-defaults> parameter for the given NETCONF RPC message\&. Sending RPC message with the <with-default> parameter set via a session which does not support the specified value or the with-defaults capability will fail\&.
 .PP
 \fBParameters:\fP
 .RS 4

@@ -29,7 +29,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.3.1</span>
+   &#160;<span id="projectnumber">0.4.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -102,7 +102,7 @@ $(document).ready(function(){initNavTree('d8/d73/group__reply__xml.html','../../
 </div><!--header-->
 <div class="contents">
 
-<p>libnetconf's functions for handling NETCONF &lt;rpc-reply&gt; messages. These functions accepts parameters as libxml2 structures.  
+<p>libnetconf's functions for handling the NETCONF &lt;rpc-reply&gt; messages. These functions accepts parameters as libxml2 structures.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
@@ -117,7 +117,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga1ce60f5416d4f75586836c1429c37149"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create rpc-reply response with &lt;data&gt; content.  <a href="#ga1ce60f5416d4f75586836c1429c37149"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
-<p>libnetconf's functions for handling NETCONF &lt;rpc-reply&gt; messages. These functions accepts parameters as libxml2 structures. </p>
+<p>libnetconf's functions for handling the NETCONF &lt;rpc-reply&gt; messages. These functions accepts parameters as libxml2 structures. </p>
 <hr/><h2>Function Documentation</h2>
 <a class="anchor" id="ga68ec8a0daf54f584339924bca5b5a682"></a>
 <div class="memitem">
@@ -161,7 +161,7 @@ Functions</h2></td></tr>
 <p>Build &lt;rpc-reply&gt; message from the libxml2 document structure. This is the reverse function of the <a class="el" href="../../d8/d73/group__reply__xml.html#ga68ec8a0daf54f584339924bca5b5a682" title="Dump the rpc-reply message into a libxml2 document structure.">ncxml_reply_dump()</a>. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">reply_dump</td><td>XML document structure with the NETCONF &lt;rpc-reply&gt; message. The structure is integrated into the internal rpc structure and caller should not access (or free) given XML document anymore. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">reply_dump</td><td>XML document structure with the NETCONF &lt;rpc-reply&gt; message. The structure is integrated into the internal rpc structure and caller should not access (or free) the given XML document anymore. </td></tr>
   </table>
   </dd>
 </dl>
@@ -190,7 +190,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>XML node &lt;data&gt; with its content. &lt;data&gt; is included to provide valid (non-NULL) output in case of empty data returned (e.g. when all data are filterred out). Caller is supposed to free the returned structure with xmlFreeNode(). </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>XML node &lt;data&gt; with its content. &lt;data&gt; is included to provide a valid (non-NULL) output in case of empty data returned (e.g. when all the data are filterred out). Caller is supposed to free the returned structure with xmlFreeNode(). </dd></dl>
 
 </div>
 </div>
@@ -211,7 +211,7 @@ Functions</h2></td></tr>
 <p>Create rpc-reply response with &lt;data&gt; content. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramname">data</td><td>Content (possible a node list) for the &lt;rpc-reply&gt;'s &lt;data&gt; element. </td></tr>
+    <tr><td class="paramname">data</td><td>Content (possibly a node list) for the &lt;rpc-reply&gt;'s &lt;data&gt; element. </td></tr>
   </table>
   </dd>
 </dl>
@@ -224,7 +224,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Jan 23 2013 16:06:49 for libnetconf by
+    <li class="footer">Generated on Mon Feb 25 2013 14:13:15 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

@@ -1,10 +1,10 @@
-.TH "NETCONF rpc (libxml2)" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc (libxml2)" 3 "Mon Feb 25 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 NETCONF rpc (libxml2) \- 
 .PP
-libnetconf's functions for handling NETCONF <rpc> messages\&. These functions accepts parameters as libxml2 structures\&.  
+libnetconf's functions for handling the NETCONF <rpc> messages\&. These functions accepts parameters as libxml2 structures\&.  
 
 .SS "Functions"
 
@@ -12,7 +12,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&. These functions ac
 .ti -1c
 .RI "struct nc_filter * \fBncxml_filter_new\fP (\fBNC_FILTER_TYPE\fP type,\&.\&.\&.)"
 .br
-.RI "\fICreate new NETCONF filter of the specified type\&. \fP"
+.RI "\fICreate a new NETCONF filter of the specified type\&. \fP"
 .ti -1c
 .RI "xmlDocPtr \fBncxml_rpc_dump\fP (const \fBnc_rpc\fP *rpc)"
 .br
@@ -24,7 +24,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&. These functions ac
 .ti -1c
 .RI "xmlNodePtr \fBncxml_rpc_get_op_content\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet content of the operation specification from the given rpc\&. \fP"
+.RI "\fIGet the content of the operation specification from the given rpc\&. \fP"
 .ti -1c
 .RI "xmlNodePtr \fBncxml_rpc_get_config\fP (const \fBnc_rpc\fP *rpc)"
 .br
@@ -40,11 +40,11 @@ libnetconf's functions for handling NETCONF <rpc> messages\&. These functions ac
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBncxml_rpc_generic\fP (const xmlNodePtr data)"
 .br
-.RI "\fICreate a generic NETCONF rpc message with specified content\&. \fP"
+.RI "\fICreate a generic NETCONF rpc message with the specified content\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
-libnetconf's functions for handling NETCONF <rpc> messages\&. These functions accepts parameters as libxml2 structures\&. 
+libnetconf's functions for handling the NETCONF <rpc> messages\&. These functions accepts parameters as libxml2 structures\&. 
 
 
 .SH "Function Documentation"
@@ -52,13 +52,13 @@ libnetconf's functions for handling NETCONF <rpc> messages\&. These functions ac
 .SS "struct nc_filter* ncxml_filter_new (\fBNC_FILTER_TYPE\fPtype, \&.\&.\&.)\fC [read]\fP"
 
 .PP
-Create new NETCONF filter of the specified type\&. \fBParameters:\fP
+Create a new NETCONF filter of the specified type\&. \fBParameters:\fP
 .RS 4
 \fItype\fP Type of the filter\&. 
 .br
 \fI\&.\&.\&.\fP Filter content:
 .IP "\(bu" 2
-for \fBNC_FILTER_SUBTREE\fP type, single variadic parameter \fBconst xmlNodePtr filter\fP with the content for the <filter> element is accepted\&. The filter parameter is not supposed to contain <filter> element, but only its content\&. The node is taken as a node list, so the sibling nodes are also added into the filter definition\&. If NULL is specified, Empty filter (RFC 6241 sec 6\&.4\&.2) is created\&. 
+for \fBNC_FILTER_SUBTREE\fP type, single variadic parameter \fBconst xmlNodePtr filter\fP with the content for the <filter> element is accepted\&. The filter parameter is not supposed to contain <filter> element, but only its content\&. The node is taken as a node list, so the sibling nodes are also added into the filter definition\&. If NULL is specified, the Empty filter (RFC 6241 sec 6\&.4\&.2) is created\&. 
 .PP
 .RE
 .PP
@@ -99,7 +99,7 @@ Complete rpc structure used by libnetconf's functions\&.
 .SS "xmlNodePtr ncxml_rpc_get_op_content (const \fBnc_rpc\fP *rpc)"
 
 .PP
-Get content of the operation specification from the given rpc\&. \fBParameters:\fP
+Get the content of the operation specification from the given rpc\&. \fBParameters:\fP
 .RS 4
 \fIrpc\fP rpc message\&. 
 .RE
@@ -130,13 +130,13 @@ XML node <config> with its content or NULL on error\&. Note that <config> can co
 Create <copy-config> NETCONF rpc message\&. .SS "Variadic parameters:"
 .PP
 .IP "\(bu" 2
-source is specified as \fBNC_DATASTORE_CONFIG\fP:
+the source is specified as \fBNC_DATASTORE_CONFIG\fP:
 .IP "  \(bu" 4
 \fBnc_rpc_copyconfig()\fP accepts as the first variadic parameter \fBconst xmlNodePtr source_config\fP providing the complete configuration data to copy\&.
 .PP
 
 .IP "\(bu" 2
-source is specified as \fBNC_DATASTORE_URL\fP:
+the source is specified as \fBNC_DATASTORE_URL\fP:
 .IP "  \(bu" 4
 \fBnc_rpc_copyconfig()\fP accepts as the first variadic parameter \fBconst char* source_url\fP providing the URL to the file
 .PP
@@ -175,9 +175,9 @@ Create <edit-config> NETCONF rpc message\&. \fBParameters:\fP
 .br
 \fIsource\fP Specifies the type of the source data taken from the variadic parameter\&. Only \fBNC_DATASTORE_CONFIG\fP (variadic parameter contains the <config> data) and \fBNC_DATASTORE_URL\fP (variadic parameter contains URL for <url> element) values are accepted\&. 
 .br
-\fIdefault_operation\fP Default operation for this request, 0 to skip setting this parameter and use default server's ('merge') behavior\&. 
+\fIdefault_operation\fP Default operation for this request, 0 to skip the setting of this parameter and use default server ('merge') behavior\&. 
 .br
-\fIerror_option\fP Set reaction to an error, 0 for the server's default behavior\&. 
+\fIerror_option\fP Set the response to an error, 0 for the server default behavior\&. 
 .br
 \fItest_option\fP Set test-option element according to :validate:1\&.1 capability specified in RFC 6241\&. 
 .br
@@ -198,7 +198,7 @@ Created rpc message\&.
 .SS "\fBnc_rpc\fP* ncxml_rpc_generic (const xmlNodePtrdata)"
 
 .PP
-Create a generic NETCONF rpc message with specified content\&. Function gets data parameter and envelope it into <rpc> container\&. Caller is fully responsible for the correctness of the given data\&.
+Create a generic NETCONF rpc message with the specified content\&. The function recieves the data parameter and envelopes it into an <rpc> container\&. Caller is fully responsible for the correctness of the given data\&.
 .PP
 \fBParameters:\fP
 .RS 4

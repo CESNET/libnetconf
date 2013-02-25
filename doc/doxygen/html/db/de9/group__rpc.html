@@ -29,7 +29,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.3.1</span>
+   &#160;<span id="projectnumber">0.4.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -159,9 +159,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga27d3fe78769630932a18c726df4fe6e6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga27d3fe78769630932a18c726df4fe6e6">nc_session_send_recv</a> (struct nc_session *session, <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> **reply)</td></tr>
 <tr class="memdesc:ga27d3fe78769630932a18c726df4fe6e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc&gt; and receive &lt;rpc-reply&gt; via the specified NETCONF session.  <a href="#ga27d3fe78769630932a18c726df4fe6e6"></a><br/></td></tr>
 <tr class="memitem:ga599c715b0aee0f1f2ed231ce1d78e5bd"><td class="memItemLeft" align="right" valign="top">struct nc_filter *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga599c715b0aee0f1f2ed231ce1d78e5bd">nc_filter_new</a> (<a class="el" href="../../db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706">NC_FILTER_TYPE</a> type,...)</td></tr>
-<tr class="memdesc:ga599c715b0aee0f1f2ed231ce1d78e5bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new NETCONF filter of the specified type.  <a href="#ga599c715b0aee0f1f2ed231ce1d78e5bd"></a><br/></td></tr>
+<tr class="memdesc:ga599c715b0aee0f1f2ed231ce1d78e5bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new NETCONF filter of the specified type.  <a href="#ga599c715b0aee0f1f2ed231ce1d78e5bd"></a><br/></td></tr>
 <tr class="memitem:ga0dbfd598d6fd303819817370cdf63229"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga0dbfd598d6fd303819817370cdf63229">nc_filter_free</a> (struct nc_filter *filter)</td></tr>
-<tr class="memdesc:ga0dbfd598d6fd303819817370cdf63229"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy filter structure.  <a href="#ga0dbfd598d6fd303819817370cdf63229"></a><br/></td></tr>
+<tr class="memdesc:ga0dbfd598d6fd303819817370cdf63229"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy the filter structure.  <a href="#ga0dbfd598d6fd303819817370cdf63229"></a><br/></td></tr>
 <tr class="memitem:gadab3d916540f79dd2b168134758fe3d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gadab3d916540f79dd2b168134758fe3d1">nc_rpc_dup</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gadab3d916540f79dd2b168134758fe3d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Duplicate &lt;rpc&gt; message.  <a href="#gadab3d916540f79dd2b168134758fe3d1"></a><br/></td></tr>
 <tr class="memitem:ga3e840368c40be2ea4d5201edbd3adaca"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga3e840368c40be2ea4d5201edbd3adaca">nc_rpc_dump</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
@@ -177,11 +177,11 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa502fb30575000775b29a764101c1bef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00">NC_RPC_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaa502fb30575000775b29a764101c1bef">nc_rpc_get_type</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gaa502fb30575000775b29a764101c1bef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get type of the rpc message.  <a href="#gaa502fb30575000775b29a764101c1bef"></a><br/></td></tr>
 <tr class="memitem:gab240067d45d58c945cdfd61948751379"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gab240067d45d58c945cdfd61948751379">nc_rpc_get_target</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
-<tr class="memdesc:gab240067d45d58c945cdfd61948751379"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get target datastore type (running, startup, candidate) of the rpc request.  <a href="#gab240067d45d58c945cdfd61948751379"></a><br/></td></tr>
+<tr class="memdesc:gab240067d45d58c945cdfd61948751379"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the target datastore type (running, startup, candidate) of the rpc request.  <a href="#gab240067d45d58c945cdfd61948751379"></a><br/></td></tr>
 <tr class="memitem:ga3fcf5083b04a294e935a2897c212065b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga3fcf5083b04a294e935a2897c212065b">nc_rpc_get_source</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
-<tr class="memdesc:ga3fcf5083b04a294e935a2897c212065b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get source datastore type (running, startup, candidate) of the rpc request.  <a href="#ga3fcf5083b04a294e935a2897c212065b"></a><br/></td></tr>
+<tr class="memdesc:ga3fcf5083b04a294e935a2897c212065b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the source datastore type (running, startup, candidate) of the rpc request.  <a href="#ga3fcf5083b04a294e935a2897c212065b"></a><br/></td></tr>
 <tr class="memitem:ga05a10e0b6c89ac04426410f399b87257"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga05a10e0b6c89ac04426410f399b87257">nc_rpc_get_config</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
-<tr class="memdesc:ga05a10e0b6c89ac04426410f399b87257"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get serialized content of the config parameter (&lt;config&gt; itself is not part of the returned data). This function is valid only for &lt;copy-config&gt; and &lt;edit-config&gt; RPCs.  <a href="#ga05a10e0b6c89ac04426410f399b87257"></a><br/></td></tr>
+<tr class="memdesc:ga05a10e0b6c89ac04426410f399b87257"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get serialized content of the config parameter (&lt;config&gt; itself is not a part of the returned data). This function is valid only for &lt;copy-config&gt; and &lt;edit-config&gt; RPCs.  <a href="#ga05a10e0b6c89ac04426410f399b87257"></a><br/></td></tr>
 <tr class="memitem:gaf867eacee93e3596371415d028e62d29"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaf867eacee93e3596371415d028e62d29">nc_rpc_get_defop</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gaf867eacee93e3596371415d028e62d29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get default-operation type, valid only for &lt;edit-config&gt; RPCs.  <a href="#gaf867eacee93e3596371415d028e62d29"></a><br/></td></tr>
 <tr class="memitem:ga488f894b9fa4866326837a9ed0575e36"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga488f894b9fa4866326837a9ed0575e36">nc_rpc_get_erropt</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
@@ -215,9 +215,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga3b762dd881622eaa72b08c9b58d76a5e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga3b762dd881622eaa72b08c9b58d76a5e">nc_rpc_getschema</a> (const char *name, const char *version, const char *format)</td></tr>
 <tr class="memdesc:ga3b762dd881622eaa72b08c9b58d76a5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;get-schema&gt; NETCONF rpc message (RFC 6022).  <a href="#ga3b762dd881622eaa72b08c9b58d76a5e"></a><br/></td></tr>
 <tr class="memitem:gaa9ad7fac41fdef0063c2e2793fb19efd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaa9ad7fac41fdef0063c2e2793fb19efd">nc_rpc_generic</a> (const char *data)</td></tr>
-<tr class="memdesc:gaa9ad7fac41fdef0063c2e2793fb19efd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a generic NETCONF rpc message with specified content.  <a href="#gaa9ad7fac41fdef0063c2e2793fb19efd"></a><br/></td></tr>
+<tr class="memdesc:gaa9ad7fac41fdef0063c2e2793fb19efd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a generic NETCONF rpc message with the specified content.  <a href="#gaa9ad7fac41fdef0063c2e2793fb19efd"></a><br/></td></tr>
 <tr class="memitem:ga14f5e170cbc9acd9a146eee2fb6b796f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga14f5e170cbc9acd9a146eee2fb6b796f">nc_rpc_capability_attr</a> (<a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914d">NC_CAP_ATTR</a> attr,...)</td></tr>
-<tr class="memdesc:ga14f5e170cbc9acd9a146eee2fb6b796f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set attribute of the given &lt;rpc&gt; specific for some NETCONF capability.  <a href="#ga14f5e170cbc9acd9a146eee2fb6b796f"></a><br/></td></tr>
+<tr class="memdesc:ga14f5e170cbc9acd9a146eee2fb6b796f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the attribute of the given &lt;rpc&gt; specific for some NETCONF capability.  <a href="#ga14f5e170cbc9acd9a146eee2fb6b796f"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's functions for handling NETCONF &lt;rpc&gt; messages. </p>
@@ -262,7 +262,7 @@ Functions</h2></td></tr>
 <p>&lt;rpc&gt; contains operation modifying datastore </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga4088fac1dd592062b27ff5b0e1708d00aa7e77d1cd094384f2683352c63a4fccb"></a>NC_RPC_SESSION</em>&nbsp;</td><td>
-<p>&lt;rpc&gt; contains operation affecting session </p>
+<p>&lt;rpc&gt; contains operation affecting the session </p>
 </td></tr>
 </table>
 </dd>
@@ -431,7 +431,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Type of received message. <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a> means error, <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a7f6951d98d30342a65e6b1d7ccca2df0">NC_MSG_RPC</a> means that *rpc points to the received &lt;rpc&gt; message. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Type of the received message. <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a> means error, <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a7f6951d98d30342a65e6b1d7ccca2df0">NC_MSG_RPC</a> means that *rpc points to the received &lt;rpc&gt; message. </dd></dl>
 
 </div>
 </div>
@@ -474,7 +474,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Type of received message. <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a> means error, <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a827b3c9c898a48ec8e9f8f9af11f1bdd">NC_MSG_REPLY</a> means that *reply points to the received &lt;rpc-reply&gt; message. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Type of the received message. <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a> means error, <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a827b3c9c898a48ec8e9f8f9af11f1bdd">NC_MSG_REPLY</a> means that *reply points to the received &lt;rpc-reply&gt; message. </dd></dl>
 
 </div>
 </div>
@@ -510,12 +510,12 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Create new NETCONF filter of the specified type. </p>
+<p>Create a new NETCONF filter of the specified type. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Type of the filter. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>Filter content:<ul>
-<li>for <a class="el" href="../../db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706ab584539474b828102a0b7238b614abd4">NC_FILTER_SUBTREE</a> type, single variadic parameter <b>const char* filter</b> is accepted. </li>
+<li>for <a class="el" href="../../db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706ab584539474b828102a0b7238b614abd4">NC_FILTER_SUBTREE</a> type, a single variadic parameter <b>const char* filter</b> is accepted. </li>
 </ul>
 </td></tr>
   </table>
@@ -539,7 +539,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Destroy filter structure. </p>
+<p>Destroy the filter structure. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">filter</td><td>Filter to destroy. </td></tr>
@@ -595,7 +595,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>String in XML format containing the NETCONF's &lt;rpc&gt; element and all its content. Caller is responsible for free of returned string with free(). </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>String in XML format containing the NETCONF's &lt;rpc&gt; element and all of its content. Caller is responsible for freeing the returned string with free(). </dd></dl>
 
 </div>
 </div>
@@ -695,7 +695,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>String in XML form starting with the operation name element. Caller is responsible for free of returned string with free(). </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>String in XML form starting with the operation name element. Caller is responsible for freeing the returned string with free(). </dd></dl>
 
 </div>
 </div>
@@ -714,7 +714,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Get type of the rpc message. </p>
-<p>&lt;rpc&gt; message can affect datastore, session or it can be unknown for the libnetconf (defined by some of unsupported capability or device configuration model)</p>
+<p>&lt;rpc&gt; message can affect the datastore, the session or it can be unknown for the libnetconf (defined by an unsupported capability or device configuration model)</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>rpc message </td></tr>
@@ -739,7 +739,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get target datastore type (running, startup, candidate) of the rpc request. </p>
+<p>Get the target datastore type (running, startup, candidate) of the rpc request. </p>
 <p>For &lt;rpc&gt; message that does not affect datastore (e.g. kill-session), the <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b">NC_DATASTORE_ERROR</a> is returned.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
@@ -747,7 +747,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73" title="Enumeration of supported types of datastores defined by NETCONF.">NC_DATASTORE</a>. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73" title="Enumeration of the supported types of datastores defined by NETCONF.">NC_DATASTORE</a>. </dd></dl>
 
 </div>
 </div>
@@ -765,7 +765,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get source datastore type (running, startup, candidate) of the rpc request. </p>
+<p>Get the source datastore type (running, startup, candidate) of the rpc request. </p>
 <p>For &lt;rpc&gt; message that does not affect datastore (e.g. kill-session), the <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b">NC_DATASTORE_ERROR</a> is returned.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
@@ -773,7 +773,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73" title="Enumeration of supported types of datastores defined by NETCONF.">NC_DATASTORE</a>. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73" title="Enumeration of the supported types of datastores defined by NETCONF.">NC_DATASTORE</a>. </dd></dl>
 
 </div>
 </div>
@@ -791,14 +791,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get serialized content of the config parameter (&lt;config&gt; itself is not part of the returned data). This function is valid only for &lt;copy-config&gt; and &lt;edit-config&gt; RPCs. </p>
+<p>Get serialized content of the config parameter (&lt;config&gt; itself is not a part of the returned data). This function is valid only for &lt;copy-config&gt; and &lt;edit-config&gt; RPCs. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>&lt;copy-config&gt; or &lt;edit-config&gt; rpc message.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Serialized XML or NULL if not available. Caller is responsible for free of returned string with free(). </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Serialized XML or NULL if not available. Caller is responsible for freeing the returned string with free(). </dd></dl>
 
 </div>
 </div>
@@ -848,7 +848,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a>, <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4">NC_EDIT_ERROPT_ERROR</a> in case of error </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a>, <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4">NC_EDIT_ERROPT_ERROR</a> in case of an error </dd></dl>
 
 </div>
 </div>
@@ -873,7 +873,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a>, <a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a1770ae5b90495ca720f60ca76ab029b4">NC_EDIT_TESTOPT_ERROR</a> in case of error </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>One of the <a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a>, <a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a1770ae5b90495ca720f60ca76ab029b4">NC_EDIT_TESTOPT_ERROR</a> in case of an error </dd></dl>
 
 </div>
 </div>
@@ -906,7 +906,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>pointer struct nc_filter or NULL if no filter specified </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>pointer to the struct nc_filter or NULL if no filter specified </dd></dl>
 
 </div>
 </div>
@@ -976,14 +976,14 @@ Functions</h2></td></tr>
 </ul>
 </li>
 <li>target is specified as <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a8507d8c0a99ba9da1cb38287b26b911c">NC_DATASTORE_URL</a>:<ul>
-<li><a class="el" href="../../db/de9/group__rpc.html#gaf7b76c1243dc218cf1dc8b17876e319c" title="Create &lt;copy-config&gt; NETCONF rpc message.">nc_rpc_copyconfig()</a> accepts as another (first or second according to eventual previous variadic parameter) variadic parameter <b>const char* target_url</b> providing the URL to the target file.</li>
+<li><a class="el" href="../../db/de9/group__rpc.html#gaf7b76c1243dc218cf1dc8b17876e319c" title="Create &lt;copy-config&gt; NETCONF rpc message.">nc_rpc_copyconfig()</a> accepts as another (first or second according to an eventual previous variadic parameter) variadic parameter <b>const char* target_url</b> providing the URL to the target file.</li>
 </ul>
 </li>
 </ul>
 <p>The file that the url refers to contains the complete datastore, encoded in XML under the element &lt;config&gt; in the "urn:ietf:params:xml:ns:netconf:base:1.0" namespace.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">source</td><td>Source configuration datastore type. If the <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e">NC_DATASTORE_CONFIG</a> is specified, data parameter is used as the complete configuration to copy. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">source</td><td>Source configuration of the datastore type. If the <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e">NC_DATASTORE_CONFIG</a> is specified, data parameter is used as the complete configuration to copy. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">target</td><td>Target configuration datastore type to be replaced. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>Specific parameters according to the source and target parameters. </td></tr>
   </table>
@@ -1082,8 +1082,8 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">target</td><td>Target configuration datastore type to be edited. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">source</td><td>Specifies the type of the source data taken from the variadic parameter. Only <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e">NC_DATASTORE_CONFIG</a> (variadic parameter contains the &lt;config&gt; data) and <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a8507d8c0a99ba9da1cb38287b26b911c">NC_DATASTORE_URL</a> (variadic parameter contains URL for &lt;url&gt; element) values are accepted. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">default_operation</td><td>Default operation for this request, 0 to skip setting this parameter and use default server's ('merge') behavior. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">error_option</td><td>Set reaction to an error, 0 for the server's default behavior. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">default_operation</td><td>Default operation for this request, 0 to skip setting this parameter and use the default server ('merge') behavior. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">error_option</td><td>Set the response to an error, 0 for the server default behavior. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">test_option</td><td>Set test-option element according to :validate:1.1 capability specified in RFC 6241. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>According to the source parameter, variadic parameter can be one of the following:<ul>
 <li><b>const char* config</b> defining the content of the &lt;config&gt; element in case the source parameter is specified as <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e">NC_DATASTORE_CONFIG</a></li>
@@ -1114,7 +1114,7 @@ Functions</h2></td></tr>
 <p>Create &lt;get&gt; NETCONF rpc message. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">filter</td><td>NETCONF filter or NULL if no filter required. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">filter</td><td>NETCONF filter or NULL if no filter is required. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1306,7 +1306,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Identifier for the schema list entry. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">version</td><td>Optional parameter specifying version of the requested schema. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>optional parameter specifying the data modeling language of the schema. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Optional parameter specifying the data modeling language of the schema. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1328,8 +1328,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Create a generic NETCONF rpc message with specified content. </p>
-<p>Function gets data parameter and envelope it into &lt;rpc&gt; container. Caller is fully responsible for the correctness of the given data.</p>
+<p>Create a generic NETCONF rpc message with the specified content. </p>
+<p>Function gets the data parameter and envelopes it into &lt;rpc&gt; container. Caller is fully responsible for the correctness of the given data.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>XML content of the &lt;rpc&gt; request to be sent. </td></tr>
@@ -1370,7 +1370,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Set attribute of the given &lt;rpc&gt; specific for some NETCONF capability. </p>
+<p>Set the attribute of the given &lt;rpc&gt; specific for some NETCONF capability. </p>
 <h3>Parameters for specific capability attributes:</h3>
 <ul>
 <li><a class="el" href="../../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba">NC_CAP_ATTR_WITHDEFAULTS_MODE</a><ul>
@@ -1386,7 +1386,7 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>RPC to be modified. This RPC must be created by one of the nc_rpc* functions. RPC received by the server side's <a class="el" href="../../db/de9/group__rpc.html#ga214fcc2c0095d56f4aa0d90c11da25fc" title="Receive &lt;rpc&gt; request from the specified NETCONF session. This function is supposed to be performed o...">nc_session_recv_rpc()</a> is not accepted. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">attr</td><td>RPC's attribute defined by a capability to be set or changed. List of accepted operations can be found in the description of this function. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">attr</td><td>RPC's attribute defined by a capability to be set or changed. The list of accepted operations can be found in the description of this function. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1400,7 +1400,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Jan 23 2013 16:06:49 for libnetconf by
+    <li class="footer">Generated on Mon Feb 25 2013 14:13:15 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

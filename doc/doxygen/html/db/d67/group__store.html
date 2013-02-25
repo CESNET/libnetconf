@@ -29,7 +29,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.3.1</span>
+   &#160;<span id="projectnumber">0.4.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -111,9 +111,9 @@ $(document).ready(function(){initNavTree('db/d67/group__store.html','../../');})
 <tr class="heading"><td colspan="2"><h2><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:gaf3338ac77041c714fc4f9877e608990a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a">NCDS_INTERNAL_ID</a>&#160;&#160;&#160;0</td></tr>
-<tr class="memdesc:gaf3338ac77041c714fc4f9877e608990a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Datastore ID to access libnetconf's internal datasotres such as notifications, monitoring, etc.  <a href="#gaf3338ac77041c714fc4f9877e608990a"></a><br/></td></tr>
+<tr class="memdesc:gaf3338ac77041c714fc4f9877e608990a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Datastore ID to access libnetconf's internal datastores such as notifications, monitoring, etc.  <a href="#gaf3338ac77041c714fc4f9877e608990a"></a><br/></td></tr>
 <tr class="memitem:ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6">NCDS_RPC_NOT_APPLICABLE</a>&#160;&#160;&#160;((void *) -1)</td></tr>
-<tr class="memdesc:ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return value of <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform requested RPC operation on the datastore.">ncds_apply_rpc()</a> when the requested operation is not applicable to the specified datastore.  <a href="#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"></a><br/></td></tr>
+<tr class="memdesc:ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return value of <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore.">ncds_apply_rpc()</a> when the requested operation is not applicable to the specified datastore.  <a href="#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"></a><br/></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -132,7 +132,7 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830">NC_DATASTORE_CANDIDATE</a>
 <br/>
  }</td></tr>
-<tr class="memdesc:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported types of datastores defined by NETCONF.  <a href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">More...</a><br/></td></tr>
+<tr class="memdesc:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of the supported types of datastores defined by NETCONF.  <a href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">More...</a><br/></td></tr>
 <tr class="memitem:gab0f0cbd5268577ec36fc76cf89c72a8f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> { <a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b">NCDS_TYPE_EMPTY</a>, 
 <a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629">NCDS_TYPE_FILE</a>
  }</td></tr>
@@ -141,23 +141,23 @@ Enumerations</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6">ncds_new</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, char *(*get_state)(const char *model, const char *running, struct nc_err **e))</td></tr>
-<tr class="memdesc:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new datastore structure of the specified implementation type.  <a href="#ga69009c5985f9eec3a6920f98a6a1a5e6"></a><br/></td></tr>
+<tr class="memdesc:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new datastore structure of the specified implementation type.  <a href="#ga69009c5985f9eec3a6920f98a6a1a5e6"></a><br/></td></tr>
 <tr class="memitem:gad48955dab497b1258d80019e542acb9b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gad48955dab497b1258d80019e542acb9b">ncds_file_set_path</a> (struct ncds_ds *datastore, const char *path)</td></tr>
-<tr class="memdesc:gad48955dab497b1258d80019e542acb9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign path of the datastore file into the datastore structure.  <a href="#gad48955dab497b1258d80019e542acb9b"></a><br/></td></tr>
+<tr class="memdesc:gad48955dab497b1258d80019e542acb9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign the path of the datastore file into the datastore structure.  <a href="#gad48955dab497b1258d80019e542acb9b"></a><br/></td></tr>
 <tr class="memitem:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">ncds_init</a> (struct ncds_ds *datastore)</td></tr>
 <tr class="memdesc:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate datastore structure for use.  <a href="#gaabb1ae2c497726ad826fc6478f97e8ff"></a><br/></td></tr>
 <tr class="memitem:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">ncds_free</a> (struct ncds_ds *datastore)</td></tr>
-<tr class="memdesc:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close specified datastore and free all resources.  <a href="#ga77b479cc1496b0c3883bb0f6bfe46754"></a><br/></td></tr>
+<tr class="memdesc:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close the specified datastore and free all the resources.  <a href="#ga77b479cc1496b0c3883bb0f6bfe46754"></a><br/></td></tr>
 <tr class="memitem:ga05e7f1ed8185b92a6dbf904172dba9d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2">ncds_free2</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> datastore_id)</td></tr>
-<tr class="memdesc:ga05e7f1ed8185b92a6dbf904172dba9d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close specified datastore and free all resources.  <a href="#ga05e7f1ed8185b92a6dbf904172dba9d2"></a><br/></td></tr>
+<tr class="memdesc:ga05e7f1ed8185b92a6dbf904172dba9d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close specified datastore and free all the resources.  <a href="#ga05e7f1ed8185b92a6dbf904172dba9d2"></a><br/></td></tr>
 <tr class="memitem:gaabfd0bf6abeaf40659043bf082e14801"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801">ncds_apply_rpc</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id, const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
-<tr class="memdesc:gaabfd0bf6abeaf40659043bf082e14801"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform requested RPC operation on the datastore.  <a href="#gaabfd0bf6abeaf40659043bf082e14801"></a><br/></td></tr>
+<tr class="memdesc:gaabfd0bf6abeaf40659043bf082e14801"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the datastore.  <a href="#gaabfd0bf6abeaf40659043bf082e14801"></a><br/></td></tr>
 <tr class="memitem:ga4158273f1ae0332638cc9343097c9f0a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a">ncds_break_locks</a> (const struct nc_session *session)</td></tr>
-<tr class="memdesc:ga4158273f1ae0332638cc9343097c9f0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove all locks that is holding given session.  <a href="#ga4158273f1ae0332638cc9343097c9f0a"></a><br/></td></tr>
+<tr class="memdesc:ga4158273f1ae0332638cc9343097c9f0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove all the locks that the given session is holding.  <a href="#ga4158273f1ae0332638cc9343097c9f0a"></a><br/></td></tr>
 <tr class="memitem:ga1855a095ba88d392b0a03af79f17fe93"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga1855a095ba88d392b0a03af79f17fe93">ncds_get_model</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id)</td></tr>
-<tr class="memdesc:ga1855a095ba88d392b0a03af79f17fe93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return serialized XML containing data model in YIN format.  <a href="#ga1855a095ba88d392b0a03af79f17fe93"></a><br/></td></tr>
+<tr class="memdesc:ga1855a095ba88d392b0a03af79f17fe93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a serialized XML containing the data model in the YIN format.  <a href="#ga1855a095ba88d392b0a03af79f17fe93"></a><br/></td></tr>
 <tr class="memitem:ga5ec9fea534bfd146019b7efb882648be"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga5ec9fea534bfd146019b7efb882648be">ncds_get_model_path</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id)</td></tr>
-<tr class="memdesc:ga5ec9fea534bfd146019b7efb882648be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return path to file containing datastore datamodel.  <a href="#ga5ec9fea534bfd146019b7efb882648be"></a><br/></td></tr>
+<tr class="memdesc:ga5ec9fea534bfd146019b7efb882648be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return path to the file containing the datastore datamodel.  <a href="#ga5ec9fea534bfd146019b7efb882648be"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's functions for handling NETCONF datastores. </p>
@@ -172,7 +172,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Datastore ID to access libnetconf's internal datasotres such as notifications, monitoring, etc. </p>
+<p>Datastore ID to access libnetconf's internal datastores such as notifications, monitoring, etc. </p>
 
 </div>
 </div>
@@ -186,7 +186,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return value of <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform requested RPC operation on the datastore.">ncds_apply_rpc()</a> when the requested operation is not applicable to the specified datastore. </p>
+<p>Return value of <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore.">ncds_apply_rpc()</a> when the requested operation is not applicable to the specified datastore. </p>
 
 </div>
 </div>
@@ -202,7 +202,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Datastore ID. </p>
-<p>Each datastore gets its ID after initialisation (<a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>). Only initialised datstores can be used to access configuration data. </p>
+<p>Each datastore gets its ID after initialisation (<a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>). Only initialised datastores can be used to access the configuration data. </p>
 
 </div>
 </div>
@@ -217,19 +217,19 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Enumeration of supported types of datastores defined by NETCONF. </p>
+<p>Enumeration of the supported types of datastores defined by NETCONF. </p>
 <dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b"></a>NC_DATASTORE_ERROR</em>&nbsp;</td><td>
-<p>error state of functions returning datastore type </p>
+<p>error state of functions returning the datastore type </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e"></a>NC_DATASTORE_CONFIG</em>&nbsp;</td><td>
-<p>value describing that datastore is set as config </p>
+<p>value describing that the datastore is set as config </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga5e4b9ee138b963e8ea2354fef2ebbe73a8507d8c0a99ba9da1cb38287b26b911c"></a>NC_DATASTORE_URL</em>&nbsp;</td><td>
 <p>value describing that the datastore data should be given from the URL </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga5e4b9ee138b963e8ea2354fef2ebbe73a431a59cb5a2f00f50ab887ee0931156a"></a>NC_DATASTORE_RUNNING</em>&nbsp;</td><td>
-<p>base NETCONF's datastore containing current device configuration </p>
+<p>base NETCONF's datastore containing the current device configuration </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga5e4b9ee138b963e8ea2354fef2ebbe73ab0fb14c1d3e587701536c288520d945b"></a>NC_DATASTORE_STARTUP</em>&nbsp;</td><td>
 <p>separated startup datastore as defined in Distinct Startup Capability </p>
@@ -306,16 +306,16 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Create new datastore structure of the specified implementation type. </p>
+<p>Create a new datastore structure of the specified implementation type. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Datastore implementation type for new datastore structure. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Datastore implementation type for the new datastore structure. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">model_path</td><td>Path to the YIN configuration data model. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">get_state</td><td>Pointer to a callback function that returns serialized XML document containing state configuration data of the device. As parameters, it receives serialized configuration data model in YIN format and current content of the running datastore. If NULL is set, &lt;get&gt; operation is performed in the same way as &lt;get-config&gt;. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">get_state</td><td>Pointer to a callback function that returns a serialized XML document containing the state configuration data of the device. The parameters it receives are a serialized configuration data model in YIN format and the current content of the running datastore. If NULL is set, &lt;get&gt; operation is performed in the same way as &lt;get-config&gt;. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Prepared (not configured) datastore structure. To configure the structure, caller must use parameters setters of the specific datastore implementation type. Then, the datastore can be initiated (<a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>) and used to access configuration data. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Prepared (not configured) datastore structure. To configure the structure, caller must use the parameter setters of the specific datastore implementation type. Then, the datastore can be initiated (<a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>) and used to access the configuration data. </dd></dl>
 
 </div>
 </div>
@@ -343,8 +343,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Assign path of the datastore file into the datastore structure. </p>
-<p>Checks if the file exist and is accessible for reading and writing. If the file does not exist it is created. File is opened and file descriptor is stored in the structure</p>
+<p>Assign the path of the datastore file into the datastore structure. </p>
+<p>Checks if the file exist and is accessible for reading and writing. If the file does not exist, it is created. The file is opened and the file descriptor is stored in the structure.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore structure to be configured. </td></tr>
@@ -371,14 +371,14 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Activate datastore structure for use. </p>
-<p>The datastore configuration is checked and if everything is correct, datastore gets its unique ID to be used for datastore operations (<a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform requested RPC operation on the datastore.">ncds_apply_rpc()</a>).</p>
+<p>The datastore configuration is checked and if everything is correct, datastore gets its unique ID to be used for datastore operations (<a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore.">ncds_apply_rpc()</a>).</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore to be initiated. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Positive integer with datastore ID on success, negative value on error. -1 Invalid datastore -2 Type-specific initialization failed -3 Unsupported datastore type -4 Memory allocation problem </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Positive integer with the datastore ID on success, negative value on error. -1 Invalid datastore -2 Type-specific initialization failed -3 Unsupported datastore type -4 Memory allocation problem </dd></dl>
 
 </div>
 </div>
@@ -396,8 +396,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Close specified datastore and free all resources. </p>
-<p>Equivalent function to <a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2" title="Close specified datastore and free all resources.">ncds_free2()</a>.</p>
+<p>Close the specified datastore and free all the resources. </p>
+<p>Equivalent function to <a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2" title="Close specified datastore and free all the resources.">ncds_free2()</a>.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore to be closed. </td></tr>
@@ -421,8 +421,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Close specified datastore and free all resources. </p>
-<p>Equivalent function to <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754" title="Close specified datastore and free all resources.">ncds_free()</a>.</p>
+<p>Close specified datastore and free all the resources. </p>
+<p>Equivalent function to <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754" title="Close the specified datastore and free all the resources.">ncds_free()</a>.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">datastore_id</td><td>ID of the datastore to be closed. </td></tr>
@@ -462,16 +462,16 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Perform requested RPC operation on the datastore. </p>
+<p>Perform the requested RPC operation on the datastore. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Datastore ID. Use 0 to apply request (typically &lt;get&gt;) onto libnetconf's internal datastore. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session (dummy session is acceptable) where the &lt;rpc&gt; came from. Capabilities checks are done according to this session. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Datastore ID. Use 0 to apply request (typically &lt;get&gt;) onto the libnetconf's internal datastore. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session (a dummy session is acceptable) where the &lt;rpc&gt; came from. Capabilities checks are done according to this session. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>NETCONF &lt;rpc&gt; message specifying requested operation. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>NULL in case of non NC_RPC_DATASTORE_* operation type, else &lt;rpc-reply&gt; with &lt;ok&gt;, &lt;data&gt; or &lt;rpc-error&gt; according to the type and the result of the requested operation. When the requested operation is not applicable to the specified datastore (e.g. namespace does not match), NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>NULL in case of a non-NC_RPC_DATASTORE_* operation type, else &lt;rpc-reply&gt; with &lt;ok&gt;, &lt;data&gt; or &lt;rpc-error&gt; according to the type and the result of the requested operation. When the requested operation is not applicable to the specified datastore (e.g. the namespace does not match), NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned. </dd></dl>
 
 </div>
 </div>
@@ -489,7 +489,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Remove all locks that is holding given session. </p>
+<p>Remove all the locks that the given session is holding. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>Session holding locks to remove </td></tr>
@@ -513,14 +513,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return serialized XML containing data model in YIN format. </p>
+<p>Return a serialized XML containing the data model in the YIN format. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID of datastore which data model we want</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID of the datastore whose data model we want</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>String containing YIN model. Caller must free memory after use. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>String containing YIN model. Caller must free the memory after use. </dd></dl>
 
 </div>
 </div>
@@ -538,14 +538,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return path to file containing datastore datamodel. </p>
+<p>Return path to the file containing the datastore datamodel. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID of datastore which data model we want</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID of the datastore whose data model we want</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>String containing path to file containing datastore datamodel. Caller must NOT free the memory. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>String containing the path to the file containing the datastore datamodel. The caller must NOT free the memory. </dd></dl>
 
 </div>
 </div>
@@ -554,7 +554,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Jan 23 2013 16:06:49 for libnetconf by
+    <li class="footer">Generated on Mon Feb 25 2013 14:13:15 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

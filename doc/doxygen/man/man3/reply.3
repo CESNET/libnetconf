@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Mon Feb 25 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -28,7 +28,7 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .ti -1c
 .RI "void \fBnc_callback_error_reply\fP (void(*func)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid))"
 .br
-.RI "\fISet callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fP"
+.RI "\fISet a callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fP"
 .ti -1c
 .RI "const \fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
 .br
@@ -56,7 +56,7 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .ti -1c
 .RI "\fBNC_REPLY_TYPE\fP \fBnc_reply_get_type\fP (const \fBnc_reply\fP *reply)"
 .br
-.RI "\fIGet type of the rpc-reply message\&. \fP"
+.RI "\fIGet the type of the rpc-reply message\&. \fP"
 .ti -1c
 .RI "char * \fBnc_reply_get_data\fP (const \fBnc_reply\fP *reply)"
 .br
@@ -130,7 +130,7 @@ rpc-reply message containing <data>
 .SS "void nc_callback_error_reply (void(*)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid)func)"
 
 .PP
-Set callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fBParameters:\fP
+Set a callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fBParameters:\fP
 .RS 4
 \fIfunc\fP Callback function to use\&. Passed parameters are:
 .IP "\(bu" 2
@@ -142,9 +142,9 @@ severity - error severity,
 .IP "\(bu" 2
 apptag - the data-model-specific or implementation-specific error condition, if one exists,
 .IP "\(bu" 2
-path - XPATH expression identifying element with error,
+path - XPATH expression identifying element with the error,
 .IP "\(bu" 2
-message - human description of the error,
+message - human-readable description of the error,
 .IP "\(bu" 2
 attribute - name of the data-model-specific XML attribute that caused the error,
 .IP "\(bu" 2
@@ -152,7 +152,7 @@ element - name of the data-model-specific XML element that caused the error,
 .IP "\(bu" 2
 ns - name of the unexpected XML namespace that caused the error,
 .IP "\(bu" 2
-sid - session ID of session holding requested lock\&. 
+sid - session ID of the session holding the requested lock\&. 
 .PP
 .RE
 .PP
@@ -193,7 +193,7 @@ Receive <rpc-reply> response from the specified NETCONF session\&. This function
 .PP
 \fBReturns:\fP
 .RS 4
-Type of received message\&. \fBNC_MSG_UNKNOWN\fP means error, \fBNC_MSG_REPLY\fP means that *reply points to the received <rpc-reply> message\&. 
+Type of the received message\&. \fBNC_MSG_UNKNOWN\fP means error, \fBNC_MSG_REPLY\fP means that *reply points to the received <rpc-reply> message\&. 
 .RE
 .PP
 
@@ -207,7 +207,7 @@ Dump the rpc-reply message into a string\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-String in XML format containing the NETCONF's <rpc-reply> element and all its content\&. Caller is responsible for free of returned string with free()\&. 
+String in XML format containing the NETCONF's <rpc-reply> element and all of its content\&. Caller is responsible for freeing the returned string with free()\&. 
 .RE
 .PP
 
@@ -256,7 +256,7 @@ message-id of the given rpc-reply message\&.
 .SS "\fBNC_REPLY_TYPE\fP nc_reply_get_type (const \fBnc_reply\fP *reply)"
 
 .PP
-Get type of the rpc-reply message\&. <rpc-reply> message can contain <ok>, <rpc-error> or <data>
+Get the type of the rpc-reply message\&. <rpc-reply> message can contain <ok>, <rpc-error> or <data>
 .PP
 \fBParameters:\fP
 .RS 4
@@ -279,7 +279,7 @@ Get content of the <data> element in <rpc-reply>\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-String with the content of the <data> element\&. Caller is responsible for free of returned string with free()\&. 
+String with the content of the <data> element\&. Caller is responsible for freeing the returned string with free()\&. 
 .RE
 .PP
 
@@ -334,7 +334,7 @@ Created <rpc-reply> message\&.
 .PP
 Create rpc-reply response with <rpc-error> content\&. \fBParameters:\fP
 .RS 4
-\fIerror\fP NETCONF error description structure for reply message\&. From now, error is connected with the reply and should not be used by the caller\&. 
+\fIerror\fP NETCONF error description structure for the reply message\&. From now, the error is connected with the reply and should not be used by the caller\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -350,9 +350,9 @@ Add another error description into the existing rpc-reply with <rpc-error> conte
 .PP
 \fBParameters:\fP
 .RS 4
-\fIreply\fP Reply structure where the given error description will be added\&. 
+\fIreply\fP Reply structure to which the given error description will be added\&. 
 .br
-\fIerror\fP NETCONF error description structure for reply message\&. From now, error is connected with the reply and should not be used by the caller\&. 
+\fIerror\fP NETCONF error description structure for the reply message\&. From now, the error is connected with the reply and should not be used by the caller\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -364,7 +364,7 @@ Add another error description into the existing rpc-reply with <rpc-error> conte
 .SS "\fBnc_reply\fP* nc_reply_merge (intcount, \fBnc_reply\fP *msg1, \fBnc_reply\fP *msg2, \&.\&.\&.)"
 
 .PP
-Merge reply messages\&. All messages MUST be of the same type\&. Function merges number of <rpc-reply> specified by count parameter (at least 2) into one <rpc-reply> message which is returned as a result\&. When the merge is successful, all input messages are freed and MUST NOT be used after this call\&. Merge can fail only due to an invalid input parameter\&. In such a case, NULL is returned and input messages are left unchanged\&.
+Merge reply messages\&. All messages MUST be of the same type\&. Function merges a number of <rpc-reply> specified by the count parameter (at least 2) into one <rpc-reply> message which is returned as the result\&. When the merge is successful, all input messages are freed and MUST NOT be used after this call\&. Merge can fail only because of an invalid input parameter\&. In such a case, NULL is returned and input messages are left unchanged\&.
 .PP
 \fBParameters:\fP
 .RS 4
@@ -379,7 +379,7 @@ Merge reply messages\&. All messages MUST be of the same type\&. Function merges
 .PP
 \fBReturns:\fP
 .RS 4
-Pointer to a new reply message with merged content of messages to merge\&. If the error occurs (due to the invalid input parameters), NULL is returned and messages to merge are not freed\&. 
+Pointer to a new reply message with the merged content of the messages to merge\&. If an error occurs (due to the invalid input parameters), NULL is returned and the messages to merge are not freed\&. 
 .RE
 .PP
 

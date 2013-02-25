@@ -1,4 +1,4 @@
-.TH "src/error.h" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "src/error.h" 3 "Mon Feb 25 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -25,11 +25,11 @@ NETCONF error handling functions\&.
 .ti -1c
 .RI "struct nc_err * \fBnc_err_new\fP (\fBNC_ERR\fP error)"
 .br
-.RI "\fICreate new error description structure\&. \fP"
+.RI "\fICreate a new error description structure\&. \fP"
 .ti -1c
 .RI "struct nc_err * \fBnc_err_dup\fP (const struct nc_err *error)"
 .br
-.RI "\fIDuplicate error description structure\&. \fP"
+.RI "\fIDuplicate an error description structure\&. \fP"
 .ti -1c
 .RI "void \fBnc_err_free\fP (struct nc_err *err)"
 .br

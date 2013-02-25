@@ -1,4 +1,4 @@
-.TH "src/notifications.h" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "src/notifications.h" 3 "Mon Feb 25 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -32,7 +32,7 @@ Functions to handle NETCONF Notifications\&.
 .ti -1c
 .RI "enum \fBNCNTF_EVENT_BY\fP { \fBNCNTF_EVENT_BY_SERVER\fP, \fBNCNTF_EVENT_BY_USER\fP }"
 .br
-.RI "\fIEnumeration of possible source of events\&. \fP"
+.RI "\fIEnumeration of the possible source of events\&. \fP"
 .in -1c
 .SS "Functions"
 
@@ -40,15 +40,15 @@ Functions to handle NETCONF Notifications\&.
 .ti -1c
 .RI "char * \fBncntf_status\fP (void)"
 .br
-.RI "\fIGet status data in xml form describing currently used streams\&. \fP"
+.RI "\fIGet the status data in xml form describing the currently used streams\&. \fP"
 .ti -1c
 .RI "int \fBncntf_stream_new\fP (const char *name, const char *desc, int replay)"
 .br
-.RI "\fICreate new NETCONF event stream\&. \fP"
+.RI "\fICreate a new NETCONF event stream\&. \fP"
 .ti -1c
 .RI "int \fBncntf_stream_allow_events\fP (const char *stream, const char *event)"
 .br
-.RI "\fISet rule to allow loging of the specified event on the given Notification stream\&. \fP"
+.RI "\fISet the rule to allow logging of the specified event on the given Notification stream\&. \fP"
 .ti -1c
 .RI "char ** \fBncntf_stream_list\fP (void)"
 .br
@@ -68,23 +68,23 @@ Functions to handle NETCONF Notifications\&.
 .ti -1c
 .RI "void \fBncntf_stream_iter_finnish\fP (const char *stream)"
 .br
-.RI "\fIClean all structures used for iteration in the specified stream\&. This function must be called as a closing function to nc_ntf_stream_iter_start() \fP"
+.RI "\fIClean all the structures used for iteration in the specified stream\&. This function must be called as a closing function to nc_ntf_stream_iter_start() \fP"
 .ti -1c
 .RI "int \fBncntf_event_new\fP (time_t etime, \fBNCNTF_EVENT\fP event,\&.\&.\&.)"
 .br
-.RI "\fIStore new event into the specified stream\&. Parameters are specific for different events\&. \fP"
+.RI "\fIStore a new event in the specified stream\&. Parameters are specific for different events\&. \fP"
 .ti -1c
 .RI "\fBnc_ntf\fP * \fBncntf_notif_create\fP (time_t event_time, const char *content)"
 .br
-.RI "\fICreate new <notification> message with given eventTime and content\&. \fP"
+.RI "\fICreate a new <notification> message with the given eventTime and content\&. \fP"
 .ti -1c
 .RI "void \fBncntf_notif_free\fP (\fBnc_ntf\fP *ntf)"
 .br
-.RI "\fIFree notification message\&. \fP"
+.RI "\fIFree the notification message\&. \fP"
 .ti -1c
 .RI "\fBNCNTF_EVENT\fP \fBncntf_notif_get_type\fP (\fBnc_ntf\fP *notif)"
 .br
-.RI "\fIGet specific notification type\&. \fP"
+.RI "\fIGet a specific notification type\&. \fP"
 .ti -1c
 .RI "char * \fBncntf_notif_get_content\fP (\fBnc_ntf\fP *notif)"
 .br
@@ -100,7 +100,7 @@ Functions to handle NETCONF Notifications\&.
 .ti -1c
 .RI "long long int \fBncntf_dispatch_send\fP (struct nc_session *session, const \fBnc_rpc\fP *subscribe_rpc)"
 .br
-.RI "\fIStart sending notification according to the given <create-subscription> NETCONF RPC request\&. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated\&. \fP"
+.RI "\fIStart sending notifications according to the given <create-subscription> NETCONF RPC request\&. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated\&. \fP"
 .ti -1c
 .RI "long long int \fBncntf_dispatch_receive\fP (struct nc_session *session, void(*process_ntf)(time_t eventtime, const char *content))"
 .br

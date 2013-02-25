@@ -29,7 +29,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.3.1</span>
+   &#160;<span id="projectnumber">0.4.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -143,7 +143,7 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca3a417a51dfb315ebb7d1427357a838b2">NC_SESSION_STATUS_DUMMY</a> =  4
 <br/>
  }</td></tr>
-<tr class="memdesc:ga9fba5da8e4c50d2427d0d24e8e7b630c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of possible states of the NETCONF session.  <a href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">More...</a><br/></td></tr>
+<tr class="memdesc:ga9fba5da8e4c50d2427d0d24e8e7b630c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of the possible states of a NETCONF session.  <a href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">More...</a><br/></td></tr>
 <tr class="memitem:gab8fb6ff96d652b9aeb1223729e5694c2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2">NC_SESSION_TERM_REASON</a> { <br/>
 &#160;&#160;<a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2a0f2c2854f81cf835944a837c89b3b6c3">NC_SESSION_TERM_CLOSED</a>, 
 <a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2ad43b0471a6cc0e281bc7eb135a59da00">NC_SESSION_TERM_KILLED</a>, 
@@ -236,7 +236,7 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830">NC_DATASTORE_CANDIDATE</a>
 <br/>
  }</td></tr>
-<tr class="memdesc:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported types of datastores defined by NETCONF.  <a href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">More...</a><br/></td></tr>
+<tr class="memdesc:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of the supported types of datastores defined by NETCONF.  <a href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">More...</a><br/></td></tr>
 <tr class="memitem:ga9e74498f9118686c7fb8dfe2c2459706"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706">NC_FILTER_TYPE</a> { <a class="el" href="../../db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706a487f472296b31fcec26a2bef87d50178">NC_FILTER_UNKNOWN</a>, 
 <a class="el" href="../../db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706ab584539474b828102a0b7238b614abd4">NC_FILTER_SUBTREE</a>
  }</td></tr>
@@ -301,7 +301,7 @@ Functions</h2></td></tr>
 <tr class="memitem:gadd8fd7b3bb2e7cba580c9a4229fe02d7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7">nc_verbosity</a> (<a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060">NC_VERB_LEVEL</a> level)</td></tr>
 <tr class="memdesc:gadd8fd7b3bb2e7cba580c9a4229fe02d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set libnetconf's verbosity level.  <a href="../../d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7"></a><br/></td></tr>
 <tr class="memitem:ga40e32bd7c1404a76105b426219021cdc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc">nc_init</a> (int flags)</td></tr>
-<tr class="memdesc:ga40e32bd7c1404a76105b426219021cdc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize libnetconf for system-wide usage. This initialization is shared across all processes using.  <a href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc"></a><br/></td></tr>
+<tr class="memdesc:ga40e32bd7c1404a76105b426219021cdc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize libnetconf for system-wide usage. This initialization is shared across all the processes.  <a href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc"></a><br/></td></tr>
 <tr class="memitem:ga85cd52f975436e64f9f128e980b77ed3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">nc_close</a> (int system)</td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
@@ -325,7 +325,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all processes using...">nc_init()</a>'s flag to enable Notification subsystem. </p>
+<p><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a>'s flag to enable Notification subsystem. </p>
 
 </div>
 </div>
@@ -370,25 +370,25 @@ Functions</h2></td></tr>
 <p>error-severity - The error severity, accepted values are 'error' and 'warning'. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73da957ee42cbef93b50bccb99973e5e66a2"></a>NC_ERR_PARAM_APPTAG</em>&nbsp;</td><td>
-<p>error-app-tag - Contains a string identifying the data-model-specific or implementation-specific error condition, if one exists. This element will not be present if no appropriate application error-tag can be associated with a particular error condition. If a data-model-specific and an implementation-specific error-app-tag both exist, then the data-model-specific value MUST be used by the server. </p>
+<p>error-app-tag - Contains a string identifying the data-model-specific or implementation-specific error condition, if one exists. This element will not be present if no appropriate application error-tag can be associated with a particular error condition. If both a data-model-specific and an implementation-specific error-app-tag exist then the data-model-specific value MUST be used by the server. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73da8f99385b8d5f3bb2a731b1d3c293fddc"></a>NC_ERR_PARAM_PATH</em>&nbsp;</td><td>
-<p>error-path - Contains the absolute XPath expression identifying the element path to the node that is associated with the error being reported. </p>
+<p>error-path - Contains an absolute XPath expression identifying the element path to the node that is associated with the error being reported. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73da1695230cad67458870f4cf93a2d530a5"></a>NC_ERR_PARAM_MSG</em>&nbsp;</td><td>
 <p>error-message - A string describing the error. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73da7627991d5ebf378bc4824541a1fdc975"></a>NC_ERR_PARAM_INFO_BADATTR</em>&nbsp;</td><td>
-<p>bad-attribute in error-info - name of the attribute, contained in 'bad-attribute', 'missing-attribute' and 'unknown-attribute' errors. </p>
+<p>bad-attribute in error-info - name of the attribute, contained in the 'bad-attribute', 'missing-attribute' and 'unknown-attribute' errors. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73dab456dd34c6e5fc0ced9b017d7543ba2c"></a>NC_ERR_PARAM_INFO_BADELEM</em>&nbsp;</td><td>
 <p>bad-element in error-info - name of the element, contained in 'missing-attribute', bad-attribute', 'unknown-attribute', 'missing-element', 'bad-element', 'unknown-element' and 'unknown-namespace' errors. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73dad9e65dbfdcddfa9321c9ff8993e02906"></a>NC_ERR_PARAM_INFO_BADNS</em>&nbsp;</td><td>
-<p>bad-namespace in error-info - name of the unexpected namespace, contained in 'unknown-namespace' error. </p>
+<p>bad-namespace in error-info - name of an unexpected namespace, contained in the 'unknown-namespace' error. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a39c5f77f5cf9108a27e7a65f3b2ba73da655a0142f1874a7b03d73caf6cd6164f"></a>NC_ERR_PARAM_INFO_SID</em>&nbsp;</td><td>
-<p>session-id in error-info - session ID of session holding the requested lock, contained in 'lock-denied' error. </p>
+<p>session-id in error-info - session ID of the session holding the requested lock, contained in 'lock-denied' error. </p>
 </td></tr>
 </table>
 </dd>
@@ -552,7 +552,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="d3/d7a/netconf_8h.html">netconf.h</a></li>
-    <li class="footer">Generated on Wed Jan 23 2013 16:06:49 for libnetconf by
+    <li class="footer">Generated on Mon Feb 25 2013 14:13:15 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

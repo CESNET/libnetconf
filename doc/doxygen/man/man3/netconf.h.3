@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Mon Feb 25 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -42,7 +42,7 @@ libnetconf's general public functions and structures definitions\&.
 .ti -1c
 .RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP =  -1, \fBNC_SESSION_STATUS_STARTUP\fP =  0, \fBNC_SESSION_STATUS_WORKING\fP =  1, \fBNC_SESSION_STATUS_CLOSING\fP =  2, \fBNC_SESSION_STATUS_CLOSED\fP =  3, \fBNC_SESSION_STATUS_DUMMY\fP =  4 }"
 .br
-.RI "\fIEnumeration of possible states of the NETCONF session\&. \fP"
+.RI "\fIEnumeration of the possible states of a NETCONF session\&. \fP"
 .ti -1c
 .RI "enum \fBNC_SESSION_TERM_REASON\fP { \fBNC_SESSION_TERM_CLOSED\fP, \fBNC_SESSION_TERM_KILLED\fP, \fBNC_SESSION_TERM_DROPPED\fP, \fBNC_SESSION_TERM_TIMEOUT\fP, \fBNC_SESSION_TERM_BADHELLO\fP, \fBNC_SESSION_TERM_OTHER\fP }"
 .br
@@ -72,7 +72,7 @@ libnetconf's general public functions and structures definitions\&.
 .ti -1c
 .RI "enum \fBNC_DATASTORE\fP { \fBNC_DATASTORE_ERROR\fP, \fBNC_DATASTORE_CONFIG\fP, \fBNC_DATASTORE_URL\fP, \fBNC_DATASTORE_RUNNING\fP, \fBNC_DATASTORE_STARTUP\fP, \fBNC_DATASTORE_CANDIDATE\fP }"
 .br
-.RI "\fIEnumeration of supported types of datastores defined by NETCONF\&. \fP"
+.RI "\fIEnumeration of the supported types of datastores defined by NETCONF\&. \fP"
 .ti -1c
 .RI "enum \fBNC_FILTER_TYPE\fP { \fBNC_FILTER_UNKNOWN\fP, \fBNC_FILTER_SUBTREE\fP }"
 .br
@@ -110,7 +110,7 @@ libnetconf's general public functions and structures definitions\&.
 .ti -1c
 .RI "int \fBnc_init\fP (int flags)"
 .br
-.RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all processes using\&. \fP"
+.RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all the processes\&. \fP"
 .ti -1c
 .RI "int \fBnc_close\fP (int system)"
 .br
@@ -168,25 +168,25 @@ error-tag - Contains a string identifying the error condition\&.
 error-severity - The error severity, accepted values are 'error' and 'warning'\&. 
 .TP
 \fB\fINC_ERR_PARAM_APPTAG \fP\fP
-error-app-tag - Contains a string identifying the data-model-specific or implementation-specific error condition, if one exists\&. This element will not be present if no appropriate application error-tag can be associated with a particular error condition\&. If a data-model-specific and an implementation-specific error-app-tag both exist, then the data-model-specific value MUST be used by the server\&. 
+error-app-tag - Contains a string identifying the data-model-specific or implementation-specific error condition, if one exists\&. This element will not be present if no appropriate application error-tag can be associated with a particular error condition\&. If both a data-model-specific and an implementation-specific error-app-tag exist then the data-model-specific value MUST be used by the server\&. 
 .TP
 \fB\fINC_ERR_PARAM_PATH \fP\fP
-error-path - Contains the absolute XPath expression identifying the element path to the node that is associated with the error being reported\&. 
+error-path - Contains an absolute XPath expression identifying the element path to the node that is associated with the error being reported\&. 
 .TP
 \fB\fINC_ERR_PARAM_MSG \fP\fP
 error-message - A string describing the error\&. 
 .TP
 \fB\fINC_ERR_PARAM_INFO_BADATTR \fP\fP
-bad-attribute in error-info - name of the attribute, contained in 'bad-attribute', 'missing-attribute' and 'unknown-attribute' errors\&. 
+bad-attribute in error-info - name of the attribute, contained in the 'bad-attribute', 'missing-attribute' and 'unknown-attribute' errors\&. 
 .TP
 \fB\fINC_ERR_PARAM_INFO_BADELEM \fP\fP
 bad-element in error-info - name of the element, contained in 'missing-attribute', bad-attribute', 'unknown-attribute', 'missing-element', 'bad-element', 'unknown-element' and 'unknown-namespace' errors\&. 
 .TP
 \fB\fINC_ERR_PARAM_INFO_BADNS \fP\fP
-bad-namespace in error-info - name of the unexpected namespace, contained in 'unknown-namespace' error\&. 
+bad-namespace in error-info - name of an unexpected namespace, contained in the 'unknown-namespace' error\&. 
 .TP
 \fB\fINC_ERR_PARAM_INFO_SID \fP\fP
-session-id in error-info - session ID of session holding the requested lock, contained in 'lock-denied' error\&. 
+session-id in error-info - session ID of the session holding the requested lock, contained in 'lock-denied' error\&. 
 .SS "enum \fBNC_EDIT_OP_TYPE\fP"
 
 .PP
