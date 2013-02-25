@@ -309,7 +309,7 @@ int ncds_file_init (struct ncds_ds* ds)
 	mode_t mask;
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
-	file_ds->xml = xmlReadFile (file_ds->path, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
+	file_ds->xml = xmlReadFile (file_ds->path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	if (file_ds->xml == NULL || file_structure_check (file_ds->xml) == 0) {
 		WARN ("Failed to parse XML in file.");
 		if (stat(file_ds->path, &st) || st.st_size > 0) {
