@@ -1186,7 +1186,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 				/* send replayComplete notification */
 				*replay_done = 1;
 				if (asprintf(&text, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
-							"<eventTime>%s</eventTime><replayComplete/></notification>", time_s = nc_time2datetime(tnow = time(NULL))) == -1) {
+							"<eventTime>%s</eventTime><replayComplete xmlns=\"urn:ietf:params:xml:ns:netmod:notification\"/></notification>", time_s = nc_time2datetime(tnow = time(NULL))) == -1) {
 					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 					WARN("Sending replayComplete failed due to previous error.");
 					text = NULL;
@@ -1647,7 +1647,8 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 			break;
 		}
 
-		if (asprintf(&content, "<netconf-config-change><datastore>%s</datastore>"
+		if (asprintf(&content, "<netconf-config-change xmlns=\"urn:ietf:params:xml:ns:yang:ietf-netconf-notifications\">"
+				"<datastore>%s</datastore>"
 				"%s</netconf-config-change>",
 				aux1, (aux2 == NULL) ? "" : aux2) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
@@ -1792,7 +1793,8 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 			break;
 		}
 
-		if (asprintf(&content, "<netconf-capability-change>%s%s</netconf-capability-change>",
+		if (asprintf(&content, "<netconf-capability-change xmlns=\"urn:ietf:params:xml:ns:yang:ietf-netconf-notifications\">"
+				"%s%s</netconf-capability-change>",
 				(aux1 == NULL) ? "" : aux1,
 				(aux2 == NULL) ? "" : aux2) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
@@ -1809,7 +1811,8 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 			ERROR("Invalid \'session\' parameter of %s.", __func__);
 			return (EXIT_FAILURE);
 		}
-		if (asprintf(&content, "<netconf-session-start><username>%s</username>"
+		if (asprintf(&content, "<netconf-session-start xmlns=\"urn:ietf:params:xml:ns:yang:ietf-netconf-notifications\">"
+				"<username>%s</username>"
 				"<session-id>%s</session-id>"
 				"<source-host>%s</source-host></netconf-session-start>",
 				session->username,
@@ -1848,7 +1851,8 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 		}
 
 		/* compound the event content */
-		if (asprintf(&content, "<netconf-session-end><username>%s</username>"
+		if (asprintf(&content, "<netconf-session-end xmlns=\"urn:ietf:params:xml:ns:yang:ietf-netconf-notifications\">"
+				"<username>%s</username>"
 				"<session-id>%s</session-id>"
 				"<source-host>%s</source-host>"
 				"%s%s</netconf-session-end>",
@@ -2076,7 +2080,7 @@ NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif)
 
 	if (xmlStrcmp(root->name, BAD_CAST "notification") == 0) {
 		for (node = root->children; node != NULL; node = node->next) {
-			if (node->name == NULL || (xmlStrEqual(node->name, BAD_CAST "eventTime") && node->ns != NULL && xmlStrEqual(node->ns->href, BAD_CAST NC_NS_NOTIFICATIONS))) {
+			if (node->name == NULL || (xmlStrEqual(node->name, BAD_CAST "eventTime"))) {
 				continue;
 			}
 			/* use first not eventTime element */
@@ -2087,19 +2091,33 @@ NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif)
 			return (NCNTF_ERROR);
 		}
 
-		if (xmlStrcmp(node->name, BAD_CAST "replayComplete") == 0) {
+		if (xmlStrcmp(node->name, BAD_CAST "replayComplete") == 0 &&
+				node->ns != NULL &&
+				xmlStrEqual(node->ns->href, BAD_CAST "urn:ietf:params:xml:ns:netmod:notification")) {
 			return (NCNTF_REPLAY_COMPLETE);
-		} else if (xmlStrcmp(node->name, BAD_CAST "notificationComplete") == 0) {
+		} else if (xmlStrcmp(node->name, BAD_CAST "notificationComplete") == 0 &&
+				node->ns != NULL &&
+				xmlStrEqual(node->ns->href, BAD_CAST "urn:ietf:params:xml:ns:netmod:notification")) {
 			return (NCNTF_NTF_COMPLETE);
-		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-config-change") == 0) {
+		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-config-change") == 0 &&
+				node->ns != NULL &&
+				xmlStrEqual(node->ns->href, BAD_CAST "urn:ietf:params:xml:ns:yang:ietf-netconf-notifications")) {
 			return (NCNTF_BASE_CFG_CHANGE);
-		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-capability-change") == 0) {
+		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-capability-change") == 0 &&
+				node->ns != NULL &&
+				xmlStrEqual(node->ns->href, BAD_CAST "urn:ietf:params:xml:ns:yang:ietf-netconf-notifications")) {
 			return (NCNTF_BASE_CPBLT_CHANGE);
-		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-session-start") == 0) {
+		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-session-start") == 0 &&
+				node->ns != NULL &&
+				xmlStrEqual(node->ns->href, BAD_CAST "urn:ietf:params:xml:ns:yang:ietf-netconf-notifications")) {
 			return (NCNTF_BASE_SESSION_START);
-		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-session-end") == 0) {
+		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-session-end") == 0 &&
+				node->ns != NULL &&
+				xmlStrEqual(node->ns->href, BAD_CAST "urn:ietf:params:xml:ns:yang:ietf-netconf-notifications")) {
 			return (NCNTF_BASE_SESSION_END);
-		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-configrmed-commit") == 0) {
+		} else if (xmlStrcmp(node->name, BAD_CAST "netconf-configrmed-commit") == 0 &&
+				node->ns != NULL &&
+				xmlStrEqual(node->ns->href, BAD_CAST "urn:ietf:params:xml:ns:yang:ietf-netconf-notifications")) {
 			return (NCNTF_BASE_CONFIRMED_COMMIT);
 		} else {
 			return (NCNTF_GENERIC);
@@ -2595,7 +2613,8 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 		return (-1);
 	}
 	if (asprintf(&event, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
-			"<eventTime>%s</eventTime><notificationComplete/></notification>", time_s = nc_time2datetime(time(NULL))) == -1) {
+			"<eventTime>%s</eventTime><notificationComplete xmlns=\"urn:ietf:params:xml:ns:netmod:notification\"/>"
+			"</notification>", time_s = nc_time2datetime(time(NULL))) == -1) {
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		WARN("Sending notificationComplete failed due to previous error.");
 		ncntf_notif_free(ntf);
