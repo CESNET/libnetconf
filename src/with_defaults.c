@@ -157,7 +157,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mod
 	xmlNodePtr *parents = NULL, *retvals = NULL, *created_local = NULL;
 	xmlNodePtr aux = NULL, aux2 = NULL;
 	xmlNsPtr ns;
-	xmlChar* value, *name, *value2;
+	xmlChar* value = NULL, *name, *value2;
 	int i, j, k, size = 0;
 	static int created_count = 0;
 	static int created_size = 0;
