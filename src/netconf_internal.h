@@ -145,6 +145,12 @@
 #endif
 
 /*
+ * libnetconf paths
+ */
+#define SESSIONSFILE_PATH	NC_WORKINGDIR_PATH "libnetconf_sessions.bin"
+#define NCNTF_STREAMS_PATH	NC_WORKINGDIR_PATH "streams/"
+
+/*
  * libnetconf permissions for every file or dir creation, process mask used with special cases
  * such as fopen()
  */
