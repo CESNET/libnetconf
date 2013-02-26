@@ -2669,7 +2669,7 @@ fi
 
 # Check whether --with-ncworkingdirpath was given.
 if test "${with_ncworkingdirpath+set}" = set; then :
-  withval=$with_ncworkingdirpath; STREAMS_PATH="$withval"
+  withval=$with_ncworkingdirpath; NC_WORKINGDIR_PATH="$withval"
 
 fi
 

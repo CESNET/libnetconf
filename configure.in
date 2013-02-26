@@ -149,7 +149,7 @@ AC_ARG_ENABLE([debug-threads],
 )
 AC_ARG_WITH([ncworkingdirpath],
 	AC_HELP_STRING([--with-ncworkingdirpath=path],[Path to a working directory of libnetconf, where all the system files are stored, the default value is /usr/share/libnetconf/]),
-	STREAMS_PATH="$withval"
+	NC_WORKINGDIR_PATH="$withval"
 )
 AC_ARG_WITH([servercfgpath],
 	AC_HELP_STRING([--with-servercfgpath=path],[Path to example server configuration files, the default value is /usr/share/libnetconf/server/]),
