@@ -197,8 +197,6 @@ install: all install-devel install-doc
 	@[ ! -L $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER) ] || \
 	    rm -rf $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER);
 	$(LN_S) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER);
-	[ -d $(STREAMS_PATH) ] || \
-	    (mkdir -p $(STREAMS_PATH); chmod 777 $(STREAMS_PATH))
 	for i in $(SUBDIRS) ; do \
 		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i install \
 		|| exit 1; \
@@ -239,8 +237,6 @@ install-doc: doc
 uninstall: uninstall-devel uninstall-doc
 	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(VERSION)
 	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER)
-	rmdir -p $(STREAMS_PATH) || rm -rf $(STREAMS_PATH)
-	rmdir -p $(STREAMS_PATH) || echo -n ""
 	for i in $(SUBDIRS) ; do \
 		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i uninstall \
 		|| exit 1; \
