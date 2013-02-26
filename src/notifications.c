@@ -67,6 +67,7 @@
 #include "messages_internal.h"
 #include "netconf.h"
 #include "session.h"
+#include "nacm.h"
 #include "config.h"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
@@ -84,6 +85,9 @@ static pthread_mutex_t *dbus_mut = NULL;
 
 /* path to the Event stream files, the default path is defined in config.h */
 static char* streams_path = NULL;
+
+/* access to the NACM statistics */
+extern struct nc_shared_info *nc_info;
 
 static pthread_key_t ncntf_replay_done;
 
@@ -2591,7 +2595,18 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 				return (-1);
 			}
 
-			nc_session_send_notif(session, ntf);
+			/* NACM - check notification permition */
+			if (nacm_check_notification(ntf, session) == NACM_PERMIT) {
+				nc_session_send_notif(session, ntf);
+			} else {
+				/* update stats */
+				if (nc_info) {
+					pthread_rwlock_wrlock(&(nc_info->lock));
+					nc_info->stats_nacm.denied_notifs++;
+					pthread_rwlock_unlock(&(nc_info->lock));
+				}
+			}
+
 			ncntf_notif_free(ntf);
 		} else {
 			WARN("Invalid format of stored event, skipping.");
@@ -2627,6 +2642,8 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	ntf->error = NULL;
 	ntf->with_defaults = NCWD_MODE_NOTSET;
 	ntf->nacm = NULL;
+
+	/* do not use ACM - notificationComplete is always permitted */
 	nc_session_send_notif(session, ntf);
 	ncntf_notif_free(ntf);
 	free(event);

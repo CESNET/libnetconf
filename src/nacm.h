@@ -86,6 +86,18 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session);
  */
 int nacm_check_operation(const nc_rpc* rpc);
 
+/**
+ * @brief Check if there is a permission to send the given notification
+ * message via the specified session.
+ *
+ * @param[in] ntf Notification message to be checked
+ * @param[in] session NETCONF session where the Notification is going to be sent
+ * @return 0 for permit the operation<br/>
+ *         1 for deny the operation<br/>
+ *        -1 in case of error
+ */
+int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session);
+
 struct rule_list** nacm_rule_lists_dup(struct rule_list** list);
 void nacm_rule_list_free(struct rule_list* rl);
 

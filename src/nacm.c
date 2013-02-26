@@ -52,6 +52,7 @@
 #include "netconf_internal.h"
 #include "nacm.h"
 #include "datastore.h"
+#include "notifications.h"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -794,51 +795,16 @@ errorcleanup:
 	return (EXIT_FAILURE);
 }
 
-int nacm_start(nc_rpc* rpc, const struct nc_session* session)
+static struct nacm_rpc* nacm_rpc_struct(const struct nc_session* session)
 {
 	struct nacm_rpc* nacm_rpc;
 	char** groups = NULL;
 	int l, c, i, j, k;
 
-	if (rpc == NULL || session == NULL) {
-		return (EXIT_FAILURE);
-	}
-
-	if (session->nacm_recovery == 1) {
-		/* we are in recovery session - NACM is ignored */
-		return (EXIT_SUCCESS);
-	}
-
-	/*
-	 * \todo
-	 * refresh internal structures according to the current content of the
-	 * configuration data - when the changes in configuration data will
-	 * be detected automatically, remove this refresh for optimizations
-	 */
-	nacm_config_refresh();
-
-	if (nacm_session == NULL || nacm_config.enabled == false) {
-		/* NACM subsystem not initiated or switched off */
-		/*
-		 * do not add NACM structure to the RPC, which means that
-		 * NACM is not applied to the RPC
-		 */
-		return (EXIT_SUCCESS);
-	}
-
-	if (nc_rpc_get_op(rpc) == NC_OP_CLOSESESSION) {
-		/* close-session is always permitted */
-		/*
-		 * do not add NACM structure to the RPC, which means that
-		 * NACM is not applied to the RPC
-		 */
-		return (EXIT_SUCCESS);
-	}
-
 	nacm_rpc = malloc(sizeof(struct nacm_rpc));
 	if (nacm_rpc == NULL) {
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
-		return (EXIT_FAILURE);
+		return (NULL);
 	}
 	nacm_rpc->default_exec = nacm_config.default_exec;
 	nacm_rpc->default_read = nacm_config.default_read;
@@ -856,7 +822,7 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session)
 					if (groups == NULL) {
 						ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 						free(nacm_rpc);
-						return (EXIT_FAILURE);
+						return (NULL);
 					}
 				}
 				groups[c] = strdup(nacm_config.groups[i]->name);
@@ -873,7 +839,7 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session)
 				if (groups == NULL) {
 					ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 					free(nacm_rpc);
-					return (EXIT_FAILURE);
+					return (NULL);
 				}
 			}
 			groups[c] = strdup(session->groups[i]);
@@ -905,7 +871,7 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session)
 							}
 							free(groups);
 							free(nacm_rpc);
-							return (EXIT_FAILURE);
+							return (NULL);
 						}
 					}
 					nacm_rpc->rule_lists[c] = nacm_rule_list_dup(nacm_config.rule_lists[i]);
@@ -925,10 +891,190 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session)
 		free(groups);
 	}
 
+	return (nacm_rpc);
+}
+
+int nacm_start(nc_rpc* rpc, const struct nc_session* session)
+{
+	if (rpc == NULL || session == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (session->nacm_recovery == 1) {
+		/* we are in recovery session - NACM is ignored */
+		return (EXIT_SUCCESS);
+	}
+
+	if (nc_rpc_get_op(rpc) == NC_OP_CLOSESESSION) {
+		/* close-session is always permitted */
+		/*
+		 * do not add NACM structure to the RPC, which means that
+		 * NACM is not applied to the RPC
+		 */
+		return (EXIT_SUCCESS);
+	}
+
+	/*
+	 * \todo
+	 * refresh internal structures according to the current content of the
+	 * configuration data - when the changes in configuration data will
+	 * be detected automatically, remove this refresh for optimizations
+	 */
+	nacm_config_refresh();
+
+	if (nacm_session == NULL || nacm_config.enabled == false) {
+		/* NACM subsystem not initiated or switched off */
+		/*
+		 * do not add NACM structure to the RPC, which means that
+		 * NACM is not applied to the RPC
+		 */
+		return (EXIT_SUCCESS);
+	}
+
 	/* connect NACM structure with RPC */
-	rpc->nacm = nacm_rpc;
+	rpc->nacm = nacm_rpc_struct(session);
 
 	return (EXIT_SUCCESS);
+}
+
+int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
+{
+	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr ntfnode;
+	const char* ntfmodule;
+	struct nacm_rpc *nacm;
+	int i, j, k;
+	int retval;
+	NCNTF_EVENT event;
+
+	if (ntf == NULL) {
+		/* invalid input parameter */
+		return (-1);
+	}
+
+	/*
+	 * \todo
+	 * refresh internal structures according to the current content of the
+	 * configuration data - when the changes in configuration data will
+	 * be detected automatically, remove this refresh for optimizations
+	 */
+	nacm_config_refresh();
+
+	if (nacm_session == NULL || nacm_config.enabled == false) {
+		/* NACM subsystem not initiated or switched off */
+		/*
+		 * do not add NACM structure to the RPC, which means that
+		 * NACM is not applied to the RPC
+		 */
+		return (EXIT_SUCCESS);
+	}
+
+	/* connect NACM structure with RPC */
+	nacm = nacm_rpc_struct(session);
+
+	if (nacm == NULL) {
+		/* NACM will not affect this notification */
+		retval = NACM_PERMIT;
+		goto nacmfree;
+	}
+
+	event = ncntf_notif_get_type(ntf);
+	if (event == NCNTF_REPLAY_COMPLETE || event == NCNTF_NTF_COMPLETE) {
+		/* NACM will not affect this notification */
+		retval = NACM_PERMIT;
+		goto nacmfree;
+	}
+
+	/* get the notification name from the message */
+	query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_NOTIFICATIONS_ID":notification", ntf->ctxt);
+	if (check_query_result(query_result, "/notification", 0, 0) != 0) {
+		retval = -1;
+		goto nacmfree;
+	}
+	ntfnode = query_result->nodesetval->nodeTab[0]->children;
+	while(ntfnode != NULL) {
+		if (ntfnode->type != XML_ELEMENT_NODE || xmlStrcmp(ntfnode->name, BAD_CAST "eventTime") == 0) {
+			/* skip comments and eventTime element */
+			ntfnode = ntfnode->next;
+			continue;
+		}
+		break;
+	}
+	xmlXPathFreeObject(query_result);
+	if (ntfnode == NULL) {
+		/* invalid message with missing notification */
+		retval = -1;
+		goto nacmfree;
+	}
+
+	/* get module name where the notification is defined */
+	ntfmodule = ncds_get_model_notification((char*)(ntfnode->name), (ntfnode->ns != NULL) ? (char*)(ntfnode->ns->href) : NULL);
+
+	if (ntfmodule != NULL) {
+		for (i = 0; nacm->rule_lists != NULL && nacm->rule_lists[i] != NULL; i++) {
+			for (j = 0; nacm->rule_lists[i]->rules != NULL && nacm->rule_lists[i]->rules[j] != NULL; j++) {
+				/*
+				 * check rules (all must be met):
+				 * - module-name matches "*" or the name of the module where the operation is defined
+				 * - type is NACM_RULE_NOTSET or type is NACM_RULE_NOTIF and data contain "*" or the notification name
+				 * - access has set NACM_ACCESS_READ bit
+				 */
+
+				/* 1) module name */
+				if (!(strcmp(nacm->rule_lists[i]->rules[j]->module, "*") == 0 ||
+				    strcmp(nacm->rule_lists[i]->rules[j]->module, ntfmodule) == 0)) {
+					/* rule does not match */
+					continue;
+				}
+
+				/* 2) type and notification name */
+				if (nacm->rule_lists[i]->rules[j]->type != NACM_RULE_NOTSET) {
+					if (nacm->rule_lists[i]->rules[j]->type == NACM_RULE_NOTIF &&
+					    nacm->rule_lists[i]->rules[j]->type_data.ntf_names != NULL) {
+						for (k = 0; nacm->rule_lists[i]->rules[j]->type_data.ntf_names[k] != NULL; k++) {
+							if (strcmp(nacm->rule_lists[i]->rules[j]->type_data.ntf_names[k], "*") == 0 ||
+							    strcmp(nacm->rule_lists[i]->rules[j]->type_data.ntf_names[k], (char*)(ntfnode->name)) == 0) {
+								break;
+							}
+						}
+						if (nacm->rule_lists[i]->rules[j]->type_data.ntf_names[k] == NULL) {
+							/* rule does not match - notification names do not match */
+							continue;
+						}
+					} else {
+						/* rule does not match - another type of rule */
+						continue;
+					}
+				}
+
+				/* 3) access */
+				if ((nacm->rule_lists[i]->rules[j]->access & NACM_ACCESS_READ) == 0) {
+					/* rule does not match */
+					continue;
+				}
+				/* rule matches */
+				retval = nacm->rule_lists[i]->rules[j]->action;
+				goto nacmfree;
+			}
+		}
+		/* no matching rule found */
+
+		/* \todo check nacm:default-deny-all */
+	}
+	/* no matching rule found */
+
+	/* default action */
+	retval = nacm->default_read;
+
+nacmfree:
+	/* free NACM structure */
+	for (i = 0; nacm->rule_lists != NULL && nacm->rule_lists[i] != NULL; i++) {
+		nacm_rule_list_free(nacm->rule_lists[i]);
+	}
+	free(nacm->rule_lists);
+	free(nacm);
+
+	return (retval);
 }
 
 int nacm_check_operation(const nc_rpc* rpc)
@@ -1007,6 +1153,7 @@ int nacm_check_operation(const nc_rpc* rpc)
 				/* 3) access */
 				if ((rpc->nacm->rule_lists[i]->rules[j]->access & NACM_ACCESS_EXEC) == 0) {
 					/* rule does not match */
+					continue;
 				}
 				/* rule matches */
 				return (rpc->nacm->rule_lists[i]->rules[j]->action);
