@@ -221,8 +221,8 @@ static int check_streams_path(char* path)
 /*
  * Set path to the directory with the stream files. It can be set by
  * environment variable defined as macro STREAMS_PATH_ENV (LIBNETCONF_STREAMS).
- * If this variable is not defined, default value from macro STREAMS_PATH_DEF
- * (/var/run/netconf_events) is used.
+ * If this variable is not defined, default value from macro NCNTF_STREAMS_PATH
+ * (default /usr/share/libnetconf/streams) is used.
  *
  * returns 0 on success, non-zero value else
  */
