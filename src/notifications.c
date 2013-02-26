@@ -2064,7 +2064,7 @@ void ncntf_notif_free(nc_ntf *ntf)
 	nc_msg_free((struct nc_msg*) ntf);
 }
 
-NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif)
+NCNTF_EVENT ncntf_notif_get_type(const nc_ntf* notif)
 {
 	xmlNodePtr root, node;
 
@@ -2128,7 +2128,7 @@ NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif)
 	}
 }
 
-char* ncntf_notif_get_content(nc_ntf* notif)
+char* ncntf_notif_get_content(const nc_ntf* notif)
 {
 	char * retval;
 	xmlNodePtr root, aux_root, node;
@@ -2213,7 +2213,7 @@ xmlNodePtr ncxmlntf_notif_get_content(nc_ntf* notif)
 	return (retval);
 }
 
-time_t ncntf_notif_get_time(nc_ntf* notif)
+time_t ncntf_notif_get_time(const nc_ntf* notif)
 {
 	xmlXPathContextPtr notif_ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;

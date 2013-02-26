@@ -218,7 +218,7 @@ void ncntf_notif_free(nc_ntf *ntf);
  * @return The same types as for ncntf_event_new() can be returned. If the
  * notification is unknown, the #NCNTF_GENERIC is returned.
  */
-NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif);
+NCNTF_EVENT ncntf_notif_get_type(const nc_ntf* notif);
 
 /**
  * @ingroup notifications
@@ -226,7 +226,7 @@ NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif);
  * @param[in] notif Notification message.
  * @return Content of the event description (serialized XML).
  */
-char* ncntf_notif_get_content(nc_ntf* notif);
+char* ncntf_notif_get_content(const nc_ntf* notif);
 
 /**
  * @ingroup notifications
@@ -234,7 +234,7 @@ char* ncntf_notif_get_content(nc_ntf* notif);
  * @param[in] notif Notification message.
  * @return Time of the event (as number of seconds since the epoch).
  */
-time_t ncntf_notif_get_time(nc_ntf* notif);
+time_t ncntf_notif_get_time(const nc_ntf* notif);
 
 /**
  * @ingroup notifications
