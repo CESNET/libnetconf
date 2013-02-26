@@ -947,9 +947,15 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 	int retval;
 	NCNTF_EVENT event;
 
-	if (ntf == NULL) {
+	if (ntf == NULL || session == NULL) {
 		/* invalid input parameter */
 		return (-1);
+	}
+
+	/* recovery session */
+	if (session->nacm_recovery) {
+		/* ignore NACM in recovery session */
+		return (NACM_PERMIT);
 	}
 
 	/*
@@ -966,7 +972,7 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 		 * do not add NACM structure to the RPC, which means that
 		 * NACM is not applied to the RPC
 		 */
-		return (EXIT_SUCCESS);
+		return (NACM_PERMIT);
 	}
 
 	/* connect NACM structure with RPC */
