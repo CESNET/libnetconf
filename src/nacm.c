@@ -68,6 +68,12 @@ struct nacm_group {
 	char** users;
 };
 
+struct path_node {
+	char* name;
+	char* ns_href;
+	struct path_node* parent;
+};
+
 struct nacm_rule {
 	char* module;
 	NACM_RULE_TYPE type;
@@ -78,7 +84,7 @@ struct nacm_rule {
 	 * - path for NACM_RULE_DATA type
 	 */
 	union {
-		char* path;
+		struct path_node* path;
 		char** rpc_names;
 		char** ntf_names;
 	} type_data;
@@ -115,7 +121,115 @@ static struct nc_session* nacm_session = NULL;
 
 int nacm_config_refresh(void);
 
-void nacm_group_free(struct nacm_group* g)
+static void nacm_path_free(struct path_node* path)
+{
+	struct path_node* aux;
+
+	if (path != NULL) {
+		for (aux = path; aux!= NULL; aux = path) {
+			path = path->parent;
+			free(aux->name);
+			free(aux->ns_href);
+			free(aux);
+		}
+	}
+}
+
+static struct path_node* nacm_path_parse(xmlNodePtr node)
+{
+	char* value, *token, *prefix = NULL, *delim;
+	xmlNsPtr *ns;
+	int i;
+	struct path_node *pnode = NULL, *pnode_parent = NULL;
+
+	if (node == NULL) {
+		return (NULL);
+	}
+
+	if ((value = nc_clrwspace((char*)node->children->content)) == NULL) {
+		return (NULL);
+	}
+
+	if ((ns = xmlGetNsList(node->doc, node)) == NULL) {
+		free(value);
+		return (NULL);
+	}
+
+
+	for (token = strsep(&value, "/"); token != NULL; token = strsep(&value, "/")) {
+		if (strlen(token) == 0) {
+			continue;
+		}
+
+		if ((delim = strstr(token, ":")) != NULL) {
+			/* there is a namespace prefix */
+			prefix = token;
+			delim[0] = 0;
+			token = &(delim[1]);
+		} else {
+			/* there is no namespace specified in path element, use default */
+			prefix = NULL;
+		}
+
+		pnode = malloc(sizeof(struct path_node));
+
+		/* search for prefix in namespaces */
+		for (i = 0; ns != NULL && ns[i] != NULL; i++) {
+			if (prefix == NULL) {
+				if (ns[i]->prefix == NULL) {
+					/* found default namespace */
+					pnode->ns_href = strdup((char*)(ns[i]->href));
+					break;
+				}
+			} else {
+				if (xmlStrcmp(ns[i]->prefix, BAD_CAST prefix) == 0) {
+					pnode->ns_href = strdup((char*)(ns[i]->href));
+					break;
+				}
+			}
+		}
+
+		if (pnode->ns_href == NULL) {
+			free(pnode);
+			pnode = NULL;
+			nacm_path_free(pnode_parent);
+			goto nacm_path_parse_end;
+		}
+		pnode->name = strdup(token);
+		pnode->parent = pnode_parent;
+		pnode_parent = pnode;
+	}
+
+nacm_path_parse_end:
+	free(value);
+	free(ns);
+	return (pnode);
+}
+
+static struct path_node* nacm_path_dup(struct path_node* orig)
+{
+	struct path_node* new = NULL, *aux, *pred = NULL;
+
+	for(; orig != NULL; orig = orig->parent) {
+		aux = malloc(sizeof(struct path_node));
+		aux->name = (orig->name != NULL) ? strdup(orig->name) : NULL;
+		aux->ns_href = (orig->ns_href != NULL) ? strdup(orig->ns_href) : NULL;
+
+		if (pred == NULL) {
+			new = aux;
+		} else {
+			pred->parent = aux;
+		}
+		pred = aux;
+	}
+	if (aux != NULL) {
+		aux->parent = NULL;
+	}
+
+	return (new);
+}
+
+static void nacm_group_free(struct nacm_group* g)
 {
 	char* s;
 	int i;
@@ -130,7 +244,7 @@ void nacm_group_free(struct nacm_group* g)
 	}
 }
 
-void nacm_rule_free(struct nacm_rule* r)
+static void nacm_rule_free(struct nacm_rule* r)
 {
 	int i;
 
@@ -150,7 +264,7 @@ void nacm_rule_free(struct nacm_rule* r)
 				free(r->type_data.rpc_names);
 			}
 		} else if (r->type == NACM_RULE_DATA) {
-			free(r->type_data.path);
+			nacm_path_free(r->type_data.path);
 		}
 		free(r->module);
 		free(r);
@@ -178,7 +292,7 @@ void nacm_rule_list_free(struct rule_list* rl)
 	}
 }
 
-struct rule_list* nacm_rule_list_dup(struct rule_list* r)
+static struct rule_list* nacm_rule_list_dup(struct rule_list* r)
 {
 	struct rule_list *new = NULL;
 	int i, j;
@@ -245,7 +359,7 @@ struct rule_list* nacm_rule_list_dup(struct rule_list* r)
 						}
 						break;
 					case NACM_RULE_DATA:
-						new->rules[i]->type_data.path = (r->rules[i]->type_data.path == NULL) ? NULL : strdup(r->rules[i]->type_data.path);
+						new->rules[i]->type_data.path = (r->rules[i]->type_data.path == NULL) ? NULL : nacm_path_dup(r->rules[i]->type_data.path);
 						break;
 					default:
 						new->rules[i]->type_data.path = NULL; /* covers also type_data.rpc_names and type_data.ntf_names */
@@ -379,7 +493,7 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 					return (NULL);
 				}
 				rule->type = NACM_RULE_DATA;
-				rule->type_data.path = nc_clrwspace((char*)node->children->content);
+				rule->type_data.path = nacm_path_parse(node);
 			} else if (xmlStrcmp(node->name, BAD_CAST "access-operations") == 0) {
 				if (xmlStrstr(node->children->content, BAD_CAST "*")) {
 					rule->access = NACM_ACCESS_ALL;
@@ -935,6 +1049,11 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session)
 	rpc->nacm = nacm_rpc_struct(session);
 
 	return (EXIT_SUCCESS);
+}
+
+int nacm_check_data(xmlNodePtr node, const int access)
+{
+	return (NACM_PERMIT);
 }
 
 int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
