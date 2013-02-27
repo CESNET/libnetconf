@@ -153,12 +153,24 @@
 /*
  * libnetconf permissions for every file or dir creation, process mask used with special cases
  * such as fopen()
+ *
+ * SETBIT = 1 - SUID
+ * SETBIT = 2 - SGID
+ * SETBIT = 0 - NONE
  */
-
-/* safe permissions - only reading and writing performed by the owner allowed */
-#define FILE_PERM 0600
-#define DIR_PERM 0700
-#define MASK_PERM 0066
+#if SETBIT == 1
+#	define FILE_PERM 0600
+#	define DIR_PERM 0700
+#	define MASK_PERM 0066
+#elif SETBIT == 2
+#	define FILE_PERM 0060
+# 	define DIR_PERM 0070
+#	define MASK_PERM 0606
+#elif SETBIT == 0
+#	define FILE_PERM 0666
+#	define DIR_PERM 0777
+#	define MASK_PERM 0000
+#endif
 
 /* libnetconf's message printing */
 char prv_msg[4096];

@@ -46,6 +46,9 @@ bindir = @bindir@
 # Set path to search for libnetconf if installed into other than default location.
 LIBNETCONF_SEARCH = "-Wl,-rpath,$(prefix)/lib"
 
+SETBIT = @SETBIT@
+SETID = @SETID@
+INSTALL_BIN_OPTIONS = 
 SERVERCFG_PATH = $(DESTDIR)/@SERVERCFG_PATH@
 CC = @CC@
 LIBS = -L../../ $(LIBNETCONF_SEARCH) -lnetconf -levent
@@ -54,6 +57,14 @@ CPPFLAGS = @CPPFLAGS@ -I../../src/ -DSERVERCFG_PATH=\"$(SERVERCFG_PATH)\" -DVERS
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
+
+INSTALL_BIN_OPTIONS = 
+ifeq ($(SETBIT), 1)
+INSTALL_BIN_OPTIONS = --mode=4755 --owner=$(SETID)
+endif
+ifeq ($(SETBIT), 2)
+INSTALL_BIN_OPTIONS = --mode=2575 --group=$(SETID)
+endif
 
 OBJDIR= .obj
 
@@ -83,10 +94,18 @@ $(OBJDIR)/%.o: %.c
 install: $(NAME)
 	@[ -d $(DESTDIR)/$(bindir) ] || \
 		(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir))
-	$(INSTALL_PROGRAM) $(NAME) $(DESTDIR)/$(bindir)/;
+	$(INSTALL_PROGRAM) $(INSTALL_BIN_OPTIONS) $(NAME) $(DESTDIR)/$(bindir)/;
 	@[ -d $(SERVERCFG_PATH) ] || \
-		(mkdir -p $(SERVERCFG_PATH); \
-		chmod -R 777 $(SERVERCFG_PATH))
+		mkdir -p $(SERVERCFG_PATH);
+	if test "$(SETBIT)" = "1"; then \
+		(chmod -R 700 $(SERVERCFG_PATH); \
+		chown $(SETID) $(SERVERCFG_PATH)) \
+	elif test "$(SETBIT)" = "2"; then \
+		(chmod -R 070 $(SERVERCFG_PATH); \
+		chown :$(SETID) $(SERVERCFG_PATH)) \
+	elif test "$(SETBIT)" = "0"; then \
+		chmod -R 777 $(SERVERCFG_PATH); \
+	fi
 	$(INSTALL_DATA) README.cfgdir $(SERVERCFG_PATH)/README
 
 .PHONY: uninstall

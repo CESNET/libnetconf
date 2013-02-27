@@ -49,12 +49,22 @@ CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ -I../../src/
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
+SETBIT = @SETBIT@
+SETID = @SETID@
+
+INSTALL_BIN_OPTIONS = 
+ifeq ($(SETBIT), 1)
+INSTALL_BIN_OPTIONS = --mode=4755 --owner=$(SETID)
+endif
+ifeq ($(SETBIT), 2)
+INSTALL_BIN_OPTIONS = --mode=2575 --group=$(SETID)
+endif
 
 OBJDIR= .obj
 
 TOPDIR = @CONFIGURE_PWD@
 
-SRCS =  read_events.c
+SRCS = read_events.c
 
 HDRS = 
 
@@ -74,7 +84,7 @@ $(OBJDIR)/%.o: %.c
 install: $(NAME)
 	[ -d $(DESTDIR)/$(bindir) ] || \
 		(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir))
-	$(INSTALL_PROGRAM) $(NAME) $(DESTDIR)/$(bindir)/;
+	$(INSTALL_PROGRAM) $(INSTALL_BIN_OPTIONS) $(NAME) $(DESTDIR)/$(bindir)/;
 
 .PHONY: uninstall
 uninstall:
