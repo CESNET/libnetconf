@@ -198,6 +198,17 @@ install: all install-devel install-doc
 	@[ ! -L $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER) ] || \
 	    rm -rf $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER);
 	$(LN_S) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER);
+	[ -d "$(NC_WORKINGDIR_PATH)" ] || \
+		mkdir -p $(NC_WORKINGDIR_PATH)
+	if test "$(SETBIT)" = "1"; then \
+		(chmod 700 $(NC_WORKINGDIR_PATH); \
+		chown $(SETID) $(NC_WORKINGDIR_PATH)) \
+	elif test "$(SETBIT)" = "2"; then \
+		(chmod 070 $(NC_WORKINGDIR_PATH); \
+		chown :$(SETID) $(NC_WORKINGDIR_PATH)) \
+	elif test "$(SETBIT)" = "0"; then \
+		chmod 777 $(NC_WORKINGDIR_PATH); \
+	fi
 	for i in $(SUBDIRS) ; do \
 		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i install \
 		|| exit 1; \
