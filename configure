@@ -627,6 +627,8 @@ HDRS_PRIV_NOTIFICATIONS
 HDRS_PUBL_SUBDIR_NOTIFICATIONS
 DBUS_NOTIFICATION_CONF
 DBUS_CONFDIR
+SETID
+SETBIT
 SERVERCFG_PATH
 NC_WORKINGDIR_PATH
 SUBDIRS
@@ -733,6 +735,8 @@ enable_debug
 enable_debug_threads
 with_ncworkingdirpath
 with_servercfgpath
+with_setbit
+with_setid
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1374,7 +1378,8 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-libssh2=DIR      Specifies libssh2 installation directory.
-  --with-examples         enable building example applications
+  --with-examples         Enable building example applications, they respect
+                          --with-setbit and --with-setid options
   --with-ncworkingdirpath=path
                           Path to a working directory of libnetconf, where all
                           the system files are stored, the default value is
@@ -1382,6 +1387,13 @@ Optional Packages:
   --with-servercfgpath=path
                           Path to example server configuration files, the
                           default value is /usr/share/libnetconf/server/
+  --with-setbit=bit       When creating files or directories using libnetconf,
+                          rely on the SUID or SGID bit set, accepted values
+                          are "UID" or "GID", a mandatory complementary option
+                          to --with-setid
+  --with-setid=id         ID interpreted as the user (or group, based on the
+                          --with-setbit option) whose identity will be used, a
+                          mandatory complementary option to --with-setbit
 
 Some influential environment variables:
   CC          C compiler command
@@ -2526,6 +2538,8 @@ CONFIGURE_PWD=`pwd`
 
 NC_WORKINGDIR_PATH="/usr/share/$PACKAGE_NAME/"
 SERVERCFG_PATH="/usr/share/$PACKAGE_NAME/server/"
+SETBIT="NONE"
+SETID="NONE"
 
 LIBS="$LIBS -lrt -lutil"
 
@@ -2680,6 +2694,40 @@ if test "${with_servercfgpath+set}" = set; then :
 
 fi
 
+
+# Check whether --with-setbit was given.
+if test "${with_setbit+set}" = set; then :
+  withval=$with_setbit; if test "$withval" != "UID" && test "$withval" != "GID"; then
+		as_fn_error $? "unknown --with-setbit argument" "$LINENO" 5
+	fi
+	SETBIT="$withval"
+
+fi
+
+
+# Check whether --with-setid was given.
+if test "${with_setid+set}" = set; then :
+  withval=$with_setid; SETID="$withval"
+
+fi
+
+
+# Check if either both the options --with-setid and --with-setbit are set or none are
+if test "$SETBIT" != "NONE" && test "$SETID" = "NONE"; then
+	as_fn_error $? "missing the complementary --with-setid option" "$LINENO" 5
+fi
+if test "$SETID" != "NONE" && test "$SETBIT" = "NONE"; then
+	as_fn_error $? "missing the complementary --with-setbit option" "$LINENO" 5
+fi
+
+# Change SETBIT text to a number
+if test "$SETBIT" = "UID"; then
+	SETBIT=1
+elif test "$SETBIT" = "GID"; then
+	SETBIT=2
+elif test "$SETBIT" = "NONE"; then
+	SETBIT=0
+fi
 
 ############################ Check for programs ################################
 
@@ -5403,6 +5451,8 @@ done
 
 
 ############################### Set output #####################################
+
+
 
 
 

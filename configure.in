@@ -65,6 +65,8 @@ AC_SUBST(CONFIGURE_PWD)
 
 NC_WORKINGDIR_PATH="/usr/share/$PACKAGE_NAME/"
 SERVERCFG_PATH="/usr/share/$PACKAGE_NAME/server/"
+SETBIT="NONE"
+SETID="NONE"
 
 LIBS="$LIBS -lrt -lutil"
 
@@ -127,7 +129,7 @@ else
 fi
 
 AC_ARG_WITH([examples],
-	[AC_HELP_STRING([--with-examples], [enable building example applications])],
+	[AC_HELP_STRING([--with-examples], [Enable building example applications, they respect --with-setbit and --with-setid options])],
 	[
 		SUBDIRS="./examples/client/ ./examples/server/"
 		if test "$notif" = "yes"; then
@@ -155,6 +157,34 @@ AC_ARG_WITH([servercfgpath],
 	AC_HELP_STRING([--with-servercfgpath=path],[Path to example server configuration files, the default value is /usr/share/libnetconf/server/]),
 	SERVERCFG_PATH="$withval"
 )
+AC_ARG_WITH([setbit],
+	AC_HELP_STRING([--with-setbit=bit],[When creating files or directories using libnetconf, rely on the SUID or SGID bit set, accepted values are "UID" or "GID", a mandatory complementary option to --with-setid]),
+	if test "$withval" != "UID" && test "$withval" != "GID"; then
+		AC_MSG_ERROR([unknown --with-setbit argument])
+	fi
+	SETBIT="$withval"
+)
+AC_ARG_WITH([setid],
+	AC_HELP_STRING([--with-setid=id],[ID interpreted as the user (or group, based on the --with-setbit option) whose identity will be used, a mandatory complementary option to --with-setbit]),
+	SETID="$withval"
+)
+
+# Check if either both the options --with-setid and --with-setbit are set or none are
+if test "$SETBIT" != "NONE" && test "$SETID" = "NONE"; then
+	AC_MSG_ERROR([missing the complementary --with-setid option])
+fi
+if test "$SETID" != "NONE" && test "$SETBIT" = "NONE"; then
+	AC_MSG_ERROR([missing the complementary --with-setbit option])
+fi
+
+# Change SETBIT text to a number
+if test "$SETBIT" = "UID"; then
+	SETBIT=1
+elif test "$SETBIT" = "GID"; then
+	SETBIT=2
+elif test "$SETBIT" = "NONE"; then
+	SETBIT=0
+fi
 
 ############################ Check for programs ################################
 
@@ -281,6 +311,8 @@ AC_SUBST(DISTRO)
 AC_SUBST(SUBDIRS)
 AC_SUBST(NC_WORKINGDIR_PATH)
 AC_SUBST(SERVERCFG_PATH)
+AC_SUBST(SETBIT)
+AC_SUBST(SETID)
 AC_SUBST(DBUS_CONFDIR)
 AC_SUBST(DBUS_NOTIFICATION_CONF)
 AC_SUBST(HDRS_PUBL_SUBDIR_NOTIFICATIONS)
