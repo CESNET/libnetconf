@@ -74,6 +74,18 @@ struct ncds_ds_file {
 	 */
 	struct ncds_funcs func;
 	/**
+	 * @brief Parsed data model structure.
+	 */
+	struct yinmodel * transapi_model;
+	/**
+	 * @brief Loaded shared library with transapi callbacks.
+	 */
+	void * transapi_module;
+	/**
+	 * @brief Transapi callback mapping structure.
+	 */
+	struct transapi_callbacks * transapi_clbks;
+	/**
 	 * @brief Path to the file containing the configuration data, a single file is
 	 * used for all the datastore types (running, startup, candidate).
 	 */

@@ -41,6 +41,7 @@
 #define DATASTORE_INTERNAL_H_
 
 #include "../datastore.h"
+#include "../transapi/transapi.h"
 
 struct ncds_lockinfo {
 	NC_DATASTORE datastore;
@@ -86,6 +87,18 @@ struct ncds_ds {
 	 * @brief Datastore implementation functions.
 	 */
 	struct ncds_funcs func;
+	/**
+	 * @brief Parsed data model structure.
+	 */
+	struct yinmodel * transapi_model;
+	/**
+	 * @brief Loaded shared library with transapi callbacks.
+	 */
+	void * transapi_module;
+	/**
+	 * @brief Transapi callback mapping structure.
+	 */
+	struct transapi_callbacks * transapi_clbks;
 };
 
 /**
