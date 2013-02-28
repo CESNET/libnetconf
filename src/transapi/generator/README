@@ -1,0 +1,32 @@
+ABOUT
+================================================================================
+Libnetconf transAPI is a framework that will save developers time and let them
+focus on configuring and managing their device instead of fighting with NETCONF
+protocol.
+It allow developer to choose parts of configuration that can be easily configured
+as a single block. Based on list of so called 'sensitive paths' generator creates
+C code containing single callback function for every 'sensitive path'. Whenever
+something changes in configuration file appropriate callback function is called
+and should reflect configuration changes to device behavior.
+
+GETTING STARTED
+================================================================================
+1. Create folder for your new module and enter it.
+2. Run python script 'generator.py'. Description of parameters follows:
+		--name	Name of your module. This is only one mandatory parameter.
+		--paths	File with list of sensitive path. One per line.
+		--template-dir	Path to directory with template files for generator.
+3. Open generated .c file and fill function bodies with code that has to be run
+	when configuration change. You can add as many auxiliary function as you need.
+	Do NOT modify anything else.
+4. Fill body of get_state_data() function so it returns all device state data
+	defined in device data model.
+5. Run sequence 'autoreconf && ./configure && make'. If the build is succesful
+	shared library is generated. You can use it with libnetconf for configuring
+	your device.
+
+AUTHORS
+================================================================================
+CESNET, z.s.p.o.
+David Kupka <dkupka@cesnet.cz>
+
