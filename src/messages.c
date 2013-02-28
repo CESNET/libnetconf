@@ -1784,56 +1784,76 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 	return (EXIT_SUCCESS);
 }
 
-nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
+nc_reply* nc_reply_merge(int count, ...)
 {
 	nc_reply *merged_reply = NULL;
 	nc_reply ** to_merge = NULL;
-	NC_REPLY_TYPE type, type_aux;
+	NC_REPLY_TYPE type = -1, type_aux;
 	va_list ap;
-	int i, len = 0;
+	int i, j, len = 0;
 	char * tmp, * data = NULL;
 
 	/* params check */
 	if (count < 2) {
-		ERROR("%s: count must be >= 2 (was %d)", __func__, count);
-		return NULL;
+		WARN("%s: you should merge 2 or more reply messages (currently merging %d reply message)", __func__, count);
+		if (count < 1) {
+			return (NULL);
+		}
 	}
 
-	if (msg1 == NULL || msg2 == NULL) {
-		ERROR("%s: Invalid input messages to merge.", __func__);
-		return NULL;
-	}
-
-	/* get type and check that first two have the same type */
-	if (((type = nc_reply_get_type(msg1)) != (type_aux = nc_reply_get_type(msg2))) || type == NC_REPLY_UNKNOWN) {
-		ERROR("%s: the type of the second reply message differs (%d:%d)", __func__, type, type_aux);
-		return NULL;
+	to_merge = malloc((count + 1) * sizeof(nc_reply*));
+	if (to_merge == NULL) {
+		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
 	}
 
 	/* initialize argument vector */
-	va_start (ap, msg2);
-
-	/* allocate array for message pointers */
-	to_merge = malloc(sizeof(nc_reply*) * count);
-	to_merge[0] = msg1;
-	to_merge[1] = msg2;
-
-	/* get all messages and check their type */
-	for (i = 2; i < count; i++) {
-		if ((to_merge[i] = va_arg(ap, nc_reply*)) == NULL) {
+	va_start (ap, count);
+	for(i = j = 0; i < count; i++, j++) {
+		if ((to_merge[j] = va_arg(ap, nc_reply*)) == NULL) {
 			ERROR("%s: invalid input message %d", __func__, i+1);
 			free(to_merge);
 			va_end(ap);
 			return NULL;
 		}
-		if (type != (type_aux = nc_reply_get_type(to_merge[i]))) {
+		if (to_merge[j] == NULL || to_merge[j] == (void*)(-1)) {
+			/* invalid reply will not be merged */
+			j--;
+			to_merge[j] = NULL; /* list terminating NULL byte */
+			continue;
+		}
+
+		if (type == -1) {
+			/* no type set yet */
+			type = nc_reply_get_type(to_merge[j]);
+		} else if (type != (type_aux = nc_reply_get_type(to_merge[j]))) {
 			ERROR("%s: the type of the message %d differs (%d:%d)", __func__, i+1, type, type_aux);
 			free(to_merge);
 			va_end(ap);
 			return NULL;
 		}
+
+		/* set list terminating NULL byte */
+		to_merge[j+1] = NULL;
+	}
+	/* real count of valid reply messages to merge */
+	count = j;
+
+	if (count == 0) {
+		/* no valid reply message to merge */
+		free(to_merge);
+		va_end(ap);
+		return (NULL);
+	} else if (count == 1) {
+		/* we have only one message to merge - provide its duplication */
+		merged_reply = nc_reply_dup(to_merge[0]);
+		nc_reply_free(to_merge[0]);
+		free(to_merge);
+		va_end(ap);
+		return (merged_reply);
 	}
 
+	/* merge all valid reply messages */
 	switch (type) {
 	case NC_REPLY_OK:
 		/* just OK */
@@ -1877,7 +1897,7 @@ nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
 	/* finalize argument vector */
 	va_end(ap);
 
-	return merged_reply;
+	return (merged_reply);
 }
 
 nc_rpc *nc_rpc_closesession()
