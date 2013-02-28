@@ -182,7 +182,12 @@ static char* nc_msg_dump(const struct nc_msg *msg)
 	}
 
 	xmlDocDumpFormatMemory(msg->doc, &buf, &len, 1);
-	/* \todo dump NACM info */
+
+	/*
+	 * NACM info is not dumped - this information is refreshed at the moment
+	 * of nc_msg_build()
+	 */
+
 	return ((char*) buf);
 }
 
@@ -261,7 +266,10 @@ static struct nc_msg* nc_msg_build (const char * msg_dump)
 	}
 	msg->error = NULL;
 	msg->with_defaults = NCWD_MODE_NOTSET;
-	/* \todo build NACM info */
+
+	/* NACM is set to NULL by default, if it is needed, caller (such as
+	 * nc_rpc_build() should store fresh NACM information */
+	msg->nacm = NULL;
 
 	return msg;
 }
@@ -429,7 +437,7 @@ NC_RPC_TYPE nc_rpc_parse_type(nc_rpc* rpc)
 	return (rpc->type.rpc);
 }
 
-nc_rpc * nc_rpc_build (const char * rpc_dump)
+nc_rpc * nc_rpc_build (const char* rpc_dump, const struct nc_session* session)
 {
 	nc_rpc* rpc;
 
@@ -443,10 +451,15 @@ nc_rpc * nc_rpc_build (const char * rpc_dump)
 	/* set with-defaults if any */
 	nc_rpc_parse_withdefaults(rpc, NULL);
 
+	if (session != NULL) {
+		/* NACM init */
+		nacm_start(rpc, session);
+	}
+
 	return rpc;
 }
 
-nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump)
+nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump, const struct nc_session* session)
 {
 	nc_rpc* rpc;
 
@@ -459,6 +472,11 @@ nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump)
 
 	/* set with-defaults if any */
 	nc_rpc_parse_withdefaults(rpc, NULL);
+
+	if (session != NULL) {
+		/* NACM init */
+		nacm_start(rpc, session);
+	}
 
 	return rpc;
 }

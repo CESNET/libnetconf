@@ -122,9 +122,11 @@ char* nc_rpc_dump (const nc_rpc *rpc);
  * This is the reverse function of the nc_rpc_dump().
  *
  * @param[in] rpc_dump String containing the NETCONF \<rpc\> message.
+ * @param[in] session Session information needed for ACM. If NULL, ACM structure
+ * is not prepared and no ACM rules will be applied to the created RPC message.
  * @return Complete rpc structure used by libnetconf's functions.
  */
-nc_rpc* nc_rpc_build (const char* rpc_dump);
+nc_rpc* nc_rpc_build (const char* rpc_dump, const struct nc_session* session);
 
 /**
  * @ingroup rpc
