@@ -66,30 +66,28 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define NC_NS_YIN "urn:ietf:params:xml:ns:yang:yin:1"
 #define NC_NS_YIN_ID "yin"
 
-
 typedef enum {
 	NC_CHECK_EDIT_DELETE = NC_EDIT_OP_DELETE,
 	NC_CHECK_EDIT_CREATE = NC_EDIT_OP_CREATE
 } NC_CHECK_EDIT_OP;
 
-
 int nc_nscmp(xmlNodePtr reference, xmlNodePtr node)
 {
-        int in_ns = 1;
+	int in_ns = 1;
 
-        if (reference->ns != NULL) {
-                /* if filter has got specified no namespace now the NETCONF base namespace must be skipped */
-                if (!strcmp((char *) reference->ns->href, NC_NS_BASE10))
-                        return 0;
+	if (reference->ns != NULL) {
+		/* if filter has got specified no namespace now the NETCONF base namespace must be skipped */
+		if (!strcmp((char *)reference->ns->href, NC_NS_BASE10))
+			return 0;
 
-                in_ns = 0;
-                if (node->ns != NULL) {
-                        if(!strcmp((char *) reference->ns->href, (char *) node->ns->href)) {
-                                in_ns = 1;
-                        }
-                }
-        }
-        return (in_ns == 1 ? 0 : 1);
+		in_ns = 0;
+		if (node->ns != NULL) {
+			if (!strcmp((char *)reference->ns->href, (char *)node->ns->href)) {
+				in_ns = 1;
+			}
+		}
+	}
+	return (in_ns == 1 ? 0 : 1);
 }
 
 /**
@@ -129,7 +127,7 @@ static NC_EDIT_OP_TYPE get_operation(xmlNodePtr node, NC_EDIT_DEFOP_TYPE defop, 
 	} else {
 		op = (NC_EDIT_OP_TYPE) defop;
 	}
-   free (operation);
+	free(operation);
 
 	return op;
 }
@@ -207,7 +205,7 @@ keyList get_keynode_list(xmlDocPtr model)
 	}
 	xmlXPathFreeContext(model_ctxt);
 
-	return (keyList) result;
+	return ((keyList)result);
 }
 
 /**
@@ -268,12 +266,12 @@ static int get_keys(keyList keys, xmlNodePtr node, int all, xmlNodePtr **result)
 		/* allocate sufficient array of pointers to key nodes */
 		*result = (xmlNodePtr*)calloc(c + 1, sizeof(xmlNodePtr));
 		if (*result == NULL) {
-			xmlFree (str);
+			xmlFree(str);
 			return (EXIT_FAILURE);
 		}
 
 		/* and now process all key nodes defined in attribute value list */
-		for (i = 0, s = (char*) str; i < c; i++, s = NULL) {
+		for (i = 0, s = (char*)str; i < c; i++, s = NULL) {
 			token = strtok(s, " ");
 			if (token == NULL) {
 				break;
@@ -296,7 +294,7 @@ static int get_keys(keyList keys, xmlNodePtr node, int all, xmlNodePtr **result)
 			}
 		}
 
-		xmlFree (str);
+		xmlFree(str);
 		break;
 	}
 
@@ -344,7 +342,7 @@ static int is_key(xmlNodePtr parent, xmlNodePtr child, keyList keys)
 
 		/* attribute have the form of space-separated list of key nodes */
 		/* compare all the key node names with the specified child */
-		for (token = s = (char*) str; token != NULL; s = NULL) {
+		for (token = s = (char*)str; token != NULL ; s = NULL) {
 			token = strtok(s, " ");
 			if (token == NULL) {
 				break;
@@ -382,8 +380,8 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 	char *aux1, *aux2;
 	int i, ret;
 
-	assert (node1 != NULL);
-	assert (node2 != NULL);
+	assert(node1 != NULL);
+	assert(node2 != NULL);
 
 	/* compare text nodes */
 	if (node1->type == XML_TEXT_NODE && node2->type == XML_TEXT_NODE) {
@@ -414,7 +412,6 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 		return 0;
 	}
 
-
 	if (keys != NULL) {
 		if (get_keys(keys, node1, 0, &keynode_list) != EXIT_SUCCESS) {
 			return 0;
@@ -429,11 +426,11 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 					if (xmlStrcmp(key->name, keynode->name) == 0) {
 						/* got key element, now check its value without leading/trailing whitespaces */
 						key_value = xmlNodeGetContent(key);
-						key_value2 = (xmlChar*) nc_clrwspace((char*) key_value);
+						key_value2 = (xmlChar*)nc_clrwspace((char*)key_value);
 						xmlFree(key_value);
-						
+
 						keynode_value = xmlNodeGetContent(keynode);
-						keynode_value2 = (xmlChar*) nc_clrwspace((char*) keynode_value);
+						keynode_value2 = (xmlChar*)nc_clrwspace((char*)keynode_value);
 						xmlFree(keynode_value);
 						if (xmlStrcmp(keynode_value2, key_value2) == 0) {
 							/* value matches, go for next key if any */
@@ -615,14 +612,16 @@ static xmlXPathObjectPtr get_operation_elements(NC_EDIT_OP_TYPE op, xmlDocPtr ed
 		opstring = NC_EDIT_OP_REMOVE_STRING;
 		break;
 	default:
-		ERROR( "Unsupported edit operation %d (%s:%d).", op, __FILE__, __LINE__);
+		ERROR("Unsupported edit operation %d (%s:%d).", op, __FILE__, __LINE__);
 		return (NULL);
 	}
 
 	/* create xpath evaluation context */
 	edit_ctxt = xmlXPathNewContext(edit);
 	if (edit_ctxt == NULL) {
-		if (edit_ctxt != NULL) { xmlXPathFreeContext(edit_ctxt);}
+		if (edit_ctxt != NULL) {
+			xmlXPathFreeContext(edit_ctxt);
+		}
 		ERROR("Creating XPath evaluation context failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
@@ -633,7 +632,7 @@ static xmlXPathObjectPtr get_operation_elements(NC_EDIT_OP_TYPE op, xmlDocPtr ed
 		return (NULL);
 	}
 
-	if (snprintf((char*) xpath, XPATH_BUFFER, "//*[@%s:operation='%s']", NC_NS_BASE_ID, opstring) <= 0) {
+	if (snprintf((char*)xpath, XPATH_BUFFER, "//*[@%s:operation='%s']", NC_NS_BASE_ID, opstring) <= 0) {
 		xmlXPathFreeContext(edit_ctxt);
 		ERROR("Preparing XPath query failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
@@ -735,7 +734,7 @@ static int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, s
  * \return On error, non-zero is returned and an err structure is filled. Zero is
  * returned on success.
  */
-static int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr orig, xmlDocPtr edit, xmlDocPtr model, struct nc_err **error)
+static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr orig, xmlDocPtr edit, xmlDocPtr model, struct nc_err **error)
 {
 	xmlXPathObjectPtr operation_nodes = NULL;
 	xmlNodePtr node_to_process = NULL, n;
@@ -749,7 +748,7 @@ static int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDoc
 
 	keys = get_keynode_list(model);
 
-	operation_nodes = get_operation_elements((NC_EDIT_OP_TYPE) op, edit);
+	operation_nodes = get_operation_elements((NC_EDIT_OP_TYPE)op, edit);
 	if (operation_nodes == NULL) {
 		*error = nc_err_new (NC_ERR_OP_FAILED);
 		return EXIT_FAILURE;
@@ -802,13 +801,15 @@ static int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDoc
 					xmlUnlinkNode(node_to_process);
 					xmlFreeNode(node_to_process);
 				}
-				xmlFree(defval); defval = NULL;
-				xmlFree(value); value = NULL;
+				xmlFree(defval);
+				defval = NULL;
+				xmlFree(value);
+				value = NULL;
 			} else {
 				*error = nc_err_new (NC_ERR_DATA_MISSING);
 				break;
 			}
-		} else if (op == NC_CHECK_EDIT_CREATE  && n != NULL) {
+		} else if (op == NC_CHECK_EDIT_CREATE && n != NULL) {
 			if (ncdflt_get_basic_mode() == NCWD_MODE_TRIM) {
 				/* A valid 'create' operation attribute for a
 				 * data node that has a schema default value
@@ -837,8 +838,10 @@ static int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDoc
 					xmlUnlinkNode(n);
 					xmlFreeNode(n);
 				}
-				xmlFree(defval); defval = NULL;
-				xmlFree(value); value = NULL;
+				xmlFree(defval);
+				defval = NULL;
+				xmlFree(value);
+				value = NULL;
 
 			} else {
 				*error = nc_err_new (NC_ERR_DATA_EXISTS);
@@ -847,8 +850,12 @@ static int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDoc
 		}
 	}
 	xmlXPathFreeObject(operation_nodes);
-	if (defval != NULL) { xmlFree(defval);}
-	if (value != NULL) { xmlFree(value);}
+	if (defval != NULL) {
+		xmlFree(defval);
+	}
+	if (value != NULL) {
+		xmlFree(value);
+	}
 
 	if (*error != NULL) {
 		return (EXIT_FAILURE);
@@ -863,7 +870,7 @@ static int check_edit_ops (NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDoc
  * \param[in] node XML node from the configuration data to delete.
  * \return Zero on success, non-zero otherwise.
  */
-static int edit_delete (xmlNodePtr node)
+static int edit_delete(xmlNodePtr node)
 {
 	assert(node != NULL);
 
@@ -896,7 +903,7 @@ static int edit_remove (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 	edit_delete(edit_node);
 
 	if (old == NULL) {
-		return EXIT_SUCCESS;
+		return (EXIT_SUCCESS);
 	} else {
 		/* remove edit node's equivalent from the original document */
 		return edit_delete(old);
@@ -923,7 +930,7 @@ static xmlNodePtr edit_create_recursively (xmlDocPtr orig_doc, xmlNodePtr edit_n
 	if (retval == NULL) {
 		parent = edit_create_recursively(orig_doc, edit_node->parent, keys);
 		if (parent == NULL) {
-			return NULL;
+			return (NULL);
 		}
 		VERB("Creating parent %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
 		retval = xmlAddChild(parent, xmlCopyNode(edit_node, 0));
@@ -972,7 +979,6 @@ static int edit_create (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 		}
 	}
 
-
 	/* remove the node from the edit document */
 	edit_delete(edit_node);
 
@@ -1007,7 +1013,7 @@ static int edit_replace (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys)
 		if (xmlReplaceNode(old, xmlCopyNode(edit_node, 1)) == NULL) {
 			return EXIT_FAILURE;
 		}
-		xmlFreeNode (old);
+		xmlFreeNode(old);
 
 		/* remove the node from the edit document */
 		edit_delete(edit_node);
@@ -1273,7 +1279,6 @@ static int edit_operations (xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFO
 		}
 	}
 
-
 	return EXIT_SUCCESS;
 
 error:
@@ -1281,14 +1286,14 @@ error:
 	return EXIT_FAILURE;
 }
 
-static int compact_edit_operations_recursively (xmlNodePtr node, NC_EDIT_OP_TYPE supreme_op)
+static int compact_edit_operations_recursively(xmlNodePtr node, NC_EDIT_OP_TYPE supreme_op)
 {
 	NC_EDIT_OP_TYPE op;
 	xmlNodePtr children;
 	int ret;
 
 	op = get_operation(node, NC_EDIT_DEFOP_NOTSET, NULL);
-	switch((int)op) {
+	switch ((int)op) {
 	case NC_EDIT_OP_ERROR:
 		return EXIT_FAILURE;
 		break;
@@ -1319,14 +1324,14 @@ static int compact_edit_operations_recursively (xmlNodePtr node, NC_EDIT_OP_TYPE
 	return EXIT_SUCCESS;
 }
 
-static int compact_edit_operations (xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
+static int compact_edit_operations(xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
 {
 	if (edit_doc == NULL) {
 		return EXIT_FAILURE;
 	}
 
 	/* to start recursive check, use defop as root's supreme operation */
-	return compact_edit_operations_recursively(xmlDocGetRootElement(edit_doc), (NC_EDIT_OP_TYPE) defop);
+	return compact_edit_operations_recursively(xmlDocGetRootElement(edit_doc), (NC_EDIT_OP_TYPE)defop);
 }
 
 /**
@@ -1362,7 +1367,7 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 	if (compact_edit_operations(edit, defop) != EXIT_SUCCESS) {
 		ERROR("Compacting edit-config operations failed.");
 		if (error != NULL) {
-			*error = nc_err_new (NC_ERR_OP_FAILED);
+			*error = nc_err_new(NC_ERR_OP_FAILED);
 		}
 		goto error_cleanup;
 	}
