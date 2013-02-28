@@ -45,6 +45,7 @@
 #include <limits.h>
 #include <fcntl.h>
 #include <assert.h>
+#include <dlfcn.h>
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
@@ -53,6 +54,7 @@
 
 #include "netconf_internal.h"
 #include "messages.h"
+#include "messages_xml.h"
 #include "error.h"
 #include "with_defaults.h"
 #include "session.h"
@@ -774,6 +776,97 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 	return (retval);
 }
 
+struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const char* callbacks_path) {
+	struct ncds_ds* ds = NULL;
+
+	if (model_path == NULL) {
+		ERROR("%s: missing model path parameter.", __func__);
+		return (NULL);
+	}
+
+	if (callbacks_path == NULL) {
+		ERROR("%s: missing callbacks path parameter.", __func__);
+		return (NULL);
+	}
+
+	switch (type) {
+	case NCDS_TYPE_FILE:
+		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file));
+		ds->func.init = ncds_file_init;
+		ds->func.free = ncds_file_free;
+		ds->func.get_lockinfo = ncds_file_lockinfo;
+		ds->func.lock = ncds_file_lock;
+		ds->func.unlock = ncds_file_unlock;
+		ds->func.getconfig = ncds_file_getconfig;
+		ds->func.copyconfig = ncds_file_copyconfig;
+		ds->func.deleteconfig = ncds_file_deleteconfig;
+		ds->func.editconfig = ncds_file_editconfig;
+		break;
+	case NCDS_TYPE_EMPTY:
+		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty));
+		ds->func.init = ncds_empty_init;
+		ds->func.free = ncds_empty_free;
+		ds->func.get_lockinfo = ncds_empty_lockinfo;
+		ds->func.lock = ncds_empty_lock;
+		ds->func.unlock = ncds_empty_unlock;
+		ds->func.getconfig = ncds_empty_getconfig;
+		ds->func.copyconfig = ncds_empty_copyconfig;
+		ds->func.deleteconfig = ncds_empty_deleteconfig;
+		ds->func.editconfig = ncds_empty_editconfig;
+		break;
+	default:
+		ERROR("Unsupported datastore implementation required.");
+		return (NULL);
+	}
+	if (ds == NULL) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+	ds->type = type;
+
+	/* get configuration data model */
+	if (access(model_path, R_OK) == -1) {
+		ERROR("Unable to access configuration data model %s (%s).", model_path, strerror(errno));
+		free(ds);
+		return (NULL);
+	}
+	ds->model = xmlReadFile(model_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
+	if (ds->model == NULL) {
+		ERROR("Unable to read configuration data model %s.", model_path);
+		free(ds);
+		return (NULL);
+	}
+	ds->model_path = strdup(model_path);
+	/* parse datamodel in YIN format */
+	if ((ds->transapi_model = yinmodel_parse(ds->model)) == NULL) {
+		ERROR("Unable to parse datamodel.");
+		return (NULL);
+	}
+
+	/* load shared library */
+	if ((ds->transapi_module = dlopen (callbacks_path, RTLD_NOW)) == NULL) {
+		ERROR("Unable to load shared library %s.", callbacks_path);
+		return (NULL);
+	}
+
+	/* get clbks structure */
+	if ((ds->transapi_clbks = dlsym (ds->transapi_module, "clbks")) == NULL) {
+		ERROR("Unable to get addresses of functions from shared library.");
+		return (NULL);
+	}
+
+	/* find get_state function */
+	if ((ds->get_state = dlsym (ds->transapi_module, "get_state_data")) == NULL) {
+		ERROR("Unable to get addresses of functions from shared library.");
+		return (NULL);
+	}
+
+	/* ds->id stays 0 to indicate, that datastore is still not fully configured */
+
+
+	return ds;
+}
+
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
 {
 	struct ncds_ds* ds = NULL;
@@ -1357,6 +1450,10 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlNodePtr aux_node, node;
 	NC_OP op;
 	NC_DATASTORE source_ds, target_ds;
+	nc_rpc * getconfig_rpc;
+	nc_reply * getconfig_reply;
+	xmlDocPtr old = NULL, new = NULL;
+	xmlNodePtr old_data = NULL, new_data = NULL;
 
 	if (rpc->type.rpc != NC_RPC_DATASTORE_READ && rpc->type.rpc != NC_RPC_DATASTORE_WRITE) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
@@ -1367,7 +1464,34 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 	}
 
-	switch (op = nc_rpc_get_op(rpc)) {
+	op = nc_rpc_get_op(rpc);
+	/* if transapi used, operation will affect running repository store current running content */
+	if (ds->transapi_clbks != NULL
+		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
+		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING) {
+		if ((getconfig_rpc = nc_rpc_getconfig(NC_DATASTORE_RUNNING, NULL)) == NULL) {
+			e = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to get-config(running).");
+			return nc_reply_error(e);
+		}
+		if ((getconfig_reply = ncds_apply_rpc(id, session, getconfig_rpc)) == NULL) {
+			nc_rpc_free(getconfig_rpc);
+			e = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to get-config(running).");
+			return nc_reply_error(e);
+		}
+		if ((old_data = ncxml_reply_get_data(getconfig_reply)) == NULL) {
+			nc_rpc_free(getconfig_rpc);
+			nc_reply_free(getconfig_reply);
+			e = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to get-config(running).");
+			return nc_reply_error(e);
+		}
+		nc_rpc_free(getconfig_rpc);
+		nc_reply_free(getconfig_reply);
+	}
+
+	switch (op) {
 	case NC_OP_LOCK:
 		ret = ds->func.lock(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
@@ -1792,6 +1916,53 @@ apply_editcopyconfig:
 			reply = nc_reply_ok();
 		}
 	}
+
+	/* if transapi used, rpc affected running and succeeded get its actual content */
+	/* find differences and call functions */
+	if (ds->transapi_clbks != NULL
+		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
+		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING) {
+		if (nc_reply_get_type(reply) == NC_REPLY_OK) {
+			if ((getconfig_rpc = nc_rpc_getconfig(NC_DATASTORE_RUNNING, NULL)) == NULL) {
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to get-config(running).");
+				return nc_reply_error(e);
+			}
+			if ((getconfig_reply = ncds_apply_rpc(id, session, getconfig_rpc)) == NULL) {
+				nc_rpc_free(getconfig_rpc);
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to get-config(running).");
+				return nc_reply_error(e);
+			}
+			if ((new_data = ncxml_reply_get_data(getconfig_reply)) == NULL) {
+				nc_rpc_free(getconfig_rpc);
+				nc_reply_free(getconfig_reply);
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to get-config(running).");
+				return nc_reply_error(e);
+			}
+			nc_rpc_free(getconfig_rpc);
+			nc_reply_free(getconfig_reply);
+
+			old = xmlNewDoc (BAD_CAST "1.0");
+			new = xmlNewDoc (BAD_CAST "1.0");
+
+			xmlDocSetRootElement(old, xmlDocCopyNode(old_data, old, 1));
+			xmlDocSetRootElement(new, xmlDocCopyNode(new_data, new, 1));
+
+			xmlFreeNode(old_data);
+			xmlFreeNode(new_data);
+
+			transapi_running_changed(ds->transapi_clbks, old, new, ds->transapi_model);
+
+			xmlFreeDoc (old);
+			xmlFreeDoc (new);
+
+		} else {
+			xmlFreeNode(old_data);
+		}
+	}
+
 	return (reply);
 }
 
