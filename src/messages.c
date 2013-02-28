@@ -337,7 +337,7 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 
 	/* create xpath evaluation context */
 	if ((rpc_ctxt = xmlXPathNewContext(rpc->doc)) == NULL) {
-		WARN("%s: Creating XPath context failed.", __func__)
+		WARN("%s: Creating XPath context failed.", __func__);
 		/* with-defaults cannot be found */
 		return (NCWD_MODE_NOTSET);
 	}
