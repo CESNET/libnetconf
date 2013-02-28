@@ -1219,14 +1219,13 @@ static int edit_operations (xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFO
 	/* delete operations */
 	nodes = get_operation_elements(NC_EDIT_OP_DELETE, edit_doc);
 	if (nodes != NULL) {
-		if (xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
-			xmlXPathFreeObject(nodes);
-		} else {
+		if (!xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* something to delete */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
 				edit_node = nodes->nodesetval->nodeTab[i];
 				orig_node = find_element_equiv(orig_doc, edit_node, keys);
 				if (orig_node == NULL) {
+					xmlXPathFreeObject(nodes);
 					goto error;
 				}
 				/* remove the node from the edit document */
@@ -1235,60 +1234,52 @@ static int edit_operations (xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFO
 				edit_delete(orig_node);
 			}
 		}
+		xmlXPathFreeObject(nodes);
 	}
 
 	/* remove operations */
 	nodes = get_operation_elements(NC_EDIT_OP_REMOVE, edit_doc);
 	if (nodes != NULL) {
-		if (xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
-			xmlXPathFreeObject(nodes);
-
-		} else {
+		if (!xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* something to remove */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
 				edit_node = nodes->nodesetval->nodeTab[i];
 				edit_remove(orig_doc, edit_node, keys);
 			}
 		}
+		xmlXPathFreeObject(nodes);
 	}
 
 	/* replace operations */
 	nodes = get_operation_elements(NC_EDIT_OP_REPLACE, edit_doc);
 	if (nodes != NULL) {
-		if (xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
-			xmlXPathFreeObject(nodes);
-
-		} else {
+		if (!xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* something to replace */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
 				edit_node = nodes->nodesetval->nodeTab[i];
 				edit_replace(orig_doc, edit_node, keys);
 			}
 		}
+		xmlXPathFreeObject(nodes);
 	}
 
 	/* create operations */
 	nodes = get_operation_elements(NC_EDIT_OP_CREATE, edit_doc);
 	if (nodes != NULL) {
-		if (xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
-			xmlXPathFreeObject(nodes);
-
-		} else {
+		if (!xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* something to create */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
 				edit_node = nodes->nodesetval->nodeTab[i];
 				edit_create(orig_doc, edit_node, keys);
 			}
 		}
+		xmlXPathFreeObject(nodes);
 	}
 
 	/* merge operations */
 	nodes = get_operation_elements(NC_EDIT_OP_MERGE, edit_doc);
 	if (nodes != NULL) {
-		if (xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
-			xmlXPathFreeObject(nodes);
-
-		} else {
+		if (!xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* something to create */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
 				edit_node = nodes->nodesetval->nodeTab[i];
@@ -1297,6 +1288,7 @@ static int edit_operations (xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFO
 				}
 			}
 		}
+		xmlXPathFreeObject(nodes);
 	}
 
 	/* default merge */
