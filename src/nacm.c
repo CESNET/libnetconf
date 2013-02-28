@@ -37,9 +37,11 @@
  *
  */
 
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
@@ -68,10 +70,15 @@ struct nacm_group {
 	char** users;
 };
 
-struct path_node {
-	char* name;
-	char* ns_href;
-	struct path_node* parent;
+struct nacm_ns {
+	char* prefix;
+	char* href;
+	struct nacm_ns *next;
+};
+
+struct nacm_path {
+	char* path;
+	struct nacm_ns* ns_list;
 };
 
 struct nacm_rule {
@@ -84,17 +91,11 @@ struct nacm_rule {
 	 * - path for NACM_RULE_DATA type
 	 */
 	union {
-		struct path_node* path;
+		struct nacm_path* path;
 		char** rpc_names;
 		char** ntf_names;
 	} type_data;
-#define NACM_ACCESS_CREATE 0x01
-#define NACM_ACCESS_READ   0x02
-#define NACM_ACCESS_UPDATE 0x04
-#define NACM_ACCESS_DELETE 0x08
-#define NACM_ACCESS_EXEC   0x10
-#define NACM_ACCESS_ALL    0xff
-	uint8_t access;
+	uint8_t access; /* macros NACM_ACCESS_* */
 	bool action; /* false (0) for permit, true (1) for deny */
 };
 
@@ -121,109 +122,102 @@ static struct nc_session* nacm_session = NULL;
 
 int nacm_config_refresh(void);
 
-static void nacm_path_free(struct path_node* path)
+static void nacm_path_free(struct nacm_path* path)
 {
-	struct path_node* aux;
+	struct nacm_ns* aux;
 
 	if (path != NULL) {
-		for (aux = path; aux!= NULL; aux = path) {
-			path = path->parent;
-			free(aux->name);
-			free(aux->ns_href);
+		free(path->path);
+		for (aux = path->ns_list; aux!= NULL; aux = path->ns_list) {
+			path->ns_list = aux->next;
+			free(aux->prefix);
+			free(aux->href);
 			free(aux);
 		}
+		free(path);
 	}
 }
 
-static struct path_node* nacm_path_parse(xmlNodePtr node)
+static struct nacm_path* nacm_path_parse(xmlNodePtr node)
 {
-	char* value, *token, *prefix = NULL, *delim;
 	xmlNsPtr *ns;
+	char *s = NULL;
+	struct nacm_path* retval;
+	struct nacm_ns *path_ns;
 	int i;
-	struct path_node *pnode = NULL, *pnode_parent = NULL;
 
 	if (node == NULL) {
 		return (NULL);
 	}
 
-	if ((value = nc_clrwspace((char*)node->children->content)) == NULL) {
+	retval = malloc(sizeof(struct nacm_path));
+	if (retval == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
 
-	if ((ns = xmlGetNsList(node->doc, node)) == NULL) {
-		free(value);
+	retval->ns_list = NULL;
+	if ((retval->path = nc_clrwspace((char*)node->children->content)) == NULL) {
+		free(retval);
 		return (NULL);
 	}
+	ns = xmlGetNsList(node->doc, node);
 
-
-	for (token = strsep(&value, "/"); token != NULL; token = strsep(&value, "/")) {
-		if (strlen(token) == 0) {
-			continue;
-		}
-
-		if ((delim = strstr(token, ":")) != NULL) {
-			/* there is a namespace prefix */
-			prefix = token;
-			delim[0] = 0;
-			token = &(delim[1]);
-		} else {
-			/* there is no namespace specified in path element, use default */
-			prefix = NULL;
-		}
-
-		pnode = malloc(sizeof(struct path_node));
-
-		/* search for prefix in namespaces */
-		for (i = 0; ns != NULL && ns[i] != NULL; i++) {
-			if (prefix == NULL) {
-				if (ns[i]->prefix == NULL) {
-					/* found default namespace */
-					pnode->ns_href = strdup((char*)(ns[i]->href));
-					break;
+	for(i = 0; ns != NULL && ns[i] != NULL; i++) {
+		/* \todo process somehow also default namespace */
+		if (ns[i]->prefix != NULL) {
+			asprintf(&s, "/%s:", ns[i]->prefix);
+			if (strstr(retval->path, s) != NULL) {
+				/* namespace used in path */
+				path_ns = malloc(sizeof(struct nacm_ns));
+				if (path_ns == NULL) {
+					ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+					nacm_path_free(retval);
+					free(ns);
+					return (NULL);
 				}
-			} else {
-				if (xmlStrcmp(ns[i]->prefix, BAD_CAST prefix) == 0) {
-					pnode->ns_href = strdup((char*)(ns[i]->href));
-					break;
-				}
+				path_ns->prefix = strdup((char*)(ns[i]->prefix));
+				path_ns->href = strdup((char*)(ns[i]->href));
+				path_ns->next = retval->ns_list;
+				retval->ns_list = path_ns;
 			}
+			free(s);
+			s = NULL;
 		}
-
-		if (pnode->ns_href == NULL) {
-			free(pnode);
-			pnode = NULL;
-			nacm_path_free(pnode_parent);
-			goto nacm_path_parse_end;
-		}
-		pnode->name = strdup(token);
-		pnode->parent = pnode_parent;
-		pnode_parent = pnode;
 	}
 
-nacm_path_parse_end:
-	free(value);
 	free(ns);
-	return (pnode);
+	return (retval);
 }
 
-static struct path_node* nacm_path_dup(struct path_node* orig)
+static struct nacm_path* nacm_path_dup(struct nacm_path* orig)
 {
-	struct path_node* new = NULL, *aux, *pred = NULL;
+	struct nacm_path *new;
+	struct nacm_ns *ns, *ns_new;
 
-	for(; orig != NULL; orig = orig->parent) {
-		aux = malloc(sizeof(struct path_node));
-		aux->name = (orig->name != NULL) ? strdup(orig->name) : NULL;
-		aux->ns_href = (orig->ns_href != NULL) ? strdup(orig->ns_href) : NULL;
-
-		if (pred == NULL) {
-			new = aux;
-		} else {
-			pred->parent = aux;
-		}
-		pred = aux;
+	if (orig == NULL || orig->path == NULL) {
+		return (NULL);
 	}
-	if (aux != NULL) {
-		aux->parent = NULL;
+
+	new = malloc(sizeof(struct nacm_path));
+	if (new == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+	new->path = strdup(orig->path);
+	new->ns_list = NULL;
+
+	for(ns = orig->ns_list; ns != NULL; ns = ns->next) {
+		ns_new = malloc(sizeof(struct nacm_ns));
+		if (ns_new == NULL) {
+			ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+			nacm_path_free(new);
+			return (NULL);
+		}
+		ns_new->prefix = strdup(ns->prefix);
+		ns_new->href = strdup(ns->href);
+		ns_new->next = new->ns_list;
+		new->ns_list = ns_new;
 	}
 
 	return (new);
@@ -1051,9 +1045,165 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session)
 	return (EXIT_SUCCESS);
 }
 
-int nacm_check_data(xmlNodePtr node, const int access)
+static void nacm_check_data_read_recursion(xmlNodePtr subtree, const struct nacm_rpc* nacm)
 {
-	return (NACM_PERMIT);
+	xmlNodePtr node, next;
+
+	if (nacm_check_data(subtree, NACM_ACCESS_READ, nacm) == NACM_DENY) {
+		xmlUnlinkNode(subtree);
+		xmlFreeNode(subtree);
+	} else {
+		for (node = subtree->children; node != NULL; node = next) {
+			next = node->next;
+			if (node->type == XML_ELEMENT_NODE) {
+				nacm_check_data_read_recursion(node, nacm);
+			}
+		}
+	}
+}
+
+int nacm_check_data_read(xmlDocPtr doc, const struct nacm_rpc* nacm)
+{
+	xmlNodePtr node, next;
+
+	if (doc == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (nacm == NULL) {
+		return (EXIT_SUCCESS);
+	}
+
+	for (node = doc->children; node != NULL; node = next) {
+		next = node->next;
+		if (node->type == XML_ELEMENT_NODE) {
+			nacm_check_data_read_recursion(node, nacm);
+		}
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_rpc* nacm)
+{
+	xmlXPathContextPtr ctxt = NULL;
+	xmlXPathObjectPtr xpath_result = NULL;
+	struct nacm_ns *ns;
+	struct nacm_rule* rule;
+	const char* module;
+	int i, j, k;
+
+	if (access == 0 || node == NULL || node->doc == NULL) {
+		/* invalid input parameter */
+		return (-1);
+	}
+
+	if (nacm == NULL) {
+		/* NACM will not affect this request */
+		return (NACM_PERMIT);
+	}
+
+	/* get module name where the data node is defined */
+	module = ncds_get_model_data((node->ns != NULL) ? (char*)(node->ns->href) : NULL);
+
+	if (module != NULL) {
+		for (i = 0; nacm->rule_lists != NULL && nacm->rule_lists[i] != NULL; i++) {
+			for (j = 0; nacm->rule_lists[i]->rules != NULL && nacm->rule_lists[i]->rules[j] != NULL; j++) {
+				/*
+				 * check rules (all must be met):
+				 * - module-name matches "*" or the name of the module where the data node is defined
+				 * - type is NACM_RULE_NOTSET or type is NACM_RULE_DATA and data contain "*" or the operation name
+				 * - access has set NACM_ACCESS_EXEC bit
+				 */
+				rule = nacm->rule_lists[i]->rules[j]; /* shortcut */
+
+				/* 1) module name */
+				if (!(strcmp(rule->module, "*") == 0 ||
+				    strcmp(rule->module, module) == 0)) {
+					/* rule does not match */
+					continue;
+				}
+
+				/* 3) access - do it before 2 for optimize, the 2nd step is the most difficult */
+				if ((rule->access & access) == 0) {
+					/* rule does not match */
+					continue;
+				}
+
+				/* 2) type and operation name */
+				if (rule->type != NACM_RULE_NOTSET) {
+					if (rule->type == NACM_RULE_DATA &&
+					    rule->type_data.path != NULL) {
+						/* create xPath context for search in node's document */
+						if ((ctxt = xmlXPathNewContext(node->doc)) == NULL) {
+							ERROR("%s: Creating XPath context failed.", __func__);
+							return (-1);
+						}
+
+						/* register namespaces from the rule's path */
+						for (ns = rule->type_data.path->ns_list; ns != NULL; ns = ns->next) {
+							if (xmlXPathRegisterNs(ctxt, BAD_CAST ns->prefix, BAD_CAST ns->href) != 0) {
+								ERROR("Registering NACM rule path namespace for the xpath context failed.");
+								xmlXPathFreeContext(ctxt);
+								return (-1);
+							}
+						}
+
+						/* query the rule's path in the node's document and compare results with the node */
+						if ((xpath_result = xmlXPathEvalExpression(BAD_CAST rule->type_data.path->path, ctxt)) != NULL) {
+							if (xmlXPathNodeSetIsEmpty(xpath_result->nodesetval)) {
+								/* rule does not match - path does not exist in document */
+								xmlXPathFreeObject(xpath_result);
+								xmlXPathFreeContext(ctxt);
+								continue;
+							}
+							for (k = 0; k < xpath_result->nodesetval->nodeNr; k++) {
+								if (node == xpath_result->nodesetval->nodeTab[k]) {
+									/* the path selects the node */
+									break;
+								}
+							}
+
+							if (k == xpath_result->nodesetval->nodeNr) {
+								/* rule does not match */
+								xmlXPathFreeObject(xpath_result);
+								xmlXPathFreeContext(ctxt);
+								continue;
+							}
+
+							xmlXPathFreeObject(xpath_result);
+						} else {
+							WARN("%s: Unable to evaluate path \"%s\"", __func__, rule->type_data.path->path);
+						}
+
+						/* cleanup */
+						xmlXPathFreeContext(ctxt);
+					} else {
+						/* rule does not match - another type of rule */
+						continue;
+					}
+				}
+
+				/* rule matches */
+				return (rule->action);
+			}
+		}
+		/* no matching rule found */
+
+		/* \todo check nacm:default-deny-all and nacm:default-deny-write */
+	}
+	/* no matching rule found */
+
+	/* default action */
+	if ((access & NACM_ACCESS_READ) != 0) {
+		return (nacm->default_read);
+	}
+	if ((access & (NACM_ACCESS_CREATE | NACM_ACCESS_DELETE | NACM_ACCESS_UPDATE)) != 0) {
+		return (nacm->default_write);
+	}
+
+	/* unknown access request - deny */
+	return (NACM_DENY);
 }
 
 int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)

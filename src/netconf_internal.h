@@ -558,6 +558,7 @@ void nc_session_monitoring_close(void);
  */
 void nc_clear_namespaces(xmlNodePtr node);
 
+const char* ncds_get_model_data(const char* namespace);
 const char* ncds_get_model_operation(const char* operation, const char* namespace);
 const char* ncds_get_model_notification(const char* notification, const char* namespace);
 

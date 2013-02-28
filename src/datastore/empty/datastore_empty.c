@@ -101,7 +101,7 @@ char* ncds_empty_getconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* 
 	return strdup ("");
 }
 
-int ncds_empty_copyconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), NC_DATASTORE UNUSED(target), NC_DATASTORE UNUSED(source), char*  UNUSED(config), struct nc_err** UNUSED(error))
+int ncds_empty_copyconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), const nc_rpc* UNUSED(rpc), NC_DATASTORE UNUSED(target), NC_DATASTORE UNUSED(source), char*  UNUSED(config), struct nc_err** UNUSED(error))
 {
 	return EXIT_SUCCESS;
 }
@@ -111,7 +111,7 @@ int ncds_empty_deleteconfig(struct ncds_ds* UNUSED(ds), const struct nc_session*
 	return EXIT_SUCCESS;
 }
 
-int ncds_empty_editconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), NC_DATASTORE UNUSED(target), const char *  UNUSED(config), NC_EDIT_DEFOP_TYPE  UNUSED(defop), NC_EDIT_ERROPT_TYPE  UNUSED(errop), struct nc_err **UNUSED(error))
+int ncds_empty_editconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), const nc_rpc* UNUSED(rpc), NC_DATASTORE UNUSED(target), const char *  UNUSED(config), NC_EDIT_DEFOP_TYPE  UNUSED(defop), NC_EDIT_ERROPT_TYPE  UNUSED(errop), struct nc_err **UNUSED(error))
 {
 	return EXIT_SUCCESS;
 }

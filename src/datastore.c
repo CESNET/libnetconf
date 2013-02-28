@@ -57,6 +57,7 @@
 #include "with_defaults.h"
 #include "session.h"
 #include "datastore.h"
+#include "nacm.h"
 #include "datastore/edit_config.h"
 #include "datastore/datastore_internal.h"
 #include "datastore/file/datastore_file.h"
@@ -1039,7 +1040,7 @@ xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDo
 	keys = get_keynode_list(data_model);
 
 	/* merge the documents */
-	ret = edit_merge(result, second->children, keys);
+	ret = edit_merge(result, second->children, keys, NULL, NULL);
 
 	if (keys != NULL) {
 		keyListFree(keys);
@@ -1538,6 +1539,9 @@ process_datastore:
 			ncdflt_default_values(doc_merged, ds->model, rpc->with_defaults);
 		}
 
+		/* NACM */
+		nacm_check_data_read(doc_merged, rpc->nacm);
+
 		/* dump the result */
 		resultbuffer = xmlBufferCreate();
 		if (resultbuffer == NULL) {
@@ -1616,6 +1620,9 @@ process_datastore:
 		if (ds && ds->model) {
 			ncdflt_default_values(doc_merged, ds->model, rpc->with_defaults);
 		}
+
+		/* NACM */
+		nacm_check_data_read(doc_merged, rpc->nacm);
 
 		/* dump the result */
 		resultbuffer = xmlBufferCreate();
@@ -1767,9 +1774,9 @@ process_datastore:
 apply_editcopyconfig:
 		/* perform the operation */
 		if (op == NC_OP_EDITCONFIG) {
-			ret = ds->func.editconfig(ds, session, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
+			ret = ds->func.editconfig(ds, session, rpc, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 		} else if (op == NC_OP_COPYCONFIG) {
-			ret = ds->func.copyconfig(ds, session, target_ds, source_ds, config, &e);
+			ret = ds->func.copyconfig(ds, session, rpc, target_ds, source_ds, config, &e);
 		} else {
 			ret = EXIT_FAILURE;
 		}
@@ -1804,7 +1811,7 @@ apply_editcopyconfig:
 		/* \todo check somehow, that candidate is not locked by another session */
 
 		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-			ret = ds->func.copyconfig (ds, session, NC_DATASTORE_RUNNING, NC_DATASTORE_CANDIDATE, NULL, &e);
+			ret = ds->func.copyconfig (ds, session, rpc, NC_DATASTORE_RUNNING, NC_DATASTORE_CANDIDATE, NULL, &e);
 
 #ifndef DISABLE_NOTIFICATIONS
 			/* log the event */
@@ -1820,7 +1827,7 @@ apply_editcopyconfig:
 		break;
 	case NC_OP_DISCARDCHANGES:
 		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-			ret = ds->func.copyconfig(ds, session, NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NULL, &e);
+			ret = ds->func.copyconfig(ds, session, rpc, NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NULL, &e);
 		} else {
 			e = nc_err_new (NC_ERR_OP_NOT_SUPPORTED);
 			ret = EXIT_FAILURE;
@@ -1961,6 +1968,31 @@ void ncds_break_locks(const struct nc_session* session)
 	}
 
 	return;
+}
+
+const char* ncds_get_model_data(const char* namespace)
+{
+	struct ncds_ds_list *ds;
+
+	if (namespace == NULL) {
+		return (NULL);
+	}
+
+	for (ds = datastores; ds != NULL; ds = ds->next) {
+		if (ds->datastore == NULL) {
+			continue;
+		}
+		if (ds->datastore->model_namespace == NULL || strcmp(ds->datastore->model_namespace, namespace) != 0) {
+			/* namespace does not match */
+			continue;
+		}
+
+		/* model found */
+		return (ds->datastore->model_name);
+	}
+
+	/* model not found */
+	return (NULL);
 }
 
 const char* ncds_get_model_operation(const char* operation, const char* namespace)

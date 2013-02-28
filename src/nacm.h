@@ -45,6 +45,13 @@
 #define NACM_DENY true
 #define NACM_PERMIT false
 
+#define NACM_ACCESS_CREATE 0x01
+#define NACM_ACCESS_READ   0x02
+#define NACM_ACCESS_UPDATE 0x04
+#define NACM_ACCESS_DELETE 0x08
+#define NACM_ACCESS_EXEC   0x10
+#define NACM_ACCESS_ALL    0xff
+
 /**
  * @brief Init NACM subsystem
  * @return 0 on success, -1 on error
@@ -97,6 +104,31 @@ int nacm_check_operation(const nc_rpc* rpc);
  *        -1 in case of error
  */
 int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session);
+
+/**
+ * @brief Check if there is a permission to access (read/create/delete/update)
+ * the given configuration data node.
+ *
+ * @param[in] node Configuration data node to be checked
+ * @param[in] access Specific access right for manipulation with the node.
+ * Value should be one of the NACM_ACCESS_* macros. NACM_ACCESS_ALL and
+ * NACM_ACCESS_EXEC are meaningless and the result is unspecified.
+ * @param[in] nacm NACM structure from the RPC
+ * @return 0 for permit the operation<br/>
+ *         1 for deny the operation<br/>
+ *        -1 in case of error
+ */
+int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_rpc* nacm);
+
+/**
+ * @brief Check given document for read access and remove node that are not
+ * allowed to be read.
+ *
+ * @param[in] doc Configuration data document to be checked and modified.
+ * @param[in] nacm NACM structure from the RPC
+ * @return 0 on success, -1 on error
+ */
+int nacm_check_data_read(xmlDocPtr doc, const struct nacm_rpc* nacm);
 
 struct rule_list** nacm_rule_lists_dup(struct rule_list** list);
 void nacm_rule_list_free(struct rule_list* rl);

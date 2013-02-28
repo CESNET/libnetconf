@@ -53,6 +53,7 @@
 #include "../../netconf_internal.h"
 #include "../../error.h"
 #include "../../session.h"
+#include "../../nacm.h"
 #include "../datastore_internal.h"
 #include "datastore_file.h"
 #include "../edit_config.h"
@@ -764,6 +765,7 @@ char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* UNUSED(s
  *
  * @param ds Pointer to a datastore structure
  * @param session Session which the request is a part of
+ * @param rpc RPC message with the request
  * @param target Target datastore.
  * @param source Source datastore, if the value is NC_DATASTORE_NONE
  * then the next parameter holds the configration to copy
@@ -773,11 +775,13 @@ char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* UNUSED(s
  * @return EXIT_SUCCESS when done without problems
  * 	   EXIT_FAILURE when error occured
  */
-int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error)
+int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, const nc_rpc* rpc, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
-	xmlDocPtr config_doc = NULL;
+	xmlDocPtr config_doc = NULL, aux_doc;
 	xmlNodePtr target_ds, source_ds, del;
+	keyList keys;
+	int r;
 
 	LOCK(file_ds);
 
@@ -849,6 +853,25 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 		return EXIT_FAILURE;
 		break;
 	}
+
+	aux_doc = xmlNewDoc (BAD_CAST "1.0");
+	xmlDocSetRootElement (aux_doc, xmlDocCopyNode (source_ds, aux_doc, 1));
+	keys = get_keynode_list(file_ds->model);
+	if ((r = edit_replace_nacmcheck(target_ds->children, aux_doc, keys, rpc->nacm, error)) != NACM_PERMIT) {
+		if (r == NACM_DENY) {
+			if (error != NULL ) {
+				*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+			}
+		} else {
+			if (error != NULL ) {
+				*error = nc_err_new(NC_ERR_OP_FAILED);
+			}
+		}
+		keyListFree(keys);
+		UNLOCK(file_ds);
+		return (EXIT_FAILURE);
+	}
+	keyListFree(keys);
 
 	/* drop current target configuration */
 	del = target_ds->children;
@@ -962,6 +985,7 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
  *
  * @param ds Datastore to edit
  * @param session Session sending the edit request
+ * @param rpc
  * @param target Datastore type
  * @param config Edit configuration.
  * @param defop Default edit operation.
@@ -969,7 +993,7 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
+int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
 {
 	struct ncds_ds_file * file_ds = (struct ncds_ds_file *)ds;
 	xmlDocPtr config_doc, datastore_doc;
@@ -1023,7 +1047,7 @@ int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session,
 	datastore_doc->children = tmp_target_ds;
 
 	/* preform edit config */
-	if (edit_config (datastore_doc, config_doc, file_ds->model, defop, errop, error)) {
+	if (edit_config (datastore_doc, config_doc, file_ds->model, defop, errop, rpc->nacm, error)) {
 		retval = EXIT_FAILURE;
 	} else {
 		/* replace datastore by edited configuration */
