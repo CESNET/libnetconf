@@ -119,8 +119,10 @@ static NC_EDIT_OP_TYPE get_operation(xmlNodePtr node, NC_EDIT_DEFOP_TYPE defop, 
 			op = NC_EDIT_OP_REMOVE;
 		} else {
 			if (error != NULL) {
-				*error = nc_err_new (NC_ERR_BAD_ATTR);
-				nc_err_set (*error, NC_ERR_PARAM_INFO_BADATTR, NC_EDIT_ATTR_OP);
+				if (error != NULL) {
+					*error = nc_err_new(NC_ERR_BAD_ATTR);
+				}
+				nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, NC_EDIT_ATTR_OP);
 			}
 			op = NC_EDIT_OP_ERROR;
 		}
@@ -677,7 +679,11 @@ static int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, s
 		return EXIT_FAILURE;
 	} else if (op == NC_EDIT_OP_DELETE || op == NC_EDIT_OP_REMOVE) {
 		if (defop == NC_EDIT_DEFOP_REPLACE) {
-			*error = nc_err_new (NC_ERR_OP_FAILED);
+			if (error != NULL) {
+				if (error != NULL) {
+					*error = nc_err_new(NC_ERR_OP_FAILED);
+				}
+			}
 			return EXIT_FAILURE;
 		}
 
@@ -688,7 +694,9 @@ static int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, s
 			if (parent_op == NC_EDIT_OP_ERROR) {
 				return EXIT_FAILURE;
 			} else if (parent_op == NC_EDIT_OP_CREATE || parent_op == NC_EDIT_OP_REPLACE) {
-				*error = nc_err_new (NC_ERR_OP_FAILED);
+				if (error != NULL) {
+					*error = nc_err_new(NC_ERR_OP_FAILED);
+				}
 				return EXIT_FAILURE;
 			}
 			parent = parent->parent;
@@ -701,7 +709,9 @@ static int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, s
 			if (parent_op == NC_EDIT_OP_ERROR) {
 				return EXIT_FAILURE;
 			} else if (parent_op == NC_EDIT_OP_DELETE || parent_op == NC_EDIT_OP_REMOVE) {
-				*error = nc_err_new (NC_ERR_OP_FAILED);
+				if (error != NULL) {
+					*error = nc_err_new(NC_ERR_OP_FAILED);
+				}
 				return EXIT_FAILURE;
 			}
 			parent = parent->parent;
@@ -750,7 +760,9 @@ static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocP
 
 	operation_nodes = get_operation_elements((NC_EDIT_OP_TYPE)op, edit);
 	if (operation_nodes == NULL) {
-		*error = nc_err_new (NC_ERR_OP_FAILED);
+		if (error != NULL) {
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+		}
 		return EXIT_FAILURE;
 	}
 
@@ -781,17 +793,23 @@ static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocP
 				defval = get_default_value(node_to_process, model);
 				if (defval == NULL) {
 					/* no default value for this node */
-					*error = nc_err_new (NC_ERR_DATA_MISSING);
+					if (error != NULL) {
+						*error = nc_err_new(NC_ERR_DATA_MISSING);
+					}
 					break;
 				}
 				value = xmlNodeGetContent(node_to_process);
 				if (value == NULL) {
-					*error = nc_err_new (NC_ERR_DATA_MISSING);
+					if (error != NULL) {
+						*error = nc_err_new(NC_ERR_DATA_MISSING);
+					}
 					break;
 				}
 				if (xmlStrcmp(defval, value) != 0) {
 					/* node do not contain default value */
-					*error = nc_err_new (NC_ERR_DATA_MISSING);
+					if (error != NULL) {
+						*error = nc_err_new(NC_ERR_DATA_MISSING);
+					}
 					break;
 				} else {
 					/* remove delete operation - it is valid
@@ -806,7 +824,9 @@ static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocP
 				xmlFree(value);
 				value = NULL;
 			} else {
-				*error = nc_err_new (NC_ERR_DATA_MISSING);
+				if (error != NULL) {
+					*error = nc_err_new(NC_ERR_DATA_MISSING);
+				}
 				break;
 			}
 		} else if (op == NC_CHECK_EDIT_CREATE && n != NULL) {
@@ -818,17 +838,23 @@ static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocP
 				defval = get_default_value(node_to_process, model);
 				if (defval == NULL) {
 					/* no default value for this node */
-					*error = nc_err_new (NC_ERR_DATA_EXISTS);
+					if (error != NULL) {
+						*error = nc_err_new(NC_ERR_DATA_EXISTS);
+					}
 					break;
 				}
 				value = xmlNodeGetContent(node_to_process);
 				if (value == NULL) {
-					*error = nc_err_new (NC_ERR_DATA_EXISTS);
+					if (error != NULL) {
+						*error = nc_err_new(NC_ERR_DATA_EXISTS);
+					}
 					break;
 				}
 				if (xmlStrcmp(defval, value) != 0) {
 					/* node do not contain default value */
-					*error = nc_err_new (NC_ERR_DATA_MISSING);
+					if (error != NULL) {
+						*error = nc_err_new(NC_ERR_DATA_MISSING);
+					}
 					break;
 				} else {
 					/* remove old node in configuration to
@@ -844,7 +870,9 @@ static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocP
 				value = NULL;
 
 			} else {
-				*error = nc_err_new (NC_ERR_DATA_EXISTS);
+				if (error != NULL) {
+					*error = nc_err_new(NC_ERR_DATA_EXISTS);
+				}
 				break;
 			}
 		}
@@ -1282,7 +1310,9 @@ static int edit_operations (xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFO
 	return EXIT_SUCCESS;
 
 error:
-	*error = nc_err_new (NC_ERR_OP_FAILED);
+	if (error != NULL) {
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+	}
 	return EXIT_FAILURE;
 }
 
