@@ -162,8 +162,8 @@ int ncds_file_set_path (struct ncds_ds* datastore, const char* path)
 		} else {
 			VERB ("Datastore file %s was created.", path);
 		}
-	} else if (eaccess (path, W_OK|R_OK)) {
-		ERROR ("Insufficient rights for manipulation with the datastore file %s.", path);
+	} else if (eaccess (path, W_OK|R_OK) != 0) {
+		ERROR ("Insufficient rights for manipulation with the datastore file %s (%s).", path, strerror(errno));
 		return (-2);
 	} else {
 		/* file exists and it is accessible */
