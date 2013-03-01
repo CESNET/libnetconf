@@ -59,6 +59,9 @@
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
+extern struct ncds_ds *nacm_ds; /* NACM datastore from datastore.c */
+static int nacm_initiated = 0;
+
 typedef enum {
 	NACM_RULE_NOTSET = 0,
 	NACM_RULE_OPERATION = 1,
@@ -117,9 +120,6 @@ struct nacm_config {
 
 /* access to the NACM statistics */
 extern struct nc_shared_info *nc_info;
-
-static nc_rpc* get_config_rpc = NULL;
-static struct nc_session* nacm_session = NULL;
 
 int nacm_config_refresh(void);
 
@@ -534,25 +534,11 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 
 int nacm_init(void)
 {
-	struct nc_cpblts *def_cpblts;
-
-	if (get_config_rpc == NULL) {
-		if ((get_config_rpc = nc_rpc_getconfig(NC_DATASTORE_RUNNING, NULL)) == NULL) {
-			return (EXIT_FAILURE);
-		}
-		/* set with defaults settings */
-		if (nc_rpc_capability_attr(get_config_rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, NCWD_MODE_ALL) != EXIT_SUCCESS) {
-			nc_rpc_free(get_config_rpc);
-			get_config_rpc = NULL;
-			return (EXIT_FAILURE);
-		}
+	if (nacm_initiated == 1) {
+		return (EXIT_FAILURE);
 	}
 
-	if (nacm_session == NULL) {
-		def_cpblts = nc_session_get_cpblts_default ();
-		nacm_session = nc_session_dummy ("nacm", "libnetconf", "localhost", def_cpblts);
-		nc_cpblts_free (def_cpblts);
-	}
+	nacm_initiated = 1;
 
 	if (nacm_config_refresh() != EXIT_SUCCESS) {
 		return (EXIT_FAILURE);
@@ -565,8 +551,10 @@ void nacm_close(void)
 {
 	int i;
 
-	nc_rpc_free(get_config_rpc);
-	get_config_rpc = NULL;
+	if (nacm_initiated == 0) {
+		return;
+	}
+
 	if (nacm_config.groups != NULL) {
 		for (i = 0; nacm_config.groups[i] != NULL; i++) {
 			nacm_group_free(nacm_config.groups[i]);
@@ -581,6 +569,7 @@ void nacm_close(void)
 		free(nacm_config.rule_lists);
 		nacm_config.rule_lists = NULL;
 	}
+	nacm_initiated = 0;
 }
 
 static int check_query_result(xmlXPathObjectPtr query_result, const char* object, int multiple, int textnode)
@@ -608,40 +597,44 @@ int nacm_config_refresh(void)
 {
 	xmlXPathContextPtr data_ctxt = NULL;
 	xmlXPathObjectPtr query_result = NULL;
-	xmlNodePtr data, node;
+	char* data;
+	xmlNodePtr node;
 	xmlChar* content = NULL;
-	xmlDocPtr data_doc;
-	nc_reply* reply;
+	xmlDocPtr data_doc = NULL;
 	int i, j, gl, rl, gc, rc;
 	bool allgroups;
 	struct nacm_group* gr;
 	struct rule_list* rlist;
 
-	if (nacm_session == NULL || get_config_rpc == NULL) {
+	if (nacm_initiated == 0) {
 		ERROR("%s: NACM Subsystem not initialized.", __func__);
 		return (EXIT_FAILURE);
 	}
 
-	reply = ncds_apply_rpc(NCDS_INTERNAL_ID, nacm_session, get_config_rpc);
-	if (reply == NULL || nc_reply_get_type (reply) != NC_REPLY_DATA) {
-		nc_reply_free (reply);
+	/* check if NACM  datastore was modified */
+	if (nacm_ds->func.was_changed(nacm_ds) == 0) {
+		/* it wasn't, we have up to date configuration data */
+		return (EXIT_SUCCESS);
+	}
+
+	if ((data = nacm_ds->func.getconfig(nacm_ds, NULL, NC_DATASTORE_RUNNING, NULL)) == NULL) {
 		ERROR("%s: getting NACM configuration data from the datastore failed.", __func__);
 		return (EXIT_FAILURE);
 	}
-	if ((data = ncxml_reply_get_data (reply)) == NULL ) {
-		nc_reply_free (reply);
-		ERROR("%s: invalid NACM configuration data.", __func__);
-		return (EXIT_FAILURE);
+	if (strcmp(data, "") == 0) {
+		data_doc = xmlNewDoc(BAD_CAST "1.0");
+	} else {
+		data_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	}
-	nc_reply_free (reply);
+	free(data);
 
-	if ((data_doc = xmlNewDoc(BAD_CAST XML_VERSION)) == NULL) {
-		ERROR("xmlNewDoc failed (%s:%d).", __FILE__, __LINE__);
-		xmlFreeNode(data);
+	if (data_doc == NULL) {
+		ERROR("%s: Reading configuration datastore failed.", __func__);
 		return (EXIT_FAILURE);
 	}
-	data_doc->encoding = xmlStrdup(BAD_CAST UTF8);
-	xmlDocSetRootElement(data_doc, data);
+
+	/* process default values */
+	ncdflt_default_values(data_doc, nacm_ds->model, NCWD_MODE_ALL);
 
 	/* create xpath evaluation context */
 	if ((data_ctxt = xmlXPathNewContext(data_doc)) == NULL) {
@@ -656,7 +649,7 @@ int nacm_config_refresh(void)
 
 	/* fill the structure */
 	/* /nacm/enable-nacm */
-	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":enable-nacm", data_ctxt);
+	query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":enable-nacm", data_ctxt);
 	if (check_query_result(query_result, "/nacm/enable-nacm", 0, 1) != 0) {
 		goto errorcleanup;
 	}
@@ -674,7 +667,7 @@ int nacm_config_refresh(void)
 	xmlXPathFreeObject(query_result);
 
 	/* /nacm/read-default */
-	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":read-default", data_ctxt);
+	query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":read-default", data_ctxt);
 	if (check_query_result(query_result, "/nacm/read-default", 0, 1) != 0) {
 		goto errorcleanup;
 	}
@@ -692,7 +685,7 @@ int nacm_config_refresh(void)
 	xmlXPathFreeObject(query_result);
 
 	/* /nacm/write-default */
-	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":write-default", data_ctxt);
+	query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":write-default", data_ctxt);
 	if (check_query_result(query_result, "/nacm/write-default", 0 ,1) != 0) {
 		goto errorcleanup;
 	}
@@ -710,7 +703,7 @@ int nacm_config_refresh(void)
 	xmlXPathFreeObject(query_result);
 
 	/* /nacm/exec-default */
-	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":exec-default", data_ctxt);
+	query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":exec-default", data_ctxt);
 	if (check_query_result(query_result, "/nacm/exec-default", 0, 1) != 0) {
 		goto errorcleanup;
 	}
@@ -728,7 +721,7 @@ int nacm_config_refresh(void)
 	xmlXPathFreeObject(query_result);
 
 	/* /nacm/enable-external-groups */
-	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":enable-external-groups", data_ctxt);
+	query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":enable-external-groups", data_ctxt);
 	if (check_query_result(query_result, "/nacm/enable-external-groups", 0, 1) != 0) {
 		goto errorcleanup;
 	}
@@ -746,7 +739,7 @@ int nacm_config_refresh(void)
 	xmlXPathFreeObject(query_result);
 
 	/* /nacm/groups/group */
-	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":groups/"NC_NS_NACM_ID":group", data_ctxt);
+	query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":groups/"NC_NS_NACM_ID":group", data_ctxt);
 	if (query_result != NULL) {
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (nacm_config.groups != NULL) {
@@ -807,7 +800,7 @@ int nacm_config_refresh(void)
 	xmlXPathFreeObject(query_result);
 
 	/* /nacm/rule-list */
-	query_result = xmlXPathEvalExpression(BAD_CAST "/*/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":rule-list", data_ctxt);
+	query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":rule-list", data_ctxt);
 	if (query_result != NULL) {
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (nacm_config.rule_lists != NULL) {
@@ -1023,15 +1016,9 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session)
 		return (EXIT_SUCCESS);
 	}
 
-	/*
-	 * \todo
-	 * refresh internal structures according to the current content of the
-	 * configuration data - when the changes in configuration data will
-	 * be detected automatically, remove this refresh for optimizations
-	 */
 	nacm_config_refresh();
 
-	if (nacm_session == NULL || nacm_config.enabled == false) {
+	if (nacm_initiated == 0 || nacm_config.enabled == false) {
 		/* NACM subsystem not initiated or switched off */
 		/*
 		 * do not add NACM structure to the RPC, which means that
@@ -1316,15 +1303,9 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 		return (NACM_PERMIT);
 	}
 
-	/*
-	 * \todo
-	 * refresh internal structures according to the current content of the
-	 * configuration data - when the changes in configuration data will
-	 * be detected automatically, remove this refresh for optimizations
-	 */
 	nacm_config_refresh();
 
-	if (nacm_session == NULL || nacm_config.enabled == false) {
+	if (nacm_initiated == 0 || nacm_config.enabled == false) {
 		/* NACM subsystem not initiated or switched off */
 		/*
 		 * do not add NACM structure to the RPC, which means that
