@@ -47,7 +47,8 @@ bindir = @bindir@
 LIBNETCONF_SEARCH = "-Wl,-rpath,$(prefix)/lib"
 
 SETBIT = @SETBIT@
-SETID = @SETID@
+SETUSER = @SETUSER@
+SETGROUP = @SETGROUP@
 INSTALL_BIN_OPTIONS = 
 SERVERCFG_PATH = $(DESTDIR)/@SERVERCFG_PATH@
 CC = @CC@
@@ -60,10 +61,13 @@ INSTALL_DATA = @INSTALL_DATA@
 
 INSTALL_BIN_OPTIONS = 
 ifeq ($(SETBIT), 1)
-INSTALL_BIN_OPTIONS = --mode=4755 --owner=$(SETID)
+INSTALL_BIN_OPTIONS = --mode=4755 --owner=$(SETUSER)
 endif
 ifeq ($(SETBIT), 2)
-INSTALL_BIN_OPTIONS = --mode=2575 --group=$(SETID)
+INSTALL_BIN_OPTIONS = --mode=2575 --group=$(SETGROUP)
+endif
+ifeq ($(SETBIT), 3)
+INSTALL_BIN_OPTIONS = --mode=6775 --owner=$(SETUSER) --group=$(SETGROUP)
 endif
 
 OBJDIR= .obj
@@ -99,10 +103,13 @@ install: $(NAME)
 		mkdir -p $(SERVERCFG_PATH);
 	if test "$(SETBIT)" = "1"; then \
 		(chmod -R 700 $(SERVERCFG_PATH); \
-		chown $(SETID) $(SERVERCFG_PATH)) \
+		chown $(SETUSER) $(SERVERCFG_PATH)) \
 	elif test "$(SETBIT)" = "2"; then \
 		(chmod -R 070 $(SERVERCFG_PATH); \
-		chown :$(SETID) $(SERVERCFG_PATH)) \
+		chown :$(SETGROUP) $(SERVERCFG_PATH)) \
+	elif test "$(SETBIT)" = "3"; then \
+		(chmod -R 770 $(SERVERCFG_PATH); \
+		chown $(SETUSER):$(SETGROUP) $(SERVERCFG_PATH)) \
 	elif test "$(SETBIT)" = "0"; then \
 		chmod -R 777 $(SERVERCFG_PATH); \
 	fi

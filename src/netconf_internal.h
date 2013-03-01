@@ -156,6 +156,7 @@
  *
  * SETBIT = 1 - SUID
  * SETBIT = 2 - SGID
+ * SETBIT = 3 - SUID + SGID
  * SETBIT = 0 - NONE
  */
 #if SETBIT == 1
@@ -166,6 +167,10 @@
 #	define FILE_PERM 0060
 # 	define DIR_PERM 0070
 #	define MASK_PERM 0606
+#elif SETBIT == 3
+#	define FILE_PERM 0660
+#	define DIR_PERM 0770
+#	define MASK_PERM 0006
 #elif SETBIT == 0
 #	define FILE_PERM 0666
 #	define DIR_PERM 0777
