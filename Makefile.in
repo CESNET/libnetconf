@@ -62,9 +62,10 @@ INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 RPMDIR = RPMBUILD
-NC_WORKINGDIR_PATH = @NC_WORKINGDIR_PATH@
+NC_WORKINGDIR_PATH = $(DESTDIR)/@NC_WORKINGDIR_PATH@
 SETBIT = @SETBIT@
-SETID = @SETID@
+SETUSER = @SETUSER@
+SETGROUP = @SETGROUP@
 IDGIT = "built from git $(shell git show --pretty=oneline | head -1 | cut -c -20)"
 IDNOGIT = "released as version $(VERSION)"
 LIBS = @LDFLAGS@ @LIBS@
@@ -200,19 +201,27 @@ install: all install-devel install-doc
 	$(LN_S) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER);
 	[ -d "$(NC_WORKINGDIR_PATH)" ] || \
 		mkdir -p $(NC_WORKINGDIR_PATH)
-	if test "$(SETBIT)" = "1"; then \
-		(chmod 700 $(NC_WORKINGDIR_PATH); \
-		chown $(SETID) $(NC_WORKINGDIR_PATH)) \
-	elif test "$(SETBIT)" = "2"; then \
-		(chmod 070 $(NC_WORKINGDIR_PATH); \
-		chown :$(SETID) $(NC_WORKINGDIR_PATH)) \
-	elif test "$(SETBIT)" = "0"; then \
-		chmod 777 $(NC_WORKINGDIR_PATH); \
-	fi
+	chmod 700 $(NC_WORKINGDIR_PATH)
+	if test "$$(($(SETBIT) & 1))" = "1"; then \
+		if test -n "$(SETUSER)"; then \
+			chown $(SETUSER) $(NC_WORKINGDIR_PATH) || \
+				echo "WARNING: invalid group $(SETUSER)"; \
+		fi; \
+	fi; \
+	if test "$$(($(SETBIT) & 2))" = "2"; then \
+		chmod g+rwx $(NC_WORKINGDIR_PATH); \
+		if test -n "$(SETGROUP)"; then \
+			chown :$(SETGROUP) $(NC_WORKINGDIR_PATH) || \
+				echo "WARNING: invalid group $(SETGROUP)"; \
+		fi; \
+	fi; \
+	if test "$(SETBIT)" = "0"; then \
+		chmod a+rwx $(NC_WORKINGDIR_PATH); \
+	fi;
 	for i in $(SUBDIRS) ; do \
 		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i install \
 		|| exit 1; \
-	done
+	done;
 	[ -d $(DESTDIR)/$(DBUS_CONFDIR)/system.d/ ] || (mkdir -p $(DESTDIR)/$(DBUS_CONFDIR)/system.d/);
 	[ -z "@SRCS_NOTIFICATIONS@" ] || $(INSTALL_DATA) libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
 
