@@ -91,6 +91,7 @@ struct ds_desc {
 	char* filename;
 };
 
+struct ncds_ds *nacm_ds = NULL; /* for NACM subsystem */
 static struct ncds_ds_list *datastores = NULL;
 
 char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
@@ -104,8 +105,10 @@ static struct ncds_ds *datastores_get_ds(ncds_id id);
 
 #ifndef DISABLE_NOTIFICATIONS
 #define INTERNAL_DS_COUNT 7
+#define NACM_DS_INDEX 6
 #else
 #define INTERNAL_DS_COUNT 4
+#define NACM_DS_INDEX 3
 #endif
 int ncds_sysinit(void)
 {
@@ -166,6 +169,7 @@ int ncds_sysinit(void)
 			}
 			ds->func.init = ncds_empty_init;
 			ds->func.free = ncds_empty_free;
+			ds->func.was_changed = ncds_empty_changed;
 			ds->func.get_lockinfo = ncds_empty_lockinfo;
 			ds->func.lock = ncds_empty_lock;
 			ds->func.unlock = ncds_empty_unlock;
@@ -182,6 +186,7 @@ int ncds_sysinit(void)
 			}
 			ds->func.init = ncds_file_init;
 			ds->func.free = ncds_file_free;
+			ds->func.was_changed = ncds_file_changed;
 			ds->func.get_lockinfo = ncds_file_lockinfo;
 			ds->func.lock = ncds_file_lock;
 			ds->func.unlock = ncds_file_unlock;
@@ -211,6 +216,7 @@ int ncds_sysinit(void)
 			return (EXIT_FAILURE);
 		}
 		ds->model_path = NULL;
+		ds->last_access = 0;
 		ds->get_state = get_state_funcs[i];
 
 		/* init */
@@ -220,11 +226,16 @@ int ncds_sysinit(void)
 		if ((dsitem = malloc (sizeof(struct ncds_ds_list))) == NULL ) {
 			return (EXIT_FAILURE);
 		}
+		if (i == NACM_DS_INDEX) {
+			/* provide NACM datastore to the NACM subsystem for faster access */
+			nacm_ds = ds;
+		}
 		dsitem->datastore = ds;
 		dsitem->next = datastores;
 		datastores = dsitem;
 		ds = NULL;
 	}
+
 
 	return (EXIT_SUCCESS);
 }
@@ -867,6 +878,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file));
 		ds->func.init = ncds_file_init;
 		ds->func.free = ncds_file_free;
+		ds->func.was_changed = ncds_file_changed;
 		ds->func.get_lockinfo = ncds_file_lockinfo;
 		ds->func.lock = ncds_file_lock;
 		ds->func.unlock = ncds_file_unlock;
@@ -879,6 +891,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty));
 		ds->func.init = ncds_empty_init;
 		ds->func.free = ncds_empty_free;
+		ds->func.was_changed = ncds_empty_changed;
 		ds->func.get_lockinfo = ncds_empty_lockinfo;
 		ds->func.lock = ncds_empty_lock;
 		ds->func.unlock = ncds_empty_unlock;
@@ -916,6 +929,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		return (NULL);
 	}
 	ds->model_path = strdup(model_path);
+	ds->last_access = 0;
 	ds->get_state = get_state;
 
 	/* ds->id stays 0 to indicate, that datastore is still not fully configured */

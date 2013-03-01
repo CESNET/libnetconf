@@ -51,6 +51,7 @@ struct ncds_lockinfo {
 struct ncds_funcs {
 	int (*init) (struct ncds_ds* ds);
 	void (*free)(struct ncds_ds* ds);
+	int (*was_changed)(struct ncds_ds* ds);
 	const struct ncds_lockinfo* (*get_lockinfo)(struct ncds_ds* ds, NC_DATASTORE target);
 	int (*lock)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 	int (*unlock)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
@@ -97,6 +98,10 @@ struct ncds_ds {
 	 * @brief YIN configuration data model in the libxml2's document form.
 	 */
 	xmlDocPtr model;
+	/**
+	 * @brief Time of the last access to the configuration datastore.
+	 */
+	time_t last_access;
 	/**
 	 * @brief Pointer to a callback function implementing the retrieval of the
 	 * device status data.

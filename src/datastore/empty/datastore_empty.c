@@ -81,6 +81,13 @@ void ncds_empty_free (struct ncds_ds * ds)
 }
 
 struct ncds_lockinfo lockinfo = {NC_DATASTORE_ERROR, NULL, NULL};
+
+int ncds_empty_changed(struct ncds_ds* UNUSED(ds))
+{
+	/* datastore never changes */
+	return(0);
+}
+
 const struct ncds_lockinfo *ncds_empty_lockinfo(struct ncds_ds* UNUSED(ds), NC_DATASTORE UNUSED(target))
 {
 	return (&lockinfo);

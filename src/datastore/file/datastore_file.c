@@ -297,6 +297,28 @@ invalid_ds:
 	return (EXIT_FAILURE);
 }
 
+int ncds_file_changed(struct ncds_ds* ds)
+{
+	time_t t;
+	struct stat statbuf;
+
+	/* get current time */
+	if ((t = time(NULL)) == ((time_t)(-1))) {
+		ERROR("time() failed (%s)", strerror(errno));
+		/* we do not know, so answer that file was changed */
+		return (1);
+	}
+
+	/* check when the file was modified */
+	if (stat(((struct ncds_ds_file*)ds)->path, &statbuf) == 0) {
+		if (statbuf.st_mtime < ds->last_access) {
+			/* file was not modified */
+			return (0);
+		}
+	}
+	return (1);
+}
+
 /**
  * @ingroup store
  * @brief Initialization of the file datastore
@@ -453,9 +475,25 @@ void ncds_file_free(struct ncds_ds* ds)
 static int file_reload (struct ncds_ds_file* file_ds)
 {
 	struct ncds_ds_file new;
+	struct stat statbuf;
+	time_t t;
 
 	if (!file_ds->ds_lock.holding_lock) {
 		return EXIT_FAILURE;
+	}
+
+	/* get current time */
+	if ((t = time(NULL)) == ((time_t)(-1))) {
+		t = 0;
+		WARN("Setting datastore access time failed (%s)", strerror(errno));
+	}
+
+	/* check when the file was modified */
+	if (stat(file_ds->path, &statbuf) == 0) {
+		if (statbuf.st_mtime < file_ds->last_access) {
+			/* file was not modified */
+			return (EXIT_SUCCESS);
+		}
 	}
 
 	memcpy (&new, file_ds, sizeof (struct ncds_ds_file));
@@ -468,6 +506,9 @@ static int file_reload (struct ncds_ds_file* file_ds)
 		xmlFreeDoc (new.xml);
 		return EXIT_FAILURE;
 	}
+
+	/* update access time */
+	new.last_access = t;
 
 	xmlFreeDoc (file_ds->xml);
 	memcpy (file_ds, &new, sizeof (struct ncds_ds_file));
@@ -486,6 +527,8 @@ static int file_reload (struct ncds_ds_file* file_ds)
  */
 static int file_sync(struct ncds_ds_file* file_ds)
 {
+	time_t t;
+
 	if (!file_ds->ds_lock.holding_lock) {
 		return EXIT_FAILURE;
 	}
@@ -498,6 +541,13 @@ static int file_sync(struct ncds_ds_file* file_ds)
 	rewind (file_ds->file);
 
 	xmlDocFormatDump(file_ds->file, file_ds->xml, 1);
+
+	/* update last access time */
+	if ((t = time(NULL)) == ((time_t)(-1))) {
+		WARN("Setting datastore access time failed (%s)", strerror(errno));
+	} else {
+		file_ds->last_access = t;
+	}
 
 	return EXIT_SUCCESS;
 }

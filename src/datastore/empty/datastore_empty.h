@@ -82,6 +82,10 @@ struct ncds_ds_empty {
 	 */
 	xmlDocPtr model;
 	/**
+	 * @brief Time of the last access to the configuration datastore.
+	 */
+	time_t last_access;
+	/**
 	 * @brief Pointer to a callback function implementing the retrieval of the
 	 * device status data.
 	 */
@@ -107,6 +111,8 @@ int ncds_empty_init (struct ncds_ds * ds);
  * @param ds Datastore to close
  */
 void ncds_empty_free (struct ncds_ds * ds);
+
+int ncds_empty_changed(struct ncds_ds* ds);
 
 const struct ncds_lockinfo *ncds_empty_lockinfo(struct ncds_ds* ds, NC_DATASTORE target);
 

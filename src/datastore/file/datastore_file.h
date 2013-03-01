@@ -85,6 +85,10 @@ struct ncds_ds_file {
 	 */
 	xmlDocPtr model;
 	/**
+	 * @brief Time of the last access to the configuration datastore.
+	 */
+	time_t last_access;
+	/**
 	 * @brief Pointer to a callback function implementing the retrieval of the
 	 * device status data.
 	 */
@@ -136,6 +140,15 @@ struct ncds_ds_file {
  * @return 0 on success, non-zero else
  */
 int ncds_file_init (struct ncds_ds* ds);
+
+/**
+ * @brief Test if configuration datastore was changed by another process since
+ * last access of the caller.
+ * @param[in] file_ds File datastore structure which will be tested.
+ * @return 0 as false if the datastore was not updated, 1 if the datastore was
+ * changed.
+ */
+int ncds_file_changed(struct ncds_ds* ds);
 
 /**
  * @brief Perform get-config on the specified repository.
