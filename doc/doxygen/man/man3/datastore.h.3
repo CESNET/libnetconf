@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Fri Mar 1 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,7 +18,7 @@ NETCONF datastore handling function prototypes and structures\&.
 .ti -1c
 .RI "#define \fBNCDS_INTERNAL_ID\fP   0"
 .br
-.RI "\fIDatastore ID to access libnetconf's internal datasotres such as notifications, monitoring, etc\&. \fP"
+.RI "\fIDatastore ID to access libnetconf's internal datastores such as notifications, monitoring, etc\&. \fP"
 .ti -1c
 .RI "#define \fBNCDS_RPC_NOT_APPLICABLE\fP   ((void *) -1)"
 .br
@@ -46,11 +46,11 @@ NETCONF datastore handling function prototypes and structures\&.
 .ti -1c
 .RI "struct ncds_ds * \fBncds_new\fP (\fBNCDS_TYPE\fP type, const char *model_path, char *(*get_state)(const char *model, const char *running, struct nc_err **e))"
 .br
-.RI "\fICreate new datastore structure of the specified implementation type\&. \fP"
+.RI "\fICreate a new datastore structure of the specified implementation type\&. \fP"
 .ti -1c
 .RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
 .br
-.RI "\fIAssign path of the datastore file into the datastore structure\&. \fP"
+.RI "\fIAssign the path of the datastore file into the datastore structure\&. \fP"
 .ti -1c
 .RI "\fBncds_id\fP \fBncds_init\fP (struct ncds_ds *datastore)"
 .br
@@ -58,27 +58,27 @@ NETCONF datastore handling function prototypes and structures\&.
 .ti -1c
 .RI "void \fBncds_free\fP (struct ncds_ds *datastore)"
 .br
-.RI "\fIClose specified datastore and free all resources\&. \fP"
+.RI "\fIClose the specified datastore and free all the resources\&. \fP"
 .ti -1c
 .RI "void \fBncds_free2\fP (\fBncds_id\fP datastore_id)"
 .br
-.RI "\fIClose specified datastore and free all resources\&. \fP"
+.RI "\fIClose specified datastore and free all the resources\&. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBncds_apply_rpc\fP (\fBncds_id\fP id, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIPerform requested RPC operation on the datastore\&. \fP"
+.RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
 .ti -1c
 .RI "void \fBncds_break_locks\fP (const struct nc_session *session)"
 .br
-.RI "\fIRemove all locks that is holding given session\&. \fP"
+.RI "\fIRemove all the locks that the given session is holding\&. \fP"
 .ti -1c
 .RI "char * \fBncds_get_model\fP (\fBncds_id\fP id)"
 .br
-.RI "\fIReturn serialized XML containing data model in YIN format\&. \fP"
+.RI "\fIReturn a serialized XML containing the data model in the YIN format\&. \fP"
 .ti -1c
 .RI "const char * \fBncds_get_model_path\fP (\fBncds_id\fP id)"
 .br
-.RI "\fIReturn path to file containing datastore datamodel\&. \fP"
+.RI "\fIReturn path to the file containing the datastore datamodel\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 

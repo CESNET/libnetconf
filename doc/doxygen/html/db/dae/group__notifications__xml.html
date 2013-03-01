@@ -29,7 +29,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.3.1</span>
+   &#160;<span id="projectnumber">0.4.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -108,11 +108,11 @@ $(document).ready(function(){initNavTree('db/dae/group__notifications__xml.html'
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga21824f1e804eed5f8907eefdd9d03a85"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/dae/group__notifications__xml.html#ga21824f1e804eed5f8907eefdd9d03a85">ncxmlntf_event_new</a> (time_t etime, <a class="el" href="../../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977">NCNTF_EVENT</a> event,...)</td></tr>
-<tr class="memdesc:ga21824f1e804eed5f8907eefdd9d03a85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store new event into the specified stream. Parameters are specific for different events.  <a href="#ga21824f1e804eed5f8907eefdd9d03a85"></a><br/></td></tr>
+<tr class="memdesc:ga21824f1e804eed5f8907eefdd9d03a85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store a new event into the specified stream. Parameters are specific for different events.  <a href="#ga21824f1e804eed5f8907eefdd9d03a85"></a><br/></td></tr>
 <tr class="memitem:gae1d3152a18bb5d030f9d42d62658986c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/dae/group__notifications__xml.html#gae1d3152a18bb5d030f9d42d62658986c">ncxmlntf_notif_create</a> (time_t event_time, const xmlNodePtr content)</td></tr>
-<tr class="memdesc:gae1d3152a18bb5d030f9d42d62658986c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new &lt;notification&gt; message with the given eventTime and content.  <a href="#gae1d3152a18bb5d030f9d42d62658986c"></a><br/></td></tr>
+<tr class="memdesc:gae1d3152a18bb5d030f9d42d62658986c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new &lt;notification&gt; message with the given eventTime and content.  <a href="#gae1d3152a18bb5d030f9d42d62658986c"></a><br/></td></tr>
 <tr class="memitem:ga26fc8f89287a14cc1da067d9aeb92fdf"><td class="memItemLeft" align="right" valign="top">xmlNodePtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/dae/group__notifications__xml.html#ga26fc8f89287a14cc1da067d9aeb92fdf">ncxmlntf_notif_get_content</a> (<a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *notif)</td></tr>
-<tr class="memdesc:ga26fc8f89287a14cc1da067d9aeb92fdf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get description of the event reported in the notification message.  <a href="#ga26fc8f89287a14cc1da067d9aeb92fdf"></a><br/></td></tr>
+<tr class="memdesc:ga26fc8f89287a14cc1da067d9aeb92fdf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the description of the event reported in the notification message.  <a href="#ga26fc8f89287a14cc1da067d9aeb92fdf"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's implementation of NETCONF asynchronous message delivery as defined in RFC 5277. These functions accepts selected parameters as libxml2 structures. </p>
@@ -147,7 +147,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Store new event into the specified stream. Parameters are specific for different events. </p>
+<p>Store a new event into the specified stream. Parameters are specific for different events. </p>
 <h3>Event parameters:</h3>
 <ul>
 <li><a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1f1e3c2032baf2542b06052243bd42c9">NCNTF_GENERIC</a><ul>
@@ -155,22 +155,22 @@ Functions</h2></td></tr>
 </ul>
 </li>
 <li><a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a9cf730f96784afdb8d783df8dacfab21">NCNTF_BASE_CFG_CHANGE</a><ul>
-<li><a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73" title="Enumeration of supported types of datastores defined by NETCONF.">NC_DATASTORE</a> <b>datastore</b> Specify which datastore has changed.</li>
-<li><a class="el" href="../../da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d" title="Enumeration of possible source of events.">NCNTF_EVENT_BY</a> <b>changed_by</b> Specify the source of the change.<ul>
-<li>If the value is set to <a class="el" href="../../da/d54/group__notifications.html#gga1e9d948b3807d679482c737da720477dab20423755c56c213cd2567b2bbf1f9c2">NCNTF_EVENT_BY_USER</a>, following parameter is required:</li>
+<li><a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73" title="Enumeration of the supported types of datastores defined by NETCONF.">NC_DATASTORE</a> <b>datastore</b> Specify which datastore has changed.</li>
+<li><a class="el" href="../../da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d" title="Enumeration of the possible source of events.">NCNTF_EVENT_BY</a> <b>changed_by</b> Specify the source of the change.<ul>
+<li>If the value is set to <a class="el" href="../../da/d54/group__notifications.html#gga1e9d948b3807d679482c737da720477dab20423755c56c213cd2567b2bbf1f9c2">NCNTF_EVENT_BY_USER</a>, the following parameter is required:</li>
 </ul>
 </li>
-<li><b>const struct nc_session* session</b> Session required the configuration change.</li>
+<li><b>const struct nc_session* session</b> Session that required the configuration change.</li>
 </ul>
 </li>
 <li><a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977af6adea71e2edc918ae1f7ade6f11ca59">NCNTF_BASE_CPBLT_CHANGE</a><ul>
 <li><b>const struct nc_cpblts* old</b> Old list of capabilities.</li>
 <li><b>const struct nc_cpblts* new</b> New list of capabilities.</li>
-<li><a class="el" href="../../da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d" title="Enumeration of possible source of events.">NCNTF_EVENT_BY</a> <b>changed_by</b> Specify the source of the change.<ul>
-<li>If the value is set to <a class="el" href="../../da/d54/group__notifications.html#gga1e9d948b3807d679482c737da720477dab20423755c56c213cd2567b2bbf1f9c2">NCNTF_EVENT_BY_USER</a>, following parameter is required:</li>
+<li><a class="el" href="../../da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d" title="Enumeration of the possible source of events.">NCNTF_EVENT_BY</a> <b>changed_by</b> Specify the source of the change.<ul>
+<li>If the value is set to <a class="el" href="../../da/d54/group__notifications.html#gga1e9d948b3807d679482c737da720477dab20423755c56c213cd2567b2bbf1f9c2">NCNTF_EVENT_BY_USER</a>, the following parameter is required:</li>
 </ul>
 </li>
-<li><b>const struct nc_session* session</b> Session required the configuration change.</li>
+<li><b>const struct nc_session* session</b> Session that required the configuration change.</li>
 </ul>
 </li>
 <li><a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a7e0ecf6ec462565f5bc9a1edfd7d4c6c">NCNTF_BASE_SESSION_START</a><ul>
@@ -178,9 +178,9 @@ Functions</h2></td></tr>
 </ul>
 </li>
 <li><a class="el" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1c06188153af81757d0ba8aac0768550">NCNTF_BASE_SESSION_END</a><ul>
-<li><b>const struct nc_session* session</b> Finnished session (<a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca3a417a51dfb315ebb7d1427357a838b2">NC_SESSION_STATUS_DUMMY</a> session is also allowed).</li>
+<li><b>const struct nc_session* session</b> Finished session (<a class="el" href="../../db/d52/group__session.html#gga9fba5da8e4c50d2427d0d24e8e7b630ca3a417a51dfb315ebb7d1427357a838b2">NC_SESSION_STATUS_DUMMY</a> session is also allowed).</li>
 <li><a class="el" href="../../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2" title="Enumeration of reasonf of the NETCONF session termination as defined in RFC 6470.">NC_SESSION_TERM_REASON</a> <b>reason</b> Session termination reason.<ul>
-<li>If the value is set to <a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2ad43b0471a6cc0e281bc7eb135a59da00">NC_SESSION_TERM_KILLED</a>, following parameter is required.</li>
+<li>If the value is set to <a class="el" href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2ad43b0471a6cc0e281bc7eb135a59da00">NC_SESSION_TERM_KILLED</a>, the following parameter is required.</li>
 </ul>
 </li>
 <li><b>const char* killed-by-sid</b> The ID of the session that directly caused the session termination. If the session was terminated by a non-NETCONF process unknown to the server, use NULL as the value.</li>
@@ -197,8 +197,8 @@ Functions</h2></td></tr>
 </ul>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">etime</td><td>Time of the event, if set to -1, current time is used. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">event</td><td>Event type to distinguish following parameters. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">etime</td><td>Time of the event, if set to -1, the current time is used. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">event</td><td>Event type to distinguish the following parameters. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>Specific parameters for different event types as described above. </td></tr>
   </table>
   </dd>
@@ -231,7 +231,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Create new &lt;notification&gt; message with the given eventTime and content. </p>
+<p>Create a new &lt;notification&gt; message with the given eventTime and content. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">event_time</td><td>Time of the event. </td></tr>
@@ -257,14 +257,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get description of the event reported in the notification message. </p>
+<p>Get the description of the event reported in the notification message. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">notif</td><td>Notification message. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Copy of the event description content (single node or node list, eventTime is not included). Caller is supposed to free the returned structure with xmlFreeNodeList(). </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Copy of the event description content (single node or node list, eventTime is not included). The caller is supposed to free the returned structure with xmlFreeNodeList(). </dd></dl>
 
 </div>
 </div>
@@ -273,7 +273,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Jan 23 2013 16:06:49 for libnetconf by
+    <li class="footer">Generated on Fri Mar 1 2013 14:49:31 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

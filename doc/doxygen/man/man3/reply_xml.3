@@ -1,10 +1,10 @@
-.TH "NETCONF rpc-reply (libxml2)" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply (libxml2)" 3 "Fri Mar 1 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 NETCONF rpc-reply (libxml2) \- 
 .PP
-libnetconf's functions for handling NETCONF <rpc-reply> messages\&. These functions accepts parameters as libxml2 structures\&.  
+libnetconf's functions for handling the NETCONF <rpc-reply> messages\&. These functions accepts parameters as libxml2 structures\&.  
 
 .SS "Functions"
 
@@ -28,7 +28,7 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&. These functi
 .in -1c
 .SH "Detailed Description"
 .PP 
-libnetconf's functions for handling NETCONF <rpc-reply> messages\&. These functions accepts parameters as libxml2 structures\&. 
+libnetconf's functions for handling the NETCONF <rpc-reply> messages\&. These functions accepts parameters as libxml2 structures\&. 
 
 
 .SH "Function Documentation"
@@ -52,7 +52,7 @@ XML document of the NETCONF's <rpc-reply> message\&. Caller is supposed to free 
 .PP
 Build <rpc-reply> message from the libxml2 document structure\&. This is the reverse function of the \fBncxml_reply_dump()\fP\&. \fBParameters:\fP
 .RS 4
-\fIreply_dump\fP XML document structure with the NETCONF <rpc-reply> message\&. The structure is integrated into the internal rpc structure and caller should not access (or free) given XML document anymore\&. 
+\fIreply_dump\fP XML document structure with the NETCONF <rpc-reply> message\&. The structure is integrated into the internal rpc structure and caller should not access (or free) the given XML document anymore\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -71,7 +71,7 @@ Get <data> element in <rpc-reply> including its content\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-XML node <data> with its content\&. <data> is included to provide valid (non-NULL) output in case of empty data returned (e\&.g\&. when all data are filterred out)\&. Caller is supposed to free the returned structure with xmlFreeNode()\&. 
+XML node <data> with its content\&. <data> is included to provide a valid (non-NULL) output in case of empty data returned (e\&.g\&. when all the data are filterred out)\&. Caller is supposed to free the returned structure with xmlFreeNode()\&. 
 .RE
 .PP
 
@@ -80,7 +80,7 @@ XML node <data> with its content\&. <data> is included to provide valid (non-NUL
 .PP
 Create rpc-reply response with <data> content\&. \fBParameters:\fP
 .RS 4
-\fIdata\fP Content (possible a node list) for the <rpc-reply>'s <data> element\&. 
+\fIdata\fP Content (possibly a node list) for the <rpc-reply>'s <data> element\&. 
 .RE
 .PP
 \fBReturns:\fP

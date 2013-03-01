@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Fri Mar 1 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -28,22 +28,22 @@ libnetconf's miscellaneous functions\&.
 .ti -1c
 .RI "int \fBnc_init\fP (int flags)"
 .br
-.RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all processes using\&. \fP"
+.RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all the processes\&. \fP"
 .ti -1c
 .RI "int \fBnc_close\fP (int system)"
 .br
 .ti -1c
 .RI "void \fBnc_callback_print\fP (void(*func)(\fBNC_VERB_LEVEL\fP level, const char *msg))"
 .br
-.RI "\fISet callback function for printing libnetconf's messages\&. \fP"
+.RI "\fISet a callback function for printing libnetconf's messages\&. \fP"
 .ti -1c
 .RI "struct nc_err * \fBnc_err_new\fP (\fBNC_ERR\fP error)"
 .br
-.RI "\fICreate new error description structure\&. \fP"
+.RI "\fICreate a new error description structure\&. \fP"
 .ti -1c
 .RI "struct nc_err * \fBnc_err_dup\fP (const struct nc_err *error)"
 .br
-.RI "\fIDuplicate error description structure\&. \fP"
+.RI "\fIDuplicate an error description structure\&. \fP"
 .ti -1c
 .RI "void \fBnc_err_free\fP (struct nc_err *err)"
 .br
@@ -83,7 +83,7 @@ error state
 waiting for another message timed out 
 .TP
 \fB\fINC_MSG_NONE \fP\fP
-no message at input or message processed internally 
+no message at input or message was processed internally 
 .TP
 \fB\fINC_MSG_HELLO \fP\fP
 <hello> message 
@@ -122,14 +122,14 @@ Print all messages including some development debug messages\&.
 .PP
 Set libnetconf's verbosity level\&. \fBParameters:\fP
 .RS 4
-\fIlevel\fP Enabled verbosity level (includes all levels with higher priority)\&. 
+\fIlevel\fP Enabled verbosity level (includes all the levels with higher priority)\&. 
 .RE
 .PP
 
 .SS "int nc_init (intflags)"
 
 .PP
-Initialize libnetconf for system-wide usage\&. This initialization is shared across all processes using\&. \fBParameters:\fP
+Initialize libnetconf for system-wide usage\&. This initialization is shared across all the processes\&. \fBParameters:\fP
 .RS 4
 \fIflags\fP ORed flags for libnetconf initialization\&. Accepted values include:
 .IP "\(bu" 2
@@ -141,7 +141,7 @@ Initialize libnetconf for system-wide usage\&. This initialization is shared acr
 .RS 4
 -1 on fatal error
 .br
- 0 if this is first init after previous system-wide \fBnc_close()\fP or system reboot
+ 0 if this is the first init after previous system-wide \fBnc_close()\fP or system reboot
 .br
  1 when someone else already called \fBnc_init()\fP since last system-wide \fBnc_close()\fP or system reboot\&. 
 .RE
@@ -150,7 +150,7 @@ Initialize libnetconf for system-wide usage\&. This initialization is shared acr
 .SS "int nc_close (intsystem)"
 \fBParameters:\fP
 .RS 4
-\fIsystem\fP Flag if close should be applied as a system-wide\&. System-wide \fBnc_close()\fP closes all shared structures if no other libnetconf participant is not currently running\&. Local release of the calling instance from the shared structures is done in both cases\&. 
+\fIsystem\fP Flag if close should be applied as system-wide\&. System-wide \fBnc_close()\fP closes all the shared structures if no other libnetconf participant is currently running\&. Local release of the calling instance from the shared structures is done in both cases\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -159,14 +159,14 @@ Initialize libnetconf for system-wide usage\&. This initialization is shared acr
 .br
  0 on success
 .br
- 1 in case of system wide when there is other participant using shared structures and system-wide close cannot be done\&. 
+ 1 in case of system-wide when there is another participant using shared structures and system-wide close cannot be done\&. 
 .RE
 .PP
 
 .SS "void nc_callback_print (void(*)(\fBNC_VERB_LEVEL\fP level, const char *msg)func)"
 
 .PP
-Set callback function for printing libnetconf's messages\&. \fBParameters:\fP
+Set a callback function for printing libnetconf's messages\&. \fBParameters:\fP
 .RS 4
 \fIfunc\fP Callback function to use\&. 
 .RE
@@ -175,28 +175,28 @@ Set callback function for printing libnetconf's messages\&. \fBParameters:\fP
 .SS "struct nc_err* nc_err_new (\fBNC_ERR\fPerror)\fC [read]\fP"
 
 .PP
-Create new error description structure\&. \fBParameters:\fP
+Create a new error description structure\&. \fBParameters:\fP
 .RS 4
 \fIerror\fP Predefined NETCONF error (according to RFC 6241 Appendix A)\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Created NETCONF error structure on success, NULL on error\&. 
+Created NETCONF error structure on success, NULL on an error\&. 
 .RE
 .PP
 
 .SS "struct nc_err* nc_err_dup (const struct nc_err *error)\fC [read]\fP"
 
 .PP
-Duplicate error description structure\&. \fBParameters:\fP
+Duplicate an error description structure\&. \fBParameters:\fP
 .RS 4
 \fIerror\fP Existing NETCONF error description structure to be duplicated\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Duplicated NETCONF error structure on success, NULL on error\&. 
+Duplicated NETCONF error structure on success, NULL on an error\&. 
 .RE
 .PP
 

@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Fri Mar 1 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -48,11 +48,11 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .ti -1c
 .RI "struct nc_filter * \fBnc_filter_new\fP (\fBNC_FILTER_TYPE\fP type,\&.\&.\&.)"
 .br
-.RI "\fICreate new NETCONF filter of the specified type\&. \fP"
+.RI "\fICreate a new NETCONF filter of the specified type\&. \fP"
 .ti -1c
 .RI "void \fBnc_filter_free\fP (struct nc_filter *filter)"
 .br
-.RI "\fIDestroy filter structure\&. \fP"
+.RI "\fIDestroy the filter structure\&. \fP"
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_dup\fP (const \fBnc_rpc\fP *rpc)"
 .br
@@ -62,7 +62,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIDump the rpc message into a string\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBnc_rpc_build\fP (const char *rpc_dump)"
+.RI "\fBnc_rpc\fP * \fBnc_rpc_build\fP (const char *rpc_dump, const struct nc_session *session)"
 .br
 .RI "\fIBuild <rpc> message from the string\&. This is the reverse function of the \fBnc_rpc_dump()\fP\&. \fP"
 .ti -1c
@@ -84,15 +84,15 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .ti -1c
 .RI "\fBNC_DATASTORE\fP \fBnc_rpc_get_target\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet target datastore type (running, startup, candidate) of the rpc request\&. \fP"
+.RI "\fIGet the target datastore type (running, startup, candidate) of the rpc request\&. \fP"
 .ti -1c
 .RI "\fBNC_DATASTORE\fP \fBnc_rpc_get_source\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet source datastore type (running, startup, candidate) of the rpc request\&. \fP"
+.RI "\fIGet the source datastore type (running, startup, candidate) of the rpc request\&. \fP"
 .ti -1c
 .RI "char * \fBnc_rpc_get_config\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet serialized content of the config parameter (<config> itself is not part of the returned data)\&. This function is valid only for <copy-config> and <edit-config> RPCs\&. \fP"
+.RI "\fIGet serialized content of the config parameter (<config> itself is not a part of the returned data)\&. This function is valid only for <copy-config> and <edit-config> RPCs\&. \fP"
 .ti -1c
 .RI "\fBNC_EDIT_DEFOP_TYPE\fP \fBnc_rpc_get_defop\fP (const \fBnc_rpc\fP *rpc)"
 .br
@@ -160,11 +160,11 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_generic\fP (const char *data)"
 .br
-.RI "\fICreate a generic NETCONF rpc message with specified content\&. \fP"
+.RI "\fICreate a generic NETCONF rpc message with the specified content\&. \fP"
 .ti -1c
 .RI "int \fBnc_rpc_capability_attr\fP (\fBnc_rpc\fP *rpc, \fBNC_CAP_ATTR\fP attr,\&.\&.\&.)"
 .br
-.RI "\fISet attribute of the given <rpc> specific for some NETCONF capability\&. \fP"
+.RI "\fISet the attribute of the given <rpc> specific for some NETCONF capability\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -200,7 +200,7 @@ value describing that no supported operation type was detected so far
 <rpc> contains operation modifying datastore 
 .TP
 \fB\fINC_RPC_SESSION \fP\fP
-<rpc> contains operation affecting session 
+<rpc> contains operation affecting the session 
 .SS "enum \fBNC_OP\fP"
 
 .PP
@@ -298,7 +298,7 @@ Receive <rpc> request from the specified NETCONF session\&. This function is sup
 .PP
 \fBReturns:\fP
 .RS 4
-Type of received message\&. \fBNC_MSG_UNKNOWN\fP means error, \fBNC_MSG_RPC\fP means that *rpc points to the received <rpc> message\&. 
+Type of the received message\&. \fBNC_MSG_UNKNOWN\fP means error, \fBNC_MSG_RPC\fP means that *rpc points to the received <rpc> message\&. 
 .RE
 .PP
 
@@ -316,20 +316,20 @@ Send <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fBParam
 .PP
 \fBReturns:\fP
 .RS 4
-Type of received message\&. \fBNC_MSG_UNKNOWN\fP means error, \fBNC_MSG_REPLY\fP means that *reply points to the received <rpc-reply> message\&. 
+Type of the received message\&. \fBNC_MSG_UNKNOWN\fP means error, \fBNC_MSG_REPLY\fP means that *reply points to the received <rpc-reply> message\&. 
 .RE
 .PP
 
 .SS "struct nc_filter* nc_filter_new (\fBNC_FILTER_TYPE\fPtype, \&.\&.\&.)\fC [read]\fP"
 
 .PP
-Create new NETCONF filter of the specified type\&. \fBParameters:\fP
+Create a new NETCONF filter of the specified type\&. \fBParameters:\fP
 .RS 4
 \fItype\fP Type of the filter\&. 
 .br
 \fI\&.\&.\&.\fP Filter content:
 .IP "\(bu" 2
-for \fBNC_FILTER_SUBTREE\fP type, single variadic parameter \fBconst char* filter\fP is accepted\&. 
+for \fBNC_FILTER_SUBTREE\fP type, a single variadic parameter \fBconst char* filter\fP is accepted\&. 
 .PP
 .RE
 .PP
@@ -342,7 +342,7 @@ Created NETCONF filter structure\&.
 .SS "void nc_filter_free (struct nc_filter *filter)"
 
 .PP
-Destroy filter structure\&. \fBParameters:\fP
+Destroy the filter structure\&. \fBParameters:\fP
 .RS 4
 \fIfilter\fP Filter to destroy\&. 
 .RE
@@ -372,16 +372,18 @@ Dump the rpc message into a string\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-String in XML format containing the NETCONF's <rpc> element and all its content\&. Caller is responsible for free of returned string with free()\&. 
+String in XML format containing the NETCONF's <rpc> element and all of its content\&. Caller is responsible for freeing the returned string with free()\&. 
 .RE
 .PP
 
-.SS "\fBnc_rpc\fP* nc_rpc_build (const char *rpc_dump)"
+.SS "\fBnc_rpc\fP* nc_rpc_build (const char *rpc_dump, const struct nc_session *session)"
 
 .PP
 Build <rpc> message from the string\&. This is the reverse function of the \fBnc_rpc_dump()\fP\&. \fBParameters:\fP
 .RS 4
 \fIrpc_dump\fP String containing the NETCONF <rpc> message\&. 
+.br
+\fIsession\fP Session information needed for ACM\&. If NULL, ACM structure is not prepared and no ACM rules will be applied to the created RPC message\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -428,14 +430,14 @@ Get content of the operation specification from the given rpc\&. \fBParameters:\
 .PP
 \fBReturns:\fP
 .RS 4
-String in XML form starting with the operation name element\&. Caller is responsible for free of returned string with free()\&. 
+String in XML form starting with the operation name element\&. Caller is responsible for freeing the returned string with free()\&. 
 .RE
 .PP
 
 .SS "\fBNC_RPC_TYPE\fP nc_rpc_get_type (const \fBnc_rpc\fP *rpc)"
 
 .PP
-Get type of the rpc message\&. <rpc> message can affect datastore, session or it can be unknown for the libnetconf (defined by some of unsupported capability or device configuration model)
+Get type of the rpc message\&. <rpc> message can affect the datastore, the session or it can be unknown for the libnetconf (defined by an unsupported capability or device configuration model)
 .PP
 \fBParameters:\fP
 .RS 4
@@ -451,7 +453,7 @@ One of the \fBNC_RPC_TYPE\fP\&.
 .SS "\fBNC_DATASTORE\fP nc_rpc_get_target (const \fBnc_rpc\fP *rpc)"
 
 .PP
-Get target datastore type (running, startup, candidate) of the rpc request\&. For <rpc> message that does not affect datastore (e\&.g\&. kill-session), the \fBNC_DATASTORE_ERROR\fP is returned\&.
+Get the target datastore type (running, startup, candidate) of the rpc request\&. For <rpc> message that does not affect datastore (e\&.g\&. kill-session), the \fBNC_DATASTORE_ERROR\fP is returned\&.
 .PP
 \fBParameters:\fP
 .RS 4
@@ -467,7 +469,7 @@ One of the \fBNC_DATASTORE\fP\&.
 .SS "\fBNC_DATASTORE\fP nc_rpc_get_source (const \fBnc_rpc\fP *rpc)"
 
 .PP
-Get source datastore type (running, startup, candidate) of the rpc request\&. For <rpc> message that does not affect datastore (e\&.g\&. kill-session), the \fBNC_DATASTORE_ERROR\fP is returned\&.
+Get the source datastore type (running, startup, candidate) of the rpc request\&. For <rpc> message that does not affect datastore (e\&.g\&. kill-session), the \fBNC_DATASTORE_ERROR\fP is returned\&.
 .PP
 \fBParameters:\fP
 .RS 4
@@ -483,14 +485,14 @@ One of the \fBNC_DATASTORE\fP\&.
 .SS "char* nc_rpc_get_config (const \fBnc_rpc\fP *rpc)"
 
 .PP
-Get serialized content of the config parameter (<config> itself is not part of the returned data)\&. This function is valid only for <copy-config> and <edit-config> RPCs\&. \fBParameters:\fP
+Get serialized content of the config parameter (<config> itself is not a part of the returned data)\&. This function is valid only for <copy-config> and <edit-config> RPCs\&. \fBParameters:\fP
 .RS 4
 \fIrpc\fP <copy-config> or <edit-config> rpc message\&.
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Serialized XML or NULL if not available\&. Caller is responsible for free of returned string with free()\&. 
+Serialized XML or NULL if not available\&. Caller is responsible for freeing the returned string with free()\&. 
 .RE
 .PP
 
@@ -518,7 +520,7 @@ Get error-option type, valid only for <edit-config> RPCs\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-One of the \fBNC_EDIT_ERROPT_TYPE\fP, \fBNC_EDIT_ERROPT_ERROR\fP in case of error 
+One of the \fBNC_EDIT_ERROPT_TYPE\fP, \fBNC_EDIT_ERROPT_ERROR\fP in case of an error 
 .RE
 .PP
 
@@ -532,7 +534,7 @@ Get test-option type, valid only for <edit-config> RPCs supporting :validate:1\&
 .PP
 \fBReturns:\fP
 .RS 4
-One of the \fBNC_EDIT_TESTOPT_TYPE\fP, \fBNC_EDIT_TESTOPT_ERROR\fP in case of error 
+One of the \fBNC_EDIT_TESTOPT_TYPE\fP, \fBNC_EDIT_TESTOPT_ERROR\fP in case of an error 
 .RE
 .PP
 
@@ -546,7 +548,7 @@ Get filter from <get> or <get-config> RPC\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-pointer struct nc_filter or NULL if no filter specified 
+pointer to the struct nc_filter or NULL if no filter specified 
 .RE
 .PP
 
@@ -579,7 +581,7 @@ source is specified as \fBNC_DATASTORE_URL\fP:
 .IP "\(bu" 2
 target is specified as \fBNC_DATASTORE_URL\fP:
 .IP "  \(bu" 4
-\fBnc_rpc_copyconfig()\fP accepts as another (first or second according to eventual previous variadic parameter) variadic parameter \fBconst char* target_url\fP providing the URL to the target file\&.
+\fBnc_rpc_copyconfig()\fP accepts as another (first or second according to an eventual previous variadic parameter) variadic parameter \fBconst char* target_url\fP providing the URL to the target file\&.
 .PP
 
 .PP
@@ -588,7 +590,7 @@ The file that the url refers to contains the complete datastore, encoded in XML 
 .PP
 \fBParameters:\fP
 .RS 4
-\fIsource\fP Source configuration datastore type\&. If the \fBNC_DATASTORE_CONFIG\fP is specified, data parameter is used as the complete configuration to copy\&. 
+\fIsource\fP Source configuration of the datastore type\&. If the \fBNC_DATASTORE_CONFIG\fP is specified, data parameter is used as the complete configuration to copy\&. 
 .br
 \fItarget\fP Target configuration datastore type to be replaced\&. 
 .br
@@ -626,9 +628,9 @@ Create <edit-config> NETCONF rpc message\&. \fBParameters:\fP
 .br
 \fIsource\fP Specifies the type of the source data taken from the variadic parameter\&. Only \fBNC_DATASTORE_CONFIG\fP (variadic parameter contains the <config> data) and \fBNC_DATASTORE_URL\fP (variadic parameter contains URL for <url> element) values are accepted\&. 
 .br
-\fIdefault_operation\fP Default operation for this request, 0 to skip setting this parameter and use default server's ('merge') behavior\&. 
+\fIdefault_operation\fP Default operation for this request, 0 to skip setting this parameter and use the default server ('merge') behavior\&. 
 .br
-\fIerror_option\fP Set reaction to an error, 0 for the server's default behavior\&. 
+\fIerror_option\fP Set the response to an error, 0 for the server default behavior\&. 
 .br
 \fItest_option\fP Set test-option element according to :validate:1\&.1 capability specified in RFC 6241\&. 
 .br
@@ -651,7 +653,7 @@ Created rpc message\&.
 .PP
 Create <get> NETCONF rpc message\&. \fBParameters:\fP
 .RS 4
-\fIfilter\fP NETCONF filter or NULL if no filter required\&. 
+\fIfilter\fP NETCONF filter or NULL if no filter is required\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -745,7 +747,7 @@ Create <get-schema> NETCONF rpc message (RFC 6022)\&. \fBParameters:\fP
 .br
 \fIversion\fP Optional parameter specifying version of the requested schema\&. 
 .br
-\fIformat\fP optional parameter specifying the data modeling language of the schema\&. 
+\fIformat\fP Optional parameter specifying the data modeling language of the schema\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -757,7 +759,7 @@ Created rpc message\&.
 .SS "\fBnc_rpc\fP* nc_rpc_generic (const char *data)"
 
 .PP
-Create a generic NETCONF rpc message with specified content\&. Function gets data parameter and envelope it into <rpc> container\&. Caller is fully responsible for the correctness of the given data\&.
+Create a generic NETCONF rpc message with the specified content\&. Function gets the data parameter and envelopes it into <rpc> container\&. Caller is fully responsible for the correctness of the given data\&.
 .PP
 \fBParameters:\fP
 .RS 4
@@ -773,7 +775,7 @@ Created rpc message\&.
 .SS "int nc_rpc_capability_attr (\fBnc_rpc\fP *rpc, \fBNC_CAP_ATTR\fPattr, \&.\&.\&.)"
 
 .PP
-Set attribute of the given <rpc> specific for some NETCONF capability\&. .SS "Parameters for specific capability attributes:"
+Set the attribute of the given <rpc> specific for some NETCONF capability\&. .SS "Parameters for specific capability attributes:"
 .PP
 .IP "\(bu" 2
 \fBNC_CAP_ATTR_WITHDEFAULTS_MODE\fP
@@ -795,7 +797,7 @@ nc_rpc_capability_attr(rpc, \fBNC_CAP_ATTR_WITHDEFAULTS_MODE\fP, \fBNCWD_MODE_AL
 .RS 4
 \fIrpc\fP RPC to be modified\&. This RPC must be created by one of the nc_rpc* functions\&. RPC received by the server side's \fBnc_session_recv_rpc()\fP is not accepted\&. 
 .br
-\fIattr\fP RPC's attribute defined by a capability to be set or changed\&. List of accepted operations can be found in the description of this function\&. 
+\fIattr\fP RPC's attribute defined by a capability to be set or changed\&. The list of accepted operations can be found in the description of this function\&. 
 .RE
 .PP
 \fBReturns:\fP

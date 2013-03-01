@@ -1,4 +1,4 @@
-.TH "src/messages_xml.h" 3 "Wed Jan 23 2013" "Version 0.3.1" "libnetconf" \" -*- nroff -*-
+.TH "src/messages_xml.h" 3 "Fri Mar 1 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -21,7 +21,7 @@ src/messages_xml.h \-
 .ti -1c
 .RI "struct nc_filter * \fBncxml_filter_new\fP (\fBNC_FILTER_TYPE\fP type,\&.\&.\&.)"
 .br
-.RI "\fICreate new NETCONF filter of the specified type\&. \fP"
+.RI "\fICreate a new NETCONF filter of the specified type\&. \fP"
 .ti -1c
 .RI "xmlDocPtr \fBncxml_reply_dump\fP (const \fBnc_reply\fP *reply)"
 .br
@@ -35,13 +35,13 @@ src/messages_xml.h \-
 .br
 .RI "\fIDump the rpc message into a libxml2 document structure\&. \fP"
 .ti -1c
-.RI "\fBnc_rpc\fP * \fBncxml_rpc_build\fP (xmlDocPtr rpc_dump)"
+.RI "\fBnc_rpc\fP * \fBncxml_rpc_build\fP (xmlDocPtr rpc_dump, const struct nc_session *session)"
 .br
 .RI "\fIBuild <rpc> message from the libxml2 document structure\&. This is the reverse function of the \fBncxml_rpc_dump()\fP\&. \fP"
 .ti -1c
 .RI "xmlNodePtr \fBncxml_rpc_get_op_content\fP (const \fBnc_rpc\fP *rpc)"
 .br
-.RI "\fIGet content of the operation specification from the given rpc\&. \fP"
+.RI "\fIGet the content of the operation specification from the given rpc\&. \fP"
 .ti -1c
 .RI "xmlNodePtr \fBncxml_rpc_get_config\fP (const \fBnc_rpc\fP *rpc)"
 .br
@@ -65,7 +65,7 @@ src/messages_xml.h \-
 .ti -1c
 .RI "\fBnc_rpc\fP * \fBncxml_rpc_generic\fP (const xmlNodePtr data)"
 .br
-.RI "\fICreate a generic NETCONF rpc message with specified content\&. \fP"
+.RI "\fICreate a generic NETCONF rpc message with the specified content\&. \fP"
 .in -1c
 .SH "Author"
 .PP 

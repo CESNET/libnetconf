@@ -29,7 +29,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.3.1</span>
+   &#160;<span id="projectnumber">0.4.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -114,11 +114,11 @@ $(document).ready(function(){initNavTree('d8/dba/notifications__xml_8h.html','..
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions.">netconf.h</a>&quot;</span></div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d7/d62/notifications_8h.html" title="Functions to handle NETCONF Notifications.">notifications.h</a>&quot;</span></div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/dae/group__notifications__xml.html#ga21824f1e804eed5f8907eefdd9d03a85" title="Store new event into the specified stream. Parameters are specific for different events.">ncxmlntf_event_new</a>(time_t etime, <a class="code" href="../../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977" title="Enumeration of supported NETCONF event notifications.">NCNTF_EVENT</a> event, ...);</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/dae/group__notifications__xml.html#ga21824f1e804eed5f8907eefdd9d03a85" title="Store a new event into the specified stream. Parameters are specific for different events...">ncxmlntf_event_new</a>(time_t etime, <a class="code" href="../../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977" title="Enumeration of supported NETCONF event notifications.">NCNTF_EVENT</a> event, ...);</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<a class="code" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe" title="Event notification message.">nc_ntf</a>* <a class="code" href="../../db/dae/group__notifications__xml.html#gae1d3152a18bb5d030f9d42d62658986c" title="Create new &lt;notification&gt; message with the given eventTime and content.">ncxmlntf_notif_create</a>(time_t event_time, <span class="keyword">const</span> xmlNodePtr content);</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<a class="code" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe" title="Event notification message.">nc_ntf</a>* <a class="code" href="../../db/dae/group__notifications__xml.html#gae1d3152a18bb5d030f9d42d62658986c" title="Create a new &lt;notification&gt; message with the given eventTime and content.">ncxmlntf_notif_create</a>(time_t event_time, <span class="keyword">const</span> xmlNodePtr content);</div>
 <div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;xmlNodePtr <a class="code" href="../../db/dae/group__notifications__xml.html#ga26fc8f89287a14cc1da067d9aeb92fdf" title="Get description of the event reported in the notification message.">ncxmlntf_notif_get_content</a>(<a class="code" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe" title="Event notification message.">nc_ntf</a>* notif);</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;xmlNodePtr <a class="code" href="../../db/dae/group__notifications__xml.html#ga26fc8f89287a14cc1da067d9aeb92fdf" title="Get the description of the event reported in the notification message.">ncxmlntf_notif_get_content</a>(<a class="code" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe" title="Event notification message.">nc_ntf</a>* notif);</div>
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;</div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* NOTIFICATIONS_XML_H_ */</span><span class="preprocessor"></span></div>
 </div><!-- fragment --></div><!-- contents -->
@@ -127,7 +127,7 @@ $(document).ready(function(){initNavTree('d8/dba/notifications__xml_8h.html','..
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="d8/dba/notifications__xml_8h.html">notifications_xml.h</a></li>
-    <li class="footer">Generated on Wed Jan 23 2013 16:06:49 for libnetconf by
+    <li class="footer">Generated on Fri Mar 1 2013 14:49:30 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>
