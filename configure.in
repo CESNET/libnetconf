@@ -66,8 +66,8 @@ AC_SUBST(CONFIGURE_PWD)
 NC_WORKINGDIR_PATH="/usr/share/$PACKAGE_NAME/"
 SERVERCFG_PATH="/usr/share/$PACKAGE_NAME/server/"
 SETBIT=0
-SETUSER="NONE"
-SETGROUP="NONE"
+SETUSER=""
+SETGROUP=""
 
 LIBS="$LIBS -lrt -lutil"
 
@@ -160,17 +160,21 @@ AC_ARG_WITH([servercfgpath],
 )
 AC_ARG_WITH([suid],
 	AC_HELP_STRING([--with-suid=user],[When creating files or directories using libnetconf, rely on the SUID bit set and change their ownership to the specified user]),
-	SETBIT=1
-	SETUSER="$withval"
+	if test "$withval" != "no"; then
+		SETBIT=$(($SETBIT | 1))
+		if test "$withval" != "yes"; then
+			SETUSER="$withval"
+		fi		
+	fi
 )
 AC_ARG_WITH([sgid],
 	AC_HELP_STRING([--with-sgid=group],[When creating files or directories using libnetconf, rely on the SGID bit set and change their ownership to the specified group]),
-	if test "$SETBIT" = "1"; then
-		SETBIT=3; \
-	else \
-		SETBIT=2; \
-	fi
-	SETGROUP="$withval"
+	if test "$withval" != "no"; then
+		SETBIT=$(($SETBIT | 2))
+		if test "$withval" != "yes"; then
+			SETGROUP="$withval"
+		fi		
+	fi	
 )
 
 ############################ Check for programs ################################

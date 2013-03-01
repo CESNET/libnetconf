@@ -84,6 +84,12 @@ all: $(NAME) $(SUBDIRS)
 
 $(NAME): $(OBJS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OBJS) $(LIBS) -o $(NAME)
+	@if test "$$(($(SETBIT) & 1))" = "1"; then \
+		chmod u+s $(NAME); \
+	fi;
+	@if test "$$(($(SETBIT) & 2))" = "2"; then \
+		chmod g+s $(NAME); \
+	fi;
 
 .PHONY: static
 static: $(OBJS)
@@ -101,19 +107,24 @@ install: $(NAME)
 	$(INSTALL_PROGRAM) $(INSTALL_BIN_OPTIONS) $(NAME) $(DESTDIR)/$(bindir)/;
 	@[ -d $(SERVERCFG_PATH) ] || \
 		mkdir -p $(SERVERCFG_PATH);
-	if test "$(SETBIT)" = "1"; then \
-		(chmod -R 700 $(SERVERCFG_PATH); \
-		chown $(SETUSER) $(SERVERCFG_PATH)) \
-	elif test "$(SETBIT)" = "2"; then \
-		(chmod -R 070 $(SERVERCFG_PATH); \
-		chown :$(SETGROUP) $(SERVERCFG_PATH)) \
-	elif test "$(SETBIT)" = "3"; then \
-		(chmod -R 770 $(SERVERCFG_PATH); \
-		chown $(SETUSER):$(SETGROUP) $(SERVERCFG_PATH)) \
-	elif test "$(SETBIT)" = "0"; then \
-		chmod -R 777 $(SERVERCFG_PATH); \
-	fi
-	$(INSTALL_DATA) README.cfgdir $(SERVERCFG_PATH)/README
+	chmod -R 700 $(SERVERCFG_PATH);
+	$(INSTALL_DATA) README.cfgdir $(SERVERCFG_PATH)/README;
+	if test "$$(($(SETBIT) & 1))" = "1"; then \
+		if test -n "$(SETUSER)"; then \
+			chown -R $(SETUSER) $(SERVERCFG_PATH) || \
+				echo "WARNING: invalid group $(SETUSER)"; \
+		fi; \
+	fi; \
+	if test "$$(($(SETBIT) & 2))" = "2"; then \
+		chmod -R g+rwx $(SERVERCFG_PATH); \
+		if test -n "$(SETGROUP)"; then \
+			chown -R :$(SETGROUP) $(SERVERCFG_PATH) || \
+				echo "WARNING: invalid group $(SETGROUP)"; \
+		fi; \
+	fi; \
+	if test "$(SETBIT)" = "0"; then \
+		chmod -R a+rwx $(SERVERCFG_PATH); \
+	fi;
 
 .PHONY: uninstall
 uninstall:

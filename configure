@@ -2539,8 +2539,8 @@ CONFIGURE_PWD=`pwd`
 NC_WORKINGDIR_PATH="/usr/share/$PACKAGE_NAME/"
 SERVERCFG_PATH="/usr/share/$PACKAGE_NAME/server/"
 SETBIT=0
-SETUSER="NONE"
-SETGROUP="NONE"
+SETUSER=""
+SETGROUP=""
 
 LIBS="$LIBS -lrt -lutil"
 
@@ -2698,20 +2698,24 @@ fi
 
 # Check whether --with-suid was given.
 if test "${with_suid+set}" = set; then :
-  withval=$with_suid; SETBIT=1
-	SETUSER="$withval"
+  withval=$with_suid; if test "$withval" != "no"; then
+		SETBIT=$(($SETBIT | 1))
+		if test "$withval" != "yes"; then
+			SETUSER="$withval"
+		fi
+	fi
 
 fi
 
 
 # Check whether --with-sgid was given.
 if test "${with_sgid+set}" = set; then :
-  withval=$with_sgid; if test "$SETBIT" = "1"; then
-		SETBIT=3; \
-	else \
-		SETBIT=2; \
+  withval=$with_sgid; if test "$withval" != "no"; then
+		SETBIT=$(($SETBIT | 2))
+		if test "$withval" != "yes"; then
+			SETGROUP="$withval"
+		fi
 	fi
-	SETGROUP="$withval"
 
 fi
 
@@ -4348,7 +4352,6 @@ done
 
 
 
-
 if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
 	if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
@@ -4477,7 +4480,6 @@ if test -n "$LIBSSH2_HANDSHAKE_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_LIBSSH2_HANDSHAKE_CFLAGS=`$PKG_CONFIG --cflags "libssh2 >= "1.2.8"" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -4494,7 +4496,6 @@ if test -n "$LIBSSH2_HANDSHAKE_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_LIBSSH2_HANDSHAKE_LIBS=`$PKG_CONFIG --libs "libssh2 >= "1.2.8"" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -4514,9 +4515,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBSSH2_HANDSHAKE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libssh2 >= "1.2.8"" 2>&1`
+	        LIBSSH2_HANDSHAKE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libssh2 >= "1.2.8"" 2>&1`
         else
-	        LIBSSH2_HANDSHAKE_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libssh2 >= "1.2.8"" 2>&1`
+	        LIBSSH2_HANDSHAKE_PKG_ERRORS=`$PKG_CONFIG --print-errors "libssh2 >= "1.2.8"" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBSSH2_HANDSHAKE_PKG_ERRORS" >&5
@@ -4548,7 +4549,6 @@ if test -n "$LIBSSH2_TIMEOUT_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_LIBSSH2_TIMEOUT_CFLAGS=`$PKG_CONFIG --cflags "libssh2 >= "1.2.9"" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -4565,7 +4565,6 @@ if test -n "$LIBSSH2_TIMEOUT_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_LIBSSH2_TIMEOUT_LIBS=`$PKG_CONFIG --libs "libssh2 >= "1.2.9"" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -4585,9 +4584,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBSSH2_TIMEOUT_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libssh2 >= "1.2.9"" 2>&1`
+	        LIBSSH2_TIMEOUT_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libssh2 >= "1.2.9"" 2>&1`
         else
-	        LIBSSH2_TIMEOUT_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libssh2 >= "1.2.9"" 2>&1`
+	        LIBSSH2_TIMEOUT_PKG_ERRORS=`$PKG_CONFIG --print-errors "libssh2 >= "1.2.9"" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBSSH2_TIMEOUT_PKG_ERRORS" >&5
@@ -5149,7 +5148,6 @@ if test -n "$DBUS_CFLAGS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_DBUS_CFLAGS=`$PKG_CONFIG --cflags "dbus-1 >= 1.0.0" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -5166,7 +5164,6 @@ if test -n "$DBUS_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_DBUS_LIBS=`$PKG_CONFIG --libs "dbus-1 >= 1.0.0" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -5186,9 +5183,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        DBUS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "dbus-1 >= 1.0.0" 2>&1`
+	        DBUS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "dbus-1 >= 1.0.0" 2>&1`
         else
-	        DBUS_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "dbus-1 >= 1.0.0" 2>&1`
+	        DBUS_PKG_ERRORS=`$PKG_CONFIG --print-errors "dbus-1 >= 1.0.0" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$DBUS_PKG_ERRORS" >&5
