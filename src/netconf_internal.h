@@ -147,8 +147,13 @@
 /*
  * libnetconf paths
  */
-#define SESSIONSFILE_PATH	NC_WORKINGDIR_PATH "libnetconf_sessions.bin"
-#define NCNTF_STREAMS_PATH	NC_WORKINGDIR_PATH "streams/"
+#ifdef NC_WORKINGDIR_PATH
+#  define SESSIONSFILE_PATH  NC_WORKINGDIR_PATH"/libnetconf_sessions.bin"
+#  define NCNTF_STREAMS_PATH NC_WORKINGDIR_PATH"/streams/"
+#else
+#  define SESSIONSFILE_PATH  "/tmp/libnetconf_sessions.bin"
+#  define NCNTF_STREAMS_PATH "/tmp/streams/"
+#endif
 
 /*
  * libnetconf permissions for every file or dir creation, process mask used with special cases
