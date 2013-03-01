@@ -164,6 +164,8 @@ AC_ARG_WITH([suid],
 		SETBIT=$(($SETBIT | 1))
 		if test "$withval" != "yes"; then
 			SETUSER="$withval"
+		else
+			SETUSER="`id -un`"
 		fi		
 	fi
 )
@@ -173,6 +175,8 @@ AC_ARG_WITH([sgid],
 		SETBIT=$(($SETBIT | 2))
 		if test "$withval" != "yes"; then
 			SETGROUP="$withval"
+		else
+			SETGROUP="`id -gn`"
 		fi		
 	fi	
 )

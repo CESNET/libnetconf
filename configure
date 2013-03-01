@@ -2702,6 +2702,8 @@ if test "${with_suid+set}" = set; then :
 		SETBIT=$(($SETBIT | 1))
 		if test "$withval" != "yes"; then
 			SETUSER="$withval"
+		else
+			SETUSER="`id -un`"
 		fi
 	fi
 
@@ -2714,6 +2716,8 @@ if test "${with_sgid+set}" = set; then :
 		SETBIT=$(($SETBIT | 2))
 		if test "$withval" != "yes"; then
 			SETGROUP="$withval"
+		else
+			SETGROUP="`id -gn`"
 		fi
 	fi
 
