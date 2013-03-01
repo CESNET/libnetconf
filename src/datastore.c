@@ -1970,7 +1970,7 @@ void ncds_break_locks(const struct nc_session* session)
 	return;
 }
 
-const char* ncds_get_model_data(const char* namespace)
+const struct ncds_ds* ncds_get_model_data(const char* namespace)
 {
 	struct ncds_ds_list *ds;
 
@@ -1988,14 +1988,14 @@ const char* ncds_get_model_data(const char* namespace)
 		}
 
 		/* model found */
-		return (ds->datastore->model_name);
+		return (ds->datastore);
 	}
 
 	/* model not found */
 	return (NULL);
 }
 
-const char* ncds_get_model_operation(const char* operation, const char* namespace)
+const struct ncds_ds* ncds_get_model_operation(const char* operation, const char* namespace)
 {
 	struct ncds_ds_list *ds;
 	int i;
@@ -2016,7 +2016,7 @@ const char* ncds_get_model_operation(const char* operation, const char* namespac
 			for (i = 0; ds->datastore->rpcs[i] != NULL; i++) {
 				if (strcmp(ds->datastore->rpcs[i], operation) == 0) {
 					/* operation definition found */
-					return (ds->datastore->model_name);
+					return (ds->datastore);
 				}
 			}
 		}
@@ -2026,7 +2026,7 @@ const char* ncds_get_model_operation(const char* operation, const char* namespac
 	return (NULL);
 }
 
-const char* ncds_get_model_notification(const char* notification, const char* namespace)
+const struct ncds_ds* ncds_get_model_notification(const char* notification, const char* namespace)
 {
 	struct ncds_ds_list *ds;
 	int i;
@@ -2047,7 +2047,7 @@ const char* ncds_get_model_notification(const char* notification, const char* na
 			for (i = 0; ds->datastore->notifs[i] != NULL; i++) {
 				if (strcmp(ds->datastore->notifs[i], notification) == 0) {
 					/* notification definition found */
-					return (ds->datastore->model_name);
+					return (ds->datastore);
 				}
 			}
 		}

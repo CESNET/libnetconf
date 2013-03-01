@@ -54,6 +54,7 @@
 #include "netconf_internal.h"
 #include "nacm.h"
 #include "datastore.h"
+#include "datastore/datastore_internal.h"
 #include "notifications.h"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
@@ -1084,13 +1085,62 @@ int nacm_check_data_read(xmlDocPtr doc, const struct nacm_rpc* nacm)
 	return (EXIT_SUCCESS);
 }
 
+/*
+ * return 0 as false (nodes are not equivalent), 1 as true (model_node defines
+ * node in model)
+ */
+static int compare_node_to_model(const xmlNodePtr node, const xmlNodePtr model_node, const char* model_namespace)
+{
+	xmlChar* name;
+	xmlNodePtr model_parent;
+
+	/* \todo Add support for augment models */
+
+	if ((name = xmlGetProp (model_node, BAD_CAST "name")) == NULL) {
+		return (0);
+	}
+
+	if (xmlStrcmp(node->name, name) != 0) {
+		xmlFree(name);
+		return (0);
+	}
+	xmlFree(name);
+
+	if (node->ns == NULL || node->ns->href == NULL ||
+	    xmlStrcmp(node->ns->href, BAD_CAST model_namespace) != 0) {
+		return (0);
+	}
+
+	/* check namespace */
+	if (node->parent->type == XML_DOCUMENT_NODE) {
+		/* we are in the root */
+		if (xmlStrcmp(model_node->parent->name, BAD_CAST "module")) {
+			/* also in model we are on the top */
+			return (1);
+		} else {
+			/* there is something left in model */
+			return (0);
+		}
+	} else {
+		/* do recursion */
+		model_parent = model_node->parent;
+		while ((model_parent != NULL) && (model_parent->type == XML_ELEMENT_NODE) &&
+		    (xmlStrcmp(model_parent->name, BAD_CAST "choice") == 0)) {
+			model_parent = model_parent->parent;
+		}
+		return (compare_node_to_model(node->parent, model_parent, model_namespace));
+	}
+}
+
 int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_rpc* nacm)
 {
+	xmlXPathObjectPtr defdeny;
+	xmlXPathContextPtr model_ctxt = NULL;
 	xmlXPathContextPtr ctxt = NULL;
 	xmlXPathObjectPtr xpath_result = NULL;
 	struct nacm_ns *ns;
 	struct nacm_rule* rule;
-	const char* module;
+	const struct ncds_ds* module;
 	int i, j, k;
 
 	if (access == 0 || node == NULL || node->doc == NULL) {
@@ -1119,7 +1169,7 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 
 				/* 1) module name */
 				if (!(strcmp(rule->module, "*") == 0 ||
-				    strcmp(rule->module, module) == 0)) {
+				    strcmp(rule->module, module->model_name) == 0)) {
 					/* rule does not match */
 					continue;
 				}
@@ -1190,7 +1240,43 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 		}
 		/* no matching rule found */
 
-		/* \todo check nacm:default-deny-all and nacm:default-deny-write */
+		/* check nacm:default-deny-all and nacm:default-deny-write */
+		if ((model_ctxt = xmlXPathNewContext(module->model)) != NULL &&
+		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) == 0 &&
+		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "nacm", BAD_CAST NC_NS_NACM) == 0) {
+			if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:container//nacm:default-deny-all", model_ctxt)) != NULL) {
+				if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
+					/* process all default-deny-all elements */
+					for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
+						if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i], (char*) module->model_namespace) == 1) {
+							xmlXPathFreeObject(defdeny);
+							xmlXPathFreeContext(model_ctxt);
+							return (NACM_DENY);
+						}
+
+					}
+				}
+				xmlXPathFreeObject(defdeny);
+			}
+			if ((access & (NACM_ACCESS_CREATE | NACM_ACCESS_DELETE | NACM_ACCESS_UPDATE)) != 0) {
+				/* check default-deny-write */
+				if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:container//nacm:default-deny-write", model_ctxt)) != NULL ) {
+					if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
+						/* process all default-deny-all elements */
+						for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
+							if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i], (char*) module->model_namespace) == 1) {
+								xmlXPathFreeObject(defdeny);
+								xmlXPathFreeContext(model_ctxt);
+								return (NACM_DENY);
+							}
+
+						}
+					}
+					xmlXPathFreeObject(defdeny);
+				}
+			}
+		}
+		xmlXPathFreeContext(model_ctxt);
 	}
 	/* no matching rule found */
 
@@ -1208,10 +1294,13 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 
 int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 {
+	xmlXPathObjectPtr defdeny;
+	xmlXPathContextPtr model_ctxt = NULL;
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr ntfnode;
-	const char* ntfmodule;
+	const struct ncds_ds* ntfmodule;
 	struct nacm_rpc *nacm;
+	char* s;
 	int i, j, k;
 	int retval;
 	NCNTF_EVENT event;
@@ -1297,7 +1386,7 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 
 				/* 1) module name */
 				if (!(strcmp(nacm->rule_lists[i]->rules[j]->module, "*") == 0 ||
-				    strcmp(nacm->rule_lists[i]->rules[j]->module, ntfmodule) == 0)) {
+				    strcmp(nacm->rule_lists[i]->rules[j]->module, ntfmodule->model_name) == 0)) {
 					/* rule does not match */
 					continue;
 				}
@@ -1334,7 +1423,28 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 		}
 		/* no matching rule found */
 
-		/* \todo check nacm:default-deny-all */
+		/* check nacm:default-deny-all */
+		if ((model_ctxt = xmlXPathNewContext(ntfmodule->model)) != NULL &&
+		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) == 0 &&
+		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "nacm", BAD_CAST NC_NS_NACM) == 0) {
+			if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:notification//nacm:default-deny-all", model_ctxt)) != NULL) {
+				if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
+					/* process all default-deny-all elements */
+					for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
+						if ((s = (char*) xmlGetProp (defdeny->nodesetval->nodeTab[i], BAD_CAST "name")) != NULL) {
+							if (strcmp(s, (char*)(ntfnode->name)) == 0) {
+								xmlXPathFreeObject(defdeny);
+								xmlXPathFreeContext(model_ctxt);
+								return(NACM_DENY);
+							}
+						}
+
+					}
+				}
+				xmlXPathFreeObject(defdeny);
+			}
+		}
+		xmlXPathFreeContext(model_ctxt);
 	}
 	/* no matching rule found */
 
@@ -1354,9 +1464,12 @@ nacmfree:
 
 int nacm_check_operation(const nc_rpc* rpc)
 {
+	xmlXPathObjectPtr defdeny;
+	xmlXPathContextPtr model_ctxt = NULL;
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr opnode;
-	const char* opmodule;
+	const struct ncds_ds* opmodule;
+	char* s;
 	NC_OP op;
 	int i, j, k;
 
@@ -1400,7 +1513,7 @@ int nacm_check_operation(const nc_rpc* rpc)
 
 				/* 1) module name */
 				if (!(strcmp(rpc->nacm->rule_lists[i]->rules[j]->module, "*") == 0 ||
-				    strcmp(rpc->nacm->rule_lists[i]->rules[j]->module, opmodule) == 0)) {
+				    strcmp(rpc->nacm->rule_lists[i]->rules[j]->module, opmodule->model_name) == 0)) {
 					/* rule does not match */
 					continue;
 				}
@@ -1436,7 +1549,28 @@ int nacm_check_operation(const nc_rpc* rpc)
 		}
 		/* no matching rule found */
 
-		/* \todo check nacm:default-deny-all */
+		/* check nacm:default-deny-all */
+		if ((model_ctxt = xmlXPathNewContext(opmodule->model)) != NULL &&
+		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) == 0 &&
+		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "nacm", BAD_CAST NC_NS_NACM) == 0) {
+			if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:rpc//nacm:default-deny-all", model_ctxt)) != NULL) {
+				if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
+					/* process all default-deny-all elements */
+					for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
+						if ((s = (char*) xmlGetProp (defdeny->nodesetval->nodeTab[i], BAD_CAST "name")) != NULL) {
+							if (strcmp(s, (char*)(opnode->name)) == 0) {
+								xmlXPathFreeObject(defdeny);
+								xmlXPathFreeContext(model_ctxt);
+								return(NACM_DENY);
+							}
+						}
+
+					}
+				}
+				xmlXPathFreeObject(defdeny);
+			}
+		}
+		xmlXPathFreeContext(model_ctxt);
 	}
 	/* no matching rule found */
 
