@@ -79,6 +79,7 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
 
 extern struct nc_shared_info *nc_info;
+extern char* server_capabilities;
 
 struct auth_pref_couple
 {
@@ -738,6 +739,13 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		return (NULL);
 	}
 	retval->username = strdup(pw->pw_name);
+	retval->groups = nc_get_grouplist(retval->username);
+	/* detect if user ID is 0 -> then the session is recovery */
+	if (pw->pw_uid == 0) {
+		retval->nacm_recovery = 1;
+	} else {
+		retval->nacm_recovery = 0;
+	}
 
 	if (capabilities == NULL) {
 		if ((server_cpblts = nc_session_get_cpblts_default()) == NULL) {
@@ -798,7 +806,12 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 			}
 		}
 	}
-	retval->capabilities_original = serialize_cpblts(server_cpblts);
+
+	if (server_capabilities != NULL) {
+		free (server_capabilities);
+		server_capabilities = serialize_cpblts(server_cpblts);
+	}
+
 	retval->status = NC_SESSION_STATUS_WORKING;
 
 	/* add namespaces of used datastores as announced capabilities */
@@ -976,12 +989,14 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->ssh_session = NULL;
 	retval->hostname = strdup(host);
 	retval->username = strdup(username);
+	retval->groups = NULL; /* client side does not need this information */
 	retval->port = strdup(port_s);
 	retval->msgid = 1;
 	retval->queue_event = NULL;
 	retval->queue_msg = NULL;
 	retval->logintime = NULL;
 	retval->monitored = 0;
+	retval->nacm_recovery = 0; /* not needed/decidable on the client side */
 	retval->stats->in_rpcs = 0;
 	retval->stats->in_bad_rpcs = 0;
 	retval->stats->out_rpc_errors = 0;
@@ -1233,12 +1248,14 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->fd_output = -1;
 	retval->hostname = strdup(host);
 	retval->username = strdup(username);
+	retval->groups = NULL; /* client side does not need this information */
 	retval->port = strdup(port_s);
 	retval->msgid = 1;
 	retval->queue_event = NULL;
 	retval->queue_msg = NULL;
 	retval->logintime = NULL;
 	retval->monitored = 0;
+	retval->nacm_recovery = 0; /* not needed/decidable on the client side */
 	retval->stats->in_rpcs = 0;
 	retval->stats->in_bad_rpcs = 0;
 	retval->stats->out_rpc_errors = 0;
@@ -1464,7 +1481,11 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	} else {
 		client_cpblts = nc_cpblts_new(cpblts->list);
 	}
-	retval->capabilities_original = serialize_cpblts(client_cpblts);
+
+	if (server_capabilities != NULL) {
+		free (server_capabilities);
+		server_capabilities = serialize_cpblts(client_cpblts);
+	}
 
 	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
 		goto shutdown;

@@ -55,6 +55,7 @@
 #include "error.h"
 #include "messages_internal.h"
 #include "with_defaults.h"
+#include "nacm.h"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -181,6 +182,12 @@ static char* nc_msg_dump(const struct nc_msg *msg)
 	}
 
 	xmlDocDumpFormatMemory(msg->doc, &buf, &len, 1);
+
+	/*
+	 * NACM info is not dumped - this information is refreshed at the moment
+	 * of nc_msg_build()
+	 */
+
 	return ((char*) buf);
 }
 
@@ -260,6 +267,10 @@ static struct nc_msg* nc_msg_build (const char * msg_dump)
 	msg->error = NULL;
 	msg->with_defaults = NCWD_MODE_NOTSET;
 
+	/* NACM is set to NULL by default, if it is needed, caller (such as
+	 * nc_rpc_build() should store fresh NACM information */
+	msg->nacm = NULL;
+
 	return msg;
 }
 
@@ -321,7 +332,7 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 	xmlXPathContextPtr rpc_ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;
 	xmlChar* data;
-	NCWD_MODE retval;
+	NCWD_MODE retval = NCWD_MODE_NOTSET;
 
 	if (rpc == NULL || nc_rpc_get_type(rpc) == NC_RPC_HELLO) {
 		return (NCWD_MODE_NOTSET);
@@ -334,7 +345,7 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 
 	/* create xpath evaluation context */
 	if ((rpc_ctxt = xmlXPathNewContext(rpc->doc)) == NULL) {
-		WARN("%s: Creating the XPath context failed.", __func__)
+		WARN("%s: Creating the XPath context failed.", __func__);
 		/* with-defaults cannot be found */
 		return (NCWD_MODE_NOTSET);
 	}
@@ -345,36 +356,37 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *sessio
 	}
 
 	/* set with-defaults if any */
-	result = xmlXPathEvalExpression(BAD_CAST "//wd:with-defaults", rpc_ctxt);
-	if (result != NULL) {
-		switch(result->nodesetval->nodeNr) {
-		case 0:
-			/* set basic mode */
-			if (session != NULL) {
-				retval = session->wd_basic;
-			} else {
-				retval = NCWD_MODE_NOTSET;
+	if ((result = xmlXPathEvalExpression(BAD_CAST "//wd:with-defaults", rpc_ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
+			switch (result->nodesetval->nodeNr) {
+			case 0:
+				/* set basic mode */
+				if (session != NULL) {
+					retval = session->wd_basic;
+				} else {
+					retval = NCWD_MODE_NOTSET;
+				}
+				break;
+			case 1:
+				data = xmlNodeGetContent(result->nodesetval->nodeTab[0]);
+				if (xmlStrcmp(data, BAD_CAST "report-all") == 0) {
+					retval = NCWD_MODE_ALL;
+				} else if (xmlStrcmp(data, BAD_CAST "report-all-tagged") == 0) {
+					retval = NCWD_MODE_ALL_TAGGED;
+				} else if (xmlStrcmp(data, BAD_CAST "trim") == 0) {
+					retval = NCWD_MODE_TRIM;
+				} else if (xmlStrcmp(data, BAD_CAST "explicit") == 0) {
+					retval = NCWD_MODE_EXPLICIT;
+				} else {
+					WARN("%s: unknown with-defaults mode detected (%s), disabling with-defaults.", __func__, data);
+					retval = NCWD_MODE_NOTSET;
+				}
+				xmlFree(data);
+				break;
+			default:
+				/* retval = NCWD_MODE_NOTSET; */
+				break;
 			}
-			break;
-		case 1:
-			data = xmlNodeGetContent(result->nodesetval->nodeTab[0]);
-			if (xmlStrcmp(data, BAD_CAST "report-all") == 0) {
-				retval = NCWD_MODE_ALL;
-			} else if (xmlStrcmp(data, BAD_CAST "report-all-tagged") == 0) {
-				retval = NCWD_MODE_ALL_TAGGED;
-			} else if (xmlStrcmp(data, BAD_CAST "trim") == 0) {
-				retval = NCWD_MODE_TRIM;
-			} else if (xmlStrcmp(data, BAD_CAST "explicit") == 0) {
-				retval = NCWD_MODE_EXPLICIT;
-			} else {
-				WARN("%s: unknown with-defaults mode detected (%s), disabling with-defaults.", __func__, data);
-				retval = NCWD_MODE_NOTSET;
-			}
-			xmlFree(data);
-			break;
-		default:
-			retval = NCWD_MODE_NOTSET;
-			break;
 		}
 		xmlXPathFreeObject(result);
 	} else {
@@ -425,7 +437,7 @@ NC_RPC_TYPE nc_rpc_parse_type(nc_rpc* rpc)
 	return (rpc->type.rpc);
 }
 
-nc_rpc * nc_rpc_build (const char * rpc_dump)
+nc_rpc * nc_rpc_build (const char* rpc_dump, const struct nc_session* session)
 {
 	nc_rpc* rpc;
 
@@ -439,10 +451,15 @@ nc_rpc * nc_rpc_build (const char * rpc_dump)
 	/* set with-defaults if any */
 	nc_rpc_parse_withdefaults(rpc, NULL);
 
+	if (session != NULL) {
+		/* NACM init */
+		nacm_start(rpc, session);
+	}
+
 	return rpc;
 }
 
-nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump)
+nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump, const struct nc_session* session)
 {
 	nc_rpc* rpc;
 
@@ -455,6 +472,11 @@ nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump)
 
 	/* set with-defaults if any */
 	nc_rpc_parse_withdefaults(rpc, NULL);
+
+	if (session != NULL) {
+		/* NACM init */
+		nacm_start(rpc, session);
+	}
 
 	return rpc;
 }
@@ -640,27 +662,28 @@ char* nc_rpc_get_op_content (const nc_rpc* rpc)
 		return NULL;
 	}
 
-	result = xmlXPathEvalExpression(BAD_CAST  "/"NC_NS_BASE10_ID":rpc/*", rpc->ctxt);
-	if (result != NULL && !xmlXPathNodeSetIsEmpty(result->nodesetval) ) {
-		buffer = xmlBufferCreate();
-		if (buffer == NULL) {
-			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
-			return NULL;
-		}
-		if ((root = xmlDocGetRootElement (rpc->doc)) == NULL) {
-			return NULL;
-		}
+	if ((result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*", rpc->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
+			buffer = xmlBufferCreate();
+			if (buffer == NULL) {
+				ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+				return NULL;
+			}
+			if ((root = xmlDocGetRootElement(rpc->doc)) == NULL) {
+				return NULL;
+			}
 
-		/* by copying node, move all needed namespaces into the content nodes */
-		aux_doc = xmlNewDoc(BAD_CAST "1.0");
-		xmlDocSetRootElement(aux_doc, xmlCopyNodeList(root->children));
-		for (i = 0; i < result->nodesetval->nodeNr; i++) {
-			xmlNodeDump (buffer, aux_doc, result->nodesetval->nodeTab[i], 1, 1);
+			/* by copying node, move all needed namespaces into the content nodes */
+			aux_doc = xmlNewDoc(BAD_CAST "1.0");
+			xmlDocSetRootElement(aux_doc, xmlCopyNodeList(root->children));
+			for (i = 0; i < result->nodesetval->nodeNr; i++) {
+				xmlNodeDump(buffer, aux_doc, result->nodesetval->nodeTab[i], 1, 1);
+			}
+			retval = strdup((char *) xmlBufferContent(buffer));
+			xmlBufferFree(buffer);
+			xmlFreeDoc(aux_doc);
 		}
-		retval = strdup((char *)xmlBufferContent (buffer));
 		xmlXPathFreeObject(result);
-		xmlBufferFree (buffer);
-		xmlFreeDoc(aux_doc);
 	}
 
 	return retval;
@@ -952,6 +975,7 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
 				ERROR("%s: multiple default-operation elements found in edit-config request", __func__);
+				xmlXPathFreeObject(query_result);
 				return (NC_EDIT_DEFOP_ERROR);
 			}
 			defop = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
@@ -988,6 +1012,7 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
 				ERROR("%s: multiple error-option elements found in the edit-config request", __func__);
+				xmlXPathFreeObject(query_result);
 				return (NC_EDIT_ERROPT_ERROR);
 			}
 			erropt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
@@ -1024,6 +1049,7 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
 				ERROR("%s: multiple test-option elements found in the edit-config request", __func__);
+				xmlXPathFreeObject(query_result);
 				return (NC_EDIT_TESTOPT_ERROR);
 			}
 			testopt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
@@ -1065,11 +1091,12 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
 				ERROR("%s: multiple filter elements found", __func__);
+				xmlXPathFreeObject(query_result);
 				return (NULL);
 			}
 			filter_node = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
-			xmlXPathFreeObject(query_result);
 		}
+		xmlXPathFreeObject(query_result);
 	}
 
 	if (filter_node != NULL) {
@@ -1112,11 +1139,12 @@ char *nc_reply_get_data(const nc_reply *reply)
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
 				ERROR("%s: multiple data elements found", __func__);
+				xmlXPathFreeObject(query_result);
 				return (NULL);
 			}
 			data = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
-			xmlXPathFreeObject(query_result);
 		}
+		xmlXPathFreeObject(query_result);
 	}
 
 	if (data == NULL) {
@@ -1129,7 +1157,7 @@ char *nc_reply_get_data(const nc_reply *reply)
 	}
 
 	aux_doc = xmlNewDoc(BAD_CAST "1.0");
-	xmlDocSetRootElement(aux_doc, xmlCopyNode(data, 1));
+	xmlDocSetRootElement(aux_doc, data);
 	for (aux_data = aux_doc->children->children; aux_data != NULL; aux_data = aux_data->next) {
 		if (aux_data->type == XML_ELEMENT_NODE) {
 			xmlNodeDump(data_buf, aux_doc, aux_data, 1, 1);
@@ -1161,11 +1189,12 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
 				ERROR("%s: multiple data elements found", __func__);
+				xmlXPathFreeObject(query_result);
 				return (NULL);
 			}
 			data = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
-			xmlXPathFreeObject(query_result);
 		}
+		xmlXPathFreeObject(query_result);
 	}
 
 	if (data == NULL) {
@@ -1173,7 +1202,7 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 		return(NULL);
 	}
 
-	return (xmlCopyNode(data, 1));
+	return (data);
 }
 
 const char *nc_reply_get_errormsg(const nc_reply *reply)
@@ -1243,6 +1272,7 @@ nc_rpc *nc_msg_client_hello(char **cpblts)
 void nc_msg_free(struct nc_msg *msg)
 {
 	struct nc_err* e, *efree;
+	int i;
 
 	if (msg != NULL && msg != ((void *) -1)) {
 		if (msg->doc != NULL) {
@@ -1260,6 +1290,13 @@ void nc_msg_free(struct nc_msg *msg)
 		}
 		if (msg->msgid != NULL) {
 			free(msg->msgid);
+		}
+		if (msg->nacm != NULL) {
+			for (i = 0; msg->nacm->rule_lists != NULL && msg->nacm->rule_lists[i] != NULL; i++) {
+				nacm_rule_list_free(msg->nacm->rule_lists[i]);
+			}
+			free(msg->nacm->rule_lists);
+			free(msg->nacm);
 		}
 		free(msg);
 	}
@@ -1287,6 +1324,15 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 	dupmsg->doc = xmlCopyDoc(msg->doc, 1);
 	dupmsg->type = msg->type;
 	dupmsg->with_defaults = msg->with_defaults;
+	if (msg->nacm != NULL) {
+		dupmsg->nacm = malloc(sizeof(struct nacm_rpc));
+		dupmsg->nacm->default_exec = msg->nacm->default_exec;
+		dupmsg->nacm->default_read = msg->nacm->default_read;
+		dupmsg->nacm->default_write = msg->nacm->default_write;
+		dupmsg->nacm->rule_lists = nacm_rule_lists_dup(msg->nacm->rule_lists);
+	} else {
+		dupmsg->nacm = NULL;
+	}
 	if (msg->msgid != NULL) {
 		dupmsg->msgid = strdup(msg->msgid);
 	} else {
@@ -1418,6 +1464,7 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 	msg->msgid = NULL;
 	msg->error = NULL;
 	msg->with_defaults = NCWD_MODE_NOTSET;
+	msg->nacm = NULL;
 
 	/* create xpath evaluation context */
 	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
@@ -1755,56 +1802,76 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 	return (EXIT_SUCCESS);
 }
 
-nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
+nc_reply* nc_reply_merge(int count, ...)
 {
 	nc_reply *merged_reply = NULL;
 	nc_reply ** to_merge = NULL;
-	NC_REPLY_TYPE type, type_aux;
+	NC_REPLY_TYPE type = -1, type_aux;
 	va_list ap;
-	int i, len = 0;
+	int i, j, len = 0;
 	char * tmp, * data = NULL;
 
 	/* params check */
 	if (count < 2) {
-		ERROR("%s: count must be >= 2 (was %d)", __func__, count);
-		return NULL;
+		WARN("%s: you should merge 2 or more reply messages (currently merging %d reply message)", __func__, count);
+		if (count < 1) {
+			return (NULL);
+		}
 	}
 
-	if (msg1 == NULL || msg2 == NULL) {
-		ERROR("%s: Invalid input messages to merge.", __func__);
-		return NULL;
-	}
-
-	/* get type and check that first two have the same type */
-	if (((type = nc_reply_get_type(msg1)) != (type_aux = nc_reply_get_type(msg2))) || type == NC_REPLY_UNKNOWN) {
-		ERROR("%s: the type of the second reply message differs (%d:%d)", __func__, type, type_aux);
-		return NULL;
+	to_merge = malloc((count + 1) * sizeof(nc_reply*));
+	if (to_merge == NULL) {
+		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
 	}
 
 	/* initialize argument vector */
-	va_start (ap, msg2);
-
-	/* allocate array for message pointers */
-	to_merge = malloc(sizeof(nc_reply*) * count);
-	to_merge[0] = msg1;
-	to_merge[1] = msg2;
-
-	/* get all messages and check their type */
-	for (i = 2; i < count; i++) {
-		if ((to_merge[i] = va_arg(ap, nc_reply*)) == NULL) {
+	va_start (ap, count);
+	for(i = j = 0; i < count; i++, j++) {
+		if ((to_merge[j] = va_arg(ap, nc_reply*)) == NULL) {
 			ERROR("%s: invalid input message %d", __func__, i+1);
 			free(to_merge);
 			va_end(ap);
 			return NULL;
 		}
-		if (type != (type_aux = nc_reply_get_type(to_merge[i]))) {
+		if (to_merge[j] == NULL || to_merge[j] == (void*)(-1)) {
+			/* invalid reply will not be merged */
+			j--;
+			to_merge[j] = NULL; /* list terminating NULL byte */
+			continue;
+		}
+
+		if (type == -1) {
+			/* no type set yet */
+			type = nc_reply_get_type(to_merge[j]);
+		} else if (type != (type_aux = nc_reply_get_type(to_merge[j]))) {
 			ERROR("%s: the type of the message %d differs (%d:%d)", __func__, i+1, type, type_aux);
 			free(to_merge);
 			va_end(ap);
 			return NULL;
 		}
+
+		/* set list terminating NULL byte */
+		to_merge[j+1] = NULL;
+	}
+	/* real count of valid reply messages to merge */
+	count = j;
+
+	if (count == 0) {
+		/* no valid reply message to merge */
+		free(to_merge);
+		va_end(ap);
+		return (NULL);
+	} else if (count == 1) {
+		/* we have only one message to merge - provide its duplication */
+		merged_reply = nc_reply_dup(to_merge[0]);
+		nc_reply_free(to_merge[0]);
+		free(to_merge);
+		va_end(ap);
+		return (merged_reply);
 	}
 
+	/* merge all valid reply messages */
 	switch (type) {
 	case NC_REPLY_OK:
 		/* just OK */
@@ -1848,7 +1915,7 @@ nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...)
 	/* finalize argument vector */
 	va_end(ap);
 
-	return merged_reply;
+	return (merged_reply);
 }
 
 nc_rpc *nc_rpc_closesession()
@@ -2021,8 +2088,8 @@ nc_rpc_capability_attr_new_elem:
 						xmlUnlinkNode(query_result->nodesetval->nodeTab[i]);
 						xmlFreeNode(query_result->nodesetval->nodeTab[i]);
 					}
-					xmlXPathFreeObject(query_result);
 				}
+				xmlXPathFreeObject(query_result);
 			}
 
 		}

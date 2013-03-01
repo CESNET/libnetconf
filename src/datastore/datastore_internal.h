@@ -55,9 +55,9 @@ struct ncds_funcs {
 	int (*lock)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 	int (*unlock)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 	char* (*getconfig)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
-	int (*copyconfig)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, NC_DATASTORE source, char* config, struct nc_err** error);
+	int (*copyconfig)(struct ncds_ds* ds, const struct nc_session* session, const nc_rpc* rpc, NC_DATASTORE target, NC_DATASTORE source, char* config, struct nc_err** error);
 	int (*deleteconfig)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
-	int (*editconfig)(struct ncds_ds *ds, const struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
+	int (*editconfig)(struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 };
 
 struct ncds_ds {
@@ -73,6 +73,26 @@ struct ncds_ds {
 	 * @brief Path to the file containing YIN configuration data model
 	 */
 	char* model_path;
+	/**
+	 * @brief Name of the model
+	 */
+	char* model_name;
+	/**
+	 * @brief Revision of the model
+	 */
+	char* model_version;
+	/**
+	 * @brief Namespace of the model
+	 */
+	char* model_namespace;
+	/**
+	 * @brief List of defined RPCs
+	 */
+	char** rpcs;
+	/**
+	 * @brief List of defined notifications
+	 */
+	char** notifs;
 	/**
 	 * @brief YIN configuration data model in the libxml2's document form.
 	 */

@@ -152,10 +152,10 @@ NCWD_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc)
 	return (rpc->with_defaults);
 }
 
-static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mode, xmlNodePtr** created)
+static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* namespace, NCWD_MODE mode, xmlNodePtr** created)
 {
 	xmlNodePtr *parents = NULL, *retvals = NULL, *created_local = NULL;
-	xmlNodePtr aux = NULL, aux2 = NULL;
+	xmlNodePtr aux = NULL;
 	xmlNsPtr ns;
 	xmlChar* value = NULL, *name, *value2;
 	int i, j, k, size = 0;
@@ -197,7 +197,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mod
 		return (NULL);
 	} else if (xmlStrcmp(node->parent->name, BAD_CAST "module") != 0) {
 		/* we will get parent of the config's equivalent of the node */
-		parents = fill_default(config, node->parent, mode, &created_local);
+		parents = fill_default(config, node->parent, namespace, mode, &created_local);
 	} else {
 		/* we are in the root */
 		aux = config->children;
@@ -223,20 +223,8 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mod
 					xmlAddSibling(config->children, aux);
 				}
 				/* set namespace */
-				if (node->doc != NULL) {
-					for (aux2 = xmlDocGetRootElement(node->doc)->children; aux2 != NULL; aux2 = aux2->next) {
-						if (aux2->type != XML_ELEMENT_NODE) {
-							continue;
-						}
-						if (xmlStrcmp(aux2->name, BAD_CAST "namespace") != 0) {
-							continue;
-						}
-						value = xmlGetProp(aux2, BAD_CAST "uri");
-						break;
-					}
-					ns = xmlNewNs(aux, BAD_CAST value, NULL);
-					xmlSetNs(aux, ns);
-				}
+				ns = xmlNewNs(aux, BAD_CAST namespace, NULL);
+				xmlSetNs(aux, ns);
 
 				/* remember created node, for later remove if no default child will be created */
 				if (created_count == created_size-1) {
@@ -387,6 +375,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mod
 						size += 32;
 						retvals = (xmlNodePtr*) realloc(retvals, size * sizeof(xmlNodePtr));
 					}
+					/* no new equivalent node found -> create one */
 					retvals[j] = xmlNewChild(parents[i], parents[i]->ns, name, NULL);
 					j++;
 					retvals[j] = NULL; /* list terminating NULL */
@@ -437,7 +426,10 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, NCWD_MODE mod
 int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mode)
 {
 	xmlXPathContextPtr model_ctxt = NULL;
-	xmlXPathObjectPtr defaults = NULL;
+	xmlXPathObjectPtr defaults = NULL, query;
+	xmlNodePtr root;
+	xmlNsPtr ns;
+	xmlChar* namespace;
 	int i;
 
 	if (config == NULL || model == NULL) {
@@ -456,18 +448,38 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 		return (EXIT_FAILURE);
 	}
 	if (xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) != 0) {
+		ERROR("%s: Registering yin namespace for the model xpath context failed.", __func__);
 		xmlXPathFreeContext(model_ctxt);
 		return (EXIT_FAILURE);
 	}
-	defaults = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:container//yin:default", model_ctxt);
-	if (defaults != NULL) {
-		/* process all defaults elements */
-		for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
-			fill_default(config, defaults->nodesetval->nodeTab[i], mode, NULL);
-		}
+	if ((query = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:namespace", model_ctxt)) == NULL) {
+		ERROR("%s: Unable to get namespace from the data model.", __func__);
+		xmlXPathFreeContext(model_ctxt);
+		return (EXIT_FAILURE);
+	}
+	if (xmlXPathNodeSetIsEmpty(query->nodesetval) || (namespace = xmlGetProp(query->nodesetval->nodeTab[0], BAD_CAST "uri")) == NULL) {
+		ERROR("%s: Unable to get namespace from the data model.", __func__);
+		xmlXPathFreeObject(query);
+		xmlXPathFreeContext(model_ctxt);
+		return (EXIT_FAILURE);
+	}
+	xmlXPathFreeObject(query);
 
+	if ((defaults = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:container//yin:default", model_ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(defaults->nodesetval)) {
+			/* if report-all-tagged, add namespace for default attribute into the whole doc */
+			if (mode == NCWD_MODE_ALL_TAGGED) {
+				ns = xmlNewNs(root = xmlDocGetRootElement(config), BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
+				xmlSetNs(root, ns);
+			}
+			/* process all defaults elements */
+			for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
+				fill_default(config, defaults->nodesetval->nodeTab[i], (char*)namespace, mode, NULL);
+			}
+		}
 		xmlXPathFreeObject(defaults);
 	}
+	xmlFree(namespace);
 	xmlXPathFreeContext(model_ctxt);
 
 	return (EXIT_SUCCESS);

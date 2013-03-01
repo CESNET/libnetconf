@@ -57,6 +57,7 @@
 #include "with_defaults.h"
 #include "session.h"
 #include "datastore.h"
+#include "nacm.h"
 #include "datastore/edit_config.h"
 #include "datastore/datastore_internal.h"
 #include "datastore/file/datastore_file.h"
@@ -70,79 +71,131 @@
 #include "../models/ietf-netconf-notifications.xxd"
 #include "../models/ietf-netconf-with-defaults.xxd"
 #include "../models/nc-notifications.xxd"
+#include "../models/ietf-netconf-acm.xxd"
+#include "../models/ietf-netconf.xxd"
+#include "../models/notifications.xxd"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 extern struct nc_shared_info *nc_info;
 
-struct ncds_ds_list
-{
+char* server_capabilities = NULL;
+
+struct ncds_ds_list {
 	struct ncds_ds *datastore;
 	struct ncds_ds_list* next;
 };
 
-/**
- * @brief Internal list of the initiated datastores.
- * By default, the list contains an internal datastore with ID 0 to get libnetconf
- * internal state information
- */
-static struct ncds_ds int_ds = {
-		NCDS_TYPE_EMPTY,
-		0,
-		NULL,
-		NULL,
-		NULL,
-		{
-				NULL,
-				NULL,
-				ncds_empty_lockinfo,
-				ncds_empty_lock,
-				ncds_empty_unlock,
-				ncds_empty_getconfig,
-				ncds_empty_copyconfig,
-				ncds_empty_deleteconfig,
-				ncds_empty_editconfig
-		}
+struct ds_desc {
+	NCDS_TYPE type;
+	char* filename;
 };
-static struct ncds_ds_list int_ds_list = {&int_ds, NULL};
-static struct ncds_ds_list *datastores = &int_ds_list;
+
+static struct ncds_ds_list *datastores = NULL;
+
+char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
+int get_model_info(xmlDocPtr model, char **name, char **version, char **namespace, char ***rpcs, char ***notifs);
+
+#ifndef DISABLE_NOTIFICATIONS
+char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
+#endif
 
 static struct ncds_ds *datastores_get_ds(ncds_id id);
+
+#ifndef DISABLE_NOTIFICATIONS
+#define INTERNAL_DS_COUNT 7
+#else
 #define INTERNAL_DS_COUNT 4
+#endif
 int ncds_sysinit(void)
 {
 	int i;
 	struct ncds_ds *ds;
 	struct ncds_ds_list *dsitem;
 	unsigned char* model[INTERNAL_DS_COUNT] = {
+			ietf_netconf_yin,
 			ietf_netconf_monitoring_yin,
+#ifndef DISABLE_NOTIFICATIONS
 			ietf_netconf_notifications_yin,
+			nc_notifications_yin,
+			notifications_yin,
+#endif
 			ietf_netconf_with_defaults_yin,
-			nc_notifications_yin
+			ietf_netconf_acm_yin
 	};
 	unsigned int model_len[INTERNAL_DS_COUNT] = {
+			ietf_netconf_yin_len,
 			ietf_netconf_monitoring_yin_len,
+#ifndef DISABLE_NOTIFICATIONS
 			ietf_netconf_notifications_yin_len,
+			nc_notifications_yin_len,
+			notifications_yin_len,
+#endif
 			ietf_netconf_with_defaults_yin_len,
-			nc_notifications_yin_len
+			ietf_netconf_acm_yin_len
+	};
+	char* (*get_state_funcs[INTERNAL_DS_COUNT])(const char* model, const char* running, struct nc_err ** e) = {
+			NULL, /* ietf-netconf */
+			get_state_monitoring, /* ietf-netconf-monitoring */
+#ifndef DISABLE_NOTIFICATIONS
+			get_state_notifications, /* ietf-netconf-notifications */
+			NULL, /* nc-notifications */
+			NULL, /* notifications */
+#endif
+			NULL, /* ietf-netconf-with-defaults */
+			NULL /* \todo: add function to get NACM status data */
+	};
+	struct ds_desc internal_ds_desc[INTERNAL_DS_COUNT] = {
+			{NCDS_TYPE_EMPTY, NULL},
+			{NCDS_TYPE_EMPTY, NULL},
+#ifndef DISABLE_NOTIFICATIONS
+			{NCDS_TYPE_EMPTY, NULL}, /* ietf-netconf-notifications */
+			{NCDS_TYPE_EMPTY, NULL}, /* nc-notifications */
+			{NCDS_TYPE_EMPTY, NULL}, /* notifications */
+#endif
+			{NCDS_TYPE_EMPTY, NULL},
+			{NCDS_TYPE_FILE, "/usr/share/libnetconf/datastore-acm.xml"}
 	};
 
-
 	for (i = 0; i < INTERNAL_DS_COUNT; i++) {
-		if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty))) == NULL) {
-			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-			return (EXIT_FAILURE);
+		switch(internal_ds_desc[i].type) {
+		case NCDS_TYPE_EMPTY:
+			if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty))) == NULL) {
+				ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+				return (EXIT_FAILURE);
+			}
+			ds->func.init = ncds_empty_init;
+			ds->func.free = ncds_empty_free;
+			ds->func.get_lockinfo = ncds_empty_lockinfo;
+			ds->func.lock = ncds_empty_lock;
+			ds->func.unlock = ncds_empty_unlock;
+			ds->func.getconfig = ncds_empty_getconfig;
+			ds->func.copyconfig = ncds_empty_copyconfig;
+			ds->func.deleteconfig = ncds_empty_deleteconfig;
+			ds->func.editconfig = ncds_empty_editconfig;
+			ds->type = NCDS_TYPE_EMPTY;
+			break;
+		case NCDS_TYPE_FILE:
+			if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file))) == NULL) {
+				ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+				return (EXIT_FAILURE);
+			}
+			ds->func.init = ncds_file_init;
+			ds->func.free = ncds_file_free;
+			ds->func.get_lockinfo = ncds_file_lockinfo;
+			ds->func.lock = ncds_file_lock;
+			ds->func.unlock = ncds_file_unlock;
+			ds->func.getconfig = ncds_file_getconfig;
+			ds->func.copyconfig = ncds_file_copyconfig;
+			ds->func.deleteconfig = ncds_file_deleteconfig;
+			ds->func.editconfig = ncds_file_editconfig;
+			ds->type = NCDS_TYPE_FILE;
+			if (ncds_file_set_path(ds, internal_ds_desc[i].filename) != 0) {
+				ERROR("Linking internal datastore to a file (%s) failed.", internal_ds_desc[i].filename);
+				return (EXIT_FAILURE);
+			}
+			break;
 		}
-		ds->func.init = ncds_empty_init;
-		ds->func.free = ncds_empty_free;
-		ds->func.get_lockinfo = ncds_empty_lockinfo;
-		ds->func.lock = ncds_empty_lock;
-		ds->func.unlock = ncds_empty_unlock;
-		ds->func.getconfig = ncds_empty_getconfig;
-		ds->func.copyconfig = ncds_empty_copyconfig;
-		ds->func.deleteconfig = ncds_empty_deleteconfig;
-		ds->func.editconfig = ncds_empty_editconfig;
-		ds->type = NCDS_TYPE_EMPTY;
 		ds->id = i;
 
 		ds->model = xmlReadMemory ((char*)model[i], model_len[i], NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
@@ -151,8 +204,17 @@ int ncds_sysinit(void)
 			free (ds);
 			return (EXIT_FAILURE);
 		}
+		if (get_model_info(ds->model, &(ds->model_name), &(ds->model_version), &(ds->model_namespace), &(ds->rpcs), &(ds->notifs)) != 0) {
+			ERROR("Unable to process internal configuration data model.");
+			xmlFreeDoc(ds->model);
+			free(ds);
+			return (EXIT_FAILURE);
+		}
 		ds->model_path = NULL;
-		ds->get_state = NULL;
+		ds->get_state = get_state_funcs[i];
+
+		/* init */
+		ds->func.init(ds);
 
 		/* add to list */
 		if ((dsitem = malloc (sizeof(struct ncds_ds_list))) == NULL ) {
@@ -257,20 +319,22 @@ const char * ncds_get_model_path(ncds_id id)
 	return datastore->model_path;
 }
 
-int get_model_info(xmlDocPtr model, char **name, char **version, char **namespace)
+int get_model_info(xmlDocPtr model, char **name, char **version, char **namespace, char ***rpcs, char ***notifs)
 {
 	xmlXPathContextPtr model_ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;
 	xmlChar *xml_aux;
 	int i, j, l;
 
+	if (notifs) {*notifs = NULL;}
+	if (rpcs) {*rpcs = NULL;}
 	if (namespace) { *namespace = NULL;}
 	if (name) {*name = NULL;}
 	if (version) {*version = NULL;}
 
 	/* prepare xpath evaluation context of the model for XPath */
 	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
-		ERROR("%s: Creating XPath context failed.", __func__)
+		ERROR("%s: Creating XPath context failed.", __func__);
 		/* with-defaults cannot be found */
 		return (EXIT_FAILURE);
 	}
@@ -315,12 +379,12 @@ int get_model_info(xmlDocPtr model, char **name, char **version, char **namespac
 							continue;
 						}
 						for (j = 0; j < l; j++) {
-							if (xml_aux[j] > *version[j]) {
+							if (xml_aux[j] > (*version)[j]) {
 								free (*version);
 								*version = (char*)xml_aux;
 								xml_aux = NULL;
 								break;
-							} else if (xml_aux[j] < *version[j]) {
+							} else if (xml_aux[j] < (*version)[j]) {
 								break;
 							}
 						}
@@ -331,10 +395,7 @@ int get_model_info(xmlDocPtr model, char **name, char **version, char **namespac
 			xmlXPathFreeObject (result);
 			if (*version == NULL ) {
 				xmlXPathFreeContext (model_ctxt);
-				if (name != NULL) {
-					xmlFree (*name);
-					*name = NULL;
-				}
+				goto errorcleanup;
 				return (EXIT_FAILURE);
 			}
 		}
@@ -346,37 +407,93 @@ int get_model_info(xmlDocPtr model, char **name, char **version, char **namespac
 		if (result != NULL ) {
 			if (result->nodesetval->nodeNr < 1) {
 				xmlXPathFreeContext (model_ctxt);
-				if (name != NULL ) {
-					xmlFree (*name);
-					*name = NULL;
-				}
-				if (version != NULL ) {
-					xmlFree (*version);
-					*version = NULL;
-				}
-				return (EXIT_FAILURE);
+				goto errorcleanup;
 			} else {
 				*namespace = (char*) xmlGetProp (result->nodesetval->nodeTab[0], BAD_CAST "uri");
 			}
 			xmlXPathFreeObject (result);
 			if (*namespace == NULL ) {
 				xmlXPathFreeContext (model_ctxt);
-				if (name != NULL ) {
-					xmlFree (*name);
-					*name = NULL;
-				}
-				if (version != NULL ) {
-					xmlFree (*version);
-					*version = NULL;
-				}
-				return (EXIT_FAILURE);
+				goto errorcleanup;
 			}
+		}
+	}
+
+	if (rpcs != NULL ) {
+		result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:rpc", model_ctxt);
+		if (result != NULL ) {
+			if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
+				*rpcs = malloc((result->nodesetval->nodeNr + 1) * sizeof(char*));
+				if (*rpcs == NULL) {
+					ERROR("Memory allocation failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+					xmlXPathFreeObject(result);
+					xmlXPathFreeContext(model_ctxt);
+					goto errorcleanup;
+				}
+				for (i = j = 0; i < result->nodesetval->nodeNr; i++) {
+					(*rpcs)[j] = (char*)xmlGetProp(result->nodesetval->nodeTab[i], BAD_CAST "name");
+					if ((*rpcs)[j] != NULL) {
+						j++;
+					}
+				}
+				(*rpcs)[j] = NULL;
+			}
+			xmlXPathFreeObject (result);
+		}
+	}
+
+	if (notifs != NULL ) {
+		result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:notification", model_ctxt);
+		if (result != NULL ) {
+			if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
+				*notifs = malloc((result->nodesetval->nodeNr + 1) * sizeof(char*));
+				if (*notifs == NULL) {
+					ERROR("Memory allocation failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+					xmlXPathFreeObject(result);
+					xmlXPathFreeContext(model_ctxt);
+					goto errorcleanup;
+				}
+				for (i = j = 0; i < result->nodesetval->nodeNr; i++) {
+					(*notifs)[j] = (char*)xmlGetProp(result->nodesetval->nodeTab[i], BAD_CAST "name");
+					if ((*notifs)[j] != NULL) {
+						j++;
+					}
+				}
+				(*notifs)[j] = NULL;
+			}
+			xmlXPathFreeObject (result);
 		}
 	}
 
 	xmlXPathFreeContext(model_ctxt);
 
 	return (EXIT_SUCCESS);
+
+
+errorcleanup:
+
+	xmlFree(*name);
+	*name = NULL;
+	xmlFree(*version);
+	*version = NULL;
+	xmlFree(*namespace);
+	*namespace = NULL;
+	if (*rpcs != NULL) {
+		for (i = 0; (*rpcs)[i] != NULL; i++) {
+			free((*rpcs)[i]);
+		}
+		free(*rpcs);
+		*rpcs = NULL;
+	}
+	if (*notifs != NULL) {
+		for (i = 0; (*notifs)[i] != NULL; i++) {
+			free((*notifs)[i]);
+		}
+		free(*notifs);
+		*notifs = NULL;
+	}
+
+	return (EXIT_FAILURE);
 }
 
 /* used in ssh.c and session.c */
@@ -384,7 +501,6 @@ char **get_schemas_capabilities(void)
 {
 	struct ncds_ds_list* ds = NULL;
 	int i;
-	char *name = NULL, *version = NULL, *namespace = NULL;
 	char **retval = NULL;
 
 	/* get size of the output */
@@ -407,23 +523,13 @@ char **get_schemas_capabilities(void)
 			continue;
 		}
 
-		if (get_model_info(ds->datastore->model, &name, &version, &namespace) != 0) {
-			free(namespace); namespace = NULL;
-			free(name); name = NULL;
-			free(version); version = NULL;
-			continue;
-		}
-		if (asprintf(&(retval[i]), "%s?module=%s%s%s", namespace, name,
-				(version != NULL && strlen(version) > 0) ? "&amp;revision=" : "",
-				(version != NULL && strlen(version) > 0) ? version : "") == -1) {
+		if (asprintf(&(retval[i]), "%s?module=%s%s%s", ds->datastore->model_namespace, ds->datastore->model_name,
+				(ds->datastore->model_version != NULL && strlen(ds->datastore->model_version) > 0) ? "&amp;revision=" : "",
+				(ds->datastore->model_version != NULL && strlen(ds->datastore->model_version) > 0) ? ds->datastore->model_version : "") == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			/* move iterator back, then variables will be freed and iterator will go back to the current value */
 			i--;
 		}
-		free(namespace); namespace = NULL;
-		free(name); name = NULL;
-		free(version); version = NULL;
-
 		i++;
 	}
 	retval[i] = NULL;
@@ -432,7 +538,6 @@ char **get_schemas_capabilities(void)
 
 char* get_schemas()
 {
-	char *schema_name, *version = NULL, *namespace = NULL;
 	struct ncds_ds_list* ds = NULL;
 	char *schema = NULL, *schemas = NULL, *aux = NULL;
 
@@ -441,9 +546,6 @@ char* get_schemas()
 			continue;
 		}
 
-		if (get_model_info(ds->datastore->model, &schema_name, &version, &namespace) != 0) {
-			continue;
-		}
 		aux = NULL;
 		if (asprintf(&aux,"<schema><identifier>%s</identifier>"
 				"<version>%s</version>"
@@ -451,16 +553,12 @@ char* get_schemas()
 				"<namespace>%s</namespace>"
 				"<location>NETCONF</location>"
 				"</schema>",
-				schema_name, version, namespace) == -1) {
+				ds->datastore->model_name,
+				ds->datastore->model_version,
+				ds->datastore->model_namespace) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			aux = NULL;
 		}
-		free(schema_name);
-		free(version);
-		free(namespace);
-		version = NULL;
-		namespace = NULL;
-		schema_name = NULL;
 
 		if (schema == NULL) {
 			schema = aux;
@@ -481,34 +579,28 @@ char* get_schemas()
 	return (schemas);
 }
 
-char* get_internal_state(const struct nc_session *session)
-{
-	char *notifs = NULL, *schemas = NULL, *sessions = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *stats = NULL, *aux = NULL;
-	struct ncds_ds_list* ds = NULL;
-	const struct ncds_lockinfo *info;
-
 #ifndef DISABLE_NOTIFICATIONS
-	xmlDocPtr doc;
-	xmlBufferPtr buf;
+char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e))
+{
+	char *retval = NULL;
 
 	/*
 	 * notifications streams
 	 */
-	if (nc_cpblts_enabled (session, NC_CAP_NOTIFICATION_ID)) {
-		notifs = ncntf_status ();
-		doc = xmlReadDoc (BAD_CAST notifs, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-		free (notifs);
-		if (doc == NULL ) {
-			notifs = NULL;
-		} else {
-			buf = xmlBufferCreate ();
-			xmlNodeDump (buf, doc, doc->children, 1, 1);
-			notifs = strdup ((char*) xmlBufferContent (buf));
-			xmlFreeDoc (doc);
-			xmlBufferFree (buf);
-		}
+	retval = ncntf_status ();
+	if (retval == NULL ) {
+		retval = strdup("");
 	}
-#endif
+
+	return (retval);
+}
+#endif /* DISABLE_NOTIFICATIONS */
+
+char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e))
+{
+	char *schemas = NULL, *sessions = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *stats = NULL, *aux = NULL;
+	struct ncds_ds_list* ds = NULL;
+	const struct ncds_lockinfo *info;
 
 	/*
 	 * datastores
@@ -520,41 +612,42 @@ char* get_internal_state(const struct nc_session *session)
 		}
 	}
 
-	if (ds != NULL ) {
-		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID) == 1) {
-			info = ds->datastore->func.get_lockinfo (ds->datastore, NC_DATASTORE_STARTUP);
-			if (info != NULL && info->sid != NULL ) {
-				if (asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
-						"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time) == -1) {
-					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-					aux = NULL;
-				}
-			}
-			if (asprintf (&ds_startup, "<datastore><name>startup</name>%s</datastore>",
-			        (aux != NULL )? aux : "") == -1) {
+	if (ds != NULL) {
+		/* startup datastore */
+		info = ds->datastore->func.get_lockinfo(ds->datastore, NC_DATASTORE_STARTUP);
+		if (info != NULL && info->sid != NULL) {
+			if (asprintf(&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
+					"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				ds_startup = NULL;
+				aux = NULL;
 			}
-			free (aux);
-			aux = NULL;
 		}
-		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) == 1) {
-			info = ds->datastore->func.get_lockinfo (ds->datastore, NC_DATASTORE_CANDIDATE);
-			if (info != NULL && info->sid != NULL ) {
-				if (asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
-						"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time) == -1) {
-					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-					aux = NULL;
-				}
-			}
-			if (asprintf (&ds_cand, "<datastore><name>candidate</name>%s</datastore>",
-			        (aux != NULL )? aux : "") == -1) {
+		if (asprintf(&ds_startup, "<datastore><name>startup</name>%s</datastore>",
+		                (aux != NULL) ? aux : "") == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			ds_startup = NULL;
+		}
+		free(aux);
+		aux = NULL;
+
+		/* candidate datastore */
+		info = ds->datastore->func.get_lockinfo(ds->datastore, NC_DATASTORE_CANDIDATE);
+		if (info != NULL && info->sid != NULL) {
+			if (asprintf(&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
+					"<locked-time>%s</locked-time></global-lock></locks>", info->sid, info->time) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				ds_cand = NULL;
+				aux = NULL;
 			}
-			free (aux);
-			aux = NULL;
 		}
+		if (asprintf(&ds_cand, "<datastore><name>candidate</name>%s</datastore>",
+		                (aux != NULL) ? aux : "") == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			ds_cand = NULL;
+		}
+		free(aux);
+		aux = NULL;
+
+		/* running datastore */
 		info = ds->datastore->func.get_lockinfo (ds->datastore, NC_DATASTORE_RUNNING);
 		if (info != NULL && info->sid != NULL ) {
 			if (asprintf (&aux, "<locks><global-lock><locked-by-session>%s</locked-by-session>"
@@ -613,13 +706,12 @@ char* get_internal_state(const struct nc_session *session)
 	}
 
 	/* get it all together */
-	if (asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s%s</netconf-state>%s", NC_NS_MONITORING,
-			(session->capabilities_original != NULL) ? session->capabilities_original : "",
+	if (asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s%s</netconf-state>", NC_NS_MONITORING,
+			(server_capabilities != NULL) ? server_capabilities : "",
 			(ds_stats != NULL) ? ds_stats : "",
 			(sessions != NULL) ? sessions : "",
 			(schemas != NULL) ? schemas : "",
-			(stats != NULL) ? stats : "",
-			(notifs != NULL) ? notifs : "") == -1) {
+			(stats != NULL) ? stats : "") == -1) {
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		retval = NULL;
 	}
@@ -631,7 +723,6 @@ char* get_internal_state(const struct nc_session *session)
 	free(sessions);
 	free(schemas);
 	free(stats);
-	free(notifs);
 
 	return (retval);
 }
@@ -640,7 +731,7 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	struct ncds_ds_list* ds = NULL;
-	char *name = NULL, *aux_name = NULL, *version = NULL, *aux_version = NULL, *format = NULL;
+	char *name = NULL, *version = NULL, *format = NULL;
 	char *retval = NULL;
 	xmlBufferPtr resultbuffer;
 
@@ -718,21 +809,13 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 			continue;
 		}
 
-		if (get_model_info(ds->datastore->model, &aux_name, &aux_version, NULL) != 0) {
-			free(aux_name);
-			free(aux_version);
-			continue;
-		}
-
-		if (strcmp(name, aux_name) == 0) {
-			if (version == NULL || strcmp(version, aux_version) == 0) {
+		if (strcmp(name, ds->datastore->model_name) == 0) {
+			if (version == NULL || strcmp(version, ds->datastore->model_version) == 0) {
 				/* check for uniqness */
 				if (retval != NULL) {
 					free(retval);
 					free(version);
-					free(aux_version);
 					free(name);
-					free(aux_name);
 					if (e != NULL) {
 						*e = nc_err_new(NC_ERR_OP_FAILED);
 						nc_err_set(*e, NC_ERR_PARAM_APPTAG, "data-not-unique");
@@ -746,9 +829,7 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 					ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
 					free(retval);
 					free(version);
-					free(aux_version);
 					free(name);
-					free(aux_name);
 					if (e != NULL) {*e = nc_err_new(NC_ERR_OP_FAILED);}
 					return NULL;
 				}
@@ -757,8 +838,6 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 				xmlBufferFree(resultbuffer);
 			}
 		}
-		free(aux_version);
-		free(aux_name);
 	}
 
 	if (retval == NULL) {
@@ -827,6 +906,12 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	ds->model = xmlReadFile(model_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
 	if (ds->model == NULL) {
 		ERROR("Unable to read the configuration data model %s.", model_path);
+		free(ds);
+		return (NULL);
+	}
+	if (get_model_info(ds->model, &(ds->model_name), &(ds->model_version), &(ds->model_namespace), &(ds->rpcs), &(ds->notifs)) != 0) {
+		ERROR("Unable to process configuration data model %s.", model_path);
+		xmlFreeDoc(ds->model);
 		free(ds);
 		return (NULL);
 	}
@@ -955,7 +1040,7 @@ xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDo
 	keys = get_keynode_list(data_model);
 
 	/* merge the documents */
-	ret = edit_merge(result, second->children, keys);
+	ret = edit_merge(result, second->children, keys, NULL, NULL);
 
 	if (keys != NULL) {
 		keyListFree(keys);
@@ -1350,19 +1435,23 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	struct nc_filter * filter = NULL;
 	char* data = NULL, *config, *model = NULL, *data2;
 	xmlDocPtr doc1, doc2, doc_merged = NULL, aux_doc;
-	int len;
+	int len, dsid;
 	int ret = EXIT_FAILURE;
-	nc_reply* reply;
+	nc_reply* reply, *old_reply = NULL, *new_reply;
 	xmlBufferPtr resultbuffer;
 	xmlNodePtr aux_node, node;
 	NC_OP op;
-	NC_DATASTORE source_ds, target_ds;
+	NC_DATASTORE source_ds = 0, target_ds = 0;
 
 	if (rpc->type.rpc != NC_RPC_DATASTORE_READ && rpc->type.rpc != NC_RPC_DATASTORE_WRITE) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
 	}
 
-	ds = datastores_get_ds(id);
+	dsid = id;
+
+process_datastore:
+
+	ds = datastores_get_ds(dsid);
 	if (ds == NULL) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 	}
@@ -1416,18 +1505,6 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 				xmlFreeDoc(doc2);
 			}
 		} else {
-			if (id == NCDS_INTERNAL_ID) {
-				/* ignore data - it is empty */
-				free(data);
-
-				/* get internal state data of the libnetconf */
-				if ((data = get_internal_state(session)) == NULL) {
-					ERROR("Getting the internal libnetconf state data failed..");
-					e = nc_err_new(NC_ERR_OP_FAILED);
-					nc_err_set(e, NC_ERR_PARAM_MSG, "Unable to get the internal libnetconf state data.");
-					break;
-				}
-			}
 			data2 = data;
 			if (asprintf(&data, "<data>%s</data>", data2) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
@@ -1461,6 +1538,9 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		if (ds && ds->model) {
 			ncdflt_default_values(doc_merged, ds->model, rpc->with_defaults);
 		}
+
+		/* NACM */
+		nacm_check_data_read(doc_merged, rpc->nacm);
 
 		/* dump the result */
 		resultbuffer = xmlBufferCreate();
@@ -1540,6 +1620,9 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		if (ds && ds->model) {
 			ncdflt_default_values(doc_merged, ds->model, rpc->with_defaults);
 		}
+
+		/* NACM */
+		nacm_check_data_read(doc_merged, rpc->nacm);
 
 		/* dump the result */
 		resultbuffer = xmlBufferCreate();
@@ -1691,9 +1774,9 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 apply_editcopyconfig:
 		/* perform the operation */
 		if (op == NC_OP_EDITCONFIG) {
-			ret = ds->func.editconfig(ds, session, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
+			ret = ds->func.editconfig(ds, session, rpc, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 		} else if (op == NC_OP_COPYCONFIG) {
-			ret = ds->func.copyconfig(ds, session, target_ds, source_ds, config, &e);
+			ret = ds->func.copyconfig(ds, session, rpc, target_ds, source_ds, config, &e);
 		} else {
 			ret = EXIT_FAILURE;
 		}
@@ -1728,7 +1811,7 @@ apply_editcopyconfig:
 		/* \todo check somehow, that candidate is not locked by another session */
 
 		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-			ret = ds->func.copyconfig (ds, session, NC_DATASTORE_RUNNING, NC_DATASTORE_CANDIDATE, NULL, &e);
+			ret = ds->func.copyconfig (ds, session, rpc, NC_DATASTORE_RUNNING, NC_DATASTORE_CANDIDATE, NULL, &e);
 
 #ifndef DISABLE_NOTIFICATIONS
 			/* log the event */
@@ -1744,7 +1827,7 @@ apply_editcopyconfig:
 		break;
 	case NC_OP_DISCARDCHANGES:
 		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-			ret = ds->func.copyconfig(ds, session, NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NULL, &e);
+			ret = ds->func.copyconfig(ds, session, rpc, NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NULL, &e);
 		} else {
 			e = nc_err_new (NC_ERR_OP_NOT_SUPPORTED);
 			ret = EXIT_FAILURE;
@@ -1752,7 +1835,7 @@ apply_editcopyconfig:
 		break;
 	case NC_OP_GETSCHEMA:
 		if (nc_cpblts_enabled (session, NC_CAP_MONITORING_ID)) {
-			if (id == NCDS_INTERNAL_ID) {
+			if (dsid == NCDS_INTERNAL_ID) {
 				if ((data = get_schema (rpc, &e)) == NULL) {
 					ret = EXIT_FAILURE;
 				} else {
@@ -1792,6 +1875,29 @@ apply_editcopyconfig:
 			reply = nc_reply_ok();
 		}
 	}
+
+	if (id == NCDS_INTERNAL_ID) {
+		if (old_reply == NULL) {
+			old_reply = reply;
+		} else {
+			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
+				if (nc_reply_get_type(old_reply) == NC_REPLY_ERROR) {
+					return (old_reply);
+				} else if (nc_reply_get_type(reply) == NC_REPLY_ERROR) {
+					return (reply);
+				} else {
+					return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
+				}
+			}
+			old_reply = reply = new_reply;
+
+		}
+		dsid++;
+		if (dsid < INTERNAL_DS_COUNT) {
+			goto process_datastore;
+		}
+	}
+
 	return (reply);
 }
 
@@ -1862,4 +1968,91 @@ void ncds_break_locks(const struct nc_session* session)
 	}
 
 	return;
+}
+
+const struct ncds_ds* ncds_get_model_data(const char* namespace)
+{
+	struct ncds_ds_list *ds;
+
+	if (namespace == NULL) {
+		return (NULL);
+	}
+
+	for (ds = datastores; ds != NULL; ds = ds->next) {
+		if (ds->datastore == NULL) {
+			continue;
+		}
+		if (ds->datastore->model_namespace == NULL || strcmp(ds->datastore->model_namespace, namespace) != 0) {
+			/* namespace does not match */
+			continue;
+		}
+
+		/* model found */
+		return (ds->datastore);
+	}
+
+	/* model not found */
+	return (NULL);
+}
+
+const struct ncds_ds* ncds_get_model_operation(const char* operation, const char* namespace)
+{
+	struct ncds_ds_list *ds;
+	int i;
+
+	if (operation == NULL || namespace == NULL) {
+		return (NULL);
+	}
+
+	for (ds = datastores; ds != NULL; ds = ds->next) {
+		if (ds->datastore == NULL) {
+			continue;
+		}
+		if (ds->datastore->model_namespace == NULL || strcmp(ds->datastore->model_namespace, namespace) != 0) {
+			/* namespace does not match */
+			continue;
+		}
+		if (ds->datastore->rpcs != NULL) {
+			for (i = 0; ds->datastore->rpcs[i] != NULL; i++) {
+				if (strcmp(ds->datastore->rpcs[i], operation) == 0) {
+					/* operation definition found */
+					return (ds->datastore);
+				}
+			}
+		}
+	}
+
+	/* oepration definition not found */
+	return (NULL);
+}
+
+const struct ncds_ds* ncds_get_model_notification(const char* notification, const char* namespace)
+{
+	struct ncds_ds_list *ds;
+	int i;
+
+	if (notification == NULL || namespace == NULL) {
+		return (NULL);
+	}
+
+	for (ds = datastores; ds != NULL; ds = ds->next) {
+		if (ds->datastore == NULL) {
+			continue;
+		}
+		if (ds->datastore->model_namespace == NULL || strcmp(ds->datastore->model_namespace, namespace) != 0) {
+			/* namespace does not match */
+			continue;
+		}
+		if (ds->datastore->notifs != NULL) {
+			for (i = 0; ds->datastore->notifs[i] != NULL; i++) {
+				if (strcmp(ds->datastore->notifs[i], notification) == 0) {
+					/* notification definition found */
+					return (ds->datastore);
+				}
+			}
+		}
+	}
+
+	/* notification definition not found */
+	return (NULL);
 }
