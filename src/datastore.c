@@ -94,6 +94,7 @@ struct ds_desc {
 struct ncds_ds *nacm_ds = NULL; /* for NACM subsystem */
 static struct ncds_ds_list *datastores = NULL;
 
+char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 int get_model_info(xmlDocPtr model, char **name, char **version, char **namespace, char ***rpcs, char ***notifs);
 
@@ -146,7 +147,7 @@ int ncds_sysinit(void)
 			NULL, /* notifications */
 #endif
 			NULL, /* ietf-netconf-with-defaults */
-			NULL /* \todo: add function to get NACM status data */
+			get_state_nacm /* NACM status data */
 	};
 	struct ds_desc internal_ds_desc[INTERNAL_DS_COUNT] = {
 			{NCDS_TYPE_EMPTY, NULL},
@@ -734,6 +735,33 @@ char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running
 	free(sessions);
 	free(schemas);
 	free(stats);
+
+	return (retval);
+}
+
+char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e))
+{
+	char* retval = NULL;
+
+	if (nc_info != NULL ) {
+		pthread_rwlock_rdlock(&(nc_info->lock));
+		if (asprintf(&retval, "<nacm xmlns=\"%s\">"
+				"<denied-operations>%u</denied-operations>"
+				"<denied-data-writes>%u</denied-data-writes>"
+				"<denied-notifications>%u</denied-notifications>"
+				"</nacm>",
+				NC_NS_NACM,
+				nc_info->stats_nacm.denied_ops,
+				nc_info->stats_nacm.denied_data,
+				nc_info->stats_nacm.denied_notifs) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			retval = NULL;
+		}
+		pthread_rwlock_unlock(&(nc_info->lock));
+	}
+	if (retval == NULL) {
+		retval = strdup("");
+	}
 
 	return (retval);
 }

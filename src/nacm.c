@@ -1129,6 +1129,7 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 	struct nacm_rule* rule;
 	const struct ncds_ds* module;
 	int i, j, k;
+	int retval = -1;
 
 	if (access == 0 || node == NULL || node->doc == NULL) {
 		/* invalid input parameter */
@@ -1222,7 +1223,8 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 				}
 
 				/* rule matches */
-				return (rule->action);
+				retval = rule->action;
+				goto result;
 			}
 		}
 		/* no matching rule found */
@@ -1238,7 +1240,8 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 						if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i], (char*) module->model_namespace) == 1) {
 							xmlXPathFreeObject(defdeny);
 							xmlXPathFreeContext(model_ctxt);
-							return (NACM_DENY);
+							retval = NACM_DENY;
+							goto result;
 						}
 
 					}
@@ -1254,7 +1257,8 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 							if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i], (char*) module->model_namespace) == 1) {
 								xmlXPathFreeObject(defdeny);
 								xmlXPathFreeContext(model_ctxt);
-								return (NACM_DENY);
+								retval = NACM_DENY;
+								goto result;
 							}
 
 						}
@@ -1269,14 +1273,26 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 
 	/* default action */
 	if ((access & NACM_ACCESS_READ) != 0) {
-		return (nacm->default_read);
+		retval = nacm->default_read;
+		goto result;
 	}
 	if ((access & (NACM_ACCESS_CREATE | NACM_ACCESS_DELETE | NACM_ACCESS_UPDATE)) != 0) {
-		return (nacm->default_write);
+		retval = nacm->default_write;
+		goto result;
 	}
 
 	/* unknown access request - deny */
-	return (NACM_DENY);
+	retval = NACM_DENY;
+
+result:
+	/* update stats */
+	if (retval == NACM_DENY && nc_info) {
+		pthread_rwlock_wrlock(&(nc_info->lock));
+		nc_info->stats_nacm.denied_data++;
+		pthread_rwlock_unlock(&(nc_info->lock));
+	}
+
+	return (retval);
 }
 
 int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
