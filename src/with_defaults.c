@@ -428,7 +428,6 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 	xmlXPathContextPtr model_ctxt = NULL;
 	xmlXPathObjectPtr defaults = NULL, query;
 	xmlNodePtr root;
-	xmlNsPtr ns;
 	xmlChar* namespace;
 	int i;
 
@@ -469,8 +468,7 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 		if (!xmlXPathNodeSetIsEmpty(defaults->nodesetval)) {
 			/* if report-all-tagged, add namespace for default attribute into the whole doc */
 			if (mode == NCWD_MODE_ALL_TAGGED) {
-				ns = xmlNewNs(root = xmlDocGetRootElement(config), BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
-				xmlSetNs(root, ns);
+				xmlNewNs(root = xmlDocGetRootElement(config), BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
 			}
 			/* process all defaults elements */
 			for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
