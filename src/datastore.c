@@ -1921,7 +1921,7 @@ apply_editcopyconfig:
 	if (id == NCDS_INTERNAL_ID) {
 		if (old_reply == NULL) {
 			old_reply = reply;
-		} else {
+		} else if (old_reply != (void*)(-1) || reply != (void*)(-1)){
 			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
 				if (nc_reply_get_type(old_reply) == NC_REPLY_ERROR) {
 					return (old_reply);
@@ -1932,7 +1932,6 @@ apply_editcopyconfig:
 				}
 			}
 			old_reply = reply = new_reply;
-
 		}
 		dsid++;
 		if (dsid < INTERNAL_DS_COUNT) {
