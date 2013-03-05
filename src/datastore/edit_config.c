@@ -38,6 +38,8 @@
  *
  */
 
+#define _GNU_SOURCE
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -925,6 +927,7 @@ static int edit_delete(xmlNodePtr node)
 static int edit_remove(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr old;
+	char *msg = NULL;
 
 	old = find_element_equiv(orig_doc, edit_node, keys);
 
@@ -943,6 +946,10 @@ static int edit_remove(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, c
 		} else {
 			if (error != NULL) {
 				*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+				if (asprintf(&msg, "removing \"%s\" data node is not permitted.", (char*)(old->name)) != -1) {
+					nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
+					free(msg);
+				}
 			}
 			return (EXIT_FAILURE);
 		}
@@ -963,8 +970,15 @@ static int edit_remove(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, c
 static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	int r;
+	char *msg = NULL;
 	xmlNodePtr retval = NULL;
 	xmlNodePtr parent = NULL;
+
+	if (edit_node == NULL || orig_doc == NULL) {
+		ERROR("%s: invalid input parameter.", __func__);
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		return (NULL);
+	}
 
 	retval = find_element_equiv(orig_doc, edit_node, keys);
 	if (retval == NULL) {
@@ -973,6 +987,10 @@ static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_no
 				if (r == NACM_DENY) {
 					if (error != NULL) {
 						*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+						if (asprintf(&msg, "creating \"%s\" data node is not permitted.", (char*)(edit_node->parent->name)) != -1) {
+							nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
+							free(msg);
+						}
 					}
 				} else {
 					if (error != NULL) {
@@ -1007,6 +1025,7 @@ static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, c
 {
 	xmlNodePtr parent = NULL;
 	int r;
+	char *msg = NULL;
 
 	assert(orig_doc != NULL);
 	assert(edit_node != NULL);
@@ -1016,6 +1035,10 @@ static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, c
 			if (r == NACM_DENY) {
 				if (error != NULL) {
 					*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+					if (asprintf(&msg, "creating \"%s\" data node is not permitted.", (char*)(edit_node->name)) != -1) {
+						nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
+						free(msg);
+					}
 				}
 			} else {
 				if (error != NULL) {
@@ -1110,6 +1133,7 @@ static int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, 
 {
 	xmlNodePtr old;
 	int r;
+	char *msg = NULL;
 
 	old = find_element_equiv(orig_doc, edit_node, keys);
 	if (old == NULL) {
@@ -1121,6 +1145,10 @@ static int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, 
 			if (r == NACM_DENY) {
 				if (error != NULL) {
 					*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+					if (asprintf(&msg, "replacing \"%s\" data node is not permitted.", (char*)(old->name)) != -1) {
+						nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
+						free(msg);
+					}
 				}
 			} else {
 				if (error != NULL) {
@@ -1152,6 +1180,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 {
 	xmlNodePtr children, aux, next;
 	int r;
+	char *msg = NULL;
 
 	/* process leaf text nodes - even if we are merging, leaf text nodes are
 	 * actually replaced by data specified by the edit configuration data
@@ -1164,6 +1193,10 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 					if (r == NACM_DENY) {
 						if (error != NULL) {
 							*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+							if (asprintf(&msg, "updating \"%s\" data node is not permitted.", (char*)(orig_node->parent->name)) != -1) {
+								nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
+								free(msg);
+							}
 						}
 					} else {
 						if (error != NULL) {
@@ -1222,6 +1255,10 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 					if (r == NACM_DENY) {
 						if (error != NULL) {
 							*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+							if (asprintf(&msg, "creating \"%s\" data node is not permitted.", (char*)(children->name)) != -1) {
+								nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
+								free(msg);
+							}
 						}
 					} else {
 						if (error != NULL) {
@@ -1274,6 +1311,7 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const str
 	xmlNodePtr orig_node;
 	xmlNodePtr aux, children;
 	int r;
+	char *msg = NULL;
 
 	assert(edit_node != NULL);
 
@@ -1310,6 +1348,10 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const str
 					if (r == NACM_DENY) {
 						if (error != NULL) {
 							*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+							if (asprintf(&msg, "creating \"%s\" data node is not permitted.", (char*)(children->name)) != -1) {
+								nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
+								free(msg);
+							}
 						}
 					} else {
 						if (error != NULL) {
@@ -1356,6 +1398,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 {
 	xmlXPathObjectPtr nodes;
 	int i;
+	char *msg = NULL;
 	xmlNodePtr orig_node, edit_node;
 
 	assert(error != NULL);
@@ -1387,6 +1430,10 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 				} else {
 					if (error != NULL) {
 						*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+						if (asprintf(&msg, "deleting \"%s\" data node is not permitted.", (char*)(orig_node->name)) != -1) {
+							nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
+							free(msg);
+						}
 					}
 					xmlXPathFreeObject(nodes);
 					return (EXIT_FAILURE);
