@@ -2079,7 +2079,6 @@ try_again:
 
 		/* NACM - check operation access */
 		if (nacm_check_operation(*rpc) != NACM_PERMIT) {
-ERROR("operation denied: %d", nc_rpc_get_op(*rpc));
 			e = nc_err_new(NC_ERR_ACCESS_DENIED);
 			nc_err_set(e, NC_ERR_PARAM_MSG, "Operation not permitted.");
 			reply = nc_reply_error(e);
