@@ -279,9 +279,11 @@ int nc_cpblts_count(const struct nc_cpblts *c);
 
 /**
  * @ingroup session
- * @brief Get NULL terminated list of the default capabilities supported by libnetconf.
+ * @brief Get NULL terminated list of the default capabilities supported by
+ * libnetconf including the list of namespaces provided by the datastores
+ * created with ncds_new() and initialized by ncds_init().
  *
- * The caller is supposed to free all the returned strings.
+ * The caller is supposed to free the returned structure with nc_cpblts_free().
  *
  * @return NETCONF capabilities structure containing capabilities supported by
  * libnetconf.
