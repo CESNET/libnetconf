@@ -1129,7 +1129,7 @@ int edit_replace_nacmcheck(xmlNodePtr orig_node, xmlDocPtr edit_doc, keyList key
  *
  * \return Zero on success, non-zero otherwise.
  */
-static int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr old;
 	int r;

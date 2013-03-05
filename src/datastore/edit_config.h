@@ -84,6 +84,18 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys);
  */
 int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, const struct nacm_rpc* nacm, struct nc_err **error);
 
+/**
+ * \brief Perform edit-config's "replace" operation on the selected node.
+ *
+ * \param[in] orig_doc Original configuration document to edit.
+ * \param[in] edit_node Node from the edit-config's \<config\> element with
+ * the specified "replace" operation.
+ * \param[in] keys  List of the key elements from the configuration data model.
+ *
+ * \return Zero on success, non-zero otherwise.
+ */
+int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error);
+
 int edit_replace_nacmcheck(xmlNodePtr orig_node, xmlDocPtr edit_doc, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error);
 int edit_merge (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error);
 
