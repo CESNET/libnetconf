@@ -1836,8 +1836,8 @@ nc_reply* nc_reply_merge(int count, ...)
 		}
 		if (to_merge[j] == NULL || to_merge[j] == (void*)(-1)) {
 			/* invalid reply will not be merged */
-			j--;
 			to_merge[j] = NULL; /* list terminating NULL byte */
+			j--;
 			continue;
 		}
 
