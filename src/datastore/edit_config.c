@@ -1461,7 +1461,6 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 		/* replace whole document */
 		if (edit_doc->children != NULL) {
 			if (edit_merge(orig_doc, edit_doc->children, keys, nacm, error) != EXIT_SUCCESS) {
-				xmlXPathFreeObject(nodes);
 				return (EXIT_FAILURE);
 			}
 		}
