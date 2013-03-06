@@ -1808,6 +1808,7 @@ nc_reply* nc_reply_merge(int count, ...)
 	nc_reply ** to_merge = NULL;
 	NC_REPLY_TYPE type = -1, type_aux;
 	va_list ap;
+	struct nc_err *err;
 	int i, j, len = 0;
 	char * tmp, * data = NULL;
 
@@ -1845,10 +1846,19 @@ nc_reply* nc_reply_merge(int count, ...)
 			/* no type set yet */
 			type = nc_reply_get_type(to_merge[j]);
 		} else if (type != (type_aux = nc_reply_get_type(to_merge[j]))) {
-			ERROR("%s: the type of the message %d differs (%d:%d)", __func__, i+1, type, type_aux);
-			free(to_merge);
-			va_end(ap);
-			return NULL;
+			if ((type == NC_REPLY_UNKNOWN || type_aux == NC_REPLY_UNKNOWN) ||
+			    (type == NC_REPLY_HELLO || type_aux == NC_REPLY_HELLO) ||
+			    ((type == NC_REPLY_DATA || type == NC_REPLY_OK) && (type_aux == NC_REPLY_DATA || type_aux == NC_REPLY_OK))) {
+				/* unable to merge such reply types */
+				ERROR("%s: the type of the message %d differs (%d:%d)", __func__, i+1, type, type_aux);
+				err = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(err, NC_ERR_PARAM_MSG, "Unable to prepare final operation result.");
+				merged_reply = nc_reply_error(err);
+				to_merge[j+1] = NULL; /* set list terminating NULL byte */
+				goto finish;
+			} else {
+				type = NC_REPLY_ERROR;
+			}
 		}
 
 		/* set list terminating NULL byte */
@@ -1898,16 +1908,19 @@ nc_reply* nc_reply_merge(int count, ...)
 		/* join all errors */
 		merged_reply = nc_reply_dup(to_merge[0]);
 		for (i = 1; i < count; i++) {
-			nc_reply_error_add(merged_reply, to_merge[i]->error);
-			to_merge[i]->error = NULL;
+			if (nc_reply_get_type(to_merge[j]) == NC_REPLY_ERROR) {
+				nc_reply_error_add(merged_reply, to_merge[i]->error);
+				to_merge[i]->error = NULL;
+			}
 		}
 		break;
 	default:
 		break;
 	}
 
+finish:
 	/* clean all merged messages */
-	for (i = 0; i < count; i++) {
+	for (i = 0; i < count && to_merge[i] != NULL; i++) {
 		nc_reply_free(to_merge[i]);
 	}
 	free(to_merge);
