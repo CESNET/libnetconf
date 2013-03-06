@@ -830,6 +830,7 @@ char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* UNUSED(s
  *
  * @return EXIT_SUCCESS when done without problems
  * 	   EXIT_FAILURE when error occured
+ * 	   EXIT_RPC_NOT_APPLICABLE when rpc is not applicable
  */
 int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, const nc_rpc* rpc, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error)
 {
@@ -908,6 +909,11 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
 		return EXIT_FAILURE;
 		break;
+	}
+
+	if (source_ds == NULL && target_ds->children == NULL) {
+		UNLOCK(file_ds);
+		return (EXIT_RPC_NOT_APPLICABLE);
 	}
 
 	aux_doc = xmlNewDoc (BAD_CAST "1.0");

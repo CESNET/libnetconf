@@ -1470,7 +1470,6 @@ xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
 	return retval;
 }
 
-#define EXIT_RPC_NOT_APPLICABLE -2
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;

@@ -42,6 +42,8 @@
 
 #include "../datastore.h"
 
+#define EXIT_RPC_NOT_APPLICABLE -2
+
 struct ncds_lockinfo {
 	NC_DATASTORE datastore;
 	char* sid;
