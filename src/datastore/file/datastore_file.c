@@ -534,7 +534,7 @@ static int file_sync(struct ncds_ds_file* file_ds)
 	}
 
 	/* erase actual config */
-	if (truncate (file_ds->path, 0) == -1) {
+	if (ftruncate (fileno(file_ds->file), 0) == -1) {
 		ERROR ("%s: truncate() of file %s failed (%s)", __func__, file_ds->path, strerror(errno));
 		return EXIT_FAILURE;
 	}
