@@ -240,16 +240,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 
 	/* create reply */
 	if (reply == NULL) {
-		/*
-		 * Following operations are handled by this answer:
-		 * - edit-config
-		 * - copy-config
-		 * - delete-config
-		 * - lock, unlock
-		 * Mentioned operations will be handled correctly in the future,
-		 * for now, server does not work with any real datastore.
-		 */
-		reply = nc_reply_ok();
+		reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
 	} else if (reply == NCDS_RPC_NOT_APPLICABLE) {
 		e = nc_err_new(NC_ERR_OP_FAILED);
 		nc_err_set(e, NC_ERR_PARAM_MSG, "Requested operation cannot be performed on the managed datastore, invalid configuration data.");
