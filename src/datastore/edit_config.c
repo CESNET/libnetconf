@@ -548,8 +548,9 @@ static xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, keyLis
 {
 	xmlNodePtr orig_parent, node;
 
-	assert(edit != NULL);
-	assert(orig_doc != NULL);
+	if (edit == NULL || orig_doc == NULL) {
+		return (NULL);
+	}
 
 	/* go recursively to the root */
 	if (edit->parent->type != XML_DOCUMENT_NODE) {
@@ -1134,6 +1135,29 @@ int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const s
 	xmlNodePtr old;
 	int r;
 	char *msg = NULL;
+
+	if (orig_doc == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (edit_node == NULL) {
+		if ((r = nacm_check_data(orig_doc->children, NACM_ACCESS_DELETE, nacm)) == NACM_PERMIT) {
+			return (edit_delete(orig_doc->children));
+		} else if (r == NACM_DENY) {
+			if (error != NULL) {
+				*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+				if (asprintf(&msg, "removing \"%s\" data node is not permitted.", (char*)(orig_doc->children->name)) != -1) {
+					nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
+					free(msg);
+				}
+			}
+		} else {
+			if (error != NULL) {
+				*error = nc_err_new(NC_ERR_OP_FAILED);
+			}
+		}
+		return (EXIT_FAILURE);
+	}
 
 	old = find_element_equiv(orig_doc, edit_node, keys);
 	if (old == NULL) {

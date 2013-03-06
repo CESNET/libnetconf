@@ -835,7 +835,7 @@ char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* UNUSED(s
 int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, const nc_rpc* rpc, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
-	xmlDocPtr config_doc = NULL, aux_doc, aux_doc2;
+	xmlDocPtr config_doc = NULL, aux_doc;
 	xmlNodePtr target_ds, source_ds, del;
 	keyList keys;
 	int r;
@@ -919,59 +919,47 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 	aux_doc = xmlNewDoc (BAD_CAST "1.0");
 	xmlDocSetRootElement(aux_doc, xmlDocCopyNode(source_ds, aux_doc, 1));
 
-	/* NACM */
-	/* RFC 6536, sec. 3.2.4., paragraph 2
-	 * If the source of the <copy-config> protocol operation is the running
-	 * configuration datastore and the target is the startup configuration
-	 * datastore, the client is only required to have permission to execute
-	 * the <copy-config> protocol operation.
-	 */
-	if (!(source == NC_DATASTORE_RUNNING && target == NC_DATASTORE_STARTUP)) {
-		keys = get_keynode_list(file_ds->model);
-		/* RFC 6536, sec 3.2.4., paragraph 3
-		 * If the source of the <copy-config> operation is a datastore,
-		 * then data nodes to which the client does not have read access
-		 * are silently omitted
+	if (rpc->nacm != NULL ) {
+		/* NACM */
+		/* RFC 6536, sec. 3.2.4., paragraph 2
+		 * If the source of the <copy-config> protocol operation is the running
+		 * configuration datastore and the target is the startup configuration
+		 * datastore, the client is only required to have permission to execute
+		 * the <copy-config> protocol operation.
 		 */
-		if (source == NC_DATASTORE_RUNNING || source == NC_DATASTORE_STARTUP || source == NC_DATASTORE_CANDIDATE) {
-			/* replace non-readable data by the current data content
-			 * to avoid their changes but allow changing of the rest
-			 * without problems with deleting non-readable data
-			 * when copying the source to the target.
+		if (!(source == NC_DATASTORE_RUNNING && target == NC_DATASTORE_STARTUP)) {
+			keys = get_keynode_list(file_ds->model);
+			if (source == NC_DATASTORE_RUNNING || source == NC_DATASTORE_STARTUP || source == NC_DATASTORE_CANDIDATE) {
+				/* RFC 6536, sec 3.2.4., paragraph 3
+				 * If the source of the <copy-config> operation is a datastore,
+				 * then data nodes to which the client does not have read access
+				 * are silently omitted
+				 */
+				nacm_check_data_read(aux_doc, rpc->nacm);
+			}
+
+			/* RFC 6536, sec. 3.2.4., paragraph 4
+			 * If the target of the <copy-config> operation is a datastore,
+			 * the client needs access to the modified nodes according to
+			 * the effective access operation of the each modified node.
 			 */
-			aux_doc2 = xmlCopyDoc(aux_doc, 1);
-			nacm_check_data_read(aux_doc2, rpc->nacm);
-			if (edit_replace(aux_doc, aux_doc2->children, keys, NULL, error) != 0) {
-				xmlFreeDoc(aux_doc2);
+			if ((r = edit_replace_nacmcheck(target_ds->children, aux_doc, keys, rpc->nacm, error)) != NACM_PERMIT) {
+				if (r == NACM_DENY) {
+					if (error != NULL ) {
+						*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+					}
+				} else {
+					if (error != NULL ) {
+						*error = nc_err_new(NC_ERR_OP_FAILED);
+					}
+				}
 				xmlFreeDoc(aux_doc);
 				keyListFree(keys);
 				UNLOCK(file_ds);
 				return (EXIT_FAILURE);
 			}
-			xmlFreeDoc(aux_doc2);
-		}
-
-		/* RFC 6536, sec. 3.2.4., paragraph 4
-		 * If the target of the <copy-config> operation is a datastore,
-		 * the client needs access to the modified nodes according to
-		 * the effective access operation of the each modified node.
-		 */
-		if ((r = edit_replace_nacmcheck(target_ds->children, aux_doc, keys, rpc->nacm, error)) != NACM_PERMIT) {
-			if (r == NACM_DENY) {
-				if (error != NULL ) {
-					*error = nc_err_new(NC_ERR_ACCESS_DENIED);
-				}
-			} else {
-				if (error != NULL ) {
-					*error = nc_err_new(NC_ERR_OP_FAILED);
-				}
-			}
-			xmlFreeDoc(aux_doc);
 			keyListFree(keys);
-			UNLOCK(file_ds);
-			return (EXIT_FAILURE);
 		}
-		keyListFree(keys);
 	}
 
 	/* drop current target configuration */
