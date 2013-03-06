@@ -53,6 +53,7 @@
 
 #include "netconf_internal.h"
 #include "messages.h"
+#include "messages_internal.h"
 #include "error.h"
 #include "with_defaults.h"
 #include "session.h"
@@ -1484,6 +1485,8 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlNodePtr aux_node, node;
 	NC_OP op;
 	NC_DATASTORE source_ds = 0, target_ds = 0;
+	struct nacm_rpc *nacm_aux;
+	nc_rpc *rpc_aux;
 
 	if (rpc->type.rpc != NC_RPC_DATASTORE_READ && rpc->type.rpc != NC_RPC_DATASTORE_WRITE) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
@@ -1869,7 +1872,15 @@ apply_editcopyconfig:
 		break;
 	case NC_OP_DISCARDCHANGES:
 		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-			ret = ds->func.copyconfig(ds, session, rpc, NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NULL, &e);
+			/* NACM - no datastore permissions are needed,
+			 * so create a copy of the rpc and remove NACM structure
+			 */
+			rpc_aux = nc_msg_dup((struct nc_msg*)rpc);
+			nacm_aux = rpc_aux->nacm;
+			rpc_aux->nacm = NULL;
+			ret = ds->func.copyconfig(ds, session, rpc_aux, NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NULL, &e);
+			rpc_aux->nacm = nacm_aux;
+			nc_rpc_free(rpc_aux);
 		} else {
 			e = nc_err_new (NC_ERR_OP_NOT_SUPPORTED);
 			ret = EXIT_FAILURE;
