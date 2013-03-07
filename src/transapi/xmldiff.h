@@ -40,6 +40,4 @@ void xmldiff_free (struct xmldiff * diff);
  */
 struct xmldiff * xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct yinmodel * model);
 
-const char * xmldiff_op2str (XMLDIFF_OP op);
-
 #endif

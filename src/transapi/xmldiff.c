@@ -9,19 +9,6 @@
 #include "xmldiff.h"
 #include "yinparser.h"
 
-
-const char * xmldiff_op2str (XMLDIFF_OP op)
-{
-	switch (op) {
-	case XMLDIFF_ERR:	return "error";
-	case XMLDIFF_NONE:	return "none";
-	case XMLDIFF_ADD:	return "add";
-	case XMLDIFF_REM:	return "rem";
-	case XMLDIFF_MOD:	return "mod";
-	default: return NULL;
-	}
-}
-
 /**
  * @brief Allocate and initialize new xmldiff structure
  *
