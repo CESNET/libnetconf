@@ -2,10 +2,16 @@
 #define _YINPARSER_H
 
 #include <libxml/tree.h>
-/* enum type for yin/yang constructs */
+/**
+ * @ingroup transapi
+ * @brief enum type for yin/yang constructs
+ */
 typedef enum {YIN_TYPE_MODULE, YIN_TYPE_CONTAINER, YIN_TYPE_LEAF, YIN_TYPE_LIST, YIN_TYPE_LEAFLIST, YIN_TYPE_CHOICE, YIN_TYPE_ANYXML, YIN_TYPE_GROUPING, YIN_TYPE_IMPORT} YIN_TYPE;
 
-/* structure holding information needed for xml document comparsion */
+/**
+ * @ingroup transapi
+ * @brief structure holding information needed for xml document comparsion
+ */
 struct yinmodel {
 	YIN_TYPE type;
 	char * name;
@@ -17,6 +23,7 @@ struct yinmodel {
 };
 
 /**
+ * @ingroup transapi
  * @brief Parse YIN data model
  *
  * @param model_doc	Data model in YIN format.
@@ -26,6 +33,7 @@ struct yinmodel {
 struct yinmodel * yinmodel_parse (xmlDocPtr model_doc);
 
 /**
+ * @ingroup transapi
  * @brief Destroy yinmodel structure and free allocated memory.
  *
  * @param yin	Structure to be freed.
