@@ -1410,10 +1410,8 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlNodePtr aux_node, node;
 	NC_OP op;
 	NC_DATASTORE source_ds, target_ds;
-	nc_rpc * getconfig_rpc;
-	nc_reply * getconfig_reply;
 	xmlDocPtr old = NULL, new = NULL;
-	xmlNodePtr old_data = NULL, new_data = NULL;
+	char * old_data = NULL, * new_data;
 
 	if (rpc->type.rpc != NC_RPC_DATASTORE_READ && rpc->type.rpc != NC_RPC_DATASTORE_WRITE) {
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED)));
@@ -1425,30 +1423,20 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	}
 
 	op = nc_rpc_get_op(rpc);
-	/* if transapi used, operation will affect running repository store current running content */
+	/* if transapi used AND operation will affect running repository => store current running content */
 	if (ds->transapi_clbks != NULL
 		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
 		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING) {
-		if ((getconfig_rpc = nc_rpc_getconfig(NC_DATASTORE_RUNNING, NULL)) == NULL) {
-			e = nc_err_new(NC_ERR_OP_FAILED);
-			nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to get-config(running).");
+		old_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
+		old = xmlReadDoc(BAD_CAST old_data, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
+		if (old == NULL) {/* cannot get or parse data */
+			if (e == NULL) { /* error not set */
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "TransAPI: Failed to get data from RUNNING datastore.");
+			}
+			free(old_data);
 			return nc_reply_error(e);
 		}
-		if ((getconfig_reply = ncds_apply_rpc(id, session, getconfig_rpc)) == NULL) {
-			nc_rpc_free(getconfig_rpc);
-			e = nc_err_new(NC_ERR_OP_FAILED);
-			nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to get-config(running).");
-			return nc_reply_error(e);
-		}
-		if ((old_data = ncxml_reply_get_data(getconfig_reply)) == NULL) {
-			nc_rpc_free(getconfig_rpc);
-			nc_reply_free(getconfig_reply);
-			e = nc_err_new(NC_ERR_OP_FAILED);
-			nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to get-config(running).");
-			return nc_reply_error(e);
-		}
-		nc_rpc_free(getconfig_rpc);
-		nc_reply_free(getconfig_reply);
 	}
 
 	switch (op) {
@@ -1881,46 +1869,39 @@ apply_editcopyconfig:
 	/* find differences and call functions */
 	if (ds->transapi_clbks != NULL
 		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
-		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING) {
-		if (nc_reply_get_type(reply) == NC_REPLY_OK) {
-			if ((getconfig_rpc = nc_rpc_getconfig(NC_DATASTORE_RUNNING, NULL)) == NULL) {
+		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK) {
+		new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
+		new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
+		free (new_data);
+		if (new == NULL) { /* cannot get or parse data */
+			if (e == NULL) {/* error not set */
 				e = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to get-config(running).");
-				return nc_reply_error(e);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "TransAPI: Failed to get data from RUNNING datastore.");
 			}
-			if ((getconfig_reply = ncds_apply_rpc(id, session, getconfig_rpc)) == NULL) {
-				nc_rpc_free(getconfig_rpc);
+			nc_reply_free(reply);
+			reply = nc_reply_error(e);
+		} else if (transapi_running_changed(ds->transapi_clbks, old, new, ds->transapi_model)) { /* device does not accept changes */
+			ERROR ("Failed to apply changes to device. Reverting changes in configuration datastore.");
+			/* try to revert configuration changes */
+			if (ds->func.copyconfig (ds, session, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, old_data, &e)) { /* revert failed */
+				ERROR ("Failed to revert changes in configuration datastore. Datastore is probably in inconsistent state.");
+				if (e == NULL) { /* error not set */
+					e = nc_err_new(NC_ERR_OP_FAILED);
+					nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device. Revert failed.");
+				}
+				nc_reply_free(reply);
+				reply = nc_reply_error(e);
+			} else { /* revert succeded */
 				e = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to get-config(running).");
-				return nc_reply_error(e);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device. Datastore configuration reverted.");
+				nc_reply_free(reply);
+				reply = nc_reply_error(e);
 			}
-			if ((new_data = ncxml_reply_get_data(getconfig_reply)) == NULL) {
-				nc_rpc_free(getconfig_rpc);
-				nc_reply_free(getconfig_reply);
-				e = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to get-config(running).");
-				return nc_reply_error(e);
-			}
-			nc_rpc_free(getconfig_rpc);
-			nc_reply_free(getconfig_reply);
-
-			old = xmlNewDoc (BAD_CAST "1.0");
-			new = xmlNewDoc (BAD_CAST "1.0");
-
-			xmlDocSetRootElement(old, xmlDocCopyNode(old_data, old, 1));
-			xmlDocSetRootElement(new, xmlDocCopyNode(new_data, new, 1));
-
-			xmlFreeNode(old_data);
-			xmlFreeNode(new_data);
-
-			transapi_running_changed(ds->transapi_clbks, old, new, ds->transapi_model);
-
-			xmlFreeDoc (old);
-			xmlFreeDoc (new);
-
-		} else {
-			xmlFreeNode(old_data);
 		}
+
+		free (old_data);
+		xmlFreeDoc (old);
+		xmlFreeDoc (new);
 	}
 
 	return (reply);
