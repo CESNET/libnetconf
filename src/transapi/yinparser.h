@@ -10,7 +10,6 @@ struct yinmodel {
 	YIN_TYPE type;
 	char * name;
 	char ** keys;
-	char * ns_prefix;
 	char * ns_uri;
 	struct yinmodel * children;
 	int keys_count;
