@@ -776,93 +776,53 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 	return (retval);
 }
 
-struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const char* callbacks_path) {
+struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const char* callbacks_path)
+{
 	struct ncds_ds* ds = NULL;
-
-	if (model_path == NULL) {
-		ERROR("%s: missing model path parameter.", __func__);
-		return (NULL);
-	}
+	void * transapi_module = NULL;
+	char* (*get_state)(const char*, const char*, struct nc_err **) = NULL;
+	struct transapi_callbacks * transapi_clbks = NULL;
 
 	if (callbacks_path == NULL) {
 		ERROR("%s: missing callbacks path parameter.", __func__);
 		return (NULL);
 	}
 
-	switch (type) {
-	case NCDS_TYPE_FILE:
-		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file));
-		ds->func.init = ncds_file_init;
-		ds->func.free = ncds_file_free;
-		ds->func.get_lockinfo = ncds_file_lockinfo;
-		ds->func.lock = ncds_file_lock;
-		ds->func.unlock = ncds_file_unlock;
-		ds->func.getconfig = ncds_file_getconfig;
-		ds->func.copyconfig = ncds_file_copyconfig;
-		ds->func.deleteconfig = ncds_file_deleteconfig;
-		ds->func.editconfig = ncds_file_editconfig;
-		break;
-	case NCDS_TYPE_EMPTY:
-		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty));
-		ds->func.init = ncds_empty_init;
-		ds->func.free = ncds_empty_free;
-		ds->func.get_lockinfo = ncds_empty_lockinfo;
-		ds->func.lock = ncds_empty_lock;
-		ds->func.unlock = ncds_empty_unlock;
-		ds->func.getconfig = ncds_empty_getconfig;
-		ds->func.copyconfig = ncds_empty_copyconfig;
-		ds->func.deleteconfig = ncds_empty_deleteconfig;
-		ds->func.editconfig = ncds_empty_editconfig;
-		break;
-	default:
-		ERROR("Unsupported datastore implementation required.");
-		return (NULL);
-	}
-	if (ds == NULL) {
-		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-		return (NULL);
-	}
-	ds->type = type;
-
-	/* get configuration data model */
-	if (access(model_path, R_OK) == -1) {
-		ERROR("Unable to access configuration data model %s (%s).", model_path, strerror(errno));
-		free(ds);
-		return (NULL);
-	}
-	ds->model = xmlReadFile(model_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
-	if (ds->model == NULL) {
-		ERROR("Unable to read configuration data model %s.", model_path);
-		free(ds);
-		return (NULL);
-	}
-	ds->model_path = strdup(model_path);
-	/* parse datamodel in YIN format */
-	if ((ds->transapi_model = yinmodel_parse(ds->model)) == NULL) {
-		ERROR("Unable to parse datamodel.");
-		return (NULL);
-	}
-
 	/* load shared library */
-	if ((ds->transapi_module = dlopen (callbacks_path, RTLD_NOW)) == NULL) {
+	if ((transapi_module = dlopen (callbacks_path, RTLD_NOW)) == NULL) {
 		ERROR("Unable to load shared library %s.", callbacks_path);
 		return (NULL);
 	}
 
-	/* get clbks structure */
-	if ((ds->transapi_clbks = dlsym (ds->transapi_module, "clbks")) == NULL) {
-		ERROR("Unable to get addresses of functions from shared library.");
-		return (NULL);
-	}
-
 	/* find get_state function */
-	if ((ds->get_state = dlsym (ds->transapi_module, "get_state_data")) == NULL) {
+	if ((get_state = dlsym (ds->transapi_module, "get_state_data")) == NULL) {
 		ERROR("Unable to get addresses of functions from shared library.");
+		dlclose (transapi_module);
 		return (NULL);
 	}
 
-	/* ds->id stays 0 to indicate, that datastore is still not fully configured */
+	/* callbacks work with configuration data */
+	/* empty datastore has no data */
+	if (type != NCDS_TYPE_EMPTY) {
+		/* get clbks structure */
+		if ((transapi_clbks = dlsym (ds->transapi_module, "clbks")) == NULL) {
+			ERROR("Unable to get addresses of functions from shared library.");
+			dlclose (transapi_module);
+			return (NULL);
+		}
+	}
 
+	/* create basic ncds_ds structure */
+	if ((ds = ncds_new(type, model_path, get_state)) == NULL) {
+		ERROR ("Failed to create ncds_ds structure.");
+		dlclose (transapi_module);
+		return (NULL);
+	}
+
+	/* add pointers for transaction API */
+	ds->transapi_module = transapi_module;
+	ds->transapi_clbks = transapi_clbks;
+	ds->transapi_model = yinmodel_parse(ds->model);
 
 	return ds;
 }
