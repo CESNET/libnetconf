@@ -122,9 +122,11 @@ char* nc_rpc_dump (const nc_rpc *rpc);
  * This is the reverse function of the nc_rpc_dump().
  *
  * @param[in] rpc_dump String containing the NETCONF \<rpc\> message.
+ * @param[in] session Session information needed for ACM. If NULL, ACM structure
+ * is not prepared and no ACM rules will be applied to the created RPC message.
  * @return Complete rpc structure used by libnetconf's functions.
  */
-nc_rpc* nc_rpc_build (const char* rpc_dump);
+nc_rpc* nc_rpc_build (const char* rpc_dump, const struct nc_session* session);
 
 /**
  * @ingroup rpc
@@ -336,15 +338,14 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error);
  * such a case, NULL is returned and input messages are left unchanged.
  *
  * @param[in] count Number of messages to merge
- * @param[in] msg1	1st message to merge.
- * @param[in] msg2	2nd message to merge.
- * @param[in] ...	Other messages to merge. Total number of messages MUST be equal to count.
+ * @param[in] ... Messages to merge (all are of nc_reply* type). Total number of
+ * messages MUST be equal to count.
  *
  * @return Pointer to a new reply message with the merged content of the messages to
  * merge. If an error occurs (due to the invalid input parameters), NULL is
  * returned and the messages to merge are not freed.
  */
-nc_reply * nc_reply_merge (int count, nc_reply * msg1, nc_reply * msg2, ...);
+nc_reply* nc_reply_merge (int count, ...);
 
 
 /**

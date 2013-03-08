@@ -29,7 +29,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.3.1</span>
+   &#160;<span id="projectnumber">0.4.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -109,23 +109,28 @@ $(document).ready(function(){initNavTree('d1/d87/libnetconf_8h.html','../../');}
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#ifndef LIBNETCONF_H_</span></div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define LIBNETCONF_H_</span></div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions.">netconf.h</a>&quot;</span></div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../dd/d49/callbacks_8h.html" title="Functions to set application&#39;s callbacks.">callbacks.h</a>&quot;</span></div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../da/d46/session_8h.html" title="Functions to handle NETCONF sessions.">session.h</a>&quot;</span></div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d5/d48/messages_8h.html" title="Functions to create NETCONF messages.">messages.h</a>&quot;</span></div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../da/d41/error_8h.html" title="NETCONF error handling functions.">error.h</a>&quot;</span></div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d9/db6/datastore_8h.html" title="NETCONF datastore handling function prototypes and structures.">datastore.h</a>&quot;</span></div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d7/d62/notifications_8h.html" title="Functions to handle NETCONF Notifications.">notifications.h</a>&quot;</span></div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../da/dbe/with__defaults_8h.html" title="Implementation of NETCONF&#39;s with-defaults capability defined in RFC 6243.">with_defaults.h</a>&quot;</span></div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;</div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* LIBNETCONF_H_ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;<span class="preprocessor">#include &quot;config.h&quot;</span></div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions.">netconf.h</a>&quot;</span></div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../dd/d49/callbacks_8h.html" title="Functions to set application&#39;s callbacks.">callbacks.h</a>&quot;</span></div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../da/d46/session_8h.html" title="Functions to handle NETCONF sessions.">session.h</a>&quot;</span></div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d5/d48/messages_8h.html" title="Functions to create NETCONF messages.">messages.h</a>&quot;</span></div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../da/d41/error_8h.html" title="NETCONF error handling functions.">error.h</a>&quot;</span></div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d9/db6/datastore_8h.html" title="NETCONF datastore handling function prototypes and structures.">datastore.h</a>&quot;</span></div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../da/dbe/with__defaults_8h.html" title="Implementation of NETCONF&#39;s with-defaults capability defined in RFC 6243.">with_defaults.h</a>&quot;</span></div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;<span class="preprocessor">#ifndef DISABLE_NOTIFICATIONS</span></div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  include &quot;<a class="code" href="../../d7/d62/notifications_8h.html" title="Functions to handle NETCONF Notifications.">notifications.h</a>&quot;</span></div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* LIBNETCONF_H_ */</span><span class="preprocessor"></span></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="d1/d87/libnetconf_8h.html">libnetconf.h</a></li>
-    <li class="footer">Generated on Wed Jan 23 2013 16:06:49 for libnetconf by
+    <li class="footer">Generated on Fri Mar 1 2013 14:49:30 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

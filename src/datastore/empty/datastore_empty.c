@@ -53,12 +53,41 @@ int ncds_empty_init (struct ncds_ds * UNUSED(ds))
 
 void ncds_empty_free (struct ncds_ds * ds)
 {
+	int i;
+
+	/* generic ncds_ds part */
+	free(ds->model_path);
+	free(ds->model_name);
+	free(ds->model_version);
+	free(ds->model_namespace);
+	if (ds->rpcs != NULL) {
+		for (i = 0; ds->rpcs[i] != NULL; i++) {
+			free(ds->rpcs[i]);
+		}
+		free(ds->rpcs);
+	}
+	if (ds->notifs != NULL) {
+		for (i = 0; ds->notifs[i] != NULL; i++) {
+			free(ds->notifs[i]);
+		}
+		free(ds->notifs);
+	}
+	if (ds->model != NULL) {
+		xmlFreeDoc(ds->model);
+	}
+
 	free (ds);
-	/* nothing else to do */
 	return;
 }
 
 struct ncds_lockinfo lockinfo = {NC_DATASTORE_ERROR, NULL, NULL};
+
+int ncds_empty_changed(struct ncds_ds* UNUSED(ds))
+{
+	/* datastore never changes */
+	return(0);
+}
+
 const struct ncds_lockinfo *ncds_empty_lockinfo(struct ncds_ds* UNUSED(ds), NC_DATASTORE UNUSED(target))
 {
 	return (&lockinfo);
@@ -79,7 +108,7 @@ char* ncds_empty_getconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* 
 	return strdup ("");
 }
 
-int ncds_empty_copyconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), NC_DATASTORE UNUSED(target), NC_DATASTORE UNUSED(source), char*  UNUSED(config), struct nc_err** UNUSED(error))
+int ncds_empty_copyconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), const nc_rpc* UNUSED(rpc), NC_DATASTORE UNUSED(target), NC_DATASTORE UNUSED(source), char*  UNUSED(config), struct nc_err** UNUSED(error))
 {
 	return EXIT_SUCCESS;
 }
@@ -89,7 +118,7 @@ int ncds_empty_deleteconfig(struct ncds_ds* UNUSED(ds), const struct nc_session*
 	return EXIT_SUCCESS;
 }
 
-int ncds_empty_editconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), NC_DATASTORE UNUSED(target), const char *  UNUSED(config), NC_EDIT_DEFOP_TYPE  UNUSED(defop), NC_EDIT_ERROPT_TYPE  UNUSED(errop), struct nc_err **UNUSED(error))
+int ncds_empty_editconfig(struct ncds_ds* UNUSED(ds), const struct nc_session* UNUSED(session), const nc_rpc* UNUSED(rpc), NC_DATASTORE UNUSED(target), const char *  UNUSED(config), NC_EDIT_DEFOP_TYPE  UNUSED(defop), NC_EDIT_ERROPT_TYPE  UNUSED(errop), struct nc_err **UNUSED(error))
 {
 	return EXIT_SUCCESS;
 }

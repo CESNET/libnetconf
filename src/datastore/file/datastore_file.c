@@ -53,6 +53,7 @@
 #include "../../netconf_internal.h"
 #include "../../error.h"
 #include "../../session.h"
+#include "../../nacm.h"
 #include "../datastore_internal.h"
 #include "datastore_file.h"
 #include "../edit_config.h"
@@ -162,8 +163,8 @@ int ncds_file_set_path (struct ncds_ds* datastore, const char* path)
 		} else {
 			VERB ("Datastore file %s was created.", path);
 		}
-	} else if (eaccess (path, W_OK|R_OK)) {
-		ERROR ("Insufficient rights for manipulation with the datastore file %s.", path);
+	} else if (eaccess (path, W_OK|R_OK) != 0) {
+		ERROR ("Insufficient rights for manipulation with the datastore file %s (%s).", path, strerror(errno));
 		return (-2);
 	} else {
 		/* file exists and it is accessible */
@@ -296,6 +297,28 @@ invalid_ds:
 	return (EXIT_FAILURE);
 }
 
+int ncds_file_changed(struct ncds_ds* ds)
+{
+	time_t t;
+	struct stat statbuf;
+
+	/* get current time */
+	if ((t = time(NULL)) == ((time_t)(-1))) {
+		ERROR("time() failed (%s)", strerror(errno));
+		/* we do not know, so answer that file was changed */
+		return (1);
+	}
+
+	/* check when the file was modified */
+	if (stat(((struct ncds_ds_file*)ds)->path, &statbuf) == 0) {
+		if (statbuf.st_mtime < ds->last_access) {
+			/* file was not modified */
+			return (0);
+		}
+	}
+	return (1);
+}
+
 /**
  * @ingroup store
  * @brief Initialization of the file datastore
@@ -312,7 +335,7 @@ int ncds_file_init (struct ncds_ds* ds)
 	mode_t mask;
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
-	file_ds->xml = xmlReadFile (file_ds->path, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
+	file_ds->xml = xmlReadFile (file_ds->path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	if (file_ds->xml == NULL || file_structure_check (file_ds->xml) == 0) {
 		WARN ("Failed to parse XML in the file.");
 		if (stat(file_ds->path, &st) || st.st_size > 0) {
@@ -392,12 +415,26 @@ int ncds_file_init (struct ncds_ds* ds)
 
 void ncds_file_free(struct ncds_ds* ds)
 {
+	int i;
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
 	if (file_ds != NULL) {
 		/* generic ncds_ds part */
-		if (file_ds->model_path != NULL) {
-			free(file_ds->model_path);
+		free(file_ds->model_path);
+		free(file_ds->model_name);
+		free(file_ds->model_version);
+		free(file_ds->model_namespace);
+		if (file_ds->rpcs != NULL) {
+			for (i = 0; file_ds->rpcs[i] != NULL; i++) {
+				free(file_ds->rpcs[i]);
+			}
+			free(file_ds->rpcs);
+		}
+		if (file_ds->notifs != NULL) {
+			for (i = 0; file_ds->notifs[i] != NULL; i++) {
+				free(file_ds->notifs[i]);
+			}
+			free(file_ds->notifs);
 		}
 		if (file_ds->model != NULL) {
 			xmlFreeDoc(file_ds->model);
@@ -418,6 +455,7 @@ void ncds_file_free(struct ncds_ds* ds)
 			}
 			sem_close(file_ds->ds_lock.lock);
 		}
+
 		free(file_ds);
 	}
 }
@@ -437,9 +475,25 @@ void ncds_file_free(struct ncds_ds* ds)
 static int file_reload (struct ncds_ds_file* file_ds)
 {
 	struct ncds_ds_file new;
+	struct stat statbuf;
+	time_t t;
 
 	if (!file_ds->ds_lock.holding_lock) {
 		return EXIT_FAILURE;
+	}
+
+	/* get current time */
+	if ((t = time(NULL)) == ((time_t)(-1))) {
+		t = 0;
+		WARN("Setting datastore access time failed (%s)", strerror(errno));
+	}
+
+	/* check when the file was modified */
+	if (stat(file_ds->path, &statbuf) == 0) {
+		if (statbuf.st_mtime < file_ds->last_access) {
+			/* file was not modified */
+			return (EXIT_SUCCESS);
+		}
 	}
 
 	memcpy (&new, file_ds, sizeof (struct ncds_ds_file));
@@ -452,6 +506,9 @@ static int file_reload (struct ncds_ds_file* file_ds)
 		xmlFreeDoc (new.xml);
 		return EXIT_FAILURE;
 	}
+
+	/* update access time */
+	new.last_access = t;
 
 	xmlFreeDoc (file_ds->xml);
 	memcpy (file_ds, &new, sizeof (struct ncds_ds_file));
@@ -470,18 +527,30 @@ static int file_reload (struct ncds_ds_file* file_ds)
  */
 static int file_sync(struct ncds_ds_file* file_ds)
 {
+	time_t t;
+
 	if (!file_ds->ds_lock.holding_lock) {
 		return EXIT_FAILURE;
 	}
 
 	/* erase actual config */
-	if (truncate (file_ds->path, 0) == -1) {
+	if (ftruncate (fileno(file_ds->file), 0) == -1) {
 		ERROR ("%s: truncate() of file %s failed (%s)", __func__, file_ds->path, strerror(errno));
 		return EXIT_FAILURE;
 	}
 	rewind (file_ds->file);
 
-	xmlDocFormatDump(file_ds->file, file_ds->xml, 1);
+	if(xmlDocFormatDump(file_ds->file, file_ds->xml, 1) == -1) {
+		ERROR("%s: storing repository into the file %s failed.", __func__, file_ds->path);
+		return (EXIT_FAILURE);
+	}
+
+	/* update last access time */
+	if ((t = time(NULL)) == ((time_t)(-1))) {
+		WARN("Setting datastore access time failed (%s)", strerror(errno));
+	} else {
+		file_ds->last_access = t;
+	}
 
 	return EXIT_SUCCESS;
 }
@@ -752,6 +821,7 @@ char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* UNUSED(s
  *
  * @param ds Pointer to a datastore structure
  * @param session Session which the request is a part of
+ * @param rpc RPC message with the request
  * @param target Target datastore.
  * @param source Source datastore, if the value is NC_DATASTORE_NONE
  * then the next parameter holds the configration to copy
@@ -760,12 +830,15 @@ char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* UNUSED(s
  *
  * @return EXIT_SUCCESS when done without problems
  * 	   EXIT_FAILURE when error occured
+ * 	   EXIT_RPC_NOT_APPLICABLE when rpc is not applicable
  */
-int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error)
+int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, const nc_rpc* rpc, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error)
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
-	xmlDocPtr config_doc = NULL;
+	xmlDocPtr config_doc = NULL, aux_doc;
 	xmlNodePtr target_ds, source_ds, del;
+	keyList keys;
+	int r;
 
 	LOCK(file_ds);
 
@@ -838,13 +911,65 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 		break;
 	}
 
+	if (source_ds == NULL && target_ds->children == NULL) {
+		UNLOCK(file_ds);
+		return (EXIT_RPC_NOT_APPLICABLE);
+	}
+
+	aux_doc = xmlNewDoc (BAD_CAST "1.0");
+	xmlDocSetRootElement(aux_doc, xmlDocCopyNode(source_ds, aux_doc, 1));
+
+	if (rpc->nacm != NULL ) {
+		/* NACM */
+		/* RFC 6536, sec. 3.2.4., paragraph 2
+		 * If the source of the <copy-config> protocol operation is the running
+		 * configuration datastore and the target is the startup configuration
+		 * datastore, the client is only required to have permission to execute
+		 * the <copy-config> protocol operation.
+		 */
+		if (!(source == NC_DATASTORE_RUNNING && target == NC_DATASTORE_STARTUP)) {
+			keys = get_keynode_list(file_ds->model);
+			if (source == NC_DATASTORE_RUNNING || source == NC_DATASTORE_STARTUP || source == NC_DATASTORE_CANDIDATE) {
+				/* RFC 6536, sec 3.2.4., paragraph 3
+				 * If the source of the <copy-config> operation is a datastore,
+				 * then data nodes to which the client does not have read access
+				 * are silently omitted
+				 */
+				nacm_check_data_read(aux_doc, rpc->nacm);
+			}
+
+			/* RFC 6536, sec. 3.2.4., paragraph 4
+			 * If the target of the <copy-config> operation is a datastore,
+			 * the client needs access to the modified nodes according to
+			 * the effective access operation of the each modified node.
+			 */
+			if ((r = edit_replace_nacmcheck(target_ds->children, aux_doc, keys, rpc->nacm, error)) != NACM_PERMIT) {
+				if (r == NACM_DENY) {
+					if (error != NULL ) {
+						*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+					}
+				} else {
+					if (error != NULL ) {
+						*error = nc_err_new(NC_ERR_OP_FAILED);
+					}
+				}
+				xmlFreeDoc(aux_doc);
+				keyListFree(keys);
+				UNLOCK(file_ds);
+				return (EXIT_FAILURE);
+			}
+			keyListFree(keys);
+		}
+	}
+
 	/* drop current target configuration */
 	del = target_ds->children;
 	xmlUnlinkNode (target_ds->children);
 	xmlFreeNode (del);
 
 	/* copy new target configuration */
-	target_ds->children = xmlDocCopyNode (source_ds, file_ds->xml, 1);
+	target_ds->children = xmlDocCopyNode (aux_doc->children, file_ds->xml, 1);
+	xmlFreeDoc(aux_doc);
 
 	/*
 	 * if we are changing candidate, mark it as modified, since we need
@@ -950,6 +1075,7 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
  *
  * @param ds Datastore to edit
  * @param session Session sending the edit request
+ * @param rpc
  * @param target Datastore type
  * @param config Edit configuration.
  * @param defop Default edit operation.
@@ -957,7 +1083,7 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
+int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error)
 {
 	struct ncds_ds_file * file_ds = (struct ncds_ds_file *)ds;
 	xmlDocPtr config_doc, datastore_doc;
@@ -1011,7 +1137,7 @@ int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session,
 	datastore_doc->children = tmp_target_ds;
 
 	/* preform edit config */
-	if (edit_config (datastore_doc, config_doc, file_ds->model, defop, errop, error)) {
+	if (edit_config (datastore_doc, config_doc, file_ds->model, defop, errop, rpc->nacm, error)) {
 		retval = EXIT_FAILURE;
 	} else {
 		/* replace datastore by edited configuration */

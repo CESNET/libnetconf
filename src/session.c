@@ -50,6 +50,7 @@
 #include <errno.h>
 #include <poll.h>
 #include <pthread.h>
+#include <pwd.h>
 
 #ifndef DISABLE_LIBSSH
 #	include <libssh2.h>
@@ -67,6 +68,7 @@
 #include "messages_internal.h"
 #include "session.h"
 #include "datastore.h"
+#include "nacm.h"
 
 #ifndef DISABLE_NOTIFICATIONS
 #  include "notifications.h"
@@ -844,6 +846,7 @@ void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supporte
 struct nc_session* nc_session_dummy(const char* sid, const char* username, const char* hostname, struct nc_cpblts *capabilities)
 {
 	struct nc_session * session;
+	struct passwd* p;
 	const char* cpblt;
 
 	if (sid == NULL || username == NULL || capabilities == NULL) {
@@ -883,11 +886,20 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	session->status = NC_SESSION_STATUS_DUMMY;
 	/* copy session id */
 	strncpy (session->session_id, sid, SID_SIZE);
-	/* copy user name */
-	session->username = strdup (username);
+	/* get system groups for the username */
+	session->groups = nc_get_grouplist(username);
 	/* if specified, copy hostname */
 	if (hostname != NULL) {
 		session->hostname = strdup (hostname);
+	}
+	/* copy user name */
+	session->username = strdup (username);
+	/* detect if user ID is 0 -> then the session is recovery */
+	session->nacm_recovery = 0;
+	if ((p = getpwnam(username)) != NULL) {
+		if (p->pw_uid == 0) {
+			session->nacm_recovery = 1;
+		}
 	}
 	/* create empty capabilities list */
 	session->capabilities = nc_cpblts_new (NULL);
@@ -1028,6 +1040,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 void nc_session_free (struct nc_session* session)
 {
 	struct session_list_item *litem, *aux;
+	int i;
 
 	nc_session_close(session, NC_SESSION_TERM_OTHER);
 
@@ -1035,10 +1048,15 @@ void nc_session_free (struct nc_session* session)
 	if (session->username != NULL) {
 		free (session->username);
 	}
+	if (session->groups != NULL) {
+		for (i = 0; session->groups[i] != NULL; i++) {
+			free(session->groups[i]);
+		}
+		free(session->groups);
+	}
 	if (session->capabilities != NULL) {
 		nc_cpblts_free(session->capabilities);
 	}
-	free(session->capabilities_original);
 
 	/* destroy mutexes */
 	pthread_mutex_destroy(&(session->mut_in));
@@ -2045,7 +2063,7 @@ try_again:
 					pthread_rwlock_unlock(&(nc_info->lock));
 				}
 
-				return (0); /* failure */
+				return (NC_MSG_NONE); /* message processed internally */
 			}
 		}
 		/* update statistics */
@@ -2054,6 +2072,28 @@ try_again:
 			pthread_rwlock_wrlock(&(nc_info->lock));
 			nc_info->stats.counters.in_rpcs++;
 			pthread_rwlock_unlock(&(nc_info->lock));
+		}
+
+		/* NACM init */
+		nacm_start(*rpc, session);
+
+		/* NACM - check operation access */
+		if (nacm_check_operation(*rpc) != NACM_PERMIT) {
+			e = nc_err_new(NC_ERR_ACCESS_DENIED);
+			nc_err_set(e, NC_ERR_PARAM_MSG, "Operation not permitted.");
+			reply = nc_reply_error(e);
+			nc_session_send_reply(session, *rpc, reply);
+			nc_rpc_free(*rpc);
+			*rpc = NULL;
+			nc_reply_free(reply);
+			/* update stats */
+			if (nc_info) {
+				pthread_rwlock_wrlock(&(nc_info->lock));
+				nc_info->stats_nacm.denied_ops++;
+				pthread_rwlock_unlock(&(nc_info->lock));
+			}
+
+			return (NC_MSG_NONE); /* message processed internally */
 		}
 
 		break;

@@ -4,7 +4,7 @@ var messages__xml_8h =
     [ "ncxml_reply_dump", "d9/de5/messages__xml_8h.html#ga68ec8a0daf54f584339924bca5b5a682", null ],
     [ "ncxml_reply_build", "d9/de5/messages__xml_8h.html#gaaaf53b5a839be6935059fdf2818a5a42", null ],
     [ "ncxml_rpc_dump", "d9/de5/messages__xml_8h.html#ga9f27fbe1879115a07d7b3ae8bf6be9e6", null ],
-    [ "ncxml_rpc_build", "d9/de5/messages__xml_8h.html#ga42b2feaa0fe28ea794748cc9535fe7b9", null ],
+    [ "ncxml_rpc_build", "d9/de5/messages__xml_8h.html#gaa6bcfc7c3e217e1b64c63bd674af4d8e", null ],
     [ "ncxml_rpc_get_op_content", "d9/de5/messages__xml_8h.html#ga78cb3e4ae4050de932cb9e705316ce53", null ],
     [ "ncxml_rpc_get_config", "d9/de5/messages__xml_8h.html#ga16f3dd2aaa13922eae37551179913b18", null ],
     [ "ncxml_reply_get_data", "d9/de5/messages__xml_8h.html#ga7878bc6bc6b6d1ca002044d7edf85943", null ],

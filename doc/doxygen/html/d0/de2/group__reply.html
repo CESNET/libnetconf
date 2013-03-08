@@ -29,7 +29,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.3.1</span>
+   &#160;<span id="projectnumber">0.4.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -128,7 +128,7 @@ Enumerations</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga771a110143440bcd3b7d4c0e98388e80"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80">nc_callback_error_reply</a> (void(*func)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid))</td></tr>
-<tr class="memdesc:ga771a110143440bcd3b7d4c0e98388e80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set callback function to process (e.g. print) NETCONF &lt;rpc-error&gt; message items.  <a href="#ga771a110143440bcd3b7d4c0e98388e80"></a><br/></td></tr>
+<tr class="memdesc:ga771a110143440bcd3b7d4c0e98388e80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function to process (e.g. print) NETCONF &lt;rpc-error&gt; message items.  <a href="#ga771a110143440bcd3b7d4c0e98388e80"></a><br/></td></tr>
 <tr class="memitem:ga0b344811af933d80615f0874650938cc"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../db/d52/group__session.html#ga85043314eec3f4f8c53234d9af1f2d41">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga0b344811af933d80615f0874650938cc">nc_session_send_reply</a> (struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:ga0b344811af933d80615f0874650938cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;rpc-reply&gt; response via specified NETCONF session. This function is supposed to be performed only by NETCONF servers.  <a href="#ga0b344811af933d80615f0874650938cc"></a><br/></td></tr>
 <tr class="memitem:ga1b8c8ca9516003938e8f647bd870beaa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga1b8c8ca9516003938e8f647bd870beaa">nc_session_recv_reply</a> (struct nc_session *session, int timeout, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> **reply)</td></tr>
@@ -142,7 +142,7 @@ Functions</h2></td></tr>
 <tr class="memitem:gad6ed5b3e0b7d8fbeb81e80bc0a326d6c"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../db/d52/group__session.html#ga85043314eec3f4f8c53234d9af1f2d41">nc_msgid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gad6ed5b3e0b7d8fbeb81e80bc0a326d6c">nc_reply_get_msgid</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:gad6ed5b3e0b7d8fbeb81e80bc0a326d6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get message-id of the given rpc-reply.  <a href="#gad6ed5b3e0b7d8fbeb81e80bc0a326d6c"></a><br/></td></tr>
 <tr class="memitem:gab12cdef82337060c425348dada7fe983"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29">NC_REPLY_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gab12cdef82337060c425348dada7fe983">nc_reply_get_type</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
-<tr class="memdesc:gab12cdef82337060c425348dada7fe983"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get type of the rpc-reply message.  <a href="#gab12cdef82337060c425348dada7fe983"></a><br/></td></tr>
+<tr class="memdesc:gab12cdef82337060c425348dada7fe983"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the type of the rpc-reply message.  <a href="#gab12cdef82337060c425348dada7fe983"></a><br/></td></tr>
 <tr class="memitem:gaac62fb3d427985311cf71a2c3ab8d424"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gaac62fb3d427985311cf71a2c3ab8d424">nc_reply_get_data</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:gaac62fb3d427985311cf71a2c3ab8d424"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get content of the &lt;data&gt; element in &lt;rpc-reply&gt;.  <a href="#gaac62fb3d427985311cf71a2c3ab8d424"></a><br/></td></tr>
 <tr class="memitem:ga121d66d8f7437d87a995b82187e7e7ff"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga121d66d8f7437d87a995b82187e7e7ff">nc_reply_get_errormsg</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
@@ -157,8 +157,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga12fd89263289491b84398279e0e449fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create rpc-reply response with &lt;rpc-error&gt; content.  <a href="#ga12fd89263289491b84398279e0e449fd"></a><br/></td></tr>
 <tr class="memitem:gafb04a6695650d05a07b571ac1410a681"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gafb04a6695650d05a07b571ac1410a681">nc_reply_error_add</a> (<a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply, struct nc_err *error)</td></tr>
 <tr class="memdesc:gafb04a6695650d05a07b571ac1410a681"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add another error description into the existing rpc-reply with &lt;rpc-error&gt; content.  <a href="#gafb04a6695650d05a07b571ac1410a681"></a><br/></td></tr>
-<tr class="memitem:gab1dd4115fe039fe495713168f9b40d34"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gab1dd4115fe039fe495713168f9b40d34">nc_reply_merge</a> (int count, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *msg1, <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *msg2,...)</td></tr>
-<tr class="memdesc:gab1dd4115fe039fe495713168f9b40d34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merge reply messages. All messages MUST be of the same type.  <a href="#gab1dd4115fe039fe495713168f9b40d34"></a><br/></td></tr>
+<tr class="memitem:gab1f7b7f9be8153758e5b047fe70fd48d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gab1f7b7f9be8153758e5b047fe70fd48d">nc_reply_merge</a> (int count,...)</td></tr>
+<tr class="memdesc:gab1f7b7f9be8153758e5b047fe70fd48d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merge reply messages. All messages MUST be of the same type.  <a href="#gab1f7b7f9be8153758e5b047fe70fd48d"></a><br/></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>libnetconf's functions for handling NETCONF &lt;rpc-reply&gt; messages. </p>
@@ -226,7 +226,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Set callback function to process (e.g. print) NETCONF &lt;rpc-error&gt; message items. </p>
+<p>Set a callback function to process (e.g. print) NETCONF &lt;rpc-error&gt; message items. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. Passed parameters are:<ul>
@@ -234,12 +234,12 @@ Functions</h2></td></tr>
 <li>type - error layer where the error occurred,</li>
 <li>severity - error severity,</li>
 <li>apptag - the data-model-specific or implementation-specific error condition, if one exists,</li>
-<li>path - XPATH expression identifying element with error,</li>
-<li>message - human description of the error,</li>
+<li>path - XPATH expression identifying element with the error,</li>
+<li>message - human-readable description of the error,</li>
 <li>attribute - name of the data-model-specific XML attribute that caused the error,</li>
 <li>element - name of the data-model-specific XML element that caused the error,</li>
 <li>ns - name of the unexpected XML namespace that caused the error,</li>
-<li>sid - session ID of session holding requested lock. </li>
+<li>sid - session ID of the session holding the requested lock. </li>
 </ul>
 </td></tr>
   </table>
@@ -332,7 +332,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Type of received message. <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a> means error, <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a827b3c9c898a48ec8e9f8f9af11f1bdd">NC_MSG_REPLY</a> means that *reply points to the received &lt;rpc-reply&gt; message. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Type of the received message. <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a> means error, <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a827b3c9c898a48ec8e9f8f9af11f1bdd">NC_MSG_REPLY</a> means that *reply points to the received &lt;rpc-reply&gt; message. </dd></dl>
 
 </div>
 </div>
@@ -357,7 +357,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>String in XML format containing the NETCONF's &lt;rpc-reply&gt; element and all its content. Caller is responsible for free of returned string with free(). </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>String in XML format containing the NETCONF's &lt;rpc-reply&gt; element and all of its content. Caller is responsible for freeing the returned string with free(). </dd></dl>
 
 </div>
 </div>
@@ -450,7 +450,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get type of the rpc-reply message. </p>
+<p>Get the type of the rpc-reply message. </p>
 <p>&lt;rpc-reply&gt; message can contain &lt;ok&gt;, &lt;rpc-error&gt; or &lt;data&gt;</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
@@ -483,7 +483,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>String with the content of the &lt;data&gt; element. Caller is responsible for free of returned string with free(). </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>String with the content of the &lt;data&gt; element. Caller is responsible for freeing the returned string with free(). </dd></dl>
 
 </div>
 </div>
@@ -596,7 +596,7 @@ Functions</h2></td></tr>
 <p>Create rpc-reply response with &lt;rpc-error&gt; content. </p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">error</td><td>NETCONF error description structure for reply message. From now, error is connected with the reply and should not be used by the caller. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">error</td><td>NETCONF error description structure for the reply message. From now, the error is connected with the reply and should not be used by the caller. </td></tr>
   </table>
   </dd>
 </dl>
@@ -632,8 +632,8 @@ Functions</h2></td></tr>
 <p>This function can be applied only to reply messages created by <a class="el" href="../../d0/de2/group__reply.html#ga12fd89263289491b84398279e0e449fd" title="Create rpc-reply response with &lt;rpc-error&gt; content.">nc_reply_error()</a>.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">reply</td><td>Reply structure where the given error description will be added. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">error</td><td>NETCONF error description structure for reply message. From now, error is connected with the reply and should not be used by the caller. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">reply</td><td>Reply structure to which the given error description will be added. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">error</td><td>NETCONF error description structure for the reply message. From now, the error is connected with the reply and should not be used by the caller. </td></tr>
   </table>
   </dd>
 </dl>
@@ -641,7 +641,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gab1dd4115fe039fe495713168f9b40d34"></a>
+<a class="anchor" id="gab1f7b7f9be8153758e5b047fe70fd48d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -650,18 +650,6 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>count</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td>
-          <td class="paramname"><em>msg1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td>
-          <td class="paramname"><em>msg2</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -678,17 +666,15 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Merge reply messages. All messages MUST be of the same type. </p>
-<p>Function merges number of &lt;rpc-reply&gt; specified by count parameter (at least 2) into one &lt;rpc-reply&gt; message which is returned as a result. When the merge is successful, all input messages are freed and MUST NOT be used after this call. Merge can fail only due to an invalid input parameter. In such a case, NULL is returned and input messages are left unchanged.</p>
+<p>Function merges a number of &lt;rpc-reply&gt; specified by the count parameter (at least 2) into one &lt;rpc-reply&gt; message which is returned as the result. When the merge is successful, all input messages are freed and MUST NOT be used after this call. Merge can fail only because of an invalid input parameter. In such a case, NULL is returned and input messages are left unchanged.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of messages to merge </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">msg1</td><td>1st message to merge. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">msg2</td><td>2nd message to merge. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>Other messages to merge. Total number of messages MUST be equal to count.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>Messages to merge (all are of nc_reply* type). Total number of messages MUST be equal to count.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Pointer to a new reply message with merged content of messages to merge. If the error occurs (due to the invalid input parameters), NULL is returned and messages to merge are not freed. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Pointer to a new reply message with the merged content of the messages to merge. If an error occurs (due to the invalid input parameters), NULL is returned and the messages to merge are not freed. </dd></dl>
 
 </div>
 </div>
@@ -697,7 +683,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Jan 23 2013 16:06:49 for libnetconf by
+    <li class="footer">Generated on Fri Mar 1 2013 14:49:31 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>

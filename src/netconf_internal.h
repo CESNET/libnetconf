@@ -41,6 +41,7 @@
 #define NETCONF_INTERNAL_H_
 
 #include <time.h>
+#include <stdbool.h>
 #include <pthread.h>
 
 #ifndef DISABLE_LIBSSH
@@ -88,27 +89,29 @@
 #define NC_NS_BASE NC_NS_BASE10
 #define NC_NS_BASE_ID NC_NS_BASE10_ID
 
-#define NC_CAP_BASE10_ID      	"urn:ietf:params:netconf:base:1.0"
-#define NC_CAP_BASE11_ID      	"urn:ietf:params:netconf:base:1.1"
-#define NC_CAP_NOTIFICATION_ID 	"urn:ietf:params:netconf:capability:notification:1.0"
-#define NC_CAP_INTERLEAVE_ID 	"urn:ietf:params:netconf:capability:interleave:1.0"
-#define NC_CAP_WRUNNING_ID  	"urn:ietf:params:netconf:capability:writable-running:1.0"
-#define NC_CAP_CANDIDATE_ID 	"urn:ietf:params:netconf:capability:candidate:1.0"
-#define NC_CAP_STARTUP_ID   	"urn:ietf:params:netconf:capability:startup:1.0"
-#define NC_CAP_POWERCTL_ID 	"urn:liberouter:params:netconf:capability:power-control:1.0"
+#define NC_CAP_BASE10_ID        "urn:ietf:params:netconf:base:1.0"
+#define NC_CAP_BASE11_ID        "urn:ietf:params:netconf:base:1.1"
+#define NC_CAP_NOTIFICATION_ID  "urn:ietf:params:netconf:capability:notification:1.0"
+#define NC_CAP_INTERLEAVE_ID    "urn:ietf:params:netconf:capability:interleave:1.0"
+#define NC_CAP_WRUNNING_ID      "urn:ietf:params:netconf:capability:writable-running:1.0"
+#define NC_CAP_CANDIDATE_ID     "urn:ietf:params:netconf:capability:candidate:1.0"
+#define NC_CAP_STARTUP_ID       "urn:ietf:params:netconf:capability:startup:1.0"
+#define NC_CAP_POWERCTL_ID      "urn:liberouter:params:netconf:capability:power-control:1.0"
 #define NC_CAP_CONFIRMED_COMMIT_ID "urn:ietf:params:netconf:capability:confirmed-commit:1.1"
-#define NC_CAP_ROLLBACK_ID	"urn:ietf:params:netconf:capability:rollback-on-error:1.0"
-#define NC_CAP_VALIDATE10_ID	"urn:ietf:params:netconf:capability:validate:1.0"
-#define NC_CAP_VALIDATE11_ID	"urn:ietf:params:netconf:capability:validate:1.1"
-#define NC_CAP_MONITORING_ID "urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
-#define NC_CAP_WITHDEFAULTS_ID 	"urn:ietf:params:netconf:capability:with-defaults:1.0"
+#define NC_CAP_ROLLBACK_ID      "urn:ietf:params:netconf:capability:rollback-on-error:1.0"
+#define NC_CAP_VALIDATE10_ID    "urn:ietf:params:netconf:capability:validate:1.0"
+#define NC_CAP_VALIDATE11_ID    "urn:ietf:params:netconf:capability:validate:1.1"
+#define NC_CAP_MONITORING_ID    "urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
+#define NC_CAP_WITHDEFAULTS_ID  "urn:ietf:params:netconf:capability:with-defaults:1.0"
 
-#define NC_NS_WITHDEFAULTS 	"urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"
+#define NC_NS_WITHDEFAULTS      "urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"
 #define NC_NS_WITHDEFAULTS_ID   "wd"
-#define NC_NS_NOTIFICATIONS "urn:ietf:params:xml:ns:netconf:notification:1.0"
-#define NC_NS_NOTIFICATIONS_ID 	"ntf"
-#define NC_NS_MONITORING 	"urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
-#define NC_NS_MONITORING_ID 	"monitor"
+#define NC_NS_NOTIFICATIONS     "urn:ietf:params:xml:ns:netconf:notification:1.0"
+#define NC_NS_NOTIFICATIONS_ID  "ntf"
+#define NC_NS_MONITORING        "urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
+#define NC_NS_MONITORING_ID     "monitor"
+#define NC_NS_NACM              "urn:ietf:params:xml:ns:yang:ietf-netconf-acm"
+#define NC_NS_NACM_ID           "nacm"
 
 /* NETCONF versions identificators */
 #define NETCONFV10	0
@@ -158,12 +161,29 @@
 /*
  * libnetconf permissions for every file or dir creation, process mask used with special cases
  * such as fopen()
+ *
+ * SETBIT = 1 - SUID
+ * SETBIT = 2 - SGID
+ * SETBIT = 3 - SUID + SGID
+ * SETBIT = 0 - NONE
  */
-
-/* safe permissions - only reading and writing performed by the owner allowed */
-#define FILE_PERM 0600
-#define DIR_PERM 0700
-#define MASK_PERM 0066
+#if SETBIT == 1
+#	define FILE_PERM 0600
+#	define DIR_PERM 0700
+#	define MASK_PERM 0066
+#elif SETBIT == 2
+#	define FILE_PERM 0060
+# 	define DIR_PERM 0070
+#	define MASK_PERM 0606
+#elif SETBIT == 3
+#	define FILE_PERM 0660
+#	define DIR_PERM 0770
+#	define MASK_PERM 0006
+#elif SETBIT == 0
+#	define FILE_PERM 0666
+#	define DIR_PERM 0777
+#	define MASK_PERM 0000
+#endif
 
 /* libnetconf's message printing */
 char prv_msg[4096];
@@ -258,6 +278,12 @@ struct nc_statistics {
 	struct nc_session_stats counters;
 };
 
+struct nacm_stats {
+	unsigned int denied_ops;
+	unsigned int denied_data;
+	unsigned int denied_notifs;
+};
+
 /**
  * @ingroup internalAPI
  * @brief Information structure shared between all libnetconf's processes.
@@ -265,6 +291,7 @@ struct nc_statistics {
 struct nc_shared_info {
 	pthread_rwlock_t lock;
 	struct nc_statistics stats;
+	struct nacm_stats stats_nacm;
 };
 
 /**
@@ -303,6 +330,8 @@ struct nc_session {
 	char *port;
 	/**< @brief name of the user holding the session */
 	char *username;
+	/**< @brief NULL-terminated list of external (system) groups for NACM */
+	char **groups;
 	/**< @brief login time in the yang:date-and-time format */
 	char *logintime;
 	/**< @brief number of confirmed capabilities */
@@ -333,6 +362,8 @@ struct nc_session {
 	struct nc_msg* queue_event;
 	/**< @brief flag for active notification subscription on the session */
 	int ntf_active;
+	/**< @brief flag for NACM Recovery session - set if session user ID is 0 */
+	int nacm_recovery;
 	/**< @brief Flag if the session is monitored and connected to the shared memory segment */
 	int monitored;
 	/**< @brief NETCONF session statistics as defined in RFC 6022 */
@@ -417,6 +448,13 @@ struct nc_err {
 	struct nc_err* next;
 };
 
+struct nacm_rpc {
+	bool default_read; /* false (0) for permit, true (1) for deny */
+	bool default_write; /* false (0) for permit, true (1) for deny */
+	bool default_exec; /* false (0) for permit, true (1) for deny */
+	struct rule_list** rule_lists;
+};
+
 /**
  * @brief generic message structure covering both a rpc and a reply.
  * @ingroup internalAPI
@@ -431,6 +469,7 @@ struct nc_msg {
 		NC_NOTIF_TYPE ntf;
 	} type;
 	NCWD_MODE with_defaults;
+	struct nacm_rpc *nacm;
 	struct nc_err* error;
 	struct nc_msg* next;
 };
@@ -557,5 +596,11 @@ void nc_session_monitoring_close(void);
  * @param[in] node XML element node which is to be checked for namespace definitions
  */
 void nc_clear_namespaces(xmlNodePtr node);
+
+const struct ncds_ds* ncds_get_model_data(const char* namespace);
+const struct ncds_ds* ncds_get_model_operation(const char* operation, const char* namespace);
+const struct ncds_ds* ncds_get_model_notification(const char* notification, const char* namespace);
+
+char** nc_get_grouplist(const char* username);
 
 #endif /* NETCONF_INTERNAL_H_ */

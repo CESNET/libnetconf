@@ -100,9 +100,11 @@ xmlDocPtr ncxml_rpc_dump(const nc_rpc *rpc);
  * @param[in] rpc_dump XML document structure with the NETCONF \<rpc\> message.
  * The structure is integrated into the internal rpc structure and caller should
  * not access (or free) given XML document anymore.
+ * @param[in] session Session information needed for ACM. If NULL, ACM structure
+ * is not prepared and no ACM rules will be applied to the created RPC message.
  * @return Complete rpc structure used by libnetconf's functions.
  */
-nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump);
+nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump, const struct nc_session* session);
 
 /**
  * @ingroup rpc_xml

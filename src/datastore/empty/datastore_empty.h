@@ -58,9 +58,33 @@ struct ncds_ds_empty {
 	 */
 	char* model_path;
 	/**
+	 * @brief Name of the model
+	 */
+	char* model_name;
+	/**
+	 * @brief Revision of the model
+	 */
+	char* model_version;
+	/**
+	 * @brief Namespace of the model
+	 */
+	char* model_namespace;
+	/**
+	 * @brief List of defined RPCs
+	 */
+	char** rpcs;
+	/**
+	 * @brief List of defined notifications
+	 */
+	char** notifs;
+	/**
 	 * @brief YIN configuration data model in the libxml2's document form.
 	 */
 	xmlDocPtr model;
+	/**
+	 * @brief Time of the last access to the configuration datastore.
+	 */
+	time_t last_access;
 	/**
 	 * @brief Pointer to a callback function implementing the retrieval of the
 	 * device status data.
@@ -101,6 +125,8 @@ int ncds_empty_init (struct ncds_ds * ds);
  */
 void ncds_empty_free (struct ncds_ds * ds);
 
+int ncds_empty_changed(struct ncds_ds* ds);
+
 const struct ncds_lockinfo *ncds_empty_lockinfo(struct ncds_ds* ds, NC_DATASTORE target);
 
 int ncds_empty_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
@@ -109,10 +135,10 @@ int ncds_empty_unlock(struct ncds_ds* ds, const struct nc_session* session, NC_D
 
 char* ncds_empty_getconfig(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 
-int ncds_empty_copyconfig(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, NC_DATASTORE source, char* config, struct nc_err** error);
+int ncds_empty_copyconfig(struct ncds_ds* ds, const struct nc_session* session, const nc_rpc* rpc, NC_DATASTORE target, NC_DATASTORE source, char* config, struct nc_err** error);
 
 int ncds_empty_deleteconfig(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 
-int ncds_empty_editconfig(struct ncds_ds *ds, const struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
+int ncds_empty_editconfig(struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 
 #endif /* DATASTORE_EMPTY_H_ */

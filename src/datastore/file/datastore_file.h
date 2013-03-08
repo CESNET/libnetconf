@@ -61,9 +61,33 @@ struct ncds_ds_file {
 	 */
 	char* model_path;
 	/**
+	 * @brief Name of the model
+	 */
+	char* model_name;
+	/**
+	 * @brief Revision of the model
+	 */
+	char* model_version;
+	/**
+	 * @brief Namespace of the model
+	 */
+	char* model_namespace;
+	/**
+	 * @brief List of defined RPCs
+	 */
+	char** rpcs;
+	/**
+	 * @brief List of defined notifications
+	 */
+	char** notifs;
+	/**
 	 * @brief YIN configuration data model in the libxml2's document form.
 	 */
 	xmlDocPtr model;
+	/**
+	 * @brief Time of the last access to the configuration datastore.
+	 */
+	time_t last_access;
 	/**
 	 * @brief Pointer to a callback function implementing the retrieval of the
 	 * device status data.
@@ -130,6 +154,15 @@ struct ncds_ds_file {
 int ncds_file_init (struct ncds_ds* ds);
 
 /**
+ * @brief Test if configuration datastore was changed by another process since
+ * last access of the caller.
+ * @param[in] file_ds File datastore structure which will be tested.
+ * @return 0 as false if the datastore was not updated, 1 if the datastore was
+ * changed.
+ */
+int ncds_file_changed(struct ncds_ds* ds);
+
+/**
  * @brief Perform get-config on the specified repository.
  *
  * @param[in] file_ds File datastore structure from which the data will be obtained.
@@ -176,6 +209,7 @@ void ncds_file_free(struct ncds_ds* ds);
  *
  * @param ds Pointer to the datastore structure
  * @param session Session which the request is a part of
+ * @param rpc RPC message with the request
  * @param target Target datastore
  * @param source Source datastore, if the value is NC_DATASTORE_NONE then the next
  * parameter holds the configration to copy
@@ -185,7 +219,7 @@ void ncds_file_free(struct ncds_ds* ds);
  * @return EXIT_SUCCESS when done without problems
  * 	   EXIT_FAILURE when error occured
  */
-int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error);
+int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, const nc_rpc* rpc, NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error);
 
 /**
  * @brief Delete the target datastore
@@ -204,6 +238,7 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
  *
  * @param ds Datastore to edit
  * @param session Session sending the edit request
+ * @param rpc RPC message with the request
  * @param target Datastore type
  * @param config Edit configuration.
  * @param defop Default edit operation.
@@ -211,6 +246,6 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
+int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 
 #endif /* DATASTORE_FILE_H_ */

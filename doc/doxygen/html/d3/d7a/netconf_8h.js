@@ -2,6 +2,7 @@ var netconf_8h =
 [
     [ "nc_msgid", "d3/d7a/netconf_8h.html#ga85043314eec3f4f8c53234d9af1f2d41", null ],
     [ "NC_INIT_NOTIF", "d3/d7a/netconf_8h.html#ae2518fb60d22a54179a25195bb7a5a6e", null ],
+    [ "NC_INIT_NACM", "d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6", null ],
     [ "nc_rpc", "d3/d7a/netconf_8h.html#gab21d1d39737065c552f2ccc5b4819262", null ],
     [ "nc_reply", "d3/d7a/netconf_8h.html#ga40338a1274759a932a7c2c7b8ed0121d", null ],
     [ "nc_ntf", "d3/d7a/netconf_8h.html#ga3c2f8ca237327fcf3c871544f414bdfe", null ],

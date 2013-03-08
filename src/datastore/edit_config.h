@@ -41,6 +41,7 @@
 #include <libxml/xpath.h>
 
 #include "../netconf.h"
+#include "../netconf_internal.h"
 #include "../error.h"
 
 #ifndef EDIT_CONFIG_H_
@@ -71,17 +72,32 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys);
  * \brief Perform edit-config changes according to the given parameters
  *
  * \param[in] repo XML document to change (target NETCONF repository).
- * \param[in] edit edit-config's \<config\> element as an XML document defining the changes to perform.
+ * \param[in] edit Content of the edit-config's \<config\> element as an XML
+ * document defining the changes to perform.
  * \param[in] model XML form (YIN) of the configuration data model appropriate to the given repo.
  * \param[in] defop Default edit-config's operation for this edit-config call.
  * \param[in] errop NETCONF edit-config's error option defining reactions to an error.
+ * \param[in] nacm NACM structure of the request RPC to check Access Rights
  * \param[out] err NETCONF error structure.
  * \return On error, non-zero is returned and err structure is filled. Zero is
  * returned on success.
  */
-int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
+int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, const struct nacm_rpc* nacm, struct nc_err **error);
 
-int edit_merge (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys);
+/**
+ * \brief Perform edit-config's "replace" operation on the selected node.
+ *
+ * \param[in] orig_doc Original configuration document to edit.
+ * \param[in] edit_node Node from the edit-config's \<config\> element with
+ * the specified "replace" operation.
+ * \param[in] keys  List of the key elements from the configuration data model.
+ *
+ * \return Zero on success, non-zero otherwise.
+ */
+int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error);
+
+int edit_replace_nacmcheck(xmlNodePtr orig_node, xmlDocPtr edit_doc, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error);
+int edit_merge (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error);
 
 /**
  * \todo: stolen from old netopeer, verify function
