@@ -209,7 +209,7 @@ void ncds_file_free(struct ncds_ds* ds);
  *
  * @param ds Pointer to the datastore structure
  * @param session Session which the request is a part of
- * @param rpc RPC message with the request
+ * @param rpc RPC message with the request. RPC message is used only for access control. If rpc is NULL access control is skipped.
  * @param target Target datastore
  * @param source Source datastore, if the value is NC_DATASTORE_NONE then the next
  * parameter holds the configration to copy
@@ -238,7 +238,7 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
  *
  * @param ds Datastore to edit
  * @param session Session sending the edit request
- * @param rpc RPC message with the request
+ * @param rpc RPC message with the request. RPC message is used only for access control. If rpc is NULL access control is skipped.
  * @param target Datastore type
  * @param config Edit configuration.
  * @param defop Default edit operation.
