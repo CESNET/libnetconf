@@ -197,7 +197,7 @@ static char** nc_accept_server_cpblts(char ** server_cpblts_list, char ** client
 	}
 
 	if ((*version) == NETCONFVUNK) {
-		ERROR("No base capability found in capabilities intersection.");
+		ERROR("No base capability found in the capabilities intersection.");
 		free(result);
 		return (NULL);
 	}
@@ -213,12 +213,12 @@ static char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 	int c;
 
 	if ((node = xmlDocGetRootElement(msg->doc)) == NULL) {
-		ERROR("Parsing <hello> message failed - document is empty.");
+		ERROR("Parsing a <hello> message failed - the document is empty.");
 		return (NULL);
 	}
 
 	if (xmlStrcmp(node->name, BAD_CAST "hello")) {
-		ERROR("Parsing <hello> message failed - received non-<hello> message.");
+		ERROR("Parsing a <hello> message failed - received a non-<hello> message.");
 		return (NULL);
 	}
 
@@ -243,7 +243,7 @@ static char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 			                capnode = capnode->next) {
 				str = (char*) xmlNodeGetContent(capnode);
 				if ((str == NULL) || (cap = nc_clrwspace(str)) == NULL) {
-					ERROR("Parsing <hello> message failed - unable to read capabilities.");
+					ERROR("Parsing a <hello> message failed - unable to read the capabilities.");
 					return (NULL);
 				}
 				xmlFree(BAD_CAST str);
@@ -277,7 +277,7 @@ static char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 
 	if (capabilities == NULL || capabilities[0] == NULL) {
 		/* no capability received */
-		ERROR("Parsing <hello> message failed - no capabilities detected.");
+		ERROR("Parsing a <hello> message failed - no capabilities detected.");
 		return (NULL);
 	}
 
@@ -366,7 +366,7 @@ struct nc_msg* read_hello(struct nc_session *session)
 
 	/* create xpath evaluation context */
 	if ((retval->ctxt = xmlXPathNewContext(retval->doc)) == NULL) {
-		ERROR("%s: rpc message XPath context can not be created.", __func__);
+		ERROR("%s: rpc message XPath context cannot be created.", __func__);
 		nc_msg_free(retval);
 		goto malformed_msg;
 	}
@@ -398,7 +398,7 @@ malformed_msg:
 		/* NETCONF version 1.1 define sending error reply from the server */
 		reply = nc_reply_error(nc_err_new(NC_ERR_MALFORMED_MSG));
 		if (reply == NULL) {
-			ERROR("Unable to create \'Malformed message\' reply");
+			ERROR("Unable to create a \'Malformed message\' reply");
 			nc_session_close(session, NC_SESSION_TERM_OTHER);
 			return (NULL);
 		}
@@ -507,7 +507,7 @@ static int nc_server_handshake(struct nc_session *session, char** cpblts)
 	/* set session ID == PID */
 	pid = (int)getpid();
 	if (snprintf(session->session_id, SID_SIZE, "%d", pid) <= 0) {
-		ERROR("Unable to generate NETCONF session ID.");
+		ERROR("Unable to generate the NETCONF session ID.");
 		return (EXIT_FAILURE);
 	}
 
@@ -551,7 +551,7 @@ static int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_
 
 	knownhosts = libssh2_knownhost_init(ssh_session);
 	if (knownhosts == NULL) {
-		ERROR("Unable to init knownhost check.");
+		ERROR("Unable to init the knownhost check.");
 	} else {
 		/* get host's fingerprint */
 		remotekey = libssh2_session_hostkey(ssh_session, &len, &hostkey_type);
@@ -563,15 +563,16 @@ static int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_
 		hostkey_typebit = (hostkey_type == LIBSSH2_HOSTKEY_TYPE_RSA) ? LIBSSH2_KNOWNHOST_KEY_SSHRSA : LIBSSH2_KNOWNHOST_KEY_SSHDSS;
 
 		/* get all the hosts */
-		if (knownhosts_file != NULL && access(knownhosts_file, F_OK) == 0) {
+		if (knownhosts_file != NULL && eaccess(knownhosts_file, F_OK) == 0) {
 			ret = libssh2_knownhost_readfile(knownhosts,
 					knownhosts_file,
 					LIBSSH2_KNOWNHOST_FILE_OPENSSH);
 		} else {
 			ret = 0;
 		}
+
 		if (ret < 0) {
-			WARN("Unable to check against knownhost file.");
+			WARN("Unable to check against the knownhost file.");
 			if (callbacks.hostkey_check(host, hostkey_type, fingerprint_md5) == 0) {
 				/* host authenticity authorized */
 				libssh2_knownhost_free(knownhosts);
@@ -631,7 +632,7 @@ static int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_
 					WARN("Writing %s failed!", knownhosts_file);
 				}
 			} else {
-				WARN("Unknown known_hosts file location, skipping writing your decision.");
+				WARN("Unknown known_hosts file location, skipping the writing of your decision.");
 			}
 
 			libssh2_knownhost_free(knownhosts);
@@ -729,10 +730,10 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	 * get username - we are running as SSH Subsystem which was started
 	 * under the user which was connecting to NETCONF server
 	 */
-	pw = getpwuid(geteuid());
+	pw = getpwuid(getuid());
 	if (pw == NULL) {
 		/* unable to get correct username */
-		ERROR("Unable to set username for SSH connection (%s).", strerror(errno));
+		ERROR("Unable to set an username for the SSH connection (%s).", strerror(errno));
 		nc_session_close(retval, NC_SESSION_TERM_OTHER);
 		return (NULL);
 	}
@@ -740,7 +741,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 
 	if (capabilities == NULL) {
 		if ((server_cpblts = nc_session_get_cpblts_default()) == NULL) {
-			VERB("Unable to set client's NETCONF capabilities.");
+			VERB("Unable to set the client's NETCONF capabilities.");
 			nc_session_close(retval, NC_SESSION_TERM_OTHER);
 			return (NULL);
 		}
@@ -832,7 +833,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		 * file of this session
 		 */
 		if ((straux = ttyname(fileno(stdin))) == 0) {
-			WARN("Unable to get tty (%s) to get client's hostname (session %s).", strerror(errno), retval->session_id);
+			WARN("Unable to get tty (%s) to get the client's hostname (session %s).", strerror(errno), retval->session_id);
 		} else {
 			if (strncmp(straux, "/dev/", 5) == 0) {
 				straux += 5;
@@ -841,7 +842,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 			strcpy(protox.ut_line, straux);
 
 			if ((utp = getutxline(&protox)) == 0) {
-				WARN("Unable to locate UTMPX for \'%s\' to get client's hostname (session %s).", straux, retval->session_id);
+				WARN("Unable to locate UTMPX for \'%s\' to get the client's hostname (session %s).", straux, retval->session_id);
 			} else {
 				retval->hostname = malloc(sizeof(char) * (1 + sizeof(utp->ut_host)));
 				memcpy(retval->hostname, utp->ut_host, sizeof(utp->ut_host));
@@ -886,23 +887,25 @@ static int find_ssh_keys ()
 		user_home = pw->pw_dir;
 	}
 
+
 	/* search in the same location as ssh do (~/.ssh/) */
-	VERB ("Searching for key pairs in standard ssh directory.");
-	for (i=0; i<SSH2_KEYS; i++) {
+	VERB ("Searching for the key pairs in the standard ssh directory.");
+	for (i = 0; i < SSH2_KEYS; i++) {
 		x = asprintf (&key_priv_path, "%s/.ssh/%s", user_home, key_names[i]);
 		y = asprintf (&key_pub_path, "%s/.ssh/%s.pub", user_home, key_names[i]);
 		if (x == -1 || y == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			continue;
 		}
-		if (access(key_priv_path, R_OK) == 0 && access(key_pub_path, R_OK) == 0) {
-			VERB ("Found pair %s[.pub]", key_priv_path);
-			nc_set_keypair_path (key_priv_path, key_pub_path);
+		if (eaccess(key_priv_path, R_OK) == 0 && eaccess(key_pub_path, R_OK) == 0) {
+			VERB("Found a pair %s[.pub]", key_priv_path);
+			nc_set_keypair_path(key_priv_path, key_pub_path);
 			retval = EXIT_SUCCESS;
 		}
 		free (key_priv_path);
 		free (key_pub_path);
 	}
+
 
 	return retval;
 }
@@ -929,7 +932,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 	if (snprintf(port_s, SHORT_INT_LENGTH, "%d", port) < 0) {
 		/* converting short int to the string failed */
-		ERROR("Unable to convert port number to string.");
+		ERROR("Unable to convert the port number to a string.");
 		return (NULL);
 	}
 
@@ -947,10 +950,10 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 	/* get current user if not specified */
 	if (username == NULL) {
-		pw = getpwuid(geteuid());
+		pw = getpwuid(getuid());
 		if (pw == NULL) {
 			/* unable to get correct username (errno from getpwuid) */
-			ERROR("Unable to set username for SSH connection (%s).", strerror(errno));
+			ERROR("Unable to set the username for the SSH connection (%s).", strerror(errno));
 			return (NULL);
 		} else {
 			username = pw->pw_name;
@@ -1041,7 +1044,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		buffer[0] = '\0';
 		/* Read 1 char at a time and build up a string */
 		/* This will wait forever until "<" as xml message start is found... */
-		DBG("waiting for password request");
+		DBG("waiting for a password request");
 		while ((count++ < BUFFER_SIZE) && (fgets(tmpchar, 2, retval->f_input) != NULL)) {
 			strcat(buffer, tmpchar);
 			if (((int *) strcasestr(buffer, "password") != NULL) || ((int *) strcasestr(buffer, "enter passphrase"))) {
@@ -1052,7 +1055,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 					}
 					strcat(buffer, tmpchar);
 				}
-				DBG("writing password to ssh");
+				DBG("writing the password to ssh");
 				//s = callbacks.sshauth_password(username, host);
 
 				fprintf(stdout, "%s ", buffer);
@@ -1062,7 +1065,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 				system("stty echo");
 
 				if (s == NULL) {
-					ERROR("Unable to get password from user (%s)", strerror(errno));
+					ERROR("Unable to get the password from a user (%s)", strerror(errno));
 					return (NULL);
 				}
 				fprintf(retval->f_input, s);
@@ -1080,7 +1083,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 				switch (forced) {
 				case 1:
 					fprintf(retval->f_input, "yes");
-					DBG("connecting to unauthenticated host");
+					DBG("connecting to an unauthenticated host");
 					break;
 				case 0:
 					fprintf(stdout, "%s ", buffer);
@@ -1090,7 +1093,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 				case -1:
 					fprintf(stdout, "%s ", buffer);
 					fprintf(retval->f_input, "no");
-					VERB("connecting to unauthenticated host disabled");
+					VERB("connecting to an unauthenticated host disabled");
 					break;
 				default:
 					return (NULL);
@@ -1127,7 +1130,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 				return (NULL);
 			}
 			if ((int *) strcasestr(buffer, "<") != NULL) {
-				DBG("XML message begin found, waiting for password finnished");
+				DBG("XML message begin found, waiting for the password finished");
 				ungetc(buffer[strlen(buffer) - 1], retval->f_input);
 				break; /* while */
 			}
@@ -1149,11 +1152,11 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	char *err_msg;
 
 	/* get current user to locate SSH known_hosts file */
-	pw = getpwuid(geteuid());
+	pw = getpwuid(getuid());
 	if (pw == NULL) {
 		if (username == NULL || strlen(username) == 0) {
 			/* unable to get correct username (errno from getpwuid) */
-			ERROR("Unable to set username for SSH connection (%s).", strerror(errno));
+			ERROR("Unable to set a username for the SSH connection (%s).", strerror(errno));
 			return (NULL);
 		}
 	} else {
@@ -1161,15 +1164,15 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			username = pw->pw_name;
 		}
 		if (asprintf(&knownhosts_file, "%s/.ssh/known_hosts", pw->pw_dir) == -1) {
-				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				knownhosts_file = NULL;
-			}
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			knownhosts_file = NULL;
+		}
 
 		/* check the existence of the known_hosts file */
-		if (knownhosts_file != NULL && access(knownhosts_file, F_OK) == 0) {
+		if (knownhosts_file != NULL && eaccess(knownhosts_file, F_OK) == 0) {
 			/* check needed access rights */
-			if (access(knownhosts_file, R_OK | W_OK) == -1) {
-				WARN("Unable to access known host file (%s).", knownhosts_file);
+			if (eaccess(knownhosts_file, R_OK | W_OK) == -1) {
+				WARN("Unable to access the known host file (%s).", knownhosts_file);
 				free(knownhosts_file);
 				knownhosts_file = NULL;
 			}
@@ -1183,7 +1186,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	hints.ai_protocol = IPPROTO_TCP;
 	i = getaddrinfo(host, port_s, &hints, &res_list);
 	if (i != 0) {
-		ERROR("Unable to translate host address (%s).", gai_strerror(i));
+		ERROR("Unable to translate the host address (%s).", gai_strerror(i));
 		return (NULL);
 	}
 
@@ -1260,7 +1263,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	/* Create a session instance */
 	retval->ssh_session = libssh2_session_init();
 	if (retval->ssh_session == NULL) {
-		ERROR("Unable to initialize SSH session.");
+		ERROR("Unable to initialize the SSH session.");
 		goto shutdown;
 	}
 
@@ -1280,13 +1283,13 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			s = "Invalid socket";
 			break;
 		case LIBSSH2_ERROR_BANNER_SEND:
-			s = "Unable to send banner to remote host";
+			s = "Unable to send the banner to a remote host";
 			break;
 		case LIBSSH2_ERROR_KEX_FAILURE:
 			s = "Encryption key exchange with the remote host failed";
 			break;
 		case LIBSSH2_ERROR_SOCKET_SEND:
-			s = "Unable to send data on socket";
+			s = "Unable to send data on the socket";
 			break;
 		case LIBSSH2_ERROR_SOCKET_DISCONNECT:
 			s = "The socket was disconnected";
@@ -1305,12 +1308,12 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			DBG("Error code %d.", r);
 			break;
 		}
-		ERROR("Starting SSH session failed (%s)", s);
+		ERROR("Starting the SSH session failed (%s)", s);
 		goto shutdown;
 	}
 
 	if (check_hostkey(host, knownhosts_file, retval->ssh_session) != 0) {
-		ERROR("Checking host key failed.");
+		ERROR("Checking the host key failed.");
 		goto shutdown;
 	}
 	if (knownhosts_file != NULL) {
@@ -1336,7 +1339,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		}
 	}
 	if ((auth == 0) && (libssh2_userauth_authenticated(retval->ssh_session) == 0)) {
-		ERROR("Unable to authenticate to remote server (Authentication methods not supported).");
+		ERROR("Unable to authenticate to the remote server (Authentication methods not supported).");
 		goto shutdown;
 	}
 
@@ -1349,7 +1352,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 		if (sshauth_pref[i].value < 0) {
 			/* all following auth methods are disabled via negative preference value */
-			ERROR("Unable to authenticate to remote server (supported authentication method(s) are disabled).");
+			ERROR("Unable to authenticate to the remote server (supported authentication method(s) are disabled).");
 			goto shutdown;
 		}
 
@@ -1379,9 +1382,9 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			VERB ("Publickey athentication");
 			/* if publickeys path not provided, try to find them in standard path */
 			if (callbacks.publickey_filename[0] == NULL || callbacks.privatekey_filename[0] == NULL) {
-				WARN ("No key pair specified. Looking for some in standard SSH path.");
+				WARN ("No key pair specified. Looking for some in the standard SSH path.");
 				if (find_ssh_keys ()) {
-					ERROR ("Searching keys failed.");
+					ERROR ("Searching for keys failed.");
 					/* error */
 					break;
 				}
@@ -1439,14 +1442,14 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->ssh_channel = libssh2_channel_open_session(retval->ssh_session);
 	if (retval->ssh_channel == NULL) {
 		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-		ERROR("Opening SSH channel failed (%s)", err_msg);
+		ERROR("Opening the SSH channel failed (%s)", err_msg);
 		goto shutdown;
 	}
 
 	/* execute the NETCONF subsystem on the channel */
 	if (libssh2_channel_subsystem(retval->ssh_channel, "netconf")) {
 		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-		ERROR("Starting netconf SSH subsystem failed (%s)", err_msg);
+		ERROR("Starting the netconf SSH subsystem failed (%s)", err_msg);
 		goto shutdown;
 	}
 #endif /* not DISABLE_LIBSSH */
@@ -1455,7 +1458,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 	if (cpblts == NULL) {
 		if ((client_cpblts = nc_session_get_cpblts_default()) == NULL) {
-			VERB("Unable to set client's NETCONF capabilities.");
+			VERB("Unable to set the client's NETCONF capabilities.");
 			goto shutdown;
 		}
 	} else {

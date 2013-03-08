@@ -192,27 +192,28 @@ static int check_streams_path(char* path)
 	struct stat sb;
 
 	/* check accessibility of the path */
-	if (access(path, F_OK|R_OK|W_OK) != 0) {
+	if (eaccess(path, F_OK | R_OK | W_OK) != 0) {
 		if (errno == ENOENT) {
 			/* path does not exist -> create it */
-			if (mkdir(path, 0777) == -1) {
-				WARN("Unable to create Events streams directory %s (%s).", path, strerror(errno));
+			if (mkdir(path, DIR_PERM) == -1) {
+				WARN("Unable to create the Events streams directory %s (%s).", path, strerror(errno));
 				return (EXIT_FAILURE);
 			}
 			return (EXIT_SUCCESS);
 		}
-		WARN("Unable to access Events streams directory %s (%s).", path, strerror(errno));
+		WARN("Unable to access the Events streams directory %s (%s).", path, strerror(errno));
 		return (EXIT_FAILURE);
 	} else {
 		/* check that the file is directory */
 		if (stat(path, &sb) == -1) {
-			WARN("Unable to get information about Events streams directory %s (%s).", path, strerror(errno));
+			WARN("Unable to get information about the Events streams directory %s (%s).", path, strerror(errno));
 			return (EXIT_FAILURE);
 		}
 		if (!S_ISDIR(sb.st_mode)) {
 			WARN("Events streams directory path %s exists, but it is not a directory.", path);
 			return (EXIT_FAILURE);
 		}
+
 		return (EXIT_SUCCESS);
 	}
 }
@@ -220,8 +221,8 @@ static int check_streams_path(char* path)
 /*
  * Set path to the directory with the stream files. It can be set by
  * environment variable defined as macro STREAMS_PATH_ENV (LIBNETCONF_STREAMS).
- * If this variable is not defined, default value from macro STREAMS_PATH_DEF
- * (/var/run/netconf_events) is used.
+ * If this variable is not defined, default value from macro NCNTF_STREAMS_PATH
+ * (default /usr/share/libnetconf/streams) is used.
  *
  * returns 0 on success, non-zero value else
  */
@@ -235,14 +236,14 @@ static int set_streams_path()
 	/* try to get path from the environment variable */
 	env = getenv(NCNTF_STREAMS_PATH_ENV);
 	if (env != NULL) {
-		VERB("Checking Events stream path %s from %s environment variable.", env, NCNTF_STREAMS_PATH_ENV);
+		VERB("Checking the Events stream path %s from %s environment variable.", env, NCNTF_STREAMS_PATH_ENV);
 		if (check_streams_path(env) == 0) {
 			streams_path = env;
 		}
 	}
 	if (streams_path == NULL) {
 		/* try to use default path */
-		VERB("Checking default Events stream path %s.", NCNTF_STREAMS_PATH);
+		VERB("Checking the default Events stream path %s.", NCNTF_STREAMS_PATH);
 		if (check_streams_path(NCNTF_STREAMS_PATH) == 0) {
 			streams_path = NCNTF_STREAMS_PATH;
 		}
@@ -307,9 +308,9 @@ static int map_rules(struct stream *s)
 		/* check if file with the rules exists */
 		if (access(filepath, F_OK) != 0) {
 			/* file does not exist, create it */
-			if ((s->fd_rules = open(filepath, O_CREAT|O_RDWR|O_EXCL, 0777)) == -1) {
+			if ((s->fd_rules = open(filepath, O_CREAT|O_RDWR|O_EXCL, FILE_PERM)) == -1) {
 				if (errno != EEXIST) {
-					ERROR("Unable to open Events stream rules file %s (%s)", filepath, strerror(errno));
+					ERROR("Unable to open the Events stream rules file %s (%s)", filepath, strerror(errno));
 					return (EXIT_FAILURE);
 				}
 				/* else file exists (someone already created it) just open it */
@@ -318,7 +319,7 @@ static int map_rules(struct stream *s)
 				lseek(s->fd_rules, NCNTF_RULES_SIZE -1, SEEK_END);
 				while (((r = write(s->fd_rules, &"\0", 1)) == -1) && (errno == EAGAIN ||errno == EINTR));
 				if (r == -1) {
-					WARN("Creating sparse stream event rules file failed (%s).", strerror(errno));
+					WARN("Creating a sparse stream event rules file failed (%s).", strerror(errno));
 				}
 				lseek(s->fd_rules, 0, SEEK_SET);
 			}
@@ -328,7 +329,7 @@ static int map_rules(struct stream *s)
 		}
 		umask(mask);
 		if (s->fd_rules == -1) {
-			ERROR("Unable to open Events stream rules file %s (%s)", filepath, strerror(errno));
+			ERROR("Unable to open the Events stream rules file %s (%s)", filepath, strerror(errno));
 			free(filepath);
 			return (EXIT_FAILURE);
 		}
@@ -338,7 +339,7 @@ static int map_rules(struct stream *s)
 	s->rules = mmap(NULL, NCNTF_RULES_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, s->fd_rules, 0);
 	if (s->rules == MAP_FAILED) {
 		/* something bad happend */
-		ERROR("mmapping Events stream rules file failed (%s)", strerror(errno));
+		ERROR("mmapping the Events stream rules file failed (%s)", strerror(errno));
 		return (EXIT_FAILURE);
 	} else {
 		return (EXIT_SUCCESS);
@@ -378,10 +379,10 @@ static int write_fileheader(struct stream *s)
 			return (EXIT_FAILURE);
 		}
 		mask = umask(0000);
-		s->fd_events = open(filepath, O_RDWR | O_CREAT | O_TRUNC, 0777);
+		s->fd_events = open(filepath, O_RDWR | O_CREAT | O_TRUNC, FILE_PERM);
 		umask(mask);
 		if (s->fd_events == -1) {
-			ERROR("Unable to create Events stream file %s (%s)", filepath, strerror(errno));
+			ERROR("Unable to create the Events stream file %s (%s)", filepath, strerror(errno));
 			free(filepath);
 			return (EXIT_FAILURE);
 		}
@@ -389,7 +390,7 @@ static int write_fileheader(struct stream *s)
 	} else {
 		/* truncate the file */
 		if (ftruncate(s->fd_events, 0) == -1) {
-			ERROR("ftruncate() failed on stream file \'%s\' failed (%s).", s->name, strerror(errno));
+			ERROR("ftruncate() on the stream file \'%s\' failed (%s).", s->name, strerror(errno));
 			return (EXIT_FAILURE);
 		}
 		lseek(s->fd_events, 0, SEEK_SET);
@@ -440,15 +441,15 @@ static int write_fileheader(struct stream *s)
 
 	/* check expected and prepared length */
 	if (offset != hlen) {
-		WARN("%s: prepared stream file header length differs expected length (%zd:%zd)", __func__, offset, hlen);
+		WARN("%s: prepared stream file header length differs from the expected length (%zd:%zd)", __func__, offset, hlen);
 	}
 
 	/* write the header */
 	while (((r = write(s->fd_events, header, offset)) == -1) && (errno == EAGAIN ||errno == EINTR));
 	if (r == -1) {
-		WARN("Writing stream event file header failed (%s).", strerror(errno));
+		WARN("Writing a stream event file header failed (%s).", strerror(errno));
 		if (ftruncate(s->fd_events, 0) == -1) {
-			ERROR("ftruncate() failed on stream file \'%s\' failed (%s).", s->name, strerror(errno));
+			ERROR("ftruncate() on stream file \'%s\' failed (%s).", s->name, strerror(errno));
 		}
 		free(header);
 		return (EXIT_FAILURE);
@@ -479,7 +480,7 @@ static struct stream *read_fileheader(const char* filepath)
 	/* open the file */
 	fd = open(filepath, O_RDWR);
 	if (fd == -1) {
-		ERROR("Unable to open Events stream file %s (%s)", filepath, strerror(errno));
+		ERROR("Unable to open the Events stream file %s (%s)", filepath, strerror(errno));
 		return (NULL);
 	}
 
@@ -537,7 +538,7 @@ static struct stream *read_fileheader(const char* filepath)
 	return (s);
 
 read_fail:
-	ERROR("Reading stream file header failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+	ERROR("Reading a stream file header failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
 	close (fd);
 	free(s);
 	return (NULL);
@@ -599,7 +600,7 @@ static struct stream* ncntf_stream_get(const char* stream)
 			s->next = streams;
 			streams = s;
 		} else if (s != NULL) {
-			ERROR("Unable to map Event stream rules file into memory.");
+			ERROR("Unable to map the Event stream rules file into memory.");
 			ncntf_stream_free(s);
 			s = NULL;
 		}
@@ -736,7 +737,7 @@ static int ncntf_streams_init(void)
 	/* explore the stream directory */
 	n = scandir(streams_path, &filelist, NULL, alphasort);
 	if (n < 0) {
-		ERROR("Unable to read from Events streams directory %s (%s).", streams_path, strerror(errno));
+		ERROR("Unable to read from the Events streams directory %s (%s).", streams_path, strerror(errno));
 		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		return (EXIT_FAILURE);
@@ -759,7 +760,7 @@ static int ncntf_streams_init(void)
 			s->next = streams;
 			streams = s;
 		} else if (s != NULL) {
-			ERROR("Unable to map Event stream rules file into memory.");
+			ERROR("Unable to map the Event stream rules file into memory.");
 			ncntf_stream_free(s);
 			s = NULL;
 		}/* else - not an event stream file */
@@ -1098,7 +1099,7 @@ void ncntf_stream_iter_start(const char* stream)
 	pthread_setspecific(ncntf_replay_done, (void*)replay_done);
 }
 
-void ncntf_stream_iter_finnish(const char* stream)
+void ncntf_stream_iter_finish(const char* stream)
 {
 	char* dbus_filter = NULL;
 	DBusError err;
@@ -1188,7 +1189,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 				if (asprintf(&text, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
 							"<eventTime>%s</eventTime><replayComplete/></notification>", time_s = nc_time2datetime(tnow = time(NULL))) == -1) {
 					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-					WARN("Sending replayComplete failed due to previous error.");
+					WARN("Sending replayComplete failed due to the previous error.");
 					text = NULL;
 				}
 				free(time_s);
@@ -1220,7 +1221,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 					/* read the parameters */
 					if (dbus_message_iter_init(signal, &signal_args)) {
 						if (DBUS_TYPE_UINT64 != dbus_message_iter_get_arg_type(&signal_args)) {
-							WARN("Unexpected DBus Event signal (timestamp is missing).");
+							WARN("Unexpected DBus Event signal (a timestamp is missing).");
 							dbus_message_unref(signal);
 							continue;
 						}
@@ -1267,11 +1268,11 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 
 		if (ncntf_stream_lock(s) == 0) {
 			if ((r = read(s->fd_events, &len, sizeof(int32_t))) <= 0) {
-				ERROR("Reading stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
 				return (NULL);
 			}
 			if ((r = read(s->fd_events, &t, sizeof(uint64_t))) <= 0) {
-				ERROR("Reading stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
 				return (NULL);
 			}
 
@@ -1300,13 +1301,13 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 			/* we're interested, read content */
 			text = malloc(len * sizeof(char));
 			if ((r = read(s->fd_events, text, len)) <= 0) {
-				ERROR("Reading stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
 				return (NULL);
 			}
 			ncntf_stream_unlock(s);
 			break; /* end the reading loop */
 		} else {
-			ERROR("Unable to read event from stream file %s (locking failed).", s->name);
+			ERROR("Unable to read an event from the stream file %s (locking failed).", s->name);
 			DBG_UNLOCK("streams_mut");
 			pthread_mutex_unlock(streams_mut);
 			return (NULL);
@@ -1384,7 +1385,7 @@ static int ncntf_event_store(time_t etime, const char* content)
 		etime = time(NULL);
 	}
 	if (etime == -1) {
-		ERROR("Setting event time failed (%s).", strerror(errno));
+		ERROR("Setting the event time failed (%s).", strerror(errno));
 		ret = EXIT_FAILURE;
 		goto cleanup;
 	}
@@ -1417,7 +1418,7 @@ static int ncntf_event_store(time_t etime, const char* content)
 			event_time,
 			content);
 	if (len == -1) {
-		ERROR("Creating event record failed.");
+		ERROR("Creating an event record failed.");
 		ret = EXIT_FAILURE;
 		goto cleanup;
 	}
@@ -1444,16 +1445,16 @@ static int ncntf_event_store(time_t etime, const char* content)
 
 write_failed:
 				if (r == -1) {
-					WARN("Writing event into stream file failed (%s).", strerror(errno));
+					WARN("Writing an event into the stream file failed (%s).", strerror(errno));
 					/* revert changes */
 					if (ftruncate(s->fd_events, offset) == -1) {
-						ERROR("ftruncate() failed on stream file \'%s\' failed (%s).", s->name, strerror(errno));
+						ERROR("ftruncate() on the stream file \'%s\' failed (%s).", s->name, strerror(errno));
 					}
 					lseek(s->fd_events, offset, SEEK_SET);
 				}
 				ncntf_stream_unlock(s);
 			} else {
-				WARN("Unable to write event %s into stream file %s (locking failed).", ename, s->name);
+				WARN("Unable to write the event %s into the stream file %s (locking failed).", ename, s->name);
 			}
 		}
 	}
@@ -1471,7 +1472,7 @@ write_failed:
 			/* create a signal and check for errors */
 			if (asprintf(&signal_object, "%s/%s", NC_NTF_DBUS_PATH, s->name) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				WARN("Announcing event via DBus failed due to previous error.");
+				WARN("Announcing event via DBus failed due to the previous error.");
 				goto cleanup_dbus_mut;
 				/* event already successfully stored, return SUCCESS */
 				ret = EXIT_SUCCESS;
@@ -1487,13 +1488,13 @@ write_failed:
 			/* append arguments onto signal */
 			dbus_message_iter_init_append(signal, &signal_args);
 			if (!dbus_message_iter_append_basic(&signal_args, DBUS_TYPE_UINT64, &etime64)) {
-				WARN("Announcing event via DBus failed (attaching event timestamp failed).");
+				WARN("Announcing event via DBus failed (attaching the event timestamp failed).");
 				goto cleanup_dbus_mut;
 				/* event already successfully stored, return SUCCESS */
 				ret = EXIT_SUCCESS;
 			}
 			if (!dbus_message_iter_append_basic(&signal_args, DBUS_TYPE_STRING, &record)) {
-				WARN("Announcing event via DBus failed (attaching event content failed).");
+				WARN("Announcing event via DBus failed (attaching the event content failed).");
 				goto cleanup_dbus_mut;
 				/* event already successfully stored, return SUCCESS */
 				ret = EXIT_SUCCESS;
@@ -1501,7 +1502,7 @@ write_failed:
 
 			/* send the message and flush the connection */
 			if (!dbus_connection_send(dbus, signal, NULL)) {
-				WARN("Announcing event via DBus failed (sending signal failed).");
+				WARN("Announcing event via DBus failed (sending the signal failed).");
 				goto cleanup_dbus_mut;
 				/* event already successfully stored, return SUCCESS */
 				ret = EXIT_SUCCESS;
@@ -1597,7 +1598,7 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 		if (content != NULL) {
 			content = strdup(content);
 		} else {
-			ERROR("Missing parameter content to create GENERIC event record.");
+			ERROR("Missing parameter content to create the GENERIC event record.");
 			return (EXIT_FAILURE);
 		}
 		break;
@@ -1867,7 +1868,7 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 
 		break;
 	default:
-		ERROR("Adding unsupported type of event.");
+		ERROR("Adding an unsupported type of event.");
 		return (EXIT_FAILURE);
 		break;
 	}
@@ -1903,7 +1904,7 @@ int ncxmlntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 			content = strdup((char*) xmlBufferContent(data_buf));
 			xmlBufferFree(data_buf);
 		} else {
-			ERROR("Missing parameter content to create GENERIC event record.");
+			ERROR("Missing parameter content to create the GENERIC event record.");
 			va_end(argp);
 			return (EXIT_FAILURE);
 		}
@@ -1936,7 +1937,7 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 	nc_ntf* retval;
 
 	if ((etime = nc_time2datetime(event_time)) == NULL) {
-		ERROR("Converting time to string failed (%s:%d)", __FILE__, __LINE__);
+		ERROR("Converting the time to a string failed (%s:%d)", __FILE__, __LINE__);
 		return (NULL);
 	}
 
@@ -1976,7 +1977,7 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 
 	/* create xpath evaluation context */
 	if ((retval->ctxt = xmlXPathNewContext(retval->doc)) == NULL) {
-		ERROR("%s: notification message XPath context can not be created.", __func__);
+		ERROR("%s: notification message XPath context cannot be created.", __func__);
 		nc_msg_free(retval);
 		return NULL;
 	}
@@ -2000,7 +2001,7 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 	nc_ntf* retval;
 
 	if ((etime = nc_time2datetime(event_time)) == NULL) {
-		ERROR("Converting time to string failed (%s:%d)", __FILE__, __LINE__);
+		ERROR("Converting the time to a string failed (%s:%d)", __FILE__, __LINE__);
 		return (NULL);
 	}
 
@@ -2039,7 +2040,7 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 
 	/* create xpath evaluation context */
 	if ((retval->ctxt = xmlXPathNewContext(retval->doc)) == NULL) {
-		ERROR("%s: notification message XPath context can not be created.", __func__);
+		ERROR("%s: notification message XPath context cannot be created.", __func__);
 		nc_msg_free(retval);
 		return NULL;
 	}
@@ -2070,7 +2071,7 @@ NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif)
 	}
 
 	if ((root = xmlDocGetRootElement (notif->doc)) == NULL) {
-		ERROR("%s: Invalid message format, root element is missing.", __func__);
+		ERROR("%s: Invalid message format, the root element is missing.", __func__);
 		return (NCNTF_ERROR);
 	}
 
@@ -2083,7 +2084,7 @@ NCNTF_EVENT ncntf_notif_get_type(nc_ntf* notif)
 			break;
 		}
 		if (node == NULL) {
-			ERROR("%s: Invalid Notification message - missing event description.", __func__);
+			ERROR("%s: Invalid Notification message - missing the event description.", __func__);
 			return (NCNTF_ERROR);
 		}
 
@@ -2123,11 +2124,11 @@ char* ncntf_notif_get_content(nc_ntf* notif)
 	}
 
 	if ((root = xmlDocGetRootElement (notif->doc)) == NULL) {
-		ERROR("%s: Invalid message format, root element is missing.", __func__);
+		ERROR("%s: Invalid message format, the root element is missing.", __func__);
 		return (NULL);
 	}
 	if (xmlStrcmp(root->name, BAD_CAST "notification") != 0) {
-		ERROR("%s: Invalid message format, missing notification element.", __func__);
+		ERROR("%s: Invalid message format, missing the notification element.", __func__);
 		return (NULL);
 	}
 
@@ -2168,11 +2169,11 @@ xmlNodePtr ncxmlntf_notif_get_content(nc_ntf* notif)
 	}
 
 	if ((root = xmlDocGetRootElement (notif->doc)) == NULL) {
-		ERROR("%s: Invalid message format, root element is missing.", __func__);
+		ERROR("%s: Invalid message format, the root element is missing.", __func__);
 		return (NULL);
 	}
 	if (xmlStrcmp(root->name, BAD_CAST "notification") != 0) {
-		ERROR("%s: Invalid message format, missing notification element.", __func__);
+		ERROR("%s: Invalid message format, missing the notification element.", __func__);
 		return (NULL);
 	}
 
@@ -2208,7 +2209,7 @@ time_t ncntf_notif_get_time(nc_ntf* notif)
 
 	/* create xpath evaluation context */
 	if ((notif_ctxt = xmlXPathNewContext(notif->doc)) == NULL) {
-		WARN("%s: Creating XPath context failed.", __func__)
+		WARN("%s: Creating the XPath context failed.", __func__)
 		/* with-defaults cannot be found */
 		return (-1);
 	}
@@ -2251,11 +2252,11 @@ static int ncntf_subscription_get_params(const nc_rpc* subscribe_rpc, char **str
 
 	/* create xpath evaluation context */
 	if ((srpc_ctxt = xmlXPathNewContext(subscribe_rpc->doc)) == NULL) {
-		ERROR("%s: Creating XPath context failed.", __func__);
+		ERROR("%s: Creating the XPath context failed.", __func__);
 		return (-1);
 	}
 	if (xmlXPathRegisterNs(srpc_ctxt, BAD_CAST "ntf", BAD_CAST NC_NS_NOTIFICATIONS) != 0) {
-		ERROR("%s: Registering namespace for XPath context failed.", __func__);
+		ERROR("%s: Registering namespace for the XPath context failed.", __func__);
 		xmlXPathFreeContext(srpc_ctxt);
 		return (-1);
 	}
@@ -2556,7 +2557,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 
 			/* create xpath evaluation context */
 			if ((ntf->ctxt = xmlXPathNewContext(ntf->doc)) == NULL) {
-				ERROR("%s: notification message XPath context can not be created.", __func__);
+				ERROR("%s: notification message XPath context cannot be created.", __func__);
 				session->ntf_active = 0;
 				nc_filter_free(filter);
 				free(stream);
@@ -2575,12 +2576,12 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 			nc_session_send_notif(session, ntf);
 			ncntf_notif_free(ntf);
 		} else {
-			WARN("Invalid format of stored event, skipping.");
+			WARN("Invalid format of a stored event, skipping.");
 		}
 		free(event);
 	}
 	xmlFreeDoc(filter_doc);
-	ncntf_stream_iter_finnish(stream);
+	ncntf_stream_iter_finish(stream);
 
 	/* cleanup */
 	nc_filter_free(filter);
@@ -2694,7 +2695,7 @@ long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_
 			ntf = NULL;
 			if (event_time == -1 || content == NULL) {
 				free(content);
-				WARN("Invalid notification received. Ignoring.");
+				WARN("Invalid notification recieved. Ignoring.");
 				continue; /* go for another notification */
 			}
 			process_ntf(event_time, content);

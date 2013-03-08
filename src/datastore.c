@@ -149,7 +149,7 @@ int ncds_sysinit(void)
 
 		ds->model = xmlReadMemory ((char*)model[i], model_len[i], NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
 		if (ds->model == NULL ) {
-			ERROR("Unable to read internal monitoring data model.");
+			ERROR("Unable to read the internal monitoring data model.");
 			free (ds);
 			return (EXIT_FAILURE);
 		}
@@ -662,7 +662,7 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 		if (query_result != NULL) {
 			xmlXPathFreeObject(query_result);
 		}
-		ERROR("%s: missing mandatory identifier element", __func__);
+		ERROR("%s: missing a mandatory identifier element", __func__);
 		*e = nc_err_new(NC_ERR_INVALID_VALUE);
 		nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "identifier");
 		nc_err_set(*e, NC_ERR_PARAM_MSG, "Missing mandatory \'identifier\' element.");
@@ -766,7 +766,7 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 	if (retval == NULL) {
 		*e = nc_err_new(NC_ERR_INVALID_VALUE);
 		nc_err_set(*e, NC_ERR_PARAM_TYPE, "protocol");
-		nc_err_set(*e, NC_ERR_PARAM_MSG, "Requested schema does not exist.");
+		nc_err_set(*e, NC_ERR_PARAM_MSG, "The requested schema does not exist.");
 	}
 
 	/* cleanup */
@@ -832,7 +832,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	struct ncds_ds* ds = NULL;
 
 	if (model_path == NULL) {
-		ERROR("%s: missing model path parameter.", __func__);
+		ERROR("%s: missing the model path parameter.", __func__);
 		return (NULL);
 	}
 
@@ -872,14 +872,14 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	ds->type = type;
 
 	/* get configuration data model */
-	if (access(model_path, R_OK) == -1) {
-		ERROR("Unable to access configuration data model %s (%s).", model_path, strerror(errno));
+	if (eaccess(model_path, R_OK) == -1) {
+		ERROR("Unable to access the configuration data model %s (%s).", model_path, strerror(errno));
 		free(ds);
 		return (NULL);
 	}
 	ds->model = xmlReadFile(model_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
 	if (ds->model == NULL) {
-		ERROR("Unable to read configuration data model %s.", model_path);
+		ERROR("Unable to read the configuration data model %s.", model_path);
 		free(ds);
 		return (NULL);
 	}
@@ -1352,7 +1352,7 @@ xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
 
 	/* prepare xpath evaluation context of the model for XPath */
 	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
-		ERROR("%s: Creating XPath context failed.", __func__)
+		ERROR("%s: Creating the XPath context failed.", __func__)
 		return (NULL);
 	}
 	if (xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST "urn:ietf:params:xml:ns:yang:yin:1") != 0) {
@@ -1377,7 +1377,7 @@ xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
 	xmlXPathFreeContext(model_ctxt);
 
 	if (root_name == NULL || ns == NULL) {
-		ERROR("Invalid configuration data model - root container or namespace missing (%s:%d).", __FILE__, __LINE__);
+		ERROR("Invalid configuration data model - root container or a namespace missing (%s:%d).", __FILE__, __LINE__);
 		return NULL;
 	}
 
@@ -1494,9 +1494,9 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 
 				/* get internal state data of the libnetconf */
 				if ((data = get_internal_state(session)) == NULL) {
-					ERROR("Getting internal libnetconf state data failed..");
+					ERROR("Getting the internal libnetconf state data failed..");
 					e = nc_err_new(NC_ERR_OP_FAILED);
-					nc_err_set(e, NC_ERR_PARAM_MSG, "Unable to get internal libnetconf state data.");
+					nc_err_set(e, NC_ERR_PARAM_MSG, "Unable to get the internal libnetconf state data.");
 					break;
 				}
 			}
@@ -1523,7 +1523,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 		free(data);
 
 		if (doc_merged == NULL) {
-			ERROR("Reading configuration datastore failed.");
+			ERROR("Reading the configuration datastore failed.");
 			e = nc_err_new(NC_ERR_OP_FAILED);
 			nc_err_set(e, NC_ERR_PARAM_MSG, "Invalid datastore content.");
 			break;
@@ -1571,7 +1571,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	case NC_OP_GETCONFIG:
 		if ((data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), &e)) == NULL) {
 			if (e == NULL) {
-				ERROR ("%s: Failed to get data from datastore (%s:%d).", __func__, __FILE__, __LINE__);
+				ERROR ("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
 				e = nc_err_new(NC_ERR_OP_FAILED);
 			}
 			break;
@@ -1664,7 +1664,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 			/* <copy-config> with specified source datastore */
 			if (target_ds == source_ds) {
 				e = nc_err_new(NC_ERR_INVALID_VALUE);
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Both target and source identify the same datastore.");
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Both the target and the source identify the same datastore.");
 				break;
 			}
 			config = NULL;
@@ -1783,7 +1783,7 @@ apply_editcopyconfig:
 		if (nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING) {
 			/* can not delete running */
 			e = nc_err_new(NC_ERR_OP_FAILED);
-			nc_err_set(e, NC_ERR_PARAM_MSG, "Can not delete running datastore.");
+			nc_err_set(e, NC_ERR_PARAM_MSG, "Cannot delete a running datastore.");
 			break;
 		}
 		ret = ds->func.deleteconfig(ds, session, target_ds = nc_rpc_get_target(rpc), &e);

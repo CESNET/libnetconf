@@ -42,6 +42,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <stddef.h>
 #include <string.h>
 #include <ctype.h>
@@ -91,9 +92,9 @@ int nc_init(int flags)
 	}
 
 	DBG("Shared memory key: %d", key);
-	shmid = shmget(key, sizeof(struct nc_shared_info), IPC_CREAT | IPC_EXCL | 0777 );
+	shmid = shmget(key, sizeof(struct nc_shared_info), IPC_CREAT | IPC_EXCL | FILE_PERM);
 	if (shmid == -1 && errno == EEXIST) {
-		shmid = shmget(key, sizeof(struct nc_shared_info), 0777);
+		shmid = shmget(key, sizeof(struct nc_shared_info), FILE_PERM);
 		retval = 1;
 		first = 0;
 	}
@@ -113,6 +114,13 @@ int nc_init(int flags)
 
 	/* todo use locks */
 	if (first) {
+		/* remove the global session information file if left over a previous libnetconf instance */
+		if ((unlink(SESSIONSFILE_PATH) == -1) && (errno != ENOENT)) {
+			ERROR("Unable to remove the session information file (%s)", strerror(errno));
+			shmdt(nc_info);
+			return (-1);
+		}
+		
 		/* lock */
 		pthread_rwlockattr_init(&rwlockattr);
 		pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
@@ -170,7 +178,7 @@ int nc_close(int system)
 
 	if (system) {
 		if (shmctl(shmid, IPC_STAT, &ds) == -1) {
-			ERROR("Unable to get status of shared memory (%s).", strerror(errno));
+			ERROR("Unable to get the status of shared memory (%s).", strerror(errno));
 			return (-1);
 		}
 		if (ds.shm_nattch == 1) {

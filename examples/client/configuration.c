@@ -89,68 +89,71 @@ void load_config (struct nc_cpblts **cpblts)
 		free (user_home);
 		return;
 	}
+	free (user_home);
+
 	ret = access (netconf_dir, R_OK|X_OK);
 	if (ret == -1) {
 		if (errno == ENOENT) {
-			ERROR ("load_config", "Configuration directory (%s) does not exist, create it.", netconf_dir);
-			if (mkdir (netconf_dir, 0777)) {
-				ERROR ("load_config", "Directory can not be created");
+			/* directory does not exist */
+			ERROR ("load_config", "Configuration directory (%s) does not exist, creating it.", netconf_dir);
+			if (mkdir (netconf_dir, 0777) != 0) {
+				ERROR ("load_config", "Configuration directory (%s) cannot be created (%s)", netconf_dir, strerror(errno));
 				free (netconf_dir);
-				free (user_home);
 				return;
 			}
 		} else {
-			ERROR ("load_config", "Directory (%s) exist but cannot be accessed", netconf_dir);
+			ERROR ("load_config", "Configuration directory (%s) exists but something else failed (%s)", netconf_dir, strerror(errno));
 			free (netconf_dir);
-			free (user_home);
 			return;
 		}
 	}
 
 	if (asprintf (&history_file, "%s/history", netconf_dir) == -1) {
 		ERROR("load_config", "asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		ERROR("load_config", "Unable to load commands history due to previous error.");
+		ERROR("load_config", "Unable to load commands history due to the previous error.");
 		history_file = NULL;
 	} else {
 		ret = access(history_file, R_OK);
 		if (ret == -1) {
 			if (errno == ENOENT) {
-				ERROR("load_config", "History file (%s) does not exit, create it", history_file);
+				ERROR("load_config", "History file (%s) does not exist, creating it", history_file);
 				if ((history_fd = creat(history_file, 0666)) == -1) {
-					ERROR("load_config", "History file can not be created");
+					ERROR("load_config", "History file cannot be created (%s)", strerror(errno));
 				} else {
 					close(history_fd);
 				}
+			} else {
+				ERROR("load_config", "Accessing the history file failed (%s)", strerror(errno));
 			}
 		} else {
 			/* file exist and is accessible */
 			if (read_history(history_file)) {
-				ERROR("load_config", "Failed to load history from previous runs.");
+				ERROR("load_config", "Failed to load history.");
 			}
 		}
 	}
 
 	if (asprintf (&config_file, "%s/config.xml", netconf_dir) == -1) {
 		ERROR("load_config", "asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		ERROR("load_config", "Unable to load configuration due to previous error.");
+		ERROR("load_config", "Unable to load configuration due to the previous error.");
 		config_file = NULL;
 	} else {
 		ret = access(config_file, R_OK);
 		if (ret == -1) {
 			if (errno == ENOENT) {
-				ERROR("load_config", "Configuration file (%s) does not exit, create it", config_file);
+				ERROR("load_config", "Configuration file (%s) does not exits, creating it", config_file);
 				if ((config_fd = creat(config_file, 0666)) == -1) {
-					ERROR("load_config", "Configuration file can not be created");
+					ERROR("load_config", "Configuration file cannot be created (%s)", strerror(errno));
 				} else {
 					close(config_fd);
 				}
 			} else {
-				ERROR("load_config", "Configuration file can not accessed: %s", strerror(errno));
+				ERROR("load_config", "Configuration file cannot accessed (%s)", strerror(errno));
 			}
 		} else {
 			/* file exist and is accessible */
 			if ((config_doc = xmlReadFile(config_file, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN)) == NULL) {
-				ERROR("load_config", "Failed to load configuration of NETCONF client.");
+				ERROR("load_config", "Failed to load configuration of NETCONF client (xmlReadFile failed).");
 			} else {
 				/* doc -> <netconf-client/>*/
 				if (config_doc->children != NULL && xmlStrEqual(config_doc->children->name, BAD_CAST "netconf-client")) {
@@ -194,7 +197,7 @@ void load_config (struct nc_cpblts **cpblts)
 											key_priv = (char*) xmlNodeGetContent(tmp_key);
 											if (asprintf(&key_pub, "%s.pub", key_priv) == -1) {
 												ERROR("load_config", "asprintf() failed (%s:%d).", __FILE__, __LINE__);
-												ERROR("load_config", "Unable to set SSH keys pair due to previous error.");
+												ERROR("load_config", "Unable to set SSH keys pair due to the previous error.");
 												key_pub = NULL;
 												tmp_key = tmp_key->next;
 												continue;
@@ -220,7 +223,6 @@ void load_config (struct nc_cpblts **cpblts)
 
 	free (config_file);
 	free (history_file);
-	free (user_home);
 	free (netconf_dir);
 }
 
@@ -256,18 +258,20 @@ void store_config (struct nc_cpblts * cpblts)
 			if (mkdir (netconf_dir, 0777)) {
 				/* directory can not be created */
 				free (netconf_dir);
+				ERROR("store_config", "Storing history failed (mkdir(): %s)", strerror(errno));
 				return;
 			}
 		} else {
 			/* directory exist but cannot be accessed */
 			free (netconf_dir);
+			ERROR("store_config", "Accessing the directory for storing the history failed (%s)", strerror(errno));
 			return;
 		}
 	}
 
 	if (asprintf (&history_file, "%s/history", netconf_dir) == -1) {
 		ERROR("store_config", "asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		ERROR("store_config", "Unable to store commands history due to previous error.");
+		ERROR("store_config", "Unable to store commands history due to the previous error.");
 		history_file = NULL;
 	} else {
 		ret = access(history_file, R_OK | W_OK);
@@ -280,6 +284,7 @@ void store_config (struct nc_cpblts * cpblts)
 					close(history_fd);
 				}
 			}
+			ERROR("store_config", "Accessing the history file failed (%s)", strerror(errno));
 		}
 
 		if (write_history(history_file)) {
@@ -290,7 +295,7 @@ void store_config (struct nc_cpblts * cpblts)
 
 	if (asprintf (&config_file, "%s/config.xml", netconf_dir) == -1) {
 		ERROR("store_config", "asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		ERROR("store_config", "Unable to store configuration due to previous error.");
+		ERROR("store_config", "Unable to store configuration due to the previous error.");
 		config_file = NULL;
 	} else {
 		if (access(config_file, R_OK | W_OK) == -1 || (config_doc = xmlReadFile(config_file, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR)) == NULL) {
@@ -314,13 +319,13 @@ void store_config (struct nc_cpblts * cpblts)
 				}
 			}
 			if ((config_f = fopen(config_file, "w")) == NULL || xmlDocFormatDump(config_f, config_doc, 1) < 0) {
-				ERROR("store_config", "Can not write configuration to file %s", config_file);
+				ERROR("store_config", "Cannot write configuration to file %s", config_file);
 			} else {
 				fclose(config_f);
 			}
 			xmlFreeDoc(config_doc);
 		} else {
-			ERROR("store_config", "Can not write configuration to file %s", config_file);
+			ERROR("store_config", "Cannot write configuration to file %s", config_file);
 		}
 	}
 
