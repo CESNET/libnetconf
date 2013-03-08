@@ -919,7 +919,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 	aux_doc = xmlNewDoc (BAD_CAST "1.0");
 	xmlDocSetRootElement(aux_doc, xmlDocCopyNode(source_ds, aux_doc, 1));
 
-	if (rpc->nacm != NULL ) {
+	if (rpc != NULL && rpc->nacm != NULL ) {
 		/* NACM */
 		/* RFC 6536, sec. 3.2.4., paragraph 2
 		 * If the source of the <copy-config> protocol operation is the running
@@ -1137,7 +1137,7 @@ int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session,
 	datastore_doc->children = tmp_target_ds;
 
 	/* preform edit config */
-	if (edit_config (datastore_doc, config_doc, file_ds->model, defop, errop, rpc->nacm, error)) {
+	if (edit_config (datastore_doc, config_doc, file_ds->model, defop, errop, (rpc != NULL) ? rpc->nacm : NULL, error)) {
 		retval = EXIT_FAILURE;
 	} else {
 		/* replace datastore by edited configuration */
