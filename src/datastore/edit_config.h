@@ -66,7 +66,7 @@ keyList get_keynode_list(xmlDocPtr model);
  *
  * \return 0 - false, 1 - true (matching elements).
  */
-int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys);
+int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys, int leaf);
 
 /**
  * \brief Perform edit-config changes according to the given parameters
@@ -94,10 +94,10 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
  *
  * \return Zero on success, non-zero otherwise.
  */
-int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error);
+int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error);
 
-int edit_replace_nacmcheck(xmlNodePtr orig_node, xmlDocPtr edit_doc, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error);
-int edit_merge (xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error);
+int edit_replace_nacmcheck(xmlNodePtr orig_node, xmlDocPtr edit_doc, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error);
+int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error);
 
 /**
  * \todo: stolen from old netopeer, verify function

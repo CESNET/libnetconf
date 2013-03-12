@@ -1083,7 +1083,7 @@ xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDo
 	keys = get_keynode_list(data_model);
 
 	/* merge the documents */
-	ret = edit_merge(result, second->children, keys, NULL, NULL);
+	ret = edit_merge(result, second->children, data_model, keys, NULL, NULL);
 
 	if (keys != NULL) {
 		keyListFree(keys);

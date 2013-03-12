@@ -943,7 +943,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 			 * the client needs access to the modified nodes according to
 			 * the effective access operation of the each modified node.
 			 */
-			if ((r = edit_replace_nacmcheck(target_ds->children, aux_doc, keys, rpc->nacm, error)) != NACM_PERMIT) {
+			if ((r = edit_replace_nacmcheck(target_ds->children, aux_doc, file_ds->model, keys, rpc->nacm, error)) != NACM_PERMIT) {
 				if (r == NACM_DENY) {
 					if (error != NULL ) {
 						*error = nc_err_new(NC_ERR_ACCESS_DENIED);

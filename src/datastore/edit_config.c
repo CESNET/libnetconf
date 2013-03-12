@@ -377,7 +377,7 @@ static int is_key(xmlNodePtr parent, xmlNodePtr child, keyList keys)
  *
  * \return 0 - false, 1 - true (matching elements), -1 - error.
  */
-int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
+int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys, int leaf)
 {
 	xmlNodePtr *keynode_list;
 	xmlNodePtr keynode, key;
@@ -415,6 +415,21 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
 	/* check element namespace */
 	if (nc_nscmp(node1, node2) != 0) {
 		return 0;
+	}
+
+	/*
+	 * if required, check children text node if exists, this is usually needed
+	 * for leaf-list's items
+	 */
+	if (leaf == 1) {
+		if (node1->children != NULL && node1->children->type == XML_TEXT_NODE &&
+		    node2->children != NULL && node2->children->type == XML_TEXT_NODE) {
+			/*
+			 * we do not need to continue to keys checking since compared elements
+			 * do not contain any children that can server as a key
+			 */
+			return (matching_elements(node1->children, node2->children, NULL, 0));
+		}
 	}
 
 	if (keys != NULL) {
@@ -479,13 +494,17 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys)
  * @param[in] model Configuration data model (YIN format)
  * @return model's equivalent of the node, NULL if no such element is found.
  */
-static xmlNodePtr model_recursion(xmlNodePtr node, xmlDocPtr model)
+static xmlNodePtr find_element_model(xmlNodePtr node, xmlDocPtr model)
 {
 	xmlNodePtr mparent, aux;
 	xmlChar* name;
 
+	if (node == NULL || node->parent == NULL) {
+		return (NULL);
+	}
+
 	if (node->parent->type != XML_DOCUMENT_NODE) {
-		mparent = model_recursion(node->parent, model);
+		mparent = find_element_model(node->parent, model);
 	} else {
 		mparent = xmlDocGetRootElement(model);
 	}
@@ -494,7 +513,7 @@ static xmlNodePtr model_recursion(xmlNodePtr node, xmlDocPtr model)
 	}
 
 	for (aux = mparent->children; aux != NULL; aux = aux->next) {
-		name = xmlGetNsProp(aux, BAD_CAST "name", BAD_CAST NC_NS_YIN);
+		name = xmlGetProp(aux, BAD_CAST "name");
 		if (name == NULL) {
 			continue;
 		}
@@ -520,7 +539,7 @@ static xmlChar* get_default_value(xmlNodePtr node, xmlDocPtr model)
 	xmlNodePtr mnode, aux;
 	xmlChar* value = NULL;
 
-	mnode = model_recursion(node, model);
+	mnode = find_element_model(node, model);
 	if (mnode == NULL) {
 		return (NULL);
 	}
@@ -544,9 +563,10 @@ static xmlChar* get_default_value(xmlNodePtr node, xmlDocPtr model)
  * \param[in] keys List of the key elements from the configuration data model.
  * \return Found equivalent element, NULL if no such element exists.
  */
-static xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, keyList keys)
+static xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, xmlDocPtr model, keyList keys)
 {
-	xmlNodePtr orig_parent, node;
+	xmlNodePtr orig_parent, node, model_def;
+	int leaf = 0;
 
 	if (edit == NULL || orig_doc == NULL) {
 		return (NULL);
@@ -554,7 +574,7 @@ static xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, keyLis
 
 	/* go recursively to the root */
 	if (edit->parent->type != XML_DOCUMENT_NODE) {
-		orig_parent = find_element_equiv(orig_doc, edit->parent, keys);
+		orig_parent = find_element_equiv(orig_doc, edit->parent, model, keys);
 	} else {
 		if (orig_doc->children == NULL) {
 			orig_parent = NULL;
@@ -566,11 +586,17 @@ static xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, keyLis
 		return (NULL);
 	}
 
+	model_def = find_element_model(edit, model);
+	if (model_def != NULL && xmlStrcmp(model_def->name, BAD_CAST "leaf-list") == 0) {
+		/* check also children text element when checking elements matching */
+		leaf = 1;
+	}
+
 	/* element check */
 	node = orig_parent->children;
 	while (node != NULL) {
 		/* compare edit and node */
-		if (matching_elements(edit, node, keys) == 0) {
+		if (matching_elements(edit, node, keys, leaf) == 0) {
 			/* non matching nodes */
 			node = node->next;
 			continue;
@@ -785,7 +811,7 @@ static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocP
 		}
 
 		/* \todo namespace handlings */
-		n = find_element_equiv(orig, node_to_process, keys);
+		n = find_element_equiv(orig, node_to_process, model, keys);
 		if (op == NC_CHECK_EDIT_DELETE && n == NULL) {
 			if (ncdflt_get_basic_mode() == NCWD_MODE_ALL) {
 				/* A valid 'delete' operation attribute for a
@@ -925,12 +951,12 @@ static int edit_delete(xmlNodePtr node)
  *
  * \return Zero on success, non-zero otherwise.
  */
-static int edit_remove(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+static int edit_remove(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr old;
 	char *msg = NULL;
 
-	old = find_element_equiv(orig_doc, edit_node, keys);
+	old = find_element_equiv(orig_doc, edit_node, model, keys);
 
 	/* remove the node from the edit document */
 	edit_delete(edit_node);
@@ -968,7 +994,7 @@ static int edit_remove(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, c
  *
  * \return Zero on success, non-zero otherwise.
  */
-static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	int r;
 	char *msg = NULL;
@@ -981,7 +1007,7 @@ static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_no
 		return (NULL);
 	}
 
-	retval = find_element_equiv(orig_doc, edit_node, keys);
+	retval = find_element_equiv(orig_doc, edit_node, model, keys);
 	if (retval == NULL) {
 		if (nacm != NULL) {
 			if ((r = nacm_check_data(edit_node->parent, NACM_ACCESS_CREATE, nacm)) != NACM_PERMIT) {
@@ -1002,7 +1028,7 @@ static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_no
 			}
 		}
 
-		parent = edit_create_recursively(orig_doc, edit_node->parent, keys, nacm, error);
+		parent = edit_create_recursively(orig_doc, edit_node->parent, model, keys, nacm, error);
 		if (parent == NULL) {
 			return (NULL);
 		}
@@ -1022,7 +1048,7 @@ static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_no
  *
  * \return Zero on success, non-zero otherwise.
  */
-static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr parent = NULL;
 	int r;
@@ -1051,7 +1077,7 @@ static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, c
 	}
 
 	if (edit_node->parent->type != XML_DOCUMENT_NODE) {
-		parent = edit_create_recursively(orig_doc, edit_node->parent, keys, nacm, error);
+		parent = edit_create_recursively(orig_doc, edit_node->parent, model, keys, nacm, error);
 		if (parent == NULL) {
 			return EXIT_FAILURE;
 		}
@@ -1080,7 +1106,7 @@ static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, c
 	return EXIT_SUCCESS;
 }
 
-int edit_replace_nacmcheck(xmlNodePtr orig_node, xmlDocPtr edit_doc, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+int edit_replace_nacmcheck(xmlNodePtr orig_node, xmlDocPtr edit_doc, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr aux;
 	int r;
@@ -1095,7 +1121,7 @@ int edit_replace_nacmcheck(xmlNodePtr orig_node, xmlDocPtr edit_doc, keyList key
 	}
 
 	if (orig_node->children == NULL || orig_node->children->type == XML_TEXT_NODE) {
-		aux = find_element_equiv(edit_doc, orig_node, keys);
+		aux = find_element_equiv(edit_doc, orig_node, model, keys);
 		if (aux == NULL) {
 			/* orig_node has no equivalent in edit, so it will be removed */
 			if ((r = nacm_check_data(orig_node, NACM_ACCESS_DELETE, nacm)) != NACM_PERMIT) {
@@ -1110,7 +1136,7 @@ int edit_replace_nacmcheck(xmlNodePtr orig_node, xmlDocPtr edit_doc, keyList key
 	} else {
 		for (aux = orig_node->children; aux != NULL ; aux = aux->next) {
 			/* do a recursion checks */
-			if ((r = edit_replace_nacmcheck(aux, edit_doc, keys, nacm, error)) != NACM_PERMIT) {
+			if ((r = edit_replace_nacmcheck(aux, edit_doc, model, keys, nacm, error)) != NACM_PERMIT) {
 				return (r);
 			}
 		}
@@ -1130,7 +1156,7 @@ int edit_replace_nacmcheck(xmlNodePtr orig_node, xmlDocPtr edit_doc, keyList key
  *
  * \return Zero on success, non-zero otherwise.
  */
-int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr old;
 	int r;
@@ -1159,13 +1185,13 @@ int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const s
 		return (EXIT_FAILURE);
 	}
 
-	old = find_element_equiv(orig_doc, edit_node, keys);
+	old = find_element_equiv(orig_doc, edit_node, model, keys);
 	if (old == NULL) {
 		/* node to be replaced doesn't exist, so create new configuration data */
-		return edit_create(orig_doc, edit_node, keys, nacm, error);
+		return edit_create(orig_doc, edit_node, model, keys, nacm, error);
 	} else {
 		/* NACM */
-		if ((r = edit_replace_nacmcheck(old, edit_node->doc, keys, nacm, error)) != NACM_PERMIT) {
+		if ((r = edit_replace_nacmcheck(old, edit_node->doc, model, keys, nacm, error)) != NACM_PERMIT) {
 			if (r == NACM_DENY) {
 				if (error != NULL) {
 					*error = nc_err_new(NC_ERR_ACCESS_DENIED);
@@ -1200,10 +1226,56 @@ int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const s
 	}
 }
 
-static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+/**
+ * @brief Check if the given node in the YIN data model defines list or leaf-list
+ * ordered by user. In such a case, specific YANG attributes "insert", "value"
+ * and "key" can appear.
+ *
+ * @return 1 if the node is user ordered list, 0 otherwise
+ */
+static int is_user_ordered_list(xmlNodePtr node)
+{
+	xmlNodePtr child;
+	xmlChar *prop;
+
+	if (node == NULL) {
+		return (0);
+	}
+
+	if ((xmlStrcmp(node->name, BAD_CAST "list") != 0) &&
+		(xmlStrcmp(node->name, BAD_CAST "leaf-list") != 0)) {
+		return (0);
+	}
+
+	for (child = node->children; child != NULL; child = child->next) {
+		if (child->type != XML_ELEMENT_NODE) {
+			continue;
+		}
+		if (xmlStrcmp(child->name, BAD_CAST "ordered-by") != 0) {
+			continue;
+		}
+
+		prop = xmlGetNsProp(child, BAD_CAST "value", BAD_CAST NC_NS_YIN);
+		if (prop != NULL) {
+			if (xmlStrcmp(prop, BAD_CAST "user") == 0) {
+				xmlFree(prop);
+				break; /* for */
+			}
+			xmlFree(prop);
+		}
+	}
+
+	if (child == NULL) {
+		return (0);
+	} else {
+		return (1);
+	}
+}
+
+static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr children, aux, next;
-	int r;
+	int r, access, duplicates;
 	char *msg = NULL;
 
 	/* process leaf text nodes - even if we are merging, leaf text nodes are
@@ -1211,9 +1283,26 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 	 */
 	if (edit_node->type == XML_TEXT_NODE) {
 		if (orig_node->type == XML_TEXT_NODE) {
+
+			/*
+			 * check if this is defined as leaf or leaf-list. In case of leaf,
+			 * the value will be updated, in case of leaf-list, the item will
+			 * be created
+			 */
+			aux = find_element_model(edit_node->parent, model);
+			if (aux && xmlStrcmp(aux->name, BAD_CAST "leaf-list") == 0) {
+				/*
+				 * according to RFC 6020, sec. 7.7.7, leaf-list entries can be
+				 * created or deleted, but they can not be modified
+				 */
+				access = NACM_ACCESS_CREATE;
+			} else {
+				access = NACM_ACCESS_UPDATE;
+			}
+
 			/* NACM */
 			if (nacm != NULL) {
-				if ((r = nacm_check_data(orig_node->parent, NACM_ACCESS_UPDATE, nacm)) != NACM_PERMIT) {
+				if ((r = nacm_check_data(orig_node->parent, access, nacm)) != NACM_PERMIT) {
 					if (r == NACM_DENY) {
 						if (error != NULL) {
 							*error = nc_err_new(NC_ERR_ACCESS_DENIED);
@@ -1231,11 +1320,32 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 				}
 			}
 
-			if (xmlReplaceNode(orig_node, xmlCopyNode(edit_node, 1)) == NULL) {
-				ERROR("Replacing text nodes when merging failed (%s:%d)", __FILE__, __LINE__);
-				return EXIT_FAILURE;
+			if (access == NACM_ACCESS_UPDATE) {
+				if (xmlReplaceNode(orig_node, xmlCopyNode(edit_node, 1)) == NULL) {
+					ERROR("Replacing text nodes when merging failed (%s:%d)", __FILE__, __LINE__);
+					return EXIT_FAILURE;
+				}
+				xmlFreeNode(orig_node);
+			} else { /* access == NACM_ACCESS_CREATE */
+				duplicates = 0;
+
+				/* check previous existence of exactly the same element in original document */
+				if (orig_node->parent != NULL && orig_node->parent->parent != NULL) {
+					for (aux = orig_node->parent->parent->children; aux != NULL ; aux = aux->next) {
+						/* we don't need keys since this is a leaf-list */
+						if (matching_elements(aux, edit_node->parent, NULL, 1) == 1) { /* checks text content */
+							duplicates = 1;
+						}
+					}
+				}
+				if (duplicates == 0) {
+					/* create a new text element (item in leaf-list) */
+					if (xmlAddNextSibling(orig_node->parent, xmlCopyNode(edit_node->parent, 1)) == NULL ) {
+						ERROR("Adding leaf-list node when merging failed (%s:%d)", __FILE__, __LINE__);
+						return EXIT_FAILURE;
+					}
+				}
 			}
-			xmlFreeNode(orig_node);
 		}
 	}
 
@@ -1262,7 +1372,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 
 			/* find matching element to children */
 			aux = orig_node->children;
-			while (aux != NULL && matching_elements(children, aux, keys) == 0) {
+			while (aux != NULL && matching_elements(children, aux, keys, 0) == 0) {
 				aux = aux->next;
 			}
 		}
@@ -1293,9 +1403,18 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 				}
 			}
 
-			if (xmlAddChild(orig_node, xmlCopyNode(children, 1)) == NULL) {
-				ERROR("Adding missing nodes when merging failed (%s:%d)", __FILE__, __LINE__);
-				return EXIT_FAILURE;
+			/* handle user ordered lists */
+			if (is_user_ordered_list(find_element_model(children, model)) == 1) {
+				/*
+				 * we have to handle user-defined position of a new element in
+				 * the existing list
+				 */
+
+			} else {
+				if (xmlAddChild(orig_node, xmlCopyNode(children, 1)) == NULL ) {
+					ERROR("Adding missing nodes when merging failed (%s:%d)", __FILE__, __LINE__);
+					return EXIT_FAILURE;
+				}
 			}
 			VERB("Adding a missing node %s while merging (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 		} else {
@@ -1305,7 +1424,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 				while (aux != NULL) {
 					next = aux->next;
 					if (aux->type == XML_TEXT_NODE) {
-						if (edit_merge_recursively(aux, children, keys, nacm, error) != EXIT_SUCCESS) {
+						if (edit_merge_recursively(aux, children, model, keys, nacm, error) != EXIT_SUCCESS) {
 							return EXIT_FAILURE;
 						}
 					}
@@ -1314,8 +1433,8 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 			} else {
 				while (aux != NULL) {
 					next = aux->next;
-					if (matching_elements(children, aux, keys) != 0) {
-						if (edit_merge_recursively(aux, children, keys, nacm, error) != EXIT_SUCCESS) {
+					if (matching_elements(children, aux, keys, 0) != 0) {
+						if (edit_merge_recursively(aux, children, model, keys, nacm, error) != EXIT_SUCCESS) {
 							return EXIT_FAILURE;
 						}
 					}
@@ -1330,7 +1449,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, ke
 	return EXIT_SUCCESS;
 }
 
-int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr orig_node;
 	xmlNodePtr aux, children;
@@ -1346,9 +1465,9 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const str
 	}
 
 	VERB("Merging the node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
-	orig_node = find_element_equiv(orig_doc, edit_node, keys);
+	orig_node = find_element_equiv(orig_doc, edit_node, model, keys);
 	if (orig_node == NULL) {
-		return edit_create(orig_doc, edit_node, keys, nacm, error);
+		return edit_create(orig_doc, edit_node, model, keys, nacm, error);
 	}
 
 	children = edit_node->children;
@@ -1359,7 +1478,7 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const str
 			continue;
 		}
 
-		aux = find_element_equiv(orig_doc, children, keys);
+		aux = find_element_equiv(orig_doc, children, model, keys);
 		if (aux == NULL) {
 			/*
 			 * there is no equivalent element of the children in the
@@ -1392,7 +1511,7 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const str
 			}
 		} else {
 			/* go recursive */
-			if (edit_merge_recursively(aux, children, keys, nacm, error) != EXIT_SUCCESS) {
+			if (edit_merge_recursively(aux, children, model, keys, nacm, error) != EXIT_SUCCESS) {
 				return EXIT_FAILURE;
 			}
 		}
@@ -1412,25 +1531,33 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, keyList keys, const str
  * \param[in] edit_doc XML document covering edit-config's \<config\> element
  *                     supposed to edit orig_doc configuration data.
  * \param[in] defop Default edit-config's operation for this edit-config call.
- * \param[in] keys  List of the key elements from the configuration data model.
+ * \param[in] model XML form (YIN) of the configuration data model appropriate
+ * to the given configuration data.
  * \param[out] err NETCONF error structure.
  *
  * \return On error, non-zero is returned and err structure is filled. Zero is
  *         returned on success.
  */
-static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop, keyList keys, const struct nacm_rpc* nacm, struct nc_err **error)
+static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr model, const struct nacm_rpc* nacm, struct nc_err **error)
 {
 	xmlXPathObjectPtr nodes;
 	int i;
 	char *msg = NULL;
 	xmlNodePtr orig_node, edit_node;
+	keyList keys;
 
 	assert(error != NULL);
+
+	keys = get_keynode_list(model);
+
+	if (error != NULL) {
+		*error = NULL;
+	}
 
 	/* default replace */
 	if (defop == NC_EDIT_DEFOP_REPLACE) {
 		/* replace whole document */
-		edit_replace(orig_doc, edit_doc->children, keys, nacm, error);
+		edit_replace(orig_doc, edit_doc->children, model, keys, nacm, error);
 	}
 
 	/* delete operations */
@@ -1440,28 +1567,33 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 			/* something to delete */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
 				edit_node = nodes->nodesetval->nodeTab[i];
-				orig_node = find_element_equiv(orig_doc, edit_node, keys);
+				orig_node = find_element_equiv(orig_doc, edit_node, model, keys);
 				if (orig_node == NULL) {
 					xmlXPathFreeObject(nodes);
+					if (error != NULL) {
+						*error = nc_err_new(NC_ERR_DATA_MISSING);
+					}
 					goto error;
 				}
-				/* NACM */
-				if (nacm_check_data(orig_node, NACM_ACCESS_DELETE, nacm) == NACM_PERMIT) {
-					/* remove the node from the edit document */
-					edit_delete(edit_node);
-					/* remove the edit node's equivalent from the original document */
-					edit_delete(orig_node);
-				} else {
-					if (error != NULL) {
-						*error = nc_err_new(NC_ERR_ACCESS_DENIED);
-						if (asprintf(&msg, "deleting \"%s\" data node is not permitted.", (char*)(orig_node->name)) != -1) {
-							nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
-							free(msg);
+				for (; orig_node != NULL; orig_node = find_element_equiv(orig_doc, edit_node, model, keys)) {
+					/* NACM */
+					if (nacm_check_data(orig_node, NACM_ACCESS_DELETE, nacm) == NACM_PERMIT) {
+						/* remove the edit node's equivalent from the original document */
+						edit_delete(orig_node);
+					} else {
+						if (error != NULL ) {
+							*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+							if (asprintf(&msg, "deleting \"%s\" data node is not permitted.", (char*) (orig_node->name)) != -1) {
+								nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
+								free(msg);
+							}
 						}
+						xmlXPathFreeObject(nodes);
+						goto error;
 					}
-					xmlXPathFreeObject(nodes);
-					return (EXIT_FAILURE);
 				}
+				/* remove the node from the edit document */
+				edit_delete(edit_node);
 			}
 		}
 		xmlXPathFreeObject(nodes);
@@ -1473,9 +1605,9 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 		if (!xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* something to remove */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
-				if (edit_remove(orig_doc, nodes->nodesetval->nodeTab[i], keys, nacm, error) != EXIT_SUCCESS) {
+				if (edit_remove(orig_doc, nodes->nodesetval->nodeTab[i], model, keys, nacm, error) != EXIT_SUCCESS) {
 					xmlXPathFreeObject(nodes);
-					return (EXIT_FAILURE);
+					goto error;
 				}
 			}
 		}
@@ -1488,9 +1620,9 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 		if (!xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* something to replace */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
-				if (edit_replace(orig_doc, nodes->nodesetval->nodeTab[i], keys, nacm, error) != EXIT_SUCCESS) {
+				if (edit_replace(orig_doc, nodes->nodesetval->nodeTab[i], model, keys, nacm, error) != EXIT_SUCCESS) {
 					xmlXPathFreeObject(nodes);
-					return (EXIT_FAILURE);
+					goto error;
 				}
 			}
 		}
@@ -1503,9 +1635,9 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 		if (!xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* something to create */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
-				if (edit_create(orig_doc, nodes->nodesetval->nodeTab[i], keys, nacm, error) != EXIT_SUCCESS) {
+				if (edit_create(orig_doc, nodes->nodesetval->nodeTab[i], model, keys, nacm, error) != EXIT_SUCCESS) {
 					xmlXPathFreeObject(nodes);
-					return (EXIT_FAILURE);
+					goto error;
 				}
 			}
 		}
@@ -1518,9 +1650,9 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 		if (!xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* something to create */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
-				if (edit_merge(orig_doc, nodes->nodesetval->nodeTab[i], keys, nacm, error) != EXIT_SUCCESS) {
+				if (edit_merge(orig_doc, nodes->nodesetval->nodeTab[i], model, keys, nacm, error) != EXIT_SUCCESS) {
 					xmlXPathFreeObject(nodes);
-					return (EXIT_FAILURE);
+					goto error;
 				}
 			}
 		}
@@ -1531,18 +1663,28 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 	if (defop == NC_EDIT_DEFOP_MERGE) {
 		/* replace whole document */
 		if (edit_doc->children != NULL) {
-			if (edit_merge(orig_doc, edit_doc->children, keys, nacm, error) != EXIT_SUCCESS) {
-				return (EXIT_FAILURE);
+			if (edit_merge(orig_doc, edit_doc->children, model, keys, nacm, error) != EXIT_SUCCESS) {
+				goto error;
 			}
 		}
+	}
+
+	if (keys != NULL) {
+		keyListFree(keys);
 	}
 
 	return EXIT_SUCCESS;
 
 error:
-	if (error != NULL) {
+
+	if (keys != NULL ) {
+		keyListFree(keys);
+	}
+
+	if (error != NULL && *error == NULL) {
 		*error = nc_err_new(NC_ERR_OP_FAILED);
 	}
+
 	return EXIT_FAILURE;
 }
 
@@ -1614,9 +1756,6 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 		return (EXIT_FAILURE);
 	}
 
-	keyList keys;
-	keys = get_keynode_list(model);
-
 	/* check operations */
 	if (check_edit_ops(NC_CHECK_EDIT_DELETE, defop, repo, edit, model, error) != EXIT_SUCCESS) {
 		goto error_cleanup;
@@ -1634,7 +1773,7 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 	}
 
 	/* perform operations */
-	if (edit_operations(repo, edit, defop, keys, nacm, error) != EXIT_SUCCESS) {
+	if (edit_operations(repo, edit, defop, model, nacm, error) != EXIT_SUCCESS) {
 		goto error_cleanup;
 	}
 
@@ -1646,17 +1785,9 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 		ncdflt_default_values(repo, model, NCWD_MODE_TRIM);
 	}
 
-	if (keys != NULL) {
-		keyListFree(keys);
-	}
-
 	return EXIT_SUCCESS;
 
 error_cleanup:
-
-	if (keys != NULL) {
-		keyListFree(keys);
-	}
 
 	return EXIT_FAILURE;
 }
