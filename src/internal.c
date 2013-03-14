@@ -443,8 +443,9 @@ void nc_clear_namespaces(xmlNodePtr node)
 {
 	xmlNsPtr ns, prev = NULL;
 
-	assert(node != NULL);
-	assert(node->type == XML_ELEMENT_NODE);
+	if (node == NULL || node->type != XML_ELEMENT_NODE) {
+		return;
+	}
 
 	for (ns = node->nsDef; ns != NULL; ) {
 		if (nc_find_namespace_usage(node, ns) == 0) {

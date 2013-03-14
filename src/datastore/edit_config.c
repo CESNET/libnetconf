@@ -69,6 +69,14 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define NC_NS_YIN "urn:ietf:params:xml:ns:yang:yin:1"
 #define NC_NS_YIN_ID "yin"
 
+struct key_predicate {
+	int position;
+	char* prefix;
+	char* href;
+	char* name;
+	char* value;
+};
+
 typedef enum {
 	NC_CHECK_EDIT_DELETE = NC_EDIT_OP_DELETE,
 	NC_CHECK_EDIT_CREATE = NC_EDIT_OP_CREATE
@@ -361,6 +369,58 @@ static int is_key(xmlNodePtr parent, xmlNodePtr child, keyList keys)
 		xmlFree(str);
 	}
 	return 0;
+}
+
+/**
+ * @brief Check if the given node in the YIN data model defines list or leaf-list
+ * ordered by user. In such a case, specific YANG attributes "insert", "value"
+ * and "key" can appear.
+ *
+ * @return 1 if the node is user ordered list, </br>
+ * 2 if the node is user ordered leaf-list, </br>
+ * 0 otherwise
+ */
+static int is_user_ordered_list(xmlNodePtr node)
+{
+	xmlNodePtr child;
+	xmlChar *prop;
+	int ret = 0;
+
+	if (node == NULL) {
+		return (0);
+	}
+
+	if (xmlStrcmp(node->name, BAD_CAST "list") == 0) {
+		ret = 1;
+	} else if (xmlStrcmp(node->name, BAD_CAST "leaf-list") == 0) {
+		ret = 2;
+	} else {
+		return (0);
+	}
+
+	for (child = node->children; child != NULL; child = child->next) {
+		if (child->type != XML_ELEMENT_NODE) {
+			continue;
+		}
+		if (xmlStrcmp(child->name, BAD_CAST "ordered-by") != 0) {
+			continue;
+		}
+
+		prop = xmlGetProp(child, BAD_CAST "value");
+		if (prop != NULL) {
+			if (xmlStrcmp(prop, BAD_CAST "user") == 0) {
+				xmlFree(prop);
+				break; /* for */
+			}
+			xmlFree(prop);
+		}
+	}
+
+	if (child == NULL) {
+		return (0);
+	} else {
+		return (ret);
+	}
 }
 
 /**
@@ -984,6 +1044,439 @@ static int edit_remove(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model
 }
 
 /**
+ * @param[in] predicate Definition of the instance identifier predicate
+ * @param[out] prefix Node namespace prefix if any, call free()
+ * @param[out] name Node's name, call free()
+ * @param[out] value Specified content of the node
+ * @return negative value on error, 0 on predicate-expr (out parameters are used)
+ * or positive value as position
+ */
+static int parse_instance_predicate(const char* predicate, char **prefix, char **name, char **value)
+{
+	int i = 0, j;
+	int retval = 0;
+	char *p, *e, *c;
+
+	if (predicate == NULL ) {
+		return (-1);
+	}
+	p = strdup(predicate);
+	if (p == NULL) {
+		return (-1);
+	}
+
+	while(p[i] == ' ' || p[i] == '\t') {
+		i++;
+	}
+	if (p[i] != '[') {
+		free(p);
+		return (-1);
+	}
+	i++;
+	while(p[i] == ' ' || p[i] == '\t') {
+		i++;
+	}
+	if ((e = strchr(p, '=')) == NULL) {
+		/* predicate is specified as position */
+		retval = atoi(&(p[i]));
+		if (retval == 0) {
+			free(p);
+			return (-1);
+		} else {
+			free(p);
+			return (retval);
+		}
+	} else {
+		/* predicate is specified as predicate-expr */
+		if (e == &(p[i])) {
+			/* there is no node-identifier */
+			free(p);
+			return (-1);
+		}
+		/* get the name - remove trailing whitespaces */
+		e[0] = 0;
+		for (j = -1; &(e[j]) != &(p[i]) && (e[j] == ' ' || e[j] == '\t'); j--) {
+			e[j] = 0;
+		}
+		if ((c = strchr(&(p[i]), ':')) != NULL) {
+			c[0] = 0;
+			if (prefix != NULL) {
+				*prefix = strdup(&(p[i]));
+			}
+			if (name != NULL) {
+				*name = strdup(&(c[1]));
+			}
+		} else {
+			if (prefix != NULL) {
+				*prefix = NULL;
+			}
+			if (name != NULL) {
+				*name = strdup(&(p[i]));
+			}
+		}
+		/* get the value */
+		/* skip leading whitespaces */
+		j = 1;
+		while(e[j] == ' ' || e[j] == '\t') {
+			j++;
+		}
+		if (e[j] != '"' && e[j] != '\'') {
+			/* invalid format */
+			free(p);
+			if (name) {
+				free(*name);
+				*name = NULL;
+			}
+			if (prefix) {
+				free(*prefix);
+				*prefix = NULL;
+			}
+			return(-1);
+		}
+		j++;
+		i = j;
+		while (e[i] != '"' && e[i] != '\'') {
+			i++;
+		}
+		e[i] = 0;
+		if (value != NULL) {
+			*value = strdup(&(e[j]));
+		}
+		free(p);
+		return (0);
+	}
+}
+
+static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct nc_err **error)
+{
+	xmlChar *ref;
+	xmlNsPtr ns;
+	char *s, *token;
+	int i, j;
+	xmlNodePtr retval, node, keynode;
+	struct key_predicate** keys;
+
+	if ((ref = xmlGetNsProp(edit_node, BAD_CAST "key", BAD_CAST NC_NS_YANG)) == NULL) {
+		/* insert reference specification is missing */
+		if (error != NULL) {
+			*error = nc_err_new(NC_ERR_MISSING_ATTR);
+			nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Missing \"key\" attribute for insert leaf-list");
+		}
+		return (NULL);
+	}
+	xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST "key", BAD_CAST NC_NS_YANG));
+
+	/* count the keys in predicate */
+	for (i = 0, s = strchr((char*)ref, '['); s != NULL; i++, s = strchr(s, '['));
+	if (i == 0) {
+		/* something went wrong */
+		if (error != NULL) {
+			*error = nc_err_new(NC_ERR_BAD_ATTR);
+			nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid value of the \"key\" attribute for insert leaf-list");
+		}
+		return (NULL);
+	}
+	keys = malloc((i + 1) * sizeof(struct key_predicate*));
+	if (keys == NULL) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	for (j = 0, s = (char*)ref; j < i; j++, s = NULL) {
+		token = strtok(s, "]");
+		if (token == NULL) {
+			keys[j] = NULL;
+			break;
+		}
+
+		keys[j] = malloc(sizeof(struct key_predicate));
+		if (keys[j] == NULL) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			retval = NULL;
+			goto cleanup;
+		}
+		keys[j]->position = parse_instance_predicate(token, &(keys[j]->prefix), &(keys[j]->name), &(keys[j]->value));
+		if (keys[j]->position == -1) {
+			if (error != NULL) {
+				*error = nc_err_new(NC_ERR_BAD_ATTR);
+				nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid value of the \"key\" attribute for insert leaf-list");
+			}
+			keys[j+1] = NULL;
+			retval = NULL;
+			goto cleanup;
+		}
+
+		/* search for namespase (href) for the prefix */
+		keys[j]->href = NULL;
+		for (node = edit_node; node->type == XML_ELEMENT_NODE; node = node->parent) {
+			for (ns = node->ns; ns != NULL; ns = ns->next) {
+				if (keys[j]->prefix == NULL) {
+					if (ns->prefix == NULL) {
+						keys[j]->href = strdup((char*)(ns->href));
+						break;
+					}
+				} else if (xmlStrcmp(ns->prefix, BAD_CAST (keys[j]->prefix)) == 0) {
+					keys[j]->href = strdup((char*)(ns->href));
+					break;
+				}
+			}
+			if (keys[j]->href != NULL) {
+				break;
+			}
+
+			for (ns = node->nsDef; ns != NULL; ns = ns->next) {
+				if (keys[j]->prefix == NULL) {
+					if (ns->prefix == NULL) {
+						keys[j]->href = strdup((char*)(ns->href));
+						break;
+					}
+				} else if (xmlStrcmp(ns->prefix, BAD_CAST (keys[j]->prefix)) == 0) {
+					keys[j]->href = strdup((char*)(ns->href));
+					break;
+				}
+			}
+			if (keys[j]->href != NULL) {
+				break;
+			}
+		}
+		if (keys[j]->href == NULL) {
+			if (error != NULL) {
+				*error = nc_err_new(NC_ERR_BAD_ATTR);
+				nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid namespace prefix in value of the \"key\" attribute for insert leaf-list");
+			}
+			keys[j+1] = NULL;
+			retval = NULL;
+			goto cleanup;
+		}
+	}
+	xmlFree(ref);
+	keys[j] = NULL; /* the list terminating NULL */
+
+	/* search for the referenced node */
+	retval = NULL;
+	j = 1;
+	for (node = parent->children; node != NULL; node = node->next) {
+		if (node->type != XML_ELEMENT_NODE) {
+			continue;
+		}
+		if (node->ns == NULL || xmlStrcmp(node->ns->href, edit_node->ns->href) != 0) {
+			continue;
+		}
+		if (xmlStrcmp(node->name, edit_node->name) != 0) {
+			continue;
+		}
+
+		/* reference specified as position */
+		if (keys[0]->position > 0) {
+			if (keys[0]->position == j) {
+				retval = node;
+				break;
+			}
+			j++;
+			continue;
+		}
+
+		/* check key elements of this node */
+		keynode = NULL;
+		for (i = 0; keys[i] != NULL; i++) {
+			if (keys[i]->position != 0) {
+				/* this should not happen */
+				if (error != NULL) {
+					*error = nc_err_new(NC_ERR_BAD_ATTR);
+					nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
+					nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid mixing of the \"key\" attribute for insert leaf-list content");
+				}
+				retval = NULL;
+				goto cleanup;
+			}
+			for (keynode = node->children; keynode != NULL; keynode = keynode->next) {
+				if (keynode->ns == NULL || keynode->ns->href == NULL) {
+					continue;
+				}
+
+				if (xmlStrcmp(keynode->ns->href, BAD_CAST (keys[i]->href)) != 0) {
+					continue;
+				}
+
+				if (xmlStrcmp(keynode->name, BAD_CAST(keys[i]->name)) != 0) {
+					continue;
+				}
+
+				if (keynode->children == NULL || keynode->children->type != XML_TEXT_NODE) {
+					continue;
+				}
+
+				s = nc_clrwspace((char*)(keynode->children->content));
+				if (s == NULL || strcmp(s, keys[i]->value) != 0) {
+					free(s);
+					continue;
+				}
+				/* we have the match */
+				break;
+			}
+			if (keynode == NULL) {
+				/* key not found */
+				break;
+			}
+		}
+		if (keynode != NULL) {
+			if (retval == NULL) {
+				retval = node;
+			} else {
+				if (error != NULL) {
+					*error = nc_err_new(NC_ERR_OP_FAILED);
+					nc_err_set(*error, NC_ERR_PARAM_APPTAG, "data-not-unique");
+					nc_err_set(*error, NC_ERR_PARAM_MSG, "Specified value of the \"key\" attribute for insert leaf-list refers multiple data.");
+				}
+				retval = NULL;
+				goto cleanup;
+			}
+		}
+	}
+
+cleanup:
+
+	for (i = 0; keys[i] != NULL; i++) {
+		free(keys[i]->name);
+		free(keys[i]->prefix);
+		free(keys[i]->value);
+		free(keys[i]);
+	}
+	free(keys);
+
+	return (retval);
+}
+
+static xmlNodePtr get_ref_leaflist(xmlNodePtr parent, xmlNodePtr edit_node, struct nc_err **error)
+{
+	xmlChar *ref;
+	char *s;
+	xmlNodePtr retval;
+
+	if ((ref = xmlGetNsProp(edit_node, BAD_CAST "value", BAD_CAST NC_NS_YANG)) == NULL) {
+		/* insert reference specification is missing */
+		if (error != NULL) {
+			*error = nc_err_new(NC_ERR_MISSING_ATTR);
+			nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "value");
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Missing \"value\" attribute for insert leaf-list");
+		}
+		return (NULL);
+	}
+	xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST "value", BAD_CAST NC_NS_YANG));
+
+	/* search for the referenced node */
+	for (retval = parent->children; retval != NULL; retval = retval->next) {
+		if (xmlStrcmp(retval->name, edit_node->name) != 0 ||
+		    retval->children == NULL || retval->children->type != XML_TEXT_NODE) {
+			continue;
+		}
+
+		s = nc_clrwspace((char*)(retval->children->content));
+		if (xmlStrcmp(ref, BAD_CAST s) == 0) {
+			free(s);
+			break;
+		}
+		free(s);
+	}
+	xmlFree(ref);
+
+	return (retval);
+}
+
+static int edit_create_lists(xmlNodePtr parent, xmlNodePtr edit_node, xmlDocPtr model, struct nc_err** error)
+{
+	int list_type;
+	xmlChar *insert;
+	xmlNodePtr node, created;
+
+	*error = NULL;
+
+	if ((list_type = is_user_ordered_list(find_element_model(edit_node, model))) == 0) {
+		return (EXIT_FAILURE);
+	}
+	/*
+	 * get the insert attribute and remove it from the edit node that will
+	 * be placed into the configuration datastore
+	 */
+	insert = xmlGetNsProp(edit_node, BAD_CAST "insert", BAD_CAST NC_NS_YANG);
+	xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST "insert", BAD_CAST NC_NS_YANG));
+
+	if (parent == NULL) {
+		/* TODO ? */
+	} else {
+		/* switch according to the insert value */
+		if (insert == NULL || xmlStrcmp(insert, BAD_CAST "last") == 0) {
+			if ((created = xmlAddChild(parent, xmlCopyNode(edit_node, 1))) == NULL) {
+				goto error;
+			}
+		} else if (xmlStrcmp(insert, BAD_CAST "first") == 0) {
+			if (parent->children == NULL) {
+				if ((created = xmlAddChild(parent, xmlCopyNode(edit_node, 1))) == NULL) {
+					goto error;
+				}
+			} else {
+				if ((created = xmlAddPrevSibling(parent->children, xmlCopyNode(edit_node, 1))) == NULL) {
+					goto error;
+				}
+			}
+		} else if (xmlStrcmp(insert, BAD_CAST "before") == 0) {
+			if (list_type == 2) { /* leaf-list */
+				node = get_ref_leaflist(parent, edit_node, error);
+			} else if (list_type == 1) {
+				node = get_ref_list(parent, edit_node, error);
+			}
+			if (node == NULL) {
+				/* insert reference node not found */
+				if (error != NULL && *error == NULL) {
+					*error = nc_err_new(NC_ERR_BAD_ATTR);
+					nc_err_set(*error, NC_ERR_PARAM_APPTAG, "missing-instance");
+				}
+				goto error;
+			} else {
+				/* place the node before its reference */
+				if ((created = xmlAddPrevSibling(node, xmlCopyNode(edit_node, 1))) == NULL) {
+					goto error;
+				}
+			}
+		} else if (xmlStrcmp(insert, BAD_CAST "after") == 0) {
+			if (list_type == 2) { /* leaf-list */
+				node = get_ref_leaflist(parent, edit_node, error);
+			} else if (list_type == 1) {
+				node = get_ref_list(parent, edit_node, error);
+			}
+			if (node == NULL) {
+				/* insert reference node not found */
+				if (error != NULL && *error == NULL) {
+					*error = nc_err_new(NC_ERR_BAD_ATTR);
+					nc_err_set(*error, NC_ERR_PARAM_APPTAG, "missing-instance");
+				}
+				goto error;
+			} else {
+				/* place the node after its reference */
+				if ((created = xmlAddNextSibling(node, xmlCopyNode(edit_node, 1))) == NULL) {
+					goto error;
+				}
+			}
+		} else {
+			ERROR("Unknown (%s) leaf-list insert requested.", (char*)insert);
+			goto error;
+		}
+	}
+	xmlFree(insert);
+	nc_clear_namespaces(created);
+
+	return (EXIT_SUCCESS);
+
+error:
+	xmlFree(insert);
+	return (EXIT_FAILURE);
+}
+
+/**
  * \brief Recursive variant of edit_create() function to create the missing parent path of the node to be created.
  *
  * \param[in] orig_doc Original configuration document to edit.
@@ -1057,6 +1550,7 @@ static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model
 	assert(orig_doc != NULL);
 	assert(edit_node != NULL);
 
+	/* NACM */
 	if (nacm != NULL) {
 		if ((r = nacm_check_data(edit_node, NACM_ACCESS_CREATE, nacm)) != NACM_PERMIT) {
 			if (r == NACM_DENY) {
@@ -1086,17 +1580,24 @@ static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model
 	xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST NC_EDIT_ATTR_OP, BAD_CAST NC_NS_BASE));
 	nc_clear_namespaces(edit_node);
 
-	/* create a new element in the configuration data as a copy of the element from the edit-config */
-	VERB("Creating the node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
-	if (parent == NULL) {
-		if (orig_doc->children == NULL) {
-			xmlDocSetRootElement(orig_doc, xmlCopyNode(edit_node, 1));
-		} else {
-			xmlAddSibling(orig_doc->children, xmlCopyNode(edit_node, 1));
+	/* handle user-ordered lists */
+	if (is_user_ordered_list(find_element_model(edit_node, model)) != 0) {
+		if (edit_create_lists(parent, edit_node, model, error) == EXIT_FAILURE) {
+			return (EXIT_FAILURE);
 		}
 	} else {
-		if (xmlAddChild(parent, xmlCopyNode(edit_node, 1)) == NULL) {
-			return EXIT_FAILURE;
+		/* create a new element in the configuration data as a copy of the element from the edit-config */
+		VERB("Creating the node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
+		if (parent == NULL) {
+			if (orig_doc->children == NULL) {
+				xmlDocSetRootElement(orig_doc, xmlCopyNode(edit_node, 1));
+			} else {
+				xmlAddSibling(orig_doc->children, xmlCopyNode(edit_node, 1));
+			}
+		} else {
+			if (xmlAddChild(parent, xmlCopyNode(edit_node, 1)) == NULL) {
+				return (EXIT_FAILURE);
+			}
 		}
 	}
 
@@ -1212,69 +1713,98 @@ int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyL
 		xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST NC_EDIT_ATTR_OP, BAD_CAST NC_NS_BASE));
 		nc_clear_namespaces(edit_node);
 
-		/* replace old configuration data with the new data */
-		VERB("Replacing the node %s (%s:%d)", (char*)old->name, __FILE__, __LINE__);
-		if (xmlReplaceNode(old, xmlCopyNode(edit_node, 1)) == NULL) {
-			return EXIT_FAILURE;
-		}
+		/*
+		 * replace old configuration data with the new data
+		 * Do this removing the old node and creating a new one to cover actual
+		 * "moving" of the instance of the list/leaf-list using YANG's insert
+		 * attribute
+		 */
+		xmlUnlinkNode(old);
 		xmlFreeNode(old);
-
-		/* remove the node from the edit document */
-		edit_delete(edit_node);
-
-		return EXIT_SUCCESS;
+		return edit_create(orig_doc, edit_node, model, keys, nacm, error);
 	}
 }
 
-/**
- * @brief Check if the given node in the YIN data model defines list or leaf-list
- * ordered by user. In such a case, specific YANG attributes "insert", "value"
- * and "key" can appear.
- *
- * @return 1 if the node is user ordered list, 0 otherwise
- */
-static int is_user_ordered_list(xmlNodePtr node)
+static int edit_merge_lists(xmlNodePtr merged_node, xmlNodePtr edit_node, xmlDocPtr model, struct nc_err** error)
 {
-	xmlNodePtr child;
-	xmlChar *prop;
+	xmlNodePtr refnode, parent;
+	int list_type;
+	char* insert;
 
-	if (node == NULL) {
-		return (0);
-	}
+	/* if this is a list/leaf-list, moving using insert attribute can be required */
+	if ((list_type = is_user_ordered_list(find_element_model(merged_node, model))) != 0) {
+		/* get the insert attribute and remove it from the merged node if already placed in */
+		if ((insert = (char*)xmlGetNsProp(edit_node, BAD_CAST "insert", BAD_CAST NC_NS_YANG)) != NULL) {
+			xmlRemoveProp(xmlHasNsProp(merged_node, BAD_CAST "insert", BAD_CAST NC_NS_YANG));
 
-	if ((xmlStrcmp(node->name, BAD_CAST "list") != 0) &&
-		(xmlStrcmp(node->name, BAD_CAST "leaf-list") != 0)) {
-		return (0);
-	}
+			parent = merged_node->parent;
 
-	for (child = node->children; child != NULL; child = child->next) {
-		if (child->type != XML_ELEMENT_NODE) {
-			continue;
-		}
-		if (xmlStrcmp(child->name, BAD_CAST "ordered-by") != 0) {
-			continue;
-		}
-
-		prop = xmlGetNsProp(child, BAD_CAST "value", BAD_CAST NC_NS_YIN);
-		if (prop != NULL) {
-			if (xmlStrcmp(prop, BAD_CAST "user") == 0) {
-				xmlFree(prop);
-				break; /* for */
+			/* switch according to the insert value */
+			if (insert == NULL || strcmp(insert, "last") == 0) {
+				/* move aux to the end of the children list */
+				if (merged_node->next != NULL) {
+					xmlUnlinkNode(merged_node);
+					xmlAddChild(parent, merged_node);
+				}
+			} else if (strcmp(insert, "first") == 0) {
+				/* move it to the beginning of the children list */
+				if (merged_node->prev != NULL) {
+					xmlUnlinkNode(merged_node);
+					xmlAddPrevSibling(parent->children, merged_node);
+				}
+			} else if (strcmp(insert, "before") == 0) {
+				if (list_type == 2) { /* leaf-list */
+					refnode = get_ref_leaflist(parent, edit_node, error);
+				} else if (list_type == 1) {
+					refnode = get_ref_list(parent, edit_node, error);
+				}
+				if (refnode == NULL) {
+					/* insert reference node not found */
+					if (error != NULL && *error == NULL) {
+						*error = nc_err_new(NC_ERR_BAD_ATTR);
+						nc_err_set(*error, NC_ERR_PARAM_APPTAG, "missing-instance");
+					}
+					xmlFree(insert);
+					return (EXIT_FAILURE);
+				} else {
+					/* place the node before its reference */
+					xmlUnlinkNode(merged_node);
+					xmlAddPrevSibling(refnode, merged_node);
+				}
+			} else if (strcmp(insert, "after") == 0) {
+				if (list_type == 2) { /* leaf-list */
+					refnode = get_ref_leaflist(parent, edit_node, error);
+				} else if (list_type == 1) {
+					refnode = get_ref_list(parent, edit_node, error);
+				}
+				if (refnode == NULL) {
+					/* insert reference node not found */
+					if (error != NULL && *error == NULL) {
+						*error = nc_err_new(NC_ERR_BAD_ATTR);
+						nc_err_set(*error, NC_ERR_PARAM_APPTAG, "missing-instance");
+					}
+					xmlFree(insert);
+					return (EXIT_FAILURE);
+				} else {
+					/* place the node after its reference */
+					xmlUnlinkNode(merged_node);
+					xmlAddNextSibling(refnode, merged_node);
+				}
+			} else {
+				ERROR("Unknown (%s) leaf-list insert requested.", (char*)insert);
+				xmlFree(insert);
+				return (EXIT_FAILURE);
 			}
-			xmlFree(prop);
 		}
+		xmlFree(insert);
 	}
 
-	if (child == NULL) {
-		return (0);
-	} else {
-		return (1);
-	}
+	return (EXIT_SUCCESS);
 }
 
 static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
-	xmlNodePtr children, aux, next;
+	xmlNodePtr children, aux, next, parent;
 	int r, access, duplicates;
 	char *msg = NULL;
 
@@ -1321,11 +1851,12 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 			}
 
 			if (access == NACM_ACCESS_UPDATE) {
-				if (xmlReplaceNode(orig_node, xmlCopyNode(edit_node, 1)) == NULL) {
+				if ((aux = xmlReplaceNode(orig_node, xmlCopyNode(edit_node, 1))) == NULL) {
 					ERROR("Replacing text nodes when merging failed (%s:%d)", __FILE__, __LINE__);
 					return EXIT_FAILURE;
 				}
 				xmlFreeNode(orig_node);
+				nc_clear_namespaces(aux);
 			} else { /* access == NACM_ACCESS_CREATE */
 				duplicates = 0;
 
@@ -1340,10 +1871,11 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 				}
 				if (duplicates == 0) {
 					/* create a new text element (item in leaf-list) */
-					if (xmlAddNextSibling(orig_node->parent, xmlCopyNode(edit_node->parent, 1)) == NULL ) {
+					if ((aux = xmlAddNextSibling(orig_node->parent, xmlCopyNode(edit_node->parent, 1))) == NULL ) {
 						ERROR("Adding leaf-list node when merging failed (%s:%d)", __FILE__, __LINE__);
 						return EXIT_FAILURE;
 					}
+					nc_clear_namespaces(aux);
 				}
 			}
 		}
@@ -1382,39 +1914,9 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 			 * there is no equivalent element of the children in the
 			 * original configuration data, so create it as new
 			 */
-
-			/* NACM */
-			if (nacm != NULL) {
-				if ((r = nacm_check_data(children, NACM_ACCESS_CREATE, nacm)) != NACM_PERMIT) {
-					if (r == NACM_DENY) {
-						if (error != NULL) {
-							*error = nc_err_new(NC_ERR_ACCESS_DENIED);
-							if (asprintf(&msg, "creating \"%s\" data node is not permitted.", (char*)(children->name)) != -1) {
-								nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
-								free(msg);
-							}
-						}
-					} else {
-						if (error != NULL) {
-							*error = nc_err_new(NC_ERR_OP_FAILED);
-						}
-					}
-					return (EXIT_FAILURE);
-				}
-			}
-
-			/* handle user ordered lists */
-			if (is_user_ordered_list(find_element_model(children, model)) == 1) {
-				/*
-				 * we have to handle user-defined position of a new element in
-				 * the existing list
-				 */
-
-			} else {
-				if (xmlAddChild(orig_node, xmlCopyNode(children, 1)) == NULL ) {
-					ERROR("Adding missing nodes when merging failed (%s:%d)", __FILE__, __LINE__);
-					return EXIT_FAILURE;
-				}
+			if (edit_create(orig_node->doc, children, model, keys, nacm, error) != 0) {
+				ERROR("Adding missing nodes when merging failed (%s:%d)", __FILE__, __LINE__);
+				return EXIT_FAILURE;
 			}
 			VERB("Adding a missing node %s while merging (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 		} else {
@@ -1431,11 +1933,23 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 					aux = next;
 				}
 			} else {
+				parent = aux->parent;
 				while (aux != NULL) {
 					next = aux->next;
 					if (matching_elements(children, aux, keys, 0) != 0) {
 						if (edit_merge_recursively(aux, children, model, keys, nacm, error) != EXIT_SUCCESS) {
 							return EXIT_FAILURE;
+						}
+
+						/* update pointer to aux, it could change in edit_merge_recursively() */
+						if (next != NULL) {
+							aux = next->prev;
+						} else {
+							aux = parent->last;
+						}
+
+						if (edit_merge_lists(aux, children, model, error) != EXIT_SUCCESS) {
+							return (EXIT_FAILURE);
 						}
 					}
 					aux = next;
@@ -1513,6 +2027,10 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyLis
 			/* go recursive */
 			if (edit_merge_recursively(aux, children, model, keys, nacm, error) != EXIT_SUCCESS) {
 				return EXIT_FAILURE;
+			}
+
+			if (edit_merge_lists(aux, children, model, error) != EXIT_SUCCESS) {
+				return (EXIT_FAILURE);
 			}
 		}
 
