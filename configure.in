@@ -214,10 +214,10 @@ if test "$libssh2" = "no"; then
 fi
 
 # Check for doxygen
-AC_CHECK_PROG(DOXYGEN, doxygen, doxygen)
+AC_CHECK_PROG(DOXYGEN, doxygen, doxygen, no)
 
 # Check for rpmbuild
-AC_CHECK_PROG(RPMBUILD, rpmbuild, rpmbuild)
+AC_CHECK_PROG(RPMBUILD, rpmbuild, rpmbuild, no)
 
 # Check for standard programs
 AC_PROG_CC

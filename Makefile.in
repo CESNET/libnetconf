@@ -156,13 +156,12 @@ $(OBJDIR)/%.o: %.c
 		(mkdir -p $$(dirname $@))
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDES) $(DBG) -fPIC -c $< -o $@
 
-doxygen: $(DOXYGEN_CONFIG)
-	@if [ -n "$(DOXYGEN)" ]; then \
+doxygen: $(DOXYGEN_CONFIG) $(HDRS_PRIV)
+	@if [ "$(DOXYGEN)" != "no" ]; then \
 		[ -d $(DOXYGEN_DIR) ] || mkdir -p $(DOXYGEN_DIR); \
 		$(DOXYGEN); \
 	else \
-		echo "Missing doxygen"; \
-		exit 1; \
+		echo "Missing doxygen!"; \
 	fi
 
 .PHONY: dist
@@ -189,9 +188,14 @@ tarball: $(SRCS) $(HEADERS)
 
 .PHONY: rpm
 rpm: tarball
-	mkdir -p $(RPMDIR)/BUILD $(RPMDIR)/RPMS $(RPMDIR)/SRPMS
-	$(RPMBUILD) -ba $(NAME).spec \
-		--define "_topdir `pwd`/$(RPMDIR)";
+	if [ "$(RPMBUILD)" != "no"]; then \
+		mkdir -p $(RPMDIR)/BUILD $(RPMDIR)/RPMS $(RPMDIR)/SRPMS \
+		$(RPMBUILD) -ba $(NAME).spec \
+			--define "_topdir `pwd`/$(RPMDIR)"; \
+	else \
+		echo "Missing rpmbuild"; \
+		exit 1; \
+	fi
 
 .PHONY: install
 install: all install-devel install-doc

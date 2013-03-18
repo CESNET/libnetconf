@@ -2859,6 +2859,7 @@ done
   done
 IFS=$as_save_IFS
 
+  test -z "$ac_cv_prog_DOXYGEN" && ac_cv_prog_DOXYGEN="no"
 fi
 fi
 DOXYGEN=$ac_cv_prog_DOXYGEN
@@ -2898,6 +2899,7 @@ done
   done
 IFS=$as_save_IFS
 
+  test -z "$ac_cv_prog_RPMBUILD" && ac_cv_prog_RPMBUILD="no"
 fi
 fi
 RPMBUILD=$ac_cv_prog_RPMBUILD
