@@ -1391,7 +1391,7 @@ static int edit_create_lists(xmlNodePtr parent, xmlNodePtr edit_node, xmlDocPtr 
 {
 	int list_type;
 	xmlChar *insert;
-	xmlNodePtr node, created;
+	xmlNodePtr node = NULL, created = NULL;
 
 	*error = NULL;
 
@@ -1727,7 +1727,7 @@ int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyL
 
 static int edit_merge_lists(xmlNodePtr merged_node, xmlNodePtr edit_node, xmlDocPtr model, struct nc_err** error)
 {
-	xmlNodePtr refnode, parent;
+	xmlNodePtr refnode = NULL, parent;
 	int list_type;
 	char* insert;
 
