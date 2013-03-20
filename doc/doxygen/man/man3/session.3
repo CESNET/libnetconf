@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Fri Mar 1 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Wed Mar 20 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -144,7 +144,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .ti -1c
 .RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP ()"
 .br
-.RI "\fIGet NULL terminated list of the default capabilities supported by libnetconf\&. \fP"
+.RI "\fIGet NULL terminated list of the default capabilities supported by libnetconf including the list of namespaces provided by the datastores created with \fBncds_new()\fP and initialized by \fBncds_init()\fP\&. \fP"
 .ti -1c
 .RI "void \fBnc_ssh_pref\fP (\fBNC_SSH_AUTH_TYPE\fP type, short int preference)"
 .br
@@ -628,7 +628,7 @@ Number of capabilities held by structure c\&.
 .SS "struct nc_cpblts* nc_session_get_cpblts_default ()\fC [read]\fP"
 
 .PP
-Get NULL terminated list of the default capabilities supported by libnetconf\&. The caller is supposed to free all the returned strings\&.
+Get NULL terminated list of the default capabilities supported by libnetconf including the list of namespaces provided by the datastores created with \fBncds_new()\fP and initialized by \fBncds_init()\fP\&. The caller is supposed to free the returned structure with \fBnc_cpblts_free()\fP\&.
 .PP
 \fBReturns:\fP
 .RS 4

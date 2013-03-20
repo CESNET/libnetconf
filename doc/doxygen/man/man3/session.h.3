@@ -1,4 +1,4 @@
-.TH "src/session.h" 3 "Fri Mar 1 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "src/session.h" 3 "Wed Mar 20 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -108,7 +108,7 @@ Functions to handle NETCONF sessions\&.
 .ti -1c
 .RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP ()"
 .br
-.RI "\fIGet NULL terminated list of the default capabilities supported by libnetconf\&. \fP"
+.RI "\fIGet NULL terminated list of the default capabilities supported by libnetconf including the list of namespaces provided by the datastores created with \fBncds_new()\fP and initialized by \fBncds_init()\fP\&. \fP"
 .ti -1c
 .RI "const \fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
 .br

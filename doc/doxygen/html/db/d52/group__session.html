@@ -199,7 +199,7 @@ Functions</h2></td></tr>
 <tr class="memitem:ga79a7aea77cbfe29535eb83a6e5c60419"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga79a7aea77cbfe29535eb83a6e5c60419">nc_cpblts_count</a> (const struct nc_cpblts *c)</td></tr>
 <tr class="memdesc:ga79a7aea77cbfe29535eb83a6e5c60419"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of capabilities in the structure.  <a href="#ga79a7aea77cbfe29535eb83a6e5c60419"></a><br/></td></tr>
 <tr class="memitem:ga6f39a278e3d907a0b26878df332ebc71"><td class="memItemLeft" align="right" valign="top">struct nc_cpblts *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71">nc_session_get_cpblts_default</a> ()</td></tr>
-<tr class="memdesc:ga6f39a278e3d907a0b26878df332ebc71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NULL terminated list of the default capabilities supported by libnetconf.  <a href="#ga6f39a278e3d907a0b26878df332ebc71"></a><br/></td></tr>
+<tr class="memdesc:ga6f39a278e3d907a0b26878df332ebc71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NULL terminated list of the default capabilities supported by libnetconf including the list of namespaces provided by the datastores created with <a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6" title="Create a new datastore structure of the specified implementation type.">ncds_new()</a> and initialized by <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>.  <a href="#ga6f39a278e3d907a0b26878df332ebc71"></a><br/></td></tr>
 <tr class="memitem:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0">nc_ssh_pref</a> (<a class="el" href="../../db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10">NC_SSH_AUTH_TYPE</a> type, short int preference)</td></tr>
 <tr class="memdesc:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the preference of the SSH authentication methods.  <a href="#ga13119fdaa84544bf254bdb35ffdf83e0"></a><br/></td></tr>
 <tr class="memitem:gae3858d998d19cb2fb700b15fdf602f23"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23">nc_session_connect</a> (const char *host, unsigned short port, const char *username, const struct nc_cpblts *cpblts)</td></tr>
@@ -1146,8 +1146,8 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Get NULL terminated list of the default capabilities supported by libnetconf. </p>
-<p>The caller is supposed to free all the returned strings.</p>
+<p>Get NULL terminated list of the default capabilities supported by libnetconf including the list of namespaces provided by the datastores created with <a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6" title="Create a new datastore structure of the specified implementation type.">ncds_new()</a> and initialized by <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>. </p>
+<p>The caller is supposed to free the returned structure with <a class="el" href="../../db/d52/group__session.html#ga6465c58b3ca057b46655d5ffa90caff3" title="Free NETCONF capabilities structure.">nc_cpblts_free()</a>.</p>
 <dl class="section return"><dt>Returns:</dt><dd>NETCONF capabilities structure containing capabilities supported by libnetconf. </dd></dl>
 
 </div>
@@ -1244,7 +1244,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">host</td><td>Hostname or address (both Ipv4 and IPv6 are accepted). 'localhost' is used by default if NULL is specified. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">port</td><td>Port number of the server. Default value 830 is used if 0 is specified. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">username</td><td>Name of the user to login to the server. The user running the application (detected from the effective UID) is used if NULL is specified. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">cpblts</td><td>NETCONF capabilities structure with capabilities supported by the client. Client can use <a class="el" href="../../db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71" title="Get NULL terminated list of the default capabilities supported by libnetconf.">nc_session_get_cpblts_default()</a> to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cpblts</td><td>NETCONF capabilities structure with capabilities supported by the client. Client can use <a class="el" href="../../db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71" title="Get NULL terminated list of the default capabilities supported by libnetconf including the list of na...">nc_session_get_cpblts_default()</a> to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter). </td></tr>
   </table>
   </dd>
 </dl>
@@ -1278,7 +1278,7 @@ Functions</h2></td></tr>
 <p>The caller process of this function is supposed to run as SSH Subsystem application launched automatically by SSH server when the NETCONF subsystem request comes to the SSH server. Only one NETCONF session can be accepted in a single SSH Subsystem.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">capabilities</td><td>NETCONF capabilities structure with the capabilities supported by the server. The caller can use <a class="el" href="../../db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71" title="Get NULL terminated list of the default capabilities supported by libnetconf.">nc_session_get_cpblts_default()</a> to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">capabilities</td><td>NETCONF capabilities structure with the capabilities supported by the server. The caller can use <a class="el" href="../../db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71" title="Get NULL terminated list of the default capabilities supported by libnetconf including the list of na...">nc_session_get_cpblts_default()</a> to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter). </td></tr>
   </table>
   </dd>
 </dl>
@@ -1291,7 +1291,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Mar 1 2013 14:49:31 for libnetconf by
+    <li class="footer">Generated on Wed Mar 20 2013 17:31:12 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.1 </li>
   </ul>
