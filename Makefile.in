@@ -188,8 +188,8 @@ tarball: $(SRCS) $(HEADERS)
 
 .PHONY: rpm
 rpm: tarball
-	if [ "$(RPMBUILD)" != "no"]; then \
-		mkdir -p $(RPMDIR)/BUILD $(RPMDIR)/RPMS $(RPMDIR)/SRPMS \
+	if [ "$(RPMBUILD)" != "no" ]; then \
+		mkdir -p $(RPMDIR)/BUILD $(RPMDIR)/RPMS $(RPMDIR)/SRPMS; \
 		$(RPMBUILD) -ba $(NAME).spec \
 			--define "_topdir `pwd`/$(RPMDIR)"; \
 	else \
