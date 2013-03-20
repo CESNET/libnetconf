@@ -372,10 +372,31 @@ static int is_key(xmlNodePtr parent, xmlNodePtr child, keyList keys)
 }
 
 /**
+ * @return NULL if the node is not a part of the choice statement,
+ * the branch node where the given node belongs to
+ */
+static xmlNodePtr is_partof_choice(xmlNodePtr node)
+{
+	xmlNodePtr aux;
+
+	if (node == NULL) {
+		return (NULL);
+	}
+
+	for (aux = node; aux->parent != NULL && aux->parent->type == XML_ELEMENT_NODE; aux = aux->parent) {
+		if (xmlStrcmp(aux->parent->name, BAD_CAST "choice") == 0) {
+			return (aux);
+		}
+	}
+	return (NULL);
+}
+
+/**
  * @brief Check if the given node in the YIN data model defines list or leaf-list
  * ordered by user. In such a case, specific YANG attributes "insert", "value"
  * and "key" can appear.
  *
+ * @param[in] node Model's node to check
  * @return 1 if the node is user ordered list, </br>
  * 2 if the node is user ordered leaf-list, </br>
  * 0 otherwise
@@ -548,6 +569,35 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys, int leaf
 	return 1;
 }
 
+static xmlNodePtr find_element_model_compare(xmlNodePtr node, xmlNodePtr model_node)
+{
+	xmlNodePtr aux, retval;
+	xmlChar* name;
+
+	if (xmlStrcmp(model_node->name, BAD_CAST "choice") == 0 ||
+	    xmlStrcmp(model_node->name, BAD_CAST "case") == 0) {
+		for (aux = model_node->children; aux != NULL; aux = aux->next) {
+			retval = find_element_model_compare(node, aux);
+			if (retval != NULL) {
+				return (retval);
+			}
+		}
+	} else {
+		name = xmlGetProp(model_node, BAD_CAST "name");
+		if (name == NULL) {
+			return (NULL);
+		}
+
+		if (xmlStrcmp(node->name, name) == 0) {
+			xmlFree(name);
+			return (model_node);
+		}
+		xmlFree(name);
+	}
+
+	return (NULL);
+}
+
 /**
  * @brief Go recursively in the YIN model and find model's equivalent of the node
  * @param[in] node XML element which we want to find in the model
@@ -556,8 +606,7 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys, int leaf
  */
 static xmlNodePtr find_element_model(xmlNodePtr node, xmlDocPtr model)
 {
-	xmlNodePtr mparent, aux;
-	xmlChar* name;
+	xmlNodePtr mparent, aux, retval;
 
 	if (node == NULL || node->parent == NULL) {
 		return (NULL);
@@ -573,16 +622,10 @@ static xmlNodePtr find_element_model(xmlNodePtr node, xmlDocPtr model)
 	}
 
 	for (aux = mparent->children; aux != NULL; aux = aux->next) {
-		name = xmlGetProp(aux, BAD_CAST "name");
-		if (name == NULL) {
-			continue;
+		retval = find_element_model_compare(node, aux);
+		if (retval != NULL) {
+			return (retval);
 		}
-
-		if (xmlStrcmp(node->name, name) == 0) {
-			xmlFree(name);
-			return (aux);
-		}
-		xmlFree(name);
 	}
 
 	return (NULL);
@@ -1387,13 +1430,48 @@ static xmlNodePtr get_ref_leaflist(xmlNodePtr parent, xmlNodePtr edit_node, stru
 	return (retval);
 }
 
+/**
+ * Common routine to create a node
+ */
+static int edit_create_routine(xmlNodePtr parent, xmlNodePtr edit_node)
+{
+	if (parent == NULL || edit_node == NULL) {
+		ERROR("%s: invalid input parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	/* create a new element in the configuration data as a copy of the element from the edit-config */
+	VERB("Creating the node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
+	if (parent->type == XML_DOCUMENT_NODE) {
+		if (parent->children == NULL) {
+			xmlDocSetRootElement(parent->doc, xmlCopyNode(edit_node, 1));
+		} else {
+			/* adding root's sibling! */
+			xmlAddChild(parent, xmlCopyNode(edit_node, 1));
+		}
+	} else {
+		if (xmlAddChild(parent, xmlCopyNode(edit_node, 1)) == NULL) {
+			ERROR("%s: Creating new node (%s) failed (%s:%d)", __func__, (char*)(edit_node->name), __FILE__, __LINE__);
+			return (EXIT_FAILURE);
+		}
+	}
+
+	return (EXIT_SUCCESS);
+}
+
 static int edit_create_lists(xmlNodePtr parent, xmlNodePtr edit_node, xmlDocPtr model, struct nc_err** error)
 {
 	int list_type;
 	xmlChar *insert;
 	xmlNodePtr node = NULL, created = NULL;
 
-	*error = NULL;
+	if (parent == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (error != NULL) {
+		*error = NULL;
+	}
 
 	if ((list_type = is_user_ordered_list(find_element_model(edit_node, model))) == 0) {
 		return (EXIT_FAILURE);
@@ -1405,67 +1483,64 @@ static int edit_create_lists(xmlNodePtr parent, xmlNodePtr edit_node, xmlDocPtr 
 	insert = xmlGetNsProp(edit_node, BAD_CAST "insert", BAD_CAST NC_NS_YANG);
 	xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST "insert", BAD_CAST NC_NS_YANG));
 
-	if (parent == NULL) {
-		/* TODO ? */
-	} else {
-		/* switch according to the insert value */
-		if (insert == NULL || xmlStrcmp(insert, BAD_CAST "last") == 0) {
+	/* switch according to the insert value */
+	if (insert == NULL || xmlStrcmp(insert, BAD_CAST "last") == 0) {
+		if ((created = xmlAddChild(parent, xmlCopyNode(edit_node, 1))) == NULL) {
+			goto error;
+		}
+	} else if (xmlStrcmp(insert, BAD_CAST "first") == 0) {
+		if (parent->children == NULL) {
 			if ((created = xmlAddChild(parent, xmlCopyNode(edit_node, 1))) == NULL) {
 				goto error;
 			}
-		} else if (xmlStrcmp(insert, BAD_CAST "first") == 0) {
-			if (parent->children == NULL) {
-				if ((created = xmlAddChild(parent, xmlCopyNode(edit_node, 1))) == NULL) {
-					goto error;
-				}
-			} else {
-				if ((created = xmlAddPrevSibling(parent->children, xmlCopyNode(edit_node, 1))) == NULL) {
-					goto error;
-				}
-			}
-		} else if (xmlStrcmp(insert, BAD_CAST "before") == 0) {
-			if (list_type == 2) { /* leaf-list */
-				node = get_ref_leaflist(parent, edit_node, error);
-			} else if (list_type == 1) {
-				node = get_ref_list(parent, edit_node, error);
-			}
-			if (node == NULL) {
-				/* insert reference node not found */
-				if (error != NULL && *error == NULL) {
-					*error = nc_err_new(NC_ERR_BAD_ATTR);
-					nc_err_set(*error, NC_ERR_PARAM_APPTAG, "missing-instance");
-				}
-				goto error;
-			} else {
-				/* place the node before its reference */
-				if ((created = xmlAddPrevSibling(node, xmlCopyNode(edit_node, 1))) == NULL) {
-					goto error;
-				}
-			}
-		} else if (xmlStrcmp(insert, BAD_CAST "after") == 0) {
-			if (list_type == 2) { /* leaf-list */
-				node = get_ref_leaflist(parent, edit_node, error);
-			} else if (list_type == 1) {
-				node = get_ref_list(parent, edit_node, error);
-			}
-			if (node == NULL) {
-				/* insert reference node not found */
-				if (error != NULL && *error == NULL) {
-					*error = nc_err_new(NC_ERR_BAD_ATTR);
-					nc_err_set(*error, NC_ERR_PARAM_APPTAG, "missing-instance");
-				}
-				goto error;
-			} else {
-				/* place the node after its reference */
-				if ((created = xmlAddNextSibling(node, xmlCopyNode(edit_node, 1))) == NULL) {
-					goto error;
-				}
-			}
 		} else {
-			ERROR("Unknown (%s) leaf-list insert requested.", (char*)insert);
-			goto error;
+			if ((created = xmlAddPrevSibling(parent->children, xmlCopyNode(edit_node, 1))) == NULL) {
+				goto error;
+			}
 		}
+	} else if (xmlStrcmp(insert, BAD_CAST "before") == 0) {
+		if (list_type == 2) { /* leaf-list */
+			node = get_ref_leaflist(parent, edit_node, error);
+		} else if (list_type == 1) {
+			node = get_ref_list(parent, edit_node, error);
+		}
+		if (node == NULL) {
+			/* insert reference node not found */
+			if (error != NULL && *error == NULL) {
+				*error = nc_err_new(NC_ERR_BAD_ATTR);
+				nc_err_set(*error, NC_ERR_PARAM_APPTAG, "missing-instance");
+			}
+			goto error;
+		} else {
+			/* place the node before its reference */
+			if ((created = xmlAddPrevSibling(node, xmlCopyNode(edit_node, 1))) == NULL) {
+				goto error;
+			}
+		}
+	} else if (xmlStrcmp(insert, BAD_CAST "after") == 0) {
+		if (list_type == 2) { /* leaf-list */
+			node = get_ref_leaflist(parent, edit_node, error);
+		} else if (list_type == 1) {
+			node = get_ref_list(parent, edit_node, error);
+		}
+		if (node == NULL) {
+			/* insert reference node not found */
+			if (error != NULL && *error == NULL) {
+				*error = nc_err_new(NC_ERR_BAD_ATTR);
+				nc_err_set(*error, NC_ERR_PARAM_APPTAG, "missing-instance");
+			}
+			goto error;
+		} else {
+			/* place the node after its reference */
+			if ((created = xmlAddNextSibling(node, xmlCopyNode(edit_node, 1))) == NULL) {
+				goto error;
+			}
+		}
+	} else {
+		ERROR("Unknown (%s) leaf-list insert requested.", (char*)insert);
+		goto error;
 	}
+
 	xmlFree(insert);
 	nc_clear_namespaces(created);
 
@@ -1474,6 +1549,88 @@ static int edit_create_lists(xmlNodePtr parent, xmlNodePtr edit_node, xmlDocPtr 
 error:
 	xmlFree(insert);
 	return (EXIT_FAILURE);
+}
+
+/**
+ * @brief Remove all nodes from other choice's cases then the except_node
+ * @param[in] parent Parent configuration data node holding the choice content.
+ * @param[in] except_node The configuration node from the choice's case that
+ * should be preserved
+ * @param[in] model Configuration data model in YIN format.
+ * @return 0 in case of success, 1 in case of error
+ */
+static int edit_choice_clean(xmlNodePtr parent, xmlNodePtr except_node, xmlDocPtr model, const struct nacm_rpc* nacm, struct nc_err** error)
+{
+	xmlNodePtr choice_branch, child, aux;
+	char* msg = NULL;
+	int r;
+
+	if (except_node == NULL || (choice_branch = is_partof_choice(find_element_model(except_node, model))) == NULL) {
+		/* ignore request if the except_node is not a part of choice statement */
+		return (EXIT_SUCCESS);
+	}
+
+	for (child = parent->children; child != NULL; ) {
+		if (child->type != XML_ELEMENT_NODE) {
+			child = child->next;
+			continue;
+		}
+
+		aux = is_partof_choice(find_element_model(child, model));
+		if (aux == NULL) {
+			child = child->next;
+			continue;
+		}
+
+		if (aux->parent == choice_branch->parent && aux != choice_branch) {
+			/* we have another branch of the same choice -> remove it */
+			aux = child->next;
+
+			/* NACM */
+			if ((r = nacm_check_data(child, NACM_ACCESS_DELETE, nacm)) == NACM_PERMIT) {
+				/* remove the edit node's equivalent from the original document */
+				edit_delete(child);
+			} else if (r == NACM_DENY) {
+				if (error != NULL) {
+					*error = nc_err_new(NC_ERR_ACCESS_DENIED);
+					if (asprintf(&msg, "removing \"%s\" data node is not permitted.", (char*)(child->name)) != -1) {
+						nc_err_set(*error, NC_ERR_PARAM_MSG, msg);
+						free(msg);
+					}
+				}
+				return (EXIT_FAILURE);
+			} else {
+				if (error != NULL) {
+					*error = nc_err_new(NC_ERR_OP_FAILED);
+				}
+				return (EXIT_FAILURE);
+			}
+
+			child = aux;
+		} else {
+			child = child->next;
+		}
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+/**
+ * @brief Create a node and handle the case that the node is one of the choice's
+ * case. Then, all nodes from other cases must be deleted.
+ *
+ * @param[in] parent Parent configuration data node holding the choice content.
+ * @param[in] edit_node The configuration node to create.
+ * @param[in] model Configuration data model in YIN format.
+ * @return 0 in case of success, 1 in case of error
+ */
+static int edit_create_choice(xmlNodePtr parent, xmlNodePtr edit_node, xmlDocPtr model, const struct nacm_rpc* nacm, struct nc_err** error)
+{
+	if (edit_choice_clean(parent, edit_node, model, nacm, error) == EXIT_FAILURE) {
+		return (EXIT_FAILURE);
+	}
+
+	return (edit_create_routine(parent, edit_node));
 }
 
 /**
@@ -1543,7 +1700,7 @@ static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_no
  */
 static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
-	xmlNodePtr parent = NULL;
+	xmlNodePtr parent = NULL, model_node;
 	int r;
 	char *msg = NULL;
 
@@ -1575,29 +1732,28 @@ static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model
 		if (parent == NULL) {
 			return EXIT_FAILURE;
 		}
+	} else {
+		parent = edit_node->parent;
 	}
+
 	/* remove operation attribute */
 	xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST NC_EDIT_ATTR_OP, BAD_CAST NC_NS_BASE));
 	nc_clear_namespaces(edit_node);
 
 	/* handle user-ordered lists */
-	if (is_user_ordered_list(find_element_model(edit_node, model)) != 0) {
+	model_node = find_element_model(edit_node, model);
+	if (is_user_ordered_list(model_node) != 0) {
 		if (edit_create_lists(parent, edit_node, model, error) == EXIT_FAILURE) {
+			return (EXIT_FAILURE);
+		}
+	} else if (is_partof_choice(model_node) != NULL) {
+		if (edit_create_choice(parent, edit_node, model, nacm, error) == EXIT_FAILURE) {
 			return (EXIT_FAILURE);
 		}
 	} else {
 		/* create a new element in the configuration data as a copy of the element from the edit-config */
-		VERB("Creating the node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
-		if (parent == NULL) {
-			if (orig_doc->children == NULL) {
-				xmlDocSetRootElement(orig_doc, xmlCopyNode(edit_node, 1));
-			} else {
-				xmlAddSibling(orig_doc->children, xmlCopyNode(edit_node, 1));
-			}
-		} else {
-			if (xmlAddChild(parent, xmlCopyNode(edit_node, 1)) == NULL) {
-				return (EXIT_FAILURE);
-			}
+		if (edit_create_routine(parent, edit_node) == EXIT_FAILURE) {
+			return (EXIT_FAILURE);
 		}
 	}
 
@@ -1951,6 +2107,9 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 						if (edit_merge_lists(aux, children, model, error) != EXIT_SUCCESS) {
 							return (EXIT_FAILURE);
 						}
+						if (edit_choice_clean(parent, children, model, nacm, error) == EXIT_FAILURE) {
+							return (EXIT_FAILURE);
+						}
 					}
 					aux = next;
 				}
@@ -2019,7 +2178,7 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyLis
 				}
 			}
 
-			if (xmlAddChild(orig_node, xmlCopyNode(children, 1)) == NULL) {
+			if ((aux = xmlAddChild(orig_node, xmlCopyNode(children, 1))) == NULL) {
 				ERROR("Adding missing nodes when merging failed (%s:%d)", __FILE__, __LINE__);
 				return EXIT_FAILURE;
 			}
@@ -2032,6 +2191,10 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyLis
 			if (edit_merge_lists(aux, children, model, error) != EXIT_SUCCESS) {
 				return (EXIT_FAILURE);
 			}
+		}
+
+		if (edit_choice_clean(aux->parent, children, model, nacm, error) == EXIT_FAILURE) {
+			return (EXIT_FAILURE);
 		}
 
 		children = children->next;
