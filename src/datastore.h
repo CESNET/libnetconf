@@ -41,6 +41,7 @@
 #define DATASTORE_H_
 
 #include "netconf.h"
+#include "error.h"
 
 /**
  * @ingroup store
