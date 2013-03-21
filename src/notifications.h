@@ -40,8 +40,9 @@
 #ifndef NOTIFICATIONS_H_
 #define NOTIFICATIONS_H_
 
+#include <time.h>
+
 #include "netconf.h"
-#include "time.h"
 
 #define NCNTF_STREAM_DEFAULT "NETCONF"
 #define NCNTF_STREAM_BASE NCNTF_STREAM_DEFAULT
