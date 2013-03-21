@@ -46,6 +46,8 @@
 #include "libnetconf/session.h"
 #include "libnetconf/messages.h"
 #include "libnetconf/with_defaults.h"
+#include "libnetconf/error.h"
+#include "libnetconf/datastore.h"
 
 #endif /* LIBNETCONF_H_ */
 
