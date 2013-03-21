@@ -159,7 +159,7 @@ int ncds_sysinit(void)
 			{NCDS_TYPE_EMPTY, NULL}, /* notifications */
 #endif
 			{NCDS_TYPE_EMPTY, NULL},
-			{NCDS_TYPE_FILE, "/usr/share/libnetconf/datastore-acm.xml"}
+			{NCDS_TYPE_FILE, NC_WORKINGDIR_PATH"/datastore-acm.xml"}
 	};
 
 	for (i = 0; i < INTERNAL_DS_COUNT; i++) {
