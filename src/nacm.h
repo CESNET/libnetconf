@@ -103,7 +103,9 @@ int nacm_check_operation(const nc_rpc* rpc);
  *         1 for deny the operation<br/>
  *        -1 in case of error
  */
+#ifndef DISABLE_NOTIFICATIONS
 int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session);
+#endif
 
 /**
  * @brief Check if there is a permission to access (read/create/delete/update)

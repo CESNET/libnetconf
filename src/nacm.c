@@ -1295,6 +1295,8 @@ result:
 	return (retval);
 }
 
+#ifndef DISABLE_NOTIFICATIONS
+
 int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 {
 	xmlXPathObjectPtr defdeny;
@@ -1458,6 +1460,7 @@ nacmfree:
 
 	return (retval);
 }
+#endif /* not DISABLE_NOTIFICATIONS */
 
 int nacm_check_operation(const nc_rpc* rpc)
 {
