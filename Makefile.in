@@ -81,6 +81,7 @@ SUBDIRS = @SUBDIRS@
 SRCS =  src/callbacks.c \
 	src/error.c \
 	src/internal.c \
+	src/compat.c \
 	src/messages.c \
 	src/session.c \
 	src/ssh.c @SRCS_NOTIFICATIONS@ \

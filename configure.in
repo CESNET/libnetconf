@@ -306,6 +306,7 @@ AC_CHECK_FUNCS([ftruncate memset mkdir munmap socket strchr strdup strerror strr
 if test "$libssh2" = "no"; then
 	AC_CHECK_FUNCS([dup2])
 fi
+AC_CHECK_FUNC([eaccess], [HAVE_EACCESS="#define HAVE_EACCESS"], [HAVE_EACCESS="#undef HAVE_EACCESS"] )
 
 ############################### Set output #####################################
 AC_SUBST(V_SHLIB_CMD)
@@ -328,7 +329,8 @@ AC_SUBST(HDRS_PRIV_NOTIFICATIONS)
 AC_SUBST(SRCS_NOTIFICATIONS)
 AC_SUBST(INCLUDE_NOTIFICATIONS)
 AC_SUBST(INCLUDE_NOTIFICATIONS_XML)
-AC_SUBST(CONFIGURE_PARAMS)	
+AC_SUBST(CONFIGURE_PARAMS)
+AC_SUBST(HAVE_EACCESS)
 
 AC_SUBST(DOXYGEN)
 if test -z "$DOXYGEN"; then

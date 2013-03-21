@@ -63,6 +63,7 @@
 #include "datastore/datastore_internal.h"
 #include "datastore/file/datastore_file.h"
 #include "datastore/empty/datastore_empty.h"
+#include "config.h"
 
 #ifndef DISABLE_NOTIFICATIONS
 #  include "notifications.h"

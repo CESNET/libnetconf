@@ -1,9 +1,9 @@
 /**
- * \file config.h
+ * \file compat.c
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief Various configuration settings.
+ * \brief Compatibility functions for various platforms.
  *
- * Copyright (C) 2013 CESNET, z.s.p.o.
+ * Copyright (C) 2012 CESNET, z.s.p.o.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,33 +37,75 @@
  *
  */
 
-#ifndef CONFIG_H_
-#define CONFIG_H_
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
-#ifndef DISABLE_LIBSSH
-/*
- * libssh2_session_startup() is deprecated in libssh2 >= 1.2.8 and replaced by
- * libssh2_session_handshake(). This macro is automatically set by configure
- * script and appropriate function according to the current (in a compilation
- * time) libssh2 version is used.
- */
-#define LIBSSH2_SESSION_HANDSHAKE(session,socket) @LIBSSH2_SESSION_HANDSHAKE@(session,socket)
+#include "config.h"
 
-/*
- * libssh2_session_set_timeout() is available since libssh2 1.2.9
- */
-#define LIBSSH2_SET_TIMEOUT(session,timeout) @LIBSSH2_SET_TIMEOUT@
-#endif /* not DISABLE_LIBSSH */
-
-/*
- * Path for storing libnetconf's Event stream files
- */
-//#define NCNTF_STREAMS_PATH "@NC_WORKINGDIR_PATH@/streams/"
-#define NCNTF_STREAMS_PATH_ENV "LIBNETCONF_STREAMS"
-
-@HAVE_EACCESS@
 #ifndef HAVE_EACCESS
-int eaccess(const char *pathname, int mode);
-#endif
 
-#endif /* CONFIG_H_ */
+static int group_member(gid_t gid)
+{
+	int n = 0;
+	gid_t *groups = NULL;
+
+	n = getgroups(0, groups);
+	groups = malloc(n * sizeof(gid_t*));
+	getgroups(n, groups);
+
+	while (n-- > 0) {
+		if (groups[n] == gid) {
+			return (1);
+		}
+	}
+	return (0);
+}
+
+int eaccess(const char *pathname, int mode)
+{
+	uid_t uid, euid;
+	gid_t gid, egid;
+	struct stat st;
+	int granted;
+
+	uid = getuid();
+	euid = geteuid();
+	gid = getgid();
+	egid = getegid();
+
+	if (uid == euid && gid == egid) {
+		/* If we are not set-uid or set-gid, access does the same.  */
+		return (access(pathname, mode));
+	}
+
+	if (stat(pathname, &st) != 0) {
+		return (-1);
+	}
+
+	/* root can read/write any file, and execute any file that anyone can execute. */
+	if (euid == 0 && ((mode & X_OK) == 0 || (st.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)))) {
+		return (0);
+	}
+
+	mode &= (X_OK | W_OK | R_OK);	/* Clear any bogus bits. */
+
+	/* check access rights according to the effective id */
+	if (euid == st.st_uid) {
+		granted = (unsigned int) (st.st_mode & (mode << 6)) >> 6;
+	} else if (egid == st.st_gid || group_member(st.st_gid)) {
+		granted = (unsigned int) (st.st_mode & (mode << 3)) >> 3;
+	} else {
+		granted = (st.st_mode & mode);
+	}
+
+	if (granted == mode) {
+		return (0);
+	} else {
+		return (-1);
+	}
+}
+
+#endif /* not HAVE_EACCESS */
+

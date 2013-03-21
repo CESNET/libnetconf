@@ -54,6 +54,7 @@
 #include "../../error.h"
 #include "../../session.h"
 #include "../../nacm.h"
+#include "../../config.h"
 #include "../datastore_internal.h"
 #include "datastore_file.h"
 #include "../edit_config.h"
