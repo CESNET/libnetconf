@@ -47,7 +47,7 @@ bindir = @bindir@
 LIBNETCONF_SEARCH = "-Wl,-rpath,$(prefix)/lib"
 
 CC = @CC@
-LIBS = -L../../ $(LIBNETCONF_SEARCH) -lnetconf -lreadline -lxml2
+LIBS = @LDFLAGS@ -L../../ $(LIBNETCONF_SEARCH) -lnetconf -lreadline -lxml2
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ -I../../src/ -DVERSION=\"$(VERSION)\"
 INSTALL = @INSTALL@
