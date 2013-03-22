@@ -2719,8 +2719,8 @@ if test "$notif" = "yes"; then
 	HDRS_PUBL_SUBDIR_NOTIFICATIONS="src/notifications.h src/notifications_xml.h"
 	HDRS_PRIV_NOTIFICATIONS="src/notifications.h src/notifications_xml.h"
 	SRCS_NOTIFICATIONS="src/notifications.c"
-	INCLUDE_NOTIFICATIONS="\#include \"libnetconf/notifications.h\""
-	INCLUDE_NOTIFICATIONS_XML="\#include \"libnetconf/notifications_xml.h\""
+	INCLUDE_NOTIFICATIONS="#include \"libnetconf/notifications.h\""
+	INCLUDE_NOTIFICATIONS_XML="#include \"libnetconf/notifications_xml.h\""
 	PROVIDES="$PROVIDES libnetconf-notifications"
 else
 	CONFIGURE_PARAMS="$CONFIGURE_PARAMS --disable-notifications"
@@ -2728,8 +2728,8 @@ else
 	HDRS_PUBL_SUBDIR_NOTIFICATIONS=""
 	HDRS_PRIV_NOTIFICATIONS=""
 	SRCS_NOTIFICATIONS=""
-	INCLUDE_NOTIFICATIONS="\#define DISABLE_NOTIFICATIONS"
-	INCLUDE_NOTIFICATIONS_XML="\#define DISABLE_NOTIFICATIONS"
+	INCLUDE_NOTIFICATIONS="#define DISABLE_NOTIFICATIONS"
+	INCLUDE_NOTIFICATIONS_XML="#define DISABLE_NOTIFICATIONS"
 fi
 
 
