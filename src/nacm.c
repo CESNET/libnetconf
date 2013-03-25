@@ -231,10 +231,12 @@ static void nacm_group_free(struct nacm_group* g)
 
 	if (g != NULL) {
 		free(g->name);
-		for (i = 0, s = g->users[i]; s != NULL; i++, s = g->users[i]) {
-			free(s);
+		if (g->users != NULL) {
+			for (i = 0, s = g->users[i]; s != NULL; i++, s = g->users[i]) {
+				free(s);
+			}
+			free(g->users);
 		}
-		free(g->users);
 		free(g);
 	}
 }
