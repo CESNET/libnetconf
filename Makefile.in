@@ -37,6 +37,8 @@
 NAME = @PACKAGE_NAME@
 
 # Various configurable paths (remember to edit Makefile.in, not Makefile)
+srcdir = @srcdir@
+abs_srcdir = @abs_srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 datarootdir = @datarootdir@
@@ -46,7 +48,7 @@ includedir = @includedir@
 libdir =  @libdir@
 mandir = @mandir@
 
-VERSION = $(shell cut -f1 ./VERSION | tr -d '\n')
+VERSION = $(shell cut -f1 "$(srcdir)/VERSION" | tr -d '\n')
 # version for soname:
 ABICOMPAT_VER = $(shell echo $(VERSION) | cut -d. -f1,2)
 RELEASE = @RELEASE@
@@ -72,11 +74,18 @@ LIBS = @LDFLAGS@ @LIBS@
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = -DNC_WORKINGDIR_PATH=\"$(NC_WORKINGDIR_PATH)\" -DSETBIT=$(SETBIT) @CPPFLAGS@
 
-OBJDIR= .obj
 DBUS_CONFDIR = @DBUS_CONFDIR@
 
-TOPDIR = @CONFIGURE_PWD@
 SUBDIRS = @SUBDIRS@
+
+INCLUDES= -I$(abs_srcdir)/src
+
+ifeq "$(shell pwd)" "$(shell readlink -f $(srcdir))"
+OBJDIR = .obj
+else
+OBJDIR = .
+VPATH = $(srcdir)
+endif
 
 SRCS =  src/callbacks.c \
 	src/error.c \
@@ -227,11 +236,11 @@ install: all install-devel install-doc
 		chmod a+rwx $(NC_WORKINGDIR_PATH); \
 	fi;
 	for i in $(SUBDIRS) ; do \
-		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i install \
+		$(MAKE) DESTDIR=$(patsubst .%,$(abs_srcdir)/.%,$(DESTDIR)) -C $$i install \
 		|| exit 1; \
 	done;
 	[ -d $(DESTDIR)/$(DBUS_CONFDIR)/system.d/ ] || (mkdir -p $(DESTDIR)/$(DBUS_CONFDIR)/system.d/);
-	[ -z "@SRCS_NOTIFICATIONS@" ] || $(INSTALL_DATA) libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
+	[ -z "@SRCS_NOTIFICATIONS@" ] || $(INSTALL_DATA) $(srcdir)/libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
 
 .PHONY: install-devel
 install-devel:
@@ -248,10 +257,10 @@ install-devel:
 		rm -rf $(DESTDIR)/$(libdir)/$(NAME).so;	
 	$(LN_S) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/$(NAME).so; \
 	for i in $(HDRS_PUBL_ROOT); do \
-		$(INSTALL_DATA) $$i $(DESTDIR)/$(includedir)/$$(basename $$i); \
+		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$$(basename $$i); \
 	done; \
 	for i in $(HDRS_PUBL_SUBDIR); do \
-		$(INSTALL_DATA) $$i $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
+		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
 	done; \
 	$(INSTALL_DATA) $(NAME).pc $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
 
@@ -267,7 +276,7 @@ uninstall: uninstall-devel uninstall-doc
 	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(VERSION)
 	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER)
 	for i in $(SUBDIRS) ; do \
-		$(MAKE) DESTDIR=$(patsubst .%,$(TOPDIR)/.%,$(DESTDIR)) -C $$i uninstall \
+		$(MAKE) DESTDIR=$(patsubst .%,$(abs_srcdir)/.%,$(DESTDIR)) -C $$i uninstall \
 		|| exit 1; \
 	done
 	[ -z "@SRCS_NOTIFICATIONS@" ] || rm -f $(DESTDIR)/$(DBUS_CONFDIR)/system.d/libnetconf.notifications.conf
@@ -291,7 +300,7 @@ uninstall-doc:
 .PHONY: clean clean-all clean-doc clean-rpm
 clean:
 	for i in $(SUBDIRS) ; do $(MAKE) -C $$i clean ; done
-	rm -rf *.a *.so* $(OBJDIR); 
+	rm -rf *.a *.so* .obj $(OBJS)
 
 clean-all: clean clean-doc clean-rpm
 

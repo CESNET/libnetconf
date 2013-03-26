@@ -39,6 +39,8 @@ VERSION = 0.2
 IDGIT = "built from git $(shell git show --pretty=oneline | head -1 | cut -c -20)"
 IDNOGIT = "released as version $(VERSION)"
 
+srcdir = @srcdir@
+abs_srcdir = @abs_srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
@@ -49,13 +51,18 @@ LIBNETCONF_SEARCH = "-Wl,-rpath,$(prefix)/lib"
 CC = @CC@
 LIBS = @LDFLAGS@ -L../../ $(LIBNETCONF_SEARCH) -lnetconf -lreadline -lxml2
 CFLAGS = -Wall @CFLAGS@
-CPPFLAGS = @CPPFLAGS@ -I../../src/ -DVERSION=\"$(VERSION)\"
+CPPFLAGS = @CPPFLAGS@ -DVERSION=\"$(VERSION)\"
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 
-OBJDIR= .obj
+INCLUDES= -I$(srcdir)/../../src
 
-TOPDIR = @CONFIGURE_PWD@
+ifeq "$(shell pwd)" "$(shell readlink -f $(srcdir))"
+OBJDIR= .obj
+else
+OBJDIR= .
+VPATH = $(srcdir)
+endif
 
 SRCS =  main.c \
 	commands.c \
@@ -80,7 +87,7 @@ static: $(OBJS)
 $(OBJDIR)/%.o: %.c
 	@[ -d $$(dirname $@) ] || \
 		(mkdir -p $$(dirname $@))
-	$(CC) $(CFLAGS) $(CPPFLAGS) -fPIC -c $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) -fPIC -c $< -o $@
 
 .PHONY: install
 install: $(NAME)
@@ -94,4 +101,4 @@ uninstall:
 
 .PHONY: clean
 clean:
-	rm -rf $(NAME) $(OBJDIR); 
+	rm -rf $(NAME) .obj $(OBJS); 

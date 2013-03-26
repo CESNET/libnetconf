@@ -39,6 +39,8 @@ VERSION = 0.2
 IDGIT = "built from git $(shell git show --pretty=oneline | head -1 | cut -c -20)"
 IDNOGIT = "released as version $(VERSION)"
 
+srcdir = @srcdir@
+abs_srcdir = @abs_srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
@@ -70,9 +72,14 @@ ifeq ($(SETBIT), 3)
 INSTALL_BIN_OPTIONS = --mode=6775 --owner=$(SETUSER) --group=$(SETGROUP)
 endif
 
-OBJDIR= .obj
+INCLUDES = -I$(srcdir)/../../src/
 
-TOPDIR = @CONFIGURE_PWD@
+ifeq "$(shell pwd)" "$(shell readlink -f $(srcdir))"
+OBJDIR= .obj
+else
+OBJDIR= .
+VPATH = $(srcdir)
+endif
 
 SRCS =  main.c 
 
@@ -98,7 +105,7 @@ static: $(OBJS)
 $(OBJDIR)/%.o: %.c
 	@[ -d $$(dirname $@) ] || \
 		(mkdir -p $$(dirname $@))
-	$(CC) $(CFLAGS) $(CPPFLAGS) -fPIC -c $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) -fPIC -c $< -o $@
 
 .PHONY: install
 install: $(NAME)
@@ -108,7 +115,7 @@ install: $(NAME)
 	@[ -d $(SERVERCFG_PATH) ] || \
 		mkdir -p $(SERVERCFG_PATH);
 	chmod -R 700 $(SERVERCFG_PATH);
-	$(INSTALL_DATA) README.cfgdir $(SERVERCFG_PATH)/README;
+	$(INSTALL_DATA) $(srcdir)/README.cfgdir $(SERVERCFG_PATH)/README;
 	if test "$$(($(SETBIT) & 1))" = "1"; then \
 		if test -n "$(SETUSER)"; then \
 			chown -R $(SETUSER) $(SERVERCFG_PATH) || \
@@ -133,4 +140,4 @@ uninstall:
 
 .PHONY: clean
 clean:
-	rm -rf $(NAME) $(OBJDIR); 
+	rm -rf $(NAME) .obj $(OBJS); 

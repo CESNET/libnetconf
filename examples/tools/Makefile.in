@@ -36,6 +36,8 @@
 
 NAME = netconf-events
 
+srcdir = @srcdir@
+abs_srcdir = @abs_srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
@@ -64,9 +66,14 @@ ifeq ($(SETBIT), 3)
 INSTALL_BIN_OPTIONS = --mode=6775 --owner=$(SETUSER) --group=$(SETGROUP)
 endif
 
-OBJDIR= .obj
+INCLUDES= -I$(srcdir)/../../src
 
-TOPDIR = @CONFIGURE_PWD@
+ifeq "$(shell pwd)" "$(shell readlink -f $(srcdir))"
+OBJDIR= .obj
+else
+OBJDIR= .
+VPATH = $(srcdir)
+endif
 
 SRCS = read_events.c
 
@@ -82,7 +89,7 @@ $(NAME): $(OBJS)
 $(OBJDIR)/%.o: %.c
 	@[ -d $$(dirname $@) ] || \
 		(mkdir -p $$(dirname $@))
-	$(CC) $(CFLAGS) $(CPPFLAGS) -fPIC -c $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) -fPIC -c $< -o $@
 
 .PHONY: install
 install: $(NAME)
@@ -96,4 +103,4 @@ uninstall:
 
 .PHONY: clean
 clean:
-	rm -rf $(NAME) $(OBJDIR); 
+	rm -rf $(NAME) .obj $(OBJS); 
