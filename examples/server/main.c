@@ -279,7 +279,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 		return (EXIT_FAILURE);
 	}
 
-	/* if you want to change default behaviour of libnetconf's with-default capability :*/
+	/* if you want to change default behavior of libnetconf's with-default capability :*/
 	/*
 	 * ncdflt_set_basic_mode(NCWD_MODE_ALL);
 	 */
