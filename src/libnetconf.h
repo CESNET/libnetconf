@@ -41,11 +41,181 @@
 #define LIBNETCONF_H_
 
 /**
- * \mainpage NETCONF library - libnetconf
+ * \mainpage About
  *
- * This documents provides documentation of the NETCONF library (libnetconf).
+ * [netconfwg]: http://trac.tools.ietf.org/wg/netconf/trac/wiki "NETCONF WG"
+ * [krejcimail]: mailto:rkrejci@cesnet.cz "Radek Krejci"
+ * [issues]: https://code.google.com/p/libnetconf/issues/list "Issues"
+ * [TMC]: https://www.liberouter.org/ "Tools for Monitoring and Configuration"
+ * [CESNET]: http://www.ces.net/ "CESNET"
+ * [RFC6241]: http://tools.ietf.org/html/rfc6241 "RFC 6241"
+ * [wrunning]: http://tools.ietf.org/html/rfc6241#section-8.2
+ * [candidate]: http://tools.ietf.org/html/rfc6241#section-8.3
+ * [startup]: http://tools.ietf.org/html/rfc6241#section-8.7
+ * [RFC6242]: http://tools.ietf.org/html/rfc6242 "RFC 6242"
+ * [RFC5277]: http://tools.ietf.org/html/rfc5277 "RFC 5277"
+ * [RFC6470]: http://tools.ietf.org/html/rfc6470 "RFC 6470"
+ * [RFC6243]: http://tools.ietf.org/html/rfc6243 "RFC 6243"
+ * [RFC6536]: http://tools.ietf.org/html/rfc6536 "RFC 6536"
+ * [interopevent]: http://www.internetsociety.org/articles/successful-netconf-interoperability-testing-announced-ietf-85
  *
- * CLIENT WORKFLOW
+ * libnetconf is a NETCONF library in C intended for building NETCONF clients
+ * and servers. It provides basic functions to connect NETCONF client and server
+ * to each other via SSH, to send and receive NETCONF messages and to store and
+ * work with the configuration data in a datastore.
+ *
+ * libnetconf implements the NETCONF protocol introduced by IETF. More
+ * information about NETCONF protocol can be found at [NETCONF WG][netconfwg].
+ *
+ * libnetconf is currently under development at the [TMC] department of [CESNET].
+ * Any testing of the library is welcome. Please inform us about your
+ * experiences with using libnetconf via [email][krejcimail] or the
+ * [Google Code's Issue section][issues]. Any feature suggestion or bugreport
+ * is also appreciated.
+ *
+ * In November 2012, CESNET attended the NETCONF Interoperability Event held in
+ * Atlanta, prior to the IETF 85 meeting. We went to the event with the
+ * libnetconf based client and server and successfully tested interoperability
+ * with other implementations. The notes from the event can be found
+ * [here][interopevent].
+ *
+ * ### Features ###
+ *
+ * - NETCONF v1.0 and v1.1 compliant ([RFC 6241][RFC6241])
+ * - NETCONF over SSH ([RFC 6242][RFC6242]) including Chunked Framing Mechanism
+ * - NETCONF Writable-running capability ([RFC 6241][wrunning])
+ * - NETCONF Candidate configuration capability ([RFC 6241][candidate])
+ * - NETCONF Distinct startup capability ([RFC 6241][startup])
+ * - NETCONF Event Notifications ([RFC 5277][RFC5277] and [RFC 6470][RFC6470])
+ * - NETCONF With-defaults capability ([RFC 6243][RFC6243])
+ * - NETCONF Access Control ([RFC 6536][RFC6536])
+ * - NETCONF CLI client for GNU/Linux
+ *
+ * ### BSD License ###
+ *
+ * Copyright (C) 2012-2013 CESNET, z.s.p.o.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ * 3. Neither the name of the Company nor the names of its contributors
+ *    may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * ALTERNATIVELY, provided that this notice is retained in full, this
+ * product may be distributed under the terms of the GNU General Public
+ * License (GPL) version 2 or later, in which case the provisions
+ * of the GPL apply INSTEAD OF those given above.
+ *
+ * This software is provided "as is", and any express or implied
+ * warranties, including, but not limited to, the implied warranties of
+ * merchantability and fitness for a particular purpose are disclaimed.
+ * In no event shall the company or contributors be liable for any
+ * direct, indirect, incidental, special, exemplary, or consequential
+ * damages (including, but not limited to, procurement of substitute
+ * goods or services; loss of use, data, or profits; or business
+ * interruption) however caused and on any theory of liability, whether
+ * in contract, strict liability, or tort (including negligence or
+ * otherwise) arising in any way out of the use of this software, even
+ * if advised of the possibility of such damage.
+ *
+ *
+ * ![CESNET, z.s.p.o.](../../img/cesnet-logo-125.png)
+ *
+ */
+
+/**
+ * \page install Compilation and Installation
+ *
+ * ## Compilation ##
+ *
+ * libnetconf uses standard GNU Autotools toolchain. To compile and install
+ * libnetconf you have to go through the following three steps:
+ *
+ * ~~~~~~~~~~~~~~
+ * $ ./configure
+ * $ make
+ * # make install
+ * ~~~~~~~~~~~~~~
+ *
+ * This way the library will be installed in `/usr/local/lib/` (or lib64) and
+ * `/usr/local/include/` respectively.
+ *
+ * ### Configure Options ###
+ *
+ * `configure` script supports the following options. The full list of the
+ * accepted options can be shown by `--help` option.
+ *
+ * - `--disable--ssh2`
+ *  - Remove dependency on the `libssh2` library. By default,
+ *    the `libssh2` library is used by the client side functions to create SSH
+ *    connection to a remote host. If the usage of the `libssh2` is disabled,
+ *    libnetconf will use a standalone `ssh(1)` client located in a system path.
+ *    `ssh(1)` client is, for example, part of the OpenSSH.
+ *
+ * - `--disable-notifications`
+ *  - Remove support for the NETCONF Notifications. As a side effect, D-Bus
+ *    (libdbus) dependency is also removed.
+ *
+ * - `--enable-debug`
+ *  - Add debugging information for a debugger.
+ *
+ * - `--with-suid=<user>`
+ *  - Limit usage of the libnetconf to the specific _user_. With this option,
+ *    libnetconf creates shared files and other resources with access rights
+ *    limited to the specified _user_. This option can be freely combined with
+ *    the `--with-sgid` option. If neither `--with-suid` nor `--with-sgid`
+ *    option is specified, full access rights for all users are granted.
+ *
+ * - `--with-sgid=<group>`
+ *  - Limit usage of the libnetconf to the specific _group_. With this option,
+ *    libnetconf creates shared files and other resources with access rights
+ *    limited to the specified _group_. This option can be freely combined with
+ *    the `--with-suid` option. If neither `--with-suid` nor `--with-sgid`
+ *    option is specified, full access rights for all users are granted.
+ *
+ * \note
+ * If the library is built with `--with-suid` or `--with-sgid` options,
+ * the proper suid or/and sgid bit should be properly set to the server-side
+ * application binaries using the libnetconf library. An example of such
+ * settings can be seen on the example server application.
+ *
+ * - `--with-examples`
+ *  - Besides the libnetconf library, build also example applications located
+ *    in the `examples/` subdirectory. Examples include NETCONF client, NETCONF
+ *    server and NETCONF Notifications reader.
+ *
+ */
+
+/**
+ * \page usage Using libnetconf
+ *
+ * Useful notes on using the libnetconf library can be found in the following
+ * articles. However, the source codes of the example client and server are
+ * supposed to be the most accurate, up-to-date and generally the best source of
+ * information.
+ *
+ * - \subpage client
+ * - \subpage server
+ *
+ * GLOSSARY
+ * --------
+ *
+ * - **message** - all the types of messages passing through NETCONF. It
+ * includes rpc, rpc-reply and notification.
+ *
+ */
+
+/**
+ * \page client Client
+ *
+ * Client Workflow
  * ---------------
  *
  * Here is a description of using libnetconf functions in a NETCONF client:
@@ -102,7 +272,12 @@
  * \link nc_filter_new() filters\endlink (nc_filter_free()) or received NETCONF
  * rpc-replies (nc_reply_free()).
  *
- * SERVER ARCHITECTURE
+ */
+
+/**
+ * \page server Server
+ *
+ * Server Architecture
  * -------------------
  *
  * It is [strongly] advised to set SUID (or SGID) bit on every application that is
@@ -141,7 +316,7 @@
  * to be passed between an agent and a device manager that applies requests to
  * the operated device and a configuration datastore.
  *
- * SERVER WORKFLOW
+ * Server Workflow
  * ---------------
  *
  * Here is a description of using libnetconf functions in a NETCONF server.
@@ -149,7 +324,7 @@
  * and a server. For this purpose, functions nc_rpc_dump(), nc_rpc_build() and
  * nc_session_dummy() can be very helpful.
  *
- * 1. **Set the verbosity (optional)**.\n
+ * 1. **Set the verbosity** (optional).\n
  * The verbosity of the libnetconf can be set by nc_verbosity(). By default,
  * libnetconf is completely silent.\n
  * There is a default message printing function writing messages on the stderr.
@@ -157,16 +332,36 @@
  * as a daemon without stderr. In this case, something like syslog should be
  * used. The application's specific message printing function can be set via
  * nc_callback_print() function.
- * 2. **Initiate datastore**.\n
- * As the first step, create a datastore handle using ncds_new() with the specific
- * datastore type implementation. Optionally, some implementation-type-specific
- * parameters can be set (e.g. ncds_file_set_path()). Finally, init the datastore
- * using ncds_init() that returns datastore's ID which is used in subsequent
- * calls.
- * 3. **Accept incoming NETCONF connection**.\n
+ * 2. **Initiate libnetconf**\n
+ * As the first step, libnetconf MUST be initiated using nc_init(). At this
+ * moment, the libnetconf subsystems, such as NETCONF Notifications or NETCONF
+ * Access Control, are initiated according to specified parameter of the
+ * nc_init() function.
+ * 3. **Set With-defaults basic mode** (optional)\n
+ * By default, libnetconf uses _explicit_ basic mode of the with-defaults
+ * capability. The basic mode can be changed via ncdflt_set_basic_mode()
+ * function. libnetconf supports _explicit_, _trim_, _report-all_ and
+ * _report-all-tagged_ basic modes of the with-defaults capability.
+ * 4. **Initiate datastore**.\n
+ * Now, a NETCONF datastore(s) can be created. A datastore handler is
+ * created using ncds_new() specifying the datastore type implementation.
+ * Optionally, some implementation-type-specific parameters can be set (e.g.
+ * ncds_file_set_path()). Finally, init the datastore using ncds_init() that
+ * returns datastore's ID which is used in subsequent calls. By default,
+ * there is always a special datastore ID 0, that refers to the libnetconf's
+ * internal datastore(s).
+ * 5. **Initiate controlled device**\n
+ * This step is actually out of the libnetconf scope. If the server starts
+ * after a reboot, it should apply startup configuration data to the controlled
+ * device and copy the startup configuration data into the running datastore.
+ * Return code of the nc_init() function tells if the libnetconf library is
+ * initiated for the first time after the system reboot or the last nc_close()
+ * call. This value can be used to decide if the startup configuration data
+ * should be applied to the controlled device.
+ * 6. **Accept incoming NETCONF connection**.\n
  * This is done by a single call of nc_session_accept(). Optionally, any specific
- * capabilities supported by the server can be set.
- * 4. **Process incoming requests**.\n
+ * capabilities supported by the server can be set as the function's parameter.
+ * 7. **Process incoming requests**.\n
  * Use nc_session_recv_rpc() to get the next request from the client from the
  * specified NETCONF session. In case of an error return code, the state of the
  * session should be checked by nc_session_get_status() to learn if the
@@ -176,33 +371,50 @@
  *    - *NC_RPC_DATASTORE_READ* or *NC_RPC_DATASTORE_WRITE*: use ncds_apply_rpc()
  *    to perform the requested operation on the datastore. If the request affects
  *    the running datastore (nc_rpc_get_target() == NC_DATASTORE_RUNNING),
- *    apply configuration changes to the controlled device.
- *    - *NC_RPC_SESSION*: \todo some common function to perform this type of
- *    requests will be added.\n
- *
- * 5. **Reply to the client's request**.\n
+ *    apply configuration changes to the controlled device. ncds_apply_rpc()
+ *    applies the request to the specified datastore. Besides the datastores
+ *    created explicitely by the ncds_new() and ncds_init() calls, remember to
+ *    apply the request to the internal libnetconf datastore with ID 0. To merge
+ *    results of the separate ncds_apply_rpc() calls can be merged by
+ *    nc_reply_merge() into a single reply message.
+ *    - *NC_RPC_SESSION*: See example server source codes. Some common function
+ *    will be added in a future to handle these requests.
+ * 8. **Reply to the client's request**.\n
  * The reply message is automatically generated by the ncds_apply_rpc() function.
  * However, server can generate its own replies using nc_reply_ok(),
  * nc_reply_data() or nc_reply_error() functions. The reply is sent to the
  * client using nc_session_send_reply() call.
- * 6. **Free all unused objects**.\n
+ * 9. **Free all unused objects**.\n
  * Do not forget to free received rpc messages (nc_rpc_free()) and any created
  * replies (nc_reply_free()).
- * 7. **Server loop**.\n
+ * 10. **Server loop**.\n
  * Repeat previous three steps.
- * 8. **Close the NETCONF session**.\n
+ * 11. **Close the NETCONF session**.\n
  * Use functions nc_session_close() and nc_session_free() (in this order) to
  * close and free all the used sources and structures connected with the session.
  * Session can be closed by the server based on its internal reasons or by
  * the libnetconf due to some error. In the second case, libnetconf marks the
  * status of the session as non-working (nc_session_get_status !=
  * NC_SESSION_STATUS_WORKING).
+ * 12. **Close the libnetconf instance**\n
+ * Close internal libnetconf structures and subsystems by the nc_close() call.
  *
- * GLOSSARY
- * --------
+ */
+
+/**
+ * \page nacm NETCONF Access Control Module (NACM)
  *
- * - **message** - all the types of messages passing through NETCONF. It
- * includes rpc, rpc-reply and notification.
+ * TBD
+ */
+
+/**
+ * \defgroup genAPI General functions
+ * \brief libnetconf's miscellaneous functions.
+ */
+
+/**
+ * \defgroup session NETCONF Session
+ * \brief libnetconf's functions for handling NETCONF sessions.
  */
 
 /**
@@ -216,18 +428,8 @@
  */
 
 /**
- * \defgroup session NETCONF Session
- * \brief libnetconf's functions for handling NETCONF sessions.
- */
-
-/**
  * \defgroup store Datastore operations
  * \brief libnetconf's functions for handling NETCONF datastores.
- */
-
-/**
- * \defgroup genAPI General functions
- * \brief libnetconf's miscellaneous functions.
  */
 
 /**

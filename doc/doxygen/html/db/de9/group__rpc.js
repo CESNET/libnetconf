@@ -1,9 +1,33 @@
 var group__rpc =
 [
     [ "nc_rpc", "db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262", null ],
-    [ "NC_RPC_TYPE", "db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00", null ],
-    [ "NC_OP", "db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07", null ],
-    [ "NC_FILTER_TYPE", "db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706", null ],
+    [ "NC_RPC_TYPE", "db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00", [
+      [ "NC_RPC_UNKNOWN", "db/de9/group__rpc.html#gga4088fac1dd592062b27ff5b0e1708d00ae27a06c29d4cb56cce4298bc54dc498a", null ],
+      [ "NC_RPC_HELLO", "db/de9/group__rpc.html#gga4088fac1dd592062b27ff5b0e1708d00a4c352cf3bf15069fc76e4ac698de0a8c", null ],
+      [ "NC_RPC_DATASTORE_READ", "db/de9/group__rpc.html#gga4088fac1dd592062b27ff5b0e1708d00ab9542d7955d9821f23b5909f3dbec7bb", null ],
+      [ "NC_RPC_DATASTORE_WRITE", "db/de9/group__rpc.html#gga4088fac1dd592062b27ff5b0e1708d00ab283d1c39df65fe56607329bc3c946f9", null ],
+      [ "NC_RPC_SESSION", "db/de9/group__rpc.html#gga4088fac1dd592062b27ff5b0e1708d00aa7e77d1cd094384f2683352c63a4fccb", null ]
+    ] ],
+    [ "NC_OP", "db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07", [
+      [ "NC_OP_UNKNOWN", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a7ca4781a2c8644c3c15e3b0cd9116090", null ],
+      [ "NC_OP_GETCONFIG", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a9f918e6ed1c58fb70ffe4cbd05882332", null ],
+      [ "NC_OP_GET", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07ae7c153c569fe9ca06532dadc41dce78f", null ],
+      [ "NC_OP_EDITCONFIG", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a545f2b8ad13fc1cb449f078908312ef1", null ],
+      [ "NC_OP_CLOSESESSION", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07af5cc206ce4cd2b20cd562bb01e0a8da3", null ],
+      [ "NC_OP_KILLSESSION", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a01a1b829ca743ac8f8e8444d71f16d0d", null ],
+      [ "NC_OP_COPYCONFIG", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07abc36a612cfba2cf3462d99fae4ab4ac5", null ],
+      [ "NC_OP_DELETECONFIG", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07abf39ac97e04fd8d77d6a409a004eb234", null ],
+      [ "NC_OP_LOCK", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07af07ffd285bc743fcbdeace96f2b21d22", null ],
+      [ "NC_OP_UNLOCK", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aa4071db38c423865b24543cb504a4b42", null ],
+      [ "NC_OP_COMMIT", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a350f96fd686eea971d1d9e087a9ff8f4", null ],
+      [ "NC_OP_DISCARDCHANGES", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a59fd75a1b96a307a2d87e327c7d9a695", null ],
+      [ "NC_OP_CREATESUBSCRIPTION", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aafc549220669ed05b9c043b09be496fe", null ],
+      [ "NC_OP_GETSCHEMA", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a213f30aeb2d0d09bc6de7d98015860c3", null ]
+    ] ],
+    [ "NC_FILTER_TYPE", "db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706", [
+      [ "NC_FILTER_UNKNOWN", "db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706a487f472296b31fcec26a2bef87d50178", null ],
+      [ "NC_FILTER_SUBTREE", "db/de9/group__rpc.html#gga9e74498f9118686c7fb8dfe2c2459706ab584539474b828102a0b7238b614abd4", null ]
+    ] ],
     [ "nc_session_send_rpc", "db/de9/group__rpc.html#gaeb0d93ea1b5ef0c22c9e5372425fb5c3", null ],
     [ "nc_session_recv_rpc", "db/de9/group__rpc.html#ga214fcc2c0095d56f4aa0d90c11da25fc", null ],
     [ "nc_session_send_recv", "db/de9/group__rpc.html#ga27d3fe78769630932a18c726df4fe6e6", null ],

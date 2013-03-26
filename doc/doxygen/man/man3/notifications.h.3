@@ -1,4 +1,4 @@
-.TH "src/notifications.h" 3 "Wed Mar 20 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "src/notifications.h" 3 "Tue Mar 26 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -9,9 +9,9 @@ Functions to handle NETCONF Notifications\&.
 .SH SYNOPSIS
 .br
 .PP
-\fC#include 'netconf\&.h'\fP
+\fC#include <time\&.h>\fP
 .br
-\fC#include 'time\&.h'\fP
+\fC#include 'netconf\&.h'\fP
 .br
 
 .SS "Macros"
@@ -28,7 +28,7 @@ Functions to handle NETCONF Notifications\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNCNTF_EVENT\fP { \fBNCNTF_ERROR\fP =  -1, \fBNCNTF_GENERIC\fP =  0, \fBNCNTF_REPLAY_COMPLETE\fP =  1, \fBNCNTF_NTF_COMPLETE\fP =  2, \fBNCNTF_BASE_CFG_CHANGE\fP =  3, \fBNCNTF_BASE_CPBLT_CHANGE\fP =  4, \fBNCNTF_BASE_SESSION_START\fP =  5, \fBNCNTF_BASE_SESSION_END\fP =  6, \fBNCNTF_BASE_CONFIRMED_COMMIT\fP =  7 }"
+.RI "enum \fBNCNTF_EVENT\fP { \fBNCNTF_ERROR\fP = -1, \fBNCNTF_GENERIC\fP = 0, \fBNCNTF_REPLAY_COMPLETE\fP = 1, \fBNCNTF_NTF_COMPLETE\fP = 2, \fBNCNTF_BASE_CFG_CHANGE\fP = 3, \fBNCNTF_BASE_CPBLT_CHANGE\fP = 4, \fBNCNTF_BASE_SESSION_START\fP = 5, \fBNCNTF_BASE_SESSION_END\fP = 6, \fBNCNTF_BASE_CONFIRMED_COMMIT\fP = 7 }"
 .br
 .RI "\fIEnumeration of supported NETCONF event notifications\&. \fP"
 .ti -1c

@@ -1,0 +1,76 @@
+.TH "install" 3 "Tue Mar 26 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+install \- Compilation and Installation 
+.SS "Compilation"
+.PP
+libnetconf uses standard GNU Autotools toolchain\&. To compile and install libnetconf you have to go through the following three steps:
+.PP
+.PP
+.nf
+$ \&./configure
+$ make
+# make install
+.fi
+.PP
+.PP
+This way the library will be installed in \fC/usr/local/lib/\fP (or lib64) and \fC/usr/local/include/\fP respectively\&.
+.PP
+.SS "Configure Options"
+.PP
+\fCconfigure\fP script supports the following options\&. The full list of the accepted options can be shown by \fC--help\fP option\&.
+.PP
+.IP "\(bu" 2
+\fC--disable--ssh2\fP
+.IP "  \(bu" 4
+Remove dependency on the \fClibssh2\fP library\&. By default, the \fClibssh2\fP library is used by the client side functions to create SSH connection to a remote host\&. If the usage of the \fClibssh2\fP is disabled, libnetconf will use a standalone \fCssh(1)\fP client located in a system path\&. \fCssh(1)\fP client is, for example, part of the OpenSSH\&.
+.PP
+
+.PP
+.PP
+.IP "\(bu" 2
+\fC--disable-notifications\fP
+.IP "  \(bu" 4
+Remove support for the NETCONF Notifications\&. As a side effect, D-Bus (libdbus) dependency is also removed\&.
+.PP
+
+.PP
+.PP
+.IP "\(bu" 2
+\fC--enable-debug\fP
+.IP "  \(bu" 4
+Add debugging information for a debugger\&.
+.PP
+
+.PP
+.PP
+.IP "\(bu" 2
+\fC--with-suid=<user>\fP
+.IP "  \(bu" 4
+Limit usage of the libnetconf to the specific \fIuser\fP\&. With this option, libnetconf creates shared files and other resources with access rights limited to the specified \fIuser\fP\&. This option can be freely combined with the \fC--with-sgid\fP option\&. If neither \fC--with-suid\fP nor \fC--with-sgid\fP option is specified, full access rights for all users are granted\&.
+.PP
+
+.PP
+.PP
+.IP "\(bu" 2
+\fC--with-sgid=<group>\fP
+.IP "  \(bu" 4
+Limit usage of the libnetconf to the specific \fIgroup\fP\&. With this option, libnetconf creates shared files and other resources with access rights limited to the specified \fIgroup\fP\&. This option can be freely combined with the \fC--with-suid\fP option\&. If neither \fC--with-suid\fP nor \fC--with-sgid\fP option is specified, full access rights for all users are granted\&.
+.PP
+
+.PP
+.PP
+\fBNote:\fP
+.RS 4
+If the library is built with \fC--with-suid\fP or \fC--with-sgid\fP options, the proper suid or/and sgid bit should be properly set to the server-side application binaries using the libnetconf library\&. An example of such settings can be seen on the example server application\&.
+.RE
+.PP
+.IP "\(bu" 2
+\fC--with-examples\fP
+.IP "  \(bu" 4
+Besides the libnetconf library, build also example applications located in the \fCexamples/\fP subdirectory\&. Examples include NETCONF client, NETCONF server and NETCONF Notifications reader\&. 
+.PP
+
+.PP
+

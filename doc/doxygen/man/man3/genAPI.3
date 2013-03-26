@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Wed Mar 20 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Tue Mar 26 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -10,7 +10,7 @@ libnetconf's miscellaneous functions\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP =  -5 }"
+.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP = -5 }"
 .br
 .RI "\fIEnumeration of NETCONF message types\&. \fP"
 .ti -1c
@@ -73,7 +73,7 @@ libnetconf's miscellaneous functions\&.
 .PP
 Enumeration of NETCONF message types\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_MSG_UNKNOWN \fP\fP
@@ -101,7 +101,7 @@ no message at input or message was processed internally
 .PP
 Verbosity levels\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_VERB_ERROR \fP\fP
@@ -133,7 +133,9 @@ Initialize libnetconf for system-wide usage\&. This initialization is shared acr
 .RS 4
 \fIflags\fP ORed flags for libnetconf initialization\&. Accepted values include:
 .IP "\(bu" 2
-\fINC_INIT_NOTIF\fP Enable Notification subsystem 
+\fINC_INIT_NOTIF\fP Enable Notification subsystem
+.IP "\(bu" 2
+\fINC_INIT_NACM\fP Enable NETCONF Access Control 
 .PP
 .RE
 .PP

@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Wed Mar 20 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Tue Mar 26 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -43,7 +43,7 @@ libnetconf's general public functions and structures definitions\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP =  -1, \fBNC_SESSION_STATUS_STARTUP\fP =  0, \fBNC_SESSION_STATUS_WORKING\fP =  1, \fBNC_SESSION_STATUS_CLOSING\fP =  2, \fBNC_SESSION_STATUS_CLOSED\fP =  3, \fBNC_SESSION_STATUS_DUMMY\fP =  4 }"
+.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP = -1, \fBNC_SESSION_STATUS_STARTUP\fP = 0, \fBNC_SESSION_STATUS_WORKING\fP = 1, \fBNC_SESSION_STATUS_CLOSING\fP = 2, \fBNC_SESSION_STATUS_CLOSED\fP = 3, \fBNC_SESSION_STATUS_DUMMY\fP = 4 }"
 .br
 .RI "\fIEnumeration of the possible states of a NETCONF session\&. \fP"
 .ti -1c
@@ -51,7 +51,7 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .RI "\fIEnumeration of reasonf of the NETCONF session termination as defined in RFC 6470\&. \fP"
 .ti -1c
-.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP =  -5 }"
+.RI "enum \fBNC_MSG_TYPE\fP { \fBNC_MSG_UNKNOWN\fP, \fBNC_MSG_WOULDBLOCK\fP, \fBNC_MSG_NONE\fP, \fBNC_MSG_HELLO\fP, \fBNC_MSG_RPC\fP, \fBNC_MSG_REPLY\fP, \fBNC_MSG_NOTIFICATION\fP = -5 }"
 .br
 .RI "\fIEnumeration of NETCONF message types\&. \fP"
 .ti -1c
@@ -81,22 +81,22 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .RI "\fIEnumeration of supported NETCONF filter types\&. \fP"
 .ti -1c
-.RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP =  -1, \fBNC_EDIT_OP_MERGE\fP =  1, \fBNC_EDIT_OP_REPLACE\fP =  2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
+.RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP = -1, \fBNC_EDIT_OP_MERGE\fP = 1, \fBNC_EDIT_OP_REPLACE\fP = 2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
 .br
 .ti -1c
-.RI "enum \fBNC_EDIT_DEFOP_TYPE\fP { \fBNC_EDIT_DEFOP_ERROR\fP =  -1, \fBNC_EDIT_DEFOP_NOTSET\fP =  0, \fBNC_EDIT_DEFOP_MERGE\fP =  1, \fBNC_EDIT_DEFOP_REPLACE\fP =  2, \fBNC_EDIT_DEFOP_NONE\fP =  3 }"
+.RI "enum \fBNC_EDIT_DEFOP_TYPE\fP { \fBNC_EDIT_DEFOP_ERROR\fP = -1, \fBNC_EDIT_DEFOP_NOTSET\fP = 0, \fBNC_EDIT_DEFOP_MERGE\fP = 1, \fBNC_EDIT_DEFOP_REPLACE\fP = 2, \fBNC_EDIT_DEFOP_NONE\fP = 3 }"
 .br
 .ti -1c
-.RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_ERROR\fP =  -1, \fBNC_EDIT_ERROPT_NOTSET\fP =  0, \fBNC_EDIT_ERROPT_STOP\fP =  1, \fBNC_EDIT_ERROPT_CONT\fP =  2, \fBNC_EDIT_ERROPT_ROLLBACK\fP =  3 }"
+.RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_ERROR\fP = -1, \fBNC_EDIT_ERROPT_NOTSET\fP = 0, \fBNC_EDIT_ERROPT_STOP\fP = 1, \fBNC_EDIT_ERROPT_CONT\fP = 2, \fBNC_EDIT_ERROPT_ROLLBACK\fP = 3 }"
 .br
 .ti -1c
-.RI "enum \fBNC_EDIT_TESTOPT_TYPE\fP { \fBNC_EDIT_TESTOPT_ERROR\fP =  -1, \fBNC_EDIT_TESTOPT_NOTSET\fP =  0, \fBNC_EDIT_TESTOPT_TESTSET\fP =  1, \fBNC_EDIT_TESTOPT_SET\fP =  2, \fBNC_EDIT_TESTOPT_TEST\fP =  3 }"
+.RI "enum \fBNC_EDIT_TESTOPT_TYPE\fP { \fBNC_EDIT_TESTOPT_ERROR\fP = -1, \fBNC_EDIT_TESTOPT_NOTSET\fP = 0, \fBNC_EDIT_TESTOPT_TESTSET\fP = 1, \fBNC_EDIT_TESTOPT_SET\fP = 2, \fBNC_EDIT_TESTOPT_TEST\fP = 3 }"
 .br
 .ti -1c
-.RI "enum \fBNCWD_MODE\fP { \fBNCWD_MODE_NOTSET\fP =  0, \fBNCWD_MODE_ALL\fP =  1, \fBNCWD_MODE_TRIM\fP =  2, \fBNCWD_MODE_EXPLICIT\fP =  4, \fBNCWD_MODE_ALL_TAGGED\fP =  8 }"
+.RI "enum \fBNCWD_MODE\fP { \fBNCWD_MODE_NOTSET\fP = 0, \fBNCWD_MODE_ALL\fP = 1, \fBNCWD_MODE_TRIM\fP = 2, \fBNCWD_MODE_EXPLICIT\fP = 4, \fBNCWD_MODE_ALL_TAGGED\fP = 8 }"
 .br
 .ti -1c
-.RI "enum \fBNC_CAP_ATTR\fP { \fBNC_CAP_ATTR_WITHDEFAULTS_MODE\fP =  1 }"
+.RI "enum \fBNC_CAP_ATTR\fP { \fBNC_CAP_ATTR_WITHDEFAULTS_MODE\fP = 1 }"
 .br
 .ti -1c
 .RI "enum \fBNC_VERB_LEVEL\fP { \fBNC_VERB_ERROR\fP, \fBNC_VERB_WARNING\fP, \fBNC_VERB_VERBOSE\fP, \fBNC_VERB_DEBUG\fP }"
@@ -150,17 +150,16 @@ This software is provided ``as is, and any express or implied warranties, includ
 .SS "enum \fBNC_NOTIF_TYPE\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_NTF_UNKNOWN \fP\fP
 .TP
 \fB\fINC_NTF_BASE \fP\fP
-
 .SS "enum \fBNC_ERR_PARAM\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_ERR_PARAM_TYPE \fP\fP
@@ -195,7 +194,7 @@ session-id in error-info - session ID of the session holding the requested lock,
 .SS "enum \fBNC_EDIT_OP_TYPE\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_EDIT_OP_ERROR \fP\fP
@@ -209,11 +208,10 @@ session-id in error-info - session ID of the session holding the requested lock,
 \fB\fINC_EDIT_OP_DELETE \fP\fP
 .TP
 \fB\fINC_EDIT_OP_REMOVE \fP\fP
-
 .SS "enum \fBNC_EDIT_DEFOP_TYPE\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_EDIT_DEFOP_ERROR \fP\fP
@@ -225,11 +223,10 @@ session-id in error-info - session ID of the session holding the requested lock,
 \fB\fINC_EDIT_DEFOP_REPLACE \fP\fP
 .TP
 \fB\fINC_EDIT_DEFOP_NONE \fP\fP
-
 .SS "enum \fBNC_EDIT_ERROPT_TYPE\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_EDIT_ERROPT_ERROR \fP\fP
@@ -241,11 +238,10 @@ session-id in error-info - session ID of the session holding the requested lock,
 \fB\fINC_EDIT_ERROPT_CONT \fP\fP
 .TP
 \fB\fINC_EDIT_ERROPT_ROLLBACK \fP\fP
-
 .SS "enum \fBNC_EDIT_TESTOPT_TYPE\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_EDIT_TESTOPT_ERROR \fP\fP
@@ -257,11 +253,10 @@ session-id in error-info - session ID of the session holding the requested lock,
 \fB\fINC_EDIT_TESTOPT_SET \fP\fP
 .TP
 \fB\fINC_EDIT_TESTOPT_TEST \fP\fP
-
 .SS "enum \fBNCWD_MODE\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINCWD_MODE_NOTSET \fP\fP
@@ -273,15 +268,13 @@ session-id in error-info - session ID of the session holding the requested lock,
 \fB\fINCWD_MODE_EXPLICIT \fP\fP
 .TP
 \fB\fINCWD_MODE_ALL_TAGGED \fP\fP
-
 .SS "enum \fBNC_CAP_ATTR\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_CAP_ATTR_WITHDEFAULTS_MODE \fP\fP
-
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

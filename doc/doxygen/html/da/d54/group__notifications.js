@@ -1,8 +1,21 @@
 var group__notifications =
 [
     [ "nc_ntf", "da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe", null ],
-    [ "NCNTF_EVENT", "da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977", null ],
-    [ "NCNTF_EVENT_BY", "da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d", null ],
+    [ "NCNTF_EVENT", "da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977", [
+      [ "NCNTF_ERROR", "da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977abd5b82879a0ac7c45f8556154fb6286a", null ],
+      [ "NCNTF_GENERIC", "da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1f1e3c2032baf2542b06052243bd42c9", null ],
+      [ "NCNTF_REPLAY_COMPLETE", "da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977aa440351ba1c82a0dd9e5301a6d03c5ac", null ],
+      [ "NCNTF_NTF_COMPLETE", "da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a0a0d2e20f15e710f1da3dace9a55fc67", null ],
+      [ "NCNTF_BASE_CFG_CHANGE", "da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a9cf730f96784afdb8d783df8dacfab21", null ],
+      [ "NCNTF_BASE_CPBLT_CHANGE", "da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977af6adea71e2edc918ae1f7ade6f11ca59", null ],
+      [ "NCNTF_BASE_SESSION_START", "da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a7e0ecf6ec462565f5bc9a1edfd7d4c6c", null ],
+      [ "NCNTF_BASE_SESSION_END", "da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1c06188153af81757d0ba8aac0768550", null ],
+      [ "NCNTF_BASE_CONFIRMED_COMMIT", "da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a2048b9cca78f499a6f361e9eeb9fa3e5", null ]
+    ] ],
+    [ "NCNTF_EVENT_BY", "da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d", [
+      [ "NCNTF_EVENT_BY_SERVER", "da/d54/group__notifications.html#gga1e9d948b3807d679482c737da720477da378e4e13ce4d7f8e1ede2a876fbc30e0", null ],
+      [ "NCNTF_EVENT_BY_USER", "da/d54/group__notifications.html#gga1e9d948b3807d679482c737da720477dab20423755c56c213cd2567b2bbf1f9c2", null ]
+    ] ],
     [ "nc_session_send_notif", "da/d54/group__notifications.html#ga2a6cd8e0aaaaf4e1b84d3a498a2a710c", null ],
     [ "nc_session_recv_notif", "da/d54/group__notifications.html#gad7ffa424401e8004fb24f9f77f0bb5be", null ],
     [ "nc_rpc_subscribe", "da/d54/group__notifications.html#gafda56cbfe02d24877d0740618aa2de98", null ],

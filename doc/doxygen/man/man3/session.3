@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Wed Mar 20 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Tue Mar 26 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,7 +18,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP =  -1, \fBNC_SESSION_STATUS_STARTUP\fP =  0, \fBNC_SESSION_STATUS_WORKING\fP =  1, \fBNC_SESSION_STATUS_CLOSING\fP =  2, \fBNC_SESSION_STATUS_CLOSED\fP =  3, \fBNC_SESSION_STATUS_DUMMY\fP =  4 }"
+.RI "enum \fBNC_SESSION_STATUS\fP { \fBNC_SESSION_STATUS_ERROR\fP = -1, \fBNC_SESSION_STATUS_STARTUP\fP = 0, \fBNC_SESSION_STATUS_WORKING\fP = 1, \fBNC_SESSION_STATUS_CLOSING\fP = 2, \fBNC_SESSION_STATUS_CLOSED\fP = 3, \fBNC_SESSION_STATUS_DUMMY\fP = 4 }"
 .br
 .RI "\fIEnumeration of the possible states of a NETCONF session\&. \fP"
 .ti -1c
@@ -26,7 +26,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .br
 .RI "\fIEnumeration of reasonf of the NETCONF session termination as defined in RFC 6470\&. \fP"
 .ti -1c
-.RI "enum \fBNC_SSH_AUTH_TYPE\fP { \fBNC_SSH_AUTH_PUBLIC_KEYS\fP =  1, \fBNC_SSH_AUTH_PASSWORD\fP =  2, \fBNC_SSH_AUTH_INTERACTIVE\fP =  4 }"
+.RI "enum \fBNC_SSH_AUTH_TYPE\fP { \fBNC_SSH_AUTH_PUBLIC_KEYS\fP = 1, \fBNC_SSH_AUTH_PASSWORD\fP = 2, \fBNC_SSH_AUTH_INTERACTIVE\fP = 4 }"
 .br
 .RI "\fIAvailable SSH authentication mechanisms\&. \fP"
 .in -1c
@@ -173,7 +173,7 @@ Type representing NETCONF message-id attribute\&. It corresponds to the followin
 We use a macro to avoid compiler warning of 'const nc_msgid' as return type of functions (because const is applied as 'char* const funct()' which is meaningless)\&.
 .PP
 Yes, I know that const char* means 'pointer to constant character (not
- string)', but I want to be clear from the API, that function returns pointer to something that should not be changed\&. 
+string)', but I want to be clear from the API, that function returns pointer to something that should not be changed\&. 
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_SESSION_STATUS\fP"
@@ -181,7 +181,7 @@ Yes, I know that const char* means 'pointer to constant character (not
 .PP
 Enumeration of the possible states of a NETCONF session\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_SESSION_STATUS_ERROR \fP\fP
@@ -206,7 +206,7 @@ session is DUMMY, only holds information, does not provide connection
 .PP
 Enumeration of reasonf of the NETCONF session termination as defined in RFC 6470\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_SESSION_TERM_CLOSED \fP\fP
@@ -231,7 +231,7 @@ terminated for some other reason
 .PP
 Available SSH authentication mechanisms\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_SSH_AUTH_PUBLIC_KEYS \fP\fP

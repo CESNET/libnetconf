@@ -338,6 +338,7 @@ void nc_verbosity(NC_VERB_LEVEL level);
  * @param[in] flags ORed flags for libnetconf initialization. Accepted values
  * include:
  *    - *NC_INIT_NOTIF* Enable Notification subsystem
+ *    - *NC_INIT_NACM* Enable NETCONF Access Control
  * @return -1 on fatal error\n 0 if this is the first init after previous
  * system-wide nc_close() or system reboot\n 1 when someone else already called
  * nc_init() since last system-wide nc_close() or system reboot.
