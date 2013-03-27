@@ -914,7 +914,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	}
 
 	/* find get_state function */
-	if ((get_state = dlsym (ds->transapi_module, "get_state_data")) == NULL) {
+	if ((get_state = dlsym (transapi_module, "get_state_data")) == NULL) {
 		ERROR("Unable to get addresses of functions from shared library.");
 		dlclose (transapi_module);
 		return (NULL);
@@ -924,7 +924,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	/* empty datastore has no data */
 	if (type != NCDS_TYPE_EMPTY) {
 		/* get clbks structure */
-		if ((transapi_clbks = dlsym (ds->transapi_module, "clbks")) == NULL) {
+		if ((transapi_clbks = dlsym (transapi_module, "clbks")) == NULL) {
 			ERROR("Unable to get addresses of functions from shared library.");
 			dlclose (transapi_module);
 			return (NULL);
