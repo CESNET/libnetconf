@@ -38,6 +38,7 @@
 import argparse
 import shutil
 import re
+import sys
 
 # Use configure.in.template and replace all variables with text
 def generate_configure_in(replace, template_dir):
@@ -161,13 +162,24 @@ parser = argparse.ArgumentParser(description='Generate files for libnetconf tran
 parser.add_argument('--name', required=True, help='Name of module with callbacks.')
 parser.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
 parser.add_argument('--template-dir', default='.', help='Path to the directory with teplate files')
-args = parser.parse_args()
+try:
+	args = parser.parse_args()
 
-# store paterns and text for replacing in configure.in
-r = {'$$PROJECTNAME$$' : args.name}
-#generate configure.in
-generate_configure_in (r, args.template_dir)
-#copy files for autotools (name.spec.in, Makefile.in, ...)
-copy_template_files(args.name, args.template_dir)
-#generate callbacks code
-generate_callbacks_file(args.name, args.paths)
+	# store paterns and text for replacing in configure.in
+	r = {'$$PROJECTNAME$$' : args.name}
+
+	#generate configure.in
+	generate_configure_in (r, args.template_dir)
+	#copy files for autotools (name.spec.in, Makefile.in, ...)
+	copy_template_files(args.name, args.template_dir)
+	#generate callbacks code
+	generate_callbacks_file(args.name, args.paths, args.model)
+except IOError as e:
+	print (e[1]+'('+str(e[0])+'): '+e.filename)
+except libxml2.libxmlError as e:
+	print('Can not parse data model: '+e.msg)
+except KeyboardInterrupt:
+	print('Killed by user!')
+
+sys.exit(0)
+
