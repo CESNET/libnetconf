@@ -424,7 +424,7 @@ struct xmldiff * xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct yinmodel * m
 		return NULL;
 	}
 	
-	asprintf (&path, "/%s", old_tmp->children->name);
+	asprintf (&path, "/");
 	diff->all_stat = xmldiff_recursive (diff, path, old_tmp, old_tmp->children, new_tmp, new_tmp->children, &model->children[0]);
 	free (path);
 
