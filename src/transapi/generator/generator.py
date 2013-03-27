@@ -51,45 +51,71 @@ def generate_configure_in(replace, template_dir):
 	inf.close()
 	outf.close()
 
+# Copy source files for autotools
 def copy_template_files(name, template_dir):
 	shutil.copy2(template_dir+'/specfile.spec.in', name+'.spec.in')
 	shutil.copy2(template_dir+'/install-sh', 'install-sh')
 	shutil.copy2(template_dir+'/Makefile.in', 'Makefile.in')
 
+# 
 def generate_callbacks_file(name, paths):
-	if paths is None:
-		paths = ['/']
+	# Create or rewrite .c file, will be generated
 	outf = open(name+'.c', 'w')
 
-	callbacks = '\t.callbacks = {'
-	funcs_count = 0
 	content = ''
-
-	# File header
+	# License and description
 	content += '/*\n'
 	content += '* This is automaticaly generated callbacks file\n'
-	content += '* For every sensitive path one function is generated\n'
-	content += '* You can safely modify function bodies as well as add new functions\n'
-	content += '* Do NOT alter function signatures or structure callback untill you exactly know what you are doing.\n'
+	content += '* It contains 3 parts: Configuration callbacks, RPC callbacks and state data callbacks.\n'
+	content += '* Do NOT alter function signatures or any structure untill you exactly know what you are doing.\n'
 	content += '*/\n\n'
+	# Include header files
 	content += '#include <libxml/tree.h>\n'
 	content += '#include <libnetconf.h>\n'
 	content += '#include <libnetconf/transapi.h>\n'
 	content += '\n'
+	# Add get state data callback
+	content += generate_state_callback()
+	# Config callbacks part
+	content += generate_config_callbacks(name, paths)
 
+	# Write to file
+	outf.write(content)
+	outf.close()
+
+def generate_state_callback():
+	content = ''
 	# function for retrieving state data from device
 	content += '/**\n'
 	content += ' * @brief Retrieve state data from device and return them as serialized XML'
 	content += ' *\n'
-	content += ' * @param model\tDevice data model. Serialized YIN.'
-	content += ' * @param running\tRunning datastore content. Serialized XML.'
-	content += ' * @parami[out] err\tDouble poiter to error structure. Fill error when some occurs.'
+	content += ' * @param model\tDevice data model. Serialized YIN.\n'
+	content += ' * @param running\tRunning datastore content. Serialized XML.\n'
+	content += ' * @param[out] err\tDouble poiter to error structure. Fill error when some occurs.\n'
 	content += ' *\n'
 	content += ' * @return State data as serialized XML or NULL in case of error.\n'
 	content += ' */\n'
 	content += 'char * get_state_data (char * model, char * running, struct nc_err **err)\n'
 	content += '{\n\treturn NULL;\n}\n\n'
 
+	return(content)
+
+
+def generate_config_callbacks(name, paths):
+	if paths is None:
+		paths = ['/']
+
+	callbacks = '\t.callbacks = {'
+	funcs_count = 0
+	content = ''
+
+
+	# Add description and instructions
+	content += '/*\n'
+	content += '* CONFIGURATION callbacks\n'
+	content += '* Here follows set of callback functions run every time some change in associated part of running datastore occurs.\n'
+	content += '* You can safely modify the bodies of all function as well as add new functions for better lucidity of code.\n'
+	content += '*/\n\n'
 	# generate callback function for every given sensitive path
 	for path in paths:
 		path = path.rstrip()
@@ -111,19 +137,23 @@ def generate_callbacks_file(name, paths):
 		content += ' *\n'
 		content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
 		content += ' */\n'
+		content += '/* !DO NOT ALTER FUNCTION SIGNATURE! */\n'
 		content += 'int '+func_name+' (XMLDIFF_OP op, xmlNodePtr node, void ** data)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
 		funcs_count += 1
 
 	# in the end of file write strucure connecting paths in XML data with callback function
-	content += 'struct transapi_callbacks clbks =  {\n'
+	content += '/*\n'
+	content += '* Structure transapi_config_callbacks provide mapping between callback and path in configuration datastore.\n'
+	content += '* It is used by libnetconf library to decide which callbacks will be run.\n'
+	content += '* DO NOT alter this structure\n'
+	content += '*/\n'
+	content += 'struct transapi_config_callbacks clbks =  {\n'
 	content += '\t.callbacks_count = '+str(funcs_count)+',\n'
 	content += '\t.data = NULL,\n'
 	content += callbacks+'\n\t}\n'
 	content += '};\n\n'
-	
-	paths.close()
-	outf.write(content)
-	outf.close()
+
+	return(content);
 
 
 # "main" starts here
