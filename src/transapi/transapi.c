@@ -1,8 +1,9 @@
 #include "transapi.h"
 #include "string.h"
+#include <stdio.h>
 
 /* will be called by library after change in running datastore */
-int transapi_running_changed (struct transapi_callbacks * c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct yinmodel * model)
+int transapi_running_changed (struct transapi_config_callbacks * c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct yinmodel * model)
 {
 	struct xmldiff * diff;
 	int i,j;

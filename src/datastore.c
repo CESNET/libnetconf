@@ -900,7 +900,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	struct ncds_ds* ds = NULL;
 	void * transapi_module = NULL;
 	char* (*get_state)(const char*, const char*, struct nc_err **) = NULL;
-	struct transapi_callbacks * transapi_clbks = NULL;
+	struct transapi_config_callbacks * transapi_clbks = NULL;
 
 	if (callbacks_path == NULL) {
 		ERROR("%s: missing callbacks path parameter.", __func__);

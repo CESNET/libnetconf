@@ -105,7 +105,7 @@ struct ncds_ds_empty {
 	/**
 	 * @brief Transapi callback mapping structure.
 	 */
-	struct transapi_callbacks * transapi_clbks;
+	struct transapi_config_callbacks * transapi_clbks;
 
 };
 

@@ -8,7 +8,7 @@
  * @ingroup transapi
  * @brief Structure binding location in configuration XML data and function callback applying changes.
  */
-struct transapi_callbacks {
+struct transapi_config_callbacks {
 	int callbacks_count;
 	void * data;
 	struct {
@@ -28,6 +28,6 @@ struct transapi_callbacks {
  *
  * @return EXIT_SUCESS or EXIT_FAILURE
  */
-int transapi_running_changed (struct transapi_callbacks * c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct yinmodel * model);
+int transapi_running_changed (struct transapi_config_callbacks * c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct yinmodel * model);
 
 #endif
