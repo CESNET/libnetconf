@@ -134,8 +134,10 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
 		return XMLDIFF_NONE;
 	} else if (old_tmp == NULL) { /* node added */
 		xmldiff_add_diff (diff, path, new_node, XMLDIFF_ADD);
+		return XMLDIFF_ADD;
 	} else if (new_tmp == NULL) { /* node removed */
 		xmldiff_add_diff (diff, path, old_node, XMLDIFF_REM);
+		return XMLDIFF_REM;
 	} else { /* node is still here, check for internal changes */
 		switch (model->type) {
 		case YIN_TYPE_CONTAINER:
