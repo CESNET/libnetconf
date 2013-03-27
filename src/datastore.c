@@ -1561,7 +1561,11 @@ process_datastore:
 		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
 		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING) {
 		old_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
-		old = xmlReadDoc(BAD_CAST old_data, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
+		if (old_data == NULL || strcmp(old_data, "") == 0) {
+			old = xmlNewDoc (BAD_CAST "1.0");
+		} else {
+			old = xmlReadDoc(BAD_CAST old_data, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
+		}
 		if (old == NULL) {/* cannot get or parse data */
 			if (e == NULL) { /* error not set */
 				e = nc_err_new(NC_ERR_OP_FAILED);
@@ -2006,7 +2010,11 @@ apply_editcopyconfig:
 		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
 		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK) {
 		new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
-		new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
+		if (new_data == NULL || strcmp(new_data, "") == 0) {
+			new = xmlNewDoc (BAD_CAST "1.0");
+		} else {
+			new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
+		}
 		free (new_data);
 		if (new == NULL) { /* cannot get or parse data */
 			if (e == NULL) {/* error not set */
