@@ -102,13 +102,42 @@ $(document).ready(function(){initNavTree('dd/d59/nacm.html','../../');});
 <div class="title">NETCONF Access Control Module (NACM) </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>TBD </p>
+<div class="textblock"><p>NACM is a transparent subsystem of libnetconf. It is activated using <a class="el" href="../../d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6">NC_INIT_NACM</a> flag in the <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a> function. No other action is required to use NACM in libnetconf. All NACM rules and settings are controlled via standard Netconf operations since NACM subsystem provides implicit datastore accessible with the <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore.">ncds_apply_rpc()</a> function with id parameter set to value <a class="el" href="../../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a" title="Datastore ID to access libnetconf&#39;s internal datastores such as notifications, monitoring, etc.">NCDS_INTERNAL_ID</a> (0).</p>
+<p>libnetconf supports usage of the system groups (/etc/group) in the access control rule-lists. To disable this feature, &lt;enable-external-groups&gt; value must be set to false:</p>
+<div class="fragment"><div class="line">&lt;nacm xmlns=<span class="stringliteral">&quot;urn:ietf:params:xml:ns:yang:ietf-netconf-acm&quot;</span>&gt;</div>
+<div class="line">  &lt;enable-external-groups&gt;<span class="keyword">false</span>&lt;/enable-external-groups&gt;</div>
+<div class="line">&lt;/nacm&gt;</div>
+</div><!-- fragment --><h3>Recovery Session</h3>
+<p>Recovery session serves to set up initial access rules or to repair a broken access control configuration. If a session is recognized as recovery NACM subsystem is completely bypassed.</p>
+<p>By default, libnetconf consider all sessions of user with the system UID equal zero as recovery. There is the <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gac0f92410b2b80bdb0df91f82705ba753" title="Set UID to detect the NACM recovery session. If this function is not used, value 0 (typically root us...">nacm_recovery_uid()</a> function that can be used to change a value of UID defining the recovery session.</p>
+<h3>Initial operation</h3>
+<p>According to <a href="http://tools.ietf.org/html/rfc6536" title="RFC 6536">RFC 6536</a>, libnetconf's NACM subsystem is initially set to allow reading (permitted read-default), refuse writing (denied write-default) and allow operation execution (permitted exec-default).</p>
+<dl class="section note"><dt>Note</dt><dd>Some operations or data have their specific access control settings defined in their data models. These settings overrides described default settings.</dd></dl>
+<p>To change this initial settings, user has to access NACM datastore via recovery session (since any write operation is denied) and set required access control rules.</p>
+<p>For example, to change default write rule from deny to permit, use edit-config operation to create (merge) the following configuration data:</p>
+<div class="fragment"><div class="line">&lt;nacm xmlns=<span class="stringliteral">&quot;urn:ietf:params:xml:ns:yang:ietf-netconf-acm&quot;</span>&gt;</div>
+<div class="line">  &lt;write-<span class="keywordflow">default</span>&gt;permit&lt;/write-<span class="keywordflow">default</span>&gt;</div>
+<div class="line">&lt;/nacm&gt;</div>
+</div><!-- fragment --><p>To guarantee all access rights to a specific users group, use edit-config operation to create (merge) the following rule:</p>
+<div class="fragment"><div class="line">&lt;nacm xmlns=<span class="stringliteral">&quot;urn:ietf:params:xml:ns:yang:ietf-netconf-acm&quot;</span>&gt;</div>
+<div class="line">  &lt;rule-list&gt;</div>
+<div class="line">    &lt;name&gt;admin-acl&lt;/name&gt;</div>
+<div class="line">    &lt;group&gt;admin&lt;/group&gt;</div>
+<div class="line">    &lt;rule&gt;</div>
+<div class="line">      &lt;name&gt;permit-all&lt;/name&gt;</div>
+<div class="line">      &lt;module-name&gt;*&lt;/module-name&gt;</div>
+<div class="line">      &lt;access-operations&gt;*&lt;/access-operations&gt;</div>
+<div class="line">      &lt;action&gt;permit&lt;/action&gt;</div>
+<div class="line">    &lt;/rule&gt;</div>
+<div class="line">  &lt;/rule-list&gt;</div>
+<div class="line">&lt;/nacm&gt;</div>
+</div><!-- fragment --><p>More examples can be found in the <a href="http://tools.ietf.org/html/rfc6536#appendix-A">Appendix A. of RFC 6536</a>. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Mar 26 2013 21:59:27 for libnetconf by
+    <li class="footer">Generated on Thu Mar 28 2013 16:50:33 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

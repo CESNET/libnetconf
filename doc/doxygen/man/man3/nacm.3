@@ -1,6 +1,64 @@
-.TH "nacm" 3 "Tue Mar 26 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "nacm" 3 "Thu Mar 28 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 nacm \- NETCONF Access Control Module (NACM) 
-TBD 
+NACM is a transparent subsystem of libnetconf\&. It is activated using \fBNC_INIT_NACM\fP flag in the \fBnc_init()\fP function\&. No other action is required to use NACM in libnetconf\&. All NACM rules and settings are controlled via standard Netconf operations since NACM subsystem provides implicit datastore accessible with the \fBncds_apply_rpc()\fP function with id parameter set to value \fBNCDS_INTERNAL_ID\fP (0)\&.
+.PP
+libnetconf supports usage of the system groups (/etc/group) in the access control rule-lists\&. To disable this feature, <enable-external-groups> value must be set to false:
+.PP
+.PP
+.nf
+<nacm xmlns='urn:ietf:params:xml:ns:yang:ietf-netconf-acm'>
+  <enable-external-groups>false</enable-external-groups>
+</nacm>
+.fi
+.PP
+.PP
+.SS "Recovery Session"
+.PP
+Recovery session serves to set up initial access rules or to repair a broken access control configuration\&. If a session is recognized as recovery NACM subsystem is completely bypassed\&.
+.PP
+By default, libnetconf consider all sessions of user with the system UID equal zero as recovery\&. There is the \fBnacm_recovery_uid()\fP function that can be used to change a value of UID defining the recovery session\&.
+.PP
+.SS "Initial operation"
+.PP
+According to \fCRFC 6536\fP, libnetconf's NACM subsystem is initially set to allow reading (permitted read-default), refuse writing (denied write-default) and allow operation execution (permitted exec-default)\&.
+.PP
+\fBNote:\fP
+.RS 4
+Some operations or data have their specific access control settings defined in their data models\&. These settings overrides described default settings\&.
+.RE
+.PP
+To change this initial settings, user has to access NACM datastore via recovery session (since any write operation is denied) and set required access control rules\&.
+.PP
+For example, to change default write rule from deny to permit, use edit-config operation to create (merge) the following configuration data:
+.PP
+.PP
+.nf
+<nacm xmlns='urn:ietf:params:xml:ns:yang:ietf-netconf-acm'>
+  <write-default>permit</write-default>
+</nacm>
+.fi
+.PP
+.PP
+To guarantee all access rights to a specific users group, use edit-config operation to create (merge) the following rule:
+.PP
+.PP
+.nf
+<nacm xmlns='urn:ietf:params:xml:ns:yang:ietf-netconf-acm'>
+  <rule-list>
+    <name>admin-acl</name>
+    <group>admin</group>
+    <rule>
+      <name>permit-all</name>
+      <module-name>*</module-name>
+      <access-operations>*</access-operations>
+      <action>permit</action>
+    </rule>
+  </rule-list>
+</nacm>
+.fi
+.PP
+.PP
+More examples can be found in the \fCAppendix A\&. of RFC 6536\fP\&. 

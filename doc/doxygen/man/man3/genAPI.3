@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Tue Mar 26 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Thu Mar 28 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -29,6 +29,10 @@ libnetconf's miscellaneous functions\&.
 .RI "int \fBnc_init\fP (int flags)"
 .br
 .RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all the processes\&. \fP"
+.ti -1c
+.RI "void \fBnacm_recovery_uid\fP (uid_t uid)"
+.br
+.RI "\fISet UID to detect the NACM recovery session\&. If this function is not used, value 0 (typically root user) is used\&. Recovery session is used to bypass NACM\&. \fP"
 .ti -1c
 .RI "int \fBnc_close\fP (int system)"
 .br
@@ -135,7 +139,7 @@ Initialize libnetconf for system-wide usage\&. This initialization is shared acr
 .IP "\(bu" 2
 \fINC_INIT_NOTIF\fP Enable Notification subsystem
 .IP "\(bu" 2
-\fINC_INIT_NACM\fP Enable NETCONF Access Control 
+\fINC_INIT_NACM\fP Enable NETCONF Access Control subsystem 
 .PP
 .RE
 .PP
@@ -146,6 +150,17 @@ Initialize libnetconf for system-wide usage\&. This initialization is shared acr
  0 if this is the first init after previous system-wide \fBnc_close()\fP or system reboot
 .br
  1 when someone else already called \fBnc_init()\fP since last system-wide \fBnc_close()\fP or system reboot\&. 
+.RE
+.PP
+
+.SS "void nacm_recovery_uid (uid_tuid)"
+
+.PP
+Set UID to detect the NACM recovery session\&. If this function is not used, value 0 (typically root user) is used\&. Recovery session is used to bypass NACM\&. The function takes effect only if the NC_INIT_NACM flag is used in \fBnc_init()\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIuid\fP User ID to be used for the recovery session\&. 
 .RE
 .PP
 

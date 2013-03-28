@@ -44,7 +44,7 @@
  * \mainpage About
  *
  * [netconfwg]: http://trac.tools.ietf.org/wg/netconf/trac/wiki "NETCONF WG"
- * [krejcimail]: mailto:rkrejci@cesnet.cz "Radek Krejci"
+ * [mlist]: https://groups.google.com/forum/#!forum/libnetconf
  * [issues]: https://code.google.com/p/libnetconf/issues/list "Issues"
  * [TMC]: https://www.liberouter.org/ "Tools for Monitoring and Configuration"
  * [CESNET]: http://www.ces.net/ "CESNET"
@@ -69,7 +69,7 @@
  *
  * libnetconf is currently under development at the [TMC] department of [CESNET].
  * Any testing of the library is welcome. Please inform us about your
- * experiences with using libnetconf via [email][krejcimail] or the
+ * experiences with using libnetconf via our [mailing list][mlist] or the
  * [Google Code's Issue section][issues]. Any feature suggestion or bugreport
  * is also appreciated.
  *
@@ -404,7 +404,80 @@
 /**
  * \page nacm NETCONF Access Control Module (NACM)
  *
- * TBD
+ * [RFC6536]: http://tools.ietf.org/html/rfc6536 "RFC 6536"
+ * [NACMExamples]: http://tools.ietf.org/html/rfc6536#appendix-A
+ *
+ * NACM is a transparent subsystem of libnetconf. It is activated using
+ * #NC_INIT_NACM flag in the nc_init() function. No other action is required
+ * to use NACM in libnetconf. All NACM rules and settings are controlled via
+ * standard Netconf operations since NACM subsystem provides implicit datastore
+ * accessible with the ncds_apply_rpc() function with id parameter set to value
+ * #NCDS_INTERNAL_ID (0).
+ *
+ * libnetconf supports usage of the system groups (/etc/group) in the access
+ * control rule-lists. To disable this feature, <enable-external-groups> value
+ * must be set to false:
+ *
+ * ~~~~~~~
+ * <nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
+ *   <enable-external-groups>false</enable-external-groups>
+ * </nacm>
+ * ~~~~~~~
+ *
+ *
+ * ### Recovery Session ###
+ *
+ * Recovery session serves to set up initial access rules or to repair a broken
+ * access control configuration. If a session is recognized as recovery NACM
+ * subsystem is completely bypassed.
+ *
+ * By default, libnetconf consider all sessions of user with the system UID
+ * equal zero as recovery. There is the nacm_recovery_uid() function that can be
+ * used to change a value of UID defining the recovery session.
+ *
+ *
+ * ### Initial operation ###
+ *
+ * According to [RFC 6536][RFC6536], libnetconf's NACM subsystem is initially
+ * set to allow reading (permitted read-default), refuse writing (denied
+ * write-default) and allow operation execution (permitted exec-default).
+ *
+ * \note Some operations or data have their specific access control settings
+ * defined in their data models. These settings overrides described default
+ * settings.
+ *
+ * To change this initial settings, user has to access NACM datastore via
+ * recovery session (since any write operation is denied) and set required
+ * access control rules.
+ *
+ * For example, to change default write rule from deny to permit, use
+ * edit-config operation to create (merge) the following configuration data:
+ *
+ * ~~~~~~~
+ * <nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
+ *   <write-default>permit</write-default>
+ * </nacm>
+ * ~~~~~~~
+ *
+ * To guarantee all access rights to a specific users group, use edit-config
+ * operation to create (merge) the following rule:
+ *
+ * ~~~~~~~
+ * <nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
+ *   <rule-list>
+ *     <name>admin-acl</name>
+ *     <group>admin</group>
+ *     <rule>
+ *       <name>permit-all</name>
+ *       <module-name>*</module-name>
+ *       <access-operations>*</access-operations>
+ *       <action>permit</action>
+ *     </rule>
+ *   </rule-list>
+ * </nacm>
+ * ~~~~~~~
+ *
+ * More examples can be found in the [Appendix A. of RFC 6536][NACMExamples].
  */
 
 /**

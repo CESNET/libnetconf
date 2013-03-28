@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Tue Mar 26 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Thu Mar 28 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -114,6 +114,10 @@ libnetconf's general public functions and structures definitions\&.
 .RI "int \fBnc_init\fP (int flags)"
 .br
 .RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all the processes\&. \fP"
+.ti -1c
+.RI "void \fBnacm_recovery_uid\fP (uid_t uid)"
+.br
+.RI "\fISet UID to detect the NACM recovery session\&. If this function is not used, value 0 (typically root user) is used\&. Recovery session is used to bypass NACM\&. \fP"
 .ti -1c
 .RI "int \fBnc_close\fP (int system)"
 .br

@@ -279,16 +279,18 @@ $(document).ready(function(){initNavTree('d3/d7a/netconf_8h_source.html','../../
 <div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init</a>(<span class="keywordtype">int</span> flags);</div>
 <div class="line"><a name="l00347"></a><span class="lineno"><a class="code" href="../../d3/d7a/netconf_8h.html#ae2518fb60d22a54179a25195bb7a5a6e">  347</a></span>&#160;<span class="preprocessor">#define NC_INIT_NOTIF 0x00000002 </span></div>
 <div class="line"><a name="l00348"></a><span class="lineno"><a class="code" href="../../d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6">  348</a></span>&#160;<span class="preprocessor">#define NC_INIT_NACM 0x00000004 </span></div>
-<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;<span class="preprocessor">int nc_close(int system);</span></div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;<span class="preprocessor">void nacm_recovery_uid(uid_t uid);</span></div>
 <div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* NETCONF_H_ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">nc_close</a>(<span class="keywordtype">int</span> system);</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* NETCONF_H_ */</span><span class="preprocessor"></span></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d3/d7a/netconf_8h.html">netconf.h</a></li>
-    <li class="footer">Generated on Tue Mar 26 2013 21:59:27 for libnetconf by
+    <li class="footer">Generated on Thu Mar 28 2013 16:50:32 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

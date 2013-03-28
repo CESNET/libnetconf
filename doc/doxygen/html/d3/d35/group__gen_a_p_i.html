@@ -140,6 +140,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga40e32bd7c1404a76105b426219021cdc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc">nc_init</a> (int flags)</td></tr>
 <tr class="memdesc:ga40e32bd7c1404a76105b426219021cdc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize libnetconf for system-wide usage. This initialization is shared across all the processes.  <a href="#ga40e32bd7c1404a76105b426219021cdc">More...</a><br/></td></tr>
 <tr class="separator:ga40e32bd7c1404a76105b426219021cdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac0f92410b2b80bdb0df91f82705ba753"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gac0f92410b2b80bdb0df91f82705ba753">nacm_recovery_uid</a> (uid_t uid)</td></tr>
+<tr class="memdesc:gac0f92410b2b80bdb0df91f82705ba753"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set UID to detect the NACM recovery session. If this function is not used, value 0 (typically root user) is used. Recovery session is used to bypass NACM.  <a href="#gac0f92410b2b80bdb0df91f82705ba753">More...</a><br/></td></tr>
+<tr class="separator:gac0f92410b2b80bdb0df91f82705ba753"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga85cd52f975436e64f9f128e980b77ed3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">nc_close</a> (int system)</td></tr>
 <tr class="separator:ga85cd52f975436e64f9f128e980b77ed3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga806dfa9c27d2b8076bae21bcd549cce7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7">nc_callback_print</a> (void(*func)(<a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060">NC_VERB_LEVEL</a> level, const char *msg))</td></tr>
@@ -276,7 +279,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">flags</td><td>ORed flags for libnetconf initialization. Accepted values include:<ul>
 <li><em>NC_INIT_NOTIF</em> Enable Notification subsystem</li>
-<li><em>NC_INIT_NACM</em> Enable NETCONF Access Control </li>
+<li><em>NC_INIT_NACM</em> Enable NETCONF Access Control subsystem </li>
 </ul>
 </td></tr>
   </table>
@@ -285,6 +288,31 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>-1 on fatal error<br/>
  0 if this is the first init after previous system-wide <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">nc_close()</a> or system reboot<br/>
  1 when someone else already called <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a> since last system-wide <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">nc_close()</a> or system reboot. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gac0f92410b2b80bdb0df91f82705ba753"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void nacm_recovery_uid </td>
+          <td>(</td>
+          <td class="paramtype">uid_t&#160;</td>
+          <td class="paramname"><em>uid</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set UID to detect the NACM recovery session. If this function is not used, value 0 (typically root user) is used. Recovery session is used to bypass NACM. </p>
+<p>The function takes effect only if the NC_INIT_NACM flag is used in <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">uid</td><td>User ID to be used for the recovery session. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -548,7 +576,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Mar 26 2013 21:59:27 for libnetconf by
+    <li class="footer">Generated on Thu Mar 28 2013 16:50:33 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

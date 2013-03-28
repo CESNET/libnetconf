@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['nacm_5frecovery_5fuid',['nacm_recovery_uid',['../d3/d35/group__gen_a_p_i.html#gac0f92410b2b80bdb0df91f82705ba753',1,'netconf.h']]],
   ['nc_5fcallback_5ferror_5freply',['nc_callback_error_reply',['../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80',1,'callbacks.h']]],
   ['nc_5fcallback_5fprint',['nc_callback_print',['../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7',1,'callbacks.h']]],
   ['nc_5fcallback_5fssh_5fhost_5fauthenticity_5fcheck',['nc_callback_ssh_host_authenticity_check',['../db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a',1,'callbacks.h']]],

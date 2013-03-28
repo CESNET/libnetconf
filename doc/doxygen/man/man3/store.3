@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Tue Mar 26 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Thu Mar 28 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -220,7 +220,7 @@ Close specified datastore and free all the resources\&. Equivalent function to \
 .PP
 Perform the requested RPC operation on the datastore\&. \fBParameters:\fP
 .RS 4
-\fIid\fP Datastore ID\&. Use 0 to apply request (typically <get>) onto the libnetconf's internal datastore\&. 
+\fIid\fP Datastore ID\&. Use \fBNCDS_INTERNAL_ID\fP (0) to apply request (typically <get>) onto the libnetconf's internal datastore\&. 
 .br
 \fIsession\fP NETCONF session (a dummy session is acceptable) where the <rpc> came from\&. Capabilities checks are done according to this session\&. 
 .br

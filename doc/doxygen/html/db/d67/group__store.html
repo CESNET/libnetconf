@@ -478,7 +478,7 @@ Functions</h2></td></tr>
 <p>Perform the requested RPC operation on the datastore. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Datastore ID. Use 0 to apply request (typically &lt;get&gt;) onto the libnetconf's internal datastore. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Datastore ID. Use <a class="el" href="../../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a" title="Datastore ID to access libnetconf&#39;s internal datastores such as notifications, monitoring, etc.">NCDS_INTERNAL_ID</a> (0) to apply request (typically &lt;get&gt;) onto the libnetconf's internal datastore. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session (a dummy session is acceptable) where the &lt;rpc&gt; came from. Capabilities checks are done according to this session. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>NETCONF &lt;rpc&gt; message specifying requested operation. </td></tr>
   </table>
@@ -567,7 +567,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Mar 26 2013 21:59:27 for libnetconf by
+    <li class="footer">Generated on Thu Mar 28 2013 16:50:33 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>
