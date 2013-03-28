@@ -146,6 +146,15 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
+ * @brief Get operation name of the given rpc.
+ * @param[in] rpc rpc message.
+ * @return Name of operation in the given rpc message. Caller
+ * is responsible for freeing the returned string with free().
+ */
+char * nc_rpc_get_op_name (const nc_rpc* rpc);
+
+/**
+ * @ingroup rpc
  * @brief Get content of the operation specification from the given rpc.
  * @param[in] rpc rpc message.
  * @return String in XML form starting with the operation name element. Caller
