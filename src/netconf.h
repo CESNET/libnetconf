@@ -40,6 +40,8 @@
 #ifndef NETCONF_H_
 #define NETCONF_H_
 
+#include <sys/types.h>
+
 struct nc_msg;
 
 /**
