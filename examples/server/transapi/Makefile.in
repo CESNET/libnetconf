@@ -1,0 +1,123 @@
+#
+# Copyright (c) 2011 CESNET
+#
+# LICENSE TERMS
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+# 3. Neither the name of the Company nor the names of its contributors
+#    may be used to endorse or promote products derived from this
+#    software without specific prior written permission.
+#
+# ALTERNATIVELY, provided that this notice is retained in full, this
+# product may be distributed under the terms of the GNU General Public
+# License (GPL) version 2 or later, in which case the provisions
+# of the GPL apply INSTEAD OF those given above.
+#
+# This software is provided ``as is'', and any express or implied
+# warranties, including, but not limited to, the implied warranties of
+# merchantability and fitness for a particular purpose are disclaimed.
+# In no event shall the company or contributors be liable for any
+# direct, indirect, incidental, special, exemplary, or consequential
+# damages (including, but not limited to, procurement of substitute
+# goods or services; loss of use, data, or profits; or business
+# interruption) however caused and on any theory of liability, whether
+# in contract, strict liability, or tort (including negligence or
+# otherwise) arising in any way out of the use of this software, even
+# if advised of the possibility of such damage.
+#
+
+PKGNAME = @PROJECTNAME@
+TARGETS = @PROJECTNAME@.so
+
+# Various configurable paths (remember to edit Makefile.in, not Makefile)
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
+datadir = @datadir@
+bindir = @bindir@
+includedir = @includedir@
+libdir =  @libdir@
+mandir = @mandir@
+
+CC = @CC@
+DOXYGEN = @DOXYGEN@
+DOXYGEN_CONFIG = Doxyfile
+DOXYGEN_DIR = doxygen
+RPMBUILD = @RPMBUILD@
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+RPMDIR = RPMBUILD
+LIBS = $(patsubst -I.%,-I$(TOPDIR)/.%,$(patsubst -L.%,-L$(TOPDIR)/.%,$(filter -L% -I%,@LIBS@))) $(filter-out -L% -I%,@LIBS@)
+CFLAGS = $(patsubst -I.%,-I$(TOPDIR)/.%,$(patsubst -L.%,-L$(TOPDIR)/.%,$(filter -L% -I%,@CFLAGS@))) $(filter-out -L% -I%,@CFLAGS@ -fPIC -shared)
+CPPFLAGS = $(patsubst -I.%,-I$(TOPDIR)/.%,$(patsubst -L.%,-L$(TOPDIR)/.%,$(filter -L% -I%,@CPPFLAGS@))) $(filter-out -L% -I%,@CPPFLAGS@)
+
+OBJDIR= .obj
+VERSION = $(shell cut -f1 ./VERSION | tr -d '\n')
+TOPDIR = @CONFIGURE_PWD@
+RELEASE=@RELEASE@
+
+SRCS = @PROJECTNAME@.c
+
+OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
+
+all: $(TARGETS)
+
+.PHONY: doc
+doc: 
+
+$(TARGETS): $(OBJS)
+	@rm -f $@;
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LIBS) $(OBJS) -o $@;
+
+$(OBJDIR)/%.o: %.c
+	@[ -d $$(dirname $@) ] || \
+		(mkdir -p $$(dirname $@))
+	$(CC) $(CFLAGS) $(CPPFLAGS) -fPIC -c $< -o $@
+
+.PHONY: install
+install: $(TARGETS)
+	[ -d $(DESTDIR)/$(libdir) ] || \
+	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir))
+	$(INSTALL_PROGRAM) $(TARGETS) $(DESTDIR)/$(libdir)/;
+	[ -d $(DESTDIR)/$(libdir) ] || \
+	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir))
+	$(INSTALL_PROGRAM) $(TARGETS) $(DESTDIR)/$(libdir)/;
+	for i in $(TARGETS) ; do \
+		cp $$i  $(DESTDIR)/$(libdir)/; \
+	done
+
+
+.PHONY: clean
+clean:
+	rm -rf $(TARGETS) $(OBJDIR)
+
+.PHONY: tarball
+tarball: $(SRCS) $(HEADERS)
+	@rm -rf $(PKGNAME)-$(VERSION);
+	@mkdir $(PKGNAME)-$(VERSION);
+	for i in $(SRCS) configure.in configure \
+	    Makefile.in VERSION $(PKGNAME).spec.in install-sh ; do \
+	    [ -d $(PKGNAME)-$(VERSION)/$$(dirname $$i) ] || (mkdir -p $(PKGNAME)-$(VERSION)/$$(dirname $$i)); \
+	        cp $$i $(PKGNAME)-$(VERSION)/$$i; \
+	done;
+	@rm -rf $(RPMDIR)/SOURCES/; \
+	mkdir -p $(RPMDIR)/SOURCES/; \
+	tar -c -z -f $(RPMDIR)/SOURCES/$(PKGNAME)-$(VERSION)-$(RELEASE).tar.gz \
+	    $(PKGNAME)-$(VERSION); \
+	rm -rf $(PKGNAME)-$(VERSION);
+
+.PHONY: rpm
+rpm: tarball
+	mkdir -p $(RPMDIR)/BUILD $(RPMDIR)/RPMS $(RPMDIR)/SRPMS
+	$(RPMBUILD) -ba $(PKGNAME).spec \
+                --define "_topdir `pwd`/$(RPMDIR)";
+
