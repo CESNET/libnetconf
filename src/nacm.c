@@ -800,11 +800,11 @@ int nacm_config_refresh(void)
 				}
 			}
 		}
+		xmlXPathFreeObject(query_result);
 	} else {
 		ERROR("%s: Unable to get information about NACM groups", __func__);
 		return (EXIT_FAILURE);
 	}
-	xmlXPathFreeObject(query_result);
 
 	/* /nacm/rule-list */
 	query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":rule-list", data_ctxt);
@@ -883,11 +883,11 @@ int nacm_config_refresh(void)
 				}
 			}
 		}
+		xmlXPathFreeObject(query_result);
 	} else {
 		ERROR("%s: Unable to get information about NACM's lists of rules", __func__);
 		return (EXIT_FAILURE);
 	}
-	xmlXPathFreeObject(query_result);
 
 	xmlXPathFreeContext(data_ctxt);
 	xmlFreeDoc(data_doc);
@@ -1371,6 +1371,8 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 		break;
 	}
 	xmlXPathFreeObject(query_result);
+	query_result = NULL;
+
 	if (ntfnode == NULL) {
 		/* invalid message with missing notification */
 		retval = -1;
@@ -1458,6 +1460,9 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 	retval = nacm->default_read;
 
 nacmfree:
+	if (query_result != NULL) {
+		xmlXPathFreeObject(query_result);
+	}
 	/* free NACM structure */
 	for (i = 0; nacm->rule_lists != NULL && nacm->rule_lists[i] != NULL; i++) {
 		nacm_rule_list_free(nacm->rule_lists[i]);

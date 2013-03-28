@@ -667,9 +667,11 @@ char* nc_rpc_get_op_content (const nc_rpc* rpc)
 			buffer = xmlBufferCreate();
 			if (buffer == NULL) {
 				ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+				xmlXPathFreeObject(result);
 				return NULL;
 			}
 			if ((root = xmlDocGetRootElement(rpc->doc)) == NULL) {
+				xmlXPathFreeObject(result);
 				return NULL;
 			}
 

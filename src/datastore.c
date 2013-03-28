@@ -380,6 +380,7 @@ int get_model_info(xmlDocPtr model, char **name, char **version, char **namespac
 		result = xmlXPathEvalExpression (BAD_CAST "/yin:module", model_ctxt);
 		if (result != NULL ) {
 			if (result->nodesetval->nodeNr < 1) {
+				xmlXPathFreeObject (result);
 				xmlXPathFreeContext (model_ctxt);
 				return (EXIT_FAILURE);
 			} else {
@@ -438,6 +439,7 @@ int get_model_info(xmlDocPtr model, char **name, char **version, char **namespac
 		result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:namespace", model_ctxt);
 		if (result != NULL ) {
 			if (result->nodesetval->nodeNr < 1) {
+				xmlXPathFreeObject (result);
 				xmlXPathFreeContext (model_ctxt);
 				goto errorcleanup;
 			} else {
@@ -802,6 +804,7 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 			*e = nc_err_new(NC_ERR_BAD_ELEM);
 			nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "identifier");
 			nc_err_set(*e, NC_ERR_PARAM_MSG, "Multiple \'identifier\' elements found.");
+			xmlXPathFreeObject(query_result);
 			return (NULL);
 		}
 		name = (char*) xmlNodeGetContent(query_result->nodesetval->nodeTab[0]);
@@ -825,11 +828,12 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 				*e = nc_err_new(NC_ERR_BAD_ELEM);
 				nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "version");
 				nc_err_set(*e, NC_ERR_PARAM_MSG, "Multiple \'version\' elements found.");
+				xmlXPathFreeObject(query_result);
 				return (NULL);
 			}
 			version = (char*) xmlNodeGetContent(query_result->nodesetval->nodeTab[0]);
-			xmlXPathFreeObject(query_result);
 		}
+		xmlXPathFreeObject(query_result);
 	}
 
 	/* get format of the schema */
@@ -840,10 +844,10 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 				*e = nc_err_new(NC_ERR_BAD_ELEM);
 				nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "version");
 				nc_err_set(*e, NC_ERR_PARAM_MSG, "Multiple \'version\' elements found.");
+				xmlXPathFreeObject(query_result);
 				return (NULL);
 			}
 			format = (char*) xmlNodeGetContent(query_result->nodesetval->nodeTab[0]);
-			xmlXPathFreeObject(query_result);
 
 			/* only yin format is supported now */
 			if (strcmp(format, "yin") != 0) {
@@ -854,6 +858,7 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 				free(format);
 				free(version);
 				free(name);
+				xmlXPathFreeObject(query_result);
 				return(NULL);
 			}
 
@@ -861,6 +866,7 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 			free(format);
 			format = NULL;
 		}
+		xmlXPathFreeObject(query_result);
 	}
 
 	for (ds = datastores; ds != NULL ; ds = ds->next) {
