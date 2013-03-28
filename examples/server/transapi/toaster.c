@@ -1,6 +1,6 @@
 /*
 * This is automaticaly generated callbacks file
-* It contains 2 parts: Configuration callbacks and state data callbacks.
+* It contains 3 parts: Configuration callbacks, RPC callbacks and state data callbacks.
 * Do NOT alter function signatures or any structure untill you exactly know what you are doing.
 */
 
@@ -12,6 +12,8 @@
 
 char * status = "off";
 int toasting = 0;
+pthread_mutex_t cancel_mutex;
+volatile int cancel;
 
 /**
  * @brief Retrieve state data from device and return them as serialized XML *
@@ -99,6 +101,114 @@ struct transapi_config_callbacks clbks =  {
 	.data = NULL,
 	.callbacks = {
 		{.path = "/", .func = callback_}
+	}
+};
+
+/*
+* RPC callbacks
+* Here follows set of callback functions run every time RPC specific for this device arrives.
+* You can safely modify the bodies of all function as well as add new functions for better lucidity of code.
+* Every function takes array of inputs as an argument. On few first lines they are assigned to named variables. Avoid accessing the array directly.
+* If input was not set in RPC message argument in set to NULL.
+*/
+
+void * make_toast (void * doneness)
+{
+			pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, NULL);
+
+			/* pretend toasting */
+			sleep (*(int*)doneness);
+
+			/* BEGIN of critical section */
+			pthread_mutex_lock (&cancel_mutex);
+			if (cancel) {
+				pthread_mutex_unlock (&cancel_mutex);
+				cancel = 0;
+				return NULL;
+			}
+			/* turn off */
+			toasting = 0;
+			ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>done</toastStatus></toastDone>");
+			/* END of critical section */
+			pthread_mutex_unlock (&cancel_mutex);
+			return NULL;
+}
+
+nc_reply * rpc_make_toast (xmlNodePtr input[])
+{
+	xmlNodePtr toasterDoneness = input[0];
+	xmlNodePtr toasterToastType = input[1];
+
+	struct nc_err * err;
+	int doneness; 
+	pthread_t tid;
+
+	if (strcmp(status, "off") == 0) {
+		return nc_reply_error(nc_err_new (NC_ERR_RES_DENIED));
+	}else if (toasting) {
+		return nc_reply_error (nc_err_new (NC_ERR_IN_USE));
+	}
+
+	if (toasterDoneness == NULL) {
+		doneness = 5;
+	} else {
+		doneness = atoi (xmlNodeGetContent(toasterDoneness));
+	}
+
+	if (doneness == 0) { /* doneness must be from <1,10> */
+		return nc_reply_error (nc_err_new (NC_ERR_INVALID_VALUE));
+	} else { /* all seems ok */
+		toasting = 1;
+		pthread_mutex_destroy (&cancel_mutex);
+		if (pthread_mutex_init (&cancel_mutex, NULL) || pthread_create (&tid, NULL, make_toast, &doneness)) { /* cannot turn heater on :-) */
+			err = nc_err_new (NC_ERR_OP_FAILED);
+			nc_err_set (err, NC_ERR_PARAM_MSG, "Toaster is broken!");
+			toasting = 0;
+			ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>error</toastStatus></toastDone>");
+			return nc_reply_error (err);
+		}
+		pthread_detach (tid);
+	}
+
+	return nc_reply_ok(); 
+}
+
+nc_reply * rpc_cancel_toast (xmlNodePtr input[])
+{
+	nc_reply * reply;
+	struct nc_err * err;
+
+	if (strcmp(status, "off") == 0) {
+		return nc_reply_error(nc_err_new (NC_ERR_RES_DENIED));
+	}
+
+	/* BEGIN of critical section */
+	pthread_mutex_lock (&cancel_mutex);
+	if (toasting == 0) {
+		err = nc_err_new (NC_ERR_OP_FAILED);
+		nc_err_set (err, NC_ERR_PARAM_MSG, "There is no toasting in progress.");
+		reply = nc_reply_error(err);
+	} else {
+		cancel = 1;
+		toasting = 0;
+		reply = nc_reply_ok();
+		ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>cancelled</toastStatus></toastDone>");
+	}
+	/* END of critical section */
+	pthread_mutex_unlock (&cancel_mutex);
+
+	return reply;
+}
+/*
+* Structure transapi_rpc_callbacks provide mapping between callbacks and RPC messages.
+* It is used by libnetconf library to decide which callbacks will be run when RPC arrives.
+* DO NOT alter this structure
+*/
+struct transapi_rpc_callbacks rpc_clbks = {
+	.callbacks_count = 2,
+	.callbacks = {
+		{.name="make-toast", .func=rpc_make_toast, .arg_count=2, .arg_order={"toasterDoneness", "toasterToastType"}},
+		{.name="cancel-toast", .func=rpc_cancel_toast, .arg_count=0, .arg_order={}}
 	}
 };
 

@@ -235,7 +235,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		}
 	} else {
 		/* process other operations */
-		reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
+		reply = ncds_apply_rpc(config->dsid, config->session, rpc);
 	}
 
 	/* create reply */
