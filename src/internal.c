@@ -64,6 +64,9 @@ int ncds_sysinit(void);
 
 int verbose_level = 0;
 
+/* UID for recovery session */
+uid_t nacm_recovery_uid_ = 0;
+
 void nc_verbosity(NC_VERB_LEVEL level)
 {
 	verbose_level = level;
@@ -80,17 +83,18 @@ struct nc_shared_info *nc_info = NULL;
 static int shmid = -1;
 
 #define NC_INIT_DONE  0x00000001
-static int init_flags = 0;
+int nc_init_flags = 0;
 
 int nc_init(int flags)
 {
 	int retval = 0, r;
+	int init_flags_aux;
 	key_t key = -4;
 	int first = 1;
 	char* t;
 	pthread_rwlockattr_t rwlockattr;
 
-	if (init_flags & NC_INIT_DONE) {
+	if (nc_init_flags & NC_INIT_DONE) {
 		ERROR("libnetconf already initiated!");
 		return (-1);
 	}
@@ -146,11 +150,17 @@ int nc_init(int flags)
 	nc_info->stats.participants++;
 	pthread_rwlock_unlock(&(nc_info->lock));
 
+	/* set temporarily nc_init_flags for use in ncds_sysinit() */
+	init_flags_aux = nc_init_flags;
+	nc_init_flags = flags;
+
 	/* init internal datastores */
 	if (ncds_sysinit() != EXIT_SUCCESS) {
 		shmdt(nc_info);
+		nc_init_flags = init_flags_aux;
 		return (-1);
 	}
+	nc_init_flags = init_flags_aux;
 
 	/* init NETCONF sessions statistics */
 	nc_session_monitoring_init();
@@ -162,7 +172,7 @@ int nc_init(int flags)
 			shmdt(nc_info);
 			return (-1);
 		}
-		init_flags |= NC_INIT_NOTIF;
+		nc_init_flags |= NC_INIT_NOTIF;
 	}
 #endif
 
@@ -172,11 +182,16 @@ int nc_init(int flags)
 			shmdt(nc_info);
 			return (-1);
 		}
-		init_flags |= NC_INIT_NACM;
+		nc_init_flags |= NC_INIT_NACM;
 	}
 
-	init_flags |= NC_INIT_DONE;
+	nc_init_flags |= NC_INIT_DONE;
 	return (retval);
+}
+
+void nacm_recovery_uid(uid_t uid)
+{
+	nacm_recovery_uid_ = uid;
 }
 
 int nc_close(int system)
@@ -212,16 +227,16 @@ int nc_close(int system)
 
 #ifndef DISABLE_NOTIFICATIONS
 	/* close Notification subsystem */
-	if (init_flags & NC_INIT_NOTIF) {
+	if (nc_init_flags & NC_INIT_NOTIF) {
 		ncntf_close();
 	}
 #endif
 	/* close Access Control subsystem */
-	if (init_flags & NC_INIT_NACM) {
+	if (nc_init_flags & NC_INIT_NACM) {
 		nacm_close();
 	}
 
-	init_flags = 0;
+	nc_init_flags = 0;
 	return (retval);
 }
 

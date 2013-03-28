@@ -613,6 +613,11 @@ int nacm_config_refresh(void)
 		return (EXIT_FAILURE);
 	}
 
+	if (nacm_ds == NULL) {
+		ERROR("%s: NACM internal datastore not initialized.", __func__);
+		return (EXIT_FAILURE);
+	}
+
 	/* check if NACM  datastore was modified */
 	if (nacm_ds->func.was_changed(nacm_ds) == 0) {
 		/* it wasn't, we have up to date configuration data */

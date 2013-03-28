@@ -81,6 +81,8 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 extern struct nc_shared_info *nc_info;
 
+extern int nc_init_flags;
+
 char* server_capabilities = NULL;
 
 struct ncds_ds_list {
@@ -109,10 +111,13 @@ static struct ncds_ds *datastores_get_ds(ncds_id id);
 #ifndef DISABLE_NOTIFICATIONS
 #define INTERNAL_DS_COUNT 7
 #define NACM_DS_INDEX 6
+#define NOTIF_DS_INDEX_L 2
+#define NOTIF_DS_INDEX_H 4
 #else
 #define INTERNAL_DS_COUNT 4
 #define NACM_DS_INDEX 3
 #endif
+int internal_ds_count = 0;
 int ncds_sysinit(void)
 {
 	int i;
@@ -163,7 +168,20 @@ int ncds_sysinit(void)
 			{NCDS_TYPE_FILE, NC_WORKINGDIR_PATH"/datastore-acm.xml"}
 	};
 
+	internal_ds_count = 0;
 	for (i = 0; i < INTERNAL_DS_COUNT; i++) {
+		if ((i == NACM_DS_INDEX) && !(nc_init_flags & NC_INIT_NACM)) {
+			/* NACM is not enabled */
+			continue;
+		}
+
+#ifndef DISABLE_NOTIFICATIONS
+		if ((i >= NOTIF_DS_INDEX_L && i <= NOTIF_DS_INDEX_H) && !(nc_init_flags & NC_INIT_NOTIF)) {
+			/* Notifications are not enabled */
+			continue;
+		}
+#endif
+
 		switch(internal_ds_desc[i].type) {
 		case NCDS_TYPE_EMPTY:
 			if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty))) == NULL) {
@@ -204,7 +222,7 @@ int ncds_sysinit(void)
 			}
 			break;
 		}
-		ds->id = i;
+		ds->id = internal_ds_count++;
 
 		ds->model = xmlReadMemory ((char*)model[i], model_len[i], NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
 		if (ds->model == NULL ) {
@@ -1945,7 +1963,7 @@ apply_editcopyconfig:
 			old_reply = reply = new_reply;
 		}
 		dsid++;
-		if (dsid < INTERNAL_DS_COUNT) {
+		if (dsid < internal_ds_count) {
 			goto process_datastore;
 		}
 	}
