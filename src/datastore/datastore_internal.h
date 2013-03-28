@@ -209,6 +209,10 @@ struct ncds_ds {
 	 * @brief Transapi callback mapping structure.
 	 */
 	struct transapi_config_callbacks * transapi_clbks;
+	/**
+	 * @brief Transapi rpc callbacks mapping structure.
+	 */
+	struct transapi_rpc_callbacks * rpc_clbks;
 };
 
 /**

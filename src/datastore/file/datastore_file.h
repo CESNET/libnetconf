@@ -110,6 +110,10 @@ struct ncds_ds_file {
 	 */
 	struct transapi_config_callbacks * transapi_clbks;
 	/**
+	 * @brief Transapi rpc callbacks mapping structure.
+	 */
+	struct transapi_rpc_callbacks * rpc_clbks;
+	/**
 	 * @brief Path to the file containing the configuration data, a single file is
 	 * used for all the datastore types (running, startup, candidate).
 	 */

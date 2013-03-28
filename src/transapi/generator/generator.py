@@ -35,6 +35,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+import libxml2
 import argparse
 import shutil
 import re
@@ -59,7 +60,7 @@ def copy_template_files(name, template_dir):
 	shutil.copy2(template_dir+'/Makefile.in', 'Makefile.in')
 
 # 
-def generate_callbacks_file(name, paths):
+def generate_callbacks_file(name, paths, model):
 	# Create or rewrite .c file, will be generated
 	outf = open(name+'.c', 'w')
 
@@ -79,6 +80,8 @@ def generate_callbacks_file(name, paths):
 	content += generate_state_callback()
 	# Config callbacks part
 	content += generate_config_callbacks(name, paths)
+	# RPC callbacks part
+	content += generate_rpc_callbacks(model)
 
 	# Write to file
 	outf.write(content)
@@ -156,11 +159,68 @@ def generate_config_callbacks(name, paths):
 
 	return(content);
 
+def generate_rpc_callbacks (doc):
+	content = ''
+	callbacks = ''
+
+	# Add description and instructions
+	content += '/*\n'
+	content += '* RPC callbacks\n'
+	content += '* Here follows set of callback functions run every time RPC specific for this device arrives.\n'
+	content += '* You can safely modify the bodies of all function as well as add new functions for better lucidity of code.\n'
+	content += '* Every function takes array of inputs as an argument. On few first lines they are assigned to named variables. Avoid accessing the array directly.\n'
+	content += '* If input was not set in RPC message argument in set to NULL.\n'
+	content += '*/\n\n'
+
+	# create xpath context
+	ctxt = doc.xpathNewContext()
+	ctxt.xpathRegisterNs('yang', 'urn:ietf:params:xml:ns:yang:yin:1')
+
+	# find all RPC defined in data model
+	rpcs = ctxt.xpathEval('//yang:rpc')
+
+	# for every RPC
+	for rpc in rpcs:
+		rpc_name = rpc.prop('name')
+		# create callback function
+		rpc_function = 'nc_reply * rpc_'+re.sub(r'[^\w]', '_', rpc_name)+' (xmlNodePtr input[])\n{\n'
+		# find all defined inputs
+		rpc_input = ctxt.xpathEval('//yang:rpc[@name="'+rpc.prop('name')+'"]/yang:input/*')
+		arg_order = '{'
+		for inp in rpc_input:
+			# assign inputs to named variables
+			rpc_function += '\txmlNodePtr '+re.sub(r'[^\w]', '_', inp.prop('name'))+' = input['+str(rpc_input.index(inp))+'];\n'
+			if not inp is rpc_input[0]:
+				arg_order += ', '
+			arg_order += '"'+inp.prop('name')+'"'
+
+		arg_order += '}'
+		rpc_function += '\n\treturn NULL; \n}\n'
+		content += rpc_function
+
+		if not rpc is rpcs[0]:
+			callbacks += ','
+		# add connection between callback and RPC message and order of arguments passed to the callback
+		callbacks += '\n\t\t{.name="'+rpc_name+'", .func=rpc_'+re.sub(r'[^\w]', '_', rpc_name)+', .arg_count='+str(len(rpc_input))+', .arg_order='+arg_order+'}'
+
+	content += '/*\n'
+	content += '* Structure transapi_rpc_callbacks provide mapping between callbacks and RPC messages.\n'
+	content += '* It is used by libnetconf library to decide which callbacks will be run when RPC arrives.\n'
+	content += '* DO NOT alter this structure\n'
+	content += '*/\n'
+	content += 'struct transapi_rpc_callbacks rpc_clbks = {\n'
+	content += '\t.callbacks_count = '+str(len(rpcs))+',\n'
+	content += '\t.callbacks = {'+callbacks+'\n\t}'
+	content += '\n};\n\n'
+
+	return(content)
+	
 
 # "main" starts here
 parser = argparse.ArgumentParser(description='Generate files for libnetconf transapi callbacks module.')
 parser.add_argument('--name', required=True, help='Name of module with callbacks.')
 parser.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
+parser.add_argument('--model', type=libxml2.parseFile, help='File holding data model. Used for generating rpc callbacks.')
 parser.add_argument('--template-dir', default='.', help='Path to the directory with teplate files')
 try:
 	args = parser.parse_args()
