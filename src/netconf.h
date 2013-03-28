@@ -349,6 +349,18 @@ int nc_init(int flags);
 
 /**
  * @ingroup genAPI
+ * @brief Set UID to detect the NACM recovery session. If this function is not
+ * used, value 0 (typically root user) is used. Recovery session is used to
+ * bypass NACM.
+ *
+ * The function takes effect only if the NC_INIT_NACM flag is used in nc_init().
+ *
+ * @param[in] uid User ID to be used for the recovery session.
+ */
+void nacm_recovery_uid(uid_t uid);
+
+/**
+ * @ingroup genAPI
  * @param[in] system Flag if close should be applied as system-wide.
  * System-wide nc_close() closes all the shared structures if no other libnetconf
  * participant is currently running. Local release of the calling instance
