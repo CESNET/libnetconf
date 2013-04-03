@@ -41,6 +41,7 @@
 #define DATASTORE_INTERNAL_H_
 
 #include "../datastore.h"
+#include "../transapi/transapi.h"
 
 #define EXIT_RPC_NOT_APPLICABLE -2
 
@@ -51,15 +52,98 @@ struct ncds_lockinfo {
 };
 
 struct ncds_funcs {
+	/**
+	 * @brief Initialization of datastore
+	 *
+	 * @param[in] ds Datastore structure
+	 * @return 0 on success, non-zero else
+	 */
 	int (*init) (struct ncds_ds* ds);
+	/**
+	 * @brief Close the specified datastore and free all the resources.
+	 * @param[in] ds Datastore to be closed.
+	 */
 	void (*free)(struct ncds_ds* ds);
+	/**
+	 * @brief Test if configuration datastore was changed by another process since
+	 * last access of the caller.
+	 * @param[in] ds Datastore structure which will be tested.
+	 * @return 0 as false if the datastore was not updated, 1 if the datastore was
+	 * changed.
+	 */
 	int (*was_changed)(struct ncds_ds* ds);
 	const struct ncds_lockinfo* (*get_lockinfo)(struct ncds_ds* ds, NC_DATASTORE target);
+	/**
+	 * @brief Lock target datastore for single session exclusive write-access
+	 *
+	 * @param[in] ds Datastore structure where the lock should be applied.
+	 * @param[in] session Session originating the request.
+	 * @param[in] target Datastore (runnign, startup, candidate) to lock.
+	 * @param[out] error NETCONF error structure describing the experienced error.
+	 * @return 0 on success, non-zero on error and error structure is filled.
+	 */
 	int (*lock)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
+	/**
+	 * @brief Unlock target datastore if it is locked by session
+	 *
+	 * @param[in] ds Datastore structure where the unlock should be applied.
+	 * @param[in] session Session originating the request.
+	 * @param[in] target Datastore (runnign, startup, candidate) to unlock.
+	 * @param[out] error NETCONF error structure describing the experienced error.
+	 * @return 0 on success, non-zero on error and error structure is filled.
+	 */
 	int (*unlock)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
+	/**
+	 * @brief Get configuration data stored in target datastore
+	 *
+	 * @param[in] ds Datastore structure from which the data will be obtained.
+	 * @param[in] session Session originating the request.
+	 * @param[in] source Datastore (runnign, startup, candidate) to get the data from.
+	 * @param[in] filter NETCONF filter to apply on the resulting data.
+	 * @param[out] error NETCONF error structure describing the experienced error.
+	 * @return NULL on error, resulting data on success.
+	*/
 	char* (*getconfig)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
+	/**
+	 * @brief Copy the content of source datastore or externally sent configuration to target datastore
+	 *
+	 * @param ds Pointer to the datastore structure
+	 * @param session Session which the request is a part of
+	 * @param rpc RPC message with the request. RPC message is used only for access control. If rpc is NULL access control is skipped.
+	 * @param target Target datastore
+	 * @param source Source datastore, if the value is NC_DATASTORE_NONE then the next
+	 * parameter holds the configration to copy
+	 * @param config Configuration to be used as the source in the form of a serialized XML.
+	 * @param error	 Netconf error structure.
+	 *
+	 * @return EXIT_SUCCESS when done without problems
+	 * 	   EXIT_FAILURE when error occured
+	 */
 	int (*copyconfig)(struct ncds_ds* ds, const struct nc_session* session, const nc_rpc* rpc, NC_DATASTORE target, NC_DATASTORE source, char* config, struct nc_err** error);
+	/**
+	 * @brief Delete the target datastore
+	 *
+	 * @param ds Datastore to delete
+	 * @param session Session requesting the deletion
+	 * @param target Datastore type
+	 * @param error Netconf error structure
+	 *
+	 * @return EXIT_SUCCESS or EXIT_FAILURE
+	 */
 	int (*deleteconfig)(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
+	/**
+	 * @brief Edit configuration in datastore
+	 *
+	 * @param ds Datastore to edit
+	 * @param session Session sending the edit request
+	 * @param rpc RPC message with the request. RPC message is used only for access control. If rpc is NULL access control is skipped.
+	 * @param target Datastore type
+	 * @param config Edit configuration.
+	 * @param defop Default edit operation.
+	 * @param error Netconf error structure
+	 *
+	 * @return EXIT_SUCCESS or EXIT_FAILURE
+	 */
 	int (*editconfig)(struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 };
 
@@ -113,6 +197,22 @@ struct ncds_ds {
 	 * @brief Datastore implementation functions.
 	 */
 	struct ncds_funcs func;
+	/**
+	 * @brief Parsed data model structure.
+	 */
+	struct yinmodel * transapi_model;
+	/**
+	 * @brief Loaded shared library with transapi callbacks.
+	 */
+	void * transapi_module;
+	/**
+	 * @brief Transapi callback mapping structure.
+	 */
+	struct transapi_config_callbacks * transapi_clbks;
+	/**
+	 * @brief Transapi rpc callbacks mapping structure.
+	 */
+	struct transapi_rpc_callbacks * rpc_clbks;
 };
 
 /**

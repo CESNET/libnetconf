@@ -518,6 +518,11 @@
  */
 
 /**
+ * \defgroup transapi Transaction API
+ * \brief libnetconf's implementation of transaction-based partial device reconfiguration.
+ */
+
+/**
  * \internal
  * \defgroup internalAPI Internal API
  * \brief libnetconf's functions, structures and macros for internal usage.

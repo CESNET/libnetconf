@@ -235,7 +235,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		}
 	} else {
 		/* process other operations */
-		reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
+		reply = ncds_apply_rpc(config->dsid, config->session, rpc);
 	}
 
 	/* create reply */
@@ -285,7 +285,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 	 */
 
 	/* prepare configuration datastore */
-	datastore = ncds_new(NCDS_TYPE_FILE, SERVERCFG_PATH"/model.yin", NULL);
+	datastore = ncds_new_transapi(NCDS_TYPE_FILE, SERVERCFG_PATH"/toaster.yin", SERVERCFG_PATH"/toaster.so");
 	if (datastore == NULL) {
 		clb_print(NC_VERB_ERROR, "Datastore preparing failed.");
 		return (EXIT_FAILURE);

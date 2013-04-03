@@ -99,7 +99,10 @@ SRCS =  src/callbacks.c \
 	src/datastore.c \
 	src/datastore/edit_config.c \
 	src/datastore/empty/datastore_empty.c \
-	src/datastore/file/datastore_file.c
+	src/datastore/file/datastore_file.c \
+	src/transapi/transapi.c \
+	src/transapi/yinparser.c \
+	src/transapi/xmldiff.c
 
 HDRS_PUBL_ROOT = headers/libnetconf.h \
 		 headers/libnetconf_xml.h
@@ -135,7 +138,10 @@ HDRS_PRIV = src/config.h.in \
 	src/datastore/datastore_internal.h \
 	src/datastore/edit_config.h \
 	src/datastore/empty/datastore_empty.h \
-	src/datastore/file/datastore_file.h
+	src/datastore/file/datastore_file.h \
+	src/transapi/transapi.h \
+	src/transapi/yinparser.h \
+	src/transapi/xmldiff.h
 
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 

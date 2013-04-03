@@ -94,6 +94,22 @@ struct ncds_ds_empty {
 	 * @brief Datastore implementation functions.
 	 */
 	struct ncds_funcs func;
+	/**
+	 * @brief Parsed data model structure.
+	 */
+	struct yinmodel * transapi_model;
+	/**
+	 * @brief Loaded shared library with transapi callbacks.
+	 */
+	void * transapi_module;
+	/**
+	 * @brief Transapi callback mapping structure.
+	 */
+	struct transapi_config_callbacks * transapi_clbks;
+	/**
+	 * @brief Transapi rpc callbacks mapping structure.
+	 */
+	struct transapi_rpc_callbacks * rpc_clbks;
 };
 
 /**

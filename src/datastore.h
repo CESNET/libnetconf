@@ -92,6 +92,20 @@ struct ncds_ds;
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err ** e));
 
 /**
+ * @ingroup transapi
+ * @brief Create new datastore structure with transaction API support
+ * @param[in] type Datastore implementation type for the new datastore structure.
+ * @param[in] model_path Path to the YIN configuration data model.
+ * @param[in] callbacks_path Path to shared library with callbacks and other functions for transaction API.
+ *
+ * @return Prepared (not configured) datastore structure. To configure the
+ * structure, caller must use the parameter setters of the specific datastore
+ * implementation type. Then, the datastore can be initiated (ncds_init()) and
+ * used to access the configuration data.
+ */
+struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const char* callbacks_path);
+
+/**
  * @ingroup store
  * @brief Assign the path of the datastore file into the datastore structure.
  *

@@ -98,6 +98,22 @@ struct ncds_ds_file {
 	 */
 	struct ncds_funcs func;
 	/**
+	 * @brief Parsed data model structure.
+	 */
+	struct yinmodel * transapi_model;
+	/**
+	 * @brief Loaded shared library with transapi callbacks.
+	 */
+	void * transapi_module;
+	/**
+	 * @brief Transapi callback mapping structure.
+	 */
+	struct transapi_config_callbacks * transapi_clbks;
+	/**
+	 * @brief Transapi rpc callbacks mapping structure.
+	 */
+	struct transapi_rpc_callbacks * rpc_clbks;
+	/**
 	 * @brief Path to the file containing the configuration data, a single file is
 	 * used for all the datastore types (running, startup, candidate).
 	 */
@@ -197,7 +213,7 @@ void ncds_file_free(struct ncds_ds* ds);
  *
  * @param ds Pointer to the datastore structure
  * @param session Session which the request is a part of
- * @param rpc RPC message with the request
+ * @param rpc RPC message with the request. RPC message is used only for access control. If rpc is NULL access control is skipped.
  * @param target Target datastore
  * @param source Source datastore, if the value is NC_DATASTORE_NONE then the next
  * parameter holds the configration to copy
@@ -226,7 +242,7 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
  *
  * @param ds Datastore to edit
  * @param session Session sending the edit request
- * @param rpc RPC message with the request
+ * @param rpc RPC message with the request. RPC message is used only for access control. If rpc is NULL access control is skipped.
  * @param target Datastore type
  * @param config Edit configuration.
  * @param defop Default edit operation.
