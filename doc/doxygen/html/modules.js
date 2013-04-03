@@ -7,6 +7,7 @@ var modules =
     [ "Datastore operations", "db/d67/group__store.html", "db/d67/group__store" ],
     [ "With-defaults capability", "d1/df7/group__withdefaults.html", "d1/df7/group__withdefaults" ],
     [ "NETCONF Event Notifications", "da/d54/group__notifications.html", "da/d54/group__notifications" ],
+    [ "Transaction API", "d8/d55/group__transapi.html", "d8/d55/group__transapi" ],
     [ "NETCONF rpc (libxml2)", "d7/dda/group__rpc__xml.html", "d7/dda/group__rpc__xml" ],
     [ "NETCONF rpc-reply (libxml2)", "d8/d73/group__reply__xml.html", "d8/d73/group__reply__xml" ],
     [ "NETCONF Event Notifications (libxml2)", "db/dae/group__notifications__xml.html", "db/dae/group__notifications__xml" ]

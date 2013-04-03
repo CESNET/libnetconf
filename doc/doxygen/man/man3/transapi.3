@@ -1,0 +1,212 @@
+.TH "Transaction API" 3 "Wed Apr 3 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Transaction API \- 
+.PP
+libnetconf's implementation of transaction-based partial device reconfiguration\&.  
+
+.SS "Data Structures"
+
+.in +1c
+.ti -1c
+.RI "struct \fBtransapi_config_callbacks\fP"
+.br
+.RI "\fIStructure binding location in configuration XML data and function callback applying changes\&. \fP"
+.ti -1c
+.RI "struct \fByinmodel\fP"
+.br
+.RI "\fIstructure holding information needed for xml document comparsion \fP"
+.ti -1c
+.RI "struct \fBxmldiff_entry\fP"
+.br
+.RI "\fIstructure for single diff entry \fP"
+.ti -1c
+.RI "struct \fBxmldiff\fP"
+.br
+.RI "\fIstructure holding all differencies found in compared files \fP"
+.in -1c
+.SS "Enumerations"
+
+.in +1c
+.ti -1c
+.RI "enum \fBYIN_TYPE\fP { \fBYIN_TYPE_MODULE\fP, \fBYIN_TYPE_CONTAINER\fP, \fBYIN_TYPE_LEAF\fP, \fBYIN_TYPE_LIST\fP, \fBYIN_TYPE_LEAFLIST\fP, \fBYIN_TYPE_CHOICE\fP, \fBYIN_TYPE_ANYXML\fP, \fBYIN_TYPE_GROUPING\fP, \fBYIN_TYPE_IMPORT\fP }"
+.br
+.RI "\fIenum type for yin/yang constructs \fP"
+.ti -1c
+.RI "enum \fBXMLDIFF_OP\fP { \fBXMLDIFF_ERR\fP = -1, \fBXMLDIFF_NONE\fP = 0, \fBXMLDIFF_ADD\fP, \fBXMLDIFF_REM\fP, \fBXMLDIFF_MOD\fP }"
+.br
+.RI "\fIEnum specifying states of node in document\&. \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "struct ncds_ds * \fBncds_new_transapi\fP (\fBNCDS_TYPE\fP type, const char *model_path, const char *callbacks_path)"
+.br
+.RI "\fICreate new datastore structure with transaction API support\&. \fP"
+.ti -1c
+.RI "int \fBtransapi_running_changed\fP (struct \fBtransapi_config_callbacks\fP *c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct \fByinmodel\fP *model)"
+.br
+.RI "\fITop level function of transaction API\&. Finds differences between old_doc and new_doc and calls specified callbacks\&. \fP"
+.ti -1c
+.RI "struct \fByinmodel\fP * \fByinmodel_parse\fP (xmlDocPtr model_doc)"
+.br
+.RI "\fIParse YIN data model\&. \fP"
+.ti -1c
+.RI "void \fByinmodel_free\fP (struct \fByinmodel\fP *yin)"
+.br
+.RI "\fIDestroy yinmodel structure and free allocated memory\&. \fP"
+.ti -1c
+.RI "void \fBxmldiff_free\fP (struct \fBxmldiff\fP *diff)"
+.br
+.RI "\fIDestroy and free whole xmldiff structure\&. \fP"
+.ti -1c
+.RI "struct \fBxmldiff\fP * \fBxmldiff_diff\fP (xmlDocPtr old, xmlDocPtr new, struct \fByinmodel\fP *model)"
+.br
+.RI "\fIModule top level function\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+libnetconf's implementation of transaction-based partial device reconfiguration\&. 
+
+
+.SH "Enumeration Type Documentation"
+.PP 
+.SS "enum \fBYIN_TYPE\fP"
+
+.PP
+enum type for yin/yang constructs 
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fIYIN_TYPE_MODULE \fP\fP
+.TP
+\fB\fIYIN_TYPE_CONTAINER \fP\fP
+.TP
+\fB\fIYIN_TYPE_LEAF \fP\fP
+.TP
+\fB\fIYIN_TYPE_LIST \fP\fP
+.TP
+\fB\fIYIN_TYPE_LEAFLIST \fP\fP
+.TP
+\fB\fIYIN_TYPE_CHOICE \fP\fP
+.TP
+\fB\fIYIN_TYPE_ANYXML \fP\fP
+.TP
+\fB\fIYIN_TYPE_GROUPING \fP\fP
+.TP
+\fB\fIYIN_TYPE_IMPORT \fP\fP
+
+.SS "enum \fBXMLDIFF_OP\fP"
+
+.PP
+Enum specifying states of node in document\&. 
+.PP
+\fBEnumerator: \fP
+.in +1c
+.TP
+\fB\fIXMLDIFF_ERR \fP\fP
+.TP
+\fB\fIXMLDIFF_NONE \fP\fP
+.TP
+\fB\fIXMLDIFF_ADD \fP\fP
+.TP
+\fB\fIXMLDIFF_REM \fP\fP
+.TP
+\fB\fIXMLDIFF_MOD \fP\fP
+
+.SH "Function Documentation"
+.PP 
+.SS "struct ncds_ds* ncds_new_transapi (\fBNCDS_TYPE\fPtype, const char *model_path, const char *callbacks_path)\fC [read]\fP"
+
+.PP
+Create new datastore structure with transaction API support\&. \fBParameters:\fP
+.RS 4
+\fItype\fP Datastore implementation type for the new datastore structure\&. 
+.br
+\fImodel_path\fP Path to the YIN configuration data model\&. 
+.br
+\fIcallbacks_path\fP Path to shared library with callbacks and other functions for transaction API\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Prepared (not configured) datastore structure\&. To configure the structure, caller must use the parameter setters of the specific datastore implementation type\&. Then, the datastore can be initiated (\fBncds_init()\fP) and used to access the configuration data\&. 
+.RE
+.PP
+
+.SS "int transapi_running_changed (struct \fBtransapi_config_callbacks\fP *c, xmlDocPtrold_doc, xmlDocPtrnew_doc, struct \fByinmodel\fP *model)"
+
+.PP
+Top level function of transaction API\&. Finds differences between old_doc and new_doc and calls specified callbacks\&. \fBParameters:\fP
+.RS 4
+\fIc\fP Structure binding callbacks with paths in XML document 
+.br
+\fIold_doc\fP Content of configuration datastore before change\&. 
+.br
+\fInew_doc\fP Content of configuration datastore after change\&. 
+.br
+\fImodel\fP Structure holding document semantics\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCESS or EXIT_FAILURE 
+.RE
+.PP
+
+.SS "struct \fByinmodel\fP* yinmodel_parse (xmlDocPtrmodel_doc)\fC [read]\fP"
+
+.PP
+Parse YIN data model\&. \fBParameters:\fP
+.RS 4
+\fImodel_doc\fP Data model in YIN format\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+yinmodel structure or NULL 
+.RE
+.PP
+
+.SS "void yinmodel_free (struct \fByinmodel\fP *yin)"
+
+.PP
+Destroy yinmodel structure and free allocated memory\&. \fBParameters:\fP
+.RS 4
+\fIyin\fP Structure to be freed\&. 
+.RE
+.PP
+
+.SS "void xmldiff_free (struct \fBxmldiff\fP *diff)"
+
+.PP
+Destroy and free whole xmldiff structure\&. \fBParameters:\fP
+.RS 4
+\fIdiff\fP pointer to xmldiff structure 
+.RE
+.PP
+
+.SS "struct \fBxmldiff\fP* xmldiff_diff (xmlDocPtrold, xmlDocPtrnew, struct \fByinmodel\fP *model)\fC [read]\fP"
+
+.PP
+Module top level function\&. \fBParameters:\fP
+.RS 4
+\fIold\fP old version of XML document 
+.br
+\fInew\fP new version of XML document 
+.br
+\fImodel\fP data model in YANG format
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+xmldiff structure holding all differences between XML documents or NULL 
+.RE
+.PP
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.

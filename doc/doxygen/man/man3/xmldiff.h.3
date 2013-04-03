@@ -1,0 +1,48 @@
+.TH "src/transapi/xmldiff.h" 3 "Wed Apr 3 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+src/transapi/xmldiff.h \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <libxml/tree\&.h>\fP
+.br
+\fC#include 'yinparser\&.h'\fP
+.br
+
+.SS "Data Structures"
+
+.in +1c
+.ti -1c
+.RI "struct \fBxmldiff_entry\fP"
+.br
+.RI "\fIstructure for single diff entry \fP"
+.ti -1c
+.RI "struct \fBxmldiff\fP"
+.br
+.RI "\fIstructure holding all differencies found in compared files \fP"
+.in -1c
+.SS "Enumerations"
+
+.in +1c
+.ti -1c
+.RI "enum \fBXMLDIFF_OP\fP { \fBXMLDIFF_ERR\fP = -1, \fBXMLDIFF_NONE\fP = 0, \fBXMLDIFF_ADD\fP, \fBXMLDIFF_REM\fP, \fBXMLDIFF_MOD\fP }"
+.br
+.RI "\fIEnum specifying states of node in document\&. \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBxmldiff_free\fP (struct \fBxmldiff\fP *diff)"
+.br
+.RI "\fIDestroy and free whole xmldiff structure\&. \fP"
+.ti -1c
+.RI "struct \fBxmldiff\fP * \fBxmldiff_diff\fP (xmlDocPtr old, xmlDocPtr new, struct \fByinmodel\fP *model)"
+.br
+.RI "\fIModule top level function\&. \fP"
+.in -1c
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.
