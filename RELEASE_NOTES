@@ -1,0 +1,28 @@
+libnetconf 0.4.0
+
+This release includes the following changes:
+
+ * NETCONF Access Control Module (RFC 6536)
+   Implementation of the NACM is provided via an internal datastore.
+ * Support for SUID and SGID applications
+   The library can be set to limit access to the shared resources for
+   a specific user or group. Applications using libnetconf compiled
+   with this option are supposed to have a proper owner/group and a
+   suid/sgid bit set.
+ * Support for editing YANG's user ordered lists
+   libnetconf supports placing of items of the YANG list and leaf-list
+   types into the specified position inside the list (RFC 6020,
+   sections 7.7.7 and 7.8.6).
+ * Support for editing YANG's choice type
+   libnetconf automatically maintain configuration data of the YANG
+   choice type (RFC 6020, section 7.9.6).
+ * Support for using ssh(1) instead of libssh2 on the client side
+ * Support for building source in external directory
+ * Support for building libnetconf without the Notifications subsystem
+   As a side effect, this option removes dependency for DBus.
+ * Add boilerplate files such as this RELEASE_NOTES, COPYING or AUTHORS
+
+
+For API/ABI compatibility to previous versions, see reports in
+'doc/compat_reports/' directory.
+

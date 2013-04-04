@@ -1,0 +1,29 @@
+Documentation
+-------------
+
+Doxygen documentation of the libnetconf API can be genrated by make(1):
+
+  make doc
+
+Online documentation in HTML format is available at:
+
+  http://libnetconf.googlecode.com/git/doc/doxygen/html/index.html
+
+
+Note
+----
+
+Please note, that master branch of our git repository is supposed to be
+an unstable branch. For stable code, please switch to the one of the version
+branches such as 0.4.x.
+
+
+Contact
+-------
+
+For any questions or technical issues, feel free to contact us via our
+mailing list:
+
+  libnetconf@googlegroups.com
+  https://groups.google.com/d/forum/libnetconf
+
