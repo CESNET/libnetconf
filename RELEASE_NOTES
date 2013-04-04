@@ -1,0 +1,12 @@
+libnetconf 0.5.0
+
+This release includes the following changes:
+
+TODO:
+ * Transaction API
+ * Support for augmented configuration data models
+
+
+For API/ABI compatibility to previous versions, see reports in
+'doc/compat_reports/' directory.
+

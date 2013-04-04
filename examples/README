@@ -14,8 +14,8 @@ NETCONF SSH server on a machine.
 
 For the server to work, you will also need to specify
 the model of a NETCONF server. The default path is
-/usr/share/libnetconf/server/model.yin, you can copy
-a model there from one of those found in libnetconf/models.
+/usr/share/libnetconf/server/model.yin. You can create
+a YIN model from the standard YANG format using pyang [1].
 
 
 SSH Server Settings
@@ -52,3 +52,8 @@ These events are stored in /usr/share/libnetconf/streams. By default,
 netconf-server names the file NETCONF.events. To read events from this
 file, use "netconf-events NETCONF".
 
+
+References
+==========
+
+ [1] = https://code.google.com/p/pyang/

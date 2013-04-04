@@ -1,0 +1,888 @@
+<!-- kind:binary;verdict:incompatible;affected:4.4;added:17;removed:0;type_problems_high:0;type_problems_medium:3;type_problems_low:2;interface_problems_high:2;interface_problems_medium:6;interface_problems_low:1;changed_constants:0;tool_version:1.98.7 -->
+<!-- kind:source;verdict:incompatible;affected:7.3;added:17;removed:0;type_problems_high:1;type_problems_medium:0;type_problems_low:1;interface_problems_high:2;interface_problems_medium:6;interface_problems_low:0;changed_constants:0;tool_version:1.98.7 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="keywords" content="libnetconf, compatibility, API, report" />
+    <meta name="description" content="Compatibility report for the libnetconf library between 0.2.3 and 0.3.0 versions" />
+    <title>
+        libnetconf: 0.2.3 to 0.3.0 compatibility report
+    </title>
+    <style type="text/css">
+    body {
+    font-family:Arial, sans-serif;
+    color:Black;
+    font-size:14px;
+}
+hr {
+    color:Black;
+    background-color:Black;
+    height:1px;
+    border:0;
+}
+h1 {
+    margin-bottom:0px;
+    padding-bottom:0px;
+    font-size:26px;
+}
+h2 {
+    margin-bottom:0px;
+    padding-bottom:0px;
+    font-size:20px;
+    white-space:nowrap;
+}
+span.section {
+    font-weight:bold;
+    cursor:pointer;
+    font-size:16px;
+    color:#003E69;
+    white-space:nowrap;
+    margin-left:5px;
+}
+span.new_sign {
+    font-weight:bold;
+    margin-left:26px;
+    font-size:16px;
+    color:#003E69;
+}
+span.new_sign_lbl {
+    margin-left:28px;
+    font-size:14px;
+    color:Black;
+}
+span:hover.section {
+    color:#336699;
+}
+span.section_affected {
+    cursor:pointer;
+    margin-left:7px;
+    padding-left:15px;
+    font-size:14px;
+    color:#cc3300;
+}
+span.section_info {
+    cursor:pointer;
+    margin-left:7px;
+    padding-left:15px;
+    font-size:14px;
+    color:Black;
+}
+span.extendable {
+    font-weight:100;
+    font-size:16px;
+}
+span.h_name {
+    color:#cc3300;
+    font-size:14px;
+    font-weight:bold;
+}
+div.h_list {
+    font-size:15px;
+    padding-left:5px;
+}
+span.ns {
+    color:#408080;
+    font-size:15px;
+}
+div.lib_list {
+    font-size:15px;
+    padding-left:5px;
+}
+span.lib_name {
+    color:Green;
+    font-size:14px;
+    font-weight:bold;
+}
+span.iname {
+    font-weight:bold;
+    font-size:16px;
+    color:#003E69;
+    margin-left:5px;
+}
+span.iname_b {
+    font-weight:bold;
+    font-size:15px;
+}
+span.iname_a {
+    color:#333333;
+    font-weight:bold;
+    font-size:15px;
+}
+span.sym_p {
+    font-weight:normal;
+    white-space:normal;
+}
+span.sym_kind {
+    color:Black;
+    font-weight:normal;
+}
+div.affect {
+    padding-left:15px;
+    padding-bottom:4px;
+    font-size:14px;
+    font-style:italic;
+    line-height:13px;
+}
+div.affected {
+    padding-left:30px;
+    padding-top:5px;
+}
+table.ptable {
+    border-collapse:collapse;
+    border:1px outset black;
+    line-height:16px;
+    margin-left:15px;
+    margin-top:3px;
+    margin-bottom:3px;
+    width:900px;
+}
+table.ptable td {
+    border:1px solid gray;
+    padding: 3px;
+}
+table.vtable {
+    border-collapse:collapse;
+    border:1px outset black;
+    line-height:16px;
+    margin-left:30px;
+    margin-top:10px;
+    width:100px;
+}
+table.vtable td {
+    border:1px solid gray;
+    white-space:nowrap;
+    padding: 3px;
+}
+table.ptable th, table.vtable th {
+    background-color:#eeeeee;
+    font-weight:bold;
+    color:#333333;
+    font-family:Verdana, Arial;
+    font-size:13px;
+    border:1px solid gray;
+    text-align:center;
+    vertical-align:top;
+    white-space:nowrap;
+    padding: 3px;
+}
+table.summary {
+    border-collapse:collapse;
+    border:1px outset black;
+}
+table.summary th {
+    background-color:#eeeeee;
+    font-weight:100;
+    text-align:left;
+    font-size:15px;
+    white-space:nowrap;
+    border:1px inset gray;
+    padding: 3px;
+}
+table.summary td {
+    text-align:right;
+    font-size:16px;
+    white-space:nowrap;
+    border:1px inset gray;
+    padding: 3px 5px 3px 10px;
+}
+table.code_view {
+    cursor:text;
+    margin-top:7px;
+    margin-left:15px;
+    font-family:Monaco, Consolas, 'DejaVu Sans Mono', 'Droid Sans Mono', Monospace;
+    font-size:14px;
+    padding:10px;
+    border:1px solid #e0e8e5;
+    color:#444444;
+    background-color:#eff3f2;
+    overflow:auto;
+}
+table.code_view td {
+    padding-left:15px;
+    text-align:left;
+    white-space:nowrap;
+}
+span.mangled {
+    padding-left:15px;
+    font-size:14px;
+    cursor:text;
+    color:#444444;
+}
+span.sym_ver {
+    color:#333333;
+    white-space:nowrap;
+}
+span.color_p {
+    font-style:italic;
+    color:Brown;
+}
+span.param {
+    font-style:italic;
+}
+span.focus_p {
+    font-style:italic;
+    color:Red;
+}
+span.ttype {
+    font-weight:100;
+}
+span.nowrap {
+    white-space:nowrap;
+}
+span.value {
+    white-space:nowrap;
+    font-weight:bold;
+}
+td.passed {
+    background-color:#CCFFCC;
+}
+td.warning {
+    background-color:#F4F4AF;
+}
+td.failed {
+    background-color:#FFCCCC;
+}
+td.new {
+    background-color:#C6DEFF;
+}
+.tabset {
+    float:left;
+}
+a.tab {
+    border:1px solid #AAA;
+    float:left;
+    margin:0px 5px -1px 0px;
+    padding:3px 5px 3px 5px;
+    position:relative;
+    font-size:14px;
+    background-color:#DDD;
+    text-decoration:none;
+    color:Black;
+}
+a.disabled:hover
+{
+    color:Black;
+    background:#EEE;
+}
+a.active:hover
+{
+    color:Black;
+    background:White;
+}
+a.active {
+    border-bottom-color:White;
+    background-color:White;
+}
+div.tab {
+    border:1px solid #AAA;
+    padding:0 7px 0 12px;
+    width:97%;
+    clear:both;
+}
+    </style>
+    <script type="text/javascript" language="JavaScript">
+    <!--
+    function showContent(header, id)
+{
+    e = document.getElementById(id);
+    if(e.style.display == 'none')
+    {
+        e.style.display = 'block';
+        e.style.visibility = 'visible';
+        header.innerHTML = header.innerHTML.replace(/\[[^0-9 ]\]/gi,"[&minus;]");
+    }
+    else
+    {
+        e.style.display = 'none';
+        e.style.visibility = 'hidden';
+        header.innerHTML = header.innerHTML.replace(/\[[^0-9 ]\]/gi,"[+]");
+    }
+}
+function initTabs()
+{
+    var url = window.location.href;
+    if(url.indexOf('_Source_')!=-1 || url.indexOf('#Source')!=-1)
+    {
+        var tab1 = document.getElementById('BinaryID');
+        var tab2 = document.getElementById('SourceID');
+        tab1.className='tab disabled';
+        tab2.className='tab active';
+    }
+    var sets = document.getElementsByTagName('div');
+    for (var i = 0; i < sets.length; i++)
+    {
+        if (sets[i].className.indexOf('tabset') != -1)
+        {
+            var tabs = [];
+            var links = sets[i].getElementsByTagName('a');
+            for (var j = 0; j < links.length; j++)
+            {
+                if (links[j].className.indexOf('tab') != -1)
+                {
+                    tabs.push(links[j]);
+                    links[j].tabs = tabs;
+                    var tab = document.getElementById(links[j].href.substr(links[j].href.indexOf('#') + 1));
+                    //reset all tabs on start
+                    if (tab)
+                    {
+                        if (links[j].className.indexOf('active')!=-1) {
+                            tab.style.display = 'block';
+                        }
+                        else {
+                            tab.style.display = 'none';
+                        }
+                    }
+                    links[j].onclick = function()
+                    {
+                        var tab = document.getElementById(this.href.substr(this.href.indexOf('#') + 1));
+                        if (tab)
+                        {
+                            //reset all tabs before change
+                            for (var k = 0; k < this.tabs.length; k++)
+                            {
+                                document.getElementById(this.tabs[k].href.substr(this.tabs[k].href.indexOf('#') + 1)).style.display = 'none';
+                                this.tabs[k].className = this.tabs[k].className.replace('active', 'disabled');
+                            }
+                            this.className = 'tab active';
+                            tab.style.display = 'block';
+                            // window.location.hash = this.id.replace('ID', '');
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if(url.indexOf('#')!=-1) {
+        location.href=location.href;
+    }
+}
+if (window.addEventListener) window.addEventListener('load', initTabs, false);
+else if (window.attachEvent) window.attachEvent('onload', initTabs);
+    -->
+    </script>
+    </head><body><a name='Source'></a><a name='Binary'></a><a name='Top'></a><h1><span class='nowrap'>API compatibility report for the <span style='color:Blue;'>libnetconf</span> library</span> <span class='nowrap'>&#160;between <span style='color:Red;'>0.2.3</span> and <span style='color:Red;'>0.3.0</span> versions on <span style='color:Blue;'>x86_64</span></span></h1>
+
+            <br/><div class='tabset'>
+            <a id='BinaryID' href='#BinaryTab' class='tab active'>Binary<br/>Compatibility</a>
+            <a id='SourceID' href='#SourceTab' style='margin-left:3px' class='tab disabled'>Source<br/>Compatibility</a>
+            </div><div id='BinaryTab' class='tab'>
+<h2>Test Info</h2><hr/>
+<table class='summary'>
+<tr><th>Library Name</th><td>libnetconf</td></tr>
+<tr><th>Version #1</th><td>0.2.3</td></tr>
+<tr><th>Version #2</th><td>0.3.0</td></tr>
+<tr><th>CPU Type</th><td>x86_64</td></tr>
+<tr><th>GCC Version</th><td>4.7</td></tr>
+<tr><th>Subject</th><td width='150px'>Binary Compatibility</td></tr>
+</table>
+<h2>Test Results</h2><hr/>
+<table class='summary'><tr><th>Total Header Files</th><td><a href='#Headers' style='color:Blue;'>10</a></td></tr>
+<tr><th>Total Shared Libraries</th><td><a href='#Libs' style='color:Blue;'>1</a></td></tr>
+<tr><th>Total Symbols / Types</th><td>124 / 86</td></tr>
+<tr><th>Verdict</th><td><span style='color:Red;'><b>Incompatible<br/>(4.4%)</b></span></td></tr>
+</table>
+<h2>Problem Summary</h2><hr/>
+<table class='summary'><tr><th></th><th style='text-align:center;'>Severity</th><th style='text-align:center;'>Count</th></tr><tr><th>Added Symbols</th><td>-</td><td class='new'><a href='#Binary_Added' style='color:Blue;'>17</a></td></tr>
+<tr><th>Removed Symbols</th><td>High</td><td>0</td></tr>
+<tr><th rowspan='3'>Problems with<br/>Data Types</th><td>High</td><td>0</td></tr>
+<tr><td>Medium</td><td class='failed'><a href='#Type_Binary_Problems_Medium' style='color:Blue;'>3</a></td></tr>
+<tr><td>Low</td><td class='warning'><a href='#Type_Binary_Problems_Low' style='color:Blue;'>2</a></td></tr>
+<tr><th rowspan='3'>Problems with<br/>Symbols</th><td>High</td><td class='failed'><a href='#Symbol_Binary_Problems_High' style='color:Blue;'>2</a></td></tr>
+<tr><td>Medium</td><td class='failed'><a href='#Symbol_Binary_Problems_Medium' style='color:Blue;'>6</a></td></tr>
+<tr><td>Low</td><td class='warning'><a href='#Symbol_Binary_Problems_Low' style='color:Blue;'>1</a></td></tr>
+<tr><th>Problems with<br/>Constants</th><td>Low</td><td>0</td></tr>
+<tr><th>Other Changes<br/>in Data Types</th><td>-</td><td class='passed'><a href='#Other_Binary_Changes_In_Types' style='color:Blue;'>1</a></td></tr>
+</table>
+
+<a name='Binary_Added'></a><h2>Added Symbols (17)</h2><hr/>
+<span class='h_name'>messages.h</span>, <span class='lib_name'>libnetconf.so.0.3.0</span><br/>
+<span class="iname">nc_rpc_capability_attr&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc* <span class='color_p'>rpc</span>,</span> enum NC_CAP_ATTR <span class='color_p'>attr</span>, <span class='nowrap'>... )</span></span></span><br/>
+<span class="iname">nc_rpc_get_testopt&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='color_p'>rpc</span> )</span></span></span><br/>
+<br/>
+<span class='h_name'>messages_xml.h</span>, <span class='lib_name'>libnetconf.so.0.3.0</span><br/>
+<span class="iname">ncxml_filter_new&#160;<span class='sym_p'>(&#160;NC_FILTER_TYPE <span class='color_p'>type</span>, <span class='nowrap'>... )</span></span></span><br/>
+<span class="iname">ncxml_reply_build&#160;<span class='sym_p'>(&#160;<span class='nowrap'>xmlDocPtr <span class='color_p'>reply_dump</span> )</span></span></span><br/>
+<span class="iname">ncxml_reply_data&#160;<span class='sym_p'>(&#160;<span class='nowrap'>xmlNodePtr const <span class='color_p'>data</span> )</span></span></span><br/>
+<span class="iname">ncxml_reply_dump&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_reply const* <span class='color_p'>reply</span> )</span></span></span><br/>
+<span class="iname">ncxml_reply_get_data&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_reply const* <span class='color_p'>reply</span> )</span></span></span><br/>
+<span class="iname">ncxml_rpc_build&#160;<span class='sym_p'>(&#160;<span class='nowrap'>xmlDocPtr <span class='color_p'>rpc_dump</span> )</span></span></span><br/>
+<span class="iname">ncxml_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, NC_DATASTORE <span class='color_p'>target</span>, <span class='nowrap'>... )</span></span></span><br/>
+<span class="iname">ncxml_rpc_dump&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='color_p'>rpc</span> )</span></span></span><br/>
+<span class="iname">ncxml_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>target</span>, NC_DATASTORE <span class='color_p'>source</span>, NC_EDIT_DEFOP_TYPE <span class='color_p'>default_operation</span>, enum NC_EDIT_ERROPT_TYPE <span class='color_p'>error_option</span>, enum NC_EDIT_TESTOPT_TYPE <span class='color_p'>test_option</span>, <span class='nowrap'>... )</span></span></span><br/>
+<span class="iname">ncxml_rpc_generic&#160;<span class='sym_p'>(&#160;<span class='nowrap'>xmlNodePtr const <span class='color_p'>data</span> )</span></span></span><br/>
+<span class="iname">ncxml_rpc_get_config&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='color_p'>rpc</span> )</span></span></span><br/>
+<span class="iname">ncxml_rpc_get_op_content&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='color_p'>rpc</span> )</span></span></span><br/>
+<br/>
+<span class='h_name'>notifications_xml.h</span>, <span class='lib_name'>libnetconf.so.0.3.0</span><br/>
+<span class="iname">ncxmlntf_event_new&#160;<span class='sym_p'>(&#160;<span class='nowrap'>time_t <span class='color_p'>etime</span>,</span> enum NCNTF_EVENT <span class='color_p'>event</span>, <span class='nowrap'>... )</span></span></span><br/>
+<span class="iname">ncxmlntf_notif_create&#160;<span class='sym_p'>(&#160;time_t <span class='color_p'>event_time</span>, <span class='nowrap'>xmlNodePtr const <span class='color_p'>content</span> )</span></span></span><br/>
+<span class="iname">ncxmlntf_notif_get_content&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_ntf* <span class='color_p'>notif</span> )</span></span></span><br/>
+<br/>
+<a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='High_Risk_Binary_Problems'></a><a name='Symbol_Binary_Problems_High'></a><a name='Interface_Binary_Problems_High'></a>
+<h2>Problems with Symbols, High Severity (2)</h2><hr/>
+<span class='h_name'>messages.h</span>, <span class='lib_name'>libnetconf.so.0.2.3</span><br/>
+<span class="section" onclick="javascript:showContent(this, 'c_1')">
+<span class='extendable'>[+]</span> nc_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, NC_DATASTORE <span class='color_p'>target</span>, enum NCWD_MODE <span class='color_p'>withdefaults</span>, <span class='nowrap'>char const* <span class='color_p'>data</span> )</span></span> (1)</span>
+<br/>
+<div id="c_1" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, NC_DATASTORE <span class='color_p'>target</span>, <span class='nowrap'>... )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'><b>3rd</b> middle parameter <b>withdefaults</b> has been removed from the calling stack.</td><td align='left' valign='top'>Layout of parameter's stack has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</td></tr>
+</table><br/>
+</div>
+<span class="section" onclick="javascript:showContent(this, 'c_2')">
+<span class='extendable'>[+]</span> nc_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>target</span>, NC_EDIT_DEFOP_TYPE <span class='color_p'>default_operation</span>, enum NC_EEDIT_RROPT_TYPE <span class='color_p'>error_option</span>, <span class='nowrap'>char const* <span class='color_p'>data</span> )</span></span> (1)</span>
+<br/>
+<div id="c_2" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>target</span>, NC_DATASTORE <span class='color_p'>source</span>, NC_EDIT_DEFOP_TYPE <span class='color_p'>default_operation</span>, enum NC_EDIT_ERROPT_TYPE <span class='color_p'>error_option</span>, enum NC_EDIT_TESTOPT_TYPE <span class='color_p'>test_option</span>, <span class='nowrap'>... )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Parameter <b>source</b> of type <b>NC_DATASTORE</b> has been added to the calling stack at the middle position.</td><td align='left' valign='top'>Layout of parameter's stack has been changed and therefore parameters at higher positions in the stack may be incorrectly initialized by applications.</td></tr>
+</table><br/>
+</div>
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Medium_Risk_Binary_Problems'></a><a name='Type_Binary_Problems_Medium'></a>
+<h2>Problems with Data Types, Medium Severity (3)</h2><hr/>
+<span class='h_name'>netconf.h</span><br/>
+<span class="section" onclick="javascript:showContent(this, 'c_3')">
+<span class='extendable'>[+]</span> <span class='ttype'>enum</span> NC_DATASTORE_TYPE (3)</span>
+<br/>
+<div id="c_3" style="display:none;">
+<table class='ptable'><tr>
+<th width='2%'></th><th width='47%'>Change</th>
+<th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Value of member <b>NC_DATASTORE_CANDIDATE</b> has been changed from <b>4</b> to <b>5</b>.</td><td align='left' valign='top'>Applications may execute a wrong branch of code in the library and therefore change the behavior.</td></tr>
+<tr><th>2</th><td align='left' valign='top'>Value of member <b>NC_DATASTORE_RUNNING</b> has been changed from <b>2</b> to <b>3</b>.</td><td align='left' valign='top'>Applications may execute a wrong branch of code in the library and therefore change the behavior.</td></tr>
+<tr><th>3</th><td align='left' valign='top'>Value of member <b>NC_DATASTORE_STARTUP</b> has been changed from <b>3</b> to <b>4</b>.</td><td align='left' valign='top'>Applications may execute a wrong branch of code in the library and therefore change the behavior.</td></tr>
+</table>
+<span class="section_affected" onclick="javascript:showContent(this, 'c_4')">
+[+] affected symbols (8)</span>
+<div id="c_4" style="display:none;">
+<div class='affected'><span class='iname_a'>nc_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='param'>source</span>, NC_DATASTORE <span class='focus_p'>target</span>, enum NCWD_MODE <span class='param'>withdefaults</span>, <span class='nowrap'>char const* <span class='param'>data</span> )</span></span></span><br/><div class='affect'>2nd parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_deleteconfig&#160;<span class='sym_p'>(&#160;<span class='nowrap'>NC_DATASTORE <span class='focus_p'>target</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='focus_p'>target</span>, NC_EDIT_DEFOP_TYPE <span class='param'>default_operation</span>, enum NC_EEDIT_RROPT_TYPE <span class='param'>error_option</span>, <span class='nowrap'>char const* <span class='param'>data</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_get_source&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='param'>rpc</span> )</span></span></span><br/><div class='affect'>Return value has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_get_target&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='param'>rpc</span> )</span></span></span><br/><div class='affect'>Return value has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_getconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='focus_p'>source</span>, struct nc_filter const* <span class='param'>filter</span>, <span class='nowrap'>enum NCWD_MODE <span class='param'>withdefaults</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;source&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_lock&#160;<span class='sym_p'>(&#160;<span class='nowrap'>NC_DATASTORE <span class='focus_p'>target</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_unlock&#160;<span class='sym_p'>(&#160;<span class='nowrap'>NC_DATASTORE <span class='focus_p'>target</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+</div></div>
+<br/><br/></div>
+
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Symbol_Binary_Problems_Medium'></a><a name='Interface_Binary_Problems_Medium'></a>
+<h2>Problems with Symbols, Medium Severity (6)</h2><hr/>
+<span class='h_name'>messages.h</span>, <span class='lib_name'>libnetconf.so.0.2.3</span><br/>
+<span class="section" onclick="javascript:showContent(this, 'c_5')">
+<span class='extendable'>[+]</span> nc_reply_get_type&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_reply const* <span class='color_p'>reply</span> )</span></span> (1)</span>
+<br/>
+<div id="c_5" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_reply_get_type&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_reply* <span class='color_p'>reply</span> )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Type of <b>1st</b> parameter <b>reply</b> has been changed from <span class='value'>nc_reply const*</span> to <b>nc_reply*</b> (became <b>non-const</b>).</td><td align='left' valign='top'>This function may change parameter <b>reply</b>, but it will be treated as const by old client applications. This may result in crash or incorrect behavior of applications.</td></tr>
+</table><br/>
+</div>
+<span class="section" onclick="javascript:showContent(this, 'c_6')">
+<span class='extendable'>[+]</span> nc_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, NC_DATASTORE <span class='color_p'>target</span>, enum NCWD_MODE <span class='color_p'>withdefaults</span>, <span class='nowrap'>char const* <span class='color_p'>data</span> )</span></span> (1)</span>
+<br/>
+<div id="c_6" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, NC_DATASTORE <span class='color_p'>target</span>, <span class='nowrap'>... )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'><b>4th</b> parameter <b>data</b> has been removed from the calling stack.</td><td align='left' valign='top'>This parameter will be ignored by the function.</td></tr>
+</table><br/>
+</div>
+<span class="section" onclick="javascript:showContent(this, 'c_7')">
+<span class='extendable'>[+]</span> nc_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>target</span>, NC_EDIT_DEFOP_TYPE <span class='color_p'>default_operation</span>, enum NC_EEDIT_RROPT_TYPE <span class='color_p'>error_option</span>, <span class='nowrap'>char const* <span class='color_p'>data</span> )</span></span> (1)</span>
+<br/>
+<div id="c_7" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>target</span>, NC_DATASTORE <span class='color_p'>source</span>, NC_EDIT_DEFOP_TYPE <span class='color_p'>default_operation</span>, enum NC_EDIT_ERROPT_TYPE <span class='color_p'>error_option</span>, enum NC_EDIT_TESTOPT_TYPE <span class='color_p'>test_option</span>, <span class='nowrap'>... )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Parameter <b>test_option</b> of type <span class='value'>enum NC_EDIT_TESTOPT_TYPE</span> has been added to the calling stack.</td><td align='left' valign='top'>This parameter will not be initialized by old clients.</td></tr>
+</table><br/>
+</div>
+<span class="section" onclick="javascript:showContent(this, 'c_8')">
+<span class='extendable'>[+]</span> nc_rpc_get&#160;<span class='sym_p'>(&#160;struct nc_filter const* <span class='color_p'>filter</span>, <span class='nowrap'>enum NCWD_MODE <span class='color_p'>withdefaults</span> )</span></span> (1)</span>
+<br/>
+<div id="c_8" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_get&#160;<span class='sym_p'>(&#160;<span class='nowrap'>struct nc_filter const* <span class='color_p'>filter</span> )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'><b>2nd</b> parameter <b>withdefaults</b> has been removed from the calling stack.</td><td align='left' valign='top'>This parameter will be ignored by the function.</td></tr>
+</table><br/>
+</div>
+<span class="section" onclick="javascript:showContent(this, 'c_9')">
+<span class='extendable'>[+]</span> nc_rpc_get_type&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='color_p'>rpc</span> )</span></span> (1)</span>
+<br/>
+<div id="c_9" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_get_type&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc* <span class='color_p'>rpc</span> )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Type of <b>1st</b> parameter <b>rpc</b> has been changed from <span class='value'>nc_rpc const*</span> to <b>nc_rpc*</b> (became <b>non-const</b>).</td><td align='left' valign='top'>This function may change parameter <b>rpc</b>, but it will be treated as const by old client applications. This may result in crash or incorrect behavior of applications.</td></tr>
+</table><br/>
+</div>
+<span class="section" onclick="javascript:showContent(this, 'c_10')">
+<span class='extendable'>[+]</span> nc_rpc_getconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, struct nc_filter const* <span class='color_p'>filter</span>, <span class='nowrap'>enum NCWD_MODE <span class='color_p'>withdefaults</span> )</span></span> (1)</span>
+<br/>
+<div id="c_10" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_getconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, <span class='nowrap'>struct nc_filter const* <span class='color_p'>filter</span> )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'><b>3rd</b> parameter <b>withdefaults</b> has been removed from the calling stack.</td><td align='left' valign='top'>This parameter will be ignored by the function.</td></tr>
+</table><br/>
+</div>
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Low_Risk_Binary_Problems'></a><a name='Type_Binary_Problems_Low'></a>
+<h2>Problems with Data Types, Low Severity (2)</h2><hr/>
+<span class='h_name'>netconf.h</span><br/>
+<span class="section" onclick="javascript:showContent(this, 'c_11')">
+<span class='extendable'>[+]</span> <span class='ttype'>enum</span> NCWD_MODE (1)</span>
+<br/>
+<div id="c_11" style="display:none;">
+<table class='ptable'><tr>
+<th width='2%'></th><th width='47%'>Change</th>
+<th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Name of member with value <b>0</b> has been changed from <b>NCWD_MODE_DISABLED</b> to <b>NCWD_MODE_NOTSET</b>.</td><td align='left' valign='top'>Applications may execute a wrong branch of code in the library and therefore change the behavior.</td></tr>
+</table>
+<span class="section_affected" onclick="javascript:showContent(this, 'c_12')">
+[+] affected symbols (6)</span>
+<div id="c_12" style="display:none;">
+<div class='affected'><span class='iname_a'>ncdflt_get_basic_mode&#160;<span class='sym_p'>(&#160;)</span></span><br/><div class='affect'>Return value has type &#39;enum NCWD_MODE&#39;.</div>
+<span class='iname_a'>ncdflt_get_supported&#160;<span class='sym_p'>(&#160;)</span></span><br/><div class='affect'>Return value has type &#39;enum NCWD_MODE&#39;.</div>
+<span class='iname_a'>ncdflt_rpc_get_withdefaults&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='param'>rpc</span> )</span></span></span><br/><div class='affect'>Return value has type &#39;enum NCWD_MODE&#39;.</div>
+<span class='iname_a'>ncdflt_rpc_withdefaults&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc* <span class='param'>rpc</span>,</span> <span class='nowrap'>enum NCWD_MODE <span class='focus_p'>mode</span> )</span></span></span><br/><div class='affect'>2nd parameter &#39;mode&#39; has type &#39;enum NCWD_MODE&#39;.</div>
+<span class='iname_a'>ncdflt_set_basic_mode&#160;<span class='sym_p'>(&#160;<span class='nowrap'>enum NCWD_MODE <span class='focus_p'>mode</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;mode&#39; has type &#39;enum NCWD_MODE&#39;.</div>
+<span class='iname_a'>ncdflt_set_supported&#160;<span class='sym_p'>(&#160;<span class='nowrap'>enum NCWD_MODE <span class='focus_p'>modes</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;modes&#39; has type &#39;enum NCWD_MODE&#39;.</div>
+</div></div>
+<br/><br/></div>
+
+<span class="section" onclick="javascript:showContent(this, 'c_13')">
+<span class='extendable'>[+]</span> <span class='ttype'>typedef</span> NC_EDIT_ERROPT_TYPE (1)</span>
+<br/>
+<div id="c_13" style="display:none;">
+<table class='ptable'><tr>
+<th width='2%'></th><th width='47%'>Change</th>
+<th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Base type has been changed from <span class='value'>enum NC_EEDIT_RROPT_TYPE</span> to <span class='value'>enum NC_EDIT_ERROPT_TYPE</span>.</td><td align='left' valign='top'>Possible incorrect initialization of parameters by applications.</td></tr>
+</table>
+<span class="section_affected" onclick="javascript:showContent(this, 'c_14')">
+[+] affected symbols (1)</span>
+<div id="c_14" style="display:none;">
+<div class='affected'><span class='iname_a'>nc_rpc_get_erropt&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='param'>rpc</span> )</span></span></span><br/><div class='affect'>Return value has type &#39;NC_EDIT_ERROPT_TYPE&#39;.</div>
+</div></div>
+<br/><br/></div>
+
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Symbol_Binary_Problems_Low'></a><a name='Interface_Binary_Problems_Low'></a>
+<h2>Problems with Symbols, Low Severity (1)</h2><hr/>
+<span class='h_name'>messages.h</span>, <span class='lib_name'>libnetconf.so.0.2.3</span><br/>
+<span class="section" onclick="javascript:showContent(this, 'c_15')">
+<span class='extendable'>[+]</span> nc_filter_new&#160;<span class='sym_p'>(&#160;NC_FILTER_TYPE <span class='color_p'>type</span>, <span class='nowrap'>char const* <span class='color_p'>filter</span> )</span></span> (1)</span>
+<br/>
+<div id="c_15" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_filter_new&#160;<span class='sym_p'>(&#160;NC_FILTER_TYPE <span class='color_p'>type</span>, <span class='nowrap'>... )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Type of <b>2nd</b> parameter <b>filter</b> has been changed from <span class='value'>char const*</span> to <span class='nowrap'><b>... (va_list)</b></span>.</td><td align='left' valign='top'>The semantic meaning of the parameter may change.</td></tr>
+</table><br/>
+</div>
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Other_Binary_Changes'></a><a name='Other_Binary_Changes_In_Types'></a>
+<h2>Other Changes in Data Types (1)</h2><hr/>
+<span class='h_name'>netconf.h</span><br/>
+<span class="section" onclick="javascript:showContent(this, 'c_16')">
+<span class='extendable'>[+]</span> <span class='ttype'>enum</span> NC_DATASTORE_TYPE (1)</span>
+<br/>
+<div id="c_16" style="display:none;">
+<table class='ptable'><tr>
+<th width='2%'></th><th width='47%'>Change</th>
+<th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>The member <b>NC_DATASTORE_URL</b> with value <b>2</b> has been added.</td><td align='left' valign='top'>No effect.</td></tr>
+</table>
+<span class="section_affected" onclick="javascript:showContent(this, 'c_17')">
+[+] affected symbols (8)</span>
+<div id="c_17" style="display:none;">
+<div class='affected'><span class='iname_a'>nc_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='param'>source</span>, NC_DATASTORE <span class='focus_p'>target</span>, enum NCWD_MODE <span class='param'>withdefaults</span>, <span class='nowrap'>char const* <span class='param'>data</span> )</span></span></span><br/><div class='affect'>2nd parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_deleteconfig&#160;<span class='sym_p'>(&#160;<span class='nowrap'>NC_DATASTORE <span class='focus_p'>target</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='focus_p'>target</span>, NC_EDIT_DEFOP_TYPE <span class='param'>default_operation</span>, enum NC_EEDIT_RROPT_TYPE <span class='param'>error_option</span>, <span class='nowrap'>char const* <span class='param'>data</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_get_source&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='param'>rpc</span> )</span></span></span><br/><div class='affect'>Return value has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_get_target&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='param'>rpc</span> )</span></span></span><br/><div class='affect'>Return value has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_getconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='focus_p'>source</span>, struct nc_filter const* <span class='param'>filter</span>, <span class='nowrap'>enum NCWD_MODE <span class='param'>withdefaults</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;source&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_lock&#160;<span class='sym_p'>(&#160;<span class='nowrap'>NC_DATASTORE <span class='focus_p'>target</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_unlock&#160;<span class='sym_p'>(&#160;<span class='nowrap'>NC_DATASTORE <span class='focus_p'>target</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+</div></div>
+<br/><br/></div>
+
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Headers'></a><h2>Header Files (10)</h2><hr/>
+<div class='h_list'>
+callbacks.h<br/>
+datastore.h<br/>
+error.h<br/>
+libnetconf.h<br/>
+messages.h<br/>
+netconf.h<br/>
+notifications.h<br/>
+session.h<br/>
+ssh.h<br/>
+with_defaults.h<br/>
+</div>
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Libs'></a><h2>Shared Libraries (1)</h2><hr/>
+<div class='lib_list'>
+libnetconf.so.0.2.3<br/>
+</div>
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<br/><br/><br/></div><div id='SourceTab' class='tab'>
+<h2>Test Info</h2><hr/>
+<table class='summary'>
+<tr><th>Library Name</th><td>libnetconf</td></tr>
+<tr><th>Version #1</th><td>0.2.3</td></tr>
+<tr><th>Version #2</th><td>0.3.0</td></tr>
+<tr><th>CPU Type</th><td>x86_64</td></tr>
+<tr><th>GCC Version</th><td>4.7</td></tr>
+<tr><th>Subject</th><td width='150px'>Source Compatibility</td></tr>
+</table>
+<h2>Test Results</h2><hr/>
+<table class='summary'><tr><th>Total Header Files</th><td><a href='#Headers' style='color:Blue;'>10</a></td></tr>
+<tr><th>Total Shared Libraries</th><td><a href='#Libs' style='color:Blue;'>1</a></td></tr>
+<tr><th>Total Symbols / Types</th><td>124 / 86</td></tr>
+<tr><th>Verdict</th><td><span style='color:Red;'><b>Incompatible<br/>(7.3%)</b></span></td></tr>
+</table>
+<h2>Problem Summary</h2><hr/>
+<table class='summary'><tr><th></th><th style='text-align:center;'>Severity</th><th style='text-align:center;'>Count</th></tr><tr><th>Added Symbols</th><td>-</td><td class='new'><a href='#Source_Added' style='color:Blue;'>17</a></td></tr>
+<tr><th>Removed Symbols</th><td>High</td><td>0</td></tr>
+<tr><th rowspan='3'>Problems with<br/>Data Types</th><td>High</td><td class='failed'><a href='#Type_Source_Problems_High' style='color:Blue;'>1</a></td></tr>
+<tr><td>Medium</td><td>0</td></tr>
+<tr><td>Low</td><td class='warning'><a href='#Type_Source_Problems_Low' style='color:Blue;'>1</a></td></tr>
+<tr><th rowspan='3'>Problems with<br/>Symbols</th><td>High</td><td class='failed'><a href='#Symbol_Source_Problems_High' style='color:Blue;'>2</a></td></tr>
+<tr><td>Medium</td><td class='failed'><a href='#Symbol_Source_Problems_Medium' style='color:Blue;'>6</a></td></tr>
+<tr><td>Low</td><td>0</td></tr>
+<tr><th>Problems with<br/>Constants</th><td>Low</td><td>0</td></tr>
+<tr><th>Other Changes<br/>in Data Types</th><td>-</td><td class='passed'><a href='#Other_Source_Changes_In_Types' style='color:Blue;'>4</a></td></tr>
+<tr><th>Other Changes<br/>in Symbols</th><td>-</td><td class='passed'><a href='#Other_Source_Changes_In_Symbols' style='color:Blue;'>1</a></td></tr>
+</table>
+
+<a name='Source_Added'></a><h2>Added Symbols (17)</h2><hr/>
+<span class='h_name'>messages.h</span><br/>
+<span class="iname">nc_rpc_capability_attr&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc* <span class='color_p'>rpc</span>,</span> enum NC_CAP_ATTR <span class='color_p'>attr</span>, <span class='nowrap'>... )</span></span></span><br/>
+<span class="iname">nc_rpc_get_testopt&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='color_p'>rpc</span> )</span></span></span><br/>
+<br/>
+<span class='h_name'>messages_xml.h</span><br/>
+<span class="iname">ncxml_filter_new&#160;<span class='sym_p'>(&#160;NC_FILTER_TYPE <span class='color_p'>type</span>, <span class='nowrap'>... )</span></span></span><br/>
+<span class="iname">ncxml_reply_build&#160;<span class='sym_p'>(&#160;<span class='nowrap'>xmlDocPtr <span class='color_p'>reply_dump</span> )</span></span></span><br/>
+<span class="iname">ncxml_reply_data&#160;<span class='sym_p'>(&#160;<span class='nowrap'>xmlNodePtr const <span class='color_p'>data</span> )</span></span></span><br/>
+<span class="iname">ncxml_reply_dump&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_reply const* <span class='color_p'>reply</span> )</span></span></span><br/>
+<span class="iname">ncxml_reply_get_data&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_reply const* <span class='color_p'>reply</span> )</span></span></span><br/>
+<span class="iname">ncxml_rpc_build&#160;<span class='sym_p'>(&#160;<span class='nowrap'>xmlDocPtr <span class='color_p'>rpc_dump</span> )</span></span></span><br/>
+<span class="iname">ncxml_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, NC_DATASTORE <span class='color_p'>target</span>, <span class='nowrap'>... )</span></span></span><br/>
+<span class="iname">ncxml_rpc_dump&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='color_p'>rpc</span> )</span></span></span><br/>
+<span class="iname">ncxml_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>target</span>, NC_DATASTORE <span class='color_p'>source</span>, NC_EDIT_DEFOP_TYPE <span class='color_p'>default_operation</span>, enum NC_EDIT_ERROPT_TYPE <span class='color_p'>error_option</span>, enum NC_EDIT_TESTOPT_TYPE <span class='color_p'>test_option</span>, <span class='nowrap'>... )</span></span></span><br/>
+<span class="iname">ncxml_rpc_generic&#160;<span class='sym_p'>(&#160;<span class='nowrap'>xmlNodePtr const <span class='color_p'>data</span> )</span></span></span><br/>
+<span class="iname">ncxml_rpc_get_config&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='color_p'>rpc</span> )</span></span></span><br/>
+<span class="iname">ncxml_rpc_get_op_content&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='color_p'>rpc</span> )</span></span></span><br/>
+<br/>
+<span class='h_name'>notifications_xml.h</span><br/>
+<span class="iname">ncxmlntf_event_new&#160;<span class='sym_p'>(&#160;<span class='nowrap'>time_t <span class='color_p'>etime</span>,</span> enum NCNTF_EVENT <span class='color_p'>event</span>, <span class='nowrap'>... )</span></span></span><br/>
+<span class="iname">ncxmlntf_notif_create&#160;<span class='sym_p'>(&#160;time_t <span class='color_p'>event_time</span>, <span class='nowrap'>xmlNodePtr const <span class='color_p'>content</span> )</span></span></span><br/>
+<span class="iname">ncxmlntf_notif_get_content&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_ntf* <span class='color_p'>notif</span> )</span></span></span><br/>
+<br/>
+<a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='High_Risk_Source_Problems'></a><a name='Type_Source_Problems_High'></a>
+<h2>Problems with Data Types, High Severity (1)</h2><hr/>
+<span class='h_name'>netconf.h</span><br/>
+<span class="section" onclick="javascript:showContent(this, 'c_18')">
+<span class='extendable'>[+]</span> <span class='ttype'>enum</span> NCWD_MODE (1)</span>
+<br/>
+<div id="c_18" style="display:none;">
+<table class='ptable'><tr>
+<th width='2%'></th><th width='47%'>Change</th>
+<th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Name of member with value <b>0</b> has been changed from <b>NCWD_MODE_DISABLED</b> to <b>NCWD_MODE_NOTSET</b>.</td><td align='left' valign='top'>Recompilation of a client program may be broken with the error message: '<b>NCWD_MODE_DISABLED</b>' was not declared in this scope.</td></tr>
+</table>
+<span class="section_affected" onclick="javascript:showContent(this, 'c_19')">
+[+] affected symbols (6)</span>
+<div id="c_19" style="display:none;">
+<div class='affected'><span class='iname_a'>ncdflt_get_basic_mode&#160;<span class='sym_p'>(&#160;)</span></span><br/><div class='affect'>Return value has type &#39;enum NCWD_MODE&#39;.</div>
+<span class='iname_a'>ncdflt_get_supported&#160;<span class='sym_p'>(&#160;)</span></span><br/><div class='affect'>Return value has type &#39;enum NCWD_MODE&#39;.</div>
+<span class='iname_a'>ncdflt_rpc_get_withdefaults&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='param'>rpc</span> )</span></span></span><br/><div class='affect'>Return value has type &#39;enum NCWD_MODE&#39;.</div>
+<span class='iname_a'>ncdflt_rpc_withdefaults&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc* <span class='param'>rpc</span>,</span> <span class='nowrap'>enum NCWD_MODE <span class='focus_p'>mode</span> )</span></span></span><br/><div class='affect'>2nd parameter &#39;mode&#39; has type &#39;enum NCWD_MODE&#39;.</div>
+<span class='iname_a'>ncdflt_set_basic_mode&#160;<span class='sym_p'>(&#160;<span class='nowrap'>enum NCWD_MODE <span class='focus_p'>mode</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;mode&#39; has type &#39;enum NCWD_MODE&#39;.</div>
+<span class='iname_a'>ncdflt_set_supported&#160;<span class='sym_p'>(&#160;<span class='nowrap'>enum NCWD_MODE <span class='focus_p'>modes</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;modes&#39; has type &#39;enum NCWD_MODE&#39;.</div>
+</div></div>
+<br/><br/></div>
+
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Symbol_Source_Problems_High'></a><a name='Interface_Source_Problems_High'></a>
+<h2>Problems with Symbols, High Severity (2)</h2><hr/>
+<span class='h_name'>messages.h</span><br/>
+<span class="section" onclick="javascript:showContent(this, 'c_20')">
+<span class='extendable'>[+]</span> nc_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, NC_DATASTORE <span class='color_p'>target</span>, enum NCWD_MODE <span class='color_p'>withdefaults</span>, <span class='nowrap'>char const* <span class='color_p'>data</span> )</span></span> (1)</span>
+<br/>
+<div id="c_20" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, NC_DATASTORE <span class='color_p'>target</span>, <span class='nowrap'>... )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'><b>3rd</b> middle parameter <b>withdefaults</b> has been removed from the calling stack.</td><td align='left' valign='top'>Recompilation of a client program may be broken.</td></tr>
+</table><br/>
+</div>
+<span class="section" onclick="javascript:showContent(this, 'c_21')">
+<span class='extendable'>[+]</span> nc_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>target</span>, NC_EDIT_DEFOP_TYPE <span class='color_p'>default_operation</span>, enum NC_EEDIT_RROPT_TYPE <span class='color_p'>error_option</span>, <span class='nowrap'>char const* <span class='color_p'>data</span> )</span></span> (1)</span>
+<br/>
+<div id="c_21" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>target</span>, NC_DATASTORE <span class='color_p'>source</span>, NC_EDIT_DEFOP_TYPE <span class='color_p'>default_operation</span>, enum NC_EDIT_ERROPT_TYPE <span class='color_p'>error_option</span>, enum NC_EDIT_TESTOPT_TYPE <span class='color_p'>test_option</span>, <span class='nowrap'>... )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Parameter <b>source</b> of type <b>NC_DATASTORE</b> has been added to the calling stack at the middle position.</td><td align='left' valign='top'>Recompilation of a client program may be broken.</td></tr>
+</table><br/>
+</div>
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Medium_Risk_Source_Problems'></a><a name='Symbol_Source_Problems_Medium'></a><a name='Interface_Source_Problems_Medium'></a>
+<h2>Problems with Symbols, Medium Severity (6)</h2><hr/>
+<span class='h_name'>messages.h</span><br/>
+<span class="section" onclick="javascript:showContent(this, 'c_22')">
+<span class='extendable'>[+]</span> nc_reply_get_type&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_reply const* <span class='color_p'>reply</span> )</span></span> (1)</span>
+<br/>
+<div id="c_22" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_reply_get_type&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_reply* <span class='color_p'>reply</span> )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Type of <b>1st</b> parameter <b>reply</b> has been changed from <span class='value'>nc_reply const*</span> to <b>nc_reply*</b> (became <b>non-const</b>).</td><td align='left' valign='top'>Recompilation of a client program may be broken.</td></tr>
+</table><br/>
+</div>
+<span class="section" onclick="javascript:showContent(this, 'c_23')">
+<span class='extendable'>[+]</span> nc_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, NC_DATASTORE <span class='color_p'>target</span>, enum NCWD_MODE <span class='color_p'>withdefaults</span>, <span class='nowrap'>char const* <span class='color_p'>data</span> )</span></span> (1)</span>
+<br/>
+<div id="c_23" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, NC_DATASTORE <span class='color_p'>target</span>, <span class='nowrap'>... )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'><b>4th</b> parameter <b>data</b> has been removed from the calling stack.</td><td align='left' valign='top'>Recompilation of a client program may be broken.</td></tr>
+</table><br/>
+</div>
+<span class="section" onclick="javascript:showContent(this, 'c_24')">
+<span class='extendable'>[+]</span> nc_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>target</span>, NC_EDIT_DEFOP_TYPE <span class='color_p'>default_operation</span>, enum NC_EEDIT_RROPT_TYPE <span class='color_p'>error_option</span>, <span class='nowrap'>char const* <span class='color_p'>data</span> )</span></span> (1)</span>
+<br/>
+<div id="c_24" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>target</span>, NC_DATASTORE <span class='color_p'>source</span>, NC_EDIT_DEFOP_TYPE <span class='color_p'>default_operation</span>, enum NC_EDIT_ERROPT_TYPE <span class='color_p'>error_option</span>, enum NC_EDIT_TESTOPT_TYPE <span class='color_p'>test_option</span>, <span class='nowrap'>... )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Parameter <b>test_option</b> of type <span class='value'>enum NC_EDIT_TESTOPT_TYPE</span> has been added to the calling stack.</td><td align='left' valign='top'>Recompilation of a client program may be broken.</td></tr>
+</table><br/>
+</div>
+<span class="section" onclick="javascript:showContent(this, 'c_25')">
+<span class='extendable'>[+]</span> nc_rpc_get&#160;<span class='sym_p'>(&#160;struct nc_filter const* <span class='color_p'>filter</span>, <span class='nowrap'>enum NCWD_MODE <span class='color_p'>withdefaults</span> )</span></span> (1)</span>
+<br/>
+<div id="c_25" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_get&#160;<span class='sym_p'>(&#160;<span class='nowrap'>struct nc_filter const* <span class='color_p'>filter</span> )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'><b>2nd</b> parameter <b>withdefaults</b> has been removed from the calling stack.</td><td align='left' valign='top'>Recompilation of a client program may be broken.</td></tr>
+</table><br/>
+</div>
+<span class="section" onclick="javascript:showContent(this, 'c_26')">
+<span class='extendable'>[+]</span> nc_rpc_get_type&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='color_p'>rpc</span> )</span></span> (1)</span>
+<br/>
+<div id="c_26" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_get_type&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc* <span class='color_p'>rpc</span> )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Type of <b>1st</b> parameter <b>rpc</b> has been changed from <span class='value'>nc_rpc const*</span> to <b>nc_rpc*</b> (became <b>non-const</b>).</td><td align='left' valign='top'>Recompilation of a client program may be broken.</td></tr>
+</table><br/>
+</div>
+<span class="section" onclick="javascript:showContent(this, 'c_27')">
+<span class='extendable'>[+]</span> nc_rpc_getconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, struct nc_filter const* <span class='color_p'>filter</span>, <span class='nowrap'>enum NCWD_MODE <span class='color_p'>withdefaults</span> )</span></span> (1)</span>
+<br/>
+<div id="c_27" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_rpc_getconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='color_p'>source</span>, <span class='nowrap'>struct nc_filter const* <span class='color_p'>filter</span> )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'><b>3rd</b> parameter <b>withdefaults</b> has been removed from the calling stack.</td><td align='left' valign='top'>Recompilation of a client program may be broken.</td></tr>
+</table><br/>
+</div>
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Low_Risk_Source_Problems'></a><a name='Type_Source_Problems_Low'></a>
+<h2>Problems with Data Types, Low Severity (1)</h2><hr/>
+<span class='h_name'>netconf.h</span><br/>
+<span class="section" onclick="javascript:showContent(this, 'c_28')">
+<span class='extendable'>[+]</span> <span class='ttype'>typedef</span> NC_EDIT_ERROPT_TYPE (1)</span>
+<br/>
+<div id="c_28" style="display:none;">
+<table class='ptable'><tr>
+<th width='2%'></th><th width='47%'>Change</th>
+<th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Base type has been changed from <span class='value'>enum NC_EEDIT_RROPT_TYPE</span> to <span class='value'>enum NC_EDIT_ERROPT_TYPE</span>.</td><td align='left' valign='top'>Recompilation of a client program may be broken.</td></tr>
+</table>
+<span class="section_affected" onclick="javascript:showContent(this, 'c_29')">
+[+] affected symbols (1)</span>
+<div id="c_29" style="display:none;">
+<div class='affected'><span class='iname_a'>nc_rpc_get_erropt&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='param'>rpc</span> )</span></span></span><br/><div class='affect'>Return value has type &#39;NC_EDIT_ERROPT_TYPE&#39;.</div>
+</div></div>
+<br/><br/></div>
+
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Other_Source_Changes'></a><a name='Other_Source_Changes_In_Types'></a>
+<h2>Other Changes in Data Types (4)</h2><hr/>
+<span class='h_name'>netconf.h</span><br/>
+<span class="section" onclick="javascript:showContent(this, 'c_30')">
+<span class='extendable'>[+]</span> <span class='ttype'>enum</span> NC_DATASTORE_TYPE (4)</span>
+<br/>
+<div id="c_30" style="display:none;">
+<table class='ptable'><tr>
+<th width='2%'></th><th width='47%'>Change</th>
+<th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>The member <b>NC_DATASTORE_URL</b> with value <b>2</b> has been added.</td><td align='left' valign='top'>No effect.</td></tr>
+<tr><th>2</th><td align='left' valign='top'>Value of member <b>NC_DATASTORE_CANDIDATE</b> has been changed from <b>4</b> to <b>5</b>.</td><td align='left' valign='top'>No effect.</td></tr>
+<tr><th>3</th><td align='left' valign='top'>Value of member <b>NC_DATASTORE_RUNNING</b> has been changed from <b>2</b> to <b>3</b>.</td><td align='left' valign='top'>No effect.</td></tr>
+<tr><th>4</th><td align='left' valign='top'>Value of member <b>NC_DATASTORE_STARTUP</b> has been changed from <b>3</b> to <b>4</b>.</td><td align='left' valign='top'>No effect.</td></tr>
+</table>
+<span class="section_affected" onclick="javascript:showContent(this, 'c_31')">
+[+] affected symbols (8)</span>
+<div id="c_31" style="display:none;">
+<div class='affected'><span class='iname_a'>nc_rpc_copyconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='param'>source</span>, NC_DATASTORE <span class='focus_p'>target</span>, enum NCWD_MODE <span class='param'>withdefaults</span>, <span class='nowrap'>char const* <span class='param'>data</span> )</span></span></span><br/><div class='affect'>2nd parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_deleteconfig&#160;<span class='sym_p'>(&#160;<span class='nowrap'>NC_DATASTORE <span class='focus_p'>target</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_editconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='focus_p'>target</span>, NC_EDIT_DEFOP_TYPE <span class='param'>default_operation</span>, enum NC_EEDIT_RROPT_TYPE <span class='param'>error_option</span>, <span class='nowrap'>char const* <span class='param'>data</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_get_source&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='param'>rpc</span> )</span></span></span><br/><div class='affect'>Return value has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_get_target&#160;<span class='sym_p'>(&#160;<span class='nowrap'>nc_rpc const* <span class='param'>rpc</span> )</span></span></span><br/><div class='affect'>Return value has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_getconfig&#160;<span class='sym_p'>(&#160;NC_DATASTORE <span class='focus_p'>source</span>, struct nc_filter const* <span class='param'>filter</span>, <span class='nowrap'>enum NCWD_MODE <span class='param'>withdefaults</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;source&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_lock&#160;<span class='sym_p'>(&#160;<span class='nowrap'>NC_DATASTORE <span class='focus_p'>target</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+<span class='iname_a'>nc_rpc_unlock&#160;<span class='sym_p'>(&#160;<span class='nowrap'>NC_DATASTORE <span class='focus_p'>target</span> )</span></span></span><br/><div class='affect'>1st parameter &#39;target&#39; has base type &#39;enum NC_DATASTORE_TYPE&#39;.</div>
+</div></div>
+<br/><br/></div>
+
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Other_Source_Changes_In_Symbols'></a><a name='Other_Source_Changes_In_Interfaces'></a>
+<h2>Other Changes in Symbols (1)</h2><hr/>
+<span class='h_name'>messages.h</span><br/>
+<span class="section" onclick="javascript:showContent(this, 'c_32')">
+<span class='extendable'>[+]</span> nc_filter_new&#160;<span class='sym_p'>(&#160;NC_FILTER_TYPE <span class='color_p'>type</span>, <span class='nowrap'>char const* <span class='color_p'>filter</span> )</span></span> (1)</span>
+<br/>
+<div id="c_32" style="display:none;">
+
+
+<span class='new_sign_lbl'>changed to:</span><br/><span class='new_sign'>nc_filter_new&#160;<span class='sym_p'>(&#160;NC_FILTER_TYPE <span class='color_p'>type</span>, <span class='nowrap'>... )</span></span></span><br/>
+<table class='ptable'><tr><th width='2%'></th><th width='47%'>Change</th><th>Effect</th></tr><tr><th>1</th><td align='left' valign='top'>Type of <b>2nd</b> parameter <b>filter</b> has been changed from <span class='value'>char const*</span> to <span class='nowrap'><b>... (va_list)</b></span>.</td><td align='left' valign='top'>No effect.</td></tr>
+</table><br/>
+</div>
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Headers'></a><h2>Header Files (10)</h2><hr/>
+<div class='h_list'>
+callbacks.h<br/>
+datastore.h<br/>
+error.h<br/>
+libnetconf.h<br/>
+messages.h<br/>
+netconf.h<br/>
+notifications.h<br/>
+session.h<br/>
+ssh.h<br/>
+with_defaults.h<br/>
+</div>
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<a name='Libs'></a><h2>Shared Libraries (1)</h2><hr/>
+<div class='lib_list'>
+libnetconf.so.0.2.3<br/>
+</div>
+<br/><a style='font-size:11px;' href='#Top'>to the top</a><br/>
+<br/><br/><br/></div><div style='width:97%;padding-top:3px;font-size:11px;' align='right'><i>Generated on Tue Jan 15 14:07:47 2013 for <span style='font-weight:bold'>libnetconf</span> by <a href='http://ispras.linuxbase.org/index.php/ABI_compliance_checker'>ABI Compliance Checker</a> 1.98.7 &#160;<br/>A tool for checking backward compatibility of a C/C++ library API&#160;&#160;</i></div>
+<div style='height:999px;'></div>
+</body></html>
