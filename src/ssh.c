@@ -317,7 +317,7 @@ struct nc_msg* read_hello(struct nc_session *session)
 	 * read next character and check ending character sequence for
 	 * NC_V10_END_MSG
 	 */
-	if (strcmp(NC_V10_END_MSG, &buffer[i - strlen(NC_V10_END_MSG)])) {
+	if (strcmp(NC_V10_END_MSG, &buffer[i - (unsigned int)strlen(NC_V10_END_MSG)])) {
 		while ((!feof(session->f_input)) && (!ferror(session->f_input)) && ((c = (char) fgetc(session->f_input)) != EOF)) {
 			if (i == size - 1) { /* buffer is too small */
 				/* allocate larger buffer */
@@ -333,7 +333,7 @@ struct nc_msg* read_hello(struct nc_session *session)
 			i++;
 
 			/* check if the ending character sequence was read */
-			if (!(strncmp(NC_V10_END_MSG, &buffer[i - strlen(NC_V10_END_MSG)], strlen(NC_V10_END_MSG)))) {
+			if (!(strncmp(NC_V10_END_MSG, &buffer[i - (unsigned int)strlen(NC_V10_END_MSG)], strlen(NC_V10_END_MSG)))) {
 				buffer[i - strlen(NC_V10_END_MSG)] = '\0';
 				break;
 			}
