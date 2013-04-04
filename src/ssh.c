@@ -1077,15 +1077,24 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 				fprintf(stdout, "%s ", buffer);
 				s = NULL;
-				system("stty -echo");
-				getline(&s, &n, stdin);
-				system("stty echo");
+				if (system("stty -echo") == -1) {
+					ERROR("system() call failed (%s:%d).", __FILE__, __LINE__);
+					return (NULL);
+				}
+				if (getline(&s, &n, stdin) == -1) {
+					ERROR("getline() failed (%s:%d).", __FILE__, __LINE__);
+					return (NULL);
+				}
+				if (system("stty echo") == -1) {
+					ERROR("system() call failed (%s:%d).", __FILE__, __LINE__);
+					return (NULL);
+				}
 
 				if (s == NULL) {
 					ERROR("Unable to get the password from a user (%s)", strerror(errno));
 					return (NULL);
 				}
-				fprintf(retval->f_input, s);
+				fprintf(retval->f_input, "%s", s);
 				//fprintf(retval->f_input, "\n");
 				fflush(retval->f_input);
 
@@ -1104,8 +1113,13 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 					break;
 				case 0:
 					fprintf(stdout, "%s ", buffer);
-					fgets(line, 81, stdin);
-					fprintf(retval->f_input, "%s", line);
+					if (fgets(line, 81, stdin) == NULL) {
+						WARN("fgets() failed (%s:%d).", __FILE__, __LINE__);
+						fprintf(retval->f_input, "no");
+						VERB("connecting to an unauthenticated host disabled");
+					} else {
+						fprintf(retval->f_input, "%s", line);
+					}
 					break;
 				case -1:
 					fprintf(stdout, "%s ", buffer);
@@ -1117,7 +1131,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 				}
 				fprintf(retval->f_input, "\n");
 				fflush(retval->f_input);
-				fgets(line, 81, retval->f_input); /* read written line from terminal */
+				if (fgets(line, 81, retval->f_input) == NULL); /* read written line from terminal */
 				line[0] = '\0'; /* and forget */
 				strcpy(buffer, "\0");
 				count = 0; /* reset search string */
