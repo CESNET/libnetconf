@@ -54,6 +54,7 @@
 #ifdef DISABLE_LIBSSH
 #	include <ctype.h>
 #	include <pty.h>
+#	include <termios.h>
 #	include <libxml/xpath.h>
 #	include <libxml/xpathInternals.h>
 #else
@@ -955,6 +956,8 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 #define SSH_PROG "ssh"
 
 	pid_t sshpid; /* child's PID */
+	struct termios termios;
+	struct winsize win;
 	int pout[2], ssh_in;
 	int ssh_fd, count = 0;
 	char buffer[BUFFER_SIZE];
@@ -1028,8 +1031,15 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->fd_output = pout[1];
 	ssh_in = pout[0];
 
+	/* Get current properties of tty */
+	ioctl(0, TIOCGWINSZ, &win);
+	if (tcgetattr(STDIN_FILENO, &termios) < 0) {
+		ERROR("%s", strerror(errno));
+		return (NULL);
+	}
+
 	/* create child process */
-	if ((sshpid = forkpty(&ssh_fd, NULL, NULL, NULL)) == -1) {
+	if ((sshpid = forkpty(&ssh_fd, NULL, &termios, &win)) == -1) {
 		ERROR("%s", strerror(errno));
 		return (NULL);
 	} else if (sshpid == 0) { /* child process*/
@@ -1173,6 +1183,13 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 				count = 0; /* reset search string */
 			}
 		}
+		termios.c_lflag &= ~(ICANON | ISIG | IEXTEN | ECHO);
+		termios.c_iflag &= ~(BRKINT | ICRNL | IGNBRK | IGNCR | INLCR | INPCK | ISTRIP | IXON | PARMRK);
+		termios.c_oflag &= ~OPOST;
+		termios.c_cc[VMIN] = 1;
+		termios.c_cc[VTIME] = 0;
+
+		tcsetattr(retval->fd_input, TCSANOW, &termios);
 	}
 #else
 	int i, j;
