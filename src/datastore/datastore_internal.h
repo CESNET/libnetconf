@@ -147,31 +147,23 @@ struct ncds_funcs {
 	int (*editconfig)(struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 };
 
-struct ncds_ds {
-	/**
-	 * @brief Datastore implementation type
-	 */
-	NCDS_TYPE type;
-	/**
-	 * @brief Datastore ID: 0 - uninitiated datastore, positive value - valid ID
-	 */
-	ncds_id id;
+struct data_model {
 	/**
 	 * @brief Path to the file containing YIN configuration data model
 	 */
-	char* model_path;
+	char* path;
 	/**
 	 * @brief Name of the model
 	 */
-	char* model_name;
+	char* name;
 	/**
 	 * @brief Revision of the model
 	 */
-	char* model_version;
+	char* version;
 	/**
 	 * @brief Namespace of the model
 	 */
-	char* model_namespace;
+	char* namespace;
 	/**
 	 * @brief List of defined RPCs
 	 */
@@ -183,7 +175,22 @@ struct ncds_ds {
 	/**
 	 * @brief YIN configuration data model in the libxml2's document form.
 	 */
-	xmlDocPtr model;
+	xmlDocPtr xml;
+	/**
+	 * @brief Parsed data model structure.
+	 */
+	struct model_tree * model_tree;
+};
+
+struct ncds_ds {
+	/**
+	 * @brief Datastore implementation type
+	 */
+	NCDS_TYPE type;
+	/**
+	 * @brief Datastore ID: 0 - uninitiated datastore, positive value - valid ID
+	 */
+	ncds_id id;
 	/**
 	 * @brief Time of the last access to the configuration datastore.
 	 */
@@ -198,21 +205,13 @@ struct ncds_ds {
 	 */
 	struct ncds_funcs func;
 	/**
-	 * @brief Parsed data model structure.
+	 * @brief Information about data model linked with the datastore
 	 */
-	struct yinmodel * transapi_model;
+	struct data_model data_model;
 	/**
-	 * @brief Loaded shared library with transapi callbacks.
+	 * @brief TransAPI information
 	 */
-	void * transapi_module;
-	/**
-	 * @brief Transapi callback mapping structure.
-	 */
-	struct transapi_config_callbacks * transapi_clbks;
-	/**
-	 * @brief Transapi rpc callbacks mapping structure.
-	 */
-	struct transapi_rpc_callbacks * rpc_clbks;
+	struct transapi transapi;
 };
 
 /**

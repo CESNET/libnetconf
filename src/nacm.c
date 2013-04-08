@@ -647,7 +647,7 @@ int nacm_config_refresh(void)
 	}
 
 	/* process default values */
-	ncdflt_default_values(data_doc, nacm_ds->model, NCWD_MODE_ALL);
+	ncdflt_default_values(data_doc, nacm_ds->data_model.xml, NCWD_MODE_ALL);
 
 	/* create xpath evaluation context */
 	if ((data_ctxt = xmlXPathNewContext(data_doc)) == NULL) {
@@ -1170,7 +1170,7 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 
 				/* 1) module name */
 				if (!(strcmp(rule->module, "*") == 0 ||
-				    strcmp(rule->module, module->model_name) == 0)) {
+				    strcmp(rule->module, module->data_model.name) == 0)) {
 					/* rule does not match */
 					continue;
 				}
@@ -1243,14 +1243,14 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 		/* no matching rule found */
 
 		/* check nacm:default-deny-all and nacm:default-deny-write */
-		if ((model_ctxt = xmlXPathNewContext(module->model)) != NULL &&
+		if ((model_ctxt = xmlXPathNewContext(module->data_model.xml)) != NULL &&
 		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) == 0 &&
 		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "nacm", BAD_CAST NC_NS_NACM) == 0) {
 			if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:container//nacm:default-deny-all", model_ctxt)) != NULL) {
 				if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
 					/* process all default-deny-all elements */
 					for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
-						if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i], (char*) module->model_namespace) == 1) {
+						if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i], (char*) module->data_model.namespace) == 1) {
 							xmlXPathFreeObject(defdeny);
 							xmlXPathFreeContext(model_ctxt);
 							retval = NACM_DENY;
@@ -1267,7 +1267,7 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 					if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
 						/* process all default-deny-all elements */
 						for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
-							if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i], (char*) module->model_namespace) == 1) {
+							if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i], (char*) module->data_model.namespace) == 1) {
 								xmlXPathFreeObject(defdeny);
 								xmlXPathFreeContext(model_ctxt);
 								retval = NACM_DENY;
@@ -1400,7 +1400,7 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 
 				/* 1) module name */
 				if (!(strcmp(nacm->rule_lists[i]->rules[j]->module, "*") == 0 ||
-				    strcmp(nacm->rule_lists[i]->rules[j]->module, ntfmodule->model_name) == 0)) {
+				    strcmp(nacm->rule_lists[i]->rules[j]->module, ntfmodule->data_model.name) == 0)) {
 					/* rule does not match */
 					continue;
 				}
@@ -1438,7 +1438,7 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 		/* no matching rule found */
 
 		/* check nacm:default-deny-all */
-		if ((model_ctxt = xmlXPathNewContext(ntfmodule->model)) != NULL &&
+		if ((model_ctxt = xmlXPathNewContext(ntfmodule->data_model.xml)) != NULL &&
 		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) == 0 &&
 		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "nacm", BAD_CAST NC_NS_NACM) == 0) {
 			if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:notification//nacm:default-deny-all", model_ctxt)) != NULL) {
@@ -1531,7 +1531,7 @@ int nacm_check_operation(const nc_rpc* rpc)
 
 				/* 1) module name */
 				if (!(strcmp(rpc->nacm->rule_lists[i]->rules[j]->module, "*") == 0 ||
-				    strcmp(rpc->nacm->rule_lists[i]->rules[j]->module, opmodule->model_name) == 0)) {
+				    strcmp(rpc->nacm->rule_lists[i]->rules[j]->module, opmodule->data_model.name) == 0)) {
 					/* rule does not match */
 					continue;
 				}
@@ -1568,7 +1568,7 @@ int nacm_check_operation(const nc_rpc* rpc)
 		/* no matching rule found */
 
 		/* check nacm:default-deny-all */
-		if ((model_ctxt = xmlXPathNewContext(opmodule->model)) != NULL &&
+		if ((model_ctxt = xmlXPathNewContext(opmodule->data_model.xml)) != NULL &&
 		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) == 0 &&
 		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "nacm", BAD_CAST NC_NS_NACM) == 0) {
 			if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:rpc//nacm:default-deny-all", model_ctxt)) != NULL) {

@@ -97,7 +97,7 @@ XMLDIFF_OP xmldiff_leaflist ()
  *
  * @param
  */
-XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_node, xmlDocPtr new_doc, xmlNodePtr new_node, struct yinmodel * model)
+XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_node, xmlDocPtr new_doc, xmlNodePtr new_node, struct model_tree * model)
 {
 
 	char * next_path;
@@ -403,7 +403,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
  *
  * @return xmldiff structure holding all differences between XML documents or NULL
  */
-struct xmldiff * xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct yinmodel * model)
+struct xmldiff * xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct model_tree * model)
 {
 	xmlDocPtr old_tmp, new_tmp;
 	struct xmldiff * diff;

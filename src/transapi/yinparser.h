@@ -6,18 +6,28 @@
  * @ingroup transapi
  * @brief enum type for yin/yang constructs
  */
-typedef enum {YIN_TYPE_MODULE, YIN_TYPE_CONTAINER, YIN_TYPE_LEAF, YIN_TYPE_LIST, YIN_TYPE_LEAFLIST, YIN_TYPE_CHOICE, YIN_TYPE_ANYXML, YIN_TYPE_GROUPING, YIN_TYPE_IMPORT} YIN_TYPE;
+typedef enum {
+	YIN_TYPE_MODULE,
+	YIN_TYPE_CONTAINER,
+	YIN_TYPE_LEAF,
+	YIN_TYPE_LIST,
+	YIN_TYPE_LEAFLIST,
+	YIN_TYPE_CHOICE,
+	YIN_TYPE_ANYXML,
+	YIN_TYPE_GROUPING,
+	YIN_TYPE_IMPORT
+} YIN_TYPE;
 
 /**
  * @ingroup transapi
- * @brief structure holding information needed for xml document comparsion
+ * @brief structure holding information about used data model in YIN format
  */
-struct yinmodel {
+struct model_tree {
 	YIN_TYPE type;
 	char * name;
 	char ** keys;
 	char * ns_uri;
-	struct yinmodel * children;
+	struct model_tree * children;
 	int keys_count;
 	int children_count;
 };
@@ -30,7 +40,7 @@ struct yinmodel {
  *
  * @return yinmodel structure or NULL
  */
-struct yinmodel * yinmodel_parse (xmlDocPtr model_doc);
+struct model_tree * yinmodel_parse (xmlDocPtr model_doc);
 
 /**
  * @ingroup transapi
@@ -38,6 +48,6 @@ struct yinmodel * yinmodel_parse (xmlDocPtr model_doc);
  *
  * @param yin	Structure to be freed.
  */
-void yinmodel_free (struct yinmodel * yin);
+void yinmodel_free (struct model_tree * yin);
 
 #endif

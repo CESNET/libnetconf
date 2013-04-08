@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 /* will be called by library after change in running datastore */
-int transapi_running_changed (struct transapi_config_callbacks * c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct yinmodel * model)
+int transapi_running_changed (struct transapi_data_callbacks * c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model)
 {
 	struct xmldiff * diff;
 	int i,j;

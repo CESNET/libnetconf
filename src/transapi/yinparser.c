@@ -8,9 +8,9 @@
 
 #include "yinparser.h"
 
-struct yinmodel * yinmodel_parse_recursive (xmlNodePtr model_node, int *children_count)
+struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, int *children_count)
 {
-	struct yinmodel * children, * choice;
+	struct model_tree * children, * choice;
 	xmlNodePtr int_tmp, list_tmp, model_tmp = model_node->children;
 	int count = 0, case_count, config;
 	char * keys, * key, * config_text;
@@ -18,7 +18,7 @@ struct yinmodel * yinmodel_parse_recursive (xmlNodePtr model_node, int *children
 	children = NULL;
 	while (model_tmp) {
 		count++;
-		children = realloc (children, sizeof (struct yinmodel) * count);
+		children = realloc (children, sizeof (struct model_tree) * count);
 		/* first check if node holds configuration */
 		int_tmp = model_tmp->children;
 		config = 1;
@@ -84,8 +84,8 @@ struct yinmodel * yinmodel_parse_recursive (xmlNodePtr model_node, int *children
 			children[count-1].children_count = 0;
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "case")) {
 			choice = yinmodel_parse_recursive (model_tmp->children, &case_count);
-			children = realloc (children, sizeof (struct yinmodel) * (case_count+count));
-			memcpy (&children[count-1], choice, case_count*sizeof(struct yinmodel));
+			children = realloc (children, sizeof (struct model_tree) * (case_count+count));
+			memcpy (&children[count-1], choice, case_count*sizeof(struct model_tree));
 			count += case_count;
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "uses")) {
 			/* search through groupings in module and submodules */
@@ -108,7 +108,7 @@ struct yinmodel * yinmodel_parse_recursive (xmlNodePtr model_node, int *children
 	return children;
 }
 
-void yinmodel_free_recursive (struct yinmodel * yin)
+void yinmodel_free_recursive (struct model_tree * yin)
 {
 	int i;
 
@@ -129,17 +129,17 @@ void yinmodel_free_recursive (struct yinmodel * yin)
 	free (yin->name);
 }
 
-void yinmodel_free (struct yinmodel * yin)
+void yinmodel_free (struct model_tree * yin)
 {
 	yinmodel_free_recursive (yin);
 
 	free (yin);
 }
 
-struct yinmodel * yinmodel_parse (xmlDocPtr model_doc)
+struct model_tree * yinmodel_parse (xmlDocPtr model_doc)
 {
 	xmlNodePtr model_root, model_top, model_tmp, import_node, grouping_node;
-	struct yinmodel * yin, * yin_act;
+	struct model_tree * yin, * yin_act;
 	int config;
 	char * config_text;
 
@@ -153,7 +153,7 @@ struct yinmodel * yinmodel_parse (xmlDocPtr model_doc)
 		return NULL;
 	}
 
-	yin = calloc (1, sizeof (struct yinmodel));
+	yin = calloc (1, sizeof (struct model_tree));
 	yin->type = YIN_TYPE_MODULE;
 	yin->name = (char*)xmlGetProp (model_root, BAD_CAST "name");
 
@@ -210,7 +210,7 @@ struct yinmodel * yinmodel_parse (xmlDocPtr model_doc)
 
 	if (config) {
 		yin->children_count++;
-		yin->children = realloc (yin->children, yin->children_count * sizeof (struct yinmodel));
+		yin->children = realloc (yin->children, yin->children_count * sizeof (struct model_tree));
 		yin->children[yin->children_count-1].type = YIN_TYPE_CONTAINER;
 		yin->children[yin->children_count-1].name = (char*)xmlGetProp (model_top, BAD_CAST "name");
 		yin->children[yin->children_count-1].keys_count = 0;

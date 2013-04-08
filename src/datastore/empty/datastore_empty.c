@@ -56,24 +56,24 @@ void ncds_empty_free (struct ncds_ds * ds)
 	int i;
 
 	/* generic ncds_ds part */
-	free(ds->model_path);
-	free(ds->model_name);
-	free(ds->model_version);
-	free(ds->model_namespace);
-	if (ds->rpcs != NULL) {
-		for (i = 0; ds->rpcs[i] != NULL; i++) {
-			free(ds->rpcs[i]);
+	free(ds->data_model.path);
+	free(ds->data_model.name);
+	free(ds->data_model.version);
+	free(ds->data_model.namespace);
+	if (ds->data_model.rpcs != NULL) {
+		for (i = 0; ds->data_model.rpcs[i] != NULL; i++) {
+			free(ds->data_model.rpcs[i]);
 		}
-		free(ds->rpcs);
+		free(ds->data_model.rpcs);
 	}
-	if (ds->notifs != NULL) {
-		for (i = 0; ds->notifs[i] != NULL; i++) {
-			free(ds->notifs[i]);
+	if (ds->data_model.notifs != NULL) {
+		for (i = 0; ds->data_model.notifs[i] != NULL; i++) {
+			free(ds->data_model.notifs[i]);
 		}
-		free(ds->notifs);
+		free(ds->data_model.notifs);
 	}
-	if (ds->model != NULL) {
-		xmlFreeDoc(ds->model);
+	if (ds->data_model.xml != NULL) {
+		xmlFreeDoc(ds->data_model.xml);
 	}
 
 	free (ds);

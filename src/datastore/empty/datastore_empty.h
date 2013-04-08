@@ -54,34 +54,6 @@ struct ncds_ds_empty {
 	 */
 	ncds_id id;
 	/**
-	 * @brief Path to file containing YIN configuration data model
-	 */
-	char* model_path;
-	/**
-	 * @brief Name of the model
-	 */
-	char* model_name;
-	/**
-	 * @brief Revision of the model
-	 */
-	char* model_version;
-	/**
-	 * @brief Namespace of the model
-	 */
-	char* model_namespace;
-	/**
-	 * @brief List of defined RPCs
-	 */
-	char** rpcs;
-	/**
-	 * @brief List of defined notifications
-	 */
-	char** notifs;
-	/**
-	 * @brief YIN configuration data model in the libxml2's document form.
-	 */
-	xmlDocPtr model;
-	/**
 	 * @brief Time of the last access to the configuration datastore.
 	 */
 	time_t last_access;
@@ -89,27 +61,19 @@ struct ncds_ds_empty {
 	 * @brief Pointer to a callback function implementing the retrieval of the
 	 * device status data.
 	 */
-	char* (*get_state)(const char* model, const char* running);
+	char* (*get_state)(const char* model, const char* running, struct nc_err ** e);
 	/**
 	 * @brief Datastore implementation functions.
 	 */
 	struct ncds_funcs func;
 	/**
-	 * @brief Parsed data model structure.
+	 * @brief Information about data model linked with the datastore
 	 */
-	struct yinmodel * transapi_model;
+	struct data_model data_model;
 	/**
-	 * @brief Loaded shared library with transapi callbacks.
+	 * @brief TransAPI information
 	 */
-	void * transapi_module;
-	/**
-	 * @brief Transapi callback mapping structure.
-	 */
-	struct transapi_config_callbacks * transapi_clbks;
-	/**
-	 * @brief Transapi rpc callbacks mapping structure.
-	 */
-	struct transapi_rpc_callbacks * rpc_clbks;
+	struct transapi transapi;
 };
 
 /**

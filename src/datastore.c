@@ -226,19 +226,24 @@ int ncds_sysinit(void)
 		}
 		ds->id = internal_ds_count++;
 
-		ds->model = xmlReadMemory ((char*)model[i], model_len[i], NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
-		if (ds->model == NULL ) {
+		ds->data_model.xml = xmlReadMemory ((char*)model[i], model_len[i], NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
+		if (ds->data_model.xml == NULL ) {
 			ERROR("Unable to read the internal monitoring data model.");
 			free (ds);
 			return (EXIT_FAILURE);
 		}
-		if (get_model_info(ds->model, &(ds->model_name), &(ds->model_version), &(ds->model_namespace), &(ds->rpcs), &(ds->notifs)) != 0) {
+		if (get_model_info(ds->data_model.xml,
+				&(ds->data_model.name),
+				&(ds->data_model.version),
+				&(ds->data_model.namespace),
+				&(ds->data_model.rpcs),
+				&(ds->data_model.notifs)) != 0) {
 			ERROR("Unable to process internal configuration data model.");
-			xmlFreeDoc(ds->model);
+			xmlFreeDoc(ds->data_model.xml);
 			free(ds);
 			return (EXIT_FAILURE);
 		}
-		ds->model_path = NULL;
+		ds->data_model.path = NULL;
 		ds->last_access = 0;
 		ds->get_state = get_state_funcs[i];
 
@@ -333,9 +338,9 @@ char * ncds_get_model(ncds_id id)
 	xmlBufferPtr buf;
 	char * retval = NULL;
 
-	if (datastore != NULL && datastore->model != NULL) {
+	if (datastore != NULL && datastore->data_model.xml != NULL) {
 		buf = xmlBufferCreate();
-		xmlNodeDump(buf, datastore->model, datastore->model->children, 1, 1);
+		xmlNodeDump(buf, datastore->data_model.xml, datastore->data_model.xml->children, 1, 1);
 		retval = strdup((char*) xmlBufferContent(buf));
 		xmlBufferFree(buf);
 	}
@@ -350,7 +355,7 @@ const char * ncds_get_model_path(ncds_id id)
 		return NULL;
 	}
 
-	return datastore->model_path;
+	return datastore->data_model.path;
 }
 
 int get_model_info(xmlDocPtr model, char **name, char **version, char **namespace, char ***rpcs, char ***notifs)
@@ -541,7 +546,7 @@ char **get_schemas_capabilities(void)
 
 	/* get size of the output */
 	for (i = 0, ds = datastores; ds != NULL; ds = ds->next) {
-		if (ds->datastore == NULL || ds->datastore->model == NULL) {
+		if (ds->datastore == NULL || ds->datastore->data_model.xml == NULL) {
 			continue;
 		} else {
 			i++;
@@ -555,13 +560,13 @@ char **get_schemas_capabilities(void)
 
 
 	for (i = 0, ds = datastores; ds != NULL; ds = ds->next) {
-		if (ds->datastore == NULL || ds->datastore->model == NULL) {
+		if (ds->datastore == NULL || ds->datastore->data_model.xml == NULL) {
 			continue;
 		}
 
-		if (asprintf(&(retval[i]), "%s?module=%s%s%s", ds->datastore->model_namespace, ds->datastore->model_name,
-				(ds->datastore->model_version != NULL && strlen(ds->datastore->model_version) > 0) ? "&amp;revision=" : "",
-				(ds->datastore->model_version != NULL && strlen(ds->datastore->model_version) > 0) ? ds->datastore->model_version : "") == -1) {
+		if (asprintf(&(retval[i]), "%s?module=%s%s%s", ds->datastore->data_model.namespace, ds->datastore->data_model.name,
+				(ds->datastore->data_model.version != NULL && strlen(ds->datastore->data_model.version) > 0) ? "&amp;revision=" : "",
+				(ds->datastore->data_model.version != NULL && strlen(ds->datastore->data_model.version) > 0) ? ds->datastore->data_model.version : "") == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			/* move iterator back, then variables will be freed and iterator will go back to the current value */
 			i--;
@@ -578,7 +583,7 @@ char* get_schemas()
 	char *schema = NULL, *schemas = NULL, *aux = NULL;
 
 	for (ds = datastores; ds != NULL; ds = ds->next) {
-		if (ds->datastore == NULL || ds->datastore->model == NULL) {
+		if (ds->datastore == NULL || ds->datastore->data_model.xml == NULL) {
 			continue;
 		}
 
@@ -589,9 +594,9 @@ char* get_schemas()
 				"<namespace>%s</namespace>"
 				"<location>NETCONF</location>"
 				"</schema>",
-				ds->datastore->model_name,
-				ds->datastore->model_version,
-				ds->datastore->model_namespace) == -1) {
+				ds->datastore->data_model.name,
+				ds->datastore->data_model.version,
+				ds->datastore->data_model.namespace) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			aux = NULL;
 		}
@@ -872,12 +877,12 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 	}
 
 	for (ds = datastores; ds != NULL ; ds = ds->next) {
-		if (ds->datastore->model == NULL) {
+		if (ds->datastore->data_model.xml == NULL) {
 			continue;
 		}
 
-		if (strcmp(name, ds->datastore->model_name) == 0) {
-			if (version == NULL || strcmp(version, ds->datastore->model_version) == 0) {
+		if (strcmp(name, ds->datastore->data_model.name) == 0) {
+			if (version == NULL || strcmp(version, ds->datastore->data_model.version) == 0) {
 				/* check for uniqness */
 				if (retval != NULL) {
 					free(retval);
@@ -900,7 +905,7 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 					if (e != NULL) {*e = nc_err_new(NC_ERR_OP_FAILED);}
 					return NULL;
 				}
-				xmlNodeDump(resultbuffer, ds->datastore->model, ds->datastore->model->children, 2, 1);
+				xmlNodeDump(resultbuffer, ds->datastore->data_model.xml, ds->datastore->data_model.xml->children, 2, 1);
 				retval = strdup((char *) xmlBufferContent(resultbuffer));
 				xmlBufferFree(resultbuffer);
 			}
@@ -925,7 +930,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	struct ncds_ds* ds = NULL;
 	void * transapi_module = NULL;
 	char* (*get_state)(const char*, const char*, struct nc_err **) = NULL;
-	struct transapi_config_callbacks * transapi_clbks = NULL;
+	struct transapi_data_callbacks * data_clbks = NULL;
 	struct transapi_rpc_callbacks * rpc_clbks = NULL;
 
 	if (callbacks_path == NULL) {
@@ -957,7 +962,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	/* empty datastore has no data */
 	if (type != NCDS_TYPE_EMPTY) {
 		/* get clbks structure */
-		if ((transapi_clbks = dlsym (transapi_module, "clbks")) == NULL) {
+		if ((data_clbks = dlsym (transapi_module, "clbks")) == NULL) {
 			ERROR("Unable to get addresses of functions from shared library.");
 			dlclose (transapi_module);
 			return (NULL);
@@ -972,10 +977,10 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	}
 
 	/* add pointers for transaction API */
-	ds->transapi_module = transapi_module;
-	ds->transapi_clbks = transapi_clbks;
-	ds->rpc_clbks = rpc_clbks;
-	ds->transapi_model = yinmodel_parse(ds->model);
+	ds->transapi.module = transapi_module;
+	ds->transapi.data_clbks = data_clbks;
+	ds->transapi.rpc_clbks = rpc_clbks;
+	ds->data_model.model_tree = yinmodel_parse(ds->data_model.xml);
 
 	return ds;
 }
@@ -1032,19 +1037,24 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		free(ds);
 		return (NULL);
 	}
-	ds->model = xmlReadFile(model_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
-	if (ds->model == NULL) {
+	ds->data_model.xml = xmlReadFile(model_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
+	if (ds->data_model.xml == NULL) {
 		ERROR("Unable to read the configuration data model %s.", model_path);
 		free(ds);
 		return (NULL);
 	}
-	if (get_model_info(ds->model, &(ds->model_name), &(ds->model_version), &(ds->model_namespace), &(ds->rpcs), &(ds->notifs)) != 0) {
+	if (get_model_info(ds->data_model.xml,
+			&(ds->data_model.name),
+			&(ds->data_model.version),
+			&(ds->data_model.namespace),
+			&(ds->data_model.rpcs),
+			&(ds->data_model.notifs)) != 0) {
 		ERROR("Unable to process configuration data model %s.", model_path);
-		xmlFreeDoc(ds->model);
+		xmlFreeDoc(ds->data_model.xml);
 		free(ds);
 		return (NULL);
 	}
-	ds->model_path = strdup(model_path);
+	ds->data_model.path = strdup(model_path);
 	ds->last_access = 0;
 	ds->get_state = get_state;
 
@@ -1591,7 +1601,7 @@ process_datastore:
 
 	op = nc_rpc_get_op(rpc);
 	/* if transapi used AND operation will affect running repository => store current running content */
-	if (ds->transapi_clbks != NULL
+	if (ds->transapi.data_clbks != NULL
 		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
 		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING) {
 		old_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
@@ -1623,7 +1633,7 @@ process_datastore:
 		if (ds->get_state != NULL) {
 			/* caller provided callback function to retrieve status data */
 
-			xmlDocDumpMemory(ds->model, (xmlChar**) (&model), &len);
+			xmlDocDumpMemory(ds->data_model.xml, (xmlChar**) (&model), &len);
 			data2 = ds->get_state(model, data, &e);
 			free(model);
 
@@ -1638,7 +1648,7 @@ process_datastore:
 			doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			free(data2);
 			/* if merge fail (probably one of docs NULL)*/
-			if ((doc_merged = ncxml_merge(doc1, doc2, ds->model)) == NULL) {
+			if ((doc_merged = ncxml_merge(doc1, doc2, ds->data_model.xml)) == NULL) {
 				/* use only config if not null*/
 				if (doc1 != NULL) {
 					doc_merged = doc1;
@@ -1689,8 +1699,8 @@ process_datastore:
 		}
 
 		/* process default values */
-		if (ds && ds->model) {
-			ncdflt_default_values(doc_merged, ds->model, rpc->with_defaults);
+		if (ds && ds->data_model.xml) {
+			ncdflt_default_values(doc_merged, ds->data_model.xml, rpc->with_defaults);
 		}
 
 		/* NACM */
@@ -1771,8 +1781,8 @@ process_datastore:
 		}
 
 		/* process default values */
-		if (ds && ds->model) {
-			ncdflt_default_values(doc_merged, ds->model, rpc->with_defaults);
+		if (ds && ds->data_model.xml) {
+			ncdflt_default_values(doc_merged, ds->data_model.xml, rpc->with_defaults);
 		}
 
 		/* NACM */
@@ -1872,7 +1882,7 @@ process_datastore:
 			 * select correct config node for the selected datastore,
 			 * it must match the model's namespace and root element name
 			 */
-			aux_node = get_model_root(doc1->children->children, ds->model);
+			aux_node = get_model_root(doc1->children->children, ds->data_model.xml);
 			if (aux_node != NULL) {
 				resultbuffer = xmlBufferCreate();
 				if (resultbuffer == NULL) {
@@ -1916,7 +1926,7 @@ process_datastore:
 				doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 				free(config);
 
-				if (ncdflt_default_clear(doc1, ds->model) != EXIT_SUCCESS) {
+				if (ncdflt_default_clear(doc1, ds->data_model.xml) != EXIT_SUCCESS) {
 					e = nc_err_new(NC_ERR_INVALID_VALUE);
 					nc_err_set(e, NC_ERR_PARAM_MSG, "with-defaults capability failure");
 					break;
@@ -2018,11 +2028,11 @@ apply_editcopyconfig:
 		/* prepare for case RPC is not supported by this datastore */
 		reply = NCDS_RPC_NOT_APPLICABLE;
 		/* go through all RPC implemented by datastore */
-		for (i=0; i<ds->rpc_clbks->callbacks_count; i++) {
+		for (i=0; i<ds->transapi.rpc_clbks->callbacks_count; i++) {
 			/* find matching rpc and call rpc callback function */
-			if (strcmp(op_name, ds->rpc_clbks->callbacks[i].name) == 0) {
+			if (strcmp(op_name, ds->transapi.rpc_clbks->callbacks[i].name) == 0) {
 				/* create array of input parameters */
-				op_input_array = calloc(ds->rpc_clbks->callbacks[i].arg_count, sizeof (xmlNode));
+				op_input_array = calloc(ds->transapi.rpc_clbks->callbacks[i].arg_count, sizeof (xmlNode));
 				/* get operation node */
 				op_node = ncxml_rpc_get_op_content(rpc);
 				op_input = op_node->children;
@@ -2030,8 +2040,8 @@ apply_editcopyconfig:
 					if (op_input->type == XML_ELEMENT_NODE) {
 						/* find position of this parameter */
 						pos = 0;
-						while (pos < ds->rpc_clbks->callbacks[i].arg_count) {
-							if (xmlStrEqual(BAD_CAST ds->rpc_clbks->callbacks[i].arg_order[pos], op_input->name)) {
+						while (pos < ds->transapi.rpc_clbks->callbacks[i].arg_count) {
+							if (xmlStrEqual(BAD_CAST ds->transapi.rpc_clbks->callbacks[i].arg_order[pos], op_input->name)) {
 								/* store copy of node to position */
 								op_input_array[pos] = xmlCopyNode(op_input, 1);
 								break;
@@ -2039,8 +2049,8 @@ apply_editcopyconfig:
 							pos++;
 						}
 						/* input node with this name not found in model defined inputs of RPC */
-						if (pos == ds->rpc_clbks->callbacks[i].arg_count) {
-							WARN("%s: input parameter %s not defined for RPC %s",__func__, op_input->name, ds->rpc_clbks->callbacks[i].name);
+						if (pos == ds->transapi.rpc_clbks->callbacks[i].arg_count) {
+							WARN("%s: input parameter %s not defined for RPC %s",__func__, op_input->name, ds->transapi.rpc_clbks->callbacks[i].name);
 						}
 					}
 					op_input = op_input->next;
@@ -2048,10 +2058,10 @@ apply_editcopyconfig:
 
 				/* call RPC callback function */
 				fprintf(stderr, "Calling RPC function\n");
-				reply = ds->rpc_clbks->callbacks[i].func(op_input_array);
+				reply = ds->transapi.rpc_clbks->callbacks[i].func(op_input_array);
 
 				/* clean array */
-				for (j=0; j<ds->rpc_clbks->callbacks[i].arg_count; j++) {
+				for (j=0; j<ds->transapi.rpc_clbks->callbacks[i].arg_count; j++) {
 					xmlFreeNode(op_input_array[j]);
 				}
 				free (op_input_array);
@@ -2092,7 +2102,7 @@ apply_editcopyconfig:
 
 	/* if transapi used, rpc affected running and succeeded get its actual content */
 	/* find differences and call functions */
-	if (ds->transapi_clbks != NULL
+	if (ds->transapi.data_clbks != NULL
 		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
 		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK) {
 		new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
@@ -2109,7 +2119,7 @@ apply_editcopyconfig:
 			}
 			nc_reply_free(reply);
 			reply = nc_reply_error(e);
-		} else if (transapi_running_changed(ds->transapi_clbks, old, new, ds->transapi_model)) { /* device does not accept changes */
+		} else if (transapi_running_changed(ds->transapi.data_clbks, old, new, ds->data_model.model_tree)) { /* device does not accept changes */
 			ERROR ("Failed to apply changes to device. Reverting changes in configuration datastore.");
 			/* try to revert configuration changes */
 			if (ds->func.copyconfig (ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, old_data, &e)) { /* revert failed */
@@ -2238,7 +2248,7 @@ const struct ncds_ds* ncds_get_model_data(const char* namespace)
 		if (ds->datastore == NULL) {
 			continue;
 		}
-		if (ds->datastore->model_namespace == NULL || strcmp(ds->datastore->model_namespace, namespace) != 0) {
+		if (ds->datastore->data_model.namespace == NULL || strcmp(ds->datastore->data_model.namespace, namespace) != 0) {
 			/* namespace does not match */
 			continue;
 		}
@@ -2264,13 +2274,13 @@ const struct ncds_ds* ncds_get_model_operation(const char* operation, const char
 		if (ds->datastore == NULL) {
 			continue;
 		}
-		if (ds->datastore->model_namespace == NULL || strcmp(ds->datastore->model_namespace, namespace) != 0) {
+		if (ds->datastore->data_model.namespace == NULL || strcmp(ds->datastore->data_model.namespace, namespace) != 0) {
 			/* namespace does not match */
 			continue;
 		}
-		if (ds->datastore->rpcs != NULL) {
-			for (i = 0; ds->datastore->rpcs[i] != NULL; i++) {
-				if (strcmp(ds->datastore->rpcs[i], operation) == 0) {
+		if (ds->datastore->data_model.rpcs != NULL) {
+			for (i = 0; ds->datastore->data_model.rpcs[i] != NULL; i++) {
+				if (strcmp(ds->datastore->data_model.rpcs[i], operation) == 0) {
 					/* operation definition found */
 					return (ds->datastore);
 				}
@@ -2295,13 +2305,13 @@ const struct ncds_ds* ncds_get_model_notification(const char* notification, cons
 		if (ds->datastore == NULL) {
 			continue;
 		}
-		if (ds->datastore->model_namespace == NULL || strcmp(ds->datastore->model_namespace, namespace) != 0) {
+		if (ds->datastore->data_model.namespace == NULL || strcmp(ds->datastore->data_model.namespace, namespace) != 0) {
 			/* namespace does not match */
 			continue;
 		}
-		if (ds->datastore->notifs != NULL) {
-			for (i = 0; ds->datastore->notifs[i] != NULL; i++) {
-				if (strcmp(ds->datastore->notifs[i], notification) == 0) {
+		if (ds->datastore->data_model.notifs != NULL) {
+			for (i = 0; ds->datastore->data_model.notifs[i] != NULL; i++) {
+				if (strcmp(ds->datastore->data_model.notifs[i], notification) == 0) {
 					/* notification definition found */
 					return (ds->datastore);
 				}
