@@ -42,6 +42,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
@@ -167,7 +168,12 @@ static struct nacm_path* nacm_path_parse(xmlNodePtr node)
 	for(i = 0; ns != NULL && ns[i] != NULL; i++) {
 		/* \todo process somehow also default namespace */
 		if (ns[i]->prefix != NULL) {
-			asprintf(&s, "/%s:", ns[i]->prefix);
+			if (asprintf(&s, "/%s:", ns[i]->prefix) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				nacm_path_free(retval);
+				free(ns);
+				return (NULL);
+			}
 			if (strstr(retval->path, s) != NULL) {
 				/* namespace used in path */
 				path_ns = malloc(sizeof(struct nacm_ns));

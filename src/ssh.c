@@ -54,6 +54,7 @@
 #ifdef DISABLE_LIBSSH
 #	include <ctype.h>
 #	include <pty.h>
+#	include <termios.h>
 #	include <libxml/xpath.h>
 #	include <libxml/xpathInternals.h>
 #else
@@ -317,7 +318,7 @@ struct nc_msg* read_hello(struct nc_session *session)
 	 * read next character and check ending character sequence for
 	 * NC_V10_END_MSG
 	 */
-	if (strcmp(NC_V10_END_MSG, &buffer[i - strlen(NC_V10_END_MSG)])) {
+	if (strcmp(NC_V10_END_MSG, &buffer[i - (unsigned int)strlen(NC_V10_END_MSG)])) {
 		while ((!feof(session->f_input)) && (!ferror(session->f_input)) && ((c = (char) fgetc(session->f_input)) != EOF)) {
 			if (i == size - 1) { /* buffer is too small */
 				/* allocate larger buffer */
@@ -333,7 +334,7 @@ struct nc_msg* read_hello(struct nc_session *session)
 			i++;
 
 			/* check if the ending character sequence was read */
-			if (!(strncmp(NC_V10_END_MSG, &buffer[i - strlen(NC_V10_END_MSG)], strlen(NC_V10_END_MSG)))) {
+			if (!(strncmp(NC_V10_END_MSG, &buffer[i - (unsigned int)strlen(NC_V10_END_MSG)], strlen(NC_V10_END_MSG)))) {
 				buffer[i - strlen(NC_V10_END_MSG)] = '\0';
 				break;
 			}
@@ -955,6 +956,8 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 #define SSH_PROG "ssh"
 
 	pid_t sshpid; /* child's PID */
+	struct termios termios;
+	struct winsize win;
 	int pout[2], ssh_in;
 	int ssh_fd, count = 0;
 	char buffer[BUFFER_SIZE];
@@ -1028,8 +1031,15 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval->fd_output = pout[1];
 	ssh_in = pout[0];
 
+	/* Get current properties of tty */
+	ioctl(0, TIOCGWINSZ, &win);
+	if (tcgetattr(STDIN_FILENO, &termios) < 0) {
+		ERROR("%s", strerror(errno));
+		return (NULL);
+	}
+
 	/* create child process */
-	if ((sshpid = forkpty(&ssh_fd, NULL, NULL, NULL)) == -1) {
+	if ((sshpid = forkpty(&ssh_fd, NULL, &termios, &win)) == -1) {
 		ERROR("%s", strerror(errno));
 		return (NULL);
 	} else if (sshpid == 0) { /* child process*/
@@ -1077,15 +1087,24 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 				fprintf(stdout, "%s ", buffer);
 				s = NULL;
-				system("stty -echo");
-				getline(&s, &n, stdin);
-				system("stty echo");
+				if (system("stty -echo") == -1) {
+					ERROR("system() call failed (%s:%d).", __FILE__, __LINE__);
+					return (NULL);
+				}
+				if (getline(&s, &n, stdin) == -1) {
+					ERROR("getline() failed (%s:%d).", __FILE__, __LINE__);
+					return (NULL);
+				}
+				if (system("stty echo") == -1) {
+					ERROR("system() call failed (%s:%d).", __FILE__, __LINE__);
+					return (NULL);
+				}
 
 				if (s == NULL) {
 					ERROR("Unable to get the password from a user (%s)", strerror(errno));
 					return (NULL);
 				}
-				fprintf(retval->f_input, s);
+				fprintf(retval->f_input, "%s", s);
 				//fprintf(retval->f_input, "\n");
 				fflush(retval->f_input);
 
@@ -1104,8 +1123,13 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 					break;
 				case 0:
 					fprintf(stdout, "%s ", buffer);
-					fgets(line, 81, stdin);
-					fprintf(retval->f_input, "%s", line);
+					if (fgets(line, 81, stdin) == NULL) {
+						WARN("fgets() failed (%s:%d).", __FILE__, __LINE__);
+						fprintf(retval->f_input, "no");
+						VERB("connecting to an unauthenticated host disabled");
+					} else {
+						fprintf(retval->f_input, "%s", line);
+					}
 					break;
 				case -1:
 					fprintf(stdout, "%s ", buffer);
@@ -1117,7 +1141,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 				}
 				fprintf(retval->f_input, "\n");
 				fflush(retval->f_input);
-				fgets(line, 81, retval->f_input); /* read written line from terminal */
+				if (fgets(line, 81, retval->f_input) == NULL); /* read written line from terminal */
 				line[0] = '\0'; /* and forget */
 				strcpy(buffer, "\0");
 				count = 0; /* reset search string */
@@ -1159,6 +1183,13 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 				count = 0; /* reset search string */
 			}
 		}
+		termios.c_lflag &= ~(ICANON | ISIG | IEXTEN | ECHO);
+		termios.c_iflag &= ~(BRKINT | ICRNL | IGNBRK | IGNCR | INLCR | INPCK | ISTRIP | IXON | PARMRK);
+		termios.c_oflag &= ~OPOST;
+		termios.c_cc[VMIN] = 1;
+		termios.c_cc[VTIME] = 0;
+
+		tcsetattr(retval->fd_input, TCSANOW, &termios);
 	}
 #else
 	int i, j;
