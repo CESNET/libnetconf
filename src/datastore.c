@@ -980,7 +980,6 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	ds->transapi.module = transapi_module;
 	ds->transapi.data_clbks = data_clbks;
 	ds->transapi.rpc_clbks = rpc_clbks;
-	ds->data_model.model_tree = yinmodel_parse(ds->data_model.xml);
 
 	return ds;
 }
@@ -1055,6 +1054,9 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		return (NULL);
 	}
 	ds->data_model.path = strdup(model_path);
+
+	/* TransAPI structure is set to NULLs */
+
 	ds->last_access = 0;
 	ds->get_state = get_state;
 
@@ -1089,6 +1091,11 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 	/* call implementation-specific datastore init() function */
 	if (datastore->func.init(datastore) != 0) {
 		return -2;
+	}
+
+	/* parse model to get aux structure for TransAPI's internal purposes */
+	if (datastore->transapi.module != NULL) {
+		datastore->data_model.model_tree = yinmodel_parse(datastore->data_model.xml);
 	}
 
 	/* acquire unique id */
