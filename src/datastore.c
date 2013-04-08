@@ -1060,7 +1060,8 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	ds->last_access = 0;
 	ds->get_state = get_state;
 
-	/* ds->id stays 0 to indicate, that datastore is still not fully configured */
+	/* ds->id is -1 to indicate, that datastore is still not fully configured */
+	ds->id = -1;
 
 	return (ds);
 }
@@ -1082,7 +1083,8 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 {
 	struct ncds_ds_list * item;
 
-	if (datastore == NULL) {
+	/* not initiated datastores have id set to -1 */
+	if (datastore == NULL || datastore->id != -1) {
 		return -1;
 	}
 
