@@ -147,6 +147,7 @@ struct ncds_funcs {
 	int (*editconfig)(struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 };
 
+struct model_augment;
 struct data_model {
 	/**
 	 * @brief Path to the file containing YIN configuration data model
@@ -179,7 +180,16 @@ struct data_model {
 	/**
 	 * @brief Parsed data model structure.
 	 */
-	struct model_tree * model_tree;
+	struct model_tree* model_tree;
+	/**
+	 * @brief Augmented models
+	 */
+	struct model_augment* augments;
+};
+
+struct model_augment {
+	struct data_model model;
+	struct model_augment* next;
 };
 
 struct ncds_ds {
@@ -213,6 +223,13 @@ struct ncds_ds {
 	 */
 	struct transapi transapi;
 };
+
+/**
+ * @brief Free data_model structure from ncds_ds structure (model itself is not
+ * freed)
+ * @param[in] model Data model structure to free its content.
+ */
+void ncds_ds_model_free(struct data_model* model);
 
 /**
  * @brief Generate a unique datastore id

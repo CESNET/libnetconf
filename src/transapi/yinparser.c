@@ -131,9 +131,10 @@ void yinmodel_free_recursive (struct model_tree * yin)
 
 void yinmodel_free (struct model_tree * yin)
 {
-	yinmodel_free_recursive (yin);
-
-	free (yin);
+	if (yin != NULL) {
+		yinmodel_free_recursive (yin);
+		free (yin);
+	}
 }
 
 struct model_tree * yinmodel_parse (xmlDocPtr model_doc)

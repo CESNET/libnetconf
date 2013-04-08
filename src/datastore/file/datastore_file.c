@@ -416,30 +416,12 @@ int ncds_file_init (struct ncds_ds* ds)
 
 void ncds_file_free(struct ncds_ds* ds)
 {
-	int i;
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
 	if (file_ds != NULL) {
 		/* generic ncds_ds part */
-		free(file_ds->data_model.path);
-		free(file_ds->data_model.name);
-		free(file_ds->data_model.version);
-		free(file_ds->data_model.namespace);
-		if (file_ds->data_model.rpcs != NULL) {
-			for (i = 0; file_ds->data_model.rpcs[i] != NULL; i++) {
-				free(file_ds->data_model.rpcs[i]);
-			}
-			free(file_ds->data_model.rpcs);
-		}
-		if (file_ds->data_model.notifs != NULL) {
-			for (i = 0; file_ds->data_model.notifs[i] != NULL; i++) {
-				free(file_ds->data_model.notifs[i]);
-			}
-			free(file_ds->data_model.notifs);
-		}
-		if (file_ds->data_model.xml != NULL) {
-			xmlFreeDoc(file_ds->data_model.xml);
-		}
+		ncds_ds_model_free(&(file_ds->data_model));
+
 		/* ncds_ds_file specific part */
 		if (file_ds->file != NULL) {
 			fclose(file_ds->file);

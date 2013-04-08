@@ -1018,6 +1018,17 @@ static int fill_model_struct(const char* model_path, struct data_model* data_mod
 	return (EXIT_SUCCESS);
 }
 
+int ncds_add_augment(struct ncds_ds* ds, const char* model_path)
+{
+
+	if (model_path == NULL || ds == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
 {
 	struct ncds_ds* ds = NULL;
@@ -1092,6 +1103,47 @@ ncds_id generate_id(void)
 	} while (datastores_get_ds(current_id) != NULL);
 
 	return current_id;
+}
+
+static void augments_free(struct model_augment* augment)
+{
+	if (augment != NULL) {
+		ncds_ds_model_free(&(augment->model));
+		augments_free(augment->next);
+		free(augment);
+	}
+}
+
+
+void ncds_ds_model_free(struct data_model* model)
+{
+	int i;
+
+	if (model == NULL) {
+		return;
+	}
+
+	free(model->path);
+	free(model->name);
+	free(model->version);
+	free(model->namespace);
+	if (model->rpcs != NULL) {
+		for (i = 0; model->rpcs[i] != NULL; i++) {
+			free(model->rpcs[i]);
+		}
+		free(model->rpcs);
+	}
+	if (model->notifs != NULL) {
+		for (i = 0; model->notifs[i] != NULL; i++) {
+			free(model->notifs[i]);
+		}
+		free(model->notifs);
+	}
+	if (model->xml != NULL) {
+		xmlFreeDoc(model->xml);
+	}
+	yinmodel_free(model->model_tree);
+	augments_free(model->augments);
 }
 
 ncds_id ncds_init(struct ncds_ds* datastore)
