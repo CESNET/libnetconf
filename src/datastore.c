@@ -984,6 +984,40 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	return ds;
 }
 
+static int fill_model_struct(const char* model_path, struct data_model* data_model)
+{
+	if (model_path == NULL || data_model == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	/* get configuration data model */
+	if (eaccess(model_path, R_OK) == -1) {
+		ERROR("Unable to access the configuration data model %s (%s).", model_path, strerror(errno));
+		return (EXIT_FAILURE);
+	}
+	data_model->xml = xmlReadFile(model_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
+	if (data_model->xml == NULL) {
+		ERROR("Unable to read the configuration data model %s.", model_path);
+		return (EXIT_FAILURE);
+	}
+	if (get_model_info(data_model->xml,
+			&(data_model->name),
+			&(data_model->version),
+			&(data_model->namespace),
+			&(data_model->rpcs),
+			&(data_model->notifs)) != 0) {
+		ERROR("Unable to process configuration data model %s.", model_path);
+		xmlFreeDoc(data_model->xml);
+		return (EXIT_FAILURE);
+	}
+	data_model->path = strdup(model_path);
+	data_model->model_tree = NULL;
+	data_model->augments = NULL;
+
+	return (EXIT_SUCCESS);
+}
+
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
 {
 	struct ncds_ds* ds = NULL;
@@ -1031,29 +1065,10 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	ds->type = type;
 
 	/* get configuration data model */
-	if (eaccess(model_path, R_OK) == -1) {
-		ERROR("Unable to access the configuration data model %s (%s).", model_path, strerror(errno));
+	if (fill_model_struct(model_path, &(ds->data_model)) == EXIT_FAILURE) {
 		free(ds);
 		return (NULL);
 	}
-	ds->data_model.xml = xmlReadFile(model_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
-	if (ds->data_model.xml == NULL) {
-		ERROR("Unable to read the configuration data model %s.", model_path);
-		free(ds);
-		return (NULL);
-	}
-	if (get_model_info(ds->data_model.xml,
-			&(ds->data_model.name),
-			&(ds->data_model.version),
-			&(ds->data_model.namespace),
-			&(ds->data_model.rpcs),
-			&(ds->data_model.notifs)) != 0) {
-		ERROR("Unable to process configuration data model %s.", model_path);
-		xmlFreeDoc(ds->data_model.xml);
-		free(ds);
-		return (NULL);
-	}
-	ds->data_model.path = strdup(model_path);
 
 	/* TransAPI structure is set to NULLs */
 
