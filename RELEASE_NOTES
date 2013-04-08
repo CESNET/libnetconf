@@ -5,7 +5,7 @@ This release includes the following changes:
 TODO:
  * Transaction API
  * Support for augmented configuration data models
-
+ * ncds_apply_rpc2all()
 
 For API/ABI compatibility to previous versions, see reports in
 'doc/compat_reports/' directory.
