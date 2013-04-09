@@ -92,6 +92,7 @@ COMMAND commands[] = {
 		{"kill-session", cmd_killsession, "NETCONF <kill-session> operation"},
 		{"lock", cmd_lock, "NETCONF <lock> operation"},
 		{"unlock", cmd_unlock, "NETCONF <unlock> operation"},
+		{"validate", cmd_validate, "NETCONF <validate> operation"},
 #ifndef DISABLE_NOTIFICATIONS
 		{"subscribe", cmd_subscribe, "NETCONF Event Notifications <create-subscription> operation"},
 #endif
@@ -656,6 +657,132 @@ int cmd_editconfig (char *arg)
 	return (send_recv_process("edit-config", rpc));
 }
 
+void cmd_validate_help ()
+{
+	char *datastores;
+	if (session == NULL) {
+		/* if session not established, print complete help for all capabilities */
+		datastores = "running|startup|candidate";
+	} else {
+		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
+			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+				datastores = "running|startup|candidate";
+			} else {
+				datastores = "running|startup";
+			}
+		} else if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+			datastores = "running|candidate";
+		} else {
+			datastores = "running";
+		}
+	}
+	fprintf (stdout, "validate [--help] [--config <file> | %s]\n", datastores);
+
+	if (session != NULL &&
+	    !(nc_cpblts_enabled (session, NC_CAP_VALIDATE10_ID) || nc_cpblts_enabled (session, NC_CAP_VALIDATE11_ID))) {
+		fprintf (stdout, "WARNING: validate operation is not supported in the current session.\n");
+	}
+}
+
+int cmd_validate (char *arg)
+{
+	int c;
+	int config_fd;
+	struct stat config_stat;
+	char *config = NULL, *config_m = NULL;
+	NC_DATASTORE source = NC_DATASTORE_ERROR;
+	nc_rpc *rpc = NULL;
+	struct arglist cmd;
+	struct option long_options[] ={
+			{"config", 2, 0, 'c'},
+			{"help", 0, 0, 'h'},
+			{0, 0, 0, 0}
+	};
+	int option_index = 0;
+
+	/* set back to start to be able to use getopt() repeatedly */
+	optind = 0;
+
+	if (session == NULL) {
+		ERROR("validate", "NETCONF session not established, use \'connect\' command.");
+		return (EXIT_FAILURE);
+	}
+
+	init_arglist (&cmd);
+	addargs (&cmd, "%s", arg);
+
+	while ((c = getopt_long (cmd.count, cmd.list, "c:h", long_options, &option_index)) != -1) {
+		switch (c) {
+		case 'c':
+			if (optarg == NULL) {
+				/* let user write edit data interactively */
+				INSTRUCTION("Type the content of a configuration datastore (close editor by Ctrl-D):\n");
+				config = mreadline(NULL);
+				if (config == NULL) {
+					ERROR("validate", "reading configuration data failed.");
+					return (EXIT_FAILURE);
+				}
+			} else {
+				/* open configuration data from the file */
+				config_fd = open(optarg, O_RDONLY);
+				if (config_fd == -1) {
+					ERROR("validate", "unable to open the local datastore file (%s).", strerror(errno));
+					clear_arglist(&cmd);
+					return (EXIT_FAILURE);
+				}
+
+				/* map content of the file into the memory */
+				fstat(config_fd, &config_stat);
+				config_m = (char*) mmap(NULL, config_stat.st_size, PROT_READ, MAP_PRIVATE, config_fd, 0);
+				if (config_m == MAP_FAILED) {
+					ERROR("validate", "mmapping of the local datastore file failed (%s).", strerror(errno));
+					clear_arglist(&cmd);
+					close(config_fd);
+					return (EXIT_FAILURE);
+				}
+
+				/* make a copy of the content to allow closing the file */
+				config = strdup(config_m);
+
+				/* unmap local datastore file and close it */
+				munmap(config_m, config_stat.st_size);
+				close(config_fd);
+			}
+
+			source = NC_DATASTORE_CONFIG;
+			break;
+		case 'h':
+			cmd_validate_help ();
+			clear_arglist(&cmd);
+			return (EXIT_SUCCESS);
+			break;
+		default:
+			ERROR("validate", "unknown option -%c.", c);
+			cmd_validate_help ();
+			clear_arglist(&cmd);
+			return (EXIT_FAILURE);
+		}
+	}
+
+	/* if the config option not set, parse remaining arguments to get source */
+	if (config == NULL) {
+		source = get_datastore("source", "validate", &cmd, optind);
+	}
+
+	/* arglist is no more needed */
+	clear_arglist(&cmd);
+
+	/* create requests */
+	rpc = nc_rpc_validate (source, config);
+	if (rpc == NULL) {
+		ERROR("validate", "creating an rpc request failed.");
+		return (EXIT_FAILURE);
+	}
+
+	/* send the request and get the reply */
+	return (send_recv_process("validate", rpc));
+}
+
 void cmd_copyconfig_help ()
 {
 	char *datastores;
@@ -812,7 +939,7 @@ int cmd_copyconfig (char *arg)
 		INSTRUCTION("Type the content of a configuration datastore (close editor by Ctrl-D):\n");
 		config = mreadline(NULL);
 		if (config == NULL) {
-			ERROR("copy-config", "reading filter failed.");
+			ERROR("copy-config", "reading configuration data failed.");
 			return (EXIT_FAILURE);
 		}
 		source = NC_DATASTORE_CONFIG;
