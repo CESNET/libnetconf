@@ -2385,6 +2385,145 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE target)
 	return (rpc);
 }
 
+nc_rpc * nc_rpc_validate(NC_DATASTORE source, ...)
+{
+	nc_rpc *rpc;
+	xmlNodePtr content, node_source, node_config;
+	xmlDocPtr config;
+	xmlNsPtr ns;
+	const char *datastore = NULL;
+	const char *source_url = NULL;
+	const char* config_s = NULL;
+	char* config_S;
+	va_list argp;
+
+	va_start(argp, source);
+
+	switch (source) {
+	case NC_DATASTORE_CONFIG:
+		config_s = va_arg(argp, const char*);
+		if (config_s == NULL || strlen(config_s) < 4) { /* at least '<x/>' */
+			ERROR("Invalid configuration data for validate operation");
+			va_end(argp);
+			return NULL;
+		}
+		break;
+	case NC_DATASTORE_URL:
+		source_url = va_arg(argp, const char*);
+		break;
+	case NC_DATASTORE_RUNNING:
+		datastore = "running";
+		break;
+	case NC_DATASTORE_STARTUP:
+		datastore = "startup";
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		datastore = "candidate";
+		break;
+	default:
+		ERROR("Unknown source for <validate>.");
+		va_end(argp);
+		return NULL;
+	}
+
+	if ((content = xmlNewNode(NULL, BAD_CAST "validate")) == NULL) {
+		ERROR("xmlNewNode failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		va_end(argp);
+		return NULL;
+	}
+	/* set namespace */
+	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(content, ns);
+
+	node_source = xmlNewChild(content, ns, BAD_CAST "source", NULL);
+	if (node_source == NULL) {
+		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+		xmlFreeNode(content);
+		va_end(argp);
+		return NULL;
+	}
+
+	if (config_s != NULL) {
+		/* source is specified as a content of the <config> element */
+
+		/* transform string to the xmlNodePtr */
+		/* add covering <config> element to allow to specify multiple root elements */
+		if (asprintf(&config_S, "<config>%s</config>", config_s) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			va_end(argp);
+			return (NULL);
+		}
+
+		/* prepare XML structure from given data */
+		config = xmlReadMemory(config_S, strlen(config_S), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		free(config_S);
+		if (config == NULL) {
+			ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			va_end(argp);
+			return (NULL);
+		}
+		if (config->children == NULL || config->children->children == NULL) {
+			ERROR("Invalid configuration data for validate operation");
+			xmlFreeNode(content);
+			xmlFreeDoc(config);
+			va_end(argp);
+			return NULL;
+		}
+
+		node_config = xmlNewChild(node_source, ns, BAD_CAST "config", NULL);
+		if (node_config == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			xmlFreeDoc(config);
+			va_end(argp);
+			return NULL;
+		}
+
+		/* connect given configuration data with the rpc request */
+		if (xmlAddChildList(node_config, xmlCopyNodeList(config->children->children)) == NULL) {
+			ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
+			xmlFreeNode(content);
+			xmlFreeDoc(config);
+			va_end(argp);
+			return NULL;
+		}
+		xmlFreeDoc(config);
+	} else {
+		/* source is one of the standard datastores */
+		if (datastore != NULL) {
+			if (xmlNewChild(node_source, ns, BAD_CAST datastore, NULL) == NULL) {
+				ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				va_end(argp);
+				return NULL;
+			}
+		} else if (source_url != NULL) {
+			/* url specified */
+			if (xmlNewChild(node_source, ns, BAD_CAST "url", BAD_CAST source_url) == NULL) {
+				ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+				xmlFreeNode(content);
+				va_end(argp);
+				return NULL;
+			}
+		} else {
+			xmlFreeNode(content);
+			va_end(argp);
+			return NULL;
+		}
+	}
+
+	if ((rpc = nc_rpc_create(content)) != NULL) {
+		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+	}
+
+	xmlFreeNode(content);
+	va_end(argp);
+	return rpc;
+}
+
+
 static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const xmlNodePtr config, const char* source_url, const char* target_url)
 {
 	nc_rpc *rpc = NULL;

@@ -463,6 +463,23 @@ nc_rpc *nc_rpc_lock(NC_DATASTORE target);
 nc_rpc *nc_rpc_unlock(NC_DATASTORE target);
 
 /**
+ * @ingroup rpc
+ * @brief Create \<validate\> NETCONF rpc message.
+ *
+ * ### Variadic parameters:
+ * - source is specified as #NC_DATASTORE_URL:
+ *  - nc_rpc_validate() accepts the first variadic parameter
+ *  **const char* source_url providing the url to the file.
+ * - source is specified as #NC_DATASTORE_CONFIG:
+ *  - nc_rpc_validate() accepts as the first variadic parameter
+ *  **const char* source_config** providing the complete configuration data to copy.
+ *
+ * @param[in] source Name of the configuration datastore to validate.
+ * @return Created rpc message.
+ */
+nc_rpc * nc_rpc_validate(NC_DATASTORE source, ...);
+
+/**
  * @ingroup notifications
  * @brief Create \<create-subsciption\> NETCONF rpc message.
  *
