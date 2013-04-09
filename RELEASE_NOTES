@@ -1,3 +1,17 @@
+libnetconf 0.4.1
+
+This release includes the following changes:
+
+ * <validate> RPC operation from the client side.
+   The library can create, send and receive response to the
+   <validate> RPC. This operation is not processed on the server side.
+
+This release fixes the following bugs:
+
+ * Communication via ssh(1) (when --disable-libssh2 is used) using
+   NETCONF v1.1.
+
+
 libnetconf 0.4.0
 
 This release includes the following changes:
