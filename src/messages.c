@@ -413,6 +413,7 @@ NC_RPC_TYPE nc_rpc_parse_type(nc_rpc* rpc)
 	case (NC_OP_GETCONFIG):
 	case (NC_OP_GETSCHEMA):
 	case (NC_OP_GET):
+	case (NC_OP_VALIDATE):
 		rpc->type.rpc = NC_RPC_DATASTORE_READ;
 		break;
 	case (NC_OP_EDITCONFIG):
@@ -613,6 +614,9 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "get") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_GET);
+		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "validate") == 0) &&
+				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
+			return (NC_OP_VALIDATE);
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "get-config") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
 			return (NC_OP_GETCONFIG);
@@ -2547,7 +2551,7 @@ nc_rpc * nc_rpc_validate(NC_DATASTORE source, ...)
 	}
 
 	if ((rpc = nc_rpc_create(content)) != NULL) {
-		rpc->type.rpc = NC_RPC_DATASTORE_WRITE;
+		rpc->type.rpc = NC_RPC_DATASTORE_READ;
 	}
 
 	xmlFreeNode(content);
