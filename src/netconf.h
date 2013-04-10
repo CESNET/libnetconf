@@ -184,6 +184,7 @@ typedef enum NC_OP {
 	NC_OP_UNLOCK,		/**< \<unlock\> operation */
 	NC_OP_COMMIT,		/**< \<commit> operation */
 	NC_OP_DISCARDCHANGES,	/**< \<discard-changes> operation */
+	NC_OP_VALIDATE,		/**< \<validate\> operation */
 	NC_OP_CREATESUBSCRIPTION,	/**< \<create-subscription\> operation (RFC 5277) */
 	NC_OP_GETSCHEMA	/**< \<get-schema> operation (RFC 6022) */
 } NC_OP;
