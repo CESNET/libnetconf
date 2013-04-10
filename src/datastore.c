@@ -2160,6 +2160,7 @@ apply_editcopyconfig:
 		}
 		dsid++;
 		if (dsid < internal_ds_count) {
+			reply = NULL;
 			goto process_datastore;
 		}
 	}
