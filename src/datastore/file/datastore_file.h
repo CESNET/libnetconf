@@ -70,6 +70,11 @@ struct ncds_ds_file {
 	 */
 	struct ncds_funcs func;
 	/**
+	 * @brief Compounded data model containing base data model extended by
+	 * all augment models
+	 */
+	xmlDocPtr ext_model;
+	/**
 	 * @brief Information about data model linked with the datastore
 	 */
 	struct data_model data_model;

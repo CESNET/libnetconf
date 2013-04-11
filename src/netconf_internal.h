@@ -591,6 +591,11 @@ void ncntf_close(void);
 
 #endif /* DISABLE_NOTIFICATIONS */
 
+/**
+ * @brief remove all internal datastore structures
+ */
+void ncds_cleanall();
+
 int nc_session_monitoring_init(void);
 void nc_session_monitoring_close(void);
 
@@ -600,9 +605,9 @@ void nc_session_monitoring_close(void);
  */
 void nc_clear_namespaces(xmlNodePtr node);
 
-const struct ncds_ds* ncds_get_model_data(const char* namespace);
-const struct ncds_ds* ncds_get_model_operation(const char* operation, const char* namespace);
-const struct ncds_ds* ncds_get_model_notification(const char* notification, const char* namespace);
+const struct data_model* ncds_get_model_data(const char* namespace);
+const struct data_model* ncds_get_model_operation(const char* operation, const char* namespace);
+const struct data_model* ncds_get_model_notification(const char* notification, const char* namespace);
 
 char** nc_get_grouplist(const char* username);
 

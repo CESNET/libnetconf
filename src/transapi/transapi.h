@@ -3,7 +3,7 @@
 
 #include "xmldiff.h"
 #include "yinparser.h"
-#include <libnetconf.h>
+#include "../libnetconf.h"
 
 /* maximal number of input arguments every defined RPC can have */
 #ifndef MAX_RPC_INPUT_ARGS

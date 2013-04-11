@@ -416,30 +416,15 @@ int ncds_file_init (struct ncds_ds* ds)
 
 void ncds_file_free(struct ncds_ds* ds)
 {
-	int i;
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
 	if (file_ds != NULL) {
 		/* generic ncds_ds part */
-		free(file_ds->data_model.path);
-		free(file_ds->data_model.name);
-		free(file_ds->data_model.version);
-		free(file_ds->data_model.namespace);
-		if (file_ds->data_model.rpcs != NULL) {
-			for (i = 0; file_ds->data_model.rpcs[i] != NULL; i++) {
-				free(file_ds->data_model.rpcs[i]);
-			}
-			free(file_ds->data_model.rpcs);
+		if (file_ds->data_model.xml != file_ds->ext_model) {
+			xmlFreeDoc(file_ds->ext_model);
 		}
-		if (file_ds->data_model.notifs != NULL) {
-			for (i = 0; file_ds->data_model.notifs[i] != NULL; i++) {
-				free(file_ds->data_model.notifs[i]);
-			}
-			free(file_ds->data_model.notifs);
-		}
-		if (file_ds->data_model.xml != NULL) {
-			xmlFreeDoc(file_ds->data_model.xml);
-		}
+		ncds_ds_model_free(&(file_ds->data_model));
+
 		/* ncds_ds_file specific part */
 		if (file_ds->file != NULL) {
 			fclose(file_ds->file);
@@ -929,7 +914,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 		 * the <copy-config> protocol operation.
 		 */
 		if (!(source == NC_DATASTORE_RUNNING && target == NC_DATASTORE_STARTUP)) {
-			keys = get_keynode_list(file_ds->data_model.xml);
+			keys = get_keynode_list(file_ds->ext_model);
 			if (source == NC_DATASTORE_RUNNING || source == NC_DATASTORE_STARTUP || source == NC_DATASTORE_CANDIDATE) {
 				/* RFC 6536, sec 3.2.4., paragraph 3
 				 * If the source of the <copy-config> operation is a datastore,
@@ -944,7 +929,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 			 * the client needs access to the modified nodes according to
 			 * the effective access operation of the each modified node.
 			 */
-			if ((r = edit_replace_nacmcheck(target_ds->children, aux_doc, file_ds->data_model.xml, keys, rpc->nacm, error)) != NACM_PERMIT) {
+			if ((r = edit_replace_nacmcheck(target_ds->children, aux_doc, file_ds->ext_model, keys, rpc->nacm, error)) != NACM_PERMIT) {
 				if (r == NACM_DENY) {
 					if (error != NULL ) {
 						*error = nc_err_new(NC_ERR_ACCESS_DENIED);
@@ -1138,7 +1123,7 @@ int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session,
 	datastore_doc->children = tmp_target_ds;
 
 	/* preform edit config */
-	if (edit_config (datastore_doc, config_doc, file_ds->data_model.xml, defop, errop, (rpc != NULL) ? rpc->nacm : NULL, error)) {
+	if (edit_config (datastore_doc, config_doc, (struct ncds_ds*)file_ds, defop, errop, (rpc != NULL) ? rpc->nacm : NULL, error)) {
 		retval = EXIT_FAILURE;
 	} else {
 		/* replace datastore by edited configuration */

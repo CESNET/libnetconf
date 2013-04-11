@@ -51,6 +51,7 @@
 #include <libxml/xpathInternals.h>
 
 #include "edit_config.h"
+#include "datastore_internal.h"
 #include "../netconf.h"
 #include "../netconf_internal.h"
 #include "../nacm.h"
@@ -575,7 +576,8 @@ static xmlNodePtr find_element_model_compare(xmlNodePtr node, xmlNodePtr model_n
 	xmlChar* name;
 
 	if (xmlStrcmp(model_node->name, BAD_CAST "choice") == 0 ||
-	    xmlStrcmp(model_node->name, BAD_CAST "case") == 0) {
+	    xmlStrcmp(model_node->name, BAD_CAST "case") == 0 ||
+	    xmlStrcmp(model_node->name, BAD_CAST "augment") == 0) {
 		for (aux = model_node->children; aux != NULL; aux = aux->next) {
 			retval = find_element_model_compare(node, aux);
 			if (retval != NULL) {
@@ -2423,7 +2425,7 @@ static int compact_edit_operations(xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
  * \param[in] repo XML document to change (target NETCONF repository).
  * \param[in] edit Content of the edit-config's \<config\> element as an XML
  * document defining the changes to perform.
- * \param[in] model XML form (YIN) of the configuration data model appropriate to the given repo.
+ * \param[in] ds Datastore structure where the edit-config will be performed.
  * \param[in] defop Default edit-config's operation for this edit-config call.
  * \param[in] errop NETCONF edit-config's error option defining reactions to an error.
  * \param[in] nacm NACM structure of the request RPC to check Access Rights
@@ -2431,17 +2433,19 @@ static int compact_edit_operations(xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
  * \return On error, non-zero is returned and err structure is filled. Zero is
  * returned on success.
  */
-int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE UNUSED(errop), const struct nacm_rpc* nacm, struct nc_err **error)
+int edit_config(xmlDocPtr repo, xmlDocPtr edit, struct ncds_ds* ds, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE UNUSED(errop), const struct nacm_rpc* nacm, struct nc_err **error)
 {
+	struct model_augment_list* ds_augment;
+
 	if (repo == NULL || edit == NULL) {
 		return (EXIT_FAILURE);
 	}
 
 	/* check operations */
-	if (check_edit_ops(NC_CHECK_EDIT_DELETE, defop, repo, edit, model, error) != EXIT_SUCCESS) {
+	if (check_edit_ops(NC_CHECK_EDIT_DELETE, defop, repo, edit, ds->ext_model, error) != EXIT_SUCCESS) {
 		goto error_cleanup;
 	}
-	if (check_edit_ops(NC_CHECK_EDIT_CREATE, defop, repo, edit, model, error) != EXIT_SUCCESS) {
+	if (check_edit_ops(NC_CHECK_EDIT_CREATE, defop, repo, edit, ds->ext_model, error) != EXIT_SUCCESS) {
 		goto error_cleanup;
 	}
 
@@ -2454,7 +2458,7 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 	}
 
 	/* perform operations */
-	if (edit_operations(repo, edit, defop, model, nacm, error) != EXIT_SUCCESS) {
+	if (edit_operations(repo, edit, defop, ds->ext_model, nacm, error) != EXIT_SUCCESS) {
 		goto error_cleanup;
 	}
 
@@ -2463,7 +2467,10 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_T
 		/* server work in trim basic mode and therefore all default
 		 * values must be removed from the datastore.
 		 */
-		ncdflt_default_values(repo, model, NCWD_MODE_TRIM);
+		ncdflt_default_values(repo, ds->data_model.xml, NCWD_MODE_TRIM);
+		for (ds_augment = ds->data_model.augments; ds_augment != NULL; ds_augment = ds_augment->next) {
+			ncdflt_default_values(repo, ds_augment->augment->model.xml, NCWD_MODE_TRIM);
+		}
 	}
 
 	return EXIT_SUCCESS;

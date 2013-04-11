@@ -53,29 +53,11 @@ int ncds_empty_init (struct ncds_ds * UNUSED(ds))
 
 void ncds_empty_free (struct ncds_ds * ds)
 {
-	int i;
-
 	/* generic ncds_ds part */
-	free(ds->data_model.path);
-	free(ds->data_model.name);
-	free(ds->data_model.version);
-	free(ds->data_model.namespace);
-	if (ds->data_model.rpcs != NULL) {
-		for (i = 0; ds->data_model.rpcs[i] != NULL; i++) {
-			free(ds->data_model.rpcs[i]);
-		}
-		free(ds->data_model.rpcs);
+	if (ds->data_model.xml != ds->ext_model) {
+		xmlFreeDoc(ds->ext_model);
 	}
-	if (ds->data_model.notifs != NULL) {
-		for (i = 0; ds->data_model.notifs[i] != NULL; i++) {
-			free(ds->data_model.notifs[i]);
-		}
-		free(ds->data_model.notifs);
-	}
-	if (ds->data_model.xml != NULL) {
-		xmlFreeDoc(ds->data_model.xml);
-	}
-
+	ncds_ds_model_free(&(ds->data_model));
 	free (ds);
 	return;
 }

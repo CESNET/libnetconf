@@ -107,6 +107,15 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 
 /**
  * @ingroup store
+ * @brief Add an augment model to the base model of the datastore
+ * @param[in] datastore Datastore structure to be augmented.
+ * @param[in] model_path Path to the augment YIN configuration data model.
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_add_augment(const char* model_path);
+
+/**
+ * @ingroup store
  * @brief Assign the path of the datastore file into the datastore structure.
  *
  * Checks if the file exist and is accessible for reading and writing.
@@ -122,7 +131,6 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 int ncds_file_set_path (struct ncds_ds* datastore, const char* path);
 
 /**
- *
  * @ingroup store
  * @brief Activate datastore structure for use.
  *
@@ -196,10 +204,14 @@ void ncds_break_locks (const struct nc_session* session);
  * @brief Return a serialized XML containing the data model in the YIN format
  *
  * @param[in] id ID of the datastore whose data model we want
+ * @param[in] augmented Set 1 to get complete data model including augmentation.
+ * In this case, returned string contains modified YIN format - there are
+ * <augment> elements inside the model including information about its namespace
+ * and module name.
  *
  * @return String containing YIN model. Caller must free the memory after use.
  */
-char * ncds_get_model (ncds_id id);
+char* ncds_get_model (ncds_id id, int augmented);
 
 /**
  * @ingroup store
