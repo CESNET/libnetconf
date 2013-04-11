@@ -225,6 +225,9 @@ int nc_close(int system)
 	/* close NETCONF session statistics */
 	nc_session_monitoring_close();
 
+	/* close all remaining datastores */
+	ncds_cleanall();
+
 #ifndef DISABLE_NOTIFICATIONS
 	/* close Notification subsystem */
 	if (nc_init_flags & NC_INIT_NOTIF) {

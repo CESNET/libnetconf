@@ -1570,9 +1570,6 @@ static nc_reply* nc_reply_create(const xmlNodePtr content)
 
 	reply = (nc_reply*)nc_msg_create(content,"rpc-reply");
 
-	/* set the reply type flag */
-	nc_reply_parse_type(reply);
-
 	return (reply);
 }
 

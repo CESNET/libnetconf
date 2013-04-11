@@ -40,6 +40,7 @@
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 
+#include "datastore_internal.h"
 #include "../netconf.h"
 #include "../netconf_internal.h"
 #include "../error.h"
@@ -74,7 +75,7 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys, int leaf
  * \param[in] repo XML document to change (target NETCONF repository).
  * \param[in] edit Content of the edit-config's \<config\> element as an XML
  * document defining the changes to perform.
- * \param[in] model XML form (YIN) of the configuration data model appropriate to the given repo.
+ * \param[in] ds Datastore structure where the edit-config will be performed.
  * \param[in] defop Default edit-config's operation for this edit-config call.
  * \param[in] errop NETCONF edit-config's error option defining reactions to an error.
  * \param[in] nacm NACM structure of the request RPC to check Access Rights
@@ -82,7 +83,7 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys, int leaf
  * \return On error, non-zero is returned and err structure is filled. Zero is
  * returned on success.
  */
-int edit_config(xmlDocPtr repo, xmlDocPtr edit, xmlDocPtr model, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, const struct nacm_rpc* nacm, struct nc_err **error);
+int edit_config(xmlDocPtr repo, xmlDocPtr edit, struct ncds_ds* ds, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE UNUSED(errop), const struct nacm_rpc* nacm, struct nc_err **error);
 
 /**
  * \brief Perform edit-config's "replace" operation on the selected node.

@@ -605,6 +605,7 @@ int nacm_config_refresh(void)
 {
 	xmlXPathContextPtr data_ctxt = NULL;
 	xmlXPathObjectPtr query_result = NULL;
+	struct model_augment_list* ds_augments;
 	char* data;
 	xmlNodePtr node;
 	xmlChar* content = NULL;
@@ -648,6 +649,9 @@ int nacm_config_refresh(void)
 
 	/* process default values */
 	ncdflt_default_values(data_doc, nacm_ds->data_model.xml, NCWD_MODE_ALL);
+	for (ds_augments = nacm_ds->data_model.augments; ds_augments != NULL; ds_augments = ds_augments->next) {
+		ncdflt_default_values(data_doc, ds_augments->augment->model.xml, NCWD_MODE_ALL);
+	}
 
 	/* create xpath evaluation context */
 	if ((data_ctxt = xmlXPathNewContext(data_doc)) == NULL) {
@@ -1125,7 +1129,9 @@ static int compare_node_to_model(const xmlNodePtr node, const xmlNodePtr model_n
 		/* do recursion */
 		model_parent = model_node->parent;
 		while ((model_parent != NULL) && (model_parent->type == XML_ELEMENT_NODE) &&
-		    (xmlStrcmp(model_parent->name, BAD_CAST "choice") == 0)) {
+		    (xmlStrcmp(model_parent->name, BAD_CAST "choice") == 0 ||
+		    xmlStrcmp(model_parent->name, BAD_CAST "case") == 0 ||
+		    xmlStrcmp(model_parent->name, BAD_CAST "augment") == 0)) {
 			model_parent = model_parent->parent;
 		}
 		return (compare_node_to_model(node->parent, model_parent, model_namespace));
@@ -1140,7 +1146,7 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 	xmlXPathObjectPtr xpath_result = NULL;
 	struct nacm_ns *ns;
 	struct nacm_rule* rule;
-	const struct ncds_ds* module;
+	const struct data_model* module;
 	int i, j, k;
 	int retval = -1;
 
@@ -1170,7 +1176,7 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 
 				/* 1) module name */
 				if (!(strcmp(rule->module, "*") == 0 ||
-				    strcmp(rule->module, module->data_model.name) == 0)) {
+				    strcmp(rule->module, module->name) == 0)) {
 					/* rule does not match */
 					continue;
 				}
@@ -1243,37 +1249,35 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 		/* no matching rule found */
 
 		/* check nacm:default-deny-all and nacm:default-deny-write */
-		if ((model_ctxt = xmlXPathNewContext(module->data_model.xml)) != NULL &&
+		if ((model_ctxt = xmlXPathNewContext(module->xml)) != NULL &&
 		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) == 0 &&
 		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "nacm", BAD_CAST NC_NS_NACM) == 0) {
-			if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:container//nacm:default-deny-all", model_ctxt)) != NULL) {
+			if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module//nacm:default-deny-all", model_ctxt)) != NULL) {
 				if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
 					/* process all default-deny-all elements */
 					for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
-						if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i], (char*) module->data_model.namespace) == 1) {
+						if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i]->parent, module->namespace) == 1) {
 							xmlXPathFreeObject(defdeny);
 							xmlXPathFreeContext(model_ctxt);
 							retval = NACM_DENY;
 							goto result;
 						}
-
 					}
 				}
 				xmlXPathFreeObject(defdeny);
 			}
 			if ((access & (NACM_ACCESS_CREATE | NACM_ACCESS_DELETE | NACM_ACCESS_UPDATE)) != 0) {
 				/* check default-deny-write */
-				if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:container//nacm:default-deny-write", model_ctxt)) != NULL ) {
+				if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module//nacm:default-deny-write", model_ctxt)) != NULL ) {
 					if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
 						/* process all default-deny-all elements */
 						for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
-							if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i], (char*) module->data_model.namespace) == 1) {
+							if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i]->parent, module->namespace) == 1) {
 								xmlXPathFreeObject(defdeny);
 								xmlXPathFreeContext(model_ctxt);
 								retval = NACM_DENY;
 								goto result;
 							}
-
 						}
 					}
 					xmlXPathFreeObject(defdeny);
@@ -1316,9 +1320,8 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 	xmlXPathContextPtr model_ctxt = NULL;
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr ntfnode;
-	const struct ncds_ds* ntfmodule;
+	const struct data_model* ntfmodule;
 	struct nacm_rpc *nacm;
-	char* s;
 	int i, j, k;
 	int retval;
 	NCNTF_EVENT event;
@@ -1400,7 +1403,7 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 
 				/* 1) module name */
 				if (!(strcmp(nacm->rule_lists[i]->rules[j]->module, "*") == 0 ||
-				    strcmp(nacm->rule_lists[i]->rules[j]->module, ntfmodule->data_model.name) == 0)) {
+				    strcmp(nacm->rule_lists[i]->rules[j]->module, ntfmodule->name) == 0)) {
 					/* rule does not match */
 					continue;
 				}
@@ -1438,21 +1441,18 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 		/* no matching rule found */
 
 		/* check nacm:default-deny-all */
-		if ((model_ctxt = xmlXPathNewContext(ntfmodule->data_model.xml)) != NULL &&
+		if ((model_ctxt = xmlXPathNewContext(ntfmodule->xml)) != NULL &&
 		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) == 0 &&
 		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "nacm", BAD_CAST NC_NS_NACM) == 0) {
 			if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:notification//nacm:default-deny-all", model_ctxt)) != NULL) {
 				if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
 					/* process all default-deny-all elements */
 					for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
-						if ((s = (char*) xmlGetProp (defdeny->nodesetval->nodeTab[i], BAD_CAST "name")) != NULL) {
-							if (strcmp(s, (char*)(ntfnode->name)) == 0) {
-								xmlXPathFreeObject(defdeny);
-								xmlXPathFreeContext(model_ctxt);
-								return(NACM_DENY);
-							}
+						if (compare_node_to_model(ntfnode, defdeny->nodesetval->nodeTab[i]->parent, ntfmodule->namespace) == 1) {
+							xmlXPathFreeObject(defdeny);
+							xmlXPathFreeContext(model_ctxt);
+							return(NACM_DENY);
 						}
-
 					}
 				}
 				xmlXPathFreeObject(defdeny);
@@ -1486,8 +1486,7 @@ int nacm_check_operation(const nc_rpc* rpc)
 	xmlXPathContextPtr model_ctxt = NULL;
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr opnode;
-	const struct ncds_ds* opmodule;
-	char* s;
+	const struct data_model* opmodule;
 	NC_OP op;
 	int i, j, k;
 
@@ -1531,7 +1530,7 @@ int nacm_check_operation(const nc_rpc* rpc)
 
 				/* 1) module name */
 				if (!(strcmp(rpc->nacm->rule_lists[i]->rules[j]->module, "*") == 0 ||
-				    strcmp(rpc->nacm->rule_lists[i]->rules[j]->module, opmodule->data_model.name) == 0)) {
+				    strcmp(rpc->nacm->rule_lists[i]->rules[j]->module, opmodule->name) == 0)) {
 					/* rule does not match */
 					continue;
 				}
@@ -1568,21 +1567,18 @@ int nacm_check_operation(const nc_rpc* rpc)
 		/* no matching rule found */
 
 		/* check nacm:default-deny-all */
-		if ((model_ctxt = xmlXPathNewContext(opmodule->data_model.xml)) != NULL &&
+		if ((model_ctxt = xmlXPathNewContext(opmodule->xml)) != NULL &&
 		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) == 0 &&
 		    xmlXPathRegisterNs(model_ctxt, BAD_CAST "nacm", BAD_CAST NC_NS_NACM) == 0) {
 			if ((defdeny = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:rpc//nacm:default-deny-all", model_ctxt)) != NULL) {
 				if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
 					/* process all default-deny-all elements */
 					for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
-						if ((s = (char*) xmlGetProp (defdeny->nodesetval->nodeTab[i], BAD_CAST "name")) != NULL) {
-							if (strcmp(s, (char*)(opnode->name)) == 0) {
-								xmlXPathFreeObject(defdeny);
-								xmlXPathFreeContext(model_ctxt);
-								return(NACM_DENY);
-							}
+						if (compare_node_to_model(opnode, defdeny->nodesetval->nodeTab[i]->parent, opmodule->namespace) == 1) {
+							xmlXPathFreeObject(defdeny);
+							xmlXPathFreeContext(model_ctxt);
+							return(NACM_DENY);
 						}
-
 					}
 				}
 				xmlXPathFreeObject(defdeny);

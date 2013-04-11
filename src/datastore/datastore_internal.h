@@ -147,7 +147,7 @@ struct ncds_funcs {
 	int (*editconfig)(struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 };
 
-struct model_augment;
+struct model_augment_list;
 struct data_model {
 	/**
 	 * @brief Path to the file containing YIN configuration data model
@@ -165,6 +165,10 @@ struct data_model {
 	 * @brief Namespace of the model
 	 */
 	char* namespace;
+	/**
+	 * @brief Prefix of the model
+	 */
+	char* prefix;
 	/**
 	 * @brief List of defined RPCs
 	 */
@@ -184,12 +188,17 @@ struct data_model {
 	/**
 	 * @brief Augmented models
 	 */
-	struct model_augment* augments;
+	struct model_augment_list* augments;
 };
 
 struct model_augment {
 	struct data_model model;
 	struct model_augment* next;
+};
+
+struct model_augment_list {
+	struct model_augment *augment;
+	struct model_augment_list* next;
 };
 
 struct ncds_ds {
@@ -214,6 +223,11 @@ struct ncds_ds {
 	 * @brief Datastore implementation functions.
 	 */
 	struct ncds_funcs func;
+	/**
+	 * @brief Compounded data model containing base data model extended by
+	 * all augment models
+	 */
+	xmlDocPtr ext_model;
 	/**
 	 * @brief Information about data model linked with the datastore
 	 */

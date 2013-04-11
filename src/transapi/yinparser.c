@@ -92,7 +92,8 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, int *childr
 			/* place content here */
 			/* TODO: maybe groupings and submodules should be accessible somewhere :-D */
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "augment")) {
-			/* find augmented node take it to main module and add augment into it */
+			children[count-1].type = YIN_TYPE_AUGMENT;
+			children[count-1].children = yinmodel_parse_recursive (model_tmp, &children[count-1].children_count);
 		} else {
 			free (children[count-1].name);
 			count--;
