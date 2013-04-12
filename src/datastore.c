@@ -2032,57 +2032,30 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
  *
  * \return Root element matching the specified configuration data model.
  */
-xmlNodePtr get_model_root(xmlNodePtr roots, xmlDocPtr model)
+static xmlNodePtr get_model_root(xmlNodePtr roots, struct data_model *data_model)
 {
-	xmlXPathContextPtr model_ctxt;
-	xmlXPathObjectPtr query_result;
 	xmlNodePtr retval;
-	xmlChar *root_name = NULL, *ns = NULL;
 
 	assert(roots != NULL);
-	assert(model != NULL);
+	assert(data_model != NULL);
 
-	/* prepare xpath evaluation context of the model for XPath */
-	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
-		ERROR("%s: Creating the XPath context failed.", __func__)
-		return (NULL);
+	if (data_model == NULL) {
+		ERROR("%s: Invalid argument - data model is unknown.", __func__);
+		return NULL;
 	}
-	if (xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST "urn:ietf:params:xml:ns:yang:yin:1") != 0) {
-		xmlXPathFreeContext(model_ctxt);
-		return (NULL);
-	}
-
-	if ((query_result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:container", model_ctxt)) != NULL) {
-		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			//root_name = xmlGetNsProp(query_result->nodesetval->nodeTab[0], BAD_CAST "name", BAD_CAST NC_NS_YIN);
-			root_name = xmlGetProp(query_result->nodesetval->nodeTab[0], BAD_CAST "name");
-		}
-		xmlXPathFreeObject(query_result);
-	}
-	if ((query_result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:namespace", model_ctxt)) != NULL) {
-		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			//ns = xmlGetNsProp(query_result->nodesetval->nodeTab[0], BAD_CAST "uri", BAD_CAST NC_NS_YIN);
-			ns = xmlGetProp(query_result->nodesetval->nodeTab[0], BAD_CAST "uri");
-		}
-		xmlXPathFreeObject(query_result);
-	}
-	xmlXPathFreeContext(model_ctxt);
-
-	if (root_name == NULL || ns == NULL) {
-		ERROR("Invalid configuration data model - root container or a namespace missing (%s:%d).", __FILE__, __LINE__);
+	if (data_model->namespace == NULL) {
+		ERROR("Invalid configuration data model '%s'- namespace is missing.", data_model->name);
 		return NULL;
 	}
 
 	retval = roots;
 	while (retval != NULL) {
-		if (xmlStrcmp(retval->name, root_name) == 0 && (retval->ns == NULL || xmlStrcmp(retval->ns->href, ns) == 0)) {
+		if (retval->ns == NULL || xmlStrcmp(retval->ns->href, BAD_CAST (data_model->namespace)) == 0) {
 			break;
 		}
 
 		retval = retval->next;
 	}
-	xmlFree(ns);
-	xmlFree(root_name);
 
 	return retval;
 }
@@ -2416,7 +2389,7 @@ process_datastore:
 			 * select correct config node for the selected datastore,
 			 * it must match the model's namespace and root element name
 			 */
-			aux_node = get_model_root(doc1->children->children, ds->data_model.xml);
+			aux_node = get_model_root(doc1->children->children, &(ds->data_model));
 			if (aux_node != NULL) {
 				resultbuffer = xmlBufferCreate();
 				if (resultbuffer == NULL) {
