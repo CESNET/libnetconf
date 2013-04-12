@@ -1735,7 +1735,8 @@ static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model
 			return EXIT_FAILURE;
 		}
 	} else {
-		parent = edit_node->parent;
+		/* we are in the root */
+		parent = (xmlNodePtr)(orig_doc->doc);
 	}
 
 	/* remove operation attribute */

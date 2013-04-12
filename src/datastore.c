@@ -2350,6 +2350,13 @@ process_datastore:
 		break;
 	case NC_OP_EDITCONFIG:
 	case NC_OP_COPYCONFIG:
+		if (ds->type == NCDS_TYPE_EMPTY) {
+			/* there is nothing to edit in empty datastore type */
+			ret = EXIT_RPC_NOT_APPLICABLE;
+			data = NULL;
+			break;
+		}
+
 		/* check target element */
 		if ((target_ds = nc_rpc_get_target(rpc)) == NC_DATASTORE_ERROR) {
 			e = nc_err_new(NC_ERR_BAD_ELEM);
@@ -2482,6 +2489,13 @@ apply_editcopyconfig:
 
 		break;
 	case NC_OP_DELETECONFIG:
+		if (ds->type == NCDS_TYPE_EMPTY) {
+			/* there is nothing to edit in empty datastore type */
+			ret = EXIT_RPC_NOT_APPLICABLE;
+			data = NULL;
+			break;
+		}
+
 		if (nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING) {
 			/* can not delete running */
 			e = nc_err_new(NC_ERR_OP_FAILED);
@@ -2501,6 +2515,13 @@ apply_editcopyconfig:
 	case NC_OP_COMMIT:
 		/* \todo check somehow, that candidate is not locked by another session */
 
+		if (ds->type == NCDS_TYPE_EMPTY) {
+			/* there is nothing to edit in empty datastore type */
+			ret = EXIT_RPC_NOT_APPLICABLE;
+			data = NULL;
+			break;
+		}
+
 		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
 			ret = ds->func.copyconfig (ds, session, rpc, NC_DATASTORE_RUNNING, NC_DATASTORE_CANDIDATE, NULL, &e);
 
@@ -2517,6 +2538,13 @@ apply_editcopyconfig:
 		}
 		break;
 	case NC_OP_DISCARDCHANGES:
+		if (ds->type == NCDS_TYPE_EMPTY) {
+			/* there is nothing to edit in empty datastore type */
+			ret = EXIT_RPC_NOT_APPLICABLE;
+			data = NULL;
+			break;
+		}
+
 		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
 			/* NACM - no datastore permissions are needed,
 			 * so create a copy of the rpc and remove NACM structure
