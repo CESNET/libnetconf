@@ -72,9 +72,9 @@ struct ncds_ds_empty {
 	 */
 	xmlDocPtr ext_model;
 	/**
-	 * @brief Information about data model linked with the datastore
+	 * @brief Information about base data model linked with the datastore
 	 */
-	struct data_model data_model;
+	struct data_model* data_model;
 	/**
 	 * @brief TransAPI information
 	 */

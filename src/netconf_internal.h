@@ -115,6 +115,8 @@
 #define NC_NS_NACM_ID           "nacm"
 #define NC_NS_YANG              "urn:ietf:params:xml:ns:yang:1"
 #define NC_NS_YANG_ID           "yang"
+#define NC_NS_YIN               "urn:ietf:params:xml:ns:yang:yin:1"
+#define NC_NS_YIN_ID            "yin"
 
 /* NETCONF versions identificators */
 #define NETCONFV10	0

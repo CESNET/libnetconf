@@ -420,10 +420,10 @@ void ncds_file_free(struct ncds_ds* ds)
 
 	if (file_ds != NULL) {
 		/* generic ncds_ds part */
-		if (file_ds->data_model.xml != file_ds->ext_model) {
+		if (file_ds->data_model->xml != file_ds->ext_model) {
 			xmlFreeDoc(file_ds->ext_model);
 		}
-		ncds_ds_model_free(&(file_ds->data_model));
+		ncds_ds_model_free(file_ds->data_model);
 
 		/* ncds_ds_file specific part */
 		if (file_ds->file != NULL) {

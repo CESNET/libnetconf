@@ -40,6 +40,9 @@
 #ifndef DATASTORE_INTERNAL_H_
 #define DATASTORE_INTERNAL_H_
 
+#include <libxml/tree.h>
+#include <libxml/xpath.h>
+
 #include "../datastore.h"
 #include "../transapi/transapi.h"
 
@@ -147,7 +150,7 @@ struct ncds_funcs {
 	int (*editconfig)(struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 };
 
-struct model_augment_list;
+struct model_list;
 struct data_model {
 	/**
 	 * @brief Path to the file containing YIN configuration data model
@@ -182,23 +185,29 @@ struct data_model {
 	 */
 	xmlDocPtr xml;
 	/**
+	 * @brief XPath context for model processing
+	 */
+	xmlXPathContextPtr ctxt;
+	/**
+	 * @brief Augment flag: -1 if the model does not contain augment section,
+	 * 0 if the model contains augment section, but it is not used anywhere,
+	 * positive number as number of other models where an augment section from
+	 * this model is used.
+	 */
+	int augmenting;
+	/**
+	 * @brief The list of models that augments this base model
+	 */
+	struct model_list* augments;
+	/**
 	 * @brief Parsed data model structure.
 	 */
 	struct model_tree* model_tree;
-	/**
-	 * @brief Augmented models
-	 */
-	struct model_augment_list* augments;
 };
 
-struct model_augment {
-	struct data_model model;
-	struct model_augment* next;
-};
-
-struct model_augment_list {
-	struct model_augment *augment;
-	struct model_augment_list* next;
+struct model_list {
+	struct data_model *model;
+	struct model_list* next;
 };
 
 struct ncds_ds {
@@ -229,9 +238,9 @@ struct ncds_ds {
 	 */
 	xmlDocPtr ext_model;
 	/**
-	 * @brief Information about data model linked with the datastore
+	 * @brief Information about base data model linked with the datastore
 	 */
-	struct data_model data_model;
+	struct data_model* data_model;
 	/**
 	 * @brief TransAPI information
 	 */
