@@ -81,6 +81,8 @@ char **get_schemas_capabilities(void);
 
 extern struct nc_shared_info *nc_info;
 
+extern uid_t nacm_recovery_uid_; /* internal.c */
+
 /**
  * @brief List of possible NETCONF transportation supported by libnetconf
  */
@@ -898,7 +900,7 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	/* detect if user ID is 0 -> then the session is recovery */
 	session->nacm_recovery = 0;
 	if ((p = getpwnam(username)) != NULL) {
-		if (p->pw_uid == 0) {
+		if (p->pw_uid == nacm_recovery_uid_) {
 			session->nacm_recovery = 1;
 		}
 	}
