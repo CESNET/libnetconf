@@ -48,6 +48,9 @@
 #include "libnetconf/with_defaults.h"
 #include "libnetconf/error.h"
 #include "libnetconf/datastore.h"
+#include "libnetconf/transapi.h"
+#include "libnetconf/xmldiff.h"
+#include "libnetconf/yinparser.h"
 
 #endif /* LIBNETCONF_H_ */
 
