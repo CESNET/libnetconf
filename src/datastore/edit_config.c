@@ -1960,7 +1960,7 @@ static int edit_merge_lists(xmlNodePtr merged_node, xmlNodePtr edit_node, xmlDoc
 
 static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
-	xmlNodePtr children, aux, next, parent;
+	xmlNodePtr children, aux, next, nextchild, parent;
 	int r, access, duplicates;
 	char *msg = NULL;
 
@@ -2007,7 +2007,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 			}
 
 			if (access == NACM_ACCESS_UPDATE) {
-				if ((aux = xmlReplaceNode(orig_node, xmlCopyNode(edit_node, 1))) == NULL) {
+				if (xmlReplaceNode(orig_node, aux = xmlCopyNode(edit_node, 1)) == NULL) {
 					ERROR("Replacing text nodes when merging failed (%s:%d)", __FILE__, __LINE__);
 					return EXIT_FAILURE;
 				}
@@ -2065,16 +2065,17 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 			}
 		}
 
+		nextchild = children->next;
 		if (aux == NULL) {
 			/*
 			 * there is no equivalent element of the children in the
 			 * original configuration data, so create it as new
 			 */
+			VERB("Adding a missing node %s while merging (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 			if (edit_create(orig_node->doc, children, model, keys, nacm, error) != 0) {
 				ERROR("Adding missing nodes when merging failed (%s:%d)", __FILE__, __LINE__);
 				return EXIT_FAILURE;
 			}
-			VERB("Adding a missing node %s while merging (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 		} else {
 			VERB("Merging the node %s (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 			/* go recursive through all matching elements */
@@ -2116,7 +2117,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 			}
 		}
 
-		children = children->next;
+		children = nextchild;
 	}
 
 	return EXIT_SUCCESS;

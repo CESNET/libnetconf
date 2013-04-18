@@ -193,6 +193,14 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 
 /**
  * @ingroup store
+ * @brief Undo the last change performed on the specified datastore.
+ * @param[in] id ID of the datastore where the rollback will be performed.
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_rollback(ncds_id id);
+
+/**
+ * @ingroup store
  * @brief Remove all the locks that the given session is holding.
  *
  * @param[in] session Session holding locks to remove

@@ -75,6 +75,15 @@ struct ncds_funcs {
 	 * changed.
 	 */
 	int (*was_changed)(struct ncds_ds* ds);
+	/**
+	 * @brief If possible, rollback the last change of the datastore.
+	 * @param[in] ds File datastore which will be rolled back.
+	 * @return 0 on success, non-zero if the operation can not be performed.
+	 */
+	int (*rollback)(struct ncds_ds* ds);
+	/**
+	 * \TODO
+	 */
 	const struct ncds_lockinfo* (*get_lockinfo)(struct ncds_ds* ds, NC_DATASTORE target);
 	/**
 	 * @brief Lock target datastore for single session exclusive write-access
