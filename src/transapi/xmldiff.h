@@ -8,7 +8,7 @@
  * @ingroup transapi
  * @brief Enum specifying states of node in document
  */
-typedef enum {XMLDIFF_ERR = -1, XMLDIFF_NONE = 0, XMLDIFF_ADD, XMLDIFF_REM, XMLDIFF_MOD} XMLDIFF_OP;
+typedef enum {XMLDIFF_ERR = -1, XMLDIFF_NONE = 0, XMLDIFF_ADD = 1, XMLDIFF_REM = 2, XMLDIFF_MOD = 4, XMLDIFF_CHAIN = 8} XMLDIFF_OP;
 
 /**
  * @ingroup transapi

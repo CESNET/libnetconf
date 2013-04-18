@@ -9,6 +9,7 @@
 #include <libnetconf/transapi.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <time.h>
 
 char * status = "off";
 int toasting = 0;
@@ -66,29 +67,40 @@ char * get_state_data (char * model, char * running, struct nc_err **err)
 /* !DO NOT ALTER FUNCTION SIGNATURE! */
 int callback_ (XMLDIFF_OP op, xmlNodePtr node, void ** data)
 {
-	status = (op == XMLDIFF_REM ? "off" : "on");
-	switch (op) {
-	case XMLDIFF_REM:
-		status = "off";
-		if (toasting != 0) {
-			fprintf (stderr, "Interrupting ongoing toasting!\n");
-			toasting = 0;
+	int ret = EXIT_FAILURE;
+	time_t t;
+
+	if (op <= 0 || op > (XMLDIFF_MOD | XMLDIFF_CHAIN | XMLDIFF_ADD | XMLDIFF_REM)) {
+		fprintf (stderr, "internal error: Invalid operation (out of range)!");
+		ret = -1;
+	} else if ((op & XMLDIFF_ADD) && (op & XMLDIFF_REM)) {
+		fprintf (stderr, "internal error: Invalid operation (ADD and REM set)!");
+		ret = -2;
+	} else {
+		if (op & XMLDIFF_MOD) {/* some child(s) was changed and has no callback */
+			fprintf (stderr, "Node was modified.\n");
+			/* TODO: process the change */
 		}
-		break;
-	case XMLDIFF_ADD:
-		status = "on";
-		break;
-	default:
-		/* 
-		 * should not happen
-		 * Container can be removed or added but holds no configuration informations.
-		 */
-		return EXIT_FAILURE;
-		break;
+
+		if (op & XMLDIFF_CHAIN) { /* some child(s) was changed and it was processed by its callback */
+			fprintf (stderr, "Child(s) of node was modified.\n");
+			/* TODO: finalize children operation */
+		}
+
+		if (op & XMLDIFF_REM) {
+			status = "off";
+			if (toasting != 0) {
+				fprintf (stderr, "Interrupting ongoing toasting!\n");
+				toasting = 0;
+			}
+		} else if (op & XMLDIFF_ADD) {
+			status = "on";
+		}
+		ret = EXIT_SUCCESS;
 	}
 
-	fprintf (stderr, "Turning toaster %s", status);
-	return EXIT_SUCCESS;
+	fprintf (stderr, "Turning toaster %s\n", status);
+	return ret;
 }
 
 /*

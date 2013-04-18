@@ -1,27 +1,46 @@
 #include "transapi.h"
-#include "string.h"
+#include <string.h>
 #include <stdio.h>
 
 /* will be called by library after change in running datastore */
 int transapi_running_changed (struct transapi_data_callbacks * c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model)
 {
 	struct xmldiff * diff;
-	int i,j;
+	int i,j, ret;
+	char * last_slash = NULL, * parent_path;
 	
-	if ((diff = xmldiff_diff (old_doc, new_doc, model)) == NULL) {
+	if ((diff = xmldiff_diff (old_doc, new_doc, model)) == NULL || diff->all_stat == XMLDIFF_ERR) { /* failed to create diff list */
+		xmldiff_free (diff);
 		return EXIT_FAILURE;
-	}
-
-	if (diff->all_stat != XMLDIFF_NONE) {
-		for (i=0; i<diff->diff_count; i++) {
-			for (j=0; i<c->callbacks_count; j++) {
-				if (strcmp(diff->diff_list[i].path, c->callbacks[j].path) == 0) {
-					if ((c->callbacks[j].func(diff->diff_list[i].op, diff->diff_list[i].node, &c->data)) != EXIT_SUCCESS) {
+	} else if (diff->all_stat != XMLDIFF_NONE) {
+		for (i=0; i<diff->diff_count; i++) { /* for each diff*/
+			for (j=0; j<c->callbacks_count; j++) { /* find callback function */
+				if (strcmp(diff->diff_list[i].path, c->callbacks[j].path) == 0) { /* exact match */
+					/* call callback function */
+					if ((ret = c->callbacks[j].func(diff->diff_list[i].op, diff->diff_list[i].node, &c->data)) != EXIT_SUCCESS) {
 						xmldiff_free (diff);
 						return EXIT_FAILURE;
 					}
 					break;
 				}
+			}
+			if (j == c->callbacks_count) { /* no callback function for given path found */
+				/* add _MOD flag to parent to ensure application of configuration changes*/
+				/* find last "/" in path */
+				if ((last_slash = rindex (diff->diff_list[i].path, '/')) == NULL) {
+					/* every path MUST contain at least one slash */
+					xmldiff_free (diff);
+					return EXIT_FAILURE;
+				}
+				/* get parent path */
+				parent_path = strndup(diff->diff_list[i].path, last_slash - diff->diff_list[i].path);
+				for (j=i; j<diff->diff_count; j++) { /* find parent */
+					if (strcmp (parent_path, diff->diff_list[j].path) == 0) {
+						diff->diff_list[j].op |= XMLDIFF_MOD; /* mark it as MODified */
+						break;
+					}
+				}
+				free (parent_path);
 			}
 		}
 	}
