@@ -6,7 +6,6 @@
 
 #include <libxml/tree.h>
 #include <libnetconf.h>
-#include <libnetconf/transapi.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <time.h>
@@ -108,7 +107,7 @@ int callback_ (XMLDIFF_OP op, xmlNodePtr node, void ** data)
 * It is used by libnetconf library to decide which callbacks will be run.
 * DO NOT alter this structure
 */
-struct transapi_config_callbacks clbks =  {
+struct transapi_data_callbacks clbks =  {
 	.callbacks_count = 1,
 	.data = NULL,
 	.callbacks = {

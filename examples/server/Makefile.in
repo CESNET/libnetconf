@@ -93,6 +93,7 @@ all: $(NAME) $(TRANSAPI)
 
 .PHONY: $(TRANSAPI)
 $(TRANSAPI):
+	( cd $(TRANSAPI) && ./configure )
 	$(MAKE) -C $@
 
 $(NAME): $(OBJS)
