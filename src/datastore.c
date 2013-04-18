@@ -2585,7 +2585,7 @@ apply_editcopyconfig:
 				}
 
 				/* call RPC callback function */
-				fprintf(stderr, "Calling RPC function\n");
+				VERB("Calling RPC function\n");
 				reply = ds->transapi.rpc_clbks->callbacks[i].func(op_input_array);
 
 				/* clean array */
