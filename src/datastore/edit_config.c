@@ -2008,7 +2008,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 			}
 
 			if (access == NACM_ACCESS_UPDATE) {
-				if ((aux = xmlReplaceNode(orig_node, xmlCopyNode(edit_node, 1))) == NULL) {
+				if (xmlReplaceNode(orig_node, aux = xmlCopyNode(edit_node, 1)) == NULL) {
 					ERROR("Replacing text nodes when merging failed (%s:%d)", __FILE__, __LINE__);
 					return EXIT_FAILURE;
 				}
