@@ -180,6 +180,19 @@ AC_ARG_WITH([sgid],
 		fi		
 	fi	
 )
+AC_ARG_WITH([nacm-recovery-uid],
+	AC_HELP_STRING([--with-nacm-recovery-uid=uid], [Set UID to be used to identify NACM recovery session, default value is 0.]),
+	[
+	if test -z "$withval"; then
+		NACM_RECOVERY_UID="0"
+	elif expr "$withval" : "-\?[[0-9]]\+$" > /dev/null ; then
+		NACM_RECOVERY_UID="$withval"
+	else
+		AC_MSG_ERROR([Invalid NACM recovey UID. The value must be a valid number.])
+	fi
+	],
+	NACM_RECOVERY_UID="0"
+)
 
 ############################ Check for programs ################################
 
@@ -312,6 +325,7 @@ AC_CHECK_FUNC([eaccess], [HAVE_EACCESS="#define HAVE_EACCESS"], [HAVE_EACCESS="#
 AC_SUBST(V_SHLIB_CMD)
 AC_SUBST(V_SHLIB_OPT)
 AC_SUBST(V_SONAME_OPT)
+AC_SUBST(NACM_RECOVERY_UID)
 AC_SUBST(BUILDREQS)
 AC_SUBST(REQS)
 AC_SUBST(PROVIDES)

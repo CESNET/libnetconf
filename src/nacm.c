@@ -605,7 +605,7 @@ int nacm_config_refresh(void)
 {
 	xmlXPathContextPtr data_ctxt = NULL;
 	xmlXPathObjectPtr query_result = NULL;
-	struct model_augment_list* ds_augments;
+	struct model_list* ds_augments;
 	char* data;
 	xmlNodePtr node;
 	xmlChar* content = NULL;
@@ -648,9 +648,9 @@ int nacm_config_refresh(void)
 	}
 
 	/* process default values */
-	ncdflt_default_values(data_doc, nacm_ds->data_model.xml, NCWD_MODE_ALL);
-	for (ds_augments = nacm_ds->data_model.augments; ds_augments != NULL; ds_augments = ds_augments->next) {
-		ncdflt_default_values(data_doc, ds_augments->augment->model.xml, NCWD_MODE_ALL);
+	ncdflt_default_values(data_doc, nacm_ds->data_model->xml, NCWD_MODE_ALL);
+	for (ds_augments = nacm_ds->data_model->augments; ds_augments != NULL; ds_augments = ds_augments->next) {
+		ncdflt_default_values(data_doc, ds_augments->model->xml, NCWD_MODE_ALL);
 	}
 
 	/* create xpath evaluation context */

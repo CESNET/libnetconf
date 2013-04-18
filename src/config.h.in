@@ -61,6 +61,14 @@
 //#define NCNTF_STREAMS_PATH "@NC_WORKINGDIR_PATH@/streams/"
 #define NCNTF_STREAMS_PATH_ENV "LIBNETCONF_STREAMS"
 
+/*
+ * NACM
+ */
+#define NACM_RECOVERY_UID @NACM_RECOVERY_UID@
+
+/*
+ * Compatibility section
+ */
 @HAVE_EACCESS@
 #ifndef HAVE_EACCESS
 int eaccess(const char *pathname, int mode);

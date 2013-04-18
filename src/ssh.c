@@ -82,8 +82,6 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 extern struct nc_shared_info *nc_info;
 extern char* server_capabilities;
 
-extern uid_t nacm_recovery_uid_; /* internal.c */
-
 struct auth_pref_couple
 {
 	NC_SSH_AUTH_TYPE type;
@@ -744,7 +742,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	retval->username = strdup(pw->pw_name);
 	retval->groups = nc_get_grouplist(retval->username);
 	/* detect if user ID is nacm_recovery_uid -> then the session is recovery */
-	if (pw->pw_uid == nacm_recovery_uid_) {
+	if (pw->pw_uid == NACM_RECOVERY_UID) {
 		retval->nacm_recovery = 1;
 	} else {
 		retval->nacm_recovery = 0;
