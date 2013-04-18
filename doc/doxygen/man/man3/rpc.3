@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Wed Apr 3 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -22,7 +22,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIEnumeration of <rpc> operation types\&. \fP"
 .ti -1c
-.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP, \fBNC_OP_COMMIT\fP, \fBNC_OP_DISCARDCHANGES\fP, \fBNC_OP_CREATESUBSCRIPTION\fP, \fBNC_OP_GETSCHEMA\fP }"
+.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP, \fBNC_OP_COMMIT\fP, \fBNC_OP_DISCARDCHANGES\fP, \fBNC_OP_VALIDATE\fP, \fBNC_OP_CREATESUBSCRIPTION\fP, \fBNC_OP_GETSCHEMA\fP }"
 .br
 .RI "\fIEnumeration of supported <rpc> operations\&. \fP"
 .ti -1c
@@ -150,6 +150,10 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fICreate <unlock> NETCONF rpc message\&. \fP"
 .ti -1c
+.RI "\fBnc_rpc\fP * \fBnc_rpc_validate\fP (\fBNC_DATASTORE\fP source,\&.\&.\&.)"
+.br
+.RI "\fICreate <validate> NETCONF rpc message\&. \fP"
+.ti -1c
 .RI "\fBnc_rpc\fP * \fBnc_rpc_commit\fP (void)"
 .br
 .RI "\fICreate <commit> NETCONF rpc message\&. \fP"
@@ -248,6 +252,9 @@ unknown/error value
 .TP
 \fB\fINC_OP_DISCARDCHANGES \fP\fP
 <discard-changes> operation 
+.TP
+\fB\fINC_OP_VALIDATE \fP\fP
+<validate> operation 
 .TP
 \fB\fINC_OP_CREATESUBSCRIPTION \fP\fP
 <create-subscription> operation (RFC 5277) 
@@ -738,6 +745,38 @@ Created rpc message\&.
 .RE
 .PP
 
+.SS "\fBnc_rpc\fP* nc_rpc_validate (\fBNC_DATASTORE\fPsource, \&.\&.\&.)"
+
+.PP
+Create <validate> NETCONF rpc message\&. .SS "Variadic parameters:"
+.PP
+.IP "\(bu" 2
+source is specified as \fBNC_DATASTORE_URL\fP:
+.IP "  \(bu" 4
+\fBnc_rpc_validate()\fP accepts the first variadic parameter \fBconst char* source_url providing the url to the file\&.\fP
+.PP
+
+.IP "\(bu" 2
+\fBsource is specified as \fBNC_DATASTORE_CONFIG\fP:
+.IP "  \(bu" 4
+\fBnc_rpc_validate()\fP accepts as the first variadic parameter **const char* source_config providing the complete configuration data to copy\&.
+.PP
+\fP
+.PP
+.PP
+\fB
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsource\fP Name of the configuration datastore to validate\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Created rpc message\&. 
+.RE
+.PP
+\fP
 .SS "\fBnc_rpc\fP* nc_rpc_commit (void)"
 
 .PP

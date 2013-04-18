@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Wed Apr 3 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -46,6 +46,10 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fICreate a new datastore structure of the specified implementation type\&. \fP"
 .ti -1c
+.RI "int \fBncds_add_augment\fP (const char *model_path)"
+.br
+.RI "\fIAdd an augment model to the base model of the datastore\&. \fP"
+.ti -1c
 .RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
 .br
 .RI "\fIAssign the path of the datastore file into the datastore structure\&. \fP"
@@ -70,7 +74,7 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fIRemove all the locks that the given session is holding\&. \fP"
 .ti -1c
-.RI "char * \fBncds_get_model\fP (\fBncds_id\fP id)"
+.RI "char * \fBncds_get_model\fP (\fBncds_id\fP id, int augmented)"
 .br
 .RI "\fIReturn a serialized XML containing the data model in the YIN format\&. \fP"
 .ti -1c
@@ -159,6 +163,22 @@ Prepared (not configured) datastore structure\&. To configure the structure, cal
 .RE
 .PP
 
+.SS "int ncds_add_augment (const char *model_path)"
+
+.PP
+Add an augment model to the base model of the datastore\&. \fBParameters:\fP
+.RS 4
+\fIdatastore\fP Datastore structure to be augmented\&. 
+.br
+\fImodel_path\fP Path to the augment YIN configuration data model\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success, non-zero on error\&. 
+.RE
+.PP
+
 .SS "int ncds_file_set_path (struct ncds_ds *datastore, const char *path)"
 
 .PP
@@ -242,12 +262,14 @@ Remove all the locks that the given session is holding\&. \fBParameters:\fP
 .RE
 .PP
 
-.SS "char* ncds_get_model (\fBncds_id\fPid)"
+.SS "char* ncds_get_model (\fBncds_id\fPid, intaugmented)"
 
 .PP
 Return a serialized XML containing the data model in the YIN format\&. \fBParameters:\fP
 .RS 4
-\fIid\fP ID of the datastore whose data model we want
+\fIid\fP ID of the datastore whose data model we want 
+.br
+\fIaugmented\fP Set 1 to get complete data model including augmentation\&. In this case, returned string contains modified YIN format - there are <augment> elements inside the model including information about its namespace and module name\&.
 .RE
 .PP
 \fBReturns:\fP

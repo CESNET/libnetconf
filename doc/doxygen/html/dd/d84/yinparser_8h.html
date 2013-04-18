@@ -26,10 +26,9 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
-  <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.4.0</span>
+   &#160;<span id="projectnumber">0.5.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -117,8 +116,8 @@ $(document).ready(function(){initNavTree('dd/d84/yinparser_8h.html','../../');})
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Data Structures</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/dbf/structyinmodel.html">yinmodel</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">structure holding information needed for xml document comparsion  <a href="../../d8/dbf/structyinmodel.html#details">More...</a><br/></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">structure holding information about used data model in YIN format  <a href="../../dd/de6/structmodel__tree.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
@@ -134,7 +133,8 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449a938c0fccc9967ead7b83fb1163266661">YIN_TYPE_ANYXML</a>, 
 <a class="el" href="../../d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449a503a29739536901c09b9c6e5e1093b4e">YIN_TYPE_GROUPING</a>, 
 <br/>
-&#160;&#160;<a class="el" href="../../d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449ab2b36feefd221bcd8074856be8a4e296">YIN_TYPE_IMPORT</a>
+&#160;&#160;<a class="el" href="../../d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449ab2b36feefd221bcd8074856be8a4e296">YIN_TYPE_IMPORT</a>, 
+<a class="el" href="../../d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449a292109c2d37d5d798072371d08d36ae4">YIN_TYPE_AUGMENT</a>
 <br/>
  }</td></tr>
 <tr class="memdesc:ga92fad6461f4d9f95f869756a02bc7449"><td class="mdescLeft">&#160;</td><td class="mdescRight">enum type for yin/yang constructs  <a href="../../d8/d55/group__transapi.html#ga92fad6461f4d9f95f869756a02bc7449">More...</a><br/></td></tr>
@@ -142,12 +142,12 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga8eff4522fbb36a9bbf15495e4e35ace0"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../d8/dbf/structyinmodel.html">yinmodel</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga8eff4522fbb36a9bbf15495e4e35ace0">yinmodel_parse</a> (xmlDocPtr model_doc)</td></tr>
-<tr class="memdesc:ga8eff4522fbb36a9bbf15495e4e35ace0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse YIN data model.  <a href="../../d8/d55/group__transapi.html#ga8eff4522fbb36a9bbf15495e4e35ace0"></a><br/></td></tr>
-<tr class="separator:ga8eff4522fbb36a9bbf15495e4e35ace0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga264071d6b6c21ee9a544f8e3327aa835"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga264071d6b6c21ee9a544f8e3327aa835">yinmodel_free</a> (struct <a class="el" href="../../d8/dbf/structyinmodel.html">yinmodel</a> *yin)</td></tr>
-<tr class="memdesc:ga264071d6b6c21ee9a544f8e3327aa835"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy yinmodel structure and free allocated memory.  <a href="../../d8/d55/group__transapi.html#ga264071d6b6c21ee9a544f8e3327aa835"></a><br/></td></tr>
-<tr class="separator:ga264071d6b6c21ee9a544f8e3327aa835"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga43c773cf978382733cb09a6becf01d33"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga43c773cf978382733cb09a6becf01d33">yinmodel_parse</a> (xmlDocPtr model_doc)</td></tr>
+<tr class="memdesc:ga43c773cf978382733cb09a6becf01d33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse YIN data model.  <a href="../../d8/d55/group__transapi.html#ga43c773cf978382733cb09a6becf01d33"></a><br/></td></tr>
+<tr class="separator:ga43c773cf978382733cb09a6becf01d33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae4f5feae970a3c2840a248190f898314"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#gae4f5feae970a3c2840a248190f898314">yinmodel_free</a> (struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *yin)</td></tr>
+<tr class="memdesc:gae4f5feae970a3c2840a248190f898314"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy yinmodel structure and free allocated memory.  <a href="../../d8/d55/group__transapi.html#gae4f5feae970a3c2840a248190f898314"></a><br/></td></tr>
+<tr class="separator:gae4f5feae970a3c2840a248190f898314"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -155,7 +155,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../dir_5cf91f2d325c7b4198cad664054031d4.html">transapi</a></li><li class="navelem"><a class="el" href="../../dd/d84/yinparser_8h.html">yinparser.h</a></li>
-    <li class="footer">Generated on Wed Apr 3 2013 16:12:15 for libnetconf by
+    <li class="footer">Generated on Thu Apr 18 2013 13:14:25 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.2 </li>
   </ul>

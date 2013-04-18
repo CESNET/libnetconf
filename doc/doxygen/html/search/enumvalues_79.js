@@ -1,6 +1,7 @@
 var searchData=
 [
   ['yin_5ftype_5fanyxml',['YIN_TYPE_ANYXML',['../d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449a938c0fccc9967ead7b83fb1163266661',1,'yinparser.h']]],
+  ['yin_5ftype_5faugment',['YIN_TYPE_AUGMENT',['../d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449a292109c2d37d5d798072371d08d36ae4',1,'yinparser.h']]],
   ['yin_5ftype_5fchoice',['YIN_TYPE_CHOICE',['../d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449a3f952fc7e303c8fca79c2964e648a9cc',1,'yinparser.h']]],
   ['yin_5ftype_5fcontainer',['YIN_TYPE_CONTAINER',['../d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449a798feec97a3268e7144a1f699e1533fa',1,'yinparser.h']]],
   ['yin_5ftype_5fgrouping',['YIN_TYPE_GROUPING',['../d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449a503a29739536901c09b9c6e5e1093b4e',1,'yinparser.h']]],

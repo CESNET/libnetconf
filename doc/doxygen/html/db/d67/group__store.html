@@ -26,10 +26,9 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
-  <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.4.0</span>
+   &#160;<span id="projectnumber">0.5.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -150,6 +149,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6">ncds_new</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, char *(*get_state)(const char *model, const char *running, struct nc_err **e))</td></tr>
 <tr class="memdesc:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new datastore structure of the specified implementation type.  <a href="#ga69009c5985f9eec3a6920f98a6a1a5e6"></a><br/></td></tr>
 <tr class="separator:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga51e4497af776be124f937c9b840cf19e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga51e4497af776be124f937c9b840cf19e">ncds_add_augment</a> (const char *model_path)</td></tr>
+<tr class="memdesc:ga51e4497af776be124f937c9b840cf19e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add an augment model to the base model of the datastore.  <a href="#ga51e4497af776be124f937c9b840cf19e"></a><br/></td></tr>
+<tr class="separator:ga51e4497af776be124f937c9b840cf19e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad48955dab497b1258d80019e542acb9b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gad48955dab497b1258d80019e542acb9b">ncds_file_set_path</a> (struct ncds_ds *datastore, const char *path)</td></tr>
 <tr class="memdesc:gad48955dab497b1258d80019e542acb9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign the path of the datastore file into the datastore structure.  <a href="#gad48955dab497b1258d80019e542acb9b"></a><br/></td></tr>
 <tr class="separator:gad48955dab497b1258d80019e542acb9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,9 +170,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga4158273f1ae0332638cc9343097c9f0a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a">ncds_break_locks</a> (const struct nc_session *session)</td></tr>
 <tr class="memdesc:ga4158273f1ae0332638cc9343097c9f0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove all the locks that the given session is holding.  <a href="#ga4158273f1ae0332638cc9343097c9f0a"></a><br/></td></tr>
 <tr class="separator:ga4158273f1ae0332638cc9343097c9f0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1855a095ba88d392b0a03af79f17fe93"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga1855a095ba88d392b0a03af79f17fe93">ncds_get_model</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id)</td></tr>
-<tr class="memdesc:ga1855a095ba88d392b0a03af79f17fe93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a serialized XML containing the data model in the YIN format.  <a href="#ga1855a095ba88d392b0a03af79f17fe93"></a><br/></td></tr>
-<tr class="separator:ga1855a095ba88d392b0a03af79f17fe93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafb5d9b48dd33ad0e9854cf935d11a66a"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gafb5d9b48dd33ad0e9854cf935d11a66a">ncds_get_model</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id, int augmented)</td></tr>
+<tr class="memdesc:gafb5d9b48dd33ad0e9854cf935d11a66a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a serialized XML containing the data model in the YIN format.  <a href="#gafb5d9b48dd33ad0e9854cf935d11a66a"></a><br/></td></tr>
+<tr class="separator:gafb5d9b48dd33ad0e9854cf935d11a66a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5ec9fea534bfd146019b7efb882648be"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga5ec9fea534bfd146019b7efb882648be">ncds_get_model_path</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id)</td></tr>
 <tr class="memdesc:ga5ec9fea534bfd146019b7efb882648be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return path to the file containing the datastore datamodel.  <a href="#ga5ec9fea534bfd146019b7efb882648be"></a><br/></td></tr>
 <tr class="separator:ga5ec9fea534bfd146019b7efb882648be"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -332,6 +334,32 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Prepared (not configured) datastore structure. To configure the structure, caller must use the parameter setters of the specific datastore implementation type. Then, the datastore can be initiated (<a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>) and used to access the configuration data. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga51e4497af776be124f937c9b840cf19e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_add_augment </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>model_path</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Add an augment model to the base model of the datastore. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore structure to be augmented. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">model_path</td><td>Path to the augment YIN configuration data model. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
 
 </div>
 </div>
@@ -515,7 +543,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga1855a095ba88d392b0a03af79f17fe93"></a>
+<a class="anchor" id="gafb5d9b48dd33ad0e9854cf935d11a66a"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -523,8 +551,18 @@ Functions</h2></td></tr>
           <td class="memname">char* ncds_get_model </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
-          <td class="paramname"><em>id</em></td><td>)</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>augmented</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -532,7 +570,8 @@ Functions</h2></td></tr>
 <p>Return a serialized XML containing the data model in the YIN format. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID of the datastore whose data model we want</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID of the datastore whose data model we want </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">augmented</td><td>Set 1 to get complete data model including augmentation. In this case, returned string contains modified YIN format - there are &lt;augment&gt; elements inside the model including information about its namespace and module name.</td></tr>
   </table>
   </dd>
 </dl>
@@ -570,7 +609,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Apr 3 2013 16:12:15 for libnetconf by
+    <li class="footer">Generated on Thu Apr 18 2013 13:14:25 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.2 </li>
   </ul>

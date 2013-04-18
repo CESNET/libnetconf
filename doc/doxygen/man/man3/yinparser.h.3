@@ -1,4 +1,4 @@
-.TH "src/transapi/yinparser.h" 3 "Wed Apr 3 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "src/transapi/yinparser.h" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -13,15 +13,15 @@ src/transapi/yinparser.h \-
 
 .in +1c
 .ti -1c
-.RI "struct \fByinmodel\fP"
+.RI "struct \fBmodel_tree\fP"
 .br
-.RI "\fIstructure holding information needed for xml document comparsion \fP"
+.RI "\fIstructure holding information about used data model in YIN format \fP"
 .in -1c
 .SS "Enumerations"
 
 .in +1c
 .ti -1c
-.RI "enum \fBYIN_TYPE\fP { \fBYIN_TYPE_MODULE\fP, \fBYIN_TYPE_CONTAINER\fP, \fBYIN_TYPE_LEAF\fP, \fBYIN_TYPE_LIST\fP, \fBYIN_TYPE_LEAFLIST\fP, \fBYIN_TYPE_CHOICE\fP, \fBYIN_TYPE_ANYXML\fP, \fBYIN_TYPE_GROUPING\fP, \fBYIN_TYPE_IMPORT\fP }"
+.RI "enum \fBYIN_TYPE\fP { \fBYIN_TYPE_MODULE\fP, \fBYIN_TYPE_CONTAINER\fP, \fBYIN_TYPE_LEAF\fP, \fBYIN_TYPE_LIST\fP, \fBYIN_TYPE_LEAFLIST\fP, \fBYIN_TYPE_CHOICE\fP, \fBYIN_TYPE_ANYXML\fP, \fBYIN_TYPE_GROUPING\fP, \fBYIN_TYPE_IMPORT\fP, \fBYIN_TYPE_AUGMENT\fP }"
 .br
 .RI "\fIenum type for yin/yang constructs \fP"
 .in -1c
@@ -29,11 +29,11 @@ src/transapi/yinparser.h \-
 
 .in +1c
 .ti -1c
-.RI "struct \fByinmodel\fP * \fByinmodel_parse\fP (xmlDocPtr model_doc)"
+.RI "struct \fBmodel_tree\fP * \fByinmodel_parse\fP (xmlDocPtr model_doc)"
 .br
 .RI "\fIParse YIN data model\&. \fP"
 .ti -1c
-.RI "void \fByinmodel_free\fP (struct \fByinmodel\fP *yin)"
+.RI "void \fByinmodel_free\fP (struct \fBmodel_tree\fP *yin)"
 .br
 .RI "\fIDestroy yinmodel structure and free allocated memory\&. \fP"
 .in -1c

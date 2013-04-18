@@ -26,10 +26,9 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
-  <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.4.0</span>
+   &#160;<span id="projectnumber">0.5.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -113,7 +112,7 @@ $(document).ready(function(){initNavTree('d7/d18/xmldiff_8h_source.html','../../
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &lt;libxml/tree.h&gt;</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../dd/d84/yinparser_8h.html">yinparser.h</a>&quot;</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;</div>
-<div class="line"><a name="l00011"></a><span class="lineno"><a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a149cdeec9d87bdbb700861f773759129">   11</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">enum</span> {<a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488af2c3cac34cb7553ac93e8f3ad8acee3c">XMLDIFF_ERR</a> = -1, <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a45a3557c464a0d85a333b68634df5561">XMLDIFF_NONE</a> = 0, <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488adc0f4fc8354a1e293db5efd4f8e6f0b1">XMLDIFF_ADD</a>, <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a149cdeec9d87bdbb700861f773759129">XMLDIFF_REM</a>, <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a27c20d1fff6c4a35673bea8c6bbe23c4">XMLDIFF_MOD</a>} <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488" title="Enum specifying states of node in document.">XMLDIFF_OP</a>;</div>
+<div class="line"><a name="l00011"></a><span class="lineno"><a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a149cdeec9d87bdbb700861f773759129">   11</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">enum</span> {<a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488af2c3cac34cb7553ac93e8f3ad8acee3c">XMLDIFF_ERR</a> = -1, <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a45a3557c464a0d85a333b68634df5561">XMLDIFF_NONE</a> = 0, <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488adc0f4fc8354a1e293db5efd4f8e6f0b1">XMLDIFF_ADD</a> = 1, <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a149cdeec9d87bdbb700861f773759129">XMLDIFF_REM</a> = 2, <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a27c20d1fff6c4a35673bea8c6bbe23c4">XMLDIFF_MOD</a> = 4, <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a4038204cbce3cfa24153b304b95e99a6">XMLDIFF_CHAIN</a> = 8} <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488" title="Enum specifying states of node in document.">XMLDIFF_OP</a>;</div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;</div>
 <div class="line"><a name="l00017"></a><span class="lineno"><a class="code" href="../../d2/d89/structxmldiff__entry.html">   17</a></span>&#160;<span class="keyword">struct </span><a class="code" href="../../d2/d89/structxmldiff__entry.html" title="structure for single diff entry">xmldiff_entry</a> {</div>
 <div class="line"><a name="l00018"></a><span class="lineno"><a class="code" href="../../d2/d89/structxmldiff__entry.html#a44196e6a5696d10442c29e639437196e">   18</a></span>&#160;        <span class="keywordtype">char</span> * <a class="code" href="../../d2/d89/structxmldiff__entry.html#a44196e6a5696d10442c29e639437196e">path</a>;</div>
@@ -130,7 +129,7 @@ $(document).ready(function(){initNavTree('d7/d18/xmldiff_8h_source.html','../../
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="keywordtype">void</span> <a class="code" href="../../d8/d55/group__transapi.html#ga51f793ef3d02f47d83d8763d4c962304" title="Destroy and free whole xmldiff structure.">xmldiff_free</a> (<span class="keyword">struct</span> <a class="code" href="../../dc/d38/structxmldiff.html" title="structure holding all differencies found in compared files">xmldiff</a> * diff);</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">struct </span><a class="code" href="../../dc/d38/structxmldiff.html" title="structure holding all differencies found in compared files">xmldiff</a> * <a class="code" href="../../d8/d55/group__transapi.html#gaefc6458c6e2172156c493f151a2470c7" title="Module top level function.">xmldiff_diff</a> (xmlDocPtr old, xmlDocPtr <span class="keyword">new</span>, <span class="keyword">struct</span> <a class="code" href="../../d8/dbf/structyinmodel.html" title="structure holding information needed for xml document comparsion">yinmodel</a> * model);</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">struct </span><a class="code" href="../../dc/d38/structxmldiff.html" title="structure holding all differencies found in compared files">xmldiff</a> * <a class="code" href="../../d8/d55/group__transapi.html#ga8f8cdd2ba2f610e486ffaaf7fd761ff9" title="Module top level function.">xmldiff_diff</a> (xmlDocPtr old, xmlDocPtr <span class="keyword">new</span>, <span class="keyword">struct</span> <a class="code" href="../../dd/de6/structmodel__tree.html" title="structure holding information about used data model in YIN format">model_tree</a> * model);</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
@@ -139,7 +138,7 @@ $(document).ready(function(){initNavTree('d7/d18/xmldiff_8h_source.html','../../
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../dir_5cf91f2d325c7b4198cad664054031d4.html">transapi</a></li><li class="navelem"><a class="el" href="../../d7/d18/xmldiff_8h.html">xmldiff.h</a></li>
-    <li class="footer">Generated on Wed Apr 3 2013 16:12:15 for libnetconf by
+    <li class="footer">Generated on Thu Apr 18 2013 13:14:25 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.2 </li>
   </ul>

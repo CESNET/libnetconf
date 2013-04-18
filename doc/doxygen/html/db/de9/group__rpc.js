@@ -21,6 +21,7 @@ var group__rpc =
       [ "NC_OP_UNLOCK", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aa4071db38c423865b24543cb504a4b42", null ],
       [ "NC_OP_COMMIT", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a350f96fd686eea971d1d9e087a9ff8f4", null ],
       [ "NC_OP_DISCARDCHANGES", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a59fd75a1b96a307a2d87e327c7d9a695", null ],
+      [ "NC_OP_VALIDATE", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a064e97e228090350548b4b67c6c598b0", null ],
       [ "NC_OP_CREATESUBSCRIPTION", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aafc549220669ed05b9c043b09be496fe", null ],
       [ "NC_OP_GETSCHEMA", "db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a213f30aeb2d0d09bc6de7d98015860c3", null ]
     ] ],
@@ -57,6 +58,7 @@ var group__rpc =
     [ "nc_rpc_killsession", "db/de9/group__rpc.html#gae9876e8d038eb81a376bd82a08c58b95", null ],
     [ "nc_rpc_lock", "db/de9/group__rpc.html#ga6a03d40e00fbe019a34541a55f3f4a31", null ],
     [ "nc_rpc_unlock", "db/de9/group__rpc.html#gad843551f9d1ff8be6a118d026e8b995a", null ],
+    [ "nc_rpc_validate", "db/de9/group__rpc.html#ga14fa1c78362457a646d5d820206d5158", null ],
     [ "nc_rpc_commit", "db/de9/group__rpc.html#ga7977ca8b562643607b3c846ed36bbb23", null ],
     [ "nc_rpc_discardchanges", "db/de9/group__rpc.html#ga337ea7a9b006a79ee5ea615e9d9a5a6f", null ],
     [ "nc_rpc_getschema", "db/de9/group__rpc.html#ga3b762dd881622eaa72b08c9b58d76a5e", null ],

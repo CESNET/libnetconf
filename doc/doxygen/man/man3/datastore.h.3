@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Wed Apr 3 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -54,6 +54,10 @@ NETCONF datastore handling function prototypes and structures\&.
 .br
 .RI "\fICreate new datastore structure with transaction API support\&. \fP"
 .ti -1c
+.RI "int \fBncds_add_augment\fP (const char *model_path)"
+.br
+.RI "\fIAdd an augment model to the base model of the datastore\&. \fP"
+.ti -1c
 .RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
 .br
 .RI "\fIAssign the path of the datastore file into the datastore structure\&. \fP"
@@ -78,7 +82,7 @@ NETCONF datastore handling function prototypes and structures\&.
 .br
 .RI "\fIRemove all the locks that the given session is holding\&. \fP"
 .ti -1c
-.RI "char * \fBncds_get_model\fP (\fBncds_id\fP id)"
+.RI "char * \fBncds_get_model\fP (\fBncds_id\fP id, int augmented)"
 .br
 .RI "\fIReturn a serialized XML containing the data model in the YIN format\&. \fP"
 .ti -1c

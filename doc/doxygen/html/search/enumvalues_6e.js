@@ -83,6 +83,7 @@ var searchData=
   ['nc_5fop_5flock',['NC_OP_LOCK',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07af07ffd285bc743fcbdeace96f2b21d22',1,'netconf.h']]],
   ['nc_5fop_5funknown',['NC_OP_UNKNOWN',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a7ca4781a2c8644c3c15e3b0cd9116090',1,'netconf.h']]],
   ['nc_5fop_5funlock',['NC_OP_UNLOCK',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aa4071db38c423865b24543cb504a4b42',1,'netconf.h']]],
+  ['nc_5fop_5fvalidate',['NC_OP_VALIDATE',['../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a064e97e228090350548b4b67c6c598b0',1,'netconf.h']]],
   ['nc_5freply_5fdata',['NC_REPLY_DATA',['../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29acf47a744ed6a6b613d63f4a77aa7135e',1,'netconf.h']]],
   ['nc_5freply_5ferror',['NC_REPLY_ERROR',['../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa47af543410586d8da28f02f099abce0',1,'netconf.h']]],
   ['nc_5freply_5fhello',['NC_REPLY_HELLO',['../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29a6d190ad4c3f0ecbaab7956227e606d27',1,'netconf.h']]],

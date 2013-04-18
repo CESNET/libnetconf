@@ -1,0 +1,54 @@
+.TH "transapi_data_callbacks" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+transapi_data_callbacks \- 
+.PP
+Structure binding location in configuration XML data and function callback applying changes\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <transapi\&.h>\fP
+.SS "Data Fields"
+
+.in +1c
+.ti -1c
+.RI "int \fBcallbacks_count\fP"
+.br
+.ti -1c
+.RI "void * \fBdata\fP"
+.br
+.ti -1c
+.RI "struct {"
+.br
+.ti -1c
+.RI "   char * \fBpath\fP"
+.br
+.ti -1c
+.RI "   int(* \fBfunc\fP )(\fBXMLDIFF_OP\fP, xmlNodePtr, void **)"
+.br
+.ti -1c
+.RI "} \fBcallbacks\fP []"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Structure binding location in configuration XML data and function callback applying changes\&. 
+.SH "Field Documentation"
+.PP 
+.SS "int callbacks_count"
+
+.SS "void* data"
+
+.SS "char* path"
+
+.SS "int(* func)(\fBXMLDIFF_OP\fP, xmlNodePtr, void **)"
+
+.SS "struct { \&.\&.\&. }   callbacks[]"
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.

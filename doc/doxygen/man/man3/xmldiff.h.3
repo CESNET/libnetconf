@@ -1,4 +1,4 @@
-.TH "src/transapi/xmldiff.h" 3 "Wed Apr 3 2013" "Version 0.4.0" "libnetconf" \" -*- nroff -*-
+.TH "src/transapi/xmldiff.h" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -27,7 +27,7 @@ src/transapi/xmldiff.h \-
 
 .in +1c
 .ti -1c
-.RI "enum \fBXMLDIFF_OP\fP { \fBXMLDIFF_ERR\fP = -1, \fBXMLDIFF_NONE\fP = 0, \fBXMLDIFF_ADD\fP, \fBXMLDIFF_REM\fP, \fBXMLDIFF_MOD\fP }"
+.RI "enum \fBXMLDIFF_OP\fP { \fBXMLDIFF_ERR\fP = -1, \fBXMLDIFF_NONE\fP = 0, \fBXMLDIFF_ADD\fP = 1, \fBXMLDIFF_REM\fP = 2, \fBXMLDIFF_MOD\fP = 4, \fBXMLDIFF_CHAIN\fP = 8 }"
 .br
 .RI "\fIEnum specifying states of node in document\&. \fP"
 .in -1c
@@ -39,7 +39,7 @@ src/transapi/xmldiff.h \-
 .br
 .RI "\fIDestroy and free whole xmldiff structure\&. \fP"
 .ti -1c
-.RI "struct \fBxmldiff\fP * \fBxmldiff_diff\fP (xmlDocPtr old, xmlDocPtr new, struct \fByinmodel\fP *model)"
+.RI "struct \fBxmldiff\fP * \fBxmldiff_diff\fP (xmlDocPtr old, xmlDocPtr new, struct \fBmodel_tree\fP *model)"
 .br
 .RI "\fIModule top level function\&. \fP"
 .in -1c

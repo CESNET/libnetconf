@@ -39,6 +39,7 @@ var messages_8h =
     [ "nc_rpc_killsession", "d5/d48/messages_8h.html#gae9876e8d038eb81a376bd82a08c58b95", null ],
     [ "nc_rpc_lock", "d5/d48/messages_8h.html#ga6a03d40e00fbe019a34541a55f3f4a31", null ],
     [ "nc_rpc_unlock", "d5/d48/messages_8h.html#gad843551f9d1ff8be6a118d026e8b995a", null ],
+    [ "nc_rpc_validate", "d5/d48/messages_8h.html#ga14fa1c78362457a646d5d820206d5158", null ],
     [ "nc_rpc_subscribe", "d5/d48/messages_8h.html#gafda56cbfe02d24877d0740618aa2de98", null ],
     [ "nc_rpc_commit", "d5/d48/messages_8h.html#ga7977ca8b562643607b3c846ed36bbb23", null ],
     [ "nc_rpc_discardchanges", "d5/d48/messages_8h.html#ga337ea7a9b006a79ee5ea615e9d9a5a6f", null ],
