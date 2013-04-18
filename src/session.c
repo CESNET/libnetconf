@@ -898,7 +898,7 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	/* detect if user ID is 0 -> then the session is recovery */
 	session->nacm_recovery = 0;
 	if ((p = getpwnam(username)) != NULL) {
-		if (p->pw_uid == 0) {
+		if (p->pw_uid == NACM_RECOVERY_UID) {
 			session->nacm_recovery = 1;
 		}
 	}

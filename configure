@@ -639,6 +639,7 @@ DISTRO
 PROVIDES
 REQS
 BUILDREQS
+NACM_RECOVERY_UID
 V_SONAME_OPT
 V_SHLIB_OPT
 V_SHLIB_CMD
@@ -740,6 +741,7 @@ with_ncworkingdirpath
 with_servercfgpath
 with_suid
 with_sgid
+with_nacm_recovery_uid
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1396,6 +1398,9 @@ Optional Packages:
   --with-sgid=group       When creating files or directories using libnetconf,
                           rely on the SGID bit set and change their ownership
                           to the specified group
+  --with-nacm-recovery-uid=uid
+                          Set UID to be used to identify NACM recovery
+                          session, default value is 0.
 
 Some influential environment variables:
   CC          C compiler command
@@ -2801,6 +2806,23 @@ if test "${with_sgid+set}" = set; then :
 			SETGROUP="`id -gn`"
 		fi
 	fi
+
+fi
+
+
+# Check whether --with-nacm-recovery-uid was given.
+if test "${with_nacm_recovery_uid+set}" = set; then :
+  withval=$with_nacm_recovery_uid;
+	if test -z "$withval"; then
+		NACM_RECOVERY_UID="0"
+	elif expr "$withval" : "-\?[0-9]\+$" > /dev/null ; then
+		NACM_RECOVERY_UID="$withval"
+	else
+		as_fn_error $? "Invalid NACM recovey UID. The value must be a valid number." "$LINENO" 5
+	fi
+
+else
+  NACM_RECOVERY_UID="0"
 
 fi
 
@@ -5937,6 +5959,7 @@ fi
 
 
 ############################### Set output #####################################
+
 
 
 

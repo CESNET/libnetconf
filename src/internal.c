@@ -64,9 +64,6 @@ int ncds_sysinit(void);
 
 int verbose_level = 0;
 
-/* UID for recovery session */
-uid_t nacm_recovery_uid_ = 0;
-
 void nc_verbosity(NC_VERB_LEVEL level)
 {
 	verbose_level = level;
@@ -187,11 +184,6 @@ int nc_init(int flags)
 
 	nc_init_flags |= NC_INIT_DONE;
 	return (retval);
-}
-
-void nacm_recovery_uid(uid_t uid)
-{
-	nacm_recovery_uid_ = uid;
 }
 
 int nc_close(int system)
