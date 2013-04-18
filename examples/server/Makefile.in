@@ -87,7 +87,13 @@ HDRS =
 
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 
-all: $(NAME) $(SUBDIRS)
+TRANSAPI = ./transapi/
+
+all: $(NAME) $(TRANSAPI)
+
+.PHONY: $(TRANSAPI)
+$(TRANSAPI):
+	$(MAKE) -C $@
 
 $(NAME): $(OBJS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OBJS) $(LIBS) -o $(NAME)
@@ -108,7 +114,7 @@ $(OBJDIR)/%.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDES) $(CPPFLAGS) -fPIC -c $< -o $@
 
 .PHONY: install
-install: $(NAME)
+install: $(NAME) $(TRANSAPI)
 	@[ -d $(DESTDIR)/$(bindir) ] || \
 		(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir))
 	$(INSTALL_PROGRAM) $(INSTALL_BIN_OPTIONS) $(NAME) $(DESTDIR)/$(bindir)/;
@@ -116,6 +122,8 @@ install: $(NAME)
 		mkdir -p $(SERVERCFG_PATH);
 	chmod -R 700 $(SERVERCFG_PATH);
 	$(INSTALL_DATA) $(srcdir)/README.cfgdir $(SERVERCFG_PATH)/README;
+	$(INSTALL_DATA) $(TRANSAPI)/toaster.so $(SERVERCFG_PATH)/toaster.so;
+	$(INSTALL_DATA) $(TRANSAPI)/toaster.yin $(SERVERCFG_PATH)/toaster.yin;
 	if test "$$(($(SETBIT) & 1))" = "1"; then \
 		if test -n "$(SETUSER)"; then \
 			chown -R $(SETUSER) $(SERVERCFG_PATH) || \
@@ -140,4 +148,5 @@ uninstall:
 
 .PHONY: clean
 clean:
+	for i in $(TRANSAPI) ; do $(MAKE) -C $$i clean ; done
 	rm -rf $(NAME) .obj $(OBJS); 
