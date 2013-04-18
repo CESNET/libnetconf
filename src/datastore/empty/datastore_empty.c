@@ -70,6 +70,11 @@ int ncds_empty_changed(struct ncds_ds* UNUSED(ds))
 	return(0);
 }
 
+int ncds_empty_rollback(struct ncds_ds* UNUSED(ds))
+{
+	return EXIT_SUCCESS;
+}
+
 const struct ncds_lockinfo *ncds_empty_lockinfo(struct ncds_ds* UNUSED(ds), NC_DATASTORE UNUSED(target))
 {
 	return (&lockinfo);

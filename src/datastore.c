@@ -198,6 +198,7 @@ int ncds_sysinit(void)
 			ds->func.init = ncds_empty_init;
 			ds->func.free = ncds_empty_free;
 			ds->func.was_changed = ncds_empty_changed;
+			ds->func.rollback = ncds_empty_rollback;
 			ds->func.get_lockinfo = ncds_empty_lockinfo;
 			ds->func.lock = ncds_empty_lock;
 			ds->func.unlock = ncds_empty_unlock;
@@ -215,6 +216,7 @@ int ncds_sysinit(void)
 			ds->func.init = ncds_file_init;
 			ds->func.free = ncds_file_free;
 			ds->func.was_changed = ncds_file_changed;
+			ds->func.rollback = ncds_file_rollback;
 			ds->func.get_lockinfo = ncds_file_lockinfo;
 			ds->func.lock = ncds_file_lock;
 			ds->func.unlock = ncds_file_unlock;
@@ -1510,6 +1512,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		ds->func.init = ncds_file_init;
 		ds->func.free = ncds_file_free;
 		ds->func.was_changed = ncds_file_changed;
+		ds->func.rollback = ncds_file_rollback;
 		ds->func.get_lockinfo = ncds_file_lockinfo;
 		ds->func.lock = ncds_file_lock;
 		ds->func.unlock = ncds_file_unlock;
@@ -1523,6 +1526,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		ds->func.init = ncds_empty_init;
 		ds->func.free = ncds_empty_free;
 		ds->func.was_changed = ncds_empty_changed;
+		ds->func.rollback = ncds_empty_rollback;
 		ds->func.get_lockinfo = ncds_empty_lockinfo;
 		ds->func.lock = ncds_empty_lock;
 		ds->func.unlock = ncds_empty_unlock;
@@ -2142,6 +2146,17 @@ static xmlNodePtr get_model_root(xmlNodePtr roots, struct data_model *data_model
 	}
 
 	return retval;
+}
+
+int ncds_rollback(ncds_id id)
+{
+	struct ncds_ds *datastore = datastores_get_ds(id);
+
+	if (datastore == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	return (datastore->func.rollback(datastore));
 }
 
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)

@@ -774,6 +774,7 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	nc_cpblts_add(retval, NC_CAP_WRUNNING_ID);
 	nc_cpblts_add(retval, NC_CAP_CANDIDATE_ID);
 	nc_cpblts_add(retval, NC_CAP_STARTUP_ID);
+	nc_cpblts_add(retval, NC_CAP_ROLLBACK_ID);
 	nc_cpblts_add(retval, NC_CAP_INTERLEAVE_ID);
 	nc_cpblts_add(retval, NC_CAP_MONITORING_ID);
 #ifndef DISABLE_NOTIFICATIONS

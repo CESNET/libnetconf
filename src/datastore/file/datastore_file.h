@@ -96,6 +96,10 @@ struct ncds_ds_file {
 	 */
 	xmlDocPtr xml;
 	/**
+	 * backup libxml2's document structure of the datastore for rollback
+	 */
+	xmlDocPtr xml_rollback;
+	/**
 	 * libxml2 Node pointers providing access to individual datastores
 	 */
 	xmlNodePtr candidate, running, startup;
@@ -134,6 +138,13 @@ int ncds_file_init (struct ncds_ds* ds);
  * changed.
  */
 int ncds_file_changed(struct ncds_ds* ds);
+
+/**
+ * @brief If possible, rollback the last change of the datastore.
+ * @param[in] ds File datastore which will be rolled back.
+ * @return 0 on success, non-zero if the operation can not be performed.
+ */
+int ncds_file_rollback(struct ncds_ds* ds);
 
 /**
  * @brief Perform get-config on the specified repository.

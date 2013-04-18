@@ -375,6 +375,7 @@ int ncds_file_init (struct ncds_ds* ds)
 		xmlDocFormatDump(file_ds->file, file_ds->xml, 1);
 		WARN ("File %s was empty. Basic structure created.", file_ds->path);
 	}
+	file_ds->xml_rollback = NULL;
 
 	/* get pointers to running, startup and candidate nodes in xml */
 	if (file_fill_dsnodes(file_ds) != EXIT_SUCCESS) {
@@ -429,12 +430,9 @@ void ncds_file_free(struct ncds_ds* ds)
 		if (file_ds->file != NULL) {
 			fclose(file_ds->file);
 		}
-		if (file_ds->path != NULL) {
-			free(file_ds->path);
-		}
-		if (file_ds->xml != NULL) {
-			xmlFreeDoc(file_ds->xml);
-		}
+		free(file_ds->path);
+		xmlFreeDoc(file_ds->xml);
+		xmlFreeDoc(file_ds->xml_rollback);
 		if (file_ds->ds_lock.lock != NULL) {
 			if (file_ds->ds_lock.holding_lock) {
 				sem_post (file_ds->ds_lock.lock);
@@ -464,7 +462,8 @@ static int file_reload (struct ncds_ds_file* file_ds)
 	struct stat statbuf;
 	time_t t;
 
-	if (!file_ds->ds_lock.holding_lock) {
+	if (file_ds == NULL || !file_ds->ds_lock.holding_lock) {
+		ERROR("%s: invalid parameter.", __func__);
 		return EXIT_FAILURE;
 	}
 
@@ -515,7 +514,8 @@ static int file_sync(struct ncds_ds_file* file_ds)
 {
 	time_t t;
 
-	if (!file_ds->ds_lock.holding_lock) {
+	if (file_ds == NULL || !file_ds->ds_lock.holding_lock) {
+		ERROR("%s: invalid parameter.", __func__);
 		return EXIT_FAILURE;
 	}
 
@@ -539,6 +539,45 @@ static int file_sync(struct ncds_ds_file* file_ds)
 	}
 
 	return EXIT_SUCCESS;
+}
+
+static int file_rollback_store(struct ncds_ds_file* file_ds)
+{
+	if (file_ds == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	xmlFreeDoc(file_ds->xml_rollback);
+	file_ds->xml_rollback = xmlCopyDoc(file_ds->xml, 1);
+
+	return (EXIT_SUCCESS);
+}
+
+static int file_rollback_restore(struct ncds_ds_file* file_ds)
+{
+	if (file_ds == NULL || !file_ds->ds_lock.holding_lock) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	if (file_ds->xml_rollback == NULL) {
+		ERROR("No backup repository for rollback operation (datastore %d).", file_ds->id);
+		return (EXIT_FAILURE);
+	}
+
+	xmlFreeDoc(file_ds->xml);
+	file_ds->xml = file_ds->xml_rollback;
+	file_ds->xml_rollback = NULL;
+	file_ds->last_access = 0;
+
+	return (file_sync(file_ds));
+}
+
+int ncds_file_rollback(struct ncds_ds* ds)
+{
+	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
+	return file_rollback_restore(file_ds);
 }
 
 struct ncds_lockinfo lockinfo_running = {NC_DATASTORE_RUNNING, NULL, NULL};
@@ -832,6 +871,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}
+	file_rollback_store(file_ds);
 
 	switch(target) {
 	case NC_DATASTORE_RUNNING:
@@ -1003,6 +1043,7 @@ int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * sessi
 		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}
+	file_rollback_store(file_ds);
 
 	switch(target) {
 	case NC_DATASTORE_RUNNING:
@@ -1084,6 +1125,7 @@ int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session,
 		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}
+	file_rollback_store(file_ds);
 
 	switch(target) {
 	case NC_DATASTORE_RUNNING:
