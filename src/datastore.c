@@ -1419,6 +1419,7 @@ static int ncds_update_augment(struct data_model *augment)
 				}
 			}
 
+			match = 0;
 			path_node = path_node->children;
 			if (module_inpath != NULL && strcmp(module, module_inpath) != 0) {
 				/* the prefix is changing, so there must be an augment element */

@@ -1918,7 +1918,7 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf)
 
 NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, int timeout, nc_ntf** ntf)
 {
-	struct nc_msg *msg_aux, *msg;
+	struct nc_msg *msg_aux, *msg=NULL;
 	NC_MSG_TYPE ret;
 	int local_timeout;
 
