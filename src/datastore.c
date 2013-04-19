@@ -97,8 +97,15 @@ struct ds_desc {
 	char* filename;
 };
 
+struct ncds {
+	struct ncds_ds_list *datastores;
+	ncds_id* datastores_ids;
+	int count;
+	int array_size;
+};
+
 struct ncds_ds *nacm_ds = NULL; /* for NACM subsystem */
-static struct ncds_ds_list *datastores = NULL;
+static struct ncds ncds = {NULL, NULL, 0, 0};
 static struct model_list *models_list = NULL;
 static struct model_list *augments_list = NULL;
 
@@ -233,7 +240,6 @@ int ncds_sysinit(void)
 		}
 		ds->id = internal_ds_count++;
 
-
 		ds->data_model = malloc(sizeof(struct data_model));
 		if (model == NULL) {
 			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
@@ -324,8 +330,14 @@ int ncds_sysinit(void)
 			nacm_ds = ds;
 		}
 		dsitem->datastore = ds;
-		dsitem->next = datastores;
-		datastores = dsitem;
+		dsitem->next = ncds.datastores;
+		ncds.datastores = dsitem;
+		ncds.count++;
+		if (ncds.count >= ncds.array_size) {
+			ncds.array_size += 10;
+			ncds.datastores_ids = realloc(ncds.datastores_ids, ncds.array_size * sizeof(ncds_id));
+		}
+
 		ds = NULL;
 	}
 
@@ -344,7 +356,7 @@ static struct ncds_ds *datastores_get_ds(ncds_id id)
 {
 	struct ncds_ds_list *ds_iter;
 
-	for (ds_iter = datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
+	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
 		if (ds_iter->datastore != NULL && ds_iter->datastore->id == id) {
 			break;
 		}
@@ -375,7 +387,7 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 		return (NULL);
 	}
 
-	for (ds_iter = datastores; ds_iter != NULL; ds_prev = ds_iter, ds_iter = ds_iter->next) {
+	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_prev = ds_iter, ds_iter = ds_iter->next) {
 		if (ds_iter->datastore != NULL && ds_iter->datastore->id == id) {
 			break;
 		}
@@ -385,12 +397,13 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 		/* required datastore was found */
 		if (ds_prev == NULL) {
 			/* we're removing the first item of the datastores list */
-			datastores = ds_iter->next;
+			ncds.datastores = ds_iter->next;
 		} else {
 			ds_prev->next = ds_iter->next;
 		}
 		retval = ds_iter->datastore;
 		free(ds_iter);
+		ncds.count--;
 	}
 
 	return retval;
@@ -711,7 +724,7 @@ char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running
 	 * datastores
 	 */
 	/* find non-empty datastore implementation */
-	for (ds = datastores; ds != NULL ; ds = ds->next) {
+	for (ds = ncds.datastores; ds != NULL ; ds = ds->next) {
 		if (ds->datastore && ds->datastore->type == NCDS_TYPE_FILE) {
 			break;
 		}
@@ -1378,7 +1391,7 @@ static int ncds_update_augment(struct data_model *augment)
 				}
 
 				/* locate the correct datastore to augment */
-				for (ds_iter = datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
+				for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
 					if (ds_iter->datastore != NULL && strcmp(ds_iter->datastore->data_model->name, module) == 0) {
 						ds = ds_iter->datastore;
 						break;
@@ -1689,8 +1702,13 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 		return -4;
 	}
 	item->datastore = datastore;
-	item->next = datastores;
-	datastores = item;
+	item->next = ncds.datastores;
+	ncds.datastores = item;
+	ncds.count++;
+	if (ncds.count >= ncds.array_size) {
+		ncds.array_size += 10;
+		ncds.datastores_ids = realloc(ncds.datastores_ids, ncds.array_size * sizeof(ncds_id));
+	}
 
 	return datastore->id;
 }
@@ -1700,7 +1718,7 @@ void ncds_cleanall()
 	struct ncds_ds_list *ds_item, *dsnext;
 	struct model_list *listitem, *listnext;
 
-	ds_item = datastores;
+	ds_item = ncds.datastores;
 	while (ds_item != NULL) {
 		dsnext = ds_item->next;
 		ncds_free(ds_item->datastore);
@@ -1743,7 +1761,7 @@ void ncds_free2(ncds_id datastore_id)
 	struct ncds_ds *del;
 
 	/* empty list */
-	if (datastores == NULL) {
+	if (ncds.datastores == NULL) {
 		return;
 	}
 
@@ -2183,6 +2201,11 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlNodePtr op_node;
 	xmlNodePtr op_input;
 	int pos;
+
+	if (rpc == NULL || session == NULL) {
+		ERROR("%s: invalid parameter %s", __func__, (rpc==NULL)?"rpc":"session");
+		return (NULL);
+	}
 
 	dsid = id;
 
@@ -2797,6 +2820,78 @@ apply_editcopyconfig:
 	return (reply);
 }
 
+nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[])
+{
+	struct ncds_ds_list* ds, *ds_rollback;
+	nc_reply *old_reply = NULL, *new_reply = NULL, *reply;
+	int id_i = 0;
+	NC_EDIT_ERROPT_TYPE erropt = 0;
+	NC_RPC_TYPE req_type;
+
+	if (rpc == NULL || session == NULL) {
+		ERROR("%s: invalid parameter %s", __func__, (rpc==NULL)?"rpc":"session");
+		return (NULL);
+	}
+
+	req_type = nc_rpc_get_type(rpc);
+	if (nc_rpc_get_op(rpc) == NC_OP_EDITCONFIG) {
+		erropt = nc_rpc_get_erropt(rpc);
+	}
+
+	if (ids != NULL) {
+		ids = &(ncds.datastores_ids);
+	}
+
+	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
+		/* skip internal datastores */
+		if (ds->datastore->id > 0 && ds->datastore->id < internal_ds_count) {
+			continue;
+		}
+
+		/* apply RPC on a single datastore */
+		reply = ncds_apply_rpc(ds->datastore->id, session, rpc);
+		if (reply != (void*)(-1)) {
+			ncds.datastores_ids[id_i] = ds->datastore->id;
+			id_i++;
+			ncds.datastores_ids[id_i] = -1; /* terminating item */
+		}
+
+		/* merge results from the previous runs */
+		if (old_reply == NULL) {
+			old_reply = reply;
+		} else if (old_reply != (void*)(-1) || reply != (void*)(-1)) {
+			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
+				if (nc_reply_get_type(old_reply) == NC_REPLY_ERROR) {
+					return (old_reply);
+				} else if (nc_reply_get_type(reply) == NC_REPLY_ERROR) {
+					return (reply);
+				} else {
+					return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
+				}
+			}
+			old_reply = reply = new_reply;
+		}
+
+		if (reply != (void*)(-1) && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
+			if (req_type == NC_RPC_DATASTORE_WRITE) {
+				if (erropt == NC_EDIT_ERROPT_STOP) {
+					return (reply);
+				} else if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_ROLLBACK) {
+					/* rollback previously changed datastores */
+					for (ds_rollback = ncds.datastores; ds_rollback != ds; ds_rollback = ds_rollback->next) {
+						ds_rollback->datastore->func.rollback(ds_rollback->datastore);
+					}
+					return (reply);
+				}
+			} else if (req_type == NC_RPC_DATASTORE_READ) {
+				return (reply);
+			}
+		}
+	}
+
+	return (reply);
+}
+
 void ncds_break_locks(const struct nc_session* session)
 {
 	struct ncds_ds_list * ds;
@@ -2808,10 +2903,9 @@ void ncds_break_locks(const struct nc_session* session)
 	NC_DATASTORE ds_type[3] = {NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NC_DATASTORE_STARTUP};
 	struct nc_cpblts * cpblts;
 
-
 	if (session == NULL) {
 		/* if session NULL, get all sessions that hold lock from first file datastore */
-		ds = datastores;
+		ds = ncds.datastores;
 		/* find first file datastore */
 		while (ds != NULL && ds->datastore != NULL && ds->datastore->type != NCDS_TYPE_FILE) {
 			ds = ds->next;
@@ -2838,7 +2932,7 @@ void ncds_break_locks(const struct nc_session* session)
 
 	/* for all prepared sessions */
 	for (i=0; i<number_sessions; i++) {
-		ds = datastores;
+		ds = ncds.datastores;
 		/* every datastore */
 		while (ds) {
 			if (ds->datastore) {
@@ -2876,7 +2970,7 @@ const struct data_model* ncds_get_model_data(const char* namespace)
 		return (NULL);
 	}
 
-	for (ds = datastores; ds != NULL; ds = ds->next) {
+	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
 		model = NULL;
 		if (ds->datastore == NULL) {
 			continue;
@@ -2917,7 +3011,7 @@ const struct data_model* ncds_get_model_operation(const char* operation, const c
 		return (NULL);
 	}
 
-	for (ds = datastores; ds != NULL; ds = ds->next) {
+	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
 		model = NULL;
 		if (ds->datastore == NULL) {
 			continue;
@@ -2962,7 +3056,7 @@ const struct data_model* ncds_get_model_notification(const char* notification, c
 		return (NULL);
 	}
 
-	for (ds = datastores; ds != NULL; ds = ds->next) {
+	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
 		model = NULL;
 		if (ds->datastore == NULL) {
 			continue;

@@ -183,13 +183,40 @@ void ncds_free2(ncds_id datastore_id);
  * @param[in] session NETCONF session (a dummy session is acceptable) where the
  * \<rpc\> came from. Capabilities checks are done according to this session.
  * @param[in] rpc NETCONF \<rpc\> message specifying requested operation.
- * @return NULL in case of a non-NC_RPC_DATASTORE_* operation type, else
- * \<rpc-reply\> with \<ok\>, \<data\> or \<rpc-error\> according to the type
- * and the result of the requested operation. When the requested operation is
- * not applicable to the specified datastore (e.g. the namespace does not match),
- * NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned.
+ * @return NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid
+ * parameter session or rpc, else \<rpc-reply\> with \<ok\>, \<data\> or
+ * \<rpc-error\> according to the type and the result of the requested
+ * operation. When the requested operation is not applicable to the specified
+ * datastore (e.g. the namespace does not match), NCDS_RPC_NOT_APPLICABLE
+ * ((void *) -1)) is returned.
  */
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc);
+
+/**
+ * @ingroup store
+ * @brief Perform the requested RPC operation on the all datastores controlled
+ * by the libnetconf (created by ncdsd_new() and ncds_init()).
+ *
+ * This function IS NOT thread safety.
+ *
+ * @param[in] id Datastore ID. Use #NCDS_INTERNAL_ID (0) to apply request
+ * (typically \<get\>) onto the libnetconf's internal datastore.
+ * @param[in] session NETCONF session (a dummy session is acceptable) where the
+ * \<rpc\> came from. Capabilities checks are done according to this session.
+ * @param[in] rpc NETCONF \<rpc\> message specifying requested operation.
+ * @param[out] ids Pointer to a static array containing list of datastore IDs
+ * where the RPC was successfully applied. The list is terminated by value a
+ * (ncds_id)(-1). The list is rewritten by a following call to
+ * ncds_apply_rpc2all().
+ * @return NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid
+ * parameter session or rpc, else \<rpc-reply\> with \<ok\>, \<data\> or
+ * \<rpc-error\> according to the type and the result of the requested
+ * operation. When the requested operation is not applicable to aany datastore
+ * (e.g. the namespace does not match no of the controlled datstores),
+ * NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned.
+ *
+ */
+nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[]);
 
 /**
  * @ingroup store
