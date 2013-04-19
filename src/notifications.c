@@ -786,12 +786,6 @@ static int ncntf_streams_init(void)
 	if (ncntf_stream_isavailable(NCNTF_STREAM_BASE) == 0) {
 		/* create default NETCONF stream if does not exist */
 		ncntf_stream_new(NCNTF_STREAM_BASE, "NETCONF Base Notifications", 1);
-		/* allow notifications defined in RFC 6470 */
-		ncntf_stream_allow_events(NCNTF_STREAM_BASE, "netconf-config-change");
-		ncntf_stream_allow_events(NCNTF_STREAM_BASE, "netconf-capability-change");
-		ncntf_stream_allow_events(NCNTF_STREAM_BASE, "netconf-session-start");
-		ncntf_stream_allow_events(NCNTF_STREAM_BASE, "netconf-session-end");
-		ncntf_stream_allow_events(NCNTF_STREAM_BASE, "netconf-confirmed-commit");
 	}
 
 	return (EXIT_SUCCESS);
@@ -1346,6 +1340,14 @@ static int ncntf_event_isallowed(const char* stream, const char* event)
 
 	if (stream == NULL || event == NULL) {
 		return (0);
+	}
+
+	if (strcmp(stream, NCNTF_STREAM_DEFAULT) == 0) {
+		/*
+		 * The default stream contains all NETCONF XML event notifications
+		 * supported by the NETCONF server.
+		 */
+		return (1);
 	}
 
 	if ((s = ncntf_stream_get(stream)) == NULL) {
