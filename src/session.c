@@ -1315,8 +1315,8 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 #endif
 	size_t rd = 0;
 	ssize_t c;
-	static char *buf = NULL;
-	static size_t buflen = 0;
+	char *buf = NULL;
+	size_t buflen = 0;
 
 	/* check if we can work with the session */
 	if (session->status != NC_SESSION_STATUS_WORKING &&
@@ -1328,19 +1328,17 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 		return (EXIT_FAILURE);
 	}
 
-	/* allocate memory according to so far maximum buffer size */
-	if (buflen == 0) {
-		/* set starting buffer size */
-		buflen = 1024;
-		buf = (char*) malloc (buflen * sizeof(char));
-		if (buf == NULL) {
-			ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
-			return (EXIT_FAILURE);
-		}
+	/* set starting buffer size */
+	buflen = 1024;
+	buf = (char*) malloc (buflen * sizeof(char));
+	if (buf == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (EXIT_FAILURE);
 	}
 
 	for (rd = 0;;) {
 		if (limit > 0 && rd > limit) {
+			free(buf);
 			WARN("%s: reading limit reached.", __func__);
 			return (EXIT_FAILURE);
 		}
@@ -1355,7 +1353,6 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 				libssh2_session_last_error (session->ssh_session, &err_msg, NULL, 0);
 				ERROR("Reading from the SSH channel failed (%zd: %s)", c, err_msg);
 				free (buf);
-				buflen = 0;
 				if (len != NULL) {
 					*len = 0;
 				}
@@ -1367,7 +1364,6 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 				if (libssh2_channel_eof (session->ssh_channel)) {
 					ERROR("Server has closed the communication socket");
 					free (buf);
-					buflen = 0;
 					if (len != NULL) {
 						*len = 0;
 					}
@@ -1391,7 +1387,6 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 				} else {
 					ERROR("Reading from an input file descriptor failed (%s)", strerror(errno));
 					free (buf);
-					buflen = 0;
 					if (len != NULL) {
 						*len = 0;
 					}
@@ -1404,7 +1399,6 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 		} else {
 			ERROR("No way to read the input, fatal error.");
 			free (buf);
-			buflen = 0;
 			if (len != NULL) {
 				*len = 0;
 			}
@@ -1428,7 +1422,9 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 					*len = rd;
 				}
 				if (text != NULL) {
-					*text = strdup (buf);
+					*text = buf;
+				} else {
+					free(buf);
 				}
 				return (EXIT_SUCCESS);
 			}
@@ -1454,10 +1450,7 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 
 	/* no one could be here */
 	ERROR("Reading NETCONF message fatal failure");
-	if (buf != NULL) {
-		free (buf);
-		buflen = 0;
-	}
+	free (buf);
 	if (len != NULL) {
 		*len = 0;
 	}
