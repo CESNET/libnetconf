@@ -1742,7 +1742,7 @@ void ncds_free(struct ncds_ds* datastore)
 		return;
 	}
 
-	if (datastore->id > 0) {
+	if (datastore->id != -1) {
 		/* datastore is initialized and must be in the datastores list */
 		ds = datastores_detach_ds(datastore->id);
 	} else {
