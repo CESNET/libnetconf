@@ -1159,7 +1159,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	pthread_mutex_lock(&(session->mut_out));
 
 	xmlDocDumpFormatMemory (msg->doc, (xmlChar**) (&text), &len, NC_CONTENT_FORMATTED);
-	DBG("Writing message: %s", text);
+	DBG("Writing message (session %s): %s", session->session_id, text);
 
 	/* if v1.1 send chunk information before message */
 	if (session->version == NETCONFV11) {
@@ -1604,7 +1604,7 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 			goto malformed_msg;
 		}
 		text[len - strlen (NC_V10_END_MSG)] = 0;
-		DBG("Received message: %s", text);
+		DBG("Received message (session %s): %s", session->session_id, text);
 		break;
 	case NETCONFV11:
 		do {
@@ -1659,7 +1659,7 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 			chunk = NULL;
 
 		} while (1);
-		DBG("Received message: %s", text);
+		DBG("Received message (session %s): %s", session->session_id, text);
 		break;
 	default:
 		ERROR("Unsupported NETCONF protocol version (%d)", session->version);
