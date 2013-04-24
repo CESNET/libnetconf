@@ -1132,7 +1132,7 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 				xmlXPathFreeObject(query_result);
 				return (NULL);
 			}
-			filter_node = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
+			filter_node = query_result->nodesetval->nodeTab[0];
 		}
 		xmlXPathFreeObject(query_result);
 	}
@@ -1149,6 +1149,7 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 			/* some uknown filter type */
 			retval->type = NC_FILTER_UNKNOWN;
 		}
+		xmlFree(type_string);
 	}
 
 	return retval;

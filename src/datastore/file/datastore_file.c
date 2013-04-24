@@ -674,7 +674,7 @@ int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DAT
 		lock = xmlGetProp (target_ds, BAD_CAST "lock");
 		*error = nc_err_new(NC_ERR_LOCK_DENIED);
 		nc_err_set(*error, NC_ERR_PARAM_INFO_SID, (char*)lock);
-		xmlFree (lock);
+		xmlFree(lock);
 		retval = EXIT_FAILURE;
 	} else {
 		if (target == NC_DATASTORE_CANDIDATE &&
@@ -693,16 +693,12 @@ int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DAT
 				retval = EXIT_FAILURE;
 			}
 		}
+		xmlFree(modified);
 	}
 	UNLOCK(file_ds);
 
 	/* cleanup */
-	if (no_session != NULL) {
-		nc_session_free(no_session);
-	}
-	if (modified != NULL) {
-		xmlFree(modified);
-	}
+	nc_session_free(no_session);
 
 	return (retval);
 }

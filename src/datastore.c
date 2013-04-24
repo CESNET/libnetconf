@@ -1211,7 +1211,6 @@ static int match_module_node(char* path_module, char* module, char* name, xmlNod
 			    xmlStrcmp((*node)->name, BAD_CAST "notification") == 0) {
 				/* if the target is one of these, check its name attribute */
 				if ((name_aux = (char*) xmlGetProp(*node, BAD_CAST "name")) == NULL ) {
-					free(name_aux);
 					*node = (*node)->next;
 					continue;
 				}

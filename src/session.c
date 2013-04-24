@@ -1044,6 +1044,10 @@ void nc_session_free (struct nc_session* session)
 	struct session_list_item *litem, *aux;
 	int i;
 
+	if (session == NULL) {
+		return;
+	}
+
 	nc_session_close(session, NC_SESSION_TERM_OTHER);
 
 	/* free items untouched by nc_session_close() */

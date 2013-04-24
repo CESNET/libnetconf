@@ -428,7 +428,7 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 	xmlXPathContextPtr model_ctxt = NULL;
 	xmlXPathObjectPtr defaults = NULL, query;
 	xmlNodePtr root;
-	xmlChar* namespace;
+	xmlChar* namespace = NULL;
 	int i;
 
 	if (config == NULL || model == NULL) {
@@ -458,6 +458,7 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 	}
 	if (xmlXPathNodeSetIsEmpty(query->nodesetval) || (namespace = xmlGetProp(query->nodesetval->nodeTab[0], BAD_CAST "uri")) == NULL) {
 		ERROR("%s: Unable to get namespace from the data model.", __func__);
+		xmlFree(namespace);
 		xmlXPathFreeObject(query);
 		xmlXPathFreeContext(model_ctxt);
 		return (EXIT_FAILURE);
