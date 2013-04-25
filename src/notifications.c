@@ -1202,7 +1202,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 			while (ncntf_config != NULL) {
 				DBG_LOCK("dbus_mut");
 				pthread_mutex_lock(dbus_mut);
-				if (dbus_connection_read_write(dbus, 10) != 1) {
+				if (dbus_connection_read_write_dispatch(dbus, 10) != 1) {
 					/* dbus connection is closed */
 					ERROR("DBus connection unexpectedly closed.");
 					break;
