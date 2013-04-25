@@ -2822,7 +2822,7 @@ apply_editcopyconfig:
 nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[])
 {
 	struct ncds_ds_list* ds, *ds_rollback;
-	nc_reply *old_reply = NULL, *new_reply = NULL, *reply;
+	nc_reply *old_reply = NULL, *new_reply = NULL, *reply = NULL;
 	int id_i = 0;
 	NC_EDIT_ERROPT_TYPE erropt = 0;
 	NC_RPC_TYPE req_type;
