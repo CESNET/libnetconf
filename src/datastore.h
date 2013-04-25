@@ -199,8 +199,6 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
  *
  * This function IS NOT thread safety.
  *
- * @param[in] id Datastore ID. Use #NCDS_INTERNAL_ID (0) to apply request
- * (typically \<get\>) onto the libnetconf's internal datastore.
  * @param[in] session NETCONF session (a dummy session is acceptable) where the
  * \<rpc\> came from. Capabilities checks are done according to this session.
  * @param[in] rpc NETCONF \<rpc\> message specifying requested operation.
