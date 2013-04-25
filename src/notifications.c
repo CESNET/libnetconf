@@ -673,7 +673,7 @@ static int ncntf_dbus_init(void)
 		dbus_error_init(&dbus_err);
 
 		/* connect to the D-Bus */
-		dbus = dbus_bus_get(DBUS_BUS_SYSTEM, &dbus_err);
+		dbus = dbus_bus_get_private(DBUS_BUS_SYSTEM, &dbus_err);
 		if (dbus_error_is_set(&dbus_err)) {
 			ERROR("D-Bus connection error (%s)", dbus_err.message);
 			dbus_error_free(&dbus_err);
@@ -699,6 +699,7 @@ static void ncntf_dbus_close(void)
 	DBG_LOCK("dbus_mut");
 	pthread_mutex_lock(dbus_mut);
 	if (dbus != NULL) {
+		dbus_connection_close(dbus);
 		dbus_connection_unref(dbus);
 		dbus = NULL;
 	}
