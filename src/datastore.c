@@ -2838,7 +2838,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 	}
 
 	if (ids != NULL) {
-		ids = &(ncds.datastores_ids);
+		*ids = ncds.datastores_ids;
 	}
 
 	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
