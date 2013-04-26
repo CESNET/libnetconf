@@ -1942,12 +1942,24 @@ nc_reply* nc_reply_merge(int count, ...)
 		break;
 	case NC_REPLY_ERROR:
 		/* join all errors */
-		merged_reply = nc_reply_dup(to_merge[0]);
-		for (i = 1; i < count; i++) {
-			if (nc_reply_get_type(to_merge[j]) == NC_REPLY_ERROR) {
-				nc_reply_error_add(merged_reply, to_merge[i]->error);
-				to_merge[i]->error = NULL;
+		for (i = 0; i < count; i++) {
+			if (nc_reply_get_type(to_merge[i]) == NC_REPLY_ERROR) {
+				if (merged_reply == NULL) {
+					/* first error reply found */
+					merged_reply = nc_reply_dup(to_merge[i]);
+				} else {
+					/* another error reply found - add error description to previous */
+					nc_reply_error_add(merged_reply, to_merge[i]->error);
+					to_merge[i]->error = NULL;
+				}
 			}
+		}
+		if (merged_reply == NULL) {
+			/* shouldn't be here anytime */
+			WARN("%s: some crappy reply merging - error reply detected but not found.", __func__);
+			free(to_merge);
+			va_end(ap);
+			return (NULL);
 		}
 		break;
 	default:
