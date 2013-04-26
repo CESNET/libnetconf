@@ -576,8 +576,19 @@ static int file_rollback_restore(struct ncds_ds_file* file_ds)
 
 int ncds_file_rollback(struct ncds_ds* ds)
 {
+	int ret;
+
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
-	return file_rollback_restore(file_ds);
+
+	if (file_ds == NULL || file_ds->type != NCDS_TYPE_FILE) {
+		return (EXIT_FAILURE);
+	}
+
+	LOCK(file_ds);
+	ret = file_rollback_restore(file_ds);
+	UNLOCK(file_ds);
+
+	return (ret);
 }
 
 struct ncds_lockinfo lockinfo_running = {NC_DATASTORE_RUNNING, NULL, NULL};
