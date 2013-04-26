@@ -976,7 +976,15 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 			 * the client needs access to the modified nodes according to
 			 * the effective access operation of the each modified node.
 			 */
-			if ((r = edit_replace_nacmcheck(target_ds->children, aux_doc, file_ds->ext_model, keys, rpc->nacm, error)) != NACM_PERMIT) {
+			if (target_ds->children == NULL) {
+				/* creating a completely new configuration data */
+				r = nacm_check_data(aux_doc->children, NACM_ACCESS_CREATE, rpc->nacm);
+			} else {
+				/* replacing an old configuration data */
+				r = edit_replace_nacmcheck(target_ds->children, aux_doc, file_ds->ext_model, keys, rpc->nacm, error);
+			}
+
+			if (r != NACM_PERMIT) {
 				if (r == NACM_DENY) {
 					if (error != NULL ) {
 						*error = nc_err_new(NC_ERR_ACCESS_DENIED);
