@@ -208,7 +208,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
  * @return NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid
  * parameter session or rpc, else \<rpc-reply\> with \<ok\>, \<data\> or
  * \<rpc-error\> according to the type and the result of the requested
- * operation. When the requested operation is not applicable to aany datastore
+ * operation. When the requested operation is not applicable to any datastore
  * (e.g. the namespace does not match no of the controlled datstores),
  * NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned.
  *
