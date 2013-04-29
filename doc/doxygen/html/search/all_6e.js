@@ -1,7 +1,6 @@
 var searchData=
 [
   ['netconf_20access_20control_20module_20_28nacm_29',['NETCONF Access Control Module (NACM)',['../dd/d59/nacm.html',1,'']]],
-  ['nacm_5frecovery_5fuid',['nacm_recovery_uid',['../d3/d35/group__gen_a_p_i.html#gac0f92410b2b80bdb0df91f82705ba753',1,'netconf.h']]],
   ['name',['name',['../d0/df8/structtransapi__rpc__callbacks.html#a5ac083a645d964373f022d03df4849c8',1,'transapi_rpc_callbacks::name()'],['../dd/de6/structmodel__tree.html#a5ac083a645d964373f022d03df4849c8',1,'model_tree::name()']]],
   ['nc_5fcallback_5ferror_5freply',['nc_callback_error_reply',['../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80',1,'callbacks.h']]],
   ['nc_5fcallback_5fprint',['nc_callback_print',['../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7',1,'callbacks.h']]],
@@ -242,6 +241,7 @@ var searchData=
   ['ncdflt_5fset_5fsupported',['ncdflt_set_supported',['../d1/df7/group__withdefaults.html#gaacdfebb053cae501e72e32220305d55b',1,'with_defaults.h']]],
   ['ncds_5fadd_5faugment',['ncds_add_augment',['../db/d67/group__store.html#ga51e4497af776be124f937c9b840cf19e',1,'datastore.h']]],
   ['ncds_5fapply_5frpc',['ncds_apply_rpc',['../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801',1,'datastore.h']]],
+  ['ncds_5fapply_5frpc2all',['ncds_apply_rpc2all',['../db/d67/group__store.html#ga6887f71d8a96129fec594a59bdd10fe9',1,'datastore.h']]],
   ['ncds_5fbreak_5flocks',['ncds_break_locks',['../db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a',1,'datastore.h']]],
   ['ncds_5ffile_5fset_5fpath',['ncds_file_set_path',['../db/d67/group__store.html#gad48955dab497b1258d80019e542acb9b',1,'datastore.h']]],
   ['ncds_5ffree',['ncds_free',['../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754',1,'datastore.h']]],
@@ -253,6 +253,7 @@ var searchData=
   ['ncds_5finternal_5fid',['NCDS_INTERNAL_ID',['../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a',1,'datastore.h']]],
   ['ncds_5fnew',['ncds_new',['../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6',1,'datastore.h']]],
   ['ncds_5fnew_5ftransapi',['ncds_new_transapi',['../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85',1,'datastore.h']]],
+  ['ncds_5frollback',['ncds_rollback',['../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e',1,'datastore.h']]],
   ['ncds_5frpc_5fnot_5fapplicable',['NCDS_RPC_NOT_APPLICABLE',['../db/d67/group__store.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6',1,'datastore.h']]],
   ['ncds_5ftype',['NCDS_TYPE',['../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f',1,'datastore.h']]],
   ['ncds_5ftype_5fempty',['NCDS_TYPE_EMPTY',['../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b',1,'datastore.h']]],

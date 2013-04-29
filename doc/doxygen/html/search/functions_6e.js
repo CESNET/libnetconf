@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['nacm_5frecovery_5fuid',['nacm_recovery_uid',['../d3/d35/group__gen_a_p_i.html#gac0f92410b2b80bdb0df91f82705ba753',1,'netconf.h']]],
   ['nc_5fcallback_5ferror_5freply',['nc_callback_error_reply',['../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80',1,'callbacks.h']]],
   ['nc_5fcallback_5fprint',['nc_callback_print',['../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7',1,'callbacks.h']]],
   ['nc_5fcallback_5fssh_5fhost_5fauthenticity_5fcheck',['nc_callback_ssh_host_authenticity_check',['../db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a',1,'callbacks.h']]],
@@ -105,6 +104,7 @@ var searchData=
   ['ncdflt_5fset_5fsupported',['ncdflt_set_supported',['../d1/df7/group__withdefaults.html#gaacdfebb053cae501e72e32220305d55b',1,'with_defaults.h']]],
   ['ncds_5fadd_5faugment',['ncds_add_augment',['../db/d67/group__store.html#ga51e4497af776be124f937c9b840cf19e',1,'datastore.h']]],
   ['ncds_5fapply_5frpc',['ncds_apply_rpc',['../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801',1,'datastore.h']]],
+  ['ncds_5fapply_5frpc2all',['ncds_apply_rpc2all',['../db/d67/group__store.html#ga6887f71d8a96129fec594a59bdd10fe9',1,'datastore.h']]],
   ['ncds_5fbreak_5flocks',['ncds_break_locks',['../db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a',1,'datastore.h']]],
   ['ncds_5ffile_5fset_5fpath',['ncds_file_set_path',['../db/d67/group__store.html#gad48955dab497b1258d80019e542acb9b',1,'datastore.h']]],
   ['ncds_5ffree',['ncds_free',['../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754',1,'datastore.h']]],
@@ -114,6 +114,7 @@ var searchData=
   ['ncds_5finit',['ncds_init',['../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff',1,'datastore.h']]],
   ['ncds_5fnew',['ncds_new',['../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6',1,'datastore.h']]],
   ['ncds_5fnew_5ftransapi',['ncds_new_transapi',['../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85',1,'datastore.h']]],
+  ['ncds_5frollback',['ncds_rollback',['../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e',1,'datastore.h']]],
   ['ncntf_5fdispatch_5freceive',['ncntf_dispatch_receive',['../da/d54/group__notifications.html#ga82da94949fd2d901c3abb2c82882346c',1,'notifications.h']]],
   ['ncntf_5fdispatch_5fsend',['ncntf_dispatch_send',['../da/d54/group__notifications.html#ga9a085479245b4da6e20fd89892cc7bc1',1,'notifications.h']]],
   ['ncntf_5fevent_5fnew',['ncntf_event_new',['../da/d54/group__notifications.html#ga9641deaca934bcd7ff66ac3ae60fc722',1,'notifications.h']]],

@@ -17,7 +17,6 @@ var group__gen_a_p_i =
     ] ],
     [ "nc_verbosity", "d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7", null ],
     [ "nc_init", "d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc", null ],
-    [ "nacm_recovery_uid", "d3/d35/group__gen_a_p_i.html#gac0f92410b2b80bdb0df91f82705ba753", null ],
     [ "nc_close", "d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3", null ],
     [ "nc_callback_print", "d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7", null ],
     [ "nc_err_new", "d3/d35/group__gen_a_p_i.html#ga057524ba5256c428b6bf88710f000e0c", null ],

@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Mon Apr 29 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -77,6 +77,14 @@ NETCONF datastore handling function prototypes and structures\&.
 .RI "\fBnc_reply\fP * \fBncds_apply_rpc\fP (\fBncds_id\fP id, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (const struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
+.br
+.RI "\fIPerform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fP"
+.ti -1c
+.RI "int \fBncds_rollback\fP (\fBncds_id\fP id)"
+.br
+.RI "\fIUndo the last change performed on the specified datastore\&. \fP"
 .ti -1c
 .RI "void \fBncds_break_locks\fP (const struct nc_session *session)"
 .br
