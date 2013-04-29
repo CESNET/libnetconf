@@ -538,8 +538,6 @@
 #include "datastore.h"
 #include "with_defaults.h"
 #include "transapi/transapi.h"
-#include "transapi/xmldiff.h"
-#include "transapi/yinparser.h"
 
 #ifndef DISABLE_NOTIFICATIONS
 #  include "notifications.h"
