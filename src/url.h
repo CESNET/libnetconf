@@ -11,5 +11,3 @@ typedef enum
 	NC_URL_FILE  =  64,
 	NC_URL_ALL   = 127
 } NC_URL_PROTOCOLS;
-
-int nc_url_allowed_protocols = 0;

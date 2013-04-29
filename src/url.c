@@ -1,5 +1,7 @@
 #include "url.h"
 
+int nc_url_allowed_protocols = 0;
+
 void nc_url_set_protocols( NC_URL_PROTOCOLS protocols )
 {
 	nc_url_allowed_protocols = protocols;
