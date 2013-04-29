@@ -1,5 +1,12 @@
 #include "url.h"
 
+/* define init flags */
+#ifdef CURL_GLOBAL_ACK_EINTR
+#define INIT_FLAGS CURL_GLOBAL_SSL|CURL_GLOBAL_ACK_EINTR
+#else
+#define INIT_FLAGS CURL_GLOBAL_SSL
+#endif
+
 int nc_url_allowed_protocols = 0;
 
 void nc_url_set_protocols( NC_URL_PROTOCOLS protocols )
@@ -26,7 +33,7 @@ int nc_get_rpc( const char * url, char * buffer )
 {
 	CURL * curl;
 	
-	curl_global_init( CURL_GLOBAL_SSL | CURL_GLOBAL_ACK_EINTR );
+	curl_global_init(INIT_FLAGS);
 	curl = curl_easy_init();
 	curl_easy_setopt( curl, CURLOPT_URL, url );
 	
