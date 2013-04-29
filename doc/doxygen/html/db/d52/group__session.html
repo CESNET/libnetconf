@@ -152,21 +152,6 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb">nc_callback_sshauth_interactive</a> (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))</td></tr>
-<tr class="memdesc:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method.  <a href="#gacb6042fe2f3cfe5d79e01de599c546eb">More...</a><br/></td></tr>
-<tr class="separator:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga28299d575ef4e234ed96bad5c4f086fb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb">nc_callback_sshauth_password</a> (char *(*func)(const char *username, const char *hostname))</td></tr>
-<tr class="memdesc:ga28299d575ef4e234ed96bad5c4f086fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'.  <a href="#ga28299d575ef4e234ed96bad5c4f086fb">More...</a><br/></td></tr>
-<tr class="separator:ga28299d575ef4e234ed96bad5c4f086fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726">nc_callback_sshauth_passphrase</a> (char *(*func)(const char *username, const char *hostname, const char *priv_key_file))</td></tr>
-<tr class="memdesc:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'.  <a href="#ga81ef9b1c1949bbffd86cbfd9aa159726">More...</a><br/></td></tr>
-<tr class="separator:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga9810aff5060e374925933d41913fbe5a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a">nc_callback_ssh_host_authenticity_check</a> (int(*func)(const char *hostname, int keytype, const char *fingerprint))</td></tr>
-<tr class="memdesc:ga9810aff5060e374925933d41913fbe5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function to authorize authenticity of an unknown host.  <a href="#ga9810aff5060e374925933d41913fbe5a">More...</a><br/></td></tr>
-<tr class="separator:ga9810aff5060e374925933d41913fbe5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab5beccc3acd15a5ad6499992e24fbe59"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gab5beccc3acd15a5ad6499992e24fbe59">nc_set_keypair_path</a> (const char *private, const char *public)</td></tr>
-<tr class="memdesc:gab5beccc3acd15a5ad6499992e24fbe59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism.  <a href="#gab5beccc3acd15a5ad6499992e24fbe59">More...</a><br/></td></tr>
-<tr class="separator:gab5beccc3acd15a5ad6499992e24fbe59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga3868d5331db61a5d3a4df3ff5fa33851"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851">nc_session_dummy</a> (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)</td></tr>
 <tr class="memdesc:ga3868d5331db61a5d3a4df3ff5fa33851"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a disconnected session structure.  <a href="#ga3868d5331db61a5d3a4df3ff5fa33851">More...</a><br/></td></tr>
 <tr class="separator:ga3868d5331db61a5d3a4df3ff5fa33851"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -362,137 +347,6 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="gacb6042fe2f3cfe5d79e01de599c546eb"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void nc_callback_sshauth_interactive </td>
-          <td>(</td>
-          <td class="paramtype">void(*)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract)&#160;</td>
-          <td class="paramname"><em>func</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga28299d575ef4e234ed96bad5c4f086fb"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void nc_callback_sshauth_password </td>
-          <td>(</td>
-          <td class="paramtype">char *(*)(const char *username, const char *hostname)&#160;</td>
-          <td class="paramname"><em>func</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga81ef9b1c1949bbffd86cbfd9aa159726"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void nc_callback_sshauth_passphrase </td>
-          <td>(</td>
-          <td class="paramtype">char *(*)(const char *username, const char *hostname, const char *priv_key_file)&#160;</td>
-          <td class="paramname"><em>func</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga9810aff5060e374925933d41913fbe5a"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void nc_callback_ssh_host_authenticity_check </td>
-          <td>(</td>
-          <td class="paramtype">int(*)(const char *hostname, int keytype, const char *fingerprint)&#160;</td>
-          <td class="paramname"><em>func</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set a callback function to authorize authenticity of an unknown host. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="gab5beccc3acd15a5ad6499992e24fbe59"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void nc_set_keypair_path </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>private</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>public</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">private</td><td></td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">public</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="ga3868d5331db61a5d3a4df3ff5fa33851"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1271,7 +1125,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div><div class="memdoc">
 
 <p>Create NETCONF session to the specified server. </p>
-<p>This function can internally use various callbacks set by the client to perform SSH authentication. It selects authentication mechanism from the list provided by the SSH server and based on the preferences set by the client via <a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0" title="Set the preference of the SSH authentication methods.">nc_ssh_pref()</a>. Then, appropriate callback function (set by <a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb" title="Set a callback function for passing the user password into the libssh2&#39;s password authentication meth...">nc_callback_sshauth_password()</a>, <a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726" title="Set a callback function for passing the user password into the libssh2&#39;s publickey authentication met...">nc_callback_sshauth_passphrase()</a>, nc_set_publickey_path() or nc_set_privatekey_path()) is used to perform the authentication.</p>
+<p>This function can internally use various callbacks set by the client to perform SSH authentication. It selects authentication mechanism from the list provided by the SSH server and based on the preferences set by the client via <a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0" title="Set the preference of the SSH authentication methods.">nc_ssh_pref()</a>. Then, appropriate callback function (set by nc_callback_sshauth_password(), nc_callback_sshauth_passphrase(), nc_set_publickey_path() or nc_set_privatekey_path()) is used to perform the authentication.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">host</td><td>Hostname or address (both Ipv4 and IPv6 are accepted). 'localhost' is used by default if NULL is specified. </td></tr>
@@ -1324,7 +1178,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon Apr 29 2013 08:42:34 for libnetconf by
+    <li class="footer">Generated on Mon Apr 29 2013 16:08:08 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>
