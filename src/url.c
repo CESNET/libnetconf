@@ -1,4 +1,4 @@
-#include "url_capabilities.h"
+#include "url.h"
 
 void nc_url_set_protocols( NC_URL_PROTOCOLS protocols )
 {
