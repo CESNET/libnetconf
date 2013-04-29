@@ -123,9 +123,10 @@ int ncds_add_augment(const char* model_path);
  *
  * @param[in] datastore Datastore structure to be configured.
  * @param[in] path File path to the file storing configuration datastores.
- * @return 0 on success
- * 	  -1 Invalid datastore
- *	  -2 Invalid path ((does not exist && can not be created) || insufficient rights)
+ * @return
+ * - 0 on success
+ * - -1 Invalid datastore
+ * - -2 Invalid path ((does not exist && can not be created) || insufficient rights)
  */
 int ncds_file_set_path (struct ncds_ds* datastore, const char* path);
 
@@ -140,10 +141,10 @@ int ncds_file_set_path (struct ncds_ds* datastore, const char* path);
  * @param[in] datastore Datastore to be initiated.
  * @return Positive integer with the datastore ID on success, negative value on
  * error.
- * 	-1 Invalid datastore
- * 	-2 Type-specific initialization failed
- * 	-3 Unsupported datastore type 
- * 	-4 Memory allocation problem
+ * - -1 Invalid datastore
+ * - -2 Type-specific initialization failed
+ * - -3 Unsupported datastore type
+ * - -4 Memory allocation problem
  */
 ncds_id ncds_init(struct ncds_ds* datastore);
 
