@@ -1,7 +1,7 @@
 /**
- * \file callbacks.h
+ * \file callbacks_ssh.h
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief Functions to set application's callbacks.
+ * \brief Functions to set libssh2's callbacks.
  *
  * Copyright (C) 2012 CESNET, z.s.p.o.
  *
@@ -37,42 +37,61 @@
  *
  */
 
-#ifndef CALLBACKS_H_
-#define CALLBACKS_H_
+#ifndef CALLBACKS_SSH_H_
+#define CALLBACKS_SSH_H_
+
+#include <libssh2.h>
 
 #include "netconf.h"
 
 /**
- * @brief Set a callback function for printing libnetconf's messages.
- * @ingroup genAPI
+ * @brief Set a callback function for passing user credentials into the libssh2's
+ * keyboard-interactive authentication method
+ * @ingroup session
  * @param[in] func Callback function to use.
  */
-void nc_callback_print(void (*func)(NC_VERB_LEVEL level, const char* msg));
+void nc_callback_sshauth_interactive(void (*func)(const char* name,
+		int name_len,
+		const char* instruction,
+		int instruction_len,
+		int num_prompts,
+		const LIBSSH2_USERAUTH_KBDINT_PROMPT* prompts,
+		LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
+		void** abstract));
 
 /**
- * @brief Set a callback function to process (e.g. print) NETCONF \<rpc-error\> message items.
- * @ingroup reply
- * @param[in] func Callback function to use. Passed parameters are:
- * - tag - error tag,
- * - type - error layer where the error occurred,
- * - severity - error severity,
- * - apptag - the data-model-specific or implementation-specific error condition, if one exists,
- * - path - XPATH expression identifying element with the error,
- * - message - human-readable description of the error,
- * - attribute - name of the data-model-specific XML attribute that caused the error,
- * - element - name of the data-model-specific XML element that caused the error,
- * - ns - name of the unexpected XML namespace that caused the error,
- * - sid - session ID of the session holding the requested lock.
+ * @brief Set a callback function for passing the user password into the libssh2's
+ * password authentication method when connecting to 'hostname' as 'username'.
+ * @ingroup session
+ * @param[in] func Callback function to use.
  */
-void nc_callback_error_reply(void (*func)(const char* tag,
-		const char* type,
-		const char* severity,
-		const char* apptag,
-		const char* path,
-		const char* message,
-		const char* attribute,
-		const char* element,
-		const char* ns,
-		const char* sid));
+void nc_callback_sshauth_password(char* (*func)(const char* username,
+		const char* hostname));
 
-#endif /* CALLBACKS_H_ */
+/**
+ * @brief Set a callback function for passing the user password into the libssh2's
+ * publickey authentication method when connecting to 'hostname' as 'username'.
+ * @ingroup session
+ * @param[in] func Callback function to use.
+ */
+void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
+		const char* hostname, const char* priv_key_file));
+
+/**
+ * @ingroup session
+ * @brief Set a callback function to authorize authenticity of an unknown host.
+ * @param[in] func Callback function to use.
+ */
+void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
+		int keytype, const char* fingerprint));
+
+/**
+ * @brief Set path to a private and a public key file used in case of SSH authentication via
+ * a publickey mechanism.
+ * @ingroup session
+ * @param[in] private
+ * @param[in] public
+ */
+void nc_set_keypair_path(const char* private, const char * public);
+
+#endif /* CALLBACKS_SSH_H_ */

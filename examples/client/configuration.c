@@ -52,6 +52,7 @@
 #include <fcntl.h>
 
 #include <libnetconf.h>
+#include <libnetconf_ssh.h>
 
 #include <libxml/tree.h>
 

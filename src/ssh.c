@@ -64,6 +64,8 @@
 #include "config.h"
 
 #include "ssh.h"
+#include "callbacks.h"
+#include "callbacks_ssh.h"
 #include "messages.h"
 #include "session.h"
 #include "netconf_internal.h"
