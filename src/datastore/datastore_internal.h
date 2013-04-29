@@ -44,7 +44,7 @@
 #include <libxml/xpath.h>
 
 #include "../datastore.h"
-#include "../transapi/transapi.h"
+#include "../transapi/transapi_internal.h"
 
 #define EXIT_RPC_NOT_APPLICABLE -2
 
