@@ -41,6 +41,7 @@
 #define LIBNETCONF_H_
 
 @INCLUDE_NOTIFICATIONS@
+@INCLUDE_URL@
 #include "libnetconf/netconf.h"
 #include "libnetconf/callbacks.h"
 #include "libnetconf/session.h"

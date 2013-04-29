@@ -94,7 +94,7 @@ SRCS =  src/callbacks.c \
 	src/messages.c \
 	src/session.c \
 	src/ssh.c @SRCS_NOTIFICATIONS@ \
-	src/with_defaults.c \
+	src/with_defaults.c @SRCS_URL@ \
 	src/nacm.c \
 	src/datastore.c \
 	src/datastore/edit_config.c \
@@ -102,8 +102,7 @@ SRCS =  src/callbacks.c \
 	src/datastore/file/datastore_file.c \
 	src/transapi/transapi.c \
 	src/transapi/yinparser.c \
-	src/transapi/xmldiff.c \
-	src/url.c	
+	src/transapi/xmldiff.c
 
 HDRS_PUBL_ROOT = headers/libnetconf.h \
 		 headers/libnetconf_xml.h
@@ -115,7 +114,7 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/messages.h \
 	src/messages_xml.h \
 	src/ssh.h @HDRS_PUBL_SUBDIR_NOTIFICATIONS@ \
-	src/with_defaults.h \
+	src/with_defaults.h @HDRS_PUBL_SUBDIR_URL@ \
 	src/datastore.h \
 	src/transapi/transapi.h \
 	src/transapi/yinparser.h \
@@ -136,7 +135,7 @@ HDRS_PRIV = src/config.h.in \
 	src/netconf_internal.h \
 	src/session.h \
 	src/ssh.h @HDRS_PRIV_NOTIFICATIONS@ \
-	src/with_defaults.h \
+	src/with_defaults.h @HDRS_PRIV_URL@ \
 	src/nacm.h \
 	src/datastore.h \
 	src/datastore/datastore_internal.h \
@@ -145,8 +144,7 @@ HDRS_PRIV = src/config.h.in \
 	src/datastore/file/datastore_file.h \
 	src/transapi/transapi.h \
 	src/transapi/yinparser.h \
-	src/transapi/xmldiff.h \
-	src/url.h
+	src/transapi/xmldiff.h
 
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 

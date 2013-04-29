@@ -545,4 +545,8 @@
 #  include "notifications.h"
 #endif
 
+#ifndef DISABLE_URL
+#  include "url.h"
+#endif
+
 #endif /* LIBNETCONF_H_ */

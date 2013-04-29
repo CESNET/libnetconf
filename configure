@@ -622,6 +622,10 @@ ac_header_list=
 ac_subst_vars='LTLIBOBJS
 HAVE_EACCESS
 CONFIGURE_PARAMS
+INCLUDE_URL
+SRCS_URL
+HDRS_PRIV_URL
+HDRS_PUBL_SUBDIR_URL
 INCLUDE_NOTIFICATIONS_XML
 INCLUDE_NOTIFICATIONS
 SRCS_NOTIFICATIONS
@@ -644,6 +648,8 @@ V_SONAME_OPT
 V_SHLIB_OPT
 V_SHLIB_CMD
 LIBOBJS
+CURL_LIBS
+CURL_CFLAGS
 DBUS_LIBS
 DBUS_CFLAGS
 PTHREAD_CFLAGS
@@ -734,6 +740,7 @@ enable_option_checking
 with_libssh2
 enable_libssh2
 enable_notifications
+enable_url
 with_examples
 enable_debug
 enable_debug_threads
@@ -760,7 +767,9 @@ LIBSSH2_HANDSHAKE_LIBS
 LIBSSH2_TIMEOUT_CFLAGS
 LIBSSH2_TIMEOUT_LIBS
 DBUS_CFLAGS
-DBUS_LIBS'
+DBUS_LIBS
+CURL_CFLAGS
+CURL_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1376,6 +1385,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-libssh2       Use ssh client program instead of libssh2.
   --disable-notifications Disable support of NETCONF Notifications (RFC 5277)
+  --disable-url           Disable support of NETCONF URL Capability (RFC 6241)
   --enable-debug          Compile with debug options
   --enable-debug-threads  Extend debug mode for threads
 
@@ -1426,6 +1436,8 @@ Some influential environment variables:
               linker flags for LIBSSH2_TIMEOUT, overriding pkg-config
   DBUS_CFLAGS C compiler flags for DBUS, overriding pkg-config
   DBUS_LIBS   linker flags for DBUS, overriding pkg-config
+  CURL_CFLAGS C compiler flags for CURL, overriding pkg-config
+  CURL_LIBS   linker flags for CURL, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -2719,7 +2731,6 @@ else
 
 fi
 
-
 if test "$notif" = "yes"; then
 	HDRS_PUBL_SUBDIR_NOTIFICATIONS="src/notifications.h src/notifications_xml.h"
 	HDRS_PRIV_NOTIFICATIONS="src/notifications.h src/notifications_xml.h"
@@ -2735,6 +2746,36 @@ else
 	SRCS_NOTIFICATIONS=""
 	INCLUDE_NOTIFICATIONS="#define DISABLE_NOTIFICATIONS"
 	INCLUDE_NOTIFICATIONS_XML="#define DISABLE_NOTIFICATIONS"
+fi
+
+# Check whether --enable-url was given.
+if test "${enable_url+set}" = set; then :
+  enableval=$enable_url;
+	if test "$enableval" = "no"; then
+		url="no"
+	else
+		url="yes"
+	fi
+
+else
+  # URL Capability is supported by default
+	url="yes"
+
+fi
+
+if test "$url" = "yes"; then
+	HDRS_PUBL_SUBDIR_URL="src/url.h"
+	HDRS_PRIV_URL="src/url_internal.h src/url.h"
+	SRCS_URL="src/url.c"
+	INCLUDE_URL="#include \"libnetconf/url.h\""
+	PROVIDES="$PROVIDES libnetconf-notifications"
+else
+	CONFIGURE_PARAMS="$CONFIGURE_PARAMS --disable-url"
+	CPPFLAGS="$CPPFLAGS -DDISABLE_URL"
+	HDRS_PUBL_SUBDIR_URL=""
+	HDRS_PRIV_URL=""
+	SRCS_URL=""
+	INCLUDE_URL="#define DISABLE_URL"
 fi
 
 
@@ -5345,6 +5386,164 @@ fi
 	LIBS="$LIBS $DBUS_LIBS"
 fi
 
+if test "$url" = "yes"; then
+	### libcurl ###
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CURL" >&5
+$as_echo_n "checking for CURL... " >&6; }
+
+if test -n "$CURL_CFLAGS"; then
+    pkg_cv_CURL_CFLAGS="$CURL_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcurl\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libcurl") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_CURL_CFLAGS=`$PKG_CONFIG --cflags "libcurl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$CURL_LIBS"; then
+    pkg_cv_CURL_LIBS="$CURL_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcurl\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libcurl") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_CURL_LIBS=`$PKG_CONFIG --libs "libcurl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        CURL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcurl" 2>&1`
+        else
+	        CURL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcurl" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$CURL_PKG_ERRORS" >&5
+
+	as_fn_error $? "Package requirements (libcurl) were not met:
+
+$CURL_PKG_ERRORS
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+Alternatively, you may set the environment variables CURL_CFLAGS
+and CURL_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details." "$LINENO" 5
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
+is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+
+Alternatively, you may set the environment variables CURL_CFLAGS
+and CURL_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.
+
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+See \`config.log' for more details" "$LINENO" 5; }
+else
+	CURL_CFLAGS=$pkg_cv_CURL_CFLAGS
+	CURL_LIBS=$pkg_cv_CURL_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl_global_init in -lcurl" >&5
+$as_echo_n "checking for curl_global_init in -lcurl... " >&6; }
+if ${ac_cv_lib_curl_curl_global_init+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lcurl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char curl_global_init ();
+int
+main ()
+{
+return curl_global_init ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_curl_curl_global_init=yes
+else
+  ac_cv_lib_curl_curl_global_init=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_curl_curl_global_init" >&5
+$as_echo "$ac_cv_lib_curl_curl_global_init" >&6; }
+if test "x$ac_cv_lib_curl_curl_global_init" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBCURL 1
+_ACEOF
+
+  LIBS="-lcurl $LIBS"
+
+else
+  as_fn_error $? "Missing libcurl." "$LINENO" 5
+fi
+
+	for ac_header in curl/curl.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "curl/curl.h" "ac_cv_header_curl_curl_h" "$ac_includes_default"
+if test "x$ac_cv_header_curl_curl_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_CURL_CURL_H 1
+_ACEOF
+
+else
+  as_fn_error $? "Missing libcurl headers." "$LINENO" 5
+fi
+
+done
+
+	BUILDREQS="$BUILDREQS libcurl-devel"
+	REQS="$REQS libcurl"
+fi
+
 ###################### Check for configure parameters ##########################
 
 ######################### Checks for header files ##############################
@@ -5959,6 +6158,10 @@ fi
 
 
 ############################### Set output #####################################
+
+
+
+
 
 
 
