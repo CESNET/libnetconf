@@ -163,6 +163,10 @@
  *  - Remove support for the NETCONF Notifications. As a side effect, D-Bus
  *    (libdbus) dependency is also removed.
  *
+ * - `--with-nacm-recovery-uid=<uid>` \anchor configure-nacm-recovery
+ *  - Specify user ID to be used for the identification of the \ref
+ *  nacm-recovery "NACM Recovery Session".
+ *
  * - `--enable-debug`
  *  - Add debugging information for a debugger.
  *
@@ -410,7 +414,7 @@
  * NACM is a transparent subsystem of libnetconf. It is activated using
  * #NC_INIT_NACM flag in the nc_init() function. No other action is required
  * to use NACM in libnetconf. All NACM rules and settings are controlled via
- * standard Netconf operations since NACM subsystem provides implicit datastore
+ * standard NETCONF operations since NACM subsystem provides implicit datastore
  * accessible with the ncds_apply_rpc() function with id parameter set to value
  * #NCDS_INTERNAL_ID (0).
  *
@@ -426,14 +430,16 @@
  *
  *
  * ### Recovery Session ###
+ * \anchor nacm-recovery
  *
  * Recovery session serves to set up initial access rules or to repair a broken
  * access control configuration. If a session is recognized as recovery NACM
  * subsystem is completely bypassed.
  *
  * By default, libnetconf consider all sessions of user with the system UID
- * equal zero as recovery. There is the nacm_recovery_uid() function that can be
- * used to change a value of UID defining the recovery session.
+ * equal zero as recovery. To change this default value to a UID of any user,
+ * use  configure's \ref configure-nacm-recovery "--with-nacm-recovery-uid"
+ * option.
  *
  *
  * ### Initial operation ###
