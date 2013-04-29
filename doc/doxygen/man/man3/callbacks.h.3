@@ -1,4 +1,4 @@
-.TH "src/callbacks.h" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "src/callbacks.h" 3 "Mon Apr 29 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -9,8 +9,6 @@ Functions to set application's callbacks\&.
 .SH SYNOPSIS
 .br
 .PP
-\fC#include <libssh2\&.h>\fP
-.br
 \fC#include 'netconf\&.h'\fP
 .br
 
@@ -25,26 +23,6 @@ Functions to set application's callbacks\&.
 .RI "void \fBnc_callback_error_reply\fP (void(*func)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid))"
 .br
 .RI "\fISet a callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fP"
-.ti -1c
-.RI "void \fBnc_callback_sshauth_interactive\fP (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))"
-.br
-.RI "\fISet a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method\&. \fP"
-.ti -1c
-.RI "void \fBnc_callback_sshauth_password\fP (char *(*func)(const char *username, const char *hostname))"
-.br
-.RI "\fISet a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'\&. \fP"
-.ti -1c
-.RI "void \fBnc_callback_sshauth_passphrase\fP (char *(*func)(const char *username, const char *hostname, const char *priv_key_file))"
-.br
-.RI "\fISet a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'\&. \fP"
-.ti -1c
-.RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, int keytype, const char *fingerprint))"
-.br
-.RI "\fISet a callback function to authorize authenticity of an unknown host\&. \fP"
-.ti -1c
-.RI "void \fBnc_set_keypair_path\fP (const char *private, const char *public)"
-.br
-.RI "\fISet path to a private and a public key file used in case of SSH authentication via a publickey mechanism\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 

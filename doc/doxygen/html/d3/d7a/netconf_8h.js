@@ -137,6 +137,5 @@ var netconf_8h =
     ] ],
     [ "nc_verbosity", "d3/d7a/netconf_8h.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7", null ],
     [ "nc_init", "d3/d7a/netconf_8h.html#ga40e32bd7c1404a76105b426219021cdc", null ],
-    [ "nacm_recovery_uid", "d3/d7a/netconf_8h.html#gac0f92410b2b80bdb0df91f82705ba753", null ],
     [ "nc_close", "d3/d7a/netconf_8h.html#ga85cd52f975436e64f9f128e980b77ed3", null ]
 ];

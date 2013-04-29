@@ -40,10 +40,6 @@
 #ifndef CALLBACKS_H_
 #define CALLBACKS_H_
 
-#ifndef DISABLE_LIBSSH
-#	include <libssh2.h>
-#endif
-
 #include "netconf.h"
 
 /**
@@ -78,59 +74,5 @@ void nc_callback_error_reply(void (*func)(const char* tag,
 		const char* element,
 		const char* ns,
 		const char* sid));
-
-#ifndef DISABLE_LIBSSH
-
-/**
- * @brief Set a callback function for passing user credentials into the libssh2's
- * keyboard-interactive authentication method
- * @ingroup session
- * @param[in] func Callback function to use.
- */
-void nc_callback_sshauth_interactive(void (*func)(const char* name,
-		int name_len,
-		const char* instruction,
-		int instruction_len,
-		int num_prompts,
-		const LIBSSH2_USERAUTH_KBDINT_PROMPT* prompts,
-		LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
-		void** abstract));
-
-/**
- * @brief Set a callback function for passing the user password into the libssh2's
- * password authentication method when connecting to 'hostname' as 'username'.
- * @ingroup session
- * @param[in] func Callback function to use.
- */
-void nc_callback_sshauth_password(char* (*func)(const char* username,
-		const char* hostname));
-
-/**
- * @brief Set a callback function for passing the user password into the libssh2's
- * publickey authentication method when connecting to 'hostname' as 'username'.
- * @ingroup session
- * @param[in] func Callback function to use.
- */
-void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
-		const char* hostname, const char* priv_key_file));
-
-/**
- * @ingroup session
- * @brief Set a callback function to authorize authenticity of an unknown host.
- * @param[in] func Callback function to use.
- */
-void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
-		int keytype, const char* fingerprint));
-
-/**
- * @brief Set path to a private and a public key file used in case of SSH authentication via
- * a publickey mechanism.
- * @ingroup session
- * @param[in] private
- * @param[in] public
- */
-void nc_set_keypair_path(const char* private, const char * public);
-
-#endif /* not DISABLE_LIBSSH */
 
 #endif /* CALLBACKS_H_ */

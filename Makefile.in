@@ -105,10 +105,12 @@ SRCS =  src/callbacks.c \
 	src/transapi/xmldiff.c
 
 HDRS_PUBL_ROOT = headers/libnetconf.h \
+		 headers/libnetconf_ssh.h \
 		 headers/libnetconf_xml.h
 
 HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/callbacks.h \
+	src/callbacks_ssh.h \
 	src/error.h \
 	src/session.h \
 	src/messages.h \
@@ -127,6 +129,7 @@ HDRS_PRIV = src/config.h.in \
 	src/libnetconf.h \
 	src/libnetconf_xml.h \
 	src/callbacks.h \
+	src/callbacks_ssh.h \
 	src/error.h \
 	src/messages.h \
 	src/messages_internal.h \

@@ -207,7 +207,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		case NC_OP_GET:
 		case NC_OP_GETCONFIG:
 		case NC_OP_GETSCHEMA:
-			reply = ncds_apply_rpc2all(config->session, rpc, NULL);
+			reply = ncds_apply_rpc2all(config->session, rpc, 0, NULL);
 			break;
 		default:
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
@@ -223,7 +223,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		case NC_OP_EDITCONFIG:
 		case NC_OP_COMMIT:
 		case NC_OP_DISCARDCHANGES:
-			reply = ncds_apply_rpc2all(config->session, rpc, NULL);
+			reply = ncds_apply_rpc2all(config->session, rpc, 0, NULL);
 			break;
 		default:
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
@@ -231,7 +231,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		}
 	} else {
 		/* process other operations */
-		reply = ncds_apply_rpc2all(config->session, rpc, NULL);
+		reply = ncds_apply_rpc2all(config->session, rpc, 0, NULL);
 	}
 
 	/* create reply */
@@ -314,7 +314,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 			clb_print (NC_VERB_ERROR, "Getting startup configuration failed (nc_rpc_getconfig()).");
 			return (EXIT_FAILURE);
 		}
-		reply = ncds_apply_rpc2all(dummy_session, rpc, NULL);
+		reply = ncds_apply_rpc2all(dummy_session, rpc, 0, NULL);
 		nc_rpc_free (rpc);
 		if (reply == NULL || nc_reply_get_type (reply) != NC_REPLY_DATA) {
 			ncds_free (datastore);
@@ -348,7 +348,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 		}
 		free (running_data);
 
-		reply = ncds_apply_rpc2all(dummy_session, rpc, NULL);
+		reply = ncds_apply_rpc2all(dummy_session, rpc, 0, NULL);
 		nc_rpc_free (rpc);
 		if (reply == NULL || nc_reply_get_type (reply) != NC_REPLY_OK) {
 			ncds_free (datastore);

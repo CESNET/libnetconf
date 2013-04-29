@@ -108,7 +108,6 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 /**
  * @ingroup store
  * @brief Add an augment model to the base model of the datastore
- * @param[in] datastore Datastore structure to be augmented.
  * @param[in] model_path Path to the augment YIN configuration data model.
  * @return 0 on success, non-zero on error.
  */
@@ -124,9 +123,10 @@ int ncds_add_augment(const char* model_path);
  *
  * @param[in] datastore Datastore structure to be configured.
  * @param[in] path File path to the file storing configuration datastores.
- * @return 0 on success
- * 	  -1 Invalid datastore
- *	  -2 Invalid path ((does not exist && can not be created) || insufficient rights)
+ * @return
+ * - 0 on success
+ * - -1 Invalid datastore
+ * - -2 Invalid path ((does not exist && can not be created) || insufficient rights)
  */
 int ncds_file_set_path (struct ncds_ds* datastore, const char* path);
 
@@ -141,10 +141,10 @@ int ncds_file_set_path (struct ncds_ds* datastore, const char* path);
  * @param[in] datastore Datastore to be initiated.
  * @return Positive integer with the datastore ID on success, negative value on
  * error.
- * 	-1 Invalid datastore
- * 	-2 Type-specific initialization failed
- * 	-3 Unsupported datastore type 
- * 	-4 Memory allocation problem
+ * - -1 Invalid datastore
+ * - -2 Type-specific initialization failed
+ * - -3 Unsupported datastore type
+ * - -4 Memory allocation problem
  */
 ncds_id ncds_init(struct ncds_ds* datastore);
 
@@ -197,24 +197,28 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
  * @brief Perform the requested RPC operation on the all datastores controlled
  * by the libnetconf (created by ncdsd_new() and ncds_init()).
  *
- * This function IS NOT thread safety.
+ * **This function IS NOT thread safety.**
  *
  * @param[in] session NETCONF session (a dummy session is acceptable) where the
  * \<rpc\> came from. Capabilities checks are done according to this session.
  * @param[in] rpc NETCONF \<rpc\> message specifying requested operation.
- * @param[out] ids Pointer to a static array containing list of datastore IDs
- * where the RPC was successfully applied. The list is terminated by value a
- * (ncds_id)(-1). The list is rewritten by a following call to
- * ncds_apply_rpc2all().
+ * @param[in] ids_copy Flag for ids array:
+ * - 0 -- ids is returned as a static array which is rewritten by a subsequent
+ * call to ncds_apply_rpc2all().
+ * - 1 -- ids is returned as a dynamically allocated array and caller is
+ * supposed to free it using free().
+ * @param[out] ids Pointer to an array of datastore IDs where the RPC was
+ * successfully applied. The list is terminated by a value (ncds_id)(-1). NULL
+ * is accepted as a valid value when this information is supposed to be ignored.
  * @return NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid
  * parameter session or rpc, else \<rpc-reply\> with \<ok\>, \<data\> or
  * \<rpc-error\> according to the type and the result of the requested
- * operation. When the requested operation is not applicable to aany datastore
+ * operation. When the requested operation is not applicable to any datastore
  * (e.g. the namespace does not match no of the controlled datstores),
  * NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned.
  *
  */
-nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[]);
+nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, int ids_copy, ncds_id* ids[]);
 
 /**
  * @ingroup store
@@ -239,8 +243,8 @@ void ncds_break_locks (const struct nc_session* session);
  * @param[in] id ID of the datastore whose data model we want
  * @param[in] augmented Set 1 to get complete data model including augmentation.
  * In this case, returned string contains modified YIN format - there are
- * <augment> elements inside the model including information about its namespace
- * and module name.
+ * \<augment\> elements inside the model including information about its
+ * namespace and module name.
  *
  * @return String containing YIN model. Caller must free the memory after use.
  */

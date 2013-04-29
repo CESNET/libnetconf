@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Mon Apr 29 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -70,6 +70,14 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
 .ti -1c
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (const struct nc_session *session, const \fBnc_rpc\fP *rpc, int ids_copy, \fBncds_id\fP *ids[])"
+.br
+.RI "\fIPerform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fP"
+.ti -1c
+.RI "int \fBncds_rollback\fP (\fBncds_id\fP id)"
+.br
+.RI "\fIUndo the last change performed on the specified datastore\&. \fP"
+.ti -1c
 .RI "void \fBncds_break_locks\fP (const struct nc_session *session)"
 .br
 .RI "\fIRemove all the locks that the given session is holding\&. \fP"
@@ -110,7 +118,7 @@ Datastore ID\&. Each datastore gets its ID after initialisation (\fBncds_init()\
 .PP
 Enumeration of the supported types of datastores defined by NETCONF\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_DATASTORE_ERROR \fP\fP
@@ -135,7 +143,7 @@ separated working datastore as defined in Candidate Configuration Capability
 .PP
 Datastore implementation types provided by libnetconf\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINCDS_TYPE_EMPTY \fP\fP
@@ -168,8 +176,6 @@ Prepared (not configured) datastore structure\&. To configure the structure, cal
 .PP
 Add an augment model to the base model of the datastore\&. \fBParameters:\fP
 .RS 4
-\fIdatastore\fP Datastore structure to be augmented\&. 
-.br
 \fImodel_path\fP Path to the augment YIN configuration data model\&. 
 .RE
 .PP
@@ -193,7 +199,13 @@ Assign the path of the datastore file into the datastore structure\&. Checks if 
 .PP
 \fBReturns:\fP
 .RS 4
-0 on success -1 Invalid datastore -2 Invalid path ((does not exist && can not be created) || insufficient rights) 
+.IP "\(bu" 2
+0 on success
+.IP "\(bu" 2
+-1 Invalid datastore
+.IP "\(bu" 2
+-2 Invalid path ((does not exist && can not be created) || insufficient rights) 
+.PP
 .RE
 .PP
 
@@ -209,7 +221,16 @@ Activate datastore structure for use\&. The datastore configuration is checked a
 .PP
 \fBReturns:\fP
 .RS 4
-Positive integer with the datastore ID on success, negative value on error\&. -1 Invalid datastore -2 Type-specific initialization failed -3 Unsupported datastore type -4 Memory allocation problem 
+Positive integer with the datastore ID on success, negative value on error\&.
+.IP "\(bu" 2
+-1 Invalid datastore
+.IP "\(bu" 2
+-2 Type-specific initialization failed
+.IP "\(bu" 2
+-3 Unsupported datastore type
+.IP "\(bu" 2
+-4 Memory allocation problem 
+.PP
 .RE
 .PP
 
@@ -249,7 +270,48 @@ Perform the requested RPC operation on the datastore\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-NULL in case of a non-NC_RPC_DATASTORE_* operation type, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to the specified datastore (e\&.g\&. the namespace does not match), NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned\&. 
+NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to the specified datastore (e\&.g\&. the namespace does not match), NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned\&. 
+.RE
+.PP
+
+.SS "\fBnc_reply\fP* ncds_apply_rpc2all (const struct nc_session *session, const \fBnc_rpc\fP *rpc, intids_copy, \fBncds_id\fP *ids[])"
+
+.PP
+Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fBThis function IS NOT thread safety\&.\fP
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsession\fP NETCONF session (a dummy session is acceptable) where the <rpc> came from\&. Capabilities checks are done according to this session\&. 
+.br
+\fIrpc\fP NETCONF <rpc> message specifying requested operation\&. 
+.br
+\fIids_copy\fP Flag for ids array:
+.IP "\(bu" 2
+0 -- ids is returned as a static array which is rewritten by a subsequent call to \fBncds_apply_rpc2all()\fP\&.
+.IP "\(bu" 2
+1 -- ids is returned as a dynamically allocated array and caller is supposed to free it using free()\&. 
+.PP
+.br
+\fIids\fP Pointer to an array of datastore IDs where the RPC was successfully applied\&. The list is terminated by a value (ncds_id)(-1)\&. NULL is accepted as a valid value when this information is supposed to be ignored\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to any datastore (e\&.g\&. the namespace does not match no of the controlled datstores), NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned\&. 
+.RE
+.PP
+
+.SS "int ncds_rollback (\fBncds_id\fPid)"
+
+.PP
+Undo the last change performed on the specified datastore\&. \fBParameters:\fP
+.RS 4
+\fIid\fP ID of the datastore where the rollback will be performed\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success, non-zero on error\&. 
 .RE
 .PP
 

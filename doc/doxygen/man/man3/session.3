@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Mon Apr 29 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -33,26 +33,6 @@ libnetconf's functions for handling NETCONF sessions\&.
 .SS "Functions"
 
 .in +1c
-.ti -1c
-.RI "void \fBnc_callback_sshauth_interactive\fP (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))"
-.br
-.RI "\fISet a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method\&. \fP"
-.ti -1c
-.RI "void \fBnc_callback_sshauth_password\fP (char *(*func)(const char *username, const char *hostname))"
-.br
-.RI "\fISet a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'\&. \fP"
-.ti -1c
-.RI "void \fBnc_callback_sshauth_passphrase\fP (char *(*func)(const char *username, const char *hostname, const char *priv_key_file))"
-.br
-.RI "\fISet a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'\&. \fP"
-.ti -1c
-.RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, int keytype, const char *fingerprint))"
-.br
-.RI "\fISet a callback function to authorize authenticity of an unknown host\&. \fP"
-.ti -1c
-.RI "void \fBnc_set_keypair_path\fP (const char *private, const char *public)"
-.br
-.RI "\fISet path to a private and a public key file used in case of SSH authentication via a publickey mechanism\&. \fP"
 .ti -1c
 .RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)"
 .br
@@ -181,7 +161,7 @@ string)', but I want to be clear from the API, that function returns pointer to 
 .PP
 Enumeration of the possible states of a NETCONF session\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_SESSION_STATUS_ERROR \fP\fP
@@ -206,7 +186,7 @@ session is DUMMY, only holds information, does not provide connection
 .PP
 Enumeration of reasonf of the NETCONF session termination as defined in RFC 6470\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_SESSION_TERM_CLOSED \fP\fP
@@ -231,7 +211,7 @@ terminated for some other reason
 .PP
 Available SSH authentication mechanisms\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_SSH_AUTH_PUBLIC_KEYS \fP\fP
@@ -244,53 +224,6 @@ SSH user authorization via password
 interactive SSH user authorization 
 .SH "Function Documentation"
 .PP 
-.SS "void nc_callback_sshauth_interactive (void(*)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract)func)"
-
-.PP
-Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method\&. \fBParameters:\fP
-.RS 4
-\fIfunc\fP Callback function to use\&. 
-.RE
-.PP
-
-.SS "void nc_callback_sshauth_password (char *(*)(const char *username, const char *hostname)func)"
-
-.PP
-Set a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'\&. \fBParameters:\fP
-.RS 4
-\fIfunc\fP Callback function to use\&. 
-.RE
-.PP
-
-.SS "void nc_callback_sshauth_passphrase (char *(*)(const char *username, const char *hostname, const char *priv_key_file)func)"
-
-.PP
-Set a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'\&. \fBParameters:\fP
-.RS 4
-\fIfunc\fP Callback function to use\&. 
-.RE
-.PP
-
-.SS "void nc_callback_ssh_host_authenticity_check (int(*)(const char *hostname, int keytype, const char *fingerprint)func)"
-
-.PP
-Set a callback function to authorize authenticity of an unknown host\&. \fBParameters:\fP
-.RS 4
-\fIfunc\fP Callback function to use\&. 
-.RE
-.PP
-
-.SS "void nc_set_keypair_path (const char *private, const char *public)"
-
-.PP
-Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism\&. \fBParameters:\fP
-.RS 4
-\fIprivate\fP 
-.br
-\fIpublic\fP 
-.RE
-.PP
-
 .SS "struct nc_session* nc_session_dummy (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)\fC [read]\fP"
 
 .PP
@@ -659,7 +592,7 @@ public keys (1)
 .SS "struct nc_session* nc_session_connect (const char *host, unsigned shortport, const char *username, const struct nc_cpblts *cpblts)\fC [read]\fP"
 
 .PP
-Create NETCONF session to the specified server\&. This function can internally use various callbacks set by the client to perform SSH authentication\&. It selects authentication mechanism from the list provided by the SSH server and based on the preferences set by the client via \fBnc_ssh_pref()\fP\&. Then, appropriate callback function (set by \fBnc_callback_sshauth_password()\fP, \fBnc_callback_sshauth_passphrase()\fP, nc_set_publickey_path() or nc_set_privatekey_path()) is used to perform the authentication\&.
+Create NETCONF session to the specified server\&. This function can internally use various callbacks set by the client to perform SSH authentication\&. It selects authentication mechanism from the list provided by the SSH server and based on the preferences set by the client via \fBnc_ssh_pref()\fP\&. Then, appropriate callback function (set by nc_callback_sshauth_password(), nc_callback_sshauth_passphrase(), nc_set_publickey_path() or nc_set_privatekey_path()) is used to perform the authentication\&.
 .PP
 \fBParameters:\fP
 .RS 4

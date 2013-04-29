@@ -22,11 +22,6 @@ var group__session =
       [ "NC_SSH_AUTH_PASSWORD", "db/d52/group__session.html#ggad9081cbe1edde22e8612e07ba4c3be10a57ebf13ab1802ab10650d4c4c77e7eef", null ],
       [ "NC_SSH_AUTH_INTERACTIVE", "db/d52/group__session.html#ggad9081cbe1edde22e8612e07ba4c3be10a497854e455f81123847c1ba089c40158", null ]
     ] ],
-    [ "nc_callback_sshauth_interactive", "db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb", null ],
-    [ "nc_callback_sshauth_password", "db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb", null ],
-    [ "nc_callback_sshauth_passphrase", "db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726", null ],
-    [ "nc_callback_ssh_host_authenticity_check", "db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a", null ],
-    [ "nc_set_keypair_path", "db/d52/group__session.html#gab5beccc3acd15a5ad6499992e24fbe59", null ],
     [ "nc_session_dummy", "db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851", null ],
     [ "nc_session_monitor", "db/d52/group__session.html#ga023c9c813c59588ab938108f3f063d41", null ],
     [ "nc_session_close", "db/d52/group__session.html#gab55a757ce7a1abc69a9866c96b125abc", null ],
