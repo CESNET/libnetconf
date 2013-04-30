@@ -3,6 +3,7 @@
 
 #include "transapi.h"
 #include "transapi_xml.h"
+#include "yinparser.h"
 
 union transapi_data_clbcks {
 	struct transapi_data_callbacks * data_clbks;

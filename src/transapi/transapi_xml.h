@@ -1,6 +1,10 @@
 #ifndef TRANSAPI_XML_H_
 #define TRANSAPI_XML_H_
 
+#include <libxml/tree.h>
+
+#include "transapi.h"
+
 /* maximal number of input arguments every defined RPC can have */
 #ifndef MAX_RPC_INPUT_ARGS
 #define MAX_RPC_INPUT_ARGS 64
