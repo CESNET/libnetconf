@@ -72,6 +72,7 @@ def generate_callbacks_file(name, paths, model, with_libxml2):
 	content += '* Do NOT alter function signatures or any structure untill you exactly know what you are doing.\n'
 	content += '*/\n\n'
 	# Include header files
+	content += '#include <stdlib.h>\n'
 	if with_libxml2:
 		content += '#include <libxml/tree.h>\n'
 		content += '#include <libnetconf_xml.h>\n'
@@ -146,10 +147,7 @@ def generate_config_callbacks(name, paths, with_libxml2):
 			callbacks += ','
 
 		# single entry per generated function
-		if with_libxml2:
-			callbacks += '\n\t\t{.path = "'+path+'", .func.func_xml = '+func_name+'}'
-		else:
-			callbacks += '\n\t\t{.path = "'+path+'", .func.func = '+func_name+'}'
+		callbacks += '\n\t\t{.path = "'+path+'", .func = '+func_name+'}'
 
 		# generate function with default doxygen documentation
 		content += '/**\n'
@@ -174,7 +172,10 @@ def generate_config_callbacks(name, paths, with_libxml2):
 	content += '* It is used by libnetconf library to decide which callbacks will be run.\n'
 	content += '* DO NOT alter this structure\n'
 	content += '*/\n'
-	content += 'struct transapi_config_callbacks clbks =  {\n'
+	if with_libxml2:
+		content += 'struct transapi_xml_data_callbacks clbks =  {\n'
+	else:
+		content += 'struct transapi_data_callbacks clbks =  {\n'
 	content += '\t.callbacks_count = '+str(funcs_count)+',\n'
 	content += '\t.data = NULL,\n'
 	content += callbacks+'\n\t}\n'
@@ -237,7 +238,10 @@ def generate_rpc_callbacks (doc, with_libxml2):
 	content += '* It is used by libnetconf library to decide which callbacks will be run when RPC arrives.\n'
 	content += '* DO NOT alter this structure\n'
 	content += '*/\n'
-	content += 'struct transapi_rpc_callbacks rpc_clbks = {\n'
+	if with_libxml2:
+		content += 'struct transapi_xml_rpc_callbacks rpc_clbks = {\n'
+	else:
+		content += 'struct transapi_rpc_callbacks rpc_clbks = {\n'
 	content += '\t.callbacks_count = '+str(len(rpcs))+',\n'
 	content += '\t.callbacks = {'+callbacks+'\n\t}'
 	content += '\n};\n\n'
