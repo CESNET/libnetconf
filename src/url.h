@@ -1,4 +1,7 @@
-#include <curl/curl.h>
+
+typedef unsigned char xmlChar;
+
+int nc_url_get_rpc( xmlChar * url );
 
 typedef enum
 {
@@ -11,3 +14,5 @@ typedef enum
 	NC_URL_FILE  =  64,
 	NC_URL_ALL   = 127
 } NC_URL_PROTOCOLS;
+
+int url_tmpfile;

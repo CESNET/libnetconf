@@ -56,6 +56,7 @@
 #include "messages_internal.h"
 #include "with_defaults.h"
 #include "nacm.h"
+#include"url.h"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -905,7 +906,11 @@ static char* nc_rpc_get_editconfig(const nc_rpc* rpc)
 	xmlDocPtr aux_doc;
 	xmlBufferPtr resultbuffer;
 	char * retval = NULL;
-
+#ifndef DISABLE_URL
+	int url_buff_fd;
+	xmlChar * url;
+#endif
+	
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
 		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			ERROR("%s: no config data in the edit-config request", __func__);
@@ -919,25 +924,55 @@ static char* nc_rpc_get_editconfig(const nc_rpc* rpc)
 
 		config = query_result->nodesetval->nodeTab[0];
 		xmlXPathFreeObject(query_result);
-	} else {
+		
+			/* dump the result */
+		resultbuffer = xmlBufferCreate();
+		if (resultbuffer == NULL) {
+			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+			return NULL;
+		}
+		if (config->children == NULL) {
+			/* config is empty */
+			return (strdup(""));
+		}
+		/* by copying nodelist, move all needed namespaces into the editing nodes */
+		aux_doc = xmlNewDoc(BAD_CAST "1.0");
+		xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
+		xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, config->children));
+
+	}
+#ifndef DISABLE_URL	
+	
+	else if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":url", rpc->ctxt)) != NULL) {
+		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			ERROR("%s: no config data in the edit-config request", __func__);
+			xmlXPathFreeObject(query_result);
+			return (NULL);
+		} else if (query_result->nodesetval->nodeNr > 1) {
+			ERROR("%s: multiple config data in the edit-config request", __func__);
+			xmlXPathFreeObject(query_result);
+			return (NULL);
+		}
+
+		url = xmlNodeGetContent( query_result->nodesetval->nodeTab[0] );
+		xmlXPathFreeObject(query_result);
+		
+		if( ( url_buff_fd = nc_url_get_rpc( url ) ) < 0 )
+		{
+			return (NULL);
+		}
+		
+		xmlFree( url );
+		
+		aux_doc = xmlReadFd( url_buff_fd, NULL, NULL, NULL);
+
+	}
+#endif	
+	else {
 		ERROR("%s: config data not found in the edit-config request", __func__);
 		return (NULL);
 	}
 
-	/* dump the result */
-	resultbuffer = xmlBufferCreate();
-	if (resultbuffer == NULL) {
-		ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
-		return NULL;
-	}
-	if (config->children == NULL) {
-		/* config is empty */
-		return (strdup(""));
-	}
-	/* by copying nodelist, move all needed namespaces into the editing nodes */
-	aux_doc = xmlNewDoc(BAD_CAST "1.0");
-	xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
-	xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, config->children));
 	for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
 		xmlNodeDump(resultbuffer, aux_doc, aux_node, 2, 1);
 	}

@@ -1,4 +1,9 @@
 #include "url.h"
+#include <curl/curl.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include "netconf_internal.h"
+
 
 /* define init flags */
 #ifdef CURL_GLOBAL_ACK_EINTR
@@ -29,13 +34,29 @@ int nc_url_is_enabled( NC_URL_PROTOCOLS protocol )
 	return nc_url_allowed_protocols & protocol;
 }
 
-int nc_get_rpc( const char * url, char * buffer )
+int nc_url_get_rpc( xmlChar * url )
 {
 	CURL * curl;
-	
+	CURLcode res;
+	char * curl_buffer[ CURL_ERROR_SIZE ];
+	if( ( url_tmpfile = mkstemp( "url_tmpfileXXXXXX") ) < 0 )
+	{
+		ERROR( "%s: cannot open temporary file", __func__ );
+	}
+	VERB( "curl: getting file from url %s", url );
 	curl_global_init(INIT_FLAGS);
 	curl = curl_easy_init();
 	curl_easy_setopt( curl, CURLOPT_URL, url );
+	curl_easy_setopt( curl, CURLOPT_WRITEDATA, url_tmpfile );
+	curl_easy_setopt( curl, CURLOPT_ERRORBUFFER, curl_buffer );
+	res = curl_easy_perform( curl );
 	
-	
+	if( res != CURLE_OK )
+	{
+		close( url_tmpfile );
+		ERROR( "%s: curl error: %s", __func__, *curl_buffer );
+		return -1;
+	}
+
+	return url_tmpfile;
 }

@@ -2479,6 +2479,10 @@ process_datastore:
 			 * document
 			 */
 			config = nc_rpc_get_config(rpc);
+			if (config == NULL) {
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				break;
+			}
 			if (strcmp(config, "") == 0) {
 				/* config is empty -> ignore rest of magic here,
 				 * go to application of the operation and do
