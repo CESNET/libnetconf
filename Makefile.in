@@ -119,8 +119,7 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/with_defaults.h \
 	src/datastore.h \
 	src/transapi/transapi.h \
-	src/transapi/yinparser.h \
-	src/transapi/xmldiff.h
+	src/transapi/transapi_xml.h 
 		
 HDRS_PUBL = $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR)
 SUBHEADERS_DIR = libnetconf
@@ -145,8 +144,6 @@ HDRS_PRIV = src/config.h.in \
 	src/datastore/edit_config.h \
 	src/datastore/empty/datastore_empty.h \
 	src/datastore/file/datastore_file.h \
-	src/transapi/transapi.h \
-	src/transapi/transapi_xml.h \
 	src/transapi/transapi_internal.h \
 	src/transapi/yinparser.h \
 	src/transapi/xmldiff.h
