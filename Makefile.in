@@ -146,6 +146,8 @@ HDRS_PRIV = src/config.h.in \
 	src/datastore/empty/datastore_empty.h \
 	src/datastore/file/datastore_file.h \
 	src/transapi/transapi.h \
+	src/transapi/transapi_xml.h \
+	src/transapi/transapi_internal.h \
 	src/transapi/yinparser.h \
 	src/transapi/xmldiff.h
 
