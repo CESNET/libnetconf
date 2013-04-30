@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <time.h>
+#include <string.h>
 
 char * status = "off";
 int toasting = 0;
