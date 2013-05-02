@@ -2982,7 +2982,8 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 
 		/* apply RPC on a single datastore */
 		reply = ncds_apply_rpc(ds->datastore->id, session, rpc);
-		if (reply != (void*)(-1)) {
+		if (ids != NULL && reply != (void*)(-1)) {
+			//fprintf (stderr, "ids: %p %p %p %p %p %p %d %d\n", reply, ncds.datastores_ids, ids, ids+id_i, ds, ds->datastore, ds->datastore->id, ids_copy);
 			(*ids)[id_i] = ds->datastore->id;
 			id_i++;
 			(*ids)[id_i] = -1; /* terminating item */
