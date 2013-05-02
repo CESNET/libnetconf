@@ -1745,8 +1745,9 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 		/* if init function is defined */
 		if (datastore->transapi.init.init != NULL) {
 			/* get startup config */
+			err = NULL;
 			if ((startup_config = datastore->func.getconfig(datastore, NULL, NC_DATASTORE_STARTUP, &err)) == NULL) {
-				ERROR ("%s: Failed to get startup config: %s", __func__, err->message);
+				ERROR ("%s: Failed to get startup config: %s", __func__, (err != NULL) ? err->message: "");
 				nc_err_free (err);
 				return -3;
 			}
@@ -1770,8 +1771,9 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 				}
 			}
 			/* store running config */
+			err = NULL;
 			if ((datastore->func.copyconfig(datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, running_config, &err)) != EXIT_SUCCESS) {
-				ERROR ("%s: Failed to store running configuration: %s", __func__, err->message);
+				ERROR ("%s: Failed to store running configuration: %s", __func__, (err != NULL) ? err->message : "");
 				nc_err_free (err);
 				return -3;
 			}
