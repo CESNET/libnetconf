@@ -60,7 +60,7 @@ def copy_template_files(name, template_dir):
 	shutil.copy2(template_dir+'/Makefile.in', 'Makefile.in')
 
 # 
-def generate_callbacks_file(name, paths, model, with_libxml2):
+def generate_callbacks_file(name, paths, model, with_libxml2, without_init, without_close):
 	# Create or rewrite .c file, will be generated
 	outf = open(name+'.c', 'w')
 
@@ -83,6 +83,11 @@ def generate_callbacks_file(name, paths, model, with_libxml2):
 	content += '/* Determines whether XML arguments are passed as (xmlDocPtr) or (char *). */\n'
 	content += 'int with_libxml2 = '+str(with_libxml2)+';\n'
 	content += '\n'
+	# init and close functions 
+	if not (without_init):
+		content += generate_init_callback(with_libxml2)
+	if not (without_close):
+		content += generate_close_callback(with_libxml2)
 	# Add get state data callback
 	content += generate_state_callback(with_libxml2)
 	# Config callbacks part
@@ -95,11 +100,38 @@ def generate_callbacks_file(name, paths, model, with_libxml2):
 	outf.write(content)
 	outf.close()
 
+def generate_init_callback(with_libxml2):
+    content = '';
+    content += '/**\n'
+    content += ' * @brief Initialize plugin after loaded and before any other functions are called.\n'
+    content += ' *\n'
+    content += ' * @param startup_config\tContent of startup datastore.\n'
+    content += ' *\n'
+    content += ' * @return New content of running datastore reflecting current device state.\n'
+    content += ' */\n'
+    if with_libxml2:
+		content += 'xmlDocPtr init(xmlDocPtr startup_config)\n'
+    else:
+		content += 'char * init(char * startup_config)\n'
+    content += '{\n\treturn NULL;\n}\n\n'
+
+    return (content)
+    
+def generate_close_callback(with_libxml2):
+    content = ''
+    content += '/**\n'
+    content += ' * @brief Free all resources allocated on plugin runtime and prepare plugin for removal.\n'
+    content += ' */\n' 
+    content += 'void close(void)\n'
+    content += '{\n\treturn;\n}\n\n'
+    
+    return (content)
+
 def generate_state_callback(with_libxml2):
 	content = ''
 	# function for retrieving state data from device
 	content += '/**\n'
-	content += ' * @brief Retrieve state data from device and return them as serialized XML'
+	content += ' * @brief Retrieve state data from device and return them as serialized XML\n'
 	content += ' *\n'
 	if with_libxml2:
 		content += ' * @param model\tDevice data model. libxml2 xmlDocPtr.\n'
@@ -256,6 +288,8 @@ parser.add_argument('--paths', type=argparse.FileType('r'), help='File holding l
 parser.add_argument('--model', type=libxml2.parseFile, help='File holding data model. Used for generating rpc callbacks.')
 parser.add_argument('--template-dir', default='.', help='Path to the directory with teplate files')
 parser.add_argument('--with-libxml2', action='store_const', const=1, default=0)
+parser.add_argument('--without-init', action='store_const', const=1, default=0, help='Module does not need initialization when loaded.')
+parser.add_argument('--without-close', action='store_const', const=1, default=0, help='Module does not need closing before unloaded.')
 try:
 	args = parser.parse_args()
 
@@ -266,7 +300,7 @@ try:
 	#copy files for autotools (name.spec.in, Makefile.in, ...)
 	copy_template_files(args.name, args.template_dir)
 	#generate callbacks code
-	generate_callbacks_file(args.name, args.paths, args.model, args.with_libxml2)
+	generate_callbacks_file(args.name, args.paths, args.model, args.with_libxml2, args.without_init, args.without_close)
 except IOError as e:
 	print (e[1]+'('+str(e[0])+'): '+e.filename)
 except libxml2.libxmlError as e:
