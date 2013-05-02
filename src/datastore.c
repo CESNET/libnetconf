@@ -1024,7 +1024,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	union transapi_init init_func = {NULL};
 	union transapi_data_clbcks data_clbks = {NULL};
 	union transapi_rpc_clbcks rpc_clbks = {NULL};
-	int *libxml2;
+	int *libxml2, lxml2;
 
 	if (callbacks_path == NULL) {
 		ERROR("%s: missing callbacks path parameter.", __func__);
@@ -1046,6 +1046,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 
 	if ((libxml2 = dlsym(transapi_module, "with_libxml2")) == NULL) {
 		WARN("libxml2_support attribute not found. Guessing not used.");
+		libxml2 = &lxml2;
 		*libxml2 = 0;
 	}
 
