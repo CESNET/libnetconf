@@ -164,24 +164,24 @@ struct transapi_xml_data_callbacks clbks =  {
 
 void * make_toast (void * doneness)
 {
-			pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, NULL);
+	pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, NULL);
 
-			/* pretend toasting */
-			sleep (*(int*)doneness);
+	/* pretend toasting */
+	sleep (*(int*)doneness);
 
-			/* BEGIN of critical section */
-			pthread_mutex_lock (&cancel_mutex);
-			if (cancel) {
-				pthread_mutex_unlock (&cancel_mutex);
-				cancel = 0;
-				return NULL;
-			}
-			/* turn off */
-			toasting = 0;
-			ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>done</toastStatus></toastDone>");
-			/* END of critical section */
-			pthread_mutex_unlock (&cancel_mutex);
-			return NULL;
+	/* BEGIN of critical section */
+	pthread_mutex_lock (&cancel_mutex);
+	if (cancel) {
+		pthread_mutex_unlock (&cancel_mutex);
+		cancel = 0;
+		return NULL;
+	}
+	/* turn off */
+	toasting = 0;
+	ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>done</toastStatus></toastDone>");
+	/* END of critical section */
+	pthread_mutex_unlock (&cancel_mutex);
+	return NULL;
 }
 
 nc_reply * rpc_make_toast (xmlNodePtr input[])
