@@ -1623,6 +1623,91 @@ static int ncds_update_uses_ds(struct ncds_ds* datastore)
 	return (ret);
 }
 
+/*
+ *  1 - remove the node
+ *  0 - do not remove the node
+ * -1 - error
+ */
+static int feature_check(xmlNodePtr node, struct model_feature **features)
+{
+	xmlNodePtr child, next;
+	char* fname;
+	int i;
+
+	if (node == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (-1);
+	}
+	if (features == NULL || features[0] == NULL) {
+		/* nothing to check */
+		return (0);
+	}
+
+	for (child = node->children; child != NULL; child = child->next) {
+		if (child->type == XML_ELEMENT_NODE && xmlStrcmp(child->name, BAD_CAST "if-feature") == 0) {
+			if ((fname = (char*) xmlGetProp (child, BAD_CAST "name")) == NULL) {
+				WARN("Invalid if-feature statement");
+				continue;
+			}
+			/* check if the feature is enabled or not */
+			for (i = 0; features[i] != NULL; i++) {
+				if (strcmp(features[i]->name, fname) == 0) {
+					if (features[i]->enabled == 0) {
+						free(fname);
+						/* remove the node */
+						return (1);
+					}
+					break;
+				}
+			}
+			free(fname);
+			/* ignore any following if-feature statements */
+			break;
+		}
+	}
+
+	/* recursion check */
+	for (child = node->children; child != NULL; child = next) {
+		next = child->next;
+		if (feature_check(child, features) == 1) {
+			/* remove the node */
+			xmlUnlinkNode(child);
+			xmlFreeNode(child);
+		}
+	}
+
+	return (0);
+}
+
+static int ncds_update_features(struct ncds_ds* datastore)
+{
+	xmlNodePtr node, next;
+
+	if (datastore == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	/*
+	 * check that the extended model is already separated from the datastore's
+	 * base model
+	 */
+	if (datastore->ext_model == datastore->data_model->xml) {
+		datastore->ext_model = xmlCopyDoc(datastore->data_model->xml, 1);
+	}
+
+	for (node = xmlDocGetRootElement(datastore->ext_model)->children; node != NULL; node = next) {
+		next = node->next;
+		if (feature_check(node, datastore->data_model->features) == 1) {
+			/* remove the node */
+			xmlUnlinkNode(node);
+			xmlFreeNode(node);
+		}
+	}
+
+	return (EXIT_SUCCESS);
+}
+
 static int ncds_update_augment(struct data_model *augment)
 {
 	xmlXPathObjectPtr imports = NULL, augments = NULL;
@@ -2088,6 +2173,11 @@ int ncds_consolidate(void)
 			ERROR("Augmenting configuration data models failed.");
 			return (EXIT_FAILURE);
 		}
+	}
+
+	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
+		/* remove disabled feature subtrees */
+		ncds_update_features(ds_iter->datastore);
 	}
 
 	return (EXIT_SUCCESS);
