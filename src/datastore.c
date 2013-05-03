@@ -46,6 +46,7 @@
 #include <fcntl.h>
 #include <assert.h>
 #include <dlfcn.h>
+#include <dirent.h>
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
@@ -108,11 +109,15 @@ struct ncds {
 struct ncds_ds *nacm_ds = NULL; /* for NACM subsystem */
 static struct ncds ncds = {NULL, NULL, 0, 0};
 static struct model_list *models_list = NULL;
-static struct model_list *augments_list = NULL;
+static char** models_dirs = NULL;
 
 char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs);
+static struct data_model* get_model(const char* module, const char* version);
+static int ncds_features_parse(struct data_model* model);
+static int ncds_update_uses_groupings(struct data_model* model);
+static int ncds_update_uses_augments(struct data_model* model);
 
 #ifndef DISABLE_NOTIFICATIONS
 char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
@@ -136,7 +141,6 @@ int ncds_sysinit(void)
 	struct ncds_ds *ds;
 	struct ncds_ds_list *dsitem;
 	struct model_list *list_item;
-	xmlXPathObjectPtr result = NULL;
 
 	unsigned char* model[INTERNAL_DS_COUNT] = {
 			ietf_netconf_yin,
@@ -279,23 +283,16 @@ int ncds_sysinit(void)
 		}
 
 		ds->data_model->path = NULL;
+		ncds_features_parse(ds->data_model);
 		ds->data_model->model_tree = NULL;
-		ds->data_model->augments = NULL;
 		ds->ext_model = ds->data_model->xml;
+
+		/* resolve uses statements in groupings and augments definitions */
+		ncds_update_uses_groupings(ds->data_model);
+		ncds_update_uses_augments(ds->data_model);
+
 		ds->last_access = 0;
 		ds->get_state = get_state_funcs[i];
-
-		/* get and process augments of the schema if any */
-		if ((result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":augment", ds->data_model->ctxt)) != NULL ) {
-			if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
-				/* there is some augment definition */
-				ds->data_model->augmenting = 0;
-			} else {
-				/* there is no augment definition */
-				ds->data_model->augmenting = -1;
-			}
-			xmlXPathFreeObject(result);
-		}
 
 		/* update internal model lists */
 		list_item = malloc(sizeof(struct model_list));
@@ -306,18 +303,6 @@ int ncds_sysinit(void)
 		list_item->model = ds->data_model;
 		list_item->next = models_list;
 		models_list = list_item;
-
-		/* update internal augment model lists */
-		if (ds->data_model->augmenting != -1) {
-			list_item = malloc(sizeof(struct model_list));
-			if (list_item == NULL) {
-				ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-				return (EXIT_FAILURE);
-			}
-			list_item->model = ds->data_model;
-			list_item->next = augments_list;
-			augments_list = list_item;
-		}
 
 		/* init */
 		ds->func.init(ds);
@@ -410,7 +395,7 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
-char * ncds_get_model(ncds_id id, int augmented)
+char * ncds_get_model(ncds_id id, int base)
 {
 	struct ncds_ds * datastore = datastores_get_ds(id);
 	xmlBufferPtr buf;
@@ -419,10 +404,10 @@ char * ncds_get_model(ncds_id id, int augmented)
 
 	if (datastore == NULL) {
 		return (NULL);
-	} else if (augmented) {
-		model = datastore->ext_model;
-	} else {
+	} else if (base) {
 		model = datastore->data_model->xml;
+	} else {
+		model = datastore->ext_model;
 	}
 
 	if (model != NULL) {
@@ -492,6 +477,7 @@ static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **ver
 							/* something strange happend ?!? - ignore this value */
 							continue;
 						}
+						/* compare with currently the newest version and remember only when it is newer */
 						for (j = 0; j < l; j++) {
 							if (xml_aux[j] > (*version)[j]) {
 								free (*version);
@@ -1120,7 +1106,6 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 static struct data_model* data_model_new(const char* model_path)
 {
 	struct data_model *model;
-	xmlXPathObjectPtr result = NULL;
 
 	if (model_path == NULL ) {
 		ERROR("%s: invalid parameter.", __func__);
@@ -1171,51 +1156,45 @@ static struct data_model* data_model_new(const char* model_path)
 		return (NULL);
 	}
 	model->path = strdup(model_path);
+	ncds_features_parse(model);
 	model->model_tree = NULL;
-	model->augments = NULL;
 
-	/* get and process augments of the schema if any */
-	if ((result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":augment", model->ctxt)) != NULL ) {
-		if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
-			/* there is some augment definition */
-			model->augmenting = 0;
-		} else {
-			/* there is no augment definition */
-			model->augmenting = -1;
-		}
-		xmlXPathFreeObject(result);
-	}
+	/* resolve uses statements in groupings and augments */
+	ncds_update_uses_groupings(model);
+	ncds_update_uses_augments(model);
 
 	return (model);
 }
 
 static int data_model_enlink(struct data_model* model)
 {
-	struct model_list *list_item;
+	struct model_list *listitem;
 
-	/* update internal model lists */
-	list_item = malloc(sizeof(struct model_list));
-	if (list_item == NULL) {
-		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-		ncds_ds_model_free(model);
+	if (model == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
 		return (EXIT_FAILURE);
 	}
-	list_item->model = model;
-	list_item->next = models_list;
-	models_list = list_item;
 
-	/* update internal augment model lists */
-	if (model->augmenting != -1) {
-		list_item = malloc(sizeof(struct model_list));
-		if (list_item == NULL) {
-			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-			ncds_ds_model_free(model);
+	/* check duplicity */
+	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
+		if (listitem->model &&
+		    strcmp(listitem->model->name, model->name) == 0 &&
+		    strcmp(listitem->model->version, model->version) == 0) {
+			/* module already found */
+			ERROR("Module to enlink already exists.");
 			return (EXIT_FAILURE);
 		}
-		list_item->model = model;
-		list_item->next = augments_list;
-		augments_list = list_item;
 	}
+
+	/* update internal model lists */
+	listitem = malloc(sizeof(struct model_list));
+	if (listitem == NULL) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return (EXIT_FAILURE);
+	}
+	listitem->model = model;
+	listitem->next = models_list;
+	models_list = listitem;
 
 	return (EXIT_SUCCESS);
 }
@@ -1318,9 +1297,8 @@ static char* get_module_with_prefix(const char* prefix, xmlXPathObjectPtr import
 	return (NULL);
 }
 
-static struct data_model *augments_get_model(const char* model_path)
+static struct data_model *read_model(const char* model_path)
 {
-	struct model_list *augment;
 	struct data_model *model;
 
 	if (model_path == NULL) {
@@ -1333,18 +1311,9 @@ static struct data_model *augments_get_model(const char* model_path)
 		return (NULL);
 	}
 
-	/* find duplications */
-	for (augment = augments_list; augment != NULL; augment = augment->next) {
-		if (strcmp(augment->model->name, model->name) == 0 &&
-		    strcmp(augment->model->namespace, model->namespace) == 0) {
-			ncds_ds_model_free(model);
-			return (augment->model);
-		}
-	}
-
 	/* add a new model into the internal lists */
 	if (data_model_enlink(model) != EXIT_SUCCESS) {
-		ERROR("Adding new augment model failed.");
+		ERROR("Adding new data model failed.");
 		ncds_ds_model_free(model);
 		return (NULL);
 	}
@@ -1352,9 +1321,309 @@ static struct data_model *augments_get_model(const char* model_path)
 	return (model);
 }
 
+/**
+ * @param[in] datastore - datastore structure where the other data models will be imported
+ * @param[in] model_ctxt - XPath context of the datastore's extended data model
+ */
+static int import_groupings(const char* module_name, xmlXPathContextPtr model_ctxt)
+{
+	xmlXPathObjectPtr imports, groupings;
+	xmlNodePtr node, node_aux;
+	xmlNsPtr ns;
+	struct data_model* model;
+	char *module, *revision, *prefix, *grouping_name, *aux;
+	int i, j;
+
+	aux = (char*) xmlGetNsProp(xmlDocGetRootElement(model_ctxt->doc), BAD_CAST "import", BAD_CAST "libnetconf");
+	if (aux != NULL && strcmp(aux, "done") == 0) {
+		/* import is already done by previous call */
+		free(aux);
+		return (EXIT_SUCCESS);
+	}
+
+	/* copy grouping definitions from imported models */
+	if ((imports = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":import", model_ctxt)) == NULL ) {
+		ERROR("%s: Evaluating XPath expression failed.", __func__);
+		return (EXIT_FAILURE);
+	}else if (!xmlXPathNodeSetIsEmpty(imports->nodesetval)) {
+		/* we have something to import */
+		for (i = 0; i < imports->nodesetval->nodeNr; i++) {
+			revision = NULL;
+			prefix = NULL;
+			module = (char*) xmlGetProp(imports->nodesetval->nodeTab[i], BAD_CAST "module");
+			if (module == NULL) {
+				WARN("%s: invalid import statement - missing module reference.", __func__);
+				continue;
+			}
+			for (node = imports->nodesetval->nodeTab[i]->children; node != NULL; node = node->next) {
+				if (node->type != XML_ELEMENT_NODE ||
+				    node->ns == NULL || node->ns->href == NULL ||
+				    xmlStrcmp(node->ns->href, BAD_CAST NC_NS_YIN) != 0) {
+					continue;
+				}
+
+				if (prefix == NULL && xmlStrcmp(node->name, BAD_CAST "prefix") == 0) {
+					prefix = (char*) xmlGetProp(node, BAD_CAST "value");
+				} else if (revision == NULL && xmlStrcmp(node->name, BAD_CAST "revision-date") == 0) {
+					revision = (char*) xmlGetProp(node, BAD_CAST "value");
+				}
+
+				if (prefix != NULL && revision != NULL) {
+					break;
+				}
+			}
+			if (prefix == NULL) {
+				ERROR("Invalid YIN module \'%s\' - missing prefix for imported \'%s\' module.", module_name, module);
+				free(revision);
+				free(module);
+				return(EXIT_FAILURE);
+			}
+			model = get_model(module, revision);
+			free(revision);
+			if (model == NULL) {
+				ERROR("Missing YIN module \'%s\' imported from \'%s\'.", module, module_name);
+				free(module);
+				free(prefix);
+				xmlXPathFreeObject(imports);
+				return(EXIT_FAILURE);
+			}
+			free(module);
+
+			/* import grouping definitions */
+			if ((groupings = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":grouping", model->ctxt)) != NULL ) {
+				/* add prefix into the grouping names and add imported grouping into the overall data model */
+				for (j = 0; j < groupings->nodesetval->nodeNr; j++) {
+					node = xmlCopyNode(groupings->nodesetval->nodeTab[j], 1);
+					grouping_name = (char*) xmlGetProp(node, BAD_CAST "name");
+					asprintf(&aux, "%s:%s", prefix, grouping_name);
+					xmlSetProp(node, BAD_CAST "name", BAD_CAST aux);
+					free(aux);
+					free(grouping_name);
+					xmlAddChild(xmlDocGetRootElement(model_ctxt->doc), node);
+				}
+				free(prefix);
+				xmlXPathFreeObject(groupings);
+			} else {
+				ERROR("%s: Evaluating XPath expression failed.", __func__);
+				free(prefix);
+				xmlXPathFreeObject(imports);
+				return (EXIT_FAILURE);
+			}
+		}
+		/* import done - note it */
+		ns = xmlNewNs(xmlDocGetRootElement(model_ctxt->doc), BAD_CAST "libnetconf", BAD_CAST "libnetconf");
+		xmlSetNsProp(xmlDocGetRootElement(model_ctxt->doc), ns, BAD_CAST "import", BAD_CAST "done");
+	}
+	xmlXPathFreeObject(imports);
+
+	/* get all grouping statements in the document and remove unneeded nodes */
+	if ((groupings = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":grouping", model_ctxt)) == NULL ) {
+		ERROR("%s: Evaluating XPath expression failed.", __func__);
+		return (EXIT_FAILURE);
+	}
+	if (!xmlXPathNodeSetIsEmpty(groupings->nodesetval)) {
+		for (j = 0; j < groupings->nodesetval->nodeNr; j++) {
+			/* remove unused data from the groupings */
+			for (node = groupings->nodesetval->nodeTab[j]->children; node != NULL; ) {
+				/*remember the next node */
+				node_aux = node->next;
+
+				if (node->type != XML_ELEMENT_NODE) {
+					xmlUnlinkNode(node);
+					xmlFreeNode(node);
+				} else if (xmlStrcmp(node->name, BAD_CAST "description") == 0||
+				    xmlStrcmp(node->name, BAD_CAST "grouping") == 0 || /* nested groupings are not supported */
+				    xmlStrcmp(node->name, BAD_CAST "reference") == 0 ||
+				    xmlStrcmp(node->name, BAD_CAST "status") == 0 ||
+				    xmlStrcmp(node->name, BAD_CAST "typedef") == 0) {
+					xmlUnlinkNode(node);
+					xmlFreeNode(node);
+				}
+
+				/* process the next node */
+				node = node_aux;
+			}
+		}
+	}
+
+	/* cleanup */
+	xmlXPathFreeObject(groupings);
+
+	return (EXIT_SUCCESS);
+}
+
+static int ncds_update_uses(const char* module_name, xmlXPathContextPtr *model_ctxt, const char* query)
+{
+	xmlXPathObjectPtr uses, groupings = NULL;
+	xmlDocPtr doc;
+	char *grouping_ref, *grouping_name;
+	int i, j, flag;
+
+	if (model_ctxt == NULL || *model_ctxt == NULL || query == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+	doc = (*model_ctxt)->doc;
+
+	/*
+	 * Get all uses statements from the data model
+	 * Do this before import_groupings to get know if there is any uses
+	 * clauses. If not, there is no need to import groupings and we can stop
+	 * the processing
+	 */
+	if ((uses = xmlXPathEvalExpression(BAD_CAST query, *model_ctxt)) != NULL ) {
+		if (xmlXPathNodeSetIsEmpty(uses->nodesetval)) {
+			/* there is no <uses> part so no work is needed */
+			xmlXPathFreeObject(uses);
+			return (EXIT_SUCCESS);
+		}
+	} else {
+		ERROR("%s: Evaluating XPath expression failed.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	/* import grouping definitions from imported data models */
+	if (import_groupings(module_name, *model_ctxt) != 0) {
+		xmlXPathFreeObject(uses);
+		return (EXIT_FAILURE);
+	}
+
+	if ((groupings = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":grouping", *model_ctxt)) == NULL ) {
+		ERROR("%s: Evaluating XPath expression failed.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	/* process all uses statements */
+	while (!xmlXPathNodeSetIsEmpty(uses->nodesetval)) {
+		for(i = 0; i < uses->nodesetval->nodeNr; i++) {
+			grouping_ref = (char*) xmlGetProp(uses->nodesetval->nodeTab[i], BAD_CAST "name");
+			flag = 0;
+			/*
+			 * we can process even references with prefix, because we
+			 * already added imported groupings with changing their name
+			 * to include prefix
+			 */
+			for (j = 0; j < groupings->nodesetval->nodeNr; j++) {
+				grouping_name = (char*) xmlGetProp(groupings->nodesetval->nodeTab[j], BAD_CAST "name");
+				if (strcmp(grouping_name, grouping_ref) == 0) {
+					/* used grouping found */
+
+					/* copy grouping content instead of uses statement */
+					xmlAddChildList(uses->nodesetval->nodeTab[i]->parent, xmlCopyNodeList(groupings->nodesetval->nodeTab[j]->children));
+
+					/* remove uses statement */
+					xmlUnlinkNode(uses->nodesetval->nodeTab[i]);
+					xmlFreeNode(uses->nodesetval->nodeTab[i]);
+					uses->nodesetval->nodeTab[i] = NULL;
+
+					free(grouping_name);
+					flag = 1;
+					break;
+				}
+				free(grouping_name);
+			}
+			free(grouping_ref);
+		}
+
+		if (flag != 0) {
+			/*
+			 * repeat uses processing - it could be in grouping, so we could
+			 * add another not yet processed uses statement
+			 */
+			xmlXPathFreeObject(uses);
+
+			/* remember to update model context */
+			xmlXPathFreeContext(*model_ctxt);
+			if ((*model_ctxt = xmlXPathNewContext(doc)) == NULL) {
+				ERROR("%s: Creating XPath context failed.", __func__);
+				return (EXIT_FAILURE);
+			}
+			if (xmlXPathRegisterNs(*model_ctxt, BAD_CAST NC_NS_YIN_ID, BAD_CAST NC_NS_YIN) != 0) {
+				xmlXPathFreeContext(*model_ctxt);
+				return (EXIT_FAILURE);
+			}
+
+			if ((uses = xmlXPathEvalExpression(BAD_CAST query, *model_ctxt)) == NULL ) {
+				ERROR("%s: Evaluating XPath expression failed.", __func__);
+				return (EXIT_FAILURE);
+			}
+		} else {
+			/* no change since last time */
+			break;
+		}
+	}
+
+	/* cleanup */
+	xmlXPathFreeObject(groupings);
+	xmlXPathFreeObject(uses);
+
+	return (EXIT_SUCCESS);
+}
+
+static int ncds_update_uses_groupings(struct data_model* model)
+{
+	char* query;
+
+	if (model == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	query = "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":grouping//"NC_NS_YIN_ID":uses";
+	return(ncds_update_uses(model->name, &(model->ctxt), query));
+}
+
+static int ncds_update_uses_augments(struct data_model* model)
+{
+	char* query;
+
+	if (model == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	query = "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":augment//"NC_NS_YIN_ID":uses";
+	return(ncds_update_uses(model->name, &(model->ctxt), query));
+}
+
+static int ncds_update_uses_ds(struct ncds_ds* datastore)
+{
+	xmlXPathContextPtr model_ctxt;
+	char* query;
+	int ret;
+
+	if (datastore == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	/*
+	 * check that the extended model is already separated from the datastore's
+	 * base model
+	 */
+	if (datastore->ext_model == datastore->data_model->xml) {
+		datastore->ext_model = xmlCopyDoc(datastore->data_model->xml, 1);
+	}
+
+	/* prepare xpath evaluation context of the model for XPath */
+	if ((model_ctxt = xmlXPathNewContext(datastore->ext_model)) == NULL) {
+		ERROR("%s: Creating XPath context failed.", __func__);
+		return (EXIT_FAILURE);
+	}
+	if (xmlXPathRegisterNs(model_ctxt, BAD_CAST NC_NS_YIN_ID, BAD_CAST NC_NS_YIN) != 0) {
+		xmlXPathFreeContext(model_ctxt);
+		return (EXIT_FAILURE);
+	}
+
+	query = "/"NC_NS_YIN_ID":module//"NC_NS_YIN_ID":uses";
+	ret = ncds_update_uses(datastore->data_model->name, &model_ctxt, query);
+	xmlXPathFreeContext(model_ctxt);
+
+	return (ret);
+}
+
 static int ncds_update_augment(struct data_model *augment)
 {
-	struct model_list *new_listitem = NULL;
 	xmlXPathObjectPtr imports = NULL, augments = NULL;
 	xmlNodePtr node, path_node;
 	xmlNsPtr ns;
@@ -1368,30 +1637,22 @@ static int ncds_update_augment(struct data_model *augment)
 		return (EXIT_FAILURE);
 	}
 
-	/* get all <import> nodes for their prefix specification to be used with augment statement */
-	if ((imports = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":import", augment->ctxt)) != NULL ) {
-#if 0
-		if (xmlXPathNodeSetIsEmpty(imports->nodesetval)) {
-			/* there is no <import> part so it cannot be augment model */
-			ERROR("%s: Invalid model: Missing <import> information.", __func__);
-			goto error_cleanup;
-		}
-#endif
-	} else {
-		ERROR("%s: Evaluating XPath expression failed.", __func__);
-		return (EXIT_FAILURE);
-	}
-
 	/* get all top-level's augment definitions */
 	if ((augments = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":augment", augment->ctxt)) != NULL ) {
 		if (xmlXPathNodeSetIsEmpty(augments->nodesetval)) {
-			/* there is no <augment> part so it cannot be augment model */
-			ERROR("%s: Invalid model: Missing <augment> information.", __func__);
-			goto error_cleanup;
+			/* there is no <augment> part so it cannot be augment model and we have nothing to do */
+			xmlXPathFreeObject(augments);
+			return (EXIT_SUCCESS);
 		}
 	} else {
 		ERROR("%s: Evaluating XPath expression failed.", __func__);
 		goto error_cleanup;
+	}
+
+	/* get all <import> nodes for their prefix specification to be used with augment statement */
+	if ((imports = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":import", augment->ctxt)) == NULL ) {
+		ERROR("%s: Evaluating XPath expression failed.", __func__);
+		return (EXIT_FAILURE);
 	}
 
 	/* process all augments from this model */
@@ -1505,21 +1766,8 @@ static int ncds_update_augment(struct data_model *augment)
 			/* whole path is correct - add the subtree */
 			xmlAddChild(path_node, node = xmlCopyNode(augments->nodesetval->nodeTab[i], 1));
 			ns = xmlNewNs(node, BAD_CAST "libnetconf", BAD_CAST "libnetconf");
-			xmlNewNsProp(node, ns, BAD_CAST "module", BAD_CAST augment->name);
-			xmlNewNsProp(node, ns, BAD_CAST "ns", BAD_CAST augment->namespace);
-
-			/* add model into list of augments of the datastore, if not already done */
-			if (ds->data_model->augments == NULL || ds->data_model->augments->model != augment) {
-				new_listitem = malloc(sizeof(struct model_list));
-				if (new_listitem == NULL) {
-					ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-					goto error_cleanup;
-				}
-				new_listitem->model = augment;
-				new_listitem->next = ds->data_model->augments;
-				ds->data_model->augments = new_listitem;
-				augment->augmenting++;
-			}
+			xmlSetNsProp(node, ns, BAD_CAST "module", BAD_CAST augment->name);
+			xmlSetNsProp(node, ns, BAD_CAST "ns", BAD_CAST augment->namespace);
 		}
 
 		free(module_inpath);
@@ -1538,20 +1786,310 @@ error_cleanup:
 	return (EXIT_FAILURE);
 }
 
-int ncds_add_augment(const char* model_path)
+int ncds_add_models_path(const char* path)
 {
-	struct data_model *augment;
+	static int list_size = 0;
+	static int list_records = 0;
 
+	if (models_dirs == NULL) {
+		/* the list was cleaned */
+		list_size = 0;
+		list_records = 0;
+	}
+
+	if (path == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	if (access(path, R_OK | X_OK) != 0) {
+		ERROR("Configuration data models directory \'%s\' is not accessible (%s).", path, strerror(errno));
+		return (EXIT_FAILURE);
+	}
+
+	list_records++;
+	if (list_records >= list_size) {
+		list_size += 5;
+		models_dirs = realloc(models_dirs, list_size * sizeof(char*));
+		if (models_dirs == NULL) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			return (EXIT_FAILURE);
+		}
+	}
+	models_dirs[list_records-1] = strdup(path);
+	models_dirs[list_records] = NULL; /* terminating NULL byte */
+
+	return (EXIT_SUCCESS);
+}
+
+int ncds_add_model(const char* model_path)
+{
 	if (model_path == NULL) {
 		ERROR("%s: invalid parameter.", __func__);
 		return (EXIT_FAILURE);
 	}
 
-	if ((augment = augments_get_model(model_path)) == NULL) {
+	if (read_model(model_path) == NULL) {
+		return (EXIT_FAILURE);
+	} else {
+		return (EXIT_SUCCESS);
+	}
+}
+
+static struct data_model* get_model(const char* module, const char* version)
+{
+	struct model_list* listitem;
+	struct data_model* model = NULL;
+	int i;
+	char* aux, *aux2;
+	DIR* dir;
+	struct dirent* file;
+
+	if (module == NULL) {
+		return (NULL);
+	}
+
+	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
+		if (listitem->model && strcmp(listitem->model->name, module) == 0) {
+			if (version != NULL) {
+				if (strcmp(listitem->model->version, version) == 0) {
+					/* module found */
+					return (listitem->model);
+				} else {
+					/* module version does not match */
+					continue;
+				}
+			} else {
+				/* module found - specific version is not required */
+				return (listitem->model);
+			}
+		}
+	}
+
+	/* module not found - try to find it in a models directories */
+	if (models_dirs != NULL) {
+		for (i = 0; models_dirs[i]; i++) {
+			aux = NULL;
+			asprintf(&aux, "%s/%s.yin", models_dirs[i], module);
+			if (access(aux, R_OK) == 0) {
+				/* we have found the correct module - probably */
+				model = read_model(aux);
+				if (model != NULL) {
+					if (strcmp(model->name, module) != 0) {
+						/* read module is incorrect */
+						ncds_ds_model_free(model);
+						model = NULL;
+					}
+				}
+			} else {
+				/*
+				 * filename can contain also revision, so try to open
+				 * all suitable files
+				 */
+				free(aux);
+				if (version == NULL) {
+					asprintf(&aux, "%s@", module);
+				} else {
+					asprintf(&aux, "%s@%s", module, version);
+				}
+				dir = opendir(models_dirs[i]);
+				while((file = readdir(dir)) != NULL) {
+					if (strncmp(file->d_name, aux, strlen(aux)) == 0 &&
+					    strcmp(&(file->d_name[strlen(file->d_name)-4]), ".yin") == 0) {
+						asprintf(&aux2, "%s/%s", models_dirs[i], file->d_name);
+						model = read_model(aux2);
+						free(aux2);
+						if (model != NULL) {
+							if (strcmp(model->name, module) != 0) {
+								/* read module is incorrect */
+								ncds_ds_model_free(model);
+								model = NULL;
+							}
+						}
+					}
+				}
+				closedir(dir);
+			}
+			free(aux);
+			if (model != NULL) {
+				return (model);
+			}
+		}
+	}
+
+	return (model);
+}
+
+static int ncds_features_parse(struct data_model* model)
+{
+	xmlXPathObjectPtr features = NULL;
+	int i;
+
+	if (model == NULL || model->ctxt == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
 		return (EXIT_FAILURE);
 	}
 
-	return (ncds_update_augment(augment));
+	/* get all top-level's augment definitions */
+	if ((features = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":feature", model->ctxt)) != NULL ) {
+		if (xmlXPathNodeSetIsEmpty(features->nodesetval)) {
+			/* there is no <feature> part so feature list will be empty */
+			model->features = NULL;
+
+			VERB("%s: no feature definitions found in data model %s.", __func__, model->name);
+			xmlXPathFreeObject(features);
+			return (EXIT_SUCCESS);
+		}
+
+		model->features = malloc((features->nodesetval->nodeNr + 1) * sizeof(struct model_feature*));
+		if (model->features == NULL) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			xmlXPathFreeObject(features);
+			return (EXIT_FAILURE);
+		}
+		for(i = 0; i < features->nodesetval->nodeNr; i++) {
+			model->features[i] = malloc(sizeof(struct model_feature));
+			if (model->features[i] == NULL) {
+				ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+				xmlXPathFreeObject(features);
+				return (EXIT_FAILURE);
+			}
+			if ((model->features[i]->name = (char*) xmlGetProp(features->nodesetval->nodeTab[i], BAD_CAST "name")) == NULL ) {
+				ERROR("xmlGetProp failed (%s:%d).", __FILE__, __LINE__);
+				free(model->features[i]);
+				model->features = NULL;
+				xmlXPathFreeObject(features);
+				return (EXIT_FAILURE);
+			}
+			/* by default, all features are disabled */
+			model->features[i]->enabled = false;
+		}
+		model->features[i] = NULL; /* list terminating NULL byte */
+
+		xmlXPathFreeObject(features);
+	} else {
+		ERROR("%s: Evaluating XPath expression failed.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+int ncds_feature_isenabled(const char* module, const char* feature)
+{
+	struct data_model* model;
+	int i;
+
+	if (module == NULL || feature == NULL) {
+		ERROR("%s: invalid parameter %s", __func__, (module==NULL)?"module":"feature");
+		return (-1);
+	}
+
+	if ((model = get_model(module, NULL)) == NULL) {
+		return (-1);
+	}
+
+	if (model->features != NULL) {
+		for (i = 0; model->features[i] != NULL; i++) {
+			if (strcmp(model->features[i]->name, feature) == 0) {
+				return(model->features[i]->enabled);
+			}
+		}
+	}
+	return (-1);
+}
+
+static inline int _feature_switch(const char* module, const char* feature, int value)
+{
+	struct data_model* model;
+	int i;
+
+	if (module == NULL || feature == NULL) {
+		ERROR("%s: invalid parameter %s", __func__, (module==NULL)?"module":"feature");
+		return (EXIT_FAILURE);
+	}
+
+	if ((model = get_model(module, NULL)) == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (model->features != NULL) {
+		for (i = 0; model->features[i] != NULL; i++) {
+			if (strcmp(model->features[i]->name, feature) == 0) {
+				model->features[i]->enabled = value;
+				return (EXIT_SUCCESS);
+			}
+		}
+	}
+
+	return (EXIT_FAILURE);
+}
+
+int ncds_feature_enable(const char* module, const char* feature)
+{
+	return (_feature_switch(module, feature, 1));
+}
+
+int ncds_feature_disable(const char* module, const char* feature)
+{
+	return (_feature_switch(module, feature, 0));
+}
+
+static inline int _features_switchall(const char* module, int value)
+{
+	struct data_model* model;
+	int i;
+
+	if (module == NULL) {
+		ERROR("%s: invalid parameter", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	if ((model = get_model(module, NULL)) == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (model->features != NULL) {
+		for (i = 0; model->features[i] != NULL; i++) {
+			model->features[i]->enabled = value;
+		}
+	}
+
+	return (EXIT_FAILURE);
+}
+
+int ncds_features_enableall(const char* module)
+{
+	return (_features_switchall(module, 1));
+}
+
+int ncds_features_disableall(const char* module)
+{
+	return (_features_switchall(module, 1));
+}
+
+int ncds_consolidate(void)
+{
+	struct ncds_ds_list *ds_iter;
+	struct model_list* listitem;
+
+	/* process uses statements in the configuration datastores */
+	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
+		if (ds_iter->datastore != NULL && ncds_update_uses_ds(ds_iter->datastore) != EXIT_SUCCESS) {
+			ERROR("Preparing configuration data models failed.");
+			return (EXIT_FAILURE);
+		}
+	}
+
+	/* augment statement processing */
+	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
+		if (listitem->model != NULL && ncds_update_augment(listitem->model) != EXIT_SUCCESS) {
+			ERROR("Augmenting configuration data models failed.");
+			return (EXIT_FAILURE);
+		}
+	}
+
+	return (EXIT_SUCCESS);
 }
 
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
@@ -1614,10 +2152,6 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	ds->last_access = 0;
 	ds->get_state = get_state;
 
-	if (ds->data_model->augmenting != -1) {
-		ncds_update_augment(ds->data_model);
-	}
-
 	/* ds->id is -1 to indicate, that datastore is still not fully configured */
 	ds->id = -1;
 
@@ -1640,38 +2174,12 @@ ncds_id generate_id(void)
 void ncds_ds_model_free(struct data_model* model)
 {
 	int i;
-	struct model_list *listitem, *listnext, *listprev;
+	struct model_list *listitem, *listprev;
 
 	if (model == NULL) {
 		return;
 	}
 
-	/* maintain internal data model lists */
-	if (model->augments != NULL) {
-		for(listitem = model->augments; listitem != NULL; ) {
-			listnext = listitem->next;
-			listitem->model->augmenting--;
-			/* do not free augment data model structure - it stays in internal lists */
-			free(listitem);
-			listitem = listnext;
-		}
-	}
-	/* augments_list */
-	if (model->augmenting != -1) {
-		listprev = NULL;
-		for (listitem = augments_list; listitem != NULL; listitem = listitem->next) {
-			if (listitem->model == model) {
-				if (listprev != NULL) {
-					listprev->next = listitem->next;
-				} else {
-					augments_list = listitem->next;
-				}
-				free(listitem);
-				break;
-			}
-			listprev = listitem;
-		}
-	}
 	/* models_list */
 	listprev = NULL;
 	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
@@ -1709,6 +2217,13 @@ void ncds_ds_model_free(struct data_model* model)
 	}
 	if (model->ctxt != NULL) {
 		xmlXPathFreeContext(model->ctxt);
+	}
+	if (model->features != NULL) {
+		for (i = 0; model->features[i] != NULL ; i++) {
+			free(model->features[i]->name);
+			free(model->features[i]);
+		}
+		free(model->features);
 	}
 	yinmodel_free(model->model_tree);
 
@@ -1803,6 +2318,7 @@ void ncds_cleanall()
 {
 	struct ncds_ds_list *ds_item, *dsnext;
 	struct model_list *listitem, *listnext;
+	int i;
 
 	ds_item = ncds.datastores;
 	while (ds_item != NULL) {
@@ -1811,12 +2327,18 @@ void ncds_cleanall()
 		ds_item = dsnext;
 	}
 
-	for(listitem = models_list; listitem != NULL; ) {
+	for (listitem = models_list; listitem != NULL; ) {
 		listnext = listitem->next;
 		ncds_ds_model_free(listitem->model);
 		/* listitem is actually also freed by ncds_ds_model_free() */
 		listitem = listnext;
 	}
+
+	for (i = 0; models_dirs != NULL && models_dirs[i] != NULL; i++) {
+		free(models_dirs[i]);
+	}
+	free(models_dirs);
+	models_dirs = NULL;
 }
 
 void ncds_free(struct ncds_ds* datastore)
@@ -2272,7 +2794,6 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 {
 	struct nc_err* e = NULL;
 	struct ncds_ds* ds = NULL;
-	struct model_list* ds_augments;
 	struct nc_filter * filter = NULL;
 	char* data = NULL, *config, *model = NULL, *data2, *op_name;
 	xmlDocPtr doc1, doc2, doc_merged = NULL, aux_doc;
@@ -2410,10 +2931,7 @@ process_datastore:
 
 		/* process default values */
 		if (ds && ds->data_model->xml) {
-			ncdflt_default_values(doc_merged, ds->data_model->xml, rpc->with_defaults);
-			for (ds_augments = ds->data_model->augments; ds_augments != NULL; ds_augments = ds_augments->next) {
-				ncdflt_default_values(doc_merged, ds_augments->model->xml, rpc->with_defaults);
-			}
+			ncdflt_default_values(doc_merged, ds->ext_model, rpc->with_defaults);
 		}
 
 		/* NACM */
@@ -2495,10 +3013,7 @@ process_datastore:
 
 		/* process default values */
 		if (ds && ds->data_model->xml) {
-			ncdflt_default_values(doc_merged, ds->data_model->xml, rpc->with_defaults);
-			for (ds_augments = ds->data_model->augments; ds_augments != NULL; ds_augments = ds_augments->next) {
-				ncdflt_default_values(doc_merged, ds_augments->model->xml, rpc->with_defaults);
-			}
+			ncdflt_default_values(doc_merged, ds->ext_model, rpc->with_defaults);
 		}
 
 		/* NACM */
@@ -3094,32 +3609,18 @@ void ncds_break_locks(const struct nc_session* session)
 
 const struct data_model* ncds_get_model_data(const char* namespace)
 {
-	struct ncds_ds_list *ds;
-	struct model_list* augment;
+	struct model_list* listitem;
 	struct data_model *model = NULL;
 
 	if (namespace == NULL) {
 		return (NULL);
 	}
 
-	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
-		model = NULL;
-		if (ds->datastore == NULL) {
-			continue;
-		}
-		if (ds->datastore->data_model->namespace != NULL || strcmp(ds->datastore->data_model->namespace, namespace) == 0) {
+	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
+		if (listitem->model->namespace != NULL && strcmp(listitem->model->namespace, namespace) == 0) {
 			/* namespace matches */
-			model = ds->datastore->data_model;
-		}
-	}
-
-	if (model == NULL) {
-		/* process augment data models */
-		for (augment = augments_list; augment != NULL; augment = augment->next) {
-			if (augment->model->namespace != NULL && strcmp(augment->model->namespace, namespace) == 0) {
-				model = augment->model;
-				break;
-			}
+			model = listitem->model;
+			break;
 		}
 	}
 
@@ -3134,36 +3635,14 @@ const struct data_model* ncds_get_model_data(const char* namespace)
 
 const struct data_model* ncds_get_model_operation(const char* operation, const char* namespace)
 {
-	struct ncds_ds_list *ds;
-	struct model_list* augment;
-	struct data_model *model = NULL;
+	const struct data_model *model = NULL;
 	int i;
 
 	if (operation == NULL || namespace == NULL) {
 		return (NULL);
 	}
 
-	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
-		model = NULL;
-		if (ds->datastore == NULL) {
-			continue;
-		}
-		if (ds->datastore->data_model->namespace != NULL || strcmp(ds->datastore->data_model->namespace, namespace) == 0) {
-			/* namespace matches */
-			model = ds->datastore->data_model;
-		}
-	}
-
-	if (model == NULL) {
-		/* process augment data models */
-		for (augment = augments_list; augment != NULL; augment = augment->next) {
-			if (augment->model->namespace != NULL && strcmp(augment->model->namespace, namespace) == 0) {
-				model = augment->model;
-				break;
-			}
-		}
-	}
-
+	model = ncds_get_model_data(namespace);
 	if (model != NULL && model->rpcs != NULL ) {
 		for (i = 0; model->rpcs[i] != NULL ; i++) {
 			if (strcmp(model->rpcs[i], operation) == 0) {
@@ -3179,36 +3658,14 @@ const struct data_model* ncds_get_model_operation(const char* operation, const c
 
 const struct data_model* ncds_get_model_notification(const char* notification, const char* namespace)
 {
-	struct ncds_ds_list *ds;
-	struct model_list* augment;
-	struct data_model *model = NULL;
+	const struct data_model *model = NULL;
 	int i;
 
 	if (notification == NULL || namespace == NULL) {
 		return (NULL);
 	}
 
-	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
-		model = NULL;
-		if (ds->datastore == NULL) {
-			continue;
-		}
-		if (ds->datastore->data_model->namespace != NULL || strcmp(ds->datastore->data_model->namespace, namespace) == 0) {
-			/* namespace matches */
-			model = ds->datastore->data_model;
-		}
-	}
-
-	if (model == NULL) {
-		/* process augment data models */
-		for (augment = augments_list; augment != NULL; augment = augment->next) {
-			if (augment->model->namespace != NULL && strcmp(augment->model->namespace, namespace) == 0) {
-				model = augment->model;
-				break;
-			}
-		}
-	}
-
+	model = ncds_get_model_data(namespace);
 	if (model != NULL && model->notifs != NULL ) {
 		for (i = 0; model->notifs[i] != NULL ; i++) {
 			if (strcmp(model->notifs[i], notification) == 0) {

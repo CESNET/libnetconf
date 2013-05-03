@@ -2434,8 +2434,6 @@ static int compact_edit_operations(xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
  */
 int edit_config(xmlDocPtr repo, xmlDocPtr edit, struct ncds_ds* ds, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE UNUSED(errop), const struct nacm_rpc* nacm, struct nc_err **error)
 {
-	struct model_list* ds_augment;
-
 	if (repo == NULL || edit == NULL) {
 		return (EXIT_FAILURE);
 	}
@@ -2466,10 +2464,7 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, struct ncds_ds* ds, NC_EDIT_DEFO
 		/* server work in trim basic mode and therefore all default
 		 * values must be removed from the datastore.
 		 */
-		ncdflt_default_values(repo, ds->data_model->xml, NCWD_MODE_TRIM);
-		for (ds_augment = ds->data_model->augments; ds_augment != NULL; ds_augment = ds_augment->next) {
-			ncdflt_default_values(repo, ds_augment->model->xml, NCWD_MODE_TRIM);
-		}
+		ncdflt_default_values(repo, ds->ext_model, NCWD_MODE_TRIM);
 	}
 
 	return EXIT_SUCCESS;
