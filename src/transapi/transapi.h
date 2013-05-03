@@ -1,14 +1,18 @@
 #ifndef _TRANSAPI_H
 #define _TRANSAPI_H
 
-#include "xmldiff.h"
-#include "yinparser.h"
 #include "../libnetconf.h"
 
 /* maximal number of input arguments every defined RPC can have */
 #ifndef MAX_RPC_INPUT_ARGS
 #define MAX_RPC_INPUT_ARGS 64
 #endif
+
+/**
+ * @ingroup transapi
+ * @brief Enum specifying states of node in document
+ */
+typedef enum {XMLDIFF_ERR = -1, XMLDIFF_NONE = 0, XMLDIFF_ADD = 1, XMLDIFF_REM = 2, XMLDIFF_MOD = 4, XMLDIFF_CHAIN = 8} XMLDIFF_OP;
 
 /**
  * @ingroup transapi

@@ -1010,7 +1010,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	union transapi_init init_func = {NULL};
 	union transapi_data_clbcks data_clbks = {NULL};
 	union transapi_rpc_clbcks rpc_clbks = {NULL};
-	int *libxml2;
+	int *libxml2, lxml2;
 
 	if (callbacks_path == NULL) {
 		ERROR("%s: missing callbacks path parameter.", __func__);
@@ -1032,6 +1032,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 
 	if ((libxml2 = dlsym(transapi_module, "with_libxml2")) == NULL) {
 		WARN("libxml2_support attribute not found. Guessing not used.");
+		libxml2 = &lxml2;
 		*libxml2 = 0;
 	}
 
@@ -2259,8 +2260,9 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 		/* if init function is defined */
 		if (datastore->transapi.init.init != NULL) {
 			/* get startup config */
+			err = NULL;
 			if ((startup_config = datastore->func.getconfig(datastore, NULL, NC_DATASTORE_STARTUP, &err)) == NULL) {
-				ERROR ("%s: Failed to get startup config: %s", __func__, err->message);
+				ERROR ("%s: Failed to get startup config: %s", __func__, (err != NULL) ? err->message: "");
 				nc_err_free (err);
 				return -3;
 			}
@@ -2284,8 +2286,9 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 				}
 			}
 			/* store running config */
+			err = NULL;
 			if ((datastore->func.copyconfig(datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, running_config, &err)) != EXIT_SUCCESS) {
-				ERROR ("%s: Failed to store running configuration: %s", __func__, err->message);
+				ERROR ("%s: Failed to store running configuration: %s", __func__, (err != NULL) ? err->message : "");
 				nc_err_free (err);
 				return -3;
 			}
@@ -3287,86 +3290,88 @@ apply_editcopyconfig:
 		/* prepare for case RPC is not supported by this datastore */
 		reply = NCDS_RPC_NOT_APPLICABLE;
 		/* go through all RPC implemented by datastore */
-		if (ds->transapi.libxml2) {
-			transapi_callbacks_count = ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks_count;
-		} else {
-			transapi_callbacks_count = ds->transapi.rpc_clbks.rpc_clbks->callbacks_count;
-		}
-		for (i=0; i<transapi_callbacks_count; i++) {
-			/* find matching rpc and call rpc callback function */
+		if (ds->transapi.module) {
 			if (ds->transapi.libxml2) {
-				rpc_name = ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].name;
+				transapi_callbacks_count = ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks_count;
 			} else {
-				rpc_name = ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].name;
+				transapi_callbacks_count = ds->transapi.rpc_clbks.rpc_clbks->callbacks_count;
 			}
-			if (strcmp(op_name, rpc_name) == 0) {
-				/* create array of input parameters */
+			for (i=0; i<transapi_callbacks_count; i++) {
+				/* find matching rpc and call rpc callback function */
 				if (ds->transapi.libxml2) {
-					op_input_array = calloc(ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_count, sizeof (xmlNodePtr));
+					rpc_name = ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].name;
 				} else {
-					op_input_array = calloc(ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_count, sizeof (char *));
-					buf = xmlBufferCreate();
+					rpc_name = ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].name;
 				}
-				/* get operation node */
-				op_node = ncxml_rpc_get_op_content(rpc);
-				op_input = op_node->children;
-				while (op_input) {
-					if (op_input->type == XML_ELEMENT_NODE) {
-						/* find position of this parameter */
-						pos = 0;
-						if (ds->transapi.libxml2) {
-							while (pos < ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_count) {
-								if (xmlStrEqual(BAD_CAST ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_order[pos], op_input->name)) {
-									/* store copy of node to position */
-									((xmlNodePtr*)op_input_array)[pos] = xmlCopyNode(op_input, 1);
-									break;
+				if (strcmp(op_name, rpc_name) == 0) {
+					/* create array of input parameters */
+					if (ds->transapi.libxml2) {
+						op_input_array = calloc(ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_count, sizeof (xmlNodePtr));
+					} else {
+						op_input_array = calloc(ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_count, sizeof (char *));
+						buf = xmlBufferCreate();
+					}
+					/* get operation node */
+					op_node = ncxml_rpc_get_op_content(rpc);
+					op_input = op_node->children;
+					while (op_input) {
+						if (op_input->type == XML_ELEMENT_NODE) {
+							/* find position of this parameter */
+							pos = 0;
+							if (ds->transapi.libxml2) {
+								while (pos < ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_count) {
+									if (xmlStrEqual(BAD_CAST ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_order[pos], op_input->name)) {
+										/* store copy of node to position */
+										((xmlNodePtr*)op_input_array)[pos] = xmlCopyNode(op_input, 1);
+										break;
+									}
+									pos++;
 								}
-								pos++;
-							}
-							/* input node with this name not found in model defined inputs of RPC */
-							if (pos == ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_count) {
-								WARN("%s: input parameter %s not defined for RPC %s",__func__, op_input->name, ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].name);
-							}
-						} else {
+								/* input node with this name not found in model defined inputs of RPC */
+								if (pos == ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_count) {
+									WARN("%s: input parameter %s not defined for RPC %s",__func__, op_input->name, ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].name);
+								}
+							} else {
 
-							while (pos < ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_count) {
-								if (xmlStrEqual(BAD_CAST ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_order[pos], op_input->name)) {
-									/* store copy of node to position */
-									xmlNodeDump(buf, rpc->doc, op_input, 1, 0);
-									((char**)op_input_array)[pos] = strdup((char*)xmlBufferContent(buf));
-									xmlBufferEmpty(buf);
-									break;
+								while (pos < ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_count) {
+									if (xmlStrEqual(BAD_CAST ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_order[pos], op_input->name)) {
+										/* store copy of node to position */
+										xmlNodeDump(buf, rpc->doc, op_input, 1, 0);
+										((char**)op_input_array)[pos] = strdup((char*)xmlBufferContent(buf));
+										xmlBufferEmpty(buf);
+										break;
+									}
+									pos++;
 								}
-								pos++;
-							}
-							/* input node with this name not found in model defined inputs of RPC */
-							if (pos == ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_count) {
-								WARN("%s: input parameter %s not defined for RPC %s",__func__, op_input->name, ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].name);
+								/* input node with this name not found in model defined inputs of RPC */
+								if (pos == ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_count) {
+									WARN("%s: input parameter %s not defined for RPC %s",__func__, op_input->name, ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].name);
+								}
 							}
 						}
+						op_input = op_input->next;
 					}
-					op_input = op_input->next;
-				}
 
-				/* call RPC callback function */
-				VERB("Calling RPC function\n");
-				if (ds->transapi.libxml2) {
-					reply = ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].func(op_input_array);
-					/* clean array */
-					for (j=0; j<ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_count; j++) {
-						xmlFreeNode(((xmlNodePtr*)op_input_array)[j]);
+					/* call RPC callback function */
+					VERB("Calling RPC function\n");
+					if (ds->transapi.libxml2) {
+						reply = ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].func(op_input_array);
+						/* clean array */
+						for (j=0; j<ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_count; j++) {
+							xmlFreeNode(((xmlNodePtr*)op_input_array)[j]);
+						}
+					} else {
+						xmlBufferFree(buf);
+						reply = ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].func(op_input_array);
+						/* clean array */
+						for (j=0; j<ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_count; j++) {
+							free(((char**)op_input_array)[j]);
+						}
 					}
-				} else {
-					xmlBufferFree(buf);
-					reply = ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].func(op_input_array);
-					/* clean array */
-					for (j=0; j<ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_count; j++) {
-						free(((char**)op_input_array)[j]);
-					}
+					free (op_input_array);
+					/* end RPC search, there can be only one RPC with name == op_name */
+					break;
 				}
-				free (op_input_array);
-				/* end RPC search, there can be only one RPC with name == op_name */
-				break;
 			}
 		}
 		free(op_name);
@@ -3497,7 +3502,8 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 
 		/* apply RPC on a single datastore */
 		reply = ncds_apply_rpc(ds->datastore->id, session, rpc);
-		if (reply != (void*)(-1)) {
+		if (ids != NULL && reply != (void*)(-1)) {
+			//fprintf (stderr, "ids: %p %p %p %p %p %p %d %d\n", reply, ncds.datastores_ids, ids, ids+id_i, ds, ds->datastore, ds->datastore->id, ids_copy);
 			(*ids)[id_i] = ds->datastore->id;
 			id_i++;
 			(*ids)[id_i] = -1; /* terminating item */
