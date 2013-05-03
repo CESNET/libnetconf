@@ -1,43 +1,193 @@
-.TH "transapi" 3 "Mon Apr 29 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "Transaction API" 3 "Fri May 3 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
-transapi \- 
-.SH SYNOPSIS
-.br
+Transaction API \- 
 .PP
-.PP
-\fC#include <transapi\&.h>\fP
-.SS "Data Fields"
+libnetconf's implementation of transaction-based partial device reconfiguration\&.  
+
+.SS "Data Structures"
 
 .in +1c
 .ti -1c
-.RI "void * \fBmodule\fP"
+.RI "struct \fBtransapi_data_callbacks\fP"
 .br
-.RI "\fILoaded shared library with transapi callbacks\&. \fP"
+.RI "\fIStructure binding location in configuration XML data and function callback applying changes\&. \fP"
 .ti -1c
-.RI "struct \fBtransapi_data_callbacks\fP * \fBdata_clbks\fP"
+.RI "struct \fBtransapi_rpc_callbacks\fP"
 .br
-.RI "\fITransapi callback mapping structure\&. \fP"
+.RI "\fIStructure binding location in configuration XML data and function callback processing RPC message\&. \fP"
 .ti -1c
-.RI "struct \fBtransapi_rpc_callbacks\fP * \fBrpc_clbks\fP"
+.RI "struct \fBmodel_tree\fP"
 .br
-.RI "\fITransapi rpc callbacks mapping structure\&. \fP"
+.RI "\fIstructure holding information about used data model in YIN format \fP"
+.ti -1c
+.RI "struct \fBxmldiff_entry\fP"
+.br
+.RI "\fIstructure for single diff entry \fP"
+.ti -1c
+.RI "struct \fBxmldiff\fP"
+.br
+.RI "\fIstructure holding all differencies found in compared files \fP"
 .in -1c
-.SH "Field Documentation"
+.SS "Enumerations"
+
+.in +1c
+.ti -1c
+.RI "enum \fBXMLDIFF_OP\fP { \fBXMLDIFF_ERR\fP = -1, \fBXMLDIFF_NONE\fP = 0, \fBXMLDIFF_ADD\fP = 1, \fBXMLDIFF_REM\fP = 2, \fBXMLDIFF_MOD\fP = 4, \fBXMLDIFF_CHAIN\fP = 8 }"
+.br
+.RI "\fIEnum specifying states of node in document\&. \fP"
+.ti -1c
+.RI "enum \fBYIN_TYPE\fP { \fBYIN_TYPE_MODULE\fP, \fBYIN_TYPE_CONTAINER\fP, \fBYIN_TYPE_LEAF\fP, \fBYIN_TYPE_LIST\fP, \fBYIN_TYPE_LEAFLIST\fP, \fBYIN_TYPE_CHOICE\fP, \fBYIN_TYPE_ANYXML\fP, \fBYIN_TYPE_GROUPING\fP, \fBYIN_TYPE_IMPORT\fP, \fBYIN_TYPE_AUGMENT\fP }"
+.br
+.RI "\fIenum type for yin/yang constructs \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "struct ncds_ds * \fBncds_new_transapi\fP (\fBNCDS_TYPE\fP type, const char *model_path, const char *callbacks_path)"
+.br
+.RI "\fICreate new datastore structure with transaction API support\&. \fP"
+.ti -1c
+.RI "struct \fBmodel_tree\fP * \fByinmodel_parse\fP (xmlDocPtr model_doc)"
+.br
+.RI "\fIParse YIN data model\&. \fP"
+.ti -1c
+.RI "void \fByinmodel_free\fP (struct \fBmodel_tree\fP *yin)"
+.br
+.RI "\fIDestroy yinmodel structure and free allocated memory\&. \fP"
+.ti -1c
+.RI "void \fBxmldiff_free\fP (struct \fBxmldiff\fP *diff)"
+.br
+.RI "\fIDestroy and free whole xmldiff structure\&. \fP"
+.ti -1c
+.RI "struct \fBxmldiff\fP * \fBxmldiff_diff\fP (xmlDocPtr old, xmlDocPtr new, struct \fBmodel_tree\fP *model)"
+.br
+.RI "\fIModule top level function\&. \fP"
+.in -1c
+.SH "Detailed Description"
 .PP 
-.SS "void* module"
+libnetconf's implementation of transaction-based partial device reconfiguration\&. 
+
+
+.SH "Enumeration Type Documentation"
+.PP 
+.SS "enum \fBXMLDIFF_OP\fP"
 
 .PP
-Loaded shared library with transapi callbacks\&. 
-.SS "struct \fBtransapi_data_callbacks\fP* data_clbks"
+Enum specifying states of node in document\&. 
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fIXMLDIFF_ERR \fP\fP
+.TP
+\fB\fIXMLDIFF_NONE \fP\fP
+.TP
+\fB\fIXMLDIFF_ADD \fP\fP
+.TP
+\fB\fIXMLDIFF_REM \fP\fP
+.TP
+\fB\fIXMLDIFF_MOD \fP\fP
+.TP
+\fB\fIXMLDIFF_CHAIN \fP\fP
+.SS "enum \fBYIN_TYPE\fP"
 
 .PP
-Transapi callback mapping structure\&. 
-.SS "struct \fBtransapi_rpc_callbacks\fP* rpc_clbks"
+enum type for yin/yang constructs 
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fIYIN_TYPE_MODULE \fP\fP
+.TP
+\fB\fIYIN_TYPE_CONTAINER \fP\fP
+.TP
+\fB\fIYIN_TYPE_LEAF \fP\fP
+.TP
+\fB\fIYIN_TYPE_LIST \fP\fP
+.TP
+\fB\fIYIN_TYPE_LEAFLIST \fP\fP
+.TP
+\fB\fIYIN_TYPE_CHOICE \fP\fP
+.TP
+\fB\fIYIN_TYPE_ANYXML \fP\fP
+.TP
+\fB\fIYIN_TYPE_GROUPING \fP\fP
+.TP
+\fB\fIYIN_TYPE_IMPORT \fP\fP
+.TP
+\fB\fIYIN_TYPE_AUGMENT \fP\fP
+.SH "Function Documentation"
+.PP 
+.SS "struct ncds_ds* ncds_new_transapi (\fBNCDS_TYPE\fPtype, const char *model_path, const char *callbacks_path)\fC [read]\fP"
 
 .PP
-Transapi rpc callbacks mapping structure\&. 
+Create new datastore structure with transaction API support\&. \fBParameters:\fP
+.RS 4
+\fItype\fP Datastore implementation type for the new datastore structure\&. 
+.br
+\fImodel_path\fP Path to the YIN configuration data model\&. 
+.br
+\fIcallbacks_path\fP Path to shared library with callbacks and other functions for transaction API\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Prepared (not configured) datastore structure\&. To configure the structure, caller must use the parameter setters of the specific datastore implementation type\&. Then, the datastore can be initiated (\fBncds_init()\fP) and used to access the configuration data\&. 
+.RE
+.PP
+
+.SS "struct \fBmodel_tree\fP* yinmodel_parse (xmlDocPtrmodel_doc)\fC [read]\fP"
+
+.PP
+Parse YIN data model\&. \fBParameters:\fP
+.RS 4
+\fImodel_doc\fP Data model in YIN format\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+yinmodel structure or NULL 
+.RE
+.PP
+
+.SS "void yinmodel_free (struct \fBmodel_tree\fP *yin)"
+
+.PP
+Destroy yinmodel structure and free allocated memory\&. \fBParameters:\fP
+.RS 4
+\fIyin\fP Structure to be freed\&. 
+.RE
+.PP
+
+.SS "void xmldiff_free (struct \fBxmldiff\fP *diff)"
+
+.PP
+Destroy and free whole xmldiff structure\&. \fBParameters:\fP
+.RS 4
+\fIdiff\fP pointer to xmldiff structure 
+.RE
+.PP
+
+.SS "struct \fBxmldiff\fP* xmldiff_diff (xmlDocPtrold, xmlDocPtrnew, struct \fBmodel_tree\fP *model)\fC [read]\fP"
+
+.PP
+Module top level function\&. \fBParameters:\fP
+.RS 4
+\fIold\fP old version of XML document 
+.br
+\fInew\fP new version of XML document 
+.br
+\fImodel\fP data model in YANG format
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+xmldiff structure holding all differences between XML documents or NULL 
+.RE
+.PP
 
 .SH "Author"
 .PP 

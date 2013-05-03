@@ -16,7 +16,6 @@ var group__store =
       [ "NCDS_TYPE_FILE", "db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629", null ]
     ] ],
     [ "ncds_new", "db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6", null ],
-    [ "ncds_add_augment", "db/d67/group__store.html#ga51e4497af776be124f937c9b840cf19e", null ],
     [ "ncds_file_set_path", "db/d67/group__store.html#gad48955dab497b1258d80019e542acb9b", null ],
     [ "ncds_init", "db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff", null ],
     [ "ncds_free", "db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754", null ],
@@ -25,6 +24,12 @@ var group__store =
     [ "ncds_apply_rpc2all", "db/d67/group__store.html#gacd81a8d7386f28d930a806723d2f6eb7", null ],
     [ "ncds_rollback", "db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e", null ],
     [ "ncds_break_locks", "db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a", null ],
-    [ "ncds_get_model", "db/d67/group__store.html#gafb5d9b48dd33ad0e9854cf935d11a66a", null ],
-    [ "ncds_get_model_path", "db/d67/group__store.html#ga5ec9fea534bfd146019b7efb882648be", null ]
+    [ "ncds_get_model", "db/d67/group__store.html#ga414b75711e49e0e1eea10ae15c14287e", null ],
+    [ "ncds_get_model_path", "db/d67/group__store.html#ga5ec9fea534bfd146019b7efb882648be", null ],
+    [ "ncds_add_models_path", "db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b", null ],
+    [ "ncds_add_model", "db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47", null ],
+    [ "ncds_feature_enable", "db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2", null ],
+    [ "ncds_feature_disable", "db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0", null ],
+    [ "ncds_features_enableall", "db/d67/group__store.html#ga3c65e57d684b25885d3ccbeb84e9f4d9", null ],
+    [ "ncds_features_disableall", "db/d67/group__store.html#ga017491407c8d2c6f596d17e64eb10d84", null ]
 ];

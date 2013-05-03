@@ -1,4 +1,4 @@
-.TH "src/transapi/xmldiff.h" 3 "Mon Apr 29 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "src/transapi/xmldiff.h" 3 "Fri May 3 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -9,6 +9,8 @@ src/transapi/xmldiff.h \-
 \fC#include <libxml/tree\&.h>\fP
 .br
 \fC#include 'yinparser\&.h'\fP
+.br
+\fC#include 'transapi\&.h'\fP
 .br
 
 .SS "Data Structures"
@@ -22,14 +24,6 @@ src/transapi/xmldiff.h \-
 .RI "struct \fBxmldiff\fP"
 .br
 .RI "\fIstructure holding all differencies found in compared files \fP"
-.in -1c
-.SS "Enumerations"
-
-.in +1c
-.ti -1c
-.RI "enum \fBXMLDIFF_OP\fP { \fBXMLDIFF_ERR\fP = -1, \fBXMLDIFF_NONE\fP = 0, \fBXMLDIFF_ADD\fP = 1, \fBXMLDIFF_REM\fP = 2, \fBXMLDIFF_MOD\fP = 4, \fBXMLDIFF_CHAIN\fP = 8 }"
-.br
-.RI "\fIEnum specifying states of node in document\&. \fP"
 .in -1c
 .SS "Functions"
 
