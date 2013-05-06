@@ -1,4 +1,4 @@
-.TH "src/ssh.h" 3 "Mon Apr 29 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "src/ssh.h" 3 "Mon May 6 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -31,6 +31,10 @@ Functions to connect to NETCONF server via SSH2\&.
 .RI "struct nc_session * \fBnc_session_connect\fP (const char *host, unsigned short port, const char *username, const struct nc_cpblts *cpblts)"
 .br
 .RI "\fICreate NETCONF session to the specified server\&. \fP"
+.ti -1c
+.RI "struct nc_session * \fBnc_session_connect_channel\fP (struct nc_session *session, const struct nc_cpblts *cpblts)"
+.br
+.RI "\fICreate another NETCONF session using already established SSH session\&. No authentication is needed in this case\&. \fP"
 .ti -1c
 .RI "struct nc_session * \fBnc_session_accept\fP (const struct nc_cpblts *capabilities)"
 .br

@@ -68,6 +68,7 @@ var searchData=
   ['nc_5fsession_5faccept',['nc_session_accept',['../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707',1,'ssh.h']]],
   ['nc_5fsession_5fclose',['nc_session_close',['../db/d52/group__session.html#gab55a757ce7a1abc69a9866c96b125abc',1,'session.h']]],
   ['nc_5fsession_5fconnect',['nc_session_connect',['../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23',1,'ssh.h']]],
+  ['nc_5fsession_5fconnect_5fchannel',['nc_session_connect_channel',['../db/d52/group__session.html#ga7d9e0f17bb4ca5b35c8343db59955060',1,'ssh.h']]],
   ['nc_5fsession_5fdummy',['nc_session_dummy',['../db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851',1,'session.h']]],
   ['nc_5fsession_5ffree',['nc_session_free',['../db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee',1,'session.h']]],
   ['nc_5fsession_5fget_5fcpblts',['nc_session_get_cpblts',['../db/d52/group__session.html#ga09bdf1d9eacf9f53bf3f05557ffe0821',1,'session.h']]],

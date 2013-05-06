@@ -1,7 +1,7 @@
 var searchData=
 [
   ['netconf_20access_20control_20module_20_28nacm_29',['NETCONF Access Control Module (NACM)',['../dd/d59/nacm.html',1,'']]],
-  ['name',['name',['../d0/df8/structtransapi__rpc__callbacks.html#a5ac083a645d964373f022d03df4849c8',1,'transapi_rpc_callbacks::name()'],['../dd/de6/structmodel__tree.html#a5ac083a645d964373f022d03df4849c8',1,'model_tree::name()']]],
+  ['name',['name',['../d0/df8/structtransapi__rpc__callbacks.html#a5ac083a645d964373f022d03df4849c8',1,'transapi_rpc_callbacks::name()'],['../d6/d8c/structtransapi__xml__rpc__callbacks.html#a5ac083a645d964373f022d03df4849c8',1,'transapi_xml_rpc_callbacks::name()'],['../dd/de6/structmodel__tree.html#a5ac083a645d964373f022d03df4849c8',1,'model_tree::name()']]],
   ['nc_5fcallback_5ferror_5freply',['nc_callback_error_reply',['../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80',1,'callbacks.h']]],
   ['nc_5fcallback_5fprint',['nc_callback_print',['../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7',1,'callbacks.h']]],
   ['nc_5fcap_5fattr',['NC_CAP_ATTR',['../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914d',1,'netconf.h']]],
@@ -137,7 +137,7 @@ var searchData=
   ['nc_5freply_5fget_5ftype',['nc_reply_get_type',['../d0/de2/group__reply.html#gab12cdef82337060c425348dada7fe983',1,'messages.h']]],
   ['nc_5freply_5fhello',['NC_REPLY_HELLO',['../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29a6d190ad4c3f0ecbaab7956227e606d27',1,'netconf.h']]],
   ['nc_5freply_5fmerge',['nc_reply_merge',['../d0/de2/group__reply.html#gab1f7b7f9be8153758e5b047fe70fd48d',1,'messages.h']]],
-  ['nc_5freply_5fok',['NC_REPLY_OK',['../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29ac65f86e9af3940dc910231afd07a70cf',1,'NC_REPLY_OK():&#160;netconf.h'],['../d0/de2/group__reply.html#ga4789f8372e5f2676236ddb0e6eeb8bb4',1,'nc_reply_ok():&#160;messages.h']]],
+  ['nc_5freply_5fok',['nc_reply_ok',['../d0/de2/group__reply.html#ga4789f8372e5f2676236ddb0e6eeb8bb4',1,'nc_reply_ok():&#160;messages.h'],['../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29ac65f86e9af3940dc910231afd07a70cf',1,'NC_REPLY_OK():&#160;netconf.h']]],
   ['nc_5freply_5ftype',['NC_REPLY_TYPE',['../d0/de2/group__reply.html#gad31ee5df47d5671ebdf1b06f785e6c29',1,'netconf.h']]],
   ['nc_5freply_5funknown',['NC_REPLY_UNKNOWN',['../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa4e871d4592173b6fff7a8d4815c8e29',1,'netconf.h']]],
   ['nc_5frpc',['nc_rpc',['../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262',1,'netconf.h']]],
@@ -181,6 +181,7 @@ var searchData=
   ['nc_5fsession_5faccept',['nc_session_accept',['../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707',1,'ssh.h']]],
   ['nc_5fsession_5fclose',['nc_session_close',['../db/d52/group__session.html#gab55a757ce7a1abc69a9866c96b125abc',1,'session.h']]],
   ['nc_5fsession_5fconnect',['nc_session_connect',['../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23',1,'ssh.h']]],
+  ['nc_5fsession_5fconnect_5fchannel',['nc_session_connect_channel',['../db/d52/group__session.html#ga7d9e0f17bb4ca5b35c8343db59955060',1,'ssh.h']]],
   ['nc_5fsession_5fdummy',['nc_session_dummy',['../db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851',1,'session.h']]],
   ['nc_5fsession_5ffree',['nc_session_free',['../db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee',1,'session.h']]],
   ['nc_5fsession_5fget_5fcpblts',['nc_session_get_cpblts',['../db/d52/group__session.html#ga09bdf1d9eacf9f53bf3f05557ffe0821',1,'session.h']]],

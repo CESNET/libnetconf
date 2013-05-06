@@ -1,0 +1,46 @@
+.TH "src/transapi/transapi_internal.h" 3 "Mon May 6 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+src/transapi/transapi_internal.h \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'transapi\&.h'\fP
+.br
+\fC#include 'transapi_xml\&.h'\fP
+.br
+\fC#include 'yinparser\&.h'\fP
+.br
+
+.SS "Data Structures"
+
+.in +1c
+.ti -1c
+.RI "union \fBtransapi_data_clbcks\fP"
+.br
+.ti -1c
+.RI "union \fBtransapi_rpc_clbcks\fP"
+.br
+.ti -1c
+.RI "union \fBtransapi_init\fP"
+.br
+.ti -1c
+.RI "struct \fBtransapi\fP"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "int \fBtransapi_running_changed\fP (struct \fBtransapi_data_callbacks\fP *c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct \fBmodel_tree\fP *model)"
+.br
+.RI "\fITop level function of transaction API\&. Finds differences between old_doc and new_doc and calls specified callbacks\&. \fP"
+.ti -1c
+.RI "int \fBtransapi_xml_running_changed\fP (struct \fBtransapi_xml_data_callbacks\fP *c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct \fBmodel_tree\fP *model)"
+.br
+.RI "\fISame functionality as \fBtransapi_running_changed()\fP\&. Using libxml2 structures for callbacks parameters\&. \fP"
+.in -1c
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.

@@ -1,4 +1,4 @@
-.TH "transapi_data_callbacks" 3 "Mon Apr 29 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "transapi_data_callbacks" 3 "Mon May 6 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -27,7 +27,7 @@ Structure binding location in configuration XML data and function callback apply
 .RI "   char * \fBpath\fP"
 .br
 .ti -1c
-.RI "   int(* \fBfunc\fP )(\fBXMLDIFF_OP\fP, xmlNodePtr, void **)"
+.RI "   int(* \fBfunc\fP )(\fBXMLDIFF_OP\fP, char *, void **)"
 .br
 .ti -1c
 .RI "} \fBcallbacks\fP []"
@@ -44,7 +44,7 @@ Structure binding location in configuration XML data and function callback apply
 
 .SS "char* path"
 
-.SS "int(* func)(\fBXMLDIFF_OP\fP, xmlNodePtr, void **)"
+.SS "int(* func)(\fBXMLDIFF_OP\fP, char *, void **)"
 
 .SS "struct { \&.\&.\&. }   callbacks[]"
 

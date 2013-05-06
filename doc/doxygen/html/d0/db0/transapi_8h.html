@@ -107,14 +107,12 @@ $(document).ready(function(){initNavTree('d0/db0/transapi_8h.html','../../');});
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#enum-members">Enumerations</a>  </div>
   <div class="headertitle">
 <div class="title">transapi.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="../../d7/d18/xmldiff_8h_source.html">xmldiff.h</a>&quot;</code><br/>
-<code>#include &quot;<a class="el" href="../../dd/d84/yinparser_8h_source.html">yinparser.h</a>&quot;</code><br/>
-<code>#include &quot;<a class="el" href="../../d1/d87/libnetconf_8h_source.html">../libnetconf.h</a>&quot;</code><br/>
+<div class="textblock"><code>#include &quot;<a class="el" href="../../d1/d87/libnetconf_8h_source.html">../libnetconf.h</a>&quot;</code><br/>
 </div>
 <p><a href="../../d0/db0/transapi_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -124,15 +122,23 @@ Data Structures</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure binding location in configuration XML data and function callback applying changes.  <a href="../../d6/dcb/structtransapi__data__callbacks.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/df8/structtransapi__rpc__callbacks.html">transapi_rpc_callbacks</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/dc0/structtransapi.html">transapi</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure binding location in configuration XML data and function callback processing RPC message.  <a href="../../d0/df8/structtransapi__rpc__callbacks.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:ga84af389e5c1106cd9cfbde1c7ca001be"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga84af389e5c1106cd9cfbde1c7ca001be">transapi_running_changed</a> (struct <a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html">transapi_data_callbacks</a> *c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *model)</td></tr>
-<tr class="memdesc:ga84af389e5c1106cd9cfbde1c7ca001be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Top level function of transaction API. Finds differences between old_doc and new_doc and calls specified callbacks.  <a href="../../d8/d55/group__transapi.html#ga84af389e5c1106cd9cfbde1c7ca001be">More...</a><br/></td></tr>
-<tr class="separator:ga84af389e5c1106cd9cfbde1c7ca001be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ga10d59d84527f735d2781dbbb629a4488"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> { <br/>
+&#160;&#160;<a class="el" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488af2c3cac34cb7553ac93e8f3ad8acee3c">XMLDIFF_ERR</a> = -1, 
+<a class="el" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a45a3557c464a0d85a333b68634df5561">XMLDIFF_NONE</a> = 0, 
+<a class="el" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488adc0f4fc8354a1e293db5efd4f8e6f0b1">XMLDIFF_ADD</a> = 1, 
+<a class="el" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a149cdeec9d87bdbb700861f773759129">XMLDIFF_REM</a> = 2, 
+<br/>
+&#160;&#160;<a class="el" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a27c20d1fff6c4a35673bea8c6bbe23c4">XMLDIFF_MOD</a> = 4, 
+<a class="el" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a4038204cbce3cfa24153b304b95e99a6">XMLDIFF_CHAIN</a> = 8
+<br/>
+ }</td></tr>
+<tr class="memdesc:ga10d59d84527f735d2781dbbb629a4488"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enum specifying states of node in document.  <a href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">More...</a><br/></td></tr>
+<tr class="separator:ga10d59d84527f735d2781dbbb629a4488"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -140,7 +146,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../dir_5cf91f2d325c7b4198cad664054031d4.html">transapi</a></li><li class="navelem"><a class="el" href="../../d0/db0/transapi_8h.html">transapi.h</a></li>
-    <li class="footer">Generated on Mon Apr 29 2013 16:35:42 for libnetconf by
+    <li class="footer">Generated on Mon May 6 2013 15:55:07 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

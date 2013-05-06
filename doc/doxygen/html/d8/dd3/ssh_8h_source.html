@@ -126,16 +126,18 @@ $(document).ready(function(){initNavTree('d8/dd3/ssh_8h_source.html','../../');}
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="keyword">struct </span>nc_session *<a class="code" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server.">nc_session_connect</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *host, <span class="keywordtype">unsigned</span> <span class="keywordtype">short</span> port, <span class="keyword">const</span> <span class="keywordtype">char</span> *username, <span class="keyword">const</span> <span class="keyword">struct</span> nc_cpblts* cpblts);</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="keyword">struct </span>nc_session *<a class="code" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707" title="Accept NETCONF session from a client.">nc_session_accept</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_cpblts* capabilities);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="keyword">struct </span>nc_session *<a class="code" href="../../db/d52/group__session.html#ga7d9e0f17bb4ca5b35c8343db59955060" title="Create another NETCONF session using already established SSH session. No authentication is needed in ...">nc_session_connect_channel</a>(<span class="keyword">struct</span> nc_session *session, <span class="keyword">const</span> <span class="keyword">struct</span> nc_cpblts* cpblts);</div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* SSH_H_ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="keyword">struct </span>nc_session *<a class="code" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707" title="Accept NETCONF session from a client.">nc_session_accept</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_cpblts* capabilities);</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* SSH_H_ */</span><span class="preprocessor"></span></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d8/dd3/ssh_8h.html">ssh.h</a></li>
-    <li class="footer">Generated on Mon Apr 29 2013 16:35:42 for libnetconf by
+    <li class="footer">Generated on Mon May 6 2013 15:55:07 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

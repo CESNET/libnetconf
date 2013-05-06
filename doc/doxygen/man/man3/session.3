@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Mon Apr 29 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Mon May 6 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -133,6 +133,10 @@ libnetconf's functions for handling NETCONF sessions\&.
 .RI "struct nc_session * \fBnc_session_connect\fP (const char *host, unsigned short port, const char *username, const struct nc_cpblts *cpblts)"
 .br
 .RI "\fICreate NETCONF session to the specified server\&. \fP"
+.ti -1c
+.RI "struct nc_session * \fBnc_session_connect_channel\fP (struct nc_session *session, const struct nc_cpblts *cpblts)"
+.br
+.RI "\fICreate another NETCONF session using already established SSH session\&. No authentication is needed in this case\&. \fP"
 .ti -1c
 .RI "struct nc_session * \fBnc_session_accept\fP (const struct nc_cpblts *capabilities)"
 .br
@@ -601,6 +605,24 @@ Create NETCONF session to the specified server\&. This function can internally u
 \fIport\fP Port number of the server\&. Default value 830 is used if 0 is specified\&. 
 .br
 \fIusername\fP Name of the user to login to the server\&. The user running the application (detected from the effective UID) is used if NULL is specified\&. 
+.br
+\fIcpblts\fP NETCONF capabilities structure with capabilities supported by the client\&. Client can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter)\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Structure describing the NETCONF session or NULL in case of an error\&. 
+.RE
+.PP
+
+.SS "struct nc_session* nc_session_connect_channel (struct nc_session *session, const struct nc_cpblts *cpblts)\fC [read]\fP"
+
+.PP
+Create another NETCONF session using already established SSH session\&. No authentication is needed in this case\&. This function works only if libnetconf is compiled with using libssh2\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsession\fP Already established NETCONF session\&. 
 .br
 \fIcpblts\fP NETCONF capabilities structure with capabilities supported by the client\&. Client can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter)\&. 
 .RE

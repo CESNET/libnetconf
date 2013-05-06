@@ -113,19 +113,28 @@ $(document).ready(function(){initNavTree('d9/dc0/structtransapi.html','../../');
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="../../d0/db0/transapi_8h_source.html">transapi.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="../../d5/df0/transapi__internal_8h_source.html">transapi_internal.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:a59fcda1946fe2178896b5967065904e6"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/dc0/structtransapi.html#a59fcda1946fe2178896b5967065904e6">module</a></td></tr>
 <tr class="memdesc:a59fcda1946fe2178896b5967065904e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loaded shared library with transapi callbacks.  <a href="#a59fcda1946fe2178896b5967065904e6">More...</a><br/></td></tr>
 <tr class="separator:a59fcda1946fe2178896b5967065904e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a44e5e883d6586faf97047d23c7bcebf7"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html">transapi_data_callbacks</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/dc0/structtransapi.html#a44e5e883d6586faf97047d23c7bcebf7">data_clbks</a></td></tr>
-<tr class="memdesc:a44e5e883d6586faf97047d23c7bcebf7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transapi callback mapping structure.  <a href="#a44e5e883d6586faf97047d23c7bcebf7">More...</a><br/></td></tr>
-<tr class="separator:a44e5e883d6586faf97047d23c7bcebf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae40968626e78bf37871565d98292b1b7"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../d0/df8/structtransapi__rpc__callbacks.html">transapi_rpc_callbacks</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/dc0/structtransapi.html#ae40968626e78bf37871565d98292b1b7">rpc_clbks</a></td></tr>
-<tr class="memdesc:ae40968626e78bf37871565d98292b1b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transapi rpc callbacks mapping structure.  <a href="#ae40968626e78bf37871565d98292b1b7">More...</a><br/></td></tr>
-<tr class="separator:ae40968626e78bf37871565d98292b1b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8296f29c8eb98f8717ff9a7e7ab193e5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/dc0/structtransapi.html#a8296f29c8eb98f8717ff9a7e7ab193e5">libxml2</a></td></tr>
+<tr class="memdesc:a8296f29c8eb98f8717ff9a7e7ab193e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Does module support libxml2?  <a href="#a8296f29c8eb98f8717ff9a7e7ab193e5">More...</a><br/></td></tr>
+<tr class="separator:a8296f29c8eb98f8717ff9a7e7ab193e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea90d8c83ba9383585992769f200e737"><td class="memItemLeft" align="right" valign="top">union <a class="el" href="../../d9/d51/uniontransapi__data__clbcks.html">transapi_data_clbcks</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/dc0/structtransapi.html#aea90d8c83ba9383585992769f200e737">data_clbks</a></td></tr>
+<tr class="memdesc:aea90d8c83ba9383585992769f200e737"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transapi callback mapping structure.  <a href="#aea90d8c83ba9383585992769f200e737">More...</a><br/></td></tr>
+<tr class="separator:aea90d8c83ba9383585992769f200e737"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ecb65330571aedb46465b13d8036a85"><td class="memItemLeft" align="right" valign="top">union <a class="el" href="../../d6/d41/uniontransapi__rpc__clbcks.html">transapi_rpc_clbcks</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/dc0/structtransapi.html#a3ecb65330571aedb46465b13d8036a85">rpc_clbks</a></td></tr>
+<tr class="memdesc:a3ecb65330571aedb46465b13d8036a85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transapi rpc callbacks mapping structure.  <a href="#a3ecb65330571aedb46465b13d8036a85">More...</a><br/></td></tr>
+<tr class="separator:a3ecb65330571aedb46465b13d8036a85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afadb18c2007a81345809ea1e2d78be7e"><td class="memItemLeft" align="right" valign="top">union <a class="el" href="../../da/d01/uniontransapi__init.html">transapi_init</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/dc0/structtransapi.html#afadb18c2007a81345809ea1e2d78be7e">init</a></td></tr>
+<tr class="memdesc:afadb18c2007a81345809ea1e2d78be7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Module initialization.  <a href="#afadb18c2007a81345809ea1e2d78be7e">More...</a><br/></td></tr>
+<tr class="separator:afadb18c2007a81345809ea1e2d78be7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a414e48f893be7474f64d2c61a9c012b9"><td class="memItemLeft" align="right" valign="top">void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/dc0/structtransapi.html#a414e48f893be7474f64d2c61a9c012b9">close</a> )(void)</td></tr>
+<tr class="memdesc:a414e48f893be7474f64d2c61a9c012b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free module resources and prepare for closing.  <a href="#a414e48f893be7474f64d2c61a9c012b9">More...</a><br/></td></tr>
+<tr class="separator:a414e48f893be7474f64d2c61a9c012b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Field Documentation</h2>
 <a class="anchor" id="a59fcda1946fe2178896b5967065904e6"></a>
@@ -142,12 +151,26 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a44e5e883d6586faf97047d23c7bcebf7"></a>
+<a class="anchor" id="a8296f29c8eb98f8717ff9a7e7ab193e5"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct <a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html">transapi_data_callbacks</a>* data_clbks</td>
+          <td class="memname">int libxml2</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Does module support libxml2? </p>
+
+</div>
+</div>
+<a class="anchor" id="aea90d8c83ba9383585992769f200e737"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">union <a class="el" href="../../d9/d51/uniontransapi__data__clbcks.html">transapi_data_clbcks</a> data_clbks</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -156,12 +179,12 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ae40968626e78bf37871565d98292b1b7"></a>
+<a class="anchor" id="a3ecb65330571aedb46465b13d8036a85"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct <a class="el" href="../../d0/df8/structtransapi__rpc__callbacks.html">transapi_rpc_callbacks</a>* rpc_clbks</td>
+          <td class="memname">union <a class="el" href="../../d6/d41/uniontransapi__rpc__clbcks.html">transapi_rpc_clbcks</a> rpc_clbks</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -170,8 +193,36 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="afadb18c2007a81345809ea1e2d78be7e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">union <a class="el" href="../../da/d01/uniontransapi__init.html">transapi_init</a> init</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Module initialization. </p>
+
+</div>
+</div>
+<a class="anchor" id="a414e48f893be7474f64d2c61a9c012b9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void(* close)(void)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Free module resources and prepare for closing. </p>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>src/transapi/<a class="el" href="../../d0/db0/transapi_8h_source.html">transapi.h</a></li>
+<li>src/transapi/<a class="el" href="../../d5/df0/transapi__internal_8h_source.html">transapi_internal.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -179,7 +230,7 @@ Data Fields</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../d9/dc0/structtransapi.html">transapi</a></li>
-    <li class="footer">Generated on Mon Apr 29 2013 16:35:42 for libnetconf by
+    <li class="footer">Generated on Mon May 6 2013 15:55:07 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

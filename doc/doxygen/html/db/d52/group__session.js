@@ -47,5 +47,6 @@ var group__session =
     [ "nc_session_get_cpblts_default", "db/d52/group__session.html#ga6f39a278e3d907a0b26878df332ebc71", null ],
     [ "nc_ssh_pref", "db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0", null ],
     [ "nc_session_connect", "db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23", null ],
+    [ "nc_session_connect_channel", "db/d52/group__session.html#ga7d9e0f17bb4ca5b35c8343db59955060", null ],
     [ "nc_session_accept", "db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707", null ]
 ];
