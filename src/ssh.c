@@ -82,7 +82,7 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
 
 extern struct nc_shared_info *nc_info;
-extern char* server_capabilities;
+extern char* server_capabilities; /* from datastore, only for server side */
 
 struct auth_pref_couple
 {
@@ -1519,11 +1519,6 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		client_cpblts = nc_cpblts_new(cpblts->list);
 	}
 
-	if (server_capabilities != NULL) {
-		free (server_capabilities);
-		server_capabilities = serialize_cpblts(client_cpblts);
-	}
-
 	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
 		goto shutdown;
 	}
@@ -1546,5 +1541,140 @@ shutdown:
 	free(knownhosts_file);
 
 	return (NULL);
+}
+
+
+struct nc_session *nc_session_connect_channel(struct nc_session *session, const struct nc_cpblts* cpblts)
+{
+	struct nc_session *retval, *session_aux;
+	struct nc_cpblts *client_cpblts = NULL;
+	pthread_mutexattr_t mattr;
+	char* err_msg;
+	int r;
+
+#ifdef DISABLE_LIBSSH
+	ERROR("%s: SSH channels are provided only with libssh2.", __func__);
+	return (NULL);
+#else
+
+	/* allocate netconf session structure */
+	retval = malloc(sizeof(struct nc_session));
+	if (retval == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
+		return (NULL);
+	}
+	memset(retval, 0, sizeof(struct nc_session));
+	if ((retval->stats = malloc (sizeof (struct nc_session_stats))) == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
+		free(retval);
+		return NULL;
+	}
+
+	retval->libssh2_socket = session->libssh2_socket;
+	retval->ssh_session = session->ssh_session; /* share the SSH session */
+	retval->fd_input = -1;
+	retval->fd_output = -1;
+	retval->hostname = session->hostname;
+	retval->username = session->username;
+	retval->groups = NULL; /* client side does not need this information */
+	retval->port = session->port;
+	retval->msgid = 1;
+	retval->queue_event = NULL;
+	retval->queue_msg = NULL;
+	retval->logintime = NULL;
+	session->ntf_active = 0;
+	retval->monitored = 0;
+	retval->nacm_recovery = 0; /* not needed/decidable on the client side */
+	retval->stats->in_rpcs = 0;
+	retval->stats->in_bad_rpcs = 0;
+	retval->stats->out_rpc_errors = 0;
+	retval->stats->out_notifications = 0;
+
+	if (pthread_mutexattr_init(&mattr) != 0) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
+	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
+		ERROR("Mutex initialization failed (%s).", strerror(r));
+		pthread_mutexattr_destroy(&mattr);
+		return (NULL);
+	}
+	pthread_mutexattr_destroy(&mattr);
+
+	/* open a separated channel */
+	retval->ssh_channel = libssh2_channel_open_session(retval->ssh_session);
+	if (retval->ssh_channel == NULL) {
+		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+		ERROR("Opening the SSH channel failed (%s)", err_msg);
+		goto shutdown;
+	}
+
+	/* execute the NETCONF subsystem on the channel */
+	if (libssh2_channel_subsystem(retval->ssh_channel, "netconf")) {
+		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+		ERROR("Starting the netconf SSH subsystem failed (%s)", err_msg);
+		goto shutdown;
+	}
+	retval->status = NC_SESSION_STATUS_WORKING;
+
+	if (cpblts == NULL) {
+		if ((client_cpblts = nc_session_get_cpblts_default()) == NULL) {
+			VERB("Unable to set the client's NETCONF capabilities.");
+			goto shutdown;
+		}
+	} else {
+		client_cpblts = nc_cpblts_new(cpblts->list);
+	}
+
+	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
+		goto shutdown;
+	}
+
+	/* set with-defaults capability flags */
+	parse_wdcap(retval->capabilities, &(retval->wd_basic), &(retval->wd_modes));
+
+	/* cleanup */
+	nc_cpblts_free(client_cpblts);
+
+	/*
+	 * link sessions:
+	 * session <-> retval <-> session_aux
+	 */
+	session_aux = session->next;
+	if (session_aux != NULL) {
+		session_aux->prev = retval;
+	}
+	session->next = retval;
+	retval->next = session_aux;
+	retval->prev = session;
+
+	return (retval);
+
+shutdown:
+
+	/* cleanup */
+	if (retval->ssh_channel != NULL) {
+		libssh2_channel_free(retval->ssh_channel);
+	}
+	if (retval) {
+		free(retval->stats);
+		pthread_mutex_destroy(&(retval->mut_in));
+		pthread_mutex_destroy(&(retval->mut_out));
+		pthread_mutex_destroy(&(retval->mut_mqueue));
+		pthread_mutex_destroy(&(retval->mut_equeue));
+		pthread_mutex_destroy(&(retval->mut_session));
+		nc_cpblts_free(retval->capabilities);
+		free(retval);
+	}
+	nc_cpblts_free(client_cpblts);
+
+	return (NULL);
+
+#endif /* not DISABLE_LIBSSH */
 }
 

@@ -997,24 +997,32 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			session->ssh_channel = NULL;
 		}
 
-		if (session->ssh_session != NULL) {
+		if (session->ssh_session != NULL && session->next == NULL && session->prev == NULL) {
+			/* close and free only if there is no other session using it */
 			libssh2_session_disconnect(session->ssh_session, nc_session_term_string(reason));
 			libssh2_session_free(session->ssh_session);
 			session->ssh_session = NULL;
+
+			close(session->libssh2_socket);
 		}
+		session->libssh2_socket = -1;
 #endif
 
-		free(session->hostname);
-		session->hostname = NULL;
 		free(session->logintime);
 		session->logintime = NULL;
-		free(session->port);
-		session->port = NULL;
 
-		if (session->libssh2_socket != -1) {
-			close(session->libssh2_socket);
-			session->libssh2_socket = -1;
+		if (session->next == NULL && session->prev == NULL) {
+			/* free only if there is no other session using it */
+			free(session->hostname);
+			free(session->username);
+			free(session->port);
+		} else {
+
+
 		}
+		session->username = NULL;
+		session->hostname = NULL;
+		session->port = NULL;
 
 		/* remove messages from the queues */
 		for (i = 0, qmsg = session->queue_event; i < 2; i++, qmsg = session->queue_msg) {
@@ -1026,7 +1034,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 		}
 
 		/*
-		 * username, capabilities and session_id are untouched
+		 * capabilities, session_id and shared monitoring structure are untouched
 		 */
 
 		/* successfully closed */
@@ -1038,8 +1046,17 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 		pthread_mutex_unlock(&(session->mut_session));
 	} else {
 		session->status = NC_SESSION_STATUS_CLOSED;
-
 	}
+
+	/* unlink the session from the list of related sessions */
+	if (session->next != NULL) {
+		session->next->prev = session->prev;
+	}
+	if (session->prev != NULL) {
+		session->prev->next = session->next;
+	}
+	session->next = NULL;
+	session->prev = NULL;
 }
 
 void nc_session_free (struct nc_session* session)
@@ -1052,11 +1069,6 @@ void nc_session_free (struct nc_session* session)
 	}
 
 	nc_session_close(session, NC_SESSION_TERM_OTHER);
-
-	/* free items untouched by nc_session_close() */
-	if (session->username != NULL) {
-		free (session->username);
-	}
 	if (session->groups != NULL) {
 		for (i = 0; session->groups[i] != NULL; i++) {
 			free(session->groups[i]);

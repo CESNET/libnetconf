@@ -341,8 +341,6 @@ struct nc_session {
 	char *logintime;
 	/**< @brief number of confirmed capabilities */
 	struct nc_cpblts *capabilities;
-	/**< @brief serialized original capabilities of a server/client */
-	char *capabilities_original;
 	/**< @brief NETCONF protocol version */
 	int version;
 	/**< @brief session's with-defaults basic mode */
@@ -373,6 +371,10 @@ struct nc_session {
 	int monitored;
 	/**< @brief NETCONF session statistics as defined in RFC 6022 */
 	struct nc_session_stats *stats;
+	/**< @brief pointer to the next NETCONF session on the shared SSH session, but different SSH channel */
+	struct nc_session *next;
+	/**< @brief pointer to the previous NETCONF session on the shared SSH session, but different SSH channel */
+	struct nc_session *prev;
 };
 
 /**
