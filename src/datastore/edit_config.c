@@ -895,11 +895,17 @@ static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocP
 		if (error != NULL) {
 			*error = nc_err_new(NC_ERR_OP_FAILED);
 		}
+		if (keys != NULL) {
+			keyListFree(keys);
+		}
 		return EXIT_FAILURE;
 	}
 
 	if (xmlXPathNodeSetIsEmpty(operation_nodes->nodesetval)) {
 		xmlXPathFreeObject(operation_nodes);
+		if (keys != NULL) {
+			keyListFree(keys);
+		}
 		return EXIT_SUCCESS;
 	}
 
@@ -909,6 +915,9 @@ static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocP
 
 		if (check_edit_ops_hierarchy(node_to_process, defop, error) != EXIT_SUCCESS) {
 			xmlXPathFreeObject(operation_nodes);
+			if (keys != NULL) {
+				keyListFree(keys);
+			}
 			return EXIT_FAILURE;
 		}
 
@@ -1015,6 +1024,9 @@ static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocP
 	}
 	if (value != NULL) {
 		xmlFree(value);
+	}
+	if (keys != NULL) {
+		keyListFree(keys);
 	}
 
 	if (*error != NULL) {
