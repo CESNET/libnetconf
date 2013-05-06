@@ -1537,14 +1537,9 @@ shutdown:
 	/* cleanup */
 	nc_session_close(retval, NC_SESSION_TERM_OTHER);
 	nc_session_free(retval);
+	nc_cpblts_free(client_cpblts);
 
-	if (knownhosts_file != NULL) {
-		free(knownhosts_file);
-	}
-
-	if (cpblts == NULL && client_cpblts != NULL) {
-		nc_cpblts_free(client_cpblts);
-	}
+	free(knownhosts_file);
 
 	return (NULL);
 }
