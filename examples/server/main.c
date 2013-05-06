@@ -312,8 +312,8 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 	 *
 	 * ncds_feature_enable("module-name", "feature1");
 	 * ncds_feature_disable("module-name", "feature1");
-	 * ncds_feature_enableall("module-name");
-	 * ncds_feature_disableall("module-name");
+	 * ncds_features_enableall("module-name");
+	 * ncds_features_disableall("module-name");
 	 */
 
 	/*
