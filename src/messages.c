@@ -913,6 +913,9 @@ static char* nc_rpc_get_editconfig(const nc_rpc* rpc)
 	
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
 		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+#ifndef DISABLE_URL
+			goto URL;
+#endif
 			ERROR("%s: no config data in the edit-config request", __func__);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
@@ -939,11 +942,12 @@ static char* nc_rpc_get_editconfig(const nc_rpc* rpc)
 		aux_doc = xmlNewDoc(BAD_CAST "1.0");
 		xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
 		xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, config->children));
+		goto END;
 
 	}
 #ifndef DISABLE_URL	
-	
-	else if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":url", rpc->ctxt)) != NULL) {
+URL:
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":url", rpc->ctxt)) != NULL) {
 		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			ERROR("%s: no config data in the edit-config request", __func__);
 			xmlXPathFreeObject(query_result);
@@ -964,7 +968,7 @@ static char* nc_rpc_get_editconfig(const nc_rpc* rpc)
 		
 		xmlFree( url );
 		
-		aux_doc = xmlReadFd( url_buff_fd, NULL, NULL, NULL);
+		aux_doc = xmlReadFd( url_buff_fd, NULL, NULL, 0);
 
 	}
 #endif	
@@ -972,7 +976,7 @@ static char* nc_rpc_get_editconfig(const nc_rpc* rpc)
 		ERROR("%s: config data not found in the edit-config request", __func__);
 		return (NULL);
 	}
-
+END:
 	for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
 		xmlNodeDump(resultbuffer, aux_doc, aux_node, 2, 1);
 	}
