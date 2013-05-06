@@ -955,6 +955,9 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 		/* close ssh session */
 #ifdef DISABLE_LIBSSH
 		if (session->status == NC_SESSION_STATUS_WORKING) {
+			/* prevent infinite recursion when socket is corrupted -> stack overflow */
+			session->status = NC_SESSION_STATUS_CLOSING;
+
 			/* close NETCONF session */
 			rpc_close = nc_rpc_closesession();
 			if (rpc_close != NULL) {
@@ -1141,9 +1144,10 @@ NC_SESSION_STATUS nc_session_get_status (const struct nc_session* session)
 int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 {
 	ssize_t c = 0;
-	int len;
+	int len, status;
 	char *text;
 	char buf[1024];
+	struct pollfd fds;
 
 	if ((session->ssh_channel == NULL) && (session->fd_output == -1)) {
 		return (EXIT_FAILURE);
@@ -1156,6 +1160,30 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	if (session->status != NC_SESSION_STATUS_WORKING &&
 			session->status != NC_SESSION_STATUS_CLOSING) {
 		return (EXIT_FAILURE);
+	}
+
+	/* check that we are able to write data */
+	while (session->fd_input != -1) {
+		fds.fd = session->fd_input;
+		fds.events = POLLOUT;
+		fds.revents = 0;
+		status = poll(&fds, 1, 0);
+
+		if ((status == -1) && (errno == EINTR)) {
+			/* poll was interrupted - try it again */
+			continue;
+		} else if (status < 0) {
+			/* poll failed - something wrong happened */
+			ERROR("Poll on output communication file descriptor failed (%s)", strerror(errno));
+			return (EXIT_FAILURE);
+
+		} else if (status > 0 && ((fds.revents & POLLHUP) || (fds.revents & POLLERR))) {
+			/* close pipe/fd - other side already did it */
+			ERROR("Communication dropped.");
+			nc_session_close(session, NC_SESSION_TERM_DROPPED);
+			return (EXIT_FAILURE);
+		}
+		break;
 	}
 
 	/* lock the session for sending the data */
