@@ -953,7 +953,6 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	}
 
 #ifdef DISABLE_LIBSSH
-#define SSH_PROG "ssh"
 
 	pid_t sshpid; /* child's PID */
 	struct termios termios;
@@ -965,6 +964,11 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	char line[81];
 	int forced = 0; /* force connection to unknown destinations */
 	size_t n;
+
+	if (access(SSH_PROG, X_OK) != 0) {
+		ERROR("Unable to locate or execute ssh(1) application \'%s\' (%s).", SSH_PROG, strerror(errno));
+		return(NULL);
+	}
 
 	/* get current user if not specified */
 	if (username == NULL) {
@@ -1053,7 +1057,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		}
 
 		/* run ssh with parameters to start ssh subsystem on the server */
-		execlp(SSH_PROG, SSH_PROG, "-l", username, "-p", port_s, "-s", host, "netconf", NULL);
+		execl(SSH_PROG, SSH_PROG, "-l", username, "-p", port_s, "-s", host, "netconf", NULL);
 		ERROR("Executing ssh failed");
 		exit(-1);
 	} else { /* parent process*/

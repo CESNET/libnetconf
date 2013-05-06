@@ -53,6 +53,12 @@
  * libssh2_session_set_timeout() is available since libssh2 1.2.9
  */
 #define LIBSSH2_SET_TIMEOUT(session,timeout) @LIBSSH2_SET_TIMEOUT@
+
+#else /* DISABLE_LIBSSH */
+
+/* set path to the used ssh(1) application */
+#define SSH_PROG "@SSH_PROG@"
+
 #endif /* not DISABLE_LIBSSH */
 
 /*

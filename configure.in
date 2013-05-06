@@ -220,8 +220,9 @@ case $host_cpu in
 esac
 
 if test "$libssh2" = "no"; then
-	AC_CHECK_PROG(SSH, ssh, ssh)
-	if test -z "$SSH"; then
+	# ssh for NETCONF connection
+	AC_PATH_PROG([SSH_PROG], [ssh], ["missing"])
+	if test "$SSH_PROG" = "missing"; then
 		AC_MSG_ERROR([Missing ssh client (install OpenSSH)])
 	fi
 fi
@@ -345,6 +346,7 @@ AC_SUBST(INCLUDE_NOTIFICATIONS)
 AC_SUBST(INCLUDE_NOTIFICATIONS_XML)
 AC_SUBST(CONFIGURE_PARAMS)
 AC_SUBST(HAVE_EACCESS)
+AC_SUBST(SSH_PROG)
 
 AC_SUBST(DOXYGEN)
 if test -z "$DOXYGEN"; then
