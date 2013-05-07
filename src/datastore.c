@@ -1458,7 +1458,7 @@ static int ncds_update_uses(const char* module_name, xmlXPathContextPtr *model_c
 	xmlXPathObjectPtr uses, groupings = NULL;
 	xmlDocPtr doc;
 	char *grouping_ref, *grouping_name;
-	int i, j, flag;
+	int i, j, flag = 0;
 
 	if (model_ctxt == NULL || *model_ctxt == NULL || query == NULL) {
 		ERROR("%s: invalid parameter.", __func__);
@@ -2324,12 +2324,6 @@ void ncds_ds_model_free(struct data_model* model)
 ncds_id ncds_init(struct ncds_ds* datastore)
 {
 	struct ncds_ds_list * item;
-	struct nc_err * err;
-	char * startup_config;
-	char * running_config;
-	xmlDocPtr startup_config_xml;
-	xmlDocPtr running_config_xml;
-	int len;
 
 	/* not initiated datastores have id set to -1 */
 	if (datastore == NULL || datastore->id != -1) {
