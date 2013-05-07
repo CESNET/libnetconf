@@ -107,14 +107,6 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 
 /**
  * @ingroup store
- * @brief Add an augment model to the base model of the datastore
- * @param[in] model_path Path to the augment YIN configuration data model.
- * @return 0 on success, non-zero on error.
- */
-int ncds_add_augment(const char* model_path);
-
-/**
- * @ingroup store
  * @brief Assign the path of the datastore file into the datastore structure.
  *
  * Checks if the file exist and is accessible for reading and writing.
@@ -241,14 +233,15 @@ void ncds_break_locks (const struct nc_session* session);
  * @brief Return a serialized XML containing the data model in the YIN format
  *
  * @param[in] id ID of the datastore whose data model we want
- * @param[in] augmented Set 1 to get complete data model including augmentation.
- * In this case, returned string contains modified YIN format - there are
- * \<augment\> elements inside the model including information about its
- * namespace and module name.
+ * @param[in] base Set 1 to get only base model without any modification. Use 0
+ * value to get complete data model including augmentation, substituted uses
+ * statements and removed disabled features of the model. In this case, returned
+ * string contains modified YIN format - there are \<augment\> elements inside
+ * the model including information about its namespace and module name.
  *
  * @return String containing YIN model. Caller must free the memory after use.
  */
-char* ncds_get_model (ncds_id id, int augmented);
+char* ncds_get_model (ncds_id id, int base);
 
 /**
  * @ingroup store
@@ -261,5 +254,84 @@ char* ncds_get_model (ncds_id id, int augmented);
  */
 const char * ncds_get_model_path (ncds_id id);
 
+
+/**
+ * @ingroup store
+ * @brief Specify a directory path to the location where the required (imported
+ * or included) data models can be found. This function can be called repeatedly
+ * to specify multiple locations.
+ *
+ * @param[in] path Directory path
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_add_models_path(const char* path);
+
+/**
+ * @ingroup store
+ * @brief Add an configuration data model to the internal list of models. Such
+ * model is used to resolve imports, includes and uses statements in base models.
+ *
+ * @param[in] path Path to the YIN format of the configuration data model.
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_add_model(const char* path);
+
+/**
+ * @ingroup store
+ * @brief Enable usage of the specified feature defined in the specified module.
+ * By default, all features are disabled.
+ * @param[in] module Name of the module where the feature is defined. Module
+ * must be accessible - added via ncds_add_model() or present in a directory
+ * specified via ncds_add_models_path() function.
+ * @param[in] feature Name of the feature to be enabled.
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_feature_enable(const char* module, const char* feature);
+
+/**
+ * @ingroup store
+ * @brief Disable usage of the specified feature defined in the specified module
+ * By default, all features are disabled.
+ * @param[in] module Name of the module where the feature is defined. Module
+ * must be accessible - added via ncds_add_model() or present in a directory
+ * specified via ncds_add_models_path() function.
+ * @param[in] feature Name of the feature to be disabled.
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_feature_disable(const char* module, const char* feature);
+
+/**
+ * @ingroup store
+ * @brief Enable usage of all features defined in the specified module. By
+ * default, all features are disabled. To enable only the specific feature(s),
+ * use ncds_feature_enable().
+ * @param[in] module Name of the module where the feature is defined. Module
+ * must be accessible - added via ncds_add_model() or present in a directory
+ * specified via ncds_add_models_path() function.
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_features_enableall(const char* module);
+
+/**
+ * @ingroup store
+ * @brief Disable usage of all features defined in the specified module. By
+ * default, all features are disabled. To disable only the specific feature(s),
+ * use ncds_feature_disable().
+ * @param[in] module Name of the module where the feature is defined. Module
+ * must be accessible - added via ncds_add_model() or present in a directory
+ * specified via ncds_add_models_path() function.
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_features_disableall(const char* module);
+
+/**
+ *
+ * @return
+ * - negative value in case of error
+ * - 0 if feature is disabled
+ * - 1 if feature is enabled
+ */
+int ncds_feature_isenabled(const char* module, const char* feature);
+int ncds_consolidate(void);
 
 #endif /* DATASTORE_H_ */

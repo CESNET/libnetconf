@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Mon May 6 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -46,10 +46,6 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fICreate a new datastore structure of the specified implementation type\&. \fP"
 .ti -1c
-.RI "int \fBncds_add_augment\fP (const char *model_path)"
-.br
-.RI "\fIAdd an augment model to the base model of the datastore\&. \fP"
-.ti -1c
 .RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
 .br
 .RI "\fIAssign the path of the datastore file into the datastore structure\&. \fP"
@@ -82,13 +78,37 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fIRemove all the locks that the given session is holding\&. \fP"
 .ti -1c
-.RI "char * \fBncds_get_model\fP (\fBncds_id\fP id, int augmented)"
+.RI "char * \fBncds_get_model\fP (\fBncds_id\fP id, int base)"
 .br
 .RI "\fIReturn a serialized XML containing the data model in the YIN format\&. \fP"
 .ti -1c
 .RI "const char * \fBncds_get_model_path\fP (\fBncds_id\fP id)"
 .br
 .RI "\fIReturn path to the file containing the datastore datamodel\&. \fP"
+.ti -1c
+.RI "int \fBncds_add_models_path\fP (const char *path)"
+.br
+.RI "\fISpecify a directory path to the location where the required (imported or included) data models can be found\&. This function can be called repeatedly to specify multiple locations\&. \fP"
+.ti -1c
+.RI "int \fBncds_add_model\fP (const char *path)"
+.br
+.RI "\fIAdd an configuration data model to the internal list of models\&. Such model is used to resolve imports, includes and uses statements in base models\&. \fP"
+.ti -1c
+.RI "int \fBncds_feature_enable\fP (const char *module, const char *feature)"
+.br
+.RI "\fIEnable usage of the specified feature defined in the specified module\&. By default, all features are disabled\&. \fP"
+.ti -1c
+.RI "int \fBncds_feature_disable\fP (const char *module, const char *feature)"
+.br
+.RI "\fIDisable usage of the specified feature defined in the specified module By default, all features are disabled\&. \fP"
+.ti -1c
+.RI "int \fBncds_features_enableall\fP (const char *module)"
+.br
+.RI "\fIEnable usage of all features defined in the specified module\&. By default, all features are disabled\&. To enable only the specific feature(s), use \fBncds_feature_enable()\fP\&. \fP"
+.ti -1c
+.RI "int \fBncds_features_disableall\fP (const char *module)"
+.br
+.RI "\fIDisable usage of all features defined in the specified module\&. By default, all features are disabled\&. To disable only the specific feature(s), use \fBncds_feature_disable()\fP\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -168,20 +188,6 @@ Create a new datastore structure of the specified implementation type\&. \fBPara
 \fBReturns:\fP
 .RS 4
 Prepared (not configured) datastore structure\&. To configure the structure, caller must use the parameter setters of the specific datastore implementation type\&. Then, the datastore can be initiated (\fBncds_init()\fP) and used to access the configuration data\&. 
-.RE
-.PP
-
-.SS "int ncds_add_augment (const char *model_path)"
-
-.PP
-Add an augment model to the base model of the datastore\&. \fBParameters:\fP
-.RS 4
-\fImodel_path\fP Path to the augment YIN configuration data model\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-0 on success, non-zero on error\&. 
 .RE
 .PP
 
@@ -324,14 +330,14 @@ Remove all the locks that the given session is holding\&. \fBParameters:\fP
 .RE
 .PP
 
-.SS "char* ncds_get_model (\fBncds_id\fPid, intaugmented)"
+.SS "char* ncds_get_model (\fBncds_id\fPid, intbase)"
 
 .PP
 Return a serialized XML containing the data model in the YIN format\&. \fBParameters:\fP
 .RS 4
 \fIid\fP ID of the datastore whose data model we want 
 .br
-\fIaugmented\fP Set 1 to get complete data model including augmentation\&. In this case, returned string contains modified YIN format - there are <augment> elements inside the model including information about its namespace and module name\&.
+\fIbase\fP Set 1 to get only base model without any modification\&. Use 0 value to get complete data model including augmentation, substituted uses statements and removed disabled features of the model\&. In this case, returned string contains modified YIN format - there are <augment> elements inside the model including information about its namespace and module name\&.
 .RE
 .PP
 \fBReturns:\fP
@@ -351,6 +357,94 @@ Return path to the file containing the datastore datamodel\&. \fBParameters:\fP
 \fBReturns:\fP
 .RS 4
 String containing the path to the file containing the datastore datamodel\&. The caller must NOT free the memory\&. 
+.RE
+.PP
+
+.SS "int ncds_add_models_path (const char *path)"
+
+.PP
+Specify a directory path to the location where the required (imported or included) data models can be found\&. This function can be called repeatedly to specify multiple locations\&. \fBParameters:\fP
+.RS 4
+\fIpath\fP Directory path 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success, non-zero on error\&. 
+.RE
+.PP
+
+.SS "int ncds_add_model (const char *path)"
+
+.PP
+Add an configuration data model to the internal list of models\&. Such model is used to resolve imports, includes and uses statements in base models\&. \fBParameters:\fP
+.RS 4
+\fIpath\fP Path to the YIN format of the configuration data model\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success, non-zero on error\&. 
+.RE
+.PP
+
+.SS "int ncds_feature_enable (const char *module, const char *feature)"
+
+.PP
+Enable usage of the specified feature defined in the specified module\&. By default, all features are disabled\&. \fBParameters:\fP
+.RS 4
+\fImodule\fP Name of the module where the feature is defined\&. Module must be accessible - added via \fBncds_add_model()\fP or present in a directory specified via \fBncds_add_models_path()\fP function\&. 
+.br
+\fIfeature\fP Name of the feature to be enabled\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success, non-zero on error\&. 
+.RE
+.PP
+
+.SS "int ncds_feature_disable (const char *module, const char *feature)"
+
+.PP
+Disable usage of the specified feature defined in the specified module By default, all features are disabled\&. \fBParameters:\fP
+.RS 4
+\fImodule\fP Name of the module where the feature is defined\&. Module must be accessible - added via \fBncds_add_model()\fP or present in a directory specified via \fBncds_add_models_path()\fP function\&. 
+.br
+\fIfeature\fP Name of the feature to be disabled\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success, non-zero on error\&. 
+.RE
+.PP
+
+.SS "int ncds_features_enableall (const char *module)"
+
+.PP
+Enable usage of all features defined in the specified module\&. By default, all features are disabled\&. To enable only the specific feature(s), use \fBncds_feature_enable()\fP\&. \fBParameters:\fP
+.RS 4
+\fImodule\fP Name of the module where the feature is defined\&. Module must be accessible - added via \fBncds_add_model()\fP or present in a directory specified via \fBncds_add_models_path()\fP function\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success, non-zero on error\&. 
+.RE
+.PP
+
+.SS "int ncds_features_disableall (const char *module)"
+
+.PP
+Disable usage of all features defined in the specified module\&. By default, all features are disabled\&. To disable only the specific feature(s), use \fBncds_feature_disable()\fP\&. \fBParameters:\fP
+.RS 4
+\fImodule\fP Name of the module where the feature is defined\&. Module must be accessible - added via \fBncds_add_model()\fP or present in a directory specified via \fBncds_add_models_path()\fP function\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success, non-zero on error\&. 
 .RE
 .PP
 

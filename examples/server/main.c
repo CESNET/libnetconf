@@ -298,6 +298,36 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 	}
 
 	/*
+	 * If needed, add location(s) of other models (e.g. with augment
+	 * statements) using (any combination) of these two functions:
+	 *
+	 * ncds_add_model("./dir/file.yin");
+	 * ncds_add_models_path("./models_dir/");
+	 */
+
+	/*
+	 * Enable supported features
+	 * By default, all features defined in the data models are disabled. To
+	 * change this setting, use following functions:
+	 *
+	 * ncds_feature_enable("module-name", "feature1");
+	 * ncds_feature_disable("module-name", "feature1");
+	 * ncds_features_enableall("module-name");
+	 * ncds_features_disableall("module-name");
+	 */
+
+	/*
+	 * Finish datastore settings
+	 * This should be done before applying any NETCONF operation
+	 * to the datastore.
+	 */
+	if (ncds_consolidate() != EXIT_SUCCESS) {
+		clb_print(NC_VERB_ERROR, "Setting up datastores failed.");
+		nc_close(0);
+		return (EXIT_FAILURE);
+	}
+
+	/*
 	 * Device initiation
 	 * - in real, check a concurrent access to the controlled device
 	 * - use a dummy NETCONF session of the server

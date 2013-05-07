@@ -33,7 +33,7 @@ var NAVTREEINDEX =
 [
 "annotated.html",
 "d5/d48/messages_8h.html#gaeb66eff28fdf195f564cb3d997d65b65",
-"da/d54/group__notifications.html#gadc78f4dd6440f4f1ac3ea12092946bd3"
+"da/d54/group__notifications.html#ga8c116b8aae2fe13811ebbfd3ca6f1a44"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

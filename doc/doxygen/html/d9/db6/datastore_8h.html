@@ -153,9 +153,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga80e69b4cada8c35e5e358287e8af3d85"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85">ncds_new_transapi</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, const char *callbacks_path)</td></tr>
 <tr class="memdesc:ga80e69b4cada8c35e5e358287e8af3d85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new datastore structure with transaction API support.  <a href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85">More...</a><br/></td></tr>
 <tr class="separator:ga80e69b4cada8c35e5e358287e8af3d85"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga51e4497af776be124f937c9b840cf19e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga51e4497af776be124f937c9b840cf19e">ncds_add_augment</a> (const char *model_path)</td></tr>
-<tr class="memdesc:ga51e4497af776be124f937c9b840cf19e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add an augment model to the base model of the datastore.  <a href="../../db/d67/group__store.html#ga51e4497af776be124f937c9b840cf19e">More...</a><br/></td></tr>
-<tr class="separator:ga51e4497af776be124f937c9b840cf19e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad48955dab497b1258d80019e542acb9b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gad48955dab497b1258d80019e542acb9b">ncds_file_set_path</a> (struct ncds_ds *datastore, const char *path)</td></tr>
 <tr class="memdesc:gad48955dab497b1258d80019e542acb9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign the path of the datastore file into the datastore structure.  <a href="../../db/d67/group__store.html#gad48955dab497b1258d80019e542acb9b">More...</a><br/></td></tr>
 <tr class="separator:gad48955dab497b1258d80019e542acb9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -180,12 +177,34 @@ Functions</h2></td></tr>
 <tr class="memitem:ga4158273f1ae0332638cc9343097c9f0a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a">ncds_break_locks</a> (const struct nc_session *session)</td></tr>
 <tr class="memdesc:ga4158273f1ae0332638cc9343097c9f0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove all the locks that the given session is holding.  <a href="../../db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a">More...</a><br/></td></tr>
 <tr class="separator:ga4158273f1ae0332638cc9343097c9f0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gafb5d9b48dd33ad0e9854cf935d11a66a"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gafb5d9b48dd33ad0e9854cf935d11a66a">ncds_get_model</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id, int augmented)</td></tr>
-<tr class="memdesc:gafb5d9b48dd33ad0e9854cf935d11a66a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a serialized XML containing the data model in the YIN format.  <a href="../../db/d67/group__store.html#gafb5d9b48dd33ad0e9854cf935d11a66a">More...</a><br/></td></tr>
-<tr class="separator:gafb5d9b48dd33ad0e9854cf935d11a66a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga414b75711e49e0e1eea10ae15c14287e"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga414b75711e49e0e1eea10ae15c14287e">ncds_get_model</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id, int base)</td></tr>
+<tr class="memdesc:ga414b75711e49e0e1eea10ae15c14287e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a serialized XML containing the data model in the YIN format.  <a href="../../db/d67/group__store.html#ga414b75711e49e0e1eea10ae15c14287e">More...</a><br/></td></tr>
+<tr class="separator:ga414b75711e49e0e1eea10ae15c14287e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5ec9fea534bfd146019b7efb882648be"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga5ec9fea534bfd146019b7efb882648be">ncds_get_model_path</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id)</td></tr>
 <tr class="memdesc:ga5ec9fea534bfd146019b7efb882648be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return path to the file containing the datastore datamodel.  <a href="../../db/d67/group__store.html#ga5ec9fea534bfd146019b7efb882648be">More...</a><br/></td></tr>
 <tr class="separator:ga5ec9fea534bfd146019b7efb882648be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga93c65facb061f1048674343ac94a993b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b">ncds_add_models_path</a> (const char *path)</td></tr>
+<tr class="memdesc:ga93c65facb061f1048674343ac94a993b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify a directory path to the location where the required (imported or included) data models can be found. This function can be called repeatedly to specify multiple locations.  <a href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b">More...</a><br/></td></tr>
+<tr class="separator:ga93c65facb061f1048674343ac94a993b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga145c9446fad8c350934c21ca86cbaf47"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47">ncds_add_model</a> (const char *path)</td></tr>
+<tr class="memdesc:ga145c9446fad8c350934c21ca86cbaf47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add an configuration data model to the internal list of models. Such model is used to resolve imports, includes and uses statements in base models.  <a href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47">More...</a><br/></td></tr>
+<tr class="separator:ga145c9446fad8c350934c21ca86cbaf47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1171ba251d855a3c9abbc57e526739b2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2">ncds_feature_enable</a> (const char *module, const char *feature)</td></tr>
+<tr class="memdesc:ga1171ba251d855a3c9abbc57e526739b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable usage of the specified feature defined in the specified module. By default, all features are disabled.  <a href="../../db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2">More...</a><br/></td></tr>
+<tr class="separator:ga1171ba251d855a3c9abbc57e526739b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga11b6f6240911ddcc5e6b8cbb6d36fcc0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0">ncds_feature_disable</a> (const char *module, const char *feature)</td></tr>
+<tr class="memdesc:ga11b6f6240911ddcc5e6b8cbb6d36fcc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disable usage of the specified feature defined in the specified module By default, all features are disabled.  <a href="../../db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0">More...</a><br/></td></tr>
+<tr class="separator:ga11b6f6240911ddcc5e6b8cbb6d36fcc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3c65e57d684b25885d3ccbeb84e9f4d9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga3c65e57d684b25885d3ccbeb84e9f4d9">ncds_features_enableall</a> (const char *module)</td></tr>
+<tr class="memdesc:ga3c65e57d684b25885d3ccbeb84e9f4d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable usage of all features defined in the specified module. By default, all features are disabled. To enable only the specific feature(s), use <a class="el" href="../../db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2" title="Enable usage of the specified feature defined in the specified module. By default, all features are disabled.">ncds_feature_enable()</a>.  <a href="../../db/d67/group__store.html#ga3c65e57d684b25885d3ccbeb84e9f4d9">More...</a><br/></td></tr>
+<tr class="separator:ga3c65e57d684b25885d3ccbeb84e9f4d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga017491407c8d2c6f596d17e64eb10d84"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga017491407c8d2c6f596d17e64eb10d84">ncds_features_disableall</a> (const char *module)</td></tr>
+<tr class="memdesc:ga017491407c8d2c6f596d17e64eb10d84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disable usage of all features defined in the specified module. By default, all features are disabled. To disable only the specific feature(s), use <a class="el" href="../../db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0" title="Disable usage of the specified feature defined in the specified module By default, all features are disabled.">ncds_feature_disable()</a>.  <a href="../../db/d67/group__store.html#ga017491407c8d2c6f596d17e64eb10d84">More...</a><br/></td></tr>
+<tr class="separator:ga017491407c8d2c6f596d17e64eb10d84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3644177deaaf308bb2ca218be99ea85"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db6/datastore_8h.html#ac3644177deaaf308bb2ca218be99ea85">ncds_feature_isenabled</a> (const char *module, const char *feature)</td></tr>
+<tr class="separator:ac3644177deaaf308bb2ca218be99ea85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2a27448a52972db6807571590a5c6da"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db6/datastore_8h.html#ab2a27448a52972db6807571590a5c6da">ncds_consolidate</a> (void)</td></tr>
+<tr class="separator:ab2a27448a52972db6807571590a5c6da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>NETCONF datastore handling function prototypes and structures. </p>
@@ -198,13 +217,62 @@ Functions</h2></td></tr>
 </ol>
 <p>ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above.</p>
 <p>This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage. </p>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="ac3644177deaaf308bb2ca218be99ea85"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_feature_isenabled </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>module</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>feature</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd><ul>
+<li>negative value in case of error</li>
+<li>0 if feature is disabled</li>
+<li>1 if feature is enabled </li>
+</ul>
+</dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ab2a27448a52972db6807571590a5c6da"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_consolidate </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d9/db6/datastore_8h.html">datastore.h</a></li>
-    <li class="footer">Generated on Mon May 6 2013 15:55:07 for libnetconf by
+    <li class="footer">Generated on Tue May 7 2013 12:44:54 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>
