@@ -80,6 +80,8 @@
 #include "../models/ietf-netconf-acm.xxd"
 #include "../models/ietf-netconf.xxd"
 #include "../models/notifications.xxd"
+#include "../models/ietf-inet-types.xxd"
+#include "../models/ietf-yang-types.xxd"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -126,13 +128,13 @@ char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(runn
 static struct ncds_ds *datastores_get_ds(ncds_id id);
 
 #ifndef DISABLE_NOTIFICATIONS
-#define INTERNAL_DS_COUNT 7
-#define NACM_DS_INDEX 6
-#define NOTIF_DS_INDEX_L 2
-#define NOTIF_DS_INDEX_H 4
+#define INTERNAL_DS_COUNT 9
+#define NACM_DS_INDEX 8
+#define NOTIF_DS_INDEX_L 4
+#define NOTIF_DS_INDEX_H 6
 #else
-#define INTERNAL_DS_COUNT 4
-#define NACM_DS_INDEX 3
+#define INTERNAL_DS_COUNT 6
+#define NACM_DS_INDEX 5
 #endif
 int internal_ds_count = 0;
 int ncds_sysinit(void)
@@ -143,6 +145,8 @@ int ncds_sysinit(void)
 	struct model_list *list_item;
 
 	unsigned char* model[INTERNAL_DS_COUNT] = {
+			ietf_inet_types_yin,
+			ietf_yang_types_yin,
 			ietf_netconf_yin,
 			ietf_netconf_monitoring_yin,
 #ifndef DISABLE_NOTIFICATIONS
@@ -154,6 +158,8 @@ int ncds_sysinit(void)
 			ietf_netconf_acm_yin
 	};
 	unsigned int model_len[INTERNAL_DS_COUNT] = {
+			ietf_inet_types_yin_len,
+			ietf_yang_types_yin_len,
 			ietf_netconf_yin_len,
 			ietf_netconf_monitoring_yin_len,
 #ifndef DISABLE_NOTIFICATIONS
@@ -165,6 +171,8 @@ int ncds_sysinit(void)
 			ietf_netconf_acm_yin_len
 	};
 	char* (*get_state_funcs[INTERNAL_DS_COUNT])(const char* model, const char* running, struct nc_err ** e) = {
+			NULL, /* ietf-inet-types */
+			NULL, /* ietf-yang-types */
 			NULL, /* ietf-netconf */
 			get_state_monitoring, /* ietf-netconf-monitoring */
 #ifndef DISABLE_NOTIFICATIONS
@@ -176,6 +184,8 @@ int ncds_sysinit(void)
 			get_state_nacm /* NACM status data */
 	};
 	struct ds_desc internal_ds_desc[INTERNAL_DS_COUNT] = {
+			{NCDS_TYPE_EMPTY, NULL},
+			{NCDS_TYPE_EMPTY, NULL},
 			{NCDS_TYPE_EMPTY, NULL},
 			{NCDS_TYPE_EMPTY, NULL},
 #ifndef DISABLE_NOTIFICATIONS
