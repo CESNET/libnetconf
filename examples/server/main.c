@@ -333,60 +333,35 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 	 * - use a dummy NETCONF session of the server
 	 */
 	if (init == 0) {
+		/* create "dummy" session for internal server use
+		 * this session supports all default capabilities
+		 */
 		def_cpblts = nc_session_get_cpblts_default ();
 		dummy_session = nc_session_dummy ("dummy", "netconf-server", "localhost", def_cpblts);
 		nc_cpblts_free (def_cpblts);
+		nc_rpc * rpc;
+		nc_reply * reply;
 
-		/* 1) load startup using get-config applied to the datastore */
-		if ((rpc = nc_rpc_getconfig (NC_DATASTORE_STARTUP, NULL)) == NULL ) {
-			ncds_free (datastore);
+		/* Create RPC message to copy startup datastore to running. */
+		if ((rpc = nc_rpc_copyconfig (NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING)) == NULL ) {
 			nc_session_free (dummy_session);
-			clb_print (NC_VERB_ERROR, "Getting startup configuration failed (nc_rpc_getconfig()).");
+			clb_print (NC_VERB_ERROR, "Creating copy-config failed.");
 			return (EXIT_FAILURE);
 		}
-		reply = ncds_apply_rpc2all(dummy_session, rpc, 0, NULL);
-		nc_rpc_free (rpc);
-		if (reply == NULL || nc_reply_get_type (reply) != NC_REPLY_DATA) {
-			ncds_free (datastore);
-			nc_reply_free (reply);
-			nc_session_free (dummy_session);
-			clb_print (NC_VERB_ERROR, "Getting startup configuration failed.");
-			return (EXIT_FAILURE);
-		}
-		if ((startup_data = nc_reply_get_data (reply)) == NULL ) {
-			ncds_free (datastore);
-			nc_reply_free (reply);
-			nc_session_free (dummy_session);
-			clb_print (NC_VERB_ERROR, "Invalid startup configuration data.");
-			return (EXIT_FAILURE);
-		}
-		nc_reply_free (reply);
-
-		/* 2) apply loaded configuration to the device and change configuration
-		 *    data according to the real state of the device
+		/* Apply RPC to all datastores.
+		 * If your devices use transapi changes will be applied automatically.
+		 * Otherwise you must apply it.
 		 */
-		/* nothing to do in this example application, change startup_data to
-		 * the running_data */
-		running_data = startup_data;
-
-		/* 3) store real state of the device as the running configuration */
-		if ((rpc = nc_rpc_copyconfig (NC_DATASTORE_CONFIG, NC_DATASTORE_RUNNING, running_data)) == NULL ) {
-			ncds_free (datastore);
-			nc_session_free (dummy_session);
-			clb_print (NC_VERB_ERROR, "Setting up running configuration failed (nc_rpc_copyconfig()).");
-			return (EXIT_FAILURE);
-		}
-		free (running_data);
-
 		reply = ncds_apply_rpc2all(dummy_session, rpc, 0, NULL);
 		nc_rpc_free (rpc);
+		/* Check returned reply */
 		if (reply == NULL || nc_reply_get_type (reply) != NC_REPLY_OK) {
-			ncds_free (datastore);
 			nc_reply_free (reply);
 			nc_session_free (dummy_session);
-			clb_print (NC_VERB_ERROR, "Setting up running configuration failed.");
+			clb_print (NC_VERB_ERROR, "Applying copy-config (startup->running) failed.");
 			return (EXIT_FAILURE);
 		}
+		/* clean */
 		nc_reply_free (reply);
 		nc_session_free (dummy_session);
 		/* device initiation done */
