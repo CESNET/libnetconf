@@ -2347,44 +2347,6 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 	if (datastore->transapi.module != NULL) {
 		/* parse model to get aux structure for TransAPI's internal purposes */
 		datastore->data_model->model_tree = yinmodel_parse(datastore->ext_model);
-		/* if init function is defined */
-		if (datastore->transapi.init.init != NULL) {
-			/* get startup config */
-			err = NULL;
-			if ((startup_config = datastore->func.getconfig(datastore, NULL, NC_DATASTORE_STARTUP, &err)) == NULL) {
-				ERROR ("%s: Failed to get startup config: %s", __func__, (err != NULL) ? err->message: "");
-				nc_err_free (err);
-				return -3;
-			}
-			/* initialize module */
-			if (datastore->transapi.libxml2) {
-				if ((startup_config_xml = xmlReadDoc(BAD_CAST startup_config, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN)) == NULL) {
-					ERROR ("%s: Failed to parse startup config.", __func__);
-					return -3;
-				}
-				if ((running_config_xml = datastore->transapi.init.init_xml(startup_config_xml)) == NULL) {
-					ERROR ("%s: Failed to initialize module.", __func__);
-					return -3;
-				}
-				xmlDocDumpMemory(running_config_xml, (xmlChar**)&running_config, &len);
-				xmlFreeDoc(startup_config_xml);
-				xmlFreeDoc(running_config_xml);
-			} else {
-				if ((running_config = datastore->transapi.init.init(startup_config)) == NULL) {
-					ERROR ("%s: Failed to initialize module.", __func__);
-					return -3;
-				}
-			}
-			/* store running config */
-			err = NULL;
-			if ((datastore->func.copyconfig(datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, running_config, &err)) != EXIT_SUCCESS) {
-				ERROR ("%s: Failed to store running configuration: %s", __func__, (err != NULL) ? err->message : "");
-				nc_err_free (err);
-				return -3;
-			}
-			free(startup_config);
-			free(running_config);
-		}
 	}
 
 	/* acquire unique id */
