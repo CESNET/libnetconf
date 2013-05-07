@@ -2205,6 +2205,10 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	switch (type) {
 	case NCDS_TYPE_FILE:
 		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file));
+		if (ds == NULL) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
 		ds->func.init = ncds_file_init;
 		ds->func.free = ncds_file_free;
 		ds->func.was_changed = ncds_file_changed;
@@ -2219,6 +2223,10 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		break;
 	case NCDS_TYPE_EMPTY:
 		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty));
+		if (ds == NULL) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
 		ds->func.init = ncds_empty_init;
 		ds->func.free = ncds_empty_free;
 		ds->func.was_changed = ncds_empty_changed;
@@ -2233,10 +2241,6 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		break;
 	default:
 		ERROR("Unsupported datastore implementation required.");
-		return (NULL);
-	}
-	if (ds == NULL) {
-		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
 	ds->type = type;
