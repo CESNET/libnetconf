@@ -255,11 +255,8 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 {
 	struct srv_config config;
 	struct ncds_ds* datastore;
-	nc_rpc* rpc;
-	nc_reply* reply;
 	struct nc_session* dummy_session;
 	struct nc_cpblts *def_cpblts;
-	char *startup_data, *running_data;
 	int init;
 
 	/* set verbosity and function to print libnetconf's messages */
