@@ -2276,6 +2276,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 				}
 				/* remove the node from the edit document */
 				edit_delete(edit_node);
+				nodes->nodesetval->nodeTab[i] = NULL;
 			}
 		}
 		xmlXPathFreeObject(nodes);
@@ -2291,6 +2292,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 					xmlXPathFreeObject(nodes);
 					goto error;
 				}
+				nodes->nodesetval->nodeTab[i] = NULL;
 			}
 		}
 		xmlXPathFreeObject(nodes);
@@ -2306,6 +2308,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 					xmlXPathFreeObject(nodes);
 					goto error;
 				}
+				nodes->nodesetval->nodeTab[i] = NULL;
 			}
 		}
 		xmlXPathFreeObject(nodes);
@@ -2321,6 +2324,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 					xmlXPathFreeObject(nodes);
 					goto error;
 				}
+				nodes->nodesetval->nodeTab[i] = NULL;
 			}
 		}
 		xmlXPathFreeObject(nodes);
@@ -2336,6 +2340,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 					xmlXPathFreeObject(nodes);
 					goto error;
 				}
+				nodes->nodesetval->nodeTab[i] = NULL;
 			}
 		}
 		xmlXPathFreeObject(nodes);
