@@ -34,12 +34,18 @@ int nc_url_is_enabled( NC_URL_PROTOCOLS protocol )
 	return nc_url_allowed_protocols & protocol;
 }
 
+size_t nc_url_writedata( char *ptr, size_t size, size_t nmemb, void *userdata) {
+	printf( "%s\n", ptr );
+	return write( url_tmpfile, ptr, size*nmemb );
+}
+
 int nc_url_get_rpc( xmlChar * url )
 {
 	CURL * curl;
 	CURLcode res;
-	char * curl_buffer[ CURL_ERROR_SIZE ];
-	if( ( url_tmpfile = mkstemp( "url_tmpfileXXXXXX") ) < 0 )
+	char curl_buffer[ CURL_ERROR_SIZE ];
+	char url_tmp_name[18] = "url_tmpfileXXXXXX";
+	if( ( url_tmpfile = mkstemp( url_tmp_name ) ) < 0 )
 	{
 		ERROR( "%s: cannot open temporary file", __func__ );
 	}
@@ -47,16 +53,16 @@ int nc_url_get_rpc( xmlChar * url )
 	curl_global_init(INIT_FLAGS);
 	curl = curl_easy_init();
 	curl_easy_setopt( curl, CURLOPT_URL, url );
-	curl_easy_setopt( curl, CURLOPT_WRITEDATA, url_tmpfile );
+	curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, nc_url_writedata );
 	curl_easy_setopt( curl, CURLOPT_ERRORBUFFER, curl_buffer );
 	res = curl_easy_perform( curl );
 	
 	if( res != CURLE_OK )
 	{
 		close( url_tmpfile );
-		ERROR( "%s: curl error: %s", __func__, *curl_buffer );
+		ERROR( "%s: curl error: %s", __func__, curl_buffer );
 		return -1;
 	}
-
+	lseek( url_tmpfile, 0, SEEK_SET );
 	return url_tmpfile;
 }
