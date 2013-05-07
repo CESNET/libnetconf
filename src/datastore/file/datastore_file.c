@@ -840,7 +840,7 @@ char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* UNUSED(s
 	for (aux_node = target_ds->children; aux_node != NULL; aux_node = aux_node->next) {
 		xmlNodeDump(resultbuffer, file_ds->xml, aux_node, 2, 1);
 	}
-	data = strdup((char *) xmlBufferContent(resultbuffer));
+	data = nc_clrwspace((char *) xmlBufferContent(resultbuffer));
 	xmlBufferFree(resultbuffer);
 
 	UNLOCK(file_ds);
