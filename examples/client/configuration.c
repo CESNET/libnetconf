@@ -80,10 +80,11 @@ void load_config (struct nc_cpblts **cpblts)
 
 	(*cpblts) = nc_session_get_cpblts_default();
 
-	if ((user_home = strdup(getenv ("HOME"))) == NULL) {
-		pw = getpwuid (getuid ());
-		user_home = strdup (pw->pw_dir);
+	if ((pw = getpwuid(getuid())) == NULL) {
+		ERROR("load_config", "Determining home directory failed (%s).", strerror(errno));
+		return;
 	}
+	user_home = pw->pw_dir;
 
 	if (asprintf (&netconf_dir, "%s/%s", user_home, NCC_DIR) == -1) {
 		ERROR("load_config", "asprintf() failed (%s:%d).", __FILE__, __LINE__);
@@ -240,10 +241,11 @@ void store_config (struct nc_cpblts * cpblts)
 	xmlNodePtr config_caps;
 	FILE * config_f;
 
-	if ((user_home = strdup(getenv ("HOME"))) == NULL) {
-		pw = getpwuid (getuid ());
-		user_home = strdup (pw->pw_dir);
+	if ((pw = getpwuid(getuid())) == NULL) {
+		ERROR("store_config", "Determining home directory failed (%s).", strerror(errno));
+		return;
 	}
+	user_home = pw->pw_dir;
 
 	if (asprintf (&netconf_dir, "%s/%s", user_home, NCC_DIR) == -1) {
 		ERROR("store_config", "asprintf() failed (%s:%d).", __FILE__, __LINE__);

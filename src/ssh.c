@@ -936,13 +936,11 @@ static int find_ssh_keys ()
 	char * key_names[SSH2_KEYS] = {"id_rsa", "id_dsa", "id_ecdsa"};
 	int i, x, y, retval = EXIT_FAILURE;
 
-	if ((user_home = getenv("HOME")) == NULL) {
-		if ((pw = getpwuid(getuid())) == NULL) {
-			return EXIT_FAILURE;
-		}
-		user_home = pw->pw_dir;
+	if ((pw = getpwuid(getuid())) == NULL) {
+		ERROR("Determining user's home directory for getting SSH keys failed (%s)", strerror(errno));
+		return EXIT_FAILURE;
 	}
-
+	user_home = pw->pw_dir;
 
 	/* search in the same location as ssh do (~/.ssh/) */
 	VERB ("Searching for the key pairs in the standard ssh directory.");
@@ -961,7 +959,6 @@ static int find_ssh_keys ()
 		free (key_priv_path);
 		free (key_pub_path);
 	}
-
 
 	return retval;
 }
