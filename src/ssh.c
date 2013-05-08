@@ -1587,16 +1587,15 @@ shutdown:
 
 struct nc_session *nc_session_connect_channel(struct nc_session *session, const struct nc_cpblts* cpblts)
 {
+#ifdef DISABLE_LIBSSH
+	ERROR("%s: SSH channels are provided only with libssh2.", __func__);
+	return (NULL);
+#else
 	struct nc_session *retval, *session_aux;
 	struct nc_cpblts *client_cpblts = NULL;
 	pthread_mutexattr_t mattr;
 	char* err_msg;
 	int r;
-
-#ifdef DISABLE_LIBSSH
-	ERROR("%s: SSH channels are provided only with libssh2.", __func__);
-	return (NULL);
-#else
 
 	/* allocate netconf session structure */
 	retval = malloc(sizeof(struct nc_session));
