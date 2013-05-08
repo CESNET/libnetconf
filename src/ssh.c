@@ -47,6 +47,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <pwd.h>
+#include <grp.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -1003,6 +1004,8 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	char line[81];
 	int forced = 0; /* force connection to unknown destinations */
 	size_t n;
+	gid_t newgid, oldgid;
+	uid_t newuid, olduid;
 
 	if (access(SSH_PROG, X_OK) != 0) {
 		ERROR("Unable to locate or execute ssh(1) application \'%s\' (%s).", SSH_PROG, strerror(errno));
@@ -1093,6 +1096,34 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		if (dup2(ssh_in, STDIN_FILENO) == -1) {
 			ERROR("%s", strerror(errno));
 			exit(-1);
+		}
+
+		/* drop privileges if any set by the application */
+		newgid = getgid();
+		oldgid = getegid();
+		newuid = getuid();
+		olduid = geteuid();
+		/* if root privileges are to be dropped, pare down the ancillary groups */
+		if (olduid == 0) {
+			setgroups(1, &newgid);
+		}
+		/* drop group privileges */
+		if (newgid != oldgid) {
+#if !defined(linux)
+			setegid(newgid);
+			setgid(newgid);
+#else
+			setregid(newgid, newgid);
+#endif
+		}
+		/* drop user privileges */
+		if (newuid != olduid) {
+#if !defined(linux)
+			seteuid(newuid);
+			setuid(newuid);
+#else
+			setreuid(newuid, newuid);
+#endif
 		}
 
 		/* run ssh with parameters to start ssh subsystem on the server */
