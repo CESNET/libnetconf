@@ -35,7 +35,6 @@ int nc_url_is_enabled( NC_URL_PROTOCOLS protocol )
 }
 
 size_t nc_url_writedata( char *ptr, size_t size, size_t nmemb, void *userdata) {
-	printf( "%s\n", ptr );
 	return write( url_tmpfile, ptr, size*nmemb );
 }
 
@@ -78,6 +77,7 @@ int nc_url_get_rpc( xmlChar * url )
 	{
 		ERROR( "%s: cannot open temporary file", __func__ );
 	}
+	unlink( url_tmp_name );
 	VERB( "curl: getting file from url %s", url );
 	curl_global_init(INIT_FLAGS);
 	curl = curl_easy_init();
