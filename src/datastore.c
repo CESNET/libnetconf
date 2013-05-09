@@ -2200,7 +2200,8 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlNodePtr op_node;
 	xmlNodePtr op_input;
 	int pos;
-
+	xmlXPathObjectPtr url_path = NULL;
+	
 	if (rpc == NULL || session == NULL) {
 		ERROR("%s: invalid parameter %s", __func__, (rpc==NULL)?"rpc":"session");
 		return (NULL);
@@ -2427,7 +2428,7 @@ process_datastore:
 					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
 					break;
-				}
+				}	
 			} else {
 				node = xmlCopyNode(aux_node, 1);
 			}
@@ -2601,8 +2602,14 @@ apply_editcopyconfig:
 			nc_err_set(e, NC_ERR_PARAM_MSG, "Cannot delete a running datastore.");
 			break;
 		}
-		ret = ds->func.deleteconfig(ds, session, target_ds = nc_rpc_get_target(rpc), &e);
-
+		target_ds  = nc_rpc_get_target(rpc);
+		if( target_ds == NC_DATASTORE_URL ) {
+			url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":delete-config/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
+			ret = nc_url_delete_config( xmlNodeGetContent( url_path->nodesetval->nodeTab[0] ) );
+			xmlXPathFreeObject( url_path );
+		} else {
+			ret = ds->func.deleteconfig(ds, session, target_ds, &e);
+		}
 #ifndef DISABLE_NOTIFICATIONS
 		/* log the event */
 		if (ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {

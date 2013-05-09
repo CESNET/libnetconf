@@ -2,7 +2,7 @@
 typedef unsigned char xmlChar;
 
 int nc_url_get_rpc( xmlChar * url );
-
+int nc_url_delete_config( xmlChar * url );
 typedef enum
 {
 	NC_URL_SCP   =   1,
