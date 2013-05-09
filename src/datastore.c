@@ -2177,6 +2177,25 @@ int ncds_rollback(ncds_id id)
 	return (datastore->func.rollback(datastore));
 }
 
+int ncds_is_conflict( const nc_rpc * rpc )
+{
+	xmlXPathObjectPtr query_source = NULL;
+	xmlXPathObjectPtr query_target = NULL;
+	if( nc_rpc_get_source(rpc) == NC_DATASTORE_URL && nc_rpc_get_target(rpc) == NC_DATASTORE_URL ) {
+		query_source = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":url", rpc->ctxt);
+		query_target = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
+		
+		if( xmlStrcmp( xmlNodeGetContent( query_source->nodesetval->nodeTab[0] ), xmlNodeGetContent( query_target->nodesetval->nodeTab[0] )  ) == 0 ) {
+			return 1;
+		}
+	}
+	else if( nc_rpc_get_source(rpc) == nc_rpc_get_target(rpc) ) {
+		return 1;
+	}
+	
+	return 0;
+}
+
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
@@ -2467,7 +2486,7 @@ process_datastore:
 				break;
 			}
 			/* <copy-config> with specified source datastore */
-			if (target_ds == source_ds) {
+			if ( ncds_is_conflict(rpc) ) {
 				e = nc_err_new(NC_ERR_INVALID_VALUE);
 				nc_err_set(e, NC_ERR_PARAM_MSG, "Both the target and the source identify the same datastore.");
 				break;
@@ -2574,7 +2593,11 @@ apply_editcopyconfig:
 		if (op == NC_OP_EDITCONFIG) {
 			ret = ds->func.editconfig(ds, session, rpc, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 		} else if (op == NC_OP_COPYCONFIG) {
-			ret = ds->func.copyconfig(ds, session, rpc, target_ds, source_ds, config, &e);
+			if( nc_rpc_get_target(rpc) == NC_DATASTORE_URL ) {	
+				ret = nc_url_upload( nc_rpc_get_config( rpc ), xmlNodeGetContent( xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt )->nodesetval->nodeTab[0] ) );
+			} else {
+				ret = ds->func.copyconfig(ds, session, rpc, target_ds, source_ds, config, &e);
+			}
 		} else {
 			ret = EXIT_FAILURE;
 		}

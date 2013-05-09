@@ -34,6 +34,36 @@ int nc_url_is_enabled( NC_URL_PROTOCOLS protocol )
 	return nc_url_allowed_protocols & protocol;
 }
 
+int nc_url_upload( const char * data, xmlChar * url ) {
+	CURL * curl;
+	CURLcode res;
+	char curl_buffer[ CURL_ERROR_SIZE ];
+	FILE * tmp_file;
+	
+	
+	tmp_file = tmpfile();
+	
+	fprintf(tmp_file, "%s", data );
+	printf( "%s", data );
+	curl_global_init(INIT_FLAGS);
+	curl = curl_easy_init();
+	curl_easy_setopt( curl, CURLOPT_URL, url );
+	curl_easy_setopt( curl, CURLOPT_UPLOAD, 1L );
+	curl_easy_setopt( curl, CURLOPT_READDATA, tmp_file );
+	curl_easy_setopt( curl, CURLOPT_ERRORBUFFER, curl_buffer );
+	res = curl_easy_perform( curl );
+	
+	if( res != CURLE_OK )
+	{
+		close( url_tmpfile );
+		ERROR( "%s: curl error: %s", __func__, curl_buffer );
+		return -1;
+	}
+	fclose( tmp_file );
+	printf( "!%s!", curl_buffer );
+	return EXIT_SUCCESS;
+}
+
 size_t nc_url_writedata( char *ptr, size_t size, size_t nmemb, void *userdata) {
 	return write( url_tmpfile, ptr, size*nmemb );
 }
@@ -62,7 +92,7 @@ int nc_url_delete_config( xmlChar * url )
 		ERROR( "%s: curl error: %s", __func__, curl_buffer );
 		return -1;
 	}
-	fclose( empty_file );
+	//fclose( empty_file );
 	
 	return EXIT_SUCCESS;
 }
