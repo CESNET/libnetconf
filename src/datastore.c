@@ -137,6 +137,53 @@ static struct ncds_ds *datastores_get_ds(ncds_id id);
 #define NACM_DS_INDEX 5
 #endif
 int internal_ds_count = 0;
+
+/* Allocate and fill the ncds func structure based on the type. */
+static struct ncds_ds* ncds_fill_func(NCDS_TYPE type)
+{
+	struct ncds_ds* ds;
+	switch (type) {
+	case NCDS_TYPE_FILE:
+		if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file))) == NULL ) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL );
+		}
+		ds->func.init = ncds_file_init;
+		ds->func.free = ncds_file_free;
+		ds->func.was_changed = ncds_file_changed;
+		ds->func.rollback = ncds_file_rollback;
+		ds->func.get_lockinfo = ncds_file_lockinfo;
+		ds->func.lock = ncds_file_lock;
+		ds->func.unlock = ncds_file_unlock;
+		ds->func.getconfig = ncds_file_getconfig;
+		ds->func.copyconfig = ncds_file_copyconfig;
+		ds->func.deleteconfig = ncds_file_deleteconfig;
+		ds->func.editconfig = ncds_file_editconfig;
+		break;
+	case NCDS_TYPE_EMPTY:
+		if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty))) == NULL ) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL );
+		}
+		ds->func.init = ncds_empty_init;
+		ds->func.free = ncds_empty_free;
+		ds->func.was_changed = ncds_empty_changed;
+		ds->func.rollback = ncds_empty_rollback;
+		ds->func.get_lockinfo = ncds_empty_lockinfo;
+		ds->func.lock = ncds_empty_lock;
+		ds->func.unlock = ncds_empty_unlock;
+		ds->func.getconfig = ncds_empty_getconfig;
+		ds->func.copyconfig = ncds_empty_copyconfig;
+		ds->func.deleteconfig = ncds_empty_deleteconfig;
+		ds->func.editconfig = ncds_empty_editconfig;
+		break;
+	default:
+		ERROR("Unsupported datastore implementation required.");
+		return (NULL );
+	}
+	return (ds);
+}
+
 int ncds_sysinit(void)
 {
 	int i;
@@ -211,48 +258,17 @@ int ncds_sysinit(void)
 		}
 #endif
 
-		switch(internal_ds_desc[i].type) {
-		case NCDS_TYPE_EMPTY:
-			if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty))) == NULL) {
-				ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-				return (EXIT_FAILURE);
-			}
-			ds->func.init = ncds_empty_init;
-			ds->func.free = ncds_empty_free;
-			ds->func.was_changed = ncds_empty_changed;
-			ds->func.rollback = ncds_empty_rollback;
-			ds->func.get_lockinfo = ncds_empty_lockinfo;
-			ds->func.lock = ncds_empty_lock;
-			ds->func.unlock = ncds_empty_unlock;
-			ds->func.getconfig = ncds_empty_getconfig;
-			ds->func.copyconfig = ncds_empty_copyconfig;
-			ds->func.deleteconfig = ncds_empty_deleteconfig;
-			ds->func.editconfig = ncds_empty_editconfig;
-			ds->type = NCDS_TYPE_EMPTY;
-			break;
-		case NCDS_TYPE_FILE:
-			if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file))) == NULL) {
-				ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-				return (EXIT_FAILURE);
-			}
-			ds->func.init = ncds_file_init;
-			ds->func.free = ncds_file_free;
-			ds->func.was_changed = ncds_file_changed;
-			ds->func.rollback = ncds_file_rollback;
-			ds->func.get_lockinfo = ncds_file_lockinfo;
-			ds->func.lock = ncds_file_lock;
-			ds->func.unlock = ncds_file_unlock;
-			ds->func.getconfig = ncds_file_getconfig;
-			ds->func.copyconfig = ncds_file_copyconfig;
-			ds->func.deleteconfig = ncds_file_deleteconfig;
-			ds->func.editconfig = ncds_file_editconfig;
-			ds->type = NCDS_TYPE_FILE;
-			if (ncds_file_set_path(ds, internal_ds_desc[i].filename) != 0) {
-				ERROR("Linking internal datastore to a file (%s) failed.", internal_ds_desc[i].filename);
-				return (EXIT_FAILURE);
-			}
-			break;
+		ds = ncds_fill_func(internal_ds_desc[i].type);
+		if (ds == NULL) {
+			/* The error was reported already. */
+			return (EXIT_FAILURE);
 		}
+		ds->type = internal_ds_desc[i].type;
+		if (ds->type == NCDS_TYPE_FILE && ncds_file_set_path(ds, internal_ds_desc[i].filename) != 0) {
+			ERROR("Linking internal datastore to a file (%s) failed.", internal_ds_desc[i].filename);
+			return (EXIT_FAILURE);
+		}
+
 		ds->id = internal_ds_count++;
 
 		ds->data_model = malloc(sizeof(struct data_model));
@@ -2202,47 +2218,12 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		return (NULL);
 	}
 
-	switch (type) {
-	case NCDS_TYPE_FILE:
-		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file));
-		if (ds == NULL) {
-			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-			return (NULL);
-		}
-		ds->func.init = ncds_file_init;
-		ds->func.free = ncds_file_free;
-		ds->func.was_changed = ncds_file_changed;
-		ds->func.rollback = ncds_file_rollback;
-		ds->func.get_lockinfo = ncds_file_lockinfo;
-		ds->func.lock = ncds_file_lock;
-		ds->func.unlock = ncds_file_unlock;
-		ds->func.getconfig = ncds_file_getconfig;
-		ds->func.copyconfig = ncds_file_copyconfig;
-		ds->func.deleteconfig = ncds_file_deleteconfig;
-		ds->func.editconfig = ncds_file_editconfig;
-		break;
-	case NCDS_TYPE_EMPTY:
-		ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_empty));
-		if (ds == NULL) {
-			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-			return (NULL);
-		}
-		ds->func.init = ncds_empty_init;
-		ds->func.free = ncds_empty_free;
-		ds->func.was_changed = ncds_empty_changed;
-		ds->func.rollback = ncds_empty_rollback;
-		ds->func.get_lockinfo = ncds_empty_lockinfo;
-		ds->func.lock = ncds_empty_lock;
-		ds->func.unlock = ncds_empty_unlock;
-		ds->func.getconfig = ncds_empty_getconfig;
-		ds->func.copyconfig = ncds_empty_copyconfig;
-		ds->func.deleteconfig = ncds_empty_deleteconfig;
-		ds->func.editconfig = ncds_empty_editconfig;
-		break;
-	default:
-		ERROR("Unsupported datastore implementation required.");
+	ds = ncds_fill_func(type);
+	if (ds == NULL) {
+		/* The error was reported already. */
 		return (NULL);
 	}
+
 	ds->type = type;
 
 	/* get configuration data model */
