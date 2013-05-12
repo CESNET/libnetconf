@@ -3509,7 +3509,7 @@ apply_editcopyconfig:
 	return (reply);
 }
 
-nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, int ids_copy, ncds_id* ids[])
+nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[])
 {
 	struct ncds_ds_list* ds, *ds_rollback;
 	nc_reply *old_reply = NULL, *new_reply = NULL, *reply = NULL;
@@ -3528,11 +3528,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 	}
 
 	if (ids != NULL) {
-		if (ids_copy != 0) {
-			*ids = malloc((ncds.count + 1) * sizeof(ncds_id));
-		} else {
-			*ids = ncds.datastores_ids;
-		}
+		*ids = ncds.datastores_ids;
 	}
 
 	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
@@ -3544,10 +3540,9 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 		/* apply RPC on a single datastore */
 		reply = ncds_apply_rpc(ds->datastore->id, session, rpc);
 		if (ids != NULL && reply != (void*)(-1)) {
-			//fprintf (stderr, "ids: %p %p %p %p %p %p %d %d\n", reply, ncds.datastores_ids, ids, ids+id_i, ds, ds->datastore, ds->datastore->id, ids_copy);
-			(*ids)[id_i] = ds->datastore->id;
+			ncds.datastores_ids[id_i] = ds->datastore->id;
 			id_i++;
-			(*ids)[id_i] = -1; /* terminating item */
+			ncds.datastores_ids[id_i] = -1; /* terminating item */
 		}
 
 		/* merge results from the previous runs */

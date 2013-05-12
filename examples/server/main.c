@@ -207,7 +207,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		case NC_OP_GET:
 		case NC_OP_GETCONFIG:
 		case NC_OP_GETSCHEMA:
-			reply = ncds_apply_rpc2all(config->session, rpc, 0, NULL);
+			reply = ncds_apply_rpc2all(config->session, rpc,  NULL);
 			break;
 		default:
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
@@ -223,7 +223,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		case NC_OP_EDITCONFIG:
 		case NC_OP_COMMIT:
 		case NC_OP_DISCARDCHANGES:
-			reply = ncds_apply_rpc2all(config->session, rpc, 0, NULL);
+			reply = ncds_apply_rpc2all(config->session, rpc, NULL);
 			break;
 		default:
 			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
@@ -231,7 +231,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		}
 	} else {
 		/* process other operations */
-		reply = ncds_apply_rpc2all(config->session, rpc, 0, NULL);
+		reply = ncds_apply_rpc2all(config->session, rpc, NULL);
 	}
 
 	/* create reply */
@@ -349,7 +349,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 		 * If your devices use transapi changes will be applied automatically.
 		 * Otherwise you must apply it.
 		 */
-		reply = ncds_apply_rpc2all(dummy_session, rpc, 0, NULL);
+		reply = ncds_apply_rpc2all(dummy_session, rpc, NULL);
 		nc_rpc_free (rpc);
 		/* Check returned reply */
 		if (reply == NULL || nc_reply_get_type (reply) != NC_REPLY_OK) {

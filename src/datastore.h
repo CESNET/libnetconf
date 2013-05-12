@@ -194,14 +194,10 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
  * @param[in] session NETCONF session (a dummy session is acceptable) where the
  * \<rpc\> came from. Capabilities checks are done according to this session.
  * @param[in] rpc NETCONF \<rpc\> message specifying requested operation.
- * @param[in] ids_copy Flag for ids array:
- * - 0 -- ids is returned as a static array which is rewritten by a subsequent
- * call to ncds_apply_rpc2all().
- * - 1 -- ids is returned as a dynamically allocated array and caller is
- * supposed to free it using free().
- * @param[out] ids Pointer to an array of datastore IDs where the RPC was
- * successfully applied. The list is terminated by a value (ncds_id)(-1). NULL
- * is accepted as a valid value when this information is supposed to be ignored.
+ * @param[out] ids Pointer to a static array containing list of datastore IDs
+ * where the RPC was successfully applied. The list is terminated by value a
+ * (ncds_id)(-1). The list is rewritten by any following call to
+ * ncds_apply_rpc2all().
  * @return NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid
  * parameter session or rpc, else \<rpc-reply\> with \<ok\>, \<data\> or
  * \<rpc-error\> according to the type and the result of the requested
@@ -210,7 +206,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
  * NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned.
  *
  */
-nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, int ids_copy, ncds_id* ids[]);
+nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[]);
 
 /**
  * @ingroup store
