@@ -879,54 +879,14 @@ static char* nc_rpc_get_copyconfig(const nc_rpc* rpc)
 
 static xmlNodePtr ncxml_rpc_get_copyconfig(const nc_rpc* rpc)
 {
-	xmlXPathObjectPtr query_result = NULL;
-	xmlNodePtr retval;
-
-	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":copy-config/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
-		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			ERROR("%s: no source config data in the copy-config request", __func__);
-			xmlXPathFreeObject(query_result);
-			return (NULL);
-		} else if (query_result->nodesetval->nodeNr > 1) {
-			ERROR("%s: multiple source config data in the copy-config request", __func__);
-			xmlXPathFreeObject(query_result);
-			return (NULL);
-		}
-
-		retval = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
-		xmlXPathFreeObject(query_result);
-		return (retval);
-	} else {
-		ERROR("%s: source config data not found in the copy-config request", __func__);
-		return (NULL);
-	}
+	return ncxml_rpc_get_config( rpc );
 }
 
 
 
 static xmlNodePtr ncxml_rpc_get_editconfig(const nc_rpc* rpc)
 {
-	xmlXPathObjectPtr query_result = NULL;
-	xmlNodePtr retval;
-
-	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
-		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			ERROR("%s: no config data in the edit-config request", __func__);
-			xmlXPathFreeObject(query_result);
-			return (NULL);
-		} else if (query_result->nodesetval->nodeNr > 1) {
-			ERROR("%s: multiple config data in the edit-config request", __func__);
-			xmlXPathFreeObject(query_result);
-			return (NULL);
-		}
-
-		retval = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
-		xmlXPathFreeObject(query_result);
-		return (retval);
-	} else {
-		ERROR("%s: config data not found in the edit-config request", __func__);
-		return (NULL);
-	}
+	return ncxml_rpc_get_config( rpc );
 }
 
 char* nc_rpc_get_config(const nc_rpc* rpc)
