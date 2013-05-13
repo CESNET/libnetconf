@@ -2,6 +2,9 @@
 #include <curl/curl.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+#include <libxml/xmlstring.h>
 #include "netconf_internal.h"
 
 
@@ -39,7 +42,22 @@ int nc_url_upload( const char * data, xmlChar * url ) {
 	CURLcode res;
 	char curl_buffer[ CURL_ERROR_SIZE ];
 	FILE * tmp_file;
+	xmlDocPtr doc;
+	xmlNodePtr root_element;
 	
+	if( strcmp( data, "" ) == 0 ) {
+		ERROR( "%s: source file is empty", __func__)
+		return EXIT_FAILURE;
+	}
+	
+	doc = xmlParseMemory( data, strlen( data ) );
+	root_element = xmlDocGetRootElement( doc );
+	if( strcmp( ( char * )root_element->name, "config" ) != 0 ) {
+		ERROR( "%s: source file does not contain config element", __func__ );
+		return EXIT_FAILURE;
+	}
+	xmlFreeNode( root_element );
+	xmlFreeDoc( doc );
 	
 	tmp_file = tmpfile();
 	
