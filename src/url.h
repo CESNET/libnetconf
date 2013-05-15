@@ -37,6 +37,7 @@
  *
  */
 
+#ifndef DISABLE_URL
 #ifndef URL_H_
 #define URL_H_
 
@@ -52,3 +53,4 @@ typedef enum NC_URL_PROTOCOLS {
 } NC_URL_PROTOCOLS;
 
 #endif /* URL_H_ */
+#endif /* DISABLE_URL */

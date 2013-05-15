@@ -2184,16 +2184,19 @@ int ncds_rollback(ncds_id id)
 int ncds_is_conflict(const nc_rpc * rpc)
 {
 	NC_DATASTORE source, target;
+#ifndef DISABLE_URL
 	xmlXPathObjectPtr query_source = NULL;
 	xmlXPathObjectPtr query_target = NULL;
 	xmlChar *nc1 = NULL, *nc2 = NULL;
 	int ret;
+#endif /* DISABLE_URL */
 
 	source = nc_rpc_get_source(rpc);
 	target = nc_rpc_get_target(rpc);
 
 	if(source == target) {
 		/* source and target datastore are the same */
+#ifndef DISABLE_URL
 		/* if they are URLs, check if both URLs point to a single resource */
 		if (source == NC_DATASTORE_URL) {
 			query_source = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":url", rpc->ctxt);
@@ -2211,6 +2214,9 @@ int ncds_is_conflict(const nc_rpc * rpc)
 
 			return (ret);
 		} else {
+#else
+		{
+#endif /* DISABLE_URL */
 			/* rpc targets local datastores */
 			return 1;
 		}
@@ -2242,7 +2248,11 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlNodePtr op_node;
 	xmlNodePtr op_input;
 	int pos;
+
+#ifndef DISABLE_URL
 	xmlXPathObjectPtr url_path = NULL;
+	xmlChar *ncontent;
+#endif /* DISABLE_URL */
 	
 	if (rpc == NULL || session == NULL) {
 		ERROR("%s: invalid parameter %s", __func__, (rpc==NULL)?"rpc":"session");
@@ -2616,9 +2626,22 @@ apply_editcopyconfig:
 		if (op == NC_OP_EDITCONFIG) {
 			ret = ds->func.editconfig(ds, session, rpc, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 		} else if (op == NC_OP_COPYCONFIG) {
-			if( nc_rpc_get_target(rpc) == NC_DATASTORE_URL ) {	
-				ret = nc_url_upload( nc_rpc_get_config( rpc ), xmlNodeGetContent( xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt )->nodesetval->nodeTab[0] ) );
+#ifndef DISABLE_URL
+			if(target_ds == NC_DATASTORE_URL) {
+				url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
+				if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
+					ERROR("%s: unable to get URL path from <copy-config> request.", __func__);
+					ret = EXIT_FAILURE;
+					break;
+				}
+				/* \todo What if the source is a local datastore (i.e. startup, running, candidate)? */
+				ret = nc_url_upload(config = nc_rpc_get_config(rpc), ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]));
+				xmlFree(ncontent);
+				xmlXPathFreeObject(url_path);
 			} else {
+#else
+			{
+#endif /* DISABLE_URL */
 				ret = ds->func.copyconfig(ds, session, rpc, target_ds, source_ds, config, &e);
 			}
 		} else {
@@ -2649,11 +2672,21 @@ apply_editcopyconfig:
 			break;
 		}
 		target_ds  = nc_rpc_get_target(rpc);
+#ifndef DISABLE_URL
 		if( target_ds == NC_DATASTORE_URL ) {
 			url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":delete-config/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
-			ret = nc_url_delete_config( xmlNodeGetContent( url_path->nodesetval->nodeTab[0] ) );
-			xmlXPathFreeObject( url_path );
+			if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
+				ERROR("%s: unable to get URL path from <delete-config> request.", __func__);
+				ret = EXIT_FAILURE;
+				break;
+			}
+			ret = nc_url_delete_config(ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]));
+			xmlFree(ncontent);
+			xmlXPathFreeObject(url_path);
 		} else {
+#else
+		{
+#endif /* DISABLE_URL */
 			ret = ds->func.deleteconfig(ds, session, target_ds, &e);
 		}
 #ifndef DISABLE_NOTIFICATIONS
