@@ -43,6 +43,8 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xmlstring.h>
+
+#include "url_internal.h"
 #include "netconf_internal.h"
 
 

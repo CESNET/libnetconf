@@ -58,7 +58,7 @@
 #include "messages_internal.h"
 #include "with_defaults.h"
 #include "nacm.h"
-#include "url.h"
+#include "url_internal.h"
 #include "session.h"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";

@@ -37,3 +37,14 @@
  *
  */
 
+
+#include "url.h"
+
+typedef unsigned char xmlChar;
+
+int nc_url_get_rpc( xmlChar * url );
+int nc_url_delete_config( xmlChar * url );
+int nc_url_upload( const char * data, xmlChar * url );
+
+int url_tmpfile;
+

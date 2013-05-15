@@ -61,6 +61,7 @@
 #include "session.h"
 #include "datastore.h"
 #include "nacm.h"
+#include "url_internal.h"
 #include "datastore/edit_config.h"
 #include "datastore/datastore_internal.h"
 #include "datastore/file/datastore_file.h"
