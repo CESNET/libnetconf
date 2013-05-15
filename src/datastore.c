@@ -2178,20 +2178,42 @@ int ncds_rollback(ncds_id id)
 	return (datastore->func.rollback(datastore));
 }
 
-int ncds_is_conflict( const nc_rpc * rpc )
+/*
+ * \todo Add description (return values)
+ */
+int ncds_is_conflict(const nc_rpc * rpc)
 {
+	NC_DATASTORE source, target;
 	xmlXPathObjectPtr query_source = NULL;
 	xmlXPathObjectPtr query_target = NULL;
-	if( nc_rpc_get_source(rpc) == NC_DATASTORE_URL && nc_rpc_get_target(rpc) == NC_DATASTORE_URL ) {
-		query_source = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":url", rpc->ctxt);
-		query_target = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
-		
-		if( xmlStrcmp( xmlNodeGetContent( query_source->nodesetval->nodeTab[0] ), xmlNodeGetContent( query_target->nodesetval->nodeTab[0] )  ) == 0 ) {
+	xmlChar *nc1 = NULL, *nc2 = NULL;
+	int ret;
+
+	source = nc_rpc_get_source(rpc);
+	target = nc_rpc_get_target(rpc);
+
+	if(source == target) {
+		/* source and target datastore are the same */
+		/* if they are URLs, check if both URLs point to a single resource */
+		if (source == NC_DATASTORE_URL) {
+			query_source = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":url", rpc->ctxt);
+			query_target = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
+
+			/*
+			 * \todo Check query_source and query_target - aren't they NULL? aren't they empty? - see line 2622
+			 */
+
+			ret = xmlStrEqual(nc1 = xmlNodeGetContent(query_source->nodesetval->nodeTab[0]), nc2 = xmlNodeGetContent(query_target->nodesetval->nodeTab[0]));
+			/* cleanup */
+			xmlFree(nc1);
+			xmlFree(nc2);
+			/* \todo what about freeing query_source and query_target? */
+
+			return (ret);
+		} else {
+			/* rpc targets local datastores */
 			return 1;
 		}
-	}
-	else if( nc_rpc_get_source(rpc) == nc_rpc_get_target(rpc) ) {
-		return 1;
 	}
 	
 	return 0;
