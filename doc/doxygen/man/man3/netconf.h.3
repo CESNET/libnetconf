@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -118,10 +118,6 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all the processes\&. \fP"
 .ti -1c
-.RI "void \fBnacm_recovery_uid\fP (uid_t uid)"
-.br
-.RI "\fISet UID to detect the NACM recovery session\&. If this function is not used, value 0 (typically root user) is used\&. Recovery session is used to bypass NACM\&. \fP"
-.ti -1c
 .RI "int \fBnc_close\fP (int system)"
 .br
 .in -1c
@@ -157,17 +153,16 @@ This software is provided ``as is, and any express or implied warranties, includ
 .SS "enum \fBNC_NOTIF_TYPE\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_NTF_UNKNOWN \fP\fP
 .TP
 \fB\fINC_NTF_BASE \fP\fP
-
 .SS "enum \fBNC_ERR_PARAM\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_ERR_PARAM_TYPE \fP\fP
@@ -202,7 +197,7 @@ session-id in error-info - session ID of the session holding the requested lock,
 .SS "enum \fBNC_EDIT_OP_TYPE\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_EDIT_OP_ERROR \fP\fP
@@ -216,11 +211,10 @@ session-id in error-info - session ID of the session holding the requested lock,
 \fB\fINC_EDIT_OP_DELETE \fP\fP
 .TP
 \fB\fINC_EDIT_OP_REMOVE \fP\fP
-
 .SS "enum \fBNC_EDIT_DEFOP_TYPE\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_EDIT_DEFOP_ERROR \fP\fP
@@ -232,11 +226,10 @@ session-id in error-info - session ID of the session holding the requested lock,
 \fB\fINC_EDIT_DEFOP_REPLACE \fP\fP
 .TP
 \fB\fINC_EDIT_DEFOP_NONE \fP\fP
-
 .SS "enum \fBNC_EDIT_ERROPT_TYPE\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_EDIT_ERROPT_ERROR \fP\fP
@@ -248,11 +241,10 @@ session-id in error-info - session ID of the session holding the requested lock,
 \fB\fINC_EDIT_ERROPT_CONT \fP\fP
 .TP
 \fB\fINC_EDIT_ERROPT_ROLLBACK \fP\fP
-
 .SS "enum \fBNC_EDIT_TESTOPT_TYPE\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_EDIT_TESTOPT_ERROR \fP\fP
@@ -264,11 +256,10 @@ session-id in error-info - session ID of the session holding the requested lock,
 \fB\fINC_EDIT_TESTOPT_SET \fP\fP
 .TP
 \fB\fINC_EDIT_TESTOPT_TEST \fP\fP
-
 .SS "enum \fBNCWD_MODE\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINCWD_MODE_NOTSET \fP\fP
@@ -280,15 +271,13 @@ session-id in error-info - session ID of the session holding the requested lock,
 \fB\fINCWD_MODE_EXPLICIT \fP\fP
 .TP
 \fB\fINCWD_MODE_ALL_TAGGED \fP\fP
-
 .SS "enum \fBNC_CAP_ATTR\fP"
 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_CAP_ATTR_WITHDEFAULTS_MODE \fP\fP
-
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

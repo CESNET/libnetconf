@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -54,10 +54,6 @@ NETCONF datastore handling function prototypes and structures\&.
 .br
 .RI "\fICreate new datastore structure with transaction API support\&. \fP"
 .ti -1c
-.RI "int \fBncds_add_augment\fP (const char *model_path)"
-.br
-.RI "\fIAdd an augment model to the base model of the datastore\&. \fP"
-.ti -1c
 .RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
 .br
 .RI "\fIAssign the path of the datastore file into the datastore structure\&. \fP"
@@ -78,17 +74,55 @@ NETCONF datastore handling function prototypes and structures\&.
 .br
 .RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
 .ti -1c
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (const struct nc_session *session, const \fBnc_rpc\fP *rpc, int ids_copy, \fBncds_id\fP *ids[])"
+.br
+.RI "\fIPerform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fP"
+.ti -1c
+.RI "int \fBncds_rollback\fP (\fBncds_id\fP id)"
+.br
+.RI "\fIUndo the last change performed on the specified datastore\&. \fP"
+.ti -1c
 .RI "void \fBncds_break_locks\fP (const struct nc_session *session)"
 .br
 .RI "\fIRemove all the locks that the given session is holding\&. \fP"
 .ti -1c
-.RI "char * \fBncds_get_model\fP (\fBncds_id\fP id, int augmented)"
+.RI "char * \fBncds_get_model\fP (\fBncds_id\fP id, int base)"
 .br
 .RI "\fIReturn a serialized XML containing the data model in the YIN format\&. \fP"
 .ti -1c
 .RI "const char * \fBncds_get_model_path\fP (\fBncds_id\fP id)"
 .br
 .RI "\fIReturn path to the file containing the datastore datamodel\&. \fP"
+.ti -1c
+.RI "int \fBncds_add_models_path\fP (const char *path)"
+.br
+.RI "\fISpecify a directory path to the location where the required (imported or included) data models can be found\&. This function can be called repeatedly to specify multiple locations\&. \fP"
+.ti -1c
+.RI "int \fBncds_add_model\fP (const char *path)"
+.br
+.RI "\fIAdd an configuration data model to the internal list of models\&. Such model is used to resolve imports, includes and uses statements in base models\&. \fP"
+.ti -1c
+.RI "int \fBncds_feature_enable\fP (const char *module, const char *feature)"
+.br
+.RI "\fIEnable usage of the specified feature defined in the specified module\&. By default, all features are disabled\&. \fP"
+.ti -1c
+.RI "int \fBncds_feature_disable\fP (const char *module, const char *feature)"
+.br
+.RI "\fIDisable usage of the specified feature defined in the specified module By default, all features are disabled\&. \fP"
+.ti -1c
+.RI "int \fBncds_features_enableall\fP (const char *module)"
+.br
+.RI "\fIEnable usage of all features defined in the specified module\&. By default, all features are disabled\&. To enable only the specific feature(s), use \fBncds_feature_enable()\fP\&. \fP"
+.ti -1c
+.RI "int \fBncds_features_disableall\fP (const char *module)"
+.br
+.RI "\fIDisable usage of all features defined in the specified module\&. By default, all features are disabled\&. To disable only the specific feature(s), use \fBncds_feature_disable()\fP\&. \fP"
+.ti -1c
+.RI "int \fBncds_feature_isenabled\fP (const char *module, const char *feature)"
+.br
+.ti -1c
+.RI "int \fBncds_consolidate\fP (void)"
+.br
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -111,6 +145,23 @@ Neither the name of the Company nor the names of its contributors may be used to
 ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above\&.
 .PP
 This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
+.SH "Function Documentation"
+.PP 
+.SS "int ncds_feature_isenabled (const char *module, const char *feature)"
+\fBReturns:\fP
+.RS 4
+.IP "\(bu" 2
+negative value in case of error
+.IP "\(bu" 2
+0 if feature is disabled
+.IP "\(bu" 2
+1 if feature is enabled 
+.PP
+.RE
+.PP
+
+.SS "int ncds_consolidate (void)"
+
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

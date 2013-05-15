@@ -1,4 +1,4 @@
-.TH "src/transapi/transapi.h" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "src/transapi/transapi.h" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -6,10 +6,6 @@ src/transapi/transapi.h \-
 .SH SYNOPSIS
 .br
 .PP
-\fC#include 'xmldiff\&.h'\fP
-.br
-\fC#include 'yinparser\&.h'\fP
-.br
 \fC#include '\&.\&./libnetconf\&.h'\fP
 .br
 
@@ -23,29 +19,16 @@ src/transapi/transapi.h \-
 .ti -1c
 .RI "struct \fBtransapi_rpc_callbacks\fP"
 .br
-.ti -1c
-.RI "struct \fBtransapi\fP"
-.br
+.RI "\fIStructure binding location in configuration XML data and function callback processing RPC message\&. \fP"
 .in -1c
-.SS "Macros"
+.SS "Enumerations"
 
 .in +1c
 .ti -1c
-.RI "#define \fBMAX_RPC_INPUT_ARGS\fP   64"
+.RI "enum \fBXMLDIFF_OP\fP { \fBXMLDIFF_ERR\fP = -1, \fBXMLDIFF_NONE\fP = 0, \fBXMLDIFF_ADD\fP = 1, \fBXMLDIFF_REM\fP = 2, \fBXMLDIFF_MOD\fP = 4, \fBXMLDIFF_CHAIN\fP = 8 }"
 .br
+.RI "\fIEnum specifying states of node in document\&. \fP"
 .in -1c
-.SS "Functions"
-
-.in +1c
-.ti -1c
-.RI "int \fBtransapi_running_changed\fP (struct \fBtransapi_data_callbacks\fP *c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct \fBmodel_tree\fP *model)"
-.br
-.RI "\fITop level function of transaction API\&. Finds differences between old_doc and new_doc and calls specified callbacks\&. \fP"
-.in -1c
-.SH "Macro Definition Documentation"
-.PP 
-.SS "#define MAX_RPC_INPUT_ARGS   64"
-
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

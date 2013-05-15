@@ -244,12 +244,14 @@ char* nc_clrwspace (const char* in)
 		return (NULL);
 	}
 
-	/* remove leading whitespace characters */
-	for (i = 0, j = 0; i < len ; i++, j++) {
-		while (retval[i] != '\0' && isspace(retval[i])) {
-			i++;
+	if (isspace(retval[0])) {
+		/* remove leading whitespace characters */
+		for (i = 0, j = 0; i < len ; i++, j++) {
+			while (retval[i] != '\0' && isspace(retval[i])) {
+				i++;
+			}
+			retval[j] = retval[i];
 		}
-		retval[j] = retval[i];
 	}
 
 	/* remove trailing whitespace characters */

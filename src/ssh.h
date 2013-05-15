@@ -98,6 +98,23 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 /**
  * @ingroup session
+ * @brief Create another NETCONF session using already established SSH session.
+ * No authentication is needed in this case.
+ *
+ * This function works only if libnetconf is compiled with using libssh2.
+ *
+ * @param[in] session Already established NETCONF session.
+ * @param[in] cpblts NETCONF capabilities structure with capabilities supported
+ * by the client. Client can use nc_session_get_cpblts_default() to get the
+ * structure with the list of all the capabilities supported by libnetconf (this is
+ * used in case of a NULL parameter).
+ * @return Structure describing the NETCONF session or NULL in case of an error.
+ *
+ */
+struct nc_session *nc_session_connect_channel(struct nc_session *session, const struct nc_cpblts* cpblts);
+
+/**
+ * @ingroup session
  * @brief Accept NETCONF session from a client.
  *
  * The caller process of this function is supposed to run as SSH Subsystem

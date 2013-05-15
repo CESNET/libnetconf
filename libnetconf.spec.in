@@ -52,5 +52,6 @@ ldconfig
 %{_libdir}/libnetconf.a
 %{_prefix}/include/libnetconf.h
 %{_prefix}/include/libnetconf_xml.h
+%{_prefix}/include/libnetconf_ssh.h
 %{_prefix}/include/libnetconf/*
 %{_prefix}/share/libnetconf/doxygen/*

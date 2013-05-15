@@ -42,7 +42,7 @@ import re
 import sys
 
 # Use configure.in.template and replace all variables with text
-def generate_configure_in(replace, template_dir):
+def generate_configure_in(replace, template_dir, with_libxml2):
 	inf = open (template_dir+'/configure.in', 'r')
 	outf = open ('configure.in', 'w')
 
@@ -60,7 +60,7 @@ def copy_template_files(name, template_dir):
 	shutil.copy2(template_dir+'/Makefile.in', 'Makefile.in')
 
 # 
-def generate_callbacks_file(name, paths, model):
+def generate_callbacks_file(name, paths, model, with_libxml2, without_init, without_close):
 	# Create or rewrite .c file, will be generated
 	outf = open(name+'.c', 'w')
 
@@ -72,40 +72,90 @@ def generate_callbacks_file(name, paths, model):
 	content += '* Do NOT alter function signatures or any structure untill you exactly know what you are doing.\n'
 	content += '*/\n\n'
 	# Include header files
-	content += '#include <libxml/tree.h>\n'
-	content += '#include <libnetconf.h>\n'
-	content += '#include <libnetconf/transapi.h>\n'
+	content += '#include <stdlib.h>\n'
+	if with_libxml2:
+		content += '#include <libxml/tree.h>\n'
+		content += '#include <libnetconf_xml.h>\n'
+	else:
+		content += '#include <libnetconf.h>\n'
 	content += '\n'
+	# libxml2?
+	content += '/* Determines whether XML arguments are passed as (xmlDocPtr) or (char *). */\n'
+	content += 'int with_libxml2 = '+str(with_libxml2)+';\n'
+	content += '\n'
+	# init and close functions 
+	if not (without_init):
+		content += generate_init_callback(with_libxml2)
+	if not (without_close):
+		content += generate_close_callback(with_libxml2)
 	# Add get state data callback
-	content += generate_state_callback()
+	content += generate_state_callback(with_libxml2)
 	# Config callbacks part
-	content += generate_config_callbacks(name, paths)
+	content += generate_config_callbacks(name, paths, with_libxml2)
 	# RPC callbacks part
-	content += generate_rpc_callbacks(model)
+	if not (model is None):
+		content += generate_rpc_callbacks(model, with_libxml2)
 
 	# Write to file
 	outf.write(content)
 	outf.close()
 
-def generate_state_callback():
+def generate_init_callback(with_libxml2):
+    content = '';
+    content += '/**\n'
+    content += ' * @brief Initialize plugin after loaded and before any other functions are called.\n'
+    content += ' *\n'
+    content += ' * @param startup_config\tContent of startup datastore.\n'
+    content += ' *\n'
+    content += ' * @return New content of running datastore reflecting current device state.\n'
+    content += ' */\n'
+    if with_libxml2:
+		content += 'xmlDocPtr init(xmlDocPtr startup_config)\n'
+    else:
+		content += 'char * init(char * startup_config)\n'
+    content += '{\n\treturn NULL;\n}\n\n'
+
+    return (content)
+    
+def generate_close_callback(with_libxml2):
+    content = ''
+    content += '/**\n'
+    content += ' * @brief Free all resources allocated on plugin runtime and prepare plugin for removal.\n'
+    content += ' */\n' 
+    content += 'void close(void)\n'
+    content += '{\n\treturn;\n}\n\n'
+    
+    return (content)
+
+def generate_state_callback(with_libxml2):
 	content = ''
 	# function for retrieving state data from device
 	content += '/**\n'
-	content += ' * @brief Retrieve state data from device and return them as serialized XML'
+	content += ' * @brief Retrieve state data from device and return them as serialized XML\n'
 	content += ' *\n'
-	content += ' * @param model\tDevice data model. Serialized YIN.\n'
-	content += ' * @param running\tRunning datastore content. Serialized XML.\n'
+	if with_libxml2:
+		content += ' * @param model\tDevice data model. libxml2 xmlDocPtr.\n'
+		content += ' * @param running\tRunning datastore content. libxml2 xmlDocPtr.\n'
+	else:
+		content += ' * @param model\tDevice data model. Serialized YIN.\n'
+		content += ' * @param running\tRunning datastore content. Serialized XML.\n'
 	content += ' * @param[out] err\tDouble poiter to error structure. Fill error when some occurs.\n'
 	content += ' *\n'
-	content += ' * @return State data as serialized XML or NULL in case of error.\n'
+	if with_libxml2:
+		content += ' * @return State data as libxml2 xmlDocPtr or NULL in case of error.\n'
+	else:
+		content += ' * @return State data as serialized XML or NULL in case of error.\n'
 	content += ' */\n'
-	content += 'char * get_state_data (char * model, char * running, struct nc_err **err)\n'
+	if with_libxml2:
+		content += 'xmlDocPtr get_state_data (xmlDocPtr model, xmlDocPtr running, struct nc_err **err)\n'
+	else:
+		content += 'char * get_state_data (char * model, char * running, struct nc_err **err)\n'
 	content += '{\n\treturn NULL;\n}\n\n'
 
 	return(content)
 
 
-def generate_config_callbacks(name, paths):
+def generate_config_callbacks(name, paths, with_libxml2):
 	if paths is None:
 		paths = ['/']
 
@@ -142,7 +192,10 @@ def generate_config_callbacks(name, paths):
 		content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
 		content += ' */\n'
 		content += '/* !DO NOT ALTER FUNCTION SIGNATURE! */\n'
-		content += 'int '+func_name+' (XMLDIFF_OP op, xmlNodePtr node, void ** data)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
+		if with_libxml2:
+			content += 'int '+func_name+' (XMLDIFF_OP op, xmlNodePtr node, void ** data)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
+		else:
+			content += 'int '+func_name+' (XMLDIFF_OP op, char * node, void ** data)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
 		funcs_count += 1
 
 	# in the end of file write strucure connecting paths in XML data with callback function
@@ -151,7 +204,10 @@ def generate_config_callbacks(name, paths):
 	content += '* It is used by libnetconf library to decide which callbacks will be run.\n'
 	content += '* DO NOT alter this structure\n'
 	content += '*/\n'
-	content += 'struct transapi_config_callbacks clbks =  {\n'
+	if with_libxml2:
+		content += 'struct transapi_xml_data_callbacks clbks =  {\n'
+	else:
+		content += 'struct transapi_data_callbacks clbks =  {\n'
 	content += '\t.callbacks_count = '+str(funcs_count)+',\n'
 	content += '\t.data = NULL,\n'
 	content += callbacks+'\n\t}\n'
@@ -159,7 +215,7 @@ def generate_config_callbacks(name, paths):
 
 	return(content);
 
-def generate_rpc_callbacks (doc):
+def generate_rpc_callbacks (doc, with_libxml2):
 	content = ''
 	callbacks = ''
 
@@ -183,13 +239,19 @@ def generate_rpc_callbacks (doc):
 	for rpc in rpcs:
 		rpc_name = rpc.prop('name')
 		# create callback function
-		rpc_function = 'nc_reply * rpc_'+re.sub(r'[^\w]', '_', rpc_name)+' (xmlNodePtr input[])\n{\n'
+		if with_libxml2:
+			rpc_function = 'nc_reply * rpc_'+re.sub(r'[^\w]', '_', rpc_name)+' (xmlNodePtr input[])\n{\n'
+		else:
+			rpc_function = 'nc_reply * rpc_'+re.sub(r'[^\w]', '_', rpc_name)+' (char *input[])\n{\n'
 		# find all defined inputs
 		rpc_input = ctxt.xpathEval('//yang:rpc[@name="'+rpc.prop('name')+'"]/yang:input/*')
 		arg_order = '{'
 		for inp in rpc_input:
 			# assign inputs to named variables
-			rpc_function += '\txmlNodePtr '+re.sub(r'[^\w]', '_', inp.prop('name'))+' = input['+str(rpc_input.index(inp))+'];\n'
+			if with_libxml2:
+				rpc_function += '\txmlNodePtr '+re.sub(r'[^\w]', '_', inp.prop('name'))+' = input['+str(rpc_input.index(inp))+'];\n'
+			else:
+				rpc_function += '\tchar * '+re.sub(r'[^\w]', '_', inp.prop('name'))+' = input['+str(rpc_input.index(inp))+'];\n'
 			if not inp is rpc_input[0]:
 				arg_order += ', '
 			arg_order += '"'+inp.prop('name')+'"'
@@ -208,7 +270,10 @@ def generate_rpc_callbacks (doc):
 	content += '* It is used by libnetconf library to decide which callbacks will be run when RPC arrives.\n'
 	content += '* DO NOT alter this structure\n'
 	content += '*/\n'
-	content += 'struct transapi_rpc_callbacks rpc_clbks = {\n'
+	if with_libxml2:
+		content += 'struct transapi_xml_rpc_callbacks rpc_clbks = {\n'
+	else:
+		content += 'struct transapi_rpc_callbacks rpc_clbks = {\n'
 	content += '\t.callbacks_count = '+str(len(rpcs))+',\n'
 	content += '\t.callbacks = {'+callbacks+'\n\t}'
 	content += '\n};\n\n'
@@ -222,18 +287,20 @@ parser.add_argument('--name', required=True, help='Name of module with callbacks
 parser.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
 parser.add_argument('--model', type=libxml2.parseFile, help='File holding data model. Used for generating rpc callbacks.')
 parser.add_argument('--template-dir', default='.', help='Path to the directory with teplate files')
+parser.add_argument('--with-libxml2', action='store_const', const=1, default=0)
+parser.add_argument('--without-init', action='store_const', const=1, default=0, help='Module does not need initialization when loaded.')
+parser.add_argument('--without-close', action='store_const', const=1, default=0, help='Module does not need closing before unloaded.')
 try:
 	args = parser.parse_args()
 
 	# store paterns and text for replacing in configure.in
 	r = {'$$PROJECTNAME$$' : args.name}
-
 	#generate configure.in
-	generate_configure_in (r, args.template_dir)
+	generate_configure_in (r, args.template_dir, args.with_libxml2)
 	#copy files for autotools (name.spec.in, Makefile.in, ...)
 	copy_template_files(args.name, args.template_dir)
 	#generate callbacks code
-	generate_callbacks_file(args.name, args.paths, args.model)
+	generate_callbacks_file(args.name, args.paths, args.model, args.with_libxml2, args.without_init, args.without_close)
 except IOError as e:
 	print (e[1]+'('+str(e[0])+'): '+e.filename)
 except libxml2.libxmlError as e:

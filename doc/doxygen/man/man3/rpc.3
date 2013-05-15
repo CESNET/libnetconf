@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -192,7 +192,7 @@ rpc message\&.
 .PP
 Enumeration of <rpc> operation types\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_RPC_UNKNOWN \fP\fP
@@ -214,7 +214,7 @@ value describing that no supported operation type was detected so far
 .PP
 Enumeration of supported <rpc> operations\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_OP_UNKNOWN \fP\fP
@@ -266,7 +266,7 @@ unknown/error value
 .PP
 Enumeration of supported NETCONF filter types\&. 
 .PP
-\fBEnumerator: \fP
+\fBEnumerator\fP
 .in +1c
 .TP
 \fB\fINC_FILTER_UNKNOWN \fP\fP
@@ -753,18 +753,16 @@ Create <validate> NETCONF rpc message\&. .SS "Variadic parameters:"
 .IP "\(bu" 2
 source is specified as \fBNC_DATASTORE_URL\fP:
 .IP "  \(bu" 4
-\fBnc_rpc_validate()\fP accepts the first variadic parameter \fBconst char* source_url providing the url to the file\&.\fP
+\fBnc_rpc_validate()\fP accepts the first variadic parameter \fBconst char* source_url\fP providing the url to the file\&.
 .PP
 
 .IP "\(bu" 2
-\fBsource is specified as \fBNC_DATASTORE_CONFIG\fP:
+source is specified as \fBNC_DATASTORE_CONFIG\fP:
 .IP "  \(bu" 4
-\fBnc_rpc_validate()\fP accepts as the first variadic parameter **const char* source_config providing the complete configuration data to copy\&.
+\fBnc_rpc_validate()\fP accepts as the first variadic parameter \fBconst char* source_config\fP providing the complete configuration data to copy\&.
 .PP
-\fP
+
 .PP
-.PP
-\fB
 .PP
 \fBParameters:\fP
 .RS 4
@@ -776,7 +774,7 @@ source is specified as \fBNC_DATASTORE_URL\fP:
 Created rpc message\&. 
 .RE
 .PP
-\fP
+
 .SS "\fBnc_rpc\fP* nc_rpc_commit (void)"
 
 .PP

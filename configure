@@ -681,7 +681,7 @@ CFLAGS
 CC
 RPMBUILD
 DOXYGEN
-SSH
+SSH_PROG
 UNAME
 PKG_CONFIG
 CONFIGURE_PWD
@@ -2935,24 +2935,27 @@ $as_echo "$as_me: WARNING: unsupported architecture $host_cpu" >&2;}
 esac
 
 if test "$libssh2" = "no"; then
+	# ssh for NETCONF connection
 	# Extract the first word of "ssh", so it can be a program name with args.
 set dummy ssh; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_SSH+:} false; then :
+if ${ac_cv_path_SSH_PROG+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$SSH"; then
-  ac_cv_prog_SSH="$SSH" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+  case $SSH_PROG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_SSH_PROG="$SSH_PROG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
 do
   IFS=$as_save_IFS
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_SSH="ssh"
+    ac_cv_path_SSH_PROG="$as_dir/$ac_word$ac_exec_ext"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -2960,19 +2963,21 @@ done
   done
 IFS=$as_save_IFS
 
+  test -z "$ac_cv_path_SSH_PROG" && ac_cv_path_SSH_PROG=""missing""
+  ;;
+esac
 fi
-fi
-SSH=$ac_cv_prog_SSH
-if test -n "$SSH"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $SSH" >&5
-$as_echo "$SSH" >&6; }
+SSH_PROG=$ac_cv_path_SSH_PROG
+if test -n "$SSH_PROG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $SSH_PROG" >&5
+$as_echo "$SSH_PROG" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-	if test -z "$SSH"; then
+	if test "$SSH_PROG" = "missing"; then
 		as_fn_error $? "Missing ssh client (install OpenSSH)" "$LINENO" 5
 	fi
 fi
@@ -6158,6 +6163,7 @@ fi
 
 
 ############################### Set output #####################################
+
 
 
 

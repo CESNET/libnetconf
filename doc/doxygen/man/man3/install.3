@@ -1,4 +1,4 @@
-.TH "install" 3 "Thu Apr 18 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "install" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -33,6 +33,14 @@ Remove dependency on the \fClibssh2\fP library\&. By default, the \fClibssh2\fP 
 \fC--disable-notifications\fP
 .IP "  \(bu" 4
 Remove support for the NETCONF Notifications\&. As a side effect, D-Bus (libdbus) dependency is also removed\&.
+.PP
+
+.PP
+.PP
+.IP "\(bu" 2
+\fC--with-nacm-recovery-uid=<uid>\fP
+.IP "  \(bu" 4
+Specify user ID to be used for the identification of the \fBNACM Recovery Session\fP\&.
 .PP
 
 .PP

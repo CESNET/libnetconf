@@ -895,11 +895,17 @@ static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocP
 		if (error != NULL) {
 			*error = nc_err_new(NC_ERR_OP_FAILED);
 		}
+		if (keys != NULL) {
+			keyListFree(keys);
+		}
 		return EXIT_FAILURE;
 	}
 
 	if (xmlXPathNodeSetIsEmpty(operation_nodes->nodesetval)) {
 		xmlXPathFreeObject(operation_nodes);
+		if (keys != NULL) {
+			keyListFree(keys);
+		}
 		return EXIT_SUCCESS;
 	}
 
@@ -909,6 +915,9 @@ static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocP
 
 		if (check_edit_ops_hierarchy(node_to_process, defop, error) != EXIT_SUCCESS) {
 			xmlXPathFreeObject(operation_nodes);
+			if (keys != NULL) {
+				keyListFree(keys);
+			}
 			return EXIT_FAILURE;
 		}
 
@@ -1015,6 +1024,9 @@ static int check_edit_ops(NC_CHECK_EDIT_OP op, NC_EDIT_DEFOP_TYPE defop, xmlDocP
 	}
 	if (value != NULL) {
 		xmlFree(value);
+	}
+	if (keys != NULL) {
+		keyListFree(keys);
 	}
 
 	if (*error != NULL) {
@@ -2439,8 +2451,6 @@ static int compact_edit_operations(xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
  */
 int edit_config(xmlDocPtr repo, xmlDocPtr edit, struct ncds_ds* ds, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE UNUSED(errop), const struct nacm_rpc* nacm, struct nc_err **error)
 {
-	struct model_list* ds_augment;
-
 	if (repo == NULL || edit == NULL) {
 		return (EXIT_FAILURE);
 	}
@@ -2471,10 +2481,7 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, struct ncds_ds* ds, NC_EDIT_DEFO
 		/* server work in trim basic mode and therefore all default
 		 * values must be removed from the datastore.
 		 */
-		ncdflt_default_values(repo, ds->data_model->xml, NCWD_MODE_TRIM);
-		for (ds_augment = ds->data_model->augments; ds_augment != NULL; ds_augment = ds_augment->next) {
-			ncdflt_default_values(repo, ds_augment->model->xml, NCWD_MODE_TRIM);
-		}
+		ncdflt_default_values(repo, ds->ext_model, NCWD_MODE_TRIM);
 	}
 
 	return EXIT_SUCCESS;

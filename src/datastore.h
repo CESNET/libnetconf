@@ -107,15 +107,6 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 
 /**
  * @ingroup store
- * @brief Add an augment model to the base model of the datastore
- * @param[in] datastore Datastore structure to be augmented.
- * @param[in] model_path Path to the augment YIN configuration data model.
- * @return 0 on success, non-zero on error.
- */
-int ncds_add_augment(const char* model_path);
-
-/**
- * @ingroup store
  * @brief Assign the path of the datastore file into the datastore structure.
  *
  * Checks if the file exist and is accessible for reading and writing.
@@ -124,9 +115,10 @@ int ncds_add_augment(const char* model_path);
  *
  * @param[in] datastore Datastore structure to be configured.
  * @param[in] path File path to the file storing configuration datastores.
- * @return 0 on success
- * 	  -1 Invalid datastore
- *	  -2 Invalid path ((does not exist && can not be created) || insufficient rights)
+ * @return
+ * - 0 on success
+ * - -1 Invalid datastore
+ * - -2 Invalid path ((does not exist && can not be created) || insufficient rights)
  */
 int ncds_file_set_path (struct ncds_ds* datastore, const char* path);
 
@@ -141,10 +133,10 @@ int ncds_file_set_path (struct ncds_ds* datastore, const char* path);
  * @param[in] datastore Datastore to be initiated.
  * @return Positive integer with the datastore ID on success, negative value on
  * error.
- * 	-1 Invalid datastore
- * 	-2 Type-specific initialization failed
- * 	-3 Unsupported datastore type 
- * 	-4 Memory allocation problem
+ * - -1 Invalid datastore
+ * - -2 Type-specific initialization failed
+ * - -3 Unsupported datastore type
+ * - -4 Memory allocation problem
  */
 ncds_id ncds_init(struct ncds_ds* datastore);
 
@@ -197,19 +189,19 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
  * @brief Perform the requested RPC operation on the all datastores controlled
  * by the libnetconf (created by ncdsd_new() and ncds_init()).
  *
- * This function IS NOT thread safety.
+ * **This function IS NOT thread safety.**
  *
  * @param[in] session NETCONF session (a dummy session is acceptable) where the
  * \<rpc\> came from. Capabilities checks are done according to this session.
  * @param[in] rpc NETCONF \<rpc\> message specifying requested operation.
  * @param[out] ids Pointer to a static array containing list of datastore IDs
  * where the RPC was successfully applied. The list is terminated by value a
- * (ncds_id)(-1). The list is rewritten by a following call to
+ * (ncds_id)(-1). The list is rewritten by any following call to
  * ncds_apply_rpc2all().
  * @return NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid
  * parameter session or rpc, else \<rpc-reply\> with \<ok\>, \<data\> or
  * \<rpc-error\> according to the type and the result of the requested
- * operation. When the requested operation is not applicable to aany datastore
+ * operation. When the requested operation is not applicable to any datastore
  * (e.g. the namespace does not match no of the controlled datstores),
  * NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned.
  *
@@ -237,14 +229,15 @@ void ncds_break_locks (const struct nc_session* session);
  * @brief Return a serialized XML containing the data model in the YIN format
  *
  * @param[in] id ID of the datastore whose data model we want
- * @param[in] augmented Set 1 to get complete data model including augmentation.
- * In this case, returned string contains modified YIN format - there are
- * <augment> elements inside the model including information about its namespace
- * and module name.
+ * @param[in] base Set 1 to get only base model without any modification. Use 0
+ * value to get complete data model including augmentation, substituted uses
+ * statements and removed disabled features of the model. In this case, returned
+ * string contains modified YIN format - there are \<augment\> elements inside
+ * the model including information about its namespace and module name.
  *
  * @return String containing YIN model. Caller must free the memory after use.
  */
-char* ncds_get_model (ncds_id id, int augmented);
+char* ncds_get_model (ncds_id id, int base);
 
 /**
  * @ingroup store
@@ -257,5 +250,84 @@ char* ncds_get_model (ncds_id id, int augmented);
  */
 const char * ncds_get_model_path (ncds_id id);
 
+
+/**
+ * @ingroup store
+ * @brief Specify a directory path to the location where the required (imported
+ * or included) data models can be found. This function can be called repeatedly
+ * to specify multiple locations.
+ *
+ * @param[in] path Directory path
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_add_models_path(const char* path);
+
+/**
+ * @ingroup store
+ * @brief Add an configuration data model to the internal list of models. Such
+ * model is used to resolve imports, includes and uses statements in base models.
+ *
+ * @param[in] path Path to the YIN format of the configuration data model.
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_add_model(const char* path);
+
+/**
+ * @ingroup store
+ * @brief Enable usage of the specified feature defined in the specified module.
+ * By default, all features are disabled.
+ * @param[in] module Name of the module where the feature is defined. Module
+ * must be accessible - added via ncds_add_model() or present in a directory
+ * specified via ncds_add_models_path() function.
+ * @param[in] feature Name of the feature to be enabled.
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_feature_enable(const char* module, const char* feature);
+
+/**
+ * @ingroup store
+ * @brief Disable usage of the specified feature defined in the specified module
+ * By default, all features are disabled.
+ * @param[in] module Name of the module where the feature is defined. Module
+ * must be accessible - added via ncds_add_model() or present in a directory
+ * specified via ncds_add_models_path() function.
+ * @param[in] feature Name of the feature to be disabled.
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_feature_disable(const char* module, const char* feature);
+
+/**
+ * @ingroup store
+ * @brief Enable usage of all features defined in the specified module. By
+ * default, all features are disabled. To enable only the specific feature(s),
+ * use ncds_feature_enable().
+ * @param[in] module Name of the module where the feature is defined. Module
+ * must be accessible - added via ncds_add_model() or present in a directory
+ * specified via ncds_add_models_path() function.
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_features_enableall(const char* module);
+
+/**
+ * @ingroup store
+ * @brief Disable usage of all features defined in the specified module. By
+ * default, all features are disabled. To disable only the specific feature(s),
+ * use ncds_feature_disable().
+ * @param[in] module Name of the module where the feature is defined. Module
+ * must be accessible - added via ncds_add_model() or present in a directory
+ * specified via ncds_add_models_path() function.
+ * @return 0 on success, non-zero on error.
+ */
+int ncds_features_disableall(const char* module);
+
+/**
+ *
+ * @return
+ * - negative value in case of error
+ * - 0 if feature is disabled
+ * - 1 if feature is enabled
+ */
+int ncds_feature_isenabled(const char* module, const char* feature);
+int ncds_consolidate(void);
 
 #endif /* DATASTORE_H_ */

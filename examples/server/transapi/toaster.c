@@ -4,17 +4,56 @@
 * Do NOT alter function signatures or any structure untill you exactly know what you are doing.
 */
 
+#include <stdlib.h>
 #include <libxml/tree.h>
-#include <libnetconf.h>
-#include <unistd.h>
+#include <libnetconf_xml.h>
 #include <pthread.h>
 #include <time.h>
+#include <string.h>
+
+/* Determines whether XML arguments are passed as (xmlDocPtr) or (char *). */
+int with_libxml2 = 1;
 
 char * status = "off";
 int toasting = 0;
 pthread_mutex_t cancel_mutex;
 volatile int cancel;
 
+/**
+ * @brief Initialize plugin after loaded and before any other functions are called.
+ *
+ * @param startup_config	Content of startup datastore.
+ *
+ * @return New content of running datastore reflecting current device state.
+ */
+xmlDocPtr init(xmlDocPtr startup_config)
+{
+	xmlNodePtr startup_root;
+
+	/* invalid document  */
+	if (startup_config == NULL) {
+		return NULL;
+	}
+
+	 startup_root = xmlDocGetRootElement(startup_config);
+
+	if (startup_root != NULL &&	xmlStrEqual(startup_root->name, BAD_CAST "toaster") &&
+		startup_root->ns != NULL && xmlStrEqual(startup_root->ns->href, BAD_CAST "http://netconfcentral.org/ns/toaster")) {
+		status = "on";
+	} else {
+		status = "off";
+	}
+	return xmlCopyDoc(startup_config, 1);
+}
+
+/**
+ * @brief Free all resources allocated on plugin runtime and prepare plugin for removal.
+ */
+void close(void)
+{
+	status = "off";
+	return;
+}
 /**
  * @brief Retrieve state data from device and return them as serialized XML *
  * @param model	Device data model. Serialized YIN.
@@ -107,7 +146,7 @@ int callback_ (XMLDIFF_OP op, xmlNodePtr node, void ** data)
 * It is used by libnetconf library to decide which callbacks will be run.
 * DO NOT alter this structure
 */
-struct transapi_data_callbacks clbks =  {
+struct transapi_xml_data_callbacks clbks =  {
 	.callbacks_count = 1,
 	.data = NULL,
 	.callbacks = {
@@ -125,24 +164,24 @@ struct transapi_data_callbacks clbks =  {
 
 void * make_toast (void * doneness)
 {
-			pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, NULL);
+	pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, NULL);
 
-			/* pretend toasting */
-			sleep (*(int*)doneness);
+	/* pretend toasting */
+	sleep (*(int*)doneness);
 
-			/* BEGIN of critical section */
-			pthread_mutex_lock (&cancel_mutex);
-			if (cancel) {
-				pthread_mutex_unlock (&cancel_mutex);
-				cancel = 0;
-				return NULL;
-			}
-			/* turn off */
-			toasting = 0;
-			ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>done</toastStatus></toastDone>");
-			/* END of critical section */
-			pthread_mutex_unlock (&cancel_mutex);
-			return NULL;
+	/* BEGIN of critical section */
+	pthread_mutex_lock (&cancel_mutex);
+	if (cancel) {
+		pthread_mutex_unlock (&cancel_mutex);
+		cancel = 0;
+		return NULL;
+	}
+	/* turn off */
+	toasting = 0;
+	ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>done</toastStatus></toastDone>");
+	/* END of critical section */
+	pthread_mutex_unlock (&cancel_mutex);
+	return NULL;
 }
 
 nc_reply * rpc_make_toast (xmlNodePtr input[])
@@ -215,7 +254,7 @@ nc_reply * rpc_cancel_toast (xmlNodePtr input[])
 * It is used by libnetconf library to decide which callbacks will be run when RPC arrives.
 * DO NOT alter this structure
 */
-struct transapi_rpc_callbacks rpc_clbks = {
+struct transapi_xml_rpc_callbacks rpc_clbks = {
 	.callbacks_count = 2,
 	.callbacks = {
 		{.name="make-toast", .func=rpc_make_toast, .arg_count=2, .arg_order={"toasterDoneness", "toasterToastType"}},

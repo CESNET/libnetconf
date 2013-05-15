@@ -43,8 +43,11 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <pwd.h>
+#include <grp.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -64,6 +67,8 @@
 #include "config.h"
 
 #include "ssh.h"
+#include "callbacks.h"
+#include "callbacks_ssh.h"
 #include "messages.h"
 #include "session.h"
 #include "netconf_internal.h"
@@ -80,7 +85,7 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
 
 extern struct nc_shared_info *nc_info;
-extern char* server_capabilities;
+extern char* server_capabilities; /* from datastore, only for server side */
 
 struct auth_pref_couple
 {
@@ -534,12 +539,14 @@ static int nc_server_handshake(struct nc_session *session, char** cpblts)
 }
 
 #ifndef DISABLE_LIBSSH
-static int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_SESSION* ssh_session)
+static int check_hostkey(const char *host, const char* knownhosts_dir, LIBSSH2_SESSION* ssh_session)
 {
 	int ret, knownhost_check, i;
+	int fd;
 	size_t len;
 	const char *remotekey, *fingerprint_raw;
 	char fingerprint_md5[48];
+	char *knownhosts_file = NULL;
 	int hostkey_type, hostkey_typebit;
 	struct libssh2_knownhost *ssh_host;
 	LIBSSH2_KNOWNHOSTS *knownhosts;
@@ -564,24 +571,54 @@ static int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_
 		}
 		hostkey_typebit = (hostkey_type == LIBSSH2_HOSTKEY_TYPE_RSA) ? LIBSSH2_KNOWNHOST_KEY_SSHRSA : LIBSSH2_KNOWNHOST_KEY_SSHDSS;
 
-		/* get all the hosts */
-		if (knownhosts_file != NULL && eaccess(knownhosts_file, F_OK) == 0) {
-			ret = libssh2_knownhost_readfile(knownhosts,
-					knownhosts_file,
-					LIBSSH2_KNOWNHOST_FILE_OPENSSH);
+		if (knownhosts_dir == NULL) {
+			/* we are not able to use knownhosts file */
+			ret = -1;
 		} else {
-			ret = 0;
+			/* set general knownhosts file used also by OpenSSH's applications */
+			if (asprintf(&knownhosts_file, "%s/known_hosts", knownhosts_dir) == -1) {
+				ERROR("%s: asprintf() failed.", __func__);
+				libssh2_knownhost_free(knownhosts);
+				return(EXIT_FAILURE);
+			}
+
+			/* get all the hosts */
+			ret = libssh2_knownhost_readfile(knownhosts, knownhosts_file, LIBSSH2_KNOWNHOST_FILE_OPENSSH);
+			if (ret < 0) {
+				/*
+				 * default known_hosts may contain keys that are not supported
+				 * by libssh2, so try to use libnetconf's specific known_hosts
+				 * file located in the same directory and named
+				 * 'netconf_known_hosts'
+				 */
+				free(knownhosts_file);
+				knownhosts_file = NULL;
+				if (asprintf(&knownhosts_file, "%s/netconf_known_hosts", knownhosts_dir) == -1) {
+					ERROR("%s: asprintf() failed.", __func__);
+					libssh2_knownhost_free(knownhosts);
+					return(EXIT_FAILURE);
+				}
+				/* create own knownhosts file if it does not exist */
+				if (eaccess(knownhosts_file, F_OK) != 0) {
+					if ((fd = creat(knownhosts_file, S_IWUSR | S_IRUSR |S_IRGRP | S_IROTH)) != -1) {
+						close(fd);
+					}
+				}
+				ret = libssh2_knownhost_readfile(knownhosts, knownhosts_file, LIBSSH2_KNOWNHOST_FILE_OPENSSH);
+			}
 		}
 
 		if (ret < 0) {
-			WARN("Unable to check against the knownhost file.");
+			WARN("Unable to check against the knownhost file (%s).", knownhosts_file);
 			if (callbacks.hostkey_check(host, hostkey_type, fingerprint_md5) == 0) {
 				/* host authenticity authorized */
 				libssh2_knownhost_free(knownhosts);
+				free(knownhosts_file);
 				return (EXIT_SUCCESS);
 			} else {
 				VERB("Host authenticity check negative.");
 				libssh2_knownhost_free(knownhosts);
+				free(knownhosts_file);
 				return (EXIT_FAILURE);
 			}
 		} else {
@@ -599,17 +636,21 @@ static int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_
 			case LIBSSH2_KNOWNHOST_CHECK_MISMATCH:
 				ERROR("Remote host %s identification changed!", host);
 				libssh2_knownhost_free(knownhosts);
+				free(knownhosts_file);
 				return (EXIT_FAILURE);
 			case LIBSSH2_KNOWNHOST_CHECK_FAILURE:
 				ERROR("Knownhost checking failed.");
 				libssh2_knownhost_free(knownhosts);
+				free(knownhosts_file);
 				return (EXIT_FAILURE);
 			case LIBSSH2_KNOWNHOST_CHECK_MATCH:
 				libssh2_knownhost_free(knownhosts);
+				free(knownhosts_file);
 				return (EXIT_SUCCESS);
 			case LIBSSH2_KNOWNHOST_CHECK_NOTFOUND:
 				if (callbacks.hostkey_check(host, hostkey_type, fingerprint_md5) == 1) {
 					VERB("Host authenticity check negative.");
+					free(knownhosts_file);
 					libssh2_knownhost_free(knownhosts);
 					return (EXIT_FAILURE);
 				}
@@ -638,6 +679,7 @@ static int check_hostkey(const char *host, const char* knownhosts_file, LIBSSH2_
 			}
 
 			libssh2_knownhost_free(knownhosts);
+			free(knownhosts_file);
 			return (EXIT_SUCCESS);
 		}
 
@@ -894,13 +936,11 @@ static int find_ssh_keys ()
 	char * key_names[SSH2_KEYS] = {"id_rsa", "id_dsa", "id_ecdsa"};
 	int i, x, y, retval = EXIT_FAILURE;
 
-	if ((user_home = getenv("HOME")) == NULL) {
-		if ((pw = getpwuid(getuid())) == NULL) {
-			return EXIT_FAILURE;
-		}
-		user_home = pw->pw_dir;
+	if ((pw = getpwuid(getuid())) == NULL) {
+		ERROR("Determining user's home directory for getting SSH keys failed (%s)", strerror(errno));
+		return EXIT_FAILURE;
 	}
-
+	user_home = pw->pw_dir;
 
 	/* search in the same location as ssh do (~/.ssh/) */
 	VERB ("Searching for the key pairs in the standard ssh directory.");
@@ -920,7 +960,6 @@ static int find_ssh_keys ()
 		free (key_pub_path);
 	}
 
-
 	return retval;
 }
 #endif /* not DISABLE_LIBSSH */
@@ -932,7 +971,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	pthread_mutexattr_t mattr;
 	char port_s[SHORT_INT_LENGTH];
 	struct passwd *pw;
-	char *knownhosts_file = NULL;
+	char *knownhosts_dir = NULL;
 	char *s;
 	int r;
 
@@ -951,7 +990,6 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	}
 
 #ifdef DISABLE_LIBSSH
-#define SSH_PROG "ssh"
 
 	pid_t sshpid; /* child's PID */
 	struct termios termios;
@@ -963,6 +1001,13 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	char line[81];
 	int forced = 0; /* force connection to unknown destinations */
 	size_t n;
+	gid_t newgid, oldgid;
+	uid_t newuid, olduid;
+
+	if (access(SSH_PROG, X_OK) != 0) {
+		ERROR("Unable to locate or execute ssh(1) application \'%s\' (%s).", SSH_PROG, strerror(errno));
+		return(NULL);
+	}
 
 	/* get current user if not specified */
 	if (username == NULL) {
@@ -1050,8 +1095,36 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			exit(-1);
 		}
 
+		/* drop privileges if any set by the application */
+		newgid = getgid();
+		oldgid = getegid();
+		newuid = getuid();
+		olduid = geteuid();
+		/* if root privileges are to be dropped, pare down the ancillary groups */
+		if (olduid == 0) {
+			setgroups(1, &newgid);
+		}
+		/* drop group privileges */
+		if (newgid != oldgid) {
+#if !defined(linux)
+			setegid(newgid);
+			setgid(newgid);
+#else
+			setregid(newgid, newgid);
+#endif
+		}
+		/* drop user privileges */
+		if (newuid != olduid) {
+#if !defined(linux)
+			seteuid(newuid);
+			setuid(newuid);
+#else
+			setreuid(newuid, newuid);
+#endif
+		}
+
 		/* run ssh with parameters to start ssh subsystem on the server */
-		execlp(SSH_PROG, SSH_PROG, "-l", username, "-p", port_s, "-s", host, "netconf", NULL);
+		execl(SSH_PROG, SSH_PROG, "-l", username, "-p", port_s, "-s", host, "netconf", NULL);
 		ERROR("Executing ssh failed");
 		exit(-1);
 	} else { /* parent process*/
@@ -1205,23 +1278,19 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			ERROR("Unable to set a username for the SSH connection (%s).", strerror(errno));
 			return (NULL);
 		}
+		/* guess home dir */
+		if (asprintf(&knownhosts_dir, "/home/%s/.ssh", username) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			knownhosts_dir = NULL;
+		}
 	} else {
 		if (username == NULL) {
 			username = pw->pw_name;
 		}
-		if (asprintf(&knownhosts_file, "%s/.ssh/known_hosts", pw->pw_dir) == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-			knownhosts_file = NULL;
-		}
 
-		/* check the existence of the known_hosts file */
-		if (knownhosts_file != NULL && eaccess(knownhosts_file, F_OK) == 0) {
-			/* check needed access rights */
-			if (eaccess(knownhosts_file, R_OK | W_OK) == -1) {
-				WARN("Unable to access the known host file (%s).", knownhosts_file);
-				free(knownhosts_file);
-				knownhosts_file = NULL;
-			}
+		if (asprintf(&knownhosts_dir, "%s/.ssh", pw->pw_dir) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			knownhosts_dir = NULL;
 		}
 	}
 
@@ -1233,6 +1302,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	i = getaddrinfo(host, port_s, &hints, &res_list);
 	if (i != 0) {
 		ERROR("Unable to translate the host address (%s).", gai_strerror(i));
+		free(knownhosts_dir);
 		return (NULL);
 	}
 
@@ -1259,6 +1329,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 	if (sock == -1) {
 		ERROR("Unable to connect to the server (%s).", strerror(i));
+		free(knownhosts_dir);
 		return (NULL);
 	}
 
@@ -1266,12 +1337,14 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	retval = malloc(sizeof(struct nc_session));
 	if (retval == NULL) {
 		ERROR("Memory allocation failed (%s)", strerror(errno));
+		free(knownhosts_dir);
 		return (NULL);
 	}
 	memset(retval, 0, sizeof(struct nc_session));
 	if ((retval->stats = malloc (sizeof (struct nc_session_stats))) == NULL) {
 		ERROR("Memory allocation failed (%s)", strerror(errno));
 		free(retval);
+		free(knownhosts_dir);
 		return NULL;
 	}
 	retval->libssh2_socket = sock;
@@ -1294,6 +1367,8 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		free(retval);
+		free(knownhosts_dir);
 		return (NULL);
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
@@ -1304,6 +1379,8 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
 		pthread_mutexattr_destroy(&mattr);
+		free(retval);
+		free(knownhosts_dir);
 		return (NULL);
 	}
 	pthread_mutexattr_destroy(&mattr);
@@ -1360,14 +1437,12 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		goto shutdown;
 	}
 
-	if (check_hostkey(host, knownhosts_file, retval->ssh_session) != 0) {
+	if (check_hostkey(host, knownhosts_dir, retval->ssh_session) != 0) {
 		ERROR("Checking the host key failed.");
 		goto shutdown;
 	}
-	if (knownhosts_file != NULL) {
-		free(knownhosts_file);
-		knownhosts_file = NULL;
-	}
+	free(knownhosts_dir);
+	knownhosts_dir = NULL;
 
 	/* check what authentication methods are available */
 	userauthlist = libssh2_userauth_list(retval->ssh_session, username, strlen(username));
@@ -1513,11 +1588,6 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		client_cpblts = nc_cpblts_new(cpblts->list);
 	}
 
-	if (server_capabilities != NULL) {
-		free (server_capabilities);
-		server_capabilities = serialize_cpblts(client_cpblts);
-	}
-
 	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
 		goto shutdown;
 	}
@@ -1535,15 +1605,144 @@ shutdown:
 	/* cleanup */
 	nc_session_close(retval, NC_SESSION_TERM_OTHER);
 	nc_session_free(retval);
+	nc_cpblts_free(client_cpblts);
 
-	if (knownhosts_file != NULL) {
-		free(knownhosts_file);
-	}
-
-	if (cpblts == NULL && client_cpblts != NULL) {
-		nc_cpblts_free(client_cpblts);
-	}
+	free(knownhosts_dir);
 
 	return (NULL);
+}
+
+
+struct nc_session *nc_session_connect_channel(struct nc_session *session, const struct nc_cpblts* cpblts)
+{
+#ifdef DISABLE_LIBSSH
+	ERROR("%s: SSH channels are provided only with libssh2.", __func__);
+	return (NULL);
+#else
+	struct nc_session *retval, *session_aux;
+	struct nc_cpblts *client_cpblts = NULL;
+	pthread_mutexattr_t mattr;
+	char* err_msg;
+	int r;
+
+	/* allocate netconf session structure */
+	retval = malloc(sizeof(struct nc_session));
+	if (retval == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
+		return (NULL);
+	}
+	memset(retval, 0, sizeof(struct nc_session));
+	if ((retval->stats = malloc (sizeof (struct nc_session_stats))) == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
+		free(retval);
+		return NULL;
+	}
+
+	retval->libssh2_socket = session->libssh2_socket;
+	retval->ssh_session = session->ssh_session; /* share the SSH session */
+	retval->fd_input = -1;
+	retval->fd_output = -1;
+	retval->hostname = session->hostname;
+	retval->username = session->username;
+	retval->groups = NULL; /* client side does not need this information */
+	retval->port = session->port;
+	retval->msgid = 1;
+	retval->queue_event = NULL;
+	retval->queue_msg = NULL;
+	retval->logintime = NULL;
+	session->ntf_active = 0;
+	retval->monitored = 0;
+	retval->nacm_recovery = 0; /* not needed/decidable on the client side */
+	retval->stats->in_rpcs = 0;
+	retval->stats->in_bad_rpcs = 0;
+	retval->stats->out_rpc_errors = 0;
+	retval->stats->out_notifications = 0;
+
+	if (pthread_mutexattr_init(&mattr) != 0) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
+	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
+		ERROR("Mutex initialization failed (%s).", strerror(r));
+		pthread_mutexattr_destroy(&mattr);
+		return (NULL);
+	}
+	pthread_mutexattr_destroy(&mattr);
+
+	/* open a separated channel */
+	retval->ssh_channel = libssh2_channel_open_session(retval->ssh_session);
+	if (retval->ssh_channel == NULL) {
+		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+		ERROR("Opening the SSH channel failed (%s)", err_msg);
+		goto shutdown;
+	}
+
+	/* execute the NETCONF subsystem on the channel */
+	if (libssh2_channel_subsystem(retval->ssh_channel, "netconf")) {
+		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+		ERROR("Starting the netconf SSH subsystem failed (%s)", err_msg);
+		goto shutdown;
+	}
+	retval->status = NC_SESSION_STATUS_WORKING;
+
+	if (cpblts == NULL) {
+		if ((client_cpblts = nc_session_get_cpblts_default()) == NULL) {
+			VERB("Unable to set the client's NETCONF capabilities.");
+			goto shutdown;
+		}
+	} else {
+		client_cpblts = nc_cpblts_new(cpblts->list);
+	}
+
+	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
+		goto shutdown;
+	}
+
+	/* set with-defaults capability flags */
+	parse_wdcap(retval->capabilities, &(retval->wd_basic), &(retval->wd_modes));
+
+	/* cleanup */
+	nc_cpblts_free(client_cpblts);
+
+	/*
+	 * link sessions:
+	 * session <-> retval <-> session_aux
+	 */
+	session_aux = session->next;
+	if (session_aux != NULL) {
+		session_aux->prev = retval;
+	}
+	session->next = retval;
+	retval->next = session_aux;
+	retval->prev = session;
+
+	return (retval);
+
+shutdown:
+
+	/* cleanup */
+	if (retval->ssh_channel != NULL) {
+		libssh2_channel_free(retval->ssh_channel);
+	}
+	if (retval) {
+		free(retval->stats);
+		pthread_mutex_destroy(&(retval->mut_in));
+		pthread_mutex_destroy(&(retval->mut_out));
+		pthread_mutex_destroy(&(retval->mut_mqueue));
+		pthread_mutex_destroy(&(retval->mut_equeue));
+		pthread_mutex_destroy(&(retval->mut_session));
+		nc_cpblts_free(retval->capabilities);
+		free(retval);
+	}
+	nc_cpblts_free(client_cpblts);
+
+	return (NULL);
+
+#endif /* not DISABLE_LIBSSH */
 }
 

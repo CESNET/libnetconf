@@ -44,7 +44,7 @@
 #include <libxml/xpath.h>
 
 #include "../datastore.h"
-#include "../transapi/transapi.h"
+#include "../transapi/transapi_internal.h"
 
 #define EXIT_RPC_NOT_APPLICABLE -2
 
@@ -159,6 +159,11 @@ struct ncds_funcs {
 	int (*editconfig)(struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 };
 
+struct model_feature {
+	char* name;
+	int enabled;
+};
+
 struct model_list;
 struct data_model {
 	/**
@@ -198,16 +203,9 @@ struct data_model {
 	 */
 	xmlXPathContextPtr ctxt;
 	/**
-	 * @brief Augment flag: -1 if the model does not contain augment section,
-	 * 0 if the model contains augment section, but it is not used anywhere,
-	 * positive number as number of other models where an augment section from
-	 * this model is used.
+	 * @brief The list of enabled features defined in the model
 	 */
-	int augmenting;
-	/**
-	 * @brief The list of models that augments this base model
-	 */
-	struct model_list* augments;
+	struct model_feature** features;
 	/**
 	 * @brief Parsed data model structure.
 	 */
