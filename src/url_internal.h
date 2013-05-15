@@ -37,6 +37,8 @@
  *
  */
 
+#ifndef URL_INTERNAL_H_
+#define URL_INTERNAL_H_
 
 #include "url.h"
 
@@ -48,3 +50,4 @@ int nc_url_upload( const char * data, xmlChar * url );
 
 int url_tmpfile;
 
+#endif /* URL_INTERNAL_H_ */

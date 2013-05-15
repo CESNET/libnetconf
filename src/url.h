@@ -37,6 +37,8 @@
  *
  */
 
+#ifndef URL_H_
+#define URL_H_
 
 typedef enum NC_URL_PROTOCOLS {
 	NC_URL_SCP   =   1,
@@ -49,3 +51,4 @@ typedef enum NC_URL_PROTOCOLS {
 	NC_URL_ALL   = 127
 } NC_URL_PROTOCOLS;
 
+#endif /* URL_H_ */
