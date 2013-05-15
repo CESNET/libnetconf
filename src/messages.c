@@ -827,68 +827,6 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 	return (nc_rpc_get_ds(rpc, "target"));
 }
 
-static char* nc_rpc_get_copyconfig(const nc_rpc* rpc)
-{
-	xmlXPathObjectPtr query_result = NULL;
-	xmlDocPtr aux_doc;
-	xmlNodePtr config = NULL, aux_node;
-	xmlBufferPtr resultbuffer;
-	char * retval = NULL;
-
-	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":copy-config/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
-		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			ERROR("%s: no source config data in the copy-config request", __func__);
-			xmlXPathFreeObject(query_result);
-			return (NULL);
-		} else if (query_result->nodesetval->nodeNr > 1) {
-			ERROR("%s: multiple source config data in the copy-config request", __func__);
-			xmlXPathFreeObject(query_result);
-			return (NULL);
-		}
-
-		config = query_result->nodesetval->nodeTab[0];
-		xmlXPathFreeObject(query_result);
-	} else {
-		ERROR("%s: source config data not found in the copy-config request", __func__);
-		return (NULL);
-	}
-
-	/* dump the result */
-	resultbuffer = xmlBufferCreate();
-	if (resultbuffer == NULL) {
-		ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
-		return NULL;
-	}
-	if (config->children == NULL) {
-		/* config is empty */
-		return (strdup(""));
-	}
-	/* by copying nodelist, move all needed namespaces into the editing nodes */
-	aux_doc = xmlNewDoc(BAD_CAST "1.0");
-	xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
-	xmlAddChildList(aux_doc->children, xmlDocCopyNodeList(aux_doc, config->children));
-	for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
-		xmlNodeDump(resultbuffer, aux_doc, aux_node, 2, 1);
-	}
-	retval = strdup((char *) xmlBufferContent(resultbuffer));
-	xmlBufferFree(resultbuffer);
-	xmlFreeDoc(aux_doc);
-
-	return retval;
-}
-
-static xmlNodePtr ncxml_rpc_get_copyconfig(const nc_rpc* rpc)
-{
-	return ncxml_rpc_get_config( rpc );
-}
-
-
-
-static xmlNodePtr ncxml_rpc_get_editconfig(const nc_rpc* rpc)
-{
-	return ncxml_rpc_get_config( rpc );
-}
-
 char* nc_rpc_get_config(const nc_rpc* rpc)
 {
 	xmlNodePtr aux_node;
@@ -897,6 +835,10 @@ char* nc_rpc_get_config(const nc_rpc* rpc)
 	char * retval = NULL;
 
 	aux_node = ncxml_rpc_get_config( rpc );
+	if (aux_node == NULL) {
+		/* some error occurred or RPC contain invalid/not-supported operation */
+		return (NULL);
+	}
 	
 	/* by copying nodelist, move all needed namespaces into the editing nodes */
 	aux_doc = xmlNewDoc(BAD_CAST "1.0");
