@@ -146,7 +146,9 @@ int nc_init(int flags)
 	nc_info->stats.participants++;
 	pthread_rwlock_unlock(&(nc_info->lock));
 
-	/* check used flags according to a compile time settings */
+	/*
+	 * check used flags according to a compile time settings
+	 */
 #ifndef DISABLE_NOTIFICATIONS
 	if (flags & NC_INIT_NOTIF) {
 		nc_init_flags |= NC_INIT_NOTIF;
@@ -157,6 +159,9 @@ int nc_init(int flags)
 	}
 	if (flags & NC_INIT_MONITORING) {
 		nc_init_flags |= NC_INIT_MONITORING;
+	}
+	if (flags & NC_INIT_WD) {
+		nc_init_flags |= NC_INIT_WD;
 	}
 
 	/*
@@ -169,9 +174,18 @@ int nc_init(int flags)
 		return (-1);
 	}
 
+	/* init NETCONF sessions statistics */
 	if (nc_init_flags & NC_INIT_MONITORING) {
-		/* init NETCONF sessions statistics */
 		nc_session_monitoring_init();
+	}
+
+	/* init NETCONF with-defaults capability */
+	if (nc_init_flags & NC_INIT_WD) {
+		ncdflt_set_basic_mode(NCWD_MODE_EXPLICIT);
+		ncdflt_set_supported(NCWD_MODE_ALL
+		    | NCWD_MODE_ALL_TAGGED
+		    | NCWD_MODE_TRIM
+		    | NCWD_MODE_EXPLICIT);
 	}
 
 #ifndef DISABLE_NOTIFICATIONS

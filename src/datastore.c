@@ -173,14 +173,16 @@ static struct ncds_ds* ncds_fill_func(NCDS_TYPE type)
 
 #ifndef DISABLE_NOTIFICATIONS
 #define INTERNAL_DS_COUNT 9
-#define NACM_DS_INDEX 8
 #define MONITOR_DS_INDEX 3
 #define NOTIF_DS_INDEX_L 4
 #define NOTIF_DS_INDEX_H 6
+#define WD_DS_INDEX 7
+#define NACM_DS_INDEX 8
 #else
 #define INTERNAL_DS_COUNT 6
-#define NACM_DS_INDEX 5
 #define MONITOR_DS_INDEX 3
+#define WD_DS_INDEX 4
+#define NACM_DS_INDEX 5
 #endif
 int internal_ds_count = 0;
 int ncds_sysinit(int flags)
@@ -252,6 +254,11 @@ int ncds_sysinit(int flags)
 
 		if ((i == MONITOR_DS_INDEX) && !(flags & NC_INIT_MONITORING)) {
 			/* NETCONF monitoring is not enabled */
+			continue;
+		}
+
+		if ((i == WD_DS_INDEX) && !(flags & NC_INIT_WD)) {
+			/* NETCONF with-defaults capability is not enabled */
 			continue;
 		}
 

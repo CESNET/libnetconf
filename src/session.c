@@ -788,7 +788,7 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 		nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
 	}
 #endif
-	if (ncdflt_get_basic_mode() != NCWD_MODE_NOTSET) {
+	if ((nc_init_flags & NC_INIT_WD) && (ncdflt_get_basic_mode() != NCWD_MODE_NOTSET)) {
 		nc_cpblts_add(retval, NC_CAP_WITHDEFAULTS_ID);
 	}
 
