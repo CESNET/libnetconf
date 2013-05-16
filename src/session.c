@@ -81,6 +81,13 @@ char **get_schemas_capabilities(void);
 
 extern struct nc_shared_info *nc_info;
 
+/*
+ * From internal.c to be used by nc_session_get_cpblts_deault() to detect
+ * what part of libnetconf is initiated and can be provided in hello messages
+ * as a supported capability/module
+ */
+extern int nc_init_flags;
+
 /**
  * @brief List of possible NETCONF transportation supported by libnetconf
  */
@@ -775,10 +782,11 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	nc_cpblts_add(retval, NC_CAP_CANDIDATE_ID);
 	nc_cpblts_add(retval, NC_CAP_STARTUP_ID);
 	nc_cpblts_add(retval, NC_CAP_ROLLBACK_ID);
-	nc_cpblts_add(retval, NC_CAP_INTERLEAVE_ID);
-	nc_cpblts_add(retval, NC_CAP_MONITORING_ID);
 #ifndef DISABLE_NOTIFICATIONS
-	nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
+	if (nc_init_flags & NC_INIT_NOTIF) {
+		nc_cpblts_add(retval, NC_CAP_INTERLEAVE_ID);
+		nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
+	}
 #endif
 	if (ncdflt_get_basic_mode() != NCWD_MODE_NOTSET) {
 		nc_cpblts_add(retval, NC_CAP_WITHDEFAULTS_ID);

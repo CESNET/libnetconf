@@ -87,8 +87,6 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 extern struct nc_shared_info *nc_info;
 
-extern int nc_init_flags;
-
 char* server_capabilities = NULL;
 
 struct ncds_ds_list {
@@ -126,17 +124,6 @@ char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(runn
 #endif
 
 static struct ncds_ds *datastores_get_ds(ncds_id id);
-
-#ifndef DISABLE_NOTIFICATIONS
-#define INTERNAL_DS_COUNT 9
-#define NACM_DS_INDEX 8
-#define NOTIF_DS_INDEX_L 4
-#define NOTIF_DS_INDEX_H 6
-#else
-#define INTERNAL_DS_COUNT 6
-#define NACM_DS_INDEX 5
-#endif
-int internal_ds_count = 0;
 
 /* Allocate and fill the ncds func structure based on the type. */
 static struct ncds_ds* ncds_fill_func(NCDS_TYPE type)
@@ -184,7 +171,19 @@ static struct ncds_ds* ncds_fill_func(NCDS_TYPE type)
 	return (ds);
 }
 
-int ncds_sysinit(void)
+#ifndef DISABLE_NOTIFICATIONS
+#define INTERNAL_DS_COUNT 9
+#define NACM_DS_INDEX 8
+#define MONITOR_DS_INDEX 3
+#define NOTIF_DS_INDEX_L 4
+#define NOTIF_DS_INDEX_H 6
+#else
+#define INTERNAL_DS_COUNT 6
+#define NACM_DS_INDEX 5
+#define MONITOR_DS_INDEX 3
+#endif
+int internal_ds_count = 0;
+int ncds_sysinit(int flags)
 {
 	int i;
 	struct ncds_ds *ds;
@@ -246,13 +245,18 @@ int ncds_sysinit(void)
 
 	internal_ds_count = 0;
 	for (i = 0; i < INTERNAL_DS_COUNT; i++) {
-		if ((i == NACM_DS_INDEX) && !(nc_init_flags & NC_INIT_NACM)) {
+		if ((i == NACM_DS_INDEX) && !(flags & NC_INIT_NACM)) {
 			/* NACM is not enabled */
 			continue;
 		}
 
+		if ((i == MONITOR_DS_INDEX) && !(flags & NC_INIT_MONITORING)) {
+			/* NETCONF monitoring is not enabled */
+			continue;
+		}
+
 #ifndef DISABLE_NOTIFICATIONS
-		if ((i >= NOTIF_DS_INDEX_L && i <= NOTIF_DS_INDEX_H) && !(nc_init_flags & NC_INIT_NOTIF)) {
+		if ((i >= NOTIF_DS_INDEX_L && i <= NOTIF_DS_INDEX_H) && !(flags & NC_INIT_NOTIF)) {
 			/* Notifications are not enabled */
 			continue;
 		}

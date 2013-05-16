@@ -347,8 +347,10 @@ void nc_verbosity(NC_VERB_LEVEL level);
  * nc_init() since last system-wide nc_close() or system reboot.
  */
 int nc_init(int flags);
+#define NC_INIT_ALL 0xffffffff /**< nc_init()'s flag to enable all optional features/subsystems */
 #define NC_INIT_NOTIF 0x00000002 /**< nc_init()'s flag to enable Notification subsystem. */
 #define NC_INIT_NACM 0x00000004 /**< nc_init()'s flag to enable Acccess Control subsystem */
+#define NC_INIT_MONITORING 0x00000008 /**< nc_init()'s flag to enable ietf-netconf-monitoring module */
 
 /**
  * @ingroup genAPI

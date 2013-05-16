@@ -60,7 +60,7 @@
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 /* defined in datastore.c */
-int ncds_sysinit(void);
+int ncds_sysinit(int flags);
 
 int verbose_level = 0;
 
@@ -85,7 +85,6 @@ int nc_init_flags = 0;
 int nc_init(int flags)
 {
 	int retval = 0, r;
-	int init_flags_aux;
 	key_t key = -4;
 	int first = 1;
 	char* t;
@@ -147,39 +146,54 @@ int nc_init(int flags)
 	nc_info->stats.participants++;
 	pthread_rwlock_unlock(&(nc_info->lock));
 
-	/* set temporarily nc_init_flags for use in ncds_sysinit() */
-	init_flags_aux = nc_init_flags;
-	nc_init_flags = flags;
+	/* check used flags according to a compile time settings */
+#ifndef DISABLE_NOTIFICATIONS
+	if (flags & NC_INIT_NOTIF) {
+		nc_init_flags |= NC_INIT_NOTIF;
+	}
+#endif /* DISABLE_NOTIFICATIONS */
+	if (flags & NC_INIT_NACM) {
+		nc_init_flags |= NC_INIT_NACM;
+	}
+	if (flags & NC_INIT_MONITORING) {
+		nc_init_flags |= NC_INIT_MONITORING;
+	}
 
-	/* init internal datastores */
-	if (ncds_sysinit() != EXIT_SUCCESS) {
+	/*
+	 * init internal datastores - they have to be initiated before they are
+	 * used by their subsystems initiated below
+	 */
+	if (ncds_sysinit(nc_init_flags) != EXIT_SUCCESS) {
 		shmdt(nc_info);
-		nc_init_flags = init_flags_aux;
+		nc_init_flags = 0;
 		return (-1);
 	}
-	nc_init_flags = init_flags_aux;
 
-	/* init NETCONF sessions statistics */
-	nc_session_monitoring_init();
+	if (nc_init_flags & NC_INIT_MONITORING) {
+		/* init NETCONF sessions statistics */
+		nc_session_monitoring_init();
+	}
 
 #ifndef DISABLE_NOTIFICATIONS
 	/* init Notification subsystem */
-	if (flags & NC_INIT_NOTIF) {
+	if (nc_init_flags & NC_INIT_NOTIF) {
 		if (ncntf_init() != EXIT_SUCCESS) {
 			shmdt(nc_info);
+			/* remove flags of uninitiated subsystems */
+			nc_init_flags &= !(NC_INIT_NOTIF & NC_INIT_NACM);
 			return (-1);
 		}
-		nc_init_flags |= NC_INIT_NOTIF;
 	}
 #endif
 
 	/* init Access Control subsystem */
-	if (flags & NC_INIT_NACM) {
+	if (nc_init_flags & NC_INIT_NACM) {
 		if (nacm_init() != EXIT_SUCCESS) {
 			shmdt(nc_info);
+			/* remove flags of uninitiated subsystems */
+			nc_init_flags &= !NC_INIT_NACM;
 			return (-1);
 		}
-		nc_init_flags |= NC_INIT_NACM;
 	}
 
 	nc_init_flags |= NC_INIT_DONE;
