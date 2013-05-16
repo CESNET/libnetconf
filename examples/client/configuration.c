@@ -88,10 +88,8 @@ void load_config (struct nc_cpblts **cpblts)
 
 	if (asprintf (&netconf_dir, "%s/%s", user_home, NCC_DIR) == -1) {
 		ERROR("load_config", "asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		free (user_home);
 		return;
 	}
-	free (user_home);
 
 	ret = access (netconf_dir, R_OK|X_OK);
 	if (ret == -1) {
@@ -249,10 +247,8 @@ void store_config (struct nc_cpblts * cpblts)
 
 	if (asprintf (&netconf_dir, "%s/%s", user_home, NCC_DIR) == -1) {
 		ERROR("store_config", "asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		free (user_home);
 		return;
 	}
-	free (user_home); user_home = NULL;
 
 	ret = access (netconf_dir, R_OK|W_OK|X_OK);
 	if (ret == -1) {
