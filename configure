@@ -1388,10 +1388,10 @@ Optional Packages:
   --with-ncworkingdirpath=path
                           Path to a working directory of libnetconf, where all
                           the system files are stored, the default value is
-                          /usr/share/libnetconf/
+                          /var/lib/libnetconf/
   --with-servercfgpath=path
                           Path to example server configuration files, the
-                          default value is /usr/share/libnetconf/server/
+                          default value is /var/lib/libnetconf/server/
   --with-suid=user        When creating files or directories using libnetconf,
                           rely on the SUID bit set and change their ownership
                           to the specified user
@@ -2622,8 +2622,8 @@ USERMAIL=`git config --get user.email`
 CONFIGURE_PWD=`pwd`
 
 
-NC_WORKINGDIR_PATH="/usr/share/$PACKAGE_NAME/"
-SERVERCFG_PATH="/usr/share/$PACKAGE_NAME/server/"
+NC_WORKINGDIR_PATH="/var/lib/$PACKAGE_NAME/"
+SERVERCFG_PATH="/var/lib/$PACKAGE_NAME/server/"
 SETBIT=0
 SETUSER=""
 SETGROUP=""

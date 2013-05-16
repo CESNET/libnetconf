@@ -63,8 +63,8 @@ AC_SUBST(USERMAIL)
 CONFIGURE_PWD=`pwd`
 AC_SUBST(CONFIGURE_PWD)
 
-NC_WORKINGDIR_PATH="/usr/share/$PACKAGE_NAME/"
-SERVERCFG_PATH="/usr/share/$PACKAGE_NAME/server/"
+NC_WORKINGDIR_PATH="/var/lib/$PACKAGE_NAME/"
+SERVERCFG_PATH="/var/lib/$PACKAGE_NAME/server/"
 SETBIT=0
 SETUSER=""
 SETGROUP=""
@@ -151,11 +151,11 @@ AC_ARG_ENABLE([debug-threads],
 	CPPFLAGS="$CPPFLAGS -DDEBUG_THREADS"
 )
 AC_ARG_WITH([ncworkingdirpath],
-	AC_HELP_STRING([--with-ncworkingdirpath=path],[Path to a working directory of libnetconf, where all the system files are stored, the default value is /usr/share/libnetconf/]),
+	AC_HELP_STRING([--with-ncworkingdirpath=path],[Path to a working directory of libnetconf, where all the system files are stored, the default value is /var/lib/libnetconf/]),
 	NC_WORKINGDIR_PATH="$withval"
 )
 AC_ARG_WITH([servercfgpath],
-	AC_HELP_STRING([--with-servercfgpath=path],[Path to example server configuration files, the default value is /usr/share/libnetconf/server/]),
+	AC_HELP_STRING([--with-servercfgpath=path],[Path to example server configuration files, the default value is /var/lib/libnetconf/server/]),
 	SERVERCFG_PATH="$withval"
 )
 AC_ARG_WITH([suid],
