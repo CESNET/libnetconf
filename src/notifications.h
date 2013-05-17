@@ -110,6 +110,20 @@ char** ncntf_stream_list(void);
 
 /**
  * @ingroup notifications
+ * @brief Get some more details about the specified NETCONF event notifications
+ * stream.
+ *
+ * @param[in] stream Name of the stream.
+ * @param[out] desc Pointer to a description string is returned.
+ * @param[out] desc Pointer to a time string of the stream start time is
+ * returned.
+ * @return 0 on success, non-zero on error (desc and start are not returned in
+ * such a case).
+ */
+int ncntf_stream_info(const char* stream, char** desc, char** start);
+
+/**
+ * @ingroup notifications
  * @brief Test if the given stream is already created and available
  * @param[in] name Name of the stream to check.
  * @return 0 - the stream is not present,<br/>1 - the stream is present

@@ -1050,6 +1050,30 @@ int ncntf_stream_isavailable(const char* name)
 	return (0); /* the stream does not exist */
 }
 
+int ncntf_stream_info(const char* stream, char** desc, char** start)
+{
+	struct stream *s;
+
+	DBG_LOCK("stream_mut");
+	pthread_mutex_lock(streams_mut);
+	if ((s = ncntf_stream_get(stream)) == NULL) {
+		DBG_UNLOCK("streams_mut");
+		pthread_mutex_unlock(streams_mut);
+		return (EXIT_FAILURE);
+	}
+	DBG_UNLOCK("streams_mut");
+	pthread_mutex_unlock(streams_mut);
+
+	if (desc != NULL) {
+		*desc = strdup(s->desc);
+	}
+	if (start != NULL) {
+		*start = nc_time2datetime(s->created);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
 void ncntf_stream_iter_start(const char* stream)
 {
 	struct stream *s;
