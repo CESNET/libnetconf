@@ -487,6 +487,47 @@
  */
 
 /**
+ * \page transapi Transaction API (transAPI)
+ *
+ * Libnetconf transAPI is a framework that will save developers time and let them
+ * focus on configuring and managing their device instead of fighting with NETCONF
+ * protocol.
+ *
+ * It allows developer to choose parts of configuration that can be easily configured
+ * as a single block. Based on list of so called 'sensitive paths' generator creates
+ * C code containing single callback function for every 'sensitive path'. Whenever
+ * something changes in configuration file appropriate callback function is called
+ * and should reflect configuration changes to device behavior.
+ *
+ * Additionaly, transAPI provides opportunity to implement behavior of RPC messages.
+ * If you provide 'generator.py' with data model containing definition of RPC messages
+ * it will generate callbacks for them too. Whenever server receives specified RPC message
+ * it will call function implemented in module.
+ *
+ * ### Getting started ###
+ *
+ * -# Create folder for your new module and enter it.
+ * -# Run python script 'generator.py'. Description of parameters follows:
+ *              - \-\-name  Name of your module. This is only one mandatory parameter.
+ *              - \-\-paths File with list of sensitive path. One per line.
+ *              - \-\-model File holding data model. Used for generating rpc callbacks.
+ *              - \-\-template\-dir Path to directory with template files for generator.
+ *              - \-\-with\-libxml2 Use libxml2 structures for passing data to and returning from callbacks.
+ *              - \-\-without\-init Module does not need initialization when loaded.
+ *              - \-\-without\-close Module does not need closing before unloaded.
+ * -# Open generated .c file and fill function bodies with code that has to be run
+ *        when configuration change or RPC message is received. You can add as many
+ *        auxiliary function as you need.
+ *        Do NOT modify structures or function headers.
+ * -# Fill body of get_state_data() function so it returns all device state data
+ *         defined in device data model.
+ * -# Fill bodies of init and close functions (if your module needs them).
+ * -# Run sequence 'autoreconf && ./configure && make'. If the build is succesful
+ *        shared library is generated. You can use it with libnetconf for configuring
+ *        your device.
+ */
+
+/**
  * \defgroup genAPI General functions
  * \brief libnetconf's miscellaneous functions.
  */
