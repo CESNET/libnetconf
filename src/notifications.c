@@ -194,15 +194,22 @@ static void filter_reg_files(char* dirpath, struct dirent **filelist, int n)
 static int check_streams_path(char* path)
 {
 	struct stat sb;
+	mode_t old_mask;
 
 	/* check accessibility of the path */
 	if (eaccess(path, F_OK | R_OK | W_OK) != 0) {
 		if (errno == ENOENT) {
+			/* set mask to 000 to create dir with rights 0777 */
+			old_mask = umask(000);
 			/* path does not exist -> create it */
 			if (mkdir(path, DIR_PERM) == -1) {
 				WARN("Unable to create the Events streams directory %s (%s).", path, strerror(errno));
+				/* restore previous mask */
+				umask(old_mask);
 				return (EXIT_FAILURE);
 			}
+			/* restore previous mask */
+			umask(old_mask);
 			return (EXIT_SUCCESS);
 		}
 		WARN("Unable to access the Events streams directory %s (%s).", path, strerror(errno));
