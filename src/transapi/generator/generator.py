@@ -105,15 +105,10 @@ def generate_init_callback(with_libxml2):
     content += '/**\n'
     content += ' * @brief Initialize plugin after loaded and before any other functions are called.\n'
     content += ' *\n'
-    content += ' * @param startup_config\tContent of startup datastore.\n'
-    content += ' *\n'
-    content += ' * @return New content of running datastore reflecting current device state.\n'
+    content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
     content += ' */\n'
-    if with_libxml2:
-		content += 'xmlDocPtr init(xmlDocPtr startup_config)\n'
-    else:
-		content += 'char * init(char * startup_config)\n'
-    content += '{\n\treturn NULL;\n}\n\n'
+    content += 'int init(void)\n'
+    content += '{\n\treturn EXIT_SUCCESS;\n}\n\n'
 
     return (content)
     

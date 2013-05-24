@@ -1044,7 +1044,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	void * transapi_module = NULL;
 	char* (*get_state)(const char*, const char*, struct nc_err **) = NULL;
 	void (*close_func)(void) = NULL;
-	union transapi_init init_func = {NULL};
+	int (*init_func)(void) = NULL;
 	union transapi_data_clbcks data_clbks = {NULL};
 	union transapi_rpc_clbcks rpc_clbks = {NULL};
 	int *libxml2, lxml2;
@@ -1081,10 +1081,6 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 			return (NULL);
 		}
 
-		if ((init_func.init_xml = dlsym (transapi_module, "init")) == NULL) {
-				WARN("%s: Unable to find \"init\" function.", __func__);
-		}
-
 		/* callbacks work with configuration data */
 		/* empty datastore has no data */
 		if (type != NCDS_TYPE_EMPTY) {
@@ -1103,10 +1099,6 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 			return (NULL);
 		}
 
-		if ((init_func.init = dlsym (transapi_module, "init")) == NULL) {
-			WARN("%s: Unable to find \"init\" function.", __func__);
-		}
-
 		/* callbacks work with configuration data */
 		/* empty datastore has no data */
 		if (type != NCDS_TYPE_EMPTY) {
@@ -1117,6 +1109,10 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 				return (NULL);
 			}
 		}
+	}
+
+	if ((init_func = dlsym (transapi_module, "init")) == NULL) {
+		WARN("%s: Unable to find \"init\" function.", __func__);
 	}
 
 	if ((close_func = dlsym (transapi_module, "close")) == NULL) {

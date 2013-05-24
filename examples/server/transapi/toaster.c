@@ -22,28 +22,14 @@ volatile int cancel;
 /**
  * @brief Initialize plugin after loaded and before any other functions are called.
  *
- * @param startup_config	Content of startup datastore.
- *
  * @return New content of running datastore reflecting current device state.
  */
-xmlDocPtr init(xmlDocPtr startup_config)
+int init(void)
 {
-	xmlNodePtr startup_root;
 
-	/* invalid document  */
-	if (startup_config == NULL) {
-		return NULL;
-	}
 
-	 startup_root = xmlDocGetRootElement(startup_config);
 
-	if (startup_root != NULL &&	xmlStrEqual(startup_root->name, BAD_CAST "toaster") &&
-		startup_root->ns != NULL && xmlStrEqual(startup_root->ns->href, BAD_CAST "http://netconfcentral.org/ns/toaster")) {
-		status = "on";
-	} else {
-		status = "off";
-	}
-	return xmlCopyDoc(startup_config, 1);
+	return EXIT_SUCCESS;
 }
 
 /**

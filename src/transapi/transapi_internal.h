@@ -15,11 +15,6 @@ union transapi_rpc_clbcks {
 	struct transapi_xml_rpc_callbacks * rpc_clbks_xml;
 };
 
-union transapi_init {
-	xmlDocPtr (*init_xml)(xmlDocPtr startup_config);
-	char * (*init)(char * startup_config);
-};
-
 struct transapi {
 	/**
 	 * @brief Loaded shared library with transapi callbacks.
@@ -40,7 +35,7 @@ struct transapi {
 	/**
 	 * @brief Module initialization.
 	 */
-	union transapi_init init;
+	int (*init)(void);
 	/**
 	 * @brief Free module resources and prepare for closing.
 	 */
