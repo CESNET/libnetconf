@@ -64,6 +64,10 @@ int ncds_sysinit(int flags);
 
 int verbose_level = 0;
 
+/* this instance is running as first after reboot or system-wide nc_close */
+/* used in nc_device_init to decide if erase running or not */
+int first_after_close = 0;
+
 void nc_verbosity(NC_VERB_LEVEL level)
 {
 	verbose_level = level;
@@ -86,7 +90,7 @@ int nc_init(int flags)
 {
 	int retval = 0, r;
 	key_t key = -4;
-	int first = 1;
+	first_after_close = 1;
 	char* t;
 	pthread_rwlockattr_t rwlockattr;
 
@@ -100,7 +104,7 @@ int nc_init(int flags)
 	if (shmid == -1 && errno == EEXIST) {
 		shmid = shmget(key, sizeof(struct nc_shared_info), FILE_PERM);
 		retval = 1;
-		first = 0;
+		first_after_close = 0;
 	}
 	if (shmid == -1) {
 		ERROR("Accessing shared memory failed (%s).", strerror(errno));
@@ -117,7 +121,7 @@ int nc_init(int flags)
 	}
 
 	/* todo use locks */
-	if (first) {
+	if (first_after_close) {
 		/* remove the global session information file if left over a previous libnetconf instance */
 		if ((unlink(SESSIONSFILE_PATH) == -1) && (errno != ENOENT)) {
 			ERROR("Unable to remove the session information file (%s)", strerror(errno));

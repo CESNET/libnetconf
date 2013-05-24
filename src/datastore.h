@@ -141,6 +141,13 @@ int ncds_file_set_path (struct ncds_ds* datastore, const char* path);
 ncds_id ncds_init(struct ncds_ds* datastore);
 
 /**
+ * @brief Initialize transAPI module(s) (if present) and copy startup configuration to running
+ *
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int ncds_device_init ();
+
+/**
  * @ingroup store
  * @brief Close the specified datastore and free all the resources.
  *

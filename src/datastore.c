@@ -118,6 +118,7 @@ static struct data_model* get_model(const char* module, const char* version);
 static int ncds_features_parse(struct data_model* model);
 static int ncds_update_uses_groupings(struct data_model* model);
 static int ncds_update_uses_augments(struct data_model* model);
+extern int first_after_close;
 
 #ifndef DISABLE_NOTIFICATIONS
 char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
@@ -431,6 +432,65 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 
 	return retval;
 }
+
+int ncds_device_init ()
+{
+	nc_rpc * rpc_msg = NULL;
+	nc_reply * reply_msg = NULL;
+	struct ncds_ds_list * ds_iter = NULL;
+	struct nc_cpblts * cpblts = NULL;
+	struct nc_session * dummy_session = NULL;
+	struct nc_err * err;
+
+	/* initialize all transAPI capable modules */
+	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter=ds_iter->next) {
+		if (ds_iter->datastore->transapi.init) {
+			if (ds_iter->datastore->transapi.init()) {
+				ERROR ("init function from module %s failed.", ds_iter->datastore->data_model->name);
+				goto fail;
+			}
+		}
+	}
+
+	if (first_after_close) {
+		/* Clean RUNNING datastore. This is important when tranAPI is deployed and does not harm when not. */
+		/* It is done by calling low level function to avoid invoking transapi now. */
+		for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter=ds_iter->next) {
+			/* TRY to erase, when it fails the datastore is probably empty */
+			/* TODO: Is there better way? */
+			ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, "", &err);
+		}
+
+		/* create dummy session for applying copy-config (startup->running) */
+		cpblts = nc_session_get_cpblts_default();
+		if ((dummy_session = nc_session_dummy("dummy-internal", "server", NULL, cpblts)) == NULL) {
+			goto fail;
+		}
+		nc_cpblts_free(cpblts);
+
+		/* initial copy of startup to running will cause full (re)configuration of module */
+		/* Here is used high level function ncds_apply_rpc2all to apply startup configuration and use transapi */
+		rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
+		reply_msg = ncds_apply_rpc2all(dummy_session, rpc_msg, NULL);
+		if (reply_msg == NULL || nc_reply_get_type (reply_msg) != NC_REPLY_OK) {
+			ERROR ("Failed perform initial copy of startup to running.");
+			goto fail;
+		}
+		nc_rpc_free(rpc_msg);
+		nc_reply_free(reply_msg);
+		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+	}
+
+	return EXIT_SUCCESS;
+fail:
+	if (dummy_session != NULL) {
+		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+	}
+	nc_rpc_free(rpc_msg);
+	nc_reply_free(reply_msg);
+	return EXIT_FAILURE;
+}
+
 
 char * ncds_get_model(ncds_id id, int base)
 {
