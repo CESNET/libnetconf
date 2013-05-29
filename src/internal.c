@@ -321,7 +321,11 @@ char** nc_get_grouplist(const char* username)
 			if (getgrouplist(username, p->pw_gid, glist, &i) != -1) {
 				for (j = 0; j < i; j++) {
 					g = getgrgid(glist[j]);
-					retval[j] = strdup(g->gr_name);
+					if (g && g->gr_name) {
+						retval[j] = strdup(g->gr_name);
+					} else {
+						retval[j] = strdup("\0");
+					}
 				}
 				retval[j] = NULL; /* list termination */
 			} else {
