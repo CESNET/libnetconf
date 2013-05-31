@@ -127,6 +127,7 @@ SUBHEADERS_DIR = libnetconf
 HDRS_PRIV = src/config.h.in \
 	src/libnetconf.h \
 	src/libnetconf_xml.h \
+	src/libnetconf_ssh.h \
 	src/callbacks.h \
 	src/callbacks_ssh.h \
 	src/error.h \
