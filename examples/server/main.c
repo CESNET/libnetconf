@@ -255,8 +255,6 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 {
 	struct srv_config config;
 	struct ncds_ds* datastore;
-	struct nc_session* dummy_session;
-	struct nc_cpblts *def_cpblts;
 	int init;
 
 	/* set verbosity and function to print libnetconf's messages */
