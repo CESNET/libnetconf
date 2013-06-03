@@ -189,8 +189,6 @@ struct transapi_xml_data_callbacks clbks =  {
 
 void * make_toast (void * doneness)
 {
-	int ret = NULL;
-
 	/* pretend toasting */
 	sleep (*(int*)doneness);
 
