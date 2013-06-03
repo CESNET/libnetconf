@@ -92,8 +92,10 @@ TRANSAPI = ./transapi/
 all: $(NAME) $(TRANSAPI)
 
 .PHONY: $(TRANSAPI)
-$(TRANSAPI):
-	( cd $(TRANSAPI) && ./configure )
+$(TRANSAPI)/Makefile:
+	(cd $(TRANSAPI) && ./configure )
+
+$(TRANSAPI): $(TRANSAPI)/Makefile
 	$(MAKE) -C $@
 
 $(NAME): $(OBJS)
