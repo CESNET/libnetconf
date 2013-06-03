@@ -43,6 +43,10 @@
 #include "ssh.h"
 #include "netconf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @ingroup session
  * @brief Create a disconnected session structure.
@@ -399,5 +403,9 @@ NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_re
  * @return String describing the given termination reason value.
  */
 const char* nc_session_term_string(NC_SESSION_TERM_REASON reason);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SESSION_H_ */

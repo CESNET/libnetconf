@@ -45,6 +45,10 @@
 #include "netconf.h"
 #include "notifications.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @ingroup notifications_xml
  * @brief Store a new event into the specified stream. Parameters are specific
@@ -114,5 +118,9 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content);
  * with xmlFreeNodeList().
  */
 xmlNodePtr ncxmlntf_notif_get_content(nc_ntf* notif);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NOTIFICATIONS_XML_H_ */

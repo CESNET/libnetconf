@@ -44,6 +44,10 @@
 #include "netconf.h"
 #include "messages.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @ingroup withdefaults
  * @brief Set the basic mode of the with-defaults capability for a NETCONF server.
@@ -120,5 +124,9 @@ int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCWD_MODE mode);
  * @return with-defaults mode of the NETCONF rpc message.
  */
 NCWD_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* WITH_DEFAULTS_H_ */

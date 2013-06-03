@@ -42,6 +42,10 @@
 
 #include "netconf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief NETCONF error structure representation
  * @ingroup genAPI
@@ -113,5 +117,9 @@ int nc_err_set(struct nc_err* err, NC_ERR_PARAM param, const char* value);
  * specified parameter is not set.
  */
 const char* nc_err_get(const struct nc_err* err, NC_ERR_PARAM param);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ERROR_H_ */

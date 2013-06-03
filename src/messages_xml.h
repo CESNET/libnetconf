@@ -47,6 +47,10 @@
 #include "netconf.h"
 #include "error.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @ingroup rpc_xml
  * @brief Create a new NETCONF filter of the specified type.
@@ -218,5 +222,9 @@ nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_D
  * @return Created rpc message.
  */
 nc_rpc *ncxml_rpc_generic(const xmlNodePtr data);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MESSAGES_XML_H_ */

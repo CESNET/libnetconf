@@ -44,6 +44,10 @@
 #include "netconf.h"
 #include "error.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @ingroup rpc
  * @brief Create a new NETCONF filter of the specified type.
@@ -571,5 +575,9 @@ nc_rpc *nc_rpc_generic(const char* data);
  *
  */
 int nc_rpc_capability_attr(nc_rpc* rpc, NC_CAP_ATTR attr, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MESSAGES_H_ */

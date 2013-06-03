@@ -42,6 +42,10 @@
 
 #include <sys/types.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct nc_msg;
 
 /**
@@ -364,5 +368,9 @@ int nc_init(int flags);
  * done.
  */
 int nc_close(int system);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NETCONF_H_ */

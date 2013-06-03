@@ -43,6 +43,10 @@
 #include "netconf.h"
 #include "error.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @ingroup store
  * @brief Datastore implementation types provided by libnetconf
@@ -336,5 +340,9 @@ int ncds_features_disableall(const char* module);
  */
 int ncds_feature_isenabled(const char* module, const char* feature);
 int ncds_consolidate(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* DATASTORE_H_ */

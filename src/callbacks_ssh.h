@@ -44,6 +44,10 @@
 
 #include "netconf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Set a callback function for passing user credentials into the libssh2's
  * keyboard-interactive authentication method
@@ -93,5 +97,9 @@ void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
  * @param[in] public
  */
 void nc_set_keypair_path(const char* private, const char * public);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CALLBACKS_SSH_H_ */

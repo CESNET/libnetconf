@@ -44,6 +44,10 @@
 
 #include "netconf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NCNTF_STREAM_DEFAULT "NETCONF"
 #define NCNTF_STREAM_BASE NCNTF_STREAM_DEFAULT
 
@@ -295,5 +299,9 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
  * @return number of received notifications, -1 on error.
  */
 long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_ntf)(time_t eventtime, const char* content));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NOTIFICATIONS_H_ */

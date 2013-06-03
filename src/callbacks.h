@@ -42,6 +42,10 @@
 
 #include "netconf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Set a callback function for printing libnetconf's messages.
  * @ingroup genAPI
@@ -74,5 +78,9 @@ void nc_callback_error_reply(void (*func)(const char* tag,
 		const char* element,
 		const char* ns,
 		const char* sid));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CALLBACKS_H_ */
