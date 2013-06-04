@@ -270,7 +270,7 @@ char** nc_get_grouplist(const char* username)
 {
 	struct passwd* p;
 	struct group* g;
-	int i, j;
+	int i, j, k;
 	gid_t *glist;
 	char** retval = NULL;
 
@@ -290,15 +290,13 @@ char** nc_get_grouplist(const char* username)
 			}
 
 			if (getgrouplist(username, p->pw_gid, glist, &i) != -1) {
-				for (j = 0; j < i; j++) {
+				for (j = 0, k = 0; j < i; j++) {
 					g = getgrgid(glist[j]);
 					if (g && g->gr_name) {
-						retval[j] = strdup(g->gr_name);
-					} else {
-						retval[j] = strdup("\0");
+						retval[k++] = strdup(g->gr_name);
 					}
 				}
-				retval[j] = NULL; /* list termination */
+				retval[k] = NULL; /* list termination */
 			} else {
 				WARN("%s: unable to get list of groups (getgrouplist() failed)", __func__);
 			}
