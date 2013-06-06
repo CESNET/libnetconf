@@ -344,6 +344,9 @@ void nc_verbosity(NC_VERB_LEVEL level);
  * shared across all the processes
  * @param[in] flags ORed flags for libnetconf initialization. Accepted values
  * include:
+ *    - *NC_INIT_ALL* Enable all available subsystems
+ *    - *NC_INIT_MONITORING* Enable ietf-netconf-monitoring module
+ *    - *NC_INIT_WD* Enable With-default capability
  *    - *NC_INIT_NOTIF* Enable Notification subsystem
  *    - *NC_INIT_NACM* Enable NETCONF Access Control subsystem
  * @return -1 on fatal error\n 0 if this is the first init after previous
