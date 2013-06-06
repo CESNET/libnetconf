@@ -119,7 +119,7 @@ char** ncntf_stream_list(void);
  *
  * @param[in] stream Name of the stream.
  * @param[out] desc Pointer to a description string is returned.
- * @param[out] desc Pointer to a time string of the stream start time is
+ * @param[out] start Pointer to a time string of the stream start time is
  * returned.
  * @return 0 on success, non-zero on error (desc and start are not returned in
  * such a case).

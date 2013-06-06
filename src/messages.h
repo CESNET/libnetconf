@@ -555,7 +555,8 @@ nc_rpc *nc_rpc_generic(const char* data);
 
 /**
  * @ingroup rpc
- * @brief Set the attribute of the given \<rpc\> specific for some NETCONF capability.
+ * @brief Set the attribute of the given \<rpc\> which is specific for some
+ * NETCONF capability.
  *
  * ### Parameters for specific capability attributes:
  * - #NC_CAP_ATTR_WITHDEFAULTS_MODE
