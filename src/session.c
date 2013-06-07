@@ -777,7 +777,6 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 
 	nc_cpblts_add(retval, NC_CAP_BASE10_ID);
 	nc_cpblts_add(retval, NC_CAP_BASE11_ID);
-	nc_cpblts_add(retval, NC_CAP_YANG_ID);
 	nc_cpblts_add(retval, NC_CAP_WRUNNING_ID);
 	nc_cpblts_add(retval, NC_CAP_CANDIDATE_ID);
 	nc_cpblts_add(retval, NC_CAP_STARTUP_ID);

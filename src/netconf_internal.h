@@ -103,7 +103,6 @@
 #define NC_CAP_VALIDATE11_ID    "urn:ietf:params:netconf:capability:validate:1.1"
 #define NC_CAP_MONITORING_ID    "urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
 #define NC_CAP_WITHDEFAULTS_ID  "urn:ietf:params:netconf:capability:with-defaults:1.0"
-#define NC_CAP_YANG_ID          "urn:ietf:params:xml:ns:yang:1"
 
 #define NC_NS_WITHDEFAULTS      "urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"
 #define NC_NS_WITHDEFAULTS_ID   "wd"
