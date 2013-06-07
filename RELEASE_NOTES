@@ -2,10 +2,28 @@ libnetconf 0.5.0
 
 This release includes the following changes:
 
-TODO:
- * Transaction API
- * Support for augmented configuration data models
- * ncds_apply_rpc2all()
+ * Transaction API (TransAPI) including code templates generator. For more
+   information, see documentation.
+ * Support for augmented configuration data models.
+ * Support for grouping/uses statements in configuration data models.
+ * Support for using multiple SSH channels.
+ * Allow switching on/off of data model features.
+ * Better separation of libssh2 - for servers or simple clients it is no more
+   needed to link libssh2, libnetconf will use it on its own.
+ * The way of setting up Recovery session UID changed - instead of function
+   nacm_recovery_uid(), the configure's --with-nacm-recovery-uid option must be
+   used.
+ * Higher granularity of nc_init()'s flags - various libnetconf's subsystems
+   including internal data store set can be switched off now. By default, caller
+   is supposed to use NC_INIT_ALL flag to initiate libnetconf with all its
+   subsystems.
+ * Allow linking libnetconf from a C++ code.
+ * Set of new functions:
+   ncds_apply_rpc2all()
+     - Apply RPC to all managed data stores and automatically compound resulting
+       reply.
+   ncntf_stream_info()
+     - Get basic information about the Event Stream.
 
 For API/ABI compatibility to previous versions, see reports in
 'doc/compat_reports/' directory.
