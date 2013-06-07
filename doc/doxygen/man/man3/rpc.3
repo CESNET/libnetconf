@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Fri Jun 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -22,13 +22,33 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIEnumeration of <rpc> operation types\&. \fP"
 .ti -1c
-.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP, \fBNC_OP_COMMIT\fP, \fBNC_OP_DISCARDCHANGES\fP, \fBNC_OP_VALIDATE\fP, \fBNC_OP_CREATESUBSCRIPTION\fP, \fBNC_OP_GETSCHEMA\fP }"
+.RI "enum \fBNC_OP\fP { \fBNC_OP_UNKNOWN\fP, \fBNC_OP_GETCONFIG\fP, \fBNC_OP_GET\fP, \fBNC_OP_EDITCONFIG\fP, \fBNC_OP_CLOSESESSION\fP, \fBNC_OP_KILLSESSION\fP, \fBNC_OP_COPYCONFIG\fP, \fBNC_OP_DELETECONFIG\fP, \fBNC_OP_LOCK\fP, \fBNC_OP_UNLOCK\fP, \fBNC_OP_COMMIT\fP, \fBNC_OP_DISCARDCHANGES\fP, \fBNC_OP_CREATESUBSCRIPTION\fP, \fBNC_OP_GETSCHEMA\fP, \fBNC_OP_VALIDATE\fP }"
 .br
 .RI "\fIEnumeration of supported <rpc> operations\&. \fP"
 .ti -1c
 .RI "enum \fBNC_FILTER_TYPE\fP { \fBNC_FILTER_UNKNOWN\fP, \fBNC_FILTER_SUBTREE\fP }"
 .br
 .RI "\fIEnumeration of supported NETCONF filter types\&. \fP"
+.ti -1c
+.RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP = -1, \fBNC_EDIT_OP_MERGE\fP = 1, \fBNC_EDIT_OP_REPLACE\fP = 2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
+.br
+.RI "\fIEnumeration of edit-config's operation attribute values\&. \fP"
+.ti -1c
+.RI "enum \fBNC_EDIT_DEFOP_TYPE\fP { \fBNC_EDIT_DEFOP_ERROR\fP = -1, \fBNC_EDIT_DEFOP_NOTSET\fP = 0, \fBNC_EDIT_DEFOP_MERGE\fP = 1, \fBNC_EDIT_DEFOP_REPLACE\fP = 2, \fBNC_EDIT_DEFOP_NONE\fP = 3 }"
+.br
+.RI "\fIEnumeration of edit-config's <default-operation> element values\&. \fP"
+.ti -1c
+.RI "enum \fBNC_EDIT_ERROPT_TYPE\fP { \fBNC_EDIT_ERROPT_ERROR\fP = -1, \fBNC_EDIT_ERROPT_NOTSET\fP = 0, \fBNC_EDIT_ERROPT_STOP\fP = 1, \fBNC_EDIT_ERROPT_CONT\fP = 2, \fBNC_EDIT_ERROPT_ROLLBACK\fP = 3 }"
+.br
+.RI "\fIEnumeration of edit-config's <error-option> element values\&. \fP"
+.ti -1c
+.RI "enum \fBNC_EDIT_TESTOPT_TYPE\fP { \fBNC_EDIT_TESTOPT_ERROR\fP = -1, \fBNC_EDIT_TESTOPT_NOTSET\fP = 0, \fBNC_EDIT_TESTOPT_TESTSET\fP = 1, \fBNC_EDIT_TESTOPT_SET\fP = 2, \fBNC_EDIT_TESTOPT_TEST\fP = 3 }"
+.br
+.RI "\fIEnumeration of edit-config's <test-option> element values\&. \fP"
+.ti -1c
+.RI "enum \fBNC_CAP_ATTR\fP { \fBNC_CAP_ATTR_WITHDEFAULTS_MODE\fP = 1 }"
+.br
+.RI "\fIRPC attributes list\&. \fP"
 .in -1c
 .SS "Functions"
 
@@ -172,7 +192,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .ti -1c
 .RI "int \fBnc_rpc_capability_attr\fP (\fBnc_rpc\fP *rpc, \fBNC_CAP_ATTR\fP attr,\&.\&.\&.)"
 .br
-.RI "\fISet the attribute of the given <rpc> specific for some NETCONF capability\&. \fP"
+.RI "\fISet the attribute of the given <rpc> which is specific for some NETCONF capability\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -253,14 +273,14 @@ unknown/error value
 \fB\fINC_OP_DISCARDCHANGES \fP\fP
 <discard-changes> operation 
 .TP
-\fB\fINC_OP_VALIDATE \fP\fP
-<validate> operation 
-.TP
 \fB\fINC_OP_CREATESUBSCRIPTION \fP\fP
 <create-subscription> operation (RFC 5277) 
 .TP
 \fB\fINC_OP_GETSCHEMA \fP\fP
 <get-schema> operation (RFC 6022) 
+.TP
+\fB\fINC_OP_VALIDATE \fP\fP
+<validate> operation 
 .SS "enum \fBNC_FILTER_TYPE\fP"
 
 .PP
@@ -270,9 +290,111 @@ Enumeration of supported NETCONF filter types\&.
 .in +1c
 .TP
 \fB\fINC_FILTER_UNKNOWN \fP\fP
+unsupported filter type 
 .TP
 \fB\fINC_FILTER_SUBTREE \fP\fP
-NC_FILTER_SUBTREE 
+subtree filter according to RFC 6241, sec\&. 6 
+.SS "enum \fBNC_EDIT_OP_TYPE\fP"
+
+.PP
+Enumeration of edit-config's operation attribute values\&. 
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fINC_EDIT_OP_ERROR \fP\fP
+for internal purposes, not defined by NETCONF 
+.TP
+\fB\fINC_EDIT_OP_MERGE \fP\fP
+merge 
+.TP
+\fB\fINC_EDIT_OP_REPLACE \fP\fP
+replace 
+.TP
+\fB\fINC_EDIT_OP_CREATE \fP\fP
+create 
+.TP
+\fB\fINC_EDIT_OP_DELETE \fP\fP
+delete 
+.TP
+\fB\fINC_EDIT_OP_REMOVE \fP\fP
+remove 
+.SS "enum \fBNC_EDIT_DEFOP_TYPE\fP"
+
+.PP
+Enumeration of edit-config's <default-operation> element values\&. 
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fINC_EDIT_DEFOP_ERROR \fP\fP
+for internal purposes, not defined by NETCONF 
+.TP
+\fB\fINC_EDIT_DEFOP_NOTSET \fP\fP
+follow NETCONF defined default behavior (merge) 
+.TP
+\fB\fINC_EDIT_DEFOP_MERGE \fP\fP
+merge (RFC 6241, sec\&. 7\&.2) 
+.TP
+\fB\fINC_EDIT_DEFOP_REPLACE \fP\fP
+replace (RFC 6241, sec\&. 7\&.2) 
+.TP
+\fB\fINC_EDIT_DEFOP_NONE \fP\fP
+none (RFC 6241, sec\&. 7\&.2) 
+.SS "enum \fBNC_EDIT_ERROPT_TYPE\fP"
+
+.PP
+Enumeration of edit-config's <error-option> element values\&. 
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fINC_EDIT_ERROPT_ERROR \fP\fP
+for internal purposes, not defined by NETCONF 
+.TP
+\fB\fINC_EDIT_ERROPT_NOTSET \fP\fP
+follow NETCONF defined default behavior (stop-on-error) 
+.TP
+\fB\fINC_EDIT_ERROPT_STOP \fP\fP
+stop-on-error (RFC 6241, sec\&. 7\&.2) 
+.TP
+\fB\fINC_EDIT_ERROPT_CONT \fP\fP
+continue-on-error (RFC 6241, sec\&. 7\&.2) 
+.TP
+\fB\fINC_EDIT_ERROPT_ROLLBACK \fP\fP
+rollback-on-error (RFC 6241, sec\&. 7\&.2), valid only when :rollback-on-error capability is enabled 
+.SS "enum \fBNC_EDIT_TESTOPT_TYPE\fP"
+
+.PP
+Enumeration of edit-config's <test-option> element values\&. Valid only with enabled :validate:1\&.1 capability\&. 
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fINC_EDIT_TESTOPT_ERROR \fP\fP
+for internal purposes, not defined by NETCONF 
+.TP
+\fB\fINC_EDIT_TESTOPT_NOTSET \fP\fP
+follow NETCONF defined default behavior (test-then-set) 
+.TP
+\fB\fINC_EDIT_TESTOPT_TESTSET \fP\fP
+test-then-set 
+.TP
+\fB\fINC_EDIT_TESTOPT_SET \fP\fP
+set 
+.TP
+\fB\fINC_EDIT_TESTOPT_TEST \fP\fP
+test-only 
+.SS "enum \fBNC_CAP_ATTR\fP"
+
+.PP
+RPC attributes list\&. List of specific attributes that can be added to selected RPC operations\&. The attributes can be set by (possibly repeated) call of the \fBnc_rpc_capability_attr()\fP function\&. 
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fINC_CAP_ATTR_WITHDEFAULTS_MODE \fP\fP
+Set <with-default> attribute of the operation 
 .SH "Function Documentation"
 .PP 
 .SS "const \fBnc_msgid\fP nc_session_send_rpc (struct nc_session *session, \fBnc_rpc\fP *rpc)"
@@ -830,7 +952,7 @@ Created rpc message\&.
 .SS "int nc_rpc_capability_attr (\fBnc_rpc\fP *rpc, \fBNC_CAP_ATTR\fPattr, \&.\&.\&.)"
 
 .PP
-Set the attribute of the given <rpc> specific for some NETCONF capability\&. .SS "Parameters for specific capability attributes:"
+Set the attribute of the given <rpc> which is specific for some NETCONF capability\&. .SS "Parameters for specific capability attributes:"
 .PP
 .IP "\(bu" 2
 \fBNC_CAP_ATTR_WITHDEFAULTS_MODE\fP

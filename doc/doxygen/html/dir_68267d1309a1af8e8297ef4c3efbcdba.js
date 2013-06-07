@@ -5,6 +5,7 @@ var dir_68267d1309a1af8e8297ef4c3efbcdba =
     [ "datastore.h", "d9/db6/datastore_8h.html", "d9/db6/datastore_8h" ],
     [ "error.h", "da/d41/error_8h.html", "da/d41/error_8h" ],
     [ "libnetconf.h", "d1/d87/libnetconf_8h.html", null ],
+    [ "libnetconf_ssh.h", "d1/da1/libnetconf__ssh_8h.html", null ],
     [ "libnetconf_xml.h", "d5/d3e/libnetconf__xml_8h.html", null ],
     [ "messages.h", "d5/d48/messages_8h.html", "d5/d48/messages_8h" ],
     [ "messages_xml.h", "d9/de5/messages__xml_8h.html", "d9/de5/messages__xml_8h" ],

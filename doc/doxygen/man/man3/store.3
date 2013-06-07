@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Fri Jun 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -66,7 +66,7 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (const struct nc_session *session, const \fBnc_rpc\fP *rpc, int ids_copy, \fBncds_id\fP *ids[])"
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (const struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
 .br
 .RI "\fIPerform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fP"
 .ti -1c
@@ -280,7 +280,7 @@ NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter ses
 .RE
 .PP
 
-.SS "\fBnc_reply\fP* ncds_apply_rpc2all (const struct nc_session *session, const \fBnc_rpc\fP *rpc, intids_copy, \fBncds_id\fP *ids[])"
+.SS "\fBnc_reply\fP* ncds_apply_rpc2all (const struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
 
 .PP
 Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fBThis function IS NOT thread safety\&.\fP
@@ -291,14 +291,7 @@ Perform the requested RPC operation on the all datastores controlled by the libn
 .br
 \fIrpc\fP NETCONF <rpc> message specifying requested operation\&. 
 .br
-\fIids_copy\fP Flag for ids array:
-.IP "\(bu" 2
-0 -- ids is returned as a static array which is rewritten by a subsequent call to \fBncds_apply_rpc2all()\fP\&.
-.IP "\(bu" 2
-1 -- ids is returned as a dynamically allocated array and caller is supposed to free it using free()\&. 
-.PP
-.br
-\fIids\fP Pointer to an array of datastore IDs where the RPC was successfully applied\&. The list is terminated by a value (ncds_id)(-1)\&. NULL is accepted as a valid value when this information is supposed to be ignored\&. 
+\fIids\fP Pointer to a static array containing list of datastore IDs where the RPC was successfully applied\&. The list is terminated by value a (ncds_id)(-1)\&. The list is rewritten by any following call to \fBncds_apply_rpc2all()\fP\&. 
 .RE
 .PP
 \fBReturns:\fP

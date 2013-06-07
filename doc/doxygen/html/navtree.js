@@ -5,6 +5,7 @@ var NAVTREE =
     [ "Compilation and Installation", "d9/d87/install.html", null ],
     [ "Using libnetconf", "da/d1b/usage.html", "da/d1b/usage" ],
     [ "NETCONF Access Control Module (NACM)", "dd/d59/nacm.html", null ],
+    [ "Transaction API (transAPI)", "d9/d25/transapi.html", null ],
     [ "Todo List", "dd/da0/todo.html", null ],
     [ "Modules", "modules.html", "modules" ],
     [ "Data Structures", null, [
@@ -32,8 +33,9 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d5/d48/messages_8h.html#gaeb66eff28fdf195f564cb3d997d65b65",
-"da/d54/group__notifications.html#ga8c116b8aae2fe13811ebbfd3ca6f1a44"
+"d5/d48/messages_8h.html#gab1f7b7f9be8153758e5b047fe70fd48d",
+"da/d54/group__notifications.html#ga05a14f949bbb781fd58a233b1d2fab33",
+"dd/de6/structmodel__tree.html#a24bb9d3a9dccb24581d359a218837c6f"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

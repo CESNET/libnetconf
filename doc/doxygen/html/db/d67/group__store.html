@@ -167,9 +167,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaabfd0bf6abeaf40659043bf082e14801"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801">ncds_apply_rpc</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id, const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gaabfd0bf6abeaf40659043bf082e14801"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the datastore.  <a href="#gaabfd0bf6abeaf40659043bf082e14801">More...</a><br/></td></tr>
 <tr class="separator:gaabfd0bf6abeaf40659043bf082e14801"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gacd81a8d7386f28d930a806723d2f6eb7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gacd81a8d7386f28d930a806723d2f6eb7">ncds_apply_rpc2all</a> (const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, int ids_copy, <a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *ids[])</td></tr>
-<tr class="memdesc:gacd81a8d7386f28d930a806723d2f6eb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>).  <a href="#gacd81a8d7386f28d930a806723d2f6eb7">More...</a><br/></td></tr>
-<tr class="separator:gacd81a8d7386f28d930a806723d2f6eb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6887f71d8a96129fec594a59bdd10fe9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga6887f71d8a96129fec594a59bdd10fe9">ncds_apply_rpc2all</a> (const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *ids[])</td></tr>
+<tr class="memdesc:ga6887f71d8a96129fec594a59bdd10fe9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>).  <a href="#ga6887f71d8a96129fec594a59bdd10fe9">More...</a><br/></td></tr>
+<tr class="separator:ga6887f71d8a96129fec594a59bdd10fe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabb9806e70f3399aed7da879095d9c64e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e">ncds_rollback</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id)</td></tr>
 <tr class="memdesc:gabb9806e70f3399aed7da879095d9c64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Undo the last change performed on the specified datastore.  <a href="#gabb9806e70f3399aed7da879095d9c64e">More...</a><br/></td></tr>
 <tr class="separator:gabb9806e70f3399aed7da879095d9c64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -524,7 +524,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gacd81a8d7386f28d930a806723d2f6eb7"></a>
+<a class="anchor" id="ga6887f71d8a96129fec594a59bdd10fe9"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -539,12 +539,6 @@ Functions</h2></td></tr>
           <td></td>
           <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
           <td class="paramname"><em>rpc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>ids_copy</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -566,12 +560,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session (a dummy session is acceptable) where the &lt;rpc&gt; came from. Capabilities checks are done according to this session. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>NETCONF &lt;rpc&gt; message specifying requested operation. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ids_copy</td><td>Flag for ids array:<ul>
-<li>0 &ndash; ids is returned as a static array which is rewritten by a subsequent call to <a class="el" href="../../db/d67/group__store.html#gacd81a8d7386f28d930a806723d2f6eb7" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a>.</li>
-<li>1 &ndash; ids is returned as a dynamically allocated array and caller is supposed to free it using free(). </li>
-</ul>
-</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">ids</td><td>Pointer to an array of datastore IDs where the RPC was successfully applied. The list is terminated by a value (ncds_id)(-1). NULL is accepted as a valid value when this information is supposed to be ignored. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ids</td><td>Pointer to a static array containing list of datastore IDs where the RPC was successfully applied. The list is terminated by value a (ncds_id)(-1). The list is rewritten by any following call to <a class="el" href="../../db/d67/group__store.html#ga6887f71d8a96129fec594a59bdd10fe9" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -866,7 +855,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue May 7 2013 12:44:54 for libnetconf by
+    <li class="footer">Generated on Fri Jun 7 2013 09:39:26 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

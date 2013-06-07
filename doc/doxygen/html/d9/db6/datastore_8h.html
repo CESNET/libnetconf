@@ -159,6 +159,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">ncds_init</a> (struct ncds_ds *datastore)</td></tr>
 <tr class="memdesc:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate datastore structure for use.  <a href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">More...</a><br/></td></tr>
 <tr class="separator:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a417f5a3cf82e1edc583b0c9dd9a9a649"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db6/datastore_8h.html#a417f5a3cf82e1edc583b0c9dd9a9a649">ncds_device_init</a> ()</td></tr>
+<tr class="memdesc:a417f5a3cf82e1edc583b0c9dd9a9a649"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize transAPI module(s) (if present) and copy startup configuration to running.  <a href="#a417f5a3cf82e1edc583b0c9dd9a9a649">More...</a><br/></td></tr>
+<tr class="separator:a417f5a3cf82e1edc583b0c9dd9a9a649"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">ncds_free</a> (struct ncds_ds *datastore)</td></tr>
 <tr class="memdesc:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close the specified datastore and free all the resources.  <a href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">More...</a><br/></td></tr>
 <tr class="separator:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,9 +171,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaabfd0bf6abeaf40659043bf082e14801"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801">ncds_apply_rpc</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id, const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gaabfd0bf6abeaf40659043bf082e14801"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the datastore.  <a href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801">More...</a><br/></td></tr>
 <tr class="separator:gaabfd0bf6abeaf40659043bf082e14801"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gacd81a8d7386f28d930a806723d2f6eb7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gacd81a8d7386f28d930a806723d2f6eb7">ncds_apply_rpc2all</a> (const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, int ids_copy, <a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *ids[])</td></tr>
-<tr class="memdesc:gacd81a8d7386f28d930a806723d2f6eb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>).  <a href="../../db/d67/group__store.html#gacd81a8d7386f28d930a806723d2f6eb7">More...</a><br/></td></tr>
-<tr class="separator:gacd81a8d7386f28d930a806723d2f6eb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6887f71d8a96129fec594a59bdd10fe9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga6887f71d8a96129fec594a59bdd10fe9">ncds_apply_rpc2all</a> (const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *ids[])</td></tr>
+<tr class="memdesc:ga6887f71d8a96129fec594a59bdd10fe9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>).  <a href="../../db/d67/group__store.html#ga6887f71d8a96129fec594a59bdd10fe9">More...</a><br/></td></tr>
+<tr class="separator:ga6887f71d8a96129fec594a59bdd10fe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabb9806e70f3399aed7da879095d9c64e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e">ncds_rollback</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id)</td></tr>
 <tr class="memdesc:gabb9806e70f3399aed7da879095d9c64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Undo the last change performed on the specified datastore.  <a href="../../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e">More...</a><br/></td></tr>
 <tr class="separator:gabb9806e70f3399aed7da879095d9c64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -218,6 +221,24 @@ Functions</h2></td></tr>
 <p>ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above.</p>
 <p>This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="a417f5a3cf82e1edc583b0c9dd9a9a649"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_device_init </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Initialize transAPI module(s) (if present) and copy startup configuration to running. </p>
+<dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCESS or EXIT_FAILURE </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ac3644177deaaf308bb2ca218be99ea85"></a>
 <div class="memitem">
 <div class="memproto">
@@ -272,7 +293,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d9/db6/datastore_8h.html">datastore.h</a></li>
-    <li class="footer">Generated on Tue May 7 2013 12:44:54 for libnetconf by
+    <li class="footer">Generated on Fri Jun 7 2013 09:39:26 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

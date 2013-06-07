@@ -1,11 +1,10 @@
 var searchData=
 [
   ['todo_20list',['Todo List',['../dd/da0/todo.html',1,'']]],
-  ['transapi',['transapi',['../d9/dc0/structtransapi.html',1,'transapi'],['../d8/d55/group__transapi.html',1,'(Global Namespace)']]],
+  ['transapi',['transapi',['../d9/dc0/structtransapi.html',1,'transapi'],['../d8/d55/group__transapi.html',1,'(Global Namespace)'],['../d9/d25/transapi.html',1,'(Global Namespace)']]],
   ['transapi_2eh',['transapi.h',['../d0/db0/transapi_8h.html',1,'']]],
   ['transapi_5fdata_5fcallbacks',['transapi_data_callbacks',['../d6/dcb/structtransapi__data__callbacks.html',1,'']]],
   ['transapi_5fdata_5fclbcks',['transapi_data_clbcks',['../d9/d51/uniontransapi__data__clbcks.html',1,'']]],
-  ['transapi_5finit',['transapi_init',['../da/d01/uniontransapi__init.html',1,'']]],
   ['transapi_5finternal_2eh',['transapi_internal.h',['../d5/df0/transapi__internal_8h.html',1,'']]],
   ['transapi_5frpc_5fcallbacks',['transapi_rpc_callbacks',['../d0/df8/structtransapi__rpc__callbacks.html',1,'']]],
   ['transapi_5frpc_5fclbcks',['transapi_rpc_clbcks',['../d6/d41/uniontransapi__rpc__clbcks.html',1,'']]],

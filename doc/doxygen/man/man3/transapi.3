@@ -1,4 +1,4 @@
-.TH "transapi" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "transapi" 3 "Fri Jun 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -28,7 +28,7 @@ transapi \-
 .br
 .RI "\fITransapi rpc callbacks mapping structure\&. \fP"
 .ti -1c
-.RI "union \fBtransapi_init\fP \fBinit\fP"
+.RI "int(* \fBinit\fP )(void)"
 .br
 .RI "\fIModule initialization\&. \fP"
 .ti -1c
@@ -54,7 +54,7 @@ Transapi callback mapping structure\&.
 
 .PP
 Transapi rpc callbacks mapping structure\&. 
-.SS "union \fBtransapi_init\fP init"
+.SS "int(* init)(void)"
 
 .PP
 Module initialization\&. 

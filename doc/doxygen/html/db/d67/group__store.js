@@ -21,7 +21,7 @@ var group__store =
     [ "ncds_free", "db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754", null ],
     [ "ncds_free2", "db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2", null ],
     [ "ncds_apply_rpc", "db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801", null ],
-    [ "ncds_apply_rpc2all", "db/d67/group__store.html#gacd81a8d7386f28d930a806723d2f6eb7", null ],
+    [ "ncds_apply_rpc2all", "db/d67/group__store.html#ga6887f71d8a96129fec594a59bdd10fe9", null ],
     [ "ncds_rollback", "db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e", null ],
     [ "ncds_break_locks", "db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a", null ],
     [ "ncds_get_model", "db/d67/group__store.html#ga414b75711e49e0e1eea10ae15c14287e", null ],
