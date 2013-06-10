@@ -347,21 +347,34 @@
  * function. libnetconf supports _explicit_, _trim_, _report-all_ and
  * _report-all-tagged_ basic modes of the with-defaults capability.
  * 4. **Initiate datastore**.\n
- * Now, a NETCONF datastore(s) can be created. A datastore handler is
- * created using ncds_new() specifying the datastore type implementation.
+ * Now, a NETCONF datastore(s) can be created. Each libnetconf's datastore
+ * is connected with a single configuration data model. This connection is
+ * defined by calling ncds_new() function, which returns the datastore handler
+ * for further manipulation with an uninitialized datastore. Usign this function,
+ * caller also specifies which datastore implementation type will be used.
  * Optionally, some implementation-type-specific parameters can be set (e.g.
- * ncds_file_set_path()). Finally, init the datastore using ncds_init() that
- * returns datastore's ID which is used in subsequent calls. By default,
- * there is always a special datastore ID 0, that refers to the libnetconf's
- * internal datastore(s).
+ * ncds_file_set_path()). Finally, datastore must be initiated by ncds_init()
+ * that returns datastore's ID which is used in subsequent calls. There is a set
+ * of special implicit datastores with ID #NCDS_INTERNAL_ID, that refers
+ * to the libnetconf's internal datastore(s).\n
+ * Optionally, each datastore can be extended by an augment data model that can
+ * be specified by ncds_add_model(). The same function can be used to specify
+ * models to resolve YANG's `import` statements. Alternatively, using
+ * ncds_add_models_path(), caller can specify a directory where such models can
+ * be found automatically. libnetconf searches for the needed models
+ * based on the modules names. Filename of the model is expected in a form
+ * `module_name[@revision].yin`.\n
+ * Caller can also switch on or off the YANG `feauters` in the specific module
+ * using ncds_feature_enable(), ncds_feature_disable(), ncds_features_enableall()
+ * and ncds_features_disableall() functions.\n
+ * Finally, ncds_consolidate() must be called to check all internal structures
+ * and to solve all `import`, `uses` and `augment` statements.
  * 5. **Initiate controlled device**\n
- * This step is actually out of the libnetconf scope. If the server starts
- * after a reboot, it should apply startup configuration data to the controlled
- * device and copy the startup configuration data into the running datastore.
- * Return code of the nc_init() function tells if the libnetconf library is
- * initiated for the first time after the system reboot or the last nc_close()
- * call. This value can be used to decide if the startup configuration data
- * should be applied to the controlled device.
+ * This step is actually out of the libnetconf scope. From the NETCONF point
+ * of view, startup configuration data should be applied to the running data
+ * store at this point. ncds_device_init() can be used to perform this task,
+ * but applying running configuration data to the controlled device must be done
+ * by a server specific (non-libnetconf) function.
  * 6. **Accept incoming NETCONF connection**.\n
  * This is done by a single call of nc_session_accept(). Optionally, any specific
  * capabilities supported by the server can be set as the function's parameter.
