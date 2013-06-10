@@ -31,5 +31,7 @@ var group__store =
     [ "ncds_feature_enable", "db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2", null ],
     [ "ncds_feature_disable", "db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0", null ],
     [ "ncds_features_enableall", "db/d67/group__store.html#ga3c65e57d684b25885d3ccbeb84e9f4d9", null ],
-    [ "ncds_features_disableall", "db/d67/group__store.html#ga017491407c8d2c6f596d17e64eb10d84", null ]
+    [ "ncds_features_disableall", "db/d67/group__store.html#ga017491407c8d2c6f596d17e64eb10d84", null ],
+    [ "ncds_feature_isenabled", "db/d67/group__store.html#gac3644177deaaf308bb2ca218be99ea85", null ],
+    [ "ncds_consolidate", "db/d67/group__store.html#gab2a27448a52972db6807571590a5c6da", null ]
 ];

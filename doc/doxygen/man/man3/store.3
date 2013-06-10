@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Fri Jun 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Mon Jun 10 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -109,6 +109,14 @@ libnetconf's functions for handling NETCONF datastores\&.
 .RI "int \fBncds_features_disableall\fP (const char *module)"
 .br
 .RI "\fIDisable usage of all features defined in the specified module\&. By default, all features are disabled\&. To disable only the specific feature(s), use \fBncds_feature_disable()\fP\&. \fP"
+.ti -1c
+.RI "int \fBncds_feature_isenabled\fP (const char *module, const char *feature)"
+.br
+.RI "\fICheck if the feature of the specified module is currently enabled or disabled\&. \fP"
+.ti -1c
+.RI "int \fBncds_consolidate\fP (void)"
+.br
+.RI "\fIConsolidate all internal structures of created data stores and all data models\&. This function especially solves all YANG's \fCuses\fP and \fCaugment\fP statements\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -436,6 +444,30 @@ Disable usage of all features defined in the specified module\&. By default, all
 .RE
 .PP
 \fBReturns:\fP
+.RS 4
+0 on success, non-zero on error\&. 
+.RE
+.PP
+
+.SS "int ncds_feature_isenabled (const char *module, const char *feature)"
+
+.PP
+Check if the feature of the specified module is currently enabled or disabled\&. \fBReturns:\fP
+.RS 4
+.IP "\(bu" 2
+negative value in case of error
+.IP "\(bu" 2
+0 if feature is disabled
+.IP "\(bu" 2
+1 if feature is enabled 
+.PP
+.RE
+.PP
+
+.SS "int ncds_consolidate (void)"
+
+.PP
+Consolidate all internal structures of created data stores and all data models\&. This function especially solves all YANG's \fCuses\fP and \fCaugment\fP statements\&. \fBReturns:\fP
 .RS 4
 0 on success, non-zero on error\&. 
 .RE
