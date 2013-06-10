@@ -332,13 +332,24 @@ int ncds_features_enableall(const char* module);
 int ncds_features_disableall(const char* module);
 
 /**
- *
+ * @ingroup store
+ * @brief Check if the feature of the specified module is currently enabled or
+ * disabled.
  * @return
  * - negative value in case of error
  * - 0 if feature is disabled
  * - 1 if feature is enabled
  */
 int ncds_feature_isenabled(const char* module, const char* feature);
+
+/**
+ * @ingroup store
+ * @brief Consolidate all internal structures of created data stores and all
+ * data models. This function especially solves all YANG's `uses` and `augment`
+ * statements.
+ *
+ * @return 0 on success, non-zero on error.
+ */
 int ncds_consolidate(void);
 
 #ifdef __cplusplus
