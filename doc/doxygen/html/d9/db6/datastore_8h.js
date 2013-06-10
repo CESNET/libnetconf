@@ -26,6 +26,6 @@ var datastore_8h =
     [ "ncds_feature_disable", "d9/db6/datastore_8h.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0", null ],
     [ "ncds_features_enableall", "d9/db6/datastore_8h.html#ga3c65e57d684b25885d3ccbeb84e9f4d9", null ],
     [ "ncds_features_disableall", "d9/db6/datastore_8h.html#ga017491407c8d2c6f596d17e64eb10d84", null ],
-    [ "ncds_feature_isenabled", "d9/db6/datastore_8h.html#ac3644177deaaf308bb2ca218be99ea85", null ],
-    [ "ncds_consolidate", "d9/db6/datastore_8h.html#ab2a27448a52972db6807571590a5c6da", null ]
+    [ "ncds_feature_isenabled", "d9/db6/datastore_8h.html#gac3644177deaaf308bb2ca218be99ea85", null ],
+    [ "ncds_consolidate", "d9/db6/datastore_8h.html#gab2a27448a52972db6807571590a5c6da", null ]
 ];
