@@ -53,7 +53,8 @@ extern "C" {
  */
 typedef enum {
 	NCDS_TYPE_EMPTY, /**< No datastore. For read-only devices. */
-	NCDS_TYPE_FILE /**< Datastores implemented as files */
+	NCDS_TYPE_FILE, /**< Datastores implemented as files */
+	NCDS_TYPE_CUSTOM /**< User-defined datastore */
 } NCDS_TYPE;
 
 /**

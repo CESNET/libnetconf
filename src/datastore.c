@@ -66,6 +66,7 @@
 #include "datastore/datastore_internal.h"
 #include "datastore/file/datastore_file.h"
 #include "datastore/empty/datastore_empty.h"
+#include "datastore/custom/datastore_custom_private.h"
 #include "transapi/transapi_internal.h"
 #include "config.h"
 
@@ -131,6 +132,23 @@ static struct ncds_ds* ncds_fill_func(NCDS_TYPE type)
 {
 	struct ncds_ds* ds;
 	switch (type) {
+	case NCDS_TYPE_CUSTOM:
+		if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_custom))) == NULL) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
+		ds->func.init = ncds_custom_init;
+		ds->func.free = ncds_custom_free;
+		ds->func.was_changed = ncds_custom_was_changed;
+		ds->func.rollback = ncds_custom_rollback;
+		ds->func.get_lockinfo = ncds_custom_get_lockinfo;
+		ds->func.lock = ncds_custom_lock;
+		ds->func.unlock = ncds_custom_unlock;
+		ds->func.getconfig = ncds_custom_getconfig;
+		ds->func.copyconfig = ncds_custom_copyconfig;
+		ds->func.deleteconfig = ncds_custom_deleteconfig;
+		ds->func.editconfig = ncds_custom_editconfig;
+		break;
 	case NCDS_TYPE_FILE:
 		if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file))) == NULL ) {
 			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
