@@ -80,14 +80,41 @@ struct ncds_custom_funcs {
 	 *
 	 * \param data The user data.
 	 * \param target Which data store should be locked.
+	 * \param session_id ID of the session requesting the lock.
 	 * \param error Set this in case of EXIT_FAILURE, to indicate what went wrong.
 	 * \return EXIT_SUCCESS or EXIT_FAILURE.
 	 */
-	int (*lock)(void *data, NC_DATASTORE target, struct nc_err** error);
+	int (*lock)(void *data, NC_DATASTORE target, const char* session_id, struct nc_err** error);
 	/**
 	 * \brief The counter-part of lock.
+	 *
+	 * libnetconf does checking whether the operation is allowed on its own
+	 * (using is_locked() function if available). So if this function is
+	 * called, just trust that the datastore can be unlocked and do it.
 	 */
 	int (*unlock)(void *data, NC_DATASTORE target, struct nc_err** error);
+	/**
+	 * \brief Is datastore currently locked?
+	 *
+	 * If function is not implemented, libnetconf will use internal
+	 * information about the lock. Note, that this information is process
+	 * specific. If your server runs in multiple processes, libnetconf's
+	 * information might not be valid. In such a case you should properly
+	 * implement this function to share lock information.
+	 *
+	 * Note, that session_id and datetime can be NULL when caller does not
+	 * need this information.
+	 *
+	 * \param[in] data The user data
+	 * \param[in] target Which datastore lock information is required.
+	 * \param[out] session_id Which session has locked the datastore.
+	 * \param[out] datatime When the datastore was locked (RFC 3339 format)
+	 * \return
+	 * - 0 datastore is not locked
+	 * - 1 datastore is locked
+	 * - negative value - function is not implemented / error
+	 */
+	int (*is_locked)(void *data, NC_DATASTORE target, const char** session_id, const char** datetime);
 	/**
 	 * @brief Get content of the config.
 	 *
@@ -101,7 +128,7 @@ struct ncds_custom_funcs {
 	 * \param data The user data.
 	 * \param target Where to copy.
 	 * \param source From where to copy.
-	 * \param config ?
+	 * \param config Custom data if source parameter is NC_DATASTORE_CONFIG
 	 * \param error Fill in in case of error.
 	 * \return EXIT_SUCCESS or EXIT_FAILURE.
 	 */
