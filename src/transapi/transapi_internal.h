@@ -25,6 +25,10 @@ struct transapi {
 	 */
 	int libxml2;
 	/**
+	 * @brief Mapping prefixes with URIs
+	 */
+	const char ** ns_mapping;
+	/**
 	 * @brief Transapi callback mapping structure.
 	 */
 	union transapi_data_clbcks data_clbks;
@@ -53,7 +57,7 @@ struct transapi {
  *
  * @return EXIT_SUCESS or EXIT_FAILURE
  */
-int transapi_running_changed (struct transapi_data_callbacks * c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model);
+int transapi_running_changed (struct transapi_data_callbacks * c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model);
 
 /**
  * @ingroup transapi
@@ -66,6 +70,6 @@ int transapi_running_changed (struct transapi_data_callbacks * c, xmlDocPtr old_
  *
  * @return EXIT_SUCESS or EXIT_FAILURE
  */
-int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model);
+int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model);
 
 #endif /* TRANSAPI_INTERNAL_H_ */
