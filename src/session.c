@@ -2322,14 +2322,18 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 
 	if (rpc != NULL) {
 		/* set message id */
-		msg->msgid = strdup(retval);
+		if (retval != NULL) {
+			msg->msgid = strdup(retval);
+		} else {
+			msg->msgid = NULL;
+		}
 		msg_root = xmlDocGetRootElement(msg->doc);
 		rpc_root = xmlDocGetRootElement(rpc->doc);
 		if (xmlStrEqual(msg_root->name, BAD_CAST "rpc-reply") &&
 				xmlStrEqual(msg_root->ns->href, BAD_CAST NC_NS_BASE10)) {
 			/* copy attributes from the rpc */
 			msg_root->properties = xmlCopyPropList(msg_root, rpc_root->properties);
-			if (msg_root->properties == NULL) {
+			if (msg_root->properties == NULL && msg->msgid != NULL) {
 				xmlNewProp(msg_root, BAD_CAST "message-id", BAD_CAST msg->msgid);
 			}
 			/* copy additional namespace definitions from rpc */
