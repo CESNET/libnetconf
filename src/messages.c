@@ -582,16 +582,9 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 		return (NC_OP_UNKNOWN);
 	}
 
-	auxnode = root->children;
-	while(1) {
-		if (auxnode == NULL) {
-			/* valid rpc operation not found */
-			return (NC_OP_UNKNOWN);
-			break;
-		}
+	for (auxnode = root->children; auxnode; auxnode = auxnode->next) {
 		if (auxnode->type != XML_ELEMENT_NODE) {
 			/* not interesting node, go to another */
-			auxnode = auxnode->next;
 			continue;
 		}
 		/* If the operation is outside any namespace then it's treated as unknown.
@@ -644,10 +637,6 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "create-subscription") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_NOTIFICATIONS) == 0)) {
 			return (NC_OP_CREATESUBSCRIPTION);
-		} else {
-			/* try another one */
-			auxnode = auxnode->next;
-			continue;
 		}
 	}
 	return (NC_OP_UNKNOWN);
