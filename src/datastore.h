@@ -80,6 +80,15 @@ struct ncds_ds;
 
 /**
  * @ingroup store
+ * @def NCDS_RPC_NOT_APPLICABLE
+ * @brief Return value of ncds_apply_rpc() when the requested operation is
+ * not applicable to the specified datastore.
+ */
+extern char error_area;
+#define NCDS_RPC_NOT_APPLICABLE ((void*)(&error_area))
+
+/**
+ * @ingroup store
  * @brief Create a new datastore structure of the specified implementation type.
  * @param[in] type Datastore implementation type for the new datastore structure.
  * @param[in] model_path Path to the YIN configuration data model.
@@ -173,13 +182,6 @@ void ncds_free2(ncds_id datastore_id);
 
 /**
  * @ingroup store
- * @brief Return value of ncds_apply_rpc() when the requested operation is
- * not applicable to the specified datastore.
- */
-#define NCDS_RPC_NOT_APPLICABLE ((void *) -1)
-
-/**
- * @ingroup store
  * @brief Perform the requested RPC operation on the datastore.
  * @param[in] id Datastore ID. Use #NCDS_INTERNAL_ID (0) to apply request
  * (typically \<get\>) onto the libnetconf's internal datastore.
@@ -191,7 +193,7 @@ void ncds_free2(ncds_id datastore_id);
  * \<rpc-error\> according to the type and the result of the requested
  * operation. When the requested operation is not applicable to the specified
  * datastore (e.g. the namespace does not match), NCDS_RPC_NOT_APPLICABLE
- * ((void *) -1)) is returned.
+ * is returned.
  */
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc);
 
@@ -214,7 +216,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
  * \<rpc-error\> according to the type and the result of the requested
  * operation. When the requested operation is not applicable to any datastore
  * (e.g. the namespace does not match no of the controlled datstores),
- * NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned.
+ * NCDS_RPC_NOT_APPLICABLE is returned.
  *
  */
 nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[]);

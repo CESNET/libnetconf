@@ -87,6 +87,10 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 extern struct nc_shared_info *nc_info;
 
+/* reserve memory for error pointers such as ERROR_POINTER or NCDS_RPC_NOT_APPLICABLE */
+char error_area;
+#define ERROR_POINTER ((void*)(&error_area))
+
 char* server_capabilities = NULL;
 
 struct ncds_ds_list {
@@ -967,7 +971,7 @@ static char* compare_schemas(struct data_model* model, char* name, char* version
 			resultbuffer = xmlBufferCreate();
 			if (resultbuffer == NULL ) {
 				ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
-				return ((void*)-1);
+				return (ERROR_POINTER);
 			}
 			xmlNodeDump(resultbuffer, model->xml, model->xml->children, 2, 1);
 			retval = strdup((char *) xmlBufferContent(resultbuffer));
@@ -1060,7 +1064,7 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 	/* process all data models */
 	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
 		r = compare_schemas(listitem->model, name, version);
-		if (r == (void*) -1) {
+		if (r == ERROR_POINTER) {
 			free(r);
 			free(version);
 			free(name);
@@ -3553,7 +3557,7 @@ apply_editcopyconfig:
 	if (id == NCDS_INTERNAL_ID) {
 		if (old_reply == NULL) {
 			old_reply = reply;
-		} else if (old_reply != (void*)(-1) || reply != (void*)(-1)){
+		} else if (old_reply != NCDS_RPC_NOT_APPLICABLE || reply != NCDS_RPC_NOT_APPLICABLE){
 			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
 				if (nc_reply_get_type(old_reply) == NC_REPLY_ERROR) {
 					return (old_reply);
@@ -3606,7 +3610,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 
 		/* apply RPC on a single datastore */
 		reply = ncds_apply_rpc(ds->datastore->id, session, rpc);
-		if (ids != NULL && reply != (void*)(-1)) {
+		if (ids != NULL && reply != NCDS_RPC_NOT_APPLICABLE) {
 			ncds.datastores_ids[id_i] = ds->datastore->id;
 			id_i++;
 			ncds.datastores_ids[id_i] = -1; /* terminating item */
@@ -3615,7 +3619,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 		/* merge results from the previous runs */
 		if (old_reply == NULL) {
 			old_reply = reply;
-		} else if (old_reply != (void*)(-1) || reply != (void*)(-1)) {
+		} else if (old_reply != NCDS_RPC_NOT_APPLICABLE || reply != NCDS_RPC_NOT_APPLICABLE) {
 			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
 				if (nc_reply_get_type(old_reply) == NC_REPLY_ERROR) {
 					return (old_reply);
@@ -3628,7 +3632,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 			old_reply = reply = new_reply;
 		}
 
-		if (reply != (void*)(-1) && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
+		if (reply != NCDS_RPC_NOT_APPLICABLE && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
 			if (req_type == NC_RPC_DATASTORE_WRITE) {
 				if (erropt == NC_EDIT_ERROPT_STOP) {
 					return (reply);

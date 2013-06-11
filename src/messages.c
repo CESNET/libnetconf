@@ -56,6 +56,7 @@
 #include "messages_internal.h"
 #include "with_defaults.h"
 #include "nacm.h"
+#include "datastore.h"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -1860,7 +1861,7 @@ nc_reply* nc_reply_merge(int count, ...)
 			va_end(ap);
 			return NULL;
 		}
-		if (to_merge[j] == NULL || to_merge[j] == (void*)(-1)) {
+		if (to_merge[j] == NULL || to_merge[j] == NCDS_RPC_NOT_APPLICABLE) {
 			/* invalid reply will not be merged */
 			to_merge[j] = NULL; /* list terminating NULL byte */
 			j--;
