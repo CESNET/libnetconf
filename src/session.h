@@ -189,7 +189,7 @@ struct nc_cpblts* nc_session_get_cpblts(const struct nc_session* session);
  * into the NETCONF capabilities structure.
  * @return Created NETCONF capabilities structure.
  */
-struct nc_cpblts *nc_cpblts_new(char* const* list);
+struct nc_cpblts *nc_cpblts_new(char* const list[]);
 
 /**
  * @ingroup session
