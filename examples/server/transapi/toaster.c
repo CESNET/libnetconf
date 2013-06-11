@@ -30,7 +30,7 @@ struct toaster_status * status = NULL;
 /**
  * @brief Initialize plugin after loaded and before any other functions are called.
  *
- * @return New content of running datastore reflecting current device state.
+ * @return EXIT_SUCCESS or EXIT_FAILURE
  */
 int init(void)
 {
@@ -84,8 +84,6 @@ void close(void)
  */
 char * get_state_data (char * model, char * running, struct nc_err **err)
 {
-
-	fprintf (stderr, "Toaster get-state. Status (%p)\n", status);
 	xmlDocPtr state;
 	xmlNodePtr root;
 	xmlNsPtr ns;
@@ -105,7 +103,7 @@ char * get_state_data (char * model, char * running, struct nc_err **err)
 
 	xmlBufferFree(buf);
 	xmlFreeDoc(state);
-	
+
 	return ret;
 }
 
