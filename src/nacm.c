@@ -1015,28 +1015,25 @@ int nacm_start(nc_rpc* rpc, const struct nc_session* session)
 		return (EXIT_FAILURE);
 	}
 
-	if (session->nacm_recovery == 1) {
-		/* we are in recovery session - NACM is ignored */
+	/*
+	 * if NACM structure will not be added into the RPC structure, NACM rules
+	 * will not be applied and NACM will not take effect.
+	 */
+
+	if (session->nacm_recovery == 1 || nacm_initiated == 0) {
+		/* NACM is not enabled or we are in recovery session (NACM is ignored) */
 		return (EXIT_SUCCESS);
 	}
 
 	if (nc_rpc_get_op(rpc) == NC_OP_CLOSESESSION) {
 		/* close-session is always permitted */
-		/*
-		 * do not add NACM structure to the RPC, which means that
-		 * NACM is not applied to the RPC
-		 */
 		return (EXIT_SUCCESS);
 	}
 
 	nacm_config_refresh();
 
-	if (nacm_initiated == 0 || nacm_config.enabled == false) {
-		/* NACM subsystem not initiated or switched off */
-		/*
-		 * do not add NACM structure to the RPC, which means that
-		 * NACM is not applied to the RPC
-		 */
+	if (nacm_config.enabled == false) {
+		/* NACM subsystem is switched off */
 		return (EXIT_SUCCESS);
 	}
 
