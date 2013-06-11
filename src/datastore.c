@@ -1108,6 +1108,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	union transapi_data_clbcks data_clbks = {NULL};
 	union transapi_rpc_clbcks rpc_clbks = {NULL};
 	int *libxml2, lxml2;
+	char * ns_mapping = NULL;
 
 	if (callbacks_path == NULL) {
 		ERROR("%s: missing callbacks path parameter.", __func__);
@@ -1131,6 +1132,12 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 		WARN("libxml2_support attribute not found. Guessing not used.");
 		libxml2 = &lxml2;
 		*libxml2 = 0;
+	}
+
+	if ((ns_mapping = dlsym(transapi_module, "namespace_mapping")) == NULL) {
+		ERROR("Unable to get mapping of prefixes with uris.");
+		dlclose(transapi_module);
+		return(NULL);
 	}
 
 	if (*libxml2) {
@@ -1189,6 +1196,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	/* add pointers for transaction API */
 	ds->transapi.module = transapi_module;
 	ds->transapi.libxml2 = (*libxml2);
+	ds->transapi.ns_mapping = (const char**)ns_mapping;
 	ds->transapi.data_clbks = data_clbks;
 	ds->transapi.rpc_clbks = rpc_clbks;
 	ds->transapi.init = init_func;
@@ -2402,7 +2410,7 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 	/* when using transapi */
 	if (datastore->transapi.module != NULL) {
 		/* parse model to get aux structure for TransAPI's internal purposes */
-		datastore->data_model->model_tree = yinmodel_parse(datastore->ext_model);
+		datastore->data_model->model_tree = yinmodel_parse(datastore->ext_model, datastore->transapi.ns_mapping);
 	}
 
 	/* acquire unique id */

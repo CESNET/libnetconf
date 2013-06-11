@@ -25,6 +25,10 @@ struct transapi {
 	 */
 	int libxml2;
 	/**
+	 * @brief Mapping prefixes with URIs
+	 */
+	const char ** ns_mapping;
+	/**
 	 * @brief Transapi callback mapping structure.
 	 */
 	union transapi_data_clbcks data_clbks;

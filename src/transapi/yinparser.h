@@ -28,6 +28,7 @@ struct model_tree {
 	char * name;
 	char ** keys;
 	char * ns_uri;
+	char * ns_prefix;
 	struct model_tree * children;
 	int keys_count;
 	int children_count;
@@ -38,10 +39,11 @@ struct model_tree {
  * @brief Parse YIN data model
  *
  * @param model_doc	Data model in YIN format.
+ * @aparam ns_mapping Pairing prefixes with URIs.
  *
  * @return yinmodel structure or NULL
  */
-struct model_tree * yinmodel_parse (xmlDocPtr model_doc);
+struct model_tree * yinmodel_parse (xmlDocPtr model_doc, const char * ns_mapping[]);
 
 /**
  * @ingroup transapi
