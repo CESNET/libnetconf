@@ -108,13 +108,18 @@ char * get_state_data (char * model, char * running, struct nc_err **err)
 }
 
 /*
+ * Mapping prefixes with namespaces.
+ * Do NOT modify this structure!
+ */
+char * namespace_mapping[] = {"toaster", "http://netconfcentral.org/ns/toaster", NULL, NULL};
+/*
 * CONFIGURATION callbacks
 * Here follows set of callback functions run every time some change in associated part of running datastore occurs.
 * You can safely modify the bodies of all function as well as add new functions for better lucidity of code.
 */
 
 /**
- * @brief This callback will be run when node in path / changes
+ * @brief This callback will be run when node in path /toaster:toaster changes
  *
  * @param op	Observed change in path. XMLDIFF_OP type.
  * @param node	Modified node. if op == XMLDIFF_REM its copy of node removed.
@@ -123,7 +128,7 @@ char * get_state_data (char * model, char * running, struct nc_err **err)
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
 /* !DO NOT ALTER FUNCTION SIGNATURE! */
-int callback_ (XMLDIFF_OP op, xmlNodePtr node, void ** data)
+int callback_toaster_toaster (XMLDIFF_OP op, xmlNodePtr node, void ** data)
 {
 	int ret = EXIT_FAILURE;
 
@@ -173,7 +178,7 @@ struct transapi_xml_data_callbacks clbks =  {
 	.callbacks_count = 1,
 	.data = NULL,
 	.callbacks = {
-		{.path = "/", .func = callback_}
+		{.path = "/toaster:toaster", .func = callback_toaster_toaster}
 	}
 };
 
