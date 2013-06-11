@@ -742,6 +742,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		free(retval);
 		return NULL;
 	}
+	retval->is_server = 1;
 	retval->libssh2_socket = -1;
 	retval->fd_input = STDIN_FILENO;
 	retval->fd_output = STDOUT_FILENO;
@@ -1033,6 +1034,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		free(retval);
 		return NULL;
 	}
+	retval->is_server = 0;
 	retval->libssh2_socket = -1;
 	retval->ssh_session = NULL;
 	retval->hostname = strdup(host);
@@ -1638,6 +1640,7 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 		return NULL;
 	}
 
+	retval->is_server = 0;
 	retval->libssh2_socket = session->libssh2_socket;
 	retval->ssh_session = session->ssh_session; /* share the SSH session */
 	retval->fd_input = -1;

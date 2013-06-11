@@ -328,6 +328,8 @@ struct nc_session {
 	void *ssh_session;
 	void *ssh_channel;
 #endif
+	/**< @brief Am I the server endpoint? */
+	int is_server;
 	/**< @brief netopeer-agent's hostname */
 	char *hostname;
 	/**< @brief netopeer-agent's port */

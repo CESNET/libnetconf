@@ -871,6 +871,9 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 		return NULL;
 	}
 
+	/* do not send <close-session> on nc_session_close() */
+	session->is_server = 0;
+
 	/* set invalid fd values to prevent comunication */
 	session->fd_input = -1;
 	session->fd_output = -1;
@@ -959,7 +962,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 
 		/* close ssh session */
 #ifdef DISABLE_LIBSSH
-		if (session->status == NC_SESSION_STATUS_WORKING) {
+		if (session->status == NC_SESSION_STATUS_WORKING && !session->is_server) {
 			/* prevent infinite recursion when socket is corrupted -> stack overflow */
 			session->status = NC_SESSION_STATUS_CLOSING;
 
@@ -977,7 +980,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 		}
 #else
 		if (session->ssh_channel != NULL) {
-			if (session->status == NC_SESSION_STATUS_WORKING && libssh2_channel_eof(session->ssh_channel) == 0) {
+			if (session->status == NC_SESSION_STATUS_WORKING && libssh2_channel_eof(session->ssh_channel) == 0 && !session->is_server) {
 				/* prevent infinite recursion when socket is corrupted -> stack overflow */
 				session->status = NC_SESSION_STATUS_CLOSING;
 
