@@ -49,6 +49,18 @@ void xmldiff_free (struct xmldiff * diff)
 	free (diff);
 }	
 
+const char * get_prefix (char * uri, const char * ns_mapping[])
+{
+	int i;
+
+	for (i=0; ns_mapping[2*i] != NULL; i++) {
+		if (strcmp(uri, ns_mapping[2*i+1]) == 0) {
+			return(ns_mapping[2*i]);
+		}
+	}
+	return(NULL);
+}
+
 /**
  * @brief Add single diff record
  *
@@ -58,9 +70,23 @@ void xmldiff_free (struct xmldiff * diff)
  *
  * return EXIT_SUCCESS or EXIT_FAILURE
  */
-int xmldiff_add_diff (struct xmldiff * diff, const char * path, const xmlNodePtr node, XMLDIFF_OP op)
+int xmldiff_add_diff (struct xmldiff * diff, const char * ns_mapping[], const char * path, const xmlNodePtr node, XMLDIFF_OP op)
 {
 	struct xmldiff_entry * internal;
+	xmlNodePtr child;
+	char * new_path;
+
+	/* if added or removed mark all children the same */
+	if (op == XMLDIFF_ADD || op == XMLDIFF_REM) {
+		for (child = node->children; child != NULL; child = child->next) {
+			if (child->type != XML_ELEMENT_NODE) {
+				continue;
+			}
+			asprintf (&new_path, "%s/%s:%s", path, get_prefix((char *)child->ns->href, ns_mapping), child->name);
+			xmldiff_add_diff (diff, ns_mapping, new_path, child, op);
+			free(new_path);
+		}
+	}
 
 	if (diff->diff_count == diff->diff_alloc) {
 		diff->diff_alloc *= 2;
@@ -97,9 +123,8 @@ XMLDIFF_OP xmldiff_leaflist ()
  *
  * @param
  */
-XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_node, xmlDocPtr new_doc, xmlNodePtr new_node, struct model_tree * model)
+XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, const char *ns_mapping[], char * path, xmlDocPtr old_doc, xmlNodePtr old_node, xmlDocPtr new_doc, xmlNodePtr new_node, struct model_tree * model)
 {
-
 	char * next_path;
 	int i;
 	xmlNodePtr old_tmp, new_tmp;
@@ -133,10 +158,10 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
 	if (old_tmp == NULL && new_tmp == NULL) { /* there was and is nothing */
 		return XMLDIFF_NONE;
 	} else if (old_tmp == NULL) { /* node added */
-		xmldiff_add_diff (diff, path, new_node, XMLDIFF_ADD);
+		xmldiff_add_diff(diff, ns_mapping, path, new_node, XMLDIFF_ADD);
 		return XMLDIFF_ADD;
 	} else if (new_tmp == NULL) { /* node removed */
-		xmldiff_add_diff (diff, path, old_node, XMLDIFF_REM);
+		xmldiff_add_diff(diff, ns_mapping, path, old_node, XMLDIFF_REM);
 		return XMLDIFF_REM;
 	} else { /* node is still here, check for internal changes */
 		switch (model->type) {
@@ -145,8 +170,8 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
 			/* container || choice */ 
 			ret_op = XMLDIFF_NONE;
 			for (i=0; i<model->children_count; i++) {
-				asprintf (&next_path, "%s/%s", path, model->children[i].name);
-				tmp_op = xmldiff_recursive (diff, next_path, old_doc, old_node->children, new_doc, new_node->children, &model->children[i]);
+				asprintf (&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
+				tmp_op = xmldiff_recursive (diff, ns_mapping, next_path, old_doc, old_node->children, new_doc, new_node->children, &model->children[i]);
 				free (next_path);
 	
 				if (tmp_op == XMLDIFF_ERR) {
@@ -156,7 +181,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
 				}
 			}
 			if (ret_op == XMLDIFF_CHAIN) {
-				xmldiff_add_diff (diff, path, new_node, XMLDIFF_CHAIN);
+				xmldiff_add_diff (diff, ns_mapping, path, new_node, XMLDIFF_CHAIN);
 			}
 			break;
 		case YIN_TYPE_LEAF: 
@@ -167,7 +192,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
 				ret_op = XMLDIFF_NONE;
 			} else {
 				ret_op = XMLDIFF_MOD;
-				xmldiff_add_diff (diff, path, new_node, XMLDIFF_MOD);
+				xmldiff_add_diff (diff, ns_mapping, path, new_node, XMLDIFF_MOD);
 			}
 			xmlFree (old_content);
 			xmlFree (new_content);
@@ -225,12 +250,12 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
 				free (old_keys);
 				
 				if (list_new_tmp == NULL) { /* item NOT found in new document -> removed */
-					xmldiff_add_diff (diff, path, list_old_tmp, XMLDIFF_REM);
+					xmldiff_add_diff (diff, ns_mapping, path, list_old_tmp, XMLDIFF_REM);
 					ret_op = XMLDIFF_CHAIN;
 				} else { /* item found => check for changes recursivelly*/
 					for (i=0; i<model->children_count; i++) {
-						asprintf (&next_path, "%s/%s", path, model->children[i].name);
-						tmp_op = xmldiff_recursive (diff, next_path, old_doc, list_old_tmp->children, new_doc, list_new_tmp->children, &model->children[i]);
+						asprintf (&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
+						tmp_op = xmldiff_recursive (diff, ns_mapping, next_path, old_doc, list_old_tmp->children, new_doc, list_new_tmp->children, &model->children[i]);
 						free (next_path);
 
 						if (tmp_op == XMLDIFF_ERR) {
@@ -241,7 +266,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
 					}
 
 					if (item_ret_op != XMLDIFF_NONE) {
-						xmldiff_add_diff (diff, path, list_new_tmp, XMLDIFF_CHAIN);
+						xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN);
 						ret_op = XMLDIFF_CHAIN;
 					}
 				}
@@ -294,12 +319,12 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
 				free (new_keys);
 				
 				if (list_old_tmp == NULL) { /* item NOT found in old document -> added */
-					xmldiff_add_diff (diff, path, list_new_tmp, XMLDIFF_ADD);
+					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD);
 					ret_op = XMLDIFF_CHAIN;
 				} else { /* item found => check for changes recursivelly*/
 					for (i=0; i<model->children_count; i++) {
-						asprintf (&next_path, "%s/%s", path, model->children[i].name);
-						tmp_op = xmldiff_recursive (diff, next_path, old_doc, list_old_tmp->children, new_doc, list_new_tmp->children, &model->children[i]);
+						asprintf (&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
+						tmp_op = xmldiff_recursive (diff, ns_mapping, next_path, old_doc, list_old_tmp->children, new_doc, list_new_tmp->children, &model->children[i]);
 						free (next_path);
 
 						if (tmp_op == XMLDIFF_ERR) {
@@ -310,7 +335,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
 					}
 
 					if (item_ret_op != XMLDIFF_NONE) {
-						xmldiff_add_diff (diff, path, list_new_tmp, XMLDIFF_CHAIN);
+						xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN);
 						ret_op = XMLDIFF_CHAIN;
 					}
 				}
@@ -337,7 +362,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
 				}
 				xmlFree (old_str);
 				if (list_new_tmp == NULL) {
-					xmldiff_add_diff (diff, path, list_old_tmp, XMLDIFF_REM);
+					xmldiff_add_diff (diff, ns_mapping, path, list_old_tmp, XMLDIFF_REM);
 					ret_op = XMLDIFF_CHAIN;
 				}
 				list_old_tmp = list_old_tmp->next;
@@ -358,7 +383,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
 				}
 				xmlFree (new_str);
 				if (list_old_tmp == NULL) {
-					xmldiff_add_diff (diff, path, list_new_tmp, XMLDIFF_ADD);
+					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD);
 					ret_op = XMLDIFF_CHAIN;
 				}
 				list_old_tmp = list_old_tmp->next;
@@ -379,7 +404,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
 			if (xmlStrEqual(old_str, new_str)) {
 				ret_op = XMLDIFF_NONE;
 			} else {
-				xmldiff_add_diff (diff, path, new_tmp, XMLDIFF_MOD);
+				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_MOD);
 				ret_op = XMLDIFF_CHAIN;
 			}
 			xmlFree(old_str);
@@ -403,7 +428,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, char * path, xmlDocPtr old_d
  *
  * @return xmldiff structure holding all differences between XML documents or NULL
  */
-struct xmldiff * xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct model_tree * model)
+struct xmldiff * xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[])
 {
 	xmlDocPtr old_tmp, new_tmp;
 	struct xmldiff * diff;
@@ -424,8 +449,8 @@ struct xmldiff * xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct model_tree *
 		return NULL;
 	}
 	
-	asprintf (&path, "/");
-	diff->all_stat = xmldiff_recursive (diff, path, old_tmp, old_tmp->children, new_tmp, new_tmp->children, &model->children[0]);
+	asprintf (&path, "/%s:%s", model->children->ns_prefix, model->children->name);
+	diff->all_stat = xmldiff_recursive (diff, ns_mapping, path, old_tmp, old_tmp->children, new_tmp, new_tmp->children, &model->children[0]);
 	free (path);
 
 	xmlFreeDoc (old_tmp);

@@ -3542,9 +3542,9 @@ apply_editcopyconfig:
 			reply = nc_reply_error(e);
 		} else {
 			if (ds->transapi.libxml2) {
-				ret = transapi_xml_running_changed(ds->transapi.data_clbks.data_clbks_xml, old, new, ds->data_model->model_tree); /* device does not accept changes */
+				ret = transapi_xml_running_changed(ds->transapi.data_clbks.data_clbks_xml, ds->transapi.ns_mapping, old, new, ds->data_model->model_tree); /* device does not accept changes */
 			} else {
-				ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, old, new, ds->data_model->model_tree); /* device does not accept changes */
+				ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model->model_tree); /* device does not accept changes */
 			}
 			if (ret) {
 				e = nc_err_new(NC_ERR_OP_FAILED);
