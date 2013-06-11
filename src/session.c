@@ -974,9 +974,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 						nc_reply_free(reply);
 					}
 				}
-				if (rpc_close != NULL) {
-					nc_rpc_free(rpc_close);
-				}
+				nc_rpc_free(rpc_close);
 			}
 		}
 #else
