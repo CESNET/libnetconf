@@ -1143,9 +1143,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	if (*libxml2) {
 		/* find rpc callback functions mapping structure */
 		if ((rpc_clbks.rpc_clbks_xml = dlsym(transapi_module, "rpc_clbks")) == NULL) {
-			ERROR("Unable to get addresses of rpc callback functions from shared library.");
-			dlclose (transapi_module);
-			return (NULL);
+			WARN("Unable to get addresses of rpc callback functions from shared library.");
 		}
 
 		/* callbacks work with configuration data */
@@ -1161,9 +1159,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	} else {
 		/* find rpc callback functions mapping structure */
 		if ((rpc_clbks.rpc_clbks = dlsym(transapi_module, "rpc_clbks")) == NULL) {
-			ERROR("Unable to get addresses of rpc callback functions from shared library.");
-			dlclose (transapi_module);
-			return (NULL);
+			WARN("Unable to get addresses of rpc callback functions from shared library.");
 		}
 
 		/* callbacks work with configuration data */
