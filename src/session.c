@@ -548,7 +548,6 @@ void nc_cpblts_free(struct nc_cpblts *c)
 struct nc_cpblts *nc_cpblts_new(char* const* list)
 {
 	struct nc_cpblts *retval;
-	char* item;
 	int i;
 
 	retval = calloc(1, sizeof(struct nc_cpblts));
@@ -567,8 +566,8 @@ struct nc_cpblts *nc_cpblts_new(char* const* list)
 	retval->list[0] = NULL;
 
 	if (list != NULL) {
-		for (i = 0, item = list[i]; item != NULL; i++) {
-			retval->list[i] = strdup (item);
+		for (i = 0; list[i] != NULL; i++) {
+			retval->list[i] = strdup (list[i]);
 			retval->items++;
 			if (retval->items == retval->list_size) {
 				/* resize the capacity of the capabilities list */
@@ -581,7 +580,6 @@ struct nc_cpblts *nc_cpblts_new(char* const* list)
 				retval->list_size *= 2;
 			}
 			retval->list[i + 1] = NULL;
-			item = list[i+1];
 		}
 	}
 
