@@ -1,7 +1,8 @@
 /**
- * \file datastore_file.h
+ * \file datastore_custom.h
  * \author Robin Obůrka <robin.oburka@nic.cz>
- * \brief NETCONF datastore handling function prototypes and structures for file datastore implementation.
+ * \brief NETCONF datastore handling function prototypes and structures for
+ * custom datastore implementation.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -42,6 +43,21 @@ struct ncds_ds;
 struct nc_err;
 
 /**
+ * \page datastores Datastores Usage
+ *
+ * \todo Everything about datastores usage and preparing specific datastore
+ * implementation via Custom datastore.
+ */
+
+/**
+ * \defgroup customdsAPI Custom Datastore API
+ * \brief libnetconf's API to use a server-specific datastore implementation.
+ *
+ * \addtogroup customdsAPI
+ * @{
+ */
+
+/**
  * \brief Public callbacks for the data store.
  *
  * These are the callbacks that need to be provided by the server
@@ -54,6 +70,7 @@ struct ncds_custom_funcs {
 	 * This callback is called before the data store is used (but
 	 * after the data has been set).
 	 *
+	 * \param[in] data The user data.
 	 * \return 0 for success, 1 for failure.
 	 */
 	int (*init)(void *data);
@@ -63,25 +80,31 @@ struct ncds_custom_funcs {
 	 * This is called after the library stops using the data store.
 	 * Use this place to free whatever resources (including data, if
 	 * it was allocated.
+	 *
+	 * \param[in] data The user data.
 	 */
 	void (*free)(void *data);
 	/**
 	 * \brief Was the content of data store changed?
+	 *
+	 * \param[in] data The user data.
+	 * \return 0 if content not changed, non-zero else
 	 */
 	int (*was_changed)(void *data);
 	/**
 	 * \brief Drop all changes.
 	 *
+	 * \param[in] data The user data.
 	 * \return 0 for success, 1 for error.
 	 */
 	int (*rollback)(void *data);
 	/**
 	 * \brief Lock the data store from other processes.
 	 *
-	 * \param data The user data.
-	 * \param target Which data store should be locked.
-	 * \param session_id ID of the session requesting the lock.
-	 * \param error Set this in case of EXIT_FAILURE, to indicate what went wrong.
+	 * \param[in] data The user data.
+	 * \param[in] target Which data store should be locked.
+	 * \param[in] session_id ID of the session requesting the lock.
+	 * \param[out] error Set this in case of EXIT_FAILURE, to indicate what went wrong.
 	 * \return EXIT_SUCCESS or EXIT_FAILURE.
 	 */
 	int (*lock)(void *data, NC_DATASTORE target, const char* session_id, struct nc_err** error);
@@ -91,6 +114,11 @@ struct ncds_custom_funcs {
 	 * libnetconf does checking whether the operation is allowed on its own
 	 * (using is_locked() function if available). So if this function is
 	 * called, just trust that the datastore can be unlocked and do it.
+	 *
+	 * \param[in] data The user data.
+	 * \param[in] target Which data store should be unlocked.
+	 * \param[out] error Set this in case of EXIT_FAILURE, to indicate what went wrong.
+	 * \return EXIT_SUCCESS or EXIT_FAILURE.
 	 */
 	int (*unlock)(void *data, NC_DATASTORE target, struct nc_err** error);
 	/**
@@ -120,38 +148,61 @@ struct ncds_custom_funcs {
 	 *
 	 * The ownership of the returned string is passed onto the
 	 * caller. So, allocate it and forget.
+	 *
+	 * \param[in] data The user data.
+	 * \param[in] target Where to read data from.
+	 * \param[out] error Set this in case of error, to indicate what went wrong.
+	 * \return Serialized content of the datastore, NULL on error
 	 */
 	char *(*getconfig)(void *data, NC_DATASTORE target, struct nc_err **error);
 	/**
 	 * \brief Copy config from one data store to another.
 	 *
-	 * \param data The user data.
-	 * \param target Where to copy.
-	 * \param source From where to copy.
-	 * \param config Custom data if source parameter is NC_DATASTORE_CONFIG
-	 * \param error Fill in in case of error.
+	 * \param[in] data The user data.
+	 * \param[in] target Where to copy.
+	 * \param[in] source From where to copy.
+	 * \param[in] config Custom data if source parameter is NC_DATASTORE_CONFIG
+	 * \param[out] error Set this in case of EXIT_FAILURE, to indicate what went wrong.
 	 * \return EXIT_SUCCESS or EXIT_FAILURE.
 	 */
 	int (*copyconfig)(void *data, NC_DATASTORE target, NC_DATASTORE source, char* config, struct nc_err** error);
 	/**
 	 * \brief Make the given data source empty.
+	 *
+	 * \param[in] data The user data.
+	 * \param[in] target Which part (running, startup, candidate) is supposed to be cleaned out.
+	 * \param[out] error Set this in case of EXIT_FAILURE, to indicate what went wrong.
+	 * \return EXIT_SUCCESS or EXIT_FAILURE.
 	 */
 	int (*deleteconfig)(void *data, NC_DATASTORE target, struct nc_err** error);
 	/**
 	 * \brief Perform the editconfig operation.
+	 *
+	 * \param[in] data The user data.
+	 * \param[in] targe What is supposed to be modified
+	 * \param[in] rpc RPC message with the request. RPC message is used only
+	 * for access control. If rpc is NULL access control is skipped.
+	 * \param[in] target What datastore part is going to be modified.
+	 * \param[in] config Edit configuration data.
+	 * \param[in] defop Default edit operation.
+	 * \param[in] errop Error-option.
+	 * \param[out] error Set this in case of EXIT_FAILURE, to indicate what went wrong.
+	 * \return EXIT_SUCCESS or EXIT_FAILURE.
 	 */
-	int (*editconfig)(void *data, NC_DATASTORE target, const char *config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
+	int (*editconfig)(void *data, const nc_rpc* rpc, NC_DATASTORE target, const char *config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 };
 
 /**
  * \brief Set custom data stored in custom datastore.
  *
  * Call after allocating the custom data store, but before initializing it.
- *
- * \param custom_data Any user provided data, passed to all the callbacks, but left intact by the
- *     library.
+ * \param datastore Custom datastore to store the data
+ * \param custom_data Any user provided data, passed to all the callbacks, but
+ * left intact by the library.
  * \param callbacks Definition of what callbacks to use to perform various operations.
  */
 void ncds_custom_set_data(struct ncds_ds* datastore, void *custom_data, const struct ncds_custom_funcs *callbacks);
+
+/** @}*/
 
 #endif /* DATASTORE_CUSTOM_H */
