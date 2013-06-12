@@ -51,6 +51,7 @@ struct transapi {
  * @brief Top level function of transaction API. Finds differences between old_doc and new_doc and calls specified callbacks.
  *
  * @param[in] c Structure binding callbacks with paths in XML document
+ * @param[in] ns_mapping Pairing prefixes with URIs.
  * @param[in] old_doc Content of configuration datastore before change.
  * @param[in] new_doc Content of configuration datastore after change.
  * @param[in] model Structure holding document semantics.
@@ -64,6 +65,7 @@ int transapi_running_changed (struct transapi_data_callbacks * c, const char * n
  * @brief Same functionality as transapi_running_changed(). Using libxml2 structures for callbacks parameters.
  *
  * @param[in] c Structure binding callbacks with paths in XML document. Callbacks uses libxml2 structures.
+ * @param[in] ns_mapping Pairing prefixes with URIs.
  * @param[in] old_doc Content of configuration datastore before change.
  * @param[in] new_doc Content of configuration datastore after change.
  * @param[in] model Structure holding document semantics.
