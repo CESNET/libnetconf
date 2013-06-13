@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Mon Jun 10 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Thu Jun 13 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -212,7 +212,7 @@ rpc message\&.
 .PP
 Enumeration of <rpc> operation types\&. 
 .PP
-\fBEnumerator\fP
+\fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINC_RPC_UNKNOWN \fP\fP
@@ -234,7 +234,7 @@ value describing that no supported operation type was detected so far
 .PP
 Enumeration of supported <rpc> operations\&. 
 .PP
-\fBEnumerator\fP
+\fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINC_OP_UNKNOWN \fP\fP
@@ -286,7 +286,7 @@ unknown/error value
 .PP
 Enumeration of supported NETCONF filter types\&. 
 .PP
-\fBEnumerator\fP
+\fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINC_FILTER_UNKNOWN \fP\fP
@@ -299,7 +299,7 @@ subtree filter according to RFC 6241, sec\&. 6
 .PP
 Enumeration of edit-config's operation attribute values\&. 
 .PP
-\fBEnumerator\fP
+\fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINC_EDIT_OP_ERROR \fP\fP
@@ -324,7 +324,7 @@ remove
 .PP
 Enumeration of edit-config's <default-operation> element values\&. 
 .PP
-\fBEnumerator\fP
+\fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINC_EDIT_DEFOP_ERROR \fP\fP
@@ -346,7 +346,7 @@ none (RFC 6241, sec\&. 7\&.2)
 .PP
 Enumeration of edit-config's <error-option> element values\&. 
 .PP
-\fBEnumerator\fP
+\fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINC_EDIT_ERROPT_ERROR \fP\fP
@@ -368,7 +368,7 @@ rollback-on-error (RFC 6241, sec\&. 7\&.2), valid only when :rollback-on-error c
 .PP
 Enumeration of edit-config's <test-option> element values\&. Valid only with enabled :validate:1\&.1 capability\&. 
 .PP
-\fBEnumerator\fP
+\fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINC_EDIT_TESTOPT_ERROR \fP\fP
@@ -390,7 +390,7 @@ test-only
 .PP
 RPC attributes list\&. List of specific attributes that can be added to selected RPC operations\&. The attributes can be set by (possibly repeated) call of the \fBnc_rpc_capability_attr()\fP function\&. 
 .PP
-\fBEnumerator\fP
+\fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINC_CAP_ATTR_WITHDEFAULTS_MODE \fP\fP

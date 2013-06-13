@@ -12,6 +12,6 @@ var yinparser_8h =
       [ "YIN_TYPE_IMPORT", "dd/d84/yinparser_8h.html#gga92fad6461f4d9f95f869756a02bc7449ab2b36feefd221bcd8074856be8a4e296", null ],
       [ "YIN_TYPE_AUGMENT", "dd/d84/yinparser_8h.html#gga92fad6461f4d9f95f869756a02bc7449a292109c2d37d5d798072371d08d36ae4", null ]
     ] ],
-    [ "yinmodel_parse", "dd/d84/yinparser_8h.html#ga43c773cf978382733cb09a6becf01d33", null ],
+    [ "yinmodel_parse", "dd/d84/yinparser_8h.html#ga11b6f802a32c98b1605debb0ac4f1c57", null ],
     [ "yinmodel_free", "dd/d84/yinparser_8h.html#gae4f5feae970a3c2840a248190f898314", null ]
 ];

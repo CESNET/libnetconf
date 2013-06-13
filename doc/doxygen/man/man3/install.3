@@ -1,8 +1,23 @@
-.TH "install" 3 "Mon Jun 10 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "install" 3 "Thu Jun 13 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 install \- Compilation and Installation 
+.SS "Cloning git repository"
+.PP
+As written on libnetconfs \fCGoogle Code page\fP the repository can be cloned using following command:
+.PP
+.PP
+.nf
+$ git clone https://code\&.google\&.com/p/libnetconf/
+.fi
+.PP
+.PP
+\fBNote:\fP
+.RS 4
+In case that git fails to clone the repository make sure git is at least version 1\&.6\&.6\&.
+.RE
+.PP
 .SS "Compilation"
 .PP
 libnetconf uses standard GNU Autotools toolchain\&. To compile and install libnetconf you have to go through the following three steps:
@@ -38,7 +53,7 @@ Remove support for the NETCONF Notifications\&. As a side effect, D-Bus (libdbus
 .PP
 .PP
 .IP "\(bu" 2
-\fC--with-nacm-recovery-uid=<uid>\fP
+\fC--with-nacm-recovery-uid=<uid>\fP 
 .IP "  \(bu" 4
 Specify user ID to be used for the identification of the \fBNACM Recovery Session\fP\&.
 .PP

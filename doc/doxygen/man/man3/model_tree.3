@@ -1,4 +1,4 @@
-.TH "model_tree" 3 "Mon Jun 10 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "model_tree" 3 "Thu Jun 13 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -27,6 +27,9 @@ structure holding information about used data model in YIN format
 .RI "char * \fBns_uri\fP"
 .br
 .ti -1c
+.RI "char * \fBns_prefix\fP"
+.br
+.ti -1c
 .RI "struct \fBmodel_tree\fP * \fBchildren\fP"
 .br
 .ti -1c
@@ -48,6 +51,8 @@ structure holding information about used data model in YIN format
 .SS "char** keys"
 
 .SS "char* ns_uri"
+
+.SS "char* ns_prefix"
 
 .SS "struct \fBmodel_tree\fP* children"
 

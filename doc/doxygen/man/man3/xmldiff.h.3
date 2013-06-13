@@ -1,4 +1,4 @@
-.TH "src/transapi/xmldiff.h" 3 "Mon Jun 10 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "src/transapi/xmldiff.h" 3 "Thu Jun 13 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -33,7 +33,7 @@ src/transapi/xmldiff.h \-
 .br
 .RI "\fIDestroy and free whole xmldiff structure\&. \fP"
 .ti -1c
-.RI "struct \fBxmldiff\fP * \fBxmldiff_diff\fP (xmlDocPtr old, xmlDocPtr new, struct \fBmodel_tree\fP *model)"
+.RI "struct \fBxmldiff\fP * \fBxmldiff_diff\fP (xmlDocPtr old, xmlDocPtr new, struct \fBmodel_tree\fP *model, const char *ns_mapping[])"
 .br
 .RI "\fIModule top level function\&. \fP"
 .in -1c

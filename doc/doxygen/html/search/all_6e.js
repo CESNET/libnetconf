@@ -325,6 +325,8 @@ var searchData=
   ['notifications_2eh',['notifications.h',['../d7/d62/notifications_8h.html',1,'']]],
   ['netconf_20event_20notifications_20_28libxml2_29',['NETCONF Event Notifications (libxml2)',['../db/dae/group__notifications__xml.html',1,'']]],
   ['notifications_5fxml_2eh',['notifications_xml.h',['../d8/dba/notifications__xml_8h.html',1,'']]],
+  ['ns_5fmapping',['ns_mapping',['../d9/dc0/structtransapi.html#afea037e397efab982d5e7d85f554d8b7',1,'transapi']]],
+  ['ns_5fprefix',['ns_prefix',['../dd/de6/structmodel__tree.html#a72e4016d53a2e3f0510716feca6f1648',1,'model_tree']]],
   ['ns_5furi',['ns_uri',['../dd/de6/structmodel__tree.html#a756c775ee7860c0419e15a5e08c633da',1,'model_tree']]],
   ['netconf_20rpc_2dreply',['NETCONF rpc-reply',['../d0/de2/group__reply.html',1,'']]],
   ['netconf_20rpc_2dreply_20_28libxml2_29',['NETCONF rpc-reply (libxml2)',['../d8/d73/group__reply__xml.html',1,'']]],

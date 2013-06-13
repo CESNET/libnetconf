@@ -12,6 +12,6 @@ var searchData=
   ['yin_5ftype_5flist',['YIN_TYPE_LIST',['../d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449a0c5a05ccb6e46f6afdba80bfbd3a4c0e',1,'yinparser.h']]],
   ['yin_5ftype_5fmodule',['YIN_TYPE_MODULE',['../d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449aacd2c9b118d093b8afb21bb2c22b0d49',1,'yinparser.h']]],
   ['yinmodel_5ffree',['yinmodel_free',['../d8/d55/group__transapi.html#gae4f5feae970a3c2840a248190f898314',1,'yinparser.h']]],
-  ['yinmodel_5fparse',['yinmodel_parse',['../d8/d55/group__transapi.html#ga43c773cf978382733cb09a6becf01d33',1,'yinparser.h']]],
+  ['yinmodel_5fparse',['yinmodel_parse',['../d8/d55/group__transapi.html#ga11b6f802a32c98b1605debb0ac4f1c57',1,'yinparser.h']]],
   ['yinparser_2eh',['yinparser.h',['../dd/d84/yinparser_8h.html',1,'']]]
 ];
