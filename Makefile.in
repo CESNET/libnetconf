@@ -218,7 +218,7 @@ rpm: tarball
 	fi
 
 .PHONY: install
-install: all install-devel install-doc
+install: all install-devel install-doc install-generator
 	[ -d $(DESTDIR)/$(libdir) ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir))
 	$(INSTALL_PROGRAM) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/;
@@ -250,6 +250,17 @@ install: all install-devel install-doc
 	done;
 	[ -d $(DESTDIR)/$(DBUS_CONFDIR)/system.d/ ] || (mkdir -p $(DESTDIR)/$(DBUS_CONFDIR)/system.d/);
 	[ -z "@SRCS_NOTIFICATIONS@" ] || $(INSTALL_DATA) $(srcdir)/libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
+
+.PHONY: install-generator
+install-generator:
+	@[ -d $(DESTDIR)/$(bindir)/$(NAME) ] || \
+		(mkdir -p $(DESTDIR)/$(bindir)/$(NAME); chmod 755 $(DESTDIR)/$(bindir)/$(NAME))
+	$(INSTALL_PROGRAM) src/transapi/generator/generator.py $(DESTDIR)/$(bindir)/lnc-creator
+	@[ -d $(DESTDIR)/$(datadir)/$(NAME)/templates ] || \
+		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/templates; chmod 755 $(DESTDIR)/$(datadir)/$(NAME)/templates)
+	for i in Makefile.in configure.in README specfile.spec.in install-sh; do \
+		$(INSTALL_DATA) src/transapi/generator/$$i $(DESTDIR)/$(datadir)/$(NAME)/templates/$$i; \
+	done
 
 .PHONY: install-devel
 install-devel:
