@@ -133,6 +133,17 @@
 /**
  * \page install Compilation and Installation
  *
+ * ## Cloning git repository ##
+ *
+ * As written on libnetconfs [Google Code page](https://code.google.com/p/libnetconf/source/checkout)
+ * the repository can be cloned using following command:
+ *
+ * ~~~~~~~
+ * $ git clone https://code.google.com/p/libnetconf/
+ * ~~~~~~~
+ *
+ * \note In case that git fails to clone the repository make sure git is at least version 1.6.6.
+ *
  * ## Compilation ##
  *
  * libnetconf uses standard GNU Autotools toolchain. To compile and install
