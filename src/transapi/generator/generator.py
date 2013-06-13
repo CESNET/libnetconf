@@ -40,6 +40,7 @@ import argparse
 import shutil
 import re
 import sys
+import os
 
 # Use configure.in.template and replace all variables with text
 def generate_configure_in(replace, template_dir, with_libxml2):
@@ -80,6 +81,8 @@ def separate_paths_and_namespaces(defs):
 
 # 
 def generate_callbacks_file(name, defs, model, with_libxml2, without_init, without_close):
+	if defs is None:
+		raise ValueError('Invalid paths file.')
 	# Create or rewrite .c file, will be generated
 	outf = open(name+'.c', 'w')
 
@@ -303,20 +306,35 @@ def generate_rpc_callbacks (doc, with_libxml2):
 	content += '\n};\n\n'
 
 	return(content)
+
+# Try to find template directory, if none of known candidates found raise exception
+def find_templates():
+	known_paths = ['/usr/share/libnetconf/templates', '/usr/local/share/libnetconf/templates/', './templates', './']
+
+	for path in known_paths:
+		if os.path.isdir(path):
+			if os.path.exists(path+'/specfile.spec.in') and os.path.exists(path+'/install-sh') and os.path.exists(path+'/Makefile.in'):
+				return(path)
 	
+	raise Exception('Template directory not found. Use --template-dir parameter to specify its location.')
 
 # "main" starts here
 parser = argparse.ArgumentParser(description='Generate files for libnetconf transapi callbacks module.')
 parser.add_argument('--name', required=True, help='Name of module with callbacks.')
 parser.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
 parser.add_argument('--model', type=libxml2.parseFile, help='File holding data model. Used for generating rpc callbacks.')
-parser.add_argument('--template-dir', default='.', help='Path to the directory with teplate files')
+parser.add_argument('--template-dir', default=None, help='Path to the directory with teplate files')
 parser.add_argument('--with-libxml2', action='store_const', const=1, default=0)
 parser.add_argument('--without-init', action='store_const', const=1, default=0, help='Module does not need initialization when loaded.')
 parser.add_argument('--without-close', action='store_const', const=1, default=0, help='Module does not need closing before unloaded.')
 try:
 	args = parser.parse_args()
 
+	# if --template-dir not specified try to find it
+	# Would be nicer to call this function in 'default' part of parsing argument
+	# --template-dir but then it gets called before trying to find and parse argument :(
+	if args.template_dir is None:
+		args.template_dir = find_templates()
 	# store paterns and text for replacing in configure.in
 	r = {'$$PROJECTNAME$$' : args.name}
 	#generate configure.in
@@ -333,6 +351,8 @@ except libxml2.libxmlError as e:
 	print('Can not parse data model: '+e.msg)
 except KeyboardInterrupt:
 	print('Killed by user!')
+except Exception as e:
+	print(str(e[0]))
 
 sys.exit(0)
 
