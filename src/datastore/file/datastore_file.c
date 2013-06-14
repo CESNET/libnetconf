@@ -320,6 +320,45 @@ int ncds_file_changed(struct ncds_ds* ds)
 	return (1);
 }
 
+static void clip_occurences_with(char *str, char sought, char replacement)
+{
+	int adjacent = 0;
+	int clipped = 0;
+
+	if (str == NULL) {
+		return;
+	}
+
+	while (*str != '\0') {
+		if (*str != sought) {
+			if (clipped != 0) {
+				/* Hurl together. */
+				*(str - clipped) = *str;
+			}
+			adjacent = 0;
+		} else if (adjacent == 0) {
+			/*
+			 * Found first character from a possible sequence of
+			 * characters. The whole sequence is going to be
+			 * replaced by only one replacement character.
+			 */
+			*(str - clipped) = replacement;
+			/* Next occurrence will be adjacent. */
+			adjacent = 1;
+		} else {
+			++clipped;
+		}
+
+		/* Next character. */
+		++str;
+	}
+
+	if (clipped != 0) {
+		/* New string end. */
+		*(str - clipped) = '\0';
+	}
+}
+
 /**
  * @ingroup store
  * @brief Initialization of the file datastore
@@ -331,7 +370,7 @@ int ncds_file_changed(struct ncds_ds* ds)
 int ncds_file_init (struct ncds_ds* ds)
 {
 	struct stat st;
-	char* new_path, *sempath, *saux;
+	char* new_path, *sempath;
 	int fd;
 	mode_t mask;
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
@@ -392,15 +431,14 @@ int ncds_file_init (struct ncds_ds* ds)
 	 */
 	/* first - prepare the path, there must be a separate lock for each
 	 * datastore(set), so name it according to the filepath with a special prefix.
-	 * backslashes in the path are replaced by underscores.
+	 * Slashes in the path are replaced with underscores.
+	 * Sequences of slashes are treated as a single slash character.
 	 */
 	if (asprintf(&sempath, "%s/%s", NCDS_LOCK, file_ds->path) == -1) {
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		return (EXIT_FAILURE);
 	}
-	while((saux = strchr(sempath, '/')) != NULL) {
-		*saux = '_';
-	}
+	clip_occurences_with(sempath, '/', '_');
 	/* recreate initial backslash in the semaphore name */
 	sempath[0] = '/';
 	/* and then create the lock (actually it is a semaphore) */
