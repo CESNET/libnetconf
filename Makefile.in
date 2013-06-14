@@ -149,6 +149,13 @@ HDRS_PRIV = src/config.h.in \
 	src/transapi/yinparser.h \
 	src/transapi/xmldiff.h
 
+GENERATOR = src/transapi/generator/generator.py \
+
+GENERATOR_FILES = src/transapi/generator/Makefile.in \
+	src/transapi/generator/specfile.spec.in \
+	src/transapi/generator/install-sh \
+	src/transapi/generator/README
+
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 
 all: $(NAME).a $(NAME).so $(SUBDIRS)
@@ -192,7 +199,7 @@ tarball: $(SRCS) $(HEADERS)
 	@rm -rf $(NAME)-$(VERSION);
 	@mkdir $(NAME)-$(VERSION);
 	@for i in $(SUBDIRS) ; do $(MAKE) -C $$i tarball-prepare; done; \
-	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) configure.in configure \
+	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) $(GENERATOR) $(GENERATOR_FILES) configure.in configure \
 	    headers/libnetconf.h.in headers/libnetconf_xml.h.in \
 	    Makefile.in VERSION $(NAME).spec.in $(NAME).pc.in \
 	    install-sh config.sub config.guess Doxyfile.in doc/img/*.png models/*; do \
@@ -255,11 +262,11 @@ install: all install-devel install-doc install-generator
 install-generator:
 	@[ -d $(DESTDIR)/$(bindir)/$(NAME) ] || \
 		(mkdir -p $(DESTDIR)/$(bindir)/$(NAME); chmod 755 $(DESTDIR)/$(bindir)/$(NAME))
-	$(INSTALL_PROGRAM) src/transapi/generator/generator.py $(DESTDIR)/$(bindir)/lnc-creator
+	$(INSTALL_PROGRAM) $(GENERATOR) $(DESTDIR)/$(bindir)/lnc-creator
 	@[ -d $(DESTDIR)/$(datadir)/$(NAME)/templates ] || \
 		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/templates; chmod 755 $(DESTDIR)/$(datadir)/$(NAME)/templates)
-	for i in Makefile.in configure.in README specfile.spec.in install-sh; do \
-		$(INSTALL_DATA) src/transapi/generator/$$i $(DESTDIR)/$(datadir)/$(NAME)/templates/$$i; \
+	for i in $(GENERATOR_FILES); do \
+		$(INSTALL_DATA) $$i $(DESTDIR)/$(datadir)/$(NAME)/templates/$$(basename $$i); \
 	done
 
 .PHONY: install-devel
