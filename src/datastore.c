@@ -433,17 +433,28 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
-int ncds_device_init ()
+int ncds_device_init (ncds_id * id)
 {
 	nc_rpc * rpc_msg = NULL;
 	nc_reply * reply_msg = NULL;
-	struct ncds_ds_list * ds_iter = NULL;
+	struct ncds_ds_list * ds_iter, *start;
+	struct ncds_ds * ds;
 	struct nc_cpblts * cpblts = NULL;
 	struct nc_session * dummy_session = NULL;
 	struct nc_err * err;
 
-	/* initialize all transAPI capable modules */
-	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter=ds_iter->next) {
+	if (id != NULL) { /* initialize given device */
+		if ((ds = datastores_get_ds(*id)) == NULL) {
+			ERROR("Unable to find module with id %d", *id);
+			goto fail;
+		}
+		start = calloc(1,sizeof(struct ncds_ds_list));
+		start->datastore = ds;
+	} else {
+		start = ncds.datastores;
+	}
+	/* OR if not specified initialize all transAPI capable modules */
+	for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 		if (ds_iter->datastore->transapi.init) {
 			if (ds_iter->datastore->transapi.init()) {
 				ERROR ("init function from module %s failed.", ds_iter->datastore->data_model->name);
@@ -455,7 +466,7 @@ int ncds_device_init ()
 	if (first_after_close) {
 		/* Clean RUNNING datastore. This is important when tranAPI is deployed and does not harm when not. */
 		/* It is done by calling low level function to avoid invoking transapi now. */
-		for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter=ds_iter->next) {
+		for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 			/* TRY to erase, when it fails the datastore is probably empty */
 			/* TODO: Is there better way? */
 			ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, "", &err);
@@ -481,6 +492,10 @@ int ncds_device_init ()
 		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
 	}
 
+	if (id != NULL) {
+		free(start);
+	}
+
 	return EXIT_SUCCESS;
 fail:
 	if (dummy_session != NULL) {
@@ -488,6 +503,10 @@ fail:
 	}
 	nc_rpc_free(rpc_msg);
 	nc_reply_free(reply_msg);
+	if (id != NULL) {
+		free(start);
+	}
+
 	return EXIT_FAILURE;
 }
 
