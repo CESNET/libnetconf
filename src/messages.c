@@ -1865,12 +1865,7 @@ nc_reply* nc_reply_merge(int count, ...)
 	/* initialize argument vector */
 	va_start (ap, count);
 	for(i = j = 0; i < count; i++, j++) {
-		if ((to_merge[j] = va_arg(ap, nc_reply*)) == NULL) {
-			ERROR("%s: invalid input message %d", __func__, i+1);
-			free(to_merge);
-			va_end(ap);
-			return NULL;
-		}
+		to_merge[j] = va_arg(ap, nc_reply*);
 		if (to_merge[j] == NULL || to_merge[j] == (void*)(-1)) {
 			/* invalid reply will not be merged */
 			to_merge[j] = NULL; /* list terminating NULL byte */
