@@ -437,7 +437,7 @@ int ncds_device_init (ncds_id * id)
 {
 	nc_rpc * rpc_msg = NULL;
 	nc_reply * reply_msg = NULL;
-	struct ncds_ds_list * ds_iter, *start;
+	struct ncds_ds_list * ds_iter, *start = NULL;
 	struct ncds_ds * ds;
 	struct nc_cpblts * cpblts = NULL;
 	struct nc_session * dummy_session = NULL;
