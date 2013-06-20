@@ -1065,7 +1065,6 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
 		r = compare_schemas(listitem->model, name, version);
 		if (r == ERROR_POINTER) {
-			free(r);
 			free(version);
 			free(name);
 			if (e != NULL ) {
