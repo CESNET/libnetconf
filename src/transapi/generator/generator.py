@@ -47,10 +47,14 @@ def generate_configure_in(replace, template_dir, with_libxml2):
 	inf = open (template_dir+'/configure.in', 'r')
 	outf = open ('configure.in', 'w')
 
-	for line in inf:
-		for pattern, value in replace.items():
-			line = line.replace(pattern, value)
-		outf.write(line)
+	conf_in = inf.read()
+	for pattern, value in replace.items():
+		if re.match(r'\$\$LIBXML2_.*\$\$', pattern) and with_libxml2 == 0:
+			conf_in = conf_in.replace(pattern, '')
+		else:
+			conf_in = conf_in.replace(pattern, value)
+
+	outf.write(conf_in)
 	inf.close()
 	outf.close()
 
@@ -336,7 +340,27 @@ try:
 	if args.template_dir is None:
 		args.template_dir = find_templates()
 	# store paterns and text for replacing in configure.in
-	r = {'$$PROJECTNAME$$' : args.name}
+	r = {'$$PROJECTNAME$$' : args.name, 
+			 '$$LIBXML2_WITH$$' : '# --with-libxml2=path-to-libxml2-git-repository\nAC_ARG_WITH([libxml2],\n\
+		\t[AC_HELP_STRING([--with-libxml2], [specific libxml2 location])],\n\
+  	\t[\n\t\tAC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no], [$withval])\n\
+    \t\tif test "$XML2_CONFIG" = "no"; then\n\
+    \t\t\tAC_MSG_ERROR([Missing development package of libxml2.])\n\
+    \t\tfi\n\
+    \t\tCFLAGS="`$withval/xml2-config --cflags` $CFLAGS"\n\
+    \t\tLDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"\n\
+    \t\tWITH_LIBXML2="$withval"\n\t]\n)',
+			'$$LIBXML2_CHECK$$' : '# Check for libxml2.\n\
+		\tif test -z "$WITH_LIBXML2" ; then\n\
+  	\t\tAC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no])\n\
+  	\t\tif test "$XML2_CONFIG" = "no"; then\n\
+    \t\t\tAC_MSG_ERROR([Missing development package of libxml2.])\n\
+  	\t\tfi\n\
+  	\t\tAC_CHECK_LIB([xml2], [main], [LIBS="`xml2-config --libs` $LIBS" CFLAGS="`xml2-config --cflags` $CFLAGS"], AC_MSG_ERROR([Libxml2 not found ]))\n\
+  	\t\tREQS="$REQS, libxml2"\n\
+  	\t\tBUILDREQS="$BUILDREQS, libxml2-devel"\n\
+		\tfi\n'
+			}
 	#generate configure.in
 	generate_configure_in (r, args.template_dir, args.with_libxml2)
 	#copy files for autotools (name.spec.in, Makefile.in, ...)
