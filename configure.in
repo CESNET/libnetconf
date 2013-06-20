@@ -77,12 +77,24 @@ if test "x$PKG_CONFIG" = "xno"; then
 	AC_MSG_ERROR(['pkgconfig' not found.])
 fi
 
-#AC_ARG_WITH([libxml2], AC_HELP_STRING([--with-libxml2], [specific libxml2 location]),[],[])
+AC_ARG_WITH([libxml2],
+	[AC_HELP_STRING([--with-libxml2], [specific libxml2 location])],
+	[
+		AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no], [$withval])
+		if test "$XML2_CONFIG" = "no"; then
+			AC_MSG_ERROR([Missing development package of libxml2.])
+		fi
+		CFLAGS="`$withval/xml2-config --cflags` $CFLAGS"
+		LDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"
+		WITH_LIBXML2="$withval"
+	]
+)
+
 AC_ARG_WITH([libssh2],
 	[AS_HELP_STRING([--with-libssh2=DIR], [Specifies libssh2 installation directory.])],
 	[
-		CFLAGS="$CFLAGS -I$withval/include"
-		LDFLAGS="$LDFLAGS -L$withval/lib -Wl,-rpath,$withval/lib"
+		CFLAGS="-I$withval/include $CFLAGS"
+		LDFLAGS="-L$withval/lib -Wl,-rpath,$withval/lib $LDFLAGS"
 	]
 )
 
@@ -243,12 +255,14 @@ AC_PROG_INSTALL
 export PKG_CONFIG_PATH=/usr/local/${libdir##*/}/pkgconfig:$PKG_CONFIG_PATH
 
 ### LibXML2 ###
-AC_CHECK_LIB([xml2], [main], [LIBS="$LIBS -lxml2"], AC_MSG_ERROR([Missing libxml2]))
-AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no])
-if test "$XML2_CONFIG" = "no"; then
-	AC_MSG_ERROR([Missing development package of libxml2.])
+if test -z "$WITH_LIBXML2" ; then
+	AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no], [$WITH_LIBXML2 $PATH])
+	if test "$XML2_CONFIG" = "no"; then
+		AC_MSG_ERROR([Missing development package of libxml2.])
+	fi
+	CFLAGS="`xml2-config --cflags` $CFLAGS"
+	LDFLAGS="`xml2-config --libs` $LDFLAGS"
 fi
-CFLAGS="$CFLAGS `xml2-config --cflags`"
 
 if test "$libssh2" = "yes"; then
 	### libssh2 ###
