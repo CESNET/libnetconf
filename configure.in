@@ -68,6 +68,7 @@ SERVERCFG_PATH="/var/lib/$PACKAGE_NAME/server/"
 SETBIT=0
 SETUSER=""
 SETGROUP=""
+CONFIGURE_ARGS=""
 
 LIBS="$LIBS -lrt -lutil"
 
@@ -87,6 +88,7 @@ AC_ARG_WITH([libxml2],
 		CFLAGS="`$withval/xml2-config --cflags` $CFLAGS"
 		LDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"
 		WITH_LIBXML2="$withval"
+		CONFIGURE_ARGS="--with-libxml2=$withval $CONFIGURE_ARGS"
 	]
 )
 
@@ -157,6 +159,7 @@ AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],[Compile with debug options]),
 	CFLAGS="$CFLAGS -g -DDEBUG",
 	CFLAGS="$CFLAGS -O3"
+	CONFIGURE_ARGS="--enable-debug $CONFIGURE_ARGS"
 )
 AC_ARG_ENABLE([debug-threads],
 	AC_HELP_STRING([--enable-debug-threads],[Extend debug mode for threads]),
@@ -361,6 +364,7 @@ AC_SUBST(INCLUDE_NOTIFICATIONS_XML)
 AC_SUBST(CONFIGURE_PARAMS)
 AC_SUBST(HAVE_EACCESS)
 AC_SUBST(SSH_PROG)
+AC_SUBST(CONFIGURE_ARGS)
 
 AC_SUBST(DOXYGEN)
 if test -z "$DOXYGEN"; then
