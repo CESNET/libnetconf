@@ -39,7 +39,7 @@ struct model_tree {
  * @brief Parse YIN data model
  *
  * @param model_doc	Data model in YIN format.
- * @aparam ns_mapping Pairing prefixes with URIs.
+ * @param ns_mapping Pairing prefixes with URIs.
  *
  * @return yinmodel structure or NULL
  */

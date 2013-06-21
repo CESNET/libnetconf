@@ -1,4 +1,4 @@
-.TH "src/transapi/yinparser.h" 3 "Mon Jun 10 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "src/transapi/yinparser.h" 3 "Fri Jun 21 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -29,7 +29,7 @@ src/transapi/yinparser.h \-
 
 .in +1c
 .ti -1c
-.RI "struct \fBmodel_tree\fP * \fByinmodel_parse\fP (xmlDocPtr model_doc)"
+.RI "struct \fBmodel_tree\fP * \fByinmodel_parse\fP (xmlDocPtr model_doc, const char *ns_mapping[])"
 .br
 .RI "\fIParse YIN data model\&. \fP"
 .ti -1c

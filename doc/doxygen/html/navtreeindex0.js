@@ -215,6 +215,7 @@ var NAVTREEINDEX0 =
 "d3/d7a/netconf_8h.html#ggaff232fd4280e385c8e45fcca033e58fdaa7f202a2d5f43e094946b1361da93f40":[8,0,0,9,19,3],
 "d3/d7a/netconf_8h.html#ggaff232fd4280e385c8e45fcca033e58fdaf85c0828113a86cb30dd67991e19b6ba":[8,0,0,9,19,4],
 "d3/d7a/netconf_8h_source.html":[8,0,0,9],
+"d3/df0/transapi_tutorial.html":[4,0],
 "d4/d24/transapi__xml_8h.html":[8,0,0,0,2],
 "d4/d24/transapi__xml_8h_source.html":[8,0,0,0,2],
 "d5/d3e/libnetconf__xml_8h.html":[8,0,0,6],
@@ -248,6 +249,5 @@ var NAVTREEINDEX0 =
 "d5/d48/messages_8h.html#gaa502fb30575000775b29a764101c1bef":[8,0,0,7,13],
 "d5/d48/messages_8h.html#gaa9ad7fac41fdef0063c2e2793fb19efd":[8,0,0,7,44],
 "d5/d48/messages_8h.html#gaac62fb3d427985311cf71a2c3ab8d424":[8,0,0,7,22],
-"d5/d48/messages_8h.html#gab12cdef82337060c425348dada7fe983":[8,0,0,7,21],
-"d5/d48/messages_8h.html#gab12fec9068d72fa6817f4a59a81e625e":[8,0,0,7,19]
+"d5/d48/messages_8h.html#gab12cdef82337060c425348dada7fe983":[8,0,0,7,21]
 };

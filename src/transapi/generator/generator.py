@@ -40,16 +40,21 @@ import argparse
 import shutil
 import re
 import sys
+import os
 
 # Use configure.in.template and replace all variables with text
 def generate_configure_in(replace, template_dir, with_libxml2):
 	inf = open (template_dir+'/configure.in', 'r')
 	outf = open ('configure.in', 'w')
 
-	for line in inf:
-		for pattern, value in replace.items():
-			line = line.replace(pattern, value)
-		outf.write(line)
+	conf_in = inf.read()
+	for pattern, value in replace.items():
+		if re.match(r'\$\$LIBXML2_.*\$\$', pattern) and with_libxml2 == 0:
+			conf_in = conf_in.replace(pattern, '')
+		else:
+			conf_in = conf_in.replace(pattern, value)
+
+	outf.write(conf_in)
 	inf.close()
 	outf.close()
 
@@ -80,6 +85,8 @@ def separate_paths_and_namespaces(defs):
 
 # 
 def generate_callbacks_file(name, defs, model, with_libxml2, without_init, without_close):
+	if defs is None:
+		raise ValueError('Invalid paths file.')
 	# Create or rewrite .c file, will be generated
 	outf = open(name+'.c', 'w')
 
@@ -303,22 +310,57 @@ def generate_rpc_callbacks (doc, with_libxml2):
 	content += '\n};\n\n'
 
 	return(content)
+
+# Try to find template directory, if none of known candidates found raise exception
+def find_templates():
+	known_paths = ['/usr/share/libnetconf/templates', '/usr/local/share/libnetconf/templates/', './templates', './']
+
+	for path in known_paths:
+		if os.path.isdir(path):
+			if os.path.exists(path+'/specfile.spec.in') and os.path.exists(path+'/install-sh') and os.path.exists(path+'/Makefile.in'):
+				return(path)
 	
+	raise Exception('Template directory not found. Use --template-dir parameter to specify its location.')
 
 # "main" starts here
 parser = argparse.ArgumentParser(description='Generate files for libnetconf transapi callbacks module.')
 parser.add_argument('--name', required=True, help='Name of module with callbacks.')
 parser.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
 parser.add_argument('--model', type=libxml2.parseFile, help='File holding data model. Used for generating rpc callbacks.')
-parser.add_argument('--template-dir', default='.', help='Path to the directory with teplate files')
+parser.add_argument('--template-dir', default=None, help='Path to the directory with teplate files')
 parser.add_argument('--with-libxml2', action='store_const', const=1, default=0)
 parser.add_argument('--without-init', action='store_const', const=1, default=0, help='Module does not need initialization when loaded.')
 parser.add_argument('--without-close', action='store_const', const=1, default=0, help='Module does not need closing before unloaded.')
 try:
 	args = parser.parse_args()
 
+	# if --template-dir not specified try to find it
+	# Would be nicer to call this function in 'default' part of parsing argument
+	# --template-dir but then it gets called before trying to find and parse argument :(
+	if args.template_dir is None:
+		args.template_dir = find_templates()
 	# store paterns and text for replacing in configure.in
-	r = {'$$PROJECTNAME$$' : args.name}
+	r = {'$$PROJECTNAME$$' : args.name, 
+			 '$$LIBXML2_WITH$$' : '# --with-libxml2=path-to-libxml2-git-repository\nAC_ARG_WITH([libxml2],\n\
+		\t[AC_HELP_STRING([--with-libxml2], [specific libxml2 location])],\n\
+  	\t[\n\t\tAC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no], [$withval])\n\
+    \t\tif test "$XML2_CONFIG" = "no"; then\n\
+    \t\t\tAC_MSG_ERROR([Missing development package of libxml2.])\n\
+    \t\tfi\n\
+    \t\tCFLAGS="`$withval/xml2-config --cflags` $CFLAGS"\n\
+    \t\tLDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"\n\
+    \t\tWITH_LIBXML2="$withval"\n\t]\n)',
+			'$$LIBXML2_CHECK$$' : '# Check for libxml2.\n\
+		\tif test -z "$WITH_LIBXML2" ; then\n\
+  	\t\tAC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no])\n\
+  	\t\tif test "$XML2_CONFIG" = "no"; then\n\
+    \t\t\tAC_MSG_ERROR([Missing development package of libxml2.])\n\
+  	\t\tfi\n\
+  	\t\tAC_CHECK_LIB([xml2], [main], [LIBS="`xml2-config --libs` $LIBS" CFLAGS="`xml2-config --cflags` $CFLAGS"], AC_MSG_ERROR([Libxml2 not found ]))\n\
+  	\t\tREQS="$REQS, libxml2"\n\
+  	\t\tBUILDREQS="$BUILDREQS, libxml2-devel"\n\
+		\tfi\n'
+			}
 	#generate configure.in
 	generate_configure_in (r, args.template_dir, args.with_libxml2)
 	#copy files for autotools (name.spec.in, Makefile.in, ...)
@@ -333,6 +375,8 @@ except libxml2.libxmlError as e:
 	print('Can not parse data model: '+e.msg)
 except KeyboardInterrupt:
 	print('Killed by user!')
+except Exception as e:
+	print(str(e[0]))
 
 sys.exit(0)
 

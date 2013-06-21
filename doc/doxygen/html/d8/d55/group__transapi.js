@@ -35,6 +35,7 @@ var group__transapi =
       [ "name", "dd/de6/structmodel__tree.html#a5ac083a645d964373f022d03df4849c8", null ],
       [ "keys", "dd/de6/structmodel__tree.html#ae73cb9d66858e2b47df1ba18eb285075", null ],
       [ "ns_uri", "dd/de6/structmodel__tree.html#a756c775ee7860c0419e15a5e08c633da", null ],
+      [ "ns_prefix", "dd/de6/structmodel__tree.html#a72e4016d53a2e3f0510716feca6f1648", null ],
       [ "children", "dd/de6/structmodel__tree.html#a128c73946040b9bc8ee47ddb296e5d36", null ],
       [ "keys_count", "dd/de6/structmodel__tree.html#a24bb9d3a9dccb24581d359a218837c6f", null ],
       [ "children_count", "dd/de6/structmodel__tree.html#a7849df4fab48f1f94b85a3045b002b1b", null ]
@@ -71,10 +72,10 @@ var group__transapi =
       [ "YIN_TYPE_AUGMENT", "d8/d55/group__transapi.html#gga92fad6461f4d9f95f869756a02bc7449a292109c2d37d5d798072371d08d36ae4", null ]
     ] ],
     [ "ncds_new_transapi", "d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85", null ],
-    [ "transapi_running_changed", "d8/d55/group__transapi.html#ga84af389e5c1106cd9cfbde1c7ca001be", null ],
-    [ "transapi_xml_running_changed", "d8/d55/group__transapi.html#ga7593335c8bd87ea1e86b32c8bc30973e", null ],
-    [ "yinmodel_parse", "d8/d55/group__transapi.html#ga43c773cf978382733cb09a6becf01d33", null ],
+    [ "transapi_running_changed", "d8/d55/group__transapi.html#ga21d851d64db3740f5dee102d3c3ffeb5", null ],
+    [ "transapi_xml_running_changed", "d8/d55/group__transapi.html#gaab24457d58494b0edf1b4beee463aec5", null ],
+    [ "yinmodel_parse", "d8/d55/group__transapi.html#ga11b6f802a32c98b1605debb0ac4f1c57", null ],
     [ "yinmodel_free", "d8/d55/group__transapi.html#gae4f5feae970a3c2840a248190f898314", null ],
     [ "xmldiff_free", "d8/d55/group__transapi.html#ga51f793ef3d02f47d83d8763d4c962304", null ],
-    [ "xmldiff_diff", "d8/d55/group__transapi.html#ga8f8cdd2ba2f610e486ffaaf7fd761ff9", null ]
+    [ "xmldiff_diff", "d8/d55/group__transapi.html#gac16efcedb0820928eb15db53623defd0", null ]
 ];

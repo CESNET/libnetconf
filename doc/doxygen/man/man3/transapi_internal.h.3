@@ -1,4 +1,4 @@
-.TH "src/transapi/transapi_internal.h" 3 "Mon Jun 10 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "src/transapi/transapi_internal.h" 3 "Fri Jun 21 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -30,11 +30,11 @@ src/transapi/transapi_internal.h \-
 
 .in +1c
 .ti -1c
-.RI "int \fBtransapi_running_changed\fP (struct \fBtransapi_data_callbacks\fP *c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct \fBmodel_tree\fP *model)"
+.RI "int \fBtransapi_running_changed\fP (struct \fBtransapi_data_callbacks\fP *c, const char *ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct \fBmodel_tree\fP *model)"
 .br
 .RI "\fITop level function of transaction API\&. Finds differences between old_doc and new_doc and calls specified callbacks\&. \fP"
 .ti -1c
-.RI "int \fBtransapi_xml_running_changed\fP (struct \fBtransapi_xml_data_callbacks\fP *c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct \fBmodel_tree\fP *model)"
+.RI "int \fBtransapi_xml_running_changed\fP (struct \fBtransapi_xml_data_callbacks\fP *c, const char *ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct \fBmodel_tree\fP *model)"
 .br
 .RI "\fISame functionality as \fBtransapi_running_changed()\fP\&. Using libxml2 structures for callbacks parameters\&. \fP"
 .in -1c

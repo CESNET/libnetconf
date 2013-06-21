@@ -1,4 +1,4 @@
-.TH "transapi" 3 "Mon Jun 10 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "transapi" 3 "Fri Jun 21 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -19,6 +19,10 @@ transapi \-
 .RI "int \fBlibxml2\fP"
 .br
 .RI "\fIDoes module support libxml2? \fP"
+.ti -1c
+.RI "const char ** \fBns_mapping\fP"
+.br
+.RI "\fIMapping prefixes with URIs\&. \fP"
 .ti -1c
 .RI "union \fBtransapi_data_clbcks\fP \fBdata_clbks\fP"
 .br
@@ -46,6 +50,10 @@ Loaded shared library with transapi callbacks\&.
 
 .PP
 Does module support libxml2? 
+.SS "const char** ns_mapping"
+
+.PP
+Mapping prefixes with URIs\&. 
 .SS "union \fBtransapi_data_clbcks\fP data_clbks"
 
 .PP

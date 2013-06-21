@@ -620,6 +620,7 @@ ac_includes_default="\
 
 ac_header_list=
 ac_subst_vars='LTLIBOBJS
+CONFIGURE_ARGS
 HAVE_EACCESS
 CONFIGURE_PARAMS
 INCLUDE_NOTIFICATIONS_XML
@@ -660,7 +661,6 @@ PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 EGREP
 GREP
-XML2_CONFIG
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
@@ -677,6 +677,7 @@ RPMBUILD
 DOXYGEN
 SSH_PROG
 UNAME
+XML2_CONFIG
 PKG_CONFIG
 CONFIGURE_PWD
 USERMAIL
@@ -731,6 +732,7 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+with_libxml2
 with_libssh2
 enable_libssh2
 enable_notifications
@@ -1382,6 +1384,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-libxml2          specific libxml2 location
   --with-libssh2=DIR      Specifies libssh2 installation directory.
   --with-examples         Enable building example applications, they respect
                           --with-suid and --with-sgid options
@@ -2627,6 +2630,7 @@ SERVERCFG_PATH="/var/lib/$PACKAGE_NAME/server/"
 SETBIT=0
 SETUSER=""
 SETGROUP=""
+CONFIGURE_ARGS=""
 
 LIBS="$LIBS -lrt -lutil"
 
@@ -2676,13 +2680,66 @@ if test "x$PKG_CONFIG" = "xno"; then
 	as_fn_error $? "'pkgconfig' not found." "$LINENO" 5
 fi
 
-#AC_ARG_WITH([libxml2], AC_HELP_STRING([--with-libxml2], [specific libxml2 location]),[],[])
+
+# Check whether --with-libxml2 was given.
+if test "${with_libxml2+set}" = set; then :
+  withval=$with_libxml2;
+		# Extract the first word of "xml2-config", so it can be a program name with args.
+set dummy xml2-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_XML2_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$XML2_CONFIG"; then
+  ac_cv_prog_XML2_CONFIG="$XML2_CONFIG" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $withval
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_XML2_CONFIG="yes"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_XML2_CONFIG" && ac_cv_prog_XML2_CONFIG="no"
+fi
+fi
+XML2_CONFIG=$ac_cv_prog_XML2_CONFIG
+if test -n "$XML2_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $XML2_CONFIG" >&5
+$as_echo "$XML2_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+		if test "$XML2_CONFIG" = "no"; then
+			as_fn_error $? "Missing development package of libxml2." "$LINENO" 5
+		fi
+		CFLAGS="`$withval/xml2-config --cflags` $CFLAGS"
+		LDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"
+		WITH_LIBXML2="$withval"
+		CONFIGURE_ARGS="--with-libxml2=$withval $CONFIGURE_ARGS"
+
+
+fi
+
+
 
 # Check whether --with-libssh2 was given.
 if test "${with_libssh2+set}" = set; then :
   withval=$with_libssh2;
-		CFLAGS="$CFLAGS -I$withval/include"
-		LDFLAGS="$LDFLAGS -L$withval/lib -Wl,-rpath,$withval/lib"
+		CFLAGS="-I$withval/include $CFLAGS"
+		LDFLAGS="-L$withval/lib -Wl,-rpath,$withval/lib $LDFLAGS"
 
 
 fi
@@ -2758,6 +2815,7 @@ if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug; CFLAGS="$CFLAGS -g -DDEBUG"
 else
   CFLAGS="$CFLAGS -O3"
+	CONFIGURE_ARGS="--enable-debug $CONFIGURE_ARGS"
 
 fi
 
@@ -4057,44 +4115,8 @@ test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 export PKG_CONFIG_PATH=/usr/local/${libdir##*/}/pkgconfig:$PKG_CONFIG_PATH
 
 ### LibXML2 ###
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lxml2" >&5
-$as_echo_n "checking for main in -lxml2... " >&6; }
-if ${ac_cv_lib_xml2_main+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lxml2  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main ()
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_xml2_main=yes
-else
-  ac_cv_lib_xml2_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_xml2_main" >&5
-$as_echo "$ac_cv_lib_xml2_main" >&6; }
-if test "x$ac_cv_lib_xml2_main" = xyes; then :
-  LIBS="$LIBS -lxml2"
-else
-  as_fn_error $? "Missing libxml2" "$LINENO" 5
-fi
-
-# Extract the first word of "xml2-config", so it can be a program name with args.
+if test -z "$WITH_LIBXML2" ; then
+	# Extract the first word of "xml2-config", so it can be a program name with args.
 set dummy xml2-config; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
@@ -4105,7 +4127,7 @@ else
   ac_cv_prog_XML2_CONFIG="$XML2_CONFIG" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
+for as_dir in $WITH_LIBXML2 $PATH
 do
   IFS=$as_save_IFS
   test -z "$as_dir" && as_dir=.
@@ -4132,14 +4154,17 @@ $as_echo "no" >&6; }
 fi
 
 
-if test "$XML2_CONFIG" = "no"; then
-	as_fn_error $? "Missing development package of libxml2." "$LINENO" 5
+	if test "$XML2_CONFIG" = "no"; then
+		as_fn_error $? "Missing development package of libxml2." "$LINENO" 5
+	fi
+	CFLAGS="`xml2-config --cflags` $CFLAGS"
+	LDFLAGS="`xml2-config --libs` $LDFLAGS"
 fi
-CFLAGS="$CFLAGS `xml2-config --cflags`"
 
 if test "$libssh2" = "yes"; then
 	### libssh2 ###
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libssh2_version in -lssh2" >&5
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libssh2_version in -lssh2" >&5
 $as_echo_n "checking for libssh2_version in -lssh2... " >&6; }
 if ${ac_cv_lib_ssh2_libssh2_version+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -5964,6 +5989,7 @@ fi
 
 
 ############################### Set output #####################################
+
 
 
 

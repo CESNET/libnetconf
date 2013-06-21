@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Mon Jun 10 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Fri Jun 21 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -14,7 +14,7 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fIDatastore ID to access libnetconf's internal datastores such as notifications, monitoring, etc\&. \fP"
 .ti -1c
-.RI "#define \fBNCDS_RPC_NOT_APPLICABLE\fP   ((void *) -1)"
+.RI "#define \fBNCDS_RPC_NOT_APPLICABLE\fP   ((void*)(&\fBerror_area\fP))"
 .br
 .RI "\fIReturn value of \fBncds_apply_rpc()\fP when the requested operation is not applicable to the specified datastore\&. \fP"
 .in -1c
@@ -129,7 +129,7 @@ libnetconf's functions for handling NETCONF datastores\&.
 
 .PP
 Datastore ID to access libnetconf's internal datastores such as notifications, monitoring, etc\&. 
-.SS "#define NCDS_RPC_NOT_APPLICABLE   ((void *) -1)"
+.SS "#define NCDS_RPC_NOT_APPLICABLE   ((void*)(&\fBerror_area\fP))"
 
 .PP
 Return value of \fBncds_apply_rpc()\fP when the requested operation is not applicable to the specified datastore\&. 
@@ -284,7 +284,7 @@ Perform the requested RPC operation on the datastore\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to the specified datastore (e\&.g\&. the namespace does not match), NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned\&. 
+NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to the specified datastore (e\&.g\&. the namespace does not match), NCDS_RPC_NOT_APPLICABLE is returned\&. 
 .RE
 .PP
 
@@ -304,7 +304,7 @@ Perform the requested RPC operation on the all datastores controlled by the libn
 .PP
 \fBReturns:\fP
 .RS 4
-NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to any datastore (e\&.g\&. the namespace does not match no of the controlled datstores), NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned\&. 
+NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to any datastore (e\&.g\&. the namespace does not match no of the controlled datstores), NCDS_RPC_NOT_APPLICABLE is returned\&. 
 .RE
 .PP
 

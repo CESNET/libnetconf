@@ -5,7 +5,7 @@ var NAVTREE =
     [ "Compilation and Installation", "d9/d87/install.html", null ],
     [ "Using libnetconf", "da/d1b/usage.html", "da/d1b/usage" ],
     [ "NETCONF Access Control Module (NACM)", "dd/d59/nacm.html", null ],
-    [ "Transaction API (transAPI)", "d9/d25/transapi.html", null ],
+    [ "Transaction API (transAPI)", "d9/d25/transapi.html", "d9/d25/transapi" ],
     [ "Todo List", "dd/da0/todo.html", null ],
     [ "Modules", "modules.html", "modules" ],
     [ "Data Structures", null, [
@@ -21,6 +21,7 @@ var NAVTREE =
       [ "Globals", "globals.html", [
         [ "All", "globals.html", "globals_dup" ],
         [ "Functions", "globals_func.html", null ],
+        [ "Variables", "globals_vars.html", null ],
         [ "Typedefs", "globals_type.html", null ],
         [ "Enumerations", "globals_enum.html", null ],
         [ "Enumerator", "globals_eval.html", null ],
@@ -33,9 +34,9 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d5/d48/messages_8h.html#gab1f7b7f9be8153758e5b047fe70fd48d",
-"da/d54/group__notifications.html#ga05a14f949bbb781fd58a233b1d2fab33",
-"dd/de6/structmodel__tree.html"
+"d5/d48/messages_8h.html#gab12fec9068d72fa6817f4a59a81e625e",
+"da/d46/session_8h.html#gaeb0d93ea1b5ef0c22c9e5372425fb5c3",
+"dd/d84/yinparser_8h.html#gga92fad6461f4d9f95f869756a02bc7449ab2b36feefd221bcd8074856be8a4e296"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -41,6 +41,7 @@ void xmldiff_free (struct xmldiff * diff);
  * @param old		old version of XML document
  * @param new		new version of XML document
  * @param model	data model in YANG format
+ * @param ns_mapping Pairing prefixes with URIs
  *
  * @return xmldiff structure holding all differences between XML documents or NULL
  */

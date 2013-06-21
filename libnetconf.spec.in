@@ -56,3 +56,5 @@ ldconfig
 %{_prefix}/include/libnetconf_ssh.h
 %{_prefix}/include/libnetconf/*
 %{_prefix}/share/libnetconf/doxygen/*
+%{_bindir}/lnc-creator
+%{_datadir}/libnetconf/templates/*
