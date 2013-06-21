@@ -147,7 +147,7 @@ ncds_id ncds_init(struct ncds_ds* datastore);
 /**
  * @brief Initialize transAPI module(s) (if present) and copy startup configuration to running
  *
- * @param id Pointer to ncds_id of device to initialize, if NULL all found transapi-capable devices will be initialize
+ * @param id Pointer to ncds_id of device to initialize, if NULL all found transapi-capable devices will be initialized
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
