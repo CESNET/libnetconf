@@ -326,7 +326,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 	 * if using tranaspi full initialize will be performed
 	 * otherwise only copyconfig (startup->running)
 	 */
-	if (ncds_device_init()) {
+	if (ncds_device_init(NULL)) {
 		clb_print(NC_VERB_ERROR, "Setting up devices failed.");
 		nc_close(0);
 		return (EXIT_FAILURE);
