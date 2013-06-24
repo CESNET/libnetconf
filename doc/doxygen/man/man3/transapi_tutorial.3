@@ -1,0 +1,213 @@
+.TH "transapi_tutorial" 3 "Fri Jun 21 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+transapi_tutorial \- transAPI Tutorial 
+On this page we will show how to write simple module for controlling \fCexample toaster\fP\&. 
+.PP
+\fBNote:\fP
+.RS 4
+To install libnetconf follow instruction on \fBCompilation and Installation\fP page\&.
+.RE
+.PP
+.SS "Preparations"
+.PP
+First we need to identify important parts of configuration data\&. Since toaster data model describes only one configurable element we have easy choice\&. So we can create the 'paths_file' file containing specification of our chosen element and mapping prefixes with URIs for any used namespace\&.
+.PP
+Our file may look like this (irrespective of order): 
+.PP
+.nf
+toaster=http://netconfcentral\&.org/ns/toaster
+/toaster:toaster
+
+.fi
+.PP
+.PP
+If we want (we do) to create call back functions for RPC messages defined for toaster we need its data model in YIN format\&. Data model in YANG format can be downloaded from NETCONF CENTRAL (http://dld.netconfcentral.org/src/toaster@2009-11-20.yang)\&. Then we convert model in YANG to YIN using \fCpyang\fP\&.
+.PP
+.PP
+.nf
+$ pyang -f yin -o toaster@2009-11-20\&.yin toaster@2009-11-20\&.yang
+.fi
+.PP
+.PP
+.SS "Generating code"
+.PP
+.IP "1." 4
+Create new directory for toaster module: 
+.PP
+.nf
+$ mkdir toaster && cd toaster/
+
+.fi
+.PP
+
+.IP "2." 4
+Run `generator\&.py': 
+.PP
+.nf
+$ lnc-creator --name toaster --paths paths_file --model toaster@2009-11-20\&.yin --with-libxml2
+
+.fi
+.PP
+
+.PP
+.PP
+.SS "Filling up functionality"
+.PP
+Here we show the simplest example of toaster simulating module\&. It is working but does not deal with multiple access and threads correctly\&. Better example may be seen in git repository (examples/server/transapi/toaster\&.c)\&.
+.PP
+.IP "1." 4
+Open 'toaster\&.c' file with you favorite editor: 
+.PP
+.nf
+$ vim toaster\&.c
+
+.fi
+.PP
+
+.PP
+.PP
+.IP "1." 4
+Add global variables and auxiliary functions 
+.PP
+.nf
+enum {ON, OFF, BUSY} status;
+pthread_t thread;
+
+void * auxiliary_make_toast(void * time)
+{
+        sleep(*(int*)time);
+
+        if (status == BUSY) {
+                status = ON;
+                ncntf_event_new(-1, NCNTF_GENERIC, '<toastDone><toastStatus>done</toastStatus></toastDone>');
+        }
+        return(NULL);
+}
+
+.fi
+.PP
+
+.IP "2." 4
+Complete 'init()' function with actions that will be run right after module loads and before any other function in module is called\&. 
+.PP
+.nf
+int init()
+{
+        status = OFF;
+        printf('Toaster initialized!\n');
+        return(EXIT_SUCCESS);
+}
+
+.fi
+.PP
+
+.IP "3." 4
+Locate 'close()' function and fill it with actions that will be run just before the module unloads\&. No other function will be called after 'close()'\&. 
+.PP
+.nf
+void close()
+{
+        printf('Toaster ready for unplugging!\n');
+}
+
+.fi
+.PP
+
+.IP "4." 4
+Fill 'get_state_data()' function with code that will generate state information as defined in data model\&. 
+.PP
+.nf
+char * get_state_data(char * model, char * running, struct nc_err **err)
+{
+        return strdup('<?xml version='1\&.0'?><toaster xmlns='http://netconfcentral\&.org/ns/toaster'> \&.\&.\&. </toaster>');
+}
+
+.fi
+.PP
+
+.IP "5." 4
+Complete configuration callbacks\&. The 'op' parameter may be used to determine operation which was done with the node\&. Parameter 'node' holds a copy of node after change (or before change if op == XMLDIFF_REM)\&. 
+.PP
+.nf
+int callback_toaster_toaster (XMLDIFF_OP op, xmlNodePtr node, void ** data)
+{
+        switch(op) {
+        case XMLDIFF_ADD:
+                status = ON;
+                break;
+        case XMLDIFF_REM:
+                status = OFF;
+                break;
+        default:
+                return(EXIT_FAILURE);
+        }
+        return(EXIT_SUCCESS);
+}
+
+.fi
+.PP
+
+.IP "6." 4
+Fill RPC message callback functions with code that will be run when message arrives\&. 
+.PP
+.nf
+nc_reply * rpc_make_toast (xmlNodePtr input[])
+{
+        xmlNodePtr toasterDoneness = input[0];
+     xmlNodePtr toasterToastType = input[1];
+
+     nc_reply * reply;
+     int doneness = atoi(xmlNodeGetContent(toasterDoneness));
+
+        if (status == ON) {
+                status = BUSY;
+                pthread_create(&thread, NULL, auxiliary_make_toast, (void*)&doneness);
+                pthread_detach(thread);
+                reply = nc_reply_ok();
+        } else {
+                reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
+        }
+        return(reply);
+}
+
+.fi
+.PP
+ 
+.PP
+.nf
+nc_reply * rpc_cancel_toast (xmlNodePtr input[])
+{
+     nc_reply * reply;
+
+     if (status == BUSY) {
+        status = ON;
+        ncntf_event_new(-1, NCNTF_GENERIC, '<toastDone><toastStatus>canceled</toastStatus></toastDone>');
+        reply = nc_reply_ok();
+     } else {
+        reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
+     }
+     return(reply);
+}
+
+.fi
+.PP
+
+.PP
+.PP
+.SS "Compiling module"
+.PP
+Following sequence of commands will produce shared library 'toaster\&.so' which may be loaded into libnetconf: 
+.PP
+.nf
+$ autoreconf
+$ \&./configure
+$ make
+
+.fi
+.PP
+.PP
+.SS "Integrating to example server"
+.PP
+In server we use libnetconfs function \fBncds_new_transapi()\fP instead of \fBncds_new()\fP to create transAPI capable data store\&. Then you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock) data-reading (get, get-config) and module data model defined RPC operations\&. All these operation are processed inside \fBncds_apply_rpc2all()\fP function\&. 
