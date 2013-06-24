@@ -60,7 +60,6 @@ def generate_configure_in(replace, template_dir, with_libxml2):
 
 # Copy source files for autotools
 def copy_template_files(name, template_dir):
-	shutil.copy2(template_dir+'/specfile.spec.in', name+'.spec.in')
 	shutil.copy2(template_dir+'/install-sh', 'install-sh')
 	shutil.copy2(template_dir+'/Makefile.in', 'Makefile.in')
 
@@ -317,7 +316,7 @@ def find_templates():
 
 	for path in known_paths:
 		if os.path.isdir(path):
-			if os.path.exists(path+'/specfile.spec.in') and os.path.exists(path+'/install-sh') and os.path.exists(path+'/Makefile.in'):
+			if os.path.exists(path+'/install-sh') and os.path.exists(path+'/Makefile.in'):
 				return(path)
 	
 	raise Exception('Template directory not found. Use --template-dir parameter to specify its location.')
@@ -341,29 +340,31 @@ try:
 		args.template_dir = find_templates()
 	# store paterns and text for replacing in configure.in
 	r = {'$$PROJECTNAME$$' : args.name, 
-			 '$$LIBXML2_WITH$$' : '# --with-libxml2=path-to-libxml2-git-repository\nAC_ARG_WITH([libxml2],\n\
-		\t[AC_HELP_STRING([--with-libxml2], [specific libxml2 location])],\n\
-  	\t[\n\t\tAC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no], [$withval])\n\
-    \t\tif test "$XML2_CONFIG" = "no"; then\n\
-    \t\t\tAC_MSG_ERROR([Missing development package of libxml2.])\n\
-    \t\tfi\n\
-    \t\tCFLAGS="`$withval/xml2-config --cflags` $CFLAGS"\n\
-    \t\tLDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"\n\
-    \t\tWITH_LIBXML2="$withval"\n\t]\n)',
-			'$$LIBXML2_CHECK$$' : '# Check for libxml2.\n\
-		\tif test -z "$WITH_LIBXML2" ; then\n\
-  	\t\tAC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no])\n\
-  	\t\tif test "$XML2_CONFIG" = "no"; then\n\
-    \t\t\tAC_MSG_ERROR([Missing development package of libxml2.])\n\
-  	\t\tfi\n\
-  	\t\tAC_CHECK_LIB([xml2], [main], [LIBS="`xml2-config --libs` $LIBS" CFLAGS="`xml2-config --cflags` $CFLAGS"], AC_MSG_ERROR([Libxml2 not found ]))\n\
-  	\t\tREQS="$REQS, libxml2"\n\
-  	\t\tBUILDREQS="$BUILDREQS, libxml2-devel"\n\
-		\tfi\n'
-			}
+	'$$LIBXML2_WITH$$' :
+'\n# --with-libxml2=path-to-libxml2-git-repository\nAC_ARG_WITH([libxml2],\n\
+\t[AC_HELP_STRING([--with-libxml2], [specific libxml2 location])],\n\
+\t[\n\
+\t\tAC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no], [$withval])\n\
+\t\tif test "$XML2_CONFIG" = "no"; then\n\
+\t\t\tAC_MSG_ERROR([Missing development package of libxml2.])\n\
+\t\tfi\n\
+\t\tCFLAGS="`$withval/xml2-config --cflags` $CFLAGS"\n\
+\t\tLDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"\n\
+\t\tWITH_LIBXML2="$withval"\n\
+\t]\n)\n',
+	'$$LIBXML2_CHECK$$' :
+'\n# Check for libxml2.\n\
+if test -z "$WITH_LIBXML2" ; then\n\
+\tAC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no])\n\
+\tif test "$XML2_CONFIG" = "no"; then\n\
+\t\tAC_MSG_ERROR([Missing development package of libxml2.])\n\
+\tfi\n\
+\tAC_CHECK_LIB([xml2], [main], [LIBS="`xml2-config --libs` $LIBS" CFLAGS="`xml2-config --cflags` $CFLAGS"], AC_MSG_ERROR([Libxml2 not found ]))\n\
+fi\n\n'
+	}
 	#generate configure.in
 	generate_configure_in (r, args.template_dir, args.with_libxml2)
-	#copy files for autotools (name.spec.in, Makefile.in, ...)
+	#copy files for autotools (Makefile.in, ...)
 	copy_template_files(args.name, args.template_dir)
 	#generate callbacks code
 	generate_callbacks_file(args.name, args.paths, args.model, args.with_libxml2, args.without_init, args.without_close)
