@@ -60,6 +60,7 @@ CPPFLAGS = @CPPFLAGS@ -I../../src/ -DSERVERCFG_PATH=\"$(SERVERCFG_PATH)\" -DVERS
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
+CONFIGURE_ARGS = @CONFIGURE_ARGS@
 
 INSTALL_BIN_OPTIONS = 
 ifeq ($(SETBIT), 1)
@@ -92,8 +93,10 @@ TRANSAPI = ./transapi/
 all: $(NAME) $(TRANSAPI)
 
 .PHONY: $(TRANSAPI)
-$(TRANSAPI):
-	( cd $(TRANSAPI) && ./configure )
+$(TRANSAPI)/Makefile:
+	(cd $(TRANSAPI) && ./configure $(CONFIGURE_ARGS) )
+
+$(TRANSAPI): $(TRANSAPI)/Makefile 
 	$(MAKE) -C $@
 
 $(NAME): $(OBJS)
@@ -150,4 +153,4 @@ uninstall:
 .PHONY: clean
 clean:
 	for i in $(TRANSAPI) ; do $(MAKE) -C $$i clean ; done
-	rm -rf $(NAME) .obj $(OBJS); 
+	rm -rf $(NAME) .obj $(OBJS) $(TRANSAPI)/Makefile ;

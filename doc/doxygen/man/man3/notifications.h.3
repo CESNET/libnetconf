@@ -1,4 +1,4 @@
-.TH "src/notifications.h" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "src/notifications.h" 3 "Fri Jun 21 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -55,6 +55,10 @@ Functions to handle NETCONF Notifications\&.
 .RI "char ** \fBncntf_stream_list\fP (void)"
 .br
 .RI "\fIGet the list of NETCONF event notifications streams\&. \fP"
+.ti -1c
+.RI "int \fBncntf_stream_info\fP (const char *stream, char **desc, char **start)"
+.br
+.RI "\fIGet some more details about the specified NETCONF event notifications stream\&. \fP"
 .ti -1c
 .RI "int \fBncntf_stream_isavailable\fP (const char *name)"
 .br

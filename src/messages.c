@@ -59,7 +59,7 @@
 #include "with_defaults.h"
 #include "nacm.h"
 #include "url_internal.h"
-#include "session.h"
+#include "datastore.h"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -586,16 +586,9 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 		return (NC_OP_UNKNOWN);
 	}
 
-	auxnode = root->children;
-	while(1) {
-		if (auxnode == NULL) {
-			/* valid rpc operation not found */
-			return (NC_OP_UNKNOWN);
-			break;
-		}
+	for (auxnode = root->children; auxnode; auxnode = auxnode->next) {
 		if (auxnode->type != XML_ELEMENT_NODE) {
 			/* not interesting node, go to another */
-			auxnode = auxnode->next;
 			continue;
 		}
 		/* If the operation is outside any namespace then it's treated as unknown.
@@ -648,10 +641,6 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "create-subscription") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_NOTIFICATIONS) == 0)) {
 			return (NC_OP_CREATESUBSCRIPTION);
-		} else {
-			/* try another one */
-			auxnode = auxnode->next;
-			continue;
 		}
 	}
 	return (NC_OP_UNKNOWN);
@@ -947,25 +936,25 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 				xmlXPathFreeObject(query_result);
 				return (NC_EDIT_DEFOP_ERROR);
 			}
-			defop = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
+			defop = query_result->nodesetval->nodeTab[0];
+
+			if (defop != NULL) {
+				if (defop->children == NULL || defop->children->type != XML_TEXT_NODE || defop->children->content == NULL) {
+					ERROR("%s: invalid format of the edit-config's default-operation parameter", __func__);
+					retval = NC_EDIT_DEFOP_ERROR;
+				} else if (xmlStrEqual(defop->children->content, BAD_CAST "merge")) {
+					retval = NC_EDIT_DEFOP_MERGE;
+				} else if (xmlStrEqual(defop->children->content, BAD_CAST "replace")) {
+					retval = NC_EDIT_DEFOP_REPLACE;
+				} else if (xmlStrEqual(defop->children->content, BAD_CAST "none")) {
+					retval = NC_EDIT_DEFOP_NONE;
+				} else {
+					ERROR("%s: unknown default-operation specified (%s)", __func__, defop->children->content)
+					retval = NC_EDIT_DEFOP_ERROR;
+				}
+			}
 		}
 		xmlXPathFreeObject(query_result);
-	}
-
-	if (defop != NULL) {
-		if (defop->children == NULL || defop->children->type != XML_TEXT_NODE || defop->children->content == NULL) {
-			ERROR("%s: invalid format of the edit-config's default-operation parameter", __func__);
-			retval = NC_EDIT_DEFOP_ERROR;
-		} else if (xmlStrEqual(defop->children->content, BAD_CAST "merge")) {
-			retval = NC_EDIT_DEFOP_MERGE;
-		} else if (xmlStrEqual(defop->children->content, BAD_CAST "replace")) {
-			retval = NC_EDIT_DEFOP_REPLACE;
-		} else if (xmlStrEqual(defop->children->content, BAD_CAST "none")) {
-			retval = NC_EDIT_DEFOP_NONE;
-		} else {
-			ERROR("%s: unknown default-operation specified (%s)", __func__, defop->children->content)
-			retval = NC_EDIT_DEFOP_ERROR;
-		}
 	}
 
 	return retval;
@@ -984,25 +973,25 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 				xmlXPathFreeObject(query_result);
 				return (NC_EDIT_ERROPT_ERROR);
 			}
-			erropt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
+			erropt = query_result->nodesetval->nodeTab[0];
+
+			if (erropt != NULL) {
+				if (erropt->children == NULL || erropt->children->type != XML_TEXT_NODE || erropt->children->content == NULL) {
+					ERROR("%s: invalid format of the edit-config's error-option parameter", __func__);
+					retval = NC_EDIT_ERROPT_ERROR;
+				} else if (xmlStrEqual(erropt->children->content, BAD_CAST "stop-on-error")) {
+					retval = NC_EDIT_ERROPT_STOP;
+				} else if (xmlStrEqual(erropt->children->content, BAD_CAST "continue-on-error")) {
+					retval = NC_EDIT_ERROPT_CONT;
+				} else if (xmlStrEqual(erropt->children->content, BAD_CAST "rollback-on-error")) {
+					retval = NC_EDIT_ERROPT_ROLLBACK;
+				} else {
+					ERROR("%s: unknown error-option specified (%s)", __func__, erropt->children->content)
+					retval = NC_EDIT_ERROPT_ERROR;
+				}
+			}
 		}
 		xmlXPathFreeObject(query_result);
-	}
-
-	if (erropt != NULL) {
-		if (erropt->children == NULL || erropt->children->type != XML_TEXT_NODE || erropt->children->content == NULL) {
-			ERROR("%s: invalid format of the edit-config's error-option parameter", __func__);
-			retval = NC_EDIT_ERROPT_ERROR;
-		} else if (xmlStrEqual(erropt->children->content, BAD_CAST "stop-on-error")) {
-			retval = NC_EDIT_ERROPT_STOP;
-		} else if (xmlStrEqual(erropt->children->content, BAD_CAST "continue-on-error")) {
-			retval = NC_EDIT_ERROPT_CONT;
-		} else if (xmlStrEqual(erropt->children->content, BAD_CAST "rollback-on-error")) {
-			retval = NC_EDIT_ERROPT_ROLLBACK;
-		} else {
-			ERROR("%s: unknown error-option specified (%s)", __func__, erropt->children->content)
-			retval = NC_EDIT_ERROPT_ERROR;
-		}
 	}
 
 	return retval;
@@ -1021,25 +1010,25 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 				xmlXPathFreeObject(query_result);
 				return (NC_EDIT_TESTOPT_ERROR);
 			}
-			testopt = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
+			testopt = query_result->nodesetval->nodeTab[0];
+
+			if (testopt != NULL) {
+				if (testopt->children == NULL || testopt->children->type != XML_TEXT_NODE || testopt->children->content == NULL) {
+					ERROR("%s: invalid format of the edit-config's test-option parameter", __func__);
+					retval = NC_EDIT_TESTOPT_ERROR;
+				} else if (xmlStrcmp(testopt->children->content, BAD_CAST "set") == 0) {
+					retval = NC_EDIT_TESTOPT_SET;
+				} else if (xmlStrcmp(testopt->children->content, BAD_CAST "test-only") == 0) {
+					retval = NC_EDIT_TESTOPT_TEST;
+				} else if (xmlStrcmp(testopt->children->content, BAD_CAST "test-then-set") == 0) {
+					retval = NC_EDIT_TESTOPT_TESTSET;
+				} else {
+					ERROR("%s: unknown test-option specified (%s)", __func__, testopt->children->content)
+					retval = NC_EDIT_TESTOPT_ERROR;
+				}
+			}
 		}
 		xmlXPathFreeObject(query_result);
-	}
-
-	if (testopt != NULL) {
-		if (testopt->children == NULL || testopt->children->type != XML_TEXT_NODE || testopt->children->content == NULL) {
-			ERROR("%s: invalid format of the edit-config's test-option parameter", __func__);
-			retval = NC_EDIT_TESTOPT_ERROR;
-		} else if (xmlStrcmp(testopt->children->content, BAD_CAST "set") == 0) {
-			retval = NC_EDIT_TESTOPT_SET;
-		} else if (xmlStrcmp(testopt->children->content, BAD_CAST "test-only") == 0) {
-			retval = NC_EDIT_TESTOPT_TEST;
-		} else if (xmlStrcmp(testopt->children->content, BAD_CAST "test-then-set") == 0) {
-			retval = NC_EDIT_TESTOPT_TESTSET;
-		} else {
-			ERROR("%s: unknown test-option specified (%s)", __func__, testopt->children->content)
-			retval = NC_EDIT_TESTOPT_ERROR;
-		}
 	}
 
 	return (retval);
@@ -1368,7 +1357,7 @@ nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
 
 	/* assign session-id */
 	/* check if session-id is prepared */
-	if (session_id == NULL || strlen(session_id) == 0) {
+	if (session_id == NULL || strisempty(session_id)) {
 		/* no session-id set */
 		ERROR("Hello: session ID is empty");
 		xmlFreeDoc(msg->doc);
@@ -1796,13 +1785,8 @@ nc_reply* nc_reply_merge(int count, ...)
 	/* initialize argument vector */
 	va_start (ap, count);
 	for(i = j = 0; i < count; i++, j++) {
-		if ((to_merge[j] = va_arg(ap, nc_reply*)) == NULL) {
-			ERROR("%s: invalid input message %d", __func__, i+1);
-			free(to_merge);
-			va_end(ap);
-			return NULL;
-		}
-		if (to_merge[j] == NULL || to_merge[j] == (void*)(-1)) {
+		to_merge[j] = va_arg(ap, nc_reply*);
+		if (to_merge[j] == NULL || to_merge[j] == NCDS_RPC_NOT_APPLICABLE) {
 			/* invalid reply will not be merged */
 			to_merge[j] = NULL; /* list terminating NULL byte */
 			j--;

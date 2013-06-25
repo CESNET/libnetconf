@@ -57,8 +57,8 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 RPMDIR = RPMBUILD
 LIBS = $(patsubst -I.%,-I$(TOPDIR)/.%,$(patsubst -L.%,-L$(TOPDIR)/.%,$(filter -L% -I%,@LIBS@))) $(filter-out -L% -I%,@LIBS@)
-CFLAGS = -I../../../src/ $(patsubst -I.%,-I$(TOPDIR)/.%,$(patsubst -L.%,-L$(TOPDIR)/.%,$(filter -L% -I%,@CFLAGS@))) $(filter-out -L% -I%,@CFLAGS@ -fPIC -shared)
-CPPFLAGS = -L../../../ $(patsubst -I.%,-I$(TOPDIR)/.%,$(patsubst -L.%,-L$(TOPDIR)/.%,$(filter -L% -I%,@CPPFLAGS@))) $(filter-out -L% -I%,@CPPFLAGS@)
+CFLAGS = $(patsubst -I.%,-I$(TOPDIR)/.%,$(patsubst -L.%,-L$(TOPDIR)/.%,$(filter -L% -I%,@CFLAGS@))) $(filter-out -L% -I%,@CFLAGS@ -fPIC -shared)
+CPPFLAGS = $(patsubst -I.%,-I$(TOPDIR)/.%,$(patsubst -L.%,-L$(TOPDIR)/.%,$(filter -L% -I%,@CPPFLAGS@))) $(filter-out -L% -I%,@CPPFLAGS@)
 
 OBJDIR= .obj
 VERSION = $(shell cut -f1 ./VERSION | tr -d '\n')

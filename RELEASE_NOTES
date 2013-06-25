@@ -1,11 +1,11 @@
-libnetconf 0.5.0
+libnetconf 0.6.0
 
 This release includes the following changes:
 
-TODO:
- * Transaction API
- * Support for augmented configuration data models
- * ncds_apply_rpc2all()
+TODO
+ * custom data stores
+ * integration of nc_session_(close/free) to simplify work with sessions
+ * detection and correction of session monitoring inconsistency
 
 For API/ABI compatibility to previous versions, see reports in
 'doc/compat_reports/' directory.

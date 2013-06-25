@@ -254,7 +254,7 @@ static char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 					return (NULL);
 				}
 				xmlFree(BAD_CAST str);
-				if (strlen(cap) > 0) {
+				if (strnonempty(cap)) {
 					capabilities[c++] = cap;
 				}
 			}
@@ -742,6 +742,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		free(retval);
 		return NULL;
 	}
+	retval->is_server = 1;
 	retval->libssh2_socket = -1;
 	retval->fd_input = STDIN_FILENO;
 	retval->fd_output = STDOUT_FILENO;
@@ -832,7 +833,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 				strcat(list, ",explicit");
 			}
 
-			if (strlen(list) > 0) {
+			if (strnonempty(list)) {
 				list[0] = '='; /* replace initial comma */
 				r = asprintf(&wdc, "urn:ietf:params:netconf:capability:with-defaults:1.0%s&amp;also-supported%s", wdc_aux, list);
 			} else {
@@ -976,7 +977,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	int r;
 
 	/* set default values */
-	if (host == NULL || strlen(host) == 0) {
+	if (host == NULL || strisempty(host)) {
 		host = "localhost";
 	}
 	if (port == 0) {
@@ -1033,6 +1034,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		free(retval);
 		return NULL;
 	}
+	retval->is_server = 0;
 	retval->libssh2_socket = -1;
 	retval->ssh_session = NULL;
 	retval->hostname = strdup(host);
@@ -1273,7 +1275,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	/* get current user to locate SSH known_hosts file */
 	pw = getpwuid(getuid());
 	if (pw == NULL) {
-		if (username == NULL || strlen(username) == 0) {
+		if (username == NULL || strisempty(username)) {
 			/* unable to get correct username (errno from getpwuid) */
 			ERROR("Unable to set a username for the SSH connection (%s).", strerror(errno));
 			return (NULL);
@@ -1638,6 +1640,7 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 		return NULL;
 	}
 
+	retval->is_server = 0;
 	retval->libssh2_socket = session->libssh2_socket;
 	retval->ssh_session = session->ssh_session; /* share the SSH session */
 	retval->fd_input = -1;

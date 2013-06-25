@@ -42,6 +42,10 @@
 
 #include "netconf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Available SSH authentication mechanisms.
  * @ingroup session
@@ -129,5 +133,9 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
  * @return Structure describing the accepted NETCONF session or NULL in case of an error.
  */
 struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SSH_H_ */

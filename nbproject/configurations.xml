@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="89">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="libnetconf">
+      <df name="examples">
+        <df name="client">
+          <in>commands.c</in>
+          <in>commands.h</in>
+          <in>configuration.c</in>
+          <in>configuration.h</in>
+          <in>main.c</in>
+          <in>mreadline.c</in>
+          <in>mreadline.h</in>
+        </df>
+        <df name="server">
+          <df name="transapi">
+            <in>toaster.c</in>
+          </df>
+          <in>main.c</in>
+        </df>
+        <df name="tools">
+          <in>read_events.c</in>
+        </df>
+      </df>
+      <df name="headers">
+        <in>libnetconf_ssh.h</in>
+      </df>
+      <df name="models">
+        <in>ietf-inet-types.xxd</in>
+        <in>ietf-netconf-acm.xxd</in>
+        <in>ietf-netconf-monitoring.xxd</in>
+        <in>ietf-netconf-notifications.xxd</in>
+        <in>ietf-netconf-with-defaults.xxd</in>
+        <in>ietf-netconf.xxd</in>
+        <in>ietf-yang-types.xxd</in>
+        <in>nc-notifications.xxd</in>
+        <in>notifications.xxd</in>
+      </df>
+      <df name="src">
+        <df name="datastore">
+          <df name="empty">
+            <in>datastore_empty.c</in>
+            <in>datastore_empty.h</in>
+          </df>
+          <df name="file">
+            <in>datastore_file.c</in>
+            <in>datastore_file.h</in>
+          </df>
+          <in>datastore_internal.h</in>
+          <in>edit_config.c</in>
+          <in>edit_config.h</in>
+        </df>
+        <df name="transapi">
+          <in>transapi.c</in>
+          <in>transapi.h</in>
+          <in>transapi_internal.h</in>
+          <in>transapi_xml.h</in>
+          <in>xmldiff.c</in>
+          <in>xmldiff.h</in>
+          <in>yinparser.c</in>
+          <in>yinparser.h</in>
+        </df>
+        <in>callbacks.c</in>
+        <in>callbacks.h</in>
+        <in>callbacks_ssh.h</in>
+        <in>compat.c</in>
+        <in>datastore.c</in>
+        <in>datastore.h</in>
+        <in>error.c</in>
+        <in>error.h</in>
+        <in>internal.c</in>
+        <in>libnetconf.h</in>
+        <in>libnetconf_ssh.h</in>
+        <in>libnetconf_xml.h</in>
+        <in>messages.c</in>
+        <in>messages.h</in>
+        <in>messages_internal.h</in>
+        <in>messages_xml.h</in>
+        <in>nacm.c</in>
+        <in>nacm.h</in>
+        <in>netconf.h</in>
+        <in>netconf_internal.h</in>
+        <in>notifications.c</in>
+        <in>notifications.h</in>
+        <in>notifications_xml.h</in>
+        <in>session.c</in>
+        <in>session.h</in>
+        <in>ssh.c</in>
+        <in>ssh.h</in>
+        <in>url.c</in>
+        <in>url.h</in>
+        <in>url_internal.h</in>
+        <in>with_defaults.c</in>
+        <in>with_defaults.h</in>
+      </df>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>configure</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath></executablePath>
+        </makeTool>
+      </makefileType>
+      <item path="examples/client/commands.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="examples/client/commands.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="examples/client/configuration.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="examples/client/configuration.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="examples/client/main.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="examples/client/mreadline.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="examples/client/mreadline.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="examples/server/main.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="examples/server/transapi/toaster.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="examples/tools/read_events.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <folder path="libnetconf/examples/server/transapi">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
+      <folder path="libnetconf/examples/tools">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
+      <folder path="libnetconf/src/datastore">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
+      <folder path="libnetconf/src/transapi">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
+      <item path="headers/libnetconf_ssh.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="models/ietf-inet-types.xxd" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="models/ietf-netconf-acm.xxd" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="models/ietf-netconf-monitoring.xxd" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="models/ietf-netconf-notifications.xxd"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="models/ietf-netconf-with-defaults.xxd"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="models/ietf-netconf.xxd" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="models/ietf-yang-types.xxd" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="models/nc-notifications.xxd" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="models/notifications.xxd" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/callbacks.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/callbacks.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/callbacks_ssh.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/compat.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/datastore.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/datastore.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/datastore/datastore_internal.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/datastore/edit_config.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/datastore/edit_config.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/datastore/empty/datastore_empty.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/datastore/empty/datastore_empty.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/datastore/file/datastore_file.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/datastore/file/datastore_file.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/error.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/error.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/internal.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/libnetconf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libnetconf_ssh.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libnetconf_xml.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/messages.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/messages.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/messages_internal.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/messages_xml.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/nacm.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/nacm.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/netconf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/netconf_internal.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/notifications.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/lib/dbus-1.0/include</pElem>
+            <pElem>/usr/include/dbus-1.0</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/notifications.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/notifications_xml.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/session.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/session.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ssh.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/ssh.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/transapi/transapi.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/transapi/transapi.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/transapi/transapi_internal.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/transapi/transapi_xml.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/transapi/xmldiff.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/transapi/xmldiff.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/transapi/yinparser.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/transapi/yinparser.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/url.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/url.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/url_internal.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/with_defaults.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>/usr/include/glib-2.0</pElem>
+            <pElem>/usr/lib/glib-2.0/include</pElem>
+            <pElem>/usr/include/qt4</pElem>
+            <pElem>/usr/include/qt4/QtCore</pElem>
+            <pElem>/usr/include/qt4/QtDBus</pElem>
+            <pElem>/usr/include/qt4/QtXml</pElem>
+            <pElem>/usr/include/libxml2</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>QT_SHARED</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="src/with_defaults.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

@@ -44,6 +44,10 @@
 
 #include "netconf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NCNTF_STREAM_DEFAULT "NETCONF"
 #define NCNTF_STREAM_BASE NCNTF_STREAM_DEFAULT
 
@@ -107,6 +111,20 @@ int ncntf_stream_allow_events(const char* stream, const char* event);
  * list
  */
 char** ncntf_stream_list(void);
+
+/**
+ * @ingroup notifications
+ * @brief Get some more details about the specified NETCONF event notifications
+ * stream.
+ *
+ * @param[in] stream Name of the stream.
+ * @param[out] desc Pointer to a description string is returned.
+ * @param[out] start Pointer to a time string of the stream start time is
+ * returned.
+ * @return 0 on success, non-zero on error (desc and start are not returned in
+ * such a case).
+ */
+int ncntf_stream_info(const char* stream, char** desc, char** start);
 
 /**
  * @ingroup notifications
@@ -281,5 +299,9 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
  * @return number of received notifications, -1 on error.
  */
 long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_ntf)(time_t eventtime, const char* content));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NOTIFICATIONS_H_ */

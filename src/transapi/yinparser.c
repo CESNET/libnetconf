@@ -6,9 +6,31 @@
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 
+#include "../datastore.h"
 #include "yinparser.h"
 
-struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, int *children_count)
+int get_node_namespace(const char * ns_mapping[], xmlNodePtr node, char ** prefix, char ** uri)
+{
+	int i;
+
+	if (((*uri) = (char*)xmlGetNsProp(node, BAD_CAST "ns", BAD_CAST "libnetconf")) == NULL) {
+		return(EXIT_FAILURE);
+	} else {
+		for (i=0; ns_mapping[2*i] != NULL; i++) {
+			if (strcmp(ns_mapping[2*i+1], (*uri)) == 0) {
+				(*prefix) = strdup(ns_mapping[2*i]);
+				break;
+			}
+		}
+		if ((*prefix) == NULL) {
+			return(EXIT_FAILURE);
+		}
+	}
+
+	return(EXIT_SUCCESS);
+}
+
+struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char * ns_mapping[], struct model_tree * parent, int *children_count)
 {
 	struct model_tree * children, * choice;
 	xmlNodePtr int_tmp, list_tmp, model_tmp = model_node->children;
@@ -39,12 +61,18 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, int *childr
 			model_tmp = model_tmp->next;
 			continue;
 		}
+		/* check if node is in other namespace */
+		if (get_node_namespace(ns_mapping, model_tmp, &children[count-1].ns_prefix, &children[count-1].ns_uri)) {
+			/* or inherit from parent */
+			children[count-1].ns_prefix = strdup(parent->ns_prefix);
+			children[count-1].ns_uri = strdup(parent->ns_uri);
+		}
 		children[count-1].name = (char*)xmlGetProp (model_tmp, BAD_CAST "name");
 		children[count-1].keys_count = 0;
 		children[count-1].keys = NULL;
 		if (xmlStrEqual(model_tmp->name, BAD_CAST "container")) {
 			children[count-1].type = YIN_TYPE_CONTAINER;
-			children[count-1].children = yinmodel_parse_recursive (model_tmp, &children[count-1].children_count);
+			children[count-1].children = yinmodel_parse_recursive (model_tmp, ns_mapping, &children[count-1], &children[count-1].children_count);
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "leaf")) {
 			children[count-1].type = YIN_TYPE_LEAF;
 			children[count-1].children = NULL;
@@ -55,7 +83,7 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, int *childr
 			children[count-1].children_count = 0;
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "list")) {
 			children[count-1].type = YIN_TYPE_LIST;
-			children[count-1].children = yinmodel_parse_recursive (model_tmp, &children[count-1].children_count);
+			children[count-1].children = yinmodel_parse_recursive (model_tmp, ns_mapping, &children[count-1], &children[count-1].children_count);
 			list_tmp = model_tmp->children;
 			while (list_tmp) {
 				if (xmlStrEqual(list_tmp->name, BAD_CAST "key")) {
@@ -77,13 +105,13 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, int *childr
 			}
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "choice")) {
 			children[count-1].type = YIN_TYPE_CHOICE;
-			children[count-1].children = yinmodel_parse_recursive (model_tmp, &children[count-1].children_count);
+			children[count-1].children = yinmodel_parse_recursive (model_tmp, ns_mapping, &children[count-1], &children[count-1].children_count);
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "anyxml")) {
 			children[count-1].type = YIN_TYPE_ANYXML;
 			children[count-1].children = NULL;
 			children[count-1].children_count = 0;
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "case")) {
-			choice = yinmodel_parse_recursive (model_tmp->children, &case_count);
+			choice = yinmodel_parse_recursive (model_tmp->children, ns_mapping, &children[count-1], &case_count);
 			children = realloc (children, sizeof (struct model_tree) * (case_count+count));
 			memcpy (&children[count-1], choice, case_count*sizeof(struct model_tree));
 			count += case_count;
@@ -93,7 +121,7 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, int *childr
 			/* TODO: maybe groupings and submodules should be accessible somewhere :-D */
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "augment")) {
 			children[count-1].type = YIN_TYPE_AUGMENT;
-			children[count-1].children = yinmodel_parse_recursive (model_tmp, &children[count-1].children_count);
+			children[count-1].children = yinmodel_parse_recursive (model_tmp, ns_mapping, &children[count-1], &children[count-1].children_count);
 		} else {
 			free (children[count-1].name);
 			count--;
@@ -117,6 +145,9 @@ void yinmodel_free_recursive (struct model_tree * yin)
 		return;
 	}
 
+	free(yin->ns_prefix);
+	free(yin->ns_uri);
+
 	for (i=0; i<yin->keys_count; i++) {
 		free(yin->keys[i]);
 	}
@@ -138,11 +169,11 @@ void yinmodel_free (struct model_tree * yin)
 	}
 }
 
-struct model_tree * yinmodel_parse (xmlDocPtr model_doc)
+struct model_tree * yinmodel_parse (xmlDocPtr model_doc, const char * ns_mapping[])
 {
-	xmlNodePtr model_root, model_top, model_tmp, import_node, grouping_node;
+	xmlNodePtr model_root, model_top = NULL, model_tmp;
 	struct model_tree * yin, * yin_act;
-	int config;
+	int config, i;
 	char * config_text;
 
 	if ((model_root = xmlDocGetRootElement (model_doc)) == NULL) {
@@ -159,35 +190,27 @@ struct model_tree * yinmodel_parse (xmlDocPtr model_doc)
 	yin->type = YIN_TYPE_MODULE;
 	yin->name = (char*)xmlGetProp (model_root, BAD_CAST "name");
 
-	/* process all imported models */
-	import_node = model_root->children;
-	while (import_node) {
-		if (xmlStrEqual(import_node->name, BAD_CAST "import")) {
-			/* create child import with prefix found here */
-			/* find yin file, load XML and call yinmodel_parse() */
-			/* save as import child */
-		}
-		import_node = import_node->next;
-	}
 
-	/* process all defined groupings */
-	grouping_node = model_root->children;
-	while (grouping_node) {
-		if (xmlStrEqual(grouping_node->name, BAD_CAST "grouping")) {
-			/* process simmilary to container */
-			/* dont forget to add processing of "uses" to yinmodel_parse_recursive() */
-			/* then save to module childrens */
+	/* find namespace, prefix and root of configuration data for this module */
+	model_tmp = model_root->children;
+	while (model_tmp) {
+		if (xmlStrEqual(model_tmp->name, BAD_CAST "namespace")) {
+			yin->ns_uri = (char*)xmlGetProp(model_tmp, BAD_CAST "uri");
+			for (i=0; ns_mapping[2*i] != NULL; i++) {
+				if (strcmp(ns_mapping[2*i+1], yin->ns_uri) == 0) {
+					yin->ns_prefix = strdup(ns_mapping[2*i]);
+					break;
+				}
+			}
+			if (yin->ns_prefix == NULL) {
+				yinmodel_free(yin);
+				return(NULL);
+			}
+		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "container")) {
+			model_top = model_tmp;
 		}
-		grouping_node = grouping_node->next;
-	}
 
-	/* find top level container */
-	model_top = model_root->children;
-	while (model_top) {
-		if (xmlStrEqual(model_top->name, BAD_CAST "container")) {
-			break;
-		}
-		model_top = model_top->next;
+		model_tmp = model_tmp->next;
 	}
 
 	/* model contains no data (probably only typedefs, rpcs, notofications, ...)*/
@@ -219,9 +242,12 @@ struct model_tree * yinmodel_parse (xmlDocPtr model_doc)
 		yin->children[yin->children_count-1].keys = NULL;
 		yin->children[yin->children_count-1].children_count = 0;
 		yin->children[yin->children_count-1].children = NULL;
-
+		if (get_node_namespace(ns_mapping, model_top, &yin->children[yin->children_count-1].ns_prefix, &yin->children[yin->children_count-1].ns_uri)) {
+			yin->children[yin->children_count-1].ns_prefix = strdup(yin->ns_prefix);
+			yin->children[yin->children_count-1].ns_uri = strdup(yin->ns_uri);
+		}
 		yin_act = &yin->children[yin->children_count-1];
-		yin_act->children = yinmodel_parse_recursive (model_top, &yin_act->children_count);
+		yin_act->children = yinmodel_parse_recursive (model_top, ns_mapping, yin_act, &yin_act->children_count);
 	}
 
 	return yin;

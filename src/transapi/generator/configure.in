@@ -1,41 +1,26 @@
 AC_PREREQ([2.63])
-AC_INIT([$$PROJECTNAME$$],[1.0])
+AC_INIT([$$PROJECTNAME$$], [1.0], [BUG-REPORT-ADDRESS])
 AC_CONFIG_SRCDIR([$$PROJECTNAME$$.c])
 
 PROJECTNAME=$$PROJECTNAME$$
 AC_SUBST(PROJECTNAME)
 
-#Check for programs
+# --enable-debug option
+AC_ARG_ENABLE([debug],
+	AC_HELP_STRING([--enable-debug],[Compile with debug options]),
+	CFLAGS="$CFLAGS -g -DDEBUG",
+	CFLAGS="$CFLAGS -O3"
+)
+$$LIBXML2_WITH$$
+# Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
 
-#Check for rpmbuild
-AC_CHECK_PROG(RPMBUILD, rpmbuild, rpmbuild)
-
-RELEASE=1
-AC_SUBST(RELEASE)
-
-# --enable-debug option
-CFLAGS=""
-AC_ARG_ENABLE([debug], AC_HELP_STRING([--enable-debug],[Compile with debug options]),	CFLAGS="$CFLAGS -g -DDEBUG",	CFLAGS="$CFLAGS -O3")
-
-# Created shared library is intended for use with libnetconf
-REQS="$REQS, libnetconf"
-
 # Checks for libraries.
-AC_CHECK_LIB([xml2], [main], [LIBS="`xml2-config --libs` $LIBS" CFLAGS="`xml2-config --cflags` $CFLAGS"], AC_MSG_ERROR([Libxml2 not found ])) 
-REQS="$REQS, libxml2"
-BUILDREQS="$BUILDREQS, libxml2-devel"
-
-# Here you can add checks for other libraries your code uses
-#AC_SEARCH_LIBS([ncds_apply_rpc],[netconf], ,AC_MSG_ERROR([libnetconf not found!]))
-#REQS="$REQS, libnetconf"
-#BUILDREQS="$BUILDREQS, libnetconf-devel"
-
+AC_SEARCH_LIBS([ncds_apply_rpc], [netconf], ,AC_MSG_ERROR([libnetconf not found!]))
+$$LIBXML2_CHECK$$
 # Checks for header files.
-AC_CHECK_HEADERS([libxml/xmlversion.h], , AC_MSG_ERROR([libxml headers missing. Please install libxml-devel package]), [AC_INCLUDES_DEFAULT])
-# Here you can add some more header files
-#AC_CHECK_HEADER([libnetconf.h], ,AC_MSG_ERROR([libnetconf.h not found!]))
+AC_CHECK_HEADERS([stdlib.h libnetconf.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_TYPE_UINT32_T
@@ -43,15 +28,5 @@ AC_CHECK_HEADERS([libxml/xmlversion.h], , AC_MSG_ERROR([libxml headers missing. 
 # Checks for library functions.
 #AC_CHECK_FUNCS([strdup])
 
-AC_SUBST(RPMBUILD)
-if test -z "$RPMBUILD"; then
-	AC_MSG_WARN([Due to missing rpmbuild you will not able to generate RPM package.])
-fi
-
-AC_SUBST(REQS)
-AC_SUBST(BUILDREQS)
-
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([$$PROJECTNAME$$.spec])
-
 AC_OUTPUT

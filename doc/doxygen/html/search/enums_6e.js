@@ -1,11 +1,11 @@
 var searchData=
 [
-  ['nc_5fcap_5fattr',['NC_CAP_ATTR',['../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914d',1,'netconf.h']]],
+  ['nc_5fcap_5fattr',['NC_CAP_ATTR',['../db/de9/group__rpc.html#ga06a2c29efc74abd4d0c88e7abb5e914d',1,'netconf.h']]],
   ['nc_5fdatastore',['NC_DATASTORE',['../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73',1,'netconf.h']]],
-  ['nc_5fedit_5fdefop_5ftype',['NC_EDIT_DEFOP_TYPE',['../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454',1,'netconf.h']]],
-  ['nc_5fedit_5ferropt_5ftype',['NC_EDIT_ERROPT_TYPE',['../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32',1,'netconf.h']]],
-  ['nc_5fedit_5fop_5ftype',['NC_EDIT_OP_TYPE',['../d3/d7a/netconf_8h.html#aff232fd4280e385c8e45fcca033e58fd',1,'netconf.h']]],
-  ['nc_5fedit_5ftestopt_5ftype',['NC_EDIT_TESTOPT_TYPE',['../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579',1,'netconf.h']]],
+  ['nc_5fedit_5fdefop_5ftype',['NC_EDIT_DEFOP_TYPE',['../db/de9/group__rpc.html#ga5852fd110198481afb37cc8dcf0bf454',1,'netconf.h']]],
+  ['nc_5fedit_5ferropt_5ftype',['NC_EDIT_ERROPT_TYPE',['../db/de9/group__rpc.html#ga8eb32ba579043f2750fa8558d9284b32',1,'netconf.h']]],
+  ['nc_5fedit_5fop_5ftype',['NC_EDIT_OP_TYPE',['../db/de9/group__rpc.html#gaff232fd4280e385c8e45fcca033e58fd',1,'netconf.h']]],
+  ['nc_5fedit_5ftestopt_5ftype',['NC_EDIT_TESTOPT_TYPE',['../db/de9/group__rpc.html#gaca86efe74fc9a26cc30e33a8e9772579',1,'netconf.h']]],
   ['nc_5ferr',['NC_ERR',['../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2',1,'error.h']]],
   ['nc_5ferr_5fparam',['NC_ERR_PARAM',['../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73d',1,'netconf.h']]],
   ['nc_5ffilter_5ftype',['NC_FILTER_TYPE',['../db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706',1,'netconf.h']]],
@@ -21,5 +21,5 @@ var searchData=
   ['ncds_5ftype',['NCDS_TYPE',['../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f',1,'datastore.h']]],
   ['ncntf_5fevent',['NCNTF_EVENT',['../da/d54/group__notifications.html#gadcf8c532762d57f7d9a5491e6abb9977',1,'notifications.h']]],
   ['ncntf_5fevent_5fby',['NCNTF_EVENT_BY',['../da/d54/group__notifications.html#ga1e9d948b3807d679482c737da720477d',1,'notifications.h']]],
-  ['ncwd_5fmode',['NCWD_MODE',['../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81',1,'netconf.h']]]
+  ['ncwd_5fmode',['NCWD_MODE',['../d1/df7/group__withdefaults.html#ga3d13afb72bb0c0098f47e8b612cdeb81',1,'netconf.h']]]
 ];

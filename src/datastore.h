@@ -43,6 +43,10 @@
 #include "netconf.h"
 #include "error.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @ingroup store
  * @brief Datastore implementation types provided by libnetconf
@@ -73,6 +77,15 @@ typedef int ncds_id;
  * @brief Datastore structure
  */
 struct ncds_ds;
+
+/**
+ * @ingroup store
+ * @def NCDS_RPC_NOT_APPLICABLE
+ * @brief Return value of ncds_apply_rpc() when the requested operation is
+ * not applicable to the specified datastore.
+ */
+extern char error_area;
+#define NCDS_RPC_NOT_APPLICABLE ((void*)(&error_area))
 
 /**
  * @ingroup store
@@ -141,6 +154,15 @@ int ncds_file_set_path (struct ncds_ds* datastore, const char* path);
 ncds_id ncds_init(struct ncds_ds* datastore);
 
 /**
+ * @brief Initialize transAPI module(s) (if present) and copy startup configuration to running
+ *
+ * @param id Pointer to ncds_id of device to initialize, if NULL all found transapi-capable devices will be initialized
+ *
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int ncds_device_init (ncds_id * id);
+
+/**
  * @ingroup store
  * @brief Close the specified datastore and free all the resources.
  *
@@ -162,13 +184,6 @@ void ncds_free2(ncds_id datastore_id);
 
 /**
  * @ingroup store
- * @brief Return value of ncds_apply_rpc() when the requested operation is
- * not applicable to the specified datastore.
- */
-#define NCDS_RPC_NOT_APPLICABLE ((void *) -1)
-
-/**
- * @ingroup store
  * @brief Perform the requested RPC operation on the datastore.
  * @param[in] id Datastore ID. Use #NCDS_INTERNAL_ID (0) to apply request
  * (typically \<get\>) onto the libnetconf's internal datastore.
@@ -180,7 +195,7 @@ void ncds_free2(ncds_id datastore_id);
  * \<rpc-error\> according to the type and the result of the requested
  * operation. When the requested operation is not applicable to the specified
  * datastore (e.g. the namespace does not match), NCDS_RPC_NOT_APPLICABLE
- * ((void *) -1)) is returned.
+ * is returned.
  */
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc);
 
@@ -203,7 +218,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
  * \<rpc-error\> according to the type and the result of the requested
  * operation. When the requested operation is not applicable to any datastore
  * (e.g. the namespace does not match no of the controlled datstores),
- * NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned.
+ * NCDS_RPC_NOT_APPLICABLE is returned.
  *
  */
 nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[]);
@@ -321,13 +336,28 @@ int ncds_features_enableall(const char* module);
 int ncds_features_disableall(const char* module);
 
 /**
- *
+ * @ingroup store
+ * @brief Check if the feature of the specified module is currently enabled or
+ * disabled.
  * @return
  * - negative value in case of error
  * - 0 if feature is disabled
  * - 1 if feature is enabled
  */
 int ncds_feature_isenabled(const char* module, const char* feature);
+
+/**
+ * @ingroup store
+ * @brief Consolidate all internal structures of created data stores and all
+ * data models. This function especially solves all YANG's `uses` and `augment`
+ * statements.
+ *
+ * @return 0 on success, non-zero on error.
+ */
 int ncds_consolidate(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* DATASTORE_H_ */

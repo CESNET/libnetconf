@@ -60,9 +60,13 @@
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 /* defined in datastore.c */
-int ncds_sysinit(void);
+int ncds_sysinit(int flags);
 
 int verbose_level = 0;
+
+/* this instance is running as first after reboot or system-wide nc_close */
+/* used in nc_device_init to decide if erase running or not */
+int first_after_close = 0;
 
 void nc_verbosity(NC_VERB_LEVEL level)
 {
@@ -85,9 +89,8 @@ int nc_init_flags = 0;
 int nc_init(int flags)
 {
 	int retval = 0, r;
-	int init_flags_aux;
 	key_t key = -4;
-	int first = 1;
+	first_after_close = 1;
 	char* t;
 	pthread_rwlockattr_t rwlockattr;
 
@@ -101,7 +104,7 @@ int nc_init(int flags)
 	if (shmid == -1 && errno == EEXIST) {
 		shmid = shmget(key, sizeof(struct nc_shared_info), FILE_PERM);
 		retval = 1;
-		first = 0;
+		first_after_close = 0;
 	}
 	if (shmid == -1) {
 		ERROR("Accessing shared memory failed (%s).", strerror(errno));
@@ -118,7 +121,7 @@ int nc_init(int flags)
 	}
 
 	/* todo use locks */
-	if (first) {
+	if (first_after_close) {
 		/* remove the global session information file if left over a previous libnetconf instance */
 		if ((unlink(SESSIONSFILE_PATH) == -1) && (errno != ENOENT)) {
 			ERROR("Unable to remove the session information file (%s)", strerror(errno));
@@ -147,39 +150,68 @@ int nc_init(int flags)
 	nc_info->stats.participants++;
 	pthread_rwlock_unlock(&(nc_info->lock));
 
-	/* set temporarily nc_init_flags for use in ncds_sysinit() */
-	init_flags_aux = nc_init_flags;
-	nc_init_flags = flags;
+	/*
+	 * check used flags according to a compile time settings
+	 */
+#ifndef DISABLE_NOTIFICATIONS
+	if (flags & NC_INIT_NOTIF) {
+		nc_init_flags |= NC_INIT_NOTIF;
+	}
+#endif /* DISABLE_NOTIFICATIONS */
+	if (flags & NC_INIT_NACM) {
+		nc_init_flags |= NC_INIT_NACM;
+	}
+	if (flags & NC_INIT_MONITORING) {
+		nc_init_flags |= NC_INIT_MONITORING;
+	}
+	if (flags & NC_INIT_WD) {
+		nc_init_flags |= NC_INIT_WD;
+	}
 
-	/* init internal datastores */
-	if (ncds_sysinit() != EXIT_SUCCESS) {
+	/*
+	 * init internal datastores - they have to be initiated before they are
+	 * used by their subsystems initiated below
+	 */
+	if (ncds_sysinit(nc_init_flags) != EXIT_SUCCESS) {
 		shmdt(nc_info);
-		nc_init_flags = init_flags_aux;
+		nc_init_flags = 0;
 		return (-1);
 	}
-	nc_init_flags = init_flags_aux;
 
 	/* init NETCONF sessions statistics */
-	nc_session_monitoring_init();
+	if (nc_init_flags & NC_INIT_MONITORING) {
+		nc_session_monitoring_init();
+	}
+
+	/* init NETCONF with-defaults capability */
+	if (nc_init_flags & NC_INIT_WD) {
+		ncdflt_set_basic_mode(NCWD_MODE_EXPLICIT);
+		ncdflt_set_supported(NCWD_MODE_ALL
+		    | NCWD_MODE_ALL_TAGGED
+		    | NCWD_MODE_TRIM
+		    | NCWD_MODE_EXPLICIT);
+	}
 
 #ifndef DISABLE_NOTIFICATIONS
 	/* init Notification subsystem */
-	if (flags & NC_INIT_NOTIF) {
+	if (nc_init_flags & NC_INIT_NOTIF) {
 		if (ncntf_init() != EXIT_SUCCESS) {
 			shmdt(nc_info);
+			/* remove flags of uninitiated subsystems */
+			nc_init_flags &= !(NC_INIT_NOTIF & NC_INIT_NACM);
 			return (-1);
 		}
-		nc_init_flags |= NC_INIT_NOTIF;
 	}
 #endif
 
 	/* init Access Control subsystem */
-	if (flags & NC_INIT_NACM) {
+	if (nc_init_flags & NC_INIT_NACM) {
 		if (nacm_init() != EXIT_SUCCESS) {
 			shmdt(nc_info);
+			/* remove flags of uninitiated subsystems */
+			nc_init_flags &= !NC_INIT_NACM;
 			return (-1);
 		}
-		nc_init_flags |= NC_INIT_NACM;
 	}
 
 	nc_init_flags |= NC_INIT_DONE;
@@ -267,7 +299,7 @@ char** nc_get_grouplist(const char* username)
 {
 	struct passwd* p;
 	struct group* g;
-	int i, j;
+	int i, j, k;
 	gid_t *glist;
 	char** retval = NULL;
 
@@ -287,11 +319,13 @@ char** nc_get_grouplist(const char* username)
 			}
 
 			if (getgrouplist(username, p->pw_gid, glist, &i) != -1) {
-				for (j = 0; j < i; j++) {
+				for (j = 0, k = 0; j < i; j++) {
 					g = getgrgid(glist[j]);
-					retval[j] = strdup(g->gr_name);
+					if (g && g->gr_name) {
+						retval[k++] = strdup(g->gr_name);
+					}
 				}
-				retval[j] = NULL; /* list termination */
+				retval[k] = NULL; /* list termination */
 			} else {
 				WARN("%s: unable to get list of groups (getgrouplist() failed)", __func__);
 			}

@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Fri Jun 21 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -22,7 +22,7 @@ NETCONF datastore handling function prototypes and structures\&.
 .br
 .RI "\fIDatastore ID to access libnetconf's internal datastores such as notifications, monitoring, etc\&. \fP"
 .ti -1c
-.RI "#define \fBNCDS_RPC_NOT_APPLICABLE\fP   ((void *) -1)"
+.RI "#define \fBNCDS_RPC_NOT_APPLICABLE\fP   ((void*)(&\fBerror_area\fP))"
 .br
 .RI "\fIReturn value of \fBncds_apply_rpc()\fP when the requested operation is not applicable to the specified datastore\&. \fP"
 .in -1c
@@ -62,6 +62,10 @@ NETCONF datastore handling function prototypes and structures\&.
 .br
 .RI "\fIActivate datastore structure for use\&. \fP"
 .ti -1c
+.RI "int \fBncds_device_init\fP (\fBncds_id\fP *id)"
+.br
+.RI "\fIInitialize transAPI module(s) (if present) and copy startup configuration to running\&. \fP"
+.ti -1c
 .RI "void \fBncds_free\fP (struct ncds_ds *datastore)"
 .br
 .RI "\fIClose the specified datastore and free all the resources\&. \fP"
@@ -74,7 +78,7 @@ NETCONF datastore handling function prototypes and structures\&.
 .br
 .RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (const struct nc_session *session, const \fBnc_rpc\fP *rpc, int ids_copy, \fBncds_id\fP *ids[])"
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (const struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
 .br
 .RI "\fIPerform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fP"
 .ti -1c
@@ -120,8 +124,17 @@ NETCONF datastore handling function prototypes and structures\&.
 .ti -1c
 .RI "int \fBncds_feature_isenabled\fP (const char *module, const char *feature)"
 .br
+.RI "\fICheck if the feature of the specified module is currently enabled or disabled\&. \fP"
 .ti -1c
 .RI "int \fBncds_consolidate\fP (void)"
+.br
+.RI "\fIConsolidate all internal structures of created data stores and all data models\&. This function especially solves all YANG's \fCuses\fP and \fCaugment\fP statements\&. \fP"
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "char \fBerror_area\fP"
 .br
 .in -1c
 .SH "Detailed Description"
@@ -147,20 +160,23 @@ ALTERNATIVELY, provided that this notice is retained in full, this product may b
 This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
 .SH "Function Documentation"
 .PP 
-.SS "int ncds_feature_isenabled (const char *module, const char *feature)"
+.SS "int ncds_device_init (\fBncds_id\fP *id)"
+
+.PP
+Initialize transAPI module(s) (if present) and copy startup configuration to running\&. \fBParameters:\fP
+.RS 4
+\fIid\fP Pointer to ncds_id of device to initialize, if NULL all found transapi-capable devices will be initialized
+.RE
+.PP
 \fBReturns:\fP
 .RS 4
-.IP "\(bu" 2
-negative value in case of error
-.IP "\(bu" 2
-0 if feature is disabled
-.IP "\(bu" 2
-1 if feature is enabled 
-.PP
+EXIT_SUCCESS or EXIT_FAILURE 
 .RE
 .PP
 
-.SS "int ncds_consolidate (void)"
+.SH "Variable Documentation"
+.PP 
+.SS "char error_area"
 
 .SH "Author"
 .PP 

@@ -255,8 +255,6 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 {
 	struct srv_config config;
 	struct ncds_ds* datastore;
-	struct nc_session* dummy_session;
-	struct nc_cpblts *def_cpblts;
 	int init;
 
 	/* set verbosity and function to print libnetconf's messages */
@@ -266,7 +264,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 	openlog("ncserver", LOG_PID, LOG_DAEMON);
 	nc_callback_print(clb_print);
 
-	init = nc_init(NC_INIT_NOTIF | NC_INIT_NACM);
+	init = nc_init(NC_INIT_ALL);
 	if (init == -1) {
 		clb_print(NC_VERB_ERROR, "libnetconf initiation failed.");
 		return (EXIT_FAILURE);
@@ -324,44 +322,14 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 		return (EXIT_FAILURE);
 	}
 
-	/*
-	 * Device initiation
-	 * - in real, check a concurrent access to the controlled device
-	 * - use a dummy NETCONF session of the server
+	/* Initialize loaded devices
+	 * if using tranaspi full initialize will be performed
+	 * otherwise only copyconfig (startup->running)
 	 */
-	if (init == 0) {
-		/* create "dummy" session for internal server use
-		 * this session supports all default capabilities
-		 */
-		def_cpblts = nc_session_get_cpblts_default ();
-		dummy_session = nc_session_dummy ("dummy", "netconf-server", "localhost", def_cpblts);
-		nc_cpblts_free (def_cpblts);
-		nc_rpc * rpc;
-		nc_reply * reply;
-
-		/* Create RPC message to copy startup datastore to running. */
-		if ((rpc = nc_rpc_copyconfig (NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING)) == NULL ) {
-			nc_session_free (dummy_session);
-			clb_print (NC_VERB_ERROR, "Creating copy-config failed.");
-			return (EXIT_FAILURE);
-		}
-		/* Apply RPC to all datastores.
-		 * If your devices use transapi changes will be applied automatically.
-		 * Otherwise you must apply it.
-		 */
-		reply = ncds_apply_rpc2all(dummy_session, rpc, NULL);
-		nc_rpc_free (rpc);
-		/* Check returned reply */
-		if (reply == NULL || nc_reply_get_type (reply) != NC_REPLY_OK) {
-			nc_reply_free (reply);
-			nc_session_free (dummy_session);
-			clb_print (NC_VERB_ERROR, "Applying copy-config (startup->running) failed.");
-			return (EXIT_FAILURE);
-		}
-		/* clean */
-		nc_reply_free (reply);
-		nc_session_free (dummy_session);
-		/* device initiation done */
+	if (ncds_device_init(NULL)) {
+		clb_print(NC_VERB_ERROR, "Setting up devices failed.");
+		nc_close(0);
+		return (EXIT_FAILURE);
 	}
 
 	/* create the NETCONF session -- accept incoming connection */

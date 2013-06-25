@@ -1197,7 +1197,7 @@ int cmd_killsession (char *arg)
 		}
 		id[0] = 0;
 
-		while (strlen(id) == 0) {
+		while (id[0] == '\0') { /* string is empty */
 			/* get mandatory argument */
 			INSTRUCTION("Set session ID to kill: ");
 			if (scanf ("%1023s", id) == EOF) {

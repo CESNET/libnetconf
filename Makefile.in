@@ -127,6 +127,7 @@ SUBHEADERS_DIR = libnetconf
 HDRS_PRIV = src/config.h.in \
 	src/libnetconf.h \
 	src/libnetconf_xml.h \
+	src/libnetconf_ssh.h \
 	src/callbacks.h \
 	src/callbacks_ssh.h \
 	src/error.h \
@@ -147,6 +148,13 @@ HDRS_PRIV = src/config.h.in \
 	src/transapi/transapi_internal.h \
 	src/transapi/yinparser.h \
 	src/transapi/xmldiff.h
+
+GENERATOR = src/transapi/generator/generator.py \
+
+GENERATOR_FILES = src/transapi/generator/Makefile.in \
+	src/transapi/generator/specfile.spec.in \
+	src/transapi/generator/install-sh \
+	src/transapi/generator/README
 
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
 
@@ -191,7 +199,7 @@ tarball: $(SRCS) $(HEADERS)
 	@rm -rf $(NAME)-$(VERSION);
 	@mkdir $(NAME)-$(VERSION);
 	@for i in $(SUBDIRS) ; do $(MAKE) -C $$i tarball-prepare; done; \
-	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) configure.in configure \
+	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) $(GENERATOR) $(GENERATOR_FILES) configure.in configure \
 	    headers/libnetconf.h.in headers/libnetconf_xml.h.in \
 	    Makefile.in VERSION $(NAME).spec.in $(NAME).pc.in \
 	    install-sh config.sub config.guess Doxyfile.in doc/img/*.png models/*; do \
@@ -217,7 +225,7 @@ rpm: tarball
 	fi
 
 .PHONY: install
-install: all install-devel install-doc
+install: all install-devel install-doc install-generator
 	[ -d $(DESTDIR)/$(libdir) ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir))
 	$(INSTALL_PROGRAM) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/;
@@ -249,6 +257,17 @@ install: all install-devel install-doc
 	done;
 	[ -d $(DESTDIR)/$(DBUS_CONFDIR)/system.d/ ] || (mkdir -p $(DESTDIR)/$(DBUS_CONFDIR)/system.d/);
 	[ -z "@SRCS_NOTIFICATIONS@" ] || $(INSTALL_DATA) $(srcdir)/libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
+
+.PHONY: install-generator
+install-generator:
+	@[ -d $(DESTDIR)/$(bindir)/$(NAME) ] || \
+		(mkdir -p $(DESTDIR)/$(bindir)/$(NAME); chmod 755 $(DESTDIR)/$(bindir)/$(NAME))
+	$(INSTALL_PROGRAM) $(GENERATOR) $(DESTDIR)/$(bindir)/lnc-creator
+	@[ -d $(DESTDIR)/$(datadir)/$(NAME)/templates ] || \
+		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/templates; chmod 755 $(DESTDIR)/$(datadir)/$(NAME)/templates)
+	for i in $(GENERATOR_FILES); do \
+		$(INSTALL_DATA) $$i $(DESTDIR)/$(datadir)/$(NAME)/templates/$$(basename $$i); \
+	done
 
 .PHONY: install-devel
 install-devel:

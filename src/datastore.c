@@ -88,7 +88,9 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 extern struct nc_shared_info *nc_info;
 
-extern int nc_init_flags;
+/* reserve memory for error pointers such as ERROR_POINTER or NCDS_RPC_NOT_APPLICABLE */
+char error_area;
+#define ERROR_POINTER ((void*)(&error_area))
 
 char* server_capabilities = NULL;
 
@@ -121,23 +123,13 @@ static struct data_model* get_model(const char* module, const char* version);
 static int ncds_features_parse(struct data_model* model);
 static int ncds_update_uses_groupings(struct data_model* model);
 static int ncds_update_uses_augments(struct data_model* model);
+extern int first_after_close;
 
 #ifndef DISABLE_NOTIFICATIONS
 char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 #endif
 
 static struct ncds_ds *datastores_get_ds(ncds_id id);
-
-#ifndef DISABLE_NOTIFICATIONS
-#define INTERNAL_DS_COUNT 9
-#define NACM_DS_INDEX 8
-#define NOTIF_DS_INDEX_L 4
-#define NOTIF_DS_INDEX_H 6
-#else
-#define INTERNAL_DS_COUNT 6
-#define NACM_DS_INDEX 5
-#endif
-int internal_ds_count = 0;
 
 /* Allocate and fill the ncds func structure based on the type. */
 static struct ncds_ds* ncds_fill_func(NCDS_TYPE type)
@@ -185,7 +177,21 @@ static struct ncds_ds* ncds_fill_func(NCDS_TYPE type)
 	return (ds);
 }
 
-int ncds_sysinit(void)
+#ifndef DISABLE_NOTIFICATIONS
+#define INTERNAL_DS_COUNT 9
+#define MONITOR_DS_INDEX 3
+#define NOTIF_DS_INDEX_L 4
+#define NOTIF_DS_INDEX_H 6
+#define WD_DS_INDEX 7
+#define NACM_DS_INDEX 8
+#else
+#define INTERNAL_DS_COUNT 6
+#define MONITOR_DS_INDEX 3
+#define WD_DS_INDEX 4
+#define NACM_DS_INDEX 5
+#endif
+int internal_ds_count = 0;
+int ncds_sysinit(int flags)
 {
 	int i;
 	struct ncds_ds *ds;
@@ -247,13 +253,23 @@ int ncds_sysinit(void)
 
 	internal_ds_count = 0;
 	for (i = 0; i < INTERNAL_DS_COUNT; i++) {
-		if ((i == NACM_DS_INDEX) && !(nc_init_flags & NC_INIT_NACM)) {
+		if ((i == NACM_DS_INDEX) && !(flags & NC_INIT_NACM)) {
 			/* NACM is not enabled */
 			continue;
 		}
 
+		if ((i == MONITOR_DS_INDEX) && !(flags & NC_INIT_MONITORING)) {
+			/* NETCONF monitoring is not enabled */
+			continue;
+		}
+
+		if ((i == WD_DS_INDEX) && !(flags & NC_INIT_WD)) {
+			/* NETCONF with-defaults capability is not enabled */
+			continue;
+		}
+
 #ifndef DISABLE_NOTIFICATIONS
-		if ((i >= NOTIF_DS_INDEX_L && i <= NOTIF_DS_INDEX_H) && !(nc_init_flags & NC_INIT_NOTIF)) {
+		if ((i >= NOTIF_DS_INDEX_L && i <= NOTIF_DS_INDEX_H) && !(flags & NC_INIT_NOTIF)) {
 			/* Notifications are not enabled */
 			continue;
 		}
@@ -421,6 +437,84 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 
 	return retval;
 }
+
+int ncds_device_init (ncds_id * id)
+{
+	nc_rpc * rpc_msg = NULL;
+	nc_reply * reply_msg = NULL;
+	struct ncds_ds_list * ds_iter, *start = NULL;
+	struct ncds_ds * ds;
+	struct nc_cpblts * cpblts = NULL;
+	struct nc_session * dummy_session = NULL;
+	struct nc_err * err;
+
+	if (id != NULL) { /* initialize given device */
+		if ((ds = datastores_get_ds(*id)) == NULL) {
+			ERROR("Unable to find module with id %d", *id);
+			goto fail;
+		}
+		start = calloc(1,sizeof(struct ncds_ds_list));
+		start->datastore = ds;
+	} else {
+		start = ncds.datastores;
+	}
+	/* OR if not specified initialize all transAPI capable modules */
+	for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
+		if (ds_iter->datastore->transapi.init) {
+			if (ds_iter->datastore->transapi.init()) {
+				ERROR ("init function from module %s failed.", ds_iter->datastore->data_model->name);
+				goto fail;
+			}
+		}
+	}
+
+	if (first_after_close) {
+		/* Clean RUNNING datastore. This is important when tranAPI is deployed and does not harm when not. */
+		/* It is done by calling low level function to avoid invoking transapi now. */
+		for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
+			/* TRY to erase, when it fails the datastore is probably empty */
+			/* TODO: Is there better way? */
+			ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, "", &err);
+		}
+
+		/* create dummy session for applying copy-config (startup->running) */
+		cpblts = nc_session_get_cpblts_default();
+		if ((dummy_session = nc_session_dummy("dummy-internal", "server", NULL, cpblts)) == NULL) {
+			goto fail;
+		}
+		nc_cpblts_free(cpblts);
+
+		/* initial copy of startup to running will cause full (re)configuration of module */
+		/* Here is used high level function ncds_apply_rpc2all to apply startup configuration and use transapi */
+		rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
+		reply_msg = ncds_apply_rpc2all(dummy_session, rpc_msg, NULL);
+		if (reply_msg == NULL || nc_reply_get_type (reply_msg) != NC_REPLY_OK) {
+			ERROR ("Failed perform initial copy of startup to running.");
+			goto fail;
+		}
+		nc_rpc_free(rpc_msg);
+		nc_reply_free(reply_msg);
+		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+	}
+
+	if (id != NULL) {
+		free(start);
+	}
+
+	return EXIT_SUCCESS;
+fail:
+	if (dummy_session != NULL) {
+		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+	}
+	nc_rpc_free(rpc_msg);
+	nc_reply_free(reply_msg);
+	if (id != NULL) {
+		free(start);
+	}
+
+	return EXIT_FAILURE;
+}
+
 
 char * ncds_get_model(ncds_id id, int base)
 {
@@ -653,8 +747,8 @@ char **get_schemas_capabilities(void)
 
 	for (i = 0, listitem = models_list; listitem != NULL; listitem = listitem->next, i++) {
 		if (asprintf(&(retval[i]), "%s?module=%s%s%s", listitem->model->namespace, listitem->model->name,
-				(listitem->model->version != NULL && strlen(listitem->model->version) > 0) ? "&amp;revision=" : "",
-				(listitem->model->version != NULL && strlen(listitem->model->version) > 0) ? listitem->model->version : "") == -1) {
+				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? "&amp;revision=" : "",
+				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? listitem->model->version : "") == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			/* move iterator back, then iterator will go back to the current value and will rewrite it*/
 			i--;
@@ -897,7 +991,7 @@ static char* compare_schemas(struct data_model* model, char* name, char* version
 			resultbuffer = xmlBufferCreate();
 			if (resultbuffer == NULL ) {
 				ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
-				return ((void*)-1);
+				return (ERROR_POINTER);
 			}
 			xmlNodeDump(resultbuffer, model->xml, model->xml->children, 2, 1);
 			retval = strdup((char *) xmlBufferContent(resultbuffer));
@@ -990,8 +1084,7 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 	/* process all data models */
 	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
 		r = compare_schemas(listitem->model, name, version);
-		if (r == (void*) -1) {
-			free(r);
+		if (r == ERROR_POINTER) {
 			free(version);
 			free(name);
 			if (e != NULL ) {
@@ -1034,10 +1127,11 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	void * transapi_module = NULL;
 	char* (*get_state)(const char*, const char*, struct nc_err **) = NULL;
 	void (*close_func)(void) = NULL;
-	union transapi_init init_func = {NULL};
+	int (*init_func)(void) = NULL;
 	union transapi_data_clbcks data_clbks = {NULL};
 	union transapi_rpc_clbcks rpc_clbks = {NULL};
 	int *libxml2, lxml2;
+	char * ns_mapping = NULL;
 
 	if (callbacks_path == NULL) {
 		ERROR("%s: missing callbacks path parameter.", __func__);
@@ -1063,16 +1157,16 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 		*libxml2 = 0;
 	}
 
+	if ((ns_mapping = dlsym(transapi_module, "namespace_mapping")) == NULL) {
+		ERROR("Unable to get mapping of prefixes with uris.");
+		dlclose(transapi_module);
+		return(NULL);
+	}
+
 	if (*libxml2) {
 		/* find rpc callback functions mapping structure */
 		if ((rpc_clbks.rpc_clbks_xml = dlsym(transapi_module, "rpc_clbks")) == NULL) {
-			ERROR("Unable to get addresses of rpc callback functions from shared library.");
-			dlclose (transapi_module);
-			return (NULL);
-		}
-
-		if ((init_func.init_xml = dlsym (transapi_module, "init")) == NULL) {
-				WARN("%s: Unable to find \"init\" function.", __func__);
+			WARN("Unable to get addresses of rpc callback functions from shared library.");
 		}
 
 		/* callbacks work with configuration data */
@@ -1088,13 +1182,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	} else {
 		/* find rpc callback functions mapping structure */
 		if ((rpc_clbks.rpc_clbks = dlsym(transapi_module, "rpc_clbks")) == NULL) {
-			ERROR("Unable to get addresses of rpc callback functions from shared library.");
-			dlclose (transapi_module);
-			return (NULL);
-		}
-
-		if ((init_func.init = dlsym (transapi_module, "init")) == NULL) {
-			WARN("%s: Unable to find \"init\" function.", __func__);
+			WARN("Unable to get addresses of rpc callback functions from shared library.");
 		}
 
 		/* callbacks work with configuration data */
@@ -1107,6 +1195,10 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 				return (NULL);
 			}
 		}
+	}
+
+	if ((init_func = dlsym (transapi_module, "init")) == NULL) {
+		WARN("%s: Unable to find \"init\" function.", __func__);
 	}
 
 	if ((close_func = dlsym (transapi_module, "close")) == NULL) {
@@ -1123,6 +1215,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	/* add pointers for transaction API */
 	ds->transapi.module = transapi_module;
 	ds->transapi.libxml2 = (*libxml2);
+	ds->transapi.ns_mapping = (const char**)ns_mapping;
 	ds->transapi.data_clbks = data_clbks;
 	ds->transapi.rpc_clbks = rpc_clbks;
 	ds->transapi.init = init_func;
@@ -2336,7 +2429,7 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 	/* when using transapi */
 	if (datastore->transapi.module != NULL) {
 		/* parse model to get aux structure for TransAPI's internal purposes */
-		datastore->data_model->model_tree = yinmodel_parse(datastore->ext_model);
+		datastore->data_model->model_tree = yinmodel_parse(datastore->ext_model, datastore->transapi.ns_mapping);
 	}
 
 	/* acquire unique id */
@@ -2572,7 +2665,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 					/* internal error - memory allocation failed, do not continue! */
 					return 0;
 				}
-				if (strlen(content1) == 0) {
+				if (strisempty(content1)) {
 					/* we have an empty content match node, so interpret it as a selection node,
 					 * which means that we will be selecting sibling nodes that will be in the
 					 * filter result
@@ -2623,7 +2716,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 									/* internal error - memory allocation failed, do not continue! */
 									return 0;
 								}
-								if (strlen(content1) == 0) {
+								if (strisempty(content1)) {
 									/* we have an empty content match node, so interpret it as a selection node,
 									 * which means that it will be included in the filter result
 									 */
@@ -3570,9 +3663,9 @@ apply_editcopyconfig:
 			reply = nc_reply_error(e);
 		} else {
 			if (ds->transapi.libxml2) {
-				ret = transapi_xml_running_changed(ds->transapi.data_clbks.data_clbks_xml, old, new, ds->data_model->model_tree); /* device does not accept changes */
+				ret = transapi_xml_running_changed(ds->transapi.data_clbks.data_clbks_xml, ds->transapi.ns_mapping, old, new, ds->data_model->model_tree); /* device does not accept changes */
 			} else {
-				ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, old, new, ds->data_model->model_tree); /* device does not accept changes */
+				ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model->model_tree); /* device does not accept changes */
 			}
 			if (ret) {
 				e = nc_err_new(NC_ERR_OP_FAILED);
@@ -3589,7 +3682,7 @@ apply_editcopyconfig:
 	if (id == NCDS_INTERNAL_ID) {
 		if (old_reply == NULL) {
 			old_reply = reply;
-		} else if (old_reply != (void*)(-1) || reply != (void*)(-1)){
+		} else if (old_reply != NCDS_RPC_NOT_APPLICABLE || reply != NCDS_RPC_NOT_APPLICABLE){
 			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
 				if (nc_reply_get_type(old_reply) == NC_REPLY_ERROR) {
 					return (old_reply);
@@ -3642,7 +3735,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 
 		/* apply RPC on a single datastore */
 		reply = ncds_apply_rpc(ds->datastore->id, session, rpc);
-		if (ids != NULL && reply != (void*)(-1)) {
+		if (ids != NULL && reply != NCDS_RPC_NOT_APPLICABLE) {
 			ncds.datastores_ids[id_i] = ds->datastore->id;
 			id_i++;
 			ncds.datastores_ids[id_i] = -1; /* terminating item */
@@ -3651,7 +3744,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 		/* merge results from the previous runs */
 		if (old_reply == NULL) {
 			old_reply = reply;
-		} else if (old_reply != (void*)(-1) || reply != (void*)(-1)) {
+		} else if (old_reply != NCDS_RPC_NOT_APPLICABLE || reply != NCDS_RPC_NOT_APPLICABLE) {
 			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
 				if (nc_reply_get_type(old_reply) == NC_REPLY_ERROR) {
 					return (old_reply);
@@ -3664,7 +3757,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 			old_reply = reply = new_reply;
 		}
 
-		if (reply != (void*)(-1) && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
+		if (reply != NCDS_RPC_NOT_APPLICABLE && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
 			if (req_type == NC_RPC_DATASTORE_WRITE) {
 				if (erropt == NC_EDIT_ERROPT_STOP) {
 					return (reply);

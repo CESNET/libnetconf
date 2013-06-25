@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Fri Jun 21 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -14,7 +14,7 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fIDatastore ID to access libnetconf's internal datastores such as notifications, monitoring, etc\&. \fP"
 .ti -1c
-.RI "#define \fBNCDS_RPC_NOT_APPLICABLE\fP   ((void *) -1)"
+.RI "#define \fBNCDS_RPC_NOT_APPLICABLE\fP   ((void*)(&\fBerror_area\fP))"
 .br
 .RI "\fIReturn value of \fBncds_apply_rpc()\fP when the requested operation is not applicable to the specified datastore\&. \fP"
 .in -1c
@@ -66,7 +66,7 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (const struct nc_session *session, const \fBnc_rpc\fP *rpc, int ids_copy, \fBncds_id\fP *ids[])"
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (const struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
 .br
 .RI "\fIPerform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fP"
 .ti -1c
@@ -109,6 +109,14 @@ libnetconf's functions for handling NETCONF datastores\&.
 .RI "int \fBncds_features_disableall\fP (const char *module)"
 .br
 .RI "\fIDisable usage of all features defined in the specified module\&. By default, all features are disabled\&. To disable only the specific feature(s), use \fBncds_feature_disable()\fP\&. \fP"
+.ti -1c
+.RI "int \fBncds_feature_isenabled\fP (const char *module, const char *feature)"
+.br
+.RI "\fICheck if the feature of the specified module is currently enabled or disabled\&. \fP"
+.ti -1c
+.RI "int \fBncds_consolidate\fP (void)"
+.br
+.RI "\fIConsolidate all internal structures of created data stores and all data models\&. This function especially solves all YANG's \fCuses\fP and \fCaugment\fP statements\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -121,7 +129,7 @@ libnetconf's functions for handling NETCONF datastores\&.
 
 .PP
 Datastore ID to access libnetconf's internal datastores such as notifications, monitoring, etc\&. 
-.SS "#define NCDS_RPC_NOT_APPLICABLE   ((void *) -1)"
+.SS "#define NCDS_RPC_NOT_APPLICABLE   ((void*)(&\fBerror_area\fP))"
 
 .PP
 Return value of \fBncds_apply_rpc()\fP when the requested operation is not applicable to the specified datastore\&. 
@@ -276,11 +284,11 @@ Perform the requested RPC operation on the datastore\&. \fBParameters:\fP
 .PP
 \fBReturns:\fP
 .RS 4
-NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to the specified datastore (e\&.g\&. the namespace does not match), NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned\&. 
+NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to the specified datastore (e\&.g\&. the namespace does not match), NCDS_RPC_NOT_APPLICABLE is returned\&. 
 .RE
 .PP
 
-.SS "\fBnc_reply\fP* ncds_apply_rpc2all (const struct nc_session *session, const \fBnc_rpc\fP *rpc, intids_copy, \fBncds_id\fP *ids[])"
+.SS "\fBnc_reply\fP* ncds_apply_rpc2all (const struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
 
 .PP
 Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fBThis function IS NOT thread safety\&.\fP
@@ -291,19 +299,12 @@ Perform the requested RPC operation on the all datastores controlled by the libn
 .br
 \fIrpc\fP NETCONF <rpc> message specifying requested operation\&. 
 .br
-\fIids_copy\fP Flag for ids array:
-.IP "\(bu" 2
-0 -- ids is returned as a static array which is rewritten by a subsequent call to \fBncds_apply_rpc2all()\fP\&.
-.IP "\(bu" 2
-1 -- ids is returned as a dynamically allocated array and caller is supposed to free it using free()\&. 
-.PP
-.br
-\fIids\fP Pointer to an array of datastore IDs where the RPC was successfully applied\&. The list is terminated by a value (ncds_id)(-1)\&. NULL is accepted as a valid value when this information is supposed to be ignored\&. 
+\fIids\fP Pointer to a static array containing list of datastore IDs where the RPC was successfully applied\&. The list is terminated by value a (ncds_id)(-1)\&. The list is rewritten by any following call to \fBncds_apply_rpc2all()\fP\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to any datastore (e\&.g\&. the namespace does not match no of the controlled datstores), NCDS_RPC_NOT_APPLICABLE ((void *) -1)) is returned\&. 
+NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to any datastore (e\&.g\&. the namespace does not match no of the controlled datstores), NCDS_RPC_NOT_APPLICABLE is returned\&. 
 .RE
 .PP
 
@@ -443,6 +444,30 @@ Disable usage of all features defined in the specified module\&. By default, all
 .RE
 .PP
 \fBReturns:\fP
+.RS 4
+0 on success, non-zero on error\&. 
+.RE
+.PP
+
+.SS "int ncds_feature_isenabled (const char *module, const char *feature)"
+
+.PP
+Check if the feature of the specified module is currently enabled or disabled\&. \fBReturns:\fP
+.RS 4
+.IP "\(bu" 2
+negative value in case of error
+.IP "\(bu" 2
+0 if feature is disabled
+.IP "\(bu" 2
+1 if feature is enabled 
+.PP
+.RE
+.PP
+
+.SS "int ncds_consolidate (void)"
+
+.PP
+Consolidate all internal structures of created data stores and all data models\&. This function especially solves all YANG's \fCuses\fP and \fCaugment\fP statements\&. \fBReturns:\fP
 .RS 4
 0 on success, non-zero on error\&. 
 .RE

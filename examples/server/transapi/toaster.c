@@ -10,40 +10,60 @@
 #include <pthread.h>
 #include <time.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
 /* Determines whether XML arguments are passed as (xmlDocPtr) or (char *). */
 int with_libxml2 = 1;
 
-char * status = "off";
-int toasting = 0;
-pthread_mutex_t cancel_mutex;
-volatile int cancel;
+/* toaster status structure */
+struct toaster_status {
+	int enabled;
+	int toasting;
+	pthread_mutex_t toaster_mutex;
+};
+
+/* status structure instance, stored in shared memory */
+struct toaster_status * status = NULL;
 
 /**
  * @brief Initialize plugin after loaded and before any other functions are called.
  *
- * @param startup_config	Content of startup datastore.
- *
- * @return New content of running datastore reflecting current device state.
+ * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-xmlDocPtr init(xmlDocPtr startup_config)
+int init(void)
 {
-	xmlNodePtr startup_root;
+	key_t shmkey;
+	int shmid;
+	int first;
 
-	/* invalid document  */
-	if (startup_config == NULL) {
-		return NULL;
+	/* get shared memory key */
+	if ((shmkey = ftok ("/proc/self/exe", 1)) == -1) {
+		return EXIT_FAILURE;
 	}
 
-	 startup_root = xmlDocGetRootElement(startup_config);
-
-	if (startup_root != NULL &&	xmlStrEqual(startup_root->name, BAD_CAST "toaster") &&
-		startup_root->ns != NULL && xmlStrEqual(startup_root->ns->href, BAD_CAST "http://netconfcentral.org/ns/toaster")) {
-		status = "on";
-	} else {
-		status = "off";
+	if ((shmid = shmget (shmkey, sizeof(struct toaster_status), 0666)) != -1) { /* get id of shared memory if exist */
+		first = 0;
+	} else if ((shmid = shmget (shmkey, sizeof(struct toaster_status), IPC_CREAT | 0666)) != -1) { /* create shared memory */
+		first = 1;
+	} else { /*shared memory can not be found nor created */
+		return EXIT_FAILURE;
 	}
-	return xmlCopyDoc(startup_config, 1);
+
+	/* attach shared memory */
+	if ((status = shmat (shmid, NULL, 0)) == (void*)-1) {
+		return EXIT_FAILURE;
+	}
+	/* first run after shared memory removed (reboot, manualy) initiate the mutex */
+	if (first) {
+		if (pthread_mutex_init (&status->toaster_mutex, NULL)) {
+			return EXIT_FAILURE;
+		}
+		status->toasting = 0;
+	}
+
+	return EXIT_SUCCESS;
 }
 
 /**
@@ -51,7 +71,7 @@ xmlDocPtr init(xmlDocPtr startup_config)
  */
 void close(void)
 {
-	status = "off";
+	shmdt(status);
 	return;
 }
 /**
@@ -75,18 +95,23 @@ char * get_state_data (char * model, char * running, struct nc_err **err)
 	xmlDocSetRootElement (state, root);
 	ns = xmlNewNs (root, BAD_CAST "http://netconfcentral.org/ns/toaster", NULL);
 	xmlNewChild (root, ns, BAD_CAST "toasterManufacturer", BAD_CAST "CESNET, z.s.p.o.");
-	xmlNewChild (root, ns, BAD_CAST "toasterModelNumber", BAD_CAST "lnetconf-0.x");
-	xmlNewChild (root, ns, BAD_CAST "toasterStatus", BAD_CAST (strcmp(status, "off") == 0 ? "up" : "down" ));
+	xmlNewChild (root, ns, BAD_CAST "toasterModelNumber", BAD_CAST "toaster");
+	xmlNewChild (root, ns, BAD_CAST "toasterStatus", BAD_CAST (status->enabled ? "down" : "up" ));
 
 	xmlNodeDump (buf, state, root, 0, 0);
 	ret = strdup(xmlBufferContent(buf));
 
 	xmlBufferFree(buf);
 	xmlFreeDoc(state);
-	
+
 	return ret;
 }
 
+/*
+ * Mapping prefixes with namespaces.
+ * Do NOT modify this structure!
+ */
+char * namespace_mapping[] = {"toaster", "http://netconfcentral.org/ns/toaster", NULL, NULL};
 /*
 * CONFIGURATION callbacks
 * Here follows set of callback functions run every time some change in associated part of running datastore occurs.
@@ -94,7 +119,7 @@ char * get_state_data (char * model, char * running, struct nc_err **err)
 */
 
 /**
- * @brief This callback will be run when node in path / changes
+ * @brief This callback will be run when node in path /toaster:toaster changes
  *
  * @param op	Observed change in path. XMLDIFF_OP type.
  * @param node	Modified node. if op == XMLDIFF_REM its copy of node removed.
@@ -103,10 +128,11 @@ char * get_state_data (char * model, char * running, struct nc_err **err)
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
 /* !DO NOT ALTER FUNCTION SIGNATURE! */
-int callback_ (XMLDIFF_OP op, xmlNodePtr node, void ** data)
+int callback_toaster_toaster (XMLDIFF_OP op, xmlNodePtr node, void ** data)
 {
 	int ret = EXIT_FAILURE;
-	time_t t;
+
+	pthread_mutex_lock(&status->toaster_mutex);
 
 	if (op <= 0 || op > (XMLDIFF_MOD | XMLDIFF_CHAIN | XMLDIFF_ADD | XMLDIFF_REM)) {
 		fprintf (stderr, "internal error: Invalid operation (out of range)!");
@@ -126,18 +152,20 @@ int callback_ (XMLDIFF_OP op, xmlNodePtr node, void ** data)
 		}
 
 		if (op & XMLDIFF_REM) {
-			status = "off";
-			if (toasting != 0) {
+			status->enabled = 0;
+			if (status->toasting != 0) {
 				fprintf (stderr, "Interrupting ongoing toasting!\n");
-				toasting = 0;
+				status->toasting = 0;
 			}
 		} else if (op & XMLDIFF_ADD) {
-			status = "on";
+			status->enabled = 1;
 		}
 		ret = EXIT_SUCCESS;
 	}
 
-	fprintf (stderr, "Turning toaster %s\n", status);
+	fprintf (stderr, "Turning toaster %s\n", status->enabled ? "on" : "off");
+
+	pthread_mutex_unlock(&status->toaster_mutex);
 	return ret;
 }
 
@@ -150,7 +178,7 @@ struct transapi_xml_data_callbacks clbks =  {
 	.callbacks_count = 1,
 	.data = NULL,
 	.callbacks = {
-		{.path = "/", .func = callback_}
+		{.path = "/toaster:toaster", .func = callback_toaster_toaster}
 	}
 };
 
@@ -164,23 +192,20 @@ struct transapi_xml_data_callbacks clbks =  {
 
 void * make_toast (void * doneness)
 {
-	pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, NULL);
-
 	/* pretend toasting */
 	sleep (*(int*)doneness);
 
-	/* BEGIN of critical section */
-	pthread_mutex_lock (&cancel_mutex);
-	if (cancel) {
-		pthread_mutex_unlock (&cancel_mutex);
-		cancel = 0;
-		return NULL;
+	pthread_mutex_lock (&status->toaster_mutex);
+
+	if (status->toasting == 0) { /* was canceled */
+		pthread_mutex_unlock (&status->toaster_mutex);
+	} else { /* still toasting */
+		/* turn off */
+		status->toasting = 0;
+		ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>done</toastStatus></toastDone>");
 	}
-	/* turn off */
-	toasting = 0;
-	ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>done</toastStatus></toastDone>");
-	/* END of critical section */
-	pthread_mutex_unlock (&cancel_mutex);
+
+	pthread_mutex_unlock (&status->toaster_mutex);
 	return NULL;
 }
 
@@ -190,37 +215,37 @@ nc_reply * rpc_make_toast (xmlNodePtr input[])
 	xmlNodePtr toasterToastType = input[1];
 
 	struct nc_err * err;
+	nc_reply * reply;
 	int doneness; 
 	pthread_t tid;
 
-	if (strcmp(status, "off") == 0) {
-		return nc_reply_error(nc_err_new (NC_ERR_RES_DENIED));
-	}else if (toasting) {
-		return nc_reply_error (nc_err_new (NC_ERR_IN_USE));
-	}
-
-	if (toasterDoneness == NULL) {
+	if (toasterDoneness == NULL) { /* doneness not specified, use default*/
 		doneness = 5;
-	} else {
+	} else { /* get doneness value */
 		doneness = atoi (xmlNodeGetContent(toasterDoneness));
 	}
 
-	if (doneness == 0) { /* doneness must be from <1,10> */
-		return nc_reply_error (nc_err_new (NC_ERR_INVALID_VALUE));
-	} else { /* all seems ok */
-		toasting = 1;
-		pthread_mutex_destroy (&cancel_mutex);
-		if (pthread_mutex_init (&cancel_mutex, NULL) || pthread_create (&tid, NULL, make_toast, &doneness)) { /* cannot turn heater on :-) */
+	pthread_mutex_lock(&status->toaster_mutex);
+
+	if (status->enabled == 0) { /* toaster is off */
+		reply = nc_reply_error(nc_err_new (NC_ERR_RES_DENIED));
+	} else if (status->toasting) { /* toaster is busy */
+		reply = nc_reply_error (nc_err_new (NC_ERR_IN_USE));
+	} else if (doneness == 0) { /* doneness must be from <1,10> */
+		reply = nc_reply_error (nc_err_new (NC_ERR_INVALID_VALUE));
+	} else if (pthread_create (&tid, NULL, make_toast, &doneness)) { /* toaster internal error (cannot turn heater on) */
 			err = nc_err_new (NC_ERR_OP_FAILED);
 			nc_err_set (err, NC_ERR_PARAM_MSG, "Toaster is broken!");
-			toasting = 0;
 			ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>error</toastStatus></toastDone>");
-			return nc_reply_error (err);
-		}
+			reply = nc_reply_error (err);
+	} else { /* all ok, start toasting */
+		status->toasting = 1;
+		reply = nc_reply_ok();
 		pthread_detach (tid);
 	}
 
-	return nc_reply_ok(); 
+	pthread_mutex_unlock(&status->toaster_mutex);
+	return reply;
 }
 
 nc_reply * rpc_cancel_toast (xmlNodePtr input[])
@@ -228,24 +253,21 @@ nc_reply * rpc_cancel_toast (xmlNodePtr input[])
 	nc_reply * reply;
 	struct nc_err * err;
 
-	if (strcmp(status, "off") == 0) {
-		return nc_reply_error(nc_err_new (NC_ERR_RES_DENIED));
-	}
+	pthread_mutex_lock(&status->toaster_mutex);
 
-	/* BEGIN of critical section */
-	pthread_mutex_lock (&cancel_mutex);
-	if (toasting == 0) {
+	if (status->enabled == 0) {/* toaster is off */
+		reply = nc_reply_error(nc_err_new (NC_ERR_RES_DENIED));
+	} else if (status->toasting == 0) { /* toaster in not toasting */
 		err = nc_err_new (NC_ERR_OP_FAILED);
 		nc_err_set (err, NC_ERR_PARAM_MSG, "There is no toasting in progress.");
 		reply = nc_reply_error(err);
-	} else {
-		cancel = 1;
-		toasting = 0;
+	} else { /* interrupt toasting */
+		status->toasting = 0;
+		ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>canceled</toastStatus></toastDone>");
 		reply = nc_reply_ok();
-		ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>cancelled</toastStatus></toastDone>");
 	}
-	/* END of critical section */
-	pthread_mutex_unlock (&cancel_mutex);
+
+	pthread_mutex_unlock(&status->toaster_mutex);
 
 	return reply;
 }

@@ -667,6 +667,7 @@ WARN_LOGFILE           =
 
 INPUT                  = src/libnetconf.h \
                          src/libnetconf_xml.h \
+                         src/libnetconf_ssh.h \
                          src/netconf.h \
                          src/callbacks.h \
                          src/error.h \

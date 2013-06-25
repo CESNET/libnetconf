@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.5.0</span>
+   &#160;<span id="projectnumber">0.5.99</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -146,9 +146,9 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a350f96fd686eea971d1d9e087a9ff8f4">NC_OP_COMMIT</a>, 
 <a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a59fd75a1b96a307a2d87e327c7d9a695">NC_OP_DISCARDCHANGES</a>, 
 <br/>
-&#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a064e97e228090350548b4b67c6c598b0">NC_OP_VALIDATE</a>, 
-<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aafc549220669ed05b9c043b09be496fe">NC_OP_CREATESUBSCRIPTION</a>, 
-<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a213f30aeb2d0d09bc6de7d98015860c3">NC_OP_GETSCHEMA</a>
+&#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07aafc549220669ed05b9c043b09be496fe">NC_OP_CREATESUBSCRIPTION</a>, 
+<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a213f30aeb2d0d09bc6de7d98015860c3">NC_OP_GETSCHEMA</a>, 
+<a class="el" href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07a064e97e228090350548b4b67c6c598b0">NC_OP_VALIDATE</a>
 <br/>
  }</td></tr>
 <tr class="memdesc:ga3e6fc59e2d06c1c0edb36ee64ee9cc07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported &lt;rpc&gt; operations.  <a href="../../db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07">More...</a><br/></td></tr>
@@ -158,6 +158,55 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:ga9e74498f9118686c7fb8dfe2c2459706"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported NETCONF filter types.  <a href="../../db/de9/group__rpc.html#ga9e74498f9118686c7fb8dfe2c2459706">More...</a><br/></td></tr>
 <tr class="separator:ga9e74498f9118686c7fb8dfe2c2459706"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaff232fd4280e385c8e45fcca033e58fd"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaff232fd4280e385c8e45fcca033e58fd">NC_EDIT_OP_TYPE</a> { <br/>
+&#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fda0edecb3360a233e6d2d8435a96a3e54f">NC_EDIT_OP_ERROR</a> = -1, 
+<a class="el" href="../../db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fda269b9d38aa530c9cfe21b5477e328e0c">NC_EDIT_OP_MERGE</a> = 1, 
+<a class="el" href="../../db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fda5d2ca68f21babd6220538a1e3eac2356">NC_EDIT_OP_REPLACE</a> = 2, 
+<a class="el" href="../../db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fdaa7f202a2d5f43e094946b1361da93f40">NC_EDIT_OP_CREATE</a>, 
+<br/>
+&#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fdaf85c0828113a86cb30dd67991e19b6ba">NC_EDIT_OP_DELETE</a>, 
+<a class="el" href="../../db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fda5c6473715392eb03614abc6d7e62bdf9">NC_EDIT_OP_REMOVE</a>
+<br/>
+ }</td></tr>
+<tr class="memdesc:gaff232fd4280e385c8e45fcca033e58fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of edit-config's operation attribute values.  <a href="../../db/de9/group__rpc.html#gaff232fd4280e385c8e45fcca033e58fd">More...</a><br/></td></tr>
+<tr class="separator:gaff232fd4280e385c8e45fcca033e58fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5852fd110198481afb37cc8dcf0bf454"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a> { <br/>
+&#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#gga5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187">NC_EDIT_DEFOP_ERROR</a> = -1, 
+<a class="el" href="../../db/de9/group__rpc.html#gga5852fd110198481afb37cc8dcf0bf454ae959e6f9ed31a8e4441ad84eae8b43d2">NC_EDIT_DEFOP_NOTSET</a> = 0, 
+<a class="el" href="../../db/de9/group__rpc.html#gga5852fd110198481afb37cc8dcf0bf454a5242dcc6a090887ef8b3f6c96b1b4931">NC_EDIT_DEFOP_MERGE</a> = 1, 
+<a class="el" href="../../db/de9/group__rpc.html#gga5852fd110198481afb37cc8dcf0bf454a80cda5b10ba3ff7f819c08508be9237c">NC_EDIT_DEFOP_REPLACE</a> = 2, 
+<br/>
+&#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#gga5852fd110198481afb37cc8dcf0bf454a37dd969ad73f6ac990785d9802672946">NC_EDIT_DEFOP_NONE</a> = 3
+<br/>
+ }</td></tr>
+<tr class="memdesc:ga5852fd110198481afb37cc8dcf0bf454"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of edit-config's &lt;default-operation&gt; element values.  <a href="../../db/de9/group__rpc.html#ga5852fd110198481afb37cc8dcf0bf454">More...</a><br/></td></tr>
+<tr class="separator:ga5852fd110198481afb37cc8dcf0bf454"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8eb32ba579043f2750fa8558d9284b32"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a> { <br/>
+&#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#gga8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4">NC_EDIT_ERROPT_ERROR</a> = -1, 
+<a class="el" href="../../db/de9/group__rpc.html#gga8eb32ba579043f2750fa8558d9284b32a8f01a1f484abf78c8c0ea3f2d369306e">NC_EDIT_ERROPT_NOTSET</a> = 0, 
+<a class="el" href="../../db/de9/group__rpc.html#gga8eb32ba579043f2750fa8558d9284b32ae3322bea978cea2d2a7c0818680bd721">NC_EDIT_ERROPT_STOP</a> = 1, 
+<a class="el" href="../../db/de9/group__rpc.html#gga8eb32ba579043f2750fa8558d9284b32a69d82c66a324215010791718c1bc61f6">NC_EDIT_ERROPT_CONT</a> = 2, 
+<br/>
+&#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#gga8eb32ba579043f2750fa8558d9284b32a35128042558e32842f827be8c31d5b1a">NC_EDIT_ERROPT_ROLLBACK</a> = 3
+<br/>
+ }</td></tr>
+<tr class="memdesc:ga8eb32ba579043f2750fa8558d9284b32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of edit-config's &lt;error-option&gt; element values.  <a href="../../db/de9/group__rpc.html#ga8eb32ba579043f2750fa8558d9284b32">More...</a><br/></td></tr>
+<tr class="separator:ga8eb32ba579043f2750fa8558d9284b32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaca86efe74fc9a26cc30e33a8e9772579"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a> { <br/>
+&#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#ggaca86efe74fc9a26cc30e33a8e9772579a1770ae5b90495ca720f60ca76ab029b4">NC_EDIT_TESTOPT_ERROR</a> = -1, 
+<a class="el" href="../../db/de9/group__rpc.html#ggaca86efe74fc9a26cc30e33a8e9772579acb24b46f501c50f2a78b87da73322bc7">NC_EDIT_TESTOPT_NOTSET</a> = 0, 
+<a class="el" href="../../db/de9/group__rpc.html#ggaca86efe74fc9a26cc30e33a8e9772579aae2180fb26e03b4c1ea184abb463056c">NC_EDIT_TESTOPT_TESTSET</a> = 1, 
+<a class="el" href="../../db/de9/group__rpc.html#ggaca86efe74fc9a26cc30e33a8e9772579a56b353b9c45d7eed3373e41feb509294">NC_EDIT_TESTOPT_SET</a> = 2, 
+<br/>
+&#160;&#160;<a class="el" href="../../db/de9/group__rpc.html#ggaca86efe74fc9a26cc30e33a8e9772579a7f8086cbfcc1c1811b33e2d681f77072">NC_EDIT_TESTOPT_TEST</a> = 3
+<br/>
+ }</td></tr>
+<tr class="memdesc:gaca86efe74fc9a26cc30e33a8e9772579"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of edit-config's &lt;test-option&gt; element values.  <a href="../../db/de9/group__rpc.html#gaca86efe74fc9a26cc30e33a8e9772579">More...</a><br/></td></tr>
+<tr class="separator:gaca86efe74fc9a26cc30e33a8e9772579"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga06a2c29efc74abd4d0c88e7abb5e914d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga06a2c29efc74abd4d0c88e7abb5e914d">NC_CAP_ATTR</a> { <a class="el" href="../../db/de9/group__rpc.html#gga06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba">NC_CAP_ATTR_WITHDEFAULTS_MODE</a> = 1
+ }</td></tr>
+<tr class="memdesc:ga06a2c29efc74abd4d0c88e7abb5e914d"><td class="mdescLeft">&#160;</td><td class="mdescRight">RPC attributes list.  <a href="../../db/de9/group__rpc.html#ga06a2c29efc74abd4d0c88e7abb5e914d">More...</a><br/></td></tr>
+<tr class="separator:ga06a2c29efc74abd4d0c88e7abb5e914d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -209,13 +258,13 @@ Functions</h2></td></tr>
 <tr class="memitem:ga05a10e0b6c89ac04426410f399b87257"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga05a10e0b6c89ac04426410f399b87257">nc_rpc_get_config</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:ga05a10e0b6c89ac04426410f399b87257"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get serialized content of the config parameter (&lt;config&gt; itself is not a part of the returned data). This function is valid only for &lt;copy-config&gt; and &lt;edit-config&gt; RPCs.  <a href="#ga05a10e0b6c89ac04426410f399b87257">More...</a><br/></td></tr>
 <tr class="separator:ga05a10e0b6c89ac04426410f399b87257"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf867eacee93e3596371415d028e62d29"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaf867eacee93e3596371415d028e62d29">nc_rpc_get_defop</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
+<tr class="memitem:gaf867eacee93e3596371415d028e62d29"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#ga5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaf867eacee93e3596371415d028e62d29">nc_rpc_get_defop</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gaf867eacee93e3596371415d028e62d29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get default-operation type, valid only for &lt;edit-config&gt; RPCs.  <a href="#gaf867eacee93e3596371415d028e62d29">More...</a><br/></td></tr>
 <tr class="separator:gaf867eacee93e3596371415d028e62d29"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga488f894b9fa4866326837a9ed0575e36"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga488f894b9fa4866326837a9ed0575e36">nc_rpc_get_erropt</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
+<tr class="memitem:ga488f894b9fa4866326837a9ed0575e36"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#ga8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga488f894b9fa4866326837a9ed0575e36">nc_rpc_get_erropt</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:ga488f894b9fa4866326837a9ed0575e36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get error-option type, valid only for &lt;edit-config&gt; RPCs.  <a href="#ga488f894b9fa4866326837a9ed0575e36">More...</a><br/></td></tr>
 <tr class="separator:ga488f894b9fa4866326837a9ed0575e36"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab12fec9068d72fa6817f4a59a81e625e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gab12fec9068d72fa6817f4a59a81e625e">nc_rpc_get_testopt</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
+<tr class="memitem:gab12fec9068d72fa6817f4a59a81e625e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gaca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gab12fec9068d72fa6817f4a59a81e625e">nc_rpc_get_testopt</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gab12fec9068d72fa6817f4a59a81e625e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get test-option type, valid only for &lt;edit-config&gt; RPCs supporting :validate:1.1 capability.  <a href="#gab12fec9068d72fa6817f4a59a81e625e">More...</a><br/></td></tr>
 <tr class="separator:gab12fec9068d72fa6817f4a59a81e625e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga05705bba8345c15637bc54cf6b9a4b3d"><td class="memItemLeft" align="right" valign="top">struct nc_filter *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga05705bba8345c15637bc54cf6b9a4b3d">nc_rpc_get_filter</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
@@ -230,7 +279,7 @@ Functions</h2></td></tr>
 <tr class="memitem:gae1faa46f5048f21dc580d44836d848e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gae1faa46f5048f21dc580d44836d848e8">nc_rpc_deleteconfig</a> (<a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a> target,...)</td></tr>
 <tr class="memdesc:gae1faa46f5048f21dc580d44836d848e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;delete-config&gt; NETCONF rpc message.  <a href="#gae1faa46f5048f21dc580d44836d848e8">More...</a><br/></td></tr>
 <tr class="separator:gae1faa46f5048f21dc580d44836d848e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae704e312c7aa5e6385abd4989e79398c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gae704e312c7aa5e6385abd4989e79398c">nc_rpc_editconfig</a> (<a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a> target, <a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a> source, <a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a> default_operation, <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a> error_option, <a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a> test_option,...)</td></tr>
+<tr class="memitem:gae704e312c7aa5e6385abd4989e79398c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gae704e312c7aa5e6385abd4989e79398c">nc_rpc_editconfig</a> (<a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a> target, <a class="el" href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">NC_DATASTORE</a> source, <a class="el" href="../../db/de9/group__rpc.html#ga5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a> default_operation, <a class="el" href="../../db/de9/group__rpc.html#ga8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a> error_option, <a class="el" href="../../db/de9/group__rpc.html#gaca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a> test_option,...)</td></tr>
 <tr class="memdesc:gae704e312c7aa5e6385abd4989e79398c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;edit-config&gt; NETCONF rpc message.  <a href="#gae704e312c7aa5e6385abd4989e79398c">More...</a><br/></td></tr>
 <tr class="separator:gae704e312c7aa5e6385abd4989e79398c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6818afbecf7fedf78f620162de78b4fd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga6818afbecf7fedf78f620162de78b4fd">nc_rpc_get</a> (const struct nc_filter *filter)</td></tr>
@@ -263,8 +312,8 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa9ad7fac41fdef0063c2e2793fb19efd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#gaa9ad7fac41fdef0063c2e2793fb19efd">nc_rpc_generic</a> (const char *data)</td></tr>
 <tr class="memdesc:gaa9ad7fac41fdef0063c2e2793fb19efd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a generic NETCONF rpc message with the specified content.  <a href="#gaa9ad7fac41fdef0063c2e2793fb19efd">More...</a><br/></td></tr>
 <tr class="separator:gaa9ad7fac41fdef0063c2e2793fb19efd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga14f5e170cbc9acd9a146eee2fb6b796f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga14f5e170cbc9acd9a146eee2fb6b796f">nc_rpc_capability_attr</a> (<a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914d">NC_CAP_ATTR</a> attr,...)</td></tr>
-<tr class="memdesc:ga14f5e170cbc9acd9a146eee2fb6b796f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the attribute of the given &lt;rpc&gt; specific for some NETCONF capability.  <a href="#ga14f5e170cbc9acd9a146eee2fb6b796f">More...</a><br/></td></tr>
+<tr class="memitem:ga14f5e170cbc9acd9a146eee2fb6b796f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de9/group__rpc.html#ga14f5e170cbc9acd9a146eee2fb6b796f">nc_rpc_capability_attr</a> (<a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../db/de9/group__rpc.html#ga06a2c29efc74abd4d0c88e7abb5e914d">NC_CAP_ATTR</a> attr,...)</td></tr>
+<tr class="memdesc:ga14f5e170cbc9acd9a146eee2fb6b796f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the attribute of the given &lt;rpc&gt; which is specific for some NETCONF capability.  <a href="#ga14f5e170cbc9acd9a146eee2fb6b796f">More...</a><br/></td></tr>
 <tr class="separator:ga14f5e170cbc9acd9a146eee2fb6b796f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -364,14 +413,14 @@ Functions</h2></td></tr>
 <tr><td class="fieldname"><em><a class="anchor" id="gga3e6fc59e2d06c1c0edb36ee64ee9cc07a59fd75a1b96a307a2d87e327c7d9a695"></a>NC_OP_DISCARDCHANGES</em>&nbsp;</td><td class="fielddoc">
 <p>&lt;discard-changes&gt; operation </p>
 </td></tr>
-<tr><td class="fieldname"><em><a class="anchor" id="gga3e6fc59e2d06c1c0edb36ee64ee9cc07a064e97e228090350548b4b67c6c598b0"></a>NC_OP_VALIDATE</em>&nbsp;</td><td class="fielddoc">
-<p>&lt;validate&gt; operation </p>
-</td></tr>
 <tr><td class="fieldname"><em><a class="anchor" id="gga3e6fc59e2d06c1c0edb36ee64ee9cc07aafc549220669ed05b9c043b09be496fe"></a>NC_OP_CREATESUBSCRIPTION</em>&nbsp;</td><td class="fielddoc">
 <p>&lt;create-subscription&gt; operation (RFC 5277) </p>
 </td></tr>
 <tr><td class="fieldname"><em><a class="anchor" id="gga3e6fc59e2d06c1c0edb36ee64ee9cc07a213f30aeb2d0d09bc6de7d98015860c3"></a>NC_OP_GETSCHEMA</em>&nbsp;</td><td class="fielddoc">
 <p>&lt;get-schema&gt; operation (RFC 6022) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="gga3e6fc59e2d06c1c0edb36ee64ee9cc07a064e97e228090350548b4b67c6c598b0"></a>NC_OP_VALIDATE</em>&nbsp;</td><td class="fielddoc">
+<p>&lt;validate&gt; operation </p>
 </td></tr>
 </table>
 
@@ -390,9 +439,158 @@ Functions</h2></td></tr>
 <p>Enumeration of supported NETCONF filter types. </p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="gga9e74498f9118686c7fb8dfe2c2459706a487f472296b31fcec26a2bef87d50178"></a>NC_FILTER_UNKNOWN</em>&nbsp;</td><td class="fielddoc">
+<p>unsupported filter type </p>
 </td></tr>
 <tr><td class="fieldname"><em><a class="anchor" id="gga9e74498f9118686c7fb8dfe2c2459706ab584539474b828102a0b7238b614abd4"></a>NC_FILTER_SUBTREE</em>&nbsp;</td><td class="fielddoc">
-<p>NC_FILTER_SUBTREE </p>
+<p>subtree filter according to RFC 6241, sec. 6 </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="gaff232fd4280e385c8e45fcca033e58fd"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="../../db/de9/group__rpc.html#gaff232fd4280e385c8e45fcca033e58fd">NC_EDIT_OP_TYPE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeration of edit-config's operation attribute values. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="ggaff232fd4280e385c8e45fcca033e58fda0edecb3360a233e6d2d8435a96a3e54f"></a>NC_EDIT_OP_ERROR</em>&nbsp;</td><td class="fielddoc">
+<p>for internal purposes, not defined by NETCONF </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ggaff232fd4280e385c8e45fcca033e58fda269b9d38aa530c9cfe21b5477e328e0c"></a>NC_EDIT_OP_MERGE</em>&nbsp;</td><td class="fielddoc">
+<p>merge </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ggaff232fd4280e385c8e45fcca033e58fda5d2ca68f21babd6220538a1e3eac2356"></a>NC_EDIT_OP_REPLACE</em>&nbsp;</td><td class="fielddoc">
+<p>replace </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ggaff232fd4280e385c8e45fcca033e58fdaa7f202a2d5f43e094946b1361da93f40"></a>NC_EDIT_OP_CREATE</em>&nbsp;</td><td class="fielddoc">
+<p>create </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ggaff232fd4280e385c8e45fcca033e58fdaf85c0828113a86cb30dd67991e19b6ba"></a>NC_EDIT_OP_DELETE</em>&nbsp;</td><td class="fielddoc">
+<p>delete </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ggaff232fd4280e385c8e45fcca033e58fda5c6473715392eb03614abc6d7e62bdf9"></a>NC_EDIT_OP_REMOVE</em>&nbsp;</td><td class="fielddoc">
+<p>remove </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="ga5852fd110198481afb37cc8dcf0bf454"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="../../db/de9/group__rpc.html#ga5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeration of edit-config's &lt;default-operation&gt; element values. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="gga5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187"></a>NC_EDIT_DEFOP_ERROR</em>&nbsp;</td><td class="fielddoc">
+<p>for internal purposes, not defined by NETCONF </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="gga5852fd110198481afb37cc8dcf0bf454ae959e6f9ed31a8e4441ad84eae8b43d2"></a>NC_EDIT_DEFOP_NOTSET</em>&nbsp;</td><td class="fielddoc">
+<p>follow NETCONF defined default behavior (merge) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="gga5852fd110198481afb37cc8dcf0bf454a5242dcc6a090887ef8b3f6c96b1b4931"></a>NC_EDIT_DEFOP_MERGE</em>&nbsp;</td><td class="fielddoc">
+<p>merge (RFC 6241, sec. 7.2) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="gga5852fd110198481afb37cc8dcf0bf454a80cda5b10ba3ff7f819c08508be9237c"></a>NC_EDIT_DEFOP_REPLACE</em>&nbsp;</td><td class="fielddoc">
+<p>replace (RFC 6241, sec. 7.2) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="gga5852fd110198481afb37cc8dcf0bf454a37dd969ad73f6ac990785d9802672946"></a>NC_EDIT_DEFOP_NONE</em>&nbsp;</td><td class="fielddoc">
+<p>none (RFC 6241, sec. 7.2) </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="ga8eb32ba579043f2750fa8558d9284b32"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="../../db/de9/group__rpc.html#ga8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeration of edit-config's &lt;error-option&gt; element values. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="gga8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4"></a>NC_EDIT_ERROPT_ERROR</em>&nbsp;</td><td class="fielddoc">
+<p>for internal purposes, not defined by NETCONF </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="gga8eb32ba579043f2750fa8558d9284b32a8f01a1f484abf78c8c0ea3f2d369306e"></a>NC_EDIT_ERROPT_NOTSET</em>&nbsp;</td><td class="fielddoc">
+<p>follow NETCONF defined default behavior (stop-on-error) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="gga8eb32ba579043f2750fa8558d9284b32ae3322bea978cea2d2a7c0818680bd721"></a>NC_EDIT_ERROPT_STOP</em>&nbsp;</td><td class="fielddoc">
+<p>stop-on-error (RFC 6241, sec. 7.2) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="gga8eb32ba579043f2750fa8558d9284b32a69d82c66a324215010791718c1bc61f6"></a>NC_EDIT_ERROPT_CONT</em>&nbsp;</td><td class="fielddoc">
+<p>continue-on-error (RFC 6241, sec. 7.2) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="gga8eb32ba579043f2750fa8558d9284b32a35128042558e32842f827be8c31d5b1a"></a>NC_EDIT_ERROPT_ROLLBACK</em>&nbsp;</td><td class="fielddoc">
+<p>rollback-on-error (RFC 6241, sec. 7.2), valid only when :rollback-on-error capability is enabled </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="gaca86efe74fc9a26cc30e33a8e9772579"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="../../db/de9/group__rpc.html#gaca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumeration of edit-config's &lt;test-option&gt; element values. </p>
+<p>Valid only with enabled :validate:1.1 capability. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="ggaca86efe74fc9a26cc30e33a8e9772579a1770ae5b90495ca720f60ca76ab029b4"></a>NC_EDIT_TESTOPT_ERROR</em>&nbsp;</td><td class="fielddoc">
+<p>for internal purposes, not defined by NETCONF </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ggaca86efe74fc9a26cc30e33a8e9772579acb24b46f501c50f2a78b87da73322bc7"></a>NC_EDIT_TESTOPT_NOTSET</em>&nbsp;</td><td class="fielddoc">
+<p>follow NETCONF defined default behavior (test-then-set) </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ggaca86efe74fc9a26cc30e33a8e9772579aae2180fb26e03b4c1ea184abb463056c"></a>NC_EDIT_TESTOPT_TESTSET</em>&nbsp;</td><td class="fielddoc">
+<p>test-then-set </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ggaca86efe74fc9a26cc30e33a8e9772579a56b353b9c45d7eed3373e41feb509294"></a>NC_EDIT_TESTOPT_SET</em>&nbsp;</td><td class="fielddoc">
+<p>set </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ggaca86efe74fc9a26cc30e33a8e9772579a7f8086cbfcc1c1811b33e2d681f77072"></a>NC_EDIT_TESTOPT_TEST</em>&nbsp;</td><td class="fielddoc">
+<p>test-only </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="ga06a2c29efc74abd4d0c88e7abb5e914d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="../../db/de9/group__rpc.html#ga06a2c29efc74abd4d0c88e7abb5e914d">NC_CAP_ATTR</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>RPC attributes list. </p>
+<p>List of specific attributes that can be added to selected RPC operations. The attributes can be set by (possibly repeated) call of the <a class="el" href="../../db/de9/group__rpc.html#ga14f5e170cbc9acd9a146eee2fb6b796f" title="Set the attribute of the given &lt;rpc&gt; which is specific for some NETCONF capability.">nc_rpc_capability_attr()</a> function. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="gga06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba"></a>NC_CAP_ATTR_WITHDEFAULTS_MODE</em>&nbsp;</td><td class="fielddoc">
+<p>Set &lt;with-default&gt; attribute of the operation </p>
 </td></tr>
 </table>
 
@@ -888,7 +1086,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a> nc_rpc_get_defop </td>
+          <td class="memname"><a class="el" href="../../db/de9/group__rpc.html#ga5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a> nc_rpc_get_defop </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
           <td class="paramname"><em>rpc</em></td><td>)</td>
@@ -904,7 +1102,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>One of the <a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a>, <a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187">NC_EDIT_DEFOP_ERROR</a> in case of error. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>One of the <a class="el" href="../../db/de9/group__rpc.html#ga5852fd110198481afb37cc8dcf0bf454" title="Enumeration of edit-config&#39;s &lt;default-operation&gt; element values.">NC_EDIT_DEFOP_TYPE</a>, <a class="el" href="../../db/de9/group__rpc.html#gga5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187">NC_EDIT_DEFOP_ERROR</a> in case of error. </dd></dl>
 
 </div>
 </div>
@@ -913,7 +1111,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a> nc_rpc_get_erropt </td>
+          <td class="memname"><a class="el" href="../../db/de9/group__rpc.html#ga8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a> nc_rpc_get_erropt </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
           <td class="paramname"><em>rpc</em></td><td>)</td>
@@ -929,7 +1127,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>One of the <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a>, <a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4">NC_EDIT_ERROPT_ERROR</a> in case of an error </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>One of the <a class="el" href="../../db/de9/group__rpc.html#ga8eb32ba579043f2750fa8558d9284b32" title="Enumeration of edit-config&#39;s &lt;error-option&gt; element values.">NC_EDIT_ERROPT_TYPE</a>, <a class="el" href="../../db/de9/group__rpc.html#gga8eb32ba579043f2750fa8558d9284b32a9a174d6de80e8ea7d2267d550061f4b4">NC_EDIT_ERROPT_ERROR</a> in case of an error </dd></dl>
 
 </div>
 </div>
@@ -938,7 +1136,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a> nc_rpc_get_testopt </td>
+          <td class="memname"><a class="el" href="../../db/de9/group__rpc.html#gaca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a> nc_rpc_get_testopt </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
           <td class="paramname"><em>rpc</em></td><td>)</td>
@@ -954,7 +1152,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>One of the <a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a>, <a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579a1770ae5b90495ca720f60ca76ab029b4">NC_EDIT_TESTOPT_ERROR</a> in case of an error </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>One of the <a class="el" href="../../db/de9/group__rpc.html#gaca86efe74fc9a26cc30e33a8e9772579" title="Enumeration of edit-config&#39;s &lt;test-option&gt; element values.">NC_EDIT_TESTOPT_TYPE</a>, <a class="el" href="../../db/de9/group__rpc.html#ggaca86efe74fc9a26cc30e33a8e9772579a1770ae5b90495ca720f60ca76ab029b4">NC_EDIT_TESTOPT_ERROR</a> in case of an error </dd></dl>
 
 </div>
 </div>
@@ -1129,19 +1327,19 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d3/d7a/netconf_8h.html#a5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../db/de9/group__rpc.html#ga5852fd110198481afb37cc8dcf0bf454">NC_EDIT_DEFOP_TYPE</a>&#160;</td>
           <td class="paramname"><em>default_operation</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d3/d7a/netconf_8h.html#a8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../db/de9/group__rpc.html#ga8eb32ba579043f2750fa8558d9284b32">NC_EDIT_ERROPT_TYPE</a>&#160;</td>
           <td class="paramname"><em>error_option</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d3/d7a/netconf_8h.html#aca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../db/de9/group__rpc.html#gaca86efe74fc9a26cc30e33a8e9772579">NC_EDIT_TESTOPT_TYPE</a>&#160;</td>
           <td class="paramname"><em>test_option</em>, </td>
         </tr>
         <tr>
@@ -1480,7 +1678,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914d">NC_CAP_ATTR</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../db/de9/group__rpc.html#ga06a2c29efc74abd4d0c88e7abb5e914d">NC_CAP_ATTR</a>&#160;</td>
           <td class="paramname"><em>attr</em>, </td>
         </tr>
         <tr>
@@ -1497,18 +1695,18 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Set the attribute of the given &lt;rpc&gt; specific for some NETCONF capability. </p>
+<p>Set the attribute of the given &lt;rpc&gt; which is specific for some NETCONF capability. </p>
 <h3>Parameters for specific capability attributes:</h3>
 <ul>
-<li><a class="el" href="../../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba">NC_CAP_ATTR_WITHDEFAULTS_MODE</a><ul>
+<li><a class="el" href="../../db/de9/group__rpc.html#gga06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba">NC_CAP_ATTR_WITHDEFAULTS_MODE</a><ul>
 <li>applicable to &lt;get&gt;, &lt;get-config&gt; and &lt;copy-config&gt; operations.</li>
-<li>Accepts one parameter of <a class="el" href="../../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81">NCWD_MODE</a> type, specifying mode of the :with-defaults capability (RFC 6243).</li>
+<li>Accepts one parameter of <a class="el" href="../../d1/df7/group__withdefaults.html#ga3d13afb72bb0c0098f47e8b612cdeb81" title="Enumeration of &lt;with-defaults&gt; element values.">NCWD_MODE</a> type, specifying mode of the :with-defaults capability (RFC 6243).</li>
 </ul>
 </li>
 </ul>
 <h3>Examples:</h3>
 <ul>
-<li>nc_rpc_capability_attr(rpc, <a class="el" href="../../d3/d7a/netconf_8h.html#a06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba">NC_CAP_ATTR_WITHDEFAULTS_MODE</a>, <a class="el" href="../../d3/d7a/netconf_8h.html#a3d13afb72bb0c0098f47e8b612cdeb81a8b422cc5bcfa0ddd20d52ec6e71362db">NCWD_MODE_ALL</a>);</li>
+<li>nc_rpc_capability_attr(rpc, <a class="el" href="../../db/de9/group__rpc.html#gga06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba">NC_CAP_ATTR_WITHDEFAULTS_MODE</a>, <a class="el" href="../../d1/df7/group__withdefaults.html#gga3d13afb72bb0c0098f47e8b612cdeb81a8b422cc5bcfa0ddd20d52ec6e71362db">NCWD_MODE_ALL</a>);</li>
 </ul>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1527,7 +1725,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue May 7 2013 12:44:54 for libnetconf by
+    <li class="footer">Generated on Fri Jun 21 2013 14:17:42 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

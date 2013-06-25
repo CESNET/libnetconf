@@ -1,0 +1,12 @@
+prefix = /usr/local
+exec_prefix = ${prefix}
+includedir = ${prefix}/include
+libdir =  ${exec_prefix}/lib
+datarootdir = ${prefix}/share
+datadir = ${datarootdir}
+
+Name: libnetconf
+Version: 0.5.99
+Description: NETCONF protocol library for NETCONF applications development.
+Libs: -L${libdir} -lnetconf
+Cflags: -I${includedir}

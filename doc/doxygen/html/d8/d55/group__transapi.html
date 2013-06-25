@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.5.0</span>
+   &#160;<span id="projectnumber">0.5.99</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -172,24 +172,24 @@ Functions</h2></td></tr>
 <tr class="memitem:ga80e69b4cada8c35e5e358287e8af3d85"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85">ncds_new_transapi</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, const char *callbacks_path)</td></tr>
 <tr class="memdesc:ga80e69b4cada8c35e5e358287e8af3d85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new datastore structure with transaction API support.  <a href="#ga80e69b4cada8c35e5e358287e8af3d85">More...</a><br/></td></tr>
 <tr class="separator:ga80e69b4cada8c35e5e358287e8af3d85"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga84af389e5c1106cd9cfbde1c7ca001be"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga84af389e5c1106cd9cfbde1c7ca001be">transapi_running_changed</a> (struct <a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html">transapi_data_callbacks</a> *c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *model)</td></tr>
-<tr class="memdesc:ga84af389e5c1106cd9cfbde1c7ca001be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Top level function of transaction API. Finds differences between old_doc and new_doc and calls specified callbacks.  <a href="#ga84af389e5c1106cd9cfbde1c7ca001be">More...</a><br/></td></tr>
-<tr class="separator:ga84af389e5c1106cd9cfbde1c7ca001be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga7593335c8bd87ea1e86b32c8bc30973e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga7593335c8bd87ea1e86b32c8bc30973e">transapi_xml_running_changed</a> (struct <a class="el" href="../../db/d0d/structtransapi__xml__data__callbacks.html">transapi_xml_data_callbacks</a> *c, xmlDocPtr old_doc, xmlDocPtr new_doc, struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *model)</td></tr>
-<tr class="memdesc:ga7593335c8bd87ea1e86b32c8bc30973e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same functionality as <a class="el" href="../../d8/d55/group__transapi.html#ga84af389e5c1106cd9cfbde1c7ca001be" title="Top level function of transaction API. Finds differences between old_doc and new_doc and calls specif...">transapi_running_changed()</a>. Using libxml2 structures for callbacks parameters.  <a href="#ga7593335c8bd87ea1e86b32c8bc30973e">More...</a><br/></td></tr>
-<tr class="separator:ga7593335c8bd87ea1e86b32c8bc30973e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga43c773cf978382733cb09a6becf01d33"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga43c773cf978382733cb09a6becf01d33">yinmodel_parse</a> (xmlDocPtr model_doc)</td></tr>
-<tr class="memdesc:ga43c773cf978382733cb09a6becf01d33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse YIN data model.  <a href="#ga43c773cf978382733cb09a6becf01d33">More...</a><br/></td></tr>
-<tr class="separator:ga43c773cf978382733cb09a6becf01d33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga21d851d64db3740f5dee102d3c3ffeb5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga21d851d64db3740f5dee102d3c3ffeb5">transapi_running_changed</a> (struct <a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html">transapi_data_callbacks</a> *c, const char *ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *model)</td></tr>
+<tr class="memdesc:ga21d851d64db3740f5dee102d3c3ffeb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Top level function of transaction API. Finds differences between old_doc and new_doc and calls specified callbacks.  <a href="#ga21d851d64db3740f5dee102d3c3ffeb5">More...</a><br/></td></tr>
+<tr class="separator:ga21d851d64db3740f5dee102d3c3ffeb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaab24457d58494b0edf1b4beee463aec5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#gaab24457d58494b0edf1b4beee463aec5">transapi_xml_running_changed</a> (struct <a class="el" href="../../db/d0d/structtransapi__xml__data__callbacks.html">transapi_xml_data_callbacks</a> *c, const char *ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *model)</td></tr>
+<tr class="memdesc:gaab24457d58494b0edf1b4beee463aec5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same functionality as <a class="el" href="../../d8/d55/group__transapi.html#ga21d851d64db3740f5dee102d3c3ffeb5" title="Top level function of transaction API. Finds differences between old_doc and new_doc and calls specif...">transapi_running_changed()</a>. Using libxml2 structures for callbacks parameters.  <a href="#gaab24457d58494b0edf1b4beee463aec5">More...</a><br/></td></tr>
+<tr class="separator:gaab24457d58494b0edf1b4beee463aec5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga11b6f802a32c98b1605debb0ac4f1c57"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga11b6f802a32c98b1605debb0ac4f1c57">yinmodel_parse</a> (xmlDocPtr model_doc, const char *ns_mapping[])</td></tr>
+<tr class="memdesc:ga11b6f802a32c98b1605debb0ac4f1c57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse YIN data model.  <a href="#ga11b6f802a32c98b1605debb0ac4f1c57">More...</a><br/></td></tr>
+<tr class="separator:ga11b6f802a32c98b1605debb0ac4f1c57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae4f5feae970a3c2840a248190f898314"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#gae4f5feae970a3c2840a248190f898314">yinmodel_free</a> (struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *yin)</td></tr>
 <tr class="memdesc:gae4f5feae970a3c2840a248190f898314"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy yinmodel structure and free allocated memory.  <a href="#gae4f5feae970a3c2840a248190f898314">More...</a><br/></td></tr>
 <tr class="separator:gae4f5feae970a3c2840a248190f898314"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga51f793ef3d02f47d83d8763d4c962304"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga51f793ef3d02f47d83d8763d4c962304">xmldiff_free</a> (struct <a class="el" href="../../dc/d38/structxmldiff.html">xmldiff</a> *diff)</td></tr>
 <tr class="memdesc:ga51f793ef3d02f47d83d8763d4c962304"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy and free whole xmldiff structure.  <a href="#ga51f793ef3d02f47d83d8763d4c962304">More...</a><br/></td></tr>
 <tr class="separator:ga51f793ef3d02f47d83d8763d4c962304"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8f8cdd2ba2f610e486ffaaf7fd761ff9"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../dc/d38/structxmldiff.html">xmldiff</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga8f8cdd2ba2f610e486ffaaf7fd761ff9">xmldiff_diff</a> (xmlDocPtr old, xmlDocPtr new, struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *model)</td></tr>
-<tr class="memdesc:ga8f8cdd2ba2f610e486ffaaf7fd761ff9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Module top level function.  <a href="#ga8f8cdd2ba2f610e486ffaaf7fd761ff9">More...</a><br/></td></tr>
-<tr class="separator:ga8f8cdd2ba2f610e486ffaaf7fd761ff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac16efcedb0820928eb15db53623defd0"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../dc/d38/structxmldiff.html">xmldiff</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#gac16efcedb0820928eb15db53623defd0">xmldiff_diff</a> (xmlDocPtr old, xmlDocPtr new, struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *model, const char *ns_mapping[])</td></tr>
+<tr class="memdesc:gac16efcedb0820928eb15db53623defd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Module top level function.  <a href="#gac16efcedb0820928eb15db53623defd0">More...</a><br/></td></tr>
+<tr class="separator:gac16efcedb0820928eb15db53623defd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>libnetconf's implementation of transaction-based partial device reconfiguration. </p>
@@ -310,7 +310,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga84af389e5c1106cd9cfbde1c7ca001be"></a>
+<a class="anchor" id="ga21d851d64db3740f5dee102d3c3ffeb5"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -319,6 +319,12 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html">transapi_data_callbacks</a> *&#160;</td>
           <td class="paramname"><em>c</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>ns_mapping</em>[], </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -350,6 +356,7 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">c</td><td>Structure binding callbacks with paths in XML document </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ns_mapping</td><td>Pairing prefixes with URIs. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">old_doc</td><td>Content of configuration datastore before change. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">new_doc</td><td>Content of configuration datastore after change. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">model</td><td>Structure holding document semantics.</td></tr>
@@ -360,7 +367,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga7593335c8bd87ea1e86b32c8bc30973e"></a>
+<a class="anchor" id="gaab24457d58494b0edf1b4beee463aec5"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -369,6 +376,12 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="../../db/d0d/structtransapi__xml__data__callbacks.html">transapi_xml_data_callbacks</a> *&#160;</td>
           <td class="paramname"><em>c</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>ns_mapping</em>[], </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -396,10 +409,11 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Same functionality as <a class="el" href="../../d8/d55/group__transapi.html#ga84af389e5c1106cd9cfbde1c7ca001be" title="Top level function of transaction API. Finds differences between old_doc and new_doc and calls specif...">transapi_running_changed()</a>. Using libxml2 structures for callbacks parameters. </p>
+<p>Same functionality as <a class="el" href="../../d8/d55/group__transapi.html#ga21d851d64db3740f5dee102d3c3ffeb5" title="Top level function of transaction API. Finds differences between old_doc and new_doc and calls specif...">transapi_running_changed()</a>. Using libxml2 structures for callbacks parameters. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">c</td><td>Structure binding callbacks with paths in XML document. Callbacks uses libxml2 structures. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ns_mapping</td><td>Pairing prefixes with URIs. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">old_doc</td><td>Content of configuration datastore before change. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">new_doc</td><td>Content of configuration datastore after change. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">model</td><td>Structure holding document semantics.</td></tr>
@@ -410,7 +424,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga43c773cf978382733cb09a6becf01d33"></a>
+<a class="anchor" id="ga11b6f802a32c98b1605debb0ac4f1c57"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -421,8 +435,18 @@ Functions</h2></td></tr>
           <td class="memname">struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a>* yinmodel_parse </td>
           <td>(</td>
           <td class="paramtype">xmlDocPtr&#160;</td>
-          <td class="paramname"><em>model_doc</em></td><td>)</td>
+          <td class="paramname"><em>model_doc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>ns_mapping</em>[]&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -435,7 +459,8 @@ Functions</h2></td></tr>
 <p>Parse YIN data model. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">model_doc</td><td>Data model in YIN format.</td></tr>
+    <tr><td class="paramname">model_doc</td><td>Data model in YIN format. </td></tr>
+    <tr><td class="paramname">ns_mapping</td><td>Pairing prefixes with URIs.</td></tr>
   </table>
   </dd>
 </dl>
@@ -491,7 +516,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga8f8cdd2ba2f610e486ffaaf7fd761ff9"></a>
+<a class="anchor" id="gac16efcedb0820928eb15db53623defd0"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -514,7 +539,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">struct <a class="el" href="../../dd/de6/structmodel__tree.html">model_tree</a> *&#160;</td>
-          <td class="paramname"><em>model</em>&#160;</td>
+          <td class="paramname"><em>model</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>ns_mapping</em>[]&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -534,7 +565,8 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">old</td><td>old version of XML document </td></tr>
     <tr><td class="paramname">new</td><td>new version of XML document </td></tr>
-    <tr><td class="paramname">model</td><td>data model in YANG format</td></tr>
+    <tr><td class="paramname">model</td><td>data model in YANG format </td></tr>
+    <tr><td class="paramname">ns_mapping</td><td>Pairing prefixes with URIs</td></tr>
   </table>
   </dd>
 </dl>
@@ -547,7 +579,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue May 7 2013 12:44:54 for libnetconf by
+    <li class="footer">Generated on Fri Jun 21 2013 14:17:42 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

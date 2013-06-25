@@ -40,27 +40,52 @@ import argparse
 import shutil
 import re
 import sys
+import os
 
 # Use configure.in.template and replace all variables with text
 def generate_configure_in(replace, template_dir, with_libxml2):
 	inf = open (template_dir+'/configure.in', 'r')
 	outf = open ('configure.in', 'w')
 
-	for line in inf:
-		for pattern, value in replace.items():
-			line = line.replace(pattern, value)
-		outf.write(line)
+	conf_in = inf.read()
+	for pattern, value in replace.items():
+		if re.match(r'\$\$LIBXML2_.*\$\$', pattern) and with_libxml2 == 0:
+			conf_in = conf_in.replace(pattern, '')
+		else:
+			conf_in = conf_in.replace(pattern, value)
+
+	outf.write(conf_in)
 	inf.close()
 	outf.close()
 
 # Copy source files for autotools
 def copy_template_files(name, template_dir):
-	shutil.copy2(template_dir+'/specfile.spec.in', name+'.spec.in')
 	shutil.copy2(template_dir+'/install-sh', 'install-sh')
 	shutil.copy2(template_dir+'/Makefile.in', 'Makefile.in')
 
+def separate_paths_and_namespaces(defs):
+	paths = []
+	namespaces = []
+	for d in defs:
+		d = d.rstrip()
+		# skip empty lines and lines starting with '#' (bash/python style single line comments)
+		if len(d) == 0 or d[0] == '#':
+			continue
+
+		# path definition
+		if re.match(r'(/([\w]+:)?[\w]+)+', d):
+			paths.append(d)
+		elif re.match(r'[\w]+=.+', d):
+			namespaces.append(d.split('='))
+		else:
+			raise ValueError('Line '+d+' is not valid namespace definition nor XPath.')
+
+	return (paths,namespaces)
+
 # 
-def generate_callbacks_file(name, paths, model, with_libxml2, without_init, without_close):
+def generate_callbacks_file(name, defs, model, with_libxml2, without_init, without_close):
+	if defs is None:
+		raise ValueError('Invalid paths file.')
 	# Create or rewrite .c file, will be generated
 	outf = open(name+'.c', 'w')
 
@@ -91,7 +116,8 @@ def generate_callbacks_file(name, paths, model, with_libxml2, without_init, with
 	# Add get state data callback
 	content += generate_state_callback(with_libxml2)
 	# Config callbacks part
-	content += generate_config_callbacks(name, paths, with_libxml2)
+	(paths, namespaces) = separate_paths_and_namespaces(defs)
+	content += generate_config_callbacks(name, paths, namespaces, with_libxml2)
 	# RPC callbacks part
 	if not (model is None):
 		content += generate_rpc_callbacks(model, with_libxml2)
@@ -105,15 +131,10 @@ def generate_init_callback(with_libxml2):
     content += '/**\n'
     content += ' * @brief Initialize plugin after loaded and before any other functions are called.\n'
     content += ' *\n'
-    content += ' * @param startup_config\tContent of startup datastore.\n'
-    content += ' *\n'
-    content += ' * @return New content of running datastore reflecting current device state.\n'
+    content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
     content += ' */\n'
-    if with_libxml2:
-		content += 'xmlDocPtr init(xmlDocPtr startup_config)\n'
-    else:
-		content += 'char * init(char * startup_config)\n'
-    content += '{\n\treturn NULL;\n}\n\n'
+    content += 'int init(void)\n'
+    content += '{\n\treturn EXIT_SUCCESS;\n}\n\n'
 
     return (content)
     
@@ -133,36 +154,46 @@ def generate_state_callback(with_libxml2):
 	content += '/**\n'
 	content += ' * @brief Retrieve state data from device and return them as serialized XML\n'
 	content += ' *\n'
-	if with_libxml2:
-		content += ' * @param model\tDevice data model. libxml2 xmlDocPtr.\n'
-		content += ' * @param running\tRunning datastore content. libxml2 xmlDocPtr.\n'
-	else:
-		content += ' * @param model\tDevice data model. Serialized YIN.\n'
-		content += ' * @param running\tRunning datastore content. Serialized XML.\n'
+	#if with_libxml2:
+	#	content += ' * @param model\tDevice data model. libxml2 xmlDocPtr.\n'
+	#	content += ' * @param running\tRunning datastore content. libxml2 xmlDocPtr.\n'
+	#else:
+	content += ' * @param model\tDevice data model. Serialized YIN.\n'
+	content += ' * @param running\tRunning datastore content. Serialized XML.\n'
 	content += ' * @param[out] err\tDouble poiter to error structure. Fill error when some occurs.\n'
 	content += ' *\n'
-	if with_libxml2:
-		content += ' * @return State data as libxml2 xmlDocPtr or NULL in case of error.\n'
-	else:
-		content += ' * @return State data as serialized XML or NULL in case of error.\n'
+	#if with_libxml2:
+	#	content += ' * @return State data as libxml2 xmlDocPtr or NULL in case of error.\n'
+	#else:
+	content += ' * @return State data as serialized XML or NULL in case of error.\n'
 	content += ' */\n'
-	if with_libxml2:
-		content += 'xmlDocPtr get_state_data (xmlDocPtr model, xmlDocPtr running, struct nc_err **err)\n'
-	else:
-		content += 'char * get_state_data (char * model, char * running, struct nc_err **err)\n'
+	#if with_libxml2:
+	#	content += 'xmlDocPtr get_state_data (xmlDocPtr model, xmlDocPtr running, struct nc_err **err)\n'
+	#else:
+	content += 'char * get_state_data (char * model, char * running, struct nc_err **err)\n'
 	content += '{\n\treturn NULL;\n}\n\n'
 
 	return(content)
 
-
-def generate_config_callbacks(name, paths, with_libxml2):
+def generate_config_callbacks(name, paths, namespaces, with_libxml2):
 	if paths is None:
-		paths = ['/']
+		raise ValueError('At least one path is required.')
 
+	content = ''
 	callbacks = '\t.callbacks = {'
 	funcs_count = 0
-	content = ''
 
+	# prefix to uri mapping 
+	content += '/*\n'
+	content += ' * Mapping prefixes with namespaces.\n'
+	content += ' * Do NOT modify this structure!\n'
+	content += ' */\n'
+	namespace = 'char * namespace_mapping[] = {'
+	for ns in namespaces:
+		namespace += '"'+ns[0]+'", "'+ns[1]+'", '
+
+	content += namespace +'NULL, NULL};\n'
+	content += '\n'
 
 	# Add description and instructions
 	content += '/*\n'
@@ -172,7 +203,6 @@ def generate_config_callbacks(name, paths, with_libxml2):
 	content += '*/\n\n'
 	# generate callback function for every given sensitive path
 	for path in paths:
-		path = path.rstrip()
 		func_name = 'callback'+re.sub(r'[^\w]', '_', path)
 		# first entry in callbacks without coma
 		if funcs_count != 0:
@@ -279,34 +309,75 @@ def generate_rpc_callbacks (doc, with_libxml2):
 	content += '\n};\n\n'
 
 	return(content)
+
+# Try to find template directory, if none of known candidates found raise exception
+def find_templates():
+	known_paths = ['/usr/share/libnetconf/templates', '/usr/local/share/libnetconf/templates/', './templates', './']
+
+	for path in known_paths:
+		if os.path.isdir(path):
+			if os.path.exists(path+'/install-sh') and os.path.exists(path+'/Makefile.in'):
+				return(path)
 	
+	raise Exception('Template directory not found. Use --template-dir parameter to specify its location.')
 
 # "main" starts here
 parser = argparse.ArgumentParser(description='Generate files for libnetconf transapi callbacks module.')
 parser.add_argument('--name', required=True, help='Name of module with callbacks.')
 parser.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
 parser.add_argument('--model', type=libxml2.parseFile, help='File holding data model. Used for generating rpc callbacks.')
-parser.add_argument('--template-dir', default='.', help='Path to the directory with teplate files')
+parser.add_argument('--template-dir', default=None, help='Path to the directory with teplate files')
 parser.add_argument('--with-libxml2', action='store_const', const=1, default=0)
 parser.add_argument('--without-init', action='store_const', const=1, default=0, help='Module does not need initialization when loaded.')
 parser.add_argument('--without-close', action='store_const', const=1, default=0, help='Module does not need closing before unloaded.')
 try:
 	args = parser.parse_args()
 
+	# if --template-dir not specified try to find it
+	# Would be nicer to call this function in 'default' part of parsing argument
+	# --template-dir but then it gets called before trying to find and parse argument :(
+	if args.template_dir is None:
+		args.template_dir = find_templates()
 	# store paterns and text for replacing in configure.in
-	r = {'$$PROJECTNAME$$' : args.name}
+	r = {'$$PROJECTNAME$$' : args.name, 
+	'$$LIBXML2_WITH$$' :
+'\n# --with-libxml2=path-to-libxml2-git-repository\nAC_ARG_WITH([libxml2],\n\
+\t[AC_HELP_STRING([--with-libxml2], [specific libxml2 location])],\n\
+\t[\n\
+\t\tAC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no], [$withval])\n\
+\t\tif test "$XML2_CONFIG" = "no"; then\n\
+\t\t\tAC_MSG_ERROR([Missing development package of libxml2.])\n\
+\t\tfi\n\
+\t\tCFLAGS="`$withval/xml2-config --cflags` $CFLAGS"\n\
+\t\tLDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"\n\
+\t\tWITH_LIBXML2="$withval"\n\
+\t]\n)\n',
+	'$$LIBXML2_CHECK$$' :
+'\n# Check for libxml2.\n\
+if test -z "$WITH_LIBXML2" ; then\n\
+\tAC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no])\n\
+\tif test "$XML2_CONFIG" = "no"; then\n\
+\t\tAC_MSG_ERROR([Missing development package of libxml2.])\n\
+\tfi\n\
+\tAC_CHECK_LIB([xml2], [main], [LIBS="`xml2-config --libs` $LIBS" CFLAGS="`xml2-config --cflags` $CFLAGS"], AC_MSG_ERROR([Libxml2 not found ]))\n\
+fi\n\n'
+	}
 	#generate configure.in
 	generate_configure_in (r, args.template_dir, args.with_libxml2)
-	#copy files for autotools (name.spec.in, Makefile.in, ...)
+	#copy files for autotools (Makefile.in, ...)
 	copy_template_files(args.name, args.template_dir)
 	#generate callbacks code
 	generate_callbacks_file(args.name, args.paths, args.model, args.with_libxml2, args.without_init, args.without_close)
+except ValueError as e:
+	print (e)
 except IOError as e:
 	print (e[1]+'('+str(e[0])+'): '+e.filename)
 except libxml2.libxmlError as e:
 	print('Can not parse data model: '+e.msg)
 except KeyboardInterrupt:
 	print('Killed by user!')
+except Exception as e:
+	print(str(e[0]))
 
 sys.exit(0)
 

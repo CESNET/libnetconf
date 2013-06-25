@@ -45,6 +45,7 @@ ldconfig
 %files
 %{_libdir}/libnetconf.so.*
 @DBUS_NOTIFICATION_CONF@
+@NC_WORKINGDIR_PATH@
 
 %files devel
 %{_libdir}/pkgconfig/libnetconf.pc
@@ -55,3 +56,5 @@ ldconfig
 %{_prefix}/include/libnetconf_ssh.h
 %{_prefix}/include/libnetconf/*
 %{_prefix}/share/libnetconf/doxygen/*
+%{_bindir}/lnc-creator
+%{_datadir}/libnetconf/templates/*

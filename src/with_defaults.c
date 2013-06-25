@@ -50,11 +50,14 @@
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
-static NCWD_MODE ncdflt_basic_mode = NCWD_MODE_EXPLICIT;
-static NCWD_MODE ncdflt_supported = (NCWD_MODE_ALL
-		| NCWD_MODE_ALL_TAGGED
-		| NCWD_MODE_TRIM
-		| NCWD_MODE_EXPLICIT);
+/*
+ * From internal.c to be used by ncdflt_set_*() functions to detect if the
+ * with-default capability is enabled
+ */
+extern int nc_init_flags;
+
+static NCWD_MODE ncdflt_basic_mode = NCWD_MODE_NOTSET;
+static NCWD_MODE ncdflt_supported = NCWD_MODE_NOTSET;
 
 NCWD_MODE ncdflt_get_basic_mode()
 {
@@ -63,27 +66,31 @@ NCWD_MODE ncdflt_get_basic_mode()
 
 void ncdflt_set_basic_mode(NCWD_MODE mode)
 {
-	/* if one of valid values, change the value */
-	if (mode == NCWD_MODE_ALL
-			|| mode == NCWD_MODE_TRIM
-			|| mode == NCWD_MODE_EXPLICIT) {
-		/* set basic mode */
-		ncdflt_basic_mode = mode;
+	if (nc_init_flags & NC_INIT_WD) {
+		/* if one of valid values, change the value */
+		if (mode == NCWD_MODE_ALL
+				|| mode == NCWD_MODE_TRIM
+				|| mode == NCWD_MODE_EXPLICIT) {
+			/* set basic mode */
+			ncdflt_basic_mode = mode;
 
-		/* if current basic mode is not in the supported set, add it */
-		if ((ncdflt_supported & ncdflt_basic_mode) == 0) {
-			ncdflt_supported |= ncdflt_basic_mode;
+			/* if current basic mode is not in the supported set, add it */
+			if ((ncdflt_supported & ncdflt_basic_mode) == 0) {
+				ncdflt_supported |= ncdflt_basic_mode;
+			}
 		}
 	}
 }
 
 void ncdflt_set_supported(NCWD_MODE modes)
 {
-	ncdflt_supported = ncdflt_basic_mode;
-	ncdflt_supported |= (modes & NCWD_MODE_ALL) ? NCWD_MODE_ALL : 0;
-	ncdflt_supported |= (modes & NCWD_MODE_ALL_TAGGED) ? NCWD_MODE_ALL_TAGGED : 0;
-	ncdflt_supported |= (modes & NCWD_MODE_TRIM) ? NCWD_MODE_TRIM : 0;
-	ncdflt_supported |= (modes & NCWD_MODE_EXPLICIT) ? NCWD_MODE_EXPLICIT : 0;
+	if (nc_init_flags & NC_INIT_WD) {
+		ncdflt_supported = ncdflt_basic_mode;
+		ncdflt_supported |= (modes & NCWD_MODE_ALL) ? NCWD_MODE_ALL : 0;
+		ncdflt_supported |= (modes & NCWD_MODE_ALL_TAGGED) ? NCWD_MODE_ALL_TAGGED : 0;
+		ncdflt_supported |= (modes & NCWD_MODE_TRIM) ? NCWD_MODE_TRIM : 0;
+		ncdflt_supported |= (modes & NCWD_MODE_EXPLICIT) ? NCWD_MODE_EXPLICIT : 0;
+	}
 }
 
 NCWD_MODE ncdflt_get_supported()

@@ -81,6 +81,13 @@ char **get_schemas_capabilities(void);
 
 extern struct nc_shared_info *nc_info;
 
+/*
+ * From internal.c to be used by nc_session_get_cpblts_deault() to detect
+ * what part of libnetconf is initiated and can be provided in hello messages
+ * as a supported capability/module
+ */
+extern int nc_init_flags;
+
 /**
  * @brief List of possible NETCONF transportation supported by libnetconf
  */
@@ -538,10 +545,9 @@ void nc_cpblts_free(struct nc_cpblts *c)
 	free(c);
 }
 
-struct nc_cpblts *nc_cpblts_new(char* const* list)
+struct nc_cpblts *nc_cpblts_new(char* const list[])
 {
 	struct nc_cpblts *retval;
-	char* item;
 	int i;
 
 	retval = calloc(1, sizeof(struct nc_cpblts));
@@ -560,8 +566,8 @@ struct nc_cpblts *nc_cpblts_new(char* const* list)
 	retval->list[0] = NULL;
 
 	if (list != NULL) {
-		for (i = 0, item = list[i]; item != NULL; i++) {
-			retval->list[i] = strdup (item);
+		for (i = 0; list[i] != NULL; i++) {
+			retval->list[i] = strdup (list[i]);
 			retval->items++;
 			if (retval->items == retval->list_size) {
 				/* resize the capacity of the capabilities list */
@@ -574,7 +580,6 @@ struct nc_cpblts *nc_cpblts_new(char* const* list)
 				retval->list_size *= 2;
 			}
 			retval->list[i + 1] = NULL;
-			item = list[i+1];
 		}
 	}
 
@@ -770,20 +775,22 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 
 	nc_cpblts_add(retval, NC_CAP_BASE10_ID);
 	nc_cpblts_add(retval, NC_CAP_BASE11_ID);
-	nc_cpblts_add(retval, NC_CAP_YANG_ID);
 	nc_cpblts_add(retval, NC_CAP_WRUNNING_ID);
 	nc_cpblts_add(retval, NC_CAP_CANDIDATE_ID);
 	nc_cpblts_add(retval, NC_CAP_STARTUP_ID);
 	nc_cpblts_add(retval, NC_CAP_ROLLBACK_ID);
-	nc_cpblts_add(retval, NC_CAP_INTERLEAVE_ID);
-	nc_cpblts_add(retval, NC_CAP_MONITORING_ID);
+
 #ifndef DISABLE_URL
 	nc_cpblts_add(retval, NC_CAP_URL_ID);
 #endif
+
 #ifndef DISABLE_NOTIFICATIONS
-	nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
+	if (nc_init_flags & NC_INIT_NOTIF) {
+		nc_cpblts_add(retval, NC_CAP_INTERLEAVE_ID);
+		nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
+	}
 #endif
-	if (ncdflt_get_basic_mode() != NCWD_MODE_NOTSET) {
+	if ((nc_init_flags & NC_INIT_WD) && (ncdflt_get_basic_mode() != NCWD_MODE_NOTSET)) {
 		nc_cpblts_add(retval, NC_CAP_WITHDEFAULTS_ID);
 	}
 
@@ -868,6 +875,9 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 		free(session);
 		return NULL;
 	}
+
+	/* do not send <close-session> on nc_session_close() */
+	session->is_server = 0;
 
 	/* set invalid fd values to prevent comunication */
 	session->fd_input = -1;
@@ -957,7 +967,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 
 		/* close ssh session */
 #ifdef DISABLE_LIBSSH
-		if (session->status == NC_SESSION_STATUS_WORKING) {
+		if (session->status == NC_SESSION_STATUS_WORKING && !session->is_server) {
 			/* prevent infinite recursion when socket is corrupted -> stack overflow */
 			session->status = NC_SESSION_STATUS_CLOSING;
 
@@ -970,14 +980,12 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 						nc_reply_free(reply);
 					}
 				}
-				if (rpc_close != NULL) {
-					nc_rpc_free(rpc_close);
-				}
+				nc_rpc_free(rpc_close);
 			}
 		}
 #else
 		if (session->ssh_channel != NULL) {
-			if (session->status == NC_SESSION_STATUS_WORKING && libssh2_channel_eof(session->ssh_channel) == 0) {
+			if (session->status == NC_SESSION_STATUS_WORKING && libssh2_channel_eof(session->ssh_channel) == 0 && !session->is_server) {
 				/* prevent infinite recursion when socket is corrupted -> stack overflow */
 				session->status = NC_SESSION_STATUS_CLOSING;
 
@@ -2320,14 +2328,18 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 
 	if (rpc != NULL) {
 		/* set message id */
-		msg->msgid = strdup(retval);
+		if (retval != NULL) {
+			msg->msgid = strdup(retval);
+		} else {
+			msg->msgid = NULL;
+		}
 		msg_root = xmlDocGetRootElement(msg->doc);
 		rpc_root = xmlDocGetRootElement(rpc->doc);
 		if (xmlStrEqual(msg_root->name, BAD_CAST "rpc-reply") &&
 				xmlStrEqual(msg_root->ns->href, BAD_CAST NC_NS_BASE10)) {
 			/* copy attributes from the rpc */
 			msg_root->properties = xmlCopyPropList(msg_root, rpc_root->properties);
-			if (msg_root->properties == NULL) {
+			if (msg_root->properties == NULL && msg->msgid != NULL) {
 				xmlNewProp(msg_root, BAD_CAST "message-id", BAD_CAST msg->msgid);
 			}
 			/* copy additional namespace definitions from rpc */

@@ -63,11 +63,12 @@ AC_SUBST(USERMAIL)
 CONFIGURE_PWD=`pwd`
 AC_SUBST(CONFIGURE_PWD)
 
-NC_WORKINGDIR_PATH="/usr/share/$PACKAGE_NAME/"
-SERVERCFG_PATH="/usr/share/$PACKAGE_NAME/server/"
+NC_WORKINGDIR_PATH="/var/lib/$PACKAGE_NAME/"
+SERVERCFG_PATH="/var/lib/$PACKAGE_NAME/server/"
 SETBIT=0
 SETUSER=""
 SETGROUP=""
+CONFIGURE_ARGS=""
 
 LIBS="$LIBS -lrt -lutil"
 
@@ -77,12 +78,25 @@ if test "x$PKG_CONFIG" = "xno"; then
 	AC_MSG_ERROR(['pkgconfig' not found.])
 fi
 
-#AC_ARG_WITH([libxml2], AC_HELP_STRING([--with-libxml2], [specific libxml2 location]),[],[])
+AC_ARG_WITH([libxml2],
+	[AC_HELP_STRING([--with-libxml2], [specific libxml2 location])],
+	[
+		AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no], [$withval])
+		if test "$XML2_CONFIG" = "no"; then
+			AC_MSG_ERROR([Missing development package of libxml2.])
+		fi
+		CFLAGS="`$withval/xml2-config --cflags` $CFLAGS"
+		LDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"
+		WITH_LIBXML2="$withval"
+		CONFIGURE_ARGS="--with-libxml2=$withval $CONFIGURE_ARGS"
+	]
+)
+
 AC_ARG_WITH([libssh2],
 	[AS_HELP_STRING([--with-libssh2=DIR], [Specifies libssh2 installation directory.])],
 	[
-		CFLAGS="$CFLAGS -I$withval/include"
-		LDFLAGS="$LDFLAGS -L$withval/lib -Wl,-rpath,$withval/lib"
+		CFLAGS="-I$withval/include $CFLAGS"
+		LDFLAGS="-L$withval/lib -Wl,-rpath,$withval/lib $LDFLAGS"
 	]
 )
 
@@ -171,17 +185,18 @@ AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],[Compile with debug options]),
 	CFLAGS="$CFLAGS -g -DDEBUG",
 	CFLAGS="$CFLAGS -O3"
+	CONFIGURE_ARGS="--enable-debug $CONFIGURE_ARGS"
 )
 AC_ARG_ENABLE([debug-threads],
 	AC_HELP_STRING([--enable-debug-threads],[Extend debug mode for threads]),
 	CPPFLAGS="$CPPFLAGS -DDEBUG_THREADS"
 )
 AC_ARG_WITH([ncworkingdirpath],
-	AC_HELP_STRING([--with-ncworkingdirpath=path],[Path to a working directory of libnetconf, where all the system files are stored, the default value is /usr/share/libnetconf/]),
+	AC_HELP_STRING([--with-ncworkingdirpath=path],[Path to a working directory of libnetconf, where all the system files are stored, the default value is /var/lib/libnetconf/]),
 	NC_WORKINGDIR_PATH="$withval"
 )
 AC_ARG_WITH([servercfgpath],
-	AC_HELP_STRING([--with-servercfgpath=path],[Path to example server configuration files, the default value is /usr/share/libnetconf/server/]),
+	AC_HELP_STRING([--with-servercfgpath=path],[Path to example server configuration files, the default value is /var/lib/libnetconf/server/]),
 	SERVERCFG_PATH="$withval"
 )
 AC_ARG_WITH([suid],
@@ -269,12 +284,14 @@ AC_PROG_INSTALL
 export PKG_CONFIG_PATH=/usr/local/${libdir##*/}/pkgconfig:$PKG_CONFIG_PATH
 
 ### LibXML2 ###
-AC_CHECK_LIB([xml2], [main], [LIBS="$LIBS -lxml2"], AC_MSG_ERROR([Missing libxml2]))
-AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no])
-if test "$XML2_CONFIG" = "no"; then
-	AC_MSG_ERROR([Missing development package of libxml2.])
+if test -z "$WITH_LIBXML2" ; then
+	AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no], [$WITH_LIBXML2 $PATH])
+	if test "$XML2_CONFIG" = "no"; then
+		AC_MSG_ERROR([Missing development package of libxml2.])
+	fi
+	CFLAGS="`xml2-config --cflags` $CFLAGS"
+	LDFLAGS="`xml2-config --libs` $LDFLAGS"
 fi
-CFLAGS="$CFLAGS `xml2-config --cflags`"
 
 if test "$libssh2" = "yes"; then
 	### libssh2 ###
@@ -386,6 +403,7 @@ AC_SUBST(INCLUDE_URL)
 AC_SUBST(CONFIGURE_PARAMS)
 AC_SUBST(HAVE_EACCESS)
 AC_SUBST(SSH_PROG)
+AC_SUBST(CONFIGURE_ARGS)
 
 AC_SUBST(DOXYGEN)
 if test -z "$DOXYGEN"; then

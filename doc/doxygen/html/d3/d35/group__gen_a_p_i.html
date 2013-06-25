@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.5.0</span>
+   &#160;<span id="projectnumber">0.5.99</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -276,6 +276,9 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">flags</td><td>ORed flags for libnetconf initialization. Accepted values include:<ul>
+<li><em>NC_INIT_ALL</em> Enable all available subsystems</li>
+<li><em>NC_INIT_MONITORING</em> Enable ietf-netconf-monitoring module</li>
+<li><em>NC_INIT_WD</em> Enable With-default capability</li>
 <li><em>NC_INIT_NOTIF</em> Enable Notification subsystem</li>
 <li><em>NC_INIT_NACM</em> Enable NETCONF Access Control subsystem </li>
 </ul>
@@ -549,7 +552,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue May 7 2013 12:44:54 for libnetconf by
+    <li class="footer">Generated on Fri Jun 21 2013 14:17:42 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

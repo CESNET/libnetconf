@@ -23,6 +23,7 @@ var group__notifications =
     [ "ncntf_stream_new", "da/d54/group__notifications.html#ga30691c17b09e98c56d39c9ebfaba1ded", null ],
     [ "ncntf_stream_allow_events", "da/d54/group__notifications.html#ga05a14f949bbb781fd58a233b1d2fab33", null ],
     [ "ncntf_stream_list", "da/d54/group__notifications.html#ga1f8e55f0f292f0514e844e7293e2b6b4", null ],
+    [ "ncntf_stream_info", "da/d54/group__notifications.html#gaff62ddbbd893faf50d3db3fa3b08c21f", null ],
     [ "ncntf_stream_isavailable", "da/d54/group__notifications.html#ga8958e791e810dd07b9121d78c870e8c5", null ],
     [ "ncntf_stream_iter_start", "da/d54/group__notifications.html#ga999c0dc786381fe91f1158b76bcbdee9", null ],
     [ "ncntf_stream_iter_next", "da/d54/group__notifications.html#gae9e1a02911f865bbc0f2b4e702b82ed7", null ],

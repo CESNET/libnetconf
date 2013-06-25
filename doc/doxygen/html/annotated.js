@@ -4,7 +4,6 @@ var annotated =
     [ "transapi", "d9/dc0/structtransapi.html", "d9/dc0/structtransapi" ],
     [ "transapi_data_callbacks", "d6/dcb/structtransapi__data__callbacks.html", "d6/dcb/structtransapi__data__callbacks" ],
     [ "transapi_data_clbcks", "d9/d51/uniontransapi__data__clbcks.html", "d9/d51/uniontransapi__data__clbcks" ],
-    [ "transapi_init", "da/d01/uniontransapi__init.html", "da/d01/uniontransapi__init" ],
     [ "transapi_rpc_callbacks", "d0/df8/structtransapi__rpc__callbacks.html", "d0/df8/structtransapi__rpc__callbacks" ],
     [ "transapi_rpc_clbcks", "d6/d41/uniontransapi__rpc__clbcks.html", "d6/d41/uniontransapi__rpc__clbcks" ],
     [ "transapi_xml_data_callbacks", "db/d0d/structtransapi__xml__data__callbacks.html", "db/d0d/structtransapi__xml__data__callbacks" ],

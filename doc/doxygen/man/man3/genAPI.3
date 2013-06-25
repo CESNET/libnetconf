@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Tue May 7 2013" "Version 0.5.0" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Fri Jun 21 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -132,6 +132,12 @@ Set libnetconf's verbosity level\&. \fBParameters:\fP
 Initialize libnetconf for system-wide usage\&. This initialization is shared across all the processes\&. \fBParameters:\fP
 .RS 4
 \fIflags\fP ORed flags for libnetconf initialization\&. Accepted values include:
+.IP "\(bu" 2
+\fINC_INIT_ALL\fP Enable all available subsystems
+.IP "\(bu" 2
+\fINC_INIT_MONITORING\fP Enable ietf-netconf-monitoring module
+.IP "\(bu" 2
+\fINC_INIT_WD\fP Enable With-default capability
 .IP "\(bu" 2
 \fINC_INIT_NOTIF\fP Enable Notification subsystem
 .IP "\(bu" 2

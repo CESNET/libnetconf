@@ -42,6 +42,10 @@
 
 #include <sys/types.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct nc_msg;
 
 /**
@@ -184,9 +188,9 @@ typedef enum NC_OP {
 	NC_OP_UNLOCK,		/**< \<unlock\> operation */
 	NC_OP_COMMIT,		/**< \<commit> operation */
 	NC_OP_DISCARDCHANGES,	/**< \<discard-changes> operation */
-	NC_OP_VALIDATE,		/**< \<validate\> operation */
 	NC_OP_CREATESUBSCRIPTION,	/**< \<create-subscription\> operation (RFC 5277) */
-	NC_OP_GETSCHEMA	/**< \<get-schema> operation (RFC 6022) */
+	NC_OP_GETSCHEMA,	/**< \<get-schema> operation (RFC 6022) */
+	NC_OP_VALIDATE		/**< \<validate\> operation */
 } NC_OP;
 
 typedef enum NC_ERR_PARAM {
@@ -266,54 +270,85 @@ typedef enum NC_DATASTORE_TYPE {
  * @brief Enumeration of supported NETCONF filter types.
  */
 typedef enum NC_FILTER_TYPE {
-	NC_FILTER_UNKNOWN,
-	NC_FILTER_SUBTREE /**< NC_FILTER_SUBTREE */
+	NC_FILTER_UNKNOWN, /**< unsupported filter type */
+	NC_FILTER_SUBTREE  /**< subtree filter according to RFC 6241, sec. 6 */
 } NC_FILTER_TYPE;
 
-/* default operations IDs for edit-config */
+/**
+ * @ingroup rpc
+ * @brief Enumeration of edit-config's operation attribute values.
+ */
 typedef enum NC_EDIT_OP_TYPE {
-	NC_EDIT_OP_ERROR = -1, /* for internal purposes, not defined by NETCONF */
-	NC_EDIT_OP_MERGE = 1,
-	NC_EDIT_OP_REPLACE = 2,
-	NC_EDIT_OP_CREATE,
-	NC_EDIT_OP_DELETE,
-	NC_EDIT_OP_REMOVE
+	NC_EDIT_OP_ERROR = -1,  /**< for internal purposes, not defined by NETCONF */
+	NC_EDIT_OP_MERGE = 1,   /**< merge */
+	NC_EDIT_OP_REPLACE = 2, /**< replace */
+	NC_EDIT_OP_CREATE,      /**< create */
+	NC_EDIT_OP_DELETE,      /**< delete */
+	NC_EDIT_OP_REMOVE       /**< remove */
 } NC_EDIT_OP_TYPE;
 
+/**
+ * @ingroup rpc
+ * @brief Enumeration of edit-config's \<default-operation\> element values.
+ */
 typedef enum NC_EDIT_DEFOP_TYPE {
-	NC_EDIT_DEFOP_ERROR = -1, /* for internal purposes, not defined by NETCONF */
-	NC_EDIT_DEFOP_NOTSET = 0, /* do not set the value, default value will be used by server */
-	NC_EDIT_DEFOP_MERGE = 1,
-	NC_EDIT_DEFOP_REPLACE = 2,
-	NC_EDIT_DEFOP_NONE = 3
+	NC_EDIT_DEFOP_ERROR = -1,  /**< for internal purposes, not defined by NETCONF */
+	NC_EDIT_DEFOP_NOTSET = 0,  /**< follow NETCONF defined default behavior (merge) */
+	NC_EDIT_DEFOP_MERGE = 1,   /**< merge (RFC 6241, sec. 7.2) */
+	NC_EDIT_DEFOP_REPLACE = 2, /**< replace (RFC 6241, sec. 7.2) */
+	NC_EDIT_DEFOP_NONE = 3     /**< none (RFC 6241, sec. 7.2) */
 } NC_EDIT_DEFOP_TYPE;
 
+/**
+ * @ingroup rpc
+ * @brief Enumeration of edit-config's \<error-option\> element values.
+ */
 typedef enum NC_EDIT_ERROPT_TYPE {
-	NC_EDIT_ERROPT_ERROR = -1, /* for internal purposes, not defined by NETCONF */
-	NC_EDIT_ERROPT_NOTSET = 0,
-	NC_EDIT_ERROPT_STOP = 1,
-	NC_EDIT_ERROPT_CONT = 2,
-	NC_EDIT_ERROPT_ROLLBACK = 3
+	NC_EDIT_ERROPT_ERROR = -1,   /**< for internal purposes, not defined by NETCONF */
+	NC_EDIT_ERROPT_NOTSET = 0,   /**< follow NETCONF defined default behavior (stop-on-error) */
+	NC_EDIT_ERROPT_STOP = 1,     /**< stop-on-error (RFC 6241, sec. 7.2) */
+	NC_EDIT_ERROPT_CONT = 2,     /**< continue-on-error (RFC 6241, sec. 7.2) */
+	NC_EDIT_ERROPT_ROLLBACK = 3  /**< rollback-on-error (RFC 6241, sec. 7.2), valid only when :rollback-on-error capability is enabled */
 } NC_EDIT_ERROPT_TYPE;
 
+/**
+ * @ingroup rpc
+ * @brief Enumeration of edit-config's \<test-option\> element values.
+ *
+ * Valid only with enabled :validate:1.1 capability.
+ */
 typedef enum NC_EDIT_TESTOPT_TYPE {
-	NC_EDIT_TESTOPT_ERROR = -1, /* for internal purposes, not defined by NETCONF */
-	NC_EDIT_TESTOPT_NOTSET = 0,
-	NC_EDIT_TESTOPT_TESTSET = 1, /* test-then-set */
-	NC_EDIT_TESTOPT_SET = 2, /* set */
-	NC_EDIT_TESTOPT_TEST = 3 /* test-only */
+	NC_EDIT_TESTOPT_ERROR = -1,  /**< for internal purposes, not defined by NETCONF */
+	NC_EDIT_TESTOPT_NOTSET = 0,  /**< follow NETCONF defined default behavior (test-then-set) */
+	NC_EDIT_TESTOPT_TESTSET = 1, /**< test-then-set */
+	NC_EDIT_TESTOPT_SET = 2,     /**< set */
+	NC_EDIT_TESTOPT_TEST = 3     /**< test-only */
 } NC_EDIT_TESTOPT_TYPE;
 
+/**
+ * @ingroup withdefaults
+ * @brief Enumeration of \<with-defaults\> element values.
+ *
+ * Valid only with enabled :with-defaults capability
+ */
 typedef enum NCWD_MODE {
-	NCWD_MODE_NOTSET = 0,
-	NCWD_MODE_ALL = 1,
-	NCWD_MODE_TRIM = 2,
-	NCWD_MODE_EXPLICIT = 4,
-	NCWD_MODE_ALL_TAGGED = 8
+	NCWD_MODE_NOTSET = 0,     /**< follow NETCONF defined default behavior (mode selected by server as its basic mode) */
+	NCWD_MODE_ALL = 1,        /**< report-all mode (RFC 6243, sec. 3.1) */
+	NCWD_MODE_TRIM = 2,       /**< trim mode (RFC 6243, sec. 3.2) */
+	NCWD_MODE_EXPLICIT = 4,   /**< explicit mode (RFC 6243, sec. 3.3) */
+	NCWD_MODE_ALL_TAGGED = 8  /**< report-all-tagged mode (RFC 6243, sec. 3.4) */
 } NCWD_MODE;
 
+/**
+ * @ingroup rpc
+ * @brief RPC attributes list
+ *
+ * List of specific attributes that can be added to selected RPC operations.
+ * The attributes can be set by (possibly repeated) call of the
+ * nc_rpc_capability_attr() function.
+ */
 typedef enum NC_CAP_ATTR {
-	NC_CAP_ATTR_WITHDEFAULTS_MODE = 1
+	NC_CAP_ATTR_WITHDEFAULTS_MODE = 1  /**< Set \<with-default\> attribute of the operation */
 } NC_CAP_ATTR;
 
 /**
@@ -340,6 +375,9 @@ void nc_verbosity(NC_VERB_LEVEL level);
  * shared across all the processes
  * @param[in] flags ORed flags for libnetconf initialization. Accepted values
  * include:
+ *    - *NC_INIT_ALL* Enable all available subsystems
+ *    - *NC_INIT_MONITORING* Enable ietf-netconf-monitoring module
+ *    - *NC_INIT_WD* Enable With-default capability
  *    - *NC_INIT_NOTIF* Enable Notification subsystem
  *    - *NC_INIT_NACM* Enable NETCONF Access Control subsystem
  * @return -1 on fatal error\n 0 if this is the first init after previous
@@ -347,8 +385,11 @@ void nc_verbosity(NC_VERB_LEVEL level);
  * nc_init() since last system-wide nc_close() or system reboot.
  */
 int nc_init(int flags);
-#define NC_INIT_NOTIF 0x00000002 /**< nc_init()'s flag to enable Notification subsystem. */
-#define NC_INIT_NACM 0x00000004 /**< nc_init()'s flag to enable Acccess Control subsystem */
+#define NC_INIT_ALL        0xffffffff /**< nc_init()'s flag to enable all optional features/subsystems */
+#define NC_INIT_NOTIF      0x00000002 /**< nc_init()'s flag to enable Notification subsystem. */
+#define NC_INIT_NACM       0x00000004 /**< nc_init()'s flag to enable Acccess Control subsystem */
+#define NC_INIT_MONITORING 0x00000008 /**< nc_init()'s flag to enable ietf-netconf-monitoring module */
+#define NC_INIT_WD         0x00000010 /**< nc_init()'s flag to enable with-default capability */
 
 /**
  * @ingroup genAPI
@@ -361,5 +402,9 @@ int nc_init(int flags);
  * done.
  */
 int nc_close(int system);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* NETCONF_H_ */

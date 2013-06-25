@@ -103,7 +103,6 @@
 #define NC_CAP_VALIDATE11_ID    "urn:ietf:params:netconf:capability:validate:1.1"
 #define NC_CAP_MONITORING_ID    "urn:ietf:params:xml:ns:yang:ietf-netconf-monitoring"
 #define NC_CAP_WITHDEFAULTS_ID  "urn:ietf:params:netconf:capability:with-defaults:1.0"
-#define NC_CAP_YANG_ID          "urn:ietf:params:xml:ns:yang:1"
 #define NC_CAP_URL_ID           "urn:ietf:params:netconf:capability:url:1.0"
 
 #define NC_NS_WITHDEFAULTS      "urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults"
@@ -206,6 +205,10 @@ extern int verbose_level;
 #define DBG_UNLOCK(name)
 #define DBG_LOCK(name)
 #endif
+
+/* Tests whether string is empty or non-empty. */
+#define strisempty(str) ((str)[0] == '\0')
+#define strnonempty(str) ((str)[0] != '\0')
 
 /**
  * @brief Callbacks structure for all the callback functions that can be set by an application
@@ -330,6 +333,8 @@ struct nc_session {
 	void *ssh_session;
 	void *ssh_channel;
 #endif
+	/**< @brief Am I the server endpoint? */
+	int is_server;
 	/**< @brief netopeer-agent's hostname */
 	char *hostname;
 	/**< @brief netopeer-agent's port */

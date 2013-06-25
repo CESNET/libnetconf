@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.5.0</span>
+   &#160;<span id="projectnumber">0.5.99</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -109,7 +109,8 @@ $(document).ready(function(){initNavTree('d9/db6/datastore_8h.html','../../');})
 <a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">datastore.h File Reference</div>  </div>
 </div><!--header-->
@@ -127,7 +128,7 @@ Macros</h2></td></tr>
 <tr class="memitem:gaf3338ac77041c714fc4f9877e608990a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a">NCDS_INTERNAL_ID</a>&#160;&#160;&#160;0</td></tr>
 <tr class="memdesc:gaf3338ac77041c714fc4f9877e608990a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Datastore ID to access libnetconf's internal datastores such as notifications, monitoring, etc.  <a href="../../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a">More...</a><br/></td></tr>
 <tr class="separator:gaf3338ac77041c714fc4f9877e608990a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6">NCDS_RPC_NOT_APPLICABLE</a>&#160;&#160;&#160;((void *) -1)</td></tr>
+<tr class="memitem:ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6">NCDS_RPC_NOT_APPLICABLE</a>&#160;&#160;&#160;((void*)(&amp;<a class="el" href="../../d9/db6/datastore_8h.html#a9d81ebfeff55fd595fb20a0804107b9b">error_area</a>))</td></tr>
 <tr class="memdesc:ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return value of <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore.">ncds_apply_rpc()</a> when the requested operation is not applicable to the specified datastore.  <a href="../../db/d67/group__store.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6">More...</a><br/></td></tr>
 <tr class="separator:ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -159,6 +160,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">ncds_init</a> (struct ncds_ds *datastore)</td></tr>
 <tr class="memdesc:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate datastore structure for use.  <a href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">More...</a><br/></td></tr>
 <tr class="separator:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18f65083d2321a896be80d686b632b9a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db6/datastore_8h.html#a18f65083d2321a896be80d686b632b9a">ncds_device_init</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *id)</td></tr>
+<tr class="memdesc:a18f65083d2321a896be80d686b632b9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize transAPI module(s) (if present) and copy startup configuration to running.  <a href="#a18f65083d2321a896be80d686b632b9a">More...</a><br/></td></tr>
+<tr class="separator:a18f65083d2321a896be80d686b632b9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">ncds_free</a> (struct ncds_ds *datastore)</td></tr>
 <tr class="memdesc:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close the specified datastore and free all the resources.  <a href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">More...</a><br/></td></tr>
 <tr class="separator:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,9 +172,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaabfd0bf6abeaf40659043bf082e14801"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801">ncds_apply_rpc</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id, const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gaabfd0bf6abeaf40659043bf082e14801"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the datastore.  <a href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801">More...</a><br/></td></tr>
 <tr class="separator:gaabfd0bf6abeaf40659043bf082e14801"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gacd81a8d7386f28d930a806723d2f6eb7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gacd81a8d7386f28d930a806723d2f6eb7">ncds_apply_rpc2all</a> (const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, int ids_copy, <a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *ids[])</td></tr>
-<tr class="memdesc:gacd81a8d7386f28d930a806723d2f6eb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>).  <a href="../../db/d67/group__store.html#gacd81a8d7386f28d930a806723d2f6eb7">More...</a><br/></td></tr>
-<tr class="separator:gacd81a8d7386f28d930a806723d2f6eb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6887f71d8a96129fec594a59bdd10fe9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga6887f71d8a96129fec594a59bdd10fe9">ncds_apply_rpc2all</a> (const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *ids[])</td></tr>
+<tr class="memdesc:ga6887f71d8a96129fec594a59bdd10fe9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>).  <a href="../../db/d67/group__store.html#ga6887f71d8a96129fec594a59bdd10fe9">More...</a><br/></td></tr>
+<tr class="separator:ga6887f71d8a96129fec594a59bdd10fe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabb9806e70f3399aed7da879095d9c64e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e">ncds_rollback</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id)</td></tr>
 <tr class="memdesc:gabb9806e70f3399aed7da879095d9c64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Undo the last change performed on the specified datastore.  <a href="../../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e">More...</a><br/></td></tr>
 <tr class="separator:gabb9806e70f3399aed7da879095d9c64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -201,10 +205,17 @@ Functions</h2></td></tr>
 <tr class="memitem:ga017491407c8d2c6f596d17e64eb10d84"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga017491407c8d2c6f596d17e64eb10d84">ncds_features_disableall</a> (const char *module)</td></tr>
 <tr class="memdesc:ga017491407c8d2c6f596d17e64eb10d84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disable usage of all features defined in the specified module. By default, all features are disabled. To disable only the specific feature(s), use <a class="el" href="../../db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0" title="Disable usage of the specified feature defined in the specified module By default, all features are disabled.">ncds_feature_disable()</a>.  <a href="../../db/d67/group__store.html#ga017491407c8d2c6f596d17e64eb10d84">More...</a><br/></td></tr>
 <tr class="separator:ga017491407c8d2c6f596d17e64eb10d84"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3644177deaaf308bb2ca218be99ea85"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db6/datastore_8h.html#ac3644177deaaf308bb2ca218be99ea85">ncds_feature_isenabled</a> (const char *module, const char *feature)</td></tr>
-<tr class="separator:ac3644177deaaf308bb2ca218be99ea85"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2a27448a52972db6807571590a5c6da"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db6/datastore_8h.html#ab2a27448a52972db6807571590a5c6da">ncds_consolidate</a> (void)</td></tr>
-<tr class="separator:ab2a27448a52972db6807571590a5c6da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac3644177deaaf308bb2ca218be99ea85"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gac3644177deaaf308bb2ca218be99ea85">ncds_feature_isenabled</a> (const char *module, const char *feature)</td></tr>
+<tr class="memdesc:gac3644177deaaf308bb2ca218be99ea85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the feature of the specified module is currently enabled or disabled.  <a href="../../db/d67/group__store.html#gac3644177deaaf308bb2ca218be99ea85">More...</a><br/></td></tr>
+<tr class="separator:gac3644177deaaf308bb2ca218be99ea85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab2a27448a52972db6807571590a5c6da"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gab2a27448a52972db6807571590a5c6da">ncds_consolidate</a> (void)</td></tr>
+<tr class="memdesc:gab2a27448a52972db6807571590a5c6da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Consolidate all internal structures of created data stores and all data models. This function especially solves all YANG's <code>uses</code> and <code>augment</code> statements.  <a href="../../db/d67/group__store.html#gab2a27448a52972db6807571590a5c6da">More...</a><br/></td></tr>
+<tr class="separator:gab2a27448a52972db6807571590a5c6da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a9d81ebfeff55fd595fb20a0804107b9b"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db6/datastore_8h.html#a9d81ebfeff55fd595fb20a0804107b9b">error_area</a></td></tr>
+<tr class="separator:a9d81ebfeff55fd595fb20a0804107b9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>NETCONF datastore handling function prototypes and structures. </p>
@@ -218,48 +229,38 @@ Functions</h2></td></tr>
 <p>ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above.</p>
 <p>This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ac3644177deaaf308bb2ca218be99ea85"></a>
+<a class="anchor" id="a18f65083d2321a896be80d686b632b9a"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int ncds_feature_isenabled </td>
+          <td class="memname">int ncds_device_init </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>module</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *&#160;</td>
+          <td class="paramname"><em>id</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>feature</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section return"><dt>Returns</dt><dd><ul>
-<li>negative value in case of error</li>
-<li>0 if feature is disabled</li>
-<li>1 if feature is enabled </li>
-</ul>
-</dd></dl>
+
+<p>Initialize transAPI module(s) (if present) and copy startup configuration to running. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">id</td><td>Pointer to ncds_id of device to initialize, if NULL all found transapi-capable devices will be initialized</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCESS or EXIT_FAILURE </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ab2a27448a52972db6807571590a5c6da"></a>
+<h2 class="groupheader">Variable Documentation</h2>
+<a class="anchor" id="a9d81ebfeff55fd595fb20a0804107b9b"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int ncds_consolidate </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
+          <td class="memname">char error_area</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -272,7 +273,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d9/db6/datastore_8h.html">datastore.h</a></li>
-    <li class="footer">Generated on Tue May 7 2013 12:44:54 for libnetconf by
+    <li class="footer">Generated on Fri Jun 21 2013 14:17:42 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>
