@@ -1639,7 +1639,6 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 	}
 
 	retval->libssh2_socket = session->libssh2_socket;
-	retval->ssh_session = session->ssh_session; /* share the SSH session */
 	retval->fd_input = -1;
 	retval->fd_output = -1;
 	retval->hostname = session->hostname;
@@ -1658,14 +1657,23 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 	retval->stats->out_rpc_errors = 0;
 	retval->stats->out_notifications = 0;
 
+	/* shared resources with the original session */
+	retval->ssh_session = session->ssh_session;
+	/*
+	 * libssh2 is quite stupid - it provides multiple channels inside a single
+	 * session, but it does not allow multiple threads to work with these
+	 * channels, so we have to share input/output mutexes of the master
+	 * session to control access to each SSH channel
+	 */
+	retval->mut_out = session->mut_in;
+	retval->mut_out = session->mut_out;
+
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
+	if ((r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
