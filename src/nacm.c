@@ -444,7 +444,7 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 				rule->type = NACM_RULE_OPERATION;
 				s_orig = s = nc_clrwspace((char*) node->children->content);
 				for (c = l = 0; (t = strsep(&s, " \n\t")) != NULL; ) {
-					if (strlen(t) == 0) {
+					if (strisempty(t)) {
 						/* empty string (double delimiter) */
 						continue;
 					}
@@ -471,7 +471,7 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 				rule->type = NACM_RULE_NOTIF;
 				s_orig = s = nc_clrwspace((char*) node->children->content);
 				for (c = l = 0; (t = strsep(&s, " \n\t")) != NULL; ) {
-					if (strlen(t) == 0) {
+					if (strisempty(t)) {
 						/* empty string (double delimiter) */
 						continue;
 					}

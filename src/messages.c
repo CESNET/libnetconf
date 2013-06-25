@@ -1427,7 +1427,7 @@ nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
 
 	/* assign session-id */
 	/* check if session-id is prepared */
-	if (session_id == NULL || strlen(session_id) == 0) {
+	if (session_id == NULL || strisempty(session_id)) {
 		/* no session-id set */
 		ERROR("Hello: session ID is empty");
 		xmlFreeDoc(msg->doc);

@@ -746,8 +746,8 @@ char **get_schemas_capabilities(void)
 
 	for (i = 0, listitem = models_list; listitem != NULL; listitem = listitem->next, i++) {
 		if (asprintf(&(retval[i]), "%s?module=%s%s%s", listitem->model->namespace, listitem->model->name,
-				(listitem->model->version != NULL && strlen(listitem->model->version) > 0) ? "&amp;revision=" : "",
-				(listitem->model->version != NULL && strlen(listitem->model->version) > 0) ? listitem->model->version : "") == -1) {
+				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? "&amp;revision=" : "",
+				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? listitem->model->version : "") == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			/* move iterator back, then iterator will go back to the current value and will rewrite it*/
 			i--;
@@ -2664,7 +2664,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 					/* internal error - memory allocation failed, do not continue! */
 					return 0;
 				}
-				if (strlen(content1) == 0) {
+				if (strisempty(content1)) {
 					/* we have an empty content match node, so interpret it as a selection node,
 					 * which means that we will be selecting sibling nodes that will be in the
 					 * filter result
@@ -2715,7 +2715,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 									/* internal error - memory allocation failed, do not continue! */
 									return 0;
 								}
-								if (strlen(content1) == 0) {
+								if (strisempty(content1)) {
 									/* we have an empty content match node, so interpret it as a selection node,
 									 * which means that it will be included in the filter result
 									 */

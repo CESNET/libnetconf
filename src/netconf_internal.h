@@ -205,6 +205,10 @@ extern int verbose_level;
 #define DBG_LOCK(name)
 #endif
 
+/* Tests whether string is empty or non-empty. */
+#define strisempty(str) ((str)[0] == '\0')
+#define strnonempty(str) ((str)[0] != '\0')
+
 /**
  * @brief Callbacks structure for all the callback functions that can be set by an application
  * @ingroup internalAPI

@@ -668,7 +668,7 @@ const struct ncds_lockinfo *ncds_file_lockinfo(struct ncds_ds* ds, NC_DATASTORE 
 	free((*info).time);
 	(*info).sid = (char*) xmlGetProp (target_ds, BAD_CAST "lock");
 	(*info).time = (char*) xmlGetProp (target_ds, BAD_CAST "locktime");
-	if (strlen((*info).sid) == 0) {
+	if (strisempty((*info).sid)) {
 		free((*info).sid);
 		free((*info).time);
 		(*info).sid = NULL;
