@@ -2836,7 +2836,8 @@ int ncds_rollback(ncds_id id)
 }
 
 /*
- * \todo Add description (return values)
+ * Checks if datastores are in conflict
+ * returns 0 if there is no conflict
  */
 int ncds_is_conflict(const nc_rpc * rpc)
 {
@@ -2861,6 +2862,7 @@ int ncds_is_conflict(const nc_rpc * rpc)
 			if( (query_source == NULL || query_target == NULL )) {
 				return 1;
 			}
+
 			nc1 = xmlNodeGetContent(query_source->nodesetval->nodeTab[0]);
 			nc2 = xmlNodeGetContent(query_target->nodesetval->nodeTab[0]);
 			
@@ -2871,7 +2873,9 @@ int ncds_is_conflict(const nc_rpc * rpc)
 			/*
 			 * \todo Check query_source and query_target - aren't they NULL? aren't they empty? - see line 2622
 			 */
+
 			ret = xmlStrcmp(nc1, nc2);
+
 			/* cleanup */
 			xmlFree(nc1);
 			xmlFree(nc2);
