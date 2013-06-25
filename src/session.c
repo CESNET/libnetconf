@@ -1009,6 +1009,10 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			libssh2_session_free(session->ssh_session);
 			session->ssh_session = NULL;
 
+			/* also destroy shared mutexes */
+			pthread_mutex_destroy(&(session->mut_in));
+			pthread_mutex_destroy(&(session->mut_out));
+
 			close(session->libssh2_socket);
 		}
 		session->libssh2_socket = -1;
@@ -1086,8 +1090,10 @@ void nc_session_free (struct nc_session* session)
 	}
 
 	/* destroy mutexes */
+#ifndef DISABLE_LIBSSH
 	pthread_mutex_destroy(&(session->mut_in));
 	pthread_mutex_destroy(&(session->mut_out));
+#endif
 	pthread_mutex_destroy(&(session->mut_mqueue));
 	pthread_mutex_destroy(&(session->mut_equeue));
 	pthread_mutex_destroy(&(session->mut_session));
