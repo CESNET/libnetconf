@@ -177,7 +177,7 @@ static char* nc_msg_dump(const struct nc_msg *msg)
 	xmlChar *buf;
 	int len;
 
-	if (msg == NULL || msg == ((void *) -1) || msg->doc == NULL) {
+	if (msg == NULL || msg == NCDS_RPC_NOT_APPLICABLE || msg->doc == NULL) {
 		ERROR("%s: invalid input parameter.", __func__);
 		return (NULL);
 	}
@@ -199,7 +199,7 @@ char* nc_reply_dump(const nc_reply *reply)
 
 xmlDocPtr ncxml_reply_dump(const nc_reply *reply)
 {
-	if (reply == NULL || reply == ((void *) -1) || reply->doc == NULL) {
+	if (reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE || reply->doc == NULL) {
 		ERROR("%s: invalid input parameter.", __func__);
 		return (NULL);
 	}
@@ -548,7 +548,7 @@ nc_reply* ncxml_reply_build(xmlDocPtr reply_dump)
 
 const nc_msgid nc_reply_get_msgid(const nc_reply *reply)
 {
-	if (reply != NULL && reply != ((void *) -1)) {
+	if (reply != NULL && reply != NCDS_RPC_NOT_APPLICABLE) {
 		return (reply->msgid);
 	} else {
 		return (0);
@@ -1148,7 +1148,7 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
 {
 
-	if (reply == NULL || reply == ((void *) -1)) {
+	if (reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE) {
 		return (NC_REPLY_UNKNOWN);
 	} else {
 		return (reply->type.reply);
@@ -1236,7 +1236,7 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 
 const char *nc_reply_get_errormsg(const nc_reply *reply)
 {
-	if (reply == NULL || reply == ((void *) -1) || reply->type.reply != NC_REPLY_ERROR) {
+	if (reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE || reply->type.reply != NC_REPLY_ERROR) {
 		return (NULL);
 	}
 
@@ -1303,7 +1303,7 @@ void nc_msg_free(struct nc_msg *msg)
 	struct nc_err* e, *efree;
 	int i;
 
-	if (msg != NULL && msg != ((void *) -1)) {
+	if (msg != NULL && msg != NCDS_RPC_NOT_APPLICABLE) {
 		if (msg->doc != NULL) {
 			xmlFreeDoc(msg->doc);
 		}
@@ -1345,7 +1345,7 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 {
 	struct nc_msg *dupmsg;
 
-	if (msg == NULL || msg == ((void *) -1) || msg->doc == NULL) {
+	if (msg == NULL || msg == NCDS_RPC_NOT_APPLICABLE || msg->doc == NULL) {
 		return (NULL);
 	}
 
@@ -1795,7 +1795,7 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 {
 	xmlNodePtr content;
 
-	if (error == NULL || reply == NULL || reply == ((void *) -1) || reply->type.reply != NC_REPLY_ERROR) {
+	if (error == NULL || reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE || reply->type.reply != NC_REPLY_ERROR) {
 		return (EXIT_FAILURE);
 	}
 	if (reply->doc == NULL || reply->doc->children == NULL) {
