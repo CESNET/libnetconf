@@ -36,9 +36,10 @@
  * if advised of the possibility of such damage.
  *
  */
-
+#define _GNU_SOURCE
 #include <curl/curl.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -55,35 +56,89 @@
 #define INIT_FLAGS CURL_GLOBAL_SSL
 #endif
 
-int nc_url_allowed_protocols = 0;
+// default allowed protocols
+int nc_url_protocols = NC_URL_FILE | NC_URL_SCP;
 
-void nc_url_set_protocols( NC_URL_PROTOCOLS protocols )
+void nc_url_set_protocols( int protocols, struct nc_session * session )
 {
-	nc_url_allowed_protocols = protocols;
+	session->url_protocols = protocols;
 }
 
-void nc_url_allow( NC_URL_PROTOCOLS protocol )
+void nc_url_allow( int protocol, struct nc_session * session )
 {
-	nc_url_allowed_protocols = nc_url_allowed_protocols | protocol;
+	session->url_protocols = session->url_protocols | protocol;
 }
 
-void nc_url_disable( NC_URL_PROTOCOLS protocol )
+void nc_url_disable( int protocol, struct nc_session * session )
 {
-	nc_url_allowed_protocols = ~(~nc_url_allowed_protocols ^ protocol ) ;
+	session->url_protocols = ~(~session->url_protocols ^ protocol ) ;
 }
 
-int nc_url_is_enabled( NC_URL_PROTOCOLS protocol )
+int nc_url_is_enabled( int protocol, const struct nc_session * session )
 {
-	return nc_url_allowed_protocols & protocol;
+	printf( "aaaauuuuuuuuuuuuuuuu %d\n\n\n", session->url_protocols );
+	return session->url_protocols & protocol;
+}
+
+/**< @brief generates url capability string with enabled protocols */
+char * nc_url_gencap( struct nc_session * session ) {
+	xmlChar * protocols[] = { BAD_CAST "scp", BAD_CAST "http", BAD_CAST "https",
+		BAD_CAST "ftp", BAD_CAST "sftp", BAD_CAST "ftps", BAD_CAST "file" };
+	char * capability;
+	int first = 1;
+	int i;
+	int protocol = 1;
+
+	if( session->url_protocols == 0 ) {
+		return NULL;
+	}
+	
+	if( asprintf( &capability, NC_CAP_URL_ID "&amp;scheme=") < 0 ) {
+		ERROR( "%s: asprintf error", __func__ );
+	}
+	
+	for( i=0, protocol=1; i<7; i++, protocol <<= 1 ) {
+		if( protocol & session->url_protocols ) {
+			if( asprintf( &capability, "%s%s%s", capability, first?"":",", protocols[i]) < 0 ) {
+				ERROR( "%s: asprintf error", __func__ );
+			}
+			first = 0;
+		}
+	}
+	
+	return capability;
+	
+}
+
+
+/**< @brief gets protocol id from url*/
+NC_URL_PROTOCOLS nc_url_get_protocol( xmlChar * url ) {
+	xmlChar * protocols[] = { BAD_CAST "scp", BAD_CAST "http", BAD_CAST "https",
+		BAD_CAST "ftp", BAD_CAST "sftp", BAD_CAST "ftps", BAD_CAST "file" };
+	int protocol = 1;
+	int i;
+	char * prot_str;
+	prot_str = strtok( (char*)url, ":" );
+	if( prot_str == NULL ) return 0;
+	for( i=0; ;i++, protocol <<= 1 ) {
+		if( protocol > 64 ) return 0;
+		if( xmlStrcmp( BAD_CAST prot_str, protocols[i]) == 0)break;
+		if( prot_str == NULL ) break;
+
+	}
+	
+	return protocol;
 }
 
 int nc_url_upload( const char * data, xmlChar * url ) {
 	CURL * curl;
 	CURLcode res;
+	
 	char curl_buffer[ CURL_ERROR_SIZE ];
 	FILE * tmp_file;
 	xmlDocPtr doc;
 	xmlNodePtr root_element;
+
 	
 	if( strcmp( data, "" ) == 0 ) {
 		ERROR( "%s: source file is empty", __func__)
@@ -133,7 +188,6 @@ int nc_url_delete_config( xmlChar * url )
 	char curl_buffer[ CURL_ERROR_SIZE ];
 	FILE * empty_file;
 	
-	
 	empty_file = tmpfile();
 	
 	curl_global_init(INIT_FLAGS);
@@ -156,7 +210,7 @@ int nc_url_delete_config( xmlChar * url )
 }
 
 int nc_url_get_rpc( xmlChar * url )
-{
+{	
 	CURL * curl;
 	CURLcode res;
 	char curl_buffer[ CURL_ERROR_SIZE ];

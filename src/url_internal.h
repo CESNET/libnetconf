@@ -42,13 +42,16 @@
 #define URL_INTERNAL_H_
 
 #include "url.h"
+#include "netconf_internal.h"
 
 typedef unsigned char xmlChar;
 
 int nc_url_get_rpc( xmlChar * url );
 int nc_url_delete_config( xmlChar * url );
 int nc_url_upload( const char * data, xmlChar * url );
-
+char * nc_url_gencap( struct nc_session * session );
+int nc_url_is_enabled( int protocol, const struct nc_session * session );
+NC_URL_PROTOCOLS nc_url_get_protocol( xmlChar * url );
 int url_tmpfile;
 
 #endif /* URL_INTERNAL_H_ */

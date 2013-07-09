@@ -2928,11 +2928,7 @@ int ncds_rollback(ncds_id id)
 	return (datastore->func.rollback(datastore));
 }
 
-/*
- * Checks if datastores are in conflict
- * returns 0 if there is no conflict
- */
-int ncds_is_conflict(const nc_rpc * rpc)
+int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
 {
 	NC_DATASTORE source, target;
 #ifndef DISABLE_URL
@@ -2949,7 +2945,7 @@ int ncds_is_conflict(const nc_rpc * rpc)
 		/* source and target datastore are the same */
 #ifndef DISABLE_URL
 		/* if they are URLs, check if both URLs point to a single resource */
-		if (source == NC_DATASTORE_URL) {
+		if (source == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
 			query_source = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":url", rpc->ctxt);
 			query_target = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
 			if( (query_source == NULL || query_target == NULL )) {
@@ -3017,6 +3013,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 #ifndef DISABLE_URL
 	xmlXPathObjectPtr url_path = NULL;
 	xmlChar *ncontent;
+	NC_URL_PROTOCOLS protocol;
 #endif /* DISABLE_URL */
 
 	if (rpc == NULL || session == NULL) {
@@ -3278,7 +3275,7 @@ process_datastore:
 				break;
 			}
 			/* <copy-config> with specified source datastore */
-			if ( ncds_is_conflict(rpc) ) {
+			if ( ncds_is_conflict(rpc, session) ) {
 				e = nc_err_new(NC_ERR_INVALID_VALUE);
 				nc_err_set(e, NC_ERR_PARAM_MSG, "Both the target and the source identify the same datastore.");
 				break;
@@ -3290,6 +3287,7 @@ process_datastore:
 			 * cover it with the <config> element to allow the creation of xml
 			 * document
 			 */
+			
 			config = nc_rpc_get_config(rpc);
 			if (config == NULL) {
 				e = nc_err_new(NC_ERR_OP_FAILED);
@@ -3386,15 +3384,26 @@ apply_editcopyconfig:
 			ret = ds->func.editconfig(ds, session, rpc, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 		} else if (op == NC_OP_COPYCONFIG) {
 #ifndef DISABLE_URL
-			if(target_ds == NC_DATASTORE_URL) {
+			if(target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
 				url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
 				if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
 					ERROR("%s: unable to get URL path from <copy-config> request.", __func__);
 					ret = EXIT_FAILURE;
 					break;
 				}
+				ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
+				protocol = nc_url_get_protocol( ncontent );
+				if( protocol == 0 ) {
+					ERROR( "%s: unknown protocol", __func__ );
+					return (NULL);
+				}
+				if( !nc_url_is_enabled( protocol, rpc->session) ) {
+					ERROR( "%s: protocol not suported", __func__ );
+					return (NULL);
+				}
+				
 				/* \todo What if the source is a local datastore (i.e. startup, running, candidate)? */
-				ret = nc_url_upload(config = nc_rpc_get_config(rpc), ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]));
+				ret = nc_url_upload(config = nc_rpc_get_config(rpc), ncontent );
 				xmlFree(ncontent);
 				xmlXPathFreeObject(url_path);
 			} else {
@@ -3432,14 +3441,25 @@ apply_editcopyconfig:
 		}
 		target_ds  = nc_rpc_get_target(rpc);
 #ifndef DISABLE_URL
-		if( target_ds == NC_DATASTORE_URL ) {
+		if(target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
 			url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":delete-config/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
 			if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
 				ERROR("%s: unable to get URL path from <delete-config> request.", __func__);
 				ret = EXIT_FAILURE;
 				break;
 			}
-			ret = nc_url_delete_config(ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]));
+			ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
+			protocol = nc_url_get_protocol( ncontent );
+			if( protocol == 0 ) {
+			ERROR( "%s: unknown protocol", __func__ );
+			return (NULL);
+		}
+			if( !nc_url_is_enabled( protocol, rpc->session) ) {
+				ERROR( "%s: protocol not suported", __func__ );
+				return (NULL);
+			}
+			
+			ret = nc_url_delete_config( ncontent );
 			xmlFree(ncontent);
 			xmlXPathFreeObject(url_path);
 		} else {

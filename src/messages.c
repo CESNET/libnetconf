@@ -858,6 +858,7 @@ xmlNodePtr ncxml_rpc_get_config( const nc_rpc* rpc )
 	xmlDocPtr aux_doc = NULL;
 #ifndef DISABLE_URL
 	int url_buff_fd;
+	NC_URL_PROTOCOLS protocol;
 #endif
 	
 	char * sources[] = {
@@ -884,6 +885,15 @@ xmlNodePtr ncxml_rpc_get_config( const nc_rpc* rpc )
 	/* URL CAPABILITY*/
 	if( i == 1 || i == 3 ) {
 #ifndef DISABLE_URL
+		protocol = nc_url_get_protocol( xmlNodeGetContent( query_result->nodesetval->nodeTab[0] ) );
+		if( protocol == 0 ) {
+			ERROR( "%s: unknown protocol", __func__ );
+			return (NULL);
+		}
+		if( !nc_url_is_enabled( protocol, rpc->session ) ) {
+			ERROR( "%s: protocol not suported", __func__ );
+			return (NULL);
+		}
 		if( ( url_buff_fd = nc_url_get_rpc( xmlNodeGetContent( query_result->nodesetval->nodeTab[0] ) ) ) < 0 )
 		{
 			return (NULL);
@@ -2193,7 +2203,6 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 		datastore = "candidate";
 		break;
 	case NC_DATASTORE_URL:
-		printf( "URL!");
 		/* work is done later */
 		break;
 	default:
