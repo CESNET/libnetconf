@@ -130,14 +130,19 @@ static struct session_list_map *session_list = NULL;
  */
 #define NC_READ_SLEEP 100
 #ifdef DISABLE_LIBSSH
-#define NC_WRITE(session,buf,c) \
-	if (session->fd_output != -1) {c += write (session->fd_output, (buf), strlen(buf));}
+#define NC_WRITE(session,buf,c,ret) \
+	if (session->fd_output != -1) {ret = write (session->fd_output, (buf), strlen(buf)); \
+		if (ret > 0) {c += ret;} \
+	}
 #else
-#define NC_WRITE(session,buf,c) \
+#define NC_WRITE(session,buf,c,ret) \
 	if(session->ssh_channel){ \
-		c += libssh2_channel_write (session->ssh_channel, (buf), strlen(buf)); \
+		ret = libssh2_channel_write (session->ssh_channel, (buf), strlen(buf)); \
+		if (ret > 0) {c += ret;} \
 	} else if (session->fd_output != -1) { \
-		c += write (session->fd_output, (buf), strlen(buf));}
+		ret = write (session->fd_output, (buf), strlen(buf)); \
+		if (ret > 0) {c += ret;} \
+	}
 #endif
 
 #define SIZE_STEP (1024*16)
@@ -1228,7 +1233,12 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 		snprintf (buf, 1024, "\n#%d\n", (int) strlen (text));
 		c = 0;
 		do {
-			NC_WRITE(session, &(buf[c]), c);
+			NC_WRITE(session, &(buf[c]), c, ret);
+			if (ret < 0) {
+				DBG_UNLOCK("mut_libssh2_channels");
+				pthread_mutex_unlock(session->mut_libssh2_channels);
+				return (EXIT_FAILURE);
+			}
 #ifndef DISABLE_LIBSSH
 			if (c == LIBSSH2_ERROR_TIMEOUT) {
 				DBG_UNLOCK("mut_libssh2_channels");
@@ -1237,13 +1247,18 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 				return (EXIT_FAILURE);
 			}
 #endif
-		} while (c != (ssize_t) strlen (buf));
+		} while (c < (ssize_t) strlen (buf));
 	}
 
 	/* write the message */
 	c = 0;
 	do {
-		NC_WRITE(session, &(text[c]), c);
+		NC_WRITE(session, &(text[c]), c, ret);
+		if (ret < 0) {
+			DBG_UNLOCK("mut_libssh2_channels");
+			pthread_mutex_unlock(session->mut_libssh2_channels);
+			return (EXIT_FAILURE);
+		}
 #ifndef DISABLE_LIBSSH
 		if (c == LIBSSH2_ERROR_TIMEOUT) {
 			DBG_UNLOCK("mut_libssh2_channels");
@@ -1252,7 +1267,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 			return (EXIT_FAILURE);
 		}
 #endif
-	} while (c != (ssize_t) strlen (text));
+	} while (c < (ssize_t) strlen (text));
 	free (text);
 
 	/* close message */
@@ -1263,7 +1278,12 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	}
 	c = 0;
 	do {
-		NC_WRITE(session, &(text[c]), c);
+		NC_WRITE(session, &(text[c]), c, ret);
+		if (ret < 0) {
+			DBG_UNLOCK("mut_libssh2_channels");
+			pthread_mutex_unlock(session->mut_libssh2_channels);
+			return (EXIT_FAILURE);
+		}
 #ifndef DISABLE_LIBSSH
 		if (c == LIBSSH2_ERROR_TIMEOUT) {
 			DBG_UNLOCK("mut_libssh2_channels");
@@ -1272,7 +1292,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 			return (EXIT_FAILURE);
 		}
 #endif
-	} while (c != (ssize_t) strlen (text));
+	} while (c < (ssize_t) strlen (text));
 
 	/* unlock the session's output */
 	DBG_UNLOCK("mut_libssh2_channels");
