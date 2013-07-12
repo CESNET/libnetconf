@@ -81,7 +81,7 @@ $(TARGETS): $(OBJS)
 $(OBJDIR)/%.o: %.c
 	@[ -d $$(dirname $@) ] || \
 		(mkdir -p $$(dirname $@))
-	$(CC) $(CFLAGS) $(CPPFLAGS) -fPIC -c $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I../../../src -fPIC -c $< -o $@
 
 .PHONY: install
 install: $(TARGETS)
