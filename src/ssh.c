@@ -759,9 +759,9 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
+	retval->mut_libssh2_channels = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
+	if ((r = pthread_mutex_init(retval->mut_libssh2_channels, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
@@ -1057,8 +1057,10 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		return (NULL);
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
+	retval->mut_libssh2_channels = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
 	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
+			(r = pthread_mutex_init(retval->mut_libssh2_channels, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
@@ -1374,8 +1376,8 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		return (NULL);
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
+	retval->mut_libssh2_channels = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
+	if ((r = pthread_mutex_init(retval->mut_libssh2_channels, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
@@ -1665,11 +1667,10 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 	/*
 	 * libssh2 is quite stupid - it provides multiple channels inside a single
 	 * session, but it does not allow multiple threads to work with these
-	 * channels, so we have to share input/output mutexes of the master
+	 * channels, so we have to share mutex of the master
 	 * session to control access to each SSH channel
 	 */
-	retval->mut_out = session->mut_in;
-	retval->mut_out = session->mut_out;
+	retval->mut_libssh2_channels = session->mut_libssh2_channels;
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
@@ -1742,8 +1743,11 @@ shutdown:
 	}
 	if (retval) {
 		free(retval->stats);
-		pthread_mutex_destroy(&(retval->mut_in));
-		pthread_mutex_destroy(&(retval->mut_out));
+		if (retval->mut_libssh2_channels != NULL) {
+			pthread_mutex_destroy(retval->mut_libssh2_channels);
+			free(retval->mut_libssh2_channels);
+			retval->mut_libssh2_channels = NULL;
+		}
 		pthread_mutex_destroy(&(retval->mut_mqueue));
 		pthread_mutex_destroy(&(retval->mut_equeue));
 		pthread_mutex_destroy(&(retval->mut_session));

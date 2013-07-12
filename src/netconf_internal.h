@@ -356,10 +356,18 @@ struct nc_session {
 	NC_SESSION_STATUS status;
 	/**< @brief thread lock for accessing session items */
 	pthread_mutex_t mut_session;
-	/**< @brief thread lock for accessing output */
-	pthread_mutex_t mut_out;
-	/**< @brief thread lock for accessing in */
-	pthread_mutex_t mut_in;
+	/**< @brief thread lock for libssh2 channels
+	 *
+	 * Tests of libssh2 in multithread application showed, that libssh2_channel_read()
+	 * and libssh_channel_write() shouldn't be called in the same time.
+	 * Therefore, we replaced mut_in and mut_out with one shared mutex
+	 * mut_libssh2_channels.
+	 * Unfortunately, even though we use this mutex in nc_session_receive() and
+	 * nc_session_send(), there is still some problem in libssh2 that causes
+	 * application failure. \note{The problem appeares mainly during notification history
+	 * replay usage with other NETCONF operations in the same time. (Tomas Cejka)}
+	 */
+	pthread_mutex_t *mut_libssh2_channels;
 	/**< @brief thread lock for accessing queue_event */
 	pthread_mutex_t mut_equeue;
 	/**< @brief thread lock for accessing queue_msg */
