@@ -46,6 +46,8 @@ REQS="$REQS, libnetconf"
   			REQS="$REQS, libxml2"
   			BUILDREQS="$BUILDREQS, libxml2-devel"
 			fi
+# Check for libnetconf
+AC_CHECK_LIB([netconf], [ncntf_event_new], [CFLAGS="-L../../../ -I../../../src/ $CFLAGS" LIBS="-lnetconf $LIBS"], AC_MSG_ERROR([libnetconf not found!]))
 
 
 # Here you can add checks for other libraries your code uses
