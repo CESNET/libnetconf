@@ -152,6 +152,7 @@ HDRS_PRIV = src/config.h.in \
 GENERATOR = src/transapi/generator/generator.py \
 
 GENERATOR_FILES = src/transapi/generator/Makefile.in \
+	src/transapi/generator/configure.in \
 	src/transapi/generator/specfile.spec.in \
 	src/transapi/generator/install-sh \
 	src/transapi/generator/README
