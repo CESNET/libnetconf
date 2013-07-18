@@ -1183,6 +1183,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	char *text;
 	char buf[1024];
 	struct pollfd fds;
+	int ret;
 
 	if ((session->ssh_channel == NULL) && (session->fd_output == -1)) {
 		return (EXIT_FAILURE);
