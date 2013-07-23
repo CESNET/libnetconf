@@ -563,6 +563,37 @@ const nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc)
 	}
 }
 
+char *nc_rpc_get_ns(const nc_rpc *rpc)
+{
+	xmlNodePtr root, opnode;
+
+	if (rpc == NULL || rpc->doc == NULL ) {
+		ERROR("%s: Invalid parameter (missing message or message document).", __func__);
+		return NULL;
+	}
+
+	if ((root = xmlDocGetRootElement(rpc->doc)) == NULL) {
+		ERROR("%s: Invalid parameter (invalid message structure).", __func__);
+		return NULL;
+	}
+	if (xmlStrcmp(root->name, BAD_CAST "rpc") != 0) {
+		ERROR("%s: Invalid rpc message - not an <rpc> message.", __func__);
+		return (NC_OP_UNKNOWN);
+	}
+
+	/* return namespace of the first element node inside <rpc> */
+	for (opnode = root->children; opnode != NULL && opnode->type != XML_ELEMENT_NODE; opnode = opnode->next);
+	if (opnode == NULL) {
+		ERROR("%s: Invalid message structure - no operation element.", __func__);
+		return (NULL);
+	} else if (opnode->ns == NULL) {
+		WARN("%s: Bad message structure - operation element with missing namespace.", __func__);
+		return (NULL);
+	} else {
+		return strdup((char *) opnode->ns->href);
+	}
+}
+
 NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 {
 	xmlNodePtr root, auxnode;
