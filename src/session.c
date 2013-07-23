@@ -133,6 +133,8 @@ static struct session_list_map *session_list = NULL;
 #define NC_WRITE(session,buf,c,ret) \
 	if (session->fd_output != -1) {ret = write (session->fd_output, (buf), strlen(buf)); \
 		if (ret > 0) {c += ret;} \
+	} else { \
+		ret = -1; \
 	}
 #else
 #define NC_WRITE(session,buf,c,ret) \
@@ -142,6 +144,8 @@ static struct session_list_map *session_list = NULL;
 	} else if (session->fd_output != -1) { \
 		ret = write (session->fd_output, (buf), strlen(buf)); \
 		if (ret > 0) {c += ret;} \
+	} else { \
+		ret = -1; \
 	}
 #endif
 
