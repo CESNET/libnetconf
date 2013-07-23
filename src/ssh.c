@@ -545,11 +545,18 @@ static int check_hostkey(const char *host, const char* knownhosts_dir, LIBSSH2_S
 	int fd;
 	size_t len;
 	const char *remotekey, *fingerprint_raw;
-	char fingerprint_md5[48];
 	char *knownhosts_file = NULL;
 	int hostkey_type, hostkey_typebit;
 	struct libssh2_knownhost *ssh_host;
 	LIBSSH2_KNOWNHOSTS *knownhosts;
+
+	/*
+	 * to print MD5 raw hash, we need 3*16 + 1 bytes (4 characters are printed
+	 * all the time, but except the last one, NULL terminating bytes are
+	 * rewritten by the following value). In the end, the last ':' is removed
+	 * for nicer output, so there are two terminating NULL bytes in the end.
+	 */
+	char fingerprint_md5[49];
 
 	/* MD5 hash size is 16B, SHA1 hash size is 20B */
 	fingerprint_raw = libssh2_hostkey_hash(ssh_session, LIBSSH2_HOSTKEY_HASH_MD5);
