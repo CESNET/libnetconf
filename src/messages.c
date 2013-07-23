@@ -112,6 +112,19 @@ struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, ...)
 	case NC_FILTER_SUBTREE:
 		/* convert string representation into libxml2 structure */
 		arg = va_arg(argp, const char*);
+		if (strncmp(arg, "<?xml", 5) == 0) {
+			/* We got a "real" XML document. We move after the XML
+			 * declaration, so the trick with covering <filter> element
+			 * will work.
+			 */
+			arg = index(arg, '>') + 1;
+			if (arg == NULL) {
+				/* content is corrupted */
+				ERROR("Invalid XML data to create subtree filter");
+				va_end(argp);
+				return NULL;
+			}
+		}
 		if (asprintf(&filter_s, "<filter>%s</filter>", (arg == NULL) ? "" : arg) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			va_end(argp);
@@ -2438,6 +2451,20 @@ nc_rpc * nc_rpc_validate(NC_DATASTORE source, ...)
 			va_end(argp);
 			return NULL;
 		}
+
+		if (strncmp(config_s, "<?xml", 5) == 0) {
+			/* We got a "real" XML document. We move after the XML
+			 * declaration, so the trick with covering <config> element
+			 * will work.
+			 */
+			config_s = index(config_s, '>') + 1;
+			if (config_s == NULL) {
+				/* content is corrupted */
+				ERROR("Invalid configuration data for validate operation");
+				va_end(argp);
+				return NULL;
+			}
+		}
 		break;
 	case NC_DATASTORE_URL:
 		source_url = va_arg(argp, const char*);
@@ -2720,6 +2747,19 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
 
 	if (source == NC_DATASTORE_CONFIG) {
 		config_s = va_arg(argp, const char*);
+		if (strncmp(config_s, "<?xml", 5) == 0) {
+			/* We got a "real" XML document. We move after the XML
+			 * declaration, so the trick with covering <config> element
+			 * will work.
+			 */
+			config_s = index(config_s, '>') + 1;
+			if (config_s == NULL) {
+				/* content is corrupted */
+				ERROR("Invalid configuration data for <copy-config> operation");
+				va_end(argp);
+				return NULL;
+			}
+		}
 
 		/* transform string to the xmlNodePtr */
 		/* add covering <config> element to allow to specify multiple root elements */
@@ -2951,6 +2991,19 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFO
 	switch (source) {
 	case NC_DATASTORE_CONFIG:
 		config_s = va_arg(argp, const char*);
+		if (strncmp(config_s, "<?xml", 5) == 0) {
+			/* We got a "real" XML document. We move after the XML
+			 * declaration, so the trick with covering <config> element
+			 * will work.
+			 */
+			config_s = index(config_s, '>') + 1;
+			if (config_s == NULL) {
+				/* content is corrupted */
+				ERROR("Invalid configuration data for <edit-config> operation");
+				va_end(argp);
+				return NULL;
+			}
+		}
 		break;
 	case NC_DATASTORE_URL:
 		url = va_arg(argp, const char*);
