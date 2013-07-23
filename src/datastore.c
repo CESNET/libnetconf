@@ -2944,6 +2944,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	int transapi_callbacks_count;
 	const char * rpc_name;
 	xmlBufferPtr buf = NULL;
+	char *end = NULL, *aux = NULL;
 
 	if (rpc == NULL || session == NULL) {
 		ERROR("%s: invalid parameter %s", __func__, (rpc==NULL)?"rpc":"session");
@@ -3030,6 +3031,20 @@ process_datastore:
 			}
 		} else {
 			data2 = data;
+			if (strncmp(data2, "<?xml", 5) == 0) {
+				/* We got a "real" XML document. We strip off the
+				 * declaration, so the thing below works.
+				 *
+				 * We just replace that with whitespaces, which is
+				 * harmless, but we'll free the correct pointer.
+				 */
+				end = index(data2, '>');
+				if (end != NULL) {
+					for (aux = data2; aux <= end; aux++) {
+						*aux = ' ';
+					}
+				} /* else content is corrupted that will be detected by xmlReadDoc() */
+			}
 			if (asprintf(&data, "<data>%s</data>", data2) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 				e = nc_err_new(NC_ERR_OP_FAILED);
