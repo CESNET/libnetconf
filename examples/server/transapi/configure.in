@@ -1,13 +1,35 @@
 AC_PREREQ([2.63])
-AC_INIT([toaster],[1.0])
+AC_INIT([toaster], [1.0], [BUG-REPORT-ADDRESS])
 AC_CONFIG_SRCDIR([toaster.c])
 
 PROJECTNAME=toaster
 AC_SUBST(PROJECTNAME)
 
-#Check for programs
+# --enable-debug option
+AC_ARG_ENABLE([debug],
+	AC_HELP_STRING([--enable-debug],[Compile with debug options]),
+	CFLAGS="$CFLAGS -g -DDEBUG",
+	CFLAGS="$CFLAGS -O3"
+)
+
+# --with-libxml2=path-to-libxml2-git-repository
+AC_ARG_WITH([libxml2],
+	[AC_HELP_STRING([--with-libxml2], [specific libxml2 location])],
+	[
+		AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no], [$withval])
+		if test "$XML2_CONFIG" = "no"; then
+			AC_MSG_ERROR([Missing development package of libxml2.])
+		fi
+		CFLAGS="`$withval/xml2-config --cflags` $CFLAGS"
+		LDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"
+		WITH_LIBXML2="$withval"
+	]
+)
+
+# Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+
 # Use libtool
 AC_PROG_LIBTOOL
 # Always use ./libtool unless overridden from command-line
@@ -16,55 +38,25 @@ if test -z "$libtool"; then
 fi
 AC_SUBST(libtool)
 
-#Check for rpmbuild
-AC_CHECK_PROG(RPMBUILD, rpmbuild, rpmbuild)
-
-RELEASE=1
-AC_SUBST(RELEASE)
-
-# --enable-debug option
-AC_ARG_ENABLE([debug], AC_HELP_STRING([--enable-debug],[Compile with debug options]),	CFLAGS="$CFLAGS -g -DDEBUG",	CFLAGS="$CFLAGS -O3")
-
-# --with-libxml2=path-to-libxml2-git-repository
-AC_ARG_WITH([libxml2],
-			[AC_HELP_STRING([--with-libxml2], [specific libxml2 location])],
-  		[
-		AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no], [$withval])
-    		if test "$XML2_CONFIG" = "no"; then
-    			AC_MSG_ERROR([Missing development package of libxml2.])
-    		fi
-    		CFLAGS="`$withval/xml2-config --cflags` $CFLAGS"
-    		LDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"
-    		WITH_LIBXML2="$withval"
-	]
-)
-
-# Created shared library is intended for use with libnetconf
-REQS="$REQS, libnetconf"
-
 # Checks for libraries.
+AC_SEARCH_LIBS([ncds_apply_rpc], [netconf], ,AC_MSG_ERROR([libnetconf not found!]))
+
+# Check for libnetconf's notification subsystem 
+AC_SEARCH_LIBS([ncntf_status], [netconf], ,AC_MSG_ERROR([libnetconf does not support notifications!]))
+
 # Check for libxml2.
-			if test -z "$WITH_LIBXML2" ; then
-  			AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no])
-  			if test "$XML2_CONFIG" = "no"; then
-    			AC_MSG_ERROR([Missing development package of libxml2.])
-  			fi
-  			AC_CHECK_LIB([xml2], [main], [LIBS="`xml2-config --libs` $LIBS" CFLAGS="`xml2-config --cflags` $CFLAGS"], AC_MSG_ERROR([Libxml2 not found ]))
-  			REQS="$REQS, libxml2"
-  			BUILDREQS="$BUILDREQS, libxml2-devel"
-			fi
-# Check for libnetconf
-AC_CHECK_LIB([netconf], [ncntf_event_new], [CFLAGS="-L../../../ -I../../../src/ $CFLAGS" LIBS="-lnetconf $LIBS"], AC_MSG_ERROR([libnetconf not found!]))
+if test -z "$WITH_LIBXML2" ; then
+	AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no])
+	if test "$XML2_CONFIG" = "no"; then
+		AC_MSG_ERROR([Missing development package of libxml2.])
+	fi
+	AC_CHECK_LIB([xml2], [main], [LIBS="`xml2-config --libs` $LIBS" CFLAGS="`xml2-config --cflags` $CFLAGS"], AC_MSG_ERROR([Libxml2 not found ]))
+fi
 
-
-# Here you can add checks for other libraries your code uses
-#AC_SEARCH_LIBS([ncds_apply_rpc],[netconf], ,AC_MSG_ERROR([libnetconf not found!]))
-#REQS="$REQS, libnetconf"
-#BUILDREQS="$BUILDREQS, libnetconf-devel"
 
 # Checks for header files.
-# Here you can add some header files
-#AC_CHECK_HEADER([libnetconf.h], ,AC_MSG_ERROR([libnetconf.h not found!]))
+CPPFLAGS="-I../../../src $CPPFLAGS"
+AC_CHECK_HEADERS([stdlib.h libnetconf.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_TYPE_UINT32_T
@@ -72,15 +64,5 @@ AC_CHECK_LIB([netconf], [ncntf_event_new], [CFLAGS="-L../../../ -I../../../src/ 
 # Checks for library functions.
 #AC_CHECK_FUNCS([strdup])
 
-AC_SUBST(RPMBUILD)
-if test -z "$RPMBUILD"; then
-	AC_MSG_WARN([Due to missing rpmbuild you will not able to generate RPM package.])
-fi
-
-AC_SUBST(REQS)
-AC_SUBST(BUILDREQS)
-
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([toaster.spec])
-
 AC_OUTPUT
