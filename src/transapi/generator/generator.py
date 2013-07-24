@@ -42,10 +42,12 @@ import re
 import sys
 import os
 
+target_dir = './'
+
 # Use configure.in.template and replace all variables with text
 def generate_configure_in(replace, template_dir, with_libxml2):
 	inf = open (template_dir+'/configure.in', 'r')
-	outf = open ('configure.in', 'w')
+	outf = open (target_dir+'/configure.in', 'w')
 
 	conf_in = inf.read()
 	for pattern, value in replace.items():
@@ -60,8 +62,11 @@ def generate_configure_in(replace, template_dir, with_libxml2):
 
 # Copy source files for autotools
 def copy_template_files(name, template_dir):
-	shutil.copy2(template_dir+'/install-sh', 'install-sh')
-	shutil.copy2(template_dir+'/Makefile.in', 'Makefile.in')
+	shutil.copy2(template_dir+'/install-sh', target_dir+'/install-sh')
+	shutil.copy2(template_dir+'/config.guess', target_dir+'/config.guess')
+	shutil.copy2(template_dir+'/config.sub', target_dir+'/config.sub')
+	shutil.copy2(template_dir+'/ltmain.sh', target_dir+'/ltmain.sh')
+	shutil.copy2(template_dir+'/Makefile.in', target_dir+'/Makefile.in')
 
 def separate_paths_and_namespaces(defs):
 	paths = []
@@ -87,7 +92,7 @@ def generate_callbacks_file(name, defs, model, with_libxml2, without_init, witho
 	if defs is None:
 		raise ValueError('Invalid paths file.')
 	# Create or rewrite .c file, will be generated
-	outf = open(name+'.c', 'w')
+	outf = open(target_dir+'/'+name+'.c', 'w')
 
 	content = ''
 	# License and description
@@ -312,11 +317,13 @@ def generate_rpc_callbacks (doc, with_libxml2):
 
 # Try to find template directory, if none of known candidates found raise exception
 def find_templates():
-	known_paths = ['/usr/share/libnetconf/templates', '/usr/local/share/libnetconf/templates/', './templates', './']
+	known_paths = ['/usr/share/libnetconf/templates/', '/usr/local/share/libnetconf/templates/', './templates/', './']
 
 	for path in known_paths:
 		if os.path.isdir(path):
-			if os.path.exists(path+'/install-sh') and os.path.exists(path+'/Makefile.in'):
+			if os.path.exists(path+'install-sh') and os.path.exists(path+'Makefile.in') and \
+					os.path.exists(path+'config.guess') and os.path.exists(path+'config.sub') and \
+					os.path.exists(path+'ltmain.sh'):
 				return(path)
 	
 	raise Exception('Template directory not found. Use --template-dir parameter to specify its location.')
@@ -362,6 +369,10 @@ if test -z "$WITH_LIBXML2" ; then\n\
 \tAC_CHECK_LIB([xml2], [main], [LIBS="`xml2-config --libs` $LIBS" CFLAGS="`xml2-config --cflags` $CFLAGS"], AC_MSG_ERROR([Libxml2 not found ]))\n\
 fi\n\n'
 	}
+	# prepare output directory
+	target_dir = './'+args.name
+	os.mkdir(target_dir)
+
 	#generate configure.in
 	generate_configure_in (r, args.template_dir, args.with_libxml2)
 	#copy files for autotools (Makefile.in, ...)

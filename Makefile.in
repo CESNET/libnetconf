@@ -47,11 +47,15 @@ bindir = @bindir@
 includedir = @includedir@
 libdir =  @libdir@
 mandir = @mandir@
+readlink = @READLINK@
+libtool = @libtool@
 
 VERSION = $(shell cut -f1 "$(srcdir)/VERSION" | tr -d '\n')
 # version for soname:
 ABICOMPAT_VER = $(shell echo $(VERSION) | cut -d. -f1,2)
 RELEASE = @RELEASE@
+# libtool version info
+version_info = @LIBTOOL_VERSION_INFO@
 
 CC = @CC@
 LN_S = @LN_S@
@@ -73,6 +77,7 @@ IDNOGIT = "released as version $(VERSION)"
 LIBS = @LDFLAGS@ @LIBS@
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = -DNC_WORKINGDIR_PATH=\"$(NC_WORKINGDIR_PATH)\" -DSETBIT=$(SETBIT) @CPPFLAGS@
+LIBTOOL = $(libtool) --tag=CC --quiet
 
 DBUS_CONFDIR = @DBUS_CONFDIR@
 
@@ -80,7 +85,7 @@ SUBDIRS = @SUBDIRS@
 
 INCLUDES= -I$(abs_srcdir)/src
 
-ifeq "$(shell pwd)" "$(shell readlink -f $(srcdir))"
+ifeq "$(shell pwd)" "$(shell $(readlink) -f $(srcdir))"
 OBJDIR = .obj
 else
 OBJDIR = .
@@ -153,35 +158,29 @@ GENERATOR = src/transapi/generator/generator.py \
 
 GENERATOR_FILES = src/transapi/generator/Makefile.in \
 	src/transapi/generator/configure.in \
-	src/transapi/generator/specfile.spec.in \
 	src/transapi/generator/install-sh \
+	src/transapi/generator/config.guess \
+	src/transapi/generator/config.sub \
+	src/transapi/generator/ltmain.sh \
 	src/transapi/generator/README
 
-OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
+LOBJS = $(SRCS:%.c=$(OBJDIR)/%.lo)
 
-all: $(NAME).a $(NAME).so $(SUBDIRS)
+all: $(NAME).la $(SUBDIRS)
 
 .PHONY: $(SUBDIRS)
 
-$(SUBDIRS): $(NAME).a $(NAME).so
+$(SUBDIRS): $(NAME).la
 	$(MAKE) -C $@
 
-$(NAME).a: $(OBJS)
+$(NAME).la: $(LOBJS)
 	@rm -f $@
-	ar rcs $@ $(OBJS)
+	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined -o $@ $^ -rpath $(libdir)
 
-$(NAME).so: $(OBJS)
-	@rm -f $@;
-	$(CC) -shared $(OBJS) $(LIBS) -Wl,-soname -Wl,$@.$(ABICOMPAT_VER) -o $@.$(VERSION);
-	@[ ! -L $@.$(ABICOMPAT_VER) ] || rm -rf $@.$(ABICOMPAT_VER);
-	$(LN_S) $@.$(VERSION) $@.$(ABICOMPAT_VER);
-	@[ ! -L $@ ] || rm -rf $@;
-	$(LN_S) $@.$(VERSION) $@;
-
-$(OBJDIR)/%.o: %.c
+$(OBJDIR)/%.lo: %.c
 	@[ -d $$(dirname $@) ] || \
 		(mkdir -p $$(dirname $@))
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDES) $(DBG) -fPIC -c $< -o $@
+	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDES) $(DBG) -fPIC -c $< -o $@
 
 .PHONY: doc
 doc: $(DOXYGEN_CONFIG) $(HDRS_PRIV)
@@ -227,12 +226,9 @@ rpm: tarball
 
 .PHONY: install
 install: all install-devel install-doc install-generator
-	[ -d $(DESTDIR)/$(libdir) ] || \
-	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir))
-	$(INSTALL_PROGRAM) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/;
-	@[ ! -L $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER) ] || \
-	    rm -rf $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER);
-	$(LN_S) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER);
+	$(INSTALL) -m 775 -d $(DESTDIR)/$(libdir)
+	$(LIBTOOL) --mode=install cp $(NAME).la $(DESTDIR)/$(libdir)
+	$(LIBTOOL) --mode=finish $(DESTDIR)/$(libdir)
 	[ -d "$(NC_WORKINGDIR_PATH)" ] || \
 		mkdir -p $(NC_WORKINGDIR_PATH)
 	chmod 700 $(NC_WORKINGDIR_PATH)
@@ -280,10 +276,7 @@ install-devel:
 	    (mkdir -p $(DESTDIR)/$(includedir); chmod 755 $(DESTDIR)/$(includedir)); \
 	[ -d $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR) ] || \
 		(mkdir -p $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR));
-	$(INSTALL_PROGRAM) $(NAME).a $(DESTDIR)/$(libdir)/;
-	@[ ! -L $(DESTDIR)/$(libdir)/$(NAME).so ] || \
-		rm -rf $(DESTDIR)/$(libdir)/$(NAME).so;	
-	$(LN_S) $(NAME).so.$(VERSION) $(DESTDIR)/$(libdir)/$(NAME).so; \
+	$(LIBTOOL) --mode=install cp $(NAME).la $(DESTDIR)/$(libdir); \
 	for i in $(HDRS_PUBL_ROOT); do \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$$(basename $$i); \
 	done; \
@@ -301,8 +294,8 @@ install-doc:
 
 .PHONY: uninstall
 uninstall: uninstall-devel uninstall-doc
-	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(VERSION)
-	rm -f $(DESTDIR)/$(libdir)/$(NAME).so.$(ABICOMPAT_VER)
+	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libldns.la
+	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
 	for i in $(SUBDIRS) ; do \
 		$(MAKE) DESTDIR=$(patsubst .%,$(abs_srcdir)/.%,$(DESTDIR)) -C $$i uninstall \
 		|| exit 1; \
@@ -311,8 +304,8 @@ uninstall: uninstall-devel uninstall-doc
 
 .PHONY: uninstall-devel
 uninstall-devel:
-	rm -f $(DESTDIR)/$(libdir)/$(NAME).a;
-	@rm -f $(DESTDIR)/$(libdir)/$(NAME).so*; \
+	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libldns.la \
+	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
 	for i in $(HDRS_PUBL_ROOT); do \
 		rm -f $(DESTDIR)/$(includedir)/$$(basename $$i); \
 	done; \
@@ -329,6 +322,8 @@ uninstall-doc:
 clean:
 	for i in $(SUBDIRS) ; do $(MAKE) -C $$i clean ; done
 	rm -rf *.a *.so* .obj $(OBJS)
+	$(LIBTOOL) --mode clean rm -f $(LOBJS)
+	$(LIBTOOL) --mode clean rm -f $(NAME).la
 
 clean-all: clean clean-doc clean-rpm
 

@@ -16,6 +16,14 @@ $$LIBXML2_WITH$$
 AC_PROG_CC
 AC_PROG_INSTALL
 
+# Use libtool
+AC_PROG_LIBTOOL
+# Always use ./libtool unless overridden from command-line
+if test -z "$libtool"; then
+	libtool='./libtool'
+fi
+AC_SUBST(libtool)
+
 # Checks for libraries.
 AC_SEARCH_LIBS([ncds_apply_rpc], [netconf], ,AC_MSG_ERROR([libnetconf not found!]))
 $$LIBXML2_CHECK$$
