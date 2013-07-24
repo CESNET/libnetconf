@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdarg.h>
 #include <stddef.h>
 #include <string.h>
 #include <ctype.h>
@@ -73,11 +74,22 @@ void nc_verbosity(NC_VERB_LEVEL level)
 	verbose_level = level;
 }
 
-void prv_print(NC_VERB_LEVEL level, const char* msg)
+void prv_printf(NC_VERB_LEVEL level, const char *format, ...)
 {
+#define PRV_MSG_SIZE 4096
+	char prv_msg[PRV_MSG_SIZE];
+	va_list ap;
+
 	if (callbacks.print != NULL) {
-		callbacks.print(level, msg);
+		va_start(ap, format);
+
+		vsnprintf(prv_msg, PRV_MSG_SIZE - 1, format, ap);
+		prv_msg[PRV_MSG_SIZE - 1] = '\0';
+		callbacks.print(level, prv_msg);
+
+		va_end(ap);
 	}
+#undef PRV_MSG_SIZE
 }
 
 struct nc_shared_info *nc_info = NULL;

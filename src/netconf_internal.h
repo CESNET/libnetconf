@@ -190,13 +190,12 @@
 #endif
 
 /* libnetconf's message printing */
-char prv_msg[4096];
-void prv_print(NC_VERB_LEVEL level, const char* msg);
+void prv_printf(NC_VERB_LEVEL level, const char *format, ...);
 extern int verbose_level;
-#define ERROR(format,args...) if(verbose_level>=NC_VERB_ERROR){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_ERROR, prv_msg);}
-#define WARN(format,args...) if(verbose_level>=NC_VERB_WARNING){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_WARNING, prv_msg);}
-#define VERB(format,args...) if(verbose_level>=NC_VERB_VERBOSE){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_VERBOSE, prv_msg);}
-#define DBG(format,args...) if(verbose_level>=NC_VERB_DEBUG){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_DEBUG, prv_msg);}
+#define ERROR(format,args...) if(verbose_level>=NC_VERB_ERROR){prv_printf(NC_VERB_ERROR,format,##args);}
+#define WARN(format,args...) if(verbose_level>=NC_VERB_WARNING){prv_printf(NC_VERB_WARNING,format,##args);}
+#define VERB(format,args...) if(verbose_level>=NC_VERB_VERBOSE){prv_printf(NC_VERB_VERBOSE,format,##args);}
+#define DBG(format,args...) if(verbose_level>=NC_VERB_DEBUG){prv_printf(NC_VERB_DEBUG,format,##args);}
 #ifdef DEBUG_THREADS
 #define DBG_UNLOCK(name) DBG("Unlocking %s in thread %lu (%s:%d)", name, pthread_self(), __FILE__, __LINE__)
 #define DBG_LOCK(name) DBG("Locking %s in thread %lu (%s:%d)", name, pthread_self(), __FILE__, __LINE__)
