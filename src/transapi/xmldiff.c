@@ -43,7 +43,6 @@ void xmldiff_free (struct xmldiff * diff)
 	int i;
 	for (i=0; i<diff->diff_count; i++) {
 		free (diff->diff_list[i].path);
-		xmlFreeNode (diff->diff_list[i].node);
 	}
 	free (diff->diff_list);
 	free (diff);
@@ -70,7 +69,7 @@ const char * get_prefix (char * uri, const char * ns_mapping[])
  *
  * return EXIT_SUCCESS or EXIT_FAILURE
  */
-int xmldiff_add_diff (struct xmldiff * diff, const char * ns_mapping[], const char * path, const xmlNodePtr node, XMLDIFF_OP op)
+int xmldiff_add_diff (struct xmldiff * diff, const char * ns_mapping[], const char * path, xmlNodePtr node, XMLDIFF_OP op)
 {
 	struct xmldiff_entry * internal;
 	xmlNodePtr child;
@@ -98,7 +97,7 @@ int xmldiff_add_diff (struct xmldiff * diff, const char * ns_mapping[], const ch
 	}
 
 	diff->diff_list[diff->diff_count].path = strdup (path);
-	diff->diff_list[diff->diff_count].node = xmlCopyNode (node, 1);
+	diff->diff_list[diff->diff_count].node = node;
 	diff->diff_list[diff->diff_count].op = op;
 
 	diff->diff_count++;
@@ -430,31 +429,20 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, const char *ns_mapping[], ch
  */
 struct xmldiff * xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[])
 {
-	xmlDocPtr old_tmp, new_tmp;
 	struct xmldiff * diff;
 	char * path;
 
-	old_tmp = xmlCopyDoc (old, 1);
-	new_tmp = xmlCopyDoc (new, 1);
-
-	if (old_tmp == NULL || new_tmp == NULL) {
-		xmlFreeDoc (old_tmp);
-		xmlFreeDoc (new_tmp);
+	if (old == NULL || new == NULL) {
 		return NULL;
 	}
 
 	if ((diff = xmldiff_new ()) == NULL) {
-		xmlFreeDoc (old_tmp);
-		xmlFreeDoc (new_tmp);
 		return NULL;
 	}
 	
 	asprintf (&path, "/%s:%s", model->children->ns_prefix, model->children->name);
-	diff->all_stat = xmldiff_recursive (diff, ns_mapping, path, old_tmp, old_tmp->children, new_tmp, new_tmp->children, &model->children[0]);
+	diff->all_stat = xmldiff_recursive (diff, ns_mapping, path, old, old->children, new, new->children, &model->children[0]);
 	free (path);
-
-	xmlFreeDoc (old_tmp);
-	xmlFreeDoc (new_tmp);
 
 	return diff;
 }

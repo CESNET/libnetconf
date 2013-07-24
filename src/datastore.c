@@ -3572,6 +3572,8 @@ apply_editcopyconfig:
 			}
 		}
 
+		// TODO!! save the possibly modified configuration in new
+
 		xmlFreeDoc (old);
 		xmlFreeDoc (new);
 	}
