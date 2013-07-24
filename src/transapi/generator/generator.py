@@ -61,6 +61,9 @@ def generate_configure_in(replace, template_dir, with_libxml2):
 # Copy source files for autotools
 def copy_template_files(name, template_dir):
 	shutil.copy2(template_dir+'/install-sh', 'install-sh')
+	shutil.copy2(template_dir+'/config.guess', 'config.guess')
+	shutil.copy2(template_dir+'/config.sub', 'config.sub')
+	shutil.copy2(template_dir+'/ltmain.sh', 'ltmain.sh')
 	shutil.copy2(template_dir+'/Makefile.in', 'Makefile.in')
 
 def separate_paths_and_namespaces(defs):
@@ -312,11 +315,13 @@ def generate_rpc_callbacks (doc, with_libxml2):
 
 # Try to find template directory, if none of known candidates found raise exception
 def find_templates():
-	known_paths = ['/usr/share/libnetconf/templates', '/usr/local/share/libnetconf/templates/', './templates', './']
+	known_paths = ['/usr/share/libnetconf/templates/', '/usr/local/share/libnetconf/templates/', './templates/', './']
 
 	for path in known_paths:
 		if os.path.isdir(path):
-			if os.path.exists(path+'/install-sh') and os.path.exists(path+'/Makefile.in'):
+			if os.path.exists(path+'install-sh') and os.path.exists(path+'Makefile.in') and \
+					os.path.exists(path+'config.guess') and os.path.exists(path+'config.sub') and \
+					os.path.exists(path+'ltmain.sh'):
 				return(path)
 	
 	raise Exception('Template directory not found. Use --template-dir parameter to specify its location.')
