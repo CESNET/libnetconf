@@ -47,7 +47,7 @@ readlink = @READLINK@
 LIBNETCONF_SEARCH = "-Wl,-rpath,$(prefix)/lib"
 
 CC = @CC@
-LIBS = @LDFLAGS@ -L../../ $(LIBNETCONF_SEARCH) -lnetconf -lxml2
+LIBS = @LDFLAGS@ -L../../.libs/ $(LIBNETCONF_SEARCH) -lnetconf -lxml2
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ -I../../src/
 INSTALL = @INSTALL@
