@@ -35,7 +35,7 @@
 #
 
 PKGNAME = @PROJECTNAME@
-TARGETS = @PROJECTNAME@.so
+TARGET = @PROJECTNAME@.la
 
 # Various configurable paths (remember to edit Makefile.in, not Makefile)
 prefix = @prefix@
@@ -46,6 +46,7 @@ bindir = @bindir@
 includedir = @includedir@
 libdir =  @libdir@
 mandir = @mandir@
+libtool = @libtool@
 
 CC = @CC@
 DOXYGEN = @DOXYGEN@
@@ -59,6 +60,7 @@ RPMDIR = RPMBUILD
 LIBS = $(patsubst -I.%,-I$(TOPDIR)/.%,$(patsubst -L.%,-L$(TOPDIR)/.%,$(filter -L% -I%,@LIBS@))) $(filter-out -L% -I%,@LIBS@)
 CFLAGS = $(patsubst -I.%,-I$(TOPDIR)/.%,$(patsubst -L.%,-L$(TOPDIR)/.%,$(filter -L% -I%,@CFLAGS@))) $(filter-out -L% -I%,@CFLAGS@ -fPIC -shared)
 CPPFLAGS = $(patsubst -I.%,-I$(TOPDIR)/.%,$(patsubst -L.%,-L$(TOPDIR)/.%,$(filter -L% -I%,@CPPFLAGS@))) $(filter-out -L% -I%,@CPPFLAGS@)
+LIBTOOL = $(libtool) --tag=CC --quiet
 
 OBJDIR= .obj
 VERSION = $(shell cut -f1 ./VERSION | tr -d '\n')
@@ -67,38 +69,36 @@ RELEASE=@RELEASE@
 
 SRCS = @PROJECTNAME@.c
 
-OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
+LOBJS = $(SRCS:%.c=$(OBJDIR)/%.lo)
 
-all: $(TARGETS)
+all: $(TARGET)
 
 .PHONY: doc
 doc: 
 
-$(TARGETS): $(OBJS)
+$(TARGET): $(LOBJS)
 	@rm -f $@;
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LIBS) $(OBJS) -o $@;
+	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(CPPFLAGS) $(LIBS) -avoid-version -module -shared -export-dynamic --mode=link -o $@ $^ -rpath $(libdir)
 
-$(OBJDIR)/%.o: %.c
+$(OBJDIR)/%.lo: %.c
 	@[ -d $$(dirname $@) ] || \
 		(mkdir -p $$(dirname $@))
-	$(CC) $(CFLAGS) $(CPPFLAGS) -I../../../src -fPIC -c $< -o $@
+	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(CPPFLAGS) -I../../../src -fPIC -shared -c $< -o $@
 
 .PHONY: install
-install: $(TARGETS)
-	[ -d $(DESTDIR)/$(libdir) ] || \
-	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir))
-	$(INSTALL_PROGRAM) $(TARGETS) $(DESTDIR)/$(libdir)/;
-	[ -d $(DESTDIR)/$(libdir) ] || \
-	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir))
-	$(INSTALL_PROGRAM) $(TARGETS) $(DESTDIR)/$(libdir)/;
-	for i in $(TARGETS) ; do \
-		cp $$i  $(DESTDIR)/$(libdir)/; \
-	done
+install: $(TARGET)
+	$(INSTALL) -m 775 -d $(DESTDIR)/$(libdir)
+	$(LIBTOOL) --mode=install cp $(TARGET) $(DESTDIR)/$(libdir)/;
+	#for i in $(TARGETS) ; do \
+	#		cp $$i  $(DESTDIR)/$(libdir)/; \
+	#done
 
 
 .PHONY: clean
 clean:
-	rm -rf $(TARGETS) $(OBJDIR)
+	$(LIBTOOL) --mode clean rm -f $(LOBJS)
+	$(LIBTOOL) --mode clean rm -f $(TARGET)
+	rm -rf $(TARGET) $(OBJDIR)
 
 .PHONY: tarball
 tarball: $(SRCS) $(HEADERS)

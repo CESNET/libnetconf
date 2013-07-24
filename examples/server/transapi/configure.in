@@ -8,6 +8,13 @@ AC_SUBST(PROJECTNAME)
 #Check for programs
 AC_PROG_CC
 AC_PROG_INSTALL
+# Use libtool
+AC_PROG_LIBTOOL
+# Always use ./libtool unless overridden from command-line
+if test -z "$libtool"; then
+	libtool='./libtool'
+fi
+AC_SUBST(libtool)
 
 #Check for rpmbuild
 AC_CHECK_PROG(RPMBUILD, rpmbuild, rpmbuild)
