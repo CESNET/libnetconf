@@ -160,6 +160,9 @@ GENERATOR_FILES = src/transapi/generator/Makefile.in \
 	src/transapi/generator/configure.in \
 	src/transapi/generator/specfile.spec.in \
 	src/transapi/generator/install-sh \
+	src/transapi/generator/config.guess \
+	src/transapi/generator/config.sub \
+	src/transapi/generator/ltmain.sh \
 	src/transapi/generator/README
 
 LOBJS = $(SRCS:%.c=$(OBJDIR)/%.lo)
