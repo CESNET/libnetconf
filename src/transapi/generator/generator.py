@@ -133,7 +133,7 @@ def generate_init_callback(with_libxml2):
     content += ' *\n'
     content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
     content += ' */\n'
-    content += 'int init(void)\n'
+    content += 'int transapi_init(void)\n'
     content += '{\n\treturn EXIT_SUCCESS;\n}\n\n'
 
     return (content)
@@ -143,7 +143,7 @@ def generate_close_callback(with_libxml2):
     content += '/**\n'
     content += ' * @brief Free all resources allocated on plugin runtime and prepare plugin for removal.\n'
     content += ' */\n' 
-    content += 'void close(void)\n'
+    content += 'void transapi_close(void)\n'
     content += '{\n\treturn;\n}\n\n'
     
     return (content)

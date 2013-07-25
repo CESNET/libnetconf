@@ -1196,12 +1196,12 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 		}
 	}
 
-	if ((init_func = dlsym (transapi_module, "init")) == NULL) {
-		WARN("%s: Unable to find \"init\" function.", __func__);
+	if ((init_func = dlsym (transapi_module, "transapi_init")) == NULL) {
+		WARN("%s: Unable to find \"transapi_init\" function.", __func__);
 	}
 
-	if ((close_func = dlsym (transapi_module, "close")) == NULL) {
-		WARN("%s: Unable to find \"close\" function.", __func__);
+	if ((close_func = dlsym (transapi_module, "transapi_close")) == NULL) {
+		WARN("%s: Unable to find \"transapi_close\" function.", __func__);
 	}
 
 	/* create basic ncds_ds structure */
