@@ -83,7 +83,7 @@ int xmldiff_add_diff (struct xmldiff * diff, const char * ns_mapping[], const ch
 				continue;
 			}
 			asprintf (&new_path, "%s/%s:%s", path, get_prefix((char *)child->ns->href, ns_mapping), child->name);
-			xmldiff_add_diff (diff, ns_mapping, new_path, child, op, 0);
+			xmldiff_add_diff (diff, ns_mapping, new_path, child, op, 1);
 			free(new_path);
 		}
 	}
