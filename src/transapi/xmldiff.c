@@ -276,7 +276,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, const char *ns_mapping[], ch
 					}
 
 					if (item_ret_op != XMLDIFF_NONE) {
-						xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN, 1);
+						xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN, 0);
 						ret_op = XMLDIFF_CHAIN;
 					}
 				}
@@ -329,7 +329,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, const char *ns_mapping[], ch
 				free (new_keys);
 				
 				if (list_old_tmp == NULL) { /* item NOT found in old document -> added */
-					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD, 0);
+					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD, 1);
 					ret_op = XMLDIFF_CHAIN;
 				} else { /* item found => check for changes recursivelly*/
 					for (i=0; i<model->children_count; i++) {
@@ -345,7 +345,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, const char *ns_mapping[], ch
 					}
 
 					if (item_ret_op != XMLDIFF_NONE) {
-						xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN, 0);
+						xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN, 1);
 						ret_op = XMLDIFF_CHAIN;
 					}
 				}
