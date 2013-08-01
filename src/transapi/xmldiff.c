@@ -196,7 +196,7 @@ model_type:
 				}
 			}
 			if (ret_op == XMLDIFF_CHAIN) {
-				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_CHAIN, 0);
+				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_CHAIN, 1);
 			}
 			break;
 		case YIN_TYPE_CHOICE: 
@@ -227,7 +227,7 @@ model_type:
 				ret_op = XMLDIFF_NONE;
 			} else {
 				ret_op = XMLDIFF_MOD;
-				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_MOD, 0);
+				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_MOD, 1);
 			}
 			xmlFree (old_content);
 			xmlFree (new_content);
@@ -397,7 +397,7 @@ model_type:
 				}
 				xmlFree (old_str);
 				if (list_new_tmp == NULL) {
-					xmldiff_add_diff (diff, ns_mapping, path, list_old_tmp, XMLDIFF_REM, 0);
+					xmldiff_add_diff (diff, ns_mapping, path, list_old_tmp, XMLDIFF_REM, 1);
 					ret_op = XMLDIFF_CHAIN;
 				}
 				list_old_tmp = list_old_tmp->next;
@@ -418,7 +418,7 @@ model_type:
 				}
 				xmlFree (new_str);
 				if (list_old_tmp == NULL) {
-					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD, 0);
+					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD, 1);
 					ret_op = XMLDIFF_CHAIN;
 				}
 				list_new_tmp = list_new_tmp->next;
@@ -439,7 +439,7 @@ model_type:
 			if (xmlStrEqual(old_str, new_str)) {
 				ret_op = XMLDIFF_NONE;
 			} else {
-				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_MOD, 0);
+				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_MOD, 1);
 				ret_op = XMLDIFF_CHAIN;
 			}
 			xmlFree(old_str);
