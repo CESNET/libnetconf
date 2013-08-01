@@ -150,6 +150,11 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, const char *ns_mapping[], ch
 		return XMLDIFF_ERR;
 	}
 
+	/* on YIN_TYPE_CHOICE the choice element itself is found in neither old_node nor new_node siblings */
+	if (model->type == YIN_TYPE_CHOICE) {
+		goto model_type;
+	}
+
 	old_tmp = old_node;
 	while (old_tmp) {
 		if (xmlStrEqual (old_tmp->name, BAD_CAST model->name)) {
@@ -174,11 +179,32 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, const char *ns_mapping[], ch
 		xmldiff_add_diff(diff, ns_mapping, path, old_tmp, XMLDIFF_REM, 0);
 		return XMLDIFF_REM;
 	} else { /* node is still here, check for internal changes */
+model_type:
 		switch (model->type) {
 		case YIN_TYPE_CONTAINER:
+		/* container */	
+		ret_op = XMLDIFF_NONE;
+			for (i=0; i<model->children_count; i++) {
+				asprintf (&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
+				tmp_op = xmldiff_recursive (diff, ns_mapping, next_path, old_doc, old_tmp->children, new_doc, new_tmp->children, &model->children[i]);
+				free (next_path);
+	
+				if (tmp_op == XMLDIFF_ERR) {
+					return XMLDIFF_ERR;
+				} else if (tmp_op != XMLDIFF_NONE) {
+					ret_op = XMLDIFF_CHAIN;
+				}
+			}
+			if (ret_op == XMLDIFF_CHAIN) {
+				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_CHAIN, 0);
+			}
+			break;
 		case YIN_TYPE_CHOICE: 
-			/* container || choice */ 
+			/* choice */ 
 			ret_op = XMLDIFF_NONE;
+			/* trim the choice path, replace it with the children directly */
+			*strrchr(path, '/') = '\0';
+
 			for (i=0; i<model->children_count; i++) {
 				asprintf (&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
 				tmp_op = xmldiff_recursive (diff, ns_mapping, next_path, old_doc, old_tmp->children, new_doc, new_tmp->children, &model->children[i]);
