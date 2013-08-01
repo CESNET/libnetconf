@@ -207,18 +207,13 @@ model_type:
 
 			for (i=0; i<model->children_count; i++) {
 				asprintf (&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
-				tmp_op = xmldiff_recursive (diff, ns_mapping, next_path, old_doc, old_tmp->children, new_doc, new_tmp->children, &model->children[i]);
+				/* we are moving down the model only (not in the configuration) */
+				tmp_op = xmldiff_recursive (diff, ns_mapping, next_path, old_doc, old_node, new_doc, new_node, &model->children[i]);
 				free (next_path);
-	
-				if (tmp_op == XMLDIFF_ERR) {
-					return XMLDIFF_ERR;
-				} else if (tmp_op != XMLDIFF_NONE) {
-					ret_op = XMLDIFF_CHAIN;
-				}
 			}
-			if (ret_op == XMLDIFF_CHAIN) {
-				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_CHAIN, 0);
-			}
+
+			/* assuming there is only one child of this choice (as it should be), we return the child's operation, the choice itself is de-facto skipped */
+			ret_op = tmp_op;
 			break;
 		case YIN_TYPE_LEAF: 
 		 	/* leaf */
