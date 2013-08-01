@@ -210,10 +210,14 @@ model_type:
 				/* we are moving down the model only (not in the configuration) */
 				tmp_op = xmldiff_recursive (diff, ns_mapping, next_path, old_doc, old_node, new_doc, new_node, &model->children[i]);
 				free (next_path);
+
+				/* assuming there is only one child of this choice (as it should be), we return this child's operation, the choice itself is de-facto skipped */
+				if (tmp_op != XMLDIFF_NONE) {
+					ret_op = tmp_op;
+					break;
+				}
 			}
 
-			/* assuming there is only one child of this choice (as it should be), we return the child's operation, the choice itself is de-facto skipped */
-			ret_op = tmp_op;
 			break;
 		case YIN_TYPE_LEAF: 
 		 	/* leaf */
