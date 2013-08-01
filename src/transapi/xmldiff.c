@@ -69,7 +69,7 @@ const char * get_prefix (char * uri, const char * ns_mapping[])
  *
  * return EXIT_SUCCESS or EXIT_FAILURE
  */
-int xmldiff_add_diff (struct xmldiff * diff, const char * ns_mapping[], const char * path, xmlNodePtr node, XMLDIFF_OP op, char duplicit_check)
+int xmldiff_add_diff (struct xmldiff * diff, const char * ns_mapping[], const char * path, xmlNodePtr node, XMLDIFF_OP op)
 {
 	struct xmldiff_entry * internal;
 	xmlNodePtr child;
@@ -83,18 +83,16 @@ int xmldiff_add_diff (struct xmldiff * diff, const char * ns_mapping[], const ch
 				continue;
 			}
 			asprintf (&new_path, "%s/%s:%s", path, get_prefix((char *)child->ns->href, ns_mapping), child->name);
-			xmldiff_add_diff (diff, ns_mapping, new_path, child, op, 1);
+			xmldiff_add_diff (diff, ns_mapping, new_path, child, op);
 			free(new_path);
 		}
 	}
 
 	/* check for duplicit diffs */
-	if (duplicit_check) {
-		for (i = 0; i < diff->diff_count; ++i) {
-			/* should be enough to check the node pointer only */
-			if (diff->diff_list[i].node == node) {
-				return EXIT_SUCCESS;
-			}
+	for (i = 0; i < diff->diff_count; ++i) {
+		/* should be enough to check the node pointer only */
+		if (diff->diff_list[i].node == node) {
+			return EXIT_SUCCESS;
 		}
 	}
 
@@ -173,10 +171,10 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, const char *ns_mapping[], ch
 	if (old_tmp == NULL && new_tmp == NULL) { /* there was and is nothing */
 		return XMLDIFF_NONE;
 	} else if (old_tmp == NULL) { /* node added */
-		xmldiff_add_diff(diff, ns_mapping, path, new_tmp, XMLDIFF_ADD, 0);
+		xmldiff_add_diff(diff, ns_mapping, path, new_tmp, XMLDIFF_ADD);
 		return XMLDIFF_ADD;
 	} else if (new_tmp == NULL) { /* node removed */
-		xmldiff_add_diff(diff, ns_mapping, path, old_tmp, XMLDIFF_REM, 0);
+		xmldiff_add_diff(diff, ns_mapping, path, old_tmp, XMLDIFF_REM);
 		return XMLDIFF_REM;
 	} else { /* node is still here, check for internal changes */
 model_type:
@@ -196,7 +194,7 @@ model_type:
 				}
 			}
 			if (ret_op == XMLDIFF_CHAIN) {
-				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_CHAIN, 1);
+				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_CHAIN);
 			}
 			break;
 		case YIN_TYPE_CHOICE: 
@@ -227,7 +225,7 @@ model_type:
 				ret_op = XMLDIFF_NONE;
 			} else {
 				ret_op = XMLDIFF_MOD;
-				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_MOD, 1);
+				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_MOD);
 			}
 			xmlFree (old_content);
 			xmlFree (new_content);
@@ -285,7 +283,7 @@ model_type:
 				free (old_keys);
 				
 				if (list_new_tmp == NULL) { /* item NOT found in new document -> removed */
-					xmldiff_add_diff (diff, ns_mapping, path, list_old_tmp, XMLDIFF_REM, 0);
+					xmldiff_add_diff (diff, ns_mapping, path, list_old_tmp, XMLDIFF_REM);
 					ret_op = XMLDIFF_CHAIN;
 				} else { /* item found => check for changes recursivelly*/
 					for (i=0; i<model->children_count; i++) {
@@ -301,7 +299,7 @@ model_type:
 					}
 
 					if (item_ret_op != XMLDIFF_NONE) {
-						xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN, 0);
+						xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN);
 						ret_op = XMLDIFF_CHAIN;
 					}
 				}
@@ -354,7 +352,7 @@ model_type:
 				free (new_keys);
 				
 				if (list_old_tmp == NULL) { /* item NOT found in old document -> added */
-					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD, 1);
+					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD);
 					ret_op = XMLDIFF_CHAIN;
 				} else { /* item found => check for changes recursivelly*/
 					for (i=0; i<model->children_count; i++) {
@@ -370,7 +368,7 @@ model_type:
 					}
 
 					if (item_ret_op != XMLDIFF_NONE) {
-						xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN, 1);
+						xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN);
 						ret_op = XMLDIFF_CHAIN;
 					}
 				}
@@ -397,7 +395,7 @@ model_type:
 				}
 				xmlFree (old_str);
 				if (list_new_tmp == NULL) {
-					xmldiff_add_diff (diff, ns_mapping, path, list_old_tmp, XMLDIFF_REM, 1);
+					xmldiff_add_diff (diff, ns_mapping, path, list_old_tmp, XMLDIFF_REM);
 					ret_op = XMLDIFF_CHAIN;
 				}
 				list_old_tmp = list_old_tmp->next;
@@ -418,7 +416,7 @@ model_type:
 				}
 				xmlFree (new_str);
 				if (list_old_tmp == NULL) {
-					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD, 1);
+					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD);
 					ret_op = XMLDIFF_CHAIN;
 				}
 				list_new_tmp = list_new_tmp->next;
@@ -439,7 +437,7 @@ model_type:
 			if (xmlStrEqual(old_str, new_str)) {
 				ret_op = XMLDIFF_NONE;
 			} else {
-				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_MOD, 1);
+				xmldiff_add_diff (diff, ns_mapping, path, new_tmp, XMLDIFF_MOD);
 				ret_op = XMLDIFF_CHAIN;
 			}
 			xmlFree(old_str);
