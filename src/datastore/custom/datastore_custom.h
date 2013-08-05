@@ -111,16 +111,16 @@ struct ncds_custom_funcs {
 	/**
 	 * \brief The counter-part of lock.
 	 *
-	 * libnetconf does checking whether the operation is allowed on its own
-	 * (using is_locked() function if available). So if this function is
-	 * called, just trust that the datastore can be unlocked and do it.
+	 * Function must check that the datastore was locked by the same session
+	 * (according to the provided session_id) that is now requesting its unlock.
 	 *
 	 * \param[in] data The user data.
 	 * \param[in] target Which data store should be unlocked.
+	 * \param[in] session_id ID of the session requesting the unlock.
 	 * \param[out] error Set this in case of EXIT_FAILURE, to indicate what went wrong.
 	 * \return EXIT_SUCCESS or EXIT_FAILURE.
 	 */
-	int (*unlock)(void *data, NC_DATASTORE target, struct nc_err** error);
+	int (*unlock)(void *data, NC_DATASTORE target, const char* sssion_id, struct nc_err** error);
 	/**
 	 * \brief Is datastore currently locked?
 	 *
