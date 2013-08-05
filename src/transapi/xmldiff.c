@@ -391,6 +391,7 @@ model_type:
 						/* equivalent found */
 						break;
 					}
+					xmlFree (new_str);
 					list_new_tmp = list_new_tmp->next;
 				}
 				xmlFree (old_str);
@@ -412,6 +413,7 @@ model_type:
 						/* equivalent found */
 						break;
 					}
+					xmlFree (old_str);
 					list_old_tmp = list_old_tmp->next;
 				}
 				xmlFree (new_str);
