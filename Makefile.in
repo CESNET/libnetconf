@@ -119,6 +119,7 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/ssh.h @HDRS_PUBL_SUBDIR_NOTIFICATIONS@ \
 	src/with_defaults.h \
 	src/datastore.h \
+	src/datastore/custom/datastore_custom.h \
 	src/transapi/transapi.h \
 	src/transapi/transapi_xml.h 
 		
