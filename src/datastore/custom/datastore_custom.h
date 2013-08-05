@@ -182,7 +182,6 @@ struct ncds_custom_funcs {
 	 * \brief Perform the editconfig operation.
 	 *
 	 * \param[in] data The user data.
-	 * \param[in] targe What is supposed to be modified
 	 * \param[in] rpc RPC message with the request. RPC message is used only
 	 * for access control. If rpc is NULL access control is skipped.
 	 * \param[in] target What datastore part is going to be modified.
