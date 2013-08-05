@@ -881,7 +881,7 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	}
 
 	/* do not send <close-session> on nc_session_close() */
-	session->is_server = 0;
+	session->is_server = 1;
 
 	/* set invalid fd values to prevent comunication */
 	session->fd_input = -1;
