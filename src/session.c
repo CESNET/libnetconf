@@ -554,7 +554,7 @@ void nc_cpblts_free(struct nc_cpblts *c)
 	free(c);
 }
 
-struct nc_cpblts *nc_cpblts_new(char* const list[])
+struct nc_cpblts *nc_cpblts_new(const char* const list[])
 {
 	struct nc_cpblts *retval;
 	int i;

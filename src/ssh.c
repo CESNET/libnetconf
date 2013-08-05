@@ -460,7 +460,7 @@ static int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello
 	}
 	if (merged_cpblts == NULL) {
 		retval = EXIT_FAILURE;
-	} else if ((session->capabilities = nc_cpblts_new(merged_cpblts)) == NULL) {
+	} else if ((session->capabilities = nc_cpblts_new((const char* const*) merged_cpblts)) == NULL) {
 		retval = EXIT_FAILURE;
 	}
 
@@ -805,7 +805,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 			return (NULL);
 		}
 	} else {
-		server_cpblts = nc_cpblts_new(capabilities->list);
+		server_cpblts = nc_cpblts_new((const char* const*)(capabilities->list));
 	}
 	/* set with-defaults capability announcement */
 	if ((nc_cpblts_get (server_cpblts, NC_CAP_WITHDEFAULTS_ID) != NULL)
@@ -1594,7 +1594,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			goto shutdown;
 		}
 	} else {
-		client_cpblts = nc_cpblts_new(cpblts->list);
+		client_cpblts = nc_cpblts_new((const char* const*)(cpblts->list));
 	}
 
 	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
@@ -1713,7 +1713,7 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 			goto shutdown;
 		}
 	} else {
-		client_cpblts = nc_cpblts_new(cpblts->list);
+		client_cpblts = nc_cpblts_new((const char* const*)(cpblts->list));
 	}
 
 	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
