@@ -61,6 +61,9 @@
 static struct ncds_lockinfo lockinfo_running = {NC_DATASTORE_RUNNING, NULL, NULL};
 static struct ncds_lockinfo lockinfo_startup = {NC_DATASTORE_STARTUP, NULL, NULL};
 static struct ncds_lockinfo lockinfo_candidate = {NC_DATASTORE_CANDIDATE, NULL, NULL};
+static pthread_mutex_t lockinfo_running_mut = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t lockinfo_startup_mut = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t lockinfo_candidate_mut = PTHREAD_MUTEX_INITIALIZER;
 
 void ncds_custom_set_data(struct ncds_ds* ds, void *custom_data, const struct ncds_custom_funcs *callbacks) {
 	struct ncds_ds_custom *c_ds = (struct ncds_ds_custom *) ds;
@@ -90,12 +93,18 @@ void ncds_custom_free(struct ncds_ds* ds) {
 	//cleanup my things
 	free(c_ds);
 
+	pthread_mutex_lock(&lockinfo_running_mut);
 	free(lockinfo_running.sid);
 	free(lockinfo_running.time);
+	pthread_mutex_unlock(&lockinfo_running_mut);
+	pthread_mutex_lock(&lockinfo_startup_mut);
 	free(lockinfo_startup.sid);
 	free(lockinfo_startup.time);
+	pthread_mutex_unlock(&lockinfo_startup_mut);
+	pthread_mutex_lock(&lockinfo_candidate_mut);
 	free(lockinfo_candidate.sid);
 	free(lockinfo_candidate.time);
+	pthread_mutex_unlock(&lockinfo_candidate_mut);
 }
 
 int ncds_custom_rollback(struct ncds_ds* ds) {
@@ -104,16 +113,20 @@ int ncds_custom_rollback(struct ncds_ds* ds) {
 	return c_ds->callbacks->rollback(c_ds->data);
 }
 
-static struct ncds_lockinfo* get_lockinfo(NC_DATASTORE target)
+static struct ncds_lockinfo* get_lockinfo(NC_DATASTORE target, pthread_mutex_t **mutex)
 {
 	switch (target) {
 	case NC_DATASTORE_RUNNING:
+		*mutex = &lockinfo_running_mut;
 		return (&lockinfo_running);
 	case NC_DATASTORE_STARTUP:
+		*mutex = &lockinfo_startup_mut;
 		return (&lockinfo_startup);
 	case NC_DATASTORE_CANDIDATE:
+		*mutex = &lockinfo_candidate_mut;
 		return (&lockinfo_candidate);
 	default:
+		ERROR("%s: invalid target.", __func__);
 		return (NULL);
 	}
 }
@@ -123,23 +136,32 @@ const struct ncds_lockinfo* ncds_custom_get_lockinfo(struct ncds_ds* ds, NC_DATA
 	const char *sid, *date;
 	struct ncds_ds_custom *c_ds = (struct ncds_ds_custom *) ds;
 	struct ncds_lockinfo *linfo;
+	pthread_mutex_t* linfo_mut = NULL;
 
-	linfo = get_lockinfo(target);
+	linfo = get_lockinfo(target, &linfo_mut);
 	if (linfo == NULL) {
-		ERROR("%s: invalid target.", __func__);
+		/* invalid target */
 		return (NULL);
 	}
 
-	retval = c_ds->callbacks->is_locked(c_ds->data, target, &sid, &date);
-	if (retval < 0) {
-		/* not implemented or error, use own information */
+	if (c_ds->callbacks->is_locked == NULL) {
+		/* is_locked() is not implemented by custom datastore, return local info */
 		return (linfo);
+	}
+
+	pthread_mutex_lock(linfo_mut);
+	retval = c_ds->callbacks->is_locked(c_ds->data, target, &sid, &date);
+	if (retval < 0) { /* error */
+		pthread_mutex_unlock(linfo_mut);
+		ERROR("%s: custom datastore's is_locked() function failed (error %d)", __func__, retval);
+		return (NULL);
 	} else {
 		/* fill updated information */
 		free(linfo->sid);
 		free(linfo->time);
 		linfo->sid = strdup(sid);
 		linfo->time = strdup(date);
+		pthread_mutex_unlock(linfo_mut);
 	}
 
 	return (linfo);
@@ -151,26 +173,38 @@ int ncds_custom_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DA
 	const char *sid = NULL;
 	struct ncds_ds_custom *c_ds = (struct ncds_ds_custom *) ds;
 	struct ncds_lockinfo *linfo;
+	pthread_mutex_t* linfo_mut = NULL;
 
-	linfo = get_lockinfo(target);
+	linfo = get_lockinfo(target, &linfo_mut);
 	if (linfo == NULL) {
-		ERROR("%s: invalid target.", __func__);
 		*error = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
 		return (EXIT_FAILURE);
 	}
 
-	/* check current status of the lock */
-	retval = c_ds->callbacks->is_locked(c_ds->data, target, &sid, NULL);
-	if (retval < 0) {
-		/* not implemented or error, use own information */
+	pthread_mutex_lock(linfo_mut);
+	if (c_ds->callbacks->is_locked == NULL) {
+		/* is_locked() is not implemented by custom datastore, use local info */
 		if (linfo->sid != NULL) {
 			/* datastore is already locked */
 			retval = 1;
 			sid = linfo->sid;
+		} else {
+			retval = 0;
 		}
-	} /* else ignore internal information that can be invalid */
+	} else {
+		/* get current info using is_locked() */
+		retval = c_ds->callbacks->is_locked(c_ds->data, target, &sid, NULL);
+		if (retval < 0) { /* error */
+			pthread_mutex_unlock(linfo_mut);
+			ERROR("%s: custom datastore's is_locked() function failed (error %d)", __func__, retval);
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "custom datastore's is_locked() function failed");
+			return (EXIT_FAILURE);
+		}
+	}
 
+	/* check current status of the lock */
 	if (retval == 0) {
 		/* datastore is not locked, try to lock it */
 		retval = c_ds->callbacks->lock(c_ds->data, target, session->session_id, error);
@@ -185,6 +219,7 @@ int ncds_custom_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DA
 		retval = EXIT_FAILURE;
 	}
 
+	pthread_mutex_unlock(linfo_mut);
 	return (retval);
 }
 
@@ -193,26 +228,36 @@ int ncds_custom_unlock(struct ncds_ds* ds, const struct nc_session* session, NC_
 	const char *sid;
 	struct ncds_ds_custom *c_ds = (struct ncds_ds_custom *) ds;
 	struct ncds_lockinfo *linfo;
+	pthread_mutex_t* linfo_mut = NULL;
 
-	linfo = get_lockinfo(target);
+	linfo = get_lockinfo(target, &linfo_mut);
 	if (linfo == NULL) {
-		ERROR("%s: invalid target.", __func__);
 		*error = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "target");
 		return (EXIT_FAILURE);
 	}
 
-	/* check current status of the lock */
-	retval = c_ds->callbacks->is_locked(c_ds->data, target, &sid, NULL);
-	if (retval < 0) {
-		/* not implemented or error, use own information */
+	pthread_mutex_lock(linfo_mut);
+	if (c_ds->callbacks->is_locked == NULL) {
+		/* is_locked() is not implemented by custom datastore, use local info */
 		if (linfo->sid == NULL) {
 			/* datastore is not locked */
 			retval = 0;
 		} else {
+			retval = 1;
 			sid = linfo->sid;
 		}
-	} /* else ignore internal information that can be invalid */
+	} else {
+		/* get current info using is_locked() */
+		retval = c_ds->callbacks->is_locked(c_ds->data, target, &sid, NULL);
+		if (retval < 0) { /* error */
+			pthread_mutex_unlock(linfo_mut);
+			ERROR("%s: custom datastore's is_locked() function failed (error %d)", __func__, retval);
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "custom datastore's is_locked() function failed");
+			return (EXIT_FAILURE);
+		}
+	}
 
 	if (retval == 0) {
 		/* datastore is not locked, wtf? */
@@ -239,6 +284,7 @@ int ncds_custom_unlock(struct ncds_ds* ds, const struct nc_session* session, NC_
 
 	}
 
+	pthread_mutex_unlock(linfo_mut);
 	return (retval);
 }
 

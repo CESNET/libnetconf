@@ -133,6 +133,9 @@ struct ncds_custom_funcs {
 	 * Note, that session_id and datetime can be NULL when caller does not
 	 * need this information.
 	 *
+	 * To announce, that this function is not implemented, set it to NULL in
+	 * callbacks parameter passed to the ncds_custom_set_data() function.
+	 *
 	 * \param[in] data The user data
 	 * \param[in] target Which datastore lock information is required.
 	 * \param[out] session_id Which session has locked the datastore.
@@ -140,7 +143,7 @@ struct ncds_custom_funcs {
 	 * \return
 	 * - 0 datastore is not locked
 	 * - 1 datastore is locked
-	 * - negative value - function is not implemented / error
+	 * - negative value - error
 	 */
 	int (*is_locked)(void *data, NC_DATASTORE target, const char** session_id, const char** datetime);
 	/**
