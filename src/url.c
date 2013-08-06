@@ -81,10 +81,11 @@ int nc_url_is_enabled( int protocol, const struct nc_session * session )
 }
 
 /**< @brief generates url capability string with enabled protocols */
-char * nc_url_gencap( struct nc_session * session ) {
 	xmlChar * protocols[] = { BAD_CAST "scp", BAD_CAST "http", BAD_CAST "https",
 		BAD_CAST "ftp", BAD_CAST "sftp", BAD_CAST "ftps", BAD_CAST "file" };
 	char * capability;
+char* nc_url_gencap(const struct nc_session *session)
+{
 	int first = 1;
 	int i;
 	int protocol = 1;
@@ -112,9 +113,10 @@ char * nc_url_gencap( struct nc_session * session ) {
 
 
 /**< @brief gets protocol id from url*/
-NC_URL_PROTOCOLS nc_url_get_protocol( xmlChar * url ) {
 	xmlChar * protocols[] = { BAD_CAST "scp", BAD_CAST "http", BAD_CAST "https",
 		BAD_CAST "ftp", BAD_CAST "sftp", BAD_CAST "ftps", BAD_CAST "file" };
+NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
+{
 	int protocol = 1;
 	int i;
 	char * prot_str;
@@ -130,7 +132,7 @@ NC_URL_PROTOCOLS nc_url_get_protocol( xmlChar * url ) {
 	return protocol;
 }
 
-int nc_url_upload( const char * data, xmlChar * url ) {
+int nc_url_upload(const char *data, const char *url) {
 	CURL * curl;
 	CURLcode res;
 	
@@ -181,7 +183,7 @@ size_t nc_url_writedata( char *ptr, size_t size, size_t nmemb, void *userdata) {
 	return write( url_tmpfile, ptr, size*nmemb );
 }
 
-int nc_url_delete_config( xmlChar * url )
+int nc_url_delete_config(const char *url)
 {
 	CURL * curl;
 	CURLcode res;
@@ -209,7 +211,7 @@ int nc_url_delete_config( xmlChar * url )
 	return EXIT_SUCCESS;
 }
 
-int nc_url_get_rpc( xmlChar * url )
+int nc_url_get_rpc(const char *url)
 {	
 	CURL * curl;
 	CURLcode res;

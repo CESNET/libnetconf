@@ -886,7 +886,7 @@ xmlNodePtr ncxml_rpc_get_config( const nc_rpc* rpc )
 	/* URL CAPABILITY*/
 	if( i == 1 || i == 3 ) {
 #ifndef DISABLE_URL
-		protocol = nc_url_get_protocol( xmlNodeGetContent( query_result->nodesetval->nodeTab[0] ) );
+		protocol = nc_url_get_protocol((char*) xmlNodeGetContent(query_result->nodesetval->nodeTab[0]));
 		if (protocol == 0) {
 			ERROR("%s: unknown protocol", __func__);
 			return (NULL);
@@ -895,8 +895,7 @@ xmlNodePtr ncxml_rpc_get_config( const nc_rpc* rpc )
 			ERROR("%s: protocol not suported", __func__);
 			return (NULL);
 		}
-		if( ( url_buff_fd = nc_url_get_rpc( xmlNodeGetContent( query_result->nodesetval->nodeTab[0] ) ) ) < 0 )
-		{
+		if ((url_buff_fd = nc_url_get_rpc((char*) xmlNodeGetContent(query_result->nodesetval->nodeTab[0]))) < 0) {
 			return (NULL);
 		}
 		xmlXPathFreeObject(query_result);

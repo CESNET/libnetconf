@@ -3392,7 +3392,7 @@ apply_editcopyconfig:
 					break;
 				}
 				ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
-				protocol = nc_url_get_protocol( ncontent );
+				protocol = nc_url_get_protocol((char*)ncontent);
 				if (protocol == 0) {
 					ERROR("%s: unknown protocol", __func__);
 					return (NULL);
@@ -3404,7 +3404,7 @@ apply_editcopyconfig:
 
 				switch (source_ds) {
 				case NC_DATASTORE_CONFIG:
-					ret = nc_url_upload(config, ncontent);
+					ret = nc_url_upload(config, (char*)ncontent);
 					break;
 				case NC_DATASTORE_RUNNING:
 				case NC_DATASTORE_STARTUP:
@@ -3462,17 +3462,17 @@ apply_editcopyconfig:
 				break;
 			}
 			ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
-			protocol = nc_url_get_protocol( ncontent );
+			protocol = nc_url_get_protocol((char*)ncontent);
 			if (protocol == 0) {
 				ERROR("%s: unknown protocol", __func__);
 				return (NULL );
 			}
-			ret = nc_url_delete_config( ncontent );
 			if (!nc_url_is_enabled(protocol, rpc->session)) {
 				ERROR("%s: protocol not suported", __func__);
 				return (NULL );
 			}
 
+			ret = nc_url_delete_config((char*)ncontent);
 			xmlFree(ncontent);
 			xmlXPathFreeObject(url_path);
 		} else {
