@@ -876,6 +876,8 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 
 	if (nc_server_handshake(retval, server_cpblts->list) != 0) {
 		nc_session_close(retval, NC_SESSION_TERM_BADHELLO);
+		nc_session_free(retval);
+		nc_cpblts_free(server_cpblts);
 		return (NULL);
 	}
 
