@@ -89,8 +89,8 @@ char * nc_url_gencap( struct nc_session * session ) {
 	int i;
 	int protocol = 1;
 
-	if( session->url_protocols == 0 ) {
-		return NULL;
+	if (session->url_protocols == 0) {
+		return (NULL);
 	}
 	
 	if( asprintf( &capability, NC_CAP_URL_ID "&amp;scheme=") < 0 ) {

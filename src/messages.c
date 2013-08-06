@@ -887,12 +887,12 @@ xmlNodePtr ncxml_rpc_get_config( const nc_rpc* rpc )
 	if( i == 1 || i == 3 ) {
 #ifndef DISABLE_URL
 		protocol = nc_url_get_protocol( xmlNodeGetContent( query_result->nodesetval->nodeTab[0] ) );
-		if( protocol == 0 ) {
-			ERROR( "%s: unknown protocol", __func__ );
+		if (protocol == 0) {
+			ERROR("%s: unknown protocol", __func__);
 			return (NULL);
 		}
-		if( !nc_url_is_enabled( protocol, rpc->session ) ) {
-			ERROR( "%s: protocol not suported", __func__ );
+		if (!nc_url_is_enabled(protocol, rpc->session)) {
+			ERROR("%s: protocol not suported", __func__);
 			return (NULL);
 		}
 		if( ( url_buff_fd = nc_url_get_rpc( xmlNodeGetContent( query_result->nodesetval->nodeTab[0] ) ) ) < 0 )
@@ -900,15 +900,15 @@ xmlNodePtr ncxml_rpc_get_config( const nc_rpc* rpc )
 			return (NULL);
 		}
 		xmlXPathFreeObject(query_result);
-		if( ( aux_doc = xmlReadFd( url_buff_fd, NULL, NULL, 0) ) == NULL ) {
-			close( url_buff_fd );
-			ERROR( "%s: error reading from tmp file", __func__ );
+		if ((aux_doc = xmlReadFd(url_buff_fd, NULL, NULL, 0)) == NULL ) {
+			close(url_buff_fd);
+			ERROR("%s: error reading from tmp file", __func__);
 			return (NULL);
 		}
-		close( url_buff_fd );
-		config = xmlDocGetRootElement( aux_doc );
-		if( xmlStrcmp( BAD_CAST "config", config->name ) != 0 ) {
-			ERROR( "%s: no config data in file", __func__ );
+		close(url_buff_fd);
+		config = xmlDocGetRootElement(aux_doc);
+		if (xmlStrcmp(BAD_CAST "config", config->name) != 0) {
+			ERROR("%s: no config data in file", __func__);
 			return (NULL);
 		}
 		

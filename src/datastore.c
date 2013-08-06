@@ -3384,7 +3384,7 @@ apply_editcopyconfig:
 			ret = ds->func.editconfig(ds, session, rpc, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 		} else if (op == NC_OP_COPYCONFIG) {
 #ifndef DISABLE_URL
-			if(target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
+			if (target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
 				url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
 				if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
 					ERROR("%s: unable to get URL path from <copy-config> request.", __func__);
@@ -3393,15 +3393,15 @@ apply_editcopyconfig:
 				}
 				ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
 				protocol = nc_url_get_protocol( ncontent );
-				if( protocol == 0 ) {
-					ERROR( "%s: unknown protocol", __func__ );
+				if (protocol == 0) {
+					ERROR("%s: unknown protocol", __func__);
 					return (NULL);
 				}
-				if( !nc_url_is_enabled( protocol, rpc->session) ) {
-					ERROR( "%s: protocol not suported", __func__ );
+				if (!nc_url_is_enabled(protocol, rpc->session)) {
+					ERROR("%s: protocol not suported", __func__);
 					return (NULL);
 				}
-				
+
 				switch (source_ds) {
 				case NC_DATASTORE_CONFIG:
 					ret = nc_url_upload(config, ncontent);
@@ -3454,7 +3454,7 @@ apply_editcopyconfig:
 		}
 		target_ds  = nc_rpc_get_target(rpc);
 #ifndef DISABLE_URL
-		if(target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
+		if (target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
 			url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":delete-config/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
 			if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
 				ERROR("%s: unable to get URL path from <delete-config> request.", __func__);
@@ -3463,16 +3463,16 @@ apply_editcopyconfig:
 			}
 			ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
 			protocol = nc_url_get_protocol( ncontent );
-			if( protocol == 0 ) {
-			ERROR( "%s: unknown protocol", __func__ );
-			return (NULL);
-		}
-			if( !nc_url_is_enabled( protocol, rpc->session) ) {
-				ERROR( "%s: protocol not suported", __func__ );
-				return (NULL);
+			if (protocol == 0) {
+				ERROR("%s: unknown protocol", __func__);
+				return (NULL );
 			}
-			
 			ret = nc_url_delete_config( ncontent );
+			if (!nc_url_is_enabled(protocol, rpc->session)) {
+				ERROR("%s: protocol not suported", __func__);
+				return (NULL );
+			}
+
 			xmlFree(ncontent);
 			xmlXPathFreeObject(url_path);
 		} else {
