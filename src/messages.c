@@ -875,6 +875,7 @@ xmlNodePtr ncxml_rpc_get_config( const nc_rpc* rpc )
 				break;
 			}
 			xmlXPathFreeObject(query_result);
+			query_result = NULL;
 		}
 	}
 	
