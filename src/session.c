@@ -135,14 +135,23 @@ static struct session_list_map *session_list = NULL;
  */
 #define NC_READ_SLEEP 100
 #ifdef DISABLE_LIBSSH
-#define NC_WRITE(session,buf,c) \
-	if (session->fd_output != -1) {c += write (session->fd_output, (buf), strlen(buf));}
+#define NC_WRITE(session,buf,c,ret) \
+	if (session->fd_output != -1) {ret = write (session->fd_output, (buf), strlen(buf)); \
+		if (ret > 0) {c += ret;} \
+	} else { \
+		ret = -1; \
+	}
 #else
-#define NC_WRITE(session,buf,c) \
+#define NC_WRITE(session,buf,c,ret) \
 	if(session->ssh_channel){ \
-		c += libssh2_channel_write (session->ssh_channel, (buf), strlen(buf)); \
+		ret = libssh2_channel_write (session->ssh_channel, (buf), strlen(buf)); \
+		if (ret > 0) {c += ret;} \
 	} else if (session->fd_output != -1) { \
-		c += write (session->fd_output, (buf), strlen(buf));}
+		ret = write (session->fd_output, (buf), strlen(buf)); \
+		if (ret > 0) {c += ret;} \
+	} else { \
+		ret = -1; \
+	}
 #endif
 
 #define SIZE_STEP (1024*16)
@@ -550,7 +559,7 @@ void nc_cpblts_free(struct nc_cpblts *c)
 	free(c);
 }
 
-struct nc_cpblts *nc_cpblts_new(char* const list[])
+struct nc_cpblts *nc_cpblts_new(const char* const list[])
 {
 	struct nc_cpblts *retval;
 	int i;
@@ -878,7 +887,7 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	}
 
 	/* do not send <close-session> on nc_session_close() */
-	session->is_server = 0;
+	session->is_server = 1;
 
 	/* set invalid fd values to prevent comunication */
 	session->fd_input = -1;
@@ -1019,6 +1028,13 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			libssh2_session_free(session->ssh_session);
 			session->ssh_session = NULL;
 
+			/* also destroy shared mutexes */
+			if (session->mut_libssh2_channels != NULL) {
+				pthread_mutex_destroy(session->mut_libssh2_channels);
+				free(session->mut_libssh2_channels);
+				session->mut_libssh2_channels = NULL;
+			}
+
 			close(session->libssh2_socket);
 		}
 		session->libssh2_socket = -1;
@@ -1096,8 +1112,13 @@ void nc_session_free (struct nc_session* session)
 	}
 
 	/* destroy mutexes */
-	pthread_mutex_destroy(&(session->mut_in));
-	pthread_mutex_destroy(&(session->mut_out));
+#ifndef DISABLE_LIBSSH
+	if (session->mut_libssh2_channels != NULL) {
+		pthread_mutex_destroy(session->mut_libssh2_channels);
+		free(session->mut_libssh2_channels);
+		session->mut_libssh2_channels = NULL;
+	}
+#endif
 	pthread_mutex_destroy(&(session->mut_mqueue));
 	pthread_mutex_destroy(&(session->mut_equeue));
 	pthread_mutex_destroy(&(session->mut_session));
@@ -1176,6 +1197,7 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	char *text;
 	char buf[1024];
 	struct pollfd fds;
+	int ret;
 
 	if ((session->ssh_channel == NULL) && (session->fd_output == -1)) {
 		return (EXIT_FAILURE);
@@ -1215,42 +1237,52 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	}
 
 	/* lock the session for sending the data */
-	DBG_LOCK("mut_out");
-	pthread_mutex_lock(&(session->mut_out));
 
 	xmlDocDumpFormatMemory (msg->doc, (xmlChar**) (&text), &len, NC_CONTENT_FORMATTED);
 	DBG("Writing message (session %s): %s", session->session_id, text);
 
+	DBG_LOCK("mut_libssh2_channels");
+	pthread_mutex_lock(session->mut_libssh2_channels);
 	/* if v1.1 send chunk information before message */
 	if (session->version == NETCONFV11) {
 		snprintf (buf, 1024, "\n#%d\n", (int) strlen (text));
 		c = 0;
 		do {
-			NC_WRITE(session, &(buf[c]), c);
+			NC_WRITE(session, &(buf[c]), c, ret);
+			if (ret < 0) {
+				DBG_UNLOCK("mut_libssh2_channels");
+				pthread_mutex_unlock(session->mut_libssh2_channels);
+				return (EXIT_FAILURE);
+			}
 #ifndef DISABLE_LIBSSH
 			if (c == LIBSSH2_ERROR_TIMEOUT) {
-				DBG_UNLOCK("mut_out");
-				pthread_mutex_unlock(&(session->mut_out));
+				DBG_UNLOCK("mut_libssh2_channels");
+				pthread_mutex_unlock(session->mut_libssh2_channels);
 				VERB("Writing data into the communication channel timeouted.");
 				return (EXIT_FAILURE);
 			}
 #endif
-		} while (c != (ssize_t) strlen (buf));
+		} while (c < (ssize_t) strlen (buf));
 	}
 
 	/* write the message */
 	c = 0;
 	do {
-		NC_WRITE(session, &(text[c]), c);
+		NC_WRITE(session, &(text[c]), c, ret);
+		if (ret < 0) {
+			DBG_UNLOCK("mut_libssh2_channels");
+			pthread_mutex_unlock(session->mut_libssh2_channels);
+			return (EXIT_FAILURE);
+		}
 #ifndef DISABLE_LIBSSH
 		if (c == LIBSSH2_ERROR_TIMEOUT) {
-			DBG_UNLOCK("mut_out");
-			pthread_mutex_unlock(&(session->mut_out));
+			DBG_UNLOCK("mut_libssh2_channels");
+			pthread_mutex_unlock(session->mut_libssh2_channels);
 			VERB("Writing data into the communication channel timeouted.");
 			return (EXIT_FAILURE);
 		}
 #endif
-	} while (c != (ssize_t) strlen (text));
+	} while (c < (ssize_t) strlen (text));
 	free (text);
 
 	/* close message */
@@ -1261,20 +1293,25 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	}
 	c = 0;
 	do {
-		NC_WRITE(session, &(text[c]), c);
+		NC_WRITE(session, &(text[c]), c, ret);
+		if (ret < 0) {
+			DBG_UNLOCK("mut_libssh2_channels");
+			pthread_mutex_unlock(session->mut_libssh2_channels);
+			return (EXIT_FAILURE);
+		}
 #ifndef DISABLE_LIBSSH
 		if (c == LIBSSH2_ERROR_TIMEOUT) {
-			DBG_UNLOCK("mut_out");
-			pthread_mutex_unlock(&(session->mut_out));
+			DBG_UNLOCK("mut_libssh2_channels");
+			pthread_mutex_unlock(session->mut_libssh2_channels);
 			VERB("Writing data into the communication channel timeouted.");
 			return (EXIT_FAILURE);
 		}
 #endif
-	} while (c != (ssize_t) strlen (text));
+	} while (c < (ssize_t) strlen (text));
 
 	/* unlock the session's output */
-	DBG_UNLOCK("mut_out");
-	pthread_mutex_unlock(&(session->mut_out));
+	DBG_UNLOCK("mut_libssh2_channels");
+	pthread_mutex_unlock(session->mut_libssh2_channels);
 
 	return (EXIT_SUCCESS);
 }
@@ -1569,8 +1606,8 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 	}
 
 	/* lock the session for receiving */
-	DBG_LOCK("mut_in");
-	pthread_mutex_lock(&(session->mut_in));
+	DBG_LOCK("mut_libssh2_channels");
+	pthread_mutex_lock(session->mut_libssh2_channels);
 
 	/* use while for possibility of repeating test */
 	while(1) {
@@ -1610,18 +1647,18 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		/* process the result */
 		if (status == 0) {
 			/* timed out */
-			DBG_UNLOCK("mut_in");
-			pthread_mutex_unlock(&(session->mut_in));
+			DBG_UNLOCK("mut_libssh2_channels");
+			pthread_mutex_unlock(session->mut_libssh2_channels);
 			return (NC_MSG_WOULDBLOCK);
 		} else if ((status == -1) && (errno == EINTR)) {
 			/* poll was interrupted */
 			continue;
 		} else if (status < 0) {
 			/* poll failed - something wrong happend, close this socket and wait for another request */
+			DBG_UNLOCK("mut_libssh2_channels");
+			pthread_mutex_unlock(session->mut_libssh2_channels);
 			ERROR("Input channel error");
 			nc_session_close(session, NC_SESSION_TERM_DROPPED);
-			DBG_UNLOCK("mut_in");
-			pthread_mutex_unlock(&(session->mut_in));
 			if (nc_info) {
 				pthread_rwlock_wrlock(&(nc_info->lock));
 				nc_info->stats.sessions_dropped++;
@@ -1635,10 +1672,10 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		/* if nothing to read and POLLHUP (EOF) or POLLERR set */
 		if ((revents & POLLHUP) || (revents & POLLERR)) {
 			/* close client's socket (it's probably already closed by client */
+			DBG_UNLOCK("mut_libssh2_channels");
+			pthread_mutex_unlock(session->mut_libssh2_channels);
 			ERROR("Input channel closed");
 			nc_session_close(session, NC_SESSION_TERM_DROPPED);
-			DBG_UNLOCK("mut_in");
-			pthread_mutex_unlock(&(session->mut_in));
 			if (nc_info) {
 				pthread_rwlock_wrlock(&(nc_info->lock));
 				nc_info->stats.sessions_dropped++;
@@ -1650,6 +1687,8 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		/* we have something to read */
 		break;
 	}
+	DBG_UNLOCK("mut_libssh2_channels");
+	pthread_mutex_unlock(session->mut_libssh2_channels);
 
 	switch (session->version) {
 	case NETCONFV10:
@@ -1719,9 +1758,6 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		goto malformed_msg;
 		break;
 	}
-
-	DBG_UNLOCK("mut_in");
-	pthread_mutex_unlock(&(session->mut_in));
 
 	retval = calloc (1, sizeof(struct nc_msg));
 	if (retval == NULL) {
@@ -1856,7 +1892,7 @@ static NC_MSG_TYPE nc_session_recv_msg (struct nc_session* session, int timeout,
 
 NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_reply** reply)
 {
-	struct nc_msg *msg_aux, *msg;
+	struct nc_msg *msg_aux, *msg = NULL;
 	NC_MSG_TYPE ret;
 	int local_timeout;
 
@@ -1929,6 +1965,7 @@ try_again:
 
 		break;
 	default:
+		nc_msg_free(msg);
 		ret = NC_MSG_UNKNOWN;
 		break;
 	}

@@ -11,11 +11,11 @@ and should reflect configuration changes to device behavior.
 
 GETTING STARTED
 ================================================================================
-1. Create folder for your new module and enter it.
-2. Run python script 'generator.py'. Description of parameters follows:
+1. Run python script 'generator.py'. Description of parameters follows:
 		--name	Name of your module. This is only one mandatory parameter.
 		--paths	File with list of sensitive path. One per line.
 		--template-dir	Path to directory with template files for generator.
+   The directory 'Name' is created with all generated files.
 3. Open generated .c file and fill function bodies with code that has to be run
 	when configuration change. You can add as many auxiliary function as you need.
 	Do NOT modify anything else.

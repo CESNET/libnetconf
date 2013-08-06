@@ -115,6 +115,19 @@ struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, ...)
 	case NC_FILTER_SUBTREE:
 		/* convert string representation into libxml2 structure */
 		arg = va_arg(argp, const char*);
+		if (strncmp(arg, "<?xml", 5) == 0) {
+			/* We got a "real" XML document. We move after the XML
+			 * declaration, so the trick with covering <filter> element
+			 * will work.
+			 */
+			arg = index(arg, '>') + 1;
+			if (arg == NULL) {
+				/* content is corrupted */
+				ERROR("Invalid XML data to create subtree filter");
+				va_end(argp);
+				return NULL;
+			}
+		}
 		if (asprintf(&filter_s, "<filter>%s</filter>", (arg == NULL) ? "" : arg) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			va_end(argp);
@@ -180,7 +193,7 @@ static char* nc_msg_dump(const struct nc_msg *msg)
 	xmlChar *buf;
 	int len;
 
-	if (msg == NULL || msg == ((void *) -1) || msg->doc == NULL) {
+	if (msg == NULL || msg == NCDS_RPC_NOT_APPLICABLE || msg->doc == NULL) {
 		ERROR("%s: invalid input parameter.", __func__);
 		return (NULL);
 	}
@@ -202,7 +215,7 @@ char* nc_reply_dump(const nc_reply *reply)
 
 xmlDocPtr ncxml_reply_dump(const nc_reply *reply)
 {
-	if (reply == NULL || reply == ((void *) -1) || reply->doc == NULL) {
+	if (reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE || reply->doc == NULL) {
 		ERROR("%s: invalid input parameter.", __func__);
 		return (NULL);
 	}
@@ -551,7 +564,7 @@ nc_reply* ncxml_reply_build(xmlDocPtr reply_dump)
 
 const nc_msgid nc_reply_get_msgid(const nc_reply *reply)
 {
-	if (reply != NULL && reply != ((void *) -1)) {
+	if (reply != NULL && reply != NCDS_RPC_NOT_APPLICABLE) {
 		return (reply->msgid);
 	} else {
 		return (0);
@@ -1088,7 +1101,7 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
 {
 
-	if (reply == NULL || reply == ((void *) -1)) {
+	if (reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE) {
 		return (NC_REPLY_UNKNOWN);
 	} else {
 		return (reply->type.reply);
@@ -1176,7 +1189,7 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 
 const char *nc_reply_get_errormsg(const nc_reply *reply)
 {
-	if (reply == NULL || reply == ((void *) -1) || reply->type.reply != NC_REPLY_ERROR) {
+	if (reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE || reply->type.reply != NC_REPLY_ERROR) {
 		return (NULL);
 	}
 
@@ -1243,7 +1256,7 @@ void nc_msg_free(struct nc_msg *msg)
 	struct nc_err* e, *efree;
 	int i;
 
-	if (msg != NULL && msg != ((void *) -1)) {
+	if (msg != NULL && msg != NCDS_RPC_NOT_APPLICABLE) {
 		if (msg->doc != NULL) {
 			xmlFreeDoc(msg->doc);
 		}
@@ -1285,7 +1298,7 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 {
 	struct nc_msg *dupmsg;
 
-	if (msg == NULL || msg == ((void *) -1) || msg->doc == NULL) {
+	if (msg == NULL || msg == NCDS_RPC_NOT_APPLICABLE || msg->doc == NULL) {
 		return (NULL);
 	}
 
@@ -1735,7 +1748,7 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 {
 	xmlNodePtr content;
 
-	if (error == NULL || reply == NULL || reply == ((void *) -1) || reply->type.reply != NC_REPLY_ERROR) {
+	if (error == NULL || reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE || reply->type.reply != NC_REPLY_ERROR) {
 		return (EXIT_FAILURE);
 	}
 	if (reply->doc == NULL || reply->doc->children == NULL) {
@@ -2379,6 +2392,20 @@ nc_rpc * nc_rpc_validate(NC_DATASTORE source, ...)
 			va_end(argp);
 			return NULL;
 		}
+
+		if (strncmp(config_s, "<?xml", 5) == 0) {
+			/* We got a "real" XML document. We move after the XML
+			 * declaration, so the trick with covering <config> element
+			 * will work.
+			 */
+			config_s = index(config_s, '>') + 1;
+			if (config_s == NULL) {
+				/* content is corrupted */
+				ERROR("Invalid configuration data for validate operation");
+				va_end(argp);
+				return NULL;
+			}
+		}
 		break;
 	case NC_DATASTORE_URL:
 		source_url = va_arg(argp, const char*);
@@ -2661,6 +2688,19 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
 
 	if (source == NC_DATASTORE_CONFIG) {
 		config_s = va_arg(argp, const char*);
+		if (strncmp(config_s, "<?xml", 5) == 0) {
+			/* We got a "real" XML document. We move after the XML
+			 * declaration, so the trick with covering <config> element
+			 * will work.
+			 */
+			config_s = index(config_s, '>') + 1;
+			if (config_s == NULL) {
+				/* content is corrupted */
+				ERROR("Invalid configuration data for <copy-config> operation");
+				va_end(argp);
+				return NULL;
+			}
+		}
 
 		/* transform string to the xmlNodePtr */
 		/* add covering <config> element to allow to specify multiple root elements */
@@ -2892,6 +2932,19 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFO
 	switch (source) {
 	case NC_DATASTORE_CONFIG:
 		config_s = va_arg(argp, const char*);
+		if (strncmp(config_s, "<?xml", 5) == 0) {
+			/* We got a "real" XML document. We move after the XML
+			 * declaration, so the trick with covering <config> element
+			 * will work.
+			 */
+			config_s = index(config_s, '>') + 1;
+			if (config_s == NULL) {
+				/* content is corrupted */
+				ERROR("Invalid configuration data for <edit-config> operation");
+				va_end(argp);
+				return NULL;
+			}
+		}
 		break;
 	case NC_DATASTORE_URL:
 		url = va_arg(argp, const char*);

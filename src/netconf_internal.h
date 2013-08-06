@@ -191,13 +191,12 @@
 #endif
 
 /* libnetconf's message printing */
-char prv_msg[4096];
-void prv_print(NC_VERB_LEVEL level, const char* msg);
+void prv_printf(NC_VERB_LEVEL level, const char *format, ...);
 extern int verbose_level;
-#define ERROR(format,args...) if(verbose_level>=NC_VERB_ERROR){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_ERROR, prv_msg);}
-#define WARN(format,args...) if(verbose_level>=NC_VERB_WARNING){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_WARNING, prv_msg);}
-#define VERB(format,args...) if(verbose_level>=NC_VERB_VERBOSE){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_VERBOSE, prv_msg);}
-#define DBG(format,args...) if(verbose_level>=NC_VERB_DEBUG){snprintf(prv_msg,4095,format,##args); prv_print(NC_VERB_DEBUG, prv_msg);}
+#define ERROR(format,args...) if(verbose_level>=NC_VERB_ERROR){prv_printf(NC_VERB_ERROR,format,##args);}
+#define WARN(format,args...) if(verbose_level>=NC_VERB_WARNING){prv_printf(NC_VERB_WARNING,format,##args);}
+#define VERB(format,args...) if(verbose_level>=NC_VERB_VERBOSE){prv_printf(NC_VERB_VERBOSE,format,##args);}
+#define DBG(format,args...) if(verbose_level>=NC_VERB_DEBUG){prv_printf(NC_VERB_DEBUG,format,##args);}
 #ifdef DEBUG_THREADS
 #define DBG_UNLOCK(name) DBG("Unlocking %s in thread %lu (%s:%d)", name, pthread_self(), __FILE__, __LINE__)
 #define DBG_LOCK(name) DBG("Locking %s in thread %lu (%s:%d)", name, pthread_self(), __FILE__, __LINE__)
@@ -357,10 +356,18 @@ struct nc_session {
 	NC_SESSION_STATUS status;
 	/**< @brief thread lock for accessing session items */
 	pthread_mutex_t mut_session;
-	/**< @brief thread lock for accessing output */
-	pthread_mutex_t mut_out;
-	/**< @brief thread lock for accessing in */
-	pthread_mutex_t mut_in;
+	/**< @brief thread lock for libssh2 channels
+	 *
+	 * Tests of libssh2 in multithread application showed, that libssh2_channel_read()
+	 * and libssh_channel_write() shouldn't be called in the same time.
+	 * Therefore, we replaced mut_in and mut_out with one shared mutex
+	 * mut_libssh2_channels.
+	 * Unfortunately, even though we use this mutex in nc_session_receive() and
+	 * nc_session_send(), there is still some problem in libssh2 that causes
+	 * application failure. \note{The problem appeares mainly during notification history
+	 * replay usage with other NETCONF operations in the same time. (Tomas Cejka)}
+	 */
+	pthread_mutex_t *mut_libssh2_channels;
 	/**< @brief thread lock for accessing queue_event */
 	pthread_mutex_t mut_equeue;
 	/**< @brief thread lock for accessing queue_msg */

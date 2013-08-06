@@ -40,6 +40,8 @@
 #ifndef CALLBACKS_SSH_H_
 #define CALLBACKS_SSH_H_
 
+#ifndef DISABLE_LIBSSH
+
 #include <libssh2.h>
 
 #include "netconf.h"
@@ -101,5 +103,7 @@ void nc_set_keypair_path(const char* private, const char * public);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* DISABLE_LIBSSH */
 
 #endif /* CALLBACKS_SSH_H_ */

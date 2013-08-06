@@ -44,12 +44,13 @@ abs_srcdir = @abs_srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
+readlink = @READLINK@
 
 # Set path to search for libnetconf if installed into other than default location.
 LIBNETCONF_SEARCH = "-Wl,-rpath,$(prefix)/lib"
 
 CC = @CC@
-LIBS = @LDFLAGS@ -L../../ $(LIBNETCONF_SEARCH) -lnetconf -lreadline -lxml2
+LIBS = @LDFLAGS@ @PTHREAD_LIBS@ -L../../.libs/ $(LIBNETCONF_SEARCH) -lnetconf -lreadline -lxml2
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ -DVERSION=\"$(VERSION)\"
 INSTALL = @INSTALL@
@@ -57,7 +58,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 
 INCLUDES= -I$(srcdir)/../../src
 
-ifeq "$(shell pwd)" "$(shell readlink -f $(srcdir))"
+ifeq "$(shell pwd)" "$(shell $(readlink) -f $(srcdir))"
 OBJDIR= .obj
 else
 OBJDIR= .

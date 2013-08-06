@@ -1140,7 +1140,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 
 	/* load shared library */
 	if ((transapi_module = dlopen (callbacks_path, RTLD_NOW)) == NULL) {
-		ERROR("Unable to load shared library %s.", callbacks_path);
+		ERROR("Unable to load shared library %s (%s).", callbacks_path, dlerror());
 		return (NULL);
 	}
 

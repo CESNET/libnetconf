@@ -466,7 +466,7 @@ static int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello
 	}
 	if (merged_cpblts == NULL) {
 		retval = EXIT_FAILURE;
-	} else if ((session->capabilities = nc_cpblts_new(merged_cpblts)) == NULL) {
+	} else if ((session->capabilities = nc_cpblts_new((const char* const*) merged_cpblts)) == NULL) {
 		retval = EXIT_FAILURE;
 	}
 
@@ -551,11 +551,18 @@ static int check_hostkey(const char *host, const char* knownhosts_dir, LIBSSH2_S
 	int fd;
 	size_t len;
 	const char *remotekey, *fingerprint_raw;
-	char fingerprint_md5[48];
 	char *knownhosts_file = NULL;
 	int hostkey_type, hostkey_typebit;
 	struct libssh2_knownhost *ssh_host;
 	LIBSSH2_KNOWNHOSTS *knownhosts;
+
+	/*
+	 * to print MD5 raw hash, we need 3*16 + 1 bytes (4 characters are printed
+	 * all the time, but except the last one, NULL terminating bytes are
+	 * rewritten by the following value). In the end, the last ':' is removed
+	 * for nicer output, so there are two terminating NULL bytes in the end.
+	 */
+	char fingerprint_md5[49];
 
 	/* MD5 hash size is 16B, SHA1 hash size is 20B */
 	fingerprint_raw = libssh2_hostkey_hash(ssh_session, LIBSSH2_HOSTKEY_HASH_MD5);
@@ -770,9 +777,9 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
+	retval->mut_libssh2_channels = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
+	if ((r = pthread_mutex_init(retval->mut_libssh2_channels, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
@@ -809,7 +816,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 			return (NULL);
 		}
 	} else {
-		server_cpblts = nc_cpblts_new(capabilities->list);
+		server_cpblts = nc_cpblts_new((const char* const*)(capabilities->list));
 	}
 	/* set with-defaults capability announcement */
 	if ((nc_cpblts_get (server_cpblts, NC_CAP_WITHDEFAULTS_ID) != NULL)
@@ -888,6 +895,8 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 
 	if (nc_server_handshake(retval, server_cpblts->list) != 0) {
 		nc_session_close(retval, NC_SESSION_TERM_BADHELLO);
+		nc_session_free(retval);
+		nc_cpblts_free(server_cpblts);
 		return (NULL);
 	}
 
@@ -1076,8 +1085,8 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		return (NULL);
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
+	retval->mut_libssh2_channels = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
+	if ((r = pthread_mutex_init(retval->mut_libssh2_channels, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
@@ -1393,8 +1402,8 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 		return (NULL);
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
+	retval->mut_libssh2_channels = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
+	if ((r = pthread_mutex_init(retval->mut_libssh2_channels, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
@@ -1606,7 +1615,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 			goto shutdown;
 		}
 	} else {
-		client_cpblts = nc_cpblts_new(cpblts->list);
+		client_cpblts = nc_cpblts_new((const char* const*)(cpblts->list));
 	}
 
 	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
@@ -1661,7 +1670,6 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 
 	retval->is_server = 0;
 	retval->libssh2_socket = session->libssh2_socket;
-	retval->ssh_session = session->ssh_session; /* share the SSH session */
 	retval->fd_input = -1;
 	retval->fd_output = -1;
 	retval->hostname = session->hostname;
@@ -1680,14 +1688,22 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 	retval->stats->out_rpc_errors = 0;
 	retval->stats->out_notifications = 0;
 
+	/* shared resources with the original session */
+	retval->ssh_session = session->ssh_session;
+	/*
+	 * libssh2 is quite stupid - it provides multiple channels inside a single
+	 * session, but it does not allow multiple threads to work with these
+	 * channels, so we have to share mutex of the master
+	 * session to control access to each SSH channel
+	 */
+	retval->mut_libssh2_channels = session->mut_libssh2_channels;
+
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	if ((r = pthread_mutex_init(&(retval->mut_in), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_out), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
+	if ((r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
@@ -1718,7 +1734,7 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 			goto shutdown;
 		}
 	} else {
-		client_cpblts = nc_cpblts_new(cpblts->list);
+		client_cpblts = nc_cpblts_new((const char* const*)(cpblts->list));
 	}
 
 	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
@@ -1753,8 +1769,11 @@ shutdown:
 	}
 	if (retval) {
 		free(retval->stats);
-		pthread_mutex_destroy(&(retval->mut_in));
-		pthread_mutex_destroy(&(retval->mut_out));
+		if (retval->mut_libssh2_channels != NULL) {
+			pthread_mutex_destroy(retval->mut_libssh2_channels);
+			free(retval->mut_libssh2_channels);
+			retval->mut_libssh2_channels = NULL;
+		}
 		pthread_mutex_destroy(&(retval->mut_mqueue));
 		pthread_mutex_destroy(&(retval->mut_equeue));
 		pthread_mutex_destroy(&(retval->mut_session));
