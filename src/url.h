@@ -41,6 +41,7 @@
 #ifndef URL_H_
 #define URL_H_
 
+/* \todo description how and where to use */
 typedef enum NC_URL_PROTOCOLS {
 	NC_URL_UNKNOWN =   0,
 	NC_URL_SCP     =   1,

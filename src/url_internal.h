@@ -44,6 +44,7 @@
 #include "url.h"
 #include "netconf_internal.h"
 
+/* \todo functions descriptions */
 int nc_url_get_rpc(const char * url);
 int nc_url_delete_config(const char *url);
 int nc_url_upload(const char *data, const char *url);
