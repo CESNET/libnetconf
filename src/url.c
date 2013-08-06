@@ -80,12 +80,20 @@ int nc_url_is_enabled( int protocol, const struct nc_session * session )
 	return session->url_protocols & protocol;
 }
 
+static xmlChar * url_protocols[] = {
+		BAD_CAST "scp",
+		BAD_CAST "http",
+		BAD_CAST "https",
+		BAD_CAST "ftp",
+		BAD_CAST "sftp",
+		BAD_CAST "ftps",
+		BAD_CAST "file"
+};
+
 /**< @brief generates url capability string with enabled protocols */
-	xmlChar * protocols[] = { BAD_CAST "scp", BAD_CAST "http", BAD_CAST "https",
-		BAD_CAST "ftp", BAD_CAST "sftp", BAD_CAST "ftps", BAD_CAST "file" };
-	char * capability;
 char* nc_url_gencap(const struct nc_session *session)
 {
+	char *cpblt = NULL, *cpblt_update = NULL;
 	int first = 1;
 	int i;
 	int protocol = 1;
@@ -93,43 +101,53 @@ char* nc_url_gencap(const struct nc_session *session)
 	if (session->url_protocols == 0) {
 		return (NULL);
 	}
-	
-	if( asprintf( &capability, NC_CAP_URL_ID "&amp;scheme=") < 0 ) {
-		ERROR( "%s: asprintf error", __func__ );
+
+	if (asprintf(&cpblt, NC_CAP_URL_ID "&amp;scheme=") < 0) {
+		ERROR("%s: asprintf error", __func__);
+		return (NULL);
 	}
-	
-	for( i=0, protocol=1; i<7; i++, protocol <<= 1 ) {
-		if( protocol & session->url_protocols ) {
-			if( asprintf( &capability, "%s%s%s", capability, first?"":",", protocols[i]) < 0 ) {
-				ERROR( "%s: asprintf error", __func__ );
+
+	for (i = 0, protocol = 1; i < 7; i++, protocol <<= 1) {
+		if (protocol & session->url_protocols) {
+			if (asprintf(&cpblt_update, "%s%s%s", cpblt, first ? "" : ",", url_protocols[i]) < 0) {
+				ERROR("%s: asprintf error", __func__);
 			}
+			free(cpblt);
+			cpblt = cpblt_update;
+			cpblt_update = NULL;
 			first = 0;
 		}
 	}
-	
-	return capability;
+
+	return (cpblt);
 	
 }
 
 
 /**< @brief gets protocol id from url*/
-	xmlChar * protocols[] = { BAD_CAST "scp", BAD_CAST "http", BAD_CAST "https",
-		BAD_CAST "ftp", BAD_CAST "sftp", BAD_CAST "ftps", BAD_CAST "file" };
 NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 {
 	int protocol = 1;
 	int i;
-	char * prot_str;
-	prot_str = strtok( (char*)url, ":" );
-	if( prot_str == NULL ) return 0;
-	for( i=0; ;i++, protocol <<= 1 ) {
-		if( protocol > 64 ) return 0;
-		if( xmlStrcmp( BAD_CAST prot_str, protocols[i]) == 0)break;
-		if( prot_str == NULL ) break;
+	char *url_aux = strdup(url);
+	char *c;
 
+	c = strchr(url_aux, ':');
+	if (c == NULL) {
+		free(url_aux);
+		ERROR("%s: invalid URL string, missing protocol specification", __func__);
+		return (NC_URL_UNKNOWN);
 	}
-	
-	return protocol;
+	c = '\0';
+
+	for (i = 0; protocol < NC_URL_ALL ; i++, protocol <<= 1) {
+		if (xmlStrcmp(BAD_CAST url_aux, url_protocols[i]) == 0) {
+			break;
+		}
+	}
+
+	free(url_aux);
+	return (protocol);
 }
 
 int nc_url_upload(const char *data, const char *url) {
