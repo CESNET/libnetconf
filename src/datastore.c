@@ -3402,8 +3402,21 @@ apply_editcopyconfig:
 					return (NULL);
 				}
 				
-				/* \todo What if the source is a local datastore (i.e. startup, running, candidate)? */
-				ret = nc_url_upload(config = nc_rpc_get_config(rpc), ncontent );
+				switch (source_ds) {
+				case NC_DATASTORE_CONFIG:
+					ret = nc_url_upload(config, ncontent);
+					break;
+				case NC_DATASTORE_RUNNING:
+				case NC_DATASTORE_STARTUP:
+				case NC_DATASTORE_CANDIDATE:
+					/* \todo get datastore content and upload it into the target */
+					WARN("%s: copying from standard datastores is not yet supported.", __func__);
+					ret = EXIT_FAILURE;
+					break;
+				default:
+					ERROR("%s: invalid source datastore for URL target", __func__);
+					break;
+				}
 				xmlFree(ncontent);
 				xmlXPathFreeObject(url_path);
 			} else {
