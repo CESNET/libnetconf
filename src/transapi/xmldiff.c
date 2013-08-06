@@ -256,6 +256,8 @@ model_type:
 						list_old_inter = list_old_inter->next;
 					}
 				}
+				old_keys  = realloc (old_keys, sizeof(char) * (strlen((const char*)old_keys)+strlen((const char*)list_old_tmp->name)+1));
+				strcat ((char*)old_keys, (char*)list_old_tmp->name); /* !! concatenate the node's name, the only positively unique key is the tuple keys + name */
 				/* go through list of new */
 				list_new_tmp = new_tmp;
 				while (list_new_tmp) {
@@ -273,6 +275,8 @@ model_type:
 							list_new_inter = list_new_inter->next;
 						}
 					}
+					new_keys  = realloc (new_keys, sizeof(char) * (strlen((const char*)new_keys)+strlen((const char*)list_new_tmp->name)+1));
+					strcat ((char*)new_keys, (char*)list_new_tmp->name);
 					if (strcmp ((const char*)old_keys, (const char*)new_keys) == 0) { /* matching item found */
 						free (new_keys);
 						break;
@@ -325,6 +329,8 @@ model_type:
 						list_new_inter = list_new_inter->next;
 					}
 				}
+				new_keys  = realloc (new_keys, sizeof(char) * (strlen((const char*)new_keys)+strlen((const char*)list_new_tmp->name)+1));
+				strcat ((char*)new_keys, (char*)list_new_tmp->name);
 				/* go through list of new */
 				list_old_tmp = old_tmp;
 				while (list_old_tmp) {
@@ -342,6 +348,8 @@ model_type:
 							list_old_inter = list_old_inter->next;
 						}
 					}
+					old_keys  = realloc (old_keys, sizeof(char) * (strlen((const char*)old_keys)+strlen((const char*)list_old_tmp->name)+1));
+					strcat ((char*)old_keys, (char*)list_old_tmp->name);
 					if (strcmp ((const char*)old_keys, (const char*)new_keys) == 0) { /* matching item found */
 						free (old_keys);
 						break;
