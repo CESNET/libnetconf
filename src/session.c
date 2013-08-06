@@ -1881,7 +1881,7 @@ static NC_MSG_TYPE nc_session_recv_msg (struct nc_session* session, int timeout,
 
 NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_reply** reply)
 {
-	struct nc_msg *msg_aux, *msg;
+	struct nc_msg *msg_aux, *msg = NULL;
 	NC_MSG_TYPE ret;
 	int local_timeout;
 
@@ -1954,6 +1954,7 @@ try_again:
 
 		break;
 	default:
+		nc_msg_free(msg);
 		ret = NC_MSG_UNKNOWN;
 		break;
 	}
