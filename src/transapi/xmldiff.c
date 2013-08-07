@@ -82,7 +82,7 @@ int xmldiff_add_diff (struct xmldiff * diff, const char * ns_mapping[], const ch
 			if (child->type != XML_ELEMENT_NODE) {
 				continue;
 			}
-			asprintf (&new_path, "%s/%s:%s", path, get_prefix((char *)child->ns->href, ns_mapping), child->name);
+			asprintf (&new_path, "%s/%s:%s", path, get_prefix((char*)child->ns->href, ns_mapping), child->name);
 			xmldiff_add_diff (diff, ns_mapping, new_path, child, op);
 			free(new_path);
 		}
@@ -143,16 +143,17 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, const char *ns_mapping[], ch
 	xmlChar * old_keys, *new_keys;
 	xmlBufferPtr buf;
 
-	/* some of required documents is missing */
+	/* Some of the required documents are missing */
 	if (old_doc == NULL || new_doc == NULL || model == NULL) {
 		return XMLDIFF_ERR;
 	}
 
-	/* on YIN_TYPE_CHOICE the choice element itself is found in neither old_node nor new_node siblings */
+	/* On YIN_TYPE_CHOICE the choice element itself is found in neither old config nor new config, but should be further parsed */
 	if (model->type == YIN_TYPE_CHOICE) {
 		goto model_type;
 	}
 
+	/* Find the node from the model in the old configuration */
 	old_tmp = old_node;
 	while (old_tmp) {
 		if (xmlStrEqual (old_tmp->name, BAD_CAST model->name)) {
@@ -160,6 +161,8 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, const char *ns_mapping[], ch
 		}
 		old_tmp = old_tmp->next;
 	}
+
+	/* Find the node from the model in the new configuration */
 	new_tmp = new_node;
 	while (new_tmp) {
 		if (xmlStrEqual (new_tmp->name, BAD_CAST model->name)) {
@@ -168,19 +171,22 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, const char *ns_mapping[], ch
 		new_tmp = new_tmp->next;
 	}
 
-	if (old_tmp == NULL && new_tmp == NULL) { /* there was and is nothing */
+	if (old_tmp == NULL && new_tmp == NULL) { /* Node is not in the new config nor the old config */
 		return XMLDIFF_NONE;
-	} else if (old_tmp == NULL) { /* node added */
+
+	} else if (old_tmp == NULL) { /* Node was added */
 		xmldiff_add_diff(diff, ns_mapping, path, new_tmp, XMLDIFF_ADD);
 		return XMLDIFF_ADD;
-	} else if (new_tmp == NULL) { /* node removed */
+
+	} else if (new_tmp == NULL) { /* Node was removed */
 		xmldiff_add_diff(diff, ns_mapping, path, old_tmp, XMLDIFF_REM);
 		return XMLDIFF_REM;
-	} else { /* node is still here, check for internal changes */
+
+	} else { /* Node is in both configurations, check for internal changes */
 model_type:
 		switch (model->type) {
 		case YIN_TYPE_CONTAINER:
-		/* container */	
+		/* Container */	
 		ret_op = XMLDIFF_NONE;
 			for (i=0; i<model->children_count; i++) {
 				asprintf (&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
@@ -198,18 +204,18 @@ model_type:
 			}
 			break;
 		case YIN_TYPE_CHOICE: 
-			/* choice */ 
+			/* Choice */ 
 			ret_op = XMLDIFF_NONE;
-			/* trim the choice path, replace it with the children directly */
+			/* Trim the choice path, replace it with the children directly */
 			*strrchr(path, '/') = '\0';
 
 			for (i=0; i<model->children_count; i++) {
 				asprintf (&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
-				/* we are moving down the model only (not in the configuration) */
+				/* We are moving down the model only (not in the configuration) */
 				tmp_op = xmldiff_recursive (diff, ns_mapping, next_path, old_doc, old_node, new_doc, new_node, &model->children[i]);
 				free (next_path);
 
-				/* assuming there is only one child of this choice (as it should be), we return this child's operation, the choice itself is de-facto skipped */
+				/* Assuming there is only one child of this choice (as it should be), we return this child's operation, the choice itself is de-facto skipped */
 				if (tmp_op != XMLDIFF_NONE) {
 					ret_op = tmp_op;
 					break;
@@ -218,7 +224,7 @@ model_type:
 
 			break;
 		case YIN_TYPE_LEAF: 
-		 	/* leaf */
+		 	/* Leaf */
 			old_content = xmlNodeGetContent (old_tmp);
 			new_content = xmlNodeGetContent (new_tmp);
 			if (xmlStrEqual (old_content, new_content)) {
@@ -231,25 +237,26 @@ model_type:
 			xmlFree (new_content);
 			break;
 		case YIN_TYPE_LIST:
-			/* list */
+			/* List */
 			ret_op = XMLDIFF_NONE;
-			/* find matching according key elements, process all elements inside recursively */
-			/* not matching are _ADD/_REM */
-			/* maching are _NONE or _CHAIN according to return values of recursive calls */
 
-			/* go through old nodes and search for matching nodes in new document*/
+			/* Find matches according to the key elements, process all the elements inside recursively */
+			/* Not matching are _ADD or _REM */
+			/* Maching are _NONE or _CHAIN, according to the return values of the recursive calls */
+
+			/* Go through the old nodes and search for matching nodes in the new document*/
 			list_old_tmp = old_tmp;
 			while (list_old_tmp) {
 				item_ret_op = XMLDIFF_NONE;
-				/* for every old node create string holding concatenated key values */
+				/* For every old node create string holding the concatenated key values */
 				old_keys = BAD_CAST strdup ("");
-				for (i=0; i<model->keys_count; i++) { /* for every specified key */
+				for (i=0; i<model->keys_count; i++) { /* For every specified key */
 					list_old_inter = list_old_tmp->children;
 					while (list_old_inter) {
-						if (xmlStrEqual(list_old_inter->name, BAD_CAST model->keys[i])) { /* find matching leaf in old document */
+						if (xmlStrEqual(list_old_inter->name, BAD_CAST model->keys[i])) { /* Find matching leaf in old document */
 							old_str = xmlNodeGetContent (list_old_inter);
 							old_keys  = realloc (old_keys, sizeof(char) * (strlen((const char*)old_keys)+strlen((const char*)old_str)+1));
-							strcat ((char*)old_keys, (char*)old_str); /* concatenate key value */
+							strcat ((char*)old_keys, (char*)old_str); /* Concatenate key value */
 							xmlFree (old_str);
 							break;
 						}
@@ -257,8 +264,8 @@ model_type:
 					}
 				}
 				old_keys  = realloc (old_keys, sizeof(char) * (strlen((const char*)old_keys)+strlen((const char*)list_old_tmp->name)+1));
-				strcat ((char*)old_keys, (char*)list_old_tmp->name); /* !! concatenate the node's name, the only positively unique key is the tuple keys + name */
-				/* go through list of new */
+				strcat ((char*)old_keys, (char*)list_old_tmp->name); /* !! Concatenate the node's name, the only positively unique key is the tuple keys + name */
+				/* Go through the new list */
 				list_new_tmp = new_tmp;
 				while (list_new_tmp) {
 					new_keys = BAD_CAST strdup ("");
@@ -277,7 +284,7 @@ model_type:
 					}
 					new_keys  = realloc (new_keys, sizeof(char) * (strlen((const char*)new_keys)+strlen((const char*)list_new_tmp->name)+1));
 					strcat ((char*)new_keys, (char*)list_new_tmp->name);
-					if (strcmp ((const char*)old_keys, (const char*)new_keys) == 0) { /* matching item found */
+					if (strcmp ((const char*)old_keys, (const char*)new_keys) == 0) { /* Matching item found */
 						free (new_keys);
 						break;
 					}
@@ -285,11 +292,11 @@ model_type:
 					list_new_tmp = list_new_tmp->next;
 				}
 				free (old_keys);
-				
-				if (list_new_tmp == NULL) { /* item NOT found in new document -> removed */
+
+				if (list_new_tmp == NULL) { /* Item NOT found in the new document -> removed */
 					xmldiff_add_diff (diff, ns_mapping, path, list_old_tmp, XMLDIFF_REM);
 					ret_op = XMLDIFF_CHAIN;
-				} else { /* item found => check for changes recursivelly*/
+				} else { /* Item found -> check for changes recursively*/
 					for (i=0; i<model->children_count; i++) {
 						asprintf (&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
 						tmp_op = xmldiff_recursive (diff, ns_mapping, next_path, old_doc, list_old_tmp->children, new_doc, list_new_tmp->children, &model->children[i]);
@@ -310,19 +317,19 @@ model_type:
 				list_old_tmp = list_old_tmp->next;
 			}
 
-			/* go through new nodes and search for matching nodes in old document*/
+			/* Go through the new nodes and search for matching nodes in the old document*/
 			list_new_tmp = new_tmp;
 			while (list_new_tmp) {
 				item_ret_op = XMLDIFF_NONE;
-				/* for every new node create string holding concatenated key values */
+				/* For every new node create string holding the concatenated key values */
 				new_keys = BAD_CAST strdup ("");
-				for (i=0; i<model->keys_count; i++) { /* for every specified key */
+				for (i=0; i<model->keys_count; i++) { /* For every specified key */
 					list_new_inter = list_new_tmp->children;
 					while (list_new_inter) {
-						if (xmlStrEqual(list_new_inter->name, BAD_CAST model->keys[i])) { /* find matching leaf in old document */
+						if (xmlStrEqual(list_new_inter->name, BAD_CAST model->keys[i])) { /* Find matching leaf in the old document */
 							new_str = xmlNodeGetContent (list_new_inter);
 							new_keys  = realloc (new_keys, sizeof(char) * (strlen((const char*)new_keys)+strlen((const char*)new_str)+1));
-							strcat ((char*)new_keys, (char*)new_str); /* concatenate key value */
+							strcat ((char*)new_keys, (char*)new_str); /* Concatenate key value */
 							xmlFree (new_str);
 							break;
 						}
@@ -331,7 +338,7 @@ model_type:
 				}
 				new_keys  = realloc (new_keys, sizeof(char) * (strlen((const char*)new_keys)+strlen((const char*)list_new_tmp->name)+1));
 				strcat ((char*)new_keys, (char*)list_new_tmp->name);
-				/* go through list of new */
+				/* Go through the new list */
 				list_old_tmp = old_tmp;
 				while (list_old_tmp) {
 					old_keys = BAD_CAST strdup ("");
@@ -350,7 +357,7 @@ model_type:
 					}
 					old_keys  = realloc (old_keys, sizeof(char) * (strlen((const char*)old_keys)+strlen((const char*)list_old_tmp->name)+1));
 					strcat ((char*)old_keys, (char*)list_old_tmp->name);
-					if (strcmp ((const char*)old_keys, (const char*)new_keys) == 0) { /* matching item found */
+					if (strcmp ((const char*)old_keys, (const char*)new_keys) == 0) { /* Matching item found */
 						free (old_keys);
 						break;
 					}
@@ -359,10 +366,10 @@ model_type:
 				}
 				free (new_keys);
 				
-				if (list_old_tmp == NULL) { /* item NOT found in old document -> added */
+				if (list_old_tmp == NULL) { /* Item NOT found in old document -> added */
 					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD);
 					ret_op = XMLDIFF_CHAIN;
-				} else { /* item found => check for changes recursivelly*/
+				} else { /* Item found -> check for changes recursively*/
 					for (i=0; i<model->children_count; i++) {
 						asprintf (&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
 						tmp_op = xmldiff_recursive (diff, ns_mapping, next_path, old_doc, list_old_tmp->children, new_doc, list_new_tmp->children, &model->children[i]);
@@ -384,10 +391,11 @@ model_type:
 			}
 			break;
 		case YIN_TYPE_LEAFLIST:
-			/* leaf-list */
+			/* Leaf-list */
 			ret_op = XMLDIFF_NONE;
-			/* search for matching, only _ADD and _REM will be here */
-			/* for each in old find one from new or log as REM */
+
+			/* Search for matches, only _ADD and _REM will be here */
+			/* For each in the old node find one from the new nodes or log as _REM */
 			list_old_tmp = old_tmp;
 			while (list_old_tmp) {
 				old_str = xmlNodeGetContent(list_old_tmp);
@@ -396,7 +404,7 @@ model_type:
 					new_str = xmlNodeGetContent (list_new_tmp);
 					if (xmlStrEqual (old_str, new_str)) {
 						xmlFree (new_str);
-						/* equivalent found */
+						/* Equivalent found */
 						break;
 					}
 					xmlFree (new_str);
@@ -409,7 +417,7 @@ model_type:
 				}
 				list_old_tmp = list_old_tmp->next;
 			}
-			/* for each in new find one from old or log as ADD */
+			/* For each in the new node find one from the old nodes or log as _ADD */
 			list_new_tmp = new_tmp;
 			while (list_new_tmp) {
 				new_str = xmlNodeGetContent(list_new_tmp);
@@ -418,7 +426,7 @@ model_type:
 					old_str = xmlNodeGetContent (list_old_tmp);
 					if (xmlStrEqual (old_str, new_str)) {
 						xmlFree (old_str);
-						/* equivalent found */
+						/* Equivalent found */
 						break;
 					}
 					xmlFree (old_str);
@@ -433,8 +441,8 @@ model_type:
 			}
 			break;
 		case YIN_TYPE_ANYXML:
-			/* anyxml */
-			/* serialize and compare strings */
+			/* Anyxml */
+			/* Serialize and compare strings */
 			/* TODO: find better solution in future */
 			buf = xmlBufferCreate ();
 			xmlNodeDump (buf, old_doc, old_tmp, 0, 0);
@@ -454,7 +462,7 @@ model_type:
 			xmlFree(new_str);
 			break;
 		default:
-			/* no other type is supported now */
+			/* No other type is supported now */
 			break;
 		}
 	}
