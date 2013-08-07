@@ -92,6 +92,7 @@ int xmldiff_add_diff (struct xmldiff * diff, const char * ns_mapping[], const ch
 	for (i = 0; i < diff->diff_count; ++i) {
 		/* should be enough to check the node pointer only */
 		if (diff->diff_list[i].node == node) {
+			MSG(0, "Duplicit found.");
 			return EXIT_SUCCESS;
 		}
 	}
@@ -366,26 +367,11 @@ model_type:
 				}
 				free (new_keys);
 				
-				if (list_old_tmp == NULL) { /* Item NOT found in old document -> added */
+				if (list_old_tmp == NULL) { /* Item NOT found in the old document -> added */
 					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD);
 					ret_op = XMLDIFF_CHAIN;
-				} else { /* Item found -> check for changes recursively*/
-					for (i=0; i<model->children_count; i++) {
-						asprintf (&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
-						tmp_op = xmldiff_recursive (diff, ns_mapping, next_path, old_doc, list_old_tmp->children, new_doc, list_new_tmp->children, &model->children[i]);
-						free (next_path);
-
-						if (tmp_op == XMLDIFF_ERR) {
-							return XMLDIFF_ERR;
-						} else {
-							item_ret_op |= tmp_op;
-						}
-					}
-
-					if (item_ret_op != XMLDIFF_NONE) {
-						xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN);
-						ret_op = XMLDIFF_CHAIN;
-					}
+				} else {
+					/* We already checked for changes in these nodes */
 				}
 				list_new_tmp = list_new_tmp->next;
 			}
