@@ -44,6 +44,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <semaphore.h>
 
 #include <libxml/tree.h>
 
@@ -64,6 +65,26 @@ static pthread_mutex_t lockinfo_running_mut = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t lockinfo_startup_mut = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t lockinfo_candidate_mut = PTHREAD_MUTEX_INITIALIZER;
 
+/**
+ * @brief custom_datastore lock
+ *
+ * There is only a single lock (named sempahore) per process. It serves
+ * to avoid race condition when doing lock and unlock operations and
+ * we are asking underlying custom datastore plugin for NETCONF lock
+ * info before doing real lock/unlock. This behavior arises only when
+ * the custom datastore do implement is_locked() function. Otherwise,
+ * avoidance of a race condition when multiple processes are accessing
+ * the datastore is up to the custom datastore plugin.
+ *
+ * This lock avoid simultaneous lock/unlock access to the all custom
+ * datastore plugin instances, i.e. it locks even if there is no race
+ * condition, because we are not able to detect (considering multiple
+ * processes) which custom datastore is accessed.
+ */
+#define CDS_LOCK_PATH "/sem.NCDS_custom"
+static sem_t *cds_lock = NULL;
+static unsigned int cds_count = 0;
+
 void ncds_custom_set_data(struct ncds_ds* ds, void *custom_data, const struct ncds_custom_funcs *callbacks) {
 	struct ncds_ds_custom *c_ds = (struct ncds_ds_custom *) ds;
 	c_ds->data = custom_data;
@@ -76,9 +97,21 @@ int ncds_custom_was_changed(struct ncds_ds* ds) {
 	return c_ds->callbacks->was_changed(c_ds->data);
 }
 
-
 int ncds_custom_init(struct ncds_ds* ds) {
 	struct ncds_ds_custom *c_ds = (struct ncds_ds_custom *) ds;
+	mode_t mask;
+
+	/* init custom_datastore lock if needed */
+	if (cds_lock == NULL) {
+		mask = umask(0000);
+		if ((cds_lock = sem_open (CDS_LOCK_PATH, O_CREAT, FILE_PERM, 1)) == SEM_FAILED) {
+			cds_lock = NULL;
+			umask(mask);
+			return (1);
+		}
+		umask(mask);
+	}
+	cds_count++;
 
 	return c_ds->callbacks->init(c_ds->data);
 }
@@ -104,6 +137,13 @@ void ncds_custom_free(struct ncds_ds* ds) {
 	free(lockinfo_candidate.sid);
 	free(lockinfo_candidate.time);
 	pthread_mutex_unlock(&lockinfo_candidate_mut);
+
+	//custom_datastore lock if we are the last
+	cds_count--;
+	if (cds_count == 0) {
+		sem_close(cds_lock);
+		cds_lock = NULL;
+	}
 }
 
 int ncds_custom_rollback(struct ncds_ds* ds) {
@@ -193,9 +233,13 @@ int ncds_custom_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DA
 			retval = 0;
 		}
 	} else {
+		/* take locking access into custom datastore plugin */
+		sem_wait(cds_lock); /* localinfo = 0 */
+
 		/* get current info using is_locked() */
 		retval = c_ds->callbacks->is_locked(c_ds->data, target, &sid, NULL);
 		if (retval < 0) { /* error */
+			sem_post(cds_lock);
 			pthread_mutex_unlock(linfo_mut);
 			ERROR("%s: custom datastore's is_locked() function failed (error %d)", __func__, retval);
 			*error = nc_err_new(NC_ERR_OP_FAILED);
@@ -213,6 +257,11 @@ int ncds_custom_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DA
 		*error = nc_err_new(NC_ERR_LOCK_DENIED);
 		nc_err_set(*error, NC_ERR_PARAM_INFO_SID, sid);
 		retval = EXIT_FAILURE;
+	}
+
+	/* drop locking access into custom datastore plugin */
+	if (localinfo == 0) {
+		sem_post(cds_lock);
 	}
 
 	/* update localinfo structure */
@@ -252,9 +301,13 @@ int ncds_custom_unlock(struct ncds_ds* ds, const struct nc_session* session, NC_
 			sid = linfo->sid;
 		}
 	} else {
+		/* take locking access into custom datastore plugin */
+		sem_wait(cds_lock); /* localinfo = 0 */
+
 		/* get current info using is_locked() */
 		retval = c_ds->callbacks->is_locked(c_ds->data, target, &sid, NULL);
 		if (retval < 0) { /* error */
+			sem_post(cds_lock);
 			pthread_mutex_unlock(linfo_mut);
 			ERROR("%s: custom datastore's is_locked() function failed (error %d)", __func__, retval);
 			*error = nc_err_new(NC_ERR_OP_FAILED);
@@ -291,6 +344,11 @@ int ncds_custom_unlock(struct ncds_ds* ds, const struct nc_session* session, NC_
 			/* try to unlock the datastore */
 			retval = c_ds->callbacks->unlock(c_ds->data, target, session->session_id, error);
 		}
+	}
+
+	/* drop locking access into custom datastore plugin */
+	if (localinfo == 0) {
+		sem_post(cds_lock);
 	}
 
 	if (retval == EXIT_SUCCESS) {
