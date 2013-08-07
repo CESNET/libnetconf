@@ -44,6 +44,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 #include <semaphore.h>
 
 #include <libxml/tree.h>
@@ -87,6 +88,9 @@ static unsigned int cds_count = 0;
 
 void ncds_custom_set_data(struct ncds_ds* ds, void *custom_data, const struct ncds_custom_funcs *callbacks) {
 	struct ncds_ds_custom *c_ds = (struct ncds_ds_custom *) ds;
+
+	assert(callbacks != NULL);
+
 	c_ds->data = custom_data;
 	c_ds->callbacks = callbacks;
 }
