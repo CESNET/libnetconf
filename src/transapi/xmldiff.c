@@ -94,7 +94,15 @@ int xmldiff_add_diff (struct xmldiff_tree** diff, const char * ns_mapping[], con
 			break;
 
 		case XML_CHILD:
-			(*diff)->children = new;
+			if ((*diff)->children == NULL) {
+				(*diff)->children = new;
+			} else {
+				cur = (*diff)->children;
+				while (cur->next != NULL) {
+					cur = cur->next;
+				}
+				cur->next = new;
+			}
 			new->parent = *diff;
 			break;
 
@@ -462,21 +470,18 @@ model_type:
  */
 struct xmldiff_tree* xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[])
 {
-	struct xmldiff_tree* diff = NULL;
-	XMLDIFF_OP ret_op;
+	struct xmldiff_tree* diff;
 	char * path;
 
 	if (old == NULL || new == NULL) {
 		return NULL;
 	}
 
-	asprintf (&path, "/%s:%s", model->children->ns_prefix, model->children->name);
-	ret_op = xmldiff_recursive (&diff, ns_mapping, path, old, old->children, new, new->children, &model->children[0]);
-	free (path);
+	diff = calloc(1, sizeof(struct xmldiff_tree));
 
-	if (ret_op != XMLDIFF_NONE) {
-		diff->op = ret_op;
-	}
+	asprintf (&path, "/%s:%s", model->children->ns_prefix, model->children->name);
+	diff->op = xmldiff_recursive (&diff->children, ns_mapping, path, old, old->children, new, new->children, &model->children[0]);
+	free (path);
 
 	return diff;
 }
