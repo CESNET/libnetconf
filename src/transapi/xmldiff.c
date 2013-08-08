@@ -59,10 +59,9 @@ int xmldiff_add_diff (struct xmldiff_tree** diff, const char * ns_mapping[], con
 	struct xmldiff_tree* new, *cur;
 	xmlNodePtr child;
 	char* new_path;
-	int i;
 
 	new = malloc(sizeof(struct xmldiff_tree));
-	memset(new, 0, sizeof(struct cmldiff_tree));
+	memset(new, 0, sizeof(struct xmldiff_tree));
 
 	/* if added or removed mark all children the same */
 	if (op == XMLDIFF_ADD || op == XMLDIFF_REM) {
@@ -71,7 +70,7 @@ int xmldiff_add_diff (struct xmldiff_tree** diff, const char * ns_mapping[], con
 				continue;
 			}
 			asprintf (&new_path, "%s/%s:%s", path, get_prefix((char*)child->ns->href, ns_mapping), child->name);
-			xmldiff_add_diff (new, ns_mapping, new_path, child, op, XML_CHILD);
+			xmldiff_add_diff (&new, ns_mapping, new_path, child, op, XML_CHILD);
 			free(new_path);
 		}
 	}
@@ -463,7 +462,7 @@ model_type:
  */
 struct xmldiff_tree* xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[])
 {
-	struct xmldiff_tree* diff;
+	struct xmldiff_tree* diff = NULL;
 	XMLDIFF_OP ret_op;
 	char * path;
 
@@ -471,10 +470,6 @@ struct xmldiff_tree* xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct model_tr
 		return NULL;
 	}
 
-	if ((diff = xmldiff_new ()) == NULL) {
-		return NULL;
-	}
-	
 	asprintf (&path, "/%s:%s", model->children->ns_prefix, model->children->name);
 	ret_op = xmldiff_recursive (&diff, ns_mapping, path, old, old->children, new, new->children, &model->children[0]);
 	free (path);
