@@ -10,7 +10,7 @@
 int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model)
 {
 	struct xmldiff * diff;
-	int i,j, ret, found = 0;
+	int i,j, ret;
 	char * last_slash = NULL, * parent_path = NULL, * tmp_path;
 	
 	if ((diff = xmldiff_diff (old_doc, new_doc, model, ns_mapping)) == NULL || diff->all_stat == XMLDIFF_ERR) { /* failed to create diff list */
@@ -33,34 +33,34 @@ int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const 
 			}
 			if (j == c->callbacks_count) { /* no callback function for given path found */
 				VERB("Path %s(%d/%d) has no callback\n", diff->diff_list[i].path, i, diff->diff_count);
-				/* add _MOD flag to nearest ancestor to ensure application of configuration changes*/
-				tmp_path = strdup(diff->diff_list[i].path);
-				while (!found && strlen(tmp_path) > 1) {
-					/* find last "/" in path */
-					if ((last_slash = rindex (tmp_path, '/')) == NULL) {
-						/* every path MUST contain at least one slash */
-						xmldiff_free (diff);
-						return EXIT_FAILURE;
-					}
-					/* get parent path */
-					parent_path = strndup(tmp_path, last_slash - tmp_path);
-					free(tmp_path);
-					for (j=i; j<diff->diff_count; j++) { /* find nearest ancestor */
-						if (strcmp (parent_path, diff->diff_list[j].path) == 0) {
-							diff->diff_list[j].op |= XMLDIFF_MOD; /* mark it as MODified */
-							found = 1;
-							break;
-						}
-					}
-					tmp_path = parent_path;
-				}
-				free(tmp_path);
-				if (found == 0) {
-					WARN("Changes in path %s will not be applied due to missing callback function.\n", diff->diff_list[i].path);
-				} else {
-					WARN("Changes in path %s should be applied when calling callback for path %s.\n", diff->diff_list[i].path, diff->diff_list[j].path);
-				}
-				found = 0;
+				//~ /* add _MOD flag to nearest ancestor to ensure application of configuration changes*/
+				//~ tmp_path = strdup(diff->diff_list[i].path);
+				//~ while (!found && strlen(tmp_path) > 1) {
+					//~ /* find last "/" in path */
+					//~ if ((last_slash = rindex (tmp_path, '/')) == NULL) {
+						//~ /* every path MUST contain at least one slash */
+						//~ xmldiff_free (diff);
+						//~ return EXIT_FAILURE;
+					//~ }
+					//~ /* get parent path */
+					//~ parent_path = strndup(tmp_path, last_slash - tmp_path);
+					//~ free(tmp_path);
+					//~ for (j=i; j<diff->diff_count; j++) { /* find nearest ancestor */
+						//~ if (strcmp (parent_path, diff->diff_list[j].path) == 0) {
+							//~ diff->diff_list[j].op |= XMLDIFF_MOD; /* mark it as MODified */
+							//~ found = 1;
+							//~ break;
+						//~ }
+					//~ }
+					//~ tmp_path = parent_path;
+				//~ }
+				//~ free(tmp_path);
+				//~ if (found == 0) {
+					//~ WARN("Changes in path %s will not be applied due to missing callback function.\n", diff->diff_list[i].path);
+				//~ } else {
+					//~ WARN("Changes in path %s should be applied when calling callback for path %s.\n", diff->diff_list[i].path, diff->diff_list[j].path);
+				//~ }
+				//~ found = 0;
 			}
 		}
 	} else {
@@ -75,7 +75,7 @@ int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const 
 int transapi_running_changed (struct transapi_data_callbacks * c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model)
 {
 	struct xmldiff * diff;
-	int i,j, ret, found = 0;
+	int i,j, ret;
 	char * last_slash = NULL, * parent_path, *tmp_path = NULL;
 	xmlBufferPtr buf;
 	char * node;
@@ -103,34 +103,35 @@ int transapi_running_changed (struct transapi_data_callbacks * c, const char * n
 				}
 			}
 			if (j == c->callbacks_count) { /* no callback function for given path found */
-				/* add _MOD flag to parent to ensure application of configuration changes*/
-				tmp_path = strdup(diff->diff_list[i].path);
-				while (!found && strlen(tmp_path) > 1) {
-					/* find last "/" in path */
-					if ((last_slash = rindex (diff->diff_list[i].path, '/')) == NULL) {
-						/* every path MUST contain at least one slash */
-						xmldiff_free (diff);
-						return EXIT_FAILURE;
-					}
-					/* get parent path */
-					parent_path = strndup(tmp_path, last_slash - tmp_path);
-					free(tmp_path);
-					for (j=i; j<diff->diff_count; j++) { /* find parent */
-						if (strcmp (parent_path, diff->diff_list[j].path) == 0) {
-							diff->diff_list[j].op |= XMLDIFF_MOD; /* mark it as MODified */
-							found = 1;
-							break;
-						}
-					}
-					tmp_path = parent_path;
-				}
-				free(tmp_path);
-				if (found == 0) {
-					WARN("Changes in path %s will not be applied due to missing callback function.\n", diff->diff_list[i].path);
-				} else {
-					WARN("Changes in path %s should be applied when calling callback for path %s.\n", diff->diff_list[i].path, diff->diff_list[j].path);
-				}
-				found = 0;
+				VERB("Path %s(%d/%d) has no callback\n", diff->diff_list[i].path, i, diff->diff_count);
+				//~ /* add _MOD flag to parent to ensure application of configuration changes*/
+				//~ tmp_path = strdup(diff->diff_list[i].path);
+				//~ while (!found && strlen(tmp_path) > 1) {
+					//~ /* find last "/" in path */
+					//~ if ((last_slash = rindex (diff->diff_list[i].path, '/')) == NULL) {
+						//~ /* every path MUST contain at least one slash */
+						//~ xmldiff_free (diff);
+						//~ return EXIT_FAILURE;
+					//~ }
+					//~ /* get parent path */
+					//~ parent_path = strndup(tmp_path, last_slash - tmp_path);
+					//~ free(tmp_path);
+					//~ for (j=i; j<diff->diff_count; j++) { /* find parent */
+						//~ if (strcmp (parent_path, diff->diff_list[j].path) == 0) {
+							//~ diff->diff_list[j].op |= XMLDIFF_MOD; /* mark it as MODified */
+							//~ found = 1;
+							//~ break;
+						//~ }
+					//~ }
+					//~ tmp_path = parent_path;
+				//~ }
+				//~ free(tmp_path);
+				//~ if (found == 0) {
+					//~ WARN("Changes in path %s will not be applied due to missing callback function.\n", diff->diff_list[i].path);
+				//~ } else {
+					//~ WARN("Changes in path %s should be applied when calling callback for path %s.\n", diff->diff_list[i].path, diff->diff_list[j].path);
+				//~ }
+				//~ found = 0;
 			}
 		}
 		xmlBufferFree(buf);
