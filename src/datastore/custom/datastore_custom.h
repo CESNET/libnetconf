@@ -120,7 +120,7 @@ struct ncds_custom_funcs {
 	 * \param[out] error Set this in case of EXIT_FAILURE, to indicate what went wrong.
 	 * \return EXIT_SUCCESS or EXIT_FAILURE.
 	 */
-	int (*unlock)(void *data, NC_DATASTORE target, const char* sssion_id, struct nc_err** error);
+	int (*unlock)(void *data, NC_DATASTORE target, const char* session_id, struct nc_err** error);
 	/**
 	 * \brief Is datastore currently locked?
 	 *
