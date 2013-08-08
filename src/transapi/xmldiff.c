@@ -474,7 +474,7 @@ model_type:
  *
  * @return xmldiff structure holding all differences between XML documents or NULL
  */
-XMLDIFF_OP xmldiff_diff (xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[])
+XMLDIFF_OP xmldiff_diff (struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[])
 {
 	char* path;
 	XMLDIFF_OP ret_op;
