@@ -7,23 +7,16 @@
 
 /**
  * @ingroup transapi
- * @brief structure for single diff entry
+ * @brief tree structure holding all differencies found in compared files
  */
-struct xmldiff_entry {
-	char * path;
+struct xmldiff_tree {
+	char* path;
 	xmlNodePtr node;
 	XMLDIFF_OP op;
-};
 
-/**
- * @ingroup transapi
- * @brief structure holding all differencies found in compared files
- */
-struct xmldiff {
-	struct xmldiff_entry * diff_list;
-	int diff_count;
-	int diff_alloc;
-	XMLDIFF_OP all_stat;
+	struct xmldiff_tree* next;
+	struct xmldiff_tree* parent;
+	struct xmldiff_tree* children;
 };
 
 /**
@@ -32,7 +25,7 @@ struct xmldiff {
  *
  * @param diff	pointer to xmldiff structure
  */
-void xmldiff_free (struct xmldiff * diff);
+void xmldiff_free (struct xmldiff_tree* diff);
 
 /**
  * @ingroup transapi
@@ -45,6 +38,6 @@ void xmldiff_free (struct xmldiff * diff);
  *
  * @return xmldiff structure holding all differences between XML documents or NULL
  */
-struct xmldiff * xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[]);
+struct xmldiff_tree* xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[]);
 
 #endif
