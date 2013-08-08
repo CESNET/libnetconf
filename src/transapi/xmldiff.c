@@ -301,7 +301,8 @@ model_type:
 				free (old_keys);
 
 				if (list_new_tmp == NULL) { /* Item NOT found in the new document -> removed */
-					xmldiff_add_diff (diff, ns_mapping, path, list_old_tmp, XMLDIFF_REM, XML_SIBLING);
+					xmldiff_add_diff (diff, ns_mapping, path, list_old_tmp, XMLDIFF_REM, XML_PARENT);
+					*diff = (*diff)->parent;
 					ret_op = XMLDIFF_CHAIN;
 				} else { /* Item found -> check for changes recursively*/
 					for (i=0; i<model->children_count; i++) {
@@ -375,7 +376,8 @@ model_type:
 				free (new_keys);
 				
 				if (list_old_tmp == NULL) { /* Item NOT found in the old document -> added */
-					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD, XML_SIBLING);
+					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD, XML_PARENT);
+					*diff = (*diff)->parent;
 					ret_op = XMLDIFF_CHAIN;
 				} else {
 					/* We already checked for changes in these nodes */
