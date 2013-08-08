@@ -468,20 +468,18 @@ model_type:
  *
  * @return xmldiff structure holding all differences between XML documents or NULL
  */
-struct xmldiff_tree* xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[])
+XMLDIFF_OP xmldiff_diff (xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[])
 {
-	struct xmldiff_tree* diff;
-	char * path;
+	char* path;
+	XMLDIFF_OP ret_op;
 
-	if (old == NULL || new == NULL) {
+	if (old == NULL || new == NULL || diff == NULL) {
 		return NULL;
 	}
 
-	diff = calloc(1, sizeof(struct xmldiff_tree));
-
 	asprintf (&path, "/%s:%s", model->children->ns_prefix, model->children->name);
-	diff->op = xmldiff_recursive (&diff->children, ns_mapping, path, old, old->children, new, new->children, &model->children[0]);
+	ret_op = xmldiff_recursive (diff, ns_mapping, path, old, old->children, new, new->children, &model->children[0]);
 	free (path);
 
-	return diff;
+	return ret_op;
 }

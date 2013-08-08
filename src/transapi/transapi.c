@@ -9,12 +9,12 @@
 /* will be called by library after change in running datastore */
 int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model)
 {
-	struct xmldiff_tree* diff;
+	struct xmldiff_tree* diff = NULL;
 	int i,j, ret;
 	char * last_slash = NULL, * parent_path = NULL, * tmp_path;
 	
-	if ((diff = xmldiff_diff (old_doc, new_doc, model, ns_mapping)) == NULL || diff->op == XMLDIFF_ERR) { /* failed to create diff list */
-		ERROR("Failed to create list of differences.\n");
+	if (xmldiff_diff (&diff, old_doc, new_doc, model, ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
+		ERROR("Failed to create the tree of differences.\n");
 		xmldiff_free (diff);
 		return EXIT_FAILURE;
 	} else if (diff->op != XMLDIFF_NONE) {
@@ -46,14 +46,14 @@ int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const 
 /* will be called by library after change in running datastore */
 int transapi_running_changed (struct transapi_data_callbacks * c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model)
 {
-	struct xmldiff_tree* diff;
+	struct xmldiff_tree* diff = NULL;
 	int i,j, ret;
 	char * last_slash = NULL, * parent_path, *tmp_path = NULL;
 	xmlBufferPtr buf;
 	char * node;
 
-	if ((diff = xmldiff_diff (old_doc, new_doc, model, ns_mapping)) == NULL || diff->op == XMLDIFF_ERR) { /* failed to create diff list */
-		ERROR("Failed to create list of differences.\n");
+	if (xmldiff_diff (&diff, old_doc, new_doc, model, ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
+		ERROR("Failed to create the tree of differences.\n");
 		xmldiff_free (diff);
 		return EXIT_FAILURE;
 	} else if (diff->op != XMLDIFF_NONE) {
