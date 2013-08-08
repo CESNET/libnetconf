@@ -38,6 +38,6 @@ void xmldiff_free (struct xmldiff_tree* diff);
  *
  * @return xmldiff structure holding all differences between XML documents or NULL
  */
-struct xmldiff_tree* xmldiff_diff (xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[]);
+XMLDIFF_OP xmldiff_diff (struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[]);
 
 #endif
