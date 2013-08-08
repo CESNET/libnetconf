@@ -84,6 +84,7 @@ int xmldiff_add_diff (struct xmldiff_tree** diff, const char * ns_mapping[], con
 	} else {
 		switch (rel) {
 		case XML_PARENT:
+			/* (*diff) is our parent */
 			(*diff)->parent = new;
 			cur = (*diff)->next;
 			while (cur != NULL) {
@@ -94,6 +95,7 @@ int xmldiff_add_diff (struct xmldiff_tree** diff, const char * ns_mapping[], con
 			break;
 
 		case XML_CHILD:
+			/* (*diff) is our child */
 			if ((*diff)->children == NULL) {
 				(*diff)->children = new;
 			} else {
@@ -107,6 +109,7 @@ int xmldiff_add_diff (struct xmldiff_tree** diff, const char * ns_mapping[], con
 			break;
 
 		case XML_SIBLING:
+			/* (*diff) is our sibling */
 			(*diff)->next = new;
 			new->parent = (*diff)->parent;
 			break;
@@ -129,7 +132,8 @@ XMLDIFF_OP xmldiff_leaflist ()
 #endif
 
 /**
- * @brief Recursively go through documents and search for differences
+ * @brief Recursively go through documents and search for differences.
+ *				!! diff tree is not built from the root, but from the leaves !!
  *
  * @param
  */
