@@ -8,7 +8,6 @@
 
 #include "xmldiff.h"
 #include "yinparser.h"
-#include "../netconf_internal.h"
 
 /**
  * @brief Allocate and initialize new xmldiff structure
@@ -86,15 +85,6 @@ int xmldiff_add_diff (struct xmldiff * diff, const char * ns_mapping[], const ch
 			asprintf (&new_path, "%s/%s:%s", path, get_prefix((char*)child->ns->href, ns_mapping), child->name);
 			xmldiff_add_diff (diff, ns_mapping, new_path, child, op);
 			free(new_path);
-		}
-	}
-
-	/* check for duplicit diffs */
-	for (i = 0; i < diff->diff_count; ++i) {
-		/* should be enough to check the node pointer only */
-		if (diff->diff_list[i].node == node) {
-			DBG("Duplicit found.");
-			return EXIT_SUCCESS;
 		}
 	}
 
