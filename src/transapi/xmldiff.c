@@ -480,7 +480,7 @@ XMLDIFF_OP xmldiff_diff (struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr ne
 	XMLDIFF_OP ret_op;
 
 	if (old == NULL || new == NULL || diff == NULL) {
-		return NULL;
+		return XMLDIFF_ERR;
 	}
 
 	asprintf (&path, "/%s:%s", model->children->ns_prefix, model->children->name);
