@@ -17,7 +17,7 @@ int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const 
 		ERROR("Failed to create the tree of differences.\n");
 		xmldiff_free (diff);
 		return EXIT_FAILURE;
-	} else if (diff->op != XMLDIFF_NONE) {
+	} else if (diff != NULL) {
 		//~ for (i=0; i<diff->diff_count; i++) { /* for each diff*/
 			//~ DBG("(%d) %s\n", diff->diff_list[i].op, diff->diff_list[i].path);
 			//~ for (j=0; j<c->callbacks_count; j++) { /* find callback function */
@@ -56,7 +56,7 @@ int transapi_running_changed (struct transapi_data_callbacks * c, const char * n
 		ERROR("Failed to create the tree of differences.\n");
 		xmldiff_free (diff);
 		return EXIT_FAILURE;
-	} else if (diff->op != XMLDIFF_NONE) {
+	} else if (diff != NULL) {
 		//~ buf = xmlBufferCreate();
 		//~ for (i=0; i<diff->diff_count; i++) { /* for each diff*/
 			//~ DBG("(%d) %s\n", diff->diff_list[i].op, diff->diff_list[i].path);
