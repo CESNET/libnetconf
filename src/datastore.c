@@ -437,15 +437,15 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
-int ncds_device_init (ncds_id * id)
+int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts)
 {
 	nc_rpc * rpc_msg = NULL;
 	nc_reply * reply_msg = NULL;
 	struct ncds_ds_list * ds_iter, *start = NULL;
 	struct ncds_ds * ds;
-	struct nc_cpblts * cpblts = NULL;
 	struct nc_session * dummy_session = NULL;
 	struct nc_err * err;
+	int nocpblts = 0;
 
 	if (id != NULL) { /* initialize given device */
 		if ((ds = datastores_get_ds(*id)) == NULL) {
@@ -469,19 +469,37 @@ int ncds_device_init (ncds_id * id)
 
 	if (first_after_close) {
 		/* Clean RUNNING datastore. This is important when transAPI is deployed and does not harm when not. */
+		if (cpblts == NULL) {
+			cpblts = nc_session_get_cpblts_default();
+			nocpblts = 1;
+		}
+
+		/* create dummy session for applying copy-config (startup->running) */
+		if ((dummy_session = nc_session_dummy("dummy-internal", "server", NULL, cpblts)) == NULL) {
+			ERROR("%s: Creating dummy-internal session failed.", __func__);
+			goto fail;
+		}
+
+		if (nocpblts) {
+			nc_cpblts_free(cpblts);
+			cpblts = NULL;
+		}
+
+		/*
+		 * If :startup is not supported, running stays persistent between
+		 * reboots
+		 */
+		if (!nc_cpblts_enabled(dummy_session, NC_CAP_STARTUP_ID)) {
+			nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+			nc_session_free(dummy_session);
+			goto success;
+		}
+
 		/* It is done by calling low level function to avoid invoking transAPI now. */
 		for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 			/* TRY to erase, when it fails the datastore is probably empty */
 			ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, "", &err);
 		}
-
-		/* create dummy session for applying copy-config (startup->running) */
-		cpblts = nc_session_get_cpblts_default();
-		if ((dummy_session = nc_session_dummy("dummy-internal", "server", NULL, cpblts)) == NULL) {
-			ERROR("%s: Creating dummy-internal session failed.", __func__);
-			goto fail;
-		}
-		nc_cpblts_free(cpblts);
 
 		/* initial copy of startup to running will cause full (re)configuration of module */
 		/* Here is used high level function ncds_apply_rpc2all to apply startup configuration and use transAPI */
@@ -494,8 +512,10 @@ int ncds_device_init (ncds_id * id)
 		nc_rpc_free(rpc_msg);
 		nc_reply_free(reply_msg);
 		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+		nc_session_free(dummy_session);
 	}
 
+success:
 	if (id != NULL) {
 		free(start);
 	}
@@ -504,6 +524,7 @@ int ncds_device_init (ncds_id * id)
 fail:
 	if (dummy_session != NULL) {
 		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+		nc_session_free(dummy_session);
 	}
 	nc_rpc_free(rpc_msg);
 	nc_reply_free(reply_msg);
@@ -3540,7 +3561,7 @@ apply_editcopyconfig:
 		}
 	}
 
-	/* if transapi used, rpc affected running and succeeded get its actual content */
+	/* if transapi used, rpc affected running and succeeded, get its actual content */
 	/* find differences and call functions */
 	if (ds->transapi.module != NULL
 		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
