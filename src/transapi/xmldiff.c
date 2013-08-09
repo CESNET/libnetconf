@@ -115,8 +115,6 @@ void xmldiff_add_diff (struct xmldiff_tree** diff, const char * ns_mapping[], co
 			break;
 		}
 	}
-
-	return EXIT_SUCCESS;
 }
 
 void xmldiff_addsibling_diff (struct xmldiff_tree** siblings, struct xmldiff_tree* new_sibling) {
