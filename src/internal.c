@@ -307,6 +307,31 @@ char* nc_clrwspace (const char* in)
 	return (retval);
 }
 
+char* nc_skip_xmldecl(const char* xmldoc)
+{
+	char *s;
+
+	if (xmldoc == NULL) {
+		return (NULL);
+	}
+
+	/* skip leading whitespaces */
+	s = index(xmldoc, '<');
+
+	/* see http://www.w3.org/TR/REC-xml/#NT-XMLDecl */
+	if (strncmp(s, "<?xml", 5) == 0) {
+		/* We got a "real" XML document. Now move after the XML declaration */
+		s = index(s, '>');
+		if (s == NULL || s[-1] != '?') {
+			/* invalid XML declaration, corrupted document */
+			return (NULL);
+		}
+		s++; /* move after ?> */
+	}
+
+	return (s);
+}
+
 char** nc_get_grouplist(const char* username)
 {
 	struct passwd* p;
