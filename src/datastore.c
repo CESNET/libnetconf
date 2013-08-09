@@ -468,23 +468,23 @@ int ncds_device_init (ncds_id * id)
 	}
 
 	if (first_after_close) {
-		/* Clean RUNNING datastore. This is important when tranAPI is deployed and does not harm when not. */
-		/* It is done by calling low level function to avoid invoking transapi now. */
+		/* Clean RUNNING datastore. This is important when transAPI is deployed and does not harm when not. */
+		/* It is done by calling low level function to avoid invoking transAPI now. */
 		for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 			/* TRY to erase, when it fails the datastore is probably empty */
-			/* TODO: Is there better way? */
 			ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, "", &err);
 		}
 
 		/* create dummy session for applying copy-config (startup->running) */
 		cpblts = nc_session_get_cpblts_default();
 		if ((dummy_session = nc_session_dummy("dummy-internal", "server", NULL, cpblts)) == NULL) {
+			ERROR("%s: Creating dummy-internal session failed.", __func__);
 			goto fail;
 		}
 		nc_cpblts_free(cpblts);
 
 		/* initial copy of startup to running will cause full (re)configuration of module */
-		/* Here is used high level function ncds_apply_rpc2all to apply startup configuration and use transapi */
+		/* Here is used high level function ncds_apply_rpc2all to apply startup configuration and use transAPI */
 		rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
 		reply_msg = ncds_apply_rpc2all(dummy_session, rpc_msg, NULL);
 		if (reply_msg == NULL || nc_reply_get_type (reply_msg) != NC_REPLY_OK) {
@@ -3487,7 +3487,7 @@ apply_editcopyconfig:
 					}
 
 					/* call RPC callback function */
-					VERB("Calling RPC function\n");
+					VERB("Calling %s RPC function\n", rpc_name);
 					if (ds->transapi.libxml2) {
 						reply = ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].func(op_input_array);
 						/* clean array */
@@ -3508,10 +3508,11 @@ apply_editcopyconfig:
 				}
 			}
 		}
+
 		free(op_name);
 		break;
 	default:
-		ERROR("%s: unsupported basic NETCONF operation requested.", __func__);
+		ERROR("%s: unsupported NETCONF operation requested.", __func__);
 		return (nc_reply_error (nc_err_new (NC_ERR_OP_NOT_SUPPORTED)));
 		break;
 	}
