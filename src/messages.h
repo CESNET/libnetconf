@@ -159,6 +159,15 @@ char * nc_rpc_get_op_name (const nc_rpc* rpc);
 
 /**
  * @ingroup rpc
+ * @brief Get operation namespace of the given rpc.
+ * @param[in] rpc rpc message.
+ * @return Namespace of operation in the given rpc message. Caller
+ * is responsible for freeing the returned string with free().
+ */
+char * nc_rpc_get_op_namespace (const nc_rpc* rpc);
+
+/**
+ * @ingroup rpc
  * @brief Get content of the operation specification from the given rpc.
  * @param[in] rpc rpc message.
  * @return String in XML form starting with the operation name element. Caller
