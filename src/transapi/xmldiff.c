@@ -134,8 +134,8 @@ void xmldiff_addsibling_diff (struct xmldiff_tree** siblings, struct xmldiff_tre
 		last_sibling = last_sibling->next;
 	}
 
-	last_sibling->next = new_sibling;
-	new_sibling->parent = last_sibling->parent;
+	last_sibling->next = *new_sibling;
+	(*new_sibling)->parent = last_sibling->parent;
 }
 
 #if 0
