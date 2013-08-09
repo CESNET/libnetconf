@@ -110,8 +110,12 @@ void xmldiff_add_diff (struct xmldiff_tree** diff, const char * ns_mapping[], co
 
 		case XML_SIBLING:
 			/* (*diff) is our sibling */
-			(*diff)->next = new;
-			new->parent = (*diff)->parent;
+			cur = *diff;
+			while (cur->next != NULL) {
+				cur = cur->next;
+			}
+			cur->next = new;
+			new->parent = cur->parent;
 			break;
 		}
 	}
