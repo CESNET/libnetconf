@@ -3610,6 +3610,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 	struct ncds_ds_list* ds, *ds_rollback;
 	nc_reply *old_reply = NULL, *new_reply = NULL, *reply = NULL;
 	int id_i = 0;
+	char *op_name, *op_namespace;
 	NC_EDIT_ERROPT_TYPE erropt = 0;
 	NC_RPC_TYPE req_type;
 
@@ -3622,6 +3623,19 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 	if (nc_rpc_get_op(rpc) == NC_OP_EDITCONFIG) {
 		erropt = nc_rpc_get_erropt(rpc);
 	}
+
+	/* check that we have a valid definition of the requested RPC */
+	op_name = nc_rpc_get_op_name(rpc);
+	op_namespace = nc_rpc_get_op_namespace(rpc);
+	if (ncds_get_model_operation(op_name, op_namespace) == NULL) {
+		/* rpc operation is not defined in any known module */
+		ERROR("%s: unsupported NETCONF operation (%s) requested.", __func__, op_name);
+		free(op_name);
+		free(op_namespace);
+		return (nc_reply_error(nc_err_new (NC_ERR_OP_NOT_SUPPORTED)));
+	}
+	free(op_namespace);
+	free(op_name);
 
 	if (ids != NULL) {
 		*ids = ncds.datastores_ids;
