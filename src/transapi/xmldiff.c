@@ -158,13 +158,13 @@ XMLDIFF_OP xmldiff_leaflist ()
  */
 XMLDIFF_OP xmldiff_recursive (struct xmldiff_tree** diff, const char *ns_mapping[], char * path, xmlDocPtr old_doc, xmlNodePtr old_node, xmlDocPtr new_doc, xmlNodePtr new_node, struct model_tree * model)
 {
-	char * next_path;
+	char * next_path, *list_name;
 	int i;
 	xmlNodePtr old_tmp, new_tmp;
 	xmlNodePtr list_old_tmp, list_new_tmp, list_old_inter, list_new_inter;
 	XMLDIFF_OP tmp_op, ret_op = XMLDIFF_NONE, item_ret_op;
 	xmlChar * old_content, * new_content;
-	xmlChar * old_str, *new_str, *list_name;
+	xmlChar * old_str, *new_str;
 	xmlChar * old_keys, *new_keys;
 	xmlBufferPtr buf;
 	struct xmldiff_tree** tmp_diff;
