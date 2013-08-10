@@ -422,14 +422,14 @@ model_type:
 			/* For each in the old node find one from the new nodes or log as _REM */
 			list_old_tmp = old_tmp;
 			while (list_old_tmp) {
-				if (!xmlStrEqual (list_name, list_old_tmp->name)) {
+				if (!xmlStrEqual (BAD_CAST list_name, list_old_tmp->name)) {
 					list_old_tmp = list_old_tmp->next;
 					continue;
 				}
 				old_str = xmlNodeGetContent(list_old_tmp);
 				list_new_tmp = new_tmp;
 				while (list_new_tmp) {
-					if (!xmlStrEqual (list_name, list_new_tmp->name)) {
+					if (!xmlStrEqual (BAD_CAST list_name, list_new_tmp->name)) {
 						list_new_tmp = list_new_tmp->next;
 						continue;
 					}
@@ -452,14 +452,14 @@ model_type:
 			/* For each in the new node find one from the old nodes or log as _ADD */
 			list_new_tmp = new_tmp;
 			while (list_new_tmp) {
-				if (!xmlStrEqual (list_name, list_new_tmp->name)) {
+				if (!xmlStrEqual (BAD_CAST list_name, list_new_tmp->name)) {
 					list_new_tmp = list_new_tmp->next;
 					continue;
 				}
 				new_str = xmlNodeGetContent(list_new_tmp);
 				list_old_tmp = old_tmp;
 				while (list_old_tmp) {
-					if (!xmlStrEqual (list_name, list_old_tmp->name)) {
+					if (!xmlStrEqual (BAD_CAST list_name, list_old_tmp->name)) {
 						list_old_tmp = list_old_tmp->next;
 						continue;
 					}
