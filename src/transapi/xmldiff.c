@@ -164,7 +164,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff_tree** diff, const char *ns_mapping
 	xmlNodePtr list_old_tmp, list_new_tmp, list_old_inter, list_new_inter;
 	XMLDIFF_OP tmp_op, ret_op = XMLDIFF_NONE, item_ret_op;
 	xmlChar * old_content, * new_content;
-	xmlChar * old_str, *new_str;
+	xmlChar * old_str, *new_str, *list_name;
 	xmlChar * old_keys, *new_keys;
 	xmlBufferPtr buf;
 	struct xmldiff_tree** tmp_diff;
@@ -416,14 +416,23 @@ model_type:
 		case YIN_TYPE_LEAFLIST:
 			/* Leaf-list */
 			ret_op = XMLDIFF_NONE;
+			list_name = strrchr(path, ':')+1;
 
 			/* Search for matches, only _ADD and _REM will be here */
 			/* For each in the old node find one from the new nodes or log as _REM */
 			list_old_tmp = old_tmp;
 			while (list_old_tmp) {
+				if (!xmlStrEqual (list_name, list_old_tmp->name)) {
+					list_old_tmp = list_old_tmp->next;
+					continue;
+				}
 				old_str = xmlNodeGetContent(list_old_tmp);
 				list_new_tmp = new_tmp;
 				while (list_new_tmp) {
+					if (!xmlStrEqual (list_name, list_new_tmp->name)) {
+						list_new_tmp = list_new_tmp->next;
+						continue;
+					}
 					new_str = xmlNodeGetContent (list_new_tmp);
 					if (xmlStrEqual (old_str, new_str)) {
 						xmlFree (new_str);
@@ -443,9 +452,17 @@ model_type:
 			/* For each in the new node find one from the old nodes or log as _ADD */
 			list_new_tmp = new_tmp;
 			while (list_new_tmp) {
+				if (!xmlStrEqual (list_name, list_new_tmp->name)) {
+					list_new_tmp = list_new_tmp->next;
+					continue;
+				}
 				new_str = xmlNodeGetContent(list_new_tmp);
 				list_old_tmp = old_tmp;
 				while (list_old_tmp) {
+					if (!xmlStrEqual (list_name, list_old_tmp->name)) {
+						list_old_tmp = list_old_tmp->next;
+						continue;
+					}
 					old_str = xmlNodeGetContent (list_old_tmp);
 					if (xmlStrEqual (old_str, new_str)) {
 						xmlFree (old_str);
