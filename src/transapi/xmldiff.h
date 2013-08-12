@@ -9,7 +9,7 @@ struct xmldiff_prio {
 	int* values;
 	size_t used;
 	size_t alloc;
-}
+};
 
 /**
  * @ingroup transapi
@@ -25,7 +25,7 @@ struct xmldiff_tree {
 	struct xmldiff_tree* next;
 	struct xmldiff_tree* parent;
 	struct xmldiff_tree* children;
-}
+};
 
 /**
  * @ingroup transapi
