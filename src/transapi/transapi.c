@@ -18,23 +18,11 @@ int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const 
 		xmldiff_free (diff);
 		return EXIT_FAILURE;
 	} else if (diff != NULL) {
-		//~ for (i=0; i<diff->diff_count; i++) { /* for each diff*/
-			//~ DBG("(%d) %s\n", diff->diff_list[i].op, diff->diff_list[i].path);
-			//~ for (j=0; j<c->callbacks_count; j++) { /* find callback function */
-				//~ if (strcmp(diff->diff_list[i].path, c->callbacks[j].path) == 0) { /* exact match */
-					//~ /* call callback function */
-					//~ if ((ret = c->callbacks[j].func(diff->diff_list[i].op, diff->diff_list[i].node, &c->data)) != EXIT_SUCCESS) {
-						//~ ERROR("Callback for path %s failed (%d).\n", diff->diff_list[i].path, ret);
-						//~ xmldiff_free (diff);
-						//~ return EXIT_FAILURE;
-					//~ }
-					//~ break;
-				//~ }
-			//~ }
-			//~ if (j == c->callbacks_count) { /* no callback function for given path found */
-				//~ VERB("Path %s(%d/%d) has no callback\n", diff->diff_list[i].path, i, diff->diff_count);
-			//~ }
-		//~ }
+		if (xmldiff_set_priorities(diff, c) != EXIT_SUCCESS) {
+			VERB("There was not found a single callback for the configuration change.\n");
+		} else {
+			
+		}
 	} else {
 		VERB("Nothing changed.\n");
 	}
