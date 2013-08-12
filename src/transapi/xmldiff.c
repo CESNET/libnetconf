@@ -47,7 +47,6 @@ void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* ne
 
 struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct transapi_xml_data_callbacks* calls) {
 	int i, min_prio;
-	struct transapi_xml_data_callbacks* calls = callbacks;
 	struct xmldiff_prio* priorities = NULL, *tmp_prio;
 	struct xmldiff_tree* child;
 
