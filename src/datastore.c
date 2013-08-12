@@ -550,6 +550,38 @@ const char * ncds_get_model_path(ncds_id id)
 	return (datastore->data_model->path);
 }
 
+int ncds_model_info(const char* path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)
+{
+	int retval;
+	xmlXPathContextPtr model_ctxt;
+	xmlDocPtr model_xml;
+
+	model_xml = xmlReadFile(path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
+	if (model_xml == NULL) {
+		ERROR("Unable to read the configuration data model %s.", path);
+		return (EXIT_FAILURE);
+	}
+
+	/* prepare xpath evaluation context of the model for XPath */
+	if ((model_ctxt = xmlXPathNewContext(model_xml)) == NULL) {
+		ERROR("%s: Creating XPath context failed.", __func__);
+		xmlFreeDoc(model_xml);
+		return (EXIT_FAILURE);
+	}
+	if (xmlXPathRegisterNs(model_ctxt, BAD_CAST NC_NS_YIN_ID, BAD_CAST NC_NS_YIN) != 0) {
+		xmlXPathFreeContext(model_ctxt);
+		xmlFreeDoc(model_xml);
+		return (EXIT_FAILURE);
+	}
+
+	retval = get_model_info(model_ctxt, name, version, namespace, prefix, rpcs, notifs);
+
+	xmlFreeDoc(model_xml);
+	xmlXPathFreeContext(model_ctxt);
+
+	return (retval);
+}
+
 static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)
 {
 	xmlXPathObjectPtr result = NULL;

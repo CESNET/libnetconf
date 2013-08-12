@@ -89,6 +89,30 @@ extern char error_area;
 
 /**
  * @ingroup store
+ * @brief Informational function to get basic information about configuration
+ * data model in the given file.
+ * @param[in] path Path to the *.yin file with the configuration data model in
+ * YIN format.
+ *
+ * Caller is responsible to free returned strings and arrays of strings. If a
+ * caller is not interested in a specific return value, NULL pointer can be
+ * set as parameter and the value of such a parameter will not be returned.
+ *
+ * @param[out] name Name of the data model
+ * @param[out] version Version of the data model
+ * @param[out] namespace Namespace for the data model
+ * @param[out] prefix Prefix for the data model
+ * @param[out] rpcs Null terminated list of names of RPCs defined in the data
+ * model
+ * @param[out] notifs Null terminated list of names of Notifications defined in
+ * the data model
+ * @return EXIT_SUCCESS or EXIT_FAILURE on error.
+ *
+ */
+int ncds_model_info(const char* path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs);
+
+/**
+ * @ingroup store
  * @brief Create a new datastore structure of the specified implementation type.
  * @param[in] type Datastore implementation type for the new datastore structure.
  * @param[in] model_path Path to the YIN configuration data model.
