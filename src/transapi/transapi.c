@@ -27,7 +27,7 @@ int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct tra
 	if (min_prio > 0) {
 		child = tree->children;
 		while (child != NULL) {
-			if (!child->apllied && child->priority == min_prio) {
+			if (!child->applied && child->priority == min_prio) {
 				/* Process this child recursively */
 				if (transapi_xml_apply_callbacks_recursive(child, calls) != EXIT_SUCCESS) {
 					return EXIT_FAILURE;
