@@ -125,9 +125,8 @@ void xmldiff_free (struct xmldiff_tree* diff)
 		cur = cur->next;
 	}
 
-	if (diff->parent == NULL) {
-		free(diff);
-	}
+	free(diff->path);
+	free(diff);
 }	
 
 const char * get_prefix (char * uri, const char * ns_mapping[])
