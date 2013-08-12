@@ -80,7 +80,7 @@ int transapi_apply_callbacks_recursive(struct xmldiff_tree* tree, struct transap
 			while (child != NULL) {
 				if (!child->applied && child->priority == min_prio) {
 					/* Process this child recursively */
-					if (transapi_xml_apply_callbacks_recursive(child, calls) != EXIT_SUCCESS) {
+					if (transapi_apply_callbacks_recursive(child, calls, old_doc, new_doc) != EXIT_SUCCESS) {
 						return EXIT_FAILURE;
 					}
 					break;
