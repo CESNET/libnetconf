@@ -26,21 +26,20 @@ void xmldiff_add_priority(int prio, struct xmldiff_prio** prios) {
 }
 
 void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* new) {
-	if (new == NULL) {
+	if (new == NULL || *old == NULL) {
+		if (*old == NULL) {
+			*old = new;
+		}
 		return;
 	}
 
-	if (*old == NULL) {
-		*old = new;
-	} else {
-		if ((*old)->alloc - (*old)->used < new->used) {
-			(*old)->alloc *= 2;
-			(*old)->values = realloc((*old)->values, (*old)->alloc);
-		}
-
-		memcpy((*old)->values+(*old)->used, new->values, new->used);
-		(*old)->used += new->used;
+	if ((*old)->alloc - (*old)->used < new->used) {
+		(*old)->alloc *= 2;
+		(*old)->values = realloc((*old)->values, (*old)->alloc);
 	}
+
+	memcpy((*old)->values+(*old)->used, new->values, new->used);
+	(*old)->used += new->used;
 
 	free(new);
 }
