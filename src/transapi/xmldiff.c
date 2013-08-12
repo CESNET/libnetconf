@@ -54,6 +54,7 @@ struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, s
 	while (child != NULL) {
 		tmp_prio = xmldiff_set_priority_recursive(child, calls);
 		xmldiff_merge_priorities(&priorities, tmp_prio);
+		child = child->next;
 	}
 
 	/* Search for the callback */
