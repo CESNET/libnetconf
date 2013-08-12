@@ -7,36 +7,39 @@
 
 int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct transapi_xml_data_callbacks* calls) {
 	struct xmldiff_tree* child;
-	int min_prio = 0, ret;
+	int min_prio, ret;
 
-	child = tree->children;
-	while (child != NULL) {
-		if (min_prio == 0 && !child->applied && child->priority > 0) {
-			/* Set minimal priority with a sensible value (first child's priority) */
-			min_prio = child->priority;
-			child = child->next;
-			continue;
-		}
-
-		if (!child->applied && child->priority > 0 && child->priority < min_prio) {
-			min_prio = child->priority;
-		}
-		child = child->next;
-	}
-
-	if (min_prio > 0) {
+	do {
+		min_prio = 0;
 		child = tree->children;
 		while (child != NULL) {
-			if (!child->applied && child->priority == min_prio) {
-				/* Process this child recursively */
-				if (transapi_xml_apply_callbacks_recursive(child, calls) != EXIT_SUCCESS) {
-					return EXIT_FAILURE;
-				}
-				break;
+			if (min_prio == 0 && !child->applied && child->priority > 0) {
+				/* Set minimal priority with a reasonable value (first child's priority) */
+				min_prio = child->priority;
+				child = child->next;
+				continue;
+			}
+
+			if (!child->applied && child->priority > 0 && child->priority < min_prio) {
+				min_prio = child->priority;
 			}
 			child = child->next;
 		}
-	}
+
+		if (min_prio > 0) {
+			child = tree->children;
+			while (child != NULL) {
+				if (!child->applied && child->priority == min_prio) {
+					/* Process this child recursively */
+					if (transapi_xml_apply_callbacks_recursive(child, calls) != EXIT_SUCCESS) {
+						return EXIT_FAILURE;
+					}
+					break;
+				}
+				child = child->next;
+			}
+		}
+	} while (min_prio > 0);
 
 	/* Finally call our callback */
 	DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
