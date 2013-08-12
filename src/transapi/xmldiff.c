@@ -38,7 +38,7 @@ void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* ne
 		(*old)->values = realloc((*old)->values, (*old)->alloc);
 	}
 
-	memcpy((*old)->values+(*old)->used, new->values, new->used);
+	memcpy((*old)->values+(*old)->used, new->values, new->used * sizeof(int));
 	(*old)->used += new->used;
 
 	free(new->values);
