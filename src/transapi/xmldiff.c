@@ -41,6 +41,7 @@ void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* ne
 	memcpy((*old)->values+(*old)->used, new->values, new->used);
 	(*old)->used += new->used;
 
+	free(new->values);
 	free(new);
 }
 
