@@ -39,10 +39,10 @@ int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct tra
 	}
 
 	/* Finally call our callback */
-	DBG("Transapi calling callback %s with op %d.\n", tree->path, tree->op);
+	DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
 	ret = calls->callbacks[tree->priority-1].func(tree->op, tree->node, &calls->data);
 	if (ret != EXIT_SUCCESS) {
-		ERROR("Callback for path %s failed (%d)\n.", tree->path, ret);
+		ERROR("Callback for path %s failed (%d).", tree->path, ret);
 	}
 
 	return ret;
@@ -54,12 +54,12 @@ int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const 
 	struct xmldiff_tree* diff = NULL;
 	
 	if (xmldiff_diff(&diff, old_doc, new_doc, model, ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
-		ERROR("Failed to create the tree of differences.\n");
+		ERROR("Failed to create the tree of differences.");
 		xmldiff_free(diff);
 		return EXIT_FAILURE;
 	} else if (diff != NULL) {
 		if (xmldiff_set_priorities(diff, c) != EXIT_SUCCESS) {
-			VERB("There was not found a single callback for the configuration change.\n");
+			VERB("There was not found a single callback for the configuration change.");
 		} else {
 			if (transapi_xml_apply_callbacks_recursive(diff, c) != EXIT_SUCCESS) {
 				xmldiff_free(diff);
@@ -67,10 +67,10 @@ int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const 
 			}
 		}
 	} else {
-		VERB("Nothing changed.\n");
+		VERB("Nothing changed.");
 	}
 
-	xmldiff_free (diff);
+	xmldiff_free(diff);
 	return EXIT_SUCCESS;
 }
 
@@ -84,7 +84,7 @@ int transapi_running_changed (struct transapi_data_callbacks * c, const char * n
 	char * node;
 
 	if (xmldiff_diff (&diff, old_doc, new_doc, model, ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
-		ERROR("Failed to create the tree of differences.\n");
+		ERROR("Failed to create the tree of differences.");
 		xmldiff_free (diff);
 		return EXIT_FAILURE;
 	} else if (diff != NULL) {
