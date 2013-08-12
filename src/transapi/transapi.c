@@ -55,6 +55,8 @@ int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct tra
 int transapi_apply_callbacks_recursive(struct xmldiff_tree* tree, struct transapi_xml_data_callbacks* calls, xmlDocPtr old_doc, xmlDocPtr new_doc) {
 	struct xmldiff_tree* child;
 	int min_prio, ret;
+	xmlBufferPtr buf;
+	char* node;
 
 	do {
 		min_prio = 0;
