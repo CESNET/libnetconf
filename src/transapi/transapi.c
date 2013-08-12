@@ -44,6 +44,7 @@ int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct tra
 	/* Finally call our callback */
 	DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
 	ret = calls->callbacks[tree->priority-1].func(tree->op, tree->node, &calls->data);
+	tree->applied = true;
 	if (ret != EXIT_SUCCESS) {
 		ERROR("Callback for path %s failed (%d).", tree->path, ret);
 	}
