@@ -52,8 +52,6 @@ int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct tra
 int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model)
 {
 	struct xmldiff_tree* diff = NULL;
-	int i,j, ret;
-	char * last_slash = NULL, * parent_path = NULL, * tmp_path;
 	
 	if (xmldiff_diff(&diff, old_doc, new_doc, model, ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
 		ERROR("Failed to create the tree of differences.\n");
