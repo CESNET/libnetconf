@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Fri Jun 21 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Mon Aug 12 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -41,6 +41,10 @@ libnetconf's functions for handling NETCONF datastores\&.
 .SS "Functions"
 
 .in +1c
+.ti -1c
+.RI "int \fBncds_model_info\fP (const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)"
+.br
+.RI "\fIInformational function to get basic information about configuration data model in the given file\&. \fP"
 .ti -1c
 .RI "struct ncds_ds * \fBncds_new\fP (\fBNCDS_TYPE\fP type, const char *model_path, char *(*get_state)(const char *model, const char *running, struct nc_err **e))"
 .br
@@ -181,6 +185,37 @@ No datastore\&. For read-only devices\&.
 Datastores implemented as files 
 .SH "Function Documentation"
 .PP 
+.SS "int ncds_model_info (const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)"
+
+.PP
+Informational function to get basic information about configuration data model in the given file\&. \fBParameters:\fP
+.RS 4
+\fIpath\fP Path to the *\&.yin file with the configuration data model in YIN format\&.
+.RE
+.PP
+Caller is responsible to free returned strings and arrays of strings\&. If a caller is not interested in a specific return value, NULL pointer can be set as parameter and the value of such a parameter will not be returned\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIname\fP Name of the data model 
+.br
+\fIversion\fP Version of the data model 
+.br
+\fInamespace\fP Namespace for the data model 
+.br
+\fIprefix\fP Prefix for the data model 
+.br
+\fIrpcs\fP Null terminated list of names of RPCs defined in the data model 
+.br
+\fInotifs\fP Null terminated list of names of Notifications defined in the data model 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCESS or EXIT_FAILURE on error\&. 
+.RE
+.PP
+
 .SS "struct ncds_ds* ncds_new (\fBNCDS_TYPE\fPtype, const char *model_path, char *(*)(const char *model, const char *running, struct nc_err **e)get_state)\fC [read]\fP"
 
 .PP

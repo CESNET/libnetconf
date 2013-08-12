@@ -7,6 +7,7 @@ var datastore_8h =
       [ "NCDS_TYPE_EMPTY", "d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b", null ],
       [ "NCDS_TYPE_FILE", "d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629", null ]
     ] ],
+    [ "ncds_model_info", "d9/db6/datastore_8h.html#ga9c0f401a6873e8778a80e6cc80c5219a", null ],
     [ "ncds_new", "d9/db6/datastore_8h.html#ga69009c5985f9eec3a6920f98a6a1a5e6", null ],
     [ "ncds_new_transapi", "d9/db6/datastore_8h.html#ga80e69b4cada8c35e5e358287e8af3d85", null ],
     [ "ncds_file_set_path", "d9/db6/datastore_8h.html#gad48955dab497b1258d80019e542acb9b", null ],

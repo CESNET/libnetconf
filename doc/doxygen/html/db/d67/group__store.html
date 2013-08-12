@@ -149,6 +149,9 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ga9c0f401a6873e8778a80e6cc80c5219a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga9c0f401a6873e8778a80e6cc80c5219a">ncds_model_info</a> (const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)</td></tr>
+<tr class="memdesc:ga9c0f401a6873e8778a80e6cc80c5219a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Informational function to get basic information about configuration data model in the given file.  <a href="#ga9c0f401a6873e8778a80e6cc80c5219a">More...</a><br/></td></tr>
+<tr class="separator:ga9c0f401a6873e8778a80e6cc80c5219a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6">ncds_new</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, char *(*get_state)(const char *model, const char *running, struct nc_err **e))</td></tr>
 <tr class="memdesc:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new datastore structure of the specified implementation type.  <a href="#ga69009c5985f9eec3a6920f98a6a1a5e6">More...</a><br/></td></tr>
 <tr class="separator:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -312,6 +315,83 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="ga9c0f401a6873e8778a80e6cc80c5219a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_model_info </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char **&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char **&#160;</td>
+          <td class="paramname"><em>version</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char **&#160;</td>
+          <td class="paramname"><em>namespace</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char **&#160;</td>
+          <td class="paramname"><em>prefix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char ***&#160;</td>
+          <td class="paramname"><em>rpcs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char ***&#160;</td>
+          <td class="paramname"><em>notifs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Informational function to get basic information about configuration data model in the given file. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Path to the *.yin file with the configuration data model in YIN format.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Caller is responsible to free returned strings and arrays of strings. If a caller is not interested in a specific return value, NULL pointer can be set as parameter and the value of such a parameter will not be returned.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">name</td><td>Name of the data model </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">version</td><td>Version of the data model </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">namespace</td><td>Namespace for the data model </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">prefix</td><td>Prefix for the data model </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">rpcs</td><td>Null terminated list of names of RPCs defined in the data model </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">notifs</td><td>Null terminated list of names of Notifications defined in the data model </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCESS or EXIT_FAILURE on error. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ga69009c5985f9eec3a6920f98a6a1a5e6"></a>
 <div class="memitem">
 <div class="memproto">
@@ -914,7 +994,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jun 21 2013 14:17:42 for libnetconf by
+    <li class="footer">Generated on Mon Aug 12 2013 14:01:45 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

@@ -13,7 +13,7 @@ var session_8h =
     [ "nc_session_get_user", "da/d46/session_8h.html#gabdd090cbc50a8f7db58e5be8062296d6", null ],
     [ "nc_session_notif_allowed", "da/d46/session_8h.html#ga65786746e736c6c0d5b74cc0d816bf9e", null ],
     [ "nc_session_get_cpblts", "da/d46/session_8h.html#ga09bdf1d9eacf9f53bf3f05557ffe0821", null ],
-    [ "nc_cpblts_new", "da/d46/session_8h.html#ga5d86d70ad3713208925aec4754602dea", null ],
+    [ "nc_cpblts_new", "da/d46/session_8h.html#gabdd04a64fd465ebbf910c6b08393ac43", null ],
     [ "nc_cpblts_free", "da/d46/session_8h.html#ga6465c58b3ca057b46655d5ffa90caff3", null ],
     [ "nc_cpblts_add", "da/d46/session_8h.html#ga2ea9b318015206d886c7e54386fc85e3", null ],
     [ "nc_cpblts_remove", "da/d46/session_8h.html#gacb59cf4fa78bf02c22afac395acf0693", null ],
