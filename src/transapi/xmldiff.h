@@ -25,7 +25,7 @@ struct xmldiff_tree {
 	struct xmldiff_tree* next;
 	struct xmldiff_tree* parent;
 	struct xmldiff_tree* children;
-};
+}
 
 /**
  * @ingroup transapi
