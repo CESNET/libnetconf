@@ -21,6 +21,7 @@ struct xmldiff_tree {
 	XMLDIFF_OP op;
 
 	int priority;
+	bool applied;
 
 	struct xmldiff_tree* next;
 	struct xmldiff_tree* parent;

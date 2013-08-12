@@ -1,10 +1,52 @@
-
 #include <string.h>
 #include <stdio.h>
 
 #include "transapi_internal.h"
 #include "xmldiff.h"
 #include "../netconf_internal.h"
+
+int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct transapi_xml_data_callbacks* calls) {
+	struct xmldiff_tree* child;
+	int min_prio = 0, ret;
+
+	child = tree->children;
+	while (child != NULL) {
+		if (min_prio == 0 && !child->applied && child->priority > 0) {
+			/* Set minimal priority with a sensible value (first child's priority) */
+			min_prio = child->priority;
+			child = child->next;
+			continue;
+		}
+
+		if (!child->applied && child->priority > 0 && child->priority < min_prio) {
+			min_prio = child->priority;
+		}
+		child = child->next;
+	}
+
+	if (min_prio > 0) {
+		child = tree->children;
+		while (child != NULL) {
+			if (!child->apllied && child->priority == min_prio) {
+				/* Process this child recursively */
+				if (transapi_xml_apply_callbacks_recursive(child, calls) != EXIT_SUCCESS) {
+					return EXIT_FAILURE;
+				}
+				break;
+			}
+			child = child->next;
+		}
+	}
+
+	/* Finally call our callback */
+	DBG("Transapi calling callback %s with op %d.\n", tree->path, tree->op);
+	ret = calls->callbacks[tree->priority-1].func(tree->op, tree->node, &calls->data);
+	if (ret != EXIT_SUCCESS) {
+		ERROR("Callback for path %s failed (%d)\n.", tree->path, ret);
+	}
+
+	return ret;
+}
 
 /* will be called by library after change in running datastore */
 int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model)
@@ -13,15 +55,18 @@ int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const 
 	int i,j, ret;
 	char * last_slash = NULL, * parent_path = NULL, * tmp_path;
 	
-	if (xmldiff_diff (&diff, old_doc, new_doc, model, ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
+	if (xmldiff_diff(&diff, old_doc, new_doc, model, ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
 		ERROR("Failed to create the tree of differences.\n");
-		xmldiff_free (diff);
+		xmldiff_free(diff);
 		return EXIT_FAILURE;
 	} else if (diff != NULL) {
 		if (xmldiff_set_priorities(diff, c) != EXIT_SUCCESS) {
 			VERB("There was not found a single callback for the configuration change.\n");
 		} else {
-			
+			if (transapi_xml_apply_callbacks_recursive(diff, c) != EXIT_SUCCESS) {
+				xmldiff_free(diff);
+				return EXIT_FAILURE;
+			}
 		}
 	} else {
 		VERB("Nothing changed.\n");
