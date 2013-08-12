@@ -1,6 +1,7 @@
 #ifndef _XMLDIFF_H
 #define _XMLDIFF_H
 
+#include <stdbool.h>
 #include <libxml/tree.h>
 #include "yinparser.h"
 #include "transapi.h"
