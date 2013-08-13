@@ -6,6 +6,10 @@
 #include "yinparser.h"
 #include "transapi.h"
 
+/**
+ * @ingroup transapi
+ * @brief buffer for storing callback priorities
+ */
 struct xmldiff_prio {
 	int* values;
 	size_t used;
@@ -50,6 +54,18 @@ void xmldiff_free (struct xmldiff_tree* diff);
  */
 XMLDIFF_OP xmldiff_diff (struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[]);
 
+/**
+ * @ingroup transapi
+ * @brief this function assigns the callback priority for every change in the tree.
+ *		If a change does not have callback, its priority becomes the lowest of
+ *		the children priorities.
+ * @param tree	difference tree
+ * @param callbacks	either transapi_data_callbacks or
+ *					transapi_xml_data_callbacks structure
+ *
+ * @return EXIT_SUCCES on success, EXIT_FAILURE if no callback can
+ *		be called for the configuration change
+ */
 int xmldiff_set_priorities(struct xmldiff_tree* tree, void* callbacks);
 
 #endif

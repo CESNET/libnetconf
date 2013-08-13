@@ -10,6 +10,7 @@
 #include "transapi_xml.h"
 #include "yinparser.h"
 
+/* adds a priority into priority buffer structure */
 void xmldiff_add_priority(int prio, struct xmldiff_prio** prios) {
 	if (*prios == NULL) {
 		*prios = malloc(sizeof(struct xmldiff_prio));
@@ -25,6 +26,7 @@ void xmldiff_add_priority(int prio, struct xmldiff_prio** prios) {
 	(*prios)->used += 1;
 }
 
+/* appends two priority structures, handy for merging all children priorities into one for the parent */
 void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* new) {
 	if (new == NULL || *old == NULL) {
 		if (*old == NULL) {
@@ -45,6 +47,7 @@ void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* ne
 	free(new);
 }
 
+/* the recursive core of xmldiff_set_priorities() function */
 struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct transapi_xml_data_callbacks* calls) {
 	int i, min_prio;
 	struct xmldiff_prio* priorities = NULL, *tmp_prio;
@@ -107,7 +110,7 @@ int xmldiff_set_priorities(struct xmldiff_tree* tree, void* callbacks) {
 }
 
 /**
- * @brief Destroy and free whole xmldiff structure
+ * @brief Destroy and free whole xmldiff_tree structure
  *
  * @param diff	pointer to xmldiff structure
  */
@@ -247,10 +250,17 @@ XMLDIFF_OP xmldiff_leaflist ()
 #endif
 
 /**
- * @brief Recursively go through documents and search for differences.
- *				!! diff tree is not built from the root, but from the leaves !!
+ * @brief Recursively go through documents and search for differences. Build
+ *		a difference tree starting with leaves.
  *
- * @param
+ * @param diff	returned difference tree, should be NULL when first passed
+ * @param ns_mapping	namespace mapings
+ * @param path	path of the model node passed
+ * @param old_doc	document with the old configuration
+ * @param old_node	current node (or sibling) in the old configuration
+ * @param new_doc	document with the new configuration
+ * @param new_node	current node (or sibling) in the new configuration
+ * @param model	current node in the model
  */
 XMLDIFF_OP xmldiff_recursive (struct xmldiff_tree** diff, const char *ns_mapping[], char * path, xmlDocPtr old_doc, xmlNodePtr old_node, xmlDocPtr new_doc, xmlNodePtr new_node, struct model_tree * model)
 {
@@ -440,6 +450,7 @@ model_type:
 					}
 
 					if (item_ret_op != XMLDIFF_NONE) {
+						/* There actually was a change, so we append those changes as our children and add our change as a sibling */
 						xmldiff_add_diff (tmp_diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN, XML_PARENT);
 						*tmp_diff = (*tmp_diff)->parent;
 						xmldiff_addsibling_diff (diff, tmp_diff);

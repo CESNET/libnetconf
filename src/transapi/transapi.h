@@ -19,8 +19,8 @@ extern "C" {
 typedef enum {XMLDIFF_ERR = -1, XMLDIFF_NONE = 0, XMLDIFF_ADD = 1, XMLDIFF_REM = 2, XMLDIFF_MOD = 4, XMLDIFF_CHAIN = 8} XMLDIFF_OP;
 
 /**
- *
- *
+ * @ingroup transapi
+ * @brief Enum with XML relationships between the nodes
  */
 typedef enum {XML_PARENT, XML_CHILD, XML_SIBLING} XML_RELATION;
 

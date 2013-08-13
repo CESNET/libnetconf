@@ -5,6 +5,7 @@
 #include "xmldiff.h"
 #include "../netconf_internal.h"
 
+/* call the callbacks in the order set by the priority of each change */
 int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct transapi_xml_data_callbacks* calls) {
 	struct xmldiff_tree* child;
 	int min_prio, ret;
@@ -52,6 +53,7 @@ int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct tra
 	return ret;
 }
 
+/* call the callbacks in the order set by the priority of each change */
 int transapi_apply_callbacks_recursive(struct xmldiff_tree* tree, struct transapi_data_callbacks* calls, xmlDocPtr old_doc, xmlDocPtr new_doc) {
 	struct xmldiff_tree* child;
 	int min_prio, ret;
