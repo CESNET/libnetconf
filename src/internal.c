@@ -179,6 +179,9 @@ int nc_init(int flags)
 	if (flags & NC_INIT_WD) {
 		nc_init_flags |= NC_INIT_WD;
 	}
+	if (flags & NC_INIT_VALIDATE) {
+		nc_init_flags |= NC_INIT_VALIDATE;
+	}
 
 	/*
 	 * init internal datastores - they have to be initiated before they are

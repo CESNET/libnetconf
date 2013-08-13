@@ -52,6 +52,7 @@
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
+#include <libxml/relaxng.h>
 
 #include "netconf_internal.h"
 #include "messages.h"
@@ -85,6 +86,12 @@
 #include "../models/ietf-yang-types.xxd"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
+/*
+ * From internal.c to be used by nc_session_get_cpblts_deault() to detect
+ * what part of libnetconf is initiated and can be executed
+ */
+extern int nc_init_flags;
 
 extern struct nc_shared_info *nc_info;
 
@@ -512,6 +519,7 @@ int ncds_device_init (ncds_id * id)
 		nc_rpc_free(rpc_msg);
 		nc_reply_free(reply_msg);
 		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+		nc_session_free(dummy_session);
 	}
 
 	if (id != NULL) {
@@ -522,6 +530,7 @@ int ncds_device_init (ncds_id * id)
 fail:
 	if (dummy_session != NULL) {
 		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+		nc_session_free(dummy_session);
 	}
 	nc_rpc_free(rpc_msg);
 	nc_reply_free(reply_msg);
@@ -2338,29 +2347,86 @@ int ncds_consolidate(void)
 	return (EXIT_SUCCESS);
 }
 
+void relaxng_error_callback(void *error, const char * msg, ...)
+{
+	struct nc_err **e = (struct nc_err**)(error);
+	va_list args;
+	char* s = NULL, *m = NULL;
+
+	if (e != NULL && *e == NULL) {
+		/*
+		 * if the callback is invoked multiply, only the first error message
+		 * will be stored as NETCONF error
+		 */
+
+		va_start(args, msg);
+		vasprintf(&s, msg, args);
+		va_end(args);
+
+		asprintf(&m, "Datastore fails to validate (%s)", s);
+		*e = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*e, NC_ERR_PARAM_MSG, m);
+
+		free(s);
+		free(m);
+	}
+}
+
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
 {
 	struct ncds_ds* ds = NULL;
+	char *basename, *path_yin;
+	char *path_rng = NULL;
+	xmlRelaxNGParserCtxtPtr rng_ctxt;
 
 	if (model_path == NULL) {
 		ERROR("%s: missing the model path parameter.", __func__);
 		return (NULL);
 	}
 
+	/* check the form of model_path - for backward compatibility
+	 * model_path.yin is supported and validation file names will be also
+	 * derived
+	 */
+	basename = strdup(model_path);
+	if (strcmp(&(basename[strlen(basename)-4]), ".yin") == 0) {
+		path_yin = strdup(model_path);
+		basename[strlen(basename)-4] = 0; /* remove .yin suffix */
+	} else {
+		asprintf(&path_yin, "%s.yin", basename);
+	}
+	asprintf(&path_rng, "%s-data.rng", basename);
+//	asprintf(&path_dsrl, "%s-data.dsrl", basename);
+//	asprintf(&path_sch, "%s-data.sch", basename);
+
 	ds = ncds_fill_func(type);
 	if (ds == NULL) {
 		/* The error was reported already. */
-		return (NULL);
+		goto cleanup;
 	}
 
 	ds->type = type;
 
 	/* get configuration data model */
-	if ((ds->data_model = read_model(model_path)) == NULL) {
+	ds->data_model = read_model(path_yin);
+	if (ds->data_model == NULL) {
 		free(ds);
-		return (NULL);
+		ds = NULL;
+		goto cleanup;
 	}
 	ds->ext_model = ds->data_model->xml;
+
+	if (nc_init_flags & NC_INIT_VALIDATE) {
+		/* prepare validation */
+		if (eaccess(path_rng, R_OK) == -1) {
+			WARN("Missing RelaxNG schema for validation (%s - %s).", path_rng, strerror(errno));
+		} else {
+			rng_ctxt = xmlRelaxNGNewParserCtxt(path_rng);
+			ds->validators.rng_schema = xmlRelaxNGParse(rng_ctxt);
+			ds->validators.rng = xmlRelaxNGNewValidCtxt(ds->validators.rng_schema);
+			xmlRelaxNGFreeParserCtxt(rng_ctxt);
+		}
+	}
 
 	/* TransAPI structure is set to NULLs */
 
@@ -2369,6 +2435,13 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 
 	/* ds->id is -1 to indicate, that datastore is still not fully configured */
 	ds->id = -1;
+
+cleanup:
+	free(basename);
+	free(path_yin);
+	free(path_rng);
+//	free(path_dsrl);
+//	free(path_sch);
 
 	return (ds);
 }
@@ -2537,6 +2610,11 @@ void ncds_free(struct ncds_ds* datastore)
 		if (ds->transapi.module != NULL && ds->transapi.close != NULL) {
 			ds->transapi.close();
 		}
+
+		/* validators */
+		xmlRelaxNGFreeValidCtxt(ds->validators.rng);
+		xmlRelaxNGFree(ds->validators.rng_schema);
+
 		datastore->func.free(ds);
 	}
 }
@@ -2961,6 +3039,52 @@ int ncds_rollback(ncds_id id)
 	}
 
 	return (datastore->func.rollback(datastore));
+}
+
+/*
+ * EXIT_SUCCESS - validation ok
+ * EXIT_FAILURE - validation failed
+ * EXIT_RPC_NOT_APPLICABLE - RelaxNG scheme not defined
+ */
+static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
+{
+	int ret = 0;
+
+	if (ds == NULL || doc == NULL) {
+		ERROR("%s: invalid input parameter", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	if (ds->validators.rng) {
+		/* RelaxNG validation */
+		DBG("RelaxNG validation on subdatastore %d", ds->id);
+
+		xmlRelaxNGSetValidErrors(ds->validators.rng,
+			(xmlRelaxNGValidityErrorFunc) relaxng_error_callback,
+			(xmlRelaxNGValidityWarningFunc) relaxng_error_callback,
+			error);
+
+		ret = xmlRelaxNGValidateDoc(ds->validators.rng, doc);
+		if (ret > 0) {
+			VERB("subdatastore %d fails to validate", ds->id);
+			if (error != NULL && *error == NULL) {
+				*error = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore fails to validate.");
+			}
+			return (EXIT_FAILURE);
+		} else if (ret < 0) {
+			VERB("validation generated an internal error", ds->id);
+			if (error != NULL && *error == NULL) {
+				*error = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Validation generated an internal error.");
+			}
+			return (EXIT_FAILURE);
+		} else { /* ret == 0 -> success */
+			return (EXIT_SUCCESS);
+		}
+	}
+
+	return (EXIT_RPC_NOT_APPLICABLE);
 }
 
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
@@ -3468,6 +3592,30 @@ apply_editcopyconfig:
 			e = nc_err_new (NC_ERR_OP_NOT_SUPPORTED);
 			ret = EXIT_FAILURE;
 		}
+		break;
+	case NC_OP_VALIDATE:
+		if ((data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), &e)) == NULL ) {
+			if (e == NULL ) {
+				ERROR("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
+				e = nc_err_new(NC_ERR_OP_FAILED);
+			}
+			break;
+		}
+		data2 = data;
+		if (asprintf(&data, "<data xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">%s</data>", data2) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			e = nc_err_new(NC_ERR_OP_FAILED);
+			free(data2);
+			break;
+		}
+		aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		free(data2);
+		free(data);
+		data = NULL;
+
+		ret = validate_ds(ds, aux_doc, &e);
+
+		xmlFreeDoc(aux_doc);
 		break;
 	case NC_OP_UNKNOWN:
 		/* get operation name */

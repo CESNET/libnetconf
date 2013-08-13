@@ -116,7 +116,10 @@ int ncds_model_info(const char* path, char **name, char **version, char **namesp
  * @ingroup store
  * @brief Create a new datastore structure of the specified implementation type.
  * @param[in] type Datastore implementation type for the new datastore structure.
- * @param[in] model_path Path to the YIN configuration data model.
+ * @param[in] model_path Base name of the configuration data model files.
+ * libnetconf expects model_path.yin as a data model, model_path.rng for
+ * grammar and data types validation, model_path.dsrl for default values
+ * validation and model_path.sch for semantic validation.
  * @param[in] get_state Pointer to a callback function that returns a serialized
  * XML document containing the state configuration data of the device. The parameters
  * it receives are a serialized configuration data model in YIN format and the current
@@ -133,8 +136,12 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
  * @ingroup transapi
  * @brief Create new datastore structure with transaction API support
  * @param[in] type Datastore implementation type for the new datastore structure.
- * @param[in] model_path Path to the YIN configuration data model.
- * @param[in] callbacks_path Path to shared library with callbacks and other functions for transaction API.
+ * @param[in] model_path Base name of the configuration data model files.
+ * libnetconf expects model_path.yin as a data model, model_path.rng for
+ * grammar and data types validation, model_path.dsrl for default values
+ * validation and model_path.sch for semantic validation.
+ * @param[in] callbacks_path Path to shared library with callbacks and other
+ * functions for transaction API.
  *
  * @return Prepared (not configured) datastore structure. To configure the
  * structure, caller must use the parameter setters of the specific datastore
