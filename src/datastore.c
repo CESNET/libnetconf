@@ -1369,23 +1369,6 @@ static int data_model_enlink(struct data_model* model)
 	return (EXIT_SUCCESS);
 }
 
-static struct data_model* data_model_new_enlink(const char* model_path)
-{
-	struct data_model *model;
-
-	model = data_model_new(model_path);
-	if (model == NULL) {
-		return (NULL);
-	}
-
-	if (data_model_enlink(model) != EXIT_SUCCESS) {
-		ncds_ds_model_free(model);
-		return (NULL);
-	}
-
-	return (model);
-}
-
 static int match_module_node(char* path_module, char* module, char* name, xmlNodePtr *node)
 {
 	char* name_aux;
@@ -2370,7 +2353,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	ds->type = type;
 
 	/* get configuration data model */
-	if ((ds->data_model = data_model_new_enlink(model_path)) == NULL) {
+	if ((ds->data_model = read_model(model_path)) == NULL) {
 		free(ds);
 		return (NULL);
 	}
