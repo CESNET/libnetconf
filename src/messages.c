@@ -570,6 +570,37 @@ const nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc)
 	}
 }
 
+char *nc_rpc_get_ns(const nc_rpc *rpc)
+{
+	xmlNodePtr root, opnode;
+
+	if (rpc == NULL || rpc->doc == NULL ) {
+		ERROR("%s: Invalid parameter (missing message or message document).", __func__);
+		return NULL;
+	}
+
+	if ((root = xmlDocGetRootElement(rpc->doc)) == NULL) {
+		ERROR("%s: Invalid parameter (invalid message structure).", __func__);
+		return NULL;
+	}
+	if (xmlStrcmp(root->name, BAD_CAST "rpc") != 0) {
+		ERROR("%s: Invalid rpc message - not an <rpc> message.", __func__);
+		return (NC_OP_UNKNOWN);
+	}
+
+	/* return namespace of the first element node inside <rpc> */
+	for (opnode = root->children; opnode != NULL && opnode->type != XML_ELEMENT_NODE; opnode = opnode->next);
+	if (opnode == NULL) {
+		ERROR("%s: Invalid message structure - no operation element.", __func__);
+		return (NULL);
+	} else if (opnode->ns == NULL) {
+		WARN("%s: Bad message structure - operation element with missing namespace.", __func__);
+		return (NULL);
+	} else {
+		return strdup((char *) opnode->ns->href);
+	}
+}
+
 NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 {
 	xmlNodePtr root, auxnode;
@@ -685,7 +716,7 @@ char* nc_rpc_get_op_content (const nc_rpc* rpc)
 {
 	char *retval = NULL;
 	xmlDocPtr aux_doc;
-	xmlNodePtr root;
+	xmlNodePtr node;
 	xmlBufferPtr buffer;
 	xmlXPathObjectPtr result = NULL;
 	int i;
@@ -702,16 +733,13 @@ char* nc_rpc_get_op_content (const nc_rpc* rpc)
 				xmlXPathFreeObject(result);
 				return NULL;
 			}
-			if ((root = xmlDocGetRootElement(rpc->doc)) == NULL) {
-				xmlXPathFreeObject(result);
-				return NULL;
-			}
 
-			/* by copying node, move all needed namespaces into the content nodes */
+			/* by copying node, move all needed namespaces into the printed nodes */
 			aux_doc = xmlNewDoc(BAD_CAST "1.0");
-			xmlDocSetRootElement(aux_doc, xmlCopyNodeList(root->children));
 			for (i = 0; i < result->nodesetval->nodeNr; i++) {
-				xmlNodeDump(buffer, aux_doc, result->nodesetval->nodeTab[i], 1, 1);
+				if ((node = xmlDocCopyNode(result->nodesetval->nodeTab[i], aux_doc, 1)) != NULL) {
+					xmlNodeDump(buffer, aux_doc, node, 1, 1);
+				}
 			}
 			retval = strdup((char *) xmlBufferContent(buffer));
 			xmlBufferFree(buffer);

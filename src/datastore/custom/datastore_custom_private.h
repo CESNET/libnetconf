@@ -1,9 +1,8 @@
 /**
- * \file datastore_file.h
- * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief NETCONF datastore handling function prototypes and structures for file datastore implementation.
- *
- * Copyright (C) 2012 CESNET, z.s.p.o.
+ * \file datastore_custom_private.h
+ * \author Robin Obůrka <robin.oburka@nic.cz>
+ * \brief NETCONF datastore handling function prototypes and structures for
+ * custom datastore implementation.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,166 +36,101 @@
  *
  */
 
-#ifndef DATASTORE_FILE_H_
-#define DATASTORE_FILE_H_
+#ifndef DATASTORE_CUSTOM_PRIVATE_H
+#define DATASTORE_CUSTOM_PRIVATE_H
 
 #include "../../netconf_internal.h"
 #include "../datastore_internal.h"
-#include <semaphore.h>
 
 /**
- * @brief File datastore implementation-specific ncds_ds structure.
+ * @brief Custom datastore implementation-specific ncds_ds structure.
  */
-struct ncds_ds_file {
+struct ncds_ds_custom {
+	struct ncds_ds ds;
 	/**
-	 * @brief Datastore implementation type
+	 * @brief User's data
 	 */
-	NCDS_TYPE type;
-	/**
-	 * @brief Datastore ID: 0 - uninitiated datastore, positive value - valid ID
-	 */
-	ncds_id id;
-	/**
-	 * @brief Time of the last access to the configuration datastore.
-	 */
-	time_t last_access;
-	/**
-	 * @brief Pointer to a callback function implementing the retrieval of the
-	 * device status data.
-	 */
-	char* (*get_state)(const char* model, const char* running, struct nc_err ** e);
-	/**
-	 * @brief Datastore implementation functions.
-	 */
-	struct ncds_funcs func;
-	/**
-	 * @brief Compounded data model containing base data model extended by
-	 * all augment models
-	 */
-	xmlDocPtr ext_model;
-	/**
-	 * @brief Information about base data model linked with the datastore
-	 */
-	struct data_model* data_model;
-	/**
-	 * @brief TransAPI information
-	 */
-	struct transapi transapi;
-	/**
-	 * @brief Path to the file containing the configuration data, a single file is
-	 * used for all the datastore types (running, startup, candidate).
-	 */
-	char* path;
-	/**
-	 * @brief File descriptor of an opened file containing the configuration data
-	 */
-	FILE* file;
-	/**
-	 * libxml2's document structure of the datastore
-	 */
-	xmlDocPtr xml;
-	/**
-	 * backup libxml2's document structure of the datastore for rollback
-	 */
-	xmlDocPtr xml_rollback;
-	/**
-	 * libxml2 Node pointers providing access to individual datastores
-	 */
-	xmlNodePtr candidate, running, startup;
-	/**
-	 * locking structure
-	 */
-	struct ds_lock_s {
-		/**
-		 * semaphore pointer
-		 */
-		sem_t * lock;
-		/**
-		 * signal set before locked
-	 	 */
-		sigset_t sigset;
-		/**
-		 * Am I holding the lock
-		 */
-		int holding_lock;
-	} ds_lock;
+	void *data;
+	const struct ncds_custom_funcs *callbacks;
 };
 
 /**
- * @brief Initialization of a file datastore
+ * @brief Initialization of a custom datastore
  *
- * @param[in] ds File datastore structure
+ * @param[in] ds Custom datastore structure
  * @return 0 on success, non-zero else
  */
-int ncds_file_init (struct ncds_ds* ds);
+int ncds_custom_init(struct ncds_ds* ds);
 
 /**
  * @brief Test if configuration datastore was changed by another process since
  * last access of the caller.
- * @param[in] ds File datastore structure which will be tested.
+ * @param[in] ds Custom datastore structure (struct ncds_ds_custom) which will
+ * be tested.
  * @return 0 as false if the datastore was not updated, 1 if the datastore was
  * changed.
  */
-int ncds_file_changed(struct ncds_ds* ds);
+int ncds_custom_was_changed(struct ncds_ds* ds);
 
 /**
  * @brief If possible, rollback the last change of the datastore.
- * @param[in] ds File datastore which will be rolled back.
+ * @param[in] ds Custom datastore which will be rolled back.
  * @return 0 on success, non-zero if the operation can not be performed.
  */
-int ncds_file_rollback(struct ncds_ds* ds);
+int ncds_custom_rollback(struct ncds_ds* ds);
 
 /**
  * @brief Perform get-config on the specified repository.
  *
- * @param[in] ds File datastore structure from which the data will be obtained.
+ * @param[in] ds Custom datastore structure (struct ncds_ds_custom) from which
+ * the data will be obtained.
  * @param[in] session Session originating the request.
  * @param[in] source Datastore (running, startup, candidate) to get the data from.
  * @param[out] error NETCONF error structure describing the experienced error.
  * @return NULL on error, resulting data on success.
-*/
-char* ncds_file_getconfig (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, struct nc_err** error);
+ */
+char* ncds_custom_getconfig(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, struct nc_err** error);
 
 /**
  * @brief Get lock information about the specified NETCONF datastore
- * @param[in] ds File datastore structure that will be checked.
+ * @param[in] ds Custom datastore structure that will be checked.
  * @param[in] target NETCONF datastore (runnign, startup, candidate) to be analyzed.
  * @return NULL on error, filled lock information structure on success.
  */
-const struct ncds_lockinfo *ncds_file_lockinfo(struct ncds_ds* ds, NC_DATASTORE target);
+const struct ncds_lockinfo *ncds_custom_get_lockinfo(struct ncds_ds* ds, NC_DATASTORE target);
 
 /**
  * @brief Perform locking of the specified datastore for the specified session.
  *
- * @param[in] ds File datastore structure where the lock should be applied.
+ * @param[in] ds Custom datastore structure where the lock should be applied.
  * @param[in] session Session originating the request.
  * @param[in] target Datastore (runnign, startup, candidate) to lock.
  * @param[out] error NETCONF error structure describing the experienced error.
  * @return 0 on success, non-zero on error and error structure is filled.
  */
-int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
+int ncds_custom_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 
 /**
  * @brief Perform unlocking of the specified datastore for the specified session.
  *
- * @param[in] ds File datastore structure where the unlock should be applied.
+ * @param[in] ds Custom datastore structure where the unlock should be applied.
  * @param[in] session Session originating the request.
  * @param[in] target Datastore (runnign, startup, candidate) to unlock.
  * @param[out] error NETCONF error structure describing the experienced error.
  * @return 0 on success, non-zero on error and error structure is filled.
  */
-int ncds_file_unlock (struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
+int ncds_custom_unlock(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE target, struct nc_err** error);
 
 /**
  * @brief Close the specified datastore and free all the resources.
- * @param[in] datastore Datastore to be closed.
+ * @param[in] ds Custom datastore to be closed.
  */
-void ncds_file_free(struct ncds_ds* ds);
+void ncds_custom_free(struct ncds_ds* ds);
 
 /**
  * @brief Copy the content of a datastore or externally sent configuration to the other datastore
  *
- * @param ds File datastore structure where the changes will be applied.
+ * @param ds Custom datastore structure where the changes will be applied.
  * @param session Session originating the request.
  * @param rpc RPC message with the request. RPC message is used only for access control. If rpc is NULL access control is skipped.
  * @param target Target datastore
@@ -207,32 +141,33 @@ void ncds_file_free(struct ncds_ds* ds);
  * @param error NETCONF error structure describing the experienced error.
  * @return 0 on success, non-zero on error and error structure is filled.
  */
-int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, const nc_rpc* rpc, NC_DATASTORE target, NC_DATASTORE source, char *config, struct nc_err **error);
+int ncds_custom_copyconfig(struct ncds_ds *ds, const struct nc_session *session, const nc_rpc* rpc, NC_DATASTORE target, NC_DATASTORE source, char *config, struct nc_err **error);
 
 /**
  * @brief Delete the target datastore
  *
- * @param[in] ds File datastore to be deleted
+ * @param[in] ds Custom datastore to be deleted
  * @param[in] session Session requesting the deletion
  * @param[in] target Datastore type (running, startup, candidate)
  * @param[out] error NETCONF error structure
  *
  * @return 0 on success, non-zero on error and error structure is filled.
  */
-int ncds_file_deleteconfig (struct ncds_ds * ds, const struct nc_session * session, NC_DATASTORE target, struct nc_err **error);
+int ncds_custom_deleteconfig(struct ncds_ds *ds, const struct nc_session *session, NC_DATASTORE target, struct nc_err **error);
 
 /**
  * @brief Perform the edit-config operation
  *
- * @param[in] ds File datastore to edit
+ * @param[in] ds Custom datastore to edit
  * @param[in] session Session sending the edit request
  * @param[in] rpc RPC message with the request. RPC message is used only for access control. If rpc is NULL access control is skipped.
  * @param[in] target Datastore type
  * @param[in] config Edit configuration.
  * @param[in] defop Default edit operation.
+ * @param[in] errop Error-option.
  * @param[out] error NETCONF error structure describing the experienced error.
  * @return 0 on success, non-zero on error and error structure is filled.
  */
-int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
+int ncds_custom_editconfig(struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char *config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 
-#endif /* DATASTORE_FILE_H_ */
+#endif /* DATASTORE_CUSTOM_PRIVATE_H */

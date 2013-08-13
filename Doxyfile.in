@@ -676,6 +676,7 @@ INPUT                  = src/libnetconf.h \
                          src/messages.h \
                          src/messages_xml.h \
                          src/datastore.h \
+                         src/datastore/custom/datastore_custom.h \
                          src/notifications.h \
                          src/notifications_xml.h \
                          src/transapi/transapi.h \
