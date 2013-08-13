@@ -48,40 +48,10 @@
  * @brief File datastore implementation-specific ncds_ds structure.
  */
 struct ncds_ds_file {
-	/**
-	 * @brief Datastore implementation type
-	 */
-	NCDS_TYPE type;
-	/**
-	 * @brief Datastore ID: 0 - uninitiated datastore, positive value - valid ID
-	 */
-	ncds_id id;
-	/**
-	 * @brief Time of the last access to the configuration datastore.
-	 */
-	time_t last_access;
-	/**
-	 * @brief Pointer to a callback function implementing the retrieval of the
-	 * device status data.
-	 */
-	char* (*get_state)(const char* model, const char* running, struct nc_err ** e);
-	/**
-	 * @brief Datastore implementation functions.
-	 */
-	struct ncds_funcs func;
-	/**
-	 * @brief Compounded data model containing base data model extended by
-	 * all augment models
-	 */
-	xmlDocPtr ext_model;
-	/**
-	 * @brief Information about base data model linked with the datastore
-	 */
-	struct data_model* data_model;
-	/**
-	 * @brief TransAPI information
-	 */
-	struct transapi transapi;
+	/* common part from datastore_internal.h */
+	struct ncds_ds ds;
+
+	/* specific part */
 	/**
 	 * @brief Path to the file containing the configuration data, a single file is
 	 * used for all the datastore types (running, startup, candidate).
