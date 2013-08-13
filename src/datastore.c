@@ -1275,7 +1275,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 
 static struct data_model* data_model_new(const char* model_path)
 {
-	struct data_model *model;
+	struct data_model *model = NULL;
 
 	if (model_path == NULL ) {
 		ERROR("%s: invalid parameter.", __func__);
@@ -1297,6 +1297,7 @@ static struct data_model* data_model_new(const char* model_path)
 	model->xml = xmlReadFile(model_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
 	if (model->xml == NULL) {
 		ERROR("Unable to read the configuration data model %s.", model_path);
+		free(model);
 		return (NULL);
 	}
 
@@ -1304,11 +1305,13 @@ static struct data_model* data_model_new(const char* model_path)
 	if ((model->ctxt = xmlXPathNewContext(model->xml)) == NULL) {
 		ERROR("%s: Creating XPath context failed.", __func__);
 		xmlFreeDoc(model->xml);
+		free(model);
 		return (NULL);
 	}
 	if (xmlXPathRegisterNs(model->ctxt, BAD_CAST NC_NS_YIN_ID, BAD_CAST NC_NS_YIN) != 0) {
 		xmlXPathFreeContext(model->ctxt);
 		xmlFreeDoc(model->xml);
+		free(model);
 		return (NULL);
 	}
 
