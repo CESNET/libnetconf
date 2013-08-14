@@ -35,6 +35,7 @@
 #
 
 NAME = @PACKAGE_NAME@
+LNCTOOL = lnc-tool/lnc-tool
 
 # Various configurable paths (remember to edit Makefile.in, not Makefile)
 srcdir = @srcdir@
@@ -170,7 +171,7 @@ GENERATOR_FILES = src/transapi/generator/Makefile.in \
 
 LOBJS = $(SRCS:%.c=$(OBJDIR)/%.lo)
 
-all: $(NAME).la $(SUBDIRS)
+all: $(LNCTOOL) $(NAME).la $(SUBDIRS)
 
 .PHONY: $(SUBDIRS)
 
@@ -180,6 +181,10 @@ $(SUBDIRS): $(NAME).la
 $(NAME).la: $(LOBJS)
 	@rm -f $@
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined -o $@ $^ -rpath $(libdir)
+
+$(LNCTOOL): $(LNCTOOL).in
+	@sed "s/@RNGLIB@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/rnglib/)/g" $< | sed 's/@XSLTDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/xslt/)/g' > $@
+	@chmod +x $@
 
 $(OBJDIR)/%.lo: %.c
 	@[ -d $$(dirname $@) ] || \
@@ -261,8 +266,8 @@ install: all install-devel install-doc install-generator
 
 .PHONY: install-generator
 install-generator:
-	@[ -d $(DESTDIR)/$(bindir)/$(NAME) ] || \
-		(mkdir -p $(DESTDIR)/$(bindir)/$(NAME); chmod 755 $(DESTDIR)/$(bindir)/$(NAME))
+	@[ -d $(DESTDIR)/$(bindir) ] || \
+		(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir))
 	$(INSTALL_PROGRAM) $(GENERATOR) $(DESTDIR)/$(bindir)/lnc-creator
 	@[ -d $(DESTDIR)/$(datadir)/$(NAME)/templates ] || \
 		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/templates; chmod 755 $(DESTDIR)/$(datadir)/$(NAME)/templates)
@@ -274,20 +279,29 @@ install-generator:
 install-devel:
 	@[ -d $(DESTDIR)/$(libdir) ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir)); \
+	[ -d $(DESTDIR)/$(bindir) ] || \
+	    (mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir)); \
 	[ -d $(DESTDIR)/$(libdir)/pkgconfig ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir)/pkgconfig; chmod 755 $(DESTDIR)/$(libdir)/pkgconfig); \
 	[ -d $(DESTDIR)/$(includedir) ] || \
 	    (mkdir -p $(DESTDIR)/$(includedir); chmod 755 $(DESTDIR)/$(includedir)); \
 	[ -d $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR) ] || \
-		(mkdir -p $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR));
+		(mkdir -p $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)); \
+	[ -d $(DESTDIR)/$(datadir)/$(NAME)/rnglib ] || \
+		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/rnglib); \
+	[ -d $(DESTDIR)/$(datadir)/$(NAME)/xslt ] || \
+		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/xslt);
 	$(LIBTOOL) --mode=install cp $(NAME).la $(DESTDIR)/$(libdir); \
 	for i in $(HDRS_PUBL_ROOT); do \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$$(basename $$i); \
 	done; \
 	for i in $(HDRS_PUBL_SUBDIR); do \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
-	done; \
-	$(INSTALL_DATA) $(NAME).pc $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
+	done;
+	$(INSTALL_DATA) $(NAME).pc $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc;
+	$(INSTALL_PROGRAM) $(LNCTOOL) $(DESTDIR)/$(bindir);
+	$(INSTALL_DATA) lnc-tool/rnglib/* $(DESTDIR)/$(datadir)/$(NAME)/rnglib/;
+	$(INSTALL_DATA) lnc-tool/xslt/* $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 
 .PHONY: install-doc
 install-doc:

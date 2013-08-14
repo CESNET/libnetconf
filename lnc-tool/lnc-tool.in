@@ -1,0 +1,200 @@
+#!/bin/sh
+#
+# lnc-tool : libnetconf helper shell script
+# Copyright (C) 2013  CESNET
+# Author(s): Radek KREJCI <rkrejci@cesnet.cz>
+#
+# LICENSE TERMS
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+# 3. Neither the name of the Company nor the names of its contributors
+#    may be used to endorse or promote products derived from this
+#    software without specific prior written permission.
+#
+# ALTERNATIVELY, provided that this notice is retained in full, this
+# product may be distributed under the terms of the GNU General Public
+# License (GPL), in which case the provisions of the GPL apply INSTEAD
+# OF those given above.
+#
+# This software is provided ``as is'', and any express or implied
+# warranties, including, but not limited to, the implied warranties of
+# merchantability and fitness for a particular purpose are disclaimed.
+# In no event shall the company or contributors be liable for any
+# direct, indirect, incidental, special, exemplary, or consequential
+# damages (including, but not limited to, procurement of substitute
+# goods or services; loss of use, data, or profits; or business
+# interruption) however caused and on any theory of liability, whether
+# in contract, strict liability, or tort (including negligence or
+# otherwise) arising in any way out of the use of this software, even
+# if advised of the possibility of such damage.
+
+usage() {
+    cat <<EOF
+
+Usage: 
+  lnc-tool [-o <output dir>] [-p <path>] [-fhv] <yang model> [<augment models>]
+
+Generates data model files used by libnetconf applications
+instance documents.
+
+Options:
+  -f                Force rewriting existing output files.
+  -h                Displays this help message and exits.
+  <yang model>      Main YANG model of a libnetconf datastore. This file is used
+                    in ncds_new*() function.
+  <augment models>  All models augmenting the main YANG model.
+  -o <output dir>   Specifies the directory for output files
+                    (current directory by default).
+  -p <path>         Search path for additional YANG models.
+  -v                Generate also files for validation.
+EOF
+}
+
+missing() {
+    echo "Missing pyang tool, please install it."
+    exit 1
+}
+
+yang2yin() {
+    for FILE in ${*}; do
+        if [ ! -f "$FILE" ]; then
+            if [ ! -f "${SEARCH_PATH}/${FILE}" ]; then
+                echo "File ${FILE} does not exist!"
+                exit 1
+            else
+                FILE=${SEARCH_PATH}/${FILE}
+            fi
+        fi
+        
+        FILE_BASE=`basename $FILE`
+        if [ -n "$FORCE" -o ! -f "${DIR}/${FILE_BASE%.yang}.yin" ]; then
+            echo -e "\t creating ${DIR}/${FILE_BASE%.yang}.yin"
+    	    $PYANG -p $SEARCH_PATH -f yin -o ${DIR}/${FILE_BASE%.yang}.yin $FILE
+    	    IMPORTED=`grep 'import ' $FILE | sed 's/.*import[ \t\r\n\v\f]*\([^ \t\r\n\v\f]*\).*/\1.yang/'`
+    	    yang2yin $IMPORTED
+        fi
+    done
+}
+
+gen_relaxng() {
+    $PYANG -f dsdl -o ${DIR}/dsdl${RANDTEXT} --dsdl-no-documentation --dsdl-no-dublin-core ${*} || exit 1
+    
+    if [ -n "$FORCE" -o ! -f "${DIR}/${1%.yang}-data.rng" ]; then    
+        echo -e "\t creating ${DIR}/${1%.yang}-data.rng"
+        $XSLTPROC --output ${DIR}/${1%.yang}-data.rng \
+            --stringparam basename ${1%.yang} \
+            --stringparam target data --stringparam rng-lib $RNGLIB \
+            ${XSLTDIR}/gen-relaxng.xsl ${DIR}/dsdl${RANDTEXT} || exit 1
+    fi
+    
+    if [ -n "$FORCE" -o ! -f "${DIR}/${1%.yang}-gdefs.rng" ]; then
+        echo -e "\t creating ${DIR}/${1%.yang}-gdefs.rng"
+        $XSLTPROC --output ${DIR}/${1%.yang}-gdefs.rng \
+            --stringparam gdefs-only 1 \
+            ${XSLTDIR}/gen-relaxng.xsl ${DIR}/dsdl${RANDTEXT} || exit 1
+    fi
+}
+
+cleanup() {
+    rm -rf ${DIR}/*${RANDTEXT}
+}
+
+# default arguments
+PYANG="pyang"
+XSLTPROC="xsltproc"
+DIR="."
+SEARCH_PATH="."
+RNGLIB=@RNGLIB@
+XSLTDIR=@XSLTDIR@
+
+VALIDATION=""
+FORCE=""
+
+RANDTEXT=$(mktemp -u .XXXXXX)
+
+#
+# Test for required tools
+#
+
+# pyang
+which $PYANG 1>/dev/null 2>&1 || missing "pyang"
+
+# xsltproc
+which $XSLTPROC 1>/dev/null 2>&1 || missing "xsltproc"
+
+#
+# process command line parameters
+#
+while getopts "fho:p:v" opt ; do
+    case $opt in
+        f)
+            FORCE="yes"
+            ;;
+        h)
+            usage
+            exit 0
+            ;;
+        o)
+            DIR=$OPTARG
+            if [ ! -d $DIR ] ; then
+                mkdir $DIR || exit 1                
+            fi
+            ;;
+        p)
+            SEARCH_PATH=$OPTARG
+            if [ ! -d $SEARCH_PATH ] ; then
+                echo "Search directory $SEARCH_PATH does not exist!"
+                exit 1
+            fi
+            ;;
+        v)
+            VALIDATION="yes"
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG." >&2
+            usage
+            exit 1
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument."
+	    usage
+	    exit 1
+            ;;
+    esac
+done
+
+shift $(($OPTIND-1))
+SRC_MAIN=$1
+
+if [ -z "$SRC_MAIN" ]; then
+    echo "Missing YANG model!"
+    usage
+    exit 1
+fi
+
+shift 1
+SRC_AUGMENTS=$*
+
+# convert yang to yin
+echo "### Converting YANG to YIN"
+yang2yin $SRC_MAIN $SRC_AUGMENTS
+echo "### Done"
+
+if [ "$VALIDATION" = "yes" ]; then
+    # create RelaxNG schemas
+    echo "### Generating Relax NG schemas for validation"
+    gen_relaxng $SRC_MAIN $SRC_AUGMENTS
+    echo "### Done"
+fi
+
+cleanup
+
+exit 0
