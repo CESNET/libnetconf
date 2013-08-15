@@ -52,9 +52,12 @@
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
-#include <libxml/relaxng.h>
-#include <libxslt/transform.h>
-#include <libxslt/xsltInternals.h>
+
+#ifndef DISABLE_VALIDATION
+#  include <libxml/relaxng.h>
+#  include <libxslt/transform.h>
+#  include <libxslt/xsltInternals.h>
+#endif
 
 #include "netconf_internal.h"
 #include "messages.h"
@@ -2349,7 +2352,8 @@ int ncds_consolidate(void)
 	return (EXIT_SUCCESS);
 }
 
-void relaxng_error_callback(void *error, const char * msg, ...)
+#ifndef DISABLE_VALIDATION
+static void relaxng_error_callback(void *error, const char * msg, ...)
 {
 	struct nc_err **e = (struct nc_err**)(error);
 	va_list args;
@@ -2374,12 +2378,122 @@ void relaxng_error_callback(void *error, const char * msg, ...)
 	}
 }
 
+/*
+ * EXIT_SUCCESS - validation ok
+ * EXIT_FAILURE - validation failed
+ * EXIT_RPC_NOT_APPLICABLE - RelaxNG scheme not defined
+ */
+static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
+{
+	int ret = 0;
+	int retval = EXIT_RPC_NOT_APPLICABLE;
+	xmlDocPtr sch_result;
+	xmlXPathContextPtr ctxt = NULL;
+	xmlXPathObjectPtr result = NULL;
+	char* schematron_error = NULL, *error_string = NULL;
+
+	assert(error != NULL);
+
+	if (ds == NULL || doc == NULL) {
+		ERROR("%s: invalid input parameter", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	if (ds->validators.rng) {
+		/* RelaxNG validation */
+		DBG("RelaxNG validation on subdatastore %d", ds->id);
+
+		xmlRelaxNGSetValidErrors(ds->validators.rng,
+			(xmlRelaxNGValidityErrorFunc) relaxng_error_callback,
+			(xmlRelaxNGValidityWarningFunc) relaxng_error_callback,
+			error);
+
+		ret = xmlRelaxNGValidateDoc(ds->validators.rng, doc);
+		if (ret > 0) {
+			VERB("subdatastore %d fails to validate", ds->id);
+			if (*error == NULL) {
+				*error = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore fails to validate.");
+			}
+			return (EXIT_FAILURE);
+		} else if (ret < 0) {
+			ERROR("validation generated an internal error", ds->id);
+			if (*error == NULL) {
+				*error = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Validation generated an internal error.");
+			}
+			return (EXIT_FAILURE);
+		} else { /* ret == 0 -> success */
+			retval = EXIT_SUCCESS;
+		}
+	}
+
+	if (ds->validators.schematron) {
+		/* schematron */
+		DBG("Schematron validation on subdatastore %d", ds->id);
+
+		sch_result = xsltApplyStylesheet(ds->validators.schematron, doc, NULL);
+		if (sch_result == NULL) {
+			ERROR("Applying Schematron stylesheet on subdatastore %d failed", ds->id);
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Schematron validation internal error.");
+			return (EXIT_FAILURE);
+		}
+
+		/* parse SVRL result */
+		if ((ctxt = xmlXPathNewContext(sch_result)) == NULL) {
+			ERROR("%s: Creating the XPath context failed.", __func__);
+			xmlFreeDoc(sch_result);
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			return (EXIT_FAILURE);
+		}
+		if (xmlXPathRegisterNs(ctxt, BAD_CAST "svrl", BAD_CAST "http://purl.oclc.org/dsdl/svrl") != 0) {
+			ERROR("Registering SVRL namespace for the xpath context failed.");
+			xmlXPathFreeContext(ctxt);
+			xmlFreeDoc(sch_result);
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			return (EXIT_FAILURE);
+		}
+		if ((result = xmlXPathEvalExpression(BAD_CAST "/svrl:schematron-output/svrl:successful-report/svrl:text", ctxt)) != NULL) {
+			if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
+				schematron_error = (char*)xmlNodeGetContent(result->nodesetval->nodeTab[0]);
+				asprintf(&error_string, "Datastore fails to validate: %s", schematron_error);
+				ERROR(error_string);
+				*error = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*error, NC_ERR_PARAM_MSG, error_string);
+				free(error_string);
+				free(schematron_error);
+
+				xmlXPathFreeObject(result);
+				xmlXPathFreeContext(ctxt);
+				xmlFreeDoc(sch_result);
+
+				return (EXIT_FAILURE);
+			} else {
+				/* there is no error */
+				retval = EXIT_SUCCESS;
+			}
+			xmlXPathFreeObject(result);
+		} else {
+			WARN("Evaluating Schematron output failed");
+		}
+		xmlXPathFreeContext(ctxt);
+		xmlFreeDoc(sch_result);
+	}
+
+	return (retval);
+}
+#endif /* not DISABLE_VALIDATION */
+
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
 {
 	struct ncds_ds* ds = NULL;
-	char *basename, *path_yin, *path_sch;
-	char *path_rng = NULL;
+	char *basename, *path_yin;
+
+#ifndef DISABLE_VALIDATION
+	char *path_rng = NULL, *path_sch = NULL;
 	xmlRelaxNGParserCtxtPtr rng_ctxt;
+#endif
 
 	if (model_path == NULL) {
 		ERROR("%s: missing the model path parameter.", __func__);
@@ -2397,8 +2511,10 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	} else {
 		asprintf(&path_yin, "%s.yin", basename);
 	}
+#ifndef DISABLE_VALIDATION
 	asprintf(&path_rng, "%s-data.rng", basename);
 	asprintf(&path_sch, "%s-schematron.xsl", basename);
+#endif
 
 	ds = ncds_fill_func(type);
 	if (ds == NULL) {
@@ -2417,6 +2533,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	}
 	ds->ext_model = ds->data_model->xml;
 
+#ifndef DISABLE_VALIDATION
 	if (nc_init_flags & NC_INIT_VALIDATE) {
 		/* prepare validation - Relax NG */
 		if (eaccess(path_rng, R_OK) == -1) {
@@ -2442,6 +2559,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 			}
 		}
 	}
+#endif /* not DISABLE_VALIDATION */
 
 	/* TransAPI structure is set to NULLs */
 
@@ -2454,8 +2572,11 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 cleanup:
 	free(basename);
 	free(path_yin);
+
+#ifndef DISABLE_VALIDATION
 	free(path_rng);
 	free(path_sch);
+#endif
 
 	return (ds);
 }
@@ -2625,10 +2746,12 @@ void ncds_free(struct ncds_ds* datastore)
 			ds->transapi.close();
 		}
 
+#ifndef DISABLE_VALIDATION
 		/* validators */
 		xmlRelaxNGFreeValidCtxt(ds->validators.rng);
 		xmlRelaxNGFree(ds->validators.rng_schema);
 		xsltFreeStylesheet(ds->validators.schematron);
+#endif
 
 		datastore->func.free(ds);
 	}
@@ -3054,112 +3177,6 @@ int ncds_rollback(ncds_id id)
 	}
 
 	return (datastore->func.rollback(datastore));
-}
-
-/*
- * EXIT_SUCCESS - validation ok
- * EXIT_FAILURE - validation failed
- * EXIT_RPC_NOT_APPLICABLE - RelaxNG scheme not defined
- */
-static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
-{
-	int ret = 0;
-	int retval = EXIT_RPC_NOT_APPLICABLE;
-	xmlDocPtr sch_result;
-	xmlXPathContextPtr ctxt = NULL;
-	xmlXPathObjectPtr result = NULL;
-	char* schematron_error = NULL, *error_string = NULL;
-
-	assert(error != NULL);
-
-	if (ds == NULL || doc == NULL) {
-		ERROR("%s: invalid input parameter", __func__);
-		return (EXIT_FAILURE);
-	}
-
-	if (ds->validators.rng) {
-		/* RelaxNG validation */
-		DBG("RelaxNG validation on subdatastore %d", ds->id);
-
-		xmlRelaxNGSetValidErrors(ds->validators.rng,
-			(xmlRelaxNGValidityErrorFunc) relaxng_error_callback,
-			(xmlRelaxNGValidityWarningFunc) relaxng_error_callback,
-			error);
-
-		ret = xmlRelaxNGValidateDoc(ds->validators.rng, doc);
-		if (ret > 0) {
-			VERB("subdatastore %d fails to validate", ds->id);
-			if (*error == NULL) {
-				*error = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore fails to validate.");
-			}
-			return (EXIT_FAILURE);
-		} else if (ret < 0) {
-			ERROR("validation generated an internal error", ds->id);
-			if (*error == NULL) {
-				*error = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(*error, NC_ERR_PARAM_MSG, "Validation generated an internal error.");
-			}
-			return (EXIT_FAILURE);
-		} else { /* ret == 0 -> success */
-			retval = EXIT_SUCCESS;
-		}
-	}
-
-	if (ds->validators.schematron) {
-		/* schematron */
-		DBG("Schematron validation on subdatastore %d", ds->id);
-
-		sch_result = xsltApplyStylesheet(ds->validators.schematron, doc, NULL);
-		if (sch_result == NULL) {
-			ERROR("Applying Schematron stylesheet on subdatastore %d failed", ds->id);
-			*error = nc_err_new(NC_ERR_OP_FAILED);
-			nc_err_set(*error, NC_ERR_PARAM_MSG, "Schematron validation internal error.");
-			return (EXIT_FAILURE);
-		}
-
-		/* parse SVRL result */
-		if ((ctxt = xmlXPathNewContext(sch_result)) == NULL) {
-			ERROR("%s: Creating the XPath context failed.", __func__);
-			xmlFreeDoc(sch_result);
-			*error = nc_err_new(NC_ERR_OP_FAILED);
-			return (EXIT_FAILURE);
-		}
-		if (xmlXPathRegisterNs(ctxt, BAD_CAST "svrl", BAD_CAST "http://purl.oclc.org/dsdl/svrl") != 0) {
-			ERROR("Registering SVRL namespace for the xpath context failed.");
-			xmlXPathFreeContext(ctxt);
-			xmlFreeDoc(sch_result);
-			*error = nc_err_new(NC_ERR_OP_FAILED);
-			return (EXIT_FAILURE);
-		}
-		if ((result = xmlXPathEvalExpression(BAD_CAST "/svrl:schematron-output/svrl:successful-report/svrl:text", ctxt)) != NULL) {
-			if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
-				schematron_error = (char*)xmlNodeGetContent(result->nodesetval->nodeTab[0]);
-				asprintf(&error_string, "Datastore fails to validate: %s", schematron_error);
-				ERROR(error_string);
-				*error = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(*error, NC_ERR_PARAM_MSG, error_string);
-				free(error_string);
-				free(schematron_error);
-
-				xmlXPathFreeObject(result);
-				xmlXPathFreeContext(ctxt);
-				xmlFreeDoc(sch_result);
-
-				return (EXIT_FAILURE);
-			} else {
-				/* there is no error */
-				retval = EXIT_SUCCESS;
-			}
-			xmlXPathFreeObject(result);
-		} else {
-			WARN("Evaluating Schematron output failed");
-		}
-		xmlXPathFreeContext(ctxt);
-		xmlFreeDoc(sch_result);
-	}
-
-	return (retval);
 }
 
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
@@ -3668,6 +3685,7 @@ apply_editcopyconfig:
 			ret = EXIT_FAILURE;
 		}
 		break;
+#ifndef DISABLE_VALIDATION
 	case NC_OP_VALIDATE:
 		if ((data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), &e)) == NULL ) {
 			if (e == NULL ) {
@@ -3692,6 +3710,7 @@ apply_editcopyconfig:
 
 		xmlFreeDoc(aux_doc);
 		break;
+#endif
 	case NC_OP_UNKNOWN:
 		/* get operation name */
 		op_name = nc_rpc_get_op_name (rpc);

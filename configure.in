@@ -158,6 +158,22 @@ else
 	[INCLUDE_NOTIFICATIONS_XML="#define DISABLE_NOTIFICATIONS"]
 fi
 
+AC_ARG_ENABLE([validation],
+	AC_HELP_STRING([--disable-validation], [Disable support for configuration data validation]),
+	[
+	if test "$enableval" = "no"; then
+		validation="no"
+	else
+		validation="yes"
+	fi
+	],
+	# support validation by default
+	validation="yes"
+)
+if test "$validation" = "no"; then
+	CPPFLAGS="$CPPFLAGS -DDISABLE_VALIDATION"
+fi
+
 AC_ARG_WITH([examples],
 	[AC_HELP_STRING([--with-examples], [Enable building example applications, they respect --with-suid and --with-sgid options])],
 	[
@@ -307,8 +323,9 @@ if test -z "$WITH_LIBXML2" ; then
 	LDFLAGS="`xml2-config --libs` $LDFLAGS"
 fi
 
+
 ### libxslt ###
-if test -z "$WITH_LIBXSLT" ; then
+if test "$validation" = "yes" -a -z "$WITH_LIBXSLT" ; then
 	AC_CHECK_PROG([XSLT_CONFIG], [xslt-config], [yes], [no], [$WITH_LIBXSLT $PATH])
 	if test "$XSLT_CONFIG" = "no"; then
 		AC_MSG_ERROR([Missing development package of libxslt.])

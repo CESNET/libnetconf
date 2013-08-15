@@ -42,8 +42,11 @@
 
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
-#include <libxml/relaxng.h>
-#include <libxslt/xsltInternals.h>
+
+#ifndef DISABLE_VALIDATION
+#  include <libxml/relaxng.h>
+#  include <libxslt/xsltInternals.h>
+#endif
 
 #include "../datastore.h"
 #include "../transapi/transapi_internal.h"
@@ -170,11 +173,13 @@ struct model_feature {
 	int enabled;
 };
 
+#ifndef DISABLE_VALIDATION
 struct model_validators {
 	xmlRelaxNGValidCtxtPtr rng;
 	xmlRelaxNGPtr rng_schema;
 	xsltStylesheetPtr schematron;
 };
+#endif
 
 struct model_list;
 struct data_model {
@@ -256,10 +261,14 @@ struct ncds_ds {
 	 * all augment models
 	 */
 	xmlDocPtr ext_model;
+
+#ifndef DISABLE_VALIDATION
 	/**
 	 * @brief Configuration data model validators
 	 */
 	struct model_validators validators;
+#endif
+
 	/**
 	 * @brief Information about base data model linked with the datastore
 	 */

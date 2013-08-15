@@ -771,6 +771,7 @@ with_libxslt
 with_libssh2
 enable_libssh2
 enable_notifications
+enable_validation
 with_examples
 enable_debug
 enable_debug_threads
@@ -1420,6 +1421,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-libssh2       Use ssh client program instead of libssh2.
   --disable-notifications Disable support of NETCONF Notifications (RFC 5277)
+  --disable-validation    Disable support for configuration data validation
   --enable-debug          Compile with debug options
   --enable-debug-threads  Extend debug mode for threads
   --enable-shared[=PKGS]  build shared libraries [default=yes]
@@ -2900,6 +2902,25 @@ else
 	SRCS_NOTIFICATIONS=""
 	INCLUDE_NOTIFICATIONS="#define DISABLE_NOTIFICATIONS"
 	INCLUDE_NOTIFICATIONS_XML="#define DISABLE_NOTIFICATIONS"
+fi
+
+# Check whether --enable-validation was given.
+if test "${enable_validation+set}" = set; then :
+  enableval=$enable_validation;
+	if test "$enableval" = "no"; then
+		validation="no"
+	else
+		validation="yes"
+	fi
+
+else
+  # support validation by default
+	validation="yes"
+
+fi
+
+if test "$validation" = "no"; then
+	CPPFLAGS="$CPPFLAGS -DDISABLE_VALIDATION"
 fi
 
 
@@ -11733,8 +11754,9 @@ fi
 	LDFLAGS="`xml2-config --libs` $LDFLAGS"
 fi
 
+
 ### libxslt ###
-if test -z "$WITH_LIBXSLT" ; then
+if test "$validation" = "yes" -a -z "$WITH_LIBXSLT" ; then
 	# Extract the first word of "xslt-config", so it can be a program name with args.
 set dummy xslt-config; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
