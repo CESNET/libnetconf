@@ -437,15 +437,15 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
-int ncds_device_init (ncds_id * id)
+int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts)
 {
 	nc_rpc * rpc_msg = NULL;
 	nc_reply * reply_msg = NULL;
 	struct ncds_ds_list * ds_iter, *start = NULL;
 	struct ncds_ds * ds;
-	struct nc_cpblts * cpblts = NULL;
 	struct nc_session * dummy_session = NULL;
 	struct nc_err * err;
+	int nocpblts = 0;
 
 	if (id != NULL) { /* initialize given device */
 		if ((ds = datastores_get_ds(*id)) == NULL) {
@@ -468,23 +468,41 @@ int ncds_device_init (ncds_id * id)
 	}
 
 	if (first_after_close) {
-		/* Clean RUNNING datastore. This is important when tranAPI is deployed and does not harm when not. */
-		/* It is done by calling low level function to avoid invoking transapi now. */
-		for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
-			/* TRY to erase, when it fails the datastore is probably empty */
-			/* TODO: Is there better way? */
-			ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, "", &err);
+		/* Clean RUNNING datastore. This is important when transAPI is deployed and does not harm when not. */
+		if (cpblts == NULL) {
+			cpblts = nc_session_get_cpblts_default();
+			nocpblts = 1;
 		}
 
 		/* create dummy session for applying copy-config (startup->running) */
-		cpblts = nc_session_get_cpblts_default();
 		if ((dummy_session = nc_session_dummy("dummy-internal", "server", NULL, cpblts)) == NULL) {
+			ERROR("%s: Creating dummy-internal session failed.", __func__);
 			goto fail;
 		}
-		nc_cpblts_free(cpblts);
+
+		if (nocpblts) {
+			nc_cpblts_free(cpblts);
+			cpblts = NULL;
+		}
+
+		/*
+		 * If :startup is not supported, running stays persistent between
+		 * reboots
+		 */
+		if (!nc_cpblts_enabled(dummy_session, NC_CAP_STARTUP_ID)) {
+			nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+			nc_session_free(dummy_session);
+			goto success;
+		}
+
+		/* It is done by calling low level function to avoid invoking transAPI now. */
+		for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
+			/* TRY to erase, when it fails the datastore is probably empty */
+			ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, "", &err);
+		}
 
 		/* initial copy of startup to running will cause full (re)configuration of module */
-		/* Here is used high level function ncds_apply_rpc2all to apply startup configuration and use transapi */
+		/* Here is used high level function ncds_apply_rpc2all to apply startup configuration and use transAPI */
 		rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
 		reply_msg = ncds_apply_rpc2all(dummy_session, rpc_msg, NULL);
 		if (reply_msg == NULL || nc_reply_get_type (reply_msg) != NC_REPLY_OK) {
@@ -494,8 +512,10 @@ int ncds_device_init (ncds_id * id)
 		nc_rpc_free(rpc_msg);
 		nc_reply_free(reply_msg);
 		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+		nc_session_free(dummy_session);
 	}
 
+success:
 	if (id != NULL) {
 		free(start);
 	}
@@ -504,6 +524,7 @@ int ncds_device_init (ncds_id * id)
 fail:
 	if (dummy_session != NULL) {
 		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+		nc_session_free(dummy_session);
 	}
 	nc_rpc_free(rpc_msg);
 	nc_reply_free(reply_msg);
@@ -1228,12 +1249,12 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 		}
 	}
 
-	if ((init_func = dlsym (transapi_module, "init")) == NULL) {
-		WARN("%s: Unable to find \"init\" function.", __func__);
+	if ((init_func = dlsym (transapi_module, "transapi_init")) == NULL) {
+		WARN("%s: Unable to find \"transapi_init\" function.", __func__);
 	}
 
-	if ((close_func = dlsym (transapi_module, "close")) == NULL) {
-		WARN("%s: Unable to find \"close\" function.", __func__);
+	if ((close_func = dlsym (transapi_module, "transapi_close")) == NULL) {
+		WARN("%s: Unable to find \"transapi_close\" function.", __func__);
 	}
 
 	/* create basic ncds_ds structure */
@@ -3519,7 +3540,7 @@ apply_editcopyconfig:
 					}
 
 					/* call RPC callback function */
-					VERB("Calling RPC function\n");
+					VERB("Calling %s RPC function\n", rpc_name);
 					if (ds->transapi.libxml2) {
 						reply = ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].func(op_input_array);
 						/* clean array */
@@ -3540,10 +3561,11 @@ apply_editcopyconfig:
 				}
 			}
 		}
+
 		free(op_name);
 		break;
 	default:
-		ERROR("%s: unsupported basic NETCONF operation requested.", __func__);
+		ERROR("%s: unsupported NETCONF operation requested.", __func__);
 		return (nc_reply_error (nc_err_new (NC_ERR_OP_NOT_SUPPORTED)));
 		break;
 	}
@@ -3571,7 +3593,7 @@ apply_editcopyconfig:
 		}
 	}
 
-	/* if transapi used, rpc affected running and succeeded get its actual content */
+	/* if transapi used, rpc affected running and succeeded, get its actual content */
 	/* find differences and call functions */
 	if (ds->transapi.module != NULL
 		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
@@ -3603,6 +3625,8 @@ apply_editcopyconfig:
 				reply = nc_reply_error(e);
 			}
 		}
+
+		// TODO!! save the possibly modified configuration in new
 
 		xmlFreeDoc (old);
 		xmlFreeDoc (new);
@@ -3639,6 +3663,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 	struct ncds_ds_list* ds, *ds_rollback;
 	nc_reply *old_reply = NULL, *new_reply = NULL, *reply = NULL;
 	int id_i = 0;
+	char *op_name, *op_namespace;
 	NC_EDIT_ERROPT_TYPE erropt = 0;
 	NC_RPC_TYPE req_type;
 
@@ -3651,6 +3676,19 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 	if (nc_rpc_get_op(rpc) == NC_OP_EDITCONFIG) {
 		erropt = nc_rpc_get_erropt(rpc);
 	}
+
+	/* check that we have a valid definition of the requested RPC */
+	op_name = nc_rpc_get_op_name(rpc);
+	op_namespace = nc_rpc_get_op_namespace(rpc);
+	if (ncds_get_model_operation(op_name, op_namespace) == NULL) {
+		/* rpc operation is not defined in any known module */
+		ERROR("%s: unsupported NETCONF operation (%s) requested.", __func__, op_name);
+		free(op_name);
+		free(op_namespace);
+		return (nc_reply_error(nc_err_new (NC_ERR_OP_NOT_SUPPORTED)));
+	}
+	free(op_namespace);
+	free(op_name);
 
 	if (ids != NULL) {
 		*ids = ncds.datastores_ids;

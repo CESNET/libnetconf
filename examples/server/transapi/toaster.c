@@ -32,7 +32,7 @@ struct toaster_status * status = NULL;
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int init(void)
+int transapi_init(void)
 {
 	key_t shmkey;
 	int shmid;
@@ -69,7 +69,7 @@ int init(void)
 /**
  * @brief Free all resources allocated on plugin runtime and prepare plugin for removal.
  */
-void close(void)
+void transapi_close(void)
 {
 	shmdt(status);
 	return;

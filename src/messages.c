@@ -681,6 +681,42 @@ char * nc_rpc_get_op_name (const nc_rpc* rpc)
 	return (strdup((char*)(auxnode->name)));
 }
 
+char * nc_rpc_get_op_namespace (const nc_rpc* rpc)
+{
+	xmlNodePtr root, auxnode;
+
+	if (rpc == NULL || rpc->doc == NULL) {
+		ERROR("%s: Invalid parameter (missing message or message document).", __func__);
+		return (NULL);
+	}
+
+	if ((root = xmlDocGetRootElement (rpc->doc)) == NULL || root->children == NULL) {
+		ERROR("%s: Invalid parameter (invalid message structure).", __func__);
+		return (NULL);
+	}
+
+	if (xmlStrcmp(root->name, BAD_CAST "rpc") != 0) {
+		ERROR("%s: Invalid rpc message - not an <rpc> message.", __func__);
+		return (NULL);
+	}
+
+	auxnode = root->children;
+	while (auxnode != NULL && auxnode->type != XML_ELEMENT_NODE) {
+		auxnode = auxnode->next;
+	}
+
+	if (auxnode == NULL) {
+		ERROR("%s: Invalid rpc message - missing operation.", __func__);
+		return (NULL);
+	}
+
+	if (auxnode->ns == NULL || auxnode->ns->href == NULL) {
+		return (NULL);
+	} else {
+		return (strdup((char*)(auxnode->ns->href)));
+	}
+}
+
 char* nc_rpc_get_op_content (const nc_rpc* rpc)
 {
 	char *retval = NULL;

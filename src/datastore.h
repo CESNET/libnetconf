@@ -178,13 +178,17 @@ int ncds_file_set_path (struct ncds_ds* datastore, const char* path);
 ncds_id ncds_init(struct ncds_ds* datastore);
 
 /**
- * @brief Initialize transAPI module(s) (if present) and copy startup configuration to running
+ * @brief Initialize transAPI module(s) (if present) and copy startup
+ * configuration to running.
  *
- * @param id Pointer to ncds_id of device to initialize, if NULL all found transapi-capable devices will be initialized
+ * @param id Pointer to ncds_id of device to initialize, if NULL all found
+ * transapi-capable devices will be initialized
+ * @param cpblts Server's NETCONF capabilities. If NULL, default capabilities
+ * from libnetconf are used.
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_device_init (ncds_id * id);
+int ncds_device_init (ncds_id * id, struct nc_cpblts* cpblts);
 
 /**
  * @ingroup store

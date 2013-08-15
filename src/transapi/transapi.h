@@ -20,6 +20,12 @@ typedef enum {XMLDIFF_ERR = -1, XMLDIFF_NONE = 0, XMLDIFF_ADD = 1, XMLDIFF_REM =
 
 /**
  * @ingroup transapi
+ * @brief Enum with XML relationships between the nodes
+ */
+typedef enum {XML_PARENT, XML_CHILD, XML_SIBLING} XML_RELATION;
+
+/**
+ * @ingroup transapi
  * @brief Structure binding location in configuration XML data and function callback applying changes.
  */
 struct transapi_data_callbacks {

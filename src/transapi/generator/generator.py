@@ -97,10 +97,10 @@ def generate_callbacks_file(name, defs, model, with_libxml2, without_init, witho
 	content = ''
 	# License and description
 	content += '/*\n'
-	content += '* This is automaticaly generated callbacks file\n'
-	content += '* It contains 3 parts: Configuration callbacks, RPC callbacks and state data callbacks.\n'
-	content += '* Do NOT alter function signatures or any structure untill you exactly know what you are doing.\n'
-	content += '*/\n\n'
+	content += ' * This is automaticaly generated callbacks file\n'
+	content += ' * It contains 3 parts: Configuration callbacks, RPC callbacks and state data callbacks.\n'
+	content += ' * Do NOT alter function signatures or any structures unless you know exactly what you are doing.\n'
+	content += ' */\n\n'
 	# Include header files
 	content += '#include <stdlib.h>\n'
 	if with_libxml2:
@@ -138,7 +138,7 @@ def generate_init_callback(with_libxml2):
     content += ' *\n'
     content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
     content += ' */\n'
-    content += 'int init(void)\n'
+    content += 'int transapi_init(void)\n'
     content += '{\n\treturn EXIT_SUCCESS;\n}\n\n'
 
     return (content)
@@ -148,7 +148,7 @@ def generate_close_callback(with_libxml2):
     content += '/**\n'
     content += ' * @brief Free all resources allocated on plugin runtime and prepare plugin for removal.\n'
     content += ' */\n' 
-    content += 'void close(void)\n'
+    content += 'void transapi_close(void)\n'
     content += '{\n\treturn;\n}\n\n'
     
     return (content)
