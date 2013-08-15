@@ -84,22 +84,44 @@ yang2yin() {
     done
 }
 
+gen_dsdl() {
+    if [ -z "$RANDTEXT" ]; then
+        RANDTEXT=$(mktemp -u .XXXXXX)
+        $PYANG -p $SEARCH_PATH -f dsdl -o ${DIR}/dsdl${RANDTEXT} --dsdl-no-documentation --dsdl-no-dublin-core ${*} || exit 1
+    fi
+}
+
 gen_relaxng() {
-    $PYANG -f dsdl -o ${DIR}/dsdl${RANDTEXT} --dsdl-no-documentation --dsdl-no-dublin-core ${*} || exit 1
+    gen_dsdl ${*}
     
-    if [ -n "$FORCE" -o ! -f "${DIR}/${1%.yang}-data.rng" ]; then    
-        echo -e "\t creating ${DIR}/${1%.yang}-data.rng"
-        $XSLTPROC --output ${DIR}/${1%.yang}-data.rng \
+    FILE=`basename ${1%.yang}-data.rng`
+    if [ -n "$FORCE" -o ! -f "${DIR}/${FILE}" ]; then
+        echo -e "\t creating ${DIR}/${FILE}"
+        $XSLTPROC --output ${DIR}/${FILE} \
             --stringparam basename ${1%.yang} \
             --stringparam target data --stringparam rng-lib $RNGLIB \
             ${XSLTDIR}/gen-relaxng.xsl ${DIR}/dsdl${RANDTEXT} || exit 1
     fi
     
-    if [ -n "$FORCE" -o ! -f "${DIR}/${1%.yang}-gdefs.rng" ]; then
-        echo -e "\t creating ${DIR}/${1%.yang}-gdefs.rng"
-        $XSLTPROC --output ${DIR}/${1%.yang}-gdefs.rng \
+    FILE=`basename ${1%.yang}-gdefs.rng`
+    if [ -n "$FORCE" -o ! -f "${DIR}/${FILE}" ]; then
+        echo -e "\t creating ${DIR}/${FILE}"
+        $XSLTPROC --output ${DIR}/${FILE} \
             --stringparam gdefs-only 1 \
             ${XSLTDIR}/gen-relaxng.xsl ${DIR}/dsdl${RANDTEXT} || exit 1
+    fi
+}
+
+gen_schematron() {
+    gen_dsdl ${*}
+
+    FILE=`basename ${1%.yang}`
+    if [ -n "$FORCE" -o ! -f "${DIR}/${FILE}-schematron.xsl" ]; then
+        echo -e "\t creating ${DIR}/${FILE}-schematron.xsl"
+        $XSLTPROC --output ${DIR}/schxsl${RANDTEXT} --stringparam target data \
+                ${XSLTDIR}/gen-schematron.xsl ${DIR}/dsdl${RANDTEXT} || exit 1
+        $XSLTPROC ${XSLTDIR}/iso_abstract_expand.xsl ${DIR}/schxsl${RANDTEXT} | \
+                $XSLTPROC -o ${DIR}/${FILE}-schematron.xsl ${XSLTDIR}/iso_svrl_for_xslt1.xsl -
     fi
 }
 
@@ -118,7 +140,6 @@ XSLTDIR=@XSLTDIR@
 VALIDATION=""
 FORCE=""
 
-RANDTEXT=$(mktemp -u .XXXXXX)
 
 #
 # Test for required tools
@@ -192,6 +213,11 @@ if [ "$VALIDATION" = "yes" ]; then
     # create RelaxNG schemas
     echo "### Generating Relax NG schemas for validation"
     gen_relaxng $SRC_MAIN $SRC_AUGMENTS
+    echo "### Done"
+
+    # create XSLT Stylesheet for Schematron validation
+    echo "### Generating Schematron Stylesheet"
+    gen_schematron $SRC_MAIN $SRC_AUGMENTS
     echo "### Done"
 fi
 
