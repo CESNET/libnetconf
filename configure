@@ -709,6 +709,7 @@ RPMBUILD
 DOXYGEN
 SSH_PROG
 UNAME
+XSLT_CONFIG
 XML2_CONFIG
 PKG_CONFIG
 CONFIGURE_PWD
@@ -766,6 +767,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_libxml2
+with_libxslt
 with_libssh2
 enable_libssh2
 enable_notifications
@@ -1430,6 +1432,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-libxml2          specific libxml2 location
+  --with-libxslt          specific libxslt location
   --with-libssh2=DIR      Specifies libssh2 installation directory.
   --with-examples         Enable building example applications, they respect
                           --with-suid and --with-sgid options
@@ -2780,6 +2783,60 @@ fi
 		LDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"
 		WITH_LIBXML2="$withval"
 		CONFIGURE_ARGS="--with-libxml2=$withval $CONFIGURE_ARGS"
+
+
+fi
+
+
+
+# Check whether --with-libxslt was given.
+if test "${with_libxslt+set}" = set; then :
+  withval=$with_libxslt;
+		# Extract the first word of "xslt-config", so it can be a program name with args.
+set dummy xslt-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_XSLT_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$XSLT_CONFIG"; then
+  ac_cv_prog_XSLT_CONFIG="$XSLT_CONFIG" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $withval
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_XSLT_CONFIG="yes"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_XSLT_CONFIG" && ac_cv_prog_XSLT_CONFIG="no"
+fi
+fi
+XSLT_CONFIG=$ac_cv_prog_XSLT_CONFIG
+if test -n "$XSLT_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $XSLT_CONFIG" >&5
+$as_echo "$XSLT_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+		if test "$XSLT_CONFIG" = "no"; then
+			as_fn_error $? "Missing development package of libxslt." "$LINENO" 5
+		fi
+		CFLAGS="`$withval/xslt-config --cflags` $CFLAGS"
+		LDFLAGS="`$withval/xslt-config --libs` $LDFLAGS"
+		WITH_LIBXSLT="$withval"
+		CONFIGURE_ARGS="--with-libxslt=$withval $CONFIGURE_ARGS"
 
 
 fi
@@ -11629,7 +11686,7 @@ export PKG_CONFIG_PATH=/usr/local/${libdir##*/}/pkgconfig:$PKG_CONFIG_PATH
 #AC_SEARCH_LIBS([login], [util], ,
 #	[AC_MSG_ERROR([Could not find login() in expected locations. Install or/and add the comprising library into the list of tested libraries.])])
 
-### LibXML2 ###
+### libxml2 ###
 if test -z "$WITH_LIBXML2" ; then
 	# Extract the first word of "xml2-config", so it can be a program name with args.
 set dummy xml2-config; ac_word=$2
@@ -11674,6 +11731,53 @@ fi
 	fi
 	CFLAGS="`xml2-config --cflags` $CFLAGS"
 	LDFLAGS="`xml2-config --libs` $LDFLAGS"
+fi
+
+### libxslt ###
+if test -z "$WITH_LIBXSLT" ; then
+	# Extract the first word of "xslt-config", so it can be a program name with args.
+set dummy xslt-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_XSLT_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$XSLT_CONFIG"; then
+  ac_cv_prog_XSLT_CONFIG="$XSLT_CONFIG" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $WITH_LIBXSLT $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_XSLT_CONFIG="yes"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_XSLT_CONFIG" && ac_cv_prog_XSLT_CONFIG="no"
+fi
+fi
+XSLT_CONFIG=$ac_cv_prog_XSLT_CONFIG
+if test -n "$XSLT_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $XSLT_CONFIG" >&5
+$as_echo "$XSLT_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+	if test "$XSLT_CONFIG" = "no"; then
+		as_fn_error $? "Missing development package of libxslt." "$LINENO" 5
+	fi
+	CFLAGS="`xslt-config --cflags` $CFLAGS"
+	LDFLAGS="`xslt-config --libs` $LDFLAGS"
 fi
 
 if test "$libssh2" = "yes"; then
