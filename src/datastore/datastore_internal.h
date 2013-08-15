@@ -43,6 +43,7 @@
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 #include <libxml/relaxng.h>
+#include <libxslt/xsltInternals.h>
 
 #include "../datastore.h"
 #include "../transapi/transapi_internal.h"
@@ -172,6 +173,7 @@ struct model_feature {
 struct model_validators {
 	xmlRelaxNGValidCtxtPtr rng;
 	xmlRelaxNGPtr rng_schema;
+	xsltStylesheetPtr schematron;
 };
 
 struct model_list;

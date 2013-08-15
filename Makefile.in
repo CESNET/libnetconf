@@ -75,7 +75,7 @@ SETUSER = @SETUSER@
 SETGROUP = @SETGROUP@
 IDGIT = "built from git $(shell git show --pretty=oneline | head -1 | cut -c -20)"
 IDNOGIT = "released as version $(VERSION)"
-LIBS = @LDFLAGS@ @LIBS@
+LIBS = -lxslt @LDFLAGS@ @LIBS@
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = -DNC_WORKINGDIR_PATH=\"$(NC_WORKINGDIR_PATH)\" -DSETBIT=$(SETBIT) @CPPFLAGS@
 LIBTOOL = $(libtool) --tag=CC --quiet
