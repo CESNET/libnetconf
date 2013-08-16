@@ -362,8 +362,14 @@ int ncds_sysinit(int flags)
 		ncds.datastores = dsitem;
 		ncds.count++;
 		if (ncds.count >= ncds.array_size) {
+			void *tmp = realloc(ncds.datastores_ids, (ncds.array_size + 10) * sizeof(ncds_id));
+			if (tmp == NULL) {
+				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+				return (EXIT_FAILURE);
+			}
+
 			ncds.array_size += 10;
-			ncds.datastores_ids = realloc(ncds.datastores_ids, ncds.array_size * sizeof(ncds_id));
+			ncds.datastores_ids = tmp;
 		}
 
 		ds = NULL;
@@ -820,9 +826,17 @@ char* get_schemas()
 		if (schema == NULL) {
 			schema = aux;
 		} else if (aux != NULL) {
-			schema = realloc(schema, strlen(schema) + strlen(aux) + 1);
-			strcat(schema, aux);
-			free(aux);
+			void *tmp = realloc(schema, strlen(schema) + strlen(aux) + 1);
+			if (tmp == NULL) {
+				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+				free(aux);
+				/* return what we have */
+				break;
+			} else {
+				schema = tmp;
+				strcat(schema, aux);
+				free(aux);
+			}
 		}
 	}
 
@@ -2044,16 +2058,24 @@ int ncds_add_models_path(const char* path)
 		return (EXIT_FAILURE);
 	}
 
-	list_records++;
-	if (list_records >= list_size) {
-		list_size += 5;
-		models_dirs = realloc(models_dirs, list_size * sizeof(char*));
-		if (models_dirs == NULL) {
+	if (list_records + 1 >= list_size) {
+		void *tmp = realloc(models_dirs, (list_size + 5) * sizeof(char*));
+		if (tmp == NULL) {
 			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 			return (EXIT_FAILURE);
 		}
+
+		models_dirs = tmp;
+		list_size += 5;
 	}
-	models_dirs[list_records-1] = strdup(path);
+
+	models_dirs[list_records] = strdup(path);
+	if (models_dirs[list_records] == NULL) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return (EXIT_FAILURE);
+	}
+
+	list_records++;
 	models_dirs[list_records] = NULL; /* terminating NULL byte */
 
 	return (EXIT_SUCCESS);
@@ -2450,10 +2472,28 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 		return -1;
 	}
 
+	/* check the size of datastore list */
+	if ((ncds.count + 1) >= ncds.array_size) {
+		void *tmp = realloc(ncds.datastores_ids, (ncds.array_size + 10) * sizeof(ncds_id));
+		if (tmp == NULL) {
+			ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+			return (-4);
+		}
+		ncds.datastores_ids = tmp;
+		ncds.array_size += 10;
+	}
+	/* prepare slot for the datastore in the list */
+	item = malloc(sizeof(struct ncds_ds_list));
+	if (item == NULL) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return -4;
+	}
+
 	/** \todo data model validation */
 
 	/* call implementation-specific datastore init() function */
 	if (datastore->func.init(datastore) != 0) {
+		free(item);
 		return -2;
 	}
 
@@ -2467,18 +2507,10 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 	datastore->id = generate_id();
 
 	/* add to list */
-	item = malloc(sizeof(struct ncds_ds_list));
-	if (item == NULL) {
-		return -4;
-	}
 	item->datastore = datastore;
 	item->next = ncds.datastores;
 	ncds.datastores = item;
 	ncds.count++;
-	if (ncds.count >= ncds.array_size) {
-		ncds.array_size += 10;
-		ncds.datastores_ids = realloc(ncds.datastores_ids, ncds.array_size * sizeof(ncds_id));
-	}
 
 	return datastore->id;
 }
