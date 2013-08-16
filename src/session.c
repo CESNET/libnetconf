@@ -430,9 +430,17 @@ char* nc_session_stats(void)
 			if (session == NULL) {
 				session = aux;
 			} else {
-				session = realloc(session, strlen(session) + strlen(aux) + 1);
-				strcat(session, aux);
-				free(aux);
+				void *tmp = realloc(session, strlen(session) + strlen(aux) + 1);
+				if (tmp == NULL) {
+					ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+					free(aux);
+					/* return what we already have */
+					break;
+				} else {
+					session = tmp;
+					strcat(session, aux);
+					free(aux);
+				}
 			}
 		}
 
@@ -580,12 +588,12 @@ struct nc_cpblts *nc_cpblts_new(const char* const list[])
 			retval->items++;
 			if (retval->items == retval->list_size) {
 				/* resize the capacity of the capabilities list */
-				errno = 0;
-				retval->list = realloc (retval->list, retval->list_size * 2 * sizeof (char*));
-				if (errno != 0) {
+				void *tmp = realloc (retval->list, retval->list_size * 2 * sizeof (char*));
+				if (tmp == NULL) {
 					nc_cpblts_free (retval);
 					return (NULL);
 				}
+				retval->list = tmp;
 				retval->list_size *= 2;
 			}
 			retval->list[i + 1] = NULL;
@@ -601,11 +609,6 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 	char *s, *p = NULL;
 
 	if (capabilities == NULL || capability_string == NULL) {
-		return (EXIT_FAILURE);
-	}
-
-	if (capabilities->items > capabilities->list_size) {
-		WARN("nc_cpblts_add: structure inconsistency! Some data may be lost.");
 		return (EXIT_FAILURE);
 	}
 
@@ -636,17 +639,22 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 		*p = '?';
 	}
 
-	capabilities->list[capabilities->items] = s;
-	capabilities->items++;
-	if (capabilities->items == capabilities->list_size) {
+	/* check size of the capabilities list */
+	if ((capabilities->items + 1) >= capabilities->list_size) {
 		/* resize the capacity of the capabilities list */
-		errno = 0;
-		capabilities->list = realloc(capabilities->list, capabilities->list_size * 2 * sizeof (char*));
-		if (errno != 0) {
+		void *tmp = realloc(capabilities->list, capabilities->list_size * 2 * sizeof (char*));
+		if (tmp == NULL) {
+			free(s);
 			return (EXIT_FAILURE);
 		}
+		capabilities->list = tmp;
 		capabilities->list_size *= 2;
 	}
+
+	/* add capability into the list */
+	capabilities->list[capabilities->items] = s;
+	capabilities->items++;
+	/* set list terminating NULL item */
 	capabilities->list[capabilities->items] = NULL;
 
 	return (EXIT_SUCCESS);
@@ -1521,8 +1529,8 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 		/* resize buffer if needed */
 		if (rd == (buflen-1)) {
 			/* get more memory for the text */
-			buf = (char*) realloc (buf, (2 * buflen) * sizeof(char));
-			if (buf == NULL) {
+			void *tmp = realloc (buf, (2 * buflen) * sizeof(char));
+			if (tmp == NULL) {
 				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 				if (len != NULL) {
 					*len = 0;
@@ -1530,8 +1538,10 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 				if (text != NULL) {
 					*text = NULL;
 				}
+				free(buf);
 				return (EXIT_FAILURE);
 			}
+			buf = tmp;
 			buflen = 2 * buflen;
 		}
 	}
@@ -1730,18 +1740,24 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 				goto malformed_msg;
 			}
 
-			/* realloc resulting text buffer if needed (always needed now) */
+			/*
+			 * realloc resulting text buffer if needed (always needed now)
+			 * don't forget count terminating null byte
+			 * */
 			if (text_size < (total_len + len + 1)) {
-				text = realloc (text, total_len + len + 1);
-				if (text == NULL) {
+				char *tmp = realloc (text, total_len + len + 1);
+				if (tmp == NULL) {
 					ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+					free(text);
 					goto malformed_msg;
 				}
+				text = tmp;
 				text[total_len] = '\0';
 				text_size = total_len + len + 1;
 			}
-			strcat (text, chunk);
-			total_len = strlen (text); /* don't forget count terminating null byte */
+			memcpy(text + total_len, chunk, len);
+			total_len += len;
+			text[total_len] = '\0';
 			free (chunk);
 			chunk = NULL;
 
