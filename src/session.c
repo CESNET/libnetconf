@@ -1725,7 +1725,10 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 				goto malformed_msg;
 			}
 
-			/* realloc resulting text buffer if needed (always needed now) */
+			/*
+			 * realloc resulting text buffer if needed (always needed now)
+			 * don't forget count terminating null byte
+			 * */
 			if (text_size < (total_len + len + 1)) {
 				text = realloc (text, total_len + len + 1);
 				if (text == NULL) {
@@ -1735,8 +1738,9 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 				text[total_len] = '\0';
 				text_size = total_len + len + 1;
 			}
-			strcat (text, chunk);
-			total_len = strlen (text); /* don't forget count terminating null byte */
+			memcpy(text + total_len, chunk, len);
+			total_len += len;
+			text[total_len] = '\0';
 			free (chunk);
 			chunk = NULL;
 
