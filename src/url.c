@@ -76,7 +76,6 @@ void nc_url_disable( int protocol, struct nc_session * session )
 
 int nc_url_is_enabled( int protocol, const struct nc_session * session )
 {
-	printf( "aaaauuuuuuuuuuuuuuuu %d\n\n\n", session->url_protocols );
 	return session->url_protocols & protocol;
 }
 
@@ -140,8 +139,8 @@ NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 	}
 	c = '\0';
 
-	for (i = 0; protocol < NC_URL_ALL ; i++, protocol <<= 1) {
-		if (xmlStrcmp(BAD_CAST url_aux, url_protocols[i]) == 0) {
+	for (i = 0; i < 7 ; i++, protocol <<= 1) {
+		if (xmlStrncmp(BAD_CAST url_aux, url_protocols[i], xmlStrlen(url_protocols[i])) == 0) {
 			break;
 		}
 	}
@@ -150,50 +149,60 @@ NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 	return (protocol);
 }
 
-int nc_url_upload(const char *data, const char *url) {
+size_t nc_url_readdata( char *ptr, size_t size, size_t nmemb, char *userdata) {
+	struct url_mem *data = (struct url_mem *)userdata; 
+    if ((size * nmemb) < 1) 
+        return 0; 
+    if (data->size) 
+    { 
+        *(char *)ptr = data->memory[0]; // copy one single byte 
+        data->memory++; // advance pointer 
+        data->size--; // less data left */ 
+        return 1; 
+    } 
+    return 0; // no more data left to deliver 
+	
+}
+
+int nc_url_upload(char *data, const char *url) {
 	CURL * curl;
 	CURLcode res;
-	
+	struct url_mem mem_data;
 	char curl_buffer[ CURL_ERROR_SIZE ];
-	FILE * tmp_file;
 	xmlDocPtr doc;
 	xmlNodePtr root_element;
-
 	
 	if( strcmp( data, "" ) == 0 ) {
 		ERROR( "%s: source file is empty", __func__)
 		return EXIT_FAILURE;
 	}
 	
+	mem_data.memory = data;
+	mem_data.size = strlen(data);
 	doc = xmlParseMemory( data, strlen( data ) );
 	root_element = xmlDocGetRootElement( doc );
 	if( strcmp( ( char * )root_element->name, "config" ) != 0 ) {
 		ERROR( "%s: source file does not contain config element", __func__ );
 		return EXIT_FAILURE;
 	}
-	xmlFreeNode( root_element );
 	xmlFreeDoc( doc );
-	
-	tmp_file = tmpfile();
-	
-	fprintf(tmp_file, "%s", data );
-	printf( "%s", data );
+
 	curl_global_init(INIT_FLAGS);
 	curl = curl_easy_init();
 	curl_easy_setopt( curl, CURLOPT_URL, url );
 	curl_easy_setopt( curl, CURLOPT_UPLOAD, 1L );
-	curl_easy_setopt( curl, CURLOPT_READDATA, tmp_file );
+	curl_easy_setopt( curl, CURLOPT_READDATA, &mem_data );
+	curl_easy_setopt( curl, CURLOPT_READFUNCTION, nc_url_readdata );
 	curl_easy_setopt( curl, CURLOPT_ERRORBUFFER, curl_buffer );
 	res = curl_easy_perform( curl );
 	
 	if( res != CURLE_OK )
 	{
-		close( url_tmpfile );
 		ERROR( "%s: curl error: %s", __func__, curl_buffer );
 		return -1;
 	}
-	fclose( tmp_file );
-	printf( "!%s!", curl_buffer );
+	curl_easy_cleanup(curl); 
+	curl_global_cleanup(); 
 	return EXIT_SUCCESS;
 }
 
@@ -210,6 +219,8 @@ int nc_url_delete_config(const char *url)
 	
 	empty_file = tmpfile();
 	
+	fprintf( empty_file, "<config></config>");
+	
 	curl_global_init(INIT_FLAGS);
 	curl = curl_easy_init();
 	curl_easy_setopt( curl, CURLOPT_URL, url );
@@ -224,8 +235,9 @@ int nc_url_delete_config(const char *url)
 		ERROR( "%s: curl error: %s", __func__, curl_buffer );
 		return -1;
 	}
-	//fclose( empty_file );
-	
+	fclose( empty_file );
+	curl_easy_cleanup(curl); 
+	curl_global_cleanup(); 
 	return EXIT_SUCCESS;
 }
 
@@ -254,6 +266,8 @@ int nc_url_get_rpc(const char *url)
 		ERROR( "%s: curl error: %s", __func__, curl_buffer );
 		return -1;
 	}
+	curl_easy_cleanup(curl); 
+	curl_global_cleanup(); 
 	lseek( url_tmpfile, 0, SEEK_SET );
 	return url_tmpfile;
 }

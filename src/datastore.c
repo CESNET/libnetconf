@@ -37,6 +37,9 @@
  *
  */
 
+#include <libxml2/libxml/xpath.h>
+
+
 #define _GNU_SOURCE
 #include <stdlib.h>
 #include <unistd.h>
@@ -3013,6 +3016,18 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 #ifndef DISABLE_URL
 	xmlXPathObjectPtr url_path = NULL;
 	xmlChar *ncontent;
+	xmlNodePtr url_remote_node;
+	xmlNodePtr url_local_node;
+	xmlNodePtr url_tmp_node;
+	xmlNodePtr url_tmp_node_next;
+	xmlXPathObjectPtr url_model_xpath = NULL;
+	xmlChar * url_model_namespace;
+	xmlChar * url_model_name;
+	xmlDocPtr url_tmp_doc;
+	xmlDocPtr url_local_doc;
+	xmlChar * url_doc_text;
+	char url_test_empty;
+	int url_tmpfile;
 	NC_URL_PROTOCOLS protocol;
 #endif /* DISABLE_URL */
 
@@ -3268,7 +3283,7 @@ process_datastore:
 			break;
 		}
 
-		if (op == NC_OP_COPYCONFIG && ((source_ds = nc_rpc_get_source(rpc)) != NC_DATASTORE_CONFIG)) {
+		if (op == NC_OP_COPYCONFIG && ((source_ds = nc_rpc_get_source(rpc)) != NC_DATASTORE_CONFIG) && ( source_ds != NC_DATASTORE_URL )) {
 			if (source_ds == NC_DATASTORE_ERROR) {
 				e = nc_err_new(NC_ERR_BAD_ELEM);
 				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "source");
@@ -3384,6 +3399,8 @@ apply_editcopyconfig:
 			ret = ds->func.editconfig(ds, session, rpc, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 		} else if (op == NC_OP_COPYCONFIG) {
 #ifndef DISABLE_URL
+			if( source_ds == NC_DATASTORE_URL )
+				source_ds = NC_DATASTORE_CONFIG;
 			if (target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
 				url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
 				if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
@@ -3398,7 +3415,7 @@ apply_editcopyconfig:
 					return (NULL);
 				}
 				if (!nc_url_is_enabled(protocol, rpc->session)) {
-					ERROR("%s: protocol not suported", __func__);
+					ERROR("%s: %d %d protocol not suported", __func__, protocol, rpc->session->url_protocols );
 					return (NULL);
 				}
 
@@ -3409,9 +3426,81 @@ apply_editcopyconfig:
 				case NC_DATASTORE_RUNNING:
 				case NC_DATASTORE_STARTUP:
 				case NC_DATASTORE_CANDIDATE:
-					/* \todo get datastore content and upload it into the target */
-					WARN("%s: copying from standard datastores is not yet supported.", __func__);
-					ret = EXIT_FAILURE;
+
+					// get data from remote file
+					if ((url_tmpfile = nc_url_get_rpc((char*) ncontent)) < 0) { // remote file is empty or does not exists
+						url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
+						url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
+						xmlDocSetRootElement(url_tmp_doc, url_remote_node);
+					} else {
+						if (read(url_tmpfile, &url_test_empty, 1) > 0){ // check if file is empty
+							lseek(url_tmpfile, 0, SEEK_SET);
+							if ((url_tmp_doc = xmlReadFd(url_tmpfile, NULL, NULL, 0)) == NULL ) { 
+								close(url_tmpfile);
+								ERROR("%s: error reading from tmp file", __func__);
+								return (NULL);
+							}
+							close(url_tmpfile);
+							url_remote_node = xmlDocGetRootElement(url_tmp_doc);
+							if (xmlStrcmp(BAD_CAST "config", url_remote_node->name) != 0) {
+								ERROR("%s: no config data in remote file", __func__);
+								return (NULL);
+							}
+
+							url_model_xpath = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":namespace", ds->data_model->ctxt);
+							url_model_namespace = xmlGetProp( url_model_xpath->nodesetval->nodeTab[0], (xmlChar*)"uri" );
+							
+							xmlXPathFreeObject(url_model_xpath);
+							url_model_xpath = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":container", ds->data_model->ctxt);
+							url_model_name = xmlGetProp( url_model_xpath->nodesetval->nodeTab[0], (xmlChar*)"name" );
+							xmlXPathFreeObject(url_model_xpath);
+
+
+							// remove all remote entries which match data models from datastore
+							url_tmp_node = url_remote_node->children;
+							while (url_tmp_node != NULL) {
+								url_tmp_node_next = url_tmp_node->next;
+								if (xmlStrcmp(url_tmp_node->name, url_model_name) == 0 && 
+										(xmlStrcmp(url_tmp_node->ns->href, url_model_namespace) == 0)) {
+									xmlUnlinkNode(url_tmp_node);
+									xmlFreeNode(url_tmp_node);
+								}
+
+								url_tmp_node = url_tmp_node_next;
+							}
+							xmlFree(url_model_name);
+							xmlFree(url_model_namespace);
+							
+						} else {
+							url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
+							url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
+							xmlDocSetRootElement(url_tmp_doc, url_remote_node);
+						}
+					}
+					
+					
+					config = ds->func.getconfig( ds, session, source_ds, &e );
+					if (asprintf(&config, "<config>%s</config>", config) == -1) {
+						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+						config = NULL;
+					}
+
+					url_local_doc = xmlParseMemory(config, strlen(config));
+					url_local_node = xmlDocGetRootElement( url_local_doc );
+					url_tmp_node = url_local_node->children;
+					while (url_tmp_node != NULL) {
+						url_tmp_node_next = url_tmp_node->next;
+						xmlAddChild(url_remote_node, url_tmp_node);
+						url_tmp_node = url_tmp_node_next;
+					}
+					
+					
+					xmlDocDumpMemory( url_tmp_doc, &url_doc_text, NULL );
+					nc_url_upload((char*) url_doc_text, (char*) ncontent);
+
+					xmlFreeDoc(url_tmp_doc);
+	
+					
 					break;
 				default:
 					ERROR("%s: invalid source datastore for URL target", __func__);
@@ -3419,6 +3508,8 @@ apply_editcopyconfig:
 				}
 				xmlFree(ncontent);
 				xmlXPathFreeObject(url_path);
+				
+				ret = EXIT_SUCCESS;
 			} else {
 #else
 			{
@@ -3468,7 +3559,7 @@ apply_editcopyconfig:
 				return (NULL );
 			}
 			if (!nc_url_is_enabled(protocol, rpc->session)) {
-				ERROR("%s: protocol not suported", __func__);
+				ERROR("%s: %d %d protocol not suported", __func__, protocol, rpc->session->url_protocols );
 				return (NULL );
 			}
 
@@ -3738,7 +3829,7 @@ apply_editcopyconfig:
 	return (reply);
 }
 
-nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[])
+nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[])
 {
 	struct ncds_ds_list* ds, *ds_rollback;
 	nc_reply *old_reply = NULL, *new_reply = NULL, *reply = NULL;
@@ -3760,6 +3851,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 		*ids = ncds.datastores_ids;
 	}
 
+	
 	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
 		/* skip internal datastores */
 		if (ds->datastore->id > 0 && ds->datastore->id < internal_ds_count) {
@@ -3806,7 +3898,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 			}
 		}
 	}
-
+	
 	return (reply);
 }
 

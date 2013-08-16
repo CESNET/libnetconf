@@ -41,6 +41,7 @@
 #ifndef URL_H_
 #define URL_H_
 
+#include "session.h"
 /* \todo description how and where to use */
 typedef enum NC_URL_PROTOCOLS {
 	NC_URL_UNKNOWN =   0,
@@ -53,6 +54,8 @@ typedef enum NC_URL_PROTOCOLS {
 	NC_URL_FILE    =  64,
 	NC_URL_ALL     = 127
 } NC_URL_PROTOCOLS;
+
+void nc_url_set_protocols( int protocols, struct nc_session * session );
 
 #endif /* URL_H_ */
 #endif /* DISABLE_URL */

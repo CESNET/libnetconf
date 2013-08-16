@@ -44,14 +44,26 @@
 #include "url.h"
 #include "netconf_internal.h"
 
+struct url_mem 
+{ 
+  char *memory; 
+  size_t size; 
+};
+
 /* \todo functions descriptions */
 int nc_url_get_rpc(const char * url);
 int nc_url_delete_config(const char *url);
-int nc_url_upload(const char *data, const char *url);
+int nc_url_upload(char *data, const char *url);
 char* nc_url_gencap(const struct nc_session *session);
 int nc_url_is_enabled(int protocol, const struct nc_session *session);
 NC_URL_PROTOCOLS nc_url_get_protocol(const char *url);
 int url_tmpfile;
+
+struct nc_url_mem 
+{ 
+  char *memory; 
+  size_t size; 
+};
 
 #endif /* URL_INTERNAL_H_ */
 #endif /* DISABLE_URL */

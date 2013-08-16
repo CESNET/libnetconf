@@ -253,7 +253,7 @@ static struct nc_msg* nc_msg_build (const char * msg_dump)
 		nc_msg_free(msg);
 		return NULL;
 	}
-
+	
 	/* register base namespace for the rpc */
 	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_BASE10_ID, BAD_CAST NC_NS_BASE10) != 0) {
 		ERROR("Registering base namespace for the message xpath context failed.");
@@ -870,6 +870,7 @@ xmlNodePtr ncxml_rpc_get_config( const nc_rpc* rpc )
 	xmlNodePtr config, aux_node;
 	xmlDocPtr aux_doc = NULL;
 #ifndef DISABLE_URL
+	xmlChar * url;
 	int url_buff_fd;
 	NC_URL_PROTOCOLS protocol;
 #endif
@@ -899,18 +900,20 @@ xmlNodePtr ncxml_rpc_get_config( const nc_rpc* rpc )
 	/* URL CAPABILITY*/
 	if( i == 1 || i == 3 ) {
 #ifndef DISABLE_URL
-		protocol = nc_url_get_protocol((char*) xmlNodeGetContent(query_result->nodesetval->nodeTab[0]));
+		protocol = nc_url_get_protocol((char*) (url = xmlNodeGetContent(query_result->nodesetval->nodeTab[0])));
+		xmlFree(url);
 		if (protocol == 0) {
 			ERROR("%s: unknown protocol", __func__);
 			return (NULL);
 		}
 		if (!nc_url_is_enabled(protocol, rpc->session)) {
-			ERROR("%s: protocol not suported", __func__);
+			ERROR("%s: %d %d protocol not suported", __func__, protocol, rpc->session->url_protocols );
 			return (NULL);
 		}
-		if ((url_buff_fd = nc_url_get_rpc((char*) xmlNodeGetContent(query_result->nodesetval->nodeTab[0]))) < 0) {
+		if ((url_buff_fd = nc_url_get_rpc((char*) (url = xmlNodeGetContent(query_result->nodesetval->nodeTab[0])))) < 0) {
 			return (NULL);
 		}
+		xmlFree(url);
 		xmlXPathFreeObject(query_result);
 		if ((aux_doc = xmlReadFd(url_buff_fd, NULL, NULL, 0)) == NULL ) {
 			close(url_buff_fd);
@@ -2249,7 +2252,6 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 			va_end(argp);
 			return (NULL);
 		}
-		printf( "%s", node_target->content );
 		va_end(argp);
 	} else {
 		/* running, startup, candidate */

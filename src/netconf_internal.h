@@ -84,8 +84,6 @@
 #define NC_NS_BASE11		"urn:ietf:params:xml:ns:netconf:base:1.1"
 #define NC_NS_BASE11_ID		"base11"
 
-#define NC_NS_YIN 		"urn:ietf:params:xml:ns:yang:yin:1"
-
 #define NC_NS_BASE NC_NS_BASE10
 #define NC_NS_BASE_ID NC_NS_BASE10_ID
 

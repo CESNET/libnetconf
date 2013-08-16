@@ -221,7 +221,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
  * NCDS_RPC_NOT_APPLICABLE is returned.
  *
  */
-nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[]);
+nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[]);
 
 /**
  * @ingroup store
