@@ -98,7 +98,7 @@ gen_relaxng() {
     if [ -n "$FORCE" -o ! -f "${DIR}/${FILE}" ]; then
         echo -e "\t creating ${DIR}/${FILE}"
         $XSLTPROC --output ${DIR}/${FILE} \
-            --stringparam basename ${1%.yang} \
+            --stringparam basename ./`basename ${1%.yang}` \
             --stringparam target data --stringparam rng-lib $RNGLIB \
             ${XSLTDIR}/gen-relaxng.xsl ${DIR}/dsdl${RANDTEXT} || exit 1
     fi
