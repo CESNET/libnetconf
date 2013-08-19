@@ -50,6 +50,7 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <dirent.h>
+#include <stdio.h>
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
