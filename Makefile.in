@@ -211,6 +211,7 @@ tarball: $(SRCS) $(HEADERS)
 	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) $(GENERATOR) $(GENERATOR_FILES) configure.in configure \
 	    headers/libnetconf.h.in headers/libnetconf_xml.h.in \
 	    Makefile.in VERSION $(NAME).spec.in $(NAME).pc.in \
+	    lnc-tool/lnc-tool.in lnc-tool/rnglib/* lnc-tool/xslt/* \
 	    install-sh config.sub config.guess Doxyfile.in doc/img/*.png models/*; do \
 	    [ -d $(NAME)-$(VERSION)/$$(dirname $$i) ] || (mkdir -p $(NAME)-$(VERSION)/$$(dirname $$i)); \
 		cp $$i $(NAME)-$(VERSION)/$$i; \
@@ -331,6 +332,9 @@ uninstall-devel:
 		rm -f $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
 	done; \
 	rm $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
+	rm $(DESTDIR)/$(bindir)/lnc-tool; \
+	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
+	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 
 .PHONY: uninstall-doc
 uninstall-doc:
