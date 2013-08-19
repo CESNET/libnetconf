@@ -151,7 +151,7 @@ NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 
 size_t nc_url_readdata(char *ptr, size_t size, size_t nmemb, char *userdata)
 {
-	struct url_mem *data = (struct url_mem *)userdata; 
+	struct nc_url_mem *data = (struct nc_url_mem *)userdata; 
 	if ((size * nmemb) < 1) 
 		return 0; 
 	if (data->size) { 
@@ -167,7 +167,7 @@ int nc_url_upload(char *data, const char *url)
 {
 	CURL * curl;
 	CURLcode res;
-	struct url_mem mem_data;
+	struct nc_url_mem mem_data;
 	char curl_buffer[CURL_ERROR_SIZE];
 	xmlDocPtr doc;
 	xmlNodePtr root_element;
@@ -179,7 +179,7 @@ int nc_url_upload(char *data, const char *url)
 	
 	mem_data.memory = data;
 	mem_data.size = strlen(data);
-	doc = xmlParseMemory(data, strlen(dat));
+	doc = xmlParseMemory(data, strlen(data));
 	root_element = xmlDocGetRootElement(doc);
 	if(strcmp((char *)root_element->name, "config") != 0) {
 		ERROR("%s: source file does not contain config element", __func__);
