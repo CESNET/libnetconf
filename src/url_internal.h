@@ -42,7 +42,6 @@
 #define URL_INTERNAL_H_
 
 #include "url.h"
-#include "netconf_internal.h" // for nc_session structure
 
 /**
  * @brief Get rpc from remote source
@@ -71,7 +70,7 @@ int nc_url_upload(char *data, const char *url);
  * @param session
  * @return capability string
  */
-char* nc_url_gencap(const struct nc_session *session);
+char* nc_url_gencap();
 
 /**
  * Check if protocol is enabled in session
@@ -79,7 +78,7 @@ char* nc_url_gencap(const struct nc_session *session);
  * @param session
  * @return 1 or 0
  */
-int nc_url_is_enabled(NC_URL_PROTOCOLS protocol, const struct nc_session *session);
+int nc_url_is_enabled(NC_URL_PROTOCOLS protocol);
 
 /**
  * Get protocol id from url string

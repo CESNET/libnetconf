@@ -386,11 +386,6 @@ struct nc_session {
 	struct nc_session *next;
 	/**< @brief pointer to the previous NETCONF session on the shared SSH session, but different SSH channel */
 	struct nc_session *prev;
-#ifndef DISABLE_URL
-	/**< @brief list of enabled protocols for url capability */
-	int url_protocols;
-#endif
-	
 };
 
 /**

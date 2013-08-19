@@ -770,8 +770,6 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	retval->stats->in_bad_rpcs = 0;
 	retval->stats->out_rpc_errors = 0;
 	retval->stats->out_notifications = 0;
-
-	retval->url_protocols = nc_url_protocols;
 	
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);

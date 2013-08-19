@@ -3420,8 +3420,8 @@ apply_editcopyconfig:
 					ERROR("%s: unknown protocol", __func__);
 					return (NULL);
 				}
-				if (!nc_url_is_enabled(protocol, rpc->session)) {
-					ERROR("%s: %d %d protocol not suported", __func__, protocol, rpc->session->url_protocols );
+				if (!nc_url_is_enabled(protocol)) {
+					ERROR("%s: protocol not suported", __func__);
 					return (NULL);
 				}
 
@@ -3568,8 +3568,8 @@ apply_editcopyconfig:
 				ERROR("%s: unknown protocol", __func__);
 				return (NULL );
 			}
-			if (!nc_url_is_enabled(protocol, rpc->session)) {
-				ERROR("%s: %d %d protocol not suported", __func__, protocol, rpc->session->url_protocols );
+			if (!(protocol)) {
+				ERROR("%s: protocol not suported", __func__);
 				return (NULL );
 			}
 

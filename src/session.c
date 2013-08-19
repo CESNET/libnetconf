@@ -928,10 +928,6 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	}
 	/* create empty capabilities list */
 	session->capabilities = nc_cpblts_new (NULL);
-	
-#ifndef DISABLE_URL
-	session->url_protocols = nc_url_protocols;
-#endif
 	/* initialize capabilities iterator */
 	nc_cpblts_iter_start (capabilities);
 	/* copy all capabilities */

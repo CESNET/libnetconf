@@ -59,24 +59,24 @@
 // default allowed protocols
 int nc_url_protocols = NC_URL_FILE | NC_URL_SCP;
 
-void nc_url_set_protocols(int protocols, struct nc_session * session)
+void nc_url_set_protocols(int protocols)
 {
-	session->url_protocols = protocols;
+	nc_url_protocols = protocols;
 }
 
-void nc_url_enable(NC_URL_PROTOCOLS protocol, struct nc_session * session)
+void nc_url_enable(NC_URL_PROTOCOLS protocol)
 {
-	session->url_protocols = session->url_protocols | protocol;
+	nc_url_protocols = nc_url_protocols | protocol;
 }
 
-void nc_url_disable(NC_URL_PROTOCOLS protocol, struct nc_session * session)
+void nc_url_disable(NC_URL_PROTOCOLS protocol)
 {
-	session->url_protocols = ~(~session->url_protocols ^ protocol ) ;
+	nc_url_protocols = ~(~nc_url_protocols ^ protocol ) ;
 }
 
-int nc_url_is_enabled(NC_URL_PROTOCOLS protocol, const struct nc_session * session)
+int nc_url_is_enabled(NC_URL_PROTOCOLS protocol)
 {
-	return session->url_protocols & protocol;
+	return nc_url_protocols & protocol;
 }
 
 static xmlChar * url_protocols[] = {
@@ -90,14 +90,14 @@ static xmlChar * url_protocols[] = {
 };
 
 /**< @brief generates url capability string with enabled protocols */
-char* nc_url_gencap(const struct nc_session *session)
+char* nc_url_gencap()
 {
 	char *cpblt = NULL, *cpblt_update = NULL;
 	int first = 1;
 	int i;
 	int protocol = 1;
 
-	if (session->url_protocols == 0) {
+	if (nc_url_protocols == 0) {
 		return (NULL);
 	}
 
@@ -107,7 +107,7 @@ char* nc_url_gencap(const struct nc_session *session)
 	}
 
 	for (i = 0, protocol = 1; i < (sizeof(url_protocols) / sizeof(url_protocols[0])); i++, protocol <<= 1) {
-		if (protocol & session->url_protocols) {
+		if (protocol & nc_url_protocols) {
 			if (asprintf(&cpblt_update, "%s%s%s", cpblt, first ? "" : ",", url_protocols[i]) < 0) {
 				ERROR("%s: asprintf error", __func__);
 			}
