@@ -3237,6 +3237,9 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	const char * rpc_name;
 	xmlBufferPtr buf = NULL;
 	char *end = NULL, *aux = NULL;
+#ifndef DISABLE_VALIDATION
+	xmlNsPtr ns;
+#endif
 
 	if (rpc == NULL || session == NULL) {
 		ERROR("%s: invalid parameter %s", __func__, (rpc==NULL)?"rpc":"session");
@@ -3719,6 +3722,12 @@ apply_editcopyconfig:
 		break;
 #ifndef DISABLE_VALIDATION
 	case NC_OP_VALIDATE:
+		if (!ds->validators.rng && !ds->validators.rng_schema && !ds->validators.schematron) {
+			/* validation not supported by this datastore */
+			ret = EXIT_RPC_NOT_APPLICABLE;
+			break;
+		}
+
 		if ((data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), &e)) == NULL ) {
 			if (e == NULL ) {
 				ERROR("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
@@ -3726,17 +3735,53 @@ apply_editcopyconfig:
 			}
 			break;
 		}
-		data2 = data;
-		if (asprintf(&data, "<data xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">%s</data>", data2) == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-			e = nc_err_new(NC_ERR_OP_FAILED);
+		aux_doc = doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		/* if the datastore is empty, doc1/aux_doc is NULL here */
+
+		if (ds->get_state != NULL) {
+			xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
+			data2 = ds->get_state(model, data, &e);
+			free(model);
+			free(data); /* running data, no more needed in this form */
+			data = NULL;
+
+			if (e != NULL) {
+				/* state data retrieval error */
+				free(data2);
+				break;
+			}
+
+			doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			free(data2);
-			break;
+
+			/* if merge fail (probably one of docs NULL)*/
+			if ((aux_doc = ncxml_merge(doc1, doc2, ds->ext_model)) == NULL ) {
+				xmlFreeDoc(doc1);
+				xmlFreeDoc(doc2);
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				break;
+			} else {
+				/* cleanup */
+				xmlFreeDoc(doc1);
+				xmlFreeDoc(doc2);
+			}
 		}
-		aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-		free(data2);
 		free(data);
 		data = NULL;
+
+		/* process default values */
+		ncdflt_default_values(aux_doc, ds->ext_model, NCWD_MODE_ALL);
+
+		/*
+		 * reconect root element from datastore data under the <data>
+		 * element required by validators
+		 */
+		aux_node = xmlDocGetRootElement(aux_doc);
+		xmlUnlinkNode(aux_node);
+		xmlDocSetRootElement(aux_doc, xmlNewDocNode(aux_doc, NULL, BAD_CAST "data", NULL));
+		ns = xmlNewNs(aux_doc->children, (xmlChar *) NC_NS_BASE10, NULL);
+		xmlSetNs(aux_doc->children, ns);
+		xmlAddChild(aux_doc->children, aux_node);
 
 		ret = validate_ds(ds, aux_doc, &e);
 
