@@ -59,7 +59,6 @@ RELEASE = @RELEASE@
 version_info = @LIBTOOL_VERSION_INFO@
 
 CC = @CC@
-LN_S = @LN_S@
 DOXYGEN = @DOXYGEN@
 DOXYGEN_CONFIG = Doxyfile
 DOXYGEN_DIR = $(shell cat $(DOXYGEN_CONFIG) | grep '^OUTPUT_DIRECTORY' | sed 's/.*=//')
