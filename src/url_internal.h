@@ -74,7 +74,7 @@ char* nc_url_gencap();
 
 /**
  * Check if protocol is enabled in session
- * @param protocol
+ * @param protocol protocol id
  * @param session
  * @return 1 or 0
  */

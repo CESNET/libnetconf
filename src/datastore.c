@@ -2929,6 +2929,12 @@ int ncds_rollback(ncds_id id)
 	return (datastore->func.rollback(datastore));
 }
 
+/**
+ * @brief Check if source and target are same. If url is enabled, checks if source and target urls are same
+ * @param rpc
+ * @param session
+ * @return 
+ */
 int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
 {
 	NC_DATASTORE source, target;

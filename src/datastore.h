@@ -356,12 +356,6 @@ int ncds_feature_isenabled(const char* module, const char* feature);
  */
 int ncds_consolidate(void);
 
-/**
- * @brief Checks if datastores are in conflict
- * @return 1 if datastores are in conflict 
- */
-int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session);
-
 #ifdef __cplusplus
 }
 #endif

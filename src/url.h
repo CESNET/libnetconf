@@ -55,22 +55,22 @@ typedef enum NC_URL_PROTOCOLS {
 } NC_URL_PROTOCOLS;
 
 /**
- * @brief Overwrite enabled protocols froms session
- * @param protocols binary array of enabled protocols
+ * @brief Overwrite enabled protocols
+ * @param protocols binary array of protocol ids (ored NC_URL_PROTOCOLS) to enable
  * @param session
  */
 void nc_url_set_protocols(int protocols);
 
 /**
  * @brief Enable protocol
- * @param protocols binary array of enabled protocols
+ * @param protocol id of protocol to enable (from NC_URL_PROTOCOLS)
  * @param session
  */
 void nc_url_enable(NC_URL_PROTOCOLS protocol);
 
 /**
  * @brief Disable protocol
- * @param protocols binary array of enabled protocols
+ * @param protocol id of protocol to disable (from NC_URL_PROTOCOLS)
  * @param session
  */
 void nc_url_disable(NC_URL_PROTOCOLS protocol);
