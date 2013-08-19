@@ -46,7 +46,7 @@
 #include <libxml/xmlstring.h>
 
 #include "url_internal.h"
-#include "netconf_internal.h"
+#include "netconf_internal.h" // for nc_session structure
 
 
 /* define init flags */
@@ -64,17 +64,17 @@ void nc_url_set_protocols( int protocols, struct nc_session * session )
 	session->url_protocols = protocols;
 }
 
-void nc_url_enable( int protocol, struct nc_session * session )
+void nc_url_enable( NC_URL_PROTOCOLS protocol, struct nc_session * session )
 {
 	session->url_protocols = session->url_protocols | protocol;
 }
 
-void nc_url_disable( int protocol, struct nc_session * session )
+void nc_url_disable( NC_URL_PROTOCOLS protocol, struct nc_session * session )
 {
 	session->url_protocols = ~(~session->url_protocols ^ protocol ) ;
 }
 
-int nc_url_is_enabled( int protocol, const struct nc_session * session )
+int nc_url_is_enabled( NC_URL_PROTOCOLS protocol, const struct nc_session * session )
 {
 	return session->url_protocols & protocol;
 }

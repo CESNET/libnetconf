@@ -42,7 +42,7 @@
 #define URL_H_
 
 #include "session.h"
-/* \todo description how and where to use */
+/* Use for enable/disable protocols. (nc_url_enable, nc_url_disable) */
 typedef enum NC_URL_PROTOCOLS {
 	NC_URL_UNKNOWN =   0,
 	NC_URL_SCP     =   1,
@@ -55,7 +55,26 @@ typedef enum NC_URL_PROTOCOLS {
 	NC_URL_ALL     = 127
 } NC_URL_PROTOCOLS;
 
+/**
+ * @brief Overwrite enabled protocols froms session
+ * @param protocols binary array of enabled protocols
+ * @param session
+ */
 void nc_url_set_protocols( int protocols, struct nc_session * session );
+
+/**
+ * @brief Enable protocol
+ * @param protocols binary array of enabled protocols
+ * @param session
+ */
+void nc_url_enable( NC_URL_PROTOCOLS protocol, struct nc_session * session );
+
+/**
+ * @brief Disable protocol
+ * @param protocols binary array of enabled protocols
+ * @param session
+ */
+void nc_url_disable( NC_URL_PROTOCOLS protocol, struct nc_session * session );
 
 #endif /* URL_H_ */
 #endif /* DISABLE_URL */

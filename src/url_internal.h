@@ -42,23 +42,56 @@
 #define URL_INTERNAL_H_
 
 #include "url.h"
-#include "netconf_internal.h"
+#include "netconf_internal.h" // for nc_session structure
 
-struct url_mem 
-{ 
-  char *memory; 
-  size_t size; 
-};
-
-/* \todo functions descriptions */
+/**
+ * @brief Get rpc from remote source
+ * @param url
+ * @return fd on tmp file with remote rpc or NULL
+ */
 int nc_url_get_rpc(const char * url);
+
+/**
+ * @brief Uploads empty (<config></config>) file to remote target
+ * @param url
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
 int nc_url_delete_config(const char *url);
+
+/**
+ * @brief Uploads data to remote target
+ * @param data configuration data closed in <config> tag
+ * @param url
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
 int nc_url_upload(char *data, const char *url);
+
+/**
+ * @brief Generate capability string from enabled protocols
+ * @param session
+ * @return capability string
+ */
 char* nc_url_gencap(const struct nc_session *session);
-int nc_url_is_enabled(int protocol, const struct nc_session *session);
+
+/**
+ * Check if protocol is enabled in session
+ * @param protocol
+ * @param session
+ * @return 1 or 0
+ */
+int nc_url_is_enabled(NC_URL_PROTOCOLS protocol, const struct nc_session *session);
+
+/**
+ * Get protocol id from url string
+ * @param url
+ * @return protocol id
+ */
 NC_URL_PROTOCOLS nc_url_get_protocol(const char *url);
+
+// tmp file with config data from remote source
 int url_tmpfile;
 
+// Struct for uploading data with curl
 struct nc_url_mem 
 { 
   char *memory; 
