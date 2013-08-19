@@ -279,6 +279,34 @@ int ncds_sysinit(int flags)
 			{NCDS_TYPE_EMPTY, NULL},
 			{NCDS_TYPE_FILE, NC_WORKINGDIR_PATH"/datastore-acm.xml"}
 	};
+#ifndef DISABLE_VALIDATION
+	char* relaxng_validators[INTERNAL_DS_COUNT] = {
+			NULL, /* ietf-inet-types */
+			NULL, /* ietf-yang-types */
+			NULL, /* ietf-netconf */
+			NULL, /* ietf-netconf-monitoring */
+#ifndef DISABLE_NOTIFICATIONS
+			NULL, /* ietf-netconf-notifications */
+			NULL, /* nc-notifications */
+			NULL, /* notifications */
+#endif
+			NULL, /* ietf-netconf-with-defaults */
+			NC_WORKINGDIR_PATH"/ietf-netconf-acm-data.rng" /* NACM RelaxNG schema */
+	};
+	char* schematron_validators[INTERNAL_DS_COUNT] = {
+			NULL, /* ietf-inet-types */
+			NULL, /* ietf-yang-types */
+			NULL, /* ietf-netconf */
+			NULL, /* ietf-netconf-monitoring */
+#ifndef DISABLE_NOTIFICATIONS
+			NULL, /* ietf-netconf-notifications */
+			NULL, /* nc-notifications */
+			NULL, /* notifications */
+#endif
+			NULL, /* ietf-netconf-with-defaults */
+			NC_WORKINGDIR_PATH"/ietf-netconf-acm-schematron.xsl" /* NACM Schematron XSL stylesheet */
+	};
+#endif
 
 	internal_ds_count = 0;
 	for (i = 0; i < INTERNAL_DS_COUNT; i++) {
@@ -375,6 +403,13 @@ int ncds_sysinit(int flags)
 		list_item->model = ds->data_model;
 		list_item->next = models_list;
 		models_list = list_item;
+
+#ifndef DISABLE_VALIDATION
+		/* set validation */
+		if (relaxng_validators[i] != NULL || schematron_validators[i] != NULL) {
+			ncds_set_validation(ds, 1, relaxng_validators[i], schematron_validators[i]);
+		}
+#endif
 
 		/* init */
 		ds->func.init(ds);
