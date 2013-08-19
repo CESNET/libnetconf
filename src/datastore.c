@@ -37,9 +37,6 @@
  *
  */
 
-#include <libxml2/libxml/xpath.h>
-
-
 #define _GNU_SOURCE
 #include <stdlib.h>
 #include <unistd.h>
