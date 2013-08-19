@@ -3464,7 +3464,7 @@ apply_editcopyconfig:
 							
 							xmlXPathFreeObject(url_model_xpath);
 							url_model_xpath = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":container", ds->data_model->ctxt);
-							url_model_name = xmlGetProp( url_model_xpath->nodesetval->nodeTab[0], (xmlChar*)"name" );
+							url_model_name = xmlGetProp(url_model_xpath->nodesetval->nodeTab[0], (xmlChar*)"name");
 							xmlXPathFreeObject(url_model_xpath);
 
 

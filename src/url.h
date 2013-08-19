@@ -60,21 +60,21 @@ typedef enum NC_URL_PROTOCOLS {
  * @param protocols binary array of enabled protocols
  * @param session
  */
-void nc_url_set_protocols( int protocols, struct nc_session * session );
+void nc_url_set_protocols(int protocols, struct nc_session * session);
 
 /**
  * @brief Enable protocol
  * @param protocols binary array of enabled protocols
  * @param session
  */
-void nc_url_enable( NC_URL_PROTOCOLS protocol, struct nc_session * session );
+void nc_url_enable(NC_URL_PROTOCOLS protocol, struct nc_session * session);
 
 /**
  * @brief Disable protocol
  * @param protocols binary array of enabled protocols
  * @param session
  */
-void nc_url_disable( NC_URL_PROTOCOLS protocol, struct nc_session * session );
+void nc_url_disable(NC_URL_PROTOCOLS protocol, struct nc_session * session);
 
 #endif /* URL_H_ */
 #endif /* DISABLE_URL */
