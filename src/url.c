@@ -106,7 +106,7 @@ char* nc_url_gencap(const struct nc_session *session)
 		return (NULL);
 	}
 
-	for (i = 0, protocol = 1; i < 7; i++, protocol <<= 1) {
+	for (i = 0, protocol = 1; i < (sizeof(url_protocols) / sizeof(url_protocols[0])); i++, protocol <<= 1) {
 		if (protocol & session->url_protocols) {
 			if (asprintf(&cpblt_update, "%s%s%s", cpblt, first ? "" : ",", url_protocols[i]) < 0) {
 				ERROR("%s: asprintf error", __func__);
@@ -139,7 +139,7 @@ NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 	}
 	c = '\0';
 
-	for (i = 0; i < 7 ; i++, protocol <<= 1) {
+	for (i = 0; i < (sizeof(url_protocols) / sizeof(url_protocols[0])) ; i++, protocol <<= 1) {
 		if (xmlStrncmp(BAD_CAST url_aux, url_protocols[i], xmlStrlen(url_protocols[i])) == 0) {
 			break;
 		}
