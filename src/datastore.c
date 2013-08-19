@@ -2960,16 +2960,11 @@ int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
 				ERROR( "Empty source or target in ncds_is_conflict" );
 				return 1;
 			}
-			/*
-			 * \todo Check query_source and query_target - aren't they NULL? aren't they empty? - see line 2622
-			 */
-
 			ret = xmlStrcmp(nc1, nc2);
 
 			/* cleanup */
 			xmlFree(nc1);
 			xmlFree(nc2);
-			/* \todo what about freeing query_source and query_target? */
 			xmlXPathFreeObject( query_source );
 			xmlXPathFreeObject( query_target );
 			return (ret);
