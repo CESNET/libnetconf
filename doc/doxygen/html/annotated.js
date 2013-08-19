@@ -1,6 +1,7 @@
 var annotated =
 [
     [ "model_tree", "dd/de6/structmodel__tree.html", "dd/de6/structmodel__tree" ],
+    [ "ncds_custom_funcs", "d0/d28/structncds__custom__funcs.html", "d0/d28/structncds__custom__funcs" ],
     [ "transapi", "d9/dc0/structtransapi.html", "d9/dc0/structtransapi" ],
     [ "transapi_data_callbacks", "d6/dcb/structtransapi__data__callbacks.html", "d6/dcb/structtransapi__data__callbacks" ],
     [ "transapi_data_clbcks", "d9/d51/uniontransapi__data__clbcks.html", "d9/d51/uniontransapi__data__clbcks" ],

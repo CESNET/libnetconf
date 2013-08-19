@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Mon Aug 12 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Mon Aug 19 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -89,6 +89,10 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .RI "const \fBnc_msgid\fP \fBnc_rpc_get_msgid\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet message-id of the given rpc\&. \fP"
+.ti -1c
+.RI "char * \fBnc_rpc_get_ns\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet user's rpc operation namespace\&. \fP"
 .ti -1c
 .RI "\fBNC_OP\fP \fBnc_rpc_get_op\fP (const \fBnc_rpc\fP *rpc)"
 .br
@@ -536,6 +540,20 @@ Get message-id of the given rpc\&. \fBParameters:\fP
 \fBReturns:\fP
 .RS 4
 message-id of the given rpc message\&. 
+.RE
+.PP
+
+.SS "char* nc_rpc_get_ns (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Get user's rpc operation namespace\&. \fBParameters:\fP
+.RS 4
+\fIrpc\fP rpc message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Namespace URI\&. 
 .RE
 .PP
 

@@ -6,6 +6,7 @@ var netconf_8h =
     [ "NC_INIT_NACM", "d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6", null ],
     [ "NC_INIT_MONITORING", "d3/d7a/netconf_8h.html#a3523107c9618d5c1b061ce12b73a7d8e", null ],
     [ "NC_INIT_WD", "d3/d7a/netconf_8h.html#ac6d72ea493b41661245c28e5b5817aa7", null ],
+    [ "NC_INIT_VALIDATE", "d3/d7a/netconf_8h.html#a8ef24bab459694bb9e9ea113983f4b0c", null ],
     [ "nc_rpc", "d3/d7a/netconf_8h.html#gab21d1d39737065c552f2ccc5b4819262", null ],
     [ "nc_reply", "d3/d7a/netconf_8h.html#ga40338a1274759a932a7c2c7b8ed0121d", null ],
     [ "nc_ntf", "d3/d7a/netconf_8h.html#ga3c2f8ca237327fcf3c871544f414bdfe", null ],
