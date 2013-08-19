@@ -3028,6 +3028,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlChar * url_doc_text;
 	char url_test_empty;
 	int url_tmpfile;
+	xmlNsPtr url_new_ns;
 	NC_URL_PROTOCOLS protocol;
 #endif /* DISABLE_URL */
 
@@ -3399,8 +3400,15 @@ apply_editcopyconfig:
 			ret = ds->func.editconfig(ds, session, rpc, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 		} else if (op == NC_OP_COPYCONFIG) {
 #ifndef DISABLE_URL
-			if( source_ds == NC_DATASTORE_URL )
+			if(source_ds == NC_DATASTORE_URL ) {
 				source_ds = NC_DATASTORE_CONFIG;
+				if(target_ds == NC_DATASTORE_URL){
+					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", config) == -1) {
+						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+						config = NULL;
+					}
+				}
+			}
 			if (target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
 				url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
 				if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
@@ -3431,6 +3439,10 @@ apply_editcopyconfig:
 					if ((url_tmpfile = nc_url_get_rpc((char*) ncontent)) < 0) { // remote file is empty or does not exists
 						url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
 						url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
+						if((url_new_ns = xmlNewNs(url_remote_node, BAD_CAST NC_NS_BASE10, NULL)) == NULL){
+							ERROR("%s: error while creating namespace to <config> node", __func__);
+						}
+						xmlSetNs(url_remote_node, url_new_ns);
 						xmlDocSetRootElement(url_tmp_doc, url_remote_node);
 					} else {
 						if (read(url_tmpfile, &url_test_empty, 1) > 0){ // check if file is empty
@@ -3480,7 +3492,7 @@ apply_editcopyconfig:
 					
 					
 					config = ds->func.getconfig( ds, session, source_ds, &e );
-					if (asprintf(&config, "<config>%s</config>", config) == -1) {
+					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", config) == -1) {
 						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 						config = NULL;
 					}

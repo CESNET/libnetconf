@@ -64,7 +64,7 @@ void nc_url_set_protocols( int protocols, struct nc_session * session )
 	session->url_protocols = protocols;
 }
 
-void nc_url_allow( int protocol, struct nc_session * session )
+void nc_url_enable( int protocol, struct nc_session * session )
 {
 	session->url_protocols = session->url_protocols | protocol;
 }
@@ -212,33 +212,7 @@ size_t nc_url_writedata( char *ptr, size_t size, size_t nmemb, void *userdata) {
 
 int nc_url_delete_config(const char *url)
 {
-	CURL * curl;
-	CURLcode res;
-	char curl_buffer[ CURL_ERROR_SIZE ];
-	FILE * empty_file;
-	
-	empty_file = tmpfile();
-	
-	fprintf( empty_file, "<config></config>");
-	
-	curl_global_init(INIT_FLAGS);
-	curl = curl_easy_init();
-	curl_easy_setopt( curl, CURLOPT_URL, url );
-	curl_easy_setopt( curl, CURLOPT_UPLOAD, 1L );
-	curl_easy_setopt( curl, CURLOPT_READDATA, empty_file );
-	curl_easy_setopt( curl, CURLOPT_ERRORBUFFER, curl_buffer );
-	res = curl_easy_perform( curl );
-	
-	if( res != CURLE_OK )
-	{
-		close( url_tmpfile );
-		ERROR( "%s: curl error: %s", __func__, curl_buffer );
-		return -1;
-	}
-	fclose( empty_file );
-	curl_easy_cleanup(curl); 
-	curl_global_cleanup(); 
-	return EXIT_SUCCESS;
+	return nc_url_upload("<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\"></config>", url);
 }
 
 int nc_url_get_rpc(const char *url)
