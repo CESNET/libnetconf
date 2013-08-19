@@ -152,6 +152,22 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 
 /**
  * @ingroup store
+ * @brief Set validators (or disable validation) on the specified datastore
+ *
+ * @param[in] datastore Datastore structure to be configured.
+ * @param[in] enable 1 to enable validation on the datastore according to the
+ * following parameters, 0 to disable validation (following parameters will be
+ * ignored).
+ * @param[in] relaxng Path to the Relax NG schema for validation of the
+ * datastore content syntax. To generate it, use the lnc-tool(1) script.
+ * @param[in] relaxng Path to the Schematron XSLT stylesheet for validation of
+ * the datastore content semantics. To generate it, use the lnc-tool(1) script.
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int ncds_set_validation(struct ncds_ds* ds, int enable, const char* relaxng, const char* schematron);
+
+/**
+ * @ingroup store
  * @brief Assign the path of the datastore file into the datastore structure.
  *
  * Checks if the file exist and is accessible for reading and writing.

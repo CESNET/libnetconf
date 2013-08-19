@@ -2507,6 +2507,91 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 }
 #endif /* not DISABLE_VALIDATION */
 
+int ncds_set_validation(struct ncds_ds* ds, int enable, const char* relaxng, const char* schematron)
+{
+#ifdef DISABLE_VALIDATION
+	return (EXIT_SUCCESS);
+#else
+	int ret = EXIT_SUCCESS;
+	xmlRelaxNGParserCtxtPtr rng_ctxt = NULL;
+	xmlRelaxNGPtr rng_schema = NULL;
+	xmlRelaxNGValidCtxtPtr rng = NULL;
+	xsltStylesheetPtr schxsl = NULL;
+
+	if (enable == 0) {
+		/* disable validation on this datastore */
+		xmlRelaxNGFreeValidCtxt(ds->validators.rng);
+		xmlRelaxNGFree(ds->validators.rng_schema);
+		xsltFreeStylesheet(ds->validators.schematron);
+		memset(&(ds->validators), 0, sizeof(struct model_validators));
+	} else if (nc_init_flags & NC_INIT_VALIDATE) { /* && enable == 1 */
+		/* enable and reset validators */
+		if (relaxng != NULL) {
+			/* prepare validators - Relax NG */
+			if (eaccess(relaxng, R_OK) == -1) {
+				ERROR("%s: Unable to access RelaxNG schema for validation (%s - %s).", __func__, relaxng, strerror(errno));
+				ret = EXIT_FAILURE;
+				goto cleanup;
+			} else {
+				rng_ctxt = xmlRelaxNGNewParserCtxt(relaxng);
+				if ((rng_schema = xmlRelaxNGParse(rng_ctxt)) == NULL) {
+					ERROR("Failed to parse Relax NG schema (%s)", relaxng);
+					ret = EXIT_FAILURE;
+					goto cleanup;
+				} else if ((rng = xmlRelaxNGNewValidCtxt(rng_schema)) == NULL) {
+					ERROR("Failed to create validation context (%s)", relaxng);
+					ret = EXIT_FAILURE;
+					goto cleanup;
+				}
+				xmlRelaxNGFreeParserCtxt(rng_ctxt);
+				rng_ctxt = NULL;
+			}
+		}
+
+		if (schematron != NULL) {
+			/* prepare validators - Schematron */
+			if (eaccess(schematron, R_OK) == -1) {
+				ERROR("%s: Unable to access Schematron stylesheet for validation (%s - %s).", __func__, schematron, strerror(errno));
+				ret = EXIT_FAILURE;
+				goto cleanup;
+			} else {
+				if ((schxsl = xsltParseStylesheetFile(BAD_CAST schematron)) == NULL) {
+					ERROR("Failed to parse Schematron stylesheet (%s)", schematron);
+					ret = EXIT_FAILURE;
+					goto cleanup;
+				}
+			}
+		}
+
+		/* replace previous validators */
+		if (rng_schema && rng) {
+			xmlRelaxNGFree(ds->validators.rng_schema);
+			ds->validators.rng_schema = rng_schema;
+			rng_schema = NULL;
+			xmlRelaxNGFreeValidCtxt(ds->validators.rng);
+			ds->validators.rng = rng;
+			rng = NULL;
+			DBG("%s: Relax NG validator set (%s)", __func__, relaxng);
+		}
+		if (schxsl) {
+			xsltFreeStylesheet(ds->validators.schematron);
+			ds->validators.schematron = schxsl;
+			schxsl = NULL;
+			DBG("%s: Schematron validator set (%s)", __func__, schematron);
+		}
+
+	}
+
+cleanup:
+	xmlRelaxNGFreeValidCtxt(rng);
+	xmlRelaxNGFree(rng_schema);
+	xmlRelaxNGFreeParserCtxt(rng_ctxt);
+	xsltFreeStylesheet(schxsl);
+
+	return (ret);
+#endif
+}
+
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
 {
 	struct ncds_ds* ds = NULL;
