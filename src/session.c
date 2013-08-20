@@ -804,6 +804,7 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 #endif
 #ifndef DISABLE_VALIDATION
 	if (nc_init_flags & NC_INIT_VALIDATE) {
+		nc_cpblts_add(retval, NC_CAP_VALIDATE10_ID);
 		nc_cpblts_add(retval, NC_CAP_VALIDATE11_ID);
 	}
 #endif
