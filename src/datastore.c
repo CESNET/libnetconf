@@ -2540,6 +2540,83 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 
 	return (retval);
 }
+
+static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session *session, NC_DATASTORE target, struct nc_err** e)
+{
+	int ret;
+	int len;
+	char *data_cfg, *data2, *model;
+	xmlDocPtr doc_cfg, doc_status, doc;
+	xmlNodePtr root;
+	xmlNsPtr ns;
+
+	if (!ds->validators.rng && !ds->validators.rng_schema && !ds->validators.schematron) {
+		/* validation not supported by this datastore */
+		return (EXIT_RPC_NOT_APPLICABLE);
+	}
+
+	if ((data_cfg = ds->func.getconfig(ds, session, target, e)) == NULL ) {
+		if (*e == NULL ) {
+			ERROR("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
+			*e = nc_err_new(NC_ERR_OP_FAILED);
+		}
+		return (EXIT_FAILURE);
+	}
+	doc = doc_cfg = xmlReadDoc(BAD_CAST data_cfg, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	/* if the datastore is empty, doc1/aux_doc is NULL here */
+
+	if (ds->get_state != NULL) {
+		xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
+		data2 = ds->get_state(model, data_cfg, e);
+		free(model);
+		free(data_cfg); /* running data, no more needed in this form */
+		data_cfg = NULL;
+
+		if (*e != NULL) {
+			/* state data retrieval error */
+			free(data2);
+			return (EXIT_FAILURE);
+		}
+
+		doc_status = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		free(data2);
+
+		/* if merge fail (probably one of docs NULL)*/
+		if ((doc = ncxml_merge(doc_cfg, doc_status, ds->ext_model)) == NULL ) {
+			xmlFreeDoc(doc_cfg);
+			xmlFreeDoc(doc_status);
+			*e = nc_err_new(NC_ERR_OP_FAILED);
+			return (EXIT_FAILURE);
+		} else {
+			/* cleanup */
+			xmlFreeDoc(doc_cfg);
+			xmlFreeDoc(doc_status);
+		}
+	}
+	free(data_cfg);
+	data_cfg = NULL;
+
+	/* process default values */
+	ncdflt_default_values(doc, ds->ext_model, NCWD_MODE_ALL);
+
+	/*
+	 * reconect root element from datastore data under the <data>
+	 * element required by validators
+	 */
+	root = xmlDocGetRootElement(doc);
+	xmlUnlinkNode(root);
+	xmlDocSetRootElement(doc, xmlNewDocNode(doc, NULL, BAD_CAST "data", NULL));
+	ns = xmlNewNs(doc->children, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(doc->children, ns);
+	xmlAddChild(doc->children, root);
+
+	ret = validate_ds(ds, doc, e);
+
+	xmlFreeDoc(doc);
+
+	return (ret);
+}
+
 #endif /* not DISABLE_VALIDATION */
 
 int ncds_set_validation(struct ncds_ds* ds, int enable, const char* relaxng, const char* schematron)
@@ -3358,7 +3435,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlBufferPtr buf = NULL;
 	char *end = NULL, *aux = NULL;
 #ifndef DISABLE_VALIDATION
-	xmlNsPtr ns;
+	NC_EDIT_TESTOPT_TYPE testopt;
 #endif
 
 	if (rpc == NULL || session == NULL) {
@@ -3377,9 +3454,11 @@ process_datastore:
 
 	op = nc_rpc_get_op(rpc);
 	/* if transapi used AND operation will affect running repository => store current running content */
-	if (ds->transapi.data_clbks.data_clbks != NULL
-		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
-		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING) {
+
+	if (ds->transapi.module != NULL
+		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
+		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING)) {
+
 		old_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
 		if (old_data == NULL || strcmp(old_data, "") == 0) {
 			old = xmlNewDoc (BAD_CAST "1.0");
@@ -3736,6 +3815,30 @@ apply_editcopyconfig:
 		/* perform the operation */
 		if (op == NC_OP_EDITCONFIG) {
 			ret = ds->func.editconfig(ds, session, rpc, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
+#ifndef DISABLE_VALIDATION
+			if (ret == EXIT_SUCCESS) {
+				/* process test option if set */
+				switch (testopt = nc_rpc_get_testopt(rpc)) {
+				case NC_EDIT_TESTOPT_TEST:
+				case NC_EDIT_TESTOPT_TESTSET:
+					/* validate the result */
+					ret = apply_rpc_validate(ds, session, target_ds, &e);
+
+					if (testopt == NC_EDIT_TESTOPT_TEST || ret == EXIT_FAILURE) {
+						/*
+						 * revert changes in the datastore:
+						 * only test was required or error occurred
+						 */
+						ds->func.rollback(ds);
+					}
+
+					break;
+				default:
+					/* continue without validation */
+					break;
+				}
+			}
+#endif
 		} else if (op == NC_OP_COPYCONFIG) {
 			ret = ds->func.copyconfig(ds, session, rpc, target_ds, source_ds, config, &e);
 		} else {
@@ -3842,70 +3945,7 @@ apply_editcopyconfig:
 		break;
 #ifndef DISABLE_VALIDATION
 	case NC_OP_VALIDATE:
-		if (!ds->validators.rng && !ds->validators.rng_schema && !ds->validators.schematron) {
-			/* validation not supported by this datastore */
-			ret = EXIT_RPC_NOT_APPLICABLE;
-			break;
-		}
-
-		if ((data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), &e)) == NULL ) {
-			if (e == NULL ) {
-				ERROR("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
-				e = nc_err_new(NC_ERR_OP_FAILED);
-			}
-			break;
-		}
-		aux_doc = doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-		/* if the datastore is empty, doc1/aux_doc is NULL here */
-
-		if (ds->get_state != NULL) {
-			xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
-			data2 = ds->get_state(model, data, &e);
-			free(model);
-			free(data); /* running data, no more needed in this form */
-			data = NULL;
-
-			if (e != NULL) {
-				/* state data retrieval error */
-				free(data2);
-				break;
-			}
-
-			doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-			free(data2);
-
-			/* if merge fail (probably one of docs NULL)*/
-			if ((aux_doc = ncxml_merge(doc1, doc2, ds->ext_model)) == NULL ) {
-				xmlFreeDoc(doc1);
-				xmlFreeDoc(doc2);
-				e = nc_err_new(NC_ERR_OP_FAILED);
-				break;
-			} else {
-				/* cleanup */
-				xmlFreeDoc(doc1);
-				xmlFreeDoc(doc2);
-			}
-		}
-		free(data);
-		data = NULL;
-
-		/* process default values */
-		ncdflt_default_values(aux_doc, ds->ext_model, NCWD_MODE_ALL);
-
-		/*
-		 * reconect root element from datastore data under the <data>
-		 * element required by validators
-		 */
-		aux_node = xmlDocGetRootElement(aux_doc);
-		xmlUnlinkNode(aux_node);
-		xmlDocSetRootElement(aux_doc, xmlNewDocNode(aux_doc, NULL, BAD_CAST "data", NULL));
-		ns = xmlNewNs(aux_doc->children, (xmlChar *) NC_NS_BASE10, NULL);
-		xmlSetNs(aux_doc->children, ns);
-		xmlAddChild(aux_doc->children, aux_node);
-
-		ret = validate_ds(ds, aux_doc, &e);
-
-		xmlFreeDoc(aux_doc);
+		ret = apply_rpc_validate(ds, session, nc_rpc_get_source(rpc), &e);
 		break;
 #endif
 	case NC_OP_UNKNOWN:
@@ -4030,10 +4070,15 @@ apply_editcopyconfig:
 	}
 
 	/* if transapi used, rpc affected running and succeeded get its actual content */
-	/* find differences and call functions */
+	/*
+	 * skip transapi if <edit-config> was performed with test-option set
+	 * to test-only value
+	 */
 	if (ds->transapi.module != NULL
-		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
-		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK) {
+		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
+		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK)) {
+
+		/* find differences and call functions */
 		new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
 		if (new_data == NULL || strcmp(new_data, "") == 0) {
 			new = xmlNewDoc (BAD_CAST "1.0");
