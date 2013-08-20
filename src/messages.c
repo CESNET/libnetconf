@@ -847,7 +847,7 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 	return (nc_rpc_get_ds(rpc, "target"));
 }
 
-static char* nc_rpc_get_copyconfig(const nc_rpc* rpc)
+static char* nc_rpc_get_cfg_common(const nc_rpc* rpc, xmlChar* query, char* operation)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlDocPtr aux_doc;
@@ -855,13 +855,13 @@ static char* nc_rpc_get_copyconfig(const nc_rpc* rpc)
 	xmlBufferPtr resultbuffer;
 	char * retval = NULL;
 
-	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":copy-config/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
+	if ((query_result = xmlXPathEvalExpression(query, rpc->ctxt)) != NULL) {
 		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			ERROR("%s: no source config data in the copy-config request", __func__);
+			ERROR("%s: no source config data in the %s request", __func__, operation);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
 		} else if (query_result->nodesetval->nodeNr > 1) {
-			ERROR("%s: multiple source config data in the copy-config request", __func__);
+			ERROR("%s: multiple source config data in the %s request", __func__, operation);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
 		}
@@ -869,7 +869,7 @@ static char* nc_rpc_get_copyconfig(const nc_rpc* rpc)
 		config = query_result->nodesetval->nodeTab[0];
 		xmlXPathFreeObject(query_result);
 	} else {
-		ERROR("%s: source config data not found in the copy-config request", __func__);
+		ERROR("%s: source config data not found in the %s request", __func__, operation);
 		return (NULL);
 	}
 
@@ -897,18 +897,44 @@ static char* nc_rpc_get_copyconfig(const nc_rpc* rpc)
 	return retval;
 }
 
-static xmlNodePtr ncxml_rpc_get_copyconfig(const nc_rpc* rpc)
+static char* nc_rpc_get_copyconfig(const nc_rpc* rpc)
+{
+	char* query = NULL;
+	char* retval;
+
+	asprintf(&query, "/%s"":rpc/%s:copy-config/%s:source/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "copy-config");
+	free(query);
+
+	return (retval);
+}
+
+static char* nc_rpc_get_validate(const nc_rpc* rpc)
+{
+	char* query = NULL;
+	char* retval;
+
+	asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "validate");
+	free(query);
+
+	return (retval);
+}
+
+static xmlNodePtr ncxml_rpc_get_cfg_common(const nc_rpc* rpc, xmlChar* query, char* operation)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr retval;
 
-	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":copy-config/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":config", rpc->ctxt)) != NULL) {
+	if ((query_result = xmlXPathEvalExpression(query, rpc->ctxt)) != NULL) {
 		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			ERROR("%s: no source config data in the copy-config request", __func__);
+			ERROR("%s: no source config data in the %s request", __func__, operation);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
 		} else if (query_result->nodesetval->nodeNr > 1) {
-			ERROR("%s: multiple source config data in the copy-config request", __func__);
+			ERROR("%s: multiple source config data in the %s request", __func__, operation);
 			xmlXPathFreeObject(query_result);
 			return (NULL);
 		}
@@ -917,9 +943,35 @@ static xmlNodePtr ncxml_rpc_get_copyconfig(const nc_rpc* rpc)
 		xmlXPathFreeObject(query_result);
 		return (retval);
 	} else {
-		ERROR("%s: source config data not found in the copy-config request", __func__);
+		ERROR("%s: source config data not found in the %s request", __func__, operation);
 		return (NULL);
 	}
+}
+
+static xmlNodePtr ncxml_rpc_get_copyconfig(const nc_rpc* rpc)
+{
+	char* query = NULL;
+	xmlNodePtr retval;
+
+	asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "validate");
+	free(query);
+
+	return (retval);
+}
+
+static xmlNodePtr ncxml_rpc_get_validate(const nc_rpc* rpc)
+{
+	char* query = NULL;
+	xmlNodePtr retval;
+
+	asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "validate");
+	free(query);
+
+	return (retval);
 }
 
 static char* nc_rpc_get_editconfig(const nc_rpc* rpc)
@@ -1006,6 +1058,9 @@ char* nc_rpc_get_config(const nc_rpc *rpc)
 	case NC_OP_EDITCONFIG:
 		return (nc_rpc_get_editconfig(rpc));
 		break;
+	case NC_OP_VALIDATE:
+		return (nc_rpc_get_validate(rpc));
+		break;
 	default:
 		/* other operations do not have config parameter */
 		return (NULL);
@@ -1020,6 +1075,9 @@ xmlNodePtr ncxml_rpc_get_config(const nc_rpc *rpc)
 		break;
 	case NC_OP_EDITCONFIG:
 		return (ncxml_rpc_get_editconfig(rpc));
+		break;
+	case NC_OP_VALIDATE:
+		return (ncxml_rpc_get_validate(rpc));
 		break;
 	default:
 		/* other operations do not have config parameter */

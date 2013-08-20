@@ -2409,6 +2409,43 @@ int ncds_consolidate(void)
 	return (EXIT_SUCCESS);
 }
 
+/**
+ * \brief Get an appropriate root node from edit-config's \<config\> element according to the specified data model
+ *
+ * \param[in] roots First of the root elements in edit-config's \<config\>
+ *                  (first children of this element).
+ * \param[in] model XML form (YIN) of the configuration data model.
+ *
+ * \return Root element matching the specified configuration data model.
+ */
+static xmlNodePtr get_model_root(xmlNodePtr roots, struct data_model *data_model)
+{
+	xmlNodePtr retval;
+
+	assert(roots != NULL);
+	assert(data_model != NULL);
+
+	if (data_model == NULL) {
+		ERROR("%s: Invalid argument - data model is unknown.", __func__);
+		return NULL;
+	}
+	if (data_model->namespace == NULL) {
+		ERROR("Invalid configuration data model '%s'- namespace is missing.", data_model->name);
+		return NULL;
+	}
+
+	retval = roots;
+	while (retval != NULL) {
+		if (retval->ns == NULL || xmlStrcmp(retval->ns->href, BAD_CAST (data_model->namespace)) == 0) {
+			break;
+		}
+
+		retval = retval->next;
+	}
+
+	return retval;
+}
+
 #ifndef DISABLE_VALIDATION
 static void relaxng_error_callback(void *error, const char * msg, ...)
 {
@@ -2541,60 +2578,143 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 	return (retval);
 }
 
-static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session *session, NC_DATASTORE target, struct nc_err** e)
+static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* session, const nc_rpc* rpc, struct nc_err** e)
 {
 	int ret;
 	int len;
-	char *data_cfg, *data2, *model;
+	char *data_cfg = NULL, *data2, *model, *config;
 	xmlDocPtr doc_cfg, doc_status, doc;
 	xmlNodePtr root;
 	xmlNsPtr ns;
+	xmlBufferPtr resultbuffer;
+	NC_DATASTORE source;
 
 	if (!ds->validators.rng && !ds->validators.rng_schema && !ds->validators.schematron) {
 		/* validation not supported by this datastore */
 		return (EXIT_RPC_NOT_APPLICABLE);
 	}
 
-	if ((data_cfg = ds->func.getconfig(ds, session, target, e)) == NULL ) {
-		if (*e == NULL ) {
-			ERROR("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
-			*e = nc_err_new(NC_ERR_OP_FAILED);
+	switch (source = nc_rpc_get_source(rpc)) {
+	case NC_DATASTORE_RUNNING:
+	case NC_DATASTORE_STARTUP:
+	case NC_DATASTORE_CANDIDATE:
+		if ((data_cfg = ds->func.getconfig(ds, session, source, e)) == NULL ) {
+			if (*e == NULL ) {
+				ERROR("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
+				*e = nc_err_new(NC_ERR_OP_FAILED);
+			}
+			return (EXIT_FAILURE);
 		}
-		return (EXIT_FAILURE);
-	}
-	doc = doc_cfg = xmlReadDoc(BAD_CAST data_cfg, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-	/* if the datastore is empty, doc1/aux_doc is NULL here */
+		doc = doc_cfg = xmlReadDoc(BAD_CAST data_cfg, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		/* if the datastore is empty, doc1/aux_doc is NULL here */
 
-	if (ds->get_state != NULL) {
-		xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
-		data2 = ds->get_state(model, data_cfg, e);
-		free(model);
-		free(data_cfg); /* running data, no more needed in this form */
+		if (ds->get_state != NULL ) {
+			xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
+			data2 = ds->get_state(model, data_cfg, e);
+			free(model);
+			free(data_cfg); /* running data, no more needed in this form */
+			data_cfg = NULL;
+
+			if (*e != NULL ) {
+				/* state data retrieval error */
+				free(data2);
+				return (EXIT_FAILURE);
+			}
+
+			doc_status = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(data2);
+
+			/* if merge fail (probably one of docs NULL)*/
+			if ((doc = ncxml_merge(doc_cfg, doc_status, ds->ext_model)) == NULL ) {
+				xmlFreeDoc(doc_cfg);
+				xmlFreeDoc(doc_status);
+				*e = nc_err_new(NC_ERR_OP_FAILED);
+				return (EXIT_FAILURE);
+			} else {
+				/* cleanup */
+				xmlFreeDoc(doc_cfg);
+				xmlFreeDoc(doc_status);
+			}
+		}
+		free(data_cfg);
+		data_cfg = NULL;
+		break;
+	case NC_DATASTORE_CONFIG:
+		/*
+		 * config can contain multiple elements on the root level, so
+		 * cover it with the <config> element to allow the creation of xml
+		 * document
+		 */
+		config = nc_rpc_get_config(rpc);
+		if (strcmp(config, "") == 0) {
+			/* config is empty -> ignore rest of magic here,
+			 * go to validation
+			 */
+			doc = xmlNewDoc(BAD_CAST "1.0");
+			break;
+		}
+
+		if (asprintf(&data_cfg, "<config>%s</config>", config) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			*e = nc_err_new(NC_ERR_OP_FAILED);
+			return (EXIT_FAILURE);
+		}
+		free(config);
+		config = NULL;
+		doc_cfg = xmlReadDoc(BAD_CAST data_cfg, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		free(data_cfg);
 		data_cfg = NULL;
 
-		if (*e != NULL) {
-			/* state data retrieval error */
-			free(data2);
-			return (EXIT_FAILURE);
+		if (doc_cfg == NULL || doc_cfg->children == NULL || doc_cfg->children->children == NULL) {
+			xmlFreeDoc(doc_cfg);
+			*e = nc_err_new(NC_ERR_INVALID_VALUE);
+			nc_err_set(*e, NC_ERR_PARAM_MSG, "Invalid <config> parameter of the rpc request.");
+			break;
 		}
 
-		doc_status = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-		free(data2);
-
-		/* if merge fail (probably one of docs NULL)*/
-		if ((doc = ncxml_merge(doc_cfg, doc_status, ds->ext_model)) == NULL ) {
+		/*
+		 * select correct config node for the selected datastore,
+		 * it must match the model's namespace and root element name
+		 */
+		root = get_model_root(doc_cfg->children->children, ds->data_model);
+		if (root != NULL) {
+			resultbuffer = xmlBufferCreate();
+			if (resultbuffer == NULL) {
+				ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+				*e = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*e, NC_ERR_PARAM_MSG, "Internal error, see libnetconf error log.");
+				break;
+			}
+			xmlNodeDump(resultbuffer, doc_cfg, root, 2, 1);
+			if ((config = strdup((char*) xmlBufferContent(resultbuffer))) == NULL) {
+				xmlBufferFree(resultbuffer);
+				xmlFreeDoc(doc_cfg);
+				ERROR("%s: xmlBufferContent failed (%s:%d)", __func__, __FILE__, __LINE__);
+				*e = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*e, NC_ERR_PARAM_MSG, "Internal error, see libnetconf error log.");
+				break;
+			}
+			/*
+			 * now we have config as a valid xml tree with the
+			 * single root
+			 */
+			xmlBufferFree(resultbuffer);
 			xmlFreeDoc(doc_cfg);
-			xmlFreeDoc(doc_status);
-			*e = nc_err_new(NC_ERR_OP_FAILED);
-			return (EXIT_FAILURE);
+
+			doc = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(config);
+			config = NULL;
 		} else {
-			/* cleanup */
 			xmlFreeDoc(doc_cfg);
-			xmlFreeDoc(doc_status);
+			/* request is not intended for this device */
+			return (EXIT_RPC_NOT_APPLICABLE);
 		}
+		break;
+	default:
+		*e = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "source");
+		return (EXIT_FAILURE);
 	}
-	free(data_cfg);
-	data_cfg = NULL;
 
 	/* process default values */
 	ncdflt_default_values(doc, ds->ext_model, NCWD_MODE_ALL);
@@ -3360,43 +3480,6 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 	return ret;
 }
 
-/**
- * \brief Get an appropriate root node from edit-config's \<config\> element according to the specified data model
- *
- * \param[in] roots First of the root elements in edit-config's \<config\>
- *                  (first children of this element).
- * \param[in] model XML form (YIN) of the configuration data model.
- *
- * \return Root element matching the specified configuration data model.
- */
-static xmlNodePtr get_model_root(xmlNodePtr roots, struct data_model *data_model)
-{
-	xmlNodePtr retval;
-
-	assert(roots != NULL);
-	assert(data_model != NULL);
-
-	if (data_model == NULL) {
-		ERROR("%s: Invalid argument - data model is unknown.", __func__);
-		return NULL;
-	}
-	if (data_model->namespace == NULL) {
-		ERROR("Invalid configuration data model '%s'- namespace is missing.", data_model->name);
-		return NULL;
-	}
-
-	retval = roots;
-	while (retval != NULL) {
-		if (retval->ns == NULL || xmlStrcmp(retval->ns->href, BAD_CAST (data_model->namespace)) == 0) {
-			break;
-		}
-
-		retval = retval->next;
-	}
-
-	return retval;
-}
-
 int ncds_rollback(ncds_id id)
 {
 	struct ncds_ds *datastore = datastores_get_ds(id);
@@ -3822,7 +3905,7 @@ apply_editcopyconfig:
 				case NC_EDIT_TESTOPT_TEST:
 				case NC_EDIT_TESTOPT_TESTSET:
 					/* validate the result */
-					ret = apply_rpc_validate(ds, session, target_ds, &e);
+					ret = apply_rpc_validate(ds, session, rpc, &e);
 
 					if (testopt == NC_EDIT_TESTOPT_TEST || ret == EXIT_FAILURE) {
 						/*
@@ -3945,7 +4028,7 @@ apply_editcopyconfig:
 		break;
 #ifndef DISABLE_VALIDATION
 	case NC_OP_VALIDATE:
-		ret = apply_rpc_validate(ds, session, nc_rpc_get_source(rpc), &e);
+		ret = apply_rpc_validate(ds, session, rpc, &e);
 		break;
 #endif
 	case NC_OP_UNKNOWN:
