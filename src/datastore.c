@@ -4107,9 +4107,9 @@ apply_editcopyconfig:
 			}
 		}
 
-		xmlFreeDoc (old);
 		xmlFreeDoc (new);
 	}
+	xmlFreeDoc (old);
 
 	if (id == NCDS_INTERNAL_ID) {
 		if (old_reply == NULL) {
