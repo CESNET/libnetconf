@@ -3282,7 +3282,7 @@ process_datastore:
 			nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "target");
 			break;
 		}
-
+		// check if source datastore is config or url
 		if (op == NC_OP_COPYCONFIG && ((source_ds = nc_rpc_get_source(rpc)) != NC_DATASTORE_CONFIG) && ( source_ds != NC_DATASTORE_URL )) {
 			if (source_ds == NC_DATASTORE_ERROR) {
 				e = nc_err_new(NC_ERR_BAD_ELEM);
@@ -3297,12 +3297,14 @@ process_datastore:
 			}
 			config = NULL;
 		} else {
+			// source is url or config, here starts woodo magic
 			/*
 			 * config can contain multiple elements on the root level, so
 			 * cover it with the <config> element to allow the creation of xml
 			 * document
 			 */
 			
+			// if config is config, just return <config> element content. If it is url, download remote file and returm content
 			config = nc_rpc_get_config(rpc);
 			if (config == NULL) {
 				e = nc_err_new(NC_ERR_OP_FAILED);
@@ -3400,8 +3402,10 @@ apply_editcopyconfig:
 		} else if (op == NC_OP_COPYCONFIG) {
 #ifndef DISABLE_URL
 			if(source_ds == NC_DATASTORE_URL ) {
+				// if source is url, change source type to config
 				source_ds = NC_DATASTORE_CONFIG;
 				if(target_ds == NC_DATASTORE_URL){
+					// if target is url, prepare document content
 					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", config) == -1) {
 						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 						config = NULL;
@@ -3409,6 +3413,7 @@ apply_editcopyconfig:
 				}
 			}
 			if (target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
+				//get target url
 				url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
 				if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
 					ERROR("%s: unable to get URL path from <copy-config> request.", __func__);
@@ -3428,14 +3433,23 @@ apply_editcopyconfig:
 
 				switch (source_ds) {
 				case NC_DATASTORE_CONFIG:
+					// source datastore is config (or url), so just upload file
 					ret = nc_url_upload(config, (char*)ncontent);
 					break;
 				case NC_DATASTORE_RUNNING:
 				case NC_DATASTORE_STARTUP:
 				case NC_DATASTORE_CANDIDATE:
-
+					/** Woodoo magic.
+					 * If target is URL we have problem, because ncds_apply_rpc2all is calling ncds_apply_rpc for
+					 * each datastore -> remote file would be overwriten everytime. So solution is to download
+					 * remote file, make document from it and add current datastore configuration data to documtent and
+					 * then upload it. Problem is if remote file is not empty (it contains data from datastores we does not have).
+					 * Then data would merge and we will have merged wanted data with non-wanted data from remote file before editing.
+					 * Thats FEATURE, not bug!!!. I reccomend to call ncds_apply_rpc2all and before that use delete-config on remote file.
+					 */
 					// get data from remote file
 					if ((url_tmpfile = nc_url_get_rpc((char*) ncontent)) < 0) { // remote file is empty or does not exists
+						// create empty document with <config> root element
 						url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
 						url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
 						if((url_new_ns = xmlNewNs(url_remote_node, BAD_CAST NC_NS_BASE10, NULL)) == NULL){
@@ -3445,6 +3459,7 @@ apply_editcopyconfig:
 						xmlDocSetRootElement(url_tmp_doc, url_remote_node);
 					} else {
 						if (read(url_tmpfile, &url_test_empty, 1) > 0){ // check if file is empty
+							// file is not empty
 							lseek(url_tmpfile, 0, SEEK_SET);
 							if ((url_tmp_doc = xmlReadFd(url_tmpfile, NULL, NULL, 0)) == NULL ) { 
 								close(url_tmpfile);
@@ -3458,6 +3473,11 @@ apply_editcopyconfig:
 								return (NULL);
 							}
 
+							/**
+							 * first we remove all entries from "remote" document which match enabled data models
+							 * this will prevent us from having multiple datastore configurations
+                             */
+							// get data models
 							url_model_xpath = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":namespace", ds->data_model->ctxt);
 							url_model_namespace = xmlGetProp( url_model_xpath->nodesetval->nodeTab[0], (xmlChar*)"uri" );
 							
@@ -3483,19 +3503,20 @@ apply_editcopyconfig:
 							xmlFree(url_model_namespace);
 							
 						} else {
+							// file is empty, create new document with root <config> element
 							url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
 							url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
 							xmlDocSetRootElement(url_tmp_doc, url_remote_node);
 						}
 					}
 					
-					
 					config = ds->func.getconfig( ds, session, source_ds, &e );
 					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", config) == -1) {
 						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 						config = NULL;
 					}
-
+					
+					// copy local data to "remote" document
 					url_local_doc = xmlParseMemory(config, strlen(config));
 					url_local_node = xmlDocGetRootElement( url_local_doc );
 					url_tmp_node = url_local_node->children;

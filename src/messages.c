@@ -929,6 +929,8 @@ xmlNodePtr ncxml_rpc_get_config( const nc_rpc* rpc )
 		
 #else
 		ERROR("%s: url capability is not supported", __func__ );
+		xmlXPathFreeObject(query_result);
+		return (NULL);
 #endif
 	}
 	else {
