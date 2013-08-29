@@ -1680,13 +1680,11 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		/* we have something to read */
 		break;
 	}
-	DBG_UNLOCK("mut_libssh2_channels");
-	pthread_mutex_unlock(session->mut_libssh2_channels);
 
 	switch (session->version) {
 	case NETCONFV10:
 		if (nc_session_read_until (session, NC_V10_END_MSG, 0, &text, &len) != 0) {
-			goto malformed_msg;
+			goto malformed_msg_channels_unlock;
 		}
 		text[len - strlen (NC_V10_END_MSG)] = 0;
 		DBG("Received message (session %s): %s", session->session_id, text);
@@ -1697,13 +1695,13 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 				if (total_len > 0) {
 					free (text);
 				}
-				goto malformed_msg;
+				goto malformed_msg_channels_unlock;
 			}
 			if (nc_session_read_until (session, "\n", 0, &chunk, &len) != 0) {
 				if (total_len > 0) {
 					free (text);
 				}
-				goto malformed_msg;
+				goto malformed_msg_channels_unlock;
 			}
 			if (strcmp (chunk, "#\n") == 0) {
 				/* end of chunked framing message */
@@ -1715,7 +1713,7 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 			chunk_length = strtoul (chunk, (char **) NULL, 10);
 			if (chunk_length == 0) {
 				ERROR("Invalid frame chunk size detected, fatal error.");
-				goto malformed_msg;
+				goto malformed_msg_channels_unlock;
 			}
 			free (chunk);
 			chunk = NULL;
@@ -1725,7 +1723,7 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 				if (total_len > 0) {
 					free (text);
 				}
-				goto malformed_msg;
+				goto malformed_msg_channels_unlock;
 			}
 
 			/*
@@ -1737,7 +1735,7 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 				if (tmp == NULL) {
 					ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 					free(text);
-					goto malformed_msg;
+					goto malformed_msg_channels_unlock;
 				}
 				text = tmp;
 				text[total_len] = '\0';
@@ -1754,9 +1752,12 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		break;
 	default:
 		ERROR("Unsupported NETCONF protocol version (%d)", session->version);
-		goto malformed_msg;
+		goto malformed_msg_channels_unlock;
 		break;
 	}
+
+	DBG_UNLOCK("mut_libssh2_channels");
+	pthread_mutex_unlock(session->mut_libssh2_channels);
 
 	retval = calloc (1, sizeof(struct nc_msg));
 	if (retval == NULL) {
@@ -1847,6 +1848,10 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 	/* return the result */
 	*msg = retval;
 	return (msgtype);
+
+malformed_msg_channels_unlock:
+	DBG_UNLOCK("mut_libssh2_channels");
+	pthread_mutex_unlock(session->mut_libssh2_channels);
 
 malformed_msg:
 	if (session->version == NETCONFV11 && session->ssh_session == NULL) {
