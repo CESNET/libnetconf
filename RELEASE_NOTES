@@ -2,8 +2,13 @@ libnetconf 0.6.0
 
 This release includes the following changes:
 
+ * Custom data store type to allow caller to use its own datastore
+   implementation.
+ * libtool(1) usage for better compatibility with other OS.
+
 TODO
- * custom data stores
+ * :validation capability
+ * TransAPI improvements
  * integration of nc_session_(close/free) to simplify work with sessions
  * detection and correction of session monitoring inconsistency
 

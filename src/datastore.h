@@ -167,7 +167,13 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 int ncds_set_validation(struct ncds_ds* ds, int enable, const char* relaxng, const char* schematron);
 
 /**
+ * @defgroup fileds File Datastore
  * @ingroup store
+ * @brief Specific functions for NCDS_FILE_DS type of datastore implementation.
+ */
+
+/**
+ * @ingroup fileds
  * @brief Assign the path of the datastore file into the datastore structure.
  *
  * Checks if the file exist and is accessible for reading and writing.
