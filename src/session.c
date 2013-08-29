@@ -1110,13 +1110,6 @@ void nc_session_free (struct nc_session* session)
 	}
 
 	/* destroy mutexes */
-#ifndef DISABLE_LIBSSH
-	if (session->mut_libssh2_channels != NULL) {
-		pthread_mutex_destroy(session->mut_libssh2_channels);
-		free(session->mut_libssh2_channels);
-		session->mut_libssh2_channels = NULL;
-	}
-#endif
 	pthread_mutex_destroy(&(session->mut_mqueue));
 	pthread_mutex_destroy(&(session->mut_equeue));
 	pthread_mutex_destroy(&(session->mut_session));
