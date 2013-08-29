@@ -105,6 +105,7 @@ SRCS =  src/callbacks.c \
 	src/datastore/edit_config.c \
 	src/datastore/empty/datastore_empty.c \
 	src/datastore/file/datastore_file.c \
+	src/datastore/custom/datastore_custom.c \
 	src/transapi/transapi.c \
 	src/transapi/yinparser.c \
 	src/transapi/xmldiff.c
@@ -123,6 +124,7 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/ssh.h @HDRS_PUBL_SUBDIR_NOTIFICATIONS@ \
 	src/with_defaults.h \
 	src/datastore.h \
+	src/datastore/custom/datastore_custom.h \
 	src/transapi/transapi.h \
 	src/transapi/transapi_xml.h 
 		
@@ -150,6 +152,8 @@ HDRS_PRIV = src/config.h.in \
 	src/datastore/edit_config.h \
 	src/datastore/empty/datastore_empty.h \
 	src/datastore/file/datastore_file.h \
+	src/datastore/custom/datastore_custom.h \
+	src/datastore/custom/datastore_custom_private.h \
 	src/transapi/transapi_internal.h \
 	src/transapi/yinparser.h \
 	src/transapi/xmldiff.h

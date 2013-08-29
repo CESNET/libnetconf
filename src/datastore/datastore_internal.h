@@ -83,6 +83,10 @@ struct ncds_funcs {
 	int (*rollback)(struct ncds_ds* ds);
 	/**
 	 * \TODO
+	 *
+	 * Returned pointer points to a static area that can be changed by any
+	 * subsequent call of get_lockinfo(), lock() or unlock() (may vary
+	 * according to a specific datastore implementation).
 	 */
 	const struct ncds_lockinfo* (*get_lockinfo)(struct ncds_ds* ds, NC_DATASTORE target);
 	/**
