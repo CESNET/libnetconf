@@ -45,15 +45,62 @@ struct nc_err;
 /**
  * \page datastores Datastores Usage
  *
- * \todo Everything about datastores usage and preparing specific datastore
- * implementation via Custom datastore.
+ * NETCONF defines usage of three datastores: running (mandatory),
+ * startup (optional via :startup capability) and candidate (optional via
+ * :candidate capability). libnetconf provides all these datastores.
+ *
+ * In addition to the described NETCONF point of view, libnetconf divides all
+ * datastores (running, startup and candidate) into datastore parts connected
+ * with a specific (basic) configuration data model. Each datastore part is
+ * created by ncds_new() or ncds_new_transapi() function. According to the
+ * specified datastore type, server should set up additional datastore settings
+ * (see sections below). Finnaly, to activate datastore and to get its unique
+ * identifier, ncds_init() function must be called.
+ *
+ * If you want to use some data model that extends (by import or augment
+ * statement) any of the used data models, functions ncds_add_model() or
+ * ncds_add_models_path() can be used to specify location of the extension data
+ * model(s).
+ *
+ * By default, all features defined in configuration data models are disabled.
+ * To enable specific features or all features at once, you can use
+ * ncds_feature_enable() and ncds_features_enableall() functions.
+ *
+ * To finish changes made to the datastores (adding augment data models,
+ * enabling and disabling features, etc.), server must call ncds_consolidate()
+ * function.
+ *
+ * As a next step, device controlled by the server should be initialized. This
+ * should includes copying startup configuration data into the running
+ * datastore (and applying them to the current device settings).
+ *
+ * ## Datastore Settings ##
+ *
+ * - Empty Datastore (*NCDS_TYPE_EMPTY*)
+ *
+ *   There is no additional settings for this datastore type.
+ *
+ * - \ref fileds (*NCDS_TYPE_FILE*)
+ *
+ *   ncds_file_set_path() to set file to store datastore content.
+ *
+ * - \ref customds (*NCDS_TYPE_CUSTOM*)
+ *
+ *   This type of datastore implementation is provided by the server, not by
+ *   libnetconf.
+ *
+ *   ncds_custom_set_data() sets server specific functions implementing the
+ *   datastore. In this case, server is required to implement functions
+ *   from #ncds_custom_funcs structure.
+ *
  */
 
 /**
- * \defgroup customdsAPI Custom Datastore API
+ * \defgroup customds Custom Datastore
+ * \ingroup store
  * \brief libnetconf's API to use a server-specific datastore implementation.
  *
- * \addtogroup customdsAPI
+ * \addtogroup customds
  * @{
  */
 
@@ -92,7 +139,7 @@ struct ncds_custom_funcs {
 	 */
 	int (*was_changed)(void *data);
 	/**
-	 * \brief Drop all changes.
+	 * \brief Revert the last change.
 	 *
 	 * \param[in] data The user data.
 	 * \return 0 for success, 1 for error.

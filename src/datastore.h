@@ -111,7 +111,13 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const char* callbacks_path);
 
 /**
+ * @defgroup fileds File Datastore
  * @ingroup store
+ * @brief Specific functions for NCDS_FILE_DS type of datastore implementation.
+ */
+
+/**
+ * @ingroup fileds
  * @brief Assign the path of the datastore file into the datastore structure.
  *
  * Checks if the file exist and is accessible for reading and writing.
