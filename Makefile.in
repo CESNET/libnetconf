@@ -35,7 +35,7 @@
 #
 
 NAME = @PACKAGE_NAME@
-LNCTOOL = lnc-tool/lnc-tool
+LNCTOOL = lnctool/lnctool
 
 # Various configurable paths (remember to edit Makefile.in, not Makefile)
 srcdir = @srcdir@
@@ -210,7 +210,7 @@ tarball: $(SRCS) $(HEADERS)
 	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) $(GENERATOR) $(GENERATOR_FILES) configure.in configure \
 	    headers/libnetconf.h.in headers/libnetconf_xml.h.in \
 	    ltmain.sh Makefile.in VERSION $(NAME).spec.in $(NAME).pc.in \
-	    lnc-tool/lnc-tool.in lnc-tool/rnglib/* lnc-tool/xslt/* \
+	    lnctool/lnctool.in lnctool/rnglib/* lnctool/xslt/* \
 	    install-sh config.sub config.guess Doxyfile.in doc/img/*.png models/*; do \
 	    [ -d $(NAME)-$(VERSION)/$$(dirname $$i) ] || (mkdir -p $(NAME)-$(VERSION)/$$(dirname $$i)); \
 		cp $$i $(NAME)-$(VERSION)/$$i; \
@@ -301,8 +301,8 @@ install-devel:
 	done;
 	$(INSTALL_DATA) $(NAME).pc $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc;
 	$(INSTALL_PROGRAM) $(LNCTOOL) $(DESTDIR)/$(bindir);
-	$(INSTALL_DATA) lnc-tool/rnglib/* $(DESTDIR)/$(datadir)/$(NAME)/rnglib/;
-	$(INSTALL_DATA) lnc-tool/xslt/* $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
+	$(INSTALL_DATA) lnctool/rnglib/* $(DESTDIR)/$(datadir)/$(NAME)/rnglib/;
+	$(INSTALL_DATA) lnctool/xslt/* $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 
 .PHONY: install-doc
 install-doc:
@@ -333,7 +333,7 @@ uninstall-devel:
 		rm -f $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
 	done; \
 	rm $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
-	rm $(DESTDIR)/$(bindir)/lnc-tool; \
+	rm $(DESTDIR)/$(bindir)/lnctool; \
 	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
 	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 
