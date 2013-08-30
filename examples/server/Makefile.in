@@ -130,7 +130,10 @@ install: $(NAME) $(TRANSAPI)
 	chmod -R 700 $(SERVERCFG_PATH);
 	$(INSTALL_DATA) $(srcdir)/README.cfgdir $(SERVERCFG_PATH)/README;
 	../../$(LIBTOOL) --mode=install cp $(TRANSAPI)/toaster.la $(SERVERCFG_PATH)/;
-	$(INSTALL_DATA) $(TRANSAPI)/toaster.yin $(SERVERCFG_PATH)/toaster.yin;
+	$(INSTALL_DATA) $(TRANSAPI)/toaster.yin $(SERVERCFG_PATH)/;
+	$(INSTALL_DATA) $(TRANSAPI)/toaster-data.rng $(SERVERCFG_PATH)/;
+	$(INSTALL_DATA) $(TRANSAPI)/toaster-gdefs.rng $(SERVERCFG_PATH)/;
+	$(INSTALL_DATA) $(TRANSAPI)/toaster-schematron.xsl $(SERVERCFG_PATH)/;
 	if test "$$(($(SETBIT) & 1))" = "1"; then \
 		if test -n "$(SETUSER)"; then \
 			chown -R $(SETUSER) $(SERVERCFG_PATH) || \
