@@ -2578,23 +2578,22 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 	return (retval);
 }
 
-static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* session, const nc_rpc* rpc, struct nc_err** e)
+static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, const char* config, struct nc_err** e)
 {
 	int ret;
 	int len;
-	char *data_cfg = NULL, *data2, *model, *config;
+	char *data_cfg = NULL, *data2, *model, *config_internal;
 	xmlDocPtr doc_cfg, doc_status, doc;
 	xmlNodePtr root;
 	xmlNsPtr ns;
 	xmlBufferPtr resultbuffer;
-	NC_DATASTORE source;
 
 	if (!ds->validators.rng && !ds->validators.rng_schema && !ds->validators.schematron) {
 		/* validation not supported by this datastore */
 		return (EXIT_RPC_NOT_APPLICABLE);
 	}
 
-	switch (source = nc_rpc_get_source(rpc)) {
+	switch (source) {
 	case NC_DATASTORE_RUNNING:
 	case NC_DATASTORE_STARTUP:
 	case NC_DATASTORE_CANDIDATE:
@@ -2645,8 +2644,7 @@ static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* sessi
 		 * cover it with the <config> element to allow the creation of xml
 		 * document
 		 */
-		config = nc_rpc_get_config(rpc);
-		if (strcmp(config, "") == 0) {
+		if (config == NULL || strcmp(config, "") == 0) {
 			/* config is empty -> ignore rest of magic here,
 			 * go to validation
 			 */
@@ -2659,8 +2657,6 @@ static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* sessi
 			*e = nc_err_new(NC_ERR_OP_FAILED);
 			return (EXIT_FAILURE);
 		}
-		free(config);
-		config = NULL;
 		doc_cfg = xmlReadDoc(BAD_CAST data_cfg, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		free(data_cfg);
 		data_cfg = NULL;
@@ -2686,7 +2682,7 @@ static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* sessi
 				break;
 			}
 			xmlNodeDump(resultbuffer, doc_cfg, root, 2, 1);
-			if ((config = strdup((char*) xmlBufferContent(resultbuffer))) == NULL) {
+			if ((config_internal = strdup((char*) xmlBufferContent(resultbuffer))) == NULL) {
 				xmlBufferFree(resultbuffer);
 				xmlFreeDoc(doc_cfg);
 				ERROR("%s: xmlBufferContent failed (%s:%d)", __func__, __FILE__, __LINE__);
@@ -2701,9 +2697,9 @@ static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* sessi
 			xmlBufferFree(resultbuffer);
 			xmlFreeDoc(doc_cfg);
 
-			doc = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-			free(config);
-			config = NULL;
+			doc = xmlReadDoc(BAD_CAST config_internal, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(config_internal);
+			config_internal = NULL;
 		} else {
 			xmlFreeDoc(doc_cfg);
 			/* request is not intended for this device */
@@ -2733,6 +2729,44 @@ static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* sessi
 	ret = validate_ds(ds, doc, e);
 
 	xmlFreeDoc(doc);
+
+	return (ret);
+
+}
+
+static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* session, const nc_rpc* rpc, struct nc_err** e)
+{
+	int ret;
+	char *config;
+	NC_DATASTORE source;
+
+	if (!ds->validators.rng && !ds->validators.rng_schema && !ds->validators.schematron) {
+		/* validation not supported by this datastore */
+		return (EXIT_RPC_NOT_APPLICABLE);
+	}
+
+	switch (source = nc_rpc_get_source(rpc)) {
+	case NC_DATASTORE_RUNNING:
+	case NC_DATASTORE_STARTUP:
+	case NC_DATASTORE_CANDIDATE:
+		ret = apply_rpc_validate_(ds, session, source, NULL, e);
+		break;
+	case NC_DATASTORE_CONFIG:
+		/*
+		 * config can contain multiple elements on the root level, so
+		 * cover it with the <config> element to allow the creation of xml
+		 * document
+		 */
+		config = nc_rpc_get_config(rpc);
+		ret = apply_rpc_validate_(ds, session, source, NULL, e);
+		free(config);
+		break;
+	default:
+		*e = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "source");
+		ret = EXIT_FAILURE;
+		break;
+	}
 
 	return (ret);
 }
@@ -3909,7 +3943,7 @@ apply_editcopyconfig:
 				case NC_EDIT_TESTOPT_TEST:
 				case NC_EDIT_TESTOPT_TESTSET:
 					/* validate the result */
-					ret = apply_rpc_validate(ds, session, rpc, &e);
+					ret = apply_rpc_validate_(ds, session, target_ds, NULL, &e);
 
 					if (testopt == NC_EDIT_TESTOPT_TEST || ret == EXIT_FAILURE) {
 						/*
