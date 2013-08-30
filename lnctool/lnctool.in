@@ -99,7 +99,7 @@ gen_relaxng() {
         echo -e "\t creating ${DIR}/${FILE}"
         $XSLTPROC --output ${DIR}/${FILE} \
             --stringparam basename ./`basename ${1%.yang}` \
-            --stringparam target data --stringparam rng-lib $RNGLIB \
+            --stringparam target data --stringparam schema-dir $RNGLIB \
             ${XSLTDIR}/gen-relaxng.xsl ${DIR}/dsdl${RANDTEXT} || exit 1
     fi
     
