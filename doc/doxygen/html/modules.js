@@ -10,6 +10,5 @@ var modules =
     [ "Transaction API", "d8/d55/group__transapi.html", "d8/d55/group__transapi" ],
     [ "NETCONF rpc (libxml2)", "d7/dda/group__rpc__xml.html", "d7/dda/group__rpc__xml" ],
     [ "NETCONF rpc-reply (libxml2)", "d8/d73/group__reply__xml.html", "d8/d73/group__reply__xml" ],
-    [ "NETCONF Event Notifications (libxml2)", "db/dae/group__notifications__xml.html", "db/dae/group__notifications__xml" ],
-    [ "Custom Datastore API", "d6/dfb/group__customds_a_p_i.html", "d6/dfb/group__customds_a_p_i" ]
+    [ "NETCONF Event Notifications (libxml2)", "db/dae/group__notifications__xml.html", "db/dae/group__notifications__xml" ]
 ];

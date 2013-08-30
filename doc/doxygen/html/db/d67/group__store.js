@@ -1,5 +1,7 @@
 var group__store =
 [
+    [ "File Datastore", "d0/d3b/group__fileds.html", "d0/d3b/group__fileds" ],
+    [ "Custom Datastore", "da/d64/group__customds.html", "da/d64/group__customds" ],
     [ "NCDS_INTERNAL_ID", "db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a", null ],
     [ "NCDS_RPC_NOT_APPLICABLE", "db/d67/group__store.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6", null ],
     [ "ncds_id", "db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19", null ],
@@ -19,7 +21,6 @@ var group__store =
     [ "ncds_model_info", "db/d67/group__store.html#ga9c0f401a6873e8778a80e6cc80c5219a", null ],
     [ "ncds_new", "db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6", null ],
     [ "ncds_set_validation", "db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31", null ],
-    [ "ncds_file_set_path", "db/d67/group__store.html#gad48955dab497b1258d80019e542acb9b", null ],
     [ "ncds_init", "db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff", null ],
     [ "ncds_free", "db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754", null ],
     [ "ncds_free2", "db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2", null ],

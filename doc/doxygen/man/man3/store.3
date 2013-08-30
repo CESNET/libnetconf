@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Mon Aug 19 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Fri Aug 30 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -6,6 +6,18 @@ Datastore operations \-
 .PP
 libnetconf's functions for handling NETCONF datastores\&.  
 
+.SS "Modules"
+
+.in +1c
+.ti -1c
+.RI "\fBFile Datastore\fP"
+.br
+.RI "\fISpecific functions for NCDS_FILE_DS type of datastore implementation\&. \fP"
+.ti -1c
+.RI "\fBCustom Datastore\fP"
+.br
+.RI "\fIlibnetconf's API to use a server-specific datastore implementation\&. \fP"
+.in -1c
 .SS "Macros"
 
 .in +1c
@@ -53,10 +65,6 @@ libnetconf's functions for handling NETCONF datastores\&.
 .RI "int \fBncds_set_validation\fP (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron)"
 .br
 .RI "\fISet validators (or disable validation) on the specified datastore\&. \fP"
-.ti -1c
-.RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
-.br
-.RI "\fIAssign the path of the datastore file into the datastore structure\&. \fP"
 .ti -1c
 .RI "\fBncds_id\fP \fBncds_init\fP (struct ncds_ds *datastore)"
 .br
@@ -258,30 +266,6 @@ Set validators (or disable validation) on the specified datastore\&. \fBParamete
 \fBReturns:\fP
 .RS 4
 EXIT_SUCCESS or EXIT_FAILURE 
-.RE
-.PP
-
-.SS "int ncds_file_set_path (struct ncds_ds *datastore, const char *path)"
-
-.PP
-Assign the path of the datastore file into the datastore structure\&. Checks if the file exist and is accessible for reading and writing\&. If the file does not exist, it is created\&. The file is opened and the file descriptor is stored in the structure\&.
-.PP
-\fBParameters:\fP
-.RS 4
-\fIdatastore\fP Datastore structure to be configured\&. 
-.br
-\fIpath\fP File path to the file storing configuration datastores\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-.IP "\(bu" 2
-0 on success
-.IP "\(bu" 2
--1 Invalid datastore
-.IP "\(bu" 2
--2 Invalid path ((does not exist && can not be created) || insufficient rights) 
-.PP
 .RE
 .PP
 

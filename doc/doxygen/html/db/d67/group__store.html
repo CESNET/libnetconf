@@ -100,6 +100,7 @@ $(document).ready(function(){initNavTree('db/d67/group__store.html','../../');})
 
 <div class="header">
   <div class="summary">
+<a href="#groups">Modules</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
@@ -112,6 +113,15 @@ $(document).ready(function(){initNavTree('db/d67/group__store.html','../../');})
 <p>libnetconf's functions for handling NETCONF datastores.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="groups"></a>
+Modules</h2></td></tr>
+<tr class="memitem:d0/d3b/group__fileds"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d3b/group__fileds.html">File Datastore</a></td></tr>
+<tr class="memdesc:d0/d3b/group__fileds"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specific functions for NCDS_FILE_DS type of datastore implementation. <br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:da/d64/group__customds"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d64/group__customds.html">Custom Datastore</a></td></tr>
+<tr class="memdesc:da/d64/group__customds"><td class="mdescLeft">&#160;</td><td class="mdescRight">libnetconf's API to use a server-specific datastore implementation. <br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:gaf3338ac77041c714fc4f9877e608990a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a">NCDS_INTERNAL_ID</a>&#160;&#160;&#160;0</td></tr>
@@ -159,9 +169,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga4777c16043f5856c5a65bcd20b5ecc31"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31">ncds_set_validation</a> (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron)</td></tr>
 <tr class="memdesc:ga4777c16043f5856c5a65bcd20b5ecc31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set validators (or disable validation) on the specified datastore.  <a href="#ga4777c16043f5856c5a65bcd20b5ecc31">More...</a><br/></td></tr>
 <tr class="separator:ga4777c16043f5856c5a65bcd20b5ecc31"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad48955dab497b1258d80019e542acb9b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gad48955dab497b1258d80019e542acb9b">ncds_file_set_path</a> (struct ncds_ds *datastore, const char *path)</td></tr>
-<tr class="memdesc:gad48955dab497b1258d80019e542acb9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign the path of the datastore file into the datastore structure.  <a href="#gad48955dab497b1258d80019e542acb9b">More...</a><br/></td></tr>
-<tr class="separator:gad48955dab497b1258d80019e542acb9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">ncds_init</a> (struct ncds_ds *datastore)</td></tr>
 <tr class="memdesc:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate datastore structure for use.  <a href="#gaabb1ae2c497726ad826fc6478f97e8ff">More...</a><br/></td></tr>
 <tr class="separator:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -497,48 +504,6 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCESS or EXIT_FAILURE </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="gad48955dab497b1258d80019e542acb9b"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ncds_file_set_path </td>
-          <td>(</td>
-          <td class="paramtype">struct ncds_ds *&#160;</td>
-          <td class="paramname"><em>datastore</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>path</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Assign the path of the datastore file into the datastore structure. </p>
-<p>Checks if the file exist and is accessible for reading and writing. If the file does not exist, it is created. The file is opened and the file descriptor is stored in the structure.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore structure to be configured. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>File path to the file storing configuration datastores. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd><ul>
-<li>0 on success</li>
-<li>-1 Invalid datastore</li>
-<li>-2 Invalid path ((does not exist &amp;&amp; can not be created) || insufficient rights) </li>
-</ul>
-</dd></dl>
 
 </div>
 </div>
@@ -1051,7 +1016,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon Aug 19 2013 16:07:48 for libnetconf by
+    <li class="footer">Generated on Fri Aug 30 2013 16:37:22 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>
