@@ -58,7 +58,7 @@ ldconfig
 %{_prefix}/include/libnetconf/*
 %{_prefix}/share/libnetconf/doxygen/*
 %{_bindir}/lnc-creator
-%{_bindir}/lnc-tool
+%{_bindir}/lnctool
 %{_datadir}/libnetconf/templates/*
 %{_datadir}/libnetconf/rnglib/*
 %{_datadir}/libnetconf/xslt/*
