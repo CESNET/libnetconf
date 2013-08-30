@@ -2885,6 +2885,8 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 				WARN("Failed to create validation context (%s)", path_rng);
 				xmlRelaxNGFree(ds->validators.rng_schema);
 				ds->validators.rng_schema = NULL;
+			} else {
+				DBG("%s: Relax NG validator set (%s)", __func__, path_rng);
 			}
 			xmlRelaxNGFreeParserCtxt(rng_ctxt);
 		}
@@ -2895,6 +2897,8 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 		} else {
 			if ((ds->validators.schematron = xsltParseStylesheetFile(BAD_CAST path_sch)) == NULL) {
 				WARN("Failed to parse Schematron stylesheet (%s)", path_sch);
+			} else {
+				DBG("%s: Schematron validator set (%s)", __func__, path_sch);
 			}
 		}
 	}
