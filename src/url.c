@@ -126,7 +126,8 @@ char* nc_url_gencap()
 /**< @brief gets protocol id from url*/
 NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 {
-	int protocol = 1;
+	int protocol = 1; /* not a SCP, just an init value for bit shift */
+	int protocol_set = 0;
 	int i;
 	char *url_aux = strdup(url);
 	char *c;
@@ -141,12 +142,17 @@ NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 
 	for (i = 0; i < (sizeof(url_protocols) / sizeof(url_protocols[0])) ; i++, protocol <<= 1) {
 		if (xmlStrncmp(BAD_CAST url_aux, url_protocols[i], xmlStrlen(url_protocols[i])) == 0) {
+			protocol_set = 1;
 			break;
 		}
 	}
-
 	free(url_aux);
-	return (protocol);
+
+	if (protocol_set) {
+		return (protocol);
+	} else {
+		return (NC_URL_UNKNOWN);
+	}
 }
 
 size_t nc_url_readdata(char *ptr, size_t size, size_t nmemb, char *userdata)

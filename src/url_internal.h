@@ -66,8 +66,7 @@ int nc_url_delete_config(const char *url);
 int nc_url_upload(char *data, const char *url);
 
 /**
- * @brief Generate capability string from enabled protocols
- * @param session
+ * @brief Generate URL capability string from enabled protocols
  * @return capability string
  */
 char* nc_url_gencap();
@@ -76,7 +75,7 @@ char* nc_url_gencap();
  * Check if protocol is enabled in session
  * @param protocol protocol id
  * @param session
- * @return 1 or 0
+ * @return 0 if not supported, nonzero otherwise
  */
 int nc_url_is_enabled(NC_URL_PROTOCOLS protocol);
 
