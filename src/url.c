@@ -101,14 +101,14 @@ char* nc_url_gencap()
 	}
 
 	if (asprintf(&cpblt, NC_CAP_URL_ID "&amp;scheme=") < 0) {
-		ERROR("%s: asprintf error", __func__);
+		ERROR("%s: asprintf error (%s:%d)", __func__, __FILE__, __LINE__);
 		return (NULL);
 	}
 
 	for (i = 0, protocol = 1; i < (sizeof(url_protocols) / sizeof(url_protocols[0])); i++, protocol <<= 1) {
 		if (protocol & nc_url_protocols) {
 			if (asprintf(&cpblt_update, "%s%s%s", cpblt, first ? "" : ",", url_protocols[i]) < 0) {
-				ERROR("%s: asprintf error", __func__);
+				ERROR("%s: asprintf error (%s:%d)", __func__, __FILE__, __LINE__);
 			}
 			free(cpblt);
 			cpblt = cpblt_update;
