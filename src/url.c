@@ -71,7 +71,7 @@ void nc_url_enable(NC_URL_PROTOCOLS protocol)
 
 void nc_url_disable(NC_URL_PROTOCOLS protocol)
 {
-	nc_url_protocols = ~(~nc_url_protocols ^ protocol ) ;
+	nc_url_protocols = (~protocol) & nc_url_protocols;
 }
 
 int nc_url_is_enabled(NC_URL_PROTOCOLS protocol)
