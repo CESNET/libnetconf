@@ -45,10 +45,10 @@
 
 /**
  * @brief Get config file from remote source and store it to temporary file
- * 
+ *
  * Caller HAVE TO close file descriptor returned by this function. Tmp file is
  * unliked by nc_url_open.
- * 
+ *
  * @param url source url
  * @return fd on tmp file with remote rpc or -1 on error
  */

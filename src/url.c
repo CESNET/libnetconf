@@ -59,10 +59,10 @@
 int url_tmpfile;
 
 // Struct for uploading data with curl
-struct nc_url_mem 
-{ 
-  char *memory; 
-  size_t size; 
+struct nc_url_mem
+{
+  char *memory;
+  size_t size;
 };
 
 // default allowed protocols
