@@ -56,6 +56,15 @@
 #define INIT_FLAGS CURL_GLOBAL_SSL
 #endif
 
+int url_tmpfile;
+
+// Struct for uploading data with curl
+struct nc_url_mem 
+{ 
+  char *memory; 
+  size_t size; 
+};
+
 // default allowed protocols
 int nc_url_protocols = NC_URL_FILE | NC_URL_SCP;
 
@@ -153,7 +162,7 @@ NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 	}
 }
 
-size_t nc_url_readdata(char *ptr, size_t size, size_t nmemb, char *userdata)
+static size_t nc_url_readdata(char *ptr, size_t size, size_t nmemb, char *userdata)
 {
 	struct nc_url_mem *data = (struct nc_url_mem *) userdata;
 	if ((size * nmemb) < 1) {
@@ -210,7 +219,7 @@ int nc_url_upload(char *data, const char *url)
 	return EXIT_SUCCESS;
 }
 
-size_t nc_url_writedata(char *ptr, size_t size, size_t nmemb, void *userdata)
+static size_t nc_url_writedata(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
 	return write(url_tmpfile, ptr, size * nmemb);
 }

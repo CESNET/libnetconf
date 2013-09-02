@@ -86,15 +86,5 @@ int nc_url_is_enabled(NC_URL_PROTOCOLS protocol);
  */
 NC_URL_PROTOCOLS nc_url_get_protocol(const char *url);
 
-// tmp file with config data from remote source
-int url_tmpfile;
-
-// Struct for uploading data with curl
-struct nc_url_mem 
-{ 
-  char *memory; 
-  size_t size; 
-};
-
 #endif /* URL_INTERNAL_H_ */
 #endif /* DISABLE_URL */
