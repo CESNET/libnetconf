@@ -224,7 +224,7 @@ int nc_url_open(const char *url)
 	CURL * curl;
 	CURLcode res;
 	char curl_buffer[CURL_ERROR_SIZE];
-	char url_tmp_name[18] = "url_tmpfileXXXXXX";
+	char url_tmp_name[(sizeof(NC_WORKINGDIR_PATH) / sizeof(char)) + 19] = NC_WORKINGDIR_PATH"/url_tmpfileXXXXXX";
 	if ((url_tmpfile = mkstemp(url_tmp_name)) < 0) {
 		ERROR("%s: cannot open temporary file", __func__);
 	}
