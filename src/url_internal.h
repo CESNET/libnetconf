@@ -44,23 +44,27 @@
 #include "url.h"
 
 /**
- * @brief Get rpc from remote source
- * @param url
+ * @brief Get config file from remote source and store it to temporary file
+ * 
+ * Caller HAVE TO close file descriptor returned by this function. Tmp file is
+ * unliked by nc_url_open.
+ * 
+ * @param url source url
  * @return fd on tmp file with remote rpc or -1 on error
  */
 int nc_url_open(const char * url);
 
 /**
- * @brief Uploads empty (<config></config>) file to remote target
- * @param url
+ * @brief Replaces target file with empty <config> element.
+ * @param url target url
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
 int nc_url_delete_config(const char *url);
 
 /**
  * @brief Uploads data to remote target
- * @param data configuration data closed in <config> tag
- * @param url
+ * @param data configuration data enclosed in <config> element
+ * @param url target url
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
 int nc_url_upload(char *data, const char *url);
@@ -72,17 +76,16 @@ int nc_url_upload(char *data, const char *url);
 char* nc_url_gencap();
 
 /**
- * Check if protocol is enabled in session
- * @param protocol protocol id
- * @param session
+ * @brief Check if protocol is enabled
+ * @param protocol protocol ID
  * @return 0 if not supported, nonzero otherwise
  */
 int nc_url_is_enabled(NC_URL_PROTOCOLS protocol);
 
 /**
- * Get protocol id from url string
- * @param url
- * @return protocol id
+ * @brief Get protocol ID from url string
+ * @param url url to check
+ * @return protocol ID
  */
 NC_URL_PROTOCOLS nc_url_get_protocol(const char *url);
 
