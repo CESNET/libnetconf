@@ -1222,7 +1222,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 	xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST "key", BAD_CAST NC_NS_YANG));
 
 	/* count the keys in predicate */
-	for (i = 0, s = strchr((char*)ref, '['); s != NULL; i++, s = strchr(s, '['));
+	for (i = 0, s = strchr((char*)ref, '['); s != NULL; i++, s = strchr(s+1, '['));
 	if (i == 0) {
 		/* something went wrong */
 		if (error != NULL) {
@@ -1988,7 +1988,12 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 			 * be created
 			 */
 			aux = find_element_model(edit_node->parent, model);
-			if (aux && xmlStrcmp(aux->name, BAD_CAST "leaf-list") == 0) {
+			if (aux == NULL) {
+				ERROR("unknown element %s!", (char*)(edit_node->parent->name));
+				*error = nc_err_new(NC_ERR_UNKNOWN_ELEM);
+				nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, (char*)(edit_node->parent->name));
+				return (EXIT_FAILURE);
+			} else if (xmlStrcmp(aux->name, BAD_CAST "leaf-list") == 0) {
 				/*
 				 * according to RFC 6020, sec. 7.7.7, leaf-list entries can be
 				 * created or deleted, but they can not be modified

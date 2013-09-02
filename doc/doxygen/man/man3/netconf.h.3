@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Fri Jun 21 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Fri Aug 30 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -33,6 +33,9 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .ti -1c
 .RI "#define \fBNC_INIT_WD\fP   0x00000010"
+.br
+.ti -1c
+.RI "#define \fBNC_INIT_VALIDATE\fP   0x00000020"
 .br
 .in -1c
 .SS "Typedefs"
@@ -169,6 +172,8 @@ This software is provided ``as is, and any express or implied warranties, includ
 \fBnc_init()\fP's flag to enable ietf-netconf-monitoring module 
 .SS "#define NC_INIT_WD   0x00000010"
 \fBnc_init()\fP's flag to enable with-default capability 
+.SS "#define NC_INIT_VALIDATE   0x00000020"
+\fBnc_init()\fP's flag to enable server's validation capability 
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_NOTIF_TYPE\fP"

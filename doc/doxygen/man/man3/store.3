@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Fri Jun 21 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Fri Aug 30 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -6,6 +6,18 @@ Datastore operations \-
 .PP
 libnetconf's functions for handling NETCONF datastores\&.  
 
+.SS "Modules"
+
+.in +1c
+.ti -1c
+.RI "\fBFile Datastore\fP"
+.br
+.RI "\fISpecific functions for NCDS_FILE_DS type of datastore implementation\&. \fP"
+.ti -1c
+.RI "\fBCustom Datastore\fP"
+.br
+.RI "\fIlibnetconf's API to use a server-specific datastore implementation\&. \fP"
+.in -1c
 .SS "Macros"
 
 .in +1c
@@ -34,7 +46,7 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fIEnumeration of the supported types of datastores defined by NETCONF\&. \fP"
 .ti -1c
-.RI "enum \fBNCDS_TYPE\fP { \fBNCDS_TYPE_EMPTY\fP, \fBNCDS_TYPE_FILE\fP }"
+.RI "enum \fBNCDS_TYPE\fP { \fBNCDS_TYPE_EMPTY\fP, \fBNCDS_TYPE_FILE\fP, \fBNCDS_TYPE_CUSTOM\fP }"
 .br
 .RI "\fIDatastore implementation types provided by libnetconf\&. \fP"
 .in -1c
@@ -42,13 +54,17 @@ libnetconf's functions for handling NETCONF datastores\&.
 
 .in +1c
 .ti -1c
+.RI "int \fBncds_model_info\fP (const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)"
+.br
+.RI "\fIInformational function to get basic information about configuration data model in the given file\&. \fP"
+.ti -1c
 .RI "struct ncds_ds * \fBncds_new\fP (\fBNCDS_TYPE\fP type, const char *model_path, char *(*get_state)(const char *model, const char *running, struct nc_err **e))"
 .br
 .RI "\fICreate a new datastore structure of the specified implementation type\&. \fP"
 .ti -1c
-.RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
+.RI "int \fBncds_set_validation\fP (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron)"
 .br
-.RI "\fIAssign the path of the datastore file into the datastore structure\&. \fP"
+.RI "\fISet validators (or disable validation) on the specified datastore\&. \fP"
 .ti -1c
 .RI "\fBncds_id\fP \fBncds_init\fP (struct ncds_ds *datastore)"
 .br
@@ -179,8 +195,42 @@ No datastore\&. For read-only devices\&.
 .TP
 \fB\fINCDS_TYPE_FILE \fP\fP
 Datastores implemented as files 
+.TP
+\fB\fINCDS_TYPE_CUSTOM \fP\fP
+User-defined datastore 
 .SH "Function Documentation"
 .PP 
+.SS "int ncds_model_info (const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)"
+
+.PP
+Informational function to get basic information about configuration data model in the given file\&. \fBParameters:\fP
+.RS 4
+\fIpath\fP Path to the *\&.yin file with the configuration data model in YIN format\&.
+.RE
+.PP
+Caller is responsible to free returned strings and arrays of strings\&. If a caller is not interested in a specific return value, NULL pointer can be set as parameter and the value of such a parameter will not be returned\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIname\fP Name of the data model 
+.br
+\fIversion\fP Version of the data model 
+.br
+\fInamespace\fP Namespace for the data model 
+.br
+\fIprefix\fP Prefix for the data model 
+.br
+\fIrpcs\fP Null terminated list of names of RPCs defined in the data model 
+.br
+\fInotifs\fP Null terminated list of names of Notifications defined in the data model 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCESS or EXIT_FAILURE on error\&. 
+.RE
+.PP
+
 .SS "struct ncds_ds* ncds_new (\fBNCDS_TYPE\fPtype, const char *model_path, char *(*)(const char *model, const char *running, struct nc_err **e)get_state)\fC [read]\fP"
 
 .PP
@@ -188,7 +238,7 @@ Create a new datastore structure of the specified implementation type\&. \fBPara
 .RS 4
 \fItype\fP Datastore implementation type for the new datastore structure\&. 
 .br
-\fImodel_path\fP Path to the YIN configuration data model\&. 
+\fImodel_path\fP Base name of the configuration data model files\&. libnetconf expects model_path\&.yin as a data model, model_path\&.rng for grammar and data types validation, model_path\&.dsrl for default values validation and model_path\&.sch for semantic validation\&. 
 .br
 \fIget_state\fP Pointer to a callback function that returns a serialized XML document containing the state configuration data of the device\&. The parameters it receives are a serialized configuration data model in YIN format and the current content of the running datastore\&. If NULL is set, <get> operation is performed in the same way as <get-config>\&. 
 .RE
@@ -199,27 +249,23 @@ Prepared (not configured) datastore structure\&. To configure the structure, cal
 .RE
 .PP
 
-.SS "int ncds_file_set_path (struct ncds_ds *datastore, const char *path)"
+.SS "int ncds_set_validation (struct ncds_ds *ds, intenable, const char *relaxng, const char *schematron)"
 
 .PP
-Assign the path of the datastore file into the datastore structure\&. Checks if the file exist and is accessible for reading and writing\&. If the file does not exist, it is created\&. The file is opened and the file descriptor is stored in the structure\&.
-.PP
-\fBParameters:\fP
+Set validators (or disable validation) on the specified datastore\&. \fBParameters:\fP
 .RS 4
-\fIdatastore\fP Datastore structure to be configured\&. 
+\fIds\fP Datastore structure to be configured\&. 
 .br
-\fIpath\fP File path to the file storing configuration datastores\&. 
+\fIenable\fP 1 to enable validation on the datastore according to the following parameters, 0 to disable validation (following parameters will be ignored)\&. 
+.br
+\fIrelaxng\fP Path to the Relax NG schema for validation of the datastore content syntax\&. To generate it, use the lnc-tool(1) script\&. 
+.br
+\fIschematron\fP Path to the Schematron XSLT stylesheet for validation of the datastore content semantics\&. To generate it, use the lnc-tool(1) script\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-.IP "\(bu" 2
-0 on success
-.IP "\(bu" 2
--1 Invalid datastore
-.IP "\(bu" 2
--2 Invalid path ((does not exist && can not be created) || insufficient rights) 
-.PP
+EXIT_SUCCESS or EXIT_FAILURE 
 .RE
 .PP
 

@@ -459,10 +459,10 @@ void ncds_file_free(struct ncds_ds* ds)
 
 	if (file_ds != NULL) {
 		/* generic ncds_ds part */
-		if (file_ds->data_model->xml != file_ds->ext_model) {
-			xmlFreeDoc(file_ds->ext_model);
+		if (file_ds->ds.data_model->xml != file_ds->ds.ext_model) {
+			xmlFreeDoc(file_ds->ds.ext_model);
 		}
-		ncds_ds_model_free(file_ds->data_model);
+		ncds_ds_model_free(file_ds->ds.data_model);
 
 		/* ncds_ds_file specific part */
 		if (file_ds->file != NULL) {
@@ -513,7 +513,7 @@ static int file_reload (struct ncds_ds_file* file_ds)
 
 	/* check when the file was modified */
 	if (stat(file_ds->path, &statbuf) == 0) {
-		if (statbuf.st_mtime < file_ds->last_access) {
+		if (statbuf.st_mtime < file_ds->ds.last_access) {
 			/* file was not modified */
 			return (EXIT_SUCCESS);
 		}
@@ -531,7 +531,7 @@ static int file_reload (struct ncds_ds_file* file_ds)
 	}
 
 	/* update access time */
-	new.last_access = t;
+	new.ds.last_access = t;
 
 	xmlFreeDoc (file_ds->xml);
 	memcpy (file_ds, &new, sizeof (struct ncds_ds_file));
@@ -573,7 +573,7 @@ static int file_sync(struct ncds_ds_file* file_ds)
 	if ((t = time(NULL)) == ((time_t)(-1))) {
 		WARN("Setting datastore access time failed (%s)", strerror(errno));
 	} else {
-		file_ds->last_access = t;
+		file_ds->ds.last_access = t;
 	}
 
 	return EXIT_SUCCESS;
@@ -600,14 +600,14 @@ static int file_rollback_restore(struct ncds_ds_file* file_ds)
 	}
 
 	if (file_ds->xml_rollback == NULL) {
-		ERROR("No backup repository for rollback operation (datastore %d).", file_ds->id);
+		ERROR("No backup repository for rollback operation (datastore %d).", file_ds->ds.id);
 		return (EXIT_FAILURE);
 	}
 
 	xmlFreeDoc(file_ds->xml);
 	file_ds->xml = file_ds->xml_rollback;
 	file_ds->xml_rollback = NULL;
-	file_ds->last_access = 0;
+	file_ds->ds.last_access = 0;
 
 	return (file_sync(file_ds));
 }
@@ -618,7 +618,7 @@ int ncds_file_rollback(struct ncds_ds* ds)
 
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
-	if (file_ds == NULL || file_ds->type != NCDS_TYPE_FILE) {
+	if (file_ds == NULL || file_ds->ds.type != NCDS_TYPE_FILE) {
 		return (EXIT_FAILURE);
 	}
 
@@ -999,7 +999,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 		 * the <copy-config> protocol operation.
 		 */
 		if (!(source == NC_DATASTORE_RUNNING && target == NC_DATASTORE_STARTUP)) {
-			keys = get_keynode_list(file_ds->ext_model);
+			keys = get_keynode_list(file_ds->ds.ext_model);
 			if (source == NC_DATASTORE_RUNNING || source == NC_DATASTORE_STARTUP || source == NC_DATASTORE_CANDIDATE) {
 				/* RFC 6536, sec 3.2.4., paragraph 3
 				 * If the source of the <copy-config> operation is a datastore,
@@ -1019,7 +1019,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 				r = nacm_check_data(aux_doc->children, NACM_ACCESS_CREATE, rpc->nacm);
 			} else {
 				/* replacing an old configuration data */
-				r = edit_replace_nacmcheck(target_ds->children, aux_doc, file_ds->ext_model, keys, rpc->nacm, error);
+				r = edit_replace_nacmcheck(target_ds->children, aux_doc, file_ds->ds.ext_model, keys, rpc->nacm, error);
 			}
 
 			if (r != NACM_PERMIT) {

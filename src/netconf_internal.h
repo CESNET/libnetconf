@@ -515,6 +515,18 @@ struct nc_cpblts {
 char* nc_clrwspace (const char* in);
 
 /**
+ * @brief Skip XML declaration in the beginning of an XML document
+ *
+ * @param xmldoc String containing XML document where the XML declaration
+ * should be skipped.
+ * @return Pointer into the given string pointing after the xml declaration if
+ * any. Leading whitespaces are also skipped. Original string is not modified
+ * in any way and if it was dynamically allocated, it should be freed via xmldoc
+ * pointer.
+ */
+char* nc_skip_xmldecl(const char* xmldoc);
+
+/**
  * @brief Process config data according to with-defaults' mode and data model
  * @param[in] config XML configuration data document in which the default values will
  * be modified (added for report-all and removed for trim mode).

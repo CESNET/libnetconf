@@ -54,6 +54,12 @@
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 
+#ifndef DISABLE_VALIDATION
+#  include <libxml/relaxng.h>
+#  include <libxslt/transform.h>
+#  include <libxslt/xsltInternals.h>
+#endif
+
 #include "netconf_internal.h"
 #include "messages.h"
 #include "messages_xml.h"
@@ -68,6 +74,7 @@
 #include "datastore/datastore_internal.h"
 #include "datastore/file/datastore_file.h"
 #include "datastore/empty/datastore_empty.h"
+#include "datastore/custom/datastore_custom_private.h"
 #include "transapi/transapi_internal.h"
 #include "config.h"
 
@@ -86,6 +93,12 @@
 #include "../models/ietf-yang-types.xxd"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
+
+/*
+ * From internal.c to be used by nc_session_get_cpblts_deault() to detect
+ * what part of libnetconf is initiated and can be executed
+ */
+extern int nc_init_flags;
 
 extern struct nc_shared_info *nc_info;
 
@@ -137,6 +150,23 @@ static struct ncds_ds* ncds_fill_func(NCDS_TYPE type)
 {
 	struct ncds_ds* ds;
 	switch (type) {
+	case NCDS_TYPE_CUSTOM:
+		if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_custom))) == NULL) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
+		ds->func.init = ncds_custom_init;
+		ds->func.free = ncds_custom_free;
+		ds->func.was_changed = ncds_custom_was_changed;
+		ds->func.rollback = ncds_custom_rollback;
+		ds->func.get_lockinfo = ncds_custom_get_lockinfo;
+		ds->func.lock = ncds_custom_lock;
+		ds->func.unlock = ncds_custom_unlock;
+		ds->func.getconfig = ncds_custom_getconfig;
+		ds->func.copyconfig = ncds_custom_copyconfig;
+		ds->func.deleteconfig = ncds_custom_deleteconfig;
+		ds->func.editconfig = ncds_custom_editconfig;
+		break;
 	case NCDS_TYPE_FILE:
 		if ((ds = (struct ncds_ds*) calloc(1, sizeof(struct ncds_ds_file))) == NULL ) {
 			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
@@ -251,6 +281,34 @@ int ncds_sysinit(int flags)
 			{NCDS_TYPE_EMPTY, NULL},
 			{NCDS_TYPE_FILE, NC_WORKINGDIR_PATH"/datastore-acm.xml"}
 	};
+#ifndef DISABLE_VALIDATION
+	char* relaxng_validators[INTERNAL_DS_COUNT] = {
+			NULL, /* ietf-inet-types */
+			NULL, /* ietf-yang-types */
+			NULL, /* ietf-netconf */
+			NULL, /* ietf-netconf-monitoring */
+#ifndef DISABLE_NOTIFICATIONS
+			NULL, /* ietf-netconf-notifications */
+			NULL, /* nc-notifications */
+			NULL, /* notifications */
+#endif
+			NULL, /* ietf-netconf-with-defaults */
+			NC_WORKINGDIR_PATH"/ietf-netconf-acm-data.rng" /* NACM RelaxNG schema */
+	};
+	char* schematron_validators[INTERNAL_DS_COUNT] = {
+			NULL, /* ietf-inet-types */
+			NULL, /* ietf-yang-types */
+			NULL, /* ietf-netconf */
+			NULL, /* ietf-netconf-monitoring */
+#ifndef DISABLE_NOTIFICATIONS
+			NULL, /* ietf-netconf-notifications */
+			NULL, /* nc-notifications */
+			NULL, /* notifications */
+#endif
+			NULL, /* ietf-netconf-with-defaults */
+			NC_WORKINGDIR_PATH"/ietf-netconf-acm-schematron.xsl" /* NACM Schematron XSL stylesheet */
+	};
+#endif
 
 	internal_ds_count = 0;
 	for (i = 0; i < INTERNAL_DS_COUNT; i++) {
@@ -348,6 +406,13 @@ int ncds_sysinit(int flags)
 		list_item->next = models_list;
 		models_list = list_item;
 
+#ifndef DISABLE_VALIDATION
+		/* set validation */
+		if (relaxng_validators[i] != NULL || schematron_validators[i] != NULL) {
+			ncds_set_validation(ds, 1, relaxng_validators[i], schematron_validators[i]);
+		}
+#endif
+
 		/* init */
 		ds->func.init(ds);
 
@@ -364,8 +429,14 @@ int ncds_sysinit(int flags)
 		ncds.datastores = dsitem;
 		ncds.count++;
 		if (ncds.count >= ncds.array_size) {
+			void *tmp = realloc(ncds.datastores_ids, (ncds.array_size + 10) * sizeof(ncds_id));
+			if (tmp == NULL) {
+				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+				return (EXIT_FAILURE);
+			}
+
 			ncds.array_size += 10;
-			ncds.datastores_ids = realloc(ncds.datastores_ids, ncds.array_size * sizeof(ncds_id));
+			ncds.datastores_ids = tmp;
 		}
 
 		ds = NULL;
@@ -496,6 +567,7 @@ int ncds_device_init (ncds_id * id)
 		nc_rpc_free(rpc_msg);
 		nc_reply_free(reply_msg);
 		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+		nc_session_free(dummy_session);
 	}
 
 	if (id != NULL) {
@@ -506,6 +578,7 @@ int ncds_device_init (ncds_id * id)
 fail:
 	if (dummy_session != NULL) {
 		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+		nc_session_free(dummy_session);
 	}
 	nc_rpc_free(rpc_msg);
 	nc_reply_free(reply_msg);
@@ -550,6 +623,38 @@ const char * ncds_get_model_path(ncds_id id)
 	}
 
 	return (datastore->data_model->path);
+}
+
+int ncds_model_info(const char* path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)
+{
+	int retval;
+	xmlXPathContextPtr model_ctxt;
+	xmlDocPtr model_xml;
+
+	model_xml = xmlReadFile(path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
+	if (model_xml == NULL) {
+		ERROR("Unable to read the configuration data model %s.", path);
+		return (EXIT_FAILURE);
+	}
+
+	/* prepare xpath evaluation context of the model for XPath */
+	if ((model_ctxt = xmlXPathNewContext(model_xml)) == NULL) {
+		ERROR("%s: Creating XPath context failed.", __func__);
+		xmlFreeDoc(model_xml);
+		return (EXIT_FAILURE);
+	}
+	if (xmlXPathRegisterNs(model_ctxt, BAD_CAST NC_NS_YIN_ID, BAD_CAST NC_NS_YIN) != 0) {
+		xmlXPathFreeContext(model_ctxt);
+		xmlFreeDoc(model_xml);
+		return (EXIT_FAILURE);
+	}
+
+	retval = get_model_info(model_ctxt, name, version, namespace, prefix, rpcs, notifs);
+
+	xmlFreeDoc(model_xml);
+	xmlXPathFreeContext(model_ctxt);
+
+	return (retval);
 }
 
 static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)
@@ -790,9 +895,17 @@ char* get_schemas()
 		if (schema == NULL) {
 			schema = aux;
 		} else if (aux != NULL) {
-			schema = realloc(schema, strlen(schema) + strlen(aux) + 1);
-			strcat(schema, aux);
-			free(aux);
+			void *tmp = realloc(schema, strlen(schema) + strlen(aux) + 1);
+			if (tmp == NULL) {
+				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+				free(aux);
+				/* return what we have */
+				break;
+			} else {
+				schema = tmp;
+				strcat(schema, aux);
+				free(aux);
+			}
 		}
 	}
 
@@ -1227,7 +1340,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 
 static struct data_model* data_model_new(const char* model_path)
 {
-	struct data_model *model;
+	struct data_model *model = NULL;
 
 	if (model_path == NULL ) {
 		ERROR("%s: invalid parameter.", __func__);
@@ -1249,6 +1362,7 @@ static struct data_model* data_model_new(const char* model_path)
 	model->xml = xmlReadFile(model_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
 	if (model->xml == NULL) {
 		ERROR("Unable to read the configuration data model %s.", model_path);
+		free(model);
 		return (NULL);
 	}
 
@@ -1256,11 +1370,13 @@ static struct data_model* data_model_new(const char* model_path)
 	if ((model->ctxt = xmlXPathNewContext(model->xml)) == NULL) {
 		ERROR("%s: Creating XPath context failed.", __func__);
 		xmlFreeDoc(model->xml);
+		free(model);
 		return (NULL);
 	}
 	if (xmlXPathRegisterNs(model->ctxt, BAD_CAST NC_NS_YIN_ID, BAD_CAST NC_NS_YIN) != 0) {
 		xmlXPathFreeContext(model->ctxt);
 		xmlFreeDoc(model->xml);
+		free(model);
 		return (NULL);
 	}
 
@@ -1319,23 +1435,6 @@ static int data_model_enlink(struct data_model* model)
 	models_list = listitem;
 
 	return (EXIT_SUCCESS);
-}
-
-static struct data_model* data_model_new_enlink(const char* model_path)
-{
-	struct data_model *model;
-
-	model = data_model_new(model_path);
-	if (model == NULL) {
-		return (NULL);
-	}
-
-	if (data_model_enlink(model) != EXIT_SUCCESS) {
-		ncds_ds_model_free(model);
-		return (NULL);
-	}
-
-	return (model);
 }
 
 static int match_module_node(char* path_module, char* module, char* name, xmlNodePtr *node)
@@ -2014,16 +2113,24 @@ int ncds_add_models_path(const char* path)
 		return (EXIT_FAILURE);
 	}
 
-	list_records++;
-	if (list_records >= list_size) {
-		list_size += 5;
-		models_dirs = realloc(models_dirs, list_size * sizeof(char*));
-		if (models_dirs == NULL) {
+	if (list_records + 1 >= list_size) {
+		void *tmp = realloc(models_dirs, (list_size + 5) * sizeof(char*));
+		if (tmp == NULL) {
 			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 			return (EXIT_FAILURE);
 		}
+
+		models_dirs = tmp;
+		list_size += 5;
 	}
-	models_dirs[list_records-1] = strdup(path);
+
+	models_dirs[list_records] = strdup(path);
+	if (models_dirs[list_records] == NULL) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return (EXIT_FAILURE);
+	}
+
+	list_records++;
 	models_dirs[list_records] = NULL; /* terminating NULL byte */
 
 	return (EXIT_SUCCESS);
@@ -2304,29 +2411,534 @@ int ncds_consolidate(void)
 	return (EXIT_SUCCESS);
 }
 
+/**
+ * \brief Get an appropriate root node from edit-config's \<config\> element according to the specified data model
+ *
+ * \param[in] roots First of the root elements in edit-config's \<config\>
+ *                  (first children of this element).
+ * \param[in] model XML form (YIN) of the configuration data model.
+ *
+ * \return Root element matching the specified configuration data model.
+ */
+static xmlNodePtr get_model_root(xmlNodePtr roots, struct data_model *data_model)
+{
+	xmlNodePtr retval;
+
+	assert(roots != NULL);
+	assert(data_model != NULL);
+
+	if (data_model == NULL) {
+		ERROR("%s: Invalid argument - data model is unknown.", __func__);
+		return NULL;
+	}
+	if (data_model->namespace == NULL) {
+		ERROR("Invalid configuration data model '%s'- namespace is missing.", data_model->name);
+		return NULL;
+	}
+
+	retval = roots;
+	while (retval != NULL) {
+		if (retval->ns == NULL || xmlStrcmp(retval->ns->href, BAD_CAST (data_model->namespace)) == 0) {
+			break;
+		}
+
+		retval = retval->next;
+	}
+
+	return retval;
+}
+
+#ifndef DISABLE_VALIDATION
+static void relaxng_error_callback(void *error, const char * msg, ...)
+{
+	struct nc_err **e = (struct nc_err**)(error);
+	va_list args;
+	char* s = NULL, *m = NULL;
+
+	if (e != NULL && *e == NULL) {
+		/*
+		 * if the callback is invoked multiply, only the first error message
+		 * will be stored as NETCONF error
+		 */
+
+		va_start(args, msg);
+		vasprintf(&s, msg, args);
+		va_end(args);
+
+		asprintf(&m, "Datastore fails to validate (%s)", s);
+		*e = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*e, NC_ERR_PARAM_MSG, m);
+
+		free(s);
+		free(m);
+	}
+}
+
+/*
+ * EXIT_SUCCESS - validation ok
+ * EXIT_FAILURE - validation failed
+ * EXIT_RPC_NOT_APPLICABLE - RelaxNG scheme not defined
+ */
+static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
+{
+	int ret = 0;
+	int retval = EXIT_RPC_NOT_APPLICABLE;
+	xmlDocPtr sch_result;
+	xmlXPathContextPtr ctxt = NULL;
+	xmlXPathObjectPtr result = NULL;
+	char* schematron_error = NULL, *error_string = NULL;
+
+	assert(error != NULL);
+
+	if (ds == NULL || doc == NULL) {
+		ERROR("%s: invalid input parameter", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	if (ds->validators.rng) {
+		/* RelaxNG validation */
+		DBG("RelaxNG validation on subdatastore %d", ds->id);
+
+		xmlRelaxNGSetValidErrors(ds->validators.rng,
+			(xmlRelaxNGValidityErrorFunc) relaxng_error_callback,
+			(xmlRelaxNGValidityWarningFunc) relaxng_error_callback,
+			error);
+
+		ret = xmlRelaxNGValidateDoc(ds->validators.rng, doc);
+		if (ret > 0) {
+			VERB("subdatastore %d fails to validate", ds->id);
+			if (*error == NULL) {
+				*error = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore fails to validate.");
+			}
+			return (EXIT_FAILURE);
+		} else if (ret < 0) {
+			ERROR("validation generated an internal error", ds->id);
+			if (*error == NULL) {
+				*error = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Validation generated an internal error.");
+			}
+			return (EXIT_FAILURE);
+		} else { /* ret == 0 -> success */
+			retval = EXIT_SUCCESS;
+		}
+	}
+
+	if (ds->validators.schematron) {
+		/* schematron */
+		DBG("Schematron validation on subdatastore %d", ds->id);
+
+		sch_result = xsltApplyStylesheet(ds->validators.schematron, doc, NULL);
+		if (sch_result == NULL) {
+			ERROR("Applying Schematron stylesheet on subdatastore %d failed", ds->id);
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Schematron validation internal error.");
+			return (EXIT_FAILURE);
+		}
+
+		/* parse SVRL result */
+		if ((ctxt = xmlXPathNewContext(sch_result)) == NULL) {
+			ERROR("%s: Creating the XPath context failed.", __func__);
+			xmlFreeDoc(sch_result);
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			return (EXIT_FAILURE);
+		}
+		if (xmlXPathRegisterNs(ctxt, BAD_CAST "svrl", BAD_CAST "http://purl.oclc.org/dsdl/svrl") != 0) {
+			ERROR("Registering SVRL namespace for the xpath context failed.");
+			xmlXPathFreeContext(ctxt);
+			xmlFreeDoc(sch_result);
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			return (EXIT_FAILURE);
+		}
+		if ((result = xmlXPathEvalExpression(BAD_CAST "/svrl:schematron-output/svrl:successful-report/svrl:text", ctxt)) != NULL) {
+			if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
+				schematron_error = (char*)xmlNodeGetContent(result->nodesetval->nodeTab[0]);
+				asprintf(&error_string, "Datastore fails to validate: %s", schematron_error);
+				ERROR(error_string);
+				*error = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*error, NC_ERR_PARAM_MSG, error_string);
+				free(error_string);
+				free(schematron_error);
+
+				xmlXPathFreeObject(result);
+				xmlXPathFreeContext(ctxt);
+				xmlFreeDoc(sch_result);
+
+				return (EXIT_FAILURE);
+			} else {
+				/* there is no error */
+				retval = EXIT_SUCCESS;
+			}
+			xmlXPathFreeObject(result);
+		} else {
+			WARN("Evaluating Schematron output failed");
+		}
+		xmlXPathFreeContext(ctxt);
+		xmlFreeDoc(sch_result);
+	}
+
+	return (retval);
+}
+
+static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, const char* config, struct nc_err** e)
+{
+	int ret;
+	int len;
+	char *data_cfg = NULL, *data2, *model, *config_internal;
+	xmlDocPtr doc_cfg, doc_status, doc;
+	xmlNodePtr root;
+	xmlNsPtr ns;
+	xmlBufferPtr resultbuffer;
+
+	if (!ds->validators.rng && !ds->validators.rng_schema && !ds->validators.schematron) {
+		/* validation not supported by this datastore */
+		return (EXIT_RPC_NOT_APPLICABLE);
+	}
+
+	switch (source) {
+	case NC_DATASTORE_RUNNING:
+	case NC_DATASTORE_STARTUP:
+	case NC_DATASTORE_CANDIDATE:
+		if ((data_cfg = ds->func.getconfig(ds, session, source, e)) == NULL ) {
+			if (*e == NULL ) {
+				ERROR("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
+				*e = nc_err_new(NC_ERR_OP_FAILED);
+			}
+			return (EXIT_FAILURE);
+		}
+		doc = doc_cfg = xmlReadDoc(BAD_CAST data_cfg, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		/* if the datastore is empty, doc1/aux_doc is NULL here */
+
+		if (ds->get_state != NULL ) {
+			xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
+			data2 = ds->get_state(model, data_cfg, e);
+			free(model);
+			free(data_cfg); /* running data, no more needed in this form */
+			data_cfg = NULL;
+
+			if (*e != NULL ) {
+				/* state data retrieval error */
+				free(data2);
+				return (EXIT_FAILURE);
+			}
+
+			doc_status = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(data2);
+
+			/* if merge fail (probably one of docs NULL)*/
+			if ((doc = ncxml_merge(doc_cfg, doc_status, ds->ext_model)) == NULL ) {
+				xmlFreeDoc(doc_cfg);
+				xmlFreeDoc(doc_status);
+				*e = nc_err_new(NC_ERR_OP_FAILED);
+				return (EXIT_FAILURE);
+			} else {
+				/* cleanup */
+				xmlFreeDoc(doc_cfg);
+				xmlFreeDoc(doc_status);
+			}
+		}
+		free(data_cfg);
+		data_cfg = NULL;
+		break;
+	case NC_DATASTORE_CONFIG:
+		/*
+		 * config can contain multiple elements on the root level, so
+		 * cover it with the <config> element to allow the creation of xml
+		 * document
+		 */
+		if (config == NULL || strcmp(config, "") == 0) {
+			/* config is empty -> ignore rest of magic here,
+			 * go to validation
+			 */
+			doc = xmlNewDoc(BAD_CAST "1.0");
+			break;
+		}
+
+		if (asprintf(&data_cfg, "<config>%s</config>", config) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			*e = nc_err_new(NC_ERR_OP_FAILED);
+			return (EXIT_FAILURE);
+		}
+		doc_cfg = xmlReadDoc(BAD_CAST data_cfg, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		free(data_cfg);
+		data_cfg = NULL;
+
+		if (doc_cfg == NULL || doc_cfg->children == NULL || doc_cfg->children->children == NULL) {
+			xmlFreeDoc(doc_cfg);
+			*e = nc_err_new(NC_ERR_INVALID_VALUE);
+			nc_err_set(*e, NC_ERR_PARAM_MSG, "Invalid <config> parameter of the rpc request.");
+			break;
+		}
+
+		/*
+		 * select correct config node for the selected datastore,
+		 * it must match the model's namespace and root element name
+		 */
+		root = get_model_root(doc_cfg->children->children, ds->data_model);
+		if (root != NULL) {
+			resultbuffer = xmlBufferCreate();
+			if (resultbuffer == NULL) {
+				ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+				*e = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*e, NC_ERR_PARAM_MSG, "Internal error, see libnetconf error log.");
+				break;
+			}
+			xmlNodeDump(resultbuffer, doc_cfg, root, 2, 1);
+			if ((config_internal = strdup((char*) xmlBufferContent(resultbuffer))) == NULL) {
+				xmlBufferFree(resultbuffer);
+				xmlFreeDoc(doc_cfg);
+				ERROR("%s: xmlBufferContent failed (%s:%d)", __func__, __FILE__, __LINE__);
+				*e = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(*e, NC_ERR_PARAM_MSG, "Internal error, see libnetconf error log.");
+				break;
+			}
+			/*
+			 * now we have config as a valid xml tree with the
+			 * single root
+			 */
+			xmlBufferFree(resultbuffer);
+			xmlFreeDoc(doc_cfg);
+
+			doc = xmlReadDoc(BAD_CAST config_internal, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			free(config_internal);
+			config_internal = NULL;
+		} else {
+			xmlFreeDoc(doc_cfg);
+			/* request is not intended for this device */
+			return (EXIT_RPC_NOT_APPLICABLE);
+		}
+		break;
+	default:
+		*e = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "source");
+		return (EXIT_FAILURE);
+	}
+
+	/* process default values */
+	ncdflt_default_values(doc, ds->ext_model, NCWD_MODE_ALL);
+
+	/*
+	 * reconect root element from datastore data under the <data>
+	 * element required by validators
+	 */
+	root = xmlDocGetRootElement(doc);
+	xmlUnlinkNode(root);
+	xmlDocSetRootElement(doc, xmlNewDocNode(doc, NULL, BAD_CAST "data", NULL));
+	ns = xmlNewNs(doc->children, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(doc->children, ns);
+	xmlAddChild(doc->children, root);
+
+	ret = validate_ds(ds, doc, e);
+
+	xmlFreeDoc(doc);
+
+	return (ret);
+
+}
+
+static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* session, const nc_rpc* rpc, struct nc_err** e)
+{
+	int ret;
+	char *config;
+	NC_DATASTORE source;
+
+	if (!ds->validators.rng && !ds->validators.rng_schema && !ds->validators.schematron) {
+		/* validation not supported by this datastore */
+		return (EXIT_RPC_NOT_APPLICABLE);
+	}
+
+	switch (source = nc_rpc_get_source(rpc)) {
+	case NC_DATASTORE_RUNNING:
+	case NC_DATASTORE_STARTUP:
+	case NC_DATASTORE_CANDIDATE:
+		ret = apply_rpc_validate_(ds, session, source, NULL, e);
+		break;
+	case NC_DATASTORE_CONFIG:
+		/*
+		 * config can contain multiple elements on the root level, so
+		 * cover it with the <config> element to allow the creation of xml
+		 * document
+		 */
+		config = nc_rpc_get_config(rpc);
+		ret = apply_rpc_validate_(ds, session, source, NULL, e);
+		free(config);
+		break;
+	default:
+		*e = nc_err_new(NC_ERR_BAD_ELEM);
+		nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "source");
+		ret = EXIT_FAILURE;
+		break;
+	}
+
+	return (ret);
+}
+
+#endif /* not DISABLE_VALIDATION */
+
+int ncds_set_validation(struct ncds_ds* ds, int enable, const char* relaxng, const char* schematron)
+{
+#ifdef DISABLE_VALIDATION
+	return (EXIT_SUCCESS);
+#else
+	int ret = EXIT_SUCCESS;
+	xmlRelaxNGParserCtxtPtr rng_ctxt = NULL;
+	xmlRelaxNGPtr rng_schema = NULL;
+	xmlRelaxNGValidCtxtPtr rng = NULL;
+	xsltStylesheetPtr schxsl = NULL;
+
+	if (enable == 0) {
+		/* disable validation on this datastore */
+		xmlRelaxNGFreeValidCtxt(ds->validators.rng);
+		xmlRelaxNGFree(ds->validators.rng_schema);
+		xsltFreeStylesheet(ds->validators.schematron);
+		memset(&(ds->validators), 0, sizeof(struct model_validators));
+	} else if (nc_init_flags & NC_INIT_VALIDATE) { /* && enable == 1 */
+		/* enable and reset validators */
+		if (relaxng != NULL) {
+			/* prepare validators - Relax NG */
+			if (eaccess(relaxng, R_OK) == -1) {
+				ERROR("%s: Unable to access RelaxNG schema for validation (%s - %s).", __func__, relaxng, strerror(errno));
+				ret = EXIT_FAILURE;
+				goto cleanup;
+			} else {
+				rng_ctxt = xmlRelaxNGNewParserCtxt(relaxng);
+				if ((rng_schema = xmlRelaxNGParse(rng_ctxt)) == NULL) {
+					ERROR("Failed to parse Relax NG schema (%s)", relaxng);
+					ret = EXIT_FAILURE;
+					goto cleanup;
+				} else if ((rng = xmlRelaxNGNewValidCtxt(rng_schema)) == NULL) {
+					ERROR("Failed to create validation context (%s)", relaxng);
+					ret = EXIT_FAILURE;
+					goto cleanup;
+				}
+				xmlRelaxNGFreeParserCtxt(rng_ctxt);
+				rng_ctxt = NULL;
+			}
+		}
+
+		if (schematron != NULL) {
+			/* prepare validators - Schematron */
+			if (eaccess(schematron, R_OK) == -1) {
+				ERROR("%s: Unable to access Schematron stylesheet for validation (%s - %s).", __func__, schematron, strerror(errno));
+				ret = EXIT_FAILURE;
+				goto cleanup;
+			} else {
+				if ((schxsl = xsltParseStylesheetFile(BAD_CAST schematron)) == NULL) {
+					ERROR("Failed to parse Schematron stylesheet (%s)", schematron);
+					ret = EXIT_FAILURE;
+					goto cleanup;
+				}
+			}
+		}
+
+		/* replace previous validators */
+		if (rng_schema && rng) {
+			xmlRelaxNGFree(ds->validators.rng_schema);
+			ds->validators.rng_schema = rng_schema;
+			rng_schema = NULL;
+			xmlRelaxNGFreeValidCtxt(ds->validators.rng);
+			ds->validators.rng = rng;
+			rng = NULL;
+			DBG("%s: Relax NG validator set (%s)", __func__, relaxng);
+		}
+		if (schxsl) {
+			xsltFreeStylesheet(ds->validators.schematron);
+			ds->validators.schematron = schxsl;
+			schxsl = NULL;
+			DBG("%s: Schematron validator set (%s)", __func__, schematron);
+		}
+
+	}
+
+cleanup:
+	xmlRelaxNGFreeValidCtxt(rng);
+	xmlRelaxNGFree(rng_schema);
+	xmlRelaxNGFreeParserCtxt(rng_ctxt);
+	xsltFreeStylesheet(schxsl);
+
+	return (ret);
+#endif
+}
+
 struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
 {
 	struct ncds_ds* ds = NULL;
+	char *basename, *path_yin;
+
+#ifndef DISABLE_VALIDATION
+	char *path_rng = NULL, *path_sch = NULL;
+	xmlRelaxNGParserCtxtPtr rng_ctxt;
+#endif
 
 	if (model_path == NULL) {
 		ERROR("%s: missing the model path parameter.", __func__);
 		return (NULL);
 	}
 
+	/* check the form of model_path - for backward compatibility
+	 * model_path.yin is supported and validation file names will be also
+	 * derived
+	 */
+	basename = strdup(model_path);
+	if (strcmp(&(basename[strlen(basename)-4]), ".yin") == 0) {
+		path_yin = strdup(model_path);
+		basename[strlen(basename)-4] = 0; /* remove .yin suffix */
+	} else {
+		asprintf(&path_yin, "%s.yin", basename);
+	}
+#ifndef DISABLE_VALIDATION
+	asprintf(&path_rng, "%s-data.rng", basename);
+	asprintf(&path_sch, "%s-schematron.xsl", basename);
+#endif
+
 	ds = ncds_fill_func(type);
 	if (ds == NULL) {
 		/* The error was reported already. */
-		return (NULL);
+		goto cleanup;
 	}
 
 	ds->type = type;
 
 	/* get configuration data model */
-	if ((ds->data_model = data_model_new_enlink(model_path)) == NULL) {
+	ds->data_model = read_model(path_yin);
+	if (ds->data_model == NULL) {
 		free(ds);
-		return (NULL);
+		ds = NULL;
+		goto cleanup;
 	}
 	ds->ext_model = ds->data_model->xml;
+
+#ifndef DISABLE_VALIDATION
+	if (nc_init_flags & NC_INIT_VALIDATE) {
+		/* prepare validation - Relax NG */
+		if (eaccess(path_rng, R_OK) == -1) {
+			WARN("Missing RelaxNG schema for validation (%s - %s).", path_rng, strerror(errno));
+		} else {
+			rng_ctxt = xmlRelaxNGNewParserCtxt(path_rng);
+			if ((ds->validators.rng_schema = xmlRelaxNGParse(rng_ctxt)) == NULL) {
+				WARN("Failed to parse Relax NG schema (%s)", path_rng);
+			} else if ((ds->validators.rng = xmlRelaxNGNewValidCtxt(ds->validators.rng_schema)) == NULL) {
+				WARN("Failed to create validation context (%s)", path_rng);
+				xmlRelaxNGFree(ds->validators.rng_schema);
+				ds->validators.rng_schema = NULL;
+			} else {
+				DBG("%s: Relax NG validator set (%s)", __func__, path_rng);
+			}
+			xmlRelaxNGFreeParserCtxt(rng_ctxt);
+		}
+
+		/* prepare validation - Schematron */
+		if (eaccess(path_sch, R_OK) == -1) {
+			WARN("Missing Schematron stylesheet for validation (%s - %s).", path_sch, strerror(errno));
+		} else {
+			if ((ds->validators.schematron = xsltParseStylesheetFile(BAD_CAST path_sch)) == NULL) {
+				WARN("Failed to parse Schematron stylesheet (%s)", path_sch);
+			} else {
+				DBG("%s: Schematron validator set (%s)", __func__, path_sch);
+			}
+		}
+	}
+#endif /* not DISABLE_VALIDATION */
 
 	/* TransAPI structure is set to NULLs */
 
@@ -2335,6 +2947,15 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 
 	/* ds->id is -1 to indicate, that datastore is still not fully configured */
 	ds->id = -1;
+
+cleanup:
+	free(basename);
+	free(path_yin);
+
+#ifndef DISABLE_VALIDATION
+	free(path_rng);
+	free(path_sch);
+#endif
 
 	return (ds);
 }
@@ -2420,10 +3041,28 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 		return -1;
 	}
 
+	/* check the size of datastore list */
+	if ((ncds.count + 1) >= ncds.array_size) {
+		void *tmp = realloc(ncds.datastores_ids, (ncds.array_size + 10) * sizeof(ncds_id));
+		if (tmp == NULL) {
+			ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+			return (-4);
+		}
+		ncds.datastores_ids = tmp;
+		ncds.array_size += 10;
+	}
+	/* prepare slot for the datastore in the list */
+	item = malloc(sizeof(struct ncds_ds_list));
+	if (item == NULL) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return -4;
+	}
+
 	/** \todo data model validation */
 
 	/* call implementation-specific datastore init() function */
 	if (datastore->func.init(datastore) != 0) {
+		free(item);
 		return -2;
 	}
 
@@ -2437,18 +3076,10 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 	datastore->id = generate_id();
 
 	/* add to list */
-	item = malloc(sizeof(struct ncds_ds_list));
-	if (item == NULL) {
-		return -4;
-	}
 	item->datastore = datastore;
 	item->next = ncds.datastores;
 	ncds.datastores = item;
 	ncds.count++;
-	if (ncds.count >= ncds.array_size) {
-		ncds.array_size += 10;
-		ncds.datastores_ids = realloc(ncds.datastores_ids, ncds.array_size * sizeof(ncds_id));
-	}
 
 	return datastore->id;
 }
@@ -2503,6 +3134,14 @@ void ncds_free(struct ncds_ds* datastore)
 		if (ds->transapi.module != NULL && ds->transapi.close != NULL) {
 			ds->transapi.close();
 		}
+
+#ifndef DISABLE_VALIDATION
+		/* validators */
+		xmlRelaxNGFreeValidCtxt(ds->validators.rng);
+		xmlRelaxNGFree(ds->validators.rng_schema);
+		xsltFreeStylesheet(ds->validators.schematron);
+#endif
+
 		datastore->func.free(ds);
 	}
 }
@@ -2881,43 +3520,6 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 	return ret;
 }
 
-/**
- * \brief Get an appropriate root node from edit-config's \<config\> element according to the specified data model
- *
- * \param[in] roots First of the root elements in edit-config's \<config\>
- *                  (first children of this element).
- * \param[in] model XML form (YIN) of the configuration data model.
- *
- * \return Root element matching the specified configuration data model.
- */
-static xmlNodePtr get_model_root(xmlNodePtr roots, struct data_model *data_model)
-{
-	xmlNodePtr retval;
-
-	assert(roots != NULL);
-	assert(data_model != NULL);
-
-	if (data_model == NULL) {
-		ERROR("%s: Invalid argument - data model is unknown.", __func__);
-		return NULL;
-	}
-	if (data_model->namespace == NULL) {
-		ERROR("Invalid configuration data model '%s'- namespace is missing.", data_model->name);
-		return NULL;
-	}
-
-	retval = roots;
-	while (retval != NULL) {
-		if (retval->ns == NULL || xmlStrcmp(retval->ns->href, BAD_CAST (data_model->namespace)) == 0) {
-			break;
-		}
-
-		retval = retval->next;
-	}
-
-	return retval;
-}
-
 int ncds_rollback(ncds_id id)
 {
 	struct ncds_ds *datastore = datastores_get_ds(id);
@@ -3011,6 +3613,10 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	int transapi_callbacks_count;
 	const char * rpc_name;
 	xmlBufferPtr buf = NULL;
+	char *end = NULL, *aux = NULL;
+#ifndef DISABLE_VALIDATION
+	NC_EDIT_TESTOPT_TYPE testopt;
+#endif
 
 #ifndef DISABLE_URL
 	xmlXPathObjectPtr url_path = NULL;
@@ -3047,9 +3653,11 @@ process_datastore:
 
 	op = nc_rpc_get_op(rpc);
 	/* if transapi used AND operation will affect running repository => store current running content */
-	if (ds->transapi.data_clbks.data_clbks != NULL
-		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
-		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING) {
+
+	if (ds->transapi.module != NULL
+		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
+		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING)) {
+
 		old_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
 		if (old_data == NULL || strcmp(old_data, "") == 0) {
 			old = xmlNewDoc (BAD_CAST "1.0");
@@ -3116,6 +3724,20 @@ process_datastore:
 			}
 		} else {
 			data2 = data;
+			if (strncmp(data2, "<?xml", 5) == 0) {
+				/* We got a "real" XML document. We strip off the
+				 * declaration, so the thing below works.
+				 *
+				 * We just replace that with whitespaces, which is
+				 * harmless, but we'll free the correct pointer.
+				 */
+				end = index(data2, '>');
+				if (end != NULL) {
+					for (aux = data2; aux <= end; aux++) {
+						*aux = ' ';
+					}
+				} /* else content is corrupted that will be detected by xmlReadDoc() */
+			}
 			if (asprintf(&data, "<data>%s</data>", data2) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 				e = nc_err_new(NC_ERR_OP_FAILED);
@@ -3399,6 +4021,30 @@ apply_editcopyconfig:
 		/* perform the operation */
 		if (op == NC_OP_EDITCONFIG) {
 			ret = ds->func.editconfig(ds, session, rpc, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
+#ifndef DISABLE_VALIDATION
+			if (ret == EXIT_SUCCESS) {
+				/* process test option if set */
+				switch (testopt = nc_rpc_get_testopt(rpc)) {
+				case NC_EDIT_TESTOPT_TEST:
+				case NC_EDIT_TESTOPT_TESTSET:
+					/* validate the result */
+					ret = apply_rpc_validate_(ds, session, target_ds, NULL, &e);
+
+					if (testopt == NC_EDIT_TESTOPT_TEST || ret == EXIT_FAILURE) {
+						/*
+						 * revert changes in the datastore:
+						 * only test was required or error occurred
+						 */
+						ds->func.rollback(ds);
+					}
+
+					break;
+				default:
+					/* continue without validation */
+					break;
+				}
+			}
+#endif
 		} else if (op == NC_OP_COPYCONFIG) {
 #ifndef DISABLE_URL
 			if(source_ds == NC_DATASTORE_URL ) {
@@ -3677,6 +4323,11 @@ apply_editcopyconfig:
 			ret = EXIT_FAILURE;
 		}
 		break;
+#ifndef DISABLE_VALIDATION
+	case NC_OP_VALIDATE:
+		ret = apply_rpc_validate(ds, session, rpc, &e);
+		break;
+#endif
 	case NC_OP_UNKNOWN:
 		/* get operation name */
 		op_name = nc_rpc_get_op_name (rpc);
@@ -3799,10 +4450,15 @@ apply_editcopyconfig:
 	}
 
 	/* if transapi used, rpc affected running and succeeded get its actual content */
-	/* find differences and call functions */
+	/*
+	 * skip transapi if <edit-config> was performed with test-option set
+	 * to test-only value
+	 */
 	if (ds->transapi.module != NULL
-		&& (op == NC_OP_COMMIT || (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG))
-		&& nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK) {
+		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
+		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK)) {
+
+		/* find differences and call functions */
 		new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
 		if (new_data == NULL || strcmp(new_data, "") == 0) {
 			new = xmlNewDoc (BAD_CAST "1.0");
@@ -3831,9 +4487,9 @@ apply_editcopyconfig:
 			}
 		}
 
-		xmlFreeDoc (old);
 		xmlFreeDoc (new);
 	}
+	xmlFreeDoc (old);
 
 	if (id == NCDS_INTERNAL_ID) {
 		if (old_reply == NULL) {

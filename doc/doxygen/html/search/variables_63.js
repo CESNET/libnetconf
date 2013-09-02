@@ -4,5 +4,6 @@ var searchData=
   ['callbacks_5fcount',['callbacks_count',['../d6/dcb/structtransapi__data__callbacks.html#a853d73f0f495147dba4842e9f860d1f0',1,'transapi_data_callbacks::callbacks_count()'],['../d0/df8/structtransapi__rpc__callbacks.html#a853d73f0f495147dba4842e9f860d1f0',1,'transapi_rpc_callbacks::callbacks_count()'],['../db/d0d/structtransapi__xml__data__callbacks.html#a853d73f0f495147dba4842e9f860d1f0',1,'transapi_xml_data_callbacks::callbacks_count()'],['../d6/d8c/structtransapi__xml__rpc__callbacks.html#a853d73f0f495147dba4842e9f860d1f0',1,'transapi_xml_rpc_callbacks::callbacks_count()']]],
   ['children',['children',['../dd/de6/structmodel__tree.html#a128c73946040b9bc8ee47ddb296e5d36',1,'model_tree']]],
   ['children_5fcount',['children_count',['../dd/de6/structmodel__tree.html#a7849df4fab48f1f94b85a3045b002b1b',1,'model_tree']]],
-  ['close',['close',['../d9/dc0/structtransapi.html#a414e48f893be7474f64d2c61a9c012b9',1,'transapi']]]
+  ['close',['close',['../d9/dc0/structtransapi.html#a414e48f893be7474f64d2c61a9c012b9',1,'transapi']]],
+  ['copyconfig',['copyconfig',['../d0/d28/structncds__custom__funcs.html#ae0d54e97fa9abaafbf3b234c365a09b6',1,'ncds_custom_funcs']]]
 ];

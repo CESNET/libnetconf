@@ -114,19 +114,12 @@ struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, ...)
 	switch (type) {
 	case NC_FILTER_SUBTREE:
 		/* convert string representation into libxml2 structure */
-		arg = va_arg(argp, const char*);
-		if (strncmp(arg, "<?xml", 5) == 0) {
-			/* We got a "real" XML document. We move after the XML
-			 * declaration, so the trick with covering <filter> element
-			 * will work.
-			 */
-			arg = index(arg, '>') + 1;
-			if (arg == NULL) {
-				/* content is corrupted */
-				ERROR("Invalid XML data to create subtree filter");
-				va_end(argp);
-				return NULL;
-			}
+		arg = nc_skip_xmldecl(va_arg(argp, const char*));
+		if (arg == NULL) {
+			/* content is corrupted */
+			ERROR("Invalid XML data to create subtree filter");
+			va_end(argp);
+			return NULL;
 		}
 		if (asprintf(&filter_s, "<filter>%s</filter>", (arg == NULL) ? "" : arg) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
@@ -580,6 +573,37 @@ const nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc)
 	}
 }
 
+char *nc_rpc_get_ns(const nc_rpc *rpc)
+{
+	xmlNodePtr root, opnode;
+
+	if (rpc == NULL || rpc->doc == NULL ) {
+		ERROR("%s: Invalid parameter (missing message or message document).", __func__);
+		return NULL;
+	}
+
+	if ((root = xmlDocGetRootElement(rpc->doc)) == NULL) {
+		ERROR("%s: Invalid parameter (invalid message structure).", __func__);
+		return NULL;
+	}
+	if (xmlStrcmp(root->name, BAD_CAST "rpc") != 0) {
+		ERROR("%s: Invalid rpc message - not an <rpc> message.", __func__);
+		return (NC_OP_UNKNOWN);
+	}
+
+	/* return namespace of the first element node inside <rpc> */
+	for (opnode = root->children; opnode != NULL && opnode->type != XML_ELEMENT_NODE; opnode = opnode->next);
+	if (opnode == NULL) {
+		ERROR("%s: Invalid message structure - no operation element.", __func__);
+		return (NULL);
+	} else if (opnode->ns == NULL) {
+		WARN("%s: Bad message structure - operation element with missing namespace.", __func__);
+		return (NULL);
+	} else {
+		return strdup((char *) opnode->ns->href);
+	}
+}
+
 NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 {
 	xmlNodePtr root, auxnode;
@@ -695,7 +719,7 @@ char* nc_rpc_get_op_content (const nc_rpc* rpc)
 {
 	char *retval = NULL;
 	xmlDocPtr aux_doc;
-	xmlNodePtr root;
+	xmlNodePtr node;
 	xmlBufferPtr buffer;
 	xmlXPathObjectPtr result = NULL;
 	int i;
@@ -712,16 +736,13 @@ char* nc_rpc_get_op_content (const nc_rpc* rpc)
 				xmlXPathFreeObject(result);
 				return NULL;
 			}
-			if ((root = xmlDocGetRootElement(rpc->doc)) == NULL) {
-				xmlXPathFreeObject(result);
-				return NULL;
-			}
 
-			/* by copying node, move all needed namespaces into the content nodes */
+			/* by copying node, move all needed namespaces into the printed nodes */
 			aux_doc = xmlNewDoc(BAD_CAST "1.0");
-			xmlDocSetRootElement(aux_doc, xmlCopyNodeList(root->children));
 			for (i = 0; i < result->nodesetval->nodeNr; i++) {
-				xmlNodeDump(buffer, aux_doc, result->nodesetval->nodeTab[i], 1, 1);
+				if ((node = xmlDocCopyNode(result->nodesetval->nodeTab[i], aux_doc, 1)) != NULL) {
+					xmlNodeDump(buffer, aux_doc, node, 1, 1);
+				}
 			}
 			retval = strdup((char *) xmlBufferContent(buffer));
 			xmlBufferFree(buffer);
@@ -829,30 +850,130 @@ NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
 	return (nc_rpc_get_ds(rpc, "target"));
 }
 
-char* nc_rpc_get_config(const nc_rpc* rpc)
+/**
+ * return
+ *   NULL on error
+ *   NCDS_RPC_NOT_APPLICABLE if query not found
+ *   standalone config node on success
+ */
+static xmlNodePtr ncxml_rpc_get_cfg_common(const nc_rpc* rpc, xmlChar* query, char* operation, int url)
 {
-	xmlNodePtr aux_node;
+	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr retval, config;
+
+#ifndef DISABLE_URL
+	NC_URL_PROTOCOLS protocol;
+	xmlChar* url_string;
+	int url_buff_fd;
+	xmlDocPtr url_doc = NULL;
+#endif
+
+	if ((query_result = xmlXPathEvalExpression(query, rpc->ctxt)) != NULL) {
+		if (xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			//ERROR("%s: no source config data in the %s request", __func__, operation);
+			xmlXPathFreeObject(query_result);
+			return (NCDS_RPC_NOT_APPLICABLE);
+		} else if (query_result->nodesetval->nodeNr > 1) {
+			ERROR("%s: multiple source config data in the %s request", __func__, operation);
+			xmlXPathFreeObject(query_result);
+			return (NULL);
+		}
+
+		config = query_result->nodesetval->nodeTab[0];
+		xmlXPathFreeObject(query_result);
+
+		if (url) {
+#ifndef DISABLE_URL
+			/* check requested protocol */
+			protocol = nc_url_get_protocol((char*) (url_string = xmlNodeGetContent(config)));
+			xmlFree(url_string);
+			if (protocol == NC_URL_UNKNOWN) {
+				ERROR("%s: unknown URL protocol", __func__);
+				return (NULL);
+			}
+			if (nc_url_is_enabled(protocol) == 0) {
+				ERROR("%s: URL protocol (%d) not supported", __func__, protocol);
+				return (NULL);
+			}
+
+			/* get data from URL */
+			if ((url_buff_fd = nc_url_get_rpc((char*) (url_string = xmlNodeGetContent(config)))) < 0) {
+				xmlFree(url_string);
+				return (NULL);
+			}
+			xmlFree(url_string);
+			if ((url_doc = xmlReadFd(url_buff_fd, NULL, NULL, 0)) == NULL ) {
+				close(url_buff_fd);
+				ERROR("%s: error reading from downloaded URL file", __func__);
+				return (NULL);
+			}
+			close(url_buff_fd);
+
+			/* config pointer is now silently moving from rpc->doc into url_doc! */
+			config = xmlDocGetRootElement(url_doc);
+
+			/* just check that content follows :url specification in RFC 6241 */
+			if (xmlStrcmp(BAD_CAST "config", config->name) != 0) {
+				/* \todo check also namespace */
+				ERROR("%s: no config data in the downloaded URL file", __func__);
+				xmlFreeDoc(url_doc);
+				return (NULL);
+			}
+	#else
+			/* this should not happen! */
+			ERROR("%s: url capability is not supported", __func__ );
+			return (NULL);
+#endif
+		}
+
+		/* by copying nodelist, move all needed namespaces into the list nodes */
+		retval = xmlNewNode(NULL, BAD_CAST "config");
+		xmlAddChildList(retval, xmlCopyNodeList(config->children));
+
+#ifndef DISABLE_URL
+		xmlFreeDoc(url_doc);
+#endif
+
+		return (retval);
+	} else {
+		ERROR("%s: source config data not found in the %s request", __func__, operation);
+		return (NULL);
+	}
+}
+
+/**
+ * return
+ *   NULL on error
+ *   NCDS_RPC_NOT_APPLICABLE if query not found
+ *   dumped config on success
+ */
+static char* nc_rpc_get_cfg_common(const nc_rpc* rpc, xmlChar* query, char* operation, int url)
+{
+	xmlNodePtr config, aux_node;
 	xmlDocPtr aux_doc;
 	xmlBufferPtr resultbuffer;
 	char * retval = NULL;
 
-	aux_node = ncxml_rpc_get_config( rpc );
-	if (aux_node == NULL) {
-		/* some error occurred or RPC contain invalid/not-supported operation */
-		return (NULL);
+	config = ncxml_rpc_get_cfg_common(rpc, query, operation, url);
+
+	if (config == NULL || config == NCDS_RPC_NOT_APPLICABLE) {
+		return ((char*)config);
 	}
-	
-	/* by copying nodelist, move all needed namespaces into the editing nodes */
-	aux_doc = xmlNewDoc(BAD_CAST "1.0");
-	xmlDocSetRootElement(aux_doc, xmlNewNode(NULL, BAD_CAST "config"));
-	xmlAddChildList(aux_doc->children, aux_node);
-		
-	/* dump the result */
+
+	/* dump result into string */
 	resultbuffer = xmlBufferCreate();
 	if (resultbuffer == NULL) {
 		ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
-		return NULL;
+		return (NULL);
 	}
+	if (config->children == NULL) {
+		/* config is empty */
+		xmlBufferFree(resultbuffer);
+		return (strdup(""));
+	}
+
+	aux_doc = xmlNewDoc(BAD_CAST "1.0");
+	xmlDocSetRootElement(aux_doc, config);
 	for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
 		xmlNodeDump(resultbuffer, aux_doc, aux_node, 2, 1);
 	}
@@ -863,92 +984,174 @@ char* nc_rpc_get_config(const nc_rpc* rpc)
 	return retval;
 }
 
-xmlNodePtr ncxml_rpc_get_config( const nc_rpc* rpc )
+static char* nc_rpc_get_cfg_copyconfig(const nc_rpc* rpc)
 {
-	int i;
-	xmlXPathObjectPtr query_result = NULL;
-	xmlNodePtr config, aux_node;
-	xmlDocPtr aux_doc = NULL;
-#ifndef DISABLE_URL
-	xmlChar * url;
-	int url_buff_fd;
-	NC_URL_PROTOCOLS protocol;
-#endif
-	
-	char * sources[] = {
-			"/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":config",
-			"/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":url",
-			"/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":copy-config/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":config",
-			"/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":copy-config/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":url"
-	};
-	
-	for( i = 0; i < 4; i++) {
-		if ((query_result = xmlXPathEvalExpression(BAD_CAST sources[i], rpc->ctxt)) != NULL) {
-			if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
-				// maybe add some error messages here
-				break;
-			}
-			xmlXPathFreeObject(query_result);
-			query_result = NULL;
-		}
-	}
-	
-	if( query_result == NULL ) {
-		return NULL;
-	}
+	char* query = NULL;
+	char* retval;
 
-	/* URL CAPABILITY*/
-	if( i == 1 || i == 3 ) {
-#ifndef DISABLE_URL
-		protocol = nc_url_get_protocol((char*) (url = xmlNodeGetContent(query_result->nodesetval->nodeTab[0])));
-		xmlFree(url);
-		if (protocol == 0) {
-			ERROR("%s: unknown protocol", __func__);
-			return (NULL);
-		}
-		if (!nc_url_is_enabled(protocol)) {
-			ERROR("%s: protocol not suported", __func__);
-			return (NULL);
-		}
-		if ((url_buff_fd = nc_url_get_rpc((char*) (url = xmlNodeGetContent(query_result->nodesetval->nodeTab[0])))) < 0) {
-			return (NULL);
-		}
-		xmlFree(url);
-		xmlXPathFreeObject(query_result);
-		if ((aux_doc = xmlReadFd(url_buff_fd, NULL, NULL, 0)) == NULL ) {
-			close(url_buff_fd);
-			ERROR("%s: error reading from tmp file", __func__);
-			return (NULL);
-		}
-		close(url_buff_fd);
-		config = xmlDocGetRootElement(aux_doc);
-		if (xmlStrcmp(BAD_CAST "config", config->name) != 0) {
-			ERROR("%s: no config data in file", __func__);
-			return (NULL);
-		}
-		
-#else
-		ERROR("%s: url capability is not supported", __func__ );
-		xmlXPathFreeObject(query_result);
-		return (NULL);
-#endif
-	}
-	else {
-		config = query_result->nodesetval->nodeTab[0];
-		xmlXPathFreeObject(query_result);
+	asprintf(&query, "/%s"":rpc/%s:copy-config/%s:source/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "copy-config", 0);
+	free(query);
 
+#ifndef DISABLE_URL
+	if (retval == NCDS_RPC_NOT_APPLICABLE) {
+		/* try URL */
+		asprintf(&query, "/%s"":rpc/%s:copy-config/%s:source/%s:url",
+				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+		retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "copy-config", 1);
+		free(query);
 	}
-	
-	
-	if (config->children == NULL) {
-		/* config is empty */
-		xmlFreeDoc(aux_doc);
+#endif
+
+	return (retval);
+}
+
+static char* nc_rpc_get_cfg_editconfig(const nc_rpc* rpc)
+{
+	char* query = NULL;
+	char* retval;
+
+	asprintf(&query, "/%s"":rpc/%s:edit-config/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "edit-config", 0);
+	free(query);
+
+#ifndef DISABLE_URL
+	if (retval == NCDS_RPC_NOT_APPLICABLE) {
+		asprintf(&query, "/%s"":rpc/%s:edit-config/%s:url",
+				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+		retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "edit-config", 0);
+		free(query);
+	}
+#endif
+
+	return (retval);
+}
+
+static char* nc_rpc_get_cfg_validate(const nc_rpc* rpc)
+{
+	char* query = NULL;
+	char* retval;
+
+	asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "validate", 0);
+	free(query);
+
+#ifndef DISABLE_URL
+	if (retval == NCDS_RPC_NOT_APPLICABLE) {
+		asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:url",
+				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+		retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "validate", 0);
+		free(query);
+	}
+#endif
+
+	return (retval);
+}
+
+static xmlNodePtr ncxml_rpc_get_cfg_copyconfig(const nc_rpc* rpc)
+{
+	char* query = NULL;
+	xmlNodePtr retval;
+
+	asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "copy-config", 0);
+	free(query);
+
+#ifndef DISABLE_URL
+	if (retval == NCDS_RPC_NOT_APPLICABLE) {
+		/* try URL */
+		asprintf(&query, "/%s"":rpc/%s:copy-config/%s:source/%s:url",
+				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+		retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "copy-config", 1);
+		free(query);
+	}
+#endif
+
+	return (retval);
+}
+
+static xmlNodePtr ncxml_rpc_get_cfg_editconfig(const nc_rpc* rpc)
+{
+	char* query = NULL;
+	xmlNodePtr retval;
+
+	asprintf(&query, "/%s"":rpc/%s:edit-config/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "edit-config", 0);
+	free(query);
+
+#ifndef DISABLE_URL
+	if (retval == NCDS_RPC_NOT_APPLICABLE) {
+		asprintf(&query, "/%s"":rpc/%s:edit-config/%s:url",
+				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+		retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "edit-config", 0);
+		free(query);
+	}
+#endif
+
+	return (retval);
+}
+
+static xmlNodePtr ncxml_rpc_get_cfg_validate(const nc_rpc* rpc)
+{
+	char* query = NULL;
+	xmlNodePtr retval;
+
+	asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "validate", 0);
+	free(query);
+
+#ifndef DISABLE_URL
+	if (retval == NCDS_RPC_NOT_APPLICABLE) {
+		asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:url",
+				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+		retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "validate", 0);
+		free(query);
+	}
+#endif
+
+	return (retval);
+}
+
+char* nc_rpc_get_config(const nc_rpc *rpc)
+{
+	switch(nc_rpc_get_op(rpc)) {
+	case NC_OP_COPYCONFIG:
+		return (nc_rpc_get_cfg_copyconfig(rpc));
+		break;
+	case NC_OP_EDITCONFIG:
+		return (nc_rpc_get_cfg_editconfig(rpc));
+		break;
+	case NC_OP_VALIDATE:
+		return (nc_rpc_get_cfg_validate(rpc));
+		break;
+	default:
+		/* other operations do not have config parameter */
 		return (NULL);
 	}
-	aux_node = xmlCopyNodeList(config->children);
-	xmlFreeDoc(aux_doc);
-	return aux_node;
-	
+}
+
+xmlNodePtr ncxml_rpc_get_config(const nc_rpc *rpc)
+{
+	switch(nc_rpc_get_op(rpc)) {
+	case NC_OP_COPYCONFIG:
+		return (ncxml_rpc_get_cfg_copyconfig(rpc));
+		break;
+	case NC_OP_EDITCONFIG:
+		return (ncxml_rpc_get_cfg_editconfig(rpc));
+		break;
+	case NC_OP_VALIDATE:
+		return (ncxml_rpc_get_cfg_validate(rpc));
+		break;
+	default:
+		/* other operations do not have config parameter */
+		return (NULL);
+	}
 }
 
 NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
@@ -1029,7 +1232,7 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr testopt = NULL;
-	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_DEFOP_MERGE;
+	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_TESTOPT_NOTSET;
 
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":test-option", rpc->ctxt)) != NULL) {
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
@@ -2390,25 +2593,11 @@ nc_rpc * nc_rpc_validate(NC_DATASTORE source, ...)
 
 	switch (source) {
 	case NC_DATASTORE_CONFIG:
-		config_s = va_arg(argp, const char*);
+		config_s = nc_skip_xmldecl(va_arg(argp, const char*));
 		if (config_s == NULL || strlen(config_s) < 4) { /* at least '<x/>' */
 			ERROR("Invalid configuration data for validate operation");
 			va_end(argp);
 			return NULL;
-		}
-
-		if (strncmp(config_s, "<?xml", 5) == 0) {
-			/* We got a "real" XML document. We move after the XML
-			 * declaration, so the trick with covering <config> element
-			 * will work.
-			 */
-			config_s = index(config_s, '>') + 1;
-			if (config_s == NULL) {
-				/* content is corrupted */
-				ERROR("Invalid configuration data for validate operation");
-				va_end(argp);
-				return NULL;
-			}
 		}
 		break;
 	case NC_DATASTORE_URL:
@@ -2691,19 +2880,12 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
 	va_start(argp, target);
 
 	if (source == NC_DATASTORE_CONFIG) {
-		config_s = va_arg(argp, const char*);
-		if (strncmp(config_s, "<?xml", 5) == 0) {
-			/* We got a "real" XML document. We move after the XML
-			 * declaration, so the trick with covering <config> element
-			 * will work.
-			 */
-			config_s = index(config_s, '>') + 1;
-			if (config_s == NULL) {
-				/* content is corrupted */
-				ERROR("Invalid configuration data for <copy-config> operation");
-				va_end(argp);
-				return NULL;
-			}
+		config_s = nc_skip_xmldecl(va_arg(argp, const char*));
+		if (config_s == NULL) {
+			/* content is corrupted */
+			ERROR("Invalid configuration data for <copy-config> operation");
+			va_end(argp);
+			return NULL;
 		}
 
 		/* transform string to the xmlNodePtr */
@@ -2935,19 +3117,12 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFO
 	va_start(argp, test_option);
 	switch (source) {
 	case NC_DATASTORE_CONFIG:
-		config_s = va_arg(argp, const char*);
-		if (strncmp(config_s, "<?xml", 5) == 0) {
-			/* We got a "real" XML document. We move after the XML
-			 * declaration, so the trick with covering <config> element
-			 * will work.
-			 */
-			config_s = index(config_s, '>') + 1;
-			if (config_s == NULL) {
-				/* content is corrupted */
-				ERROR("Invalid configuration data for <edit-config> operation");
-				va_end(argp);
-				return NULL;
-			}
+		config_s = nc_skip_xmldecl(va_arg(argp, const char*));
+		if (config_s == NULL) {
+			/* content is corrupted */
+			ERROR("Invalid configuration data for <edit-config> operation");
+			va_end(argp);
+			return NULL;
 		}
 		break;
 	case NC_DATASTORE_URL:

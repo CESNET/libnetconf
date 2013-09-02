@@ -1,0 +1,49 @@
+.TH "Custom Datastore" 3 "Fri Aug 30 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Custom Datastore \- 
+.PP
+libnetconf's API to use a server-specific datastore implementation\&.  
+
+.SS "Data Structures"
+
+.in +1c
+.ti -1c
+.RI "struct \fBncds_custom_funcs\fP"
+.br
+.RI "\fIPublic callbacks for the data store\&. \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBncds_custom_set_data\fP (struct ncds_ds *datastore, void *custom_data, const struct \fBncds_custom_funcs\fP *callbacks)"
+.br
+.RI "\fISet custom data stored in custom datastore\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+libnetconf's API to use a server-specific datastore implementation\&. 
+
+
+.SH "Function Documentation"
+.PP 
+.SS "void ncds_custom_set_data (struct ncds_ds *datastore, void *custom_data, const struct \fBncds_custom_funcs\fP *callbacks)"
+
+.PP
+Set custom data stored in custom datastore\&. Call after allocating the custom data store, but before initializing it\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdatastore\fP Custom datastore to store the data 
+.br
+\fIcustom_data\fP Any user provided data, passed to all the callbacks, but left intact by the library\&. 
+.br
+\fIcallbacks\fP Definition of what callbacks to use to perform various operations\&. 
+.RE
+.PP
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.

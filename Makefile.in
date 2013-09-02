@@ -35,6 +35,7 @@
 #
 
 NAME = @PACKAGE_NAME@
+LNCTOOL = lnctool/lnctool
 
 # Various configurable paths (remember to edit Makefile.in, not Makefile)
 srcdir = @srcdir@
@@ -58,7 +59,6 @@ RELEASE = @RELEASE@
 version_info = @LIBTOOL_VERSION_INFO@
 
 CC = @CC@
-LN_S = @LN_S@
 DOXYGEN = @DOXYGEN@
 DOXYGEN_CONFIG = Doxyfile
 DOXYGEN_DIR = $(shell cat $(DOXYGEN_CONFIG) | grep '^OUTPUT_DIRECTORY' | sed 's/.*=//')
@@ -105,6 +105,7 @@ SRCS =  src/callbacks.c \
 	src/datastore/edit_config.c \
 	src/datastore/empty/datastore_empty.c \
 	src/datastore/file/datastore_file.c \
+	src/datastore/custom/datastore_custom.c \
 	src/transapi/transapi.c \
 	src/transapi/yinparser.c \
 	src/transapi/xmldiff.c
@@ -123,6 +124,7 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/ssh.h @HDRS_PUBL_SUBDIR_NOTIFICATIONS@ \
 	src/with_defaults.h @HDRS_PUBL_SUBDIR_URL@ \
 	src/datastore.h \
+	src/datastore/custom/datastore_custom.h \
 	src/transapi/transapi.h \
 	src/transapi/transapi_xml.h 
 		
@@ -150,6 +152,8 @@ HDRS_PRIV = src/config.h.in \
 	src/datastore/edit_config.h \
 	src/datastore/empty/datastore_empty.h \
 	src/datastore/file/datastore_file.h \
+	src/datastore/custom/datastore_custom.h \
+	src/datastore/custom/datastore_custom_private.h \
 	src/transapi/transapi_internal.h \
 	src/transapi/yinparser.h \
 	src/transapi/xmldiff.h
@@ -166,7 +170,7 @@ GENERATOR_FILES = src/transapi/generator/Makefile.in \
 
 LOBJS = $(SRCS:%.c=$(OBJDIR)/%.lo)
 
-all: $(NAME).la $(SUBDIRS)
+all: $(LNCTOOL) $(NAME).la $(SUBDIRS)
 
 .PHONY: $(SUBDIRS)
 
@@ -176,6 +180,10 @@ $(SUBDIRS): $(NAME).la
 $(NAME).la: $(LOBJS)
 	@rm -f $@
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined -o $@ $^ -rpath $(libdir)
+
+$(LNCTOOL): $(LNCTOOL).in
+	@sed "s/@RNGLIB@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/rnglib/)/g" $< | sed 's/@XSLTDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/xslt/)/g' > $@
+	@chmod +x $@
 
 $(OBJDIR)/%.lo: %.c
 	@[ -d $$(dirname $@) ] || \
@@ -201,7 +209,8 @@ tarball: $(SRCS) $(HEADERS)
 	@for i in $(SUBDIRS) ; do $(MAKE) -C $$i tarball-prepare; done; \
 	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) $(GENERATOR) $(GENERATOR_FILES) configure.in configure \
 	    headers/libnetconf.h.in headers/libnetconf_xml.h.in \
-	    Makefile.in VERSION $(NAME).spec.in $(NAME).pc.in \
+	    ltmain.sh Makefile.in VERSION $(NAME).spec.in $(NAME).pc.in \
+	    lnctool/lnctool.in lnctool/rnglib/* lnctool/xslt/* \
 	    install-sh config.sub config.guess Doxyfile.in doc/img/*.png models/*; do \
 	    [ -d $(NAME)-$(VERSION)/$$(dirname $$i) ] || (mkdir -p $(NAME)-$(VERSION)/$$(dirname $$i)); \
 		cp $$i $(NAME)-$(VERSION)/$$i; \
@@ -232,6 +241,7 @@ install: all install-devel install-doc install-generator
 	[ -d "$(NC_WORKINGDIR_PATH)" ] || \
 		mkdir -p $(NC_WORKINGDIR_PATH)
 	chmod 700 $(NC_WORKINGDIR_PATH)
+	$(INSTALL_DATA) models/ietf-netconf-acm*.rng models/ietf-netconf-acm-schematron.xsl $(NC_WORKINGDIR_PATH)
 	if test "$$(($(SETBIT) & 1))" = "1"; then \
 		if test -n "$(SETUSER)"; then \
 			chown $(SETUSER) $(NC_WORKINGDIR_PATH) || \
@@ -257,8 +267,8 @@ install: all install-devel install-doc install-generator
 
 .PHONY: install-generator
 install-generator:
-	@[ -d $(DESTDIR)/$(bindir)/$(NAME) ] || \
-		(mkdir -p $(DESTDIR)/$(bindir)/$(NAME); chmod 755 $(DESTDIR)/$(bindir)/$(NAME))
+	@[ -d $(DESTDIR)/$(bindir) ] || \
+		(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir))
 	$(INSTALL_PROGRAM) $(GENERATOR) $(DESTDIR)/$(bindir)/lnc-creator
 	@[ -d $(DESTDIR)/$(datadir)/$(NAME)/templates ] || \
 		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/templates; chmod 755 $(DESTDIR)/$(datadir)/$(NAME)/templates)
@@ -270,20 +280,29 @@ install-generator:
 install-devel:
 	@[ -d $(DESTDIR)/$(libdir) ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir)); \
+	[ -d $(DESTDIR)/$(bindir) ] || \
+	    (mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir)); \
 	[ -d $(DESTDIR)/$(libdir)/pkgconfig ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir)/pkgconfig; chmod 755 $(DESTDIR)/$(libdir)/pkgconfig); \
 	[ -d $(DESTDIR)/$(includedir) ] || \
 	    (mkdir -p $(DESTDIR)/$(includedir); chmod 755 $(DESTDIR)/$(includedir)); \
 	[ -d $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR) ] || \
-		(mkdir -p $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR));
+		(mkdir -p $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)); \
+	[ -d $(DESTDIR)/$(datadir)/$(NAME)/rnglib ] || \
+		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/rnglib); \
+	[ -d $(DESTDIR)/$(datadir)/$(NAME)/xslt ] || \
+		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/xslt);
 	$(LIBTOOL) --mode=install cp $(NAME).la $(DESTDIR)/$(libdir); \
 	for i in $(HDRS_PUBL_ROOT); do \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$$(basename $$i); \
 	done; \
 	for i in $(HDRS_PUBL_SUBDIR); do \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
-	done; \
-	$(INSTALL_DATA) $(NAME).pc $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
+	done;
+	$(INSTALL_DATA) $(NAME).pc $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc;
+	$(INSTALL_PROGRAM) $(LNCTOOL) $(DESTDIR)/$(bindir);
+	$(INSTALL_DATA) lnctool/rnglib/* $(DESTDIR)/$(datadir)/$(NAME)/rnglib/;
+	$(INSTALL_DATA) lnctool/xslt/* $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 
 .PHONY: install-doc
 install-doc:
@@ -296,6 +315,7 @@ install-doc:
 uninstall: uninstall-devel uninstall-doc
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libldns.la
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
+	rm $(NC_WOTKINGDIR_PATH)/ietf-netconf-acm*.rng $(NC_WORKINGDIR_PATH)/ietf-netconf-acm-schematron.xsl;
 	for i in $(SUBDIRS) ; do \
 		$(MAKE) DESTDIR=$(patsubst .%,$(abs_srcdir)/.%,$(DESTDIR)) -C $$i uninstall \
 		|| exit 1; \
@@ -313,6 +333,9 @@ uninstall-devel:
 		rm -f $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
 	done; \
 	rm $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
+	rm $(DESTDIR)/$(bindir)/lnctool; \
+	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
+	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 
 .PHONY: uninstall-doc
 uninstall-doc:
