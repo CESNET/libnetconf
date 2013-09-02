@@ -868,7 +868,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	}
 	
 #ifndef DISABLE_URL
-	url_capability_string = nc_url_gencap( retval );
+	url_capability_string = nc_url_gencap();
 	nc_cpblts_add(server_cpblts, url_capability_string );
 	free( url_capability_string );
 #endif
