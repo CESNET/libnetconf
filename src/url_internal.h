@@ -46,7 +46,7 @@
 /**
  * @brief Get rpc from remote source
  * @param url
- * @return fd on tmp file with remote rpc or NULL
+ * @return fd on tmp file with remote rpc or -1 on error
  */
 int nc_url_open(const char * url);
 

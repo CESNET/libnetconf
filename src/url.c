@@ -41,6 +41,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xmlstring.h>
@@ -226,10 +227,11 @@ int nc_url_open(const char *url)
 	char curl_buffer[CURL_ERROR_SIZE];
 	char url_tmp_name[(sizeof(NC_WORKINGDIR_PATH) / sizeof(char)) + 19] = NC_WORKINGDIR_PATH"/url_tmpfileXXXXXX";
 	if ((url_tmpfile = mkstemp(url_tmp_name)) < 0) {
-		ERROR("%s: cannot open temporary file", __func__);
+		ERROR("%s: cannot create temporary file (%s)", __func__, strerror(errno));
+		return (-1);
 	}
 	unlink(url_tmp_name);
-	VERB("curl: getting file from url %s", url);
+	VERB("Getting file from URL: %s (via curl)", url);
 	curl_global_init(INIT_FLAGS);
 	curl = curl_easy_init();
 	curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -240,7 +242,7 @@ int nc_url_open(const char *url)
 	if (res != CURLE_OK) {
 		close(url_tmpfile);
 		ERROR("%s: curl error: %s", __func__, curl_buffer);
-		return -1;
+		return (-1);
 	}
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
