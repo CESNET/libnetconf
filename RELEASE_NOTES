@@ -2,7 +2,9 @@ libnetconf 0.6.0
 
 This release includes the following changes:
 
- * Full implementation of :validate capability
+ * Full implementation of :validate capability.
+ * Full implementation of :url capability with support of local file, SCP,
+   HTTP, HTTPS, FTP, SFTP and FTPS protocols.
  * Custom data store type to allow caller to use its own datastore
    implementation.
  * lnctool(1) to generate YIN model format and validators files.
