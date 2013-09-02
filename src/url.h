@@ -41,39 +41,53 @@
 #ifndef URL_H_
 #define URL_H_
 
-/* Use for enable/disable protocols. (nc_url_enable, nc_url_disable) */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @ingroup url
+ * @brief List of protocol IDs supported by URL capability implementation.
+ * Values are used to enable/disable server support of these protocols
+ * (nc_url_enable(), nc_url_disable()).
+ */
 typedef enum NC_URL_PROTOCOLS {
-	NC_URL_UNKNOWN =   0,
-	NC_URL_SCP     =   1,
-	NC_URL_HTTP    =   2,
-	NC_URL_HTTPS   =   4,
-	NC_URL_FTP     =   8,
-	NC_URL_SFTP    =  16,
-	NC_URL_FTPS    =  32,
-	NC_URL_FILE    =  64,
-	NC_URL_ALL     = 127
+	NC_URL_UNKNOWN =   0, /**< No protocol. */
+	NC_URL_SCP     =   1, /**< SCP (Secure Copy Protocol). */
+	NC_URL_HTTP    =   2, /**< HTTP (Hypertext Transfer Protocol). */
+	NC_URL_HTTPS   =   4, /**< HTTPS (Hypertext Transfer Protocol Secure). */
+	NC_URL_FTP     =   8, /**< FTP (File Transfer Protocol). */
+	NC_URL_SFTP    =  16, /**< SFTP (SSH File Transfer Protocol) */
+	NC_URL_FTPS    =  32, /**< FTPS (FTP/SSL) */
+	NC_URL_FILE    =  64, /**< local file */
+	NC_URL_ALL     = 127  /**< All supported protocols */
 } NC_URL_PROTOCOLS;
 
 /**
- * @brief Overwrite enabled protocols
- * @param protocols binary array of protocol ids (ored NC_URL_PROTOCOLS) to enable
- * @param session
+ * @ingroup url
+ * @brief Overwrite enabled protocols for URL capability
+ * @param protocols binary array of protocol IDs (ORed NC_URL_PROTOCOLS) to be
+ * enabled.
  */
 void nc_url_set_protocols(int protocols);
 
 /**
- * @brief Enable protocol
- * @param protocol id of protocol to enable (from NC_URL_PROTOCOLS)
- * @param session
+ * @ingroup url
+ * @brief Enable specific protocol for use in URL capability.
+ * @param protocol ID of the protocol to enable.
  */
 void nc_url_enable(NC_URL_PROTOCOLS protocol);
 
 /**
- * @brief Disable protocol
- * @param protocol id of protocol to disable (from NC_URL_PROTOCOLS)
- * @param session
+ * @ingroup url
+ * @brief Disable specific protocol for use in URL capability.
+ * @param protocol ID of the protocol to disable.
  */
 void nc_url_disable(NC_URL_PROTOCOLS protocol);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* URL_H_ */
 #endif /* DISABLE_URL */

@@ -51,7 +51,9 @@
  * [RFC6241]: http://tools.ietf.org/html/rfc6241 "RFC 6241"
  * [wrunning]: http://tools.ietf.org/html/rfc6241#section-8.2
  * [candidate]: http://tools.ietf.org/html/rfc6241#section-8.3
+ * [validate]: http://tools.ietf.org/html/rfc6241#section-8.6
  * [startup]: http://tools.ietf.org/html/rfc6241#section-8.7
+ * [url]: http://tools.ietf.org/html/rfc6241#section-8.8
  * [RFC6242]: http://tools.ietf.org/html/rfc6242 "RFC 6242"
  * [RFC5277]: http://tools.ietf.org/html/rfc5277 "RFC 5277"
  * [RFC6470]: http://tools.ietf.org/html/rfc6470 "RFC 6470"
@@ -85,7 +87,9 @@
  * - NETCONF over SSH ([RFC 6242][RFC6242]) including Chunked Framing Mechanism
  * - NETCONF Writable-running capability ([RFC 6241][wrunning])
  * - NETCONF Candidate configuration capability ([RFC 6241][candidate])
+ * - NETCONF Validate capability ([RFC 6241][validate])
  * - NETCONF Distinct startup capability ([RFC 6241][startup])
+ * - NETCONF URL capability ([RFC 6241][url])
  * - NETCONF Event Notifications ([RFC 5277][RFC5277] and [RFC 6470][RFC6470])
  * - NETCONF With-defaults capability ([RFC 6243][RFC6243])
  * - NETCONF Access Control ([RFC 6536][RFC6536])
@@ -742,8 +746,14 @@
 
 /**
  * \defgroup withdefaults With-defaults capability
- * \brief libnetconf's implementation of NETCONF with-defaults capability as
+ * \brief libnetconf's settings for NETCONF :with-defaults capability as
  * defined in RFC 6243.
+ */
+
+/**
+ * \defgroup url URL capability
+ * \brief libnetconf's settings for NETCONF :url capability as
+ * defined in RFC 6241.
  */
 
 /**
