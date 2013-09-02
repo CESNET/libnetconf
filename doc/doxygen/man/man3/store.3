@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Fri Aug 30 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Mon Sep 2 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -82,7 +82,7 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (const struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
 .br
 .RI "\fIPerform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fP"
 .ti -1c
@@ -334,7 +334,7 @@ NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter ses
 .RE
 .PP
 
-.SS "\fBnc_reply\fP* ncds_apply_rpc2all (const struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
+.SS "\fBnc_reply\fP* ncds_apply_rpc2all (struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
 
 .PP
 Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fBThis function IS NOT thread safety\&.\fP

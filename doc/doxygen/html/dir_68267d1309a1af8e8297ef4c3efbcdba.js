@@ -15,5 +15,6 @@ var dir_68267d1309a1af8e8297ef4c3efbcdba =
     [ "notifications_xml.h", "d8/dba/notifications__xml_8h.html", "d8/dba/notifications__xml_8h" ],
     [ "session.h", "da/d46/session_8h.html", "da/d46/session_8h" ],
     [ "ssh.h", "d8/dd3/ssh_8h.html", "d8/dd3/ssh_8h" ],
+    [ "url.h", "df/db8/url_8h.html", "df/db8/url_8h" ],
     [ "with_defaults.h", "da/dbe/with__defaults_8h.html", "da/dbe/with__defaults_8h" ]
 ];

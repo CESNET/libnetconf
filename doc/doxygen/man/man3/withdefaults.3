@@ -1,10 +1,10 @@
-.TH "With-defaults capability" 3 "Fri Aug 30 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "With-defaults capability" 3 "Mon Sep 2 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 With-defaults capability \- 
 .PP
-libnetconf's implementation of NETCONF with-defaults capability as defined in RFC 6243\&.  
+libnetconf's settings for NETCONF :with-defaults capability as defined in RFC 6243\&.  
 
 .SS "Macros"
 
@@ -42,19 +42,15 @@ libnetconf's implementation of NETCONF with-defaults capability as defined in RF
 .br
 .RI "\fIGet ORed value containing the currently supported with-defaults modes\&. \fP"
 .ti -1c
-.RI "int \fBncdflt_rpc_withdefaults\fP (\fBnc_rpc\fP *rpc, \fBNCWD_MODE\fP mode)"
-.br
-.RI "\fISet the <with-defaults> parameter for the given NETCONF RPC message\&. \fP"
-.ti -1c
 .RI "\fBNCWD_MODE\fP \fBncdflt_rpc_get_withdefaults\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet value of the <with-defaults> element from the rpc message\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
-libnetconf's implementation of NETCONF with-defaults capability as defined in RFC 6243\&. 
+libnetconf's settings for NETCONF :with-defaults capability as defined in RFC 6243\&. 
 
-
+libnetconf's implementation of NETCONF with-defaults capability as defined in RFC 6243\&.
 .SH "Macro Definition Documentation"
 .PP 
 .SS "#define NCDFLT_DISABLE   \fBncdflt_set_basic_mode\fP(NCWD_MODE_DISABLED)"
@@ -126,24 +122,6 @@ Set with-defaults modes that are supported\&. This function should be used befor
 Get ORed value containing the currently supported with-defaults modes\&. \fBReturns:\fP
 .RS 4
 ORed value containing the currently supported with-defaults modes\&. 
-.RE
-.PP
-
-.SS "int ncdflt_rpc_withdefaults (\fBnc_rpc\fP *rpc, \fBNCWD_MODE\fPmode)"
-
-.PP
-Set the <with-defaults> parameter for the given NETCONF RPC message\&. Sending RPC message with the <with-default> parameter set via a session which does not support the specified value or the with-defaults capability will fail\&.
-.PP
-\fBParameters:\fP
-.RS 4
-\fIrpc\fP RPC message where <with-defaults> will be added\&. 
-.br
-\fImode\fP Value for the <with-defaults> parameter, NCDFLT_MODE_DISABLED has no effect\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-0 on success, non-zero else\&. 
 .RE
 .PP
 

@@ -1,0 +1,105 @@
+.TH "URL capability" 3 "Mon Sep 2 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+URL capability \- 
+.PP
+libnetconf's settings for NETCONF :url capability as defined in RFC 6241\&.  
+
+.SS "Enumerations"
+
+.in +1c
+.ti -1c
+.RI "enum \fBNC_URL_PROTOCOLS\fP { \fBNC_URL_UNKNOWN\fP = 0, \fBNC_URL_SCP\fP = 1, \fBNC_URL_HTTP\fP = 2, \fBNC_URL_HTTPS\fP = 4, \fBNC_URL_FTP\fP = 8, \fBNC_URL_SFTP\fP = 16, \fBNC_URL_FTPS\fP = 32, \fBNC_URL_FILE\fP = 64, \fBNC_URL_ALL\fP = 127 }"
+.br
+.RI "\fIList of protocol IDs supported by URL capability implementation\&. Values are used to enable/disable server support of these protocols (\fBnc_url_enable()\fP, \fBnc_url_disable()\fP)\&. \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBnc_url_set_protocols\fP (int protocols)"
+.br
+.RI "\fIOverwrite enabled protocols for URL capability\&. \fP"
+.ti -1c
+.RI "void \fBnc_url_enable\fP (\fBNC_URL_PROTOCOLS\fP protocol)"
+.br
+.RI "\fIEnable specific protocol for use in URL capability\&. \fP"
+.ti -1c
+.RI "void \fBnc_url_disable\fP (\fBNC_URL_PROTOCOLS\fP protocol)"
+.br
+.RI "\fIDisable specific protocol for use in URL capability\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+libnetconf's settings for NETCONF :url capability as defined in RFC 6241\&. 
+
+
+.SH "Enumeration Type Documentation"
+.PP 
+.SS "enum \fBNC_URL_PROTOCOLS\fP"
+
+.PP
+List of protocol IDs supported by URL capability implementation\&. Values are used to enable/disable server support of these protocols (\fBnc_url_enable()\fP, \fBnc_url_disable()\fP)\&. 
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fINC_URL_UNKNOWN \fP\fP
+No protocol\&. 
+.TP
+\fB\fINC_URL_SCP \fP\fP
+SCP (Secure Copy Protocol)\&. 
+.TP
+\fB\fINC_URL_HTTP \fP\fP
+HTTP (Hypertext Transfer Protocol)\&. 
+.TP
+\fB\fINC_URL_HTTPS \fP\fP
+HTTPS (Hypertext Transfer Protocol Secure)\&. 
+.TP
+\fB\fINC_URL_FTP \fP\fP
+FTP (File Transfer Protocol)\&. 
+.TP
+\fB\fINC_URL_SFTP \fP\fP
+SFTP (SSH File Transfer Protocol) 
+.TP
+\fB\fINC_URL_FTPS \fP\fP
+FTPS (FTP/SSL) 
+.TP
+\fB\fINC_URL_FILE \fP\fP
+local file 
+.TP
+\fB\fINC_URL_ALL \fP\fP
+All supported protocols 
+.SH "Function Documentation"
+.PP 
+.SS "void nc_url_set_protocols (intprotocols)"
+
+.PP
+Overwrite enabled protocols for URL capability\&. \fBParameters:\fP
+.RS 4
+\fIprotocols\fP binary array of protocol IDs (ORed NC_URL_PROTOCOLS) to be enabled\&. 
+.RE
+.PP
+
+.SS "void nc_url_enable (\fBNC_URL_PROTOCOLS\fPprotocol)"
+
+.PP
+Enable specific protocol for use in URL capability\&. \fBParameters:\fP
+.RS 4
+\fIprotocol\fP ID of the protocol to enable\&. 
+.RE
+.PP
+
+.SS "void nc_url_disable (\fBNC_URL_PROTOCOLS\fPprotocol)"
+
+.PP
+Disable specific protocol for use in URL capability\&. \fBParameters:\fP
+.RS 4
+\fIprotocol\fP ID of the protocol to disable\&. 
+.RE
+.PP
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.
