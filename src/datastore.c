@@ -47,6 +47,7 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <dirent.h>
+#include <stdio.h>
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
@@ -68,6 +69,7 @@
 #include "session.h"
 #include "datastore.h"
 #include "nacm.h"
+#include "url_internal.h"
 #include "datastore/edit_config.h"
 #include "datastore/datastore_internal.h"
 #include "datastore/file/datastore_file.h"
@@ -3529,6 +3531,63 @@ int ncds_rollback(ncds_id id)
 	return (datastore->func.rollback(datastore));
 }
 
+/**
+ * @brief Check if source and target are same. If url is enabled, checks if source and target urls are same
+ * @param rpc
+ * @param session
+ * @return 
+ */
+int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
+{
+	NC_DATASTORE source, target;
+#ifndef DISABLE_URL
+	xmlXPathObjectPtr query_source = NULL;
+	xmlXPathObjectPtr query_target = NULL;
+	xmlChar *nc1 = NULL, *nc2 = NULL;
+	int ret;
+#endif /* DISABLE_URL */
+
+	source = nc_rpc_get_source(rpc);
+	target = nc_rpc_get_target(rpc);
+
+	if(source == target) {
+		/* source and target datastore are the same */
+#ifndef DISABLE_URL
+		/* if they are URLs, check if both URLs point to a single resource */
+		if (source == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
+			query_source = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":url", rpc->ctxt);
+			query_target = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
+			if( (query_source == NULL || query_target == NULL )) {
+				return 1;
+			}
+
+			nc1 = xmlNodeGetContent(query_source->nodesetval->nodeTab[0]);
+			nc2 = xmlNodeGetContent(query_target->nodesetval->nodeTab[0]);
+			
+			if((nc1 == NULL) || (nc2 == NULL) ){
+				ERROR( "Empty source or target in ncds_is_conflict" );
+				return 1;
+			}
+			ret = xmlStrcmp(nc1, nc2);
+
+			/* cleanup */
+			xmlFree(nc1);
+			xmlFree(nc2);
+			xmlXPathFreeObject( query_source );
+			xmlXPathFreeObject( query_target );
+			return (ret);
+		} else {
+#else
+		{
+#endif /* DISABLE_URL */
+			/* rpc targets local datastores */
+			return 1;
+		}
+	}
+	
+	return 0;
+}
+
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
@@ -3558,6 +3617,25 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 #ifndef DISABLE_VALIDATION
 	NC_EDIT_TESTOPT_TYPE testopt;
 #endif
+
+#ifndef DISABLE_URL
+	xmlXPathObjectPtr url_path = NULL;
+	xmlChar *ncontent;
+	xmlNodePtr url_remote_node;
+	xmlNodePtr url_local_node;
+	xmlNodePtr url_tmp_node;
+	xmlNodePtr url_tmp_node_next;
+	xmlXPathObjectPtr url_model_xpath = NULL;
+	xmlChar * url_model_namespace;
+	xmlChar * url_model_name;
+	xmlDocPtr url_tmp_doc;
+	xmlDocPtr url_local_doc;
+	xmlChar * url_doc_text;
+	char url_test_empty;
+	int url_tmpfile;
+	xmlNsPtr url_new_ns;
+	NC_URL_PROTOCOLS protocol;
+#endif /* DISABLE_URL */
 
 	if (rpc == NULL || session == NULL) {
 		ERROR("%s: invalid parameter %s", __func__, (rpc==NULL)?"rpc":"session");
@@ -3795,7 +3873,7 @@ process_datastore:
 					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
 					break;
-				}
+				}	
 			} else {
 				node = xmlCopyNode(aux_node, 1);
 			}
@@ -3826,27 +3904,34 @@ process_datastore:
 			nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "target");
 			break;
 		}
-
-		if (op == NC_OP_COPYCONFIG && ((source_ds = nc_rpc_get_source(rpc)) != NC_DATASTORE_CONFIG)) {
+		// check if source datastore is config or url
+		if (op == NC_OP_COPYCONFIG && ((source_ds = nc_rpc_get_source(rpc)) != NC_DATASTORE_CONFIG) && ( source_ds != NC_DATASTORE_URL )) {
 			if (source_ds == NC_DATASTORE_ERROR) {
 				e = nc_err_new(NC_ERR_BAD_ELEM);
 				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "source");
 				break;
 			}
 			/* <copy-config> with specified source datastore */
-			if (target_ds == source_ds) {
+			if ( ncds_is_conflict(rpc, session) ) {
 				e = nc_err_new(NC_ERR_INVALID_VALUE);
 				nc_err_set(e, NC_ERR_PARAM_MSG, "Both the target and the source identify the same datastore.");
 				break;
 			}
 			config = NULL;
 		} else {
+			// source is url or config, here starts woodo magic
 			/*
 			 * config can contain multiple elements on the root level, so
 			 * cover it with the <config> element to allow the creation of xml
 			 * document
 			 */
+			
+			// if config is config, just return <config> element content. If it is url, download remote file and returm content
 			config = nc_rpc_get_config(rpc);
+			if (config == NULL) {
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				break;
+			}
 			if (strcmp(config, "") == 0) {
 				/* config is empty -> ignore rest of magic here,
 				 * go to application of the operation and do
@@ -3961,7 +4046,154 @@ apply_editcopyconfig:
 			}
 #endif
 		} else if (op == NC_OP_COPYCONFIG) {
-			ret = ds->func.copyconfig(ds, session, rpc, target_ds, source_ds, config, &e);
+#ifndef DISABLE_URL
+			if(source_ds == NC_DATASTORE_URL ) {
+				// if source is url, change source type to config
+				source_ds = NC_DATASTORE_CONFIG;
+				if(target_ds == NC_DATASTORE_URL){
+					// if target is url, prepare document content
+					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", config) == -1) {
+						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+						config = NULL;
+					}
+				}
+			}
+			if (target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
+				//get target url
+				url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
+				if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
+					ERROR("%s: unable to get URL path from <copy-config> request.", __func__);
+					ret = EXIT_FAILURE;
+					break;
+				}
+				ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
+				protocol = nc_url_get_protocol((char*)ncontent);
+				if (protocol == 0) {
+					ERROR("%s: unknown protocol", __func__);
+					return (NULL);
+				}
+				if (!nc_url_is_enabled(protocol)) {
+					ERROR("%s: protocol not suported", __func__);
+					return (NULL);
+				}
+
+				switch (source_ds) {
+				case NC_DATASTORE_CONFIG:
+					// source datastore is config (or url), so just upload file
+					ret = nc_url_upload(config, (char*)ncontent);
+					break;
+				case NC_DATASTORE_RUNNING:
+				case NC_DATASTORE_STARTUP:
+				case NC_DATASTORE_CANDIDATE:
+					/** Woodoo magic.
+					 * If target is URL we have problem, because ncds_apply_rpc2all is calling ncds_apply_rpc for
+					 * each datastore -> remote file would be overwriten everytime. So solution is to download
+					 * remote file, make document from it and add current datastore configuration data to documtent and
+					 * then upload it. Problem is if remote file is not empty (it contains data from datastores we does not have).
+					 * Then data would merge and we will have merged wanted data with non-wanted data from remote file before editing.
+					 * Thats FEATURE, not bug!!!. I reccomend to call ncds_apply_rpc2all and before that use delete-config on remote file.
+					 */
+					// get data from remote file
+					if ((url_tmpfile = nc_url_open((char*) ncontent)) < 0) { // remote file is empty or does not exists
+						// create empty document with <config> root element
+						url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
+						url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
+						if((url_new_ns = xmlNewNs(url_remote_node, BAD_CAST NC_NS_BASE10, NULL)) == NULL){
+							ERROR("%s: error while creating namespace to <config> node", __func__);
+						}
+						xmlSetNs(url_remote_node, url_new_ns);
+						xmlDocSetRootElement(url_tmp_doc, url_remote_node);
+					} else {
+						if (read(url_tmpfile, &url_test_empty, 1) > 0){ // check if file is empty
+							// file is not empty
+							lseek(url_tmpfile, 0, SEEK_SET);
+							if ((url_tmp_doc = xmlReadFd(url_tmpfile, NULL, NULL, 0)) == NULL ) { 
+								close(url_tmpfile);
+								ERROR("%s: error reading from tmp file", __func__);
+								return (NULL);
+							}
+							close(url_tmpfile);
+							url_remote_node = xmlDocGetRootElement(url_tmp_doc);
+							if (xmlStrcmp(BAD_CAST "config", url_remote_node->name) != 0) {
+								ERROR("%s: no config data in remote file", __func__);
+								return (NULL);
+							}
+
+							/**
+							 * first we remove all entries from "remote" document which match enabled data models
+							 * this will prevent us from having multiple datastore configurations
+                             */
+							// get data models
+							url_model_xpath = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":namespace", ds->data_model->ctxt);
+							url_model_namespace = xmlGetProp( url_model_xpath->nodesetval->nodeTab[0], (xmlChar*)"uri" );
+							
+							xmlXPathFreeObject(url_model_xpath);
+							url_model_xpath = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":container", ds->data_model->ctxt);
+							url_model_name = xmlGetProp(url_model_xpath->nodesetval->nodeTab[0], (xmlChar*)"name");
+							xmlXPathFreeObject(url_model_xpath);
+
+
+							// remove all remote entries which match data models from datastore
+							url_tmp_node = url_remote_node->children;
+							while (url_tmp_node != NULL) {
+								url_tmp_node_next = url_tmp_node->next;
+								if (xmlStrcmp(url_tmp_node->name, url_model_name) == 0 && 
+										(xmlStrcmp(url_tmp_node->ns->href, url_model_namespace) == 0)) {
+									xmlUnlinkNode(url_tmp_node);
+									xmlFreeNode(url_tmp_node);
+								}
+
+								url_tmp_node = url_tmp_node_next;
+							}
+							xmlFree(url_model_name);
+							xmlFree(url_model_namespace);
+							
+						} else {
+							// file is empty, create new document with root <config> element
+							url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
+							url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
+							xmlDocSetRootElement(url_tmp_doc, url_remote_node);
+						}
+					}
+					
+					config = ds->func.getconfig( ds, session, source_ds, &e );
+					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", config) == -1) {
+						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+						config = NULL;
+					}
+					
+					// copy local data to "remote" document
+					url_local_doc = xmlParseMemory(config, strlen(config));
+					url_local_node = xmlDocGetRootElement( url_local_doc );
+					url_tmp_node = url_local_node->children;
+					while (url_tmp_node != NULL) {
+						url_tmp_node_next = url_tmp_node->next;
+						xmlAddChild(url_remote_node, url_tmp_node);
+						url_tmp_node = url_tmp_node_next;
+					}
+					
+					
+					xmlDocDumpMemory( url_tmp_doc, &url_doc_text, NULL );
+					nc_url_upload((char*) url_doc_text, (char*) ncontent);
+
+					xmlFreeDoc(url_tmp_doc);
+	
+					
+					break;
+				default:
+					ERROR("%s: invalid source datastore for URL target", __func__);
+					break;
+				}
+				xmlFree(ncontent);
+				xmlXPathFreeObject(url_path);
+				
+				ret = EXIT_SUCCESS;
+			} else {
+#else
+			{
+#endif /* DISABLE_URL */
+				ret = ds->func.copyconfig(ds, session, rpc, target_ds, source_ds, config, &e);
+			}
 		} else {
 			ret = EXIT_FAILURE;
 		}
@@ -3989,8 +4221,35 @@ apply_editcopyconfig:
 			nc_err_set(e, NC_ERR_PARAM_MSG, "Cannot delete a running datastore.");
 			break;
 		}
-		ret = ds->func.deleteconfig(ds, session, target_ds = nc_rpc_get_target(rpc), &e);
+		target_ds  = nc_rpc_get_target(rpc);
+#ifndef DISABLE_URL
+		if (target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
+			url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":delete-config/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
+			if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
+				ERROR("%s: unable to get URL path from <delete-config> request.", __func__);
+				ret = EXIT_FAILURE;
+				break;
+			}
+			ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
+			protocol = nc_url_get_protocol((char*)ncontent);
+			if (protocol == 0) {
+				ERROR("%s: unknown protocol", __func__);
+				return (NULL );
+			}
+			if (!(protocol)) {
+				ERROR("%s: protocol not suported", __func__);
+				return (NULL );
+			}
 
+			ret = nc_url_delete_config((char*)ncontent);
+			xmlFree(ncontent);
+			xmlXPathFreeObject(url_path);
+		} else {
+#else
+		{
+#endif /* DISABLE_URL */
+			ret = ds->func.deleteconfig(ds, session, target_ds, &e);
+		}
 #ifndef DISABLE_NOTIFICATIONS
 		/* log the event */
 		if (ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
@@ -4258,7 +4517,7 @@ apply_editcopyconfig:
 	return (reply);
 }
 
-nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[])
+nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[])
 {
 	struct ncds_ds_list* ds, *ds_rollback;
 	nc_reply *old_reply = NULL, *new_reply = NULL, *reply = NULL;
@@ -4280,6 +4539,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 		*ids = ncds.datastores_ids;
 	}
 
+	
 	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
 		/* skip internal datastores */
 		if (ds->datastore->id > 0 && ds->datastore->id < internal_ds_count) {
@@ -4326,7 +4586,7 @@ nc_reply* ncds_apply_rpc2all(const struct nc_session* session, const nc_rpc* rpc
 			}
 		}
 	}
-
+	
 	return (reply);
 }
 

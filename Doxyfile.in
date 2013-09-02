@@ -684,6 +684,7 @@ INPUT                  = src/libnetconf.h \
                          src/transapi/transapi_internal.h \
                          src/transapi/yinparser.h \
                          src/transapi/xmldiff.h \
+                         src/url.h \
                          src/with_defaults.h
 
 # This tag can be used to specify the character encoding of the source files 

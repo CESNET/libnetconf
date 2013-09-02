@@ -63,7 +63,9 @@
 #else
 #	include "libssh2.h"
 #endif
-
+#ifndef DISABLE_URL
+#	include "url_internal.h"
+#endif
 #include "config.h"
 
 #include "ssh.h"
@@ -87,6 +89,10 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 extern struct nc_shared_info *nc_info;
 extern char* server_capabilities; /* from datastore, only for server side */
 
+#ifndef DISABLE_URL
+	extern int nc_url_protocols;
+#endif
+	
 struct auth_pref_couple
 {
 	NC_SSH_AUTH_TYPE type;
@@ -736,6 +742,9 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	NCWD_MODE mode;
 	char** nslist;
 	pthread_mutexattr_t mattr;
+#ifndef DISABLE_URL
+	char * url_capability_string;
+#endif
 
 	/* allocate netconf session structure */
 	retval = malloc(sizeof(struct nc_session));
@@ -761,7 +770,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	retval->stats->in_bad_rpcs = 0;
 	retval->stats->out_rpc_errors = 0;
 	retval->stats->out_notifications = 0;
-
+	
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
@@ -857,7 +866,15 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 			}
 		}
 	}
+	
+#ifndef DISABLE_URL
+	url_capability_string = nc_url_gencap();
+	nc_cpblts_add(server_cpblts, url_capability_string );
+	free( url_capability_string );
+#endif
 
+	
+	
 	if (server_capabilities != NULL) {
 		free (server_capabilities);
 		server_capabilities = serialize_cpblts(server_cpblts);

@@ -1,9 +1,9 @@
 /**
- * \file libnetconf.h
- * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief libnetconf's main header.
+ * \file url_internal.h
+ * \author Ondrej Vlk <ondrasek.vlk@gmail.com>
+ * \brief libnetconf's internal API to use the URL capability.
  *
- * Copyright (C) 2012 CESNET, z.s.p.o.
+ * Copyright (C) 2013 CESNET, z.s.p.o.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,19 +37,57 @@
  *
  */
 
-#ifndef LIBNETCONF_H_
-#define LIBNETCONF_H_
+#ifndef DISABLE_URL
+#ifndef URL_INTERNAL_H_
+#define URL_INTERNAL_H_
 
-@INCLUDE_NOTIFICATIONS@
-@INCLUDE_URL@
-#include "libnetconf/netconf.h"
-#include "libnetconf/callbacks.h"
-#include "libnetconf/session.h"
-#include "libnetconf/messages.h"
-#include "libnetconf/with_defaults.h"
-#include "libnetconf/error.h"
-#include "libnetconf/datastore.h"
-#include "libnetconf/transapi.h"
+#include "url.h"
 
-#endif /* LIBNETCONF_H_ */
+/**
+ * @brief Get config file from remote source and store it to temporary file
+ *
+ * Caller HAVE TO close file descriptor returned by this function. Tmp file is
+ * unliked by nc_url_open.
+ *
+ * @param url source url
+ * @return fd on tmp file with remote rpc or -1 on error
+ */
+int nc_url_open(const char * url);
 
+/**
+ * @brief Replaces target file with empty <config> element.
+ * @param url target url
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int nc_url_delete_config(const char *url);
+
+/**
+ * @brief Uploads data to remote target
+ * @param data configuration data enclosed in <config> element
+ * @param url target url
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int nc_url_upload(char *data, const char *url);
+
+/**
+ * @brief Generate URL capability string from enabled protocols
+ * @return capability string
+ */
+char* nc_url_gencap();
+
+/**
+ * @brief Check if protocol is enabled
+ * @param protocol protocol ID
+ * @return 0 if not supported, nonzero otherwise
+ */
+int nc_url_is_enabled(NC_URL_PROTOCOLS protocol);
+
+/**
+ * @brief Get protocol ID from url string
+ * @param url url to check
+ * @return protocol ID
+ */
+NC_URL_PROTOCOLS nc_url_get_protocol(const char *url);
+
+#endif /* URL_INTERNAL_H_ */
+#endif /* DISABLE_URL */

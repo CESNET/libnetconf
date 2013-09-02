@@ -74,6 +74,11 @@
 #  include "notifications.h"
 #endif
 
+#ifndef DISABLE_URL
+#	include "url_internal.h"
+	extern int nc_url_protocols;
+#endif
+
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 /* definition in datastore.c */
@@ -784,7 +789,7 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	struct nc_cpblts *retval;
 	char** nslist;
 	int i;
-
+	
 	retval = nc_cpblts_new(NULL);
 	if (retval == NULL) {
 		return (NULL);
@@ -796,6 +801,7 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	nc_cpblts_add(retval, NC_CAP_CANDIDATE_ID);
 	nc_cpblts_add(retval, NC_CAP_STARTUP_ID);
 	nc_cpblts_add(retval, NC_CAP_ROLLBACK_ID);
+
 #ifndef DISABLE_NOTIFICATIONS
 	if (nc_init_flags & NC_INIT_NOTIF) {
 		nc_cpblts_add(retval, NC_CAP_INTERLEAVE_ID);
@@ -1853,6 +1859,7 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 
 	/* return the result */
 	*msg = retval;
+	(*msg)->session = session;
 	return (msgtype);
 
 malformed_msg_channels_unlock:
@@ -1875,7 +1882,7 @@ malformed_msg:
 
 	ERROR("Malformed message received, closing the session %s.", session->session_id);
 	nc_session_close(session, NC_SESSION_TERM_OTHER);
-
+	
 	return (NC_MSG_UNKNOWN);
 }
 
@@ -1983,6 +1990,8 @@ try_again:
 	DBG_UNLOCK("mut_mqueue");
 	pthread_mutex_unlock(&(session->mut_mqueue));
 
+	
+	
 	return (ret);
 }
 

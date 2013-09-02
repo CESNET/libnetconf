@@ -1,9 +1,9 @@
 /**
- * \file libnetconf.h
- * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief libnetconf's main header.
+ * \file url.h
+ * \author Ondrej Vlk <ondrasek.vlk@gmail.com>
+ * \brief libnetconf's public API to use the URL capability.
  *
- * Copyright (C) 2012 CESNET, z.s.p.o.
+ * Copyright (C) 2013 CESNET, z.s.p.o.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,19 +37,57 @@
  *
  */
 
-#ifndef LIBNETCONF_H_
-#define LIBNETCONF_H_
+#ifndef DISABLE_URL
+#ifndef URL_H_
+#define URL_H_
 
-@INCLUDE_NOTIFICATIONS@
-@INCLUDE_URL@
-#include "libnetconf/netconf.h"
-#include "libnetconf/callbacks.h"
-#include "libnetconf/session.h"
-#include "libnetconf/messages.h"
-#include "libnetconf/with_defaults.h"
-#include "libnetconf/error.h"
-#include "libnetconf/datastore.h"
-#include "libnetconf/transapi.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* LIBNETCONF_H_ */
+/**
+ * @ingroup url
+ * @brief List of protocol IDs supported by URL capability implementation.
+ * Values are used to enable/disable server support of these protocols
+ * (nc_url_enable(), nc_url_disable()).
+ */
+typedef enum NC_URL_PROTOCOLS {
+	NC_URL_UNKNOWN =   0, /**< No protocol. */
+	NC_URL_SCP     =   1, /**< SCP (Secure Copy Protocol). */
+	NC_URL_HTTP    =   2, /**< HTTP (Hypertext Transfer Protocol). */
+	NC_URL_HTTPS   =   4, /**< HTTPS (Hypertext Transfer Protocol Secure). */
+	NC_URL_FTP     =   8, /**< FTP (File Transfer Protocol). */
+	NC_URL_SFTP    =  16, /**< SFTP (SSH File Transfer Protocol) */
+	NC_URL_FTPS    =  32, /**< FTPS (FTP/SSL) */
+	NC_URL_FILE    =  64, /**< local file */
+	NC_URL_ALL     = 127  /**< All supported protocols */
+} NC_URL_PROTOCOLS;
 
+/**
+ * @ingroup url
+ * @brief Overwrite enabled protocols for URL capability
+ * @param protocols binary array of protocol IDs (ORed NC_URL_PROTOCOLS) to be
+ * enabled.
+ */
+void nc_url_set_protocols(int protocols);
+
+/**
+ * @ingroup url
+ * @brief Enable specific protocol for use in URL capability.
+ * @param protocol ID of the protocol to enable.
+ */
+void nc_url_enable(NC_URL_PROTOCOLS protocol);
+
+/**
+ * @ingroup url
+ * @brief Disable specific protocol for use in URL capability.
+ * @param protocol ID of the protocol to disable.
+ */
+void nc_url_disable(NC_URL_PROTOCOLS protocol);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* URL_H_ */
+#endif /* DISABLE_URL */
