@@ -221,7 +221,7 @@ int nc_url_delete_config(const char *url)
 	return nc_url_upload("<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\"></config>", url);
 }
 
-int nc_url_get_rpc(const char *url)
+int nc_url_open(const char *url)
 {	
 	CURL * curl;
 	CURLcode res;

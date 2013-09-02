@@ -897,7 +897,7 @@ static xmlNodePtr ncxml_rpc_get_cfg_common(const nc_rpc* rpc, xmlChar* query, ch
 			}
 
 			/* get data from URL */
-			if ((url_buff_fd = nc_url_get_rpc((char*) (url_string = xmlNodeGetContent(config)))) < 0) {
+			if ((url_buff_fd = nc_url_open((char*) (url_string = xmlNodeGetContent(config)))) < 0) {
 				xmlFree(url_string);
 				return (NULL);
 			}

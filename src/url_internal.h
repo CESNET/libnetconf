@@ -48,7 +48,7 @@
  * @param url
  * @return fd on tmp file with remote rpc or NULL
  */
-int nc_url_get_rpc(const char * url);
+int nc_url_open(const char * url);
 
 /**
  * @brief Uploads empty (<config></config>) file to remote target

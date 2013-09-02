@@ -4094,7 +4094,7 @@ apply_editcopyconfig:
 					 * Thats FEATURE, not bug!!!. I reccomend to call ncds_apply_rpc2all and before that use delete-config on remote file.
 					 */
 					// get data from remote file
-					if ((url_tmpfile = nc_url_get_rpc((char*) ncontent)) < 0) { // remote file is empty or does not exists
+					if ((url_tmpfile = nc_url_open((char*) ncontent)) < 0) { // remote file is empty or does not exists
 						// create empty document with <config> root element
 						url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
 						url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
