@@ -162,7 +162,7 @@ NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 	}
 }
 
-static size_t nc_url_readdata(char *ptr, size_t size, size_t nmemb, char *userdata)
+static size_t nc_url_readdata(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
 	struct nc_url_mem *data = (struct nc_url_mem *) userdata;
 	if ((size * nmemb) < 1) {
