@@ -1496,6 +1496,16 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 					}
 					return (EXIT_FAILURE);
 				}
+			} else if (c == 0) {
+				ERROR("EOF received (%s)", strerror(errno));
+				free(buf);
+				if (len != NULL ) {
+					*len = 0;
+				}
+				if (text != NULL ) {
+					*text = NULL;
+				}
+				return (EXIT_FAILURE);
 			}
 		} else {
 			ERROR("No way to read the input, fatal error.");
