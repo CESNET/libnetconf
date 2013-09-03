@@ -110,7 +110,7 @@ char* nc_url_gencap()
 		return (NULL);
 	}
 
-	if (asprintf(&cpblt, NC_CAP_URL_ID "&amp;scheme=") < 0) {
+	if (asprintf(&cpblt, NC_CAP_URL_ID "?scheme=") < 0) {
 		ERROR("%s: asprintf error (%s:%d)", __func__, __FILE__, __LINE__);
 		return (NULL);
 	}
