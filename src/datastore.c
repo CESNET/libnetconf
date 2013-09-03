@@ -2753,6 +2753,7 @@ static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* sessi
 	case NC_DATASTORE_CANDIDATE:
 		ret = apply_rpc_validate_(ds, session, source, NULL, e);
 		break;
+	case NC_DATASTORE_URL:
 	case NC_DATASTORE_CONFIG:
 		/*
 		 * config can contain multiple elements on the root level, so
@@ -2760,7 +2761,7 @@ static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* sessi
 		 * document
 		 */
 		config = nc_rpc_get_config(rpc);
-		ret = apply_rpc_validate_(ds, session, source, NULL, e);
+		ret = apply_rpc_validate_(ds, session, NC_DATASTORE_CONFIG, NULL, e);
 		free(config);
 		break;
 	default:
