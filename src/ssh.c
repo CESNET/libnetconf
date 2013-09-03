@@ -817,7 +817,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		server_cpblts = nc_cpblts_new((const char* const*)(capabilities->list));
 	}
 	/* set with-defaults capability announcement */
-	if ((nc_cpblts_get (server_cpblts, NC_CAP_WITHDEFAULTS_ID) != NULL)
+	if ((nc_cpblts_get(server_cpblts, NC_CAP_WITHDEFAULTS_ID) != NULL)
          && ((mode = ncdflt_get_basic_mode()) != NCWD_MODE_NOTSET)) {
 		switch(mode) {
 		case NCWD_MODE_ALL:
@@ -866,15 +866,13 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 			}
 		}
 	}
-	
+
 #ifndef DISABLE_URL
 	url_capability_string = nc_url_gencap();
 	nc_cpblts_add(server_cpblts, url_capability_string );
 	free( url_capability_string );
 #endif
 
-	
-	
 	if (server_capabilities != NULL) {
 		free (server_capabilities);
 		server_capabilities = serialize_cpblts(server_cpblts);
