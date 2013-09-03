@@ -742,9 +742,6 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	NCWD_MODE mode;
 	char** nslist;
 	pthread_mutexattr_t mattr;
-#ifndef DISABLE_URL
-	char * url_capability_string;
-#endif
 
 	/* allocate netconf session structure */
 	retval = malloc(sizeof(struct nc_session));
@@ -868,9 +865,12 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	}
 
 #ifndef DISABLE_URL
-	url_capability_string = nc_url_gencap();
-	nc_cpblts_add(server_cpblts, url_capability_string );
-	free( url_capability_string );
+	if (nc_cpblts_get(server_cpblts, NC_CAP_URL_ID) != NULL) {
+		/* update URL capability with enabled protocols */
+		straux = nc_url_gencap();
+		nc_cpblts_add(server_cpblts, straux);
+		free(straux);
+	}
 #endif
 
 	if (server_capabilities != NULL) {
