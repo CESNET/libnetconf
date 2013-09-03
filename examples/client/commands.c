@@ -493,10 +493,10 @@ void cmd_editconfig_help()
 		rollback = "";
 	}
 
-	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_VALIDATE10_ID)) {
+	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_VALIDATE11_ID)) {
+			validate = "[--test <set|test-only|test-then-set>] ";
+	} else if (session == NULL || nc_cpblts_enabled (session, NC_CAP_VALIDATE10_ID)) {
 		validate = "[--test <set|test-then-set>] ";
-	} else if (session == NULL || nc_cpblts_enabled (session, NC_CAP_VALIDATE11_ID)) {
-		validate = "[--test <set|test-only|test-then-set>] ";
 	} else {
 		validate = "";
 	}
@@ -631,7 +631,7 @@ int cmd_editconfig (char *arg)
 			/* validate test option */
 			if (strcmp (optarg, "set") == 0) {
 				testopt = NC_EDIT_TESTOPT_SET;
-			} else if (nc_cpblts_enabled (session, NC_CAP_VALIDATE11_ID) && strcmp (optarg, "test-only") == 0) {
+			} else if (strcmp (optarg, "test-only") == 0 && nc_cpblts_enabled (session, NC_CAP_VALIDATE11_ID)) {
 				testopt = NC_EDIT_TESTOPT_TEST;
 			} else if (strcmp (optarg, "test-then-set") == 0) {
 				testopt = NC_EDIT_TESTOPT_TESTSET;
