@@ -327,6 +327,10 @@ char* nc_skip_xmldecl(const char* xmldoc)
 
 	/* skip leading whitespaces */
 	s = index(xmldoc, '<');
+	if (s == NULL) {
+		/* not a valid XML document */
+		return (NULL);
+	}
 
 	/* see http://www.w3.org/TR/REC-xml/#NT-XMLDecl */
 	if (strncmp(s, "<?xml", 5) == 0) {
