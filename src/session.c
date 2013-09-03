@@ -817,6 +817,11 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	if ((nc_init_flags & NC_INIT_WD) && (ncdflt_get_basic_mode() != NCWD_MODE_NOTSET)) {
 		nc_cpblts_add(retval, NC_CAP_WITHDEFAULTS_ID);
 	}
+#ifndef DISABLE_URL
+	if ((nc_init_flags & NC_INIT_URL)) {
+		nc_cpblts_add(retval, NC_CAP_URL_ID);
+	}
+#endif
 
 	/* add namespaces of used datastores as announced capabilities */
 	if ((nslist = get_schemas_capabilities()) != NULL) {

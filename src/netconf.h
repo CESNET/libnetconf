@@ -391,6 +391,7 @@ int nc_init(int flags);
 #define NC_INIT_MONITORING 0x00000008 /**< nc_init()'s flag to enable ietf-netconf-monitoring module */
 #define NC_INIT_WD         0x00000010 /**< nc_init()'s flag to enable with-default capability */
 #define NC_INIT_VALIDATE   0x00000020 /**< nc_init()'s flag to enable server's validation capability */
+#define NC_INIT_URL        0x00000040 /**< nc_init()'s flag to enable server's URL capability */
 
 /**
  * @ingroup genAPI
