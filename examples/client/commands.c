@@ -1088,24 +1088,38 @@ int cmd_get (char *arg)
 
 void cmd_deleteconfig_help ()
 {
-	char *datastores = NULL;
+	char *ds_startup, *ds_candidate, *ds_url;
 
 	if (session == NULL) {
-		datastores = "startup|candidate";
-	} else if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
-		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-			datastores = "startup|candidate";
-		} else {
-			datastores = "startup";
-		}
-	} else if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-		datastores = "candidate";
+		ds_startup = "startup";
+		ds_candidate = "|candidate";
+		ds_url = "url:<url>";
 	} else {
+		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
+			ds_startup = "startup";
+		} else {
+			ds_startup = "";
+		}
+
+		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+			ds_candidate = (strlen(ds_startup) == 0) ? "candidate" : "|candidate";
+		} else {
+			ds_candidate = "";
+		}
+
+		if (nc_cpblts_enabled (session, NC_CAP_URL_ID)) {
+			ds_url = ((strlen(ds_startup) + strlen(ds_candidate)) == 0) ? "url:<url>" : "|url:<url>";
+		} else {
+			ds_url = "";
+		}
+	}
+
+	if ((strlen(ds_startup) + strlen(ds_candidate) + strlen(ds_url)) == 0) {
 		fprintf (stdout, "delete-config cannot be used in the current session.\n");
 		return;
 	}
 
-	fprintf (stdout, "delete-config [--help]  %s\n", datastores);
+	fprintf (stdout, "delete-config [--help]  %s%s%s\n", ds_startup, ds_candidate, ds_url);
 }
 
 int cmd_deleteconfig (char *arg)
@@ -1113,6 +1127,7 @@ int cmd_deleteconfig (char *arg)
 	int c;
 	NC_DATASTORE target;
 	nc_rpc *rpc = NULL;
+	char *url = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"help", 0, 0, 'h'},
@@ -1151,10 +1166,10 @@ int cmd_deleteconfig (char *arg)
 		}
 	}
 
-	target = get_datastore("target", "delete-config", &cmd, optind, NULL);
+	target = get_datastore("target", "delete-config", &cmd, optind, &url);
 	while (target == NC_DATASTORE_RUNNING) {
 		fprintf (stdout, "delete-config: <running> datastore cannot be deleted.");
-		target = get_datastore("target", "delete-config", &cmd, cmd.count, NULL);
+		target = get_datastore("target", "delete-config", &cmd, cmd.count, &url);
 	}
 
 	/* arglist is no more needed */
@@ -1165,7 +1180,8 @@ int cmd_deleteconfig (char *arg)
 	}
 
 	/* create requests */
-	rpc = nc_rpc_deleteconfig(target);
+	rpc = nc_rpc_deleteconfig(target, url);
+	free(url);
 	if (rpc == NULL) {
 		ERROR("delete-config", "creating an rpc request failed.");
 		return (EXIT_FAILURE);
