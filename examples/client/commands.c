@@ -677,24 +677,32 @@ int cmd_editconfig (char *arg)
 
 void cmd_validate_help ()
 {
-	char *datastores;
+	char *ds_startup, *ds_candidate, *ds_url;
+
 	if (session == NULL) {
 		/* if session not established, print complete help for all capabilities */
-		datastores = "running|startup|candidate";
+		ds_startup = "|startup";
+		ds_candidate = "|candidate";
+		ds_url = "|url:<url>";
 	} else {
 		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
-			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-				datastores = "running|startup|candidate";
-			} else {
-				datastores = "running|startup";
-			}
-		} else if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-			datastores = "running|candidate";
+			ds_startup = "|startup";
 		} else {
-			datastores = "running";
+			ds_startup = "";
+		}
+		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+			ds_candidate = "|candidate";
+		} else {
+			ds_candidate = "";
+		}
+		if (nc_cpblts_enabled (session, NC_CAP_URL_ID)) {
+			ds_url = "|url:<dsturl>";
+		} else {
+			ds_url = "";
 		}
 	}
-	fprintf (stdout, "validate [--help] [--config <file> | %s]\n", datastores);
+	fprintf (stdout, "validate [--help] [--config <file> | running%s%s%s]\n",
+			ds_startup, ds_candidate, ds_url);
 
 	if (session != NULL &&
 	    !(nc_cpblts_enabled (session, NC_CAP_VALIDATE10_ID) || nc_cpblts_enabled (session, NC_CAP_VALIDATE11_ID))) {
@@ -784,7 +792,7 @@ int cmd_validate (char *arg)
 
 	/* if the config option not set, parse remaining arguments to get source */
 	if (config == NULL) {
-		source = get_datastore("source", "validate", &cmd, optind, NULL);
+		source = get_datastore("source", "validate", &cmd, optind, &config);
 	}
 
 	/* arglist is no more needed */
@@ -792,6 +800,7 @@ int cmd_validate (char *arg)
 
 	/* create requests */
 	rpc = nc_rpc_validate (source, config);
+	free(config);
 	if (rpc == NULL) {
 		ERROR("validate", "creating an rpc request failed.");
 		return (EXIT_FAILURE);
