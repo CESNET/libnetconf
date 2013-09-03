@@ -2872,6 +2872,7 @@ if test "${enable_libssh2+set}" = set; then :
   enableval=$enable_libssh2; if test "$enableval" = "no"; then
 		libssh2="no"
 		CPPFLAGS="$CPPFLAGS -DDISABLE_LIBSSH"
+		LIBS="$LIBS -lutil" # forkpty()
 	else
 		libssh2="yes"
 	fi
