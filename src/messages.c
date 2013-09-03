@@ -2725,7 +2725,7 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 	char *datastores[2] = {NULL, NULL}; /* 0 - source, 1 - target */
 	int i;
 
-	if (target == source) {
+	if (target == source && target != NC_DATASTORE_URL) {
 		ERROR("<copy-config>'s source and target parameters identify the same datastore.");
 		return (NULL);
 	}
@@ -2781,7 +2781,7 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		goto cleanup;
 	}
-	if (datastores[0] == NULL) {
+	if (params[0] == NC_DATASTORE_CONFIG) {
 		/* source configuration is given as data parameter */
 
 		/* if data is an empty string, create \<copy-config\> with empty \<config\> */
@@ -2800,7 +2800,7 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 				goto cleanup;
 			}
 		}
-	} else if (source_url != NULL) {
+	} else if (params[0] == NC_DATASTORE_URL) {
 		/* source is specified as URL */
 		if (xmlNewChild(node_source, ns, BAD_CAST "url", BAD_CAST source_url) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
@@ -2820,9 +2820,9 @@ static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 		goto cleanup;
 	}
-	if (target_url != NULL) {
-		/* source is specified as URL */
-		if (xmlNewChild(node_source, ns, BAD_CAST "url", BAD_CAST target_url) == NULL) {
+	if (params[1] == NC_DATASTORE_URL) {
+		/* target is specified as URL */
+		if (xmlNewChild(node_target, ns, BAD_CAST "url", BAD_CAST target_url) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
 		}
