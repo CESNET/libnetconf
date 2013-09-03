@@ -502,14 +502,14 @@ void cmd_editconfig_help()
 	}
 
 	/* if session not established, print complete help for all capabilities */
-	fprintf (stdout, "edit-config [--help] [--defop <merge|replace|none>] [--error <stop|continue%s>] %s[--config <file>] running", rollback, validate);
+	fprintf (stdout, "edit-config [--help] [--defop <merge|replace|none>] [--error <stop|continue%s>] %s[--config <file> | --url <url>] running", rollback, validate);
 	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
 		fprintf (stdout, "|startup");
 	}
 	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
 		fprintf (stdout, "|candidate");
 	}
-	fprintf (stdout, "\n");
+	fprintf (stdout, "\nIf neither --config nor --url is specified, user is prompted to set edit data manually.\n");
 }
 
 int cmd_editconfig (char *arg)
@@ -518,7 +518,7 @@ int cmd_editconfig (char *arg)
 	char *config_m = NULL, *config = NULL;
 	int config_fd;
 	struct stat config_stat;
-	NC_DATASTORE target;
+	NC_DATASTORE target, source;
 	NC_EDIT_DEFOP_TYPE defop = 0; /* do not set this parameter by default */
 	NC_EDIT_ERROPT_TYPE erropt = 0; /* do not set this parameter by default */
 	NC_EDIT_TESTOPT_TYPE testopt = 0;
@@ -530,6 +530,7 @@ int cmd_editconfig (char *arg)
 			{"error", 1, 0, 'e'},
 			{"help", 0, 0, 'h'},
 			{"test", 1, 0, 't'},
+			{"url", 1, 0, 'u'},
 			{0, 0, 0, 0}
 	};
 	int option_index = 0;
@@ -546,9 +547,16 @@ int cmd_editconfig (char *arg)
 	addargs (&cmd, "%s", arg);
 
 	/* rocess command line parameters */
-	while ((c = getopt_long (cmd.count, cmd.list, "c:d:e:h", long_options, &option_index)) != -1) {
+	while ((c = getopt_long (cmd.count, cmd.list, "c:d:e:t:u:h", long_options, &option_index)) != -1) {
 		switch (c) {
 		case 'c':
+			/* check if -u was not used */
+			if (config != NULL) {
+				ERROR("edit-config", "mixing --config and --url parameters is not allowed.");
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+
 			/* open edit configuration data from the file */
 			config_fd = open(optarg, O_RDONLY);
 			if (config_fd == -1) {
@@ -569,6 +577,7 @@ int cmd_editconfig (char *arg)
 
 			/* make a copy of the content to allow closing the file */
 			config = strdup(config_m);
+			source = NC_DATASTORE_CONFIG;
 
 			/* unmap edit data file and close it */
 			munmap(config_m, config_stat.st_size);
@@ -634,6 +643,16 @@ int cmd_editconfig (char *arg)
 			}
 
 			break;
+		case 'u':
+			/* check if -c was not used */
+			if (config != NULL) {
+				ERROR("edit-config", "mixing --config and --url parameters is not allowed.");
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+			config = strdup(optarg);
+			source = NC_DATASTORE_URL;
+			break;
 		default:
 			ERROR("edit-config", "unknown option -%c.", c);
 			cmd_editconfig_help ();
@@ -658,13 +677,14 @@ int cmd_editconfig (char *arg)
 		INSTRUCTION("Type the edit configuration data (close editor by Ctrl-D):\n");
 		config = mreadline(NULL);
 		if (config == NULL) {
-			ERROR("edit-config", "reading filter failed.");
+			ERROR("edit-config", "reading edit data failed.");
 			return (EXIT_FAILURE);
 		}
+		source = NC_DATASTORE_CONFIG;
 	}
 
 	/* create requests */
-	rpc = nc_rpc_editconfig(target, NC_DATASTORE_CONFIG, defop, erropt, testopt, config);
+	rpc = nc_rpc_editconfig(target, source, defop, erropt, testopt, config);
 	free(config);
 	if (rpc == NULL) {
 		ERROR("edit-config", "creating rpc request failed.");
