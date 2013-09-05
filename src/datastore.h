@@ -100,7 +100,7 @@ extern char error_area;
  * with a specific (basic) configuration data model. Each datastore part is
  * created by ncds_new() or ncds_new_transapi() function. According to the
  * specified datastore type, server should set up additional datastore settings
- * (see sections below). If some specific validation settings are needed,
+ * (see section \ref ds_settings). If some specific validation settings are needed,
  * ncds_set_validation() function can be used (more information about validation
  * can be found at a separated \ref validation "page". Finnaly, to activate
  * datastore and to get its unique identifier, ncds_init() function must be
@@ -123,6 +123,7 @@ extern char error_area;
  * should includes copying startup configuration data into the running
  * datastore (and applying them to the current device settings).
  *
+ * \anchor ds_settings
  * ## Datastore Settings ##
  *
  * - Empty Datastore (*NCDS_TYPE_EMPTY*)
