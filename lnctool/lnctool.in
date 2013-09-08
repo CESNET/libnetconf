@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# lnc-tool : libnetconf helper shell script
+# lnctool : libnetconf helper shell script
 # Copyright (C) 2013  CESNET
 # Author(s): Radek KREJCI <rkrejci@cesnet.cz>
 #
@@ -40,7 +40,7 @@ usage() {
     cat <<EOF
 
 Usage: 
-  lnc-tool [-o <output dir>] [-p <path>] [-fhv] <yang model> [<augment models>]
+  `basename ${0}`[-o <output dir>] [-p <path>] [-fhv] <yang model> [<augment models>]
 
 Generates data model files used by libnetconf applications
 instance documents.
@@ -59,7 +59,7 @@ EOF
 }
 
 missing() {
-    echo "Missing pyang tool, please install it."
+    echo "Missing ${1} tool, please install it."
     exit 1
 }
 
