@@ -386,7 +386,7 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff *diff, const char *ns_mapping[], ch
 					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD);
 					ret_op = XMLDIFF_CHAIN;
 				}
-				list_old_tmp = list_old_tmp->next;
+				list_new_tmp = list_new_tmp->next;
 			}
 			break;
 		case YIN_TYPE_ANYXML:
