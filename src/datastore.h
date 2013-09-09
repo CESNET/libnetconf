@@ -514,7 +514,7 @@ int ncds_feature_disable(const char* module, const char* feature);
  * @brief Enable usage of all features defined in the specified module. By
  * default, all features are disabled. To enable only the specific feature(s),
  * use ncds_feature_enable().
- * @param[in] module Name of the module where the feature is defined. Module
+ * @param[in] module Name of the module where the features are defined. Module
  * must be accessible - added via ncds_add_model() or present in a directory
  * specified via ncds_add_models_path() function.
  * @return 0 on success, non-zero on error.
@@ -526,7 +526,7 @@ int ncds_features_enableall(const char* module);
  * @brief Disable usage of all features defined in the specified module. By
  * default, all features are disabled. To disable only the specific feature(s),
  * use ncds_feature_disable().
- * @param[in] module Name of the module where the feature is defined. Module
+ * @param[in] module Name of the module where the features are defined. Module
  * must be accessible - added via ncds_add_model() or present in a directory
  * specified via ncds_add_models_path() function.
  * @return 0 on success, non-zero on error.
