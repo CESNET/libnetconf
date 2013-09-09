@@ -5,18 +5,20 @@ var datastore_8h =
     [ "ncds_id", "d9/db6/datastore_8h.html#ga8e6ae05c400975ba4d3f038c6d174c19", null ],
     [ "NCDS_TYPE", "d9/db6/datastore_8h.html#gab0f0cbd5268577ec36fc76cf89c72a8f", [
       [ "NCDS_TYPE_EMPTY", "d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b", null ],
-      [ "NCDS_TYPE_FILE", "d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629", null ]
+      [ "NCDS_TYPE_FILE", "d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629", null ],
+      [ "NCDS_TYPE_CUSTOM", "d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa962fdf56453d65bd49886f1f00820e85", null ]
     ] ],
     [ "ncds_model_info", "d9/db6/datastore_8h.html#ga9c0f401a6873e8778a80e6cc80c5219a", null ],
     [ "ncds_new", "d9/db6/datastore_8h.html#ga69009c5985f9eec3a6920f98a6a1a5e6", null ],
     [ "ncds_new_transapi", "d9/db6/datastore_8h.html#ga80e69b4cada8c35e5e358287e8af3d85", null ],
+    [ "ncds_set_validation", "d9/db6/datastore_8h.html#ga4777c16043f5856c5a65bcd20b5ecc31", null ],
     [ "ncds_file_set_path", "d9/db6/datastore_8h.html#gad48955dab497b1258d80019e542acb9b", null ],
     [ "ncds_init", "d9/db6/datastore_8h.html#gaabb1ae2c497726ad826fc6478f97e8ff", null ],
     [ "ncds_device_init", "d9/db6/datastore_8h.html#a18f65083d2321a896be80d686b632b9a", null ],
     [ "ncds_free", "d9/db6/datastore_8h.html#ga77b479cc1496b0c3883bb0f6bfe46754", null ],
     [ "ncds_free2", "d9/db6/datastore_8h.html#ga05e7f1ed8185b92a6dbf904172dba9d2", null ],
     [ "ncds_apply_rpc", "d9/db6/datastore_8h.html#gaabfd0bf6abeaf40659043bf082e14801", null ],
-    [ "ncds_apply_rpc2all", "d9/db6/datastore_8h.html#ga6887f71d8a96129fec594a59bdd10fe9", null ],
+    [ "ncds_apply_rpc2all", "d9/db6/datastore_8h.html#ga6e6e979bd82e50913c82b4dc37cb8759", null ],
     [ "ncds_rollback", "d9/db6/datastore_8h.html#gabb9806e70f3399aed7da879095d9c64e", null ],
     [ "ncds_break_locks", "d9/db6/datastore_8h.html#ga4158273f1ae0332638cc9343097c9f0a", null ],
     [ "ncds_get_model", "d9/db6/datastore_8h.html#ga414b75711e49e0e1eea10ae15c14287e", null ],

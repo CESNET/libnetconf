@@ -1,0 +1,50 @@
+.TH "File Datastore" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+File Datastore \- 
+.PP
+Specific functions for NCDS_FILE_DS type of datastore implementation\&.  
+
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
+.br
+.RI "\fIAssign the path of the datastore file into the datastore structure\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Specific functions for NCDS_FILE_DS type of datastore implementation\&. 
+
+
+.SH "Function Documentation"
+.PP 
+.SS "int ncds_file_set_path (struct ncds_ds *datastore, const char *path)"
+
+.PP
+Assign the path of the datastore file into the datastore structure\&. Checks if the file exist and is accessible for reading and writing\&. If the file does not exist, it is created\&. The file is opened and the file descriptor is stored in the structure\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdatastore\fP Datastore structure to be configured\&. 
+.br
+\fIpath\fP File path to the file storing configuration datastores\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+.IP "\(bu" 2
+0 on success
+.IP "\(bu" 2
+-1 Invalid datastore
+.IP "\(bu" 2
+-2 Invalid path ((does not exist && can not be created) || insufficient rights) 
+.PP
+.RE
+.PP
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.

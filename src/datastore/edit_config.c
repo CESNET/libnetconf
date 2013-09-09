@@ -1222,7 +1222,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 	xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST "key", BAD_CAST NC_NS_YANG));
 
 	/* count the keys in predicate */
-	for (i = 0, s = strchr((char*)ref, '['); s != NULL; i++, s = strchr(s, '['));
+	for (i = 0, s = strchr((char*)ref, '['); s != NULL; i++, s = strchr(s+1, '['));
 	if (i == 0) {
 		/* something went wrong */
 		if (error != NULL) {
@@ -2293,6 +2293,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 				}
 				/* remove the node from the edit document */
 				edit_delete(edit_node);
+				nodes->nodesetval->nodeTab[i] = NULL;
 			}
 		}
 		xmlXPathFreeObject(nodes);
@@ -2308,6 +2309,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 					xmlXPathFreeObject(nodes);
 					goto error;
 				}
+				nodes->nodesetval->nodeTab[i] = NULL;
 			}
 		}
 		xmlXPathFreeObject(nodes);
@@ -2323,6 +2325,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 					xmlXPathFreeObject(nodes);
 					goto error;
 				}
+				nodes->nodesetval->nodeTab[i] = NULL;
 			}
 		}
 		xmlXPathFreeObject(nodes);
@@ -2338,6 +2341,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 					xmlXPathFreeObject(nodes);
 					goto error;
 				}
+				nodes->nodesetval->nodeTab[i] = NULL;
 			}
 		}
 		xmlXPathFreeObject(nodes);
@@ -2353,6 +2357,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 					xmlXPathFreeObject(nodes);
 					goto error;
 				}
+				nodes->nodesetval->nodeTab[i] = NULL;
 			}
 		}
 		xmlXPathFreeObject(nodes);

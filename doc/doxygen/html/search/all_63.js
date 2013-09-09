@@ -7,5 +7,7 @@ var searchData=
   ['children_5fcount',['children_count',['../dd/de6/structmodel__tree.html#a7849df4fab48f1f94b85a3045b002b1b',1,'model_tree']]],
   ['client',['Client',['../d1/d25/client.html',1,'usage']]],
   ['close',['close',['../d9/dc0/structtransapi.html#a414e48f893be7474f64d2c61a9c012b9',1,'transapi']]],
+  ['copyconfig',['copyconfig',['../d0/d28/structncds__custom__funcs.html#ae0d54e97fa9abaafbf3b234c365a09b6',1,'ncds_custom_funcs']]],
+  ['custom_20datastore',['Custom Datastore',['../da/d64/group__customds.html',1,'']]],
   ['compilation_20and_20installation',['Compilation and Installation',['../d9/d87/install.html',1,'']]]
 ];

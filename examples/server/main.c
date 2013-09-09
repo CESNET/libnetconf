@@ -207,6 +207,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		case NC_OP_GET:
 		case NC_OP_GETCONFIG:
 		case NC_OP_GETSCHEMA:
+		case NC_OP_VALIDATE:
 			reply = ncds_apply_rpc2all(config->session, rpc,  NULL);
 			break;
 		default:
@@ -239,7 +240,7 @@ void process_rpc(evutil_socket_t UNUSED(in), short UNUSED(events), void *arg)
 		reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
 	} else if (reply == NCDS_RPC_NOT_APPLICABLE) {
 		e = nc_err_new(NC_ERR_OP_FAILED);
-		nc_err_set(e, NC_ERR_PARAM_MSG, "Requested operation cannot be performed on the managed datastore, invalid configuration data.");
+		nc_err_set(e, NC_ERR_PARAM_MSG, "Requested operation cannot be performed on the managed datastore.");
 		reply = nc_reply_error(e);
 	}
 

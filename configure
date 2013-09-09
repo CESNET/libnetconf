@@ -633,6 +633,10 @@ ac_subst_vars='LTLIBOBJS
 CONFIGURE_ARGS
 HAVE_EACCESS
 CONFIGURE_PARAMS
+INCLUDE_URL
+SRCS_URL
+HDRS_PRIV_URL
+HDRS_PUBL_SUBDIR_URL
 INCLUDE_NOTIFICATIONS_XML
 INCLUDE_NOTIFICATIONS
 SRCS_NOTIFICATIONS
@@ -655,6 +659,8 @@ V_SONAME_OPT
 V_SHLIB_OPT
 V_SHLIB_CMD
 LIBOBJS
+CURL_LIBS
+CURL_CFLAGS
 DBUS_LIBS
 DBUS_CFLAGS
 PTHREAD_CFLAGS
@@ -709,6 +715,7 @@ RPMBUILD
 DOXYGEN
 SSH_PROG
 UNAME
+XSLT_CONFIG
 XML2_CONFIG
 PKG_CONFIG
 CONFIGURE_PWD
@@ -766,9 +773,12 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_libxml2
+with_libxslt
 with_libssh2
 enable_libssh2
 enable_notifications
+enable_url
+enable_validation
 with_examples
 enable_debug
 enable_debug_threads
@@ -802,7 +812,9 @@ LIBSSH2_HANDSHAKE_LIBS
 LIBSSH2_TIMEOUT_CFLAGS
 LIBSSH2_TIMEOUT_LIBS
 DBUS_CFLAGS
-DBUS_LIBS'
+DBUS_LIBS
+CURL_CFLAGS
+CURL_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1418,6 +1430,8 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-libssh2       Use ssh client program instead of libssh2.
   --disable-notifications Disable support of NETCONF Notifications (RFC 5277)
+  --disable-url           Disable support of NETCONF URL Capability (RFC 6241)
+  --disable-validation    Disable support for configuration data validation
   --enable-debug          Compile with debug options
   --enable-debug-threads  Extend debug mode for threads
   --enable-shared[=PKGS]  build shared libraries [default=yes]
@@ -1430,6 +1444,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-libxml2          specific libxml2 location
+  --with-libxslt          specific libxslt location
   --with-libssh2=DIR      Specifies libssh2 installation directory.
   --with-examples         Enable building example applications, they respect
                           --with-suid and --with-sgid options
@@ -1479,6 +1494,8 @@ Some influential environment variables:
               linker flags for LIBSSH2_TIMEOUT, overriding pkg-config
   DBUS_CFLAGS C compiler flags for DBUS, overriding pkg-config
   DBUS_LIBS   linker flags for DBUS, overriding pkg-config
+  CURL_CFLAGS C compiler flags for CURL, overriding pkg-config
+  CURL_LIBS   linker flags for CURL, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -2786,6 +2803,60 @@ fi
 
 
 
+# Check whether --with-libxslt was given.
+if test "${with_libxslt+set}" = set; then :
+  withval=$with_libxslt;
+		# Extract the first word of "xslt-config", so it can be a program name with args.
+set dummy xslt-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_XSLT_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$XSLT_CONFIG"; then
+  ac_cv_prog_XSLT_CONFIG="$XSLT_CONFIG" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $withval
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_XSLT_CONFIG="yes"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_XSLT_CONFIG" && ac_cv_prog_XSLT_CONFIG="no"
+fi
+fi
+XSLT_CONFIG=$ac_cv_prog_XSLT_CONFIG
+if test -n "$XSLT_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $XSLT_CONFIG" >&5
+$as_echo "$XSLT_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+		if test "$XSLT_CONFIG" = "no"; then
+			as_fn_error $? "Missing development package of libxslt." "$LINENO" 5
+		fi
+		CFLAGS="`$withval/xslt-config --cflags` $CFLAGS"
+		LDFLAGS="`$withval/xslt-config --libs` $LDFLAGS"
+		WITH_LIBXSLT="$withval"
+		CONFIGURE_ARGS="--with-libxslt=$withval $CONFIGURE_ARGS"
+
+
+fi
+
+
+
 # Check whether --with-libssh2 was given.
 if test "${with_libssh2+set}" = set; then :
   withval=$with_libssh2;
@@ -2801,6 +2872,7 @@ if test "${enable_libssh2+set}" = set; then :
   enableval=$enable_libssh2; if test "$enableval" = "no"; then
 		libssh2="no"
 		CPPFLAGS="$CPPFLAGS -DDISABLE_LIBSSH"
+		LIBS="$LIBS -lutil" # forkpty()
 	else
 		libssh2="yes"
 	fi
@@ -2827,7 +2899,6 @@ else
 
 fi
 
-
 if test "$notif" = "yes"; then
 	HDRS_PUBL_SUBDIR_NOTIFICATIONS="src/notifications.h src/notifications_xml.h"
 	HDRS_PRIV_NOTIFICATIONS="src/notifications.h src/notifications_xml.h"
@@ -2843,6 +2914,55 @@ else
 	SRCS_NOTIFICATIONS=""
 	INCLUDE_NOTIFICATIONS="#define DISABLE_NOTIFICATIONS"
 	INCLUDE_NOTIFICATIONS_XML="#define DISABLE_NOTIFICATIONS"
+fi
+
+# Check whether --enable-url was given.
+if test "${enable_url+set}" = set; then :
+  enableval=$enable_url;
+	if test "$enableval" = "no"; then
+		url="no"
+	else
+		url="yes"
+	fi
+
+else
+  # URL Capability is supported by default
+	url="yes"
+
+fi
+
+if test "$url" = "yes"; then
+	HDRS_PUBL_SUBDIR_URL="src/url.h"
+	HDRS_PRIV_URL="src/url_internal.h src/url.h"
+	SRCS_URL="src/url.c"
+	INCLUDE_URL="#include \"libnetconf/url.h\""
+	PROVIDES="$PROVIDES libnetconf-notifications"
+else
+	CONFIGURE_PARAMS="$CONFIGURE_PARAMS --disable-url"
+	CPPFLAGS="$CPPFLAGS -DDISABLE_URL"
+	HDRS_PUBL_SUBDIR_URL=""
+	HDRS_PRIV_URL=""
+	SRCS_URL=""
+	INCLUDE_URL="#define DISABLE_URL"
+fi
+
+# Check whether --enable-validation was given.
+if test "${enable_validation+set}" = set; then :
+  enableval=$enable_validation;
+	if test "$enableval" = "no"; then
+		validation="no"
+	else
+		validation="yes"
+	fi
+
+else
+  # support validation by default
+	validation="yes"
+
+fi
+
+if test "$validation" = "no"; then
+	CPPFLAGS="$CPPFLAGS -DDISABLE_VALIDATION"
 fi
 
 
@@ -11629,7 +11749,7 @@ export PKG_CONFIG_PATH=/usr/local/${libdir##*/}/pkgconfig:$PKG_CONFIG_PATH
 #AC_SEARCH_LIBS([login], [util], ,
 #	[AC_MSG_ERROR([Could not find login() in expected locations. Install or/and add the comprising library into the list of tested libraries.])])
 
-### LibXML2 ###
+### libxml2 ###
 if test -z "$WITH_LIBXML2" ; then
 	# Extract the first word of "xml2-config", so it can be a program name with args.
 set dummy xml2-config; ac_word=$2
@@ -11674,6 +11794,54 @@ fi
 	fi
 	CFLAGS="`xml2-config --cflags` $CFLAGS"
 	LDFLAGS="`xml2-config --libs` $LDFLAGS"
+fi
+
+
+### libxslt ###
+if test "$validation" = "yes" -a -z "$WITH_LIBXSLT" ; then
+	# Extract the first word of "xslt-config", so it can be a program name with args.
+set dummy xslt-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_XSLT_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$XSLT_CONFIG"; then
+  ac_cv_prog_XSLT_CONFIG="$XSLT_CONFIG" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $WITH_LIBXSLT $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_XSLT_CONFIG="yes"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_XSLT_CONFIG" && ac_cv_prog_XSLT_CONFIG="no"
+fi
+fi
+XSLT_CONFIG=$ac_cv_prog_XSLT_CONFIG
+if test -n "$XSLT_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $XSLT_CONFIG" >&5
+$as_echo "$XSLT_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+	if test "$XSLT_CONFIG" = "no"; then
+		as_fn_error $? "Missing development package of libxslt." "$LINENO" 5
+	fi
+	CFLAGS="`xslt-config --cflags` $CFLAGS"
+	LDFLAGS="`xslt-config --libs` $LDFLAGS"
 fi
 
 if test "$libssh2" = "yes"; then
@@ -12689,6 +12857,164 @@ fi
 	LIBS="$LIBS $DBUS_LIBS"
 fi
 
+if test "$url" = "yes"; then
+	### libcurl ###
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CURL" >&5
+$as_echo_n "checking for CURL... " >&6; }
+
+if test -n "$CURL_CFLAGS"; then
+    pkg_cv_CURL_CFLAGS="$CURL_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcurl\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libcurl") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_CURL_CFLAGS=`$PKG_CONFIG --cflags "libcurl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$CURL_LIBS"; then
+    pkg_cv_CURL_LIBS="$CURL_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcurl\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libcurl") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_CURL_LIBS=`$PKG_CONFIG --libs "libcurl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        CURL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcurl" 2>&1`
+        else
+	        CURL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcurl" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$CURL_PKG_ERRORS" >&5
+
+	as_fn_error $? "Package requirements (libcurl) were not met:
+
+$CURL_PKG_ERRORS
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+Alternatively, you may set the environment variables CURL_CFLAGS
+and CURL_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details." "$LINENO" 5
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
+is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+
+Alternatively, you may set the environment variables CURL_CFLAGS
+and CURL_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.
+
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+See \`config.log' for more details" "$LINENO" 5; }
+else
+	CURL_CFLAGS=$pkg_cv_CURL_CFLAGS
+	CURL_LIBS=$pkg_cv_CURL_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl_global_init in -lcurl" >&5
+$as_echo_n "checking for curl_global_init in -lcurl... " >&6; }
+if ${ac_cv_lib_curl_curl_global_init+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lcurl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char curl_global_init ();
+int
+main ()
+{
+return curl_global_init ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_curl_curl_global_init=yes
+else
+  ac_cv_lib_curl_curl_global_init=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_curl_curl_global_init" >&5
+$as_echo "$ac_cv_lib_curl_curl_global_init" >&6; }
+if test "x$ac_cv_lib_curl_curl_global_init" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBCURL 1
+_ACEOF
+
+  LIBS="-lcurl $LIBS"
+
+else
+  as_fn_error $? "Missing libcurl." "$LINENO" 5
+fi
+
+	for ac_header in curl/curl.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "curl/curl.h" "ac_cv_header_curl_curl_h" "$ac_includes_default"
+if test "x$ac_cv_header_curl_curl_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_CURL_CURL_H 1
+_ACEOF
+
+else
+  as_fn_error $? "Missing libcurl headers." "$LINENO" 5
+fi
+
+done
+
+	BUILDREQS="$BUILDREQS libcurl-devel"
+	REQS="$REQS libcurl"
+fi
+
 ###################### Check for configure parameters ##########################
 
 ######################### Checks for header files ##############################
@@ -13303,6 +13629,10 @@ fi
 
 
 ############################### Set output #####################################
+
+
+
+
 
 
 

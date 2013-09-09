@@ -108,7 +108,7 @@ $(document).ready(function(){initNavTree('d1/df7/group__withdefaults.html','../.
 </div><!--header-->
 <div class="contents">
 
-<p>libnetconf's implementation of NETCONF with-defaults capability as defined in RFC 6243.  
+<p>libnetconf's settings for NETCONF :with-defaults capability as defined in RFC 6243.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
@@ -145,15 +145,13 @@ Functions</h2></td></tr>
 <tr class="memitem:ga52d555725304e76a2e38b8ae5e49ce20"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d1/df7/group__withdefaults.html#ga3d13afb72bb0c0098f47e8b612cdeb81">NCWD_MODE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/df7/group__withdefaults.html#ga52d555725304e76a2e38b8ae5e49ce20">ncdflt_get_supported</a> ()</td></tr>
 <tr class="memdesc:ga52d555725304e76a2e38b8ae5e49ce20"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get ORed value containing the currently supported with-defaults modes.  <a href="#ga52d555725304e76a2e38b8ae5e49ce20">More...</a><br/></td></tr>
 <tr class="separator:ga52d555725304e76a2e38b8ae5e49ce20"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga9838751c66ea7213ba4497adeb1b3bdb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/df7/group__withdefaults.html#ga9838751c66ea7213ba4497adeb1b3bdb">ncdflt_rpc_withdefaults</a> (<a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../d1/df7/group__withdefaults.html#ga3d13afb72bb0c0098f47e8b612cdeb81">NCWD_MODE</a> mode)</td></tr>
-<tr class="memdesc:ga9838751c66ea7213ba4497adeb1b3bdb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the &lt;with-defaults&gt; parameter for the given NETCONF RPC message.  <a href="#ga9838751c66ea7213ba4497adeb1b3bdb">More...</a><br/></td></tr>
-<tr class="separator:ga9838751c66ea7213ba4497adeb1b3bdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gacdabc187c9ca8f1faa7d9016decf3561"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d1/df7/group__withdefaults.html#ga3d13afb72bb0c0098f47e8b612cdeb81">NCWD_MODE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/df7/group__withdefaults.html#gacdabc187c9ca8f1faa7d9016decf3561">ncdflt_rpc_get_withdefaults</a> (const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gacdabc187c9ca8f1faa7d9016decf3561"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get value of the &lt;with-defaults&gt; element from the rpc message.  <a href="#gacdabc187c9ca8f1faa7d9016decf3561">More...</a><br/></td></tr>
 <tr class="separator:gacdabc187c9ca8f1faa7d9016decf3561"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p>libnetconf's implementation of NETCONF with-defaults capability as defined in RFC 6243. </p>
+<p>libnetconf's settings for NETCONF :with-defaults capability as defined in RFC 6243. </p>
+<p>libnetconf's implementation of NETCONF with-defaults capability as defined in RFC 6243.</p>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a class="anchor" id="ga2f7ad46580c9d311a31ed090baa7e22e"></a>
 <div class="memitem">
@@ -291,43 +289,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga9838751c66ea7213ba4497adeb1b3bdb"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ncdflt_rpc_withdefaults </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
-          <td class="paramname"><em>rpc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d1/df7/group__withdefaults.html#ga3d13afb72bb0c0098f47e8b612cdeb81">NCWD_MODE</a>&#160;</td>
-          <td class="paramname"><em>mode</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set the &lt;with-defaults&gt; parameter for the given NETCONF RPC message. </p>
-<p>Sending RPC message with the &lt;with-default&gt; parameter set via a session which does not support the specified value or the with-defaults capability will fail.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>RPC message where &lt;with-defaults&gt; will be added. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">mode</td><td>Value for the &lt;with-defaults&gt; parameter, NCDFLT_MODE_DISABLED has no effect. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero else. </dd></dl>
-
-</div>
-</div>
 <a class="anchor" id="gacdabc187c9ca8f1faa7d9016decf3561"></a>
 <div class="memitem">
 <div class="memproto">
@@ -358,7 +319,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon Aug 12 2013 14:01:45 for libnetconf by
+    <li class="footer">Generated on Thu Sep 5 2013 09:25:54 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

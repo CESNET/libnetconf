@@ -6,6 +6,8 @@ var NAVTREE =
     [ "Using libnetconf", "da/d1b/usage.html", "da/d1b/usage" ],
     [ "NETCONF Access Control Module (NACM)", "dd/d59/nacm.html", null ],
     [ "Transaction API (transAPI)", "d9/d25/transapi.html", "d9/d25/transapi" ],
+    [ "Datastores Usage", "d1/deb/datastores.html", null ],
+    [ "Data Validation", "db/df0/validation.html", null ],
     [ "Todo List", "dd/da0/todo.html", null ],
     [ "Modules", "modules.html", "modules" ],
     [ "Data Structures", null, [
@@ -34,9 +36,9 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d5/d48/messages_8h.html#gab12fec9068d72fa6817f4a59a81e625e",
-"da/d46/session_8h.html#gaea2ced8d4e5f2cc9971680e49f876c58",
-"dd/d84/yinparser_8h.html#gga92fad6461f4d9f95f869756a02bc7449a938c0fccc9967ead7b83fb1163266661"
+"d5/d48/messages_8h.html#ga337ea7a9b006a79ee5ea615e9d9a5a6f",
+"da/d41/error_8h.html#ga316faef1140f1b48a2ed1de6d84d2bef",
+"db/de9/group__rpc.html#gga8eb32ba579043f2750fa8558d9284b32a35128042558e32842f827be8c31d5b1a"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

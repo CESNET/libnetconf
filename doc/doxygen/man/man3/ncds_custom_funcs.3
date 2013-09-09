@@ -1,0 +1,287 @@
+.TH "ncds_custom_funcs" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ncds_custom_funcs \- 
+.PP
+Public callbacks for the data store\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <datastore_custom\&.h>\fP
+.SS "Data Fields"
+
+.in +1c
+.ti -1c
+.RI "int(* \fBinit\fP )(void *data)"
+.br
+.RI "\fICalled before the data store is used\&. \fP"
+.ti -1c
+.RI "void(* \fBfree\fP )(void *data)"
+.br
+.RI "\fICalled after the last use of the data store\&. \fP"
+.ti -1c
+.RI "int(* \fBwas_changed\fP )(void *data)"
+.br
+.RI "\fIWas the content of data store changed? \fP"
+.ti -1c
+.RI "int(* \fBrollback\fP )(void *data)"
+.br
+.RI "\fIRevert the last change\&. \fP"
+.ti -1c
+.RI "int(* \fBlock\fP )(void *data, \fBNC_DATASTORE\fP target, const char *session_id, struct nc_err **error)"
+.br
+.RI "\fILock the data store from other processes\&. \fP"
+.ti -1c
+.RI "int(* \fBunlock\fP )(void *data, \fBNC_DATASTORE\fP target, const char *session_id, struct nc_err **error)"
+.br
+.RI "\fIThe counter-part of lock\&. \fP"
+.ti -1c
+.RI "int(* \fBis_locked\fP )(void *data, \fBNC_DATASTORE\fP target, const char **session_id, const char **datetime)"
+.br
+.RI "\fIIs datastore currently locked? \fP"
+.ti -1c
+.RI "char *(* \fBgetconfig\fP )(void *data, \fBNC_DATASTORE\fP target, struct nc_err **error)"
+.br
+.RI "\fIGet content of the config\&. \fP"
+.ti -1c
+.RI "int(* \fBcopyconfig\fP )(void *data, \fBNC_DATASTORE\fP target, \fBNC_DATASTORE\fP source, char *config, struct nc_err **error)"
+.br
+.RI "\fICopy config from one data store to another\&. \fP"
+.ti -1c
+.RI "int(* \fBdeleteconfig\fP )(void *data, \fBNC_DATASTORE\fP target, struct nc_err **error)"
+.br
+.RI "\fIMake the given data source empty\&. \fP"
+.ti -1c
+.RI "int(* \fBeditconfig\fP )(void *data, const \fBnc_rpc\fP *rpc, \fBNC_DATASTORE\fP target, const char *config, \fBNC_EDIT_DEFOP_TYPE\fP defop, \fBNC_EDIT_ERROPT_TYPE\fP errop, struct nc_err **error)"
+.br
+.RI "\fIPerform the editconfig operation\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Public callbacks for the data store\&. 
+
+These are the callbacks that need to be provided by the server to be used from the custom data store\&. 
+.SH "Field Documentation"
+.PP 
+.SS "int(* init)(void *data)"
+
+.PP
+Called before the data store is used\&. This callback is called before the data store is used (but after the data has been set)\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdata\fP The user data\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 for success, 1 for failure\&. 
+.RE
+.PP
+
+.SS "void(* free)(void *data)"
+
+.PP
+Called after the last use of the data store\&. This is called after the library stops using the data store\&. Use this place to free whatever resources (including data, if it was allocated\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdata\fP The user data\&. 
+.RE
+.PP
+
+.SS "int(* was_changed)(void *data)"
+
+.PP
+Was the content of data store changed? \fBParameters:\fP
+.RS 4
+\fIdata\fP The user data\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 if content not changed, non-zero else 
+.RE
+.PP
+
+.SS "int(* rollback)(void *data)"
+
+.PP
+Revert the last change\&. \fBParameters:\fP
+.RS 4
+\fIdata\fP The user data\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 for success, 1 for error\&. 
+.RE
+.PP
+
+.SS "int(* lock)(void *data, \fBNC_DATASTORE\fP target, const char *session_id, struct nc_err **error)"
+
+.PP
+Lock the data store from other processes\&. \fBParameters:\fP
+.RS 4
+\fIdata\fP The user data\&. 
+.br
+\fItarget\fP Which data store should be locked\&. 
+.br
+\fIsession_id\fP ID of the session requesting the lock\&. 
+.br
+\fIerror\fP Set this in case of EXIT_FAILURE, to indicate what went wrong\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCESS or EXIT_FAILURE\&. 
+.RE
+.PP
+
+.SS "int(* unlock)(void *data, \fBNC_DATASTORE\fP target, const char *session_id, struct nc_err **error)"
+
+.PP
+The counter-part of lock\&. Function must check that the datastore was locked by the same session (according to the provided session_id) that is now requesting its unlock\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdata\fP The user data\&. 
+.br
+\fItarget\fP Which data store should be unlocked\&. 
+.br
+\fIsession_id\fP ID of the session requesting the unlock\&. 
+.br
+\fIerror\fP Set this in case of EXIT_FAILURE, to indicate what went wrong\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCESS or EXIT_FAILURE\&. 
+.RE
+.PP
+
+.SS "int(* is_locked)(void *data, \fBNC_DATASTORE\fP target, const char **session_id, const char **datetime)"
+
+.PP
+Is datastore currently locked? If function is not implemented, libnetconf will use internal information about the lock\&. Note, that this information is process specific\&. If your server runs in multiple processes, libnetconf's information might not be valid\&. In such a case you should properly implement this function to share lock information\&.
+.PP
+Note, that session_id and datetime can be NULL when caller does not need this information\&.
+.PP
+To announce, that this function is not implemented, set it to NULL in callbacks parameter passed to the \fBncds_custom_set_data()\fP function\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdata\fP The user data 
+.br
+\fItarget\fP Which datastore lock information is required\&. 
+.br
+\fIsession_id\fP Which session has locked the datastore\&. 
+.br
+\fIdatatime\fP When the datastore was locked (RFC 3339 format) 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+.IP "\(bu" 2
+0 datastore is not locked
+.IP "\(bu" 2
+1 datastore is locked
+.IP "\(bu" 2
+negative value - error 
+.PP
+.RE
+.PP
+
+.SS "char*(* getconfig)(void *data, \fBNC_DATASTORE\fP target, struct nc_err **error)"
+
+.PP
+Get content of the config\&. The ownership of the returned string is passed onto the caller\&. So, allocate it and forget\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdata\fP The user data\&. 
+.br
+\fItarget\fP Where to read data from\&. 
+.br
+\fIerror\fP Set this in case of error, to indicate what went wrong\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Serialized content of the datastore, NULL on error 
+.RE
+.PP
+
+.SS "int(* copyconfig)(void *data, \fBNC_DATASTORE\fP target, \fBNC_DATASTORE\fP source, char *config, struct nc_err **error)"
+
+.PP
+Copy config from one data store to another\&. \fBParameters:\fP
+.RS 4
+\fIdata\fP The user data\&. 
+.br
+\fItarget\fP Where to copy\&. 
+.br
+\fIsource\fP From where to copy\&. 
+.br
+\fIconfig\fP Custom data if source parameter is NC_DATASTORE_CONFIG 
+.br
+\fIerror\fP Set this in case of EXIT_FAILURE, to indicate what went wrong\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCESS or EXIT_FAILURE\&. 
+.RE
+.PP
+
+.SS "int(* deleteconfig)(void *data, \fBNC_DATASTORE\fP target, struct nc_err **error)"
+
+.PP
+Make the given data source empty\&. \fBParameters:\fP
+.RS 4
+\fIdata\fP The user data\&. 
+.br
+\fItarget\fP Which part (running, startup, candidate) is supposed to be cleaned out\&. 
+.br
+\fIerror\fP Set this in case of EXIT_FAILURE, to indicate what went wrong\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCESS or EXIT_FAILURE\&. 
+.RE
+.PP
+
+.SS "int(* editconfig)(void *data, const \fBnc_rpc\fP *rpc, \fBNC_DATASTORE\fP target, const char *config, \fBNC_EDIT_DEFOP_TYPE\fP defop, \fBNC_EDIT_ERROPT_TYPE\fP errop, struct nc_err **error)"
+
+.PP
+Perform the editconfig operation\&. \fBParameters:\fP
+.RS 4
+\fIdata\fP The user data\&. 
+.br
+\fIrpc\fP RPC message with the request\&. RPC message is used only for access control\&. If rpc is NULL access control is skipped\&. 
+.br
+\fItarget\fP What datastore part is going to be modified\&. 
+.br
+\fIconfig\fP Edit configuration data\&. 
+.br
+\fIdefop\fP Default edit operation\&. 
+.br
+\fIerrop\fP Error-option\&. 
+.br
+\fIerror\fP Set this in case of EXIT_FAILURE, to indicate what went wrong\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCESS or EXIT_FAILURE\&. 
+.RE
+.PP
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.

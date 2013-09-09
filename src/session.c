@@ -74,6 +74,11 @@
 #  include "notifications.h"
 #endif
 
+#ifndef DISABLE_URL
+#	include "url_internal.h"
+	extern int nc_url_protocols;
+#endif
+
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 /* definition in datastore.c */
@@ -430,9 +435,17 @@ char* nc_session_stats(void)
 			if (session == NULL) {
 				session = aux;
 			} else {
-				session = realloc(session, strlen(session) + strlen(aux) + 1);
-				strcat(session, aux);
-				free(aux);
+				void *tmp = realloc(session, strlen(session) + strlen(aux) + 1);
+				if (tmp == NULL) {
+					ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+					free(aux);
+					/* return what we already have */
+					break;
+				} else {
+					session = tmp;
+					strcat(session, aux);
+					free(aux);
+				}
 			}
 		}
 
@@ -580,12 +593,12 @@ struct nc_cpblts *nc_cpblts_new(const char* const list[])
 			retval->items++;
 			if (retval->items == retval->list_size) {
 				/* resize the capacity of the capabilities list */
-				errno = 0;
-				retval->list = realloc (retval->list, retval->list_size * 2 * sizeof (char*));
-				if (errno != 0) {
+				void *tmp = realloc (retval->list, retval->list_size * 2 * sizeof (char*));
+				if (tmp == NULL) {
 					nc_cpblts_free (retval);
 					return (NULL);
 				}
+				retval->list = tmp;
 				retval->list_size *= 2;
 			}
 			retval->list[i + 1] = NULL;
@@ -601,11 +614,6 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 	char *s, *p = NULL;
 
 	if (capabilities == NULL || capability_string == NULL) {
-		return (EXIT_FAILURE);
-	}
-
-	if (capabilities->items > capabilities->list_size) {
-		WARN("nc_cpblts_add: structure inconsistency! Some data may be lost.");
 		return (EXIT_FAILURE);
 	}
 
@@ -636,17 +644,22 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
 		*p = '?';
 	}
 
-	capabilities->list[capabilities->items] = s;
-	capabilities->items++;
-	if (capabilities->items == capabilities->list_size) {
+	/* check size of the capabilities list */
+	if ((capabilities->items + 1) >= capabilities->list_size) {
 		/* resize the capacity of the capabilities list */
-		errno = 0;
-		capabilities->list = realloc(capabilities->list, capabilities->list_size * 2 * sizeof (char*));
-		if (errno != 0) {
+		void *tmp = realloc(capabilities->list, capabilities->list_size * 2 * sizeof (char*));
+		if (tmp == NULL) {
+			free(s);
 			return (EXIT_FAILURE);
 		}
+		capabilities->list = tmp;
 		capabilities->list_size *= 2;
 	}
+
+	/* add capability into the list */
+	capabilities->list[capabilities->items] = s;
+	capabilities->items++;
+	/* set list terminating NULL item */
 	capabilities->list[capabilities->items] = NULL;
 
 	return (EXIT_SUCCESS);
@@ -776,7 +789,7 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	struct nc_cpblts *retval;
 	char** nslist;
 	int i;
-
+	
 	retval = nc_cpblts_new(NULL);
 	if (retval == NULL) {
 		return (NULL);
@@ -788,15 +801,27 @@ struct nc_cpblts *nc_session_get_cpblts_default ()
 	nc_cpblts_add(retval, NC_CAP_CANDIDATE_ID);
 	nc_cpblts_add(retval, NC_CAP_STARTUP_ID);
 	nc_cpblts_add(retval, NC_CAP_ROLLBACK_ID);
+
 #ifndef DISABLE_NOTIFICATIONS
 	if (nc_init_flags & NC_INIT_NOTIF) {
 		nc_cpblts_add(retval, NC_CAP_INTERLEAVE_ID);
 		nc_cpblts_add(retval, NC_CAP_NOTIFICATION_ID);
 	}
 #endif
+#ifndef DISABLE_VALIDATION
+	if (nc_init_flags & NC_INIT_VALIDATE) {
+		nc_cpblts_add(retval, NC_CAP_VALIDATE10_ID);
+		nc_cpblts_add(retval, NC_CAP_VALIDATE11_ID);
+	}
+#endif
 	if ((nc_init_flags & NC_INIT_WD) && (ncdflt_get_basic_mode() != NCWD_MODE_NOTSET)) {
 		nc_cpblts_add(retval, NC_CAP_WITHDEFAULTS_ID);
 	}
+#ifndef DISABLE_URL
+	if ((nc_init_flags & NC_INIT_URL)) {
+		nc_cpblts_add(retval, NC_CAP_URL_ID);
+	}
+#endif
 
 	/* add namespaces of used datastores as announced capabilities */
 	if ((nslist = get_schemas_capabilities()) != NULL) {
@@ -1102,13 +1127,6 @@ void nc_session_free (struct nc_session* session)
 	}
 
 	/* destroy mutexes */
-#ifndef DISABLE_LIBSSH
-	if (session->mut_libssh2_channels != NULL) {
-		pthread_mutex_destroy(session->mut_libssh2_channels);
-		free(session->mut_libssh2_channels);
-		session->mut_libssh2_channels = NULL;
-	}
-#endif
 	pthread_mutex_destroy(&(session->mut_mqueue));
 	pthread_mutex_destroy(&(session->mut_equeue));
 	pthread_mutex_destroy(&(session->mut_session));
@@ -1478,6 +1496,16 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 					}
 					return (EXIT_FAILURE);
 				}
+			} else if (c == 0) {
+				ERROR("EOF received (%s)", strerror(errno));
+				free(buf);
+				if (len != NULL ) {
+					*len = 0;
+				}
+				if (text != NULL ) {
+					*text = NULL;
+				}
+				return (EXIT_FAILURE);
 			}
 		} else {
 			ERROR("No way to read the input, fatal error.");
@@ -1516,8 +1544,8 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 		/* resize buffer if needed */
 		if (rd == (buflen-1)) {
 			/* get more memory for the text */
-			buf = (char*) realloc (buf, (2 * buflen) * sizeof(char));
-			if (buf == NULL) {
+			void *tmp = realloc (buf, (2 * buflen) * sizeof(char));
+			if (tmp == NULL) {
 				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 				if (len != NULL) {
 					*len = 0;
@@ -1525,8 +1553,10 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 				if (text != NULL) {
 					*text = NULL;
 				}
+				free(buf);
 				return (EXIT_FAILURE);
 			}
+			buf = tmp;
 			buflen = 2 * buflen;
 		}
 	}
@@ -1677,13 +1707,11 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		/* we have something to read */
 		break;
 	}
-	DBG_UNLOCK("mut_libssh2_channels");
-	pthread_mutex_unlock(session->mut_libssh2_channels);
 
 	switch (session->version) {
 	case NETCONFV10:
 		if (nc_session_read_until (session, NC_V10_END_MSG, 0, &text, &len) != 0) {
-			goto malformed_msg;
+			goto malformed_msg_channels_unlock;
 		}
 		text[len - strlen (NC_V10_END_MSG)] = 0;
 		DBG("Received message (session %s): %s", session->session_id, text);
@@ -1694,13 +1722,13 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 				if (total_len > 0) {
 					free (text);
 				}
-				goto malformed_msg;
+				goto malformed_msg_channels_unlock;
 			}
 			if (nc_session_read_until (session, "\n", 0, &chunk, &len) != 0) {
 				if (total_len > 0) {
 					free (text);
 				}
-				goto malformed_msg;
+				goto malformed_msg_channels_unlock;
 			}
 			if (strcmp (chunk, "#\n") == 0) {
 				/* end of chunked framing message */
@@ -1712,7 +1740,7 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 			chunk_length = strtoul (chunk, (char **) NULL, 10);
 			if (chunk_length == 0) {
 				ERROR("Invalid frame chunk size detected, fatal error.");
-				goto malformed_msg;
+				goto malformed_msg_channels_unlock;
 			}
 			free (chunk);
 			chunk = NULL;
@@ -1722,21 +1750,27 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 				if (total_len > 0) {
 					free (text);
 				}
-				goto malformed_msg;
+				goto malformed_msg_channels_unlock;
 			}
 
-			/* realloc resulting text buffer if needed (always needed now) */
+			/*
+			 * realloc resulting text buffer if needed (always needed now)
+			 * don't forget count terminating null byte
+			 * */
 			if (text_size < (total_len + len + 1)) {
-				text = realloc (text, total_len + len + 1);
-				if (text == NULL) {
+				char *tmp = realloc (text, total_len + len + 1);
+				if (tmp == NULL) {
 					ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
-					goto malformed_msg;
+					free(text);
+					goto malformed_msg_channels_unlock;
 				}
+				text = tmp;
 				text[total_len] = '\0';
 				text_size = total_len + len + 1;
 			}
-			strcat (text, chunk);
-			total_len = strlen (text); /* don't forget count terminating null byte */
+			memcpy(text + total_len, chunk, len);
+			total_len += len;
+			text[total_len] = '\0';
 			free (chunk);
 			chunk = NULL;
 
@@ -1745,9 +1779,12 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		break;
 	default:
 		ERROR("Unsupported NETCONF protocol version (%d)", session->version);
-		goto malformed_msg;
+		goto malformed_msg_channels_unlock;
 		break;
 	}
+
+	DBG_UNLOCK("mut_libssh2_channels");
+	pthread_mutex_unlock(session->mut_libssh2_channels);
 
 	retval = calloc (1, sizeof(struct nc_msg));
 	if (retval == NULL) {
@@ -1837,7 +1874,12 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 
 	/* return the result */
 	*msg = retval;
+	(*msg)->session = session;
 	return (msgtype);
+
+malformed_msg_channels_unlock:
+	DBG_UNLOCK("mut_libssh2_channels");
+	pthread_mutex_unlock(session->mut_libssh2_channels);
 
 malformed_msg:
 	if (session->version == NETCONFV11 && session->ssh_session == NULL) {
@@ -1855,7 +1897,7 @@ malformed_msg:
 
 	ERROR("Malformed message received, closing the session %s.", session->session_id);
 	nc_session_close(session, NC_SESSION_TERM_OTHER);
-
+	
 	return (NC_MSG_UNKNOWN);
 }
 
@@ -1963,6 +2005,8 @@ try_again:
 	DBG_UNLOCK("mut_mqueue");
 	pthread_mutex_unlock(&(session->mut_mqueue));
 
+	
+	
 	return (ret);
 }
 

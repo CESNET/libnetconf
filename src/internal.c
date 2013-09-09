@@ -179,6 +179,16 @@ int nc_init(int flags)
 	if (flags & NC_INIT_WD) {
 		nc_init_flags |= NC_INIT_WD;
 	}
+#ifndef DISABLE_VALIDATION
+	if (flags & NC_INIT_VALIDATE) {
+		nc_init_flags |= NC_INIT_VALIDATE;
+	}
+#endif
+#ifndef DISABLE_URL
+	if (flags & NC_INIT_URL) {
+		nc_init_flags |= NC_INIT_URL;
+	}
+#endif
 
 	/*
 	 * init internal datastores - they have to be initiated before they are
@@ -317,6 +327,10 @@ char* nc_skip_xmldecl(const char* xmldoc)
 
 	/* skip leading whitespaces */
 	s = index(xmldoc, '<');
+	if (s == NULL) {
+		/* not a valid XML document */
+		return (NULL);
+	}
 
 	/* see http://www.w3.org/TR/REC-xml/#NT-XMLDecl */
 	if (strncmp(s, "<?xml", 5) == 0) {

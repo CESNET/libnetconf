@@ -100,6 +100,7 @@ $(document).ready(function(){initNavTree('db/d67/group__store.html','../../');})
 
 <div class="header">
   <div class="summary">
+<a href="#groups">Modules</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
@@ -112,6 +113,15 @@ $(document).ready(function(){initNavTree('db/d67/group__store.html','../../');})
 <p>libnetconf's functions for handling NETCONF datastores.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="groups"></a>
+Modules</h2></td></tr>
+<tr class="memitem:d0/d3b/group__fileds"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d3b/group__fileds.html">File Datastore</a></td></tr>
+<tr class="memdesc:d0/d3b/group__fileds"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specific functions for NCDS_FILE_DS type of datastore implementation. <br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:da/d64/group__customds"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d64/group__customds.html">Custom Datastore</a></td></tr>
+<tr class="memdesc:da/d64/group__customds"><td class="mdescLeft">&#160;</td><td class="mdescRight">libnetconf's API to use a server-specific datastore implementation. <br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:gaf3338ac77041c714fc4f9877e608990a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a">NCDS_INTERNAL_ID</a>&#160;&#160;&#160;0</td></tr>
@@ -142,7 +152,8 @@ Enumerations</h2></td></tr>
 <tr class="memdesc:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of the supported types of datastores defined by NETCONF.  <a href="../../db/d67/group__store.html#ga5e4b9ee138b963e8ea2354fef2ebbe73">More...</a><br/></td></tr>
 <tr class="separator:ga5e4b9ee138b963e8ea2354fef2ebbe73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab0f0cbd5268577ec36fc76cf89c72a8f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> { <a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b">NCDS_TYPE_EMPTY</a>, 
-<a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629">NCDS_TYPE_FILE</a>
+<a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629">NCDS_TYPE_FILE</a>, 
+<a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa962fdf56453d65bd49886f1f00820e85">NCDS_TYPE_CUSTOM</a>
  }</td></tr>
 <tr class="memdesc:gab0f0cbd5268577ec36fc76cf89c72a8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Datastore implementation types provided by libnetconf.  <a href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">More...</a><br/></td></tr>
 <tr class="separator:gab0f0cbd5268577ec36fc76cf89c72a8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,9 +166,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6">ncds_new</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, char *(*get_state)(const char *model, const char *running, struct nc_err **e))</td></tr>
 <tr class="memdesc:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new datastore structure of the specified implementation type.  <a href="#ga69009c5985f9eec3a6920f98a6a1a5e6">More...</a><br/></td></tr>
 <tr class="separator:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad48955dab497b1258d80019e542acb9b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gad48955dab497b1258d80019e542acb9b">ncds_file_set_path</a> (struct ncds_ds *datastore, const char *path)</td></tr>
-<tr class="memdesc:gad48955dab497b1258d80019e542acb9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign the path of the datastore file into the datastore structure.  <a href="#gad48955dab497b1258d80019e542acb9b">More...</a><br/></td></tr>
-<tr class="separator:gad48955dab497b1258d80019e542acb9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4777c16043f5856c5a65bcd20b5ecc31"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31">ncds_set_validation</a> (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron)</td></tr>
+<tr class="memdesc:ga4777c16043f5856c5a65bcd20b5ecc31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set validators (or disable validation) on the specified datastore.  <a href="#ga4777c16043f5856c5a65bcd20b5ecc31">More...</a><br/></td></tr>
+<tr class="separator:ga4777c16043f5856c5a65bcd20b5ecc31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">ncds_init</a> (struct ncds_ds *datastore)</td></tr>
 <tr class="memdesc:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate datastore structure for use.  <a href="#gaabb1ae2c497726ad826fc6478f97e8ff">More...</a><br/></td></tr>
 <tr class="separator:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -170,9 +181,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaabfd0bf6abeaf40659043bf082e14801"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801">ncds_apply_rpc</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id, const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gaabfd0bf6abeaf40659043bf082e14801"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the datastore.  <a href="#gaabfd0bf6abeaf40659043bf082e14801">More...</a><br/></td></tr>
 <tr class="separator:gaabfd0bf6abeaf40659043bf082e14801"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6887f71d8a96129fec594a59bdd10fe9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga6887f71d8a96129fec594a59bdd10fe9">ncds_apply_rpc2all</a> (const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *ids[])</td></tr>
-<tr class="memdesc:ga6887f71d8a96129fec594a59bdd10fe9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>).  <a href="#ga6887f71d8a96129fec594a59bdd10fe9">More...</a><br/></td></tr>
-<tr class="separator:ga6887f71d8a96129fec594a59bdd10fe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6e6e979bd82e50913c82b4dc37cb8759"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759">ncds_apply_rpc2all</a> (struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *ids[])</td></tr>
+<tr class="memdesc:ga6e6e979bd82e50913c82b4dc37cb8759"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a>).  <a href="#ga6e6e979bd82e50913c82b4dc37cb8759">More...</a><br/></td></tr>
+<tr class="separator:ga6e6e979bd82e50913c82b4dc37cb8759"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabb9806e70f3399aed7da879095d9c64e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e">ncds_rollback</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id)</td></tr>
 <tr class="memdesc:gabb9806e70f3399aed7da879095d9c64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Undo the last change performed on the specified datastore.  <a href="#gabb9806e70f3399aed7da879095d9c64e">More...</a><br/></td></tr>
 <tr class="separator:gabb9806e70f3399aed7da879095d9c64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -310,6 +321,9 @@ Functions</h2></td></tr>
 <tr><td class="fieldname"><em><a class="anchor" id="ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629"></a>NCDS_TYPE_FILE</em>&nbsp;</td><td class="fielddoc">
 <p>Datastores implemented as files </p>
 </td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ggab0f0cbd5268577ec36fc76cf89c72a8fa962fdf56453d65bd49886f1f00820e85"></a>NCDS_TYPE_CUSTOM</em>&nbsp;</td><td class="fielddoc">
+<p>User-defined datastore </p>
+</td></tr>
 </table>
 
 </div>
@@ -434,7 +448,7 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Datastore implementation type for the new datastore structure. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">model_path</td><td>Path to the YIN configuration data model. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">model_path</td><td>Base name of the configuration data model files. libnetconf expects model_path.yin as a data model, model_path.rng for grammar and data types validation, model_path.dsrl for default values validation and model_path.sch for semantic validation. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">get_state</td><td>Pointer to a callback function that returns a serialized XML document containing the state configuration data of the device. The parameters it receives are a serialized configuration data model in YIN format and the current content of the running datastore. If NULL is set, &lt;get&gt; operation is performed in the same way as &lt;get-config&gt;. </td></tr>
   </table>
   </dd>
@@ -443,21 +457,33 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gad48955dab497b1258d80019e542acb9b"></a>
+<a class="anchor" id="ga4777c16043f5856c5a65bcd20b5ecc31"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int ncds_file_set_path </td>
+          <td class="memname">int ncds_set_validation </td>
           <td>(</td>
           <td class="paramtype">struct ncds_ds *&#160;</td>
-          <td class="paramname"><em>datastore</em>, </td>
+          <td class="paramname"><em>ds</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>enable</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>path</em>&#160;</td>
+          <td class="paramname"><em>relaxng</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>schematron</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -467,21 +493,17 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Assign the path of the datastore file into the datastore structure. </p>
-<p>Checks if the file exist and is accessible for reading and writing. If the file does not exist, it is created. The file is opened and the file descriptor is stored in the structure.</p>
+<p>Set validators (or disable validation) on the specified datastore. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore structure to be configured. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>File path to the file storing configuration datastores. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ds</td><td>Datastore structure to be configured. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">enable</td><td>1 to enable validation on the datastore according to the following parameters, 0 to disable validation (following parameters will be ignored). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">relaxng</td><td>Path to the Relax NG schema for validation of the datastore content syntax. To generate it, use the lnc-tool(1) script. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">schematron</td><td>Path to the Schematron XSLT stylesheet for validation of the datastore content semantics. To generate it, use the lnc-tool(1) script. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd><ul>
-<li>0 on success</li>
-<li>-1 Invalid datastore</li>
-<li>-2 Invalid path ((does not exist &amp;&amp; can not be created) || insufficient rights) </li>
-</ul>
-</dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCESS or EXIT_FAILURE </dd></dl>
 
 </div>
 </div>
@@ -610,14 +632,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga6887f71d8a96129fec594a59bdd10fe9"></a>
+<a class="anchor" id="ga6e6e979bd82e50913c82b4dc37cb8759"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* ncds_apply_rpc2all </td>
           <td>(</td>
-          <td class="paramtype">const struct nc_session *&#160;</td>
+          <td class="paramtype">struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em>, </td>
         </tr>
         <tr>
@@ -646,7 +668,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session (a dummy session is acceptable) where the &lt;rpc&gt; came from. Capabilities checks are done according to this session. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>NETCONF &lt;rpc&gt; message specifying requested operation. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">ids</td><td>Pointer to a static array containing list of datastore IDs where the RPC was successfully applied. The list is terminated by value a (ncds_id)(-1). The list is rewritten by any following call to <a class="el" href="../../db/d67/group__store.html#ga6887f71d8a96129fec594a59bdd10fe9" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a>. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ids</td><td>Pointer to a static array containing list of datastore IDs where the RPC was successfully applied. The list is terminated by value a (ncds_id)(-1). The list is rewritten by any following call to <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -994,7 +1016,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon Aug 12 2013 14:01:45 for libnetconf by
+    <li class="footer">Generated on Thu Sep 5 2013 09:25:54 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

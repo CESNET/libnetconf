@@ -104,21 +104,6 @@ NCWD_MODE ncdflt_get_supported();
 
 /**
  * @ingroup withdefaults
- * @brief Set the \<with-defaults\> parameter for the given NETCONF RPC message.
- *
- * Sending RPC message with the \<with-default\> parameter set via a session
- * which does not support the specified value or the with-defaults capability
- * will fail.
- *
- * @param[in] rpc RPC message where \<with-defaults\> will be added.
- * @param[in] mode Value for the \<with-defaults\> parameter,
- * NCDFLT_MODE_DISABLED has no effect.
- * @return 0 on success, non-zero else.
- */
-int ncdflt_rpc_withdefaults(nc_rpc* rpc, NCWD_MODE mode);
-
-/**
- * @ingroup withdefaults
  * @brief Get value of the \<with-defaults\> element from the rpc message.
  * @param[in] rpc RPC message to be parsed.
  * @return with-defaults mode of the NETCONF rpc message.

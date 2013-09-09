@@ -65,7 +65,8 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define NC_CAP_ROLLBACK_ID  "urn:ietf:params:netconf:capability:rollback-on-error:1.0"
 #define NC_CAP_VALIDATE10_ID  "urn:ietf:params:netconf:capability:validate:1.0"
 #define NC_CAP_VALIDATE11_ID  "urn:ietf:params:netconf:capability:validate:1.1"
-#define NC_CAP_WITHDEFAULTS_ID 	"urn:ietf:params:netconf:capability:with-defaults:1.0"
+#define NC_CAP_WITHDEFAULTS_ID "urn:ietf:params:netconf:capability:with-defaults:1.0"
+#define NC_CAP_URL_ID       "urn:ietf:params:netconf:capability:url:1.0"
 
 extern int done;
 extern struct nc_cpblts * client_supported_cpblts;
@@ -246,7 +247,7 @@ int cmd_status (char* UNUSED(arg))
 	return (EXIT_SUCCESS);
 }
 
-static NC_DATASTORE get_datastore(const char* paramtype, const char* operation, struct arglist *cmd, int index)
+static NC_DATASTORE get_datastore(const char* paramtype, const char* operation, struct arglist *cmd, int index, char** url)
 {
 	int valid = 0;
 	char *datastore;
@@ -272,6 +273,9 @@ userinput:
 			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
 				fprintf (stdout, "|candidate");
 			}
+			if (nc_cpblts_enabled (session, NC_CAP_URL_ID)) {
+				fprintf (stdout, "|url:<dsturl>");
+			}
 			fprintf (stdout, "): ");
 			if (scanf ("%1023s", datastore) == EOF) {
 				ERROR(operation, "Reading the user input failed (%s).", (errno != 0) ? strerror(errno) : "Unexpected input");
@@ -290,6 +294,13 @@ userinput:
 			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) && strcmp (datastore, "candidate") == 0) {
 				valid = 1;
 				retval = NC_DATASTORE_CANDIDATE;
+			}
+			if (nc_cpblts_enabled (session, NC_CAP_URL_ID) && strncmp (datastore, "url:", 4) == 0) {
+				valid = 1;
+				retval = NC_DATASTORE_URL;
+				if (url != NULL) {
+					*url = strdup(&(datastore[4]));
+				}
 			}
 
 			if (!valid) {
@@ -313,6 +324,13 @@ userinput:
 		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) && strcmp (datastore, "candidate") == 0) {
 			valid = 1;
 			retval = NC_DATASTORE_CANDIDATE;
+		}
+		if (nc_cpblts_enabled (session, NC_CAP_URL_ID) && strncmp (datastore, "url:", 4) == 0) {
+			valid = 1;
+			retval = NC_DATASTORE_URL;
+			if (url != NULL) {
+				*url = strdup(&(datastore[4]));
+			}
 		}
 
 		if (!valid) {
@@ -475,23 +493,23 @@ void cmd_editconfig_help()
 		rollback = "";
 	}
 
-	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_VALIDATE10_ID)) {
+	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_VALIDATE11_ID)) {
+			validate = "[--test <set|test-only|test-then-set>] ";
+	} else if (session == NULL || nc_cpblts_enabled (session, NC_CAP_VALIDATE10_ID)) {
 		validate = "[--test <set|test-then-set>] ";
-	} else if (session == NULL || nc_cpblts_enabled (session, NC_CAP_VALIDATE11_ID)) {
-		validate = "[--test <set|test-only|test-then-set>] ";
 	} else {
 		validate = "";
 	}
 
 	/* if session not established, print complete help for all capabilities */
-	fprintf (stdout, "edit-config [--help] [--defop <merge|replace|none>] [--error <stop|continue%s>] %s[--config <file>] running", rollback, validate);
+	fprintf (stdout, "edit-config [--help] [--defop <merge|replace|none>] [--error <stop|continue%s>] %s[--config <file> | --url <url>] running", rollback, validate);
 	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
 		fprintf (stdout, "|startup");
 	}
 	if (session == NULL || nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
 		fprintf (stdout, "|candidate");
 	}
-	fprintf (stdout, "\n");
+	fprintf (stdout, "\nIf neither --config nor --url is specified, user is prompted to set edit data manually.\n");
 }
 
 int cmd_editconfig (char *arg)
@@ -500,7 +518,7 @@ int cmd_editconfig (char *arg)
 	char *config_m = NULL, *config = NULL;
 	int config_fd;
 	struct stat config_stat;
-	NC_DATASTORE target;
+	NC_DATASTORE target, source;
 	NC_EDIT_DEFOP_TYPE defop = 0; /* do not set this parameter by default */
 	NC_EDIT_ERROPT_TYPE erropt = 0; /* do not set this parameter by default */
 	NC_EDIT_TESTOPT_TYPE testopt = 0;
@@ -512,6 +530,7 @@ int cmd_editconfig (char *arg)
 			{"error", 1, 0, 'e'},
 			{"help", 0, 0, 'h'},
 			{"test", 1, 0, 't'},
+			{"url", 1, 0, 'u'},
 			{0, 0, 0, 0}
 	};
 	int option_index = 0;
@@ -528,9 +547,16 @@ int cmd_editconfig (char *arg)
 	addargs (&cmd, "%s", arg);
 
 	/* rocess command line parameters */
-	while ((c = getopt_long (cmd.count, cmd.list, "c:d:e:h", long_options, &option_index)) != -1) {
+	while ((c = getopt_long (cmd.count, cmd.list, "c:d:e:t:u:h", long_options, &option_index)) != -1) {
 		switch (c) {
 		case 'c':
+			/* check if -u was not used */
+			if (config != NULL) {
+				ERROR("edit-config", "mixing --config and --url parameters is not allowed.");
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+
 			/* open edit configuration data from the file */
 			config_fd = open(optarg, O_RDONLY);
 			if (config_fd == -1) {
@@ -551,6 +577,7 @@ int cmd_editconfig (char *arg)
 
 			/* make a copy of the content to allow closing the file */
 			config = strdup(config_m);
+			source = NC_DATASTORE_CONFIG;
 
 			/* unmap edit data file and close it */
 			munmap(config_m, config_stat.st_size);
@@ -604,7 +631,7 @@ int cmd_editconfig (char *arg)
 			/* validate test option */
 			if (strcmp (optarg, "set") == 0) {
 				testopt = NC_EDIT_TESTOPT_SET;
-			} else if (nc_cpblts_enabled (session, NC_CAP_VALIDATE11_ID) && strcmp (optarg, "test-only") == 0) {
+			} else if (strcmp (optarg, "test-only") == 0 && nc_cpblts_enabled (session, NC_CAP_VALIDATE11_ID)) {
 				testopt = NC_EDIT_TESTOPT_TEST;
 			} else if (strcmp (optarg, "test-then-set") == 0) {
 				testopt = NC_EDIT_TESTOPT_TESTSET;
@@ -616,6 +643,16 @@ int cmd_editconfig (char *arg)
 			}
 
 			break;
+		case 'u':
+			/* check if -c was not used */
+			if (config != NULL) {
+				ERROR("edit-config", "mixing --config and --url parameters is not allowed.");
+				clear_arglist(&cmd);
+				return (EXIT_FAILURE);
+			}
+			config = strdup(optarg);
+			source = NC_DATASTORE_URL;
+			break;
 		default:
 			ERROR("edit-config", "unknown option -%c.", c);
 			cmd_editconfig_help ();
@@ -625,7 +662,7 @@ int cmd_editconfig (char *arg)
 	}
 
 	/* get what datastore is target of the operation */
-	target = get_datastore("target", "edit-config", &cmd, optind);
+	target = get_datastore("target", "edit-config", &cmd, optind, NULL);
 
 	/* arglist is no more needed */
 	clear_arglist(&cmd);
@@ -640,13 +677,14 @@ int cmd_editconfig (char *arg)
 		INSTRUCTION("Type the edit configuration data (close editor by Ctrl-D):\n");
 		config = mreadline(NULL);
 		if (config == NULL) {
-			ERROR("edit-config", "reading filter failed.");
+			ERROR("edit-config", "reading edit data failed.");
 			return (EXIT_FAILURE);
 		}
+		source = NC_DATASTORE_CONFIG;
 	}
 
 	/* create requests */
-	rpc = nc_rpc_editconfig(target, NC_DATASTORE_CONFIG, defop, erropt, testopt, config);
+	rpc = nc_rpc_editconfig(target, source, defop, erropt, testopt, config);
 	free(config);
 	if (rpc == NULL) {
 		ERROR("edit-config", "creating rpc request failed.");
@@ -659,24 +697,32 @@ int cmd_editconfig (char *arg)
 
 void cmd_validate_help ()
 {
-	char *datastores;
+	char *ds_startup, *ds_candidate, *ds_url;
+
 	if (session == NULL) {
 		/* if session not established, print complete help for all capabilities */
-		datastores = "running|startup|candidate";
+		ds_startup = "|startup";
+		ds_candidate = "|candidate";
+		ds_url = "|url:<url>";
 	} else {
 		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
-			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-				datastores = "running|startup|candidate";
-			} else {
-				datastores = "running|startup";
-			}
-		} else if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-			datastores = "running|candidate";
+			ds_startup = "|startup";
 		} else {
-			datastores = "running";
+			ds_startup = "";
+		}
+		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+			ds_candidate = "|candidate";
+		} else {
+			ds_candidate = "";
+		}
+		if (nc_cpblts_enabled (session, NC_CAP_URL_ID)) {
+			ds_url = "|url:<dsturl>";
+		} else {
+			ds_url = "";
 		}
 	}
-	fprintf (stdout, "validate [--help] [--config <file> | %s]\n", datastores);
+	fprintf (stdout, "validate [--help] [--config <file> | running%s%s%s]\n",
+			ds_startup, ds_candidate, ds_url);
 
 	if (session != NULL &&
 	    !(nc_cpblts_enabled (session, NC_CAP_VALIDATE10_ID) || nc_cpblts_enabled (session, NC_CAP_VALIDATE11_ID))) {
@@ -766,7 +812,7 @@ int cmd_validate (char *arg)
 
 	/* if the config option not set, parse remaining arguments to get source */
 	if (config == NULL) {
-		source = get_datastore("source", "validate", &cmd, optind);
+		source = get_datastore("source", "validate", &cmd, optind, &config);
 	}
 
 	/* arglist is no more needed */
@@ -774,6 +820,7 @@ int cmd_validate (char *arg)
 
 	/* create requests */
 	rpc = nc_rpc_validate (source, config);
+	free(config);
 	if (rpc == NULL) {
 		ERROR("validate", "creating an rpc request failed.");
 		return (EXIT_FAILURE);
@@ -785,24 +832,30 @@ int cmd_validate (char *arg)
 
 void cmd_copyconfig_help ()
 {
-	char *datastores;
+	char *ds_startup, *ds_candidate, *ds_url;
 	char *defaults;
 
 	if (session == NULL) {
 		/* if session not established, print complete help for all capabilities */
-		datastores = "running|startup|candidate";
+		ds_startup = "|startup";
+		ds_candidate = "|candidate";
+		ds_url = "|url:<dsturl>";
 		defaults = "[--defaults report-all|report-all-tagged|trim|explicit] ";
 	} else {
 		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
-			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-				datastores = "running|startup|candidate";
-			} else {
-				datastores = "running|startup";
-			}
-		} else if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-			datastores = "running|candidate";
+			ds_startup = "|startup";
 		} else {
-			datastores = "running";
+			ds_startup = "";
+		}
+		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+			ds_candidate = "|candidate";
+		} else {
+			ds_candidate = "";
+		}
+		if (nc_cpblts_enabled (session, NC_CAP_URL_ID)) {
+			ds_url = "|url:<dsturl>";
+		} else {
+			ds_url = "";
 		}
 
 		if (nc_cpblts_enabled (session, NC_CAP_WITHDEFAULTS_ID)) {
@@ -812,7 +865,9 @@ void cmd_copyconfig_help ()
 		}
 	}
 
-	fprintf (stdout, "copy-config [--help] %s[--source %s | --config <file>] %s\n", defaults, datastores, datastores);
+	fprintf (stdout, "copy-config [--help] %s[--source running%s%s%s | --config <file>] running%s%s%s\n",
+			defaults, ds_startup, ds_candidate, ds_url,
+			ds_startup, ds_candidate, ds_url);
 }
 
 int cmd_copyconfig (char *arg)
@@ -820,7 +875,7 @@ int cmd_copyconfig (char *arg)
 	int c;
 	int config_fd;
 	struct stat config_stat;
-	char *config = NULL, *config_m = NULL;
+	char *config = NULL, *config_m = NULL, *url_dst = NULL;
 	NC_DATASTORE target;
 	NC_DATASTORE source = NC_DATASTORE_ERROR;
 	struct nc_filter *filter = NULL;
@@ -847,12 +902,12 @@ int cmd_copyconfig (char *arg)
 	init_arglist (&cmd);
 	addargs (&cmd, "%s", arg);
 
-	while ((c = getopt_long (cmd.count, cmd.list, "c:d:s:h", long_options, &option_index)) != -1) {
+	while ((c = getopt_long (cmd.count, cmd.list, "c:d:s:u:h", long_options, &option_index)) != -1) {
 		switch (c) {
 		case 'c':
 			/* check if -s was not used */
 			if (source != NC_DATASTORE_ERROR) {
-				ERROR("copy-config", "mixing --source and --config parameters is not allowed.");
+				ERROR("copy-config", "mixing --source, --url and --config parameters is not allowed.");
 				clear_arglist(&cmd);
 				return (EXIT_FAILURE);
 			}
@@ -889,7 +944,7 @@ int cmd_copyconfig (char *arg)
 		case 's':
 			/* check if -c was not used */
 			if (source != NC_DATASTORE_ERROR) {
-				ERROR("copy-config", "mixing --source and --config parameters is not allowed.");
+				ERROR("copy-config", "mixing --source, --url and --config parameters is not allowed.");
 				clear_arglist(&cmd);
 				return (EXIT_FAILURE);
 			}
@@ -903,6 +958,10 @@ int cmd_copyconfig (char *arg)
 			}
 			if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID) && strcmp (optarg, "candidate") == 0) {
 				source = NC_DATASTORE_CANDIDATE;
+			}
+			if (nc_cpblts_enabled (session, NC_CAP_URL_ID) && strncmp (optarg, "url:", 4) == 0) {
+				source = NC_DATASTORE_URL;
+				config = strdup(&(optarg[4]));
 			}
 
 			if (source == NC_DATASTORE_ERROR) {
@@ -924,7 +983,7 @@ int cmd_copyconfig (char *arg)
 		}
 	}
 
-	target = get_datastore("target", "copy-config", &cmd, optind);
+	target = get_datastore("target", "copy-config", &cmd, optind, &url_dst);
 
 	/* arglist is no more needed */
 	clear_arglist(&cmd);
@@ -946,8 +1005,10 @@ int cmd_copyconfig (char *arg)
 	}
 
 	/* create requests */
-	rpc = nc_rpc_copyconfig (source, target, config);
+	rpc = nc_rpc_copyconfig (source, target, config, url_dst);
 	nc_filter_free(filter);
+	free(config);
+	free(url_dst);
 	if (rpc == NULL) {
 		ERROR("copy-config", "creating an rpc request failed.");
 		return (EXIT_FAILURE);
@@ -1056,24 +1117,38 @@ int cmd_get (char *arg)
 
 void cmd_deleteconfig_help ()
 {
-	char *datastores = NULL;
+	char *ds_startup, *ds_candidate, *ds_url;
 
 	if (session == NULL) {
-		datastores = "startup|candidate";
-	} else if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
-		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-			datastores = "startup|candidate";
-		} else {
-			datastores = "startup";
-		}
-	} else if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
-		datastores = "candidate";
+		ds_startup = "startup";
+		ds_candidate = "|candidate";
+		ds_url = "url:<url>";
 	} else {
+		if (nc_cpblts_enabled (session, NC_CAP_STARTUP_ID)) {
+			ds_startup = "startup";
+		} else {
+			ds_startup = "";
+		}
+
+		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
+			ds_candidate = (strlen(ds_startup) == 0) ? "candidate" : "|candidate";
+		} else {
+			ds_candidate = "";
+		}
+
+		if (nc_cpblts_enabled (session, NC_CAP_URL_ID)) {
+			ds_url = ((strlen(ds_startup) + strlen(ds_candidate)) == 0) ? "url:<url>" : "|url:<url>";
+		} else {
+			ds_url = "";
+		}
+	}
+
+	if ((strlen(ds_startup) + strlen(ds_candidate) + strlen(ds_url)) == 0) {
 		fprintf (stdout, "delete-config cannot be used in the current session.\n");
 		return;
 	}
 
-	fprintf (stdout, "delete-config [--help]  %s\n", datastores);
+	fprintf (stdout, "delete-config [--help]  %s%s%s\n", ds_startup, ds_candidate, ds_url);
 }
 
 int cmd_deleteconfig (char *arg)
@@ -1081,6 +1156,7 @@ int cmd_deleteconfig (char *arg)
 	int c;
 	NC_DATASTORE target;
 	nc_rpc *rpc = NULL;
+	char *url = NULL;
 	struct arglist cmd;
 	struct option long_options[] ={
 			{"help", 0, 0, 'h'},
@@ -1119,10 +1195,10 @@ int cmd_deleteconfig (char *arg)
 		}
 	}
 
-	target = get_datastore("target", "delete-config", &cmd, optind);
+	target = get_datastore("target", "delete-config", &cmd, optind, &url);
 	while (target == NC_DATASTORE_RUNNING) {
 		fprintf (stdout, "delete-config: <running> datastore cannot be deleted.");
-		target = get_datastore("target", "delete-config", &cmd, cmd.count);
+		target = get_datastore("target", "delete-config", &cmd, cmd.count, &url);
 	}
 
 	/* arglist is no more needed */
@@ -1133,7 +1209,8 @@ int cmd_deleteconfig (char *arg)
 	}
 
 	/* create requests */
-	rpc = nc_rpc_deleteconfig(target);
+	rpc = nc_rpc_deleteconfig(target, url);
+	free(url);
 	if (rpc == NULL) {
 		ERROR("delete-config", "creating an rpc request failed.");
 		return (EXIT_FAILURE);
@@ -1389,7 +1466,7 @@ int cmd_getconfig (char *arg)
 		}
 	}
 
-	target = get_datastore("target", "get-config", &cmd, optind);
+	target = get_datastore("target", "get-config", &cmd, optind, NULL);
 
 	/* arglist is no more needed */
 	clear_arglist(&cmd);
@@ -1573,7 +1650,7 @@ int cmd_un_lock (int op, char *arg)
 		}
 	}
 
-	target = get_datastore("target", operation, &cmd, optind);
+	target = get_datastore("target", operation, &cmd, optind, NULL);
 
 	/* arglist is no more needed */
 	clear_arglist(&cmd);

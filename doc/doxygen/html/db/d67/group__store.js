@@ -1,5 +1,7 @@
 var group__store =
 [
+    [ "File Datastore", "d0/d3b/group__fileds.html", "d0/d3b/group__fileds" ],
+    [ "Custom Datastore", "da/d64/group__customds.html", "da/d64/group__customds" ],
     [ "NCDS_INTERNAL_ID", "db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a", null ],
     [ "NCDS_RPC_NOT_APPLICABLE", "db/d67/group__store.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6", null ],
     [ "ncds_id", "db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19", null ],
@@ -13,16 +15,17 @@ var group__store =
     ] ],
     [ "NCDS_TYPE", "db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f", [
       [ "NCDS_TYPE_EMPTY", "db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b", null ],
-      [ "NCDS_TYPE_FILE", "db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629", null ]
+      [ "NCDS_TYPE_FILE", "db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629", null ],
+      [ "NCDS_TYPE_CUSTOM", "db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa962fdf56453d65bd49886f1f00820e85", null ]
     ] ],
     [ "ncds_model_info", "db/d67/group__store.html#ga9c0f401a6873e8778a80e6cc80c5219a", null ],
     [ "ncds_new", "db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6", null ],
-    [ "ncds_file_set_path", "db/d67/group__store.html#gad48955dab497b1258d80019e542acb9b", null ],
+    [ "ncds_set_validation", "db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31", null ],
     [ "ncds_init", "db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff", null ],
     [ "ncds_free", "db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754", null ],
     [ "ncds_free2", "db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2", null ],
     [ "ncds_apply_rpc", "db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801", null ],
-    [ "ncds_apply_rpc2all", "db/d67/group__store.html#ga6887f71d8a96129fec594a59bdd10fe9", null ],
+    [ "ncds_apply_rpc2all", "db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759", null ],
     [ "ncds_rollback", "db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e", null ],
     [ "ncds_break_locks", "db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a", null ],
     [ "ncds_get_model", "db/d67/group__store.html#ga414b75711e49e0e1eea10ae15c14287e", null ],

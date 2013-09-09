@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Mon Aug 12 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -38,7 +38,7 @@ NETCONF datastore handling function prototypes and structures\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNCDS_TYPE\fP { \fBNCDS_TYPE_EMPTY\fP, \fBNCDS_TYPE_FILE\fP }"
+.RI "enum \fBNCDS_TYPE\fP { \fBNCDS_TYPE_EMPTY\fP, \fBNCDS_TYPE_FILE\fP, \fBNCDS_TYPE_CUSTOM\fP }"
 .br
 .RI "\fIDatastore implementation types provided by libnetconf\&. \fP"
 .in -1c
@@ -57,6 +57,10 @@ NETCONF datastore handling function prototypes and structures\&.
 .RI "struct ncds_ds * \fBncds_new_transapi\fP (\fBNCDS_TYPE\fP type, const char *model_path, const char *callbacks_path)"
 .br
 .RI "\fICreate new datastore structure with transaction API support\&. \fP"
+.ti -1c
+.RI "int \fBncds_set_validation\fP (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron)"
+.br
+.RI "\fISet validators (or disable validation) on the specified datastore\&. \fP"
 .ti -1c
 .RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
 .br
@@ -82,7 +86,7 @@ NETCONF datastore handling function prototypes and structures\&.
 .br
 .RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (const struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
 .br
 .RI "\fIPerform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fP"
 .ti -1c
