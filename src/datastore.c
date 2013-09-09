@@ -2369,7 +2369,7 @@ static inline int _features_switchall(const char* module, int value)
 		}
 	}
 
-	return (EXIT_FAILURE);
+	return (EXIT_SUCCESS);
 }
 
 int ncds_features_enableall(const char* module)
