@@ -99,7 +99,7 @@ int transapi_apply_callbacks_recursive(struct xmldiff_tree* tree, struct transap
 	xmlNodeDump(buf, tree->op == XMLDIFF_REM ? old_doc : new_doc, tree->node, 1, 0);
 	node = (char*)xmlBufferContent(buf);
 	ret = calls->callbacks[tree->priority-1].func(tree->op, node, &calls->data);
-	xmlBufferEmpty(buf);
+	xmlBufferFree(buf);
 	tree->applied = true;
 	if (ret != EXIT_SUCCESS) {
 		ERROR("Callback for path %s failed (%d).", tree->path, ret);
