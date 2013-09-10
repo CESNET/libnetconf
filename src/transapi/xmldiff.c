@@ -124,9 +124,9 @@ void xmldiff_free (struct xmldiff_tree* diff)
 		return;
 	}
 
-	cur = diff;
+	cur = diff->children;
 	while (cur != NULL) {
-		xmldiff_free(cur->children);
+		xmldiff_free(cur);
 		cur = cur->next;
 	}
 
