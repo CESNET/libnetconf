@@ -2582,7 +2582,7 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 
 static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, const char* config, struct nc_err** e)
 {
-	int ret;
+	int ret = EXIT_FAILURE;
 	int len;
 	char *data_cfg = NULL, *data2, *model, *config_internal;
 	xmlDocPtr doc_cfg, doc_status, doc;
@@ -2594,6 +2594,9 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		/* validation not supported by this datastore */
 		return (EXIT_RPC_NOT_APPLICABLE);
 	}
+
+	/* init/clean error information */
+	*e = NULL;
 
 	switch (source) {
 	case NC_DATASTORE_RUNNING:
@@ -2613,22 +2616,25 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 			xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
 			data2 = ds->get_state(model, data_cfg, e);
 			free(model);
-			free(data_cfg); /* running data, no more needed in this form */
-			data_cfg = NULL;
 
 			if (*e != NULL ) {
 				/* state data retrieval error */
 				free(data2);
+				free(data_cfg);
 				return (EXIT_FAILURE);
 			}
 
 			doc_status = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			free(data2);
 
-			/* if merge fail (probably one of docs NULL)*/
-			if ((doc = ncxml_merge(doc_cfg, doc_status, ds->ext_model)) == NULL ) {
+			if (data_cfg == NULL || strisempty(data_cfg)) {
+				/* there are no configuration data, use only status, no merge is needed */
+				doc = doc_status;
+				/* doc_cfg is NULL and don't need to free() */
+			} else if ((doc = ncxml_merge(doc_cfg, doc_status, ds->ext_model)) == NULL ) {
 				xmlFreeDoc(doc_cfg);
 				xmlFreeDoc(doc_status);
+				free(data_cfg);
 				*e = nc_err_new(NC_ERR_OP_FAILED);
 				return (EXIT_FAILURE);
 			} else {
@@ -2714,23 +2720,36 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		return (EXIT_FAILURE);
 	}
 
-	/* process default values */
-	ncdflt_default_values(doc, ds->ext_model, NCWD_MODE_ALL);
+	if (doc == NULL){
+		if (*e != NULL) {
+			/* some error occurred */
+			ret = EXIT_FAILURE;
+		} else {
+			/*
+			 * there are no data to validate - datastore is empty and
+			 * it is a valid state of the datastore
+			 */
+			ret = EXIT_SUCCESS;
+		}
+	} else {
+		/* process default values */
+		ncdflt_default_values(doc, ds->ext_model, NCWD_MODE_ALL);
 
-	/*
-	 * reconect root element from datastore data under the <data>
-	 * element required by validators
-	 */
-	root = xmlDocGetRootElement(doc);
-	xmlUnlinkNode(root);
-	xmlDocSetRootElement(doc, xmlNewDocNode(doc, NULL, BAD_CAST "data", NULL));
-	ns = xmlNewNs(doc->children, (xmlChar *) NC_NS_BASE10, NULL);
-	xmlSetNs(doc->children, ns);
-	xmlAddChild(doc->children, root);
+		/*
+		 * reconnect root element from datastore data under the <data>
+		 * element required by validators
+		 */
+		root = xmlDocGetRootElement(doc);
+		xmlUnlinkNode(root);
+		xmlDocSetRootElement(doc, xmlNewDocNode(doc, NULL, BAD_CAST "data", NULL ));
+		ns = xmlNewNs(doc->children, (xmlChar *) NC_NS_BASE10, NULL );
+		xmlSetNs(doc->children, ns);
+		xmlAddChild(doc->children, root);
 
-	ret = validate_ds(ds, doc, e);
+		ret = validate_ds(ds, doc, e);
 
-	xmlFreeDoc(doc);
+		xmlFreeDoc(doc);
+	}
 
 	return (ret);
 
