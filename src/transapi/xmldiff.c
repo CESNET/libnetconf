@@ -127,11 +127,11 @@ void xmldiff_free (struct xmldiff_tree* diff)
 	cur = diff->children;
 	while (cur != NULL) {
 		xmldiff_free(cur);
+		free(cur);
 		cur = cur->next;
 	}
 
 	free(diff->path);
-	free(diff);
 }	
 
 const char * get_prefix (char * uri, const char * ns_mapping[])
