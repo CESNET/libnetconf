@@ -107,6 +107,7 @@ int xmldiff_set_priorities(struct xmldiff_tree* tree, void* callbacks) {
 	}
 
 	free(ret->values);
+	free(ret);
 	return EXIT_SUCCESS;
 }
 
@@ -338,9 +339,8 @@ model_type:
 				xmldiff_add_diff (tmp_diff, ns_mapping, path, new_tmp, XMLDIFF_CHAIN, XML_PARENT);
 				*tmp_diff = (*tmp_diff)->parent;
 				xmldiff_addsibling_diff (diff, tmp_diff);
-			} else {
-				free(tmp_diff);
 			}
+			free(tmp_diff);
 			break;
 		case YIN_TYPE_CHOICE: 
 			/* Choice */ 
