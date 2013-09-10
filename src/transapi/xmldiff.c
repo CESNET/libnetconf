@@ -339,7 +339,7 @@ model_type:
 				*tmp_diff = (*tmp_diff)->parent;
 				xmldiff_addsibling_diff (diff, tmp_diff);
 			} else {
-				free(*tmp_diff);
+				free(tmp_diff);
 			}
 			break;
 		case YIN_TYPE_CHOICE: 
@@ -465,7 +465,7 @@ model_type:
 						xmldiff_addsibling_diff (diff, tmp_diff);
 						ret_op = XMLDIFF_CHAIN;
 					} else {
-						free(*tmp_diff);
+						free(tmp_diff);
 					}
 				}
 				list_old_tmp = list_old_tmp->next;
