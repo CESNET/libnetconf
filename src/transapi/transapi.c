@@ -41,7 +41,7 @@ int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct tra
 		}
 	}
 
-	return ret;
+	return EXIT_SUCCESS;
 }
 
 /* call the callbacks in the order set by the priority of each change */
@@ -87,7 +87,7 @@ int transapi_apply_callbacks_recursive(struct xmldiff_tree* tree, struct transap
 		}
 	}
 
-	return ret;
+	return EXIT_SUCCESS;
 }
 
 /* will be called by library after change in running datastore */
