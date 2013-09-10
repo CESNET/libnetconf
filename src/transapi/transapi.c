@@ -121,9 +121,9 @@ int transapi_running_changed (struct transapi_data_callbacks * c, const char * n
 {
 	struct xmldiff_tree* diff = NULL;
 
-	if (xmldiff_diff (&diff, old_doc, new_doc, model, ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
+	if (xmldiff_diff(&diff, old_doc, new_doc, model, ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
 		ERROR("Failed to create the tree of differences.");
-		xmldiff_free (diff);
+		xmldiff_free(diff);
 		return EXIT_FAILURE;
 	} else if (diff != NULL) {
 		if (xmldiff_set_priorities(diff, c) != EXIT_SUCCESS) {
@@ -131,6 +131,7 @@ int transapi_running_changed (struct transapi_data_callbacks * c, const char * n
 		} else {
 			if (transapi_apply_callbacks_recursive(diff, c, old_doc, new_doc) != EXIT_SUCCESS) {
 				xmldiff_free(diff);
+				free(diff);
 				return EXIT_FAILURE;
 			}
 		}
@@ -138,6 +139,7 @@ int transapi_running_changed (struct transapi_data_callbacks * c, const char * n
 		VERB("Nothing changed.\n");
 	}
 
-	xmldiff_free (diff);
+	xmldiff_free(diff);
+	free(diff);
 	return EXIT_SUCCESS;
 }
