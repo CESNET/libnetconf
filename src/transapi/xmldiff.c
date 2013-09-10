@@ -83,6 +83,7 @@ struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, s
 		xmldiff_add_priority(min_prio, &priorities);
 	} else if (i < calls->callbacks_count) {
 		/* We have a callback */
+		tree->callback = true;
 		tree->priority = i+1;
 
 		/* Save our priority */

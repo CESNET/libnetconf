@@ -7,47 +7,38 @@
 
 /* call the callbacks in the order set by the priority of each change */
 int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct transapi_xml_data_callbacks* calls) {
-	struct xmldiff_tree* child;
-	int min_prio, ret;
+	struct xmldiff_tree* child, *cur_min;
+	int ret;
 
 	do {
-		min_prio = 0;
+		cur_min = NULL;
 		child = tree->children;
 		while (child != NULL) {
-			if (min_prio == 0 && !child->applied && child->priority > 0) {
-				/* Set minimal priority with a reasonable value (first child's priority) */
-				min_prio = child->priority;
-				child = child->next;
-				continue;
-			}
-
-			if (!child->applied && child->priority > 0 && child->priority < min_prio) {
-				min_prio = child->priority;
+			if (child->callback && !child->applied) {
+				/* Valid change with a callback */
+				if (cur_min == NULL || cur_min->priority > child->priority) {
+					cur_min = child;
+				}
 			}
 			child = child->next;
 		}
 
-		if (min_prio > 0) {
-			child = tree->children;
-			while (child != NULL) {
-				if (!child->applied && child->priority == min_prio) {
-					/* Process this child recursively */
-					if (transapi_xml_apply_callbacks_recursive(child, calls) != EXIT_SUCCESS) {
-						return EXIT_FAILURE;
-					}
-					break;
-				}
-				child = child->next;
+		if (cur_min != NULL) {
+			/* Process this child recursively */
+			if (transapi_xml_apply_callbacks_recursive(cur_min, calls) != EXIT_SUCCESS) {
+				return EXIT_FAILURE;
 			}
 		}
-	} while (min_prio > 0);
+	} while (cur_min != NULL);
 
 	/* Finally call our callback */
-	DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
-	ret = calls->callbacks[tree->priority-1].func(tree->op, tree->node, &calls->data);
-	tree->applied = true;
-	if (ret != EXIT_SUCCESS) {
-		ERROR("Callback for path %s failed (%d).", tree->path, ret);
+	if (tree->callback) {
+		DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
+		ret = calls->callbacks[tree->priority-1].func(tree->op, tree->node, &calls->data);
+		tree->applied = true;
+		if (ret != EXIT_SUCCESS) {
+			ERROR("Callback for path %s failed (%d).", tree->path, ret);
+		}
 	}
 
 	return ret;
@@ -55,54 +46,45 @@ int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct tra
 
 /* call the callbacks in the order set by the priority of each change */
 int transapi_apply_callbacks_recursive(struct xmldiff_tree* tree, struct transapi_data_callbacks* calls, xmlDocPtr old_doc, xmlDocPtr new_doc) {
-	struct xmldiff_tree* child;
-	int min_prio, ret;
+	struct xmldiff_tree* child, *cur_min;
+	int ret;
 	xmlBufferPtr buf;
 	char* node;
 
 	do {
-		min_prio = 0;
+		cur_min = NULL;
 		child = tree->children;
 		while (child != NULL) {
-			if (min_prio == 0 && !child->applied && child->priority > 0) {
-				/* Set minimal priority with a reasonable value (first child's priority) */
-				min_prio = child->priority;
-				child = child->next;
-				continue;
-			}
-
-			if (!child->applied && child->priority > 0 && child->priority < min_prio) {
-				min_prio = child->priority;
+			if (child->callback && !child->applied) {
+				/* Valid change with a callback */
+				if (cur_min == NULL || cur_min->priority > child->priority) {
+					cur_min = child;
+				}
 			}
 			child = child->next;
 		}
 
-		if (min_prio > 0) {
-			child = tree->children;
-			while (child != NULL) {
-				if (!child->applied && child->priority == min_prio) {
-					/* Process this child recursively */
-					if (transapi_apply_callbacks_recursive(child, calls, old_doc, new_doc) != EXIT_SUCCESS) {
-						return EXIT_FAILURE;
-					}
-					break;
-				}
-				child = child->next;
+		if (cur_min != NULL) {
+			/* Process this child recursively */
+			if (transapi_apply_callbacks_recursive(cur_min, calls, old_doc, new_doc) != EXIT_SUCCESS) {
+				return EXIT_FAILURE;
 			}
 		}
-	} while (min_prio > 0);
+	} while (cur_min != NULL);
 
 	/* Finally call our callback */
-	DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
-	/* if node was removed, it was copied from old XML doc, else from new XML doc */
-	buf = xmlBufferCreate();
-	xmlNodeDump(buf, tree->op == XMLDIFF_REM ? old_doc : new_doc, tree->node, 1, 0);
-	node = (char*)xmlBufferContent(buf);
-	ret = calls->callbacks[tree->priority-1].func(tree->op, node, &calls->data);
-	xmlBufferFree(buf);
-	tree->applied = true;
-	if (ret != EXIT_SUCCESS) {
-		ERROR("Callback for path %s failed (%d).", tree->path, ret);
+	if (tree->callback) {
+		DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
+		/* if node was removed, it was copied from old XML doc, else from new XML doc */
+		buf = xmlBufferCreate();
+		xmlNodeDump(buf, tree->op == XMLDIFF_REM ? old_doc : new_doc, tree->node, 1, 0);
+		node = (char*)xmlBufferContent(buf);
+		ret = calls->callbacks[tree->priority-1].func(tree->op, node, &calls->data);
+		xmlBufferFree(buf);
+		tree->applied = true;
+		if (ret != EXIT_SUCCESS) {
+			ERROR("Callback for path %s failed (%d).", tree->path, ret);
+		}
 	}
 
 	return ret;
