@@ -19,7 +19,7 @@ void xmldiff_add_priority(int prio, struct xmldiff_prio** prios) {
 		(*prios)->values = malloc(10 * sizeof(int));
 	} else if ((*prios)->used == (*prios)->alloc) {
 		(*prios)->alloc *= 2;
-		(*prios)->values = realloc((*prios)->values, (*prios)->alloc);
+		(*prios)->values = realloc((*prios)->values, (*prios)->alloc * sizeof(int));
 	}
 
 	(*prios)->values[(*prios)->used] = prio;
@@ -37,7 +37,7 @@ void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* ne
 
 	if ((*old)->alloc - (*old)->used < new->used) {
 		(*old)->alloc *= 2;
-		(*old)->values = realloc((*old)->values, (*old)->alloc);
+		(*old)->values = realloc((*old)->values, (*old)->alloc * sizeof(int));
 	}
 
 	memcpy((*old)->values+(*old)->used, new->values, new->used * sizeof(int));
