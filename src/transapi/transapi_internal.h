@@ -15,6 +15,17 @@ union transapi_rpc_clbcks {
 	struct transapi_xml_rpc_callbacks * rpc_clbks_xml;
 };
 
+/**
+ * @ingroup transapi
+ * @brief Enum with XML relationships between the nodes
+ */
+typedef enum
+{
+	XML_PARENT, /** < Represent XML parent role. */
+	XML_CHILD, /** < Represent XML child role. */
+	XML_SIBLING /** < Represent XML sibling role. */
+} XML_RELATION;
+
 struct transapi {
 	/**
 	 * @brief Loaded shared library with transapi callbacks.

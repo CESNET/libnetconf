@@ -9,6 +9,7 @@
 #include "xmldiff.h"
 #include "transapi_xml.h"
 #include "yinparser.h"
+#include "transapi_internal.h"
 
 /* adds a priority into priority buffer structure */
 void xmldiff_add_priority(int prio, struct xmldiff_prio** prios) {
