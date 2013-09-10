@@ -118,7 +118,7 @@ int xmldiff_set_priorities(struct xmldiff_tree* tree, void* callbacks) {
  */
 void xmldiff_free (struct xmldiff_tree* diff)
 {
-	struct xmldiff_tree* cur;
+	struct xmldiff_tree* cur, *prev;
 
 	if (diff == NULL) {
 		return;
@@ -127,12 +127,13 @@ void xmldiff_free (struct xmldiff_tree* diff)
 	cur = diff->children;
 	while (cur != NULL) {
 		xmldiff_free(cur);
-		free(cur);
+		prev = cur;
 		cur = cur->next;
+		free(prev);
 	}
 
 	free(diff->path);
-}	
+}
 
 const char * get_prefix (char * uri, const char * ns_mapping[])
 {
