@@ -2601,7 +2601,7 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 
 static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, const char* config, struct nc_err** e)
 {
-	int ret;
+	int ret = EXIT_FAILURE;
 	int len;
 	char *data_cfg = NULL, *data2, *model, *config_internal;
 	xmlDocPtr doc_cfg, doc_status, doc;
@@ -2613,6 +2613,9 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		/* validation not supported by this datastore */
 		return (EXIT_RPC_NOT_APPLICABLE);
 	}
+
+	/* init/clean error information */
+	*e = NULL;
 
 	switch (source) {
 	case NC_DATASTORE_RUNNING:
@@ -2632,22 +2635,25 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 			xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
 			data2 = ds->get_state(model, data_cfg, e);
 			free(model);
-			free(data_cfg); /* running data, no more needed in this form */
-			data_cfg = NULL;
 
 			if (*e != NULL ) {
 				/* state data retrieval error */
 				free(data2);
+				free(data_cfg);
 				return (EXIT_FAILURE);
 			}
 
 			doc_status = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			free(data2);
 
-			/* if merge fail (probably one of docs NULL)*/
-			if ((doc = ncxml_merge(doc_cfg, doc_status, ds->ext_model)) == NULL ) {
+			if (data_cfg == NULL || strisempty(data_cfg)) {
+				/* there are no configuration data, use only status, no merge is needed */
+				doc = doc_status;
+				/* doc_cfg is NULL and don't need to free() */
+			} else if ((doc = ncxml_merge(doc_cfg, doc_status, ds->ext_model)) == NULL ) {
 				xmlFreeDoc(doc_cfg);
 				xmlFreeDoc(doc_status);
+				free(data_cfg);
 				*e = nc_err_new(NC_ERR_OP_FAILED);
 				return (EXIT_FAILURE);
 			} else {
@@ -2733,23 +2739,36 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		return (EXIT_FAILURE);
 	}
 
-	/* process default values */
-	ncdflt_default_values(doc, ds->ext_model, NCWD_MODE_ALL);
+	if (doc == NULL){
+		if (*e != NULL) {
+			/* some error occurred */
+			ret = EXIT_FAILURE;
+		} else {
+			/*
+			 * there are no data to validate - datastore is empty and
+			 * it is a valid state of the datastore
+			 */
+			ret = EXIT_SUCCESS;
+		}
+	} else {
+		/* process default values */
+		ncdflt_default_values(doc, ds->ext_model, NCWD_MODE_ALL);
 
-	/*
-	 * reconect root element from datastore data under the <data>
-	 * element required by validators
-	 */
-	root = xmlDocGetRootElement(doc);
-	xmlUnlinkNode(root);
-	xmlDocSetRootElement(doc, xmlNewDocNode(doc, NULL, BAD_CAST "data", NULL));
-	ns = xmlNewNs(doc->children, (xmlChar *) NC_NS_BASE10, NULL);
-	xmlSetNs(doc->children, ns);
-	xmlAddChild(doc->children, root);
+		/*
+		 * reconnect root element from datastore data under the <data>
+		 * element required by validators
+		 */
+		root = xmlDocGetRootElement(doc);
+		xmlUnlinkNode(root);
+		xmlDocSetRootElement(doc, xmlNewDocNode(doc, NULL, BAD_CAST "data", NULL ));
+		ns = xmlNewNs(doc->children, (xmlChar *) NC_NS_BASE10, NULL );
+		xmlSetNs(doc->children, ns);
+		xmlAddChild(doc->children, root);
 
-	ret = validate_ds(ds, doc, e);
+		ret = validate_ds(ds, doc, e);
 
-	xmlFreeDoc(doc);
+		xmlFreeDoc(doc);
+	}
 
 	return (ret);
 
@@ -3608,6 +3627,71 @@ int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
 	return 0;
 }
 
+/**
+ * \return NULL on success, error reply with error info else
+ */
+static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session* session, xmlDocPtr old, int rollback, nc_reply *reply)
+{
+	char *new_data;
+	xmlDocPtr new;
+	int ret;
+	struct nc_err *e;
+	nc_reply *new_reply = NULL;
+
+	if (rollback && reply != NULL) {
+		/* use some reply to add new error messages */
+		new_reply = reply;
+	}
+
+	/* find differences and call functions */
+	new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
+	if (new_data == NULL || strcmp(new_data, "") == 0) {
+		new = xmlNewDoc(BAD_CAST "1.0");
+	} else {
+		new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN);
+	}
+	free(new_data);
+	if (new == NULL ) { /* cannot get or parse data */
+		e = nc_err_new(NC_ERR_OP_FAILED);
+		if (new_reply != NULL) {
+			/* second try, add the error info */
+			nc_err_set(e, NC_ERR_PARAM_MSG, "TransAPI: Failed to get data from RUNNING datastore. Configuration is probably inconsistent.");
+			nc_reply_error_add(new_reply, e);
+		} else {
+			nc_err_set(e, NC_ERR_PARAM_MSG, "TransAPI: Failed to get data from RUNNING datastore.");
+			new_reply = nc_reply_error(e);
+		}
+	} else {
+		if (ds->transapi.libxml2) {
+			ret = transapi_xml_running_changed(ds->transapi.data_clbks.data_clbks_xml, ds->transapi.ns_mapping, old, new, ds->data_model->model_tree); /* device does not accept changes */
+		} else {
+			ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model->model_tree); /* device does not accept changes */
+		}
+		if (ret) {
+			e = nc_err_new(NC_ERR_OP_FAILED);
+			if (new_reply != NULL ) {
+				/* second try, add the error info */
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to rollback configuration changes to device. Configuration is probably inconsistent.");
+				nc_reply_error_add(new_reply, e);
+			} else {
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device.");
+				new_reply = nc_reply_error(e);
+
+				if (!rollback) {
+					/* do the rollback on datastore */
+					ds->func.rollback(ds);
+					/* and on the device via transapi */
+					rollback = 1;
+					new_reply = ncds_apply_transapi(ds, session, new, 1, new_reply);
+				}
+			}
+		} /* else success */
+		xmlFreeDoc(new);
+	}
+
+	return (new_reply);
+}
+
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
@@ -3621,8 +3705,8 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlBufferPtr resultbuffer;
 	xmlNodePtr aux_node, node;
 	NC_OP op;
-	xmlDocPtr old = NULL, new = NULL;
-	char * old_data = NULL, * new_data;
+	xmlDocPtr old = NULL;
+	char * old_data = NULL;
 	NC_DATASTORE source_ds = 0, target_ds = 0;
 	struct nacm_rpc *nacm_aux;
 	nc_rpc *rpc_aux;
@@ -4142,7 +4226,7 @@ apply_editcopyconfig:
 							/**
 							 * first we remove all entries from "remote" document which match enabled data models
 							 * this will prevent us from having multiple datastore configurations
-                             */
+							 */
 							// get data models
 							url_model_xpath = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":namespace", ds->data_model->ctxt);
 							url_model_namespace = xmlGetProp( url_model_xpath->nodesetval->nodeTab[0], (xmlChar*)"uri" );
@@ -4479,35 +4563,10 @@ apply_editcopyconfig:
 		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK)) {
 
-		/* find differences and call functions */
-		new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
-		if (new_data == NULL || strcmp(new_data, "") == 0) {
-			new = xmlNewDoc (BAD_CAST "1.0");
-		} else {
-			new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
-		}
-		free (new_data);
-		if (new == NULL) { /* cannot get or parse data */
-			if (e == NULL) {/* error not set */
-				e = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(e, NC_ERR_PARAM_MSG, "TransAPI: Failed to get data from RUNNING datastore.");
-			}
+		if ((new_reply = ncds_apply_transapi(ds, session, old, 0, NULL)) != NULL) {
 			nc_reply_free(reply);
-			reply = nc_reply_error(e);
-		} else {
-			if (ds->transapi.libxml2) {
-				ret = transapi_xml_running_changed(ds->transapi.data_clbks.data_clbks_xml, ds->transapi.ns_mapping, old, new, ds->data_model->model_tree); /* device does not accept changes */
-			} else {
-				ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model->model_tree); /* device does not accept changes */
-			}
-			if (ret) {
-				e = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device.");
-				nc_reply_free(reply);
-				reply = nc_reply_error(e);
-			}
+			reply = new_reply;
 		}
-
 	}
 	xmlFreeDoc (old);
 	old = NULL;
@@ -4542,8 +4601,10 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 {
 	struct ncds_ds_list* ds, *ds_rollback;
 	nc_reply *old_reply = NULL, *new_reply = NULL, *reply = NULL;
-	int id_i = 0;
-	char *op_name, *op_namespace;
+	int id_i = 0, transapi = 0;
+	char *op_name, *op_namespace, *data;
+	xmlDocPtr old;
+	NC_OP op;
 	NC_EDIT_ERROPT_TYPE erropt = 0;
 	NC_RPC_TYPE req_type;
 
@@ -4611,8 +4672,36 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 					return (reply);
 				} else if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_ROLLBACK) {
 					/* rollback previously changed datastores */
+					/* do not skip internal datastores */
 					for (ds_rollback = ncds.datastores; ds_rollback != ds; ds_rollback = ds_rollback->next) {
+						if (ds_rollback->datastore->transapi.module != NULL
+								&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST)))
+								&& (nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING)) {
+							transapi = 1;
+						} else {
+							transapi = 0;
+						}
+
+						if (transapi) {
+							/* remeber data for transAPI diff */
+							data = ds_rollback->datastore->func.getconfig(ds_rollback->datastore, session, NC_DATASTORE_RUNNING, NULL);
+							if (data == NULL || strcmp(data, "") == 0) {
+								old = xmlNewDoc(BAD_CAST "1.0");
+							} else {
+								old = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN);
+							}
+							free(data);
+						}
+
 						ds_rollback->datastore->func.rollback(ds_rollback->datastore);
+
+						/* transAPI rollback */
+						op = nc_rpc_get_op(rpc);
+						if (transapi) {
+							reply = ncds_apply_transapi(ds_rollback->datastore, session, old, 1, reply);
+							xmlFreeDoc(old);
+						}
+
 					}
 					return (reply);
 				}

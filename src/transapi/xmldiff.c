@@ -20,7 +20,7 @@ void xmldiff_add_priority(int prio, struct xmldiff_prio** prios) {
 		(*prios)->values = malloc(10 * sizeof(int));
 	} else if ((*prios)->used == (*prios)->alloc) {
 		(*prios)->alloc *= 2;
-		(*prios)->values = realloc((*prios)->values, (*prios)->alloc);
+		(*prios)->values = realloc((*prios)->values, (*prios)->alloc * sizeof(int));
 	}
 
 	(*prios)->values[(*prios)->used] = prio;
@@ -38,7 +38,7 @@ void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* ne
 
 	if ((*old)->alloc - (*old)->used < new->used) {
 		(*old)->alloc *= 2;
-		(*old)->values = realloc((*old)->values, (*old)->alloc);
+		(*old)->values = realloc((*old)->values, (*old)->alloc * sizeof(int));
 	}
 
 	memcpy((*old)->values+(*old)->used, new->values, new->used * sizeof(int));
@@ -84,6 +84,7 @@ struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, s
 		xmldiff_add_priority(min_prio, &priorities);
 	} else if (i < calls->callbacks_count) {
 		/* We have a callback */
+		tree->callback = true;
 		tree->priority = i+1;
 
 		/* Save our priority */
@@ -107,6 +108,7 @@ int xmldiff_set_priorities(struct xmldiff_tree* tree, void* callbacks) {
 	}
 
 	free(ret->values);
+	free(ret);
 	return EXIT_SUCCESS;
 }
 
@@ -117,21 +119,22 @@ int xmldiff_set_priorities(struct xmldiff_tree* tree, void* callbacks) {
  */
 void xmldiff_free (struct xmldiff_tree* diff)
 {
-	struct xmldiff_tree* cur;
+	struct xmldiff_tree* cur, *prev;
 
 	if (diff == NULL) {
 		return;
 	}
 
-	cur = diff;
+	cur = diff->children;
 	while (cur != NULL) {
-		xmldiff_free(cur->children);
+		xmldiff_free(cur);
+		prev = cur;
 		cur = cur->next;
+		free(prev);
 	}
 
 	free(diff->path);
-	free(diff);
-}	
+}
 
 const char * get_prefix (char * uri, const char * ns_mapping[])
 {
@@ -338,9 +341,8 @@ model_type:
 				xmldiff_add_diff (tmp_diff, ns_mapping, path, new_tmp, XMLDIFF_CHAIN, XML_PARENT);
 				*tmp_diff = (*tmp_diff)->parent;
 				xmldiff_addsibling_diff (diff, tmp_diff);
-			} else {
-				free(*tmp_diff);
 			}
+			free(tmp_diff);
 			break;
 		case YIN_TYPE_CHOICE: 
 			/* Choice */ 
@@ -386,6 +388,12 @@ model_type:
 			/* Go through the old nodes and search for matching nodes in the new document*/
 			list_old_tmp = old_tmp;
 			while (list_old_tmp) {
+				/* We have to make sure that this really is a list node we are checking now */
+				if (xmlStrcmp(old_tmp->name, list_old_tmp->name) != 0) {
+					list_old_tmp = list_old_tmp->next;
+					continue;
+				}
+
 				item_ret_op = XMLDIFF_NONE;
 				/* For every old node create string holding the concatenated key values */
 				old_keys = BAD_CAST strdup ("");
@@ -402,11 +410,15 @@ model_type:
 						list_old_inter = list_old_inter->next;
 					}
 				}
-				old_keys  = realloc (old_keys, sizeof(char) * (strlen((const char*)old_keys)+strlen((const char*)list_old_tmp->name)+1));
-				strcat ((char*)old_keys, (char*)list_old_tmp->name); /* !! Concatenate the node's name, the only positively unique key is the tuple keys + name */
+
 				/* Go through the new list */
 				list_new_tmp = new_tmp;
 				while (list_new_tmp) {
+					if (xmlStrcmp(old_tmp->name, list_new_tmp->name) != 0) {
+						list_new_tmp = list_new_tmp->next;
+						continue;
+					}
+
 					new_keys = BAD_CAST strdup ("");
 					for (i=0; i<model->keys_count; i++) {
 						list_new_inter = list_new_tmp->children;
@@ -421,8 +433,6 @@ model_type:
 							list_new_inter = list_new_inter->next;
 						}
 					}
-					new_keys  = realloc (new_keys, sizeof(char) * (strlen((const char*)new_keys)+strlen((const char*)list_new_tmp->name)+1));
-					strcat ((char*)new_keys, (char*)list_new_tmp->name);
 					if (strcmp ((const char*)old_keys, (const char*)new_keys) == 0) { /* Matching item found */
 						free (new_keys);
 						break;
@@ -457,7 +467,7 @@ model_type:
 						xmldiff_addsibling_diff (diff, tmp_diff);
 						ret_op = XMLDIFF_CHAIN;
 					} else {
-						free(*tmp_diff);
+						free(tmp_diff);
 					}
 				}
 				list_old_tmp = list_old_tmp->next;
@@ -466,6 +476,11 @@ model_type:
 			/* Go through the new nodes and search for matching nodes in the old document*/
 			list_new_tmp = new_tmp;
 			while (list_new_tmp) {
+				if (xmlStrcmp(new_tmp->name, list_new_tmp->name) != 0) {
+					list_new_tmp = list_new_tmp->next;
+					continue;
+				}
+
 				item_ret_op = XMLDIFF_NONE;
 				/* For every new node create string holding the concatenated key values */
 				new_keys = BAD_CAST strdup ("");
@@ -482,11 +497,14 @@ model_type:
 						list_new_inter = list_new_inter->next;
 					}
 				}
-				new_keys  = realloc (new_keys, sizeof(char) * (strlen((const char*)new_keys)+strlen((const char*)list_new_tmp->name)+1));
-				strcat ((char*)new_keys, (char*)list_new_tmp->name);
 				/* Go through the new list */
 				list_old_tmp = old_tmp;
 				while (list_old_tmp) {
+					if (xmlStrcmp(new_tmp->name, list_old_tmp->name) != 0) {
+						list_old_tmp = list_old_tmp->next;
+						continue;
+					}
+
 					old_keys = BAD_CAST strdup ("");
 					for (i=0; i<model->keys_count; i++) {
 						list_old_inter = list_old_tmp->children;
@@ -501,8 +519,6 @@ model_type:
 							list_old_inter = list_old_inter->next;
 						}
 					}
-					old_keys  = realloc (old_keys, sizeof(char) * (strlen((const char*)old_keys)+strlen((const char*)list_old_tmp->name)+1));
-					strcat ((char*)old_keys, (char*)list_old_tmp->name);
 					if (strcmp ((const char*)old_keys, (const char*)new_keys) == 0) { /* Matching item found */
 						free (old_keys);
 						break;
