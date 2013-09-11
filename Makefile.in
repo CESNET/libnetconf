@@ -315,7 +315,7 @@ install-doc:
 uninstall: uninstall-devel uninstall-doc
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libldns.la
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
-	rm $(NC_WOTKINGDIR_PATH)/ietf-netconf-acm*.rng $(NC_WORKINGDIR_PATH)/ietf-netconf-acm-schematron.xsl;
+	rm $(NC_WORKINGDIR_PATH)/ietf-netconf-acm*.rng $(NC_WORKINGDIR_PATH)/ietf-netconf-acm-schematron.xsl;
 	for i in $(SUBDIRS) ; do \
 		$(MAKE) DESTDIR=$(patsubst .%,$(abs_srcdir)/.%,$(DESTDIR)) -C $$i uninstall \
 		|| exit 1; \
