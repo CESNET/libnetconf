@@ -14,6 +14,9 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+/* transAPI version which must be compatible with libnetconf */
+int transapi_version = 1;
+
 /* Determines whether XML arguments are passed as (xmlDocPtr) or (char *). */
 int with_libxml2 = 1;
 

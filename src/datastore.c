@@ -1263,7 +1263,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	int (*init_func)(void) = NULL;
 	union transapi_data_clbcks data_clbks = {NULL};
 	union transapi_rpc_clbcks rpc_clbks = {NULL};
-	int *libxml2, lxml2;
+	int *libxml2, lxml2, *ver, ver_default = 1;
 	char * ns_mapping = NULL;
 
 	if (callbacks_path == NULL) {
@@ -1274,6 +1274,17 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	/* load shared library */
 	if ((transapi_module = dlopen (callbacks_path, RTLD_NOW)) == NULL) {
 		ERROR("Unable to load shared library %s (%s).", callbacks_path, dlerror());
+		return (NULL);
+	}
+
+	/* check transAPI version used to built the module */
+	if ((ver = dlsym (transapi_module, "transapi_version")) == NULL) {
+		WARN("transAPI version in module %s not found. Probably version 1, update your module.", callbacks_path);
+		ver = &ver_default;
+	}
+	if (*ver != TRANSAPI_VERSION) {
+		ERROR("Wrong transAPI version of the module %s. Have %d, but %d is required.", callbacks_path, *ver, TRANSAPI_VERSION);
+		dlclose (transapi_module);
 		return (NULL);
 	}
 

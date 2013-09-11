@@ -42,6 +42,8 @@ import re
 import sys
 import os
 
+transapi_version = 1
+
 target_dir = './'
 
 # Use configure.in.template and replace all variables with text
@@ -109,6 +111,9 @@ def generate_callbacks_file(name, defs, model, with_libxml2, without_init, witho
 	else:
 		content += '#include <libnetconf.h>\n'
 	content += '\n'
+	# transAPI version
+	content += '/* transAPI version which must be compatible with libnetconf */\n'
+	content += 'int transapi_version = '+str(transapi_version)+';\n\n'
 	# libxml2?
 	content += '/* Determines whether XML arguments are passed as (xmlDocPtr) or (char *). */\n'
 	content += 'int with_libxml2 = '+str(with_libxml2)+';\n'
