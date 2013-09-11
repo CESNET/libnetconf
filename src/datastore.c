@@ -4605,7 +4605,7 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 	char *op_name, *op_namespace, *data;
 	xmlDocPtr old;
 	NC_OP op;
-	NC_EDIT_ERROPT_TYPE erropt = 0;
+	NC_EDIT_ERROPT_TYPE erropt = NC_EDIT_ERROPT_NOTSET;
 	NC_RPC_TYPE req_type;
 
 	if (rpc == NULL || session == NULL) {
@@ -4704,7 +4704,9 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 
 					}
 					return (reply);
-				}
+				} /* else if (erropt == NC_EDIT_ERROPT_CONT)
+				   * just continue
+				   */
 			} else if (req_type == NC_RPC_DATASTORE_READ) {
 				return (reply);
 			}
