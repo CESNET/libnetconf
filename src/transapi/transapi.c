@@ -38,6 +38,7 @@ int transapi_xml_apply_callbacks_recursive(struct xmldiff_tree* tree, struct tra
 		tree->applied = true;
 		if (ret != EXIT_SUCCESS) {
 			ERROR("Callback for path %s failed (%d).", tree->path, ret);
+			return EXIT_FAILURE;
 		}
 	}
 
@@ -84,6 +85,7 @@ int transapi_apply_callbacks_recursive(struct xmldiff_tree* tree, struct transap
 		tree->applied = true;
 		if (ret != EXIT_SUCCESS) {
 			ERROR("Callback for path %s failed (%d).", tree->path, ret);
+			return EXIT_FAILURE;
 		}
 	}
 
