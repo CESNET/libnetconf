@@ -107,6 +107,7 @@ int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const 
 		} else {
 			if (transapi_xml_apply_callbacks_recursive(diff, c) != EXIT_SUCCESS) {
 				xmldiff_free(diff);
+				free(diff);
 				return EXIT_FAILURE;
 			}
 		}
@@ -115,6 +116,7 @@ int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const 
 	}
 
 	xmldiff_free(diff);
+	free(diff);
 	return EXIT_SUCCESS;
 }
 
