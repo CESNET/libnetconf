@@ -665,7 +665,7 @@ static xmlChar* get_default_value(xmlNodePtr node, xmlDocPtr model)
  * \param[in] keys List of the key elements from the configuration data model.
  * \return Found equivalent element, NULL if no such element exists.
  */
-static xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, xmlDocPtr model, keyList keys)
+xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, xmlDocPtr model, keyList keys)
 {
 	xmlNodePtr orig_parent, node, model_def;
 	int leaf = 0;

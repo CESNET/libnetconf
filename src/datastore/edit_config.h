@@ -70,6 +70,17 @@ keyList get_keynode_list(xmlDocPtr model);
 int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys, int leaf);
 
 /**
+ * \brief Find an equivalent of the given node in orig_doc document.
+ *
+ * \param[in] orig_doc Original configuration document to edit.
+ * \param[in] node Element whose equivalent in orig_doc should be found.
+ * \param[in] model Configuration data model.
+ * \param[in] keys List of the key elements from the configuration data model.
+ * \return Found equivalent element, NULL if no such element exists.
+ */
+xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, xmlDocPtr model, keyList keys);
+
+/**
  * \brief Perform edit-config changes according to the given parameters
  *
  * \param[in] repo XML document to change (target NETCONF repository).

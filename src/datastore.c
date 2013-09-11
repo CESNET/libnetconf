@@ -3641,10 +3641,11 @@ int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
 /**
  * \return NULL on success, error reply with error info else
  */
-static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session* session, xmlDocPtr old, int rollback, nc_reply *reply)
+static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session* session, xmlDocPtr old, int rollback, NC_EDIT_ERROPT_TYPE erropt, nc_reply *reply)
 {
 	char *new_data;
 	xmlDocPtr new;
+	xmlChar *config;
 	int ret;
 	struct nc_err *e;
 	nc_reply *new_reply = NULL;
@@ -3673,11 +3674,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 			new_reply = nc_reply_error(e);
 		}
 	} else {
-		if (ds->transapi.libxml2) {
-			ret = transapi_xml_running_changed(ds->transapi.data_clbks.data_clbks_xml, ds->transapi.ns_mapping, old, new, ds->data_model->model_tree); /* device does not accept changes */
-		} else {
-			ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model->model_tree); /* device does not accept changes */
-		}
+		ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, ds->transapi.libxml2);
 		if (ret) {
 			e = nc_err_new(NC_ERR_OP_FAILED);
 			if (new_reply != NULL ) {
@@ -3687,15 +3684,21 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 			} else {
 				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device.");
 				new_reply = nc_reply_error(e);
-
+#if 0
 				if (!rollback) {
 					/* do the rollback on datastore */
 					ds->func.rollback(ds);
 					/* and on the device via transapi */
 					rollback = 1;
-					new_reply = ncds_apply_transapi(ds, session, new, 1, new_reply);
+					new_reply = ncds_apply_transapi(ds, session, new, 1, erropt, new_reply);
 				}
+#endif
 			}
+			xmlDocDumpMemory(new, &config, NULL);
+			if (ds->func.copyconfig(ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, (char*)config, &e) == EXIT_FAILURE) {
+				ERROR("transAPI apply failed");
+			}
+			xmlFree(config);
 		} /* else success */
 		xmlFreeDoc(new);
 	}
@@ -4574,7 +4577,7 @@ apply_editcopyconfig:
 		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK)) {
 
-		if ((new_reply = ncds_apply_transapi(ds, session, old, 0, NULL)) != NULL) {
+		if ((new_reply = ncds_apply_transapi(ds, session, old, 0, nc_rpc_get_erropt(rpc), NULL)) != NULL) {
 			nc_reply_free(reply);
 			reply = new_reply;
 		}
@@ -4709,7 +4712,7 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 						/* transAPI rollback */
 						op = nc_rpc_get_op(rpc);
 						if (transapi) {
-							reply = ncds_apply_transapi(ds_rollback->datastore, session, old, 1, reply);
+							reply = ncds_apply_transapi(ds_rollback->datastore, session, old, 1, erropt, reply);
 							xmlFreeDoc(old);
 						}
 

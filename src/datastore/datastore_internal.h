@@ -49,7 +49,6 @@
 #endif
 
 #include "../datastore.h"
-#include "../transapi/transapi_internal.h"
 
 #define EXIT_RPC_NOT_APPLICABLE -2
 
@@ -180,6 +179,47 @@ struct model_validators {
 	xsltStylesheetPtr schematron;
 };
 #endif
+
+union transapi_data_clbcks {
+	struct transapi_data_callbacks * data_clbks;
+	struct transapi_xml_data_callbacks * data_clbks_xml;
+};
+
+union transapi_rpc_clbcks {
+	struct transapi_rpc_callbacks * rpc_clbks;
+	struct transapi_xml_rpc_callbacks * rpc_clbks_xml;
+};
+
+struct transapi {
+	/**
+	 * @brief Loaded shared library with transapi callbacks.
+	 */
+	void * module;
+	/**
+	 * @brief Does module support libxml2?
+	 */
+	int libxml2;
+	/**
+	 * @brief Mapping prefixes with URIs
+	 */
+	const char ** ns_mapping;
+	/**
+	 * @brief Transapi callback mapping structure.
+	 */
+	union transapi_data_clbcks data_clbks;
+	/**
+	 * @brief Transapi rpc callbacks mapping structure.
+	 */
+	union transapi_rpc_clbcks rpc_clbks;
+	/**
+	 * @brief Module initialization.
+	 */
+	int (*init)(void);
+	/**
+	 * @brief Free module resources and prepare for closing.
+	 */
+	void (*close)(void);
+};
 
 struct model_list;
 struct data_model {
