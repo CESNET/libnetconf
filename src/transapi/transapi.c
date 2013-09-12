@@ -52,8 +52,8 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 		cur_min = NULL;
 		child = tree->children;
 		while (child != NULL) {
-			if (child->callback && !child->applied) {
-				/* Valid change with a callback */
+			if (child->priority && !child->applied) {
+				/* Valid change with a callback or callback in child (priority > 0) not yet applied */
 				if (cur_min == NULL || cur_min->priority > child->priority) {
 					cur_min = child;
 				}
@@ -95,10 +95,10 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 			} else if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
 			} else if (erropt == NC_EDIT_ERROPT_CONT) {
 			}
-		} else {
-			tree->applied = true;
 		}
 	}
+	/* mark subtree as solved */
+	tree->applied = true;
 
 	return EXIT_SUCCESS;
 }
