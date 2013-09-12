@@ -20,7 +20,7 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 
 	for(child = tree->children; child != NULL; child = child->next) {
 		transapi_revert_callbacks_recursive(info, child, erropt);
-		if (tree->callback && !tree->applied) {
+		if (!tree->applied) {
 			if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_STOP) {
 				/* discard proposed changes */
 				if (tree->op == XMLDIFF_ADD && tree->node != NULL ) {
