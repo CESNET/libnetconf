@@ -22,34 +22,48 @@ struct transapi_callbacks_info {
 static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree)
 {
 	xmlNodePtr parent, xmlnode;
+	struct xmldiff_tree* child;
 
 	DBG("Transapi revert XML tree (%s, proposed operation %d).", tree->path, tree->op);
-
 	/* discard proposed changes */
-	if (tree->op == XMLDIFF_ADD && tree->node != NULL ) {
+	if ((tree->op & XMLDIFF_ADD) && tree->node != NULL ) {
 		/* remove element to add from the new XML tree */
 		xmlUnlinkNode(tree->node);
 		xmlFreeNode(tree->node);
-	} else if (tree->op == XMLDIFF_REM && tree->node != NULL ) {
+		tree->node = NULL;
+	} else if ((tree->op & XMLDIFF_REM) && tree->node != NULL ) {
 		/* reconnect old node supposed to be romeved back to the new XML tree */
 		parent = find_element_equiv(info->new, tree->node->parent, info->model, info->keys);
 		xmlAddChild(parent, xmlCopyNode(tree->node, 1));
-	} else if ((tree->op == XMLDIFF_MOD || tree->op == XMLDIFF_CHAIN) && tree->node != NULL ) {
+	} else if ((tree->op & XMLDIFF_MOD) && tree->node != NULL ) {
 		/* replace new node with the previous one */
-		parent = find_element_equiv(info->old, tree->node->parent, info->model, info->keys);
-		for (xmlnode = parent->children; xmlnode != NULL; xmlnode = xmlnode->next) {
-			if (matching_elements(tree->node, xmlnode, info->keys, 0)) {
-				break;
+		for (child = tree->children; child != NULL; child = child->next) {
+			if (child->priority != 0) {
+				/* this node is already solved by previous recursion */
+				continue;
+			}
+
+			/*
+			 * we have node with priority 0, it means it was not solved
+			 * yet and we want to replace it by the previous config data
+			 */
+			parent = find_element_equiv(info->old, tree->node->parent, info->model, info->keys);
+			for (xmlnode = parent->children; xmlnode != NULL; xmlnode = xmlnode->next) {
+				if (matching_elements(tree->node, xmlnode, info->keys, 0)) {
+					break;
+				}
+			}
+			if (xmlnode != NULL ) {
+				/* replace subtree */
+				xmlReplaceNode(child->node, xmlCopyNode(xmlnode, 1));
+				xmlFreeNode(child->node);
+				child->node = NULL;
+			} else {
+				WARN("Unable to discard not executed changes from XML tree: previous subtree version not found (path %s).", child->path);
 			}
 		}
-		if (xmlnode != NULL ) {
-			/* replace subtree */
-			xmlReplaceNode(tree->node, xmlnode);
-			xmlFreeNode(tree->node);
-		} else {
-			WARN("Unable to discard not executed changes from XML tree: previous subtree version not found.")
-		}
-	}
+	} /* else XMLDIFF_CHAIN is not interesting here (stop-on-error) */
+	tree->applied = true;
 }
 
 static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt)
@@ -75,86 +89,93 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 	 */
 
 	if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_STOP) {
+		/* do the recursion - process children */
 		for(child = tree->children; child != NULL; child = child->next) {
 			/*
 			 * current node either all its children were applied and we
 			 * don't need to revert xorresponding XML tree changes
 			 */
-			if (tree->applied) {
+			if (child->applied) {
 				continue;
 			}
 
 			/* do the recursion */
 			transapi_revert_callbacks_recursive(info, child, erropt);
+		}
 
+		/* process the current node */
+		if (tree->priority != 0) {
 			/* discard proposed changes */
 			transapi_revert_xml_tree(info, tree);
 		}
+
 	} else if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
+		/* do the recursion - process children */
 		for(child = tree->children; child != NULL; child = child->next) {
 			/* if priority == 0 then the node neither its children have no callbacks */
-			if (tree->priority == 0) {
+			if (child->priority == 0) {
 				continue;
 			}
 
 			/* do the recursion */
 			transapi_revert_callbacks_recursive(info, child, erropt);
+		}
 
-			/* current node has no callback function or it was not applied */
-			if (!tree->callback || !tree->applied) {
-				continue;
-			}
+		/* process the current node */
+		/* current node has no callback function or it was not applied */
+		if (!tree->callback || !tree->applied) {
+			return (EXIT_SUCCESS);
+		}
 
-			/*
-			 * do not affect XML tree, just use transAPI callbacks
-			 * to revert applied chenges. XML tree is reverted in
-			 * nc_rpc_apply()
-			 */
-			if (tree->op == XMLDIFF_ADD && tree->node != NULL ) {
-				/* node was added, now remove it */
-				op = XMLDIFF_REM;
-				xmlnode = tree->node;
-			} else if (tree->op == XMLDIFF_REM && tree->node != NULL ) {
-				/* node was removed, add it back */
-				op = XMLDIFF_ADD;
-				xmlnode = tree->node;
-			} else if ((tree->op == XMLDIFF_MOD || tree->op == XMLDIFF_CHAIN) && tree->node != NULL ) {
-				/* node was modified, replace it with previous version */
-				parent = find_element_equiv(info->old, tree->node->parent, info->model, info->keys);
-				for (xmlnode = parent->children; xmlnode != NULL; xmlnode = xmlnode->next) {
-					if (matching_elements(tree->node, xmlnode, info->keys, 0)) {
-						break;
-					}
-				}
-				if (xmlnode != NULL ) {
-					op = tree->op;
-					/* xmlnode already set */
-				} else {
-					ERROR("Unable to revert executed changes: previous subtree version not found.");
-					/* continue with a next change */
-					continue;
+		/*
+		 * do not affect XML tree, just use transAPI callbacks
+		 * to revert applied chenges. XML tree is reverted in
+		 * nc_rpc_apply()
+		 */
+		if ((tree->op & XMLDIFF_ADD) && tree->node != NULL ) {
+			/* node was added, now remove it */
+			op = XMLDIFF_REM;
+			xmlnode = tree->node;
+		} else if ((tree->op & XMLDIFF_REM) && tree->node != NULL ) {
+			/* node was removed, add it back */
+			op = XMLDIFF_ADD;
+			xmlnode = tree->node;
+		} else if (((tree->op & XMLDIFF_MOD) || (tree->op & XMLDIFF_CHAIN)) && tree->node != NULL ) {
+			/* node was modified, replace it with previous version */
+			parent = find_element_equiv(info->old, tree->node->parent, info->model, info->keys);
+			for (xmlnode = parent->children; xmlnode != NULL; xmlnode = xmlnode->next) {
+				if (matching_elements(tree->node, xmlnode, info->keys, 0)) {
+					break;
 				}
 			}
-
-			DBG("Transapi revert callback %s with op %d.", tree->path, op);
-
-			/* revert changes */
-			if (info->libxml2) {
-				xmlcalls = (struct transapi_xml_data_callbacks*)(info->calls);
-				ret = xmlcalls->callbacks[tree->priority - 1].func(op, xmlnode, &xmlcalls->data);
+			if (xmlnode != NULL ) {
+				op = tree->op;
+				/* xmlnode already set */
 			} else {
-				/* if node was removed, it was copied from old XML doc, else from new XML doc */
-				stdcalls = (struct transapi_data_callbacks*)(info->calls);
-				buf = xmlBufferCreate();
-				xmlNodeDump(buf, xmlnode->doc, xmlnode, 1, 0);
-				node = (char*) xmlBufferContent(buf);
-				ret = stdcalls->callbacks[tree->priority - 1].func(op, node, &stdcalls->data);
-				xmlBufferFree(buf);
+				ERROR("Unable to revert executed changes: previous subtree version not found.");
+				return (EXIT_FAILURE);
 			}
+		}
 
-			if (ret != EXIT_SUCCESS) {
-				WARN("Reverting configuration changes via transAPI failed, configuration may be inconsistent.");
-			}
+		DBG("Transapi revert callback %s with op %d.", tree->path, op);
+
+		/* revert changes */
+		if (info->libxml2) {
+			xmlcalls = (struct transapi_xml_data_callbacks*) (info->calls);
+			ret = xmlcalls->callbacks[tree->priority - 1].func(op, xmlnode, &xmlcalls->data);
+		} else {
+			/* if node was removed, it was copied from old XML doc, else from new XML doc */
+			stdcalls = (struct transapi_data_callbacks*) (info->calls);
+			buf = xmlBufferCreate();
+			xmlNodeDump(buf, xmlnode->doc, xmlnode, 1, 0);
+			node = (char*) xmlBufferContent(buf);
+			ret = stdcalls->callbacks[tree->priority - 1].func(op, node, &stdcalls->data);
+			xmlBufferFree(buf);
+		}
+
+		if (ret != EXIT_SUCCESS) {
+			WARN("Reverting configuration changes via transAPI failed, configuration may be inconsistent.");
+			return (EXIT_FAILURE);
 		}
 	}
 
