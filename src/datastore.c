@@ -1264,6 +1264,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	union transapi_data_clbcks data_clbks = {NULL};
 	union transapi_rpc_clbcks rpc_clbks = {NULL};
 	int *libxml2, lxml2, *ver, ver_default = 1;
+	int *modified;
 	char * ns_mapping = NULL;
 
 	if (callbacks_path == NULL) {
@@ -1284,6 +1285,12 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	}
 	if (*ver != TRANSAPI_VERSION) {
 		ERROR("Wrong transAPI version of the module %s. Have %d, but %d is required.", callbacks_path, *ver, TRANSAPI_VERSION);
+		dlclose (transapi_module);
+		return (NULL);
+	}
+
+	if ((modified = dlsym(transapi_module, "config_modified")) == NULL) {
+		ERROR("Unable to get config_modified variable from shared library.");
 		dlclose (transapi_module);
 		return (NULL);
 	}
@@ -1359,6 +1366,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	/* add pointers for transaction API */
 	ds->transapi.module = transapi_module;
 	ds->transapi.libxml2 = (*libxml2);
+	ds->transapi.config_modified = modified;
 	ds->transapi.ns_mapping = (const char**)ns_mapping;
 	ds->transapi.data_clbks = data_clbks;
 	ds->transapi.rpc_clbks = rpc_clbks;
@@ -3691,12 +3699,17 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 				}
 
 			}
+		} /* else success */
+
+		if (ret || ds->transapi.config_modified) {
+			ds->transapi.config_modified = 0;
+
 			xmlDocDumpMemory(new, &config, NULL);
 			if (ds->func.copyconfig(ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, (char*)config, &e) == EXIT_FAILURE) {
 				ERROR("transAPI apply failed");
 			}
 			xmlFree(config);
-		} /* else success */
+		}
 		xmlFreeDoc(new);
 	}
 

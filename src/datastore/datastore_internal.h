@@ -200,6 +200,10 @@ struct transapi {
 	 */
 	int libxml2;
 	/**
+	 * @brief Flag if configuration data passed to callbacks were modified
+	 */
+	int *config_modified;
+	/**
 	 * @brief Mapping prefixes with URIs
 	 */
 	const char ** ns_mapping;

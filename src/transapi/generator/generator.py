@@ -42,7 +42,7 @@ import re
 import sys
 import os
 
-transapi_version = 1
+transapi_version = 2
 
 target_dir = './'
 
@@ -117,7 +117,12 @@ def generate_callbacks_file(name, defs, model, with_libxml2, without_init, witho
 	# libxml2?
 	content += '/* Determines whether XML arguments are passed as (xmlDocPtr) or (char *). */\n'
 	content += 'int with_libxml2 = '+str(with_libxml2)+';\n'
-	content += '\n'
+	content += '\n/*\n'
+	content += ' * Signal to libnetconf that configuration data were modified by any callback.\n'
+	content += ' * 0 - data not modified\n'
+	content += ' * 1 - data have been modified\n'
+	content += ' */\n'
+	content += 'int config_modified = 0;\n\n'
 	# init and close functions 
 	if not (without_init):
 		content += generate_init_callback(with_libxml2)
