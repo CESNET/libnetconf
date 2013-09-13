@@ -72,7 +72,7 @@ struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, s
 			/* Cannot happen */
 		} else if (children_without_callback == 0) {
 			/* All of our children have a callback -> XMLDIFF_CHAIN stays */
-		} else if (children > children_without_callback) {
+		} else if (children_count > children_without_callback) {
 			/* Some children have a callback, some don't -> XMLDIFF_CHAIN | XMLDIFF_MOD */
 			tree->op |= XMLDIFF_MOD;
 		} else { /* (children == children_without_callback) */
@@ -85,7 +85,7 @@ struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, s
 		} else if (children_without_callback == 0) {
 			/* All of our children have a callback -> XMLDIFF_CHAIN | previous op */
 			tree->op |= XMLDIFF_CHAIN;
-		} else if (children > children_without_callback) {
+		} else if (children_count > children_without_callback) {
 			/* Some children have a callback, chain should be set -> XMLDIFF_CHAIN | previous op */
 			tree->op |= XMLDIFF_CHAIN;
 		} else { /* (children == children_without_callback) */
