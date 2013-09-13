@@ -50,16 +50,47 @@ void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* ne
 
 /* the recursive core of xmldiff_set_priorities() function */
 struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct transapi_xml_data_callbacks* calls) {
-	int i, min_prio;
+	int i, min_prio, children_count = 0, children_without_callback = 0;
 	struct xmldiff_prio* priorities = NULL, *tmp_prio;
 	struct xmldiff_tree* child;
 
 	/* First search for the callbacks of our children */
 	child = tree->children;
 	while (child != NULL) {
+		++children_count;
 		tmp_prio = xmldiff_set_priority_recursive(child, calls);
+		if (tmp_prio == NULL) {
+			++children_without_callback;
+		}
 		xmldiff_merge_priorities(&priorities, tmp_prio);
 		child = child->next;
+	}
+
+	/* Fix XMLDIFF_OP */
+	if (tree->op & XMLDIFF_CHAIN) {
+		if (children_count == 0) {
+			/* Cannot happen */
+		} else if (children_without_callback == 0) {
+			/* All of our children have a callback -> XMLDIFF_CHAIN stays */
+		} else if (children > children_without_callback) {
+			/* Some children have a callback, some don't -> XMLDIFF_CHAIN | XMLDIFF_MOD */
+			tree->op |= XMLDIFF_MOD;
+		} else { /* (children == children_without_callback) */
+			/* No child has a callback -> XMLDIFF_MOD */
+			tree->op = XMLDIFF_MOD;
+		}
+	} else { /* XMLDIFF_ADD or XMLDIFF_REM */
+		if (children_count == 0) {
+			/* XMLDIFF_OP is correct */
+		} else if (children_without_callback == 0) {
+			/* All of our children have a callback -> XMLDIFF_CHAIN | previous op */
+			tree->op |= XMLDIFF_CHAIN;
+		} else if (children > children_without_callback) {
+			/* Some children have a callback, chain should be set -> XMLDIFF_CHAIN | previous op */
+			tree->op |= XMLDIFF_CHAIN;
+		} else { /* (children == children_without_callback) */
+			/* No child has a callback -> only the previous op */
+		}
 	}
 
 	/* Search for the callback */
