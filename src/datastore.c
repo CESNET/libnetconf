@@ -510,7 +510,7 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
-int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts)
+int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 {
 	nc_rpc * rpc_msg = NULL;
 	nc_reply * reply_msg = NULL;
@@ -527,10 +527,10 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts)
 		}
 		start = calloc(1,sizeof(struct ncds_ds_list));
 		start->datastore = ds;
-	} else {
+	} else { /* OR if not specified initialize all transAPI capable modules */
 		start = ncds.datastores;
 	}
-	/* OR if not specified initialize all transAPI capable modules */
+
 	for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 		if (ds_iter->datastore->transapi.init) {
 			if (ds_iter->datastore->transapi.init()) {
@@ -540,7 +540,7 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts)
 		}
 	}
 
-	if (first_after_close) {
+	if (first_after_close || force) { /* if this process is first after a nc_close(system=1) or reinitialization is forced */
 		/* Clean RUNNING datastore. This is important when transAPI is deployed and does not harm when not. */
 		if (cpblts == NULL) {
 			cpblts = nc_session_get_cpblts_default();
@@ -568,22 +568,22 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts)
 			goto success;
 		}
 
+		rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
 		/* It is done by calling low level function to avoid invoking transAPI now. */
 		for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 			/* TRY to erase, when it fails the datastore is probably empty */
 			ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, "", &err);
+			/* initial copy of startup to running will cause full (re)configuration of module */
+			/* Here is used high level function ncds_apply_rpc to apply startup configuration and use transAPI */
+			reply_msg = ncds_apply_rpc(ds_iter->datastore->id, dummy_session, rpc_msg);
+			if (reply_msg == NULL || nc_reply_get_type (reply_msg) != NC_REPLY_OK) {
+				ERROR ("Failed perform initial copy of startup to running.");
+				goto fail;
+			}
+			nc_reply_free(reply_msg);
 		}
 
-		/* initial copy of startup to running will cause full (re)configuration of module */
-		/* Here is used high level function ncds_apply_rpc2all to apply startup configuration and use transAPI */
-		rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
-		reply_msg = ncds_apply_rpc2all(dummy_session, rpc_msg, NULL);
-		if (reply_msg == NULL || nc_reply_get_type (reply_msg) != NC_REPLY_OK) {
-			ERROR ("Failed perform initial copy of startup to running.");
-			goto fail;
-		}
 		nc_rpc_free(rpc_msg);
-		nc_reply_free(reply_msg);
 		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
 		nc_session_free(dummy_session);
 	}

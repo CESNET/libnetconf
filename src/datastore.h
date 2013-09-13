@@ -359,10 +359,11 @@ ncds_id ncds_init(struct ncds_ds* datastore);
  * transapi-capable devices will be initialized
  * @param cpblts Server's NETCONF capabilities. If NULL, default capabilities
  * from libnetconf are used.
+ * @param force Force fresh configuration of device from STARTUP datastore.
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_device_init (ncds_id * id, struct nc_cpblts* cpblts);
+int ncds_device_init (ncds_id * id, struct nc_cpblts* cpblts, int force);
 
 /**
  * @ingroup store
