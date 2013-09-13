@@ -3641,7 +3641,7 @@ int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
 /**
  * \return NULL on success, error reply with error info else
  */
-static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session* session, xmlDocPtr old, int rollback, NC_EDIT_ERROPT_TYPE erropt, nc_reply *reply)
+static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session* session, xmlDocPtr old, NC_EDIT_ERROPT_TYPE erropt, nc_reply *reply)
 {
 	char *new_data;
 	xmlDocPtr new;
@@ -3650,7 +3650,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 	struct nc_err *e;
 	nc_reply *new_reply = NULL;
 
-	if (rollback && reply != NULL) {
+	if (reply != NULL && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
 		/* use some reply to add new error messages */
 		new_reply = reply;
 	}
@@ -3684,15 +3684,12 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 			} else {
 				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device.");
 				new_reply = nc_reply_error(e);
-#if 0
-				if (!rollback) {
+
+				if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
 					/* do the rollback on datastore */
 					ds->func.rollback(ds);
-					/* and on the device via transapi */
-					rollback = 1;
-					new_reply = ncds_apply_transapi(ds, session, new, 1, erropt, new_reply);
 				}
-#endif
+
 			}
 			xmlDocDumpMemory(new, &config, NULL);
 			if (ds->func.copyconfig(ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, (char*)config, &e) == EXIT_FAILURE) {
@@ -4577,7 +4574,7 @@ apply_editcopyconfig:
 		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK)) {
 
-		if ((new_reply = ncds_apply_transapi(ds, session, old, 0, nc_rpc_get_erropt(rpc), NULL)) != NULL) {
+		if ((new_reply = ncds_apply_transapi(ds, session, old, nc_rpc_get_erropt(rpc), NULL)) != NULL) {
 			nc_reply_free(reply);
 			reply = new_reply;
 		}
@@ -4712,7 +4709,7 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 						/* transAPI rollback */
 						op = nc_rpc_get_op(rpc);
 						if (transapi) {
-							reply = ncds_apply_transapi(ds_rollback->datastore, session, old, 1, erropt, reply);
+							reply = ncds_apply_transapi(ds_rollback->datastore, session, old, erropt, reply);
 							xmlFreeDoc(old);
 						}
 

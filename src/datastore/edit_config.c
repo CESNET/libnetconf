@@ -505,7 +505,7 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys, int leaf
 		    node2->children != NULL && node2->children->type == XML_TEXT_NODE) {
 			/*
 			 * we do not need to continue to keys checking since compared elements
-			 * do not contain any children that can server as a key
+			 * do not contain any children that can serve as a key
 			 */
 			return (matching_elements(node1->children, node2->children, NULL, 0));
 		}

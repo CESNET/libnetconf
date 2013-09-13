@@ -1043,17 +1043,16 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			libssh2_session_free(session->ssh_session);
 			session->ssh_session = NULL;
 
-			/* also destroy shared mutexes */
-			if (session->mut_libssh2_channels != NULL) {
-				pthread_mutex_destroy(session->mut_libssh2_channels);
-				free(session->mut_libssh2_channels);
-				session->mut_libssh2_channels = NULL;
-			}
-
 			close(session->libssh2_socket);
 		}
 		session->libssh2_socket = -1;
 #endif
+		/* also destroy shared mutexes */
+		if (session->mut_libssh2_channels != NULL) {
+			pthread_mutex_destroy(session->mut_libssh2_channels);
+			free(session->mut_libssh2_channels);
+			session->mut_libssh2_channels = NULL;
+		}
 
 		free(session->logintime);
 		session->logintime = NULL;

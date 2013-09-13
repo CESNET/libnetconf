@@ -124,6 +124,8 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char 
 			children[count-1].children = yinmodel_parse_recursive (model_tmp, ns_mapping, &children[count-1], &children[count-1].children_count);
 		} else {
 			free (children[count-1].name);
+			free (children[count-1].ns_prefix);
+			free (children[count-1].ns_uri);
 			count--;
 			model_tmp = model_tmp->next;
 			continue;
