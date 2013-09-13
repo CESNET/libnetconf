@@ -198,7 +198,7 @@ void xmldiff_add_diff (struct xmldiff_tree** diff, const char * ns_mapping[], co
 	memset(new, 0, sizeof(struct xmldiff_tree));
 
 	/* if added or removed mark all children the same */
-	if (op == XMLDIFF_ADD || op == XMLDIFF_REM) {
+	if (op & XMLDIFF_ADD || op & XMLDIFF_REM) {
 		for (child = node->children; child != NULL; child = child->next) {
 			if (child->type != XML_ELEMENT_NODE) {
 				continue;
