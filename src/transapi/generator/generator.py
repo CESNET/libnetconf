@@ -42,7 +42,7 @@ import re
 import sys
 import os
 
-transapi_version = 1
+transapi_version = 2
 
 target_dir = './'
 
@@ -117,7 +117,12 @@ def generate_callbacks_file(name, defs, model, with_libxml2, without_init, witho
 	# libxml2?
 	content += '/* Determines whether XML arguments are passed as (xmlDocPtr) or (char *). */\n'
 	content += 'int with_libxml2 = '+str(with_libxml2)+';\n'
-	content += '\n'
+	content += '\n/*\n'
+	content += ' * Signal to libnetconf that configuration data were modified by any callback.\n'
+	content += ' * 0 - data not modified\n'
+	content += ' * 1 - data have been modified\n'
+	content += ' */\n'
+	content += 'int config_modified = 0;\n\n'
 	# init and close functions 
 	if not (without_init):
 		content += generate_init_callback(with_libxml2)
@@ -225,17 +230,18 @@ def generate_config_callbacks(name, paths, namespaces, with_libxml2):
 		content += '/**\n'
 		content += ' * @brief This callback will be run when node in path '+path+' changes\n'
 		content += ' *\n'
-		content += ' * @param op\tObserved change in path. XMLDIFF_OP type.\n'
-		content += ' * @param node\tModified node. if op == XMLDIFF_REM its copy of node removed.\n'
-		content += ' * @param data\tDouble pointer to void. Its passed to every callback. You can share data using it.\n'
+		content += ' * @param[in] data\tDouble pointer to void. Its passed to every callback. You can share data using it.\n'
+		content += ' * @param[in] op\tObserved change in path. XMLDIFF_OP type.\n'
+		content += ' * @param[in] node\tModified node. if op == XMLDIFF_REM its copy of node removed.\n'
+		content += ' * @param[out] error\tIf callback fails, it can return libnetconf error structure with a failure description.\n'
 		content += ' *\n'
 		content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
 		content += ' */\n'
 		content += '/* !DO NOT ALTER FUNCTION SIGNATURE! */\n'
 		if with_libxml2:
-			content += 'int '+func_name+' (XMLDIFF_OP op, xmlNodePtr node, void ** data)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
+			content += 'int '+func_name+' (void ** data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err** error)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
 		else:
-			content += 'int '+func_name+' (XMLDIFF_OP op, char * node, void ** data)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
+			content += 'int '+func_name+' ( void ** data, XMLDIFF_OP op, char * node, struct nc_err** error)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
 		funcs_count += 1
 
 	# in the end of file write strucure connecting paths in XML data with callback function

@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 /* Current transAPI version */
-#define TRANSAPI_VERSION 1
+#define TRANSAPI_VERSION 2
 
 /* maximal number of input arguments every defined RPC can have */
 #ifndef MAX_RPC_INPUT_ARGS
@@ -38,7 +38,7 @@ struct transapi_data_callbacks {
 	void * data;
 	struct {
 		char * path;
-		int (*func)(XMLDIFF_OP, char *, void **);
+		int (*func)(void**, XMLDIFF_OP, char*, struct nc_err**);
 	} callbacks[];
 };
 

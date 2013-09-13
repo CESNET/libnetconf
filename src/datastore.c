@@ -510,7 +510,7 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
-int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts)
+int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 {
 	nc_rpc * rpc_msg = NULL;
 	nc_reply * reply_msg = NULL;
@@ -527,10 +527,10 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts)
 		}
 		start = calloc(1,sizeof(struct ncds_ds_list));
 		start->datastore = ds;
-	} else {
+	} else { /* OR if not specified initialize all transAPI capable modules */
 		start = ncds.datastores;
 	}
-	/* OR if not specified initialize all transAPI capable modules */
+
 	for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 		if (ds_iter->datastore->transapi.init) {
 			if (ds_iter->datastore->transapi.init()) {
@@ -540,7 +540,7 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts)
 		}
 	}
 
-	if (first_after_close) {
+	if (first_after_close || force) { /* if this process is first after a nc_close(system=1) or reinitialization is forced */
 		/* Clean RUNNING datastore. This is important when transAPI is deployed and does not harm when not. */
 		if (cpblts == NULL) {
 			cpblts = nc_session_get_cpblts_default();
@@ -568,22 +568,22 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts)
 			goto success;
 		}
 
+		rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
 		/* It is done by calling low level function to avoid invoking transAPI now. */
 		for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 			/* TRY to erase, when it fails the datastore is probably empty */
 			ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, "", &err);
+			/* initial copy of startup to running will cause full (re)configuration of module */
+			/* Here is used high level function ncds_apply_rpc to apply startup configuration and use transAPI */
+			reply_msg = ncds_apply_rpc(ds_iter->datastore->id, dummy_session, rpc_msg);
+			if (reply_msg == NULL || nc_reply_get_type (reply_msg) != NC_REPLY_OK) {
+				ERROR ("Failed perform initial copy of startup to running.");
+				goto fail;
+			}
+			nc_reply_free(reply_msg);
 		}
 
-		/* initial copy of startup to running will cause full (re)configuration of module */
-		/* Here is used high level function ncds_apply_rpc2all to apply startup configuration and use transAPI */
-		rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
-		reply_msg = ncds_apply_rpc2all(dummy_session, rpc_msg, NULL);
-		if (reply_msg == NULL || nc_reply_get_type (reply_msg) != NC_REPLY_OK) {
-			ERROR ("Failed perform initial copy of startup to running.");
-			goto fail;
-		}
 		nc_rpc_free(rpc_msg);
-		nc_reply_free(reply_msg);
 		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
 		nc_session_free(dummy_session);
 	}
@@ -1264,6 +1264,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	union transapi_data_clbcks data_clbks = {NULL};
 	union transapi_rpc_clbcks rpc_clbks = {NULL};
 	int *libxml2, lxml2, *ver, ver_default = 1;
+	int *modified;
 	char * ns_mapping = NULL;
 
 	if (callbacks_path == NULL) {
@@ -1284,6 +1285,12 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	}
 	if (*ver != TRANSAPI_VERSION) {
 		ERROR("Wrong transAPI version of the module %s. Have %d, but %d is required.", callbacks_path, *ver, TRANSAPI_VERSION);
+		dlclose (transapi_module);
+		return (NULL);
+	}
+
+	if ((modified = dlsym(transapi_module, "config_modified")) == NULL) {
+		ERROR("Unable to get config_modified variable from shared library.");
 		dlclose (transapi_module);
 		return (NULL);
 	}
@@ -1359,6 +1366,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	/* add pointers for transaction API */
 	ds->transapi.module = transapi_module;
 	ds->transapi.libxml2 = (*libxml2);
+	ds->transapi.config_modified = modified;
 	ds->transapi.ns_mapping = (const char**)ns_mapping;
 	ds->transapi.data_clbks = data_clbks;
 	ds->transapi.rpc_clbks = rpc_clbks;
@@ -3647,7 +3655,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 	xmlDocPtr new;
 	xmlChar *config;
 	int ret;
-	struct nc_err *e;
+	struct nc_err *e = NULL, *e_new;
 	nc_reply *new_reply = NULL;
 
 	if (reply != NULL && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
@@ -3674,16 +3682,21 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 			new_reply = nc_reply_error(e);
 		}
 	} else {
-		ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, ds->transapi.libxml2);
+		ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, ds->transapi.libxml2, &e);
 		if (ret) {
-			e = nc_err_new(NC_ERR_OP_FAILED);
+			e_new = nc_err_new(NC_ERR_OP_FAILED);
+			if (e != NULL) {
+				/* remember the error description from TransAPI */
+				e_new->next = e;
+				e = NULL;
+			}
 			if (new_reply != NULL ) {
 				/* second try, add the error info */
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to rollback configuration changes to device. Configuration is probably inconsistent.");
-				nc_reply_error_add(new_reply, e);
+				nc_err_set(e_new, NC_ERR_PARAM_MSG, "Failed to rollback configuration changes to device. Configuration is probably inconsistent.");
+				nc_reply_error_add(new_reply, e_new);
 			} else {
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device.");
-				new_reply = nc_reply_error(e);
+				nc_err_set(e_new, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device.");
+				new_reply = nc_reply_error(e_new);
 
 				if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
 					/* do the rollback on datastore */
@@ -3691,12 +3704,17 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 				}
 
 			}
+		} /* else success */
+
+		if (ret || ds->transapi.config_modified) {
+			ds->transapi.config_modified = 0;
+			DBG("Updating XML tree after TransAPI callbacks");
 			xmlDocDumpMemory(new, &config, NULL);
 			if (ds->func.copyconfig(ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, (char*)config, &e) == EXIT_FAILURE) {
 				ERROR("transAPI apply failed");
 			}
 			xmlFree(config);
-		} /* else success */
+		}
 		xmlFreeDoc(new);
 	}
 

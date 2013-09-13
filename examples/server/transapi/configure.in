@@ -41,9 +41,6 @@ AC_SUBST(libtool)
 # Checks for libraries.
 AC_SEARCH_LIBS([ncds_apply_rpc], [netconf], ,AC_MSG_ERROR([libnetconf not found!]))
 
-# Check for libnetconf's notification subsystem 
-AC_SEARCH_LIBS([ncntf_status], [netconf], ,AC_MSG_ERROR([libnetconf does not support notifications!]))
-
 # Check for libxml2.
 if test -z "$WITH_LIBXML2" ; then
 	AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no])
@@ -55,7 +52,6 @@ fi
 
 
 # Checks for header files.
-CPPFLAGS="-I../../../src $CPPFLAGS"
 AC_CHECK_HEADERS([stdlib.h libnetconf.h])
 
 # Checks for typedefs, structures, and compiler characteristics.

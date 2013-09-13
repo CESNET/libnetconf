@@ -66,7 +66,7 @@ static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info,
 	tree->applied = true;
 }
 
-static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt)
+static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err** error)
 {
 	struct xmldiff_tree *child;
 	xmlNodePtr parent, xmlnode;
@@ -76,6 +76,7 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 	char* node;
 	int ret;
 	XMLDIFF_OP op;
+	struct nc_err *new_error = NULL;
 
 	/*
 	 * On Rollback-on-error, we have to revert applied changes, but we can
@@ -100,7 +101,7 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 			}
 
 			/* do the recursion */
-			transapi_revert_callbacks_recursive(info, child, erropt);
+			transapi_revert_callbacks_recursive(info, child, erropt, error);
 		}
 
 		/* process the current node */
@@ -118,7 +119,7 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 			}
 
 			/* do the recursion */
-			transapi_revert_callbacks_recursive(info, child, erropt);
+			transapi_revert_callbacks_recursive(info, child, erropt, error);
 		}
 
 		/* process the current node */
@@ -162,19 +163,27 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 		/* revert changes */
 		if (info->libxml2) {
 			xmlcalls = (struct transapi_xml_data_callbacks*) (info->calls);
-			ret = xmlcalls->callbacks[tree->priority - 1].func(op, xmlnode, &xmlcalls->data);
+			ret = xmlcalls->callbacks[tree->priority - 1].func(&xmlcalls->data, op, xmlnode, &new_error);
 		} else {
 			/* if node was removed, it was copied from old XML doc, else from new XML doc */
 			stdcalls = (struct transapi_data_callbacks*) (info->calls);
 			buf = xmlBufferCreate();
 			xmlNodeDump(buf, xmlnode->doc, xmlnode, 1, 0);
 			node = (char*) xmlBufferContent(buf);
-			ret = stdcalls->callbacks[tree->priority - 1].func(op, node, &stdcalls->data);
+			ret = stdcalls->callbacks[tree->priority - 1].func(&stdcalls->data, op, node, &new_error);
 			xmlBufferFree(buf);
 		}
 
 		if (ret != EXIT_SUCCESS) {
 			WARN("Reverting configuration changes via transAPI failed, configuration may be inconsistent.");
+			if (*error != NULL && new_error != NULL) {
+				/* concatenate errors */
+				new_error->next = *error;
+				*error = new_error;
+			} else if (new_error != NULL) {
+				*error = new_error;
+			}
+
 			return (EXIT_FAILURE);
 		}
 	}
@@ -183,13 +192,14 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 }
 
 /* call the callbacks in the order set by the priority of each change */
-static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt) {
+static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error) {
 	struct xmldiff_tree* child, *cur_min;
 	int ret, retval = EXIT_SUCCESS;
 	xmlBufferPtr buf;
 	char* node;
 	struct transapi_xml_data_callbacks *xmlcalls = NULL;
 	struct transapi_data_callbacks *stdcalls = NULL;
+	struct nc_err *new_error = NULL;
 
 	do {
 		cur_min = NULL;
@@ -206,7 +216,7 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 
 		if (cur_min != NULL) {
 			/* Process this child recursively */
-			if (transapi_apply_callbacks_recursive(info, cur_min, erropt) != EXIT_SUCCESS) {
+			if (transapi_apply_callbacks_recursive(info, cur_min, erropt, error) != EXIT_SUCCESS) {
 				if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_STOP || erropt == NC_EDIT_ERROPT_ROLLBACK) {
 					return (EXIT_FAILURE);
 				}
@@ -224,18 +234,25 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 		DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
 		if (info->libxml2) {
 			xmlcalls = (struct transapi_xml_data_callbacks*)(info->calls);
-			ret = xmlcalls->callbacks[tree->priority-1].func(tree->op, tree->node, &xmlcalls->data);
+			ret = xmlcalls->callbacks[tree->priority-1].func(&xmlcalls->data, tree->op, tree->node, &new_error);
 		} else {
 			/* if node was removed, it was copied from old XML doc, else from new XML doc */
 			stdcalls = (struct transapi_data_callbacks*)(info->calls);
 			buf = xmlBufferCreate();
 			xmlNodeDump(buf, tree->op == XMLDIFF_REM ? info->old : info->new, tree->node, 1, 0);
 			node = (char*)xmlBufferContent(buf);
-			ret = stdcalls->callbacks[tree->priority-1].func(tree->op, node, &stdcalls->data);
+			ret = stdcalls->callbacks[tree->priority-1].func(&stdcalls->data, tree->op, node, &new_error);
 			xmlBufferFree(buf);
 		}
 		if (ret != EXIT_SUCCESS) {
 			ERROR("Callback for path %s failed (%d).", tree->path, ret);
+			if (*error != NULL) {
+				/* concatenate errors */
+				new_error->next = *error;
+				*error = new_error;
+			} else if (new_error != NULL) {
+				*error = new_error;
+			}
 
 			if (erropt == NC_EDIT_ERROPT_CONT) {
 				/* on continue-on-error, return not applied changes immediately and then continue */
@@ -253,7 +270,7 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 }
 
 /* will be called by library after change in running datastore */
-int transapi_running_changed (void* c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct data_model *model, NC_EDIT_ERROPT_TYPE erropt, int libxml2)
+int transapi_running_changed(void* c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct data_model *model, NC_EDIT_ERROPT_TYPE erropt, int libxml2, struct nc_err **error)
 {
 	struct xmldiff_tree* diff = NULL;
 	struct transapi_callbacks_info info;
@@ -273,10 +290,10 @@ int transapi_running_changed (void* c, const char * ns_mapping[], xmlDocPtr old_
 			info.libxml2 = libxml2;
 			info.calls = c;
 
-			if (transapi_apply_callbacks_recursive(&info, diff, erropt) != EXIT_SUCCESS) {
+			if (transapi_apply_callbacks_recursive(&info, diff, erropt, error) != EXIT_SUCCESS) {
 				if (erropt != NC_EDIT_ERROPT_CONT) {
 					/* revert not applied changes from XML tree */
-					transapi_revert_callbacks_recursive(&info, diff, erropt);
+					transapi_revert_callbacks_recursive(&info, diff, erropt, error);
 				}
 
 				keyListFree(info.keys);

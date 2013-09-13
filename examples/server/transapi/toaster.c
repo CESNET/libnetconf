@@ -15,10 +15,17 @@
 #include <sys/shm.h>
 
 /* transAPI version which must be compatible with libnetconf */
-int transapi_version = 1;
+int transapi_version = 2;
 
 /* Determines whether XML arguments are passed as (xmlDocPtr) or (char *). */
 int with_libxml2 = 1;
+
+/*
+ * Signal to libnetconf that configuration data were modified by any callback.
+ * 0 - data not modified
+ * 1 - data have been modified
+ */
+int config_modified = 0;
 
 /* toaster status structure */
 struct toaster_status {
@@ -124,25 +131,22 @@ char * namespace_mapping[] = {"toaster", "http://netconfcentral.org/ns/toaster",
 /**
  * @brief This callback will be run when node in path /toaster:toaster changes
  *
- * @param op	Observed change in path. XMLDIFF_OP type.
- * @param node	Modified node. if op == XMLDIFF_REM its copy of node removed.
- * @param data	Double pointer to void. Its passed to every callback. You can share data using it.
+ * @param[in] data	Double pointer to void. Its passed to every callback. You can share data using it.
+ * @param[in] op	Observed change in path. XMLDIFF_OP type.
+ * @param[in] node	Modified node. if op == XMLDIFF_REM its copy of node removed.
+ * @param[out] error	If callback fails, it can return libnetconf error structure with a failure description.
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
 /* !DO NOT ALTER FUNCTION SIGNATURE! */
-int callback_toaster_toaster (XMLDIFF_OP op, xmlNodePtr node, void ** data)
+int callback_toaster_toaster (void ** data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err** error)
 {
-	int ret = EXIT_FAILURE;
-
 	pthread_mutex_lock(&status->toaster_mutex);
 
-	if (op <= 0 || op > (XMLDIFF_MOD | XMLDIFF_CHAIN | XMLDIFF_ADD | XMLDIFF_REM)) {
-		fprintf (stderr, "internal error: Invalid operation (out of range)!");
-		ret = -1;
-	} else if ((op & XMLDIFF_ADD) && (op & XMLDIFF_REM)) {
-		fprintf (stderr, "internal error: Invalid operation (ADD and REM set)!");
-		ret = -2;
+	if (op <= 0 || op > (XMLDIFF_MOD | XMLDIFF_CHAIN | XMLDIFF_ADD | XMLDIFF_REM) || ((op & XMLDIFF_ADD) && (op & XMLDIFF_REM))) {
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid configuration data modification for toaster module.");
+		return (EXIT_FAILURE);
 	} else {
 		if (op & XMLDIFF_MOD) {/* some child(s) was changed and has no callback */
 			fprintf (stderr, "Node was modified.\n");
@@ -163,13 +167,13 @@ int callback_toaster_toaster (XMLDIFF_OP op, xmlNodePtr node, void ** data)
 		} else if (op & XMLDIFF_ADD) {
 			status->enabled = 1;
 		}
-		ret = EXIT_SUCCESS;
 	}
 
 	fprintf (stderr, "Turning toaster %s\n", status->enabled ? "on" : "off");
 
 	pthread_mutex_unlock(&status->toaster_mutex);
-	return ret;
+
+	return EXIT_SUCCESS;
 }
 
 /*

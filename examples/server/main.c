@@ -277,14 +277,12 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 	 */
 
 	/* prepare configuration datastore */
-	datastore = ncds_new_transapi(NCDS_TYPE_FILE,
-			"/home/krejci/svn/libnetconf/src/transapi/generator/test-list/test-list.yin",
-			"/home/krejci/svn/libnetconf/src/transapi/generator/test-list/.libs/test-list.so");
+	datastore = ncds_new_transapi(NCDS_TYPE_FILE, SERVERCFG_PATH"/toaster.yin", SERVERCFG_PATH"/toaster.so");
 	if (datastore == NULL) {
 		clb_print(NC_VERB_ERROR, "Datastore preparing failed.");
 		return (EXIT_FAILURE);
 	}
-	if (ncds_file_set_path(datastore, "/home/krejci/svn/libnetconf/src/transapi/generator/test-list/datastore.xml") != 0) {
+	if (ncds_file_set_path(datastore, SERVERCFG_PATH"/datastore.xml") != 0) {
 		clb_print(NC_VERB_ERROR, "Linking datastore to a file failed.");
 		return (EXIT_FAILURE);
 	}
@@ -329,7 +327,7 @@ int main(int UNUSED(argc), char** UNUSED(argv))
 	 * if using tranaspi full initialize will be performed
 	 * otherwise only copyconfig (startup->running)
 	 */
-	if (ncds_device_init(NULL, NULL)) {
+	if (ncds_device_init(NULL, NULL, 0)) {
 		clb_print(NC_VERB_ERROR, "Setting up devices failed.");
 		nc_close(0);
 		return (EXIT_FAILURE);

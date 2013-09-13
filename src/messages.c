@@ -511,7 +511,7 @@ NC_REPLY_TYPE nc_reply_parse_type(nc_reply* reply)
 		xmlXPathFreeObject(query_result);
 	}
 	if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":rpc-error", reply->ctxt)) != NULL) {
-		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			reply->type.reply = NC_REPLY_ERROR;
 			nc_err_parse(reply);
 		}
@@ -1675,7 +1675,7 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 	ns = xmlNewNs(xmlmsg->children, (xmlChar *) NC_NS_BASE10, NULL);
 	xmlSetNs(xmlmsg->children, ns);
 
-	if (xmlAddChild(xmlmsg->children, xmlCopyNode(content, 1)) == NULL) {
+	if (xmlAddChildList(xmlmsg->children, xmlCopyNodeList(content)) == NULL) {
 		ERROR("xmlAddChild failed (%s:%d).", __FILE__, __LINE__);
 		xmlFreeDoc(xmlmsg);
 		return NULL;
@@ -1956,8 +1956,7 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 		if (first == NULL) {
 			first = content;
 		} else {
-			content->next = first;
-			first = content;
+			xmlAddSibling(first, content);
 		}
 		error = error->next;
 	}
@@ -1983,7 +1982,7 @@ nc_reply *nc_reply_error(struct nc_err* error)
 	}
 	reply->error = error;
 	reply->type.reply = NC_REPLY_ERROR;
-	xmlFreeNode(content);
+	xmlFreeNodeList(content);
 
 	return (reply);
 }
@@ -2005,9 +2004,9 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 	}
 
 	/* add new description into the reply */
-	if (xmlAddChild(reply->doc->children, xmlCopyNode(content, 1)) == NULL) {
+	if (xmlAddChildList(reply->doc->children, xmlCopyNodeList(content)) == NULL) {
 		ERROR("xmlAddChild failed (%s:%d).", __FILE__, __LINE__);
-		xmlFreeNode(content);
+		xmlFreeNodeList(content);
 		return (EXIT_FAILURE);
 	}
 
@@ -2020,7 +2019,7 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 	reply->error = error;
 
 	/* cleanup */
-	xmlFreeNode(content);
+	xmlFreeNodeList(content);
 
 	return (EXIT_SUCCESS);
 }

@@ -1925,6 +1925,7 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_r
 	struct nc_msg *msg_aux, *msg = NULL;
 	NC_MSG_TYPE ret;
 	int local_timeout;
+	struct nc_err* error;
 
 	if (timeout == 0) {
 		local_timeout = 0;
@@ -1954,16 +1955,18 @@ try_again:
 		if (nc_reply_get_type (msg) == NC_REPLY_ERROR &&
 				callbacks.process_error_reply != NULL) {
 			/* process rpc-error msg */
-			callbacks.process_error_reply(msg->error->tag,
-					msg->error->type,
-					msg->error->severity,
-					msg->error->apptag,
-					msg->error->path,
-					msg->error->message,
-					msg->error->attribute,
-					msg->error->element,
-					msg->error->ns,
-					msg->error->sid);
+			for (error = msg->error; error != NULL; error = error->next) {
+				callbacks.process_error_reply(error->tag,
+						error->type,
+						error->severity,
+						error->apptag,
+						error->path,
+						error->message,
+						error->attribute,
+						error->element,
+						error->ns,
+						error->sid);
+			}
 			/* free the data */
 			nc_reply_free(msg);
 			ret = NC_MSG_NONE;
