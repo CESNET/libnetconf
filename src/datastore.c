@@ -3655,7 +3655,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 	xmlDocPtr new;
 	xmlChar *config;
 	int ret;
-	struct nc_err *e;
+	struct nc_err *e = NULL, *e_new;
 	nc_reply *new_reply = NULL;
 
 	if (reply != NULL && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
@@ -3682,16 +3682,21 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 			new_reply = nc_reply_error(e);
 		}
 	} else {
-		ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, ds->transapi.libxml2);
+		ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, ds->transapi.libxml2, &e);
 		if (ret) {
-			e = nc_err_new(NC_ERR_OP_FAILED);
+			e_new = nc_err_new(NC_ERR_OP_FAILED);
+			if (e != NULL) {
+				/* remember the error description from TransAPI */
+				e_new->next = e;
+				e = NULL;
+			}
 			if (new_reply != NULL ) {
 				/* second try, add the error info */
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to rollback configuration changes to device. Configuration is probably inconsistent.");
-				nc_reply_error_add(new_reply, e);
+				nc_err_set(e_new, NC_ERR_PARAM_MSG, "Failed to rollback configuration changes to device. Configuration is probably inconsistent.");
+				nc_reply_error_add(new_reply, e_new);
 			} else {
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device.");
-				new_reply = nc_reply_error(e);
+				nc_err_set(e_new, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device.");
+				new_reply = nc_reply_error(e_new);
 
 				if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
 					/* do the rollback on datastore */
@@ -3703,7 +3708,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 
 		if (ret || ds->transapi.config_modified) {
 			ds->transapi.config_modified = 0;
-
+			DBG("Updating XML tree after TransAPI callbacks");
 			xmlDocDumpMemory(new, &config, NULL);
 			if (ds->func.copyconfig(ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, (char*)config, &e) == EXIT_FAILURE) {
 				ERROR("transAPI apply failed");

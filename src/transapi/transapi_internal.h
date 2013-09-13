@@ -30,6 +30,6 @@ typedef enum
  *
  * @return EXIT_SUCESS or EXIT_FAILURE
  */
-int transapi_running_changed (void* c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct data_model *model, NC_EDIT_ERROPT_TYPE erropt, int libxml2);
+int transapi_running_changed(void* c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct data_model *model, NC_EDIT_ERROPT_TYPE erropt, int libxml2, struct nc_err **error);
 
 #endif /* TRANSAPI_INTERNAL_H_ */
