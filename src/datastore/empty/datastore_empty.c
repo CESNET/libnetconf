@@ -53,12 +53,6 @@ int ncds_empty_init (struct ncds_ds * UNUSED(ds))
 
 void ncds_empty_free (struct ncds_ds * ds)
 {
-	/* generic ncds_ds part */
-	if (ds->data_model->xml != ds->ext_model) {
-		xmlFreeDoc(ds->ext_model);
-	}
-	ncds_ds_model_free(ds->data_model);
-	free (ds);
 	return;
 }
 

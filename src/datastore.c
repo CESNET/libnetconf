@@ -3191,8 +3191,16 @@ void ncds_free(struct ncds_ds* datastore)
 		xmlRelaxNGFree(ds->validators.rng_schema);
 		xsltFreeStylesheet(ds->validators.schematron);
 #endif
-
+		/* free all implementation specific resources */
 		datastore->func.free(ds);
+
+		/* free models */
+		if (ds->data_model->xml != ds->ext_model) {
+			xmlFreeDoc(ds->ext_model);
+		}
+		ncds_ds_model_free(ds->data_model);
+
+		free (ds);
 	}
 }
 
