@@ -12,9 +12,9 @@
  */
 typedef enum
 {
-	XML_PARENT, /** < Represent XML parent role. */
-	XML_CHILD, /** < Represent XML child role. */
-	XML_SIBLING /** < Represent XML sibling role. */
+	XML_PARENT, /**< Represent XML parent role. */
+	XML_CHILD, /**< Represent XML child role. */
+	XML_SIBLING /**< Represent XML sibling role. */
 } XML_RELATION;
 
 /**
