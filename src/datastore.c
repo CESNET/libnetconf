@@ -3180,9 +3180,16 @@ void ncds_free(struct ncds_ds* datastore)
 
 	/* close and free the datastore itself */
 	if (ds != NULL) {
-		/* if using transapi and close function is defined */
-		if (ds->transapi.module != NULL && ds->transapi.close != NULL) {
-			ds->transapi.close();
+		/* if using transapi */
+		if (ds->transapi.module != NULL) {
+			/* and close function is defined */
+			if (ds->transapi.close != NULL) {
+				ds->transapi.close();
+			}
+			/* unloading transapi module failed */
+			if (dlclose(ds->transapi.module)) {
+				ERROR("%s: Unloading transAPI module failed: %s:", __func__, dlerror());
+			}
 		}
 
 #ifndef DISABLE_VALIDATION
