@@ -69,13 +69,13 @@ static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info,
 static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err** error)
 {
 	struct xmldiff_tree *child;
-	xmlNodePtr parent, xmlnode;
+	xmlNodePtr parent, xmlnode = NULL;
 	struct transapi_xml_data_callbacks *xmlcalls = NULL;
 	struct transapi_data_callbacks *stdcalls = NULL;
 	xmlBufferPtr buf;
 	char* node;
 	int ret;
-	XMLDIFF_OP op;
+	XMLDIFF_OP op = XMLDIFF_NONE;
 	struct nc_err *new_error = NULL;
 
 	/*
