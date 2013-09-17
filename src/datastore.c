@@ -4717,6 +4717,7 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 				} else if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
 					/* rollback previously changed datastores */
 					/* do not skip internal datastores */
+					op = nc_rpc_get_op(rpc);
 					for (ds_rollback = ncds.datastores; ds_rollback != ds; ds_rollback = ds_rollback->next) {
 						if (ds_rollback->datastore->transapi.module != NULL
 								&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST)))
@@ -4740,7 +4741,6 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 						ds_rollback->datastore->func.rollback(ds_rollback->datastore);
 
 						/* transAPI rollback */
-						op = nc_rpc_get_op(rpc);
 						if (transapi) {
 							reply = ncds_apply_transapi(ds_rollback->datastore, session, old, erropt, reply);
 							xmlFreeDoc(old);
