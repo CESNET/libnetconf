@@ -4649,6 +4649,7 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 	char *op_name, *op_namespace, *data;
 	xmlDocPtr old;
 	NC_OP op;
+	NC_DATASTORE target;
 	NC_EDIT_ERROPT_TYPE erropt = NC_EDIT_ERROPT_NOTSET;
 	NC_RPC_TYPE req_type;
 
@@ -4718,10 +4719,11 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 					/* rollback previously changed datastores */
 					/* do not skip internal datastores */
 					op = nc_rpc_get_op(rpc);
+					target = nc_rpc_get_target(rpc);
 					for (ds_rollback = ncds.datastores; ds_rollback != ds; ds_rollback = ds_rollback->next) {
 						if (ds_rollback->datastore->transapi.module != NULL
 								&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST)))
-								&& (nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING)) {
+								&& ( target == NC_DATASTORE_RUNNING)) {
 							transapi = 1;
 						} else {
 							transapi = 0;
