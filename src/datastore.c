@@ -4163,6 +4163,21 @@ apply_editcopyconfig:
 					/* validate the result */
 					ret = apply_rpc_validate_(ds, session, target_ds, NULL, &e);
 
+					if (ret == EXIT_RPC_NOT_APPLICABLE) {
+						/*
+						 * we don't have enough information to do
+						 * validation (validators are missing), so
+						 * just say that it is ok and allow to
+						 * perform the required changes. In validate
+						 * operation we return RPC not applicable if
+						 * no datastore provides validation, but
+						 * in edit-config, we don't know if there
+						 * is any datastore with validation since
+						 * it doesn't need to affect all datastores.
+						 */
+						ret = EXIT_SUCCESS;
+					}
+
 					if (testopt == NC_EDIT_TESTOPT_TEST || ret == EXIT_FAILURE) {
 						/*
 						 * revert changes in the datastore:
