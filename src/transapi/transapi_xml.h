@@ -23,7 +23,7 @@ struct transapi_xml_data_callbacks {
 	void * data;
 	struct {
 		char * path;
-		int (*func)(XMLDIFF_OP, xmlNodePtr, void **);
+		int (*func)(void**, XMLDIFF_OP, xmlNodePtr, struct nc_err**);
 	} callbacks[];
 };
 

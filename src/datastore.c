@@ -1264,6 +1264,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	union transapi_data_clbcks data_clbks = {NULL};
 	union transapi_rpc_clbcks rpc_clbks = {NULL};
 	int *libxml2, lxml2, *ver, ver_default = 1;
+	int *modified;
 	char * ns_mapping = NULL;
 
 	if (callbacks_path == NULL) {
@@ -1284,6 +1285,12 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	}
 	if (*ver != TRANSAPI_VERSION) {
 		ERROR("Wrong transAPI version of the module %s. Have %d, but %d is required.", callbacks_path, *ver, TRANSAPI_VERSION);
+		dlclose (transapi_module);
+		return (NULL);
+	}
+
+	if ((modified = dlsym(transapi_module, "config_modified")) == NULL) {
+		ERROR("Unable to get config_modified variable from shared library.");
 		dlclose (transapi_module);
 		return (NULL);
 	}
@@ -1359,6 +1366,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	/* add pointers for transaction API */
 	ds->transapi.module = transapi_module;
 	ds->transapi.libxml2 = (*libxml2);
+	ds->transapi.config_modified = modified;
 	ds->transapi.ns_mapping = (const char**)ns_mapping;
 	ds->transapi.data_clbks = data_clbks;
 	ds->transapi.rpc_clbks = rpc_clbks;
@@ -3662,7 +3670,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 	xmlDocPtr new;
 	xmlChar *config;
 	int ret;
-	struct nc_err *e;
+	struct nc_err *e = NULL, *e_new;
 	nc_reply *new_reply = NULL;
 
 	if (reply != NULL && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
@@ -3689,16 +3697,21 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 			new_reply = nc_reply_error(e);
 		}
 	} else {
-		ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, ds->transapi.libxml2);
+		ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, ds->transapi.libxml2, &e);
 		if (ret) {
-			e = nc_err_new(NC_ERR_OP_FAILED);
+			e_new = nc_err_new(NC_ERR_OP_FAILED);
+			if (e != NULL) {
+				/* remember the error description from TransAPI */
+				e_new->next = e;
+				e = NULL;
+			}
 			if (new_reply != NULL ) {
 				/* second try, add the error info */
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to rollback configuration changes to device. Configuration is probably inconsistent.");
-				nc_reply_error_add(new_reply, e);
+				nc_err_set(e_new, NC_ERR_PARAM_MSG, "Failed to rollback configuration changes to device. Configuration is probably inconsistent.");
+				nc_reply_error_add(new_reply, e_new);
 			} else {
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device.");
-				new_reply = nc_reply_error(e);
+				nc_err_set(e_new, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device.");
+				new_reply = nc_reply_error(e_new);
 
 				if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
 					/* do the rollback on datastore */
@@ -3706,12 +3719,17 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 				}
 
 			}
+		} /* else success */
+
+		if (ret || ds->transapi.config_modified) {
+			ds->transapi.config_modified = 0;
+			DBG("Updating XML tree after TransAPI callbacks");
 			xmlDocDumpMemory(new, &config, NULL);
 			if (ds->func.copyconfig(ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, (char*)config, &e) == EXIT_FAILURE) {
 				ERROR("transAPI apply failed");
 			}
 			xmlFree(config);
-		} /* else success */
+		}
 		xmlFreeDoc(new);
 	}
 
@@ -4159,6 +4177,21 @@ apply_editcopyconfig:
 				case NC_EDIT_TESTOPT_TESTSET:
 					/* validate the result */
 					ret = apply_rpc_validate_(ds, session, target_ds, NULL, &e);
+
+					if (ret == EXIT_RPC_NOT_APPLICABLE) {
+						/*
+						 * we don't have enough information to do
+						 * validation (validators are missing), so
+						 * just say that it is ok and allow to
+						 * perform the required changes. In validate
+						 * operation we return RPC not applicable if
+						 * no datastore provides validation, but
+						 * in edit-config, we don't know if there
+						 * is any datastore with validation since
+						 * it doesn't need to affect all datastores.
+						 */
+						ret = EXIT_SUCCESS;
+					}
 
 					if (testopt == NC_EDIT_TESTOPT_TEST || ret == EXIT_FAILURE) {
 						/*
@@ -4631,6 +4664,7 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 	char *op_name, *op_namespace, *data;
 	xmlDocPtr old;
 	NC_OP op;
+	NC_DATASTORE target;
 	NC_EDIT_ERROPT_TYPE erropt = NC_EDIT_ERROPT_NOTSET;
 	NC_RPC_TYPE req_type;
 
@@ -4699,10 +4733,12 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 				} else if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
 					/* rollback previously changed datastores */
 					/* do not skip internal datastores */
+					op = nc_rpc_get_op(rpc);
+					target = nc_rpc_get_target(rpc);
 					for (ds_rollback = ncds.datastores; ds_rollback != ds; ds_rollback = ds_rollback->next) {
 						if (ds_rollback->datastore->transapi.module != NULL
 								&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST)))
-								&& (nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING)) {
+								&& ( target == NC_DATASTORE_RUNNING)) {
 							transapi = 1;
 						} else {
 							transapi = 0;
@@ -4722,7 +4758,6 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 						ds_rollback->datastore->func.rollback(ds_rollback->datastore);
 
 						/* transAPI rollback */
-						op = nc_rpc_get_op(rpc);
 						if (transapi) {
 							reply = ncds_apply_transapi(ds_rollback->datastore, session, old, erropt, reply);
 							xmlFreeDoc(old);
