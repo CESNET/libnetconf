@@ -1215,7 +1215,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 		if (error != NULL) {
 			*error = nc_err_new(NC_ERR_MISSING_ATTR);
 			nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
-			nc_err_set(*error, NC_ERR_PARAM_MSG, "Missing \"key\" attribute for insert leaf-list");
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Missing \"key\" attribute to insert list item");
 		}
 		return (NULL);
 	}
@@ -1228,7 +1228,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 		if (error != NULL) {
 			*error = nc_err_new(NC_ERR_BAD_ATTR);
 			nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
-			nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid value of the \"key\" attribute for insert leaf-list");
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid value of the \"key\" attribute to insert list item");
 		}
 		return (NULL);
 	}
@@ -1256,7 +1256,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 			if (error != NULL) {
 				*error = nc_err_new(NC_ERR_BAD_ATTR);
 				nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
-				nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid value of the \"key\" attribute for insert leaf-list");
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid value of the \"key\" attribute to insert list item");
 			}
 			keys[j+1] = NULL;
 			retval = NULL;
@@ -1300,7 +1300,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 			if (error != NULL) {
 				*error = nc_err_new(NC_ERR_BAD_ATTR);
 				nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
-				nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid namespace prefix in value of the \"key\" attribute for insert leaf-list");
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid namespace prefix in value of the \"key\" attribute to insert list item");
 			}
 			keys[j+1] = NULL;
 			retval = NULL;
@@ -1342,7 +1342,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 				if (error != NULL) {
 					*error = nc_err_new(NC_ERR_BAD_ATTR);
 					nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
-					nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid mixing of the \"key\" attribute for insert leaf-list content");
+					nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid mixing of the \"key\" attribute content to insert list item");
 				}
 				retval = NULL;
 				goto cleanup;
@@ -1384,7 +1384,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 				if (error != NULL) {
 					*error = nc_err_new(NC_ERR_OP_FAILED);
 					nc_err_set(*error, NC_ERR_PARAM_APPTAG, "data-not-unique");
-					nc_err_set(*error, NC_ERR_PARAM_MSG, "Specified value of the \"key\" attribute for insert leaf-list refers multiple data.");
+					nc_err_set(*error, NC_ERR_PARAM_MSG, "Specified value of the \"key\" attribute to insert list item refers multiple data.");
 				}
 				retval = NULL;
 				goto cleanup;
@@ -1416,7 +1416,7 @@ static xmlNodePtr get_ref_leaflist(xmlNodePtr parent, xmlNodePtr edit_node, stru
 		if (error != NULL) {
 			*error = nc_err_new(NC_ERR_MISSING_ATTR);
 			nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "value");
-			nc_err_set(*error, NC_ERR_PARAM_MSG, "Missing \"value\" attribute for insert leaf-list");
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Missing \"value\" attribute to insert leaf-list");
 		}
 		return (NULL);
 	}
