@@ -1421,6 +1421,7 @@ static xmlNodePtr get_ref_leaflist(xmlNodePtr parent, xmlNodePtr edit_node, stru
 		return (NULL);
 	}
 	xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST "value", BAD_CAST NC_NS_YANG));
+	VERB("Reference value for leaf-list is \"%s\" (%s:%d)", ref, __FILE__, __LINE__);
 
 	/* search for the referenced node */
 	for (retval = parent->children; retval != NULL; retval = retval->next) {
@@ -1905,6 +1906,7 @@ static int edit_merge_lists(xmlNodePtr merged_node, xmlNodePtr edit_node, xmlDoc
 		if ((insert = (char*)xmlGetNsProp(edit_node, BAD_CAST "insert", BAD_CAST NC_NS_YANG)) != NULL) {
 			xmlRemoveProp(xmlHasNsProp(merged_node, BAD_CAST "insert", BAD_CAST NC_NS_YANG));
 
+			VERB("Merging list with insert value \"%s\" (%s:%d)", insert, __FILE__, __LINE__);
 			parent = merged_node->parent;
 
 			/* switch according to the insert value */
@@ -1981,6 +1983,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 	 */
 	if (edit_node->type == XML_TEXT_NODE) {
 		if (orig_node->type == XML_TEXT_NODE) {
+			VERB("Merging the node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
 
 			/*
 			 * check if this is defined as leaf or leaf-list. In case of leaf,
@@ -2094,7 +2097,6 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 				return EXIT_FAILURE;
 			}
 		} else {
-			VERB("Merging the node %s (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 			/* go recursive through all matching elements */
 			if (children->type == XML_TEXT_NODE) {
 				while (aux != NULL) {
@@ -2107,6 +2109,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 					aux = next;
 				}
 			} else {
+				VERB("Merging the node %s (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 				parent = aux->parent;
 				while (aux != NULL) {
 					next = aux->next;
@@ -2202,6 +2205,7 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyLis
 			}
 		} else {
 			/* go recursive */
+			VERB("Merging the node %s (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 			if (edit_merge_recursively(aux, children, model, keys, nacm, error) != EXIT_SUCCESS) {
 				return EXIT_FAILURE;
 			}
