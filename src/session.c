@@ -2377,7 +2377,7 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 	int ret;
 	struct nc_msg *msg;
 	const nc_msgid retval = NULL;
-	xmlNsPtr ns, ns_aux;
+	xmlNsPtr ns;
 	xmlNodePtr msg_root, rpc_root;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
@@ -2420,14 +2420,14 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 			if (msg_root->properties == NULL && msg->msgid != NULL) {
 				xmlNewProp(msg_root, BAD_CAST "message-id", BAD_CAST msg->msgid);
 			}
+
 			/* copy additional namespace definitions from rpc */
 			for (ns = rpc_root->nsDef; ns != NULL; ns = ns->next) {
 				if (ns->prefix == NULL) {
 					/* skip default namespace */
 					continue;
 				}
-				ns_aux = xmlNewNs(msg_root, ns->href, ns->prefix);
-				xmlSetNs(msg_root, ns_aux);
+				xmlNewNs(msg_root, ns->href, ns->prefix);
 			}
 
 		}

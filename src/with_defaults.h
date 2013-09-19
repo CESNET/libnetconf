@@ -80,7 +80,7 @@ void ncdflt_set_basic_mode(NCWD_MODE mode);
  * @brief Get the current set basic mode of the with-defaults capability.
  * @return Current value of the with-defaults' basic mode.
  */
-NCWD_MODE ncdflt_get_basic_mode();
+NCWD_MODE ncdflt_get_basic_mode(void);
 
 /**
  * @ingroup withdefaults
@@ -100,7 +100,7 @@ void ncdflt_set_supported(NCWD_MODE modes);
  * @brief Get ORed value containing the currently supported with-defaults modes.
  * @return ORed value containing the currently supported with-defaults modes.
  */
-NCWD_MODE ncdflt_get_supported();
+NCWD_MODE ncdflt_get_supported(void);
 
 /**
  * @ingroup withdefaults
