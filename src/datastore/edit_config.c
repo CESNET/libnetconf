@@ -1974,8 +1974,9 @@ static int edit_merge_lists(xmlNodePtr merged_node, xmlNodePtr edit_node, xmlDoc
 
 static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
-	xmlNodePtr children, aux, next, nextchild, parent;
+	xmlNodePtr children, aux, next, nextchild, parent, model_node;
 	int r, access, duplicates;
+	int leaf_list;
 	char *msg = NULL;
 
 	/* process leaf text nodes - even if we are merging, leaf text nodes are
@@ -2042,6 +2043,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 						/* we don't need keys since this is a leaf-list */
 						if (matching_elements(aux, edit_node->parent, NULL, 1) == 1) { /* checks text content */
 							duplicates = 1;
+							break;
 						}
 					}
 				}
@@ -2111,9 +2113,30 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 			} else {
 				VERB("Merging the node %s (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 				parent = aux->parent;
+
+				/*
+				 * if the node is leaf-list, we have to reflect it when
+				 * searching for matching elements - in such a case we
+				 * need exactly the same (with the same value) node for
+				 * YANG's  ordered-by user feature, because we are going
+				 * to move the node. In other cases (mainly leafs) we
+				 * don't care the content, because we want to change it.
+				 */
+				model_node = find_element_model(children, model);
+				if (model_node == NULL) {
+					ERROR("unknown element %s!", (char*)(children->name));
+					*error = nc_err_new(NC_ERR_UNKNOWN_ELEM);
+					nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, (char*)(children->name));
+					return (EXIT_FAILURE);
+				} else if (xmlStrcmp(model_node->name, BAD_CAST "leaf-list") == 0) {
+					leaf_list = 1;
+				} else {
+					leaf_list = 0;
+				}
+
 				while (aux != NULL) {
 					next = aux->next;
-					if (matching_elements(children, aux, keys, 0) != 0) {
+					if (matching_elements(children, aux, keys, leaf_list) != 0) {
 						if (edit_merge_recursively(aux, children, model, keys, nacm, error) != EXIT_SUCCESS) {
 							return EXIT_FAILURE;
 						}
@@ -2130,6 +2153,11 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 						}
 						if (edit_choice_clean(parent, children, model, nacm, error) == EXIT_FAILURE) {
 							return (EXIT_FAILURE);
+						}
+
+						if (leaf_list) {
+							/* we are done */
+							break;
 						}
 					}
 					aux = next;
