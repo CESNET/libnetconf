@@ -576,7 +576,7 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 			/* initial copy of startup to running will cause full (re)configuration of module */
 			/* Here is used high level function ncds_apply_rpc to apply startup configuration and use transAPI */
 			reply_msg = ncds_apply_rpc(ds_iter->datastore->id, dummy_session, rpc_msg);
-			if (reply_msg == NULL || nc_reply_get_type (reply_msg) != NC_REPLY_OK) {
+			if (reply_msg == NULL || (reply_msg != NCDS_RPC_NOT_APPLICABLE && nc_reply_get_type (reply_msg) != NC_REPLY_OK)) {
 				ERROR ("Failed perform initial copy of startup to running.");
 				goto fail;
 			}
