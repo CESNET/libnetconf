@@ -11,9 +11,9 @@ This release includes the following changes:
  * libtool(1) usage for better compatibility with other OS.
  * Simplification of NETCONF session closing - only nc_session_free() is
    now required instead of a pair of nc_session_close() and nc_Session_free().
+ * TransAPI improvements
 
 TODO
- * TransAPI improvements
  * detection and correction of session monitoring inconsistency
 
 For API/ABI compatibility to previous versions, see reports in
