@@ -19,12 +19,18 @@ typedef enum {
 	YIN_TYPE_AUGMENT /**< YANG augment statement (https://tools.ietf.org/html/rfc6020#section-7.15) */
 } YIN_TYPE;
 
+typedef enum {
+	YIN_ORDER_SYSTEM,
+	YIN_ORDER_USER
+} YIN_ORDER;
+
 /**
  * @ingroup transapi
  * @brief structure holding information about used data model in YIN format
  */
 struct model_tree {
 	YIN_TYPE type;
+	YIN_ORDER ordering; /** < list ordering valid only when type=={YIN_TYPE_LIST|YIN_TYPE_LEAFLIST} */
 	char * name;
 	char ** keys;
 	char * ns_uri;

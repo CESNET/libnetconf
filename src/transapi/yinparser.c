@@ -36,6 +36,7 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char 
 	xmlNodePtr int_tmp, list_tmp, model_tmp = model_node->children;
 	int count = 0, case_count, config;
 	char * keys, * key, * config_text;
+	xmlChar *value;
 
 	children = NULL;
 	while (model_tmp) {
@@ -81,12 +82,34 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char 
 			children[count-1].type = YIN_TYPE_LEAFLIST;
 			children[count-1].children = NULL;
 			children[count-1].children_count = 0;
+			children[count-1].ordering = YIN_ORDER_SYSTEM;
+			list_tmp = model_tmp->children;
+			while (list_tmp) {
+				if (xmlStrEqual(list_tmp->name, BAD_CAST "ordered-by")) {
+					value = xmlGetProp(list_tmp, BAD_CAST "value");
+					if (xmlStrEqual(value, BAD_CAST "user")) {
+						children[count-1].ordering = YIN_ORDER_USER;
+					}
+					xmlFree(value);
+					break;
+				}
+				list_tmp = list_tmp->next;
+			}
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "list")) {
 			children[count-1].type = YIN_TYPE_LIST;
+			children[count-1].children = NULL;
+			children[count-1].children_count = 0;
+			children[count-1].ordering = YIN_ORDER_SYSTEM;
 			children[count-1].children = yinmodel_parse_recursive (model_tmp, ns_mapping, &children[count-1], &children[count-1].children_count);
 			list_tmp = model_tmp->children;
 			while (list_tmp) {
-				if (xmlStrEqual(list_tmp->name, BAD_CAST "key")) {
+				if (xmlStrEqual(list_tmp->name, BAD_CAST "ordered-by")) {
+					value = xmlGetProp(list_tmp, BAD_CAST "value");
+					if (xmlStrEqual(value, BAD_CAST "user")) {
+						children[count-1].ordering = YIN_ORDER_USER;
+					}
+					xmlFree(value);
+				} else if (xmlStrEqual(list_tmp->name, BAD_CAST "key")) {
 					keys = (char*)xmlGetProp (list_tmp, BAD_CAST "value");
 					children[count-1].keys_count = 0;
 					children[count-1].keys = NULL;
@@ -98,8 +121,6 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char 
 						key = strtok (NULL, " ");
 					}
 					free (keys);
-
-					break;
 				}
 				list_tmp = list_tmp->next;
 			}
