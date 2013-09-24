@@ -81,8 +81,6 @@ LIBTOOL = $(libtool) --tag=CC --quiet
 
 DBUS_CONFDIR = @DBUS_CONFDIR@
 
-SUBDIRS = @SUBDIRS@
-
 INCLUDES= -I$(abs_srcdir)/src
 
 ifeq "$(shell pwd)" "$(shell $(readlink) -f $(srcdir))"
@@ -170,12 +168,7 @@ GENERATOR_FILES = src/transapi/generator/Makefile.in \
 
 LOBJS = $(SRCS:%.c=$(OBJDIR)/%.lo)
 
-all: $(LNCTOOL) $(NAME).la $(SUBDIRS)
-
-.PHONY: $(SUBDIRS)
-
-$(SUBDIRS): $(NAME).la
-	$(MAKE) -C $@
+all: $(LNCTOOL) $(NAME).la
 
 $(NAME).la: $(LOBJS)
 	@rm -f $@
@@ -206,7 +199,6 @@ dist: $(NAME).spec tarball rpm
 tarball: $(SRCS) $(HEADERS)
 	@rm -rf $(NAME)-$(VERSION);
 	@mkdir $(NAME)-$(VERSION);
-	@for i in $(SUBDIRS) ; do $(MAKE) -C $$i tarball-prepare; done; \
 	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) $(GENERATOR) $(GENERATOR_FILES) configure.in configure \
 	    headers/libnetconf.h.in headers/libnetconf_xml.h.in \
 	    ltmain.sh Makefile.in VERSION $(NAME).spec.in $(NAME).pc.in \
@@ -258,10 +250,6 @@ install: all install-devel install-doc install-generator
 	if test "$(SETBIT)" = "0"; then \
 		chmod a+rwx $(NC_WORKINGDIR_PATH); \
 	fi;
-	for i in $(SUBDIRS) ; do \
-		$(MAKE) DESTDIR=$(patsubst .%,$(abs_srcdir)/.%,$(DESTDIR)) -C $$i install \
-		|| exit 1; \
-	done;
 	[ -d $(DESTDIR)/$(DBUS_CONFDIR)/system.d/ ] || (mkdir -p $(DESTDIR)/$(DBUS_CONFDIR)/system.d/);
 	[ -z "@SRCS_NOTIFICATIONS@" ] || $(INSTALL_DATA) $(srcdir)/libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
 
@@ -316,10 +304,6 @@ uninstall: uninstall-devel uninstall-doc
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libldns.la
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
 	rm $(NC_WORKINGDIR_PATH)/ietf-netconf-acm*.rng $(NC_WORKINGDIR_PATH)/ietf-netconf-acm-schematron.xsl;
-	for i in $(SUBDIRS) ; do \
-		$(MAKE) DESTDIR=$(patsubst .%,$(abs_srcdir)/.%,$(DESTDIR)) -C $$i uninstall \
-		|| exit 1; \
-	done
 	[ -z "@SRCS_NOTIFICATIONS@" ] || rm -f $(DESTDIR)/$(DBUS_CONFDIR)/system.d/libnetconf.notifications.conf
 
 .PHONY: uninstall-devel
@@ -343,7 +327,6 @@ uninstall-doc:
 
 .PHONY: clean clean-all clean-doc clean-rpm
 clean:
-	for i in $(SUBDIRS) ; do $(MAKE) -C $$i clean ; done
 	rm -rf *.a *.so* .obj $(OBJS)
 	$(LIBTOOL) --mode clean rm -f $(LOBJS)
 	$(LIBTOOL) --mode clean rm -f $(NAME).la

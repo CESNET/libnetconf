@@ -647,9 +647,7 @@ DBUS_CONFDIR
 SETGROUP
 SETUSER
 SETBIT
-SERVERCFG_PATH
 NC_WORKINGDIR_PATH
-SUBDIRS
 DISTRO
 PROVIDES
 REQS
@@ -718,7 +716,6 @@ UNAME
 XSLT_CONFIG
 XML2_CONFIG
 PKG_CONFIG
-CONFIGURE_PWD
 USERMAIL
 USERNAME
 RELEASE
@@ -779,11 +776,9 @@ enable_libssh2
 enable_notifications
 enable_url
 enable_validation
-with_examples
 enable_debug
 enable_debug_threads
 with_ncworkingdirpath
-with_servercfgpath
 with_suid
 with_sgid
 with_nacm_recovery_uid
@@ -1446,15 +1441,10 @@ Optional Packages:
   --with-libxml2          specific libxml2 location
   --with-libxslt          specific libxslt location
   --with-libssh2=DIR      Specifies libssh2 installation directory.
-  --with-examples         Enable building example applications, they respect
-                          --with-suid and --with-sgid options
   --with-ncworkingdirpath=path
                           Path to a working directory of libnetconf, where all
                           the system files are stored, the default value is
                           /var/lib/libnetconf/
-  --with-servercfgpath=path
-                          Path to example server configuration files, the
-                          default value is /var/lib/libnetconf/server/
   --with-suid=user        When creating files or directories using libnetconf,
                           rely on the SUID bit set and change their ownership
                           to the specified user
@@ -2691,11 +2681,7 @@ USERMAIL=`git config --get user.email`
 
 
 
-CONFIGURE_PWD=`pwd`
-
-
 NC_WORKINGDIR_PATH="/var/lib/$PACKAGE_NAME/"
-SERVERCFG_PATH="/var/lib/$PACKAGE_NAME/server/"
 SETBIT=0
 SETUSER=""
 SETGROUP=""
@@ -2965,22 +2951,6 @@ if test "$validation" = "no"; then
 	CPPFLAGS="$CPPFLAGS -DDISABLE_VALIDATION"
 fi
 
-
-# Check whether --with-examples was given.
-if test "${with_examples+set}" = set; then :
-  withval=$with_examples;
-		SUBDIRS="./examples/client/ ./examples/server/"
-		if test "$notif" = "yes"; then
-			# enable compilation of netconf-events tool
-			SUBDIRS="$SUBDIRS ./examples/tools/"
-		fi
-
-else
-  SUBDIRS=""
-
-fi
-
-
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug; CFLAGS="$CFLAGS -g -O0 -DDEBUG"
@@ -3000,13 +2970,6 @@ fi
 # Check whether --with-ncworkingdirpath was given.
 if test "${with_ncworkingdirpath+set}" = set; then :
   withval=$with_ncworkingdirpath; NC_WORKINGDIR_PATH="$withval"
-
-fi
-
-
-# Check whether --with-servercfgpath was given.
-if test "${with_servercfgpath+set}" = set; then :
-  withval=$with_servercfgpath; SERVERCFG_PATH="$withval"
 
 fi
 
@@ -12173,129 +12136,6 @@ fi
 
 fi
 
-if test -n "$SUBDIRS"; then
-	### libreadline ###
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for readline in -lreadline" >&5
-$as_echo_n "checking for readline in -lreadline... " >&6; }
-if ${ac_cv_lib_readline_readline+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lreadline  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char readline ();
-int
-main ()
-{
-return readline ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_readline_readline=yes
-else
-  ac_cv_lib_readline_readline=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_readline_readline" >&5
-$as_echo "$ac_cv_lib_readline_readline" >&6; }
-if test "x$ac_cv_lib_readline_readline" = xyes; then :
-  LIBS="$LIBS"
-else
-  # prevent adding -lreadline to LIBS
-		as_fn_error $? "Missing libreadline" "$LINENO" 5
-
-fi
-
-	for ac_header in readline/readline.h readline/history.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-else
-  as_fn_error $? "Missing libreadline headers." "$LINENO" 5
-fi
-
-done
-
-
-	### libevent ###
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for event_base_dispatch in -levent" >&5
-$as_echo_n "checking for event_base_dispatch in -levent... " >&6; }
-if ${ac_cv_lib_event_event_base_dispatch+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-levent  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char event_base_dispatch ();
-int
-main ()
-{
-return event_base_dispatch ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_event_event_base_dispatch=yes
-else
-  ac_cv_lib_event_event_base_dispatch=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_event_event_base_dispatch" >&5
-$as_echo "$ac_cv_lib_event_event_base_dispatch" >&6; }
-if test "x$ac_cv_lib_event_event_base_dispatch" = xyes; then :
-  LIBS="$LIBS"
-else
-  # prevent adding -levent to LIBS
-		as_fn_error $? "Missing libevent" "$LINENO" 5
-
-fi
-
-	for ac_header in event2/event.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "event2/event.h" "ac_cv_header_event2_event_h" "$ac_includes_default"
-if test "x$ac_cv_header_event2_event_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_EVENT2_EVENT_H 1
-_ACEOF
-
-else
-  as_fn_error $? "Missing libevent headers." "$LINENO" 5
-fi
-
-done
-
-fi
-
 ### pthread ###
 
 
@@ -13659,8 +13499,6 @@ fi
 
 
 
-
-
 if test -z "$DOXYGEN"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Due to missing doxygen you will not able to generate Doxygen documentation." >&5
 $as_echo "$as_me: WARNING: Due to missing doxygen you will not able to generate Doxygen documentation." >&2;}
@@ -13676,10 +13514,6 @@ ac_config_files="$ac_config_files Makefile src/config.h libnetconf.spec libnetco
 
 ac_config_files="$ac_config_files headers/libnetconf.h headers/libnetconf_xml.h"
 
-if test -n "$SUBDIRS"; then
-	ac_config_files="$ac_config_files examples/client/Makefile examples/server/Makefile examples/tools/Makefile"
-
-fi
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -14681,9 +14515,6 @@ do
     "Doxyfile") CONFIG_FILES="$CONFIG_FILES Doxyfile" ;;
     "headers/libnetconf.h") CONFIG_FILES="$CONFIG_FILES headers/libnetconf.h" ;;
     "headers/libnetconf_xml.h") CONFIG_FILES="$CONFIG_FILES headers/libnetconf_xml.h" ;;
-    "examples/client/Makefile") CONFIG_FILES="$CONFIG_FILES examples/client/Makefile" ;;
-    "examples/server/Makefile") CONFIG_FILES="$CONFIG_FILES examples/server/Makefile" ;;
-    "examples/tools/Makefile") CONFIG_FILES="$CONFIG_FILES examples/tools/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
