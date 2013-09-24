@@ -26,7 +26,9 @@ typedef enum
 	XMLDIFF_ADD = 1 /**< Element was added to configuration. */,
 	XMLDIFF_REM = 2 /**< Element was removed from configuration. */,
 	XMLDIFF_MOD = 4/**< Element was modified. */,
-	XMLDIFF_CHAIN = 8/**< Some of children of element was modified/added/removed. */
+	XMLDIFF_CHAIN = 8/**< Some of children of element was modified/added/removed. */,
+	XMLDIFF_SIBLING = 16 /**< Some sibling nodes were added/removed/changed position. Only for LEAF and LEAF-LIST. */,
+	XMLDIFF_REORDER = 32 /**< Some of the children nodes changed theirs position. None was added/removed. Only for LEAF and LEAF-LIST. */,
 } XMLDIFF_OP;
 
 /**

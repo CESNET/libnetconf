@@ -304,6 +304,60 @@ int node_cmp(xmlNodePtr node1, xmlNodePtr node2)
 	return(ret);
 }
 
+/*
+ * @brief Return EXIT_SUCCESS if node1 and node2 have same name, are in the same namespace and
+ * have the same key values.
+ *
+ * @param node1	One node to compare.
+ * @param node2	Other node to compare.
+ *
+ * @return EXIT_SUCCESS when equivalent EXIT_FAILURE otherwise
+ */
+int list_node_cmp(xmlNodePtr node1, xmlNodePtr node2, struct model_tree * model)
+{
+	int i, ret = EXIT_FAILURE;
+	xmlNodePtr node_tmp;
+	xmlChar * tmp_str, *node1_keys, *node2_keys;
+
+	if (node_cmp(node1, node2) == EXIT_SUCCESS) {
+		/* For every old node create string holding the concatenated key values */
+		node1_keys = BAD_CAST strdup ("");
+		node2_keys = BAD_CAST strdup ("");
+		for (i=0; i<model->keys_count; i++) { /* For every specified key */
+			node_tmp = node1->children;
+			while (node_tmp) {
+				if (xmlStrEqual(node_tmp->name, BAD_CAST model->keys[i])) { /* Find matching leaf in old document */
+					tmp_str = xmlNodeGetContent (node_tmp);
+					node1_keys  = realloc (node1_keys, sizeof(char) * (strlen((const char*)node1_keys)+strlen((const char*)tmp_str)+1));
+					strcat ((char*)node1_keys, (char*)tmp_str); /* Concatenate key value */
+					xmlFree (tmp_str);
+					break;
+				}
+				node_tmp = node_tmp->next;
+			}
+			node_tmp = node2->children;
+			while (node_tmp) {
+				if (xmlStrEqual(node_tmp->name, BAD_CAST model->keys[i])) { /* Find matching leaf in old document */
+					tmp_str = xmlNodeGetContent (node_tmp);
+					node2_keys = realloc (node2_keys, sizeof(char) * (strlen((const char*)node2_keys)+strlen((const char*)tmp_str)+1));
+					strcat ((char*)node2_keys, (char*)tmp_str); /* Concatenate key value */
+					xmlFree (tmp_str);
+					break;
+				}
+				node_tmp = node_tmp->next;
+			}
+		}
+		if (xmlStrEqual(node1_keys, node2_keys)) {
+			ret = EXIT_SUCCESS;
+		}
+		xmlFree(node1_keys);
+		xmlFree(node2_keys);
+	}
+
+	return(ret);
+}
+
+
 #if 0
 XMLDIFF_OP xmldiff_list
 {
@@ -341,6 +395,8 @@ XMLDIFF_OP xmldiff_recursive (struct xmldiff_tree** diff, const char *ns_mapping
 	xmlChar * old_keys, *new_keys;
 	xmlBufferPtr buf;
 	struct xmldiff_tree** tmp_diff;
+	xmlNodePtr * list_added, * realloc_tmp;
+	int list_added_cnt;
 
 	/* Some of the required documents are missing */
 	if (old_doc == NULL || new_doc == NULL || model == NULL) {
@@ -389,6 +445,7 @@ model_type:
 			ret_op = XMLDIFF_NONE;
 			tmp_diff = malloc(sizeof(struct xmldiff_tree*));
 			*tmp_diff = NULL;
+			tmp_op = XMLDIFF_NONE;
 			for (i=0; i<model->children_count; i++) {
 				asprintf (&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
 				tmp_op = xmldiff_recursive (tmp_diff, ns_mapping, next_path, old_doc, old_tmp->children, new_doc, new_tmp->children, &model->children[i]);
@@ -400,8 +457,8 @@ model_type:
 					ret_op = XMLDIFF_CHAIN;
 				}
 			}
-			if (ret_op == XMLDIFF_CHAIN) {
-				xmldiff_add_diff (tmp_diff, ns_mapping, path, new_tmp, XMLDIFF_CHAIN, XML_PARENT);
+			if (tmp_op != XMLDIFF_NONE) {
+				xmldiff_add_diff (tmp_diff, ns_mapping, path, new_tmp, tmp_op, XML_PARENT);
 				*tmp_diff = (*tmp_diff)->parent;
 				xmldiff_addsibling_diff (diff, tmp_diff);
 			}
@@ -443,6 +500,8 @@ model_type:
 		case YIN_TYPE_LIST:
 			/* List */
 			ret_op = XMLDIFF_NONE;
+			list_added = NULL;
+			list_added_cnt = 0;
 
 			/* Find matches according to the key elements, process all the elements inside recursively */
 			/* Not matching are _ADD or _REM */
@@ -594,16 +653,94 @@ model_type:
 				if (list_old_tmp == NULL) { /* Item NOT found in the old document -> added */
 					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD, XML_SIBLING);
 					ret_op = XMLDIFF_CHAIN;
+					/* remeber that the node was added*/
+					if ((realloc_tmp = realloc (list_added, ++list_added_cnt * sizeof(xmlNodePtr))) == NULL) {
+						free(list_added);
+						return (XMLDIFF_ERR);
+					} else {
+						list_added = realloc_tmp;
+						list_added[list_added_cnt-1] = list_new_tmp;
+					}
 				} else {
 					/* We already checked for changes in these nodes */
 				}
 				list_new_tmp = list_new_tmp->next;
 			}
+			/* list is ordered by user */
+			if (model->ordering == YIN_ORDER_USER) {
+				/* No node was added or removed */
+				if (ret_op == XMLDIFF_NONE) {
+					/* go through old and new list and compare pairs */
+					/* if there is a difference the list was somehow reordered */
+					list_old_tmp = old_tmp;
+					list_new_tmp = new_tmp;
+
+					while (list_old_tmp && list_new_tmp) {
+						if (!xmlStrEqual(list_old_tmp->name, BAD_CAST model->name)) {
+							list_old_tmp = list_old_tmp->next;
+							continue;
+						}
+						if (!xmlStrEqual(list_new_tmp->name, BAD_CAST model->name)) {
+							list_new_tmp = list_new_tmp->next;
+							continue;
+						}
+
+						if (!xmlStrEqual(list_old_tmp->name, list_new_tmp->name)) {
+							/* difference found */
+							ret_op = XMLDIFF_REORDER;
+							break;
+						}
+
+						if (list_node_cmp(list_old_tmp, list_new_tmp, model)) {
+							ret_op = XMLDIFF_REORDER;
+							break;
+						}
+
+						list_old_tmp = list_old_tmp->next;
+						list_new_tmp = list_new_tmp->next;
+					}
+
+					if (ret_op == XMLDIFF_REORDER) {
+						/* inform all siblings that order changed (XMLDIFF_SIBLING) */
+						list_new_tmp = new_tmp;
+						while (list_new_tmp) {
+							if (!xmlStrEqual(list_new_tmp->name, BAD_CAST model->name)) {
+								list_new_tmp = list_new_tmp->next;
+								continue;
+							}
+
+							xmldiff_add_diff(diff, ns_mapping, path, list_new_tmp, XMLDIFF_SIBLING, XML_SIBLING);
+							list_new_tmp = list_new_tmp->next;
+						}
+					}
+				} else if (ret_op == XMLDIFF_CHAIN) {
+					list_new_tmp = new_tmp;
+					while (list_new_tmp) {
+						if (!xmlStrEqual(list_new_tmp->name, BAD_CAST model->name)) {
+							list_new_tmp = list_new_tmp->next;
+							continue;
+						}
+						for (i=0; i<list_added_cnt; i++) {
+							if (list_added[i] == list_new_tmp) {
+								break;
+							}
+						}
+
+						if (i == list_added_cnt) { /* no match in list_added */
+							xmldiff_add_diff(diff, ns_mapping, path, list_new_tmp, XMLDIFF_SIBLING, XML_SIBLING);
+						}
+						list_new_tmp = list_new_tmp->next;
+					}
+				}
+			}
+			free(list_added);
 			break;
 		case YIN_TYPE_LEAFLIST:
 			/* Leaf-list */
 			ret_op = XMLDIFF_NONE;
 			list_name = strrchr(path, ':')+1;
+			list_added = NULL;
+			list_added_cnt = 0;
 
 			/* Search for matches, only _ADD and _REM will be here */
 			/* For each in the old node find one from the new nodes or log as _REM */
@@ -663,9 +800,85 @@ model_type:
 				if (list_old_tmp == NULL) {
 					xmldiff_add_diff (diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD, XML_SIBLING);
 					ret_op = XMLDIFF_CHAIN;
+					/* remeber that the node was added*/
+					if ((realloc_tmp = realloc (list_added, ++list_added_cnt * sizeof(xmlNodePtr))) == NULL) {
+						free(list_added);
+						return (XMLDIFF_ERR);
+					} else {
+						list_added = realloc_tmp;
+						list_added[list_added_cnt-1] = list_new_tmp;
+					}
 				}
 				list_new_tmp = list_new_tmp->next;
 			}
+			/* leaf-list is ordered by user */
+			if (model->ordering == YIN_ORDER_USER) {
+				/* No node was added or removed */
+				if (ret_op == XMLDIFF_NONE) {
+					/* go through old and new list and compare pairs */
+					/* if there is a difference the list was somehow reordered */
+					list_old_tmp = old_tmp;
+					list_new_tmp = new_tmp;
+
+					while (list_old_tmp && list_new_tmp) {
+						if (!xmlStrEqual(list_old_tmp->name, BAD_CAST model->name)) {
+							list_old_tmp = list_old_tmp->next;
+							continue;
+						}
+						if (!xmlStrEqual(list_new_tmp->name, BAD_CAST model->name)) {
+							list_new_tmp = list_new_tmp->next;
+							continue;
+						}
+
+						if (!xmlStrEqual(list_old_tmp->name, list_new_tmp->name)) {
+							/* difference found */
+							ret_op = XMLDIFF_REORDER;
+							break;
+						}
+
+						if (!xmlStrEqual(list_old_tmp->children->content, list_new_tmp->children->content)) {
+							ret_op = XMLDIFF_REORDER;
+							break;
+						}
+
+						list_old_tmp = list_old_tmp->next;
+						list_new_tmp = list_new_tmp->next;
+					}
+
+					if (ret_op == XMLDIFF_REORDER) {
+						/* inform all siblings that order changed (XMLDIFF_SIBLING) */
+						list_new_tmp = new_tmp;
+						while (list_new_tmp) {
+							if (!xmlStrEqual(list_new_tmp->name, BAD_CAST model->name)) {
+								list_new_tmp = list_new_tmp->next;
+								continue;
+							}
+
+							xmldiff_add_diff(diff, ns_mapping, path, list_new_tmp, XMLDIFF_SIBLING, XML_SIBLING);
+							list_new_tmp = list_new_tmp->next;
+						}
+					}
+				} else if (ret_op == XMLDIFF_CHAIN) {
+					list_new_tmp = new_tmp;
+					while (list_new_tmp) {
+						if (!xmlStrEqual(list_new_tmp->name, BAD_CAST model->name)) {
+							list_new_tmp = list_new_tmp->next;
+							continue;
+						}
+						for (i=0; i<list_added_cnt; i++) {
+							if (list_added[i] == list_new_tmp) {
+								break;
+							}
+						}
+
+						if (i == list_added_cnt) { /* no match in list_added */
+							xmldiff_add_diff(diff, ns_mapping, path, list_new_tmp, XMLDIFF_SIBLING, XML_SIBLING);
+						}
+						list_new_tmp = list_new_tmp->next;
+					}
+				}
+			}
+			free(list_added);
 			break;
 		case YIN_TYPE_ANYXML:
 			/* Anyxml */
