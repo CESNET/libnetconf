@@ -1651,6 +1651,12 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 	char* err_msg;
 	int r;
 
+	if (session == NULL || session->is_server) {
+		/* we can open channel only for client-side, no-dummy sessions */
+		ERROR("Invalid session for opening another channel");
+		return (NULL);
+	}
+
 	/* allocate netconf session structure */
 	retval = malloc(sizeof(struct nc_session));
 	if (retval == NULL) {

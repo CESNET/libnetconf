@@ -80,18 +80,6 @@ int nc_session_monitor(struct nc_session* session);
 
 /**
  * @ingroup session
- * @brief Close NETCONF connection with the server.
- *
- * Only nc_session_free() and nc_session_get_status() functions are allowed
- * after this call.
- *
- * @param[in] session Session to close.
- * @param[in] reason Type of the session termination reason.
- */
-void nc_session_close (struct nc_session* session, NC_SESSION_TERM_REASON reason);
-
-/**
- * @ingroup session
  * @brief Cleanup the session structure and free all the allocated resources.
  *
  * Do not use the given session structure after this call.
@@ -394,15 +382,6 @@ int nc_msgid_compare (const nc_msgid id1, const nc_msgid id2);
  * means that *reply points to the received \<rpc-reply\> message.
  */
 NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_reply** reply);
-
-/**
- * ingroup session
- * @brief Get human-readable description to the specific type of the session
- * termination reason.
- * @param[in] reason Type of the session termination reason.
- * @return String describing the given termination reason value.
- */
-const char* nc_session_term_string(NC_SESSION_TERM_REASON reason);
 
 #ifdef __cplusplus
 }

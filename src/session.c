@@ -1115,7 +1115,12 @@ void nc_session_free (struct nc_session* session)
 		return;
 	}
 
-	nc_session_close(session, NC_SESSION_TERM_OTHER);
+	if (session->status != NC_SESSION_STATUS_CLOSED) {
+		nc_session_close(session, NC_SESSION_TERM_CLOSED);
+		/* let notification receiving function stop, if any */
+		ncntf_dispatch_stop(session);
+	}
+
 	if (session->groups != NULL) {
 		for (i = 0; session->groups[i] != NULL; i++) {
 			free(session->groups[i]);

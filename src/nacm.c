@@ -916,6 +916,11 @@ static struct nacm_rpc* nacm_rpc_struct(const struct nc_session* session)
 	char** groups = NULL;
 	int l, c, i, j, k;
 
+	if (session == NULL || session->status != NC_SESSION_STATUS_WORKING) {
+		ERROR("%s: invalid session to use", __func__);
+		return (NULL);
+	}
+
 	nacm_rpc = malloc(sizeof(struct nacm_rpc));
 	if (nacm_rpc == NULL) {
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);

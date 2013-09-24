@@ -2467,6 +2467,24 @@ cleanup:
 }
 
 /**
+ * @brief Stop the running ncntf_dispatch_receive()
+ *
+ * When the client is going to close an active session and receiving
+ * notifications is active, we should properly stop it before freeing session
+ * structure
+ *
+ */
+void ncntf_dispatch_stop(struct nc_session *session)
+{
+	if (session != NULL && session->ntf_active) {
+		session->ntf_stop = 1;
+		while (session->ntf_active) {
+			usleep(20);
+		}
+	}
+}
+
+/**
  * @ingroup notifications
  * @brief Start sending notifications according to the given
  * \<create-subscription\> NETCONF RPC request. All events from the specified
@@ -2534,7 +2552,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	filter_doc->encoding = xmlStrdup(BAD_CAST UTF8);
 
 	ncntf_stream_iter_start(stream);
-	while(ncntf_config != NULL) {
+	while(ncntf_config != NULL && !(session->ntf_stop)) {
 		if ((event = ncntf_stream_iter_next(stream, start, stop, NULL)) == NULL) {
 			if ((stop == -1) || ((stop != -1) && (stop > time(NULL)))) {
 				continue;
@@ -2708,7 +2726,7 @@ long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_
 	long long int count = 0;
 	nc_ntf* ntf = NULL;
 	NC_MSG_TYPE type;
-	int eventfd = -1, dispatch = 1;
+	int eventfd = -1;
 	time_t event_time;
 	char* content;
 
@@ -2731,6 +2749,7 @@ long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_
 	pthread_mutex_lock(&(session->mut_session));
 	if (session->ntf_active == 0) {
 		session->ntf_active = 1;
+		session->ntf_stop = 0;
 	} else {
 		DBG_UNLOCK("mut_session");
 		pthread_mutex_unlock(&(session->mut_session));
@@ -2746,18 +2765,18 @@ long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_
 	}
 
 	/* main loop for receiving notifications */
-	while(dispatch && session != NULL && session->status == NC_SESSION_STATUS_WORKING) {
+	while(session != NULL && !(session->ntf_stop) && session->status == NC_SESSION_STATUS_WORKING) {
 		/* process current notification */
 		switch (type = nc_session_recv_notif(session, 0, &ntf)) {
 		case NC_MSG_UNKNOWN: /* error */
-			dispatch = 0;
+			session->ntf_stop = 1;
 			continue; /* end the dispatch loop */
 			break;
 		case NC_MSG_NOTIFICATION:
 			/* check for <notificationComplete> */
 			if (ncntf_notif_get_type(ntf) == NCNTF_NTF_COMPLETE) {
 				/* end of the Notification stream */
-				dispatch = 0;
+				session->ntf_stop = 1;
 			}
 
 			/* Parse XML to get parameters for callback function */
@@ -2781,7 +2800,10 @@ long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_
 		}
 	}
 
-	session->ntf_active = 0;
+	if (session != NULL) {
+		session->ntf_active = 0;
+	}
+
 	return (count);
 }
 

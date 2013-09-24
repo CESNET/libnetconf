@@ -116,7 +116,7 @@ typedef enum NC_SESSION_STATUS {
 
 /**
  * @ingroup session
- * @brief Enumeration of reasonf of the NETCONF session termination as defined
+ * @brief Enumeration of reasons of the NETCONF session termination as defined
  * in RFC 6470.
  */
 typedef enum NC_SESSION_TERM_REASON {

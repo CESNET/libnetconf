@@ -376,6 +376,8 @@ struct nc_session {
 	struct nc_msg* queue_event;
 	/**< @brief flag for active notification subscription on the session */
 	int ntf_active;
+	/**< @brief flag for stopping notification subscription on the session */
+	int ntf_stop;
 	/**< @brief flag for NACM Recovery session - set if session user ID is 0 */
 	int nacm_recovery;
 	/**< @brief Flag if the session is monitored and connected to the shared memory segment */
@@ -603,6 +605,25 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter * filter, xmlNodePtr *ne
  */
 char* nc_session_stats(void);
 
+/**
+ * @brief Get human-readable description to the specific type of the session
+ * termination reason.
+ * @param[in] reason Type of the session termination reason.
+ * @return String describing the given termination reason value.
+ */
+const char* nc_session_term_string(NC_SESSION_TERM_REASON reason);
+
+/**
+ * @brief Close NETCONF connection with the server.
+ *
+ * Only nc_session_free() and nc_session_get_status() functions are allowed
+ * after this call.
+ *
+ * @param[in] session Session to close.
+ * @param[in] reason Type of the session termination reason.
+ */
+void nc_session_close (struct nc_session* session, NC_SESSION_TERM_REASON reason);
+
 #ifndef DISABLE_NOTIFICATIONS
 
 /**
@@ -616,6 +637,17 @@ int ncntf_init(void);
  * environment.
  */
 void ncntf_close(void);
+
+/**
+ * @brief Stop the running ncntf_dispatch_receive()
+ *
+ * When we are going to close an active session and receiving/sending
+ * notifications is active, we should properly stop it before freeing session
+ * structure. This should be called after nc_session_close() but before
+ * doing stuff in nc_session_free().
+ *
+ */
+void ncntf_dispatch_stop(struct nc_session *session);
 
 #endif /* DISABLE_NOTIFICATIONS */
 
