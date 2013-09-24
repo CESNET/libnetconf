@@ -284,8 +284,8 @@
  * communication channel can be checked by poll(), select(), ... This descriptor
  * can be obtained via nc_session_get_eventfd() function.
  * -# **Close the NETCONF session**.\n
- * When the communication is finished, the NETCONF session is closed by
- * nc_session_close() and all the used structures are freed by nc_session_free().
+ * When the communication is done, the NETCONF session should be freed (session
+ * is also properly closed) via  nc_session_free() function.
  * -# **Free all created objects**.\n
  * Do not forget to free created rpc messages (nc_rpc_free()),
  * \link nc_filter_new() filters\endlink (nc_filter_free()) or received NETCONF
@@ -422,12 +422,11 @@
  * 10. **Server loop**.\n
  * Repeat previous three steps.
  * 11. **Close the NETCONF session**.\n
- * Use functions nc_session_close() and nc_session_free() (in this order) to
- * close and free all the used sources and structures connected with the session.
- * Session can be closed by the server based on its internal reasons or by
- * the libnetconf due to some error. In the second case, libnetconf marks the
- * status of the session as non-working (nc_session_get_status !=
- * NC_SESSION_STATUS_WORKING).
+ * Use functions nc_session_free() to close and free all the used sources and
+ * structures connected with the session.
+ * Server should close the session when a nc_session_* function fails and
+ * libnetconf set the status of the session as non-working
+ * (nc_session_get_status != NC_SESSION_STATUS_WORKING).
  * 12. **Close the libnetconf instance**\n
  * Close internal libnetconf structures and subsystems by the nc_close() call.
  *
