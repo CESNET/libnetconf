@@ -681,9 +681,6 @@ INPUT                  = src/libnetconf.h \
                          src/notifications_xml.h \
                          src/transapi/transapi.h \
                          src/transapi/transapi_xml.h \
-                         src/transapi/transapi_internal.h \
-                         src/transapi/yinparser.h \
-                         src/transapi/xmldiff.h \
                          src/url.h \
                          src/with_defaults.h
 
