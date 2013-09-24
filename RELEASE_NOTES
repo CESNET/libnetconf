@@ -9,10 +9,11 @@ This release includes the following changes:
    implementation.
  * lnctool(1) to generate YIN model format and validators files.
  * libtool(1) usage for better compatibility with other OS.
+ * Simplification of NETCONF session closing - only nc_session_free() is
+   now required instead of a pair of nc_session_close() and nc_Session_free().
 
 TODO
  * TransAPI improvements
- * integration of nc_session_(close/free) to simplify work with sessions
  * detection and correction of session monitoring inconsistency
 
 For API/ABI compatibility to previous versions, see reports in
