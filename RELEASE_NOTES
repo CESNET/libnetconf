@@ -13,9 +13,6 @@ This release includes the following changes:
    now required instead of a pair of nc_session_close() and nc_Session_free().
  * TransAPI improvements
 
-TODO
- * detection and correction of session monitoring inconsistency
-
 For API/ABI compatibility to previous versions, see reports in
 'doc/compat_reports/' directory.
 
