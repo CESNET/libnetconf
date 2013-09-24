@@ -272,6 +272,38 @@ void xmldiff_addsibling_diff (struct xmldiff_tree** siblings, struct xmldiff_tre
 	(*new_sibling)->parent = last_sibling->parent;
 }
 
+/**
+ * @brief Return EXIT_SUCCESS if node1 and node2 have same name and are in the same namespace.
+ *
+ * This function is used in xmldiff_recursive() for determining that we have
+ * found equivalent node in the other document. Only name and namespace is checked
+ * because in xmldiff_recursive() is always assured that we are on the same place in
+ * both documents.
+ *
+ * @param node1	One node to compare.
+ * @param node2	Other node to compare.
+ *
+ * @return EXIT_SUCCESS when equivalent EXIT_FAILURE otherwise
+ */
+int node_cmp(xmlNodePtr node1, xmlNodePtr node2)
+{
+	int ret = EXIT_FAILURE;
+	
+	if (node1 != NULL && node2 != NULL) { /* valid nodes */
+		if (xmlStrEqual(node1->name, node2->name)) { /*	with same name */
+			if (node1->ns == node2->ns) {/* namespace is identical (single object referenced by both nodes) on both NULL */
+				ret = EXIT_SUCCESS;
+			} else if ((node1->ns == NULL || node2->ns == NULL) || (node1->ns->href == NULL || node2->ns->href == NULL))  { /* one of nodes has no namespace */
+				ret = EXIT_FAILURE;
+			} else if (xmlStrEqual(node1->ns->href, node2->ns->href)) {
+				ret = EXIT_SUCCESS;
+			}
+		}
+	}
+
+	return(ret);
+}
+
 #if 0
 XMLDIFF_OP xmldiff_list
 {
@@ -420,7 +452,7 @@ model_type:
 			list_old_tmp = old_tmp;
 			while (list_old_tmp) {
 				/* We have to make sure that this really is a list node we are checking now */
-				if (xmlStrcmp(old_tmp->name, list_old_tmp->name) != 0) {
+				if (node_cmp(old_tmp, list_old_tmp)) {
 					list_old_tmp = list_old_tmp->next;
 					continue;
 				}
@@ -445,7 +477,7 @@ model_type:
 				/* Go through the new list */
 				list_new_tmp = new_tmp;
 				while (list_new_tmp) {
-					if (xmlStrcmp(old_tmp->name, list_new_tmp->name) != 0) {
+					if (node_cmp(old_tmp, list_new_tmp)) {
 						list_new_tmp = list_new_tmp->next;
 						continue;
 					}
@@ -507,7 +539,7 @@ model_type:
 			/* Go through the new nodes and search for matching nodes in the old document*/
 			list_new_tmp = new_tmp;
 			while (list_new_tmp) {
-				if (xmlStrcmp(new_tmp->name, list_new_tmp->name) != 0) {
+				if (node_cmp(new_tmp, list_new_tmp)) {
 					list_new_tmp = list_new_tmp->next;
 					continue;
 				}
@@ -531,7 +563,7 @@ model_type:
 				/* Go through the new list */
 				list_old_tmp = old_tmp;
 				while (list_old_tmp) {
-					if (xmlStrcmp(new_tmp->name, list_old_tmp->name) != 0) {
+					if (node_cmp(new_tmp, list_old_tmp)) {
 						list_old_tmp = list_old_tmp->next;
 						continue;
 					}
