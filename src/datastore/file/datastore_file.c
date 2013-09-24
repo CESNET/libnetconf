@@ -458,12 +458,6 @@ void ncds_file_free(struct ncds_ds* ds)
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
 	if (file_ds != NULL) {
-		/* generic ncds_ds part */
-		if (file_ds->ds.data_model->xml != file_ds->ds.ext_model) {
-			xmlFreeDoc(file_ds->ds.ext_model);
-		}
-		ncds_ds_model_free(file_ds->ds.data_model);
-
 		/* ncds_ds_file specific part */
 		if (file_ds->file != NULL) {
 			fclose(file_ds->file);
@@ -477,8 +471,6 @@ void ncds_file_free(struct ncds_ds* ds)
 			}
 			sem_close(file_ds->ds_lock.lock);
 		}
-
-		free(file_ds);
 	}
 }
 

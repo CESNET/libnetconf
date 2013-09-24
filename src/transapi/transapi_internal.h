@@ -4,47 +4,18 @@
 #include "transapi.h"
 #include "transapi_xml.h"
 #include "yinparser.h"
+#include "../datastore/datastore_internal.h"
 
-union transapi_data_clbcks {
-	struct transapi_data_callbacks * data_clbks;
-	struct transapi_xml_data_callbacks * data_clbks_xml;
-};
-
-union transapi_rpc_clbcks {
-	struct transapi_rpc_callbacks * rpc_clbks;
-	struct transapi_xml_rpc_callbacks * rpc_clbks_xml;
-};
-
-struct transapi {
-	/**
-	 * @brief Loaded shared library with transapi callbacks.
-	 */
-	void * module;
-	/**
-	 * @brief Does module support libxml2?
-	 */
-	int libxml2;
-	/**
-	 * @brief Mapping prefixes with URIs
-	 */
-	const char ** ns_mapping;
-	/**
-	 * @brief Transapi callback mapping structure.
-	 */
-	union transapi_data_clbcks data_clbks;
-	/**
-	 * @brief Transapi rpc callbacks mapping structure.
-	 */
-	union transapi_rpc_clbcks rpc_clbks;
-	/**
-	 * @brief Module initialization.
-	 */
-	int (*init)(void);
-	/**
-	 * @brief Free module resources and prepare for closing.
-	 */
-	void (*close)(void);
-};
+/**
+ * @ingroup transapi
+ * @brief Enum with XML relationships between the nodes
+ */
+typedef enum
+{
+	XML_PARENT, /**< Represent XML parent role. */
+	XML_CHILD, /**< Represent XML child role. */
+	XML_SIBLING /**< Represent XML sibling role. */
+} XML_RELATION;
 
 /**
  * @ingroup transapi
@@ -55,23 +26,10 @@ struct transapi {
  * @param[in] old_doc Content of configuration datastore before change.
  * @param[in] new_doc Content of configuration datastore after change.
  * @param[in] model Structure holding document semantics.
+ * @param[in] libxml2 Specify if the module uses libxml2 API
  *
  * @return EXIT_SUCESS or EXIT_FAILURE
  */
-int transapi_running_changed (struct transapi_data_callbacks * c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model);
-
-/**
- * @ingroup transapi
- * @brief Same functionality as transapi_running_changed(). Using libxml2 structures for callbacks parameters.
- *
- * @param[in] c Structure binding callbacks with paths in XML document. Callbacks uses libxml2 structures.
- * @param[in] ns_mapping Pairing prefixes with URIs.
- * @param[in] old_doc Content of configuration datastore before change.
- * @param[in] new_doc Content of configuration datastore after change.
- * @param[in] model Structure holding document semantics.
- *
- * @return EXIT_SUCESS or EXIT_FAILURE
- */
-int transapi_xml_running_changed (struct transapi_xml_data_callbacks * c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct model_tree * model);
+int transapi_running_changed(void* c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct data_model *model, NC_EDIT_ERROPT_TYPE erropt, int libxml2, struct nc_err **error);
 
 #endif /* TRANSAPI_INTERNAL_H_ */

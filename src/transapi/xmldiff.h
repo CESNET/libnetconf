@@ -1,29 +1,37 @@
 #ifndef _XMLDIFF_H
 #define _XMLDIFF_H
 
+#include <stdbool.h>
 #include <libxml/tree.h>
 #include "yinparser.h"
 #include "transapi.h"
 
 /**
  * @ingroup transapi
- * @brief structure for single diff entry
+ * @brief buffer for storing callback priorities
  */
-struct xmldiff_entry {
-	char * path;
-	xmlNodePtr node;
-	XMLDIFF_OP op;
+struct xmldiff_prio {
+	int* values;
+	size_t used;
+	size_t alloc;
 };
 
 /**
  * @ingroup transapi
- * @brief structure holding all differencies found in compared files
+ * @brief tree structure holding all differencies found in compared files
  */
-struct xmldiff {
-	struct xmldiff_entry * diff_list;
-	int diff_count;
-	int diff_alloc;
-	XMLDIFF_OP all_stat;
+struct xmldiff_tree {
+	char* path;
+	xmlNodePtr node;
+	XMLDIFF_OP op;
+
+	int priority;
+	bool callback;
+	bool applied;
+
+	struct xmldiff_tree* next;
+	struct xmldiff_tree* parent;
+	struct xmldiff_tree* children;
 };
 
 /**
@@ -32,7 +40,7 @@ struct xmldiff {
  *
  * @param diff	pointer to xmldiff structure
  */
-void xmldiff_free (struct xmldiff * diff);
+void xmldiff_free (struct xmldiff_tree* diff);
 
 /**
  * @ingroup transapi
@@ -45,6 +53,20 @@ void xmldiff_free (struct xmldiff * diff);
  *
  * @return xmldiff structure holding all differences between XML documents or NULL
  */
-struct xmldiff * xmldiff_diff (xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[]);
+XMLDIFF_OP xmldiff_diff (struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[]);
+
+/**
+ * @ingroup transapi
+ * @brief this function assigns the callback priority for every change in the tree.
+ *		If a change does not have callback, its priority becomes the lowest of
+ *		the children priorities.
+ * @param tree	difference tree
+ * @param callbacks	either transapi_data_callbacks or
+ *					transapi_xml_data_callbacks structure
+ *
+ * @return EXIT_SUCCES on success, EXIT_FAILURE if no callback can
+ *		be called for the configuration change
+ */
+int xmldiff_set_priorities(struct xmldiff_tree* tree, void* callbacks);
 
 #endif

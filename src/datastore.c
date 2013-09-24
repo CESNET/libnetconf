@@ -510,15 +510,15 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
-int ncds_device_init (ncds_id * id)
+int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 {
 	nc_rpc * rpc_msg = NULL;
 	nc_reply * reply_msg = NULL;
 	struct ncds_ds_list * ds_iter, *start = NULL;
 	struct ncds_ds * ds;
-	struct nc_cpblts * cpblts = NULL;
 	struct nc_session * dummy_session = NULL;
 	struct nc_err * err;
+	int nocpblts = 0;
 
 	if (id != NULL) { /* initialize given device */
 		if ((ds = datastores_get_ds(*id)) == NULL) {
@@ -527,10 +527,10 @@ int ncds_device_init (ncds_id * id)
 		}
 		start = calloc(1,sizeof(struct ncds_ds_list));
 		start->datastore = ds;
-	} else {
+	} else { /* OR if not specified initialize all transAPI capable modules */
 		start = ncds.datastores;
 	}
-	/* OR if not specified initialize all transAPI capable modules */
+
 	for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 		if (ds_iter->datastore->transapi.init) {
 			if (ds_iter->datastore->transapi.init()) {
@@ -540,36 +540,55 @@ int ncds_device_init (ncds_id * id)
 		}
 	}
 
-	if (first_after_close) {
-		/* Clean RUNNING datastore. This is important when tranAPI is deployed and does not harm when not. */
-		/* It is done by calling low level function to avoid invoking transapi now. */
-		for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
-			/* TRY to erase, when it fails the datastore is probably empty */
-			/* TODO: Is there better way? */
-			ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, "", &err);
+	if (first_after_close || force) { /* if this process is first after a nc_close(system=1) or reinitialization is forced */
+		/* Clean RUNNING datastore. This is important when transAPI is deployed and does not harm when not. */
+		if (cpblts == NULL) {
+			cpblts = nc_session_get_cpblts_default();
+			nocpblts = 1;
 		}
 
 		/* create dummy session for applying copy-config (startup->running) */
-		cpblts = nc_session_get_cpblts_default();
 		if ((dummy_session = nc_session_dummy("dummy-internal", "server", NULL, cpblts)) == NULL) {
+			ERROR("%s: Creating dummy-internal session failed.", __func__);
 			goto fail;
 		}
-		nc_cpblts_free(cpblts);
 
-		/* initial copy of startup to running will cause full (re)configuration of module */
-		/* Here is used high level function ncds_apply_rpc2all to apply startup configuration and use transapi */
-		rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
-		reply_msg = ncds_apply_rpc2all(dummy_session, rpc_msg, NULL);
-		if (reply_msg == NULL || nc_reply_get_type (reply_msg) != NC_REPLY_OK) {
-			ERROR ("Failed perform initial copy of startup to running.");
-			goto fail;
+		if (nocpblts) {
+			nc_cpblts_free(cpblts);
+			cpblts = NULL;
 		}
+
+		/*
+		 * If :startup is not supported, running stays persistent between
+		 * reboots
+		 */
+		if (!nc_cpblts_enabled(dummy_session, NC_CAP_STARTUP_ID)) {
+			nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+			nc_session_free(dummy_session);
+			goto success;
+		}
+
+		rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
+		/* It is done by calling low level function to avoid invoking transAPI now. */
+		for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
+			/* TRY to erase, when it fails the datastore is probably empty */
+			ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, "", &err);
+			/* initial copy of startup to running will cause full (re)configuration of module */
+			/* Here is used high level function ncds_apply_rpc to apply startup configuration and use transAPI */
+			reply_msg = ncds_apply_rpc(ds_iter->datastore->id, dummy_session, rpc_msg);
+			if (reply_msg == NULL || (reply_msg != NCDS_RPC_NOT_APPLICABLE && nc_reply_get_type (reply_msg) != NC_REPLY_OK)) {
+				ERROR ("Failed perform initial copy of startup to running.");
+				goto fail;
+			}
+			nc_reply_free(reply_msg);
+		}
+
 		nc_rpc_free(rpc_msg);
-		nc_reply_free(reply_msg);
 		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
 		nc_session_free(dummy_session);
 	}
 
+success:
 	if (id != NULL) {
 		free(start);
 	}
@@ -1244,7 +1263,8 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	int (*init_func)(void) = NULL;
 	union transapi_data_clbcks data_clbks = {NULL};
 	union transapi_rpc_clbcks rpc_clbks = {NULL};
-	int *libxml2, lxml2;
+	int *libxml2, lxml2, *ver, ver_default = 1;
+	int *modified;
 	char * ns_mapping = NULL;
 
 	if (callbacks_path == NULL) {
@@ -1255,6 +1275,23 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	/* load shared library */
 	if ((transapi_module = dlopen (callbacks_path, RTLD_NOW)) == NULL) {
 		ERROR("Unable to load shared library %s (%s).", callbacks_path, dlerror());
+		return (NULL);
+	}
+
+	/* check transAPI version used to built the module */
+	if ((ver = dlsym (transapi_module, "transapi_version")) == NULL) {
+		WARN("transAPI version in module %s not found. Probably version 1, update your module.", callbacks_path);
+		ver = &ver_default;
+	}
+	if (*ver != TRANSAPI_VERSION) {
+		ERROR("Wrong transAPI version of the module %s. Have %d, but %d is required.", callbacks_path, *ver, TRANSAPI_VERSION);
+		dlclose (transapi_module);
+		return (NULL);
+	}
+
+	if ((modified = dlsym(transapi_module, "config_modified")) == NULL) {
+		ERROR("Unable to get config_modified variable from shared library.");
+		dlclose (transapi_module);
 		return (NULL);
 	}
 
@@ -1311,12 +1348,12 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 		}
 	}
 
-	if ((init_func = dlsym (transapi_module, "init")) == NULL) {
-		WARN("%s: Unable to find \"init\" function.", __func__);
+	if ((init_func = dlsym (transapi_module, "transapi_init")) == NULL) {
+		WARN("%s: Unable to find \"transapi_init\" function.", __func__);
 	}
 
-	if ((close_func = dlsym (transapi_module, "close")) == NULL) {
-		WARN("%s: Unable to find \"close\" function.", __func__);
+	if ((close_func = dlsym (transapi_module, "transapi_close")) == NULL) {
+		WARN("%s: Unable to find \"transapi_close\" function.", __func__);
 	}
 
 	/* create basic ncds_ds structure */
@@ -1329,6 +1366,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	/* add pointers for transaction API */
 	ds->transapi.module = transapi_module;
 	ds->transapi.libxml2 = (*libxml2);
+	ds->transapi.config_modified = modified;
 	ds->transapi.ns_mapping = (const char**)ns_mapping;
 	ds->transapi.data_clbks = data_clbks;
 	ds->transapi.rpc_clbks = rpc_clbks;
@@ -3150,9 +3188,16 @@ void ncds_free(struct ncds_ds* datastore)
 
 	/* close and free the datastore itself */
 	if (ds != NULL) {
-		/* if using transapi and close function is defined */
-		if (ds->transapi.module != NULL && ds->transapi.close != NULL) {
-			ds->transapi.close();
+		/* if using transapi */
+		if (ds->transapi.module != NULL) {
+			/* and close function is defined */
+			if (ds->transapi.close != NULL) {
+				ds->transapi.close();
+			}
+			/* unloading transapi module failed */
+			if (dlclose(ds->transapi.module)) {
+				ERROR("%s: Unloading transAPI module failed: %s:", __func__, dlerror());
+			}
 		}
 
 #ifndef DISABLE_VALIDATION
@@ -3161,8 +3206,16 @@ void ncds_free(struct ncds_ds* datastore)
 		xmlRelaxNGFree(ds->validators.rng_schema);
 		xsltFreeStylesheet(ds->validators.schematron);
 #endif
-
+		/* free all implementation specific resources */
 		datastore->func.free(ds);
+
+		/* free models */
+		if (ds->data_model->xml != ds->ext_model) {
+			xmlFreeDoc(ds->ext_model);
+		}
+		ncds_ds_model_free(ds->data_model);
+
+		free (ds);
 	}
 }
 
@@ -3608,6 +3661,81 @@ int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
 	return 0;
 }
 
+/**
+ * \return NULL on success, error reply with error info else
+ */
+static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session* session, xmlDocPtr old, NC_EDIT_ERROPT_TYPE erropt, nc_reply *reply)
+{
+	char *new_data;
+	xmlDocPtr new;
+	xmlChar *config;
+	int ret;
+	struct nc_err *e = NULL, *e_new;
+	nc_reply *new_reply = NULL;
+
+	if (reply != NULL && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
+		/* use some reply to add new error messages */
+		new_reply = reply;
+	}
+
+	/* find differences and call functions */
+	new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
+	if (new_data == NULL || strcmp(new_data, "") == 0) {
+		new = xmlNewDoc(BAD_CAST "1.0");
+	} else {
+		new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN);
+	}
+	free(new_data);
+	if (new == NULL ) { /* cannot get or parse data */
+		e = nc_err_new(NC_ERR_OP_FAILED);
+		if (new_reply != NULL) {
+			/* second try, add the error info */
+			nc_err_set(e, NC_ERR_PARAM_MSG, "TransAPI: Failed to get data from RUNNING datastore. Configuration is probably inconsistent.");
+			nc_reply_error_add(new_reply, e);
+		} else {
+			nc_err_set(e, NC_ERR_PARAM_MSG, "TransAPI: Failed to get data from RUNNING datastore.");
+			new_reply = nc_reply_error(e);
+		}
+	} else {
+		ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, ds->transapi.libxml2, &e);
+		if (ret) {
+			e_new = nc_err_new(NC_ERR_OP_FAILED);
+			if (e != NULL) {
+				/* remember the error description from TransAPI */
+				e_new->next = e;
+				e = NULL;
+			}
+			if (new_reply != NULL ) {
+				/* second try, add the error info */
+				nc_err_set(e_new, NC_ERR_PARAM_MSG, "Failed to rollback configuration changes to device. Configuration is probably inconsistent.");
+				nc_reply_error_add(new_reply, e_new);
+			} else {
+				nc_err_set(e_new, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device.");
+				new_reply = nc_reply_error(e_new);
+
+				if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
+					/* do the rollback on datastore */
+					ds->func.rollback(ds);
+				}
+
+			}
+		} /* else success */
+
+		if (ret || ds->transapi.config_modified) {
+			ds->transapi.config_modified = 0;
+			DBG("Updating XML tree after TransAPI callbacks");
+			xmlDocDumpMemory(new, &config, NULL);
+			if (ds->func.copyconfig(ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, (char*)config, &e) == EXIT_FAILURE) {
+				ERROR("transAPI apply failed");
+			}
+			xmlFree(config);
+		}
+		xmlFreeDoc(new);
+	}
+
+	return (new_reply);
+}
+
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
@@ -3621,8 +3749,8 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlBufferPtr resultbuffer;
 	xmlNodePtr aux_node, node;
 	NC_OP op;
-	xmlDocPtr old = NULL, new = NULL;
-	char * old_data = NULL, * new_data;
+	xmlDocPtr old = NULL;
+	char * old_data = NULL;
 	NC_DATASTORE source_ds = 0, target_ds = 0;
 	struct nacm_rpc *nacm_aux;
 	nc_rpc *rpc_aux;
@@ -4050,6 +4178,21 @@ apply_editcopyconfig:
 					/* validate the result */
 					ret = apply_rpc_validate_(ds, session, target_ds, NULL, &e);
 
+					if (ret == EXIT_RPC_NOT_APPLICABLE) {
+						/*
+						 * we don't have enough information to do
+						 * validation (validators are missing), so
+						 * just say that it is ok and allow to
+						 * perform the required changes. In validate
+						 * operation we return RPC not applicable if
+						 * no datastore provides validation, but
+						 * in edit-config, we don't know if there
+						 * is any datastore with validation since
+						 * it doesn't need to affect all datastores.
+						 */
+						ret = EXIT_SUCCESS;
+					}
+
 					if (testopt == NC_EDIT_TESTOPT_TEST || ret == EXIT_FAILURE) {
 						/*
 						 * revert changes in the datastore:
@@ -4142,7 +4285,7 @@ apply_editcopyconfig:
 							/**
 							 * first we remove all entries from "remote" document which match enabled data models
 							 * this will prevent us from having multiple datastore configurations
-                             */
+							 */
 							// get data models
 							url_model_xpath = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":namespace", ds->data_model->ctxt);
 							url_model_namespace = xmlGetProp( url_model_xpath->nodesetval->nodeTab[0], (xmlChar*)"uri" );
@@ -4417,7 +4560,7 @@ apply_editcopyconfig:
 					}
 
 					/* call RPC callback function */
-					VERB("Calling RPC function\n");
+					VERB("Calling %s RPC function\n", rpc_name);
 					if (ds->transapi.libxml2) {
 						reply = ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].func(op_input_array);
 						/* clean array */
@@ -4438,10 +4581,11 @@ apply_editcopyconfig:
 				}
 			}
 		}
+
 		free(op_name);
 		break;
 	default:
-		ERROR("%s: unsupported basic NETCONF operation requested.", __func__);
+		ERROR("%s: unsupported NETCONF operation requested.", __func__);
 		return (nc_reply_error (nc_err_new (NC_ERR_OP_NOT_SUPPORTED)));
 		break;
 	}
@@ -4478,38 +4622,13 @@ apply_editcopyconfig:
 		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK)) {
 
-		/* find differences and call functions */
-		new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
-		if (new_data == NULL || strcmp(new_data, "") == 0) {
-			new = xmlNewDoc (BAD_CAST "1.0");
-		} else {
-			new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
-		}
-		free (new_data);
-		if (new == NULL) { /* cannot get or parse data */
-			if (e == NULL) {/* error not set */
-				e = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(e, NC_ERR_PARAM_MSG, "TransAPI: Failed to get data from RUNNING datastore.");
-			}
+		if ((new_reply = ncds_apply_transapi(ds, session, old, nc_rpc_get_erropt(rpc), NULL)) != NULL) {
 			nc_reply_free(reply);
-			reply = nc_reply_error(e);
-		} else {
-			if (ds->transapi.libxml2) {
-				ret = transapi_xml_running_changed(ds->transapi.data_clbks.data_clbks_xml, ds->transapi.ns_mapping, old, new, ds->data_model->model_tree); /* device does not accept changes */
-			} else {
-				ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model->model_tree); /* device does not accept changes */
-			}
-			if (ret) {
-				e = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(e, NC_ERR_PARAM_MSG, "Failed to apply configuration changes to device.");
-				nc_reply_free(reply);
-				reply = nc_reply_error(e);
-			}
+			reply = new_reply;
 		}
-
-		xmlFreeDoc (new);
 	}
 	xmlFreeDoc (old);
+	old = NULL;
 
 	if (id == NCDS_INTERNAL_ID) {
 		if (old_reply == NULL) {
@@ -4541,8 +4660,12 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 {
 	struct ncds_ds_list* ds, *ds_rollback;
 	nc_reply *old_reply = NULL, *new_reply = NULL, *reply = NULL;
-	int id_i = 0;
-	NC_EDIT_ERROPT_TYPE erropt = 0;
+	int id_i = 0, transapi = 0;
+	char *op_name, *op_namespace, *data;
+	xmlDocPtr old;
+	NC_OP op;
+	NC_DATASTORE target;
+	NC_EDIT_ERROPT_TYPE erropt = NC_EDIT_ERROPT_NOTSET;
 	NC_RPC_TYPE req_type;
 
 	if (rpc == NULL || session == NULL) {
@@ -4554,6 +4677,19 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 	if (nc_rpc_get_op(rpc) == NC_OP_EDITCONFIG) {
 		erropt = nc_rpc_get_erropt(rpc);
 	}
+
+	/* check that we have a valid definition of the requested RPC */
+	op_name = nc_rpc_get_op_name(rpc);
+	op_namespace = nc_rpc_get_op_namespace(rpc);
+	if (ncds_get_model_operation(op_name, op_namespace) == NULL) {
+		/* rpc operation is not defined in any known module */
+		ERROR("%s: unsupported NETCONF operation (%s) requested.", __func__, op_name);
+		free(op_name);
+		free(op_namespace);
+		return (nc_reply_error(nc_err_new (NC_ERR_OP_NOT_SUPPORTED)));
+	}
+	free(op_namespace);
+	free(op_name);
 
 	if (ids != NULL) {
 		*ids = ncds.datastores_ids;
@@ -4592,15 +4728,46 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 
 		if (reply != NCDS_RPC_NOT_APPLICABLE && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
 			if (req_type == NC_RPC_DATASTORE_WRITE) {
-				if (erropt == NC_EDIT_ERROPT_STOP) {
+				if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_STOP) {
 					return (reply);
-				} else if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_ROLLBACK) {
+				} else if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
 					/* rollback previously changed datastores */
+					/* do not skip internal datastores */
+					op = nc_rpc_get_op(rpc);
+					target = nc_rpc_get_target(rpc);
 					for (ds_rollback = ncds.datastores; ds_rollback != ds; ds_rollback = ds_rollback->next) {
+						if (ds_rollback->datastore->transapi.module != NULL
+								&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST)))
+								&& ( target == NC_DATASTORE_RUNNING)) {
+							transapi = 1;
+						} else {
+							transapi = 0;
+						}
+
+						if (transapi) {
+							/* remeber data for transAPI diff */
+							data = ds_rollback->datastore->func.getconfig(ds_rollback->datastore, session, NC_DATASTORE_RUNNING, NULL);
+							if (data == NULL || strcmp(data, "") == 0) {
+								old = xmlNewDoc(BAD_CAST "1.0");
+							} else {
+								old = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN);
+							}
+							free(data);
+						}
+
 						ds_rollback->datastore->func.rollback(ds_rollback->datastore);
+
+						/* transAPI rollback */
+						if (transapi) {
+							reply = ncds_apply_transapi(ds_rollback->datastore, session, old, erropt, reply);
+							xmlFreeDoc(old);
+						}
+
 					}
 					return (reply);
-				}
+				} /* else if (erropt == NC_EDIT_ERROPT_CONT)
+				   * just continue
+				   */
 			} else if (req_type == NC_RPC_DATASTORE_READ) {
 				return (reply);
 			}

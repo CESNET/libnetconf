@@ -772,8 +772,8 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
-	retval->mut_libssh2_channels = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
+	retval->mut_libssh2_channels = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
 	if ((r = pthread_mutex_init(retval->mut_libssh2_channels, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||

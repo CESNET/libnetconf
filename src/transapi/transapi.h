@@ -7,6 +7,9 @@
 extern "C" {
 #endif
 
+/* Current transAPI version */
+#define TRANSAPI_VERSION 2
+
 /* maximal number of input arguments every defined RPC can have */
 #ifndef MAX_RPC_INPUT_ARGS
 #define MAX_RPC_INPUT_ARGS 64
@@ -16,7 +19,17 @@ extern "C" {
  * @ingroup transapi
  * @brief Enum specifying states of node in document
  */
-typedef enum {XMLDIFF_ERR = -1, XMLDIFF_NONE = 0, XMLDIFF_ADD = 1, XMLDIFF_REM = 2, XMLDIFF_MOD = 4, XMLDIFF_CHAIN = 8} XMLDIFF_OP;
+typedef enum
+{
+	XMLDIFF_ERR = -1 /**< Error while creating XML difftree. */,
+	XMLDIFF_NONE = 0 /**< Last operation did not cause any change in configuration. */,
+	XMLDIFF_ADD = 1 /**< Element was added to configuration. */,
+	XMLDIFF_REM = 2 /**< Element was removed from configuration. */,
+	XMLDIFF_MOD = 4/**< Element was modified. */,
+	XMLDIFF_CHAIN = 8/**< Some of children of element was modified/added/removed. */,
+	XMLDIFF_SIBLING = 16 /**< Some sibling nodes were added/removed/changed position. Only for LEAF and LEAF-LIST. */,
+	XMLDIFF_REORDER = 32 /**< Some of the children nodes changed theirs position. None was added/removed. Only for LEAF and LEAF-LIST. */,
+} XMLDIFF_OP;
 
 /**
  * @ingroup transapi
@@ -27,7 +40,7 @@ struct transapi_data_callbacks {
 	void * data;
 	struct {
 		char * path;
-		int (*func)(XMLDIFF_OP, char *, void **);
+		int (*func)(void**, XMLDIFF_OP, char*, struct nc_err**);
 	} callbacks[];
 };
 
