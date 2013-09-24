@@ -1369,6 +1369,8 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 					free(s);
 					continue;
 				}
+				free(s);
+
 				/* we have the match */
 				break;
 			}
@@ -1397,6 +1399,7 @@ cleanup:
 	for (i = 0; keys[i] != NULL; i++) {
 		free(keys[i]->name);
 		free(keys[i]->prefix);
+		free(keys[i]->href);
 		free(keys[i]->value);
 		free(keys[i]);
 	}
