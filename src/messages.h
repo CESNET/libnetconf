@@ -323,7 +323,7 @@ void nc_reply_free(nc_reply *reply);
  * @brief Create \<ok\> rpc-reply response.
  * @return Created \<rpc-reply\> message.
  */
-nc_reply *nc_reply_ok();
+nc_reply *nc_reply_ok(void);
 
 /**
  * @ingroup reply

@@ -292,7 +292,7 @@ int nc_cpblts_count(const struct nc_cpblts *c);
  * @return NETCONF capabilities structure containing capabilities supported by
  * libnetconf.
  */
-struct nc_cpblts *nc_session_get_cpblts_default();
+struct nc_cpblts *nc_session_get_cpblts_default(void);
 
 /**
  * @ingroup rpc

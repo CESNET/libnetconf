@@ -1215,7 +1215,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 		if (error != NULL) {
 			*error = nc_err_new(NC_ERR_MISSING_ATTR);
 			nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
-			nc_err_set(*error, NC_ERR_PARAM_MSG, "Missing \"key\" attribute for insert leaf-list");
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Missing \"key\" attribute to insert list item");
 		}
 		return (NULL);
 	}
@@ -1228,7 +1228,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 		if (error != NULL) {
 			*error = nc_err_new(NC_ERR_BAD_ATTR);
 			nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
-			nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid value of the \"key\" attribute for insert leaf-list");
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid value of the \"key\" attribute to insert list item");
 		}
 		return (NULL);
 	}
@@ -1256,7 +1256,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 			if (error != NULL) {
 				*error = nc_err_new(NC_ERR_BAD_ATTR);
 				nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
-				nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid value of the \"key\" attribute for insert leaf-list");
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid value of the \"key\" attribute to insert list item");
 			}
 			keys[j+1] = NULL;
 			retval = NULL;
@@ -1300,7 +1300,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 			if (error != NULL) {
 				*error = nc_err_new(NC_ERR_BAD_ATTR);
 				nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
-				nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid namespace prefix in value of the \"key\" attribute for insert leaf-list");
+				nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid namespace prefix in value of the \"key\" attribute to insert list item");
 			}
 			keys[j+1] = NULL;
 			retval = NULL;
@@ -1342,7 +1342,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 				if (error != NULL) {
 					*error = nc_err_new(NC_ERR_BAD_ATTR);
 					nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "key");
-					nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid mixing of the \"key\" attribute for insert leaf-list content");
+					nc_err_set(*error, NC_ERR_PARAM_MSG, "Invalid mixing of the \"key\" attribute content to insert list item");
 				}
 				retval = NULL;
 				goto cleanup;
@@ -1384,7 +1384,7 @@ static xmlNodePtr get_ref_list(xmlNodePtr parent, xmlNodePtr edit_node, struct n
 				if (error != NULL) {
 					*error = nc_err_new(NC_ERR_OP_FAILED);
 					nc_err_set(*error, NC_ERR_PARAM_APPTAG, "data-not-unique");
-					nc_err_set(*error, NC_ERR_PARAM_MSG, "Specified value of the \"key\" attribute for insert leaf-list refers multiple data.");
+					nc_err_set(*error, NC_ERR_PARAM_MSG, "Specified value of the \"key\" attribute to insert list item refers multiple data.");
 				}
 				retval = NULL;
 				goto cleanup;
@@ -1416,11 +1416,12 @@ static xmlNodePtr get_ref_leaflist(xmlNodePtr parent, xmlNodePtr edit_node, stru
 		if (error != NULL) {
 			*error = nc_err_new(NC_ERR_MISSING_ATTR);
 			nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, "value");
-			nc_err_set(*error, NC_ERR_PARAM_MSG, "Missing \"value\" attribute for insert leaf-list");
+			nc_err_set(*error, NC_ERR_PARAM_MSG, "Missing \"value\" attribute to insert leaf-list");
 		}
 		return (NULL);
 	}
 	xmlRemoveProp(xmlHasNsProp(edit_node, BAD_CAST "value", BAD_CAST NC_NS_YANG));
+	VERB("Reference value for leaf-list is \"%s\" (%s:%d)", ref, __FILE__, __LINE__);
 
 	/* search for the referenced node */
 	for (retval = parent->children; retval != NULL; retval = retval->next) {
@@ -1905,6 +1906,7 @@ static int edit_merge_lists(xmlNodePtr merged_node, xmlNodePtr edit_node, xmlDoc
 		if ((insert = (char*)xmlGetNsProp(edit_node, BAD_CAST "insert", BAD_CAST NC_NS_YANG)) != NULL) {
 			xmlRemoveProp(xmlHasNsProp(merged_node, BAD_CAST "insert", BAD_CAST NC_NS_YANG));
 
+			VERB("Merging list with insert value \"%s\" (%s:%d)", insert, __FILE__, __LINE__);
 			parent = merged_node->parent;
 
 			/* switch according to the insert value */
@@ -1972,8 +1974,9 @@ static int edit_merge_lists(xmlNodePtr merged_node, xmlNodePtr edit_node, xmlDoc
 
 static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
-	xmlNodePtr children, aux, next, nextchild, parent;
+	xmlNodePtr children, aux, next, nextchild, parent, model_node;
 	int r, access, duplicates;
+	int leaf_list;
 	char *msg = NULL;
 
 	/* process leaf text nodes - even if we are merging, leaf text nodes are
@@ -1981,6 +1984,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 	 */
 	if (edit_node->type == XML_TEXT_NODE) {
 		if (orig_node->type == XML_TEXT_NODE) {
+			VERB("Merging the node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
 
 			/*
 			 * check if this is defined as leaf or leaf-list. In case of leaf,
@@ -2039,6 +2043,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 						/* we don't need keys since this is a leaf-list */
 						if (matching_elements(aux, edit_node->parent, NULL, 1) == 1) { /* checks text content */
 							duplicates = 1;
+							break;
 						}
 					}
 				}
@@ -2094,7 +2099,6 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 				return EXIT_FAILURE;
 			}
 		} else {
-			VERB("Merging the node %s (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 			/* go recursive through all matching elements */
 			if (children->type == XML_TEXT_NODE) {
 				while (aux != NULL) {
@@ -2107,10 +2111,32 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 					aux = next;
 				}
 			} else {
+				VERB("Merging the node %s (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 				parent = aux->parent;
+
+				/*
+				 * if the node is leaf-list, we have to reflect it when
+				 * searching for matching elements - in such a case we
+				 * need exactly the same (with the same value) node for
+				 * YANG's  ordered-by user feature, because we are going
+				 * to move the node. In other cases (mainly leafs) we
+				 * don't care the content, because we want to change it.
+				 */
+				model_node = find_element_model(children, model);
+				if (model_node == NULL) {
+					ERROR("unknown element %s!", (char*)(children->name));
+					*error = nc_err_new(NC_ERR_UNKNOWN_ELEM);
+					nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, (char*)(children->name));
+					return (EXIT_FAILURE);
+				} else if (xmlStrcmp(model_node->name, BAD_CAST "leaf-list") == 0) {
+					leaf_list = 1;
+				} else {
+					leaf_list = 0;
+				}
+
 				while (aux != NULL) {
 					next = aux->next;
-					if (matching_elements(children, aux, keys, 0) != 0) {
+					if (matching_elements(children, aux, keys, leaf_list) != 0) {
 						if (edit_merge_recursively(aux, children, model, keys, nacm, error) != EXIT_SUCCESS) {
 							return EXIT_FAILURE;
 						}
@@ -2127,6 +2153,11 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 						}
 						if (edit_choice_clean(parent, children, model, nacm, error) == EXIT_FAILURE) {
 							return (EXIT_FAILURE);
+						}
+
+						if (leaf_list) {
+							/* we are done */
+							break;
 						}
 					}
 					aux = next;
@@ -2202,6 +2233,7 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyLis
 			}
 		} else {
 			/* go recursive */
+			VERB("Merging the node %s (%s:%d)", (char*)children->name, __FILE__, __LINE__);
 			if (edit_merge_recursively(aux, children, model, keys, nacm, error) != EXIT_SUCCESS) {
 				return EXIT_FAILURE;
 			}
