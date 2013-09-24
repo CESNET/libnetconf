@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -70,7 +70,7 @@ NETCONF datastore handling function prototypes and structures\&.
 .br
 .RI "\fIActivate datastore structure for use\&. \fP"
 .ti -1c
-.RI "int \fBncds_device_init\fP (\fBncds_id\fP *id)"
+.RI "int \fBncds_device_init\fP (\fBncds_id\fP *id, struct nc_cpblts *cpblts, int force)"
 .br
 .RI "\fIInitialize transAPI module(s) (if present) and copy startup configuration to running\&. \fP"
 .ti -1c
@@ -168,12 +168,16 @@ ALTERNATIVELY, provided that this notice is retained in full, this product may b
 This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
 .SH "Function Documentation"
 .PP 
-.SS "int ncds_device_init (\fBncds_id\fP *id)"
+.SS "int ncds_device_init (\fBncds_id\fP *id, struct nc_cpblts *cpblts, intforce)"
 
 .PP
 Initialize transAPI module(s) (if present) and copy startup configuration to running\&. \fBParameters:\fP
 .RS 4
-\fIid\fP Pointer to ncds_id of device to initialize, if NULL all found transapi-capable devices will be initialized
+\fIid\fP Pointer to ncds_id of device to initialize, if NULL all found transapi-capable devices will be initialized 
+.br
+\fIcpblts\fP Server's NETCONF capabilities\&. If NULL, default capabilities from libnetconf are used\&. 
+.br
+\fIforce\fP Force fresh configuration of device from STARTUP datastore\&.
 .RE
 .PP
 \fBReturns:\fP

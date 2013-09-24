@@ -1,4 +1,4 @@
-.TH "src/with_defaults.h" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "src/with_defaults.h" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -30,7 +30,7 @@ Implementation of NETCONF's with-defaults capability defined in RFC 6243\&.
 .br
 .RI "\fISet the basic mode of the with-defaults capability for a NETCONF server\&. \fP"
 .ti -1c
-.RI "\fBNCWD_MODE\fP \fBncdflt_get_basic_mode\fP ()"
+.RI "\fBNCWD_MODE\fP \fBncdflt_get_basic_mode\fP (void)"
 .br
 .RI "\fIGet the current set basic mode of the with-defaults capability\&. \fP"
 .ti -1c
@@ -38,7 +38,7 @@ Implementation of NETCONF's with-defaults capability defined in RFC 6243\&.
 .br
 .RI "\fISet with-defaults modes that are supported\&. \fP"
 .ti -1c
-.RI "\fBNCWD_MODE\fP \fBncdflt_get_supported\fP ()"
+.RI "\fBNCWD_MODE\fP \fBncdflt_get_supported\fP (void)"
 .br
 .RI "\fIGet ORed value containing the currently supported with-defaults modes\&. \fP"
 .ti -1c

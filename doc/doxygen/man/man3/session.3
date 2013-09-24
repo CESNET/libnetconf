@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -24,7 +24,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .ti -1c
 .RI "enum \fBNC_SESSION_TERM_REASON\fP { \fBNC_SESSION_TERM_CLOSED\fP, \fBNC_SESSION_TERM_KILLED\fP, \fBNC_SESSION_TERM_DROPPED\fP, \fBNC_SESSION_TERM_TIMEOUT\fP, \fBNC_SESSION_TERM_BADHELLO\fP, \fBNC_SESSION_TERM_OTHER\fP }"
 .br
-.RI "\fIEnumeration of reasonf of the NETCONF session termination as defined in RFC 6470\&. \fP"
+.RI "\fIEnumeration of reasons of the NETCONF session termination as defined in RFC 6470\&. \fP"
 .ti -1c
 .RI "enum \fBNC_SSH_AUTH_TYPE\fP { \fBNC_SSH_AUTH_PUBLIC_KEYS\fP = 1, \fBNC_SSH_AUTH_PASSWORD\fP = 2, \fBNC_SSH_AUTH_INTERACTIVE\fP = 4 }"
 .br
@@ -41,10 +41,6 @@ libnetconf's functions for handling NETCONF sessions\&.
 .RI "int \fBnc_session_monitor\fP (struct nc_session *session)"
 .br
 .RI "\fIAdd the session into the internal list of monitored sessions that are returned as part of netconf-state information defined in RFC 6022\&. \fP"
-.ti -1c
-.RI "void \fBnc_session_close\fP (struct nc_session *session, \fBNC_SESSION_TERM_REASON\fP reason)"
-.br
-.RI "\fIClose NETCONF connection with the server\&. \fP"
 .ti -1c
 .RI "void \fBnc_session_free\fP (struct nc_session *session)"
 .br
@@ -122,7 +118,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .br
 .RI "\fIGet the number of capabilities in the structure\&. \fP"
 .ti -1c
-.RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP ()"
+.RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP (void)"
 .br
 .RI "\fIGet NULL terminated list of the default capabilities supported by libnetconf including the list of namespaces provided by the datastores created with \fBncds_new()\fP and initialized by \fBncds_init()\fP\&. \fP"
 .ti -1c
@@ -188,7 +184,7 @@ session is DUMMY, only holds information, does not provide connection
 .SS "enum \fBNC_SESSION_TERM_REASON\fP"
 
 .PP
-Enumeration of reasonf of the NETCONF session termination as defined in RFC 6470\&. 
+Enumeration of reasons of the NETCONF session termination as defined in RFC 6470\&. 
 .PP
 \fBEnumerator\fP
 .in +1c
@@ -263,19 +259,6 @@ Add the session into the internal list of monitored sessions that are returned a
 \fBReturns:\fP
 .RS 4
 0 on success, non-zero on error\&. 
-.RE
-.PP
-
-.SS "void nc_session_close (struct nc_session *session, \fBNC_SESSION_TERM_REASON\fPreason)"
-
-.PP
-Close NETCONF connection with the server\&. Only \fBnc_session_free()\fP and \fBnc_session_get_status()\fP functions are allowed after this call\&.
-.PP
-\fBParameters:\fP
-.RS 4
-\fIsession\fP Session to close\&. 
-.br
-\fIreason\fP Type of the session termination reason\&. 
 .RE
 .PP
 
@@ -562,7 +545,7 @@ Number of capabilities held by structure c\&.
 .RE
 .PP
 
-.SS "struct nc_cpblts* nc_session_get_cpblts_default ()\fC [read]\fP"
+.SS "struct nc_cpblts* nc_session_get_cpblts_default (void)\fC [read]\fP"
 
 .PP
 Get NULL terminated list of the default capabilities supported by libnetconf including the list of namespaces provided by the datastores created with \fBncds_new()\fP and initialized by \fBncds_init()\fP\&. The caller is supposed to free the returned structure with \fBnc_cpblts_free()\fP\&.

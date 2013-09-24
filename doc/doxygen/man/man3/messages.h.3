@@ -1,4 +1,4 @@
-.TH "src/messages.h" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "src/messages.h" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -72,6 +72,10 @@ Functions to create NETCONF messages\&.
 .br
 .RI "\fIGet operation name of the given rpc\&. \fP"
 .ti -1c
+.RI "char * \fBnc_rpc_get_op_namespace\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet operation namespace of the given rpc\&. \fP"
+.ti -1c
 .RI "char * \fBnc_rpc_get_op_content\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet content of the operation specification from the given rpc\&. \fP"
@@ -128,7 +132,7 @@ Functions to create NETCONF messages\&.
 .br
 .RI "\fIFree reply message\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBnc_reply_ok\fP ()"
+.RI "\fBnc_reply\fP * \fBnc_reply_ok\fP (void)"
 .br
 .RI "\fICreate <ok> rpc-reply response\&. \fP"
 .ti -1c

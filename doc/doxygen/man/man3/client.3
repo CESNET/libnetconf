@@ -1,4 +1,4 @@
-.TH "client" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "client" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -55,7 +55,7 @@ Here is a description of using libnetconf functions in a NETCONF client:
 .IP "8." 4
 \fBClose the NETCONF session\fP\&.
 .br
- When the communication is finished, the NETCONF session is closed by \fBnc_session_close()\fP and all the used structures are freed by \fBnc_session_free()\fP\&.
+ When the communication is done, the NETCONF session should be freed (session is also properly closed) via \fBnc_session_free()\fP function\&.
 .IP "9." 4
 \fBFree all created objects\fP\&.
 .br

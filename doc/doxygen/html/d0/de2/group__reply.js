@@ -19,7 +19,7 @@ var group__reply =
     [ "nc_reply_get_data", "d0/de2/group__reply.html#gaac62fb3d427985311cf71a2c3ab8d424", null ],
     [ "nc_reply_get_errormsg", "d0/de2/group__reply.html#ga121d66d8f7437d87a995b82187e7e7ff", null ],
     [ "nc_reply_free", "d0/de2/group__reply.html#ga17aa9f38d7b75dec1a57b478b0b39710", null ],
-    [ "nc_reply_ok", "d0/de2/group__reply.html#ga4789f8372e5f2676236ddb0e6eeb8bb4", null ],
+    [ "nc_reply_ok", "d0/de2/group__reply.html#ga047f565bb3671ec4016fef5461e8f67e", null ],
     [ "nc_reply_data", "d0/de2/group__reply.html#ga4543351c89208bb06fa895be334d59ad", null ],
     [ "nc_reply_error", "d0/de2/group__reply.html#ga12fd89263289491b84398279e0e449fd", null ],
     [ "nc_reply_error_add", "d0/de2/group__reply.html#gafb04a6695650d05a07b571ac1410a681", null ],

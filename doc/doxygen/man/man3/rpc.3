@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -101,6 +101,10 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .RI "char * \fBnc_rpc_get_op_name\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet operation name of the given rpc\&. \fP"
+.ti -1c
+.RI "char * \fBnc_rpc_get_op_namespace\fP (const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIGet operation namespace of the given rpc\&. \fP"
 .ti -1c
 .RI "char * \fBnc_rpc_get_op_content\fP (const \fBnc_rpc\fP *rpc)"
 .br
@@ -582,6 +586,20 @@ Get operation name of the given rpc\&. \fBParameters:\fP
 \fBReturns:\fP
 .RS 4
 Name of operation in the given rpc message\&. Caller is responsible for freeing the returned string with free()\&. 
+.RE
+.PP
+
+.SS "char* nc_rpc_get_op_namespace (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Get operation namespace of the given rpc\&. \fBParameters:\fP
+.RS 4
+\fIrpc\fP rpc message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Namespace of operation in the given rpc message\&. Caller is responsible for freeing the returned string with free()\&. 
 .RE
 .PP
 

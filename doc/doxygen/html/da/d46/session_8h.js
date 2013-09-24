@@ -2,7 +2,6 @@ var session_8h =
 [
     [ "nc_session_dummy", "da/d46/session_8h.html#ga3868d5331db61a5d3a4df3ff5fa33851", null ],
     [ "nc_session_monitor", "da/d46/session_8h.html#ga023c9c813c59588ab938108f3f063d41", null ],
-    [ "nc_session_close", "da/d46/session_8h.html#gab55a757ce7a1abc69a9866c96b125abc", null ],
     [ "nc_session_free", "da/d46/session_8h.html#gaa5994f45a7031dc931bdf4a3acebedee", null ],
     [ "nc_session_get_status", "da/d46/session_8h.html#gacebd018e30c3eeb0638bbb428a1741b4", null ],
     [ "nc_session_get_version", "da/d46/session_8h.html#gac8ea61702127df024c037869feb72d97", null ],
@@ -22,7 +21,7 @@ var session_8h =
     [ "nc_cpblts_iter_start", "da/d46/session_8h.html#gae92c774e940114b4733f85e186d84620", null ],
     [ "nc_cpblts_iter_next", "da/d46/session_8h.html#gaea2ced8d4e5f2cc9971680e49f876c58", null ],
     [ "nc_cpblts_count", "da/d46/session_8h.html#ga79a7aea77cbfe29535eb83a6e5c60419", null ],
-    [ "nc_session_get_cpblts_default", "da/d46/session_8h.html#ga6f39a278e3d907a0b26878df332ebc71", null ],
+    [ "nc_session_get_cpblts_default", "da/d46/session_8h.html#ga8283673aa18f079a89a437efb436a55a", null ],
     [ "nc_session_send_rpc", "da/d46/session_8h.html#gaeb0d93ea1b5ef0c22c9e5372425fb5c3", null ],
     [ "nc_session_send_reply", "da/d46/session_8h.html#ga0b344811af933d80615f0874650938cc", null ],
     [ "nc_session_send_notif", "da/d46/session_8h.html#ga2a6cd8e0aaaaf4e1b84d3a498a2a710c", null ],
@@ -30,6 +29,5 @@ var session_8h =
     [ "nc_session_recv_reply", "da/d46/session_8h.html#ga1b8c8ca9516003938e8f647bd870beaa", null ],
     [ "nc_session_recv_notif", "da/d46/session_8h.html#gad7ffa424401e8004fb24f9f77f0bb5be", null ],
     [ "nc_msgid_compare", "da/d46/session_8h.html#gae160a70158f957344eb3204987329632", null ],
-    [ "nc_session_send_recv", "da/d46/session_8h.html#ga27d3fe78769630932a18c726df4fe6e6", null ],
-    [ "nc_session_term_string", "da/d46/session_8h.html#aa7a7d734813481b2b50443b558fedf4f", null ]
+    [ "nc_session_send_recv", "da/d46/session_8h.html#ga27d3fe78769630932a18c726df4fe6e6", null ]
 ];

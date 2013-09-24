@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.5.99</span>
+   &#160;<span id="projectnumber">0.6.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -127,8 +127,9 @@ Data Fields</h2></td></tr>
 <tr class="memitem:a73c5d3c3573277311516698443f0744e"><td class="memItemLeft" >struct {</td></tr>
 <tr class="memitem:a44196e6a5696d10442c29e639437196e"><td class="memItemLeft" >&#160;&#160;&#160;char *&#160;&#160;&#160;<a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html#a44196e6a5696d10442c29e639437196e">path</a></td></tr>
 <tr class="separator:a44196e6a5696d10442c29e639437196e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af6f80b46157a254f0f5ad9bd0bab567f"><td class="memItemLeft" >&#160;&#160;&#160;int(*&#160;&#160;&#160;<a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html#af6f80b46157a254f0f5ad9bd0bab567f">func</a> )(<a class="el" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a>, char *, void **)</td></tr>
-<tr class="separator:af6f80b46157a254f0f5ad9bd0bab567f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ba3ca1fa2368451c47067be3c575927"><td class="memItemLeft" >&#160;&#160;&#160;int(*&#160;&#160;&#160;<a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html#a9ba3ca1fa2368451c47067be3c575927">func</a> )(void **, <a class="el" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a>, char <br class="typebreak"/>
+&#160;&#160;&#160;&#160;&#160;&#160;*, struct nc_err **)</td></tr>
+<tr class="separator:a9ba3ca1fa2368451c47067be3c575927"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a73c5d3c3573277311516698443f0744e"><td class="memItemLeft" valign="top">}&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html#a73c5d3c3573277311516698443f0744e">callbacks</a> []</td></tr>
 <tr class="separator:a73c5d3c3573277311516698443f0744e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -171,12 +172,12 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="af6f80b46157a254f0f5ad9bd0bab567f"></a>
+<a class="anchor" id="a9ba3ca1fa2368451c47067be3c575927"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int(* func)(<a class="el" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a>, char *, void **)</td>
+          <td class="memname">int(* func)(void **, <a class="el" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a>, char *, struct nc_err **)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -204,7 +205,7 @@ Data Fields</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html">transapi_data_callbacks</a></li>
-    <li class="footer">Generated on Thu Sep 5 2013 09:25:55 for libnetconf by
+    <li class="footer">Generated on Tue Sep 24 2013 16:01:43 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

@@ -73,6 +73,7 @@ var group__rpc =
     [ "nc_rpc_get_ns", "db/de9/group__rpc.html#ga21ae2135af2588162112c13fb4095652", null ],
     [ "nc_rpc_get_op", "db/de9/group__rpc.html#gabf639574395456fb6f4bade36fb4babd", null ],
     [ "nc_rpc_get_op_name", "db/de9/group__rpc.html#ga9796f2bc7841265d478891974eb610c6", null ],
+    [ "nc_rpc_get_op_namespace", "db/de9/group__rpc.html#ga0b5d7acbcc0429fac6d5e3b509609bd8", null ],
     [ "nc_rpc_get_op_content", "db/de9/group__rpc.html#gade3f111e7c7727d512313b4875fd8f50", null ],
     [ "nc_rpc_get_type", "db/de9/group__rpc.html#gaa502fb30575000775b29a764101c1bef", null ],
     [ "nc_rpc_get_target", "db/de9/group__rpc.html#gab240067d45d58c945cdfd61948751379", null ],

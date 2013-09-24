@@ -1,4 +1,4 @@
-.TH "With-defaults capability" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "With-defaults capability" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -30,7 +30,7 @@ libnetconf's settings for NETCONF :with-defaults capability as defined in RFC 62
 .br
 .RI "\fISet the basic mode of the with-defaults capability for a NETCONF server\&. \fP"
 .ti -1c
-.RI "\fBNCWD_MODE\fP \fBncdflt_get_basic_mode\fP ()"
+.RI "\fBNCWD_MODE\fP \fBncdflt_get_basic_mode\fP (void)"
 .br
 .RI "\fIGet the current set basic mode of the with-defaults capability\&. \fP"
 .ti -1c
@@ -38,7 +38,7 @@ libnetconf's settings for NETCONF :with-defaults capability as defined in RFC 62
 .br
 .RI "\fISet with-defaults modes that are supported\&. \fP"
 .ti -1c
-.RI "\fBNCWD_MODE\fP \fBncdflt_get_supported\fP ()"
+.RI "\fBNCWD_MODE\fP \fBncdflt_get_supported\fP (void)"
 .br
 .RI "\fIGet ORed value containing the currently supported with-defaults modes\&. \fP"
 .ti -1c
@@ -96,7 +96,7 @@ On the client side, this function does not have any effect of setting up a speci
 .RE
 .PP
 
-.SS "\fBNCWD_MODE\fP ncdflt_get_basic_mode ()"
+.SS "\fBNCWD_MODE\fP ncdflt_get_basic_mode (void)"
 
 .PP
 Get the current set basic mode of the with-defaults capability\&. \fBReturns:\fP
@@ -116,7 +116,7 @@ Set with-defaults modes that are supported\&. This function should be used befor
 .RE
 .PP
 
-.SS "\fBNCWD_MODE\fP ncdflt_get_supported ()"
+.SS "\fBNCWD_MODE\fP ncdflt_get_supported (void)"
 
 .PP
 Get ORed value containing the currently supported with-defaults modes\&. \fBReturns:\fP

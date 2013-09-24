@@ -1,4 +1,4 @@
-.TH "src/transapi/transapi.h" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "src/transapi/transapi.h" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -21,14 +21,25 @@ src/transapi/transapi.h \-
 .br
 .RI "\fIStructure binding location in configuration XML data and function callback processing RPC message\&. \fP"
 .in -1c
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBTRANSAPI_VERSION\fP   2"
+.br
+.in -1c
 .SS "Enumerations"
 
 .in +1c
 .ti -1c
-.RI "enum \fBXMLDIFF_OP\fP { \fBXMLDIFF_ERR\fP = -1, \fBXMLDIFF_NONE\fP = 0, \fBXMLDIFF_ADD\fP = 1, \fBXMLDIFF_REM\fP = 2, \fBXMLDIFF_MOD\fP = 4, \fBXMLDIFF_CHAIN\fP = 8 }"
+.RI "enum \fBXMLDIFF_OP\fP { \fBXMLDIFF_ERR\fP = -1, \fBXMLDIFF_NONE\fP = 0, \fBXMLDIFF_ADD\fP = 1, \fBXMLDIFF_REM\fP = 2, \fBXMLDIFF_MOD\fP = 4, \fBXMLDIFF_CHAIN\fP = 8, \fBXMLDIFF_SIBLING\fP = 16, \fBXMLDIFF_REORDER\fP = 32 }"
 .br
 .RI "\fIEnum specifying states of node in document\&. \fP"
 .in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define TRANSAPI_VERSION   2"
+
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

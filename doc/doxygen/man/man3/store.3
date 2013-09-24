@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -472,7 +472,7 @@ Disable usage of the specified feature defined in the specified module By defaul
 .PP
 Enable usage of all features defined in the specified module\&. By default, all features are disabled\&. To enable only the specific feature(s), use \fBncds_feature_enable()\fP\&. \fBParameters:\fP
 .RS 4
-\fImodule\fP Name of the module where the feature is defined\&. Module must be accessible - added via \fBncds_add_model()\fP or present in a directory specified via \fBncds_add_models_path()\fP function\&. 
+\fImodule\fP Name of the module where the features are defined\&. Module must be accessible - added via \fBncds_add_model()\fP or present in a directory specified via \fBncds_add_models_path()\fP function\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -486,7 +486,7 @@ Enable usage of all features defined in the specified module\&. By default, all 
 .PP
 Disable usage of all features defined in the specified module\&. By default, all features are disabled\&. To disable only the specific feature(s), use \fBncds_feature_disable()\fP\&. \fBParameters:\fP
 .RS 4
-\fImodule\fP Name of the module where the feature is defined\&. Module must be accessible - added via \fBncds_add_model()\fP or present in a directory specified via \fBncds_add_models_path()\fP function\&. 
+\fImodule\fP Name of the module where the features are defined\&. Module must be accessible - added via \fBncds_add_model()\fP or present in a directory specified via \fBncds_add_models_path()\fP function\&. 
 .RE
 .PP
 \fBReturns:\fP

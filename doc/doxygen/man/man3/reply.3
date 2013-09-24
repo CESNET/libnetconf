@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -70,7 +70,7 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .br
 .RI "\fIFree reply message\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBnc_reply_ok\fP ()"
+.RI "\fBnc_reply\fP * \fBnc_reply_ok\fP (void)"
 .br
 .RI "\fICreate <ok> rpc-reply response\&. \fP"
 .ti -1c
@@ -306,7 +306,7 @@ Free reply message\&. \fBParameters:\fP
 .RE
 .PP
 
-.SS "\fBnc_reply\fP* nc_reply_ok ()"
+.SS "\fBnc_reply\fP* nc_reply_ok (void)"
 
 .PP
 Create <ok> rpc-reply response\&. \fBReturns:\fP

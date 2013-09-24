@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.5.99</span>
+   &#160;<span id="projectnumber">0.6.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -167,9 +167,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">ncds_init</a> (struct ncds_ds *datastore)</td></tr>
 <tr class="memdesc:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate datastore structure for use.  <a href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">More...</a><br/></td></tr>
 <tr class="separator:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a18f65083d2321a896be80d686b632b9a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db6/datastore_8h.html#a18f65083d2321a896be80d686b632b9a">ncds_device_init</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *id)</td></tr>
-<tr class="memdesc:a18f65083d2321a896be80d686b632b9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize transAPI module(s) (if present) and copy startup configuration to running.  <a href="#a18f65083d2321a896be80d686b632b9a">More...</a><br/></td></tr>
-<tr class="separator:a18f65083d2321a896be80d686b632b9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a838c60661fb05e3a0fbe5aef5c64ff87"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db6/datastore_8h.html#a838c60661fb05e3a0fbe5aef5c64ff87">ncds_device_init</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *id, struct nc_cpblts *cpblts, int force)</td></tr>
+<tr class="memdesc:a838c60661fb05e3a0fbe5aef5c64ff87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize transAPI module(s) (if present) and copy startup configuration to running.  <a href="#a838c60661fb05e3a0fbe5aef5c64ff87">More...</a><br/></td></tr>
+<tr class="separator:a838c60661fb05e3a0fbe5aef5c64ff87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">ncds_free</a> (struct ncds_ds *datastore)</td></tr>
 <tr class="memdesc:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close the specified datastore and free all the resources.  <a href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">More...</a><br/></td></tr>
 <tr class="separator:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -236,7 +236,7 @@ Variables</h2></td></tr>
 <p>ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above.</p>
 <p>This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="a18f65083d2321a896be80d686b632b9a"></a>
+<a class="anchor" id="a838c60661fb05e3a0fbe5aef5c64ff87"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -244,8 +244,24 @@ Variables</h2></td></tr>
           <td class="memname">int ncds_device_init </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *&#160;</td>
-          <td class="paramname"><em>id</em></td><td>)</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">struct nc_cpblts *&#160;</td>
+          <td class="paramname"><em>cpblts</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>force</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -253,7 +269,9 @@ Variables</h2></td></tr>
 <p>Initialize transAPI module(s) (if present) and copy startup configuration to running. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">id</td><td>Pointer to ncds_id of device to initialize, if NULL all found transapi-capable devices will be initialized</td></tr>
+    <tr><td class="paramname">id</td><td>Pointer to ncds_id of device to initialize, if NULL all found transapi-capable devices will be initialized </td></tr>
+    <tr><td class="paramname">cpblts</td><td>Server's NETCONF capabilities. If NULL, default capabilities from libnetconf are used. </td></tr>
+    <tr><td class="paramname">force</td><td>Force fresh configuration of device from STARTUP datastore.</td></tr>
   </table>
   </dd>
 </dl>
@@ -280,7 +298,7 @@ Variables</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d9/db6/datastore_8h.html">datastore.h</a></li>
-    <li class="footer">Generated on Thu Sep 5 2013 09:25:54 for libnetconf by
+    <li class="footer">Generated on Tue Sep 24 2013 16:01:43 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

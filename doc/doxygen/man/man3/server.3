@@ -1,4 +1,4 @@
-.TH "server" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "server" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -82,7 +82,7 @@ Here is a description of using libnetconf functions in a NETCONF server\&. Accor
 .IP "11." 4
 \fBClose the NETCONF session\fP\&.
 .br
- Use functions \fBnc_session_close()\fP and \fBnc_session_free()\fP (in this order) to close and free all the used sources and structures connected with the session\&. Session can be closed by the server based on its internal reasons or by the libnetconf due to some error\&. In the second case, libnetconf marks the status of the session as non-working (nc_session_get_status != NC_SESSION_STATUS_WORKING)\&.
+ Use functions \fBnc_session_free()\fP to close and free all the used sources and structures connected with the session\&. Server should close the session when a nc_session_* function fails and libnetconf set the status of the session as non-working (nc_session_get_status != NC_SESSION_STATUS_WORKING)\&.
 .IP "12." 4
 \fBClose the libnetconf instance\fP
 .br

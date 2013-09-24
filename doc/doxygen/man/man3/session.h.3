@@ -1,4 +1,4 @@
-.TH "src/session.h" 3 "Thu Sep 5 2013" "Version 0.5.99" "libnetconf" \" -*- nroff -*-
+.TH "src/session.h" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -25,10 +25,6 @@ Functions to handle NETCONF sessions\&.
 .RI "int \fBnc_session_monitor\fP (struct nc_session *session)"
 .br
 .RI "\fIAdd the session into the internal list of monitored sessions that are returned as part of netconf-state information defined in RFC 6022\&. \fP"
-.ti -1c
-.RI "void \fBnc_session_close\fP (struct nc_session *session, \fBNC_SESSION_TERM_REASON\fP reason)"
-.br
-.RI "\fIClose NETCONF connection with the server\&. \fP"
 .ti -1c
 .RI "void \fBnc_session_free\fP (struct nc_session *session)"
 .br
@@ -106,7 +102,7 @@ Functions to handle NETCONF sessions\&.
 .br
 .RI "\fIGet the number of capabilities in the structure\&. \fP"
 .ti -1c
-.RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP ()"
+.RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP (void)"
 .br
 .RI "\fIGet NULL terminated list of the default capabilities supported by libnetconf including the list of namespaces provided by the datastores created with \fBncds_new()\fP and initialized by \fBncds_init()\fP\&. \fP"
 .ti -1c
@@ -141,10 +137,6 @@ Functions to handle NETCONF sessions\&.
 .RI "\fBNC_MSG_TYPE\fP \fBnc_session_send_recv\fP (struct nc_session *session, \fBnc_rpc\fP *rpc, \fBnc_reply\fP **reply)"
 .br
 .RI "\fISend <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fP"
-.ti -1c
-.RI "const char * \fBnc_session_term_string\fP (\fBNC_SESSION_TERM_REASON\fP reason)"
-.br
-.RI "\fIGet human-readable description to the specific type of the session termination reason\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -167,24 +159,6 @@ Neither the name of the Company nor the names of its contributors may be used to
 ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above\&.
 .PP
 This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
-.SH "Function Documentation"
-.PP 
-.SS "const char* nc_session_term_string (\fBNC_SESSION_TERM_REASON\fPreason)"
-
-.PP
-Get human-readable description to the specific type of the session termination reason\&. ingroup session 
-.PP
-\fBParameters:\fP
-.RS 4
-\fIreason\fP Type of the session termination reason\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-String describing the given termination reason value\&. 
-.RE
-.PP
-
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.
