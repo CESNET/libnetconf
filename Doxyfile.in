@@ -670,6 +670,7 @@ INPUT                  = src/libnetconf.h \
                          src/libnetconf_ssh.h \
                          src/netconf.h \
                          src/callbacks.h \
+                         src/callbacks_ssh.h \
                          src/error.h \
                          src/session.h \
                          src/ssh.h \
