@@ -132,7 +132,7 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char 
 			children[count-1].children = NULL;
 			children[count-1].children_count = 0;
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "case")) {
-			choice = yinmodel_parse_recursive (model_tmp->children, ns_mapping, &children[count-1], &case_count);
+			choice = yinmodel_parse_recursive (model_tmp, ns_mapping, &children[count-1], &case_count);
 			children = realloc (children, sizeof (struct model_tree) * (case_count+count));
 			memcpy (&children[count-1], choice, case_count*sizeof(struct model_tree));
 			count += case_count;
