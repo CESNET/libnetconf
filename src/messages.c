@@ -1156,38 +1156,48 @@ static xmlNodePtr ncxml_rpc_get_cfg_validate(const nc_rpc* rpc)
 
 char* nc_rpc_get_config(const nc_rpc *rpc)
 {
+	char* retval = NULL;
+
 	switch(nc_rpc_get_op(rpc)) {
 	case NC_OP_COPYCONFIG:
-		return (nc_rpc_get_cfg_copyconfig(rpc));
+		retval = nc_rpc_get_cfg_copyconfig(rpc);
 		break;
 	case NC_OP_EDITCONFIG:
-		return (nc_rpc_get_cfg_editconfig(rpc));
+		retval = nc_rpc_get_cfg_editconfig(rpc);
 		break;
 	case NC_OP_VALIDATE:
-		return (nc_rpc_get_cfg_validate(rpc));
+		retval = nc_rpc_get_cfg_validate(rpc);
 		break;
 	default:
 		/* other operations do not have config parameter */
 		return (NULL);
 	}
+
+	/* convert NCDS_RPC_NOT_APPLICABLE value to NULL */
+	return ((retval == (char*)NCDS_RPC_NOT_APPLICABLE) ? NULL : retval);
 }
 
 xmlNodePtr ncxml_rpc_get_config(const nc_rpc *rpc)
 {
+	xmlNodePtr retval = NULL;
+
 	switch(nc_rpc_get_op(rpc)) {
 	case NC_OP_COPYCONFIG:
-		return (ncxml_rpc_get_cfg_copyconfig(rpc));
+		retval = ncxml_rpc_get_cfg_copyconfig(rpc);
 		break;
 	case NC_OP_EDITCONFIG:
-		return (ncxml_rpc_get_cfg_editconfig(rpc));
+		retval = ncxml_rpc_get_cfg_editconfig(rpc);
 		break;
 	case NC_OP_VALIDATE:
-		return (ncxml_rpc_get_cfg_validate(rpc));
+		retval = ncxml_rpc_get_cfg_validate(rpc);
 		break;
 	default:
 		/* other operations do not have config parameter */
 		return (NULL);
 	}
+
+	/* convert NCDS_RPC_NOT_APPLICABLE value to NULL */
+	return ((retval == (xmlNodePtr)NCDS_RPC_NOT_APPLICABLE) ? NULL : retval);
 }
 
 NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
