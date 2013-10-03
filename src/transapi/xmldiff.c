@@ -457,7 +457,7 @@ model_type:
 					ret_op = XMLDIFF_CHAIN;
 				}
 			}
-			if (tmp_op != XMLDIFF_NONE) {
+			if (ret_op != XMLDIFF_NONE) {
 				xmldiff_add_diff (tmp_diff, ns_mapping, path, new_tmp, tmp_op, XML_PARENT);
 				*tmp_diff = (*tmp_diff)->parent;
 				xmldiff_addsibling_diff (diff, tmp_diff);
