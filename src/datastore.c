@@ -3623,22 +3623,22 @@ int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
 	source = nc_rpc_get_source(rpc);
 	target = nc_rpc_get_target(rpc);
 
-	if(source == target) {
+	if (source == target) {
 		/* source and target datastore are the same */
 #ifndef DISABLE_URL
 		/* if they are URLs, check if both URLs point to a single resource */
 		if (source == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
 			query_source = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":source/"NC_NS_BASE10_ID":url", rpc->ctxt);
 			query_target = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
-			if( (query_source == NULL || query_target == NULL )) {
+			if ((query_source == NULL || query_target == NULL )) {
 				return 1;
 			}
 
 			nc1 = xmlNodeGetContent(query_source->nodesetval->nodeTab[0]);
 			nc2 = xmlNodeGetContent(query_target->nodesetval->nodeTab[0]);
-			
-			if((nc1 == NULL) || (nc2 == NULL) ){
-				ERROR( "Empty source or target in ncds_is_conflict" );
+
+			if ((nc1 == NULL) || (nc2 == NULL)) {
+				ERROR("Empty source or target in ncds_is_conflict");
 				return 1;
 			}
 			ret = xmlStrcmp(nc1, nc2);
@@ -3646,8 +3646,8 @@ int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
 			/* cleanup */
 			xmlFree(nc1);
 			xmlFree(nc2);
-			xmlXPathFreeObject( query_source );
-			xmlXPathFreeObject( query_target );
+			xmlXPathFreeObject(query_source);
+			xmlXPathFreeObject(query_target);
 			return (ret);
 		} else {
 #else
@@ -3657,7 +3657,7 @@ int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
 			return 1;
 		}
 	}
-	
+
 	return 0;
 }
 
@@ -4210,11 +4210,11 @@ apply_editcopyconfig:
 #endif
 		} else if (op == NC_OP_COPYCONFIG) {
 #ifndef DISABLE_URL
-			if(source_ds == NC_DATASTORE_URL ) {
-				// if source is url, change source type to config
+			if (source_ds == NC_DATASTORE_URL) {
+				/* if source is url, change source type to config */
 				source_ds = NC_DATASTORE_CONFIG;
-				if(target_ds == NC_DATASTORE_URL){
-					// if target is url, prepare document content
+				if (target_ds == NC_DATASTORE_URL) {
+					/* if target is url, prepare document content */
 					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", config) == -1) {
 						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 						config = NULL;
@@ -4222,7 +4222,7 @@ apply_editcopyconfig:
 				}
 			}
 			if (target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
-				//get target url
+				/* get target url */
 				url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
 				if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
 					ERROR("%s: unable to get URL path from <copy-config> request.", __func__);
@@ -4248,7 +4248,7 @@ apply_editcopyconfig:
 				case NC_DATASTORE_RUNNING:
 				case NC_DATASTORE_STARTUP:
 				case NC_DATASTORE_CANDIDATE:
-					/** Woodoo magic.
+					/* Woodoo magic.
 					 * If target is URL we have problem, because ncds_apply_rpc2all is calling ncds_apply_rpc for
 					 * each datastore -> remote file would be overwriten everytime. So solution is to download
 					 * remote file, make document from it and add current datastore configuration data to documtent and
@@ -4256,21 +4256,24 @@ apply_editcopyconfig:
 					 * Then data would merge and we will have merged wanted data with non-wanted data from remote file before editing.
 					 * Thats FEATURE, not bug!!!. I reccomend to call ncds_apply_rpc2all and before that use delete-config on remote file.
 					 */
-					// get data from remote file
-					if ((url_tmpfile = nc_url_open((char*) ncontent)) < 0) { // remote file is empty or does not exists
-						// create empty document with <config> root element
+					/* get data from remote file */
+					if ((url_tmpfile = nc_url_open((char*) ncontent)) < 0) {
+						/*
+						 * remote file is empty or does not exists,
+						 * so create empty document with <config> root element
+						 */
 						url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
 						url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
-						if((url_new_ns = xmlNewNs(url_remote_node, BAD_CAST NC_NS_BASE10, NULL)) == NULL){
+						if ((url_new_ns = xmlNewNs(url_remote_node, BAD_CAST NC_NS_BASE10, NULL)) == NULL) {
 							ERROR("%s: error while creating namespace to <config> node", __func__);
 						}
 						xmlSetNs(url_remote_node, url_new_ns);
 						xmlDocSetRootElement(url_tmp_doc, url_remote_node);
 					} else {
-						if (read(url_tmpfile, &url_test_empty, 1) > 0){ // check if file is empty
-							// file is not empty
+						if (read(url_tmpfile, &url_test_empty, 1) > 0) {
+							/* file is not empty */
 							lseek(url_tmpfile, 0, SEEK_SET);
-							if ((url_tmp_doc = xmlReadFd(url_tmpfile, NULL, NULL, 0)) == NULL ) { 
+							if ((url_tmp_doc = xmlReadFd(url_tmpfile, NULL, NULL, 0)) == NULL) {
 								close(url_tmpfile);
 								ERROR("%s: error reading from tmp file", __func__);
 								return (NULL);
@@ -4286,21 +4289,20 @@ apply_editcopyconfig:
 							 * first we remove all entries from "remote" document which match enabled data models
 							 * this will prevent us from having multiple datastore configurations
 							 */
-							// get data models
+							/* get data models */
 							url_model_xpath = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":namespace", ds->data_model->ctxt);
-							url_model_namespace = xmlGetProp( url_model_xpath->nodesetval->nodeTab[0], (xmlChar*)"uri" );
-							
+							url_model_namespace = xmlGetProp(url_model_xpath->nodesetval->nodeTab[0], BAD_CAST "uri");
 							xmlXPathFreeObject(url_model_xpath);
+
 							url_model_xpath = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":container", ds->data_model->ctxt);
-							url_model_name = xmlGetProp(url_model_xpath->nodesetval->nodeTab[0], (xmlChar*)"name");
+							url_model_name = xmlGetProp(url_model_xpath->nodesetval->nodeTab[0], BAD_CAST "name");
 							xmlXPathFreeObject(url_model_xpath);
 
-
-							// remove all remote entries which match data models from datastore
+							/* remove all remote entries which match data models from datastore */
 							url_tmp_node = url_remote_node->children;
 							while (url_tmp_node != NULL) {
 								url_tmp_node_next = url_tmp_node->next;
-								if (xmlStrcmp(url_tmp_node->name, url_model_name) == 0 && 
+								if (xmlStrcmp(url_tmp_node->name, url_model_name) == 0 &&
 										(xmlStrcmp(url_tmp_node->ns->href, url_model_namespace) == 0)) {
 									xmlUnlinkNode(url_tmp_node);
 									xmlFreeNode(url_tmp_node);
@@ -4310,38 +4312,36 @@ apply_editcopyconfig:
 							}
 							xmlFree(url_model_name);
 							xmlFree(url_model_namespace);
-							
+
 						} else {
-							// file is empty, create new document with root <config> element
+							/* file is empty, create new document with root <config> element */
 							url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
 							url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
 							xmlDocSetRootElement(url_tmp_doc, url_remote_node);
 						}
 					}
-					
-					config = ds->func.getconfig( ds, session, source_ds, &e );
+
+					config = ds->func.getconfig(ds, session, source_ds, &e);
 					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", config) == -1) {
 						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 						config = NULL;
 					}
-					
-					// copy local data to "remote" document
+
+					/* copy local data to "remote" document */
 					url_local_doc = xmlParseMemory(config, strlen(config));
-					url_local_node = xmlDocGetRootElement( url_local_doc );
+					url_local_node = xmlDocGetRootElement(url_local_doc);
 					url_tmp_node = url_local_node->children;
 					while (url_tmp_node != NULL) {
 						url_tmp_node_next = url_tmp_node->next;
 						xmlAddChild(url_remote_node, url_tmp_node);
 						url_tmp_node = url_tmp_node_next;
 					}
-					
-					
-					xmlDocDumpMemory( url_tmp_doc, &url_doc_text, NULL );
+
+					xmlDocDumpMemory(url_tmp_doc, &url_doc_text, NULL);
 					nc_url_upload((char*) url_doc_text, (char*) ncontent);
 
 					xmlFreeDoc(url_tmp_doc);
-	
-					
+
 					break;
 				default:
 					ERROR("%s: invalid source datastore for URL target", __func__);
@@ -4349,7 +4349,7 @@ apply_editcopyconfig:
 				}
 				xmlFree(ncontent);
 				xmlXPathFreeObject(url_path);
-				
+
 				ret = EXIT_SUCCESS;
 			} else {
 #else
@@ -4394,17 +4394,17 @@ apply_editcopyconfig:
 				break;
 			}
 			ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
-			protocol = nc_url_get_protocol((char*)ncontent);
+			protocol = nc_url_get_protocol((char*) ncontent);
 			if (protocol == 0) {
 				ERROR("%s: unknown protocol", __func__);
-				return (NULL );
+				return (NULL);
 			}
 			if (!(protocol)) {
 				ERROR("%s: protocol not suported", __func__);
-				return (NULL );
+				return (NULL);
 			}
 
-			ret = nc_url_delete_config((char*)ncontent);
+			ret = nc_url_delete_config((char*) ncontent);
 			xmlFree(ncontent);
 			xmlXPathFreeObject(url_path);
 		} else {
