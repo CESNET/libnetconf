@@ -165,17 +165,20 @@ NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 
 static size_t nc_url_readdata(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
+	size_t copied = 0;
+	size_t aux_size = size * nmemb;
 	struct nc_url_mem *data = (struct nc_url_mem *) userdata;
-	if ((size * nmemb) < 1) {
+
+	if (aux_size < 1 || data->size == 0) {
+		/* no space or nothing lefts */
 		return 0;
 	}
-	if (data->size) {
-		*(char *) ptr = data->memory[0]; // copy one single byte
-		data->memory++; // advance pointer
-		data->size--; // less data left */ 
-		return 1;
-	}
-	return 0; // no more data left to deliver 	
+
+	copied = (data->size > aux_size) ? aux_size : data->size;
+	memcpy(ptr, data->memory, copied);
+	data->memory = data->memory + copied; /* move pointer */
+	data->size = data->size - copied; /* decrease amount of data left */
+	return (copied);
 }
 
 int nc_url_upload(char *data, const char *url)
