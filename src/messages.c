@@ -1204,7 +1204,7 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr defop = NULL;
-	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_DEFOP_MERGE;
+	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_DEFOP_NOTSET;
 
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":default-operation", rpc->ctxt)) != NULL) {
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {

@@ -2411,7 +2411,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 	}
 
 	/* default merge */
-	if (defop == NC_EDIT_DEFOP_MERGE) {
+	if (defop == NC_EDIT_DEFOP_MERGE || defop == NC_EDIT_DEFOP_NOTSET) {
 		/* replace whole document */
 		if (edit_doc->children != NULL) {
 			if (edit_merge(orig_doc, edit_doc->children, model, keys, nacm, error) != EXIT_SUCCESS) {
