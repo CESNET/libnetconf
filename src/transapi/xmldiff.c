@@ -453,11 +453,11 @@ model_type:
 	
 				if (tmp_op == XMLDIFF_ERR) {
 					return XMLDIFF_ERR;
-				} else if (!(tmp_op & XMLDIFF_NONE)) {
+				} else if (tmp_op != XMLDIFF_NONE) {
 					ret_op = XMLDIFF_CHAIN;
 				}
 			}
-			if (!(ret_op & XMLDIFF_NONE)) {
+			if (ret_op != XMLDIFF_NONE) {
 				xmldiff_add_diff (tmp_diff, ns_mapping, path, new_tmp, ret_op, XML_PARENT);
 				*tmp_diff = (*tmp_diff)->parent;
 				xmldiff_addsibling_diff (diff, tmp_diff);
