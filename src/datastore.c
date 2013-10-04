@@ -4215,10 +4215,14 @@ apply_editcopyconfig:
 				source_ds = NC_DATASTORE_CONFIG;
 				if (target_ds == NC_DATASTORE_URL) {
 					/* if target is url, prepare document content */
-					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", config) == -1) {
+					data = config;
+					config = NULL;
+					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", data) == -1) {
 						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 						config = NULL;
 					}
+					free(data);
+					data = NULL;
 				}
 			}
 			if (target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
@@ -4321,11 +4325,22 @@ apply_editcopyconfig:
 						}
 					}
 
-					config = ds->func.getconfig(ds, session, source_ds, &e);
-					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", config) == -1) {
+					data = ds->func.getconfig(ds, session, source_ds, &e);
+					if (data == NULL ) {
+						if (e == NULL ) {
+							ERROR("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
+							e = nc_err_new(NC_ERR_OP_FAILED);
+						}
+						xmlFreeDoc(url_tmp_doc);
+						break;
+					}
+					/* config == NULL */
+					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", data) == -1) {
 						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 						config = NULL;
 					}
+					free(data);
+					data = NULL;
 
 					/* copy local data to "remote" document */
 					url_local_doc = xmlParseMemory(config, strlen(config));
@@ -4350,7 +4365,12 @@ apply_editcopyconfig:
 				xmlFree(ncontent);
 				xmlXPathFreeObject(url_path);
 
-				ret = EXIT_SUCCESS;
+				if (e == NULL) {
+					ret = EXIT_SUCCESS;
+				} else {
+					free(config);
+					break; /* main switch */
+				}
 			} else {
 #else
 			{
