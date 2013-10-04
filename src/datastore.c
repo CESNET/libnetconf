@@ -3830,7 +3830,13 @@ process_datastore:
 		ret = ds->func.unlock(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
 	case NC_OP_GET:
-		data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
+		if ((data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e)) == NULL ) {
+			if (e == NULL ) {
+				ERROR("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
+				e = nc_err_new(NC_ERR_OP_FAILED);
+			}
+			break;
+		}
 
 		if (ds->get_state != NULL) {
 			/* caller provided callback function to retrieve status data */
@@ -4219,7 +4225,11 @@ apply_editcopyconfig:
 					config = NULL;
 					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", data) == -1) {
 						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-						config = NULL;
+						e = nc_err_new(NC_ERR_OP_FAILED);
+						nc_err_set(e, NC_ERR_PARAM_MSG, "libnetconf server internal error, see error log.");
+						free(data);
+						data = NULL;
+						break; /* main switch */
 					}
 					free(data);
 					data = NULL;
@@ -4230,18 +4240,22 @@ apply_editcopyconfig:
 				url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/*/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
 				if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
 					ERROR("%s: unable to get URL path from <copy-config> request.", __func__);
-					ret = EXIT_FAILURE;
-					break;
+					e = nc_err_new(NC_ERR_BAD_ELEM);
+					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "target");
+					nc_err_set(e, NC_ERR_PARAM_MSG, "Unable to get URL path from the <copy-config> request.");
+					xmlXPathFreeObject(url_path);
+					break; /* main switch */
 				}
 				ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
+				xmlXPathFreeObject(url_path);
+
 				protocol = nc_url_get_protocol((char*)ncontent);
-				if (protocol == 0) {
-					ERROR("%s: unknown protocol", __func__);
-					return (NULL);
-				}
-				if (!nc_url_is_enabled(protocol)) {
-					ERROR("%s: protocol not suported", __func__);
-					return (NULL);
+				if (protocol == 0 || !nc_url_is_enabled(protocol)) {
+					ERROR("%s: protocol (%s - %d) not supported", __func__, ncontent, protocol);
+					e = nc_err_new(NC_ERR_OP_FAILED);
+					nc_err_set(e, NC_ERR_PARAM_MSG, "Specified URL protocol not supported.");
+					xmlFree(ncontent);
+					break; /* main switch */
 				}
 
 				switch (source_ds) {
@@ -4268,9 +4282,7 @@ apply_editcopyconfig:
 						 */
 						url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
 						url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
-						if ((url_new_ns = xmlNewNs(url_remote_node, BAD_CAST NC_NS_BASE10, NULL)) == NULL) {
-							ERROR("%s: error while creating namespace to <config> node", __func__);
-						}
+						url_new_ns = xmlNewNs(url_remote_node, BAD_CAST NC_NS_BASE10, NULL);
 						xmlSetNs(url_remote_node, url_new_ns);
 						xmlDocSetRootElement(url_tmp_doc, url_remote_node);
 					} else {
@@ -4279,14 +4291,18 @@ apply_editcopyconfig:
 							lseek(url_tmpfile, 0, SEEK_SET);
 							if ((url_tmp_doc = xmlReadFd(url_tmpfile, NULL, NULL, 0)) == NULL) {
 								close(url_tmpfile);
-								ERROR("%s: error reading from tmp file", __func__);
-								return (NULL);
+								ERROR("%s: error reading XML data from tmp file", __func__);
+								e = nc_err_new(NC_ERR_OP_FAILED);
+								nc_err_set(e, NC_ERR_PARAM_MSG, "libnetconf internal server error, see error log.");
+								break;
 							}
 							close(url_tmpfile);
 							url_remote_node = xmlDocGetRootElement(url_tmp_doc);
 							if (xmlStrcmp(BAD_CAST "config", url_remote_node->name) != 0) {
-								ERROR("%s: no config data in remote file", __func__);
-								return (NULL);
+								ERROR("%s: no config data in remote file (%s)", __func__, ncontent);
+								e = nc_err_new(NC_ERR_OP_FAILED);
+								nc_err_set(e, NC_ERR_PARAM_MSG, "Invalid remote configuration file, missing <config> element.");
+								break;
 							}
 
 							/**
@@ -4337,7 +4353,14 @@ apply_editcopyconfig:
 					/* config == NULL */
 					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", data) == -1) {
 						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-						config = NULL;
+						e = nc_err_new(NC_ERR_OP_FAILED);
+						nc_err_set(e, NC_ERR_PARAM_MSG, "libnetconf server internal error, see error log.");
+
+						/* cleanup */
+						xmlFreeDoc(url_tmp_doc);
+						free(data);
+						data = NULL;
+						break;
 					}
 					free(data);
 					data = NULL;
@@ -4354,16 +4377,18 @@ apply_editcopyconfig:
 
 					xmlDocDumpMemory(url_tmp_doc, &url_doc_text, NULL);
 					nc_url_upload((char*) url_doc_text, (char*) ncontent);
-
+					xmlFree(url_doc_text);
 					xmlFreeDoc(url_tmp_doc);
 
 					break;
 				default:
 					ERROR("%s: invalid source datastore for URL target", __func__);
+					e = nc_err_new(NC_ERR_BAD_ELEM);
+					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "source");
+					nc_err_set(e, NC_ERR_PARAM_MSG, "Invalid source element value for use with URL target.");
 					break;
 				}
 				xmlFree(ncontent);
-				xmlXPathFreeObject(url_path);
 
 				if (e == NULL) {
 					ret = EXIT_SUCCESS;
@@ -4410,23 +4435,27 @@ apply_editcopyconfig:
 			url_path = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":delete-config/"NC_NS_BASE10_ID":target/"NC_NS_BASE10_ID":url", rpc->ctxt);
 			if (url_path == NULL || xmlXPathNodeSetIsEmpty(url_path->nodesetval)) {
 				ERROR("%s: unable to get URL path from <delete-config> request.", __func__);
+				e = nc_err_new(NC_ERR_BAD_ELEM);
+				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "target");
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Unable to get URL path from the <delete-config> request.");
+				xmlXPathFreeObject(url_path);
 				ret = EXIT_FAILURE;
 				break;
 			}
 			ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
+			xmlXPathFreeObject(url_path);
+
 			protocol = nc_url_get_protocol((char*) ncontent);
-			if (protocol == 0) {
-				ERROR("%s: unknown protocol", __func__);
-				return (NULL);
-			}
-			if (!(protocol)) {
-				ERROR("%s: protocol not suported", __func__);
-				return (NULL);
+			if (protocol == 0 || !nc_url_is_enabled(protocol)) {
+				ERROR("%s: protocol (%s - %d) not supported", __func__, ncontent, protocol);
+				e = nc_err_new(NC_ERR_OP_FAILED);
+				nc_err_set(e, NC_ERR_PARAM_MSG, "Specified URL protocol not supported.");
+				xmlFree(ncontent);
+				break; /* main switch */
 			}
 
 			ret = nc_url_delete_config((char*) ncontent);
 			xmlFree(ncontent);
-			xmlXPathFreeObject(url_path);
 		} else {
 #else
 		{
