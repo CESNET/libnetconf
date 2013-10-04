@@ -1241,7 +1241,7 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr erropt = NULL;
-	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_DEFOP_MERGE;
+	NC_EDIT_ERROPT_TYPE retval = NC_EDIT_ERROPT_NOTSET;
 
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":error-option", rpc->ctxt)) != NULL) {
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
@@ -1278,7 +1278,7 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr testopt = NULL;
-	NC_EDIT_DEFOP_TYPE retval = NC_EDIT_TESTOPT_NOTSET;
+	NC_EDIT_TESTOPT_TYPE retval = NC_EDIT_TESTOPT_NOTSET;
 
 	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc/"NC_NS_BASE10_ID":edit-config/"NC_NS_BASE10_ID":test-option", rpc->ctxt)) != NULL) {
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
