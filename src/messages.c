@@ -2038,10 +2038,10 @@ nc_reply* nc_reply_merge(int count, ...)
 {
 	nc_reply *merged_reply = NULL;
 	nc_reply ** to_merge = NULL;
-	NC_REPLY_TYPE type = -1, type_aux;
+	NC_REPLY_TYPE type = NC_REPLY_UNKNOWN, type_aux;
 	va_list ap;
 	struct nc_err *err;
-	int i, j, len = 0;
+	int i, j, t, len = 0;
 	char * tmp, * data = NULL;
 
 	/* params check */
@@ -2060,7 +2060,7 @@ nc_reply* nc_reply_merge(int count, ...)
 
 	/* initialize argument vector */
 	va_start (ap, count);
-	for(i = j = 0; i < count; i++, j++) {
+	for(i = j = t = 0; i < count; i++, j++) {
 		to_merge[j] = va_arg(ap, nc_reply*);
 		if (to_merge[j] == NULL || to_merge[j] == NCDS_RPC_NOT_APPLICABLE) {
 			/* invalid reply will not be merged */
@@ -2069,8 +2069,9 @@ nc_reply* nc_reply_merge(int count, ...)
 			continue;
 		}
 
-		if (type == -1) {
+		if (t == 0) {
 			/* no type set yet */
+			t++;
 			type = nc_reply_get_type(to_merge[j]);
 		} else if (type != (type_aux = nc_reply_get_type(to_merge[j]))) {
 			if ((type == NC_REPLY_UNKNOWN || type_aux == NC_REPLY_UNKNOWN) ||

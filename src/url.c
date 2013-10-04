@@ -116,7 +116,7 @@ char* nc_url_gencap()
 		return (NULL);
 	}
 
-	for (i = 0, protocol = 1; i < (sizeof(url_protocols) / sizeof(url_protocols[0])); i++, protocol <<= 1) {
+	for (i = 0, protocol = 1; (unsigned int) i < (sizeof(url_protocols) / sizeof(url_protocols[0])); i++, protocol <<= 1) {
 		if (protocol & nc_url_protocols) {
 			if (asprintf(&cpblt_update, "%s%s%s", cpblt, first ? "" : ",", url_protocols[i]) < 0) {
 				ERROR("%s: asprintf error (%s:%d)", __func__, __FILE__, __LINE__);
@@ -148,7 +148,7 @@ NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 	}
 	c = '\0';
 
-	for (i = 0; i < (sizeof(url_protocols) / sizeof(url_protocols[0])); i++, protocol <<= 1) {
+	for (i = 0; (unsigned int) i < (sizeof(url_protocols) / sizeof(url_protocols[0])); i++, protocol <<= 1) {
 		if (xmlStrncmp(BAD_CAST url_aux, url_protocols[i], xmlStrlen(url_protocols[i])) == 0) {
 			protocol_set = 1;
 			break;

@@ -103,7 +103,7 @@ struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, s
 	if (i == calls->callbacks_count && priorities != NULL) {
 		/* We do not have a callback, so we use the lowest priority from our children callbacks */
 		min_prio = priorities->values[0];
-		for (i = 1; i < priorities->used; ++i) {
+		for (i = 1; (unsigned int) i < priorities->used; ++i) {
 			if (priorities->values[i] < min_prio) {
 				min_prio = priorities->values[i];
 			}
