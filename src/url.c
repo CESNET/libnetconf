@@ -59,11 +59,11 @@
 
 int url_tmpfile;
 
-// Struct for uploading data with curl
+/* Struct for uploading data with curl */
 struct nc_url_mem
 {
-  char *memory;
-  size_t size;
+	char *memory;
+	size_t size;
 };
 
 // default allowed protocols
@@ -100,7 +100,7 @@ static xmlChar * url_protocols[] = {
 };
 
 /**< @brief generates url capability string with enabled protocols */
-char* nc_url_gencap()
+char* nc_url_gencap(void)
 {
 	char *cpblt = NULL, *cpblt_update = NULL;
 	int first = 1;
@@ -165,17 +165,20 @@ NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 
 static size_t nc_url_readdata(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
+	size_t copied = 0;
+	size_t aux_size = size * nmemb;
 	struct nc_url_mem *data = (struct nc_url_mem *) userdata;
-	if ((size * nmemb) < 1) {
+
+	if (aux_size < 1 || data->size == 0) {
+		/* no space or nothing lefts */
 		return 0;
 	}
-	if (data->size) {
-		*(char *) ptr = data->memory[0]; // copy one single byte
-		data->memory++; // advance pointer
-		data->size--; // less data left */ 
-		return 1;
-	}
-	return 0; // no more data left to deliver 	
+
+	copied = (data->size > aux_size) ? aux_size : data->size;
+	memcpy(ptr, data->memory, copied);
+	data->memory = data->memory + copied; /* move pointer */
+	data->size = data->size - copied; /* decrease amount of data left */
+	return (copied);
 }
 
 int nc_url_upload(char *data, const char *url)
@@ -192,8 +195,7 @@ int nc_url_upload(char *data, const char *url)
 		return EXIT_FAILURE;
 	}
 
-	mem_data.memory = data;
-	mem_data.size = strlen(data);
+	/* check that the content follows RFC */
 	doc = xmlParseMemory(data, strlen(data));
 	root_element = xmlDocGetRootElement(doc);
 	if (strcmp((char *) root_element->name, "config") != 0) {
@@ -202,6 +204,11 @@ int nc_url_upload(char *data, const char *url)
 	}
 	xmlFreeDoc(doc);
 
+	/* fill the structure for libcurl's READFUNCTION */
+	mem_data.memory = data;
+	mem_data.size = strlen(data);
+
+	/* set up libcurl */
 	curl_global_init(INIT_FLAGS);
 	curl = curl_easy_init();
 	curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -210,13 +217,15 @@ int nc_url_upload(char *data, const char *url)
 	curl_easy_setopt(curl, CURLOPT_READFUNCTION, nc_url_readdata);
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_buffer);
 	res = curl_easy_perform(curl);
-
 	if (res != CURLE_OK) {
 		ERROR("%s: curl error: %s", __func__, curl_buffer);
 		return -1;
 	}
+
+	/* cleanup */
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
+
 	return EXIT_SUCCESS;
 }
 
@@ -236,26 +245,36 @@ int nc_url_open(const char *url)
 	CURLcode res;
 	char curl_buffer[CURL_ERROR_SIZE];
 	char url_tmp_name[(sizeof(NC_WORKINGDIR_PATH) / sizeof(char)) + 19] = NC_WORKINGDIR_PATH"/url_tmpfileXXXXXX";
+
+	/* prepare temporary file ... */
 	if ((url_tmpfile = mkstemp(url_tmp_name)) < 0) {
 		ERROR("%s: cannot create temporary file (%s)", __func__, strerror(errno));
 		return (-1);
 	}
+	/* and hide it from the file system */
 	unlink(url_tmp_name);
+
 	VERB("Getting file from URL: %s (via curl)", url);
+
+	/* set up libcurl */
 	curl_global_init(INIT_FLAGS);
 	curl = curl_easy_init();
 	curl_easy_setopt(curl, CURLOPT_URL, url);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, nc_url_writedata);
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_buffer);
 	res = curl_easy_perform(curl);
-
 	if (res != CURLE_OK) {
 		close(url_tmpfile);
 		ERROR("%s: curl error: %s", __func__, curl_buffer);
 		return (-1);
 	}
+
+	/* cleanup */
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
+
+	/* move back to the beginning of the output file */
 	lseek(url_tmpfile, 0, SEEK_SET);
+
 	return url_tmpfile;
 }
