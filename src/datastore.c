@@ -4058,29 +4058,29 @@ process_datastore:
 			nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "target");
 			break;
 		}
-		// check if source datastore is config or url
-		if (op == NC_OP_COPYCONFIG && ((source_ds = nc_rpc_get_source(rpc)) != NC_DATASTORE_CONFIG) && ( source_ds != NC_DATASTORE_URL )) {
-			if (source_ds == NC_DATASTORE_ERROR) {
-				e = nc_err_new(NC_ERR_BAD_ELEM);
-				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "source");
-				break;
-			}
-			/* <copy-config> with specified source datastore */
-			if ( ncds_is_conflict(rpc, session) ) {
+		/* check source element */
+		if ((source_ds = nc_rpc_get_source(rpc)) == NC_DATASTORE_ERROR) {
+			e = nc_err_new(NC_ERR_BAD_ELEM);
+			nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "source");
+			break;
+		}
+
+		if (op == NC_OP_COPYCONFIG && ((source_ds != NC_DATASTORE_CONFIG) && (source_ds != NC_DATASTORE_URL ))) {
+			/* <copy-config> with a standard datastore as a source */
+			/* check possible conflicts */
+			if (ncds_is_conflict(rpc, session) ) {
 				e = nc_err_new(NC_ERR_INVALID_VALUE);
 				nc_err_set(e, NC_ERR_PARAM_MSG, "Both the target and the source identify the same datastore.");
 				break;
 			}
 			config = NULL;
 		} else {
-			// source is url or config, here starts woodo magic
+			/* source is url or config, here starts woodo magic */
 			/*
-			 * config can contain multiple elements on the root level, so
-			 * cover it with the <config> element to allow the creation of xml
-			 * document
+			 * if configuration data are provided as operation's config,
+			 * just return <config> element content. If it is url,
+			 * download remote file and return its content
 			 */
-			
-			// if config is config, just return <config> element content. If it is url, download remote file and returm content
 			config = nc_rpc_get_config(rpc);
 			if (config == NULL) {
 				e = nc_err_new(NC_ERR_OP_FAILED);
@@ -4094,6 +4094,11 @@ process_datastore:
 				goto apply_editcopyconfig;
 			}
 
+			/*
+			 * config can contain multiple elements on the root level, so
+			 * cover it with the <config> element to allow the creation of
+			 * xml document
+			 */
 			if (asprintf(&data, "<config>%s</config>", config) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 				e = nc_err_new(NC_ERR_OP_FAILED);
@@ -4260,7 +4265,7 @@ apply_editcopyconfig:
 
 				switch (source_ds) {
 				case NC_DATASTORE_CONFIG:
-					// source datastore is config (or url), so just upload file
+					/* source datastore is config (or url), so just upload file */
 					ret = nc_url_upload(config, (char*)ncontent);
 					break;
 				case NC_DATASTORE_RUNNING:
