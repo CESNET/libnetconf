@@ -100,7 +100,7 @@ static xmlChar * url_protocols[] = {
 };
 
 /**< @brief generates url capability string with enabled protocols */
-char* nc_url_gencap()
+char* nc_url_gencap(void)
 {
 	char *cpblt = NULL, *cpblt_update = NULL;
 	int first = 1;

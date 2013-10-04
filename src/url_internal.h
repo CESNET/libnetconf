@@ -73,7 +73,7 @@ int nc_url_upload(char *data, const char *url);
  * @brief Generate URL capability string from enabled protocols
  * @return capability string
  */
-char* nc_url_gencap();
+char* nc_url_gencap(void);
 
 /**
  * @brief Check if protocol is enabled
