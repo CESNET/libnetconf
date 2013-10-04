@@ -220,7 +220,7 @@ int nc_url_upload(char *data, const char *url)
 	return EXIT_SUCCESS;
 }
 
-static size_t nc_url_writedata(char *ptr, size_t size, size_t nmemb, void *userdata)
+static size_t nc_url_writedata(char *ptr, size_t size, size_t nmemb, void* UNUSED(userdata))
 {
 	return write(url_tmpfile, ptr, size * nmemb);
 }

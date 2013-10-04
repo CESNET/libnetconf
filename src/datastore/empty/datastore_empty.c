@@ -51,7 +51,7 @@ int ncds_empty_init (struct ncds_ds * UNUSED(ds))
 	return EXIT_SUCCESS;
 }
 
-void ncds_empty_free (struct ncds_ds * ds)
+void ncds_empty_free (struct ncds_ds* UNUSED(ds))
 {
 	return;
 }
