@@ -4059,7 +4059,7 @@ process_datastore:
 			break;
 		}
 		/* check source element */
-		if ((source_ds = nc_rpc_get_source(rpc)) == NC_DATASTORE_ERROR) {
+		if (op == NC_OP_COPYCONFIG && (source_ds = nc_rpc_get_source(rpc)) == NC_DATASTORE_ERROR) {
 			e = nc_err_new(NC_ERR_BAD_ELEM);
 			nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "source");
 			break;
