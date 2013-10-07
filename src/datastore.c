@@ -2446,6 +2446,19 @@ int ncds_consolidate(void)
 		ncds_update_features(ds_iter->datastore);
 	}
 
+	/* parse models to get aux structure for TransAPI's internal purposes */
+	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
+		/* when using transapi */
+		if (ds_iter->datastore->transapi.module != NULL) {
+			/* parse only models not parsed yet */
+			if (ds_iter->datastore->data_model->model_tree == NULL) {
+				if ((ds_iter->datastore->data_model->model_tree = yinmodel_parse(ds_iter->datastore->ext_model, ds_iter->datastore->transapi.ns_mapping)) == NULL) {
+					WARN("Failed to parse model %s. Callbacks of transAPI modules using this model will not be executed.", ds_iter->datastore->data_model->name)
+				}
+			}
+		}
+	}
+
 	return (EXIT_SUCCESS);
 }
 
@@ -3124,12 +3137,6 @@ ncds_id ncds_init(struct ncds_ds* datastore)
 		return -2;
 	}
 
-	/* when using transapi */
-	if (datastore->transapi.module != NULL) {
-		/* parse model to get aux structure for TransAPI's internal purposes */
-		datastore->data_model->model_tree = yinmodel_parse(datastore->ext_model, datastore->transapi.ns_mapping);
-	}
-
 	/* acquire unique id */
 	datastore->id = generate_id();
 
@@ -3721,7 +3728,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 			}
 		} /* else success */
 
-		if (ret || ds->transapi.config_modified) {
+		if (ret || *ds->transapi.config_modified) {
 			ds->transapi.config_modified = 0;
 			DBG("Updating XML tree after TransAPI callbacks");
 			xmlDocDumpMemory(new, &config, NULL);

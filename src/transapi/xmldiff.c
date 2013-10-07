@@ -924,7 +924,7 @@ XMLDIFF_OP xmldiff_diff (struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr ne
 	char* path;
 	XMLDIFF_OP ret_op;
 
-	if (old == NULL || new == NULL || diff == NULL) {
+	if (old == NULL || new == NULL || diff == NULL || model == NULL) {
 		return XMLDIFF_ERR;
 	}
 
