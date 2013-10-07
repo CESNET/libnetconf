@@ -136,10 +136,6 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char 
 			children = realloc (children, sizeof (struct model_tree) * (case_count+count));
 			memcpy (&children[count-1], choice, case_count*sizeof(struct model_tree));
 			count += case_count;
-		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "uses")) {
-			/* search through groupings in module and submodules */
-			/* place content here */
-			/* TODO: maybe groupings and submodules should be accessible somewhere :-D */
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "augment")) {
 			children[count-1].type = YIN_TYPE_AUGMENT;
 			children[count-1].children = yinmodel_parse_recursive (model_tmp, ns_mapping, &children[count-1], &children[count-1].children_count);
