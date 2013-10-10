@@ -3302,7 +3302,7 @@ xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDo
  *						the same values) as reference node, 1 otherwise
  */
 int attrcmp(xmlNodePtr reference, xmlNodePtr node)
-{
+{ds->transapi.config_modified
 	xmlAttrPtr attr = reference->properties;
 	xmlChar *value = NULL, *refvalue = NULL;
 
@@ -3728,7 +3728,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 			}
 		} /* else success */
 
-		if (ret || ds->transapi.config_modified) {
+		if (ret || *ds->transapi.config_modified) {
 			ds->transapi.config_modified = 0;
 			DBG("Updating XML tree after TransAPI callbacks");
 			xmlDocDumpMemory(new, &config, NULL);
