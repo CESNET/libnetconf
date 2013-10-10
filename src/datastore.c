@@ -3302,7 +3302,7 @@ xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDo
  *						the same values) as reference node, 1 otherwise
  */
 int attrcmp(xmlNodePtr reference, xmlNodePtr node)
-{ds->transapi.config_modified
+{
 	xmlAttrPtr attr = reference->properties;
 	xmlChar *value = NULL, *refvalue = NULL;
 
