@@ -92,6 +92,42 @@ void prv_printf(NC_VERB_LEVEL level, const char *format, ...)
 #undef PRV_MSG_SIZE
 }
 
+void nc_verb_verbose(const char *format, ...)
+{
+	va_list argptr;
+	char * str;
+
+	va_start(argptr, format);
+	vasprintf(&str, format, argptr);
+	VERB(str);
+	free(str);
+	va_end(argptr);
+}
+
+void nc_verb_warning(const char *format, ...)
+{
+	va_list argptr;
+	char *str;
+
+	va_start(argptr, format);
+	vasprintf(&str, format, argptr);
+	WARN(format, argptr);
+	free(str);
+	va_end(argptr);
+}
+
+void nc_verb_error(const char *format, ...)
+{
+	va_list argptr;
+	char *str;
+
+	va_start(argptr, format);
+	vasprintf(&str, format, argptr);
+	ERROR(format, argptr);
+	free(str);
+	va_end(argptr);
+}
+
 struct nc_shared_info *nc_info = NULL;
 static int shmid = -1;
 

@@ -370,6 +370,30 @@ typedef enum NC_VERB_LEVEL {
 void nc_verbosity(NC_VERB_LEVEL level);
 
 /**
+ * @brief Function for logging error messages.
+ * @param[in] format	printf's format string
+ * @param[in] ...	list of arguments specified in format
+ * @ingroup genAPI
+ */
+void nc_verb_error(const char * format, ...);
+
+/**
+ * @brief Function for logging warning messages.
+ * @param[in] format	printf's format string
+ * @param[in] ...	list of arguments specified in format
+ * @ingroup genAPI
+ */
+void nc_verb_warning(const char * format, ...);
+
+/**
+ * @brief Function for logging verbose messages.
+ * @param[in] format	printf's format string
+ * @param[in] ...	list of arguments specified in format
+ * @ingroup genAPI
+ */
+	void nc_verb_verbose(const char * format, ...);
+
+/**
  * @ingroup genAPI
  * @brief Initialize libnetconf for system-wide usage. This initialization is
  * shared across all the processes
