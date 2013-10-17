@@ -74,57 +74,53 @@ void nc_verbosity(NC_VERB_LEVEL level)
 	verbose_level = level;
 }
 
-void prv_printf(NC_VERB_LEVEL level, const char *format, ...)
+void prv_vprintf(NC_VERB_LEVEL level, const char *format, va_list args)
 {
 #define PRV_MSG_SIZE 4096
 	char prv_msg[PRV_MSG_SIZE];
-	va_list ap;
 
 	if (callbacks.print != NULL) {
-		va_start(ap, format);
-
-		vsnprintf(prv_msg, PRV_MSG_SIZE - 1, format, ap);
+		vsnprintf(prv_msg, PRV_MSG_SIZE - 1, format, args);
 		prv_msg[PRV_MSG_SIZE - 1] = '\0';
 		callbacks.print(level, prv_msg);
 
-		va_end(ap);
 	}
 #undef PRV_MSG_SIZE
+}
+
+void prv_printf(NC_VERB_LEVEL level, const char *format, ...)
+{
+	va_list ap;
+
+	va_start(ap, format);
+	prv_vprintf(level, format, ap);
+	va_end(ap);
 }
 
 void nc_verb_verbose(const char *format, ...)
 {
 	va_list argptr;
-	char * str;
 
 	va_start(argptr, format);
-	vasprintf(&str, format, argptr);
-	VERB(str);
-	free(str);
+	prv_vprintf(NC_VERB_VERBOSE, format, argptr);
 	va_end(argptr);
 }
 
 void nc_verb_warning(const char *format, ...)
 {
 	va_list argptr;
-	char *str;
 
 	va_start(argptr, format);
-	vasprintf(&str, format, argptr);
-	WARN(format, argptr);
-	free(str);
+	prv_vprintf(NC_VERB_WARNING, format, argptr);
 	va_end(argptr);
 }
 
 void nc_verb_error(const char *format, ...)
 {
 	va_list argptr;
-	char *str;
 
 	va_start(argptr, format);
-	vasprintf(&str, format, argptr);
-	ERROR(format, argptr);
-	free(str);
+	prv_vprintf(NC_VERB_ERROR, format, argptr);
 	va_end(argptr);
 }
 
