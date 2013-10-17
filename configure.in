@@ -302,7 +302,7 @@ fi
 
 
 # Check for standard programs
-AC_PROG_CC
+AC_PROG_CC(clang llvm-gcc gcc)
 AC_PROG_CPP
 AC_PROG_LN_S
 AC_PROG_INSTALL
