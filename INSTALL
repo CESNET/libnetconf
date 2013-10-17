@@ -30,17 +30,6 @@ also needed to compile libnetconf.
   $ ./configure --disable-notifications
 
 
-If compiling including the example implementations of a server
-and a client you will also need:
-
-- libevent
-  version 2.0.x
-  http://libevent.org
-
-- libreadline
-  http://www.gnu.org/software/readline/
-
-
 The remaining items are optional.
 
 - doxygen
@@ -67,19 +56,6 @@ This way the library will be installed in /usr/local/lib and
 options specified, to show them all use:
 
 $ ./configure --help
-
-For instance, to build and install libnetconf with the examples:
-
-$ ./configure --with-examples
-$ make
-# make install
-
-This will include all the examples in the build process and
-then copy them to /usr/local/bin/ as netconf-server, netconf-client
-and netconf-events. Also, the directories /usr/share/libnetconf/server/
-and /usr/share/libnetconf/streams/ are created because they are
-required by netconf-server. For more information about the examples
-refer to the README in ./examples.
 
 
 Contact
