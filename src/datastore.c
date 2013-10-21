@@ -353,7 +353,7 @@ int ncds_sysinit(int flags)
 			return (EXIT_FAILURE);
 		}
 
-		ds->data_model->xml = xmlReadMemory ((char*)model[i], model_len[i], NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
+		ds->data_model->xml = xmlReadMemory ((char*)model[i], model_len[i], NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		if (ds->data_model->xml == NULL ) {
 			ERROR("Unable to read the internal monitoring data model.");
 			free (ds);
@@ -650,7 +650,7 @@ int ncds_model_info(const char* path, char **name, char **version, char **namesp
 	xmlXPathContextPtr model_ctxt;
 	xmlDocPtr model_xml;
 
-	model_xml = xmlReadFile(path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
+	model_xml = xmlReadFile(path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	if (model_xml == NULL) {
 		ERROR("Unable to read the configuration data model %s.", path);
 		return (EXIT_FAILURE);
@@ -1397,7 +1397,7 @@ static struct data_model* data_model_new(const char* model_path)
 		return (NULL);
 	}
 
-	model->xml = xmlReadFile(model_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR);
+	model->xml = xmlReadFile(model_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	if (model->xml == NULL) {
 		ERROR("Unable to read the configuration data model %s.", model_path);
 		free(model);
@@ -2660,7 +2660,7 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 			}
 			return (EXIT_FAILURE);
 		}
-		doc = doc_cfg = xmlReadDoc(BAD_CAST data_cfg, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		doc = doc_cfg = xmlReadDoc(BAD_CAST data_cfg, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		/* if the datastore is empty, doc1/aux_doc is NULL here */
 
 		if (ds->get_state != NULL ) {
@@ -2675,7 +2675,7 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 				return (EXIT_FAILURE);
 			}
 
-			doc_status = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			doc_status = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			free(data2);
 
 			if (data_cfg == NULL || strisempty(data_cfg)) {
@@ -2716,7 +2716,7 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 			*e = nc_err_new(NC_ERR_OP_FAILED);
 			return (EXIT_FAILURE);
 		}
-		doc_cfg = xmlReadDoc(BAD_CAST data_cfg, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		doc_cfg = xmlReadDoc(BAD_CAST data_cfg, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		free(data_cfg);
 		data_cfg = NULL;
 
@@ -2756,7 +2756,7 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 			xmlBufferFree(resultbuffer);
 			xmlFreeDoc(doc_cfg);
 
-			doc = xmlReadDoc(BAD_CAST config_internal, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			doc = xmlReadDoc(BAD_CAST config_internal, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			free(config_internal);
 			config_internal = NULL;
 		} else {
@@ -3690,7 +3690,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 	if (new_data == NULL || strcmp(new_data, "") == 0) {
 		new = xmlNewDoc(BAD_CAST "1.0");
 	} else {
-		new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN);
+		new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	}
 	free(new_data);
 	if (new == NULL ) { /* cannot get or parse data */
@@ -3817,7 +3817,7 @@ process_datastore:
 		if (old_data == NULL || strcmp(old_data, "") == 0) {
 			old = xmlNewDoc (BAD_CAST "1.0");
 		} else {
-			old = xmlReadDoc(BAD_CAST old_data, NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN);
+			old = xmlReadDoc(BAD_CAST old_data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		}
 		free(old_data);
 		if (old == NULL) {/* cannot get or parse data */
@@ -3859,8 +3859,8 @@ process_datastore:
 			}
 
 			/* merge status and config data */
-			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-			doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			free(data2);
 			/* if merge fail (probably one of docs NULL)*/
 			if ((doc_merged = ncxml_merge(doc1, doc2, ds->ext_model)) == NULL) {
@@ -3904,7 +3904,7 @@ process_datastore:
 				e = nc_err_new(NC_ERR_OP_FAILED);
 				break;
 			}
-			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			if (aux_doc && aux_doc->children) {
 				doc_merged = xmlNewDoc(BAD_CAST "1.0");
 				for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
@@ -3986,7 +3986,7 @@ process_datastore:
 				e = nc_err_new(NC_ERR_OP_FAILED);
 				break;
 			}
-			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			if (aux_doc && aux_doc->children) {
 				doc_merged = xmlNewDoc(BAD_CAST "1.0");
 				for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
@@ -4113,7 +4113,7 @@ process_datastore:
 			}
 			free(config);
 			config = NULL;
-			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			free(data);
 			data = NULL;
 
@@ -4171,7 +4171,7 @@ process_datastore:
 				 * is supposed to be default, otherwise the
 				 * invalid-value error reply must be returned.
 				 */
-				doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+				doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 				free(config);
 
 				if (ncdflt_default_clear(doc1, ds->ext_model) != EXIT_SUCCESS) {
@@ -4301,7 +4301,7 @@ apply_editcopyconfig:
 						if (read(url_tmpfile, &url_test_empty, 1) > 0) {
 							/* file is not empty */
 							lseek(url_tmpfile, 0, SEEK_SET);
-							if ((url_tmp_doc = xmlReadFd(url_tmpfile, NULL, NULL, 0)) == NULL) {
+							if ((url_tmp_doc = xmlReadFd(url_tmpfile, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING)) == NULL) {
 								close(url_tmpfile);
 								ERROR("%s: error reading XML data from tmp file", __func__);
 								e = nc_err_new(NC_ERR_OP_FAILED);
@@ -4811,7 +4811,7 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 							if (data == NULL || strcmp(data, "") == 0) {
 								old = xmlNewDoc(BAD_CAST "1.0");
 							} else {
-								old = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN);
+								old = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 							}
 							free(data);
 						}
