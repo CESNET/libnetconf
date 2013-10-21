@@ -1435,7 +1435,7 @@ static int ncntf_event_store(time_t etime, const char* content)
 	etime64 = (uint64_t)etime;
 
 	/* get event name string for filter on streams */
-	if ((edoc = xmlReadMemory(content, strlen(content), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING)) == NULL) {
+	if ((edoc = xmlReadMemory(content, strlen(content), NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING)) == NULL) {
 		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
 		ret = EXIT_FAILURE;
 		goto cleanup;
@@ -1988,7 +1988,7 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 		free(etime);
 		return (NULL);
 	}
-	notif_doc = xmlReadMemory(notif_data, strlen(notif_data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	notif_doc = xmlReadMemory(notif_data, strlen(notif_data), NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	if (notif_doc == NULL) {
 		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
 		free(notif_data);
@@ -2561,7 +2561,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 				break;
 			}
 		}
-		if ((event_doc = xmlReadMemory(event, strlen(event), NULL, NULL, 0)) != NULL) {
+		if ((event_doc = xmlReadMemory(event, strlen(event), NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING)) != NULL) {
 			/* apply filter */
 			if (filter != NULL) {
 
@@ -2690,7 +2690,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 		return(count);
 	}
 	free (time_s);
-	ntf->doc = xmlReadMemory(event, strlen(event), NULL, NULL, 0);
+	ntf->doc = xmlReadMemory(event, strlen(event), NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	ntf->msgid = NULL;
 	ntf->error = NULL;
 	ntf->with_defaults = NCWD_MODE_NOTSET;

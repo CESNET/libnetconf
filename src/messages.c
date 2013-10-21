@@ -126,7 +126,7 @@ struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, ...)
 			va_end(argp);
 			return (NULL);
 		}
-		filter = xmlReadDoc(BAD_CAST filter_s, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN);
+		filter = xmlReadDoc(BAD_CAST filter_s, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		free(filter_s);
 		if (filter == NULL) {
 			ERROR("xmlReadDoc() failed (%s:%d).", __FILE__, __LINE__);
@@ -235,7 +235,7 @@ static struct nc_msg* nc_msg_build (const char * msg_dump)
 		return NULL;
 	}
 
-	if ((msg->doc = xmlReadMemory (msg_dump, strlen(msg_dump), NULL, NULL, XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN)) == NULL) {
+	if ((msg->doc = xmlReadMemory (msg_dump, strlen(msg_dump), NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING)) == NULL) {
 		free (msg);
 		return NULL;
 	}
@@ -938,7 +938,7 @@ static xmlNodePtr ncxml_rpc_get_cfg_common(const nc_rpc* rpc, xmlChar* query, ch
 				return (NULL);
 			}
 			xmlFree(url_string);
-			if ((url_doc = xmlReadFd(url_buff_fd, NULL, NULL, 0)) == NULL ) {
+			if ((url_doc = xmlReadFd(url_buff_fd, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING)) == NULL ) {
 				close(url_buff_fd);
 				ERROR("%s: error reading from downloaded URL file", __func__);
 				return (NULL);
@@ -1810,7 +1810,7 @@ nc_reply *nc_reply_data(const char* data)
 	}
 
 	/* prepare XML structure from given data */
-	doc_data = xmlReadMemory(data_env, strlen(data_env), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	doc_data = xmlReadMemory(data_env, strlen(data_env), NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	if (doc_data == NULL) {
 		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
 		free(data_env);
@@ -2694,7 +2694,7 @@ nc_rpc * nc_rpc_validate(NC_DATASTORE source, ...)
 		}
 
 		/* prepare XML structure from given data */
-		config = xmlReadMemory(config_S, strlen(config_S), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		config = xmlReadMemory(config_S, strlen(config_S), NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		free(config_S);
 		if (config == NULL) {
 			ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
@@ -2943,7 +2943,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
 		}
 
 		/* prepare XML structure from given data */
-		config = xmlReadMemory(config_S, strlen(config_S), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		config = xmlReadMemory(config_S, strlen(config_S), NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		free(config_S);
 		if (config == NULL) {
 			ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
@@ -3190,7 +3190,7 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFO
 	}
 
 	/* prepare XML structure from given data */
-	config = xmlReadMemory(config_S, strlen(config_S), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	config = xmlReadMemory(config_S, strlen(config_S), NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	free(config_S);
 	if (config == NULL) {
 		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
@@ -3424,7 +3424,7 @@ nc_rpc *nc_rpc_generic(const char* data)
 	}
 
 	/* read data as XML document */
-	doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	if (doc_data == NULL) {
 		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
 		return (NULL);
