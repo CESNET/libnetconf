@@ -132,27 +132,27 @@ def generate_callbacks_file(name, defs, model, without_init, without_close):
 	outf.close()
 
 def generate_init_callback():
-    content = '';
-    content += '/**\n'
-    content += ' * @brief Initialize plugin after loaded and before any other functions are called.\n'
-    content += ' *\n'
-		content += ' * @param[out] running\tCurrent configuration of managed device.\n\n'
-    content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
-    content += ' */\n'
-    content += 'int transapi_init(xmlDocPtr * running)\n'
-    content += '{\n\treturn EXIT_SUCCESS;\n}\n\n'
+	content = '';
+	content += '/**\n'
+	content += ' * @brief Initialize plugin after loaded and before any other functions are called.\n'
+	content += ' *\n'
+	content += ' * @param[out] running\tCurrent configuration of managed device.\n\n'
+	content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
+	content += ' */\n'
+	content += 'int transapi_init(xmlDocPtr * running)\n'
+	content += '{\n\treturn EXIT_SUCCESS;\n}\n\n'
 
-    return (content)
+	return (content)
     
 def generate_close_callback():
-    content = ''
-    content += '/**\n'
-    content += ' * @brief Free all resources allocated on plugin runtime and prepare plugin for removal.\n'
-    content += ' */\n' 
-    content += 'void transapi_close(void)\n'
-    content += '{\n\treturn;\n}\n\n'
-    
-    return (content)
+	content = ''
+	content += '/**\n'
+	content += ' * @brief Free all resources allocated on plugin runtime and prepare plugin for removal.\n'
+	content += ' */\n' 
+	content += 'void transapi_close(void)\n'
+	content += '{\n\treturn;\n}\n\n'
+
+	return (content)
 
 def generate_state_callback():
 	content = ''
