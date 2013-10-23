@@ -67,7 +67,7 @@
 #include "error.h"
 #include "with_defaults.h"
 #include "session.h"
-#include "datastore.h"
+#include "datastore_xml.h"
 #include "nacm.h"
 #include "url_internal.h"
 #include "datastore/edit_config.h"
@@ -519,6 +519,9 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 	struct nc_session * dummy_session = NULL;
 	struct nc_err * err;
 	int nocpblts = 0;
+	xmlDocPtr running_doc = NULL;
+	char * new_running_config;
+	xmlBufferPtr running_buf;
 
 	if (id != NULL) { /* initialize given device */
 		if ((ds = datastores_get_ds(*id)) == NULL) {
@@ -533,11 +536,23 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 
 	for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 		if (ds_iter->datastore->transapi.init) {
-			if (ds_iter->datastore->transapi.init()) {
+			/* module can return current configuration of device */
+			if (ds_iter->datastore->transapi.init(&running_doc)) {
 				ERROR ("init function from module %s failed.", ds_iter->datastore->data_model->name);
 				goto fail;
 			}
 		}
+	}
+
+	if (running_doc == NULL) {
+		new_running_config = strdup("");
+	} else {
+		running_buf = xmlBufferCreate();
+		xmlNodeDump(running_buf, running_doc, xmlDocGetRootElement(running_doc), 0, 0);
+		new_running_config = strdup((char*)xmlBufferContent(running_buf));
+		xmlBufferFree(running_buf);
+		xmlFreeDoc(running_doc);
+		running_doc = NULL;
 	}
 
 	if (first_after_close || force) { /* if this process is first after a nc_close(system=1) or reinitialization is forced */
@@ -571,8 +586,14 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 		rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
 		/* It is done by calling low level function to avoid invoking transAPI now. */
 		for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
-			/* TRY to erase, when it fails the datastore is probably empty */
-			ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, "", &err);
+			/* replace running datastore with current configuration provided by module, or erase it if none provided
+			 * this is done be low level function to bypass transapi */
+			if (ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, new_running_config, &err)) {
+				free(new_running_config);
+				ERROR("Failed to replace running with current configuration.");
+				goto fail;
+			}
+			free(new_running_config);
 			/* initial copy of startup to running will cause full (re)configuration of module */
 			/* Here is used high level function ncds_apply_rpc to apply startup configuration and use transAPI */
 			reply_msg = ncds_apply_rpc(ds_iter->datastore->id, dummy_session, rpc_msg);
@@ -1258,12 +1279,12 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 {
 	struct ncds_ds* ds = NULL;
 	void * transapi_module = NULL;
-	char* (*get_state)(const char*, const char*, struct nc_err **) = NULL;
+	xmlDocPtr (*get_state)(const xmlDocPtr, const xmlDocPtr, struct nc_err **) = NULL;
 	void (*close_func)(void) = NULL;
-	int (*init_func)(void) = NULL;
-	union transapi_data_clbcks data_clbks = {NULL};
-	union transapi_rpc_clbcks rpc_clbks = {NULL};
-	int *libxml2, lxml2, *ver, ver_default = 1;
+	int (*init_func)(xmlDocPtr *) = NULL;
+	struct transapi_data_callbacks * data_clbks = NULL;
+	struct transapi_rpc_callbacks * rpc_clbks = NULL;
+	int *ver, ver_default = 1;
 	int *modified;
 	char * ns_mapping = NULL;
 
@@ -1302,49 +1323,25 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 		return (NULL);
 	}
 
-	if ((libxml2 = dlsym(transapi_module, "with_libxml2")) == NULL) {
-		WARN("libxml2_support attribute not found. Guessing not used.");
-		libxml2 = &lxml2;
-		*libxml2 = 0;
-	}
-
 	if ((ns_mapping = dlsym(transapi_module, "namespace_mapping")) == NULL) {
 		ERROR("Unable to get mapping of prefixes with uris.");
 		dlclose(transapi_module);
 		return(NULL);
 	}
 
-	if (*libxml2) {
-		/* find rpc callback functions mapping structure */
-		if ((rpc_clbks.rpc_clbks_xml = dlsym(transapi_module, "rpc_clbks")) == NULL) {
-			WARN("Unable to get addresses of rpc callback functions from shared library.");
-		}
+	/* find rpc callback functions mapping structure */
+	if ((rpc_clbks = dlsym(transapi_module, "rpc_clbks")) == NULL) {
+		WARN("Unable to get addresses of rpc callback functions from shared library.");
+	}
 
-		/* callbacks work with configuration data */
-		/* empty datastore has no data */
-		if (type != NCDS_TYPE_EMPTY) {
-			/* get clbks structure */
-			if ((data_clbks.data_clbks_xml = dlsym (transapi_module, "clbks")) == NULL) {
-				ERROR("Unable to get addresses of functions from shared library.");
-				dlclose (transapi_module);
-				return (NULL);
-			}
-		}
-	} else {
-		/* find rpc callback functions mapping structure */
-		if ((rpc_clbks.rpc_clbks = dlsym(transapi_module, "rpc_clbks")) == NULL) {
-			WARN("Unable to get addresses of rpc callback functions from shared library.");
-		}
-
-		/* callbacks work with configuration data */
-		/* empty datastore has no data */
-		if (type != NCDS_TYPE_EMPTY) {
-			/* get clbks structure */
-			if ((data_clbks.data_clbks_xml = dlsym (transapi_module, "clbks")) == NULL) {
-				ERROR("Unable to get addresses of functions from shared library.");
-				dlclose (transapi_module);
-				return (NULL);
-			}
+	/* callbacks work with configuration data */
+	/* empty datastore has no data */
+	if (type != NCDS_TYPE_EMPTY) {
+		/* get clbks structure */
+		if ((data_clbks = dlsym (transapi_module, "clbks")) == NULL) {
+			ERROR("Unable to get addresses of functions from shared library.");
+			dlclose (transapi_module);
+			return (NULL);
 		}
 	}
 
@@ -1357,7 +1354,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	}
 
 	/* create basic ncds_ds structure */
-	if ((ds = ncds_new(type, model_path, get_state)) == NULL) {
+	if ((ds = ncds_new2(type, model_path, get_state)) == NULL) {
 		ERROR ("Failed to create ncds_ds structure.");
 		dlclose (transapi_module);
 		return (NULL);
@@ -1365,7 +1362,6 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 
 	/* add pointers for transaction API */
 	ds->transapi.module = transapi_module;
-	ds->transapi.libxml2 = (*libxml2);
 	ds->transapi.config_modified = modified;
 	ds->transapi.ns_mapping = (const char**)ns_mapping;
 	ds->transapi.data_clbks = data_clbks;
@@ -2931,7 +2927,7 @@ cleanup:
 #endif
 }
 
-struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
+struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path)
 {
 	struct ncds_ds* ds = NULL;
 	char *basename, *path_yin;
@@ -3014,7 +3010,6 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	/* TransAPI structure is set to NULLs */
 
 	ds->last_access = 0;
-	ds->get_state = get_state;
 
 	/* ds->id is -1 to indicate, that datastore is still not fully configured */
 	ds->id = -1;
@@ -3029,6 +3024,30 @@ cleanup:
 #endif
 
 	return (ds);
+}
+
+struct ncds_ds* ncds_new2(NCDS_TYPE type, const char * model_path, xmlDocPtr (*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e))
+{
+	struct ncds_ds * ds;
+
+	if ((ds = ncds_new_internal(type, model_path)) != NULL) {
+		ds->get_state_xml = get_state;
+		ds->get_state = NULL;
+	}
+
+	return(ds);
+}
+
+struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
+{
+	struct ncds_ds * ds;
+
+	if ((ds = ncds_new_internal(type, model_path)) != NULL) {
+		ds->get_state_xml = NULL;
+		ds->get_state = get_state;
+	}
+
+	return(ds);
 }
 
 ncds_id generate_id(void)
@@ -3704,7 +3723,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 			new_reply = nc_reply_error(e);
 		}
 	} else {
-		ret = transapi_running_changed(ds->transapi.data_clbks.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, ds->transapi.libxml2, &e);
+		ret = transapi_running_changed(ds->transapi.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, &e);
 		if (ret) {
 			e_new = nc_err_new(NC_ERR_OP_FAILED);
 			if (e != NULL) {
@@ -3767,7 +3786,6 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	int pos;
 	int transapi_callbacks_count;
 	const char * rpc_name;
-	xmlBufferPtr buf = NULL;
 	char *end = NULL, *aux = NULL;
 #ifndef DISABLE_VALIDATION
 	NC_EDIT_TESTOPT_TYPE testopt;
@@ -3844,13 +3862,20 @@ process_datastore:
 			}
 			break;
 		}
+		doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 
-		if (ds->get_state != NULL) {
+		if (ds->get_state_xml != NULL || ds->get_state != NULL) {
 			/* caller provided callback function to retrieve status data */
 
-			xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
-			data2 = ds->get_state(model, data, &e);
-			free(model);
+			if (ds->get_state_xml != NULL) {
+				doc2 = ds->get_state_xml(ds->ext_model, doc1, &e);
+			} else if (ds->get_state != NULL) {
+				xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
+				data2 = ds->get_state(model, data, &e);
+				doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+				free(model);
+				free(data2);
+			}
 
 			if (e != NULL) {
 				/* state data retrieval error */
@@ -3859,9 +3884,6 @@ process_datastore:
 			}
 
 			/* merge status and config data */
-			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-			doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-			free(data2);
 			/* if merge fail (probably one of docs NULL)*/
 			if ((doc_merged = ncxml_merge(doc1, doc2, ds->ext_model)) == NULL) {
 				/* use only config if not null*/
@@ -4559,26 +4581,13 @@ apply_editcopyconfig:
 		reply = NCDS_RPC_NOT_APPLICABLE;
 		/* go through all RPC implemented by datastore */
 		if (ds->transapi.module) {
-			if (ds->transapi.libxml2) {
-				transapi_callbacks_count = ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks_count;
-			} else {
-				transapi_callbacks_count = ds->transapi.rpc_clbks.rpc_clbks->callbacks_count;
-			}
+			transapi_callbacks_count = ds->transapi.rpc_clbks->callbacks_count;
 			for (i=0; i<transapi_callbacks_count; i++) {
 				/* find matching rpc and call rpc callback function */
-				if (ds->transapi.libxml2) {
-					rpc_name = ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].name;
-				} else {
-					rpc_name = ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].name;
-				}
+				rpc_name = ds->transapi.rpc_clbks->callbacks[i].name;
 				if (strcmp(op_name, rpc_name) == 0) {
 					/* create array of input parameters */
-					if (ds->transapi.libxml2) {
-						op_input_array = calloc(ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_count, sizeof (xmlNodePtr));
-					} else {
-						op_input_array = calloc(ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_count, sizeof (char *));
-						buf = xmlBufferCreate();
-					}
+					op_input_array = calloc(ds->transapi.rpc_clbks->callbacks[i].arg_count, sizeof (xmlNodePtr));
 					/* get operation node */
 					op_node = ncxml_rpc_get_op_content(rpc);
 					op_input = op_node->children;
@@ -4586,35 +4595,17 @@ apply_editcopyconfig:
 						if (op_input->type == XML_ELEMENT_NODE) {
 							/* find position of this parameter */
 							pos = 0;
-							if (ds->transapi.libxml2) {
-								while (pos < ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_count) {
-									if (xmlStrEqual(BAD_CAST ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_order[pos], op_input->name)) {
-										/* store copy of node to position */
-										((xmlNodePtr*)op_input_array)[pos] = xmlCopyNode(op_input, 1);
-										break;
-									}
-									pos++;
+							while (pos < ds->transapi.rpc_clbks->callbacks[i].arg_count) {
+								if (xmlStrEqual(BAD_CAST ds->transapi.rpc_clbks->callbacks[i].arg_order[pos], op_input->name)) {
+									/* store copy of node to position */
+									((xmlNodePtr*)op_input_array)[pos] = xmlCopyNode(op_input, 1);
+									break;
 								}
-								/* input node with this name not found in model defined inputs of RPC */
-								if (pos == ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_count) {
-									WARN("%s: input parameter %s not defined for RPC %s",__func__, op_input->name, ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].name);
-								}
-							} else {
-
-								while (pos < ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_count) {
-									if (xmlStrEqual(BAD_CAST ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_order[pos], op_input->name)) {
-										/* store copy of node to position */
-										xmlNodeDump(buf, rpc->doc, op_input, 1, 0);
-										((char**)op_input_array)[pos] = strdup((char*)xmlBufferContent(buf));
-										xmlBufferEmpty(buf);
-										break;
-									}
-									pos++;
-								}
-								/* input node with this name not found in model defined inputs of RPC */
-								if (pos == ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_count) {
-									WARN("%s: input parameter %s not defined for RPC %s",__func__, op_input->name, ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].name);
-								}
+								pos++;
+							}
+							/* input node with this name not found in model defined inputs of RPC */
+							if (pos == ds->transapi.rpc_clbks->callbacks[i].arg_count) {
+								WARN("%s: input parameter %s not defined for RPC %s",__func__, op_input->name, ds->transapi.rpc_clbks->callbacks[i].name);
 							}
 						}
 						op_input = op_input->next;
@@ -4622,19 +4613,10 @@ apply_editcopyconfig:
 
 					/* call RPC callback function */
 					VERB("Calling %s RPC function\n", rpc_name);
-					if (ds->transapi.libxml2) {
-						reply = ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].func(op_input_array);
-						/* clean array */
-						for (j=0; j<ds->transapi.rpc_clbks.rpc_clbks_xml->callbacks[i].arg_count; j++) {
-							xmlFreeNode(((xmlNodePtr*)op_input_array)[j]);
-						}
-					} else {
-						xmlBufferFree(buf);
-						reply = ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].func(op_input_array);
-						/* clean array */
-						for (j=0; j<ds->transapi.rpc_clbks.rpc_clbks->callbacks[i].arg_count; j++) {
-							free(((char**)op_input_array)[j]);
-						}
+					reply = ds->transapi.rpc_clbks->callbacks[i].func(op_input_array);
+					/* clean array */
+					for (j=0; j<ds->transapi.rpc_clbks->callbacks[i].arg_count; j++) {
+						xmlFreeNode(((xmlNodePtr*)op_input_array)[j]);
 					}
 					free (op_input_array);
 					/* end RPC search, there can be only one RPC with name == op_name */

@@ -7,7 +7,7 @@
 #include <libxml/parser.h>
 
 #include "xmldiff.h"
-#include "transapi_xml.h"
+#include "transapi.h"
 #include "yinparser.h"
 #include "transapi_internal.h"
 
@@ -49,7 +49,7 @@ void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* ne
 }
 
 /* the recursive core of xmldiff_set_priorities() function */
-struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct transapi_xml_data_callbacks* calls) {
+struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct transapi_data_callbacks* calls) {
 	int i, min_prio, children_count = 0, children_without_callback = 0;
 	struct xmldiff_prio* priorities = NULL, *tmp_prio;
 	struct xmldiff_tree* child;
@@ -128,7 +128,7 @@ struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, s
 }
 
 int xmldiff_set_priorities(struct xmldiff_tree* tree, void* callbacks) {
-	struct transapi_xml_data_callbacks* calls = callbacks;
+	struct transapi_data_callbacks* calls = callbacks;
 	struct xmldiff_prio* ret;
 
 	ret = xmldiff_set_priority_recursive(tree, calls);

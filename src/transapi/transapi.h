@@ -1,6 +1,7 @@
 #ifndef _TRANSAPI_H
 #define _TRANSAPI_H
 
+#include <libxml/tree.h>
 #include "../libnetconf.h"
 
 #ifdef __cplusplus
@@ -8,7 +9,7 @@ extern "C" {
 #endif
 
 /* Current transAPI version */
-#define TRANSAPI_VERSION 2
+#define TRANSAPI_VERSION 3
 
 /* maximal number of input arguments every defined RPC can have */
 #ifndef MAX_RPC_INPUT_ARGS
@@ -33,30 +34,29 @@ typedef enum
 
 /**
  * @ingroup transapi
- * @brief Structure binding location in configuration XML data and function callback applying changes.
+ * @brief Same as transapi_data_callbacks. Using libxml2 structures for callbacks parameters.
  */
 struct transapi_data_callbacks {
 	int callbacks_count;
 	void * data;
 	struct {
 		char * path;
-		int (*func)(void**, XMLDIFF_OP, char*, struct nc_err**);
+		int (*func)(void**, XMLDIFF_OP, xmlNodePtr, struct nc_err**);
 	} callbacks[];
 };
 
-
 /**
  * @ingroup transapi
- * @brief Structure binding location in configuration XML data and function callback processing RPC message.
+ * @brief Same as transapi_rpc_callbacks. Using libxml2 structures for callbacks parameters.
  */
 struct transapi_rpc_callbacks {
-        int callbacks_count;
-        struct {
-                char * name;
-                int arg_count;
-        		nc_reply * (*func)(char *[]);
-                char * arg_order[MAX_RPC_INPUT_ARGS];
-        } callbacks[];
+	int callbacks_count;
+	struct {
+		char * name;
+		int arg_count;
+		nc_reply * (*func)(xmlNodePtr []);
+		char * arg_order[MAX_RPC_INPUT_ARGS];
+	} callbacks[];
 };
 
 #ifdef __cplusplus

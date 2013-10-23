@@ -2,7 +2,6 @@
 #define TRANSAPI_INTERNAL_H_
 
 #include "transapi.h"
-#include "transapi_xml.h"
 #include "yinparser.h"
 #include "../datastore/datastore_internal.h"
 
@@ -30,6 +29,6 @@ typedef enum
  *
  * @return EXIT_SUCESS or EXIT_FAILURE
  */
-int transapi_running_changed(void* c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct data_model *model, NC_EDIT_ERROPT_TYPE erropt, int libxml2, struct nc_err **error);
+int transapi_running_changed(struct transapi_data_callbacks* c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct data_model *model, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error);
 
 #endif /* TRANSAPI_INTERNAL_H_ */

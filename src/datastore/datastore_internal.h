@@ -180,25 +180,11 @@ struct model_validators {
 };
 #endif
 
-union transapi_data_clbcks {
-	struct transapi_data_callbacks * data_clbks;
-	struct transapi_xml_data_callbacks * data_clbks_xml;
-};
-
-union transapi_rpc_clbcks {
-	struct transapi_rpc_callbacks * rpc_clbks;
-	struct transapi_xml_rpc_callbacks * rpc_clbks_xml;
-};
-
 struct transapi {
 	/**
 	 * @brief Loaded shared library with transapi callbacks.
 	 */
 	void * module;
-	/**
-	 * @brief Does module support libxml2?
-	 */
-	int libxml2;
 	/**
 	 * @brief Flag if configuration data passed to callbacks were modified
 	 */
@@ -210,15 +196,15 @@ struct transapi {
 	/**
 	 * @brief Transapi callback mapping structure.
 	 */
-	union transapi_data_clbcks data_clbks;
+	struct transapi_data_callbacks * data_clbks;
 	/**
 	 * @brief Transapi rpc callbacks mapping structure.
 	 */
-	union transapi_rpc_clbcks rpc_clbks;
+	struct transapi_rpc_callbacks * rpc_clbks;
 	/**
 	 * @brief Module initialization.
 	 */
-	int (*init)(void);
+	int (*init)(xmlDocPtr *);
 	/**
 	 * @brief Free module resources and prepare for closing.
 	 */
@@ -296,6 +282,11 @@ struct ncds_ds {
 	 * device status data.
 	 */
 	char* (*get_state)(const char* model, const char* running, struct nc_err ** e);
+	/**
+	 * @brief Pointer to a xml version of callback function implementing the
+	 * retrieval of the device status data.
+	 */
+	xmlDocPtr (*get_state_xml)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e);
 	/**
 	 * @brief Datastore implementation functions.
 	 */
