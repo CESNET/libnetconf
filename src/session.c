@@ -1116,8 +1116,10 @@ void nc_session_free (struct nc_session* session)
 
 	if (session->status != NC_SESSION_STATUS_CLOSED) {
 		nc_session_close(session, NC_SESSION_TERM_CLOSED);
+#ifndef DISABLE_NOTIFICATIONS
 		/* let notification receiving function stop, if any */
 		ncntf_dispatch_stop(session);
+#endif
 	}
 
 	if (session->groups != NULL) {
