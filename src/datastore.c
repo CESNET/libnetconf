@@ -518,7 +518,7 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 	struct ncds_ds * ds;
 	struct nc_session * dummy_session = NULL;
 	struct nc_err * err;
-	int nocpblts = 0;
+	int nocpblts = 0, ret;
 	xmlDocPtr running_doc = NULL;
 	char * new_running_config;
 	xmlBufferPtr running_buf;
@@ -534,6 +534,24 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 		start = ncds.datastores;
 	}
 
+	if (cpblts == NULL) {
+		cpblts = nc_session_get_cpblts_default();
+		nocpblts = 1;
+	}
+
+	/* create dummy session for applying copy-config (startup->running) */
+	if ((dummy_session = nc_session_dummy("dummy-internal", "server", NULL, cpblts)) == NULL) {
+		ERROR("%s: Creating dummy-internal session failed.", __func__);
+		goto fail;
+	}
+
+	if (nocpblts) {
+		nc_cpblts_free(cpblts);
+		cpblts = NULL;
+	}
+
+	rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
+
 	for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 		if (ds_iter->datastore->transapi.init) {
 			/* module can return current configuration of device */
@@ -542,53 +560,36 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 				goto fail;
 			}
 		}
-	}
 
-	if (running_doc == NULL) {
-		new_running_config = strdup("");
-	} else {
-		running_buf = xmlBufferCreate();
-		xmlNodeDump(running_buf, running_doc, xmlDocGetRootElement(running_doc), 0, 0);
-		new_running_config = strdup((char*)xmlBufferContent(running_buf));
-		xmlBufferFree(running_buf);
-		xmlFreeDoc(running_doc);
-		running_doc = NULL;
-	}
-
-	if (first_after_close || force) { /* if this process is first after a nc_close(system=1) or reinitialization is forced */
-		/* Clean RUNNING datastore. This is important when transAPI is deployed and does not harm when not. */
-		if (cpblts == NULL) {
-			cpblts = nc_session_get_cpblts_default();
-			nocpblts = 1;
+		if (running_doc == NULL) {
+			new_running_config = strdup("");
+		} else {
+			running_buf = xmlBufferCreate();
+			xmlNodeDump(running_buf, running_doc, xmlDocGetRootElement(running_doc), 0, 0);
+			new_running_config = strdup((char*)xmlBufferContent(running_buf));
+			xmlBufferFree(running_buf);
+			xmlFreeDoc(running_doc);
+			running_doc = NULL;
 		}
 
-		/* create dummy session for applying copy-config (startup->running) */
-		if ((dummy_session = nc_session_dummy("dummy-internal", "server", NULL, cpblts)) == NULL) {
-			ERROR("%s: Creating dummy-internal session failed.", __func__);
-			goto fail;
-		}
+		if (first_after_close || force) { /* if this process is first after a nc_close(system=1) or reinitialization is forced */
+			/* Clean RUNNING datastore. This is important when transAPI is deployed and does not harm when not. */
+			/* It is done by calling low level function to avoid invoking transAPI now. */
 
-		if (nocpblts) {
-			nc_cpblts_free(cpblts);
-			cpblts = NULL;
-		}
+			/*
+			 * If :startup is not supported, running stays persistent between
+			 * reboots
+			 */
+			if (!nc_cpblts_enabled(dummy_session, NC_CAP_STARTUP_ID)) {
+				nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+				nc_session_free(dummy_session);
+				goto success;
+			}
 
-		/*
-		 * If :startup is not supported, running stays persistent between
-		 * reboots
-		 */
-		if (!nc_cpblts_enabled(dummy_session, NC_CAP_STARTUP_ID)) {
-			nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
-			nc_session_free(dummy_session);
-			goto success;
-		}
-
-		rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
-		/* It is done by calling low level function to avoid invoking transAPI now. */
-		for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 			/* replace running datastore with current configuration provided by module, or erase it if none provided
 			 * this is done be low level function to bypass transapi */
-			if (ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, new_running_config, &err)) {
+			ret = ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, new_running_config, &err);
+			if (ret != 0 && ret != EXIT_RPC_NOT_APPLICABLE) {
 				free(new_running_config);
 				ERROR("Failed to replace running with current configuration.");
 				goto fail;
@@ -602,12 +603,12 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 				goto fail;
 			}
 			nc_reply_free(reply_msg);
+			
 		}
-
-		nc_rpc_free(rpc_msg);
-		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
-		nc_session_free(dummy_session);
 	}
+	nc_rpc_free(rpc_msg);
+	nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
+	nc_session_free(dummy_session);
 
 success:
 	if (id != NULL) {
