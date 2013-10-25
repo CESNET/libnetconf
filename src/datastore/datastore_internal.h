@@ -190,6 +190,10 @@ struct transapi {
 	 */
 	int *config_modified;
 	/**
+	 * @brief edit-config's error-option for the current transaction
+	 */
+	NC_EDIT_ERROPT_TYPE *erropt;
+	/**
 	 * @brief Mapping prefixes with URIs
 	 */
 	const char ** ns_mapping;

@@ -113,6 +113,16 @@ def generate_callbacks_file(name, defs, model, without_init, without_close):
 	content += ' * 1 - data have been modified\n'
 	content += ' */\n'
 	content += 'int config_modified = 0;\n\n'
+	content += '/* Do not modify or set! This variable is set by libnetconf to announce edit-config\'s error-option\n'
+	content += 'Feel free to use it to distinguish module behavior for different error-option values.\n'
+	content += ' * Possible values:\n'
+	content += ' * NC_EDIT_ERROPT_STOP - Following callback after failure are not executed, all successful callbacks executed till\n'
+	content += '                         failure point must be applied to the device.\n'
+	content += ' * NC_EDIT_ERROPT_CONT - Failed callbacks are skipped, but all callbacks needed to apply configuration changes are executed\n'
+	content += ' * NC_EDIT_ERROPT_ROLLBACK - After failure, following callbacks are not executed, but previous successful callbacks are\n'
+	content += '                         executed again with previous configuration data to roll it back.\n'
+	content += ' */\n'
+	content += 'NC_EDIT_ERROPT_TYPE erropt = NC_EDIT_ERROPT_NOTSET;\n\n'
 	# init and close functions 
 	if not (without_init):
 		content += generate_init_callback()

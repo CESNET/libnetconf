@@ -1287,6 +1287,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	struct transapi_rpc_callbacks * rpc_clbks = NULL;
 	int *ver, ver_default = 1;
 	int *modified;
+	NC_EDIT_ERROPT_TYPE *erropt;
 	char * ns_mapping = NULL;
 
 	if (callbacks_path == NULL) {
@@ -1313,6 +1314,12 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 
 	if ((modified = dlsym(transapi_module, "config_modified")) == NULL) {
 		ERROR("Unable to get config_modified variable from shared library.");
+		dlclose (transapi_module);
+		return (NULL);
+	}
+
+	if ((erropt = dlsym(transapi_module, "erropt")) == NULL) {
+		ERROR("Unable to get erropt variable from shared library.");
 		dlclose (transapi_module);
 		return (NULL);
 	}
@@ -1364,6 +1371,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	/* add pointers for transaction API */
 	ds->transapi.module = transapi_module;
 	ds->transapi.config_modified = modified;
+	ds->transapi.erropt = erropt;
 	ds->transapi.ns_mapping = (const char**)ns_mapping;
 	ds->transapi.data_clbks = data_clbks;
 	ds->transapi.rpc_clbks = rpc_clbks;
@@ -3724,6 +3732,9 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 			new_reply = nc_reply_error(e);
 		}
 	} else {
+		/* announce error-option to the TransAPI module, if error-option not set, announce default stop-on-error */
+		*(ds->transapi.erropt) = (erropt != NC_EDIT_ERROPT_NOTSET) ? erropt : NC_EDIT_ERROPT_STOP;
+		/* perform TransAPI transactions */
 		ret = transapi_running_changed(ds->transapi.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, &e);
 		if (ret) {
 			e_new = nc_err_new(NC_ERR_OP_FAILED);
