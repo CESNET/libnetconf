@@ -47,7 +47,7 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char 
 		config = 1;
 		while (int_tmp) {
 			if (xmlStrEqual (int_tmp->name, BAD_CAST "config")) {
-				config_text = (char*)xmlNodeGetContent(int_tmp);
+				config_text = (char*)xmlGetProp(int_tmp, BAD_CAST "value");
 				if (strcasecmp (config_text, "false") == 0 || strcasecmp (config_text, "0") == 0) {
 					config = 0;
 				}
@@ -234,7 +234,7 @@ struct model_tree * yinmodel_parse (xmlDocPtr model_doc, const char * ns_mapping
 		model_tmp = model_tmp->next;
 	}
 
-	/* model contains no data (probably only typedefs, rpcs, notofications, ...)*/
+	/* model contains no data (probably only typedefs, rpcs, notifications, ...)*/
 	if (model_top == NULL) {
 		return yin;
 	}
@@ -244,7 +244,7 @@ struct model_tree * yinmodel_parse (xmlDocPtr model_doc, const char * ns_mapping
 	config = 1;
 	while (model_tmp) {
 		if (xmlStrEqual (model_tmp->name, BAD_CAST "config")) {
-			config_text = (char*)xmlNodeGetContent(model_tmp);
+			config_text = (char*)xmlGetProp(model_tmp, BAD_CAST "value");
 			if (strcasecmp (config_text, "false") == 0) {
 				config = 0;
 			}
