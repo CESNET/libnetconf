@@ -6,6 +6,7 @@
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 
+#include "../netconf_internal.h"
 #include "../datastore.h"
 #include "yinparser.h"
 
@@ -192,9 +193,9 @@ void yinmodel_free (struct model_tree * yin)
 
 struct model_tree * yinmodel_parse (xmlDocPtr model_doc, const char * ns_mapping[])
 {
-	xmlNodePtr model_root, model_top = NULL, model_tmp;
+	xmlNodePtr model_root, model_top = NULL, model_tmp, model_tmp2;
 	struct model_tree * yin, * yin_act;
-	int config, i;
+	int config_top, i, config_tmp;
 	char * config_text;
 
 	if ((model_root = xmlDocGetRootElement (model_doc)) == NULL) {
@@ -228,7 +229,30 @@ struct model_tree * yinmodel_parse (xmlDocPtr model_doc, const char * ns_mapping
 				return(NULL);
 			}
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "container")) {
-			model_top = model_tmp;
+			/* check config value */
+			config_tmp = 1;
+			model_tmp2 = model_tmp->children;
+			while (model_tmp2) {
+				if (xmlStrEqual (model_tmp2->name, BAD_CAST "config")) {
+					config_text = (char*)xmlGetProp(model_tmp2, BAD_CAST "value");
+					if (strcasecmp (config_text, "false") == 0) {
+						config_tmp = 0;
+					}
+					free (config_text);
+					break;
+				}
+				model_tmp2 = model_tmp2->next;
+			}
+
+			/* not only state data */
+			if (config_tmp == 1) {
+				if (model_top != NULL) {
+					WARN("Model \"%s\" has more configurable roots, using the first one parsed.", yin->name);
+				} else {
+					config_top = config_tmp;
+					model_top = model_tmp;
+				}
+			}
 		}
 
 		model_tmp = model_tmp->next;
@@ -239,22 +263,7 @@ struct model_tree * yinmodel_parse (xmlDocPtr model_doc, const char * ns_mapping
 		return yin;
 	}
 
-	/* find model top, will be last child of module */
-	model_tmp = model_top->children;
-	config = 1;
-	while (model_tmp) {
-		if (xmlStrEqual (model_tmp->name, BAD_CAST "config")) {
-			config_text = (char*)xmlGetProp(model_tmp, BAD_CAST "value");
-			if (strcasecmp (config_text, "false") == 0) {
-				config = 0;
-			}
-			free (config_text);
-			break;
-		}
-		model_tmp = model_tmp->next;
-	}
-
-	if (config) {
+	if (config_top) {
 		yin->children_count++;
 		yin->children = realloc (yin->children, yin->children_count * sizeof (struct model_tree));
 		yin->children[yin->children_count-1].type = YIN_TYPE_CONTAINER;
