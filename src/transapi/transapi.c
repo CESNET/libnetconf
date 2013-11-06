@@ -241,12 +241,12 @@ int transapi_running_changed(struct transapi_data_callbacks* c, const char * ns_
 	struct transapi_callbacks_info info;
 	
 	if (xmldiff_diff(&diff, old_doc, new_doc, model->model_tree, ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
-		ERROR("Failed to create the tree of differences.");
+		ERROR("Model \"%s\" transAPI: failed to create the tree of differences.", model->name);
 		xmldiff_free(diff);
 		return EXIT_FAILURE;
 	} else if (diff != NULL) {
 		if (xmldiff_set_priorities(diff, c) != EXIT_SUCCESS) {
-			VERB("There was not found a single callback for the configuration change.");
+			VERB("Model \"%s\" transAPI: there was not a single callback found for the configuration change.", model->name);
 		} else {
 			info.old = old_doc;
 			info.new = new_doc;
@@ -268,7 +268,7 @@ int transapi_running_changed(struct transapi_data_callbacks* c, const char * ns_
 			keyListFree(info.keys);
 		}
 	} else {
-		VERB("Nothing changed.");
+		VERB("Model \"%s\" transAPI: nothing changed.", model->name);
 	}
 
 	xmldiff_free(diff);
