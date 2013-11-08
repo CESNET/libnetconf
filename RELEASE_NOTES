@@ -2,11 +2,11 @@ libnetconf 0.7.0
 
 This release includes the following changes:
 
+ * Dependency on D-Bus removed.
  * Example applications were moved to a separated Netopeer project.
 
 TODO
  * detection and correction of session monitoring inconsistency
- * DBUS dependency removed
 
 For API/ABI compatibility to previous versions, see reports in
 'doc/compat_reports/' directory.
