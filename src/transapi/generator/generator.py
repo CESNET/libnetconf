@@ -144,8 +144,15 @@ def generate_callbacks_file(name, defs, model, without_init, without_close):
 def generate_init_callback():
 	content = '';
 	content += '/**\n'
-	content += ' * @brief Initialize plugin after loaded and before any other functions are called.\n'
-	content += ' *\n'
+	content += ' * @brief Initialize plugin after loaded and before any other functions are called.\n\n'
+	content += ' * This function should not apply any configuration data to the controlled device. If no\n'
+	content += ' * running is returned (it stays *NULL), complete startup configuration is consequently\n'
+	content += ' * applied via module callbacks. When a running configuration is returned, libnetconf\n'
+	content += ' * then applies (via module\'s callbacks) only the startup configuration data that\n'
+	content += ' * differ from the returned running configuration data.\n\n'
+	content += ' * Please note, that copying startup data to the running is performed only after the\n'
+	content += ' * libnetconf\'s system-wide close - see nc_close() function documentation for more\n'
+	content += ' * information.\n\n'
 	content += ' * @param[out] running\tCurrent configuration of managed device.\n\n'
 	content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
 	content += ' */\n'
