@@ -56,8 +56,6 @@
 #include <poll.h>
 #include <pthread.h>
 
-#include <dbus/dbus.h>
-
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
@@ -78,18 +76,13 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 /* sleep time in dispatch loops in microseconds */
 #define NCNTF_DISPATCH_SLEEP 100
 
-#define NC_NTF_DBUS_PATH "/libnetconf/notifications/stream"
-#define NC_NTF_DBUS_INTERFACE "libnetconf.notifications.stream"
-static DBusConnection* dbus = NULL;
-static pthread_mutex_t *dbus_mut = NULL;
-
 /* path to the Event stream files, the default path is defined in config.h */
 static char* streams_path = NULL;
 
 /* access to the NACM statistics */
 extern struct nc_shared_info *nc_info;
 
-static pthread_key_t ncntf_replay_done;
+static pthread_key_t ncntf_replay_end;
 
 /*
  * STREAM FILE FORMAT
@@ -667,54 +660,6 @@ static int ncntf_stream_unlock(struct stream *s)
 }
 
 /*
- * Initialize D-Bus communication
- */
-static int ncntf_dbus_init(void)
-{
-	DBusError dbus_err;
-
-	DBG_LOCK("dbus_mut");
-	pthread_mutex_lock(dbus_mut);
-	if (dbus == NULL) {
-		/* initialize the errors */
-		dbus_error_init(&dbus_err);
-
-		/* connect to the D-Bus */
-		dbus = dbus_bus_get_private(DBUS_BUS_SYSTEM, &dbus_err);
-		if (dbus_error_is_set(&dbus_err)) {
-			ERROR("D-Bus connection error (%s)", dbus_err.message);
-			dbus_error_free(&dbus_err);
-		}
-		if (dbus == NULL) {
-			ERROR("Unable to connect to the D-Bus's system bus");
-			DBG_UNLOCK("dbus_mut");
-			pthread_mutex_unlock(dbus_mut);
-			return (EXIT_FAILURE);
-		}
-	}
-	DBG_UNLOCK("dbus_mut");
-	pthread_mutex_unlock(dbus_mut);
-
-	return (EXIT_SUCCESS);
-}
-
-/*
- * Close the D-Bus communication channel
- */
-static void ncntf_dbus_close(void)
-{
-	DBG_LOCK("dbus_mut");
-	pthread_mutex_lock(dbus_mut);
-	if (dbus != NULL) {
-		dbus_connection_close(dbus);
-		dbus_connection_unref(dbus);
-		dbus = NULL;
-	}
-	DBG_UNLOCK("dbus_mut");
-	pthread_mutex_unlock(dbus_mut);
-}
-
-/*
  * Initiate the list of the available streams. It opens all the accessible stream files
  * from the stream directory.
  *
@@ -852,35 +797,7 @@ int ncntf_init(void)
 		pthread_mutexattr_destroy(&mattr);
 	}
 
-	/* init dbus's mutex if needed */
-	if (dbus_mut == NULL) {
-		if (pthread_mutexattr_init(&mattr) != 0) {
-			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-			return (EXIT_FAILURE);
-		}
-		if ((dbus_mut = malloc(sizeof(pthread_mutex_t))) == NULL) {
-			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-			pthread_mutexattr_destroy(&mattr);
-			return (EXIT_FAILURE);
-		}
-		/*
-		 * mutex MUST be recursive since we use it this way
-		 */
-		pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-		if ((r = pthread_mutex_init(dbus_mut, &mattr)) != 0) {
-			ERROR("Mutex initialization failed (%s).", strerror(r));
-			pthread_mutexattr_destroy(&mattr);
-			return (EXIT_FAILURE);
-		}
-		pthread_mutexattr_destroy(&mattr);
-	}
-
-	pthread_key_create(&ncntf_replay_done, free);
-
-	/* initiate DBus communication */
-	if ((ret = ncntf_dbus_init()) != 0) {
-		return (ret);
-	}
+	pthread_key_create(&ncntf_replay_end, free);
 
 	/* initiate streams */
 	if ((ret = ncntf_streams_init()) != 0) {
@@ -904,14 +821,10 @@ void ncntf_close(void)
 		xmlFreeDoc(ncntf_config);
 		ncntf_config = NULL;
 
-		ncntf_dbus_close();
 		ncntf_streams_close();
 		pthread_mutex_destroy(streams_mut);
-		pthread_mutex_destroy(dbus_mut);
 		free(streams_mut);
 		streams_mut = NULL;
-		free(dbus_mut);
-		dbus_mut = NULL;
 	}
 }
 
@@ -1084,13 +997,13 @@ int ncntf_stream_info(const char* stream, char** desc, char** start)
 void ncntf_stream_iter_start(const char* stream)
 {
 	struct stream *s;
-	char* dbus_filter = NULL;
-	DBusError err;
-	int *replay_done;
+	off_t *eof_offset; /* to mark where the replay ends */
 
 	if (ncntf_config == NULL) {
 		return;
 	}
+
+	eof_offset = malloc(sizeof(off_t));
 
 	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
@@ -1099,64 +1012,22 @@ void ncntf_stream_iter_start(const char* stream)
 		pthread_mutex_unlock(streams_mut);
 		return;
 	}
+	/* remember the current end of file position */
+	*eof_offset = lseek(s->fd_events, 0, SEEK_END);
+	/* move to the start of records section */
 	lseek(s->fd_events, s->data, SEEK_SET);
 	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
 
-	/* subscribe DBus signals for the stream */
-	if (asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
-			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream) == -1) {
-		WARN("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-	}
-	dbus_error_init(&err);
-
-	DBG_LOCK("dbus_mut");
-	pthread_mutex_lock(dbus_mut);
-	dbus_bus_add_match(dbus, dbus_filter, &err);
-	dbus_connection_flush(dbus);
-	DBG_UNLOCK("dbus_mut");
-	pthread_mutex_unlock(dbus_mut);
-
-	free(dbus_filter);
-
-	if (dbus_error_is_set(&err)) {
-		WARN("%s", err.message);
-		dbus_error_free(&err);
-	}
-
-	replay_done = malloc(sizeof(int));
-	*replay_done = 0;
-	pthread_setspecific(ncntf_replay_done, (void*)replay_done);
+	pthread_setspecific(ncntf_replay_end, (void*)eof_offset);
 }
 
 void ncntf_stream_iter_finish(const char* stream)
 {
-	char* dbus_filter = NULL;
-	DBusError err;
-	int *replay_done;
+	off_t *replay_end;
 
-	/* unsubscribe DBus */
-	if (asprintf(&dbus_filter, "type='signal',interface='%s',path='%s/%s',member='Event'",
-			NC_NTF_DBUS_INTERFACE, NC_NTF_DBUS_PATH, stream) == -1) {
-		WARN("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-	}
-	dbus_error_init(&err);
-
-	DBG_LOCK("dbus_mut");
-	pthread_mutex_lock(dbus_mut);
-	dbus_bus_remove_match(dbus, dbus_filter, &err);
-	dbus_connection_flush(dbus);
-	DBG_UNLOCK("dbus_mut");
-	pthread_mutex_unlock(dbus_mut);
-
-	free(dbus_filter);
-
-	if (dbus_error_is_set(&err)) {
-		WARN("%s", err.message);
-		dbus_error_free(&err);
-	}
-	replay_done = (int*) pthread_getspecific(ncntf_replay_done);
-	*replay_done = 0;
+	replay_end = (off_t*) pthread_getspecific(ncntf_replay_end);
+	*replay_end = 0;
 }
 
 /*
@@ -1171,9 +1042,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 	uint64_t t;
 	off_t offset;
 	char* text = NULL;
-	DBusMessage *signal;
-	DBusMessageIter signal_args;
-	int* replay_done;
+	off_t* replay_end;
 	char* time_s;
 	time_t tnow;
 	int r;
@@ -1195,10 +1064,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 		return (NULL);
 	}
 
-	replay_done = (int*) pthread_getspecific(ncntf_replay_done);
-	if (start == -1) {
-		*replay_done = 1;
-	}
+	replay_end = (off_t*) pthread_getspecific(ncntf_replay_end);
 
 	while (1) {
 		/* condition to read events from file (use replay):
@@ -1206,16 +1072,16 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 		 * 2) stream has a replay option allowed
 		 * 3) there are still some data to be read from the stream file
 		 */
-		if ((*replay_done == 0) && (start != -1) && (s->replay == 1) && (offset = lseek(s->fd_events, 0, SEEK_CUR)) < lseek(s->fd_events, 0, SEEK_END)) {
-			/* there are still some data to read */
-			lseek(s->fd_events, offset, SEEK_SET);
-		} else {
-			/* no more data */
-			DBG_UNLOCK("streams_mut");
-			pthread_mutex_unlock(streams_mut);
-			if (*replay_done == 0) {
+		offset = lseek(s->fd_events, 0, SEEK_CUR);
+		if ((start != -1) && (s->replay == 1) && (*replay_end != 0)) {
+			/* replay part */
+			if (offset >= *replay_end) {
+				/* we are getting out of replay */
+
+				DBG_UNLOCK("streams_mut");
+				pthread_mutex_unlock(streams_mut);
+
 				/* send replayComplete notification */
-				*replay_done = 1;
 				if (asprintf(&text, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
 							"<eventTime>%s</eventTime><replayComplete xmlns=\"urn:ietf:params:xml:ns:netmod:notification\"/></notification>", time_s = nc_time2datetime(tnow = time(NULL))) == -1) {
 					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
@@ -1227,74 +1093,20 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 					*event_time = tnow;
 				}
 				return (text);
+			} else {
+				/* reading data from the stream file as replay */
 			}
-
-			/* try DBus */
-			while (ncntf_config != NULL) {
-				DBG_LOCK("dbus_mut");
-				pthread_mutex_lock(dbus_mut);
-				if (dbus_connection_read_write_dispatch(dbus, 10) != 1) {
-					/* dbus connection is closed */
-					ERROR("DBus connection unexpectedly closed.");
-					break;
-				}
-				signal = dbus_connection_pop_message(dbus);
-				DBG_UNLOCK("dbus_mut");
-				pthread_mutex_unlock(dbus_mut);
-
-				if (signal != NULL && dbus_message_is_signal(signal, NC_NTF_DBUS_INTERFACE, "Event")) {
-					/* parse the message according to the
-					 * filter set in nc_ntf_stream_iter_start(),
-					 * we have Event signal from the stream
-					 * interface of the specified stream
-					 */
-					/* read the parameters */
-					if (dbus_message_iter_init(signal, &signal_args)) {
-						if (DBUS_TYPE_UINT64 != dbus_message_iter_get_arg_type(&signal_args)) {
-							WARN("Unexpected DBus Event signal (a timestamp is missing).");
-							dbus_message_unref(signal);
-							continue;
-						}
-						dbus_message_iter_get_basic(&signal_args, &t);
-						/* check boundaries */
-						if ((start != -1) && (start > (time_t)t)) {
-							/*
-							 * we're not interested in this event, it
-							 * happened before specified start time
-							 */
-							dbus_message_unref(signal);
-							continue; /* try next signal */
-						}
-						if ((stop != -1) && (stop < (time_t)t)) {
-							/*
-							 * we're not interested in this event, it
-							 * happened after specified stop time
-							 */
-							dbus_message_unref(signal);
-							continue; /* try next signal */
-						}
-						/* we're interested, read content */
-						dbus_message_iter_next (&signal_args);
-						if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(&signal_args)) {
-							WARN("Unexpected DBus Event signal (content is missing).");
-							dbus_message_unref(signal);
-							continue;
-						}
-						dbus_message_iter_get_basic(&signal_args, &text);
-						dbus_message_unref(signal);
-						if (event_time != NULL) {
-							*event_time = (time_t)t;
-						}
-						return(strdup(text));
-					}
-				}
-				/* else signal == NULL */
-				break;
-			}
-
-			/* no more events */
-			return (NULL);
 		}
+
+		/* check that we have something to read */
+		if (offset == lseek(s->fd_events, 0, SEEK_END)) {
+			/* nothing to read */
+			DBG_UNLOCK("streams_mut");
+			pthread_mutex_unlock(streams_mut);
+			return(NULL);
+		}
+		/* move file offset position back */
+		lseek(s->fd_events, offset, SEEK_SET);
 
 		if (ncntf_stream_lock(s) == 0) {
 			if ((r = read(s->fd_events, &len, sizeof(int32_t))) <= 0) {
@@ -1403,7 +1215,7 @@ static int ncntf_event_isallowed(const char* stream, const char* event)
 static int ncntf_event_store(time_t etime, const char* content)
 {
 	int ret = EXIT_SUCCESS;
-	char *event_time = NULL, *signal_object = NULL, *aux1 = NULL;
+	char *event_time = NULL, *aux1 = NULL;
 	char *record = NULL, *ename = NULL;
 	struct stream* s;
 	uint64_t etime64;
@@ -1411,8 +1223,6 @@ static int ncntf_event_store(time_t etime, const char* content)
 	int32_t len;
 	ssize_t r;
 	off_t offset;
-	DBusMessage *signal = NULL;
-	DBusMessageIter signal_args;
 
 	if (content == NULL) {
 		return (EXIT_FAILURE);
@@ -1499,65 +1309,7 @@ write_failed:
 	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
 
-	/* announce event via DBus */
-	DBG_LOCK("dbus_mut");
-	pthread_mutex_lock(dbus_mut);
-	if (dbus != NULL) {
-		for (s = streams; s != NULL; s = s->next) {
-			if (ncntf_event_isallowed(s->name, ename) == 0) {
-				continue;
-			}
-			/* create a signal and check for errors */
-			if (asprintf(&signal_object, "%s/%s", NC_NTF_DBUS_PATH, s->name) == -1) {
-				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				WARN("Announcing event via DBus failed due to the previous error.");
-				goto cleanup_dbus_mut;
-				/* event already successfully stored, return SUCCESS */
-				ret = EXIT_SUCCESS;
-			}
-			signal = dbus_message_new_signal(signal_object, NC_NTF_DBUS_INTERFACE, "Event");
-			free(signal_object);
-			if (signal == NULL) {
-				WARN("Announcing event via DBus failed (creating DBus signal failed).");
-				goto cleanup_dbus_mut;
-				/* event already successfully stored, return SUCCESS */
-				ret = EXIT_SUCCESS;
-			}
-			/* append arguments onto signal */
-			dbus_message_iter_init_append(signal, &signal_args);
-			if (!dbus_message_iter_append_basic(&signal_args, DBUS_TYPE_UINT64, &etime64)) {
-				WARN("Announcing event via DBus failed (attaching the event timestamp failed).");
-				goto cleanup_dbus_mut;
-				/* event already successfully stored, return SUCCESS */
-				ret = EXIT_SUCCESS;
-			}
-			if (!dbus_message_iter_append_basic(&signal_args, DBUS_TYPE_STRING, &record)) {
-				WARN("Announcing event via DBus failed (attaching the event content failed).");
-				goto cleanup_dbus_mut;
-				/* event already successfully stored, return SUCCESS */
-				ret = EXIT_SUCCESS;
-			}
-
-			/* send the message and flush the connection */
-			if (!dbus_connection_send(dbus, signal, NULL)) {
-				WARN("Announcing event via DBus failed (sending the signal failed).");
-				goto cleanup_dbus_mut;
-				/* event already successfully stored, return SUCCESS */
-				ret = EXIT_SUCCESS;
-			}
-			dbus_connection_flush(dbus);
-		}
-	}
-
-cleanup_dbus_mut:
-	DBG_UNLOCK("dbus_mut");
-	pthread_mutex_unlock(dbus_mut);
 cleanup:
-	/* free DBus signal */
-	if (signal != NULL) {
-		dbus_message_unref(signal);
-	}
-
 	/* final cleanup */
 	free(record);
 	free(ename);
@@ -2555,6 +2307,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	while(ncntf_config != NULL && !(session->ntf_stop)) {
 		if ((event = ncntf_stream_iter_next(stream, start, stop, NULL)) == NULL) {
 			if ((stop == -1) || ((stop != -1) && (stop > time(NULL)))) {
+				usleep(NCNTF_DISPATCH_SLEEP);
 				continue;
 			} else {
 				DBG("stream iter end: stop=%ld, time=%ld", stop, time(NULL));

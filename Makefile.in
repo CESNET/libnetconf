@@ -79,8 +79,6 @@ CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = -DNC_WORKINGDIR_PATH=\"$(NC_WORKINGDIR_PATH)\" -DSETBIT=$(SETBIT) @CPPFLAGS@
 LIBTOOL = $(libtool) --tag=CC --quiet
 
-DBUS_CONFDIR = @DBUS_CONFDIR@
-
 INCLUDES= -I$(abs_srcdir)/src
 
 ifeq "$(shell pwd)" "$(shell $(readlink) -f $(srcdir))"
@@ -250,8 +248,6 @@ install: all install-devel install-doc install-generator
 	if test "$(SETBIT)" = "0"; then \
 		chmod a+rwx $(NC_WORKINGDIR_PATH); \
 	fi;
-	[ -d $(DESTDIR)/$(DBUS_CONFDIR)/system.d/ ] || (mkdir -p $(DESTDIR)/$(DBUS_CONFDIR)/system.d/);
-	[ -z "@SRCS_NOTIFICATIONS@" ] || $(INSTALL_DATA) $(srcdir)/libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
 
 .PHONY: install-generator
 install-generator:
@@ -304,7 +300,6 @@ uninstall: uninstall-devel uninstall-doc
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libldns.la
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
 	rm $(NC_WORKINGDIR_PATH)/ietf-netconf-acm*.rng $(NC_WORKINGDIR_PATH)/ietf-netconf-acm-schematron.xsl;
-	[ -z "@SRCS_NOTIFICATIONS@" ] || rm -f $(DESTDIR)/$(DBUS_CONFDIR)/system.d/libnetconf.notifications.conf
 
 .PHONY: uninstall-devel
 uninstall-devel:

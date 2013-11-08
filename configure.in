@@ -363,16 +363,6 @@ AX_PTHREAD([
 AC_SEARCH_LIBS([sem_init], [pthread rt], ,
 	[AC_MSG_ERROR([Could not find sem_init() in expected locations. Install or/and add the comprising library into the list of tested libraries.])])
 
-if test "$notif" = "yes"; then
-	### libdbus ###
-	PKG_CHECK_MODULES([DBUS], [dbus-1 >= 1.0.0])
-	DBUS_CONFDIR="`pkg-config --variable=sysconfdir dbus-1`/dbus-1/"
-	DBUS_NOTIFICATION_CONF="$DBUS_CONFDIR/system.d/libnetconf.notifications.conf"
-	
-	CFLAGS="$CFLAGS $DBUS_CFLAGS"
-	LIBS="$LIBS $DBUS_LIBS"
-fi
-
 if test "$url" = "yes"; then
 	### libcurl ###
 	PKG_CHECK_MODULES([CURL], [libcurl])
@@ -423,8 +413,6 @@ AC_SUBST(NC_WORKINGDIR_PATH)
 AC_SUBST(SETBIT)
 AC_SUBST(SETUSER)
 AC_SUBST(SETGROUP)
-AC_SUBST(DBUS_CONFDIR)
-AC_SUBST(DBUS_NOTIFICATION_CONF)
 AC_SUBST(HDRS_PUBL_SUBDIR_NOTIFICATIONS)
 AC_SUBST(HDRS_PRIV_NOTIFICATIONS)
 AC_SUBST(SRCS_NOTIFICATIONS)
