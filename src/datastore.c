@@ -3879,19 +3879,23 @@ process_datastore:
 			}
 			break;
 		}
-		doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 
 		if (ds->get_state_xml != NULL || ds->get_state != NULL) {
 			/* caller provided callback function to retrieve status data */
 
 			if (ds->get_state_xml != NULL) {
+				/* status data are directly in XML format */
 				doc2 = ds->get_state_xml(ds->ext_model, doc1, &e);
 			} else if (ds->get_state != NULL) {
+				/* status data are provided as string, convert it into XML structure */
 				xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
 				data2 = ds->get_state(model, data, &e);
 				doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 				free(model);
 				free(data2);
+			} else {
+				/* we have no status data */
+				doc2 = NULL;
 			}
 
 			if (e != NULL) {
@@ -3899,6 +3903,9 @@ process_datastore:
 				free(data);
 				break;
 			}
+
+			/* convert configuration data into XML structure */
+			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 
 			/* merge status and config data */
 			/* if merge fail (probably one of docs NULL)*/
