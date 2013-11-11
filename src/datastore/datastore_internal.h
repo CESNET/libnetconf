@@ -232,7 +232,7 @@ struct data_model {
 	/**
 	 * @brief Namespace of the model
 	 */
-	char* namespace;
+	char* ns;
 	/**
 	 * @brief Prefix of the model
 	 */

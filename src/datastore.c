@@ -374,7 +374,7 @@ int ncds_sysinit(int flags)
 		if (get_model_info(ds->data_model->ctxt,
 				&(ds->data_model->name),
 				&(ds->data_model->version),
-				&(ds->data_model->namespace),
+				&(ds->data_model->ns),
 				&(ds->data_model->prefix),
 				&(ds->data_model->rpcs),
 				&(ds->data_model->notifs)) != 0) {
@@ -898,7 +898,7 @@ char **get_schemas_capabilities(void)
 	}
 
 	for (i = 0, listitem = models_list; listitem != NULL; listitem = listitem->next, i++) {
-		if (asprintf(&(retval[i]), "%s?module=%s%s%s", listitem->model->namespace, listitem->model->name,
+		if (asprintf(&(retval[i]), "%s?module=%s%s%s", listitem->model->ns, listitem->model->name,
 				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? "&amp;revision=" : "",
 				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? listitem->model->version : "") == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
@@ -937,7 +937,7 @@ char* get_schemas()
 	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
 		aux = get_schemas_str(listitem->model->name,
 				listitem->model->version,
-				listitem->model->namespace);
+				listitem->model->ns);
 		if (schema == NULL) {
 			schema = aux;
 		} else if (aux != NULL) {
@@ -1431,7 +1431,7 @@ static struct data_model* data_model_new(const char* model_path)
 	if (get_model_info(model->ctxt,
 			&(model->name),
 			&(model->version),
-			&(model->namespace),
+			&(model->ns),
 			&(model->prefix),
 			&(model->rpcs),
 			&(model->notifs)) != 0) {
@@ -2121,7 +2121,7 @@ static int ncds_update_augment(struct data_model *augment)
 			xmlAddChild(path_node, node = xmlCopyNode(augments->nodesetval->nodeTab[i], 1));
 			ns = xmlNewNs(node, BAD_CAST "libnetconf", BAD_CAST "libnetconf");
 			xmlSetNsProp(node, ns, BAD_CAST "module", BAD_CAST augment->name);
-			xmlSetNsProp(node, ns, BAD_CAST "ns", BAD_CAST augment->namespace);
+			xmlSetNsProp(node, ns, BAD_CAST "ns", BAD_CAST augment->ns);
 		}
 
 		free(module_inpath);
@@ -2492,14 +2492,14 @@ static xmlNodePtr get_model_root(xmlNodePtr roots, struct data_model *data_model
 		ERROR("%s: Invalid argument - data model is unknown.", __func__);
 		return NULL;
 	}
-	if (data_model->namespace == NULL) {
+	if (data_model->ns == NULL) {
 		ERROR("Invalid configuration data model '%s'- namespace is missing.", data_model->name);
 		return NULL;
 	}
 
 	retval = roots;
 	while (retval != NULL) {
-		if (retval->ns == NULL || xmlStrcmp(retval->ns->href, BAD_CAST (data_model->namespace)) == 0) {
+		if (retval->ns == NULL || xmlStrcmp(retval->ns->href, BAD_CAST (data_model->ns)) == 0) {
 			break;
 		}
 
@@ -3104,7 +3104,7 @@ void ncds_ds_model_free(struct data_model* model)
 	free(model->path);
 	free(model->name);
 	free(model->version);
-	free(model->namespace);
+	free(model->ns);
 	free(model->prefix);
 	if (model->rpcs != NULL) {
 		for (i = 0; model->rpcs[i] != NULL; i++) {
@@ -4922,7 +4922,7 @@ const struct data_model* ncds_get_model_data(const char* namespace)
 	}
 
 	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
-		if (listitem->model->namespace != NULL && strcmp(listitem->model->namespace, namespace) == 0) {
+		if (listitem->model->ns != NULL && strcmp(listitem->model->ns, namespace) == 0) {
 			/* namespace matches */
 			model = listitem->model;
 			break;
