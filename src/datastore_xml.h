@@ -40,6 +40,8 @@
 #ifndef DATASTORE_XML_H_
 #define DATASTORE_XML_H_
 
+#include <libxml/tree.h>
+
 #include "datastore.h"
 
 #ifdef __cplusplus
