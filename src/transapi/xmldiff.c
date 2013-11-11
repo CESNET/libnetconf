@@ -37,7 +37,7 @@ void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* ne
 	}
 
 	if ((*old)->alloc - (*old)->used < new->used) {
-		(*old)->alloc *= 2;
+		(*old)->alloc = (*old)->used + new->used + 10;
 		(*old)->values = realloc((*old)->values, (*old)->alloc * sizeof(int));
 	}
 
@@ -110,9 +110,6 @@ struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, s
 		}
 
 		tree->priority = min_prio;
-
-		/* Save our priority */
-		xmldiff_add_priority(min_prio, &priorities);
 	} else if (i < calls->callbacks_count) {
 		/* We have a callback */
 		tree->callback = true;
