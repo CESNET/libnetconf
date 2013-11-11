@@ -1,9 +1,9 @@
 /**
- * \file datastore.h
- * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief NETCONF datastore handling function prototypes and structures.
+ * \file datastore_xml.h
+ * \author David Kupka <dkupka@cesnet.cz>
+ * \brief NETCONF datastore handling function prototypes and structures - XML variants.
  *
- * Copyright (C) 2012 CESNET, z.s.p.o.
+ * Copyright (C) 2013 CESNET, z.s.p.o.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
