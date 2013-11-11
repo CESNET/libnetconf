@@ -27,9 +27,15 @@ static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info,
 		xmlFreeNode(tree->node);
 		tree->node = NULL;
 	} else if ((tree->op & XMLDIFF_REM) && tree->node != NULL ) {
-		/* reconnect old node supposed to be romeved back to the new XML tree */
-		parent = find_element_equiv(info->new, tree->node->parent, info->model, info->keys);
-		xmlAddChild(parent, xmlCopyNode(tree->node, 1));
+		/* reconnect old node supposed to be removed back to the new XML tree */
+		if (tree->node->parent->type != XML_DOCUMENT_NODE) {
+			parent = find_element_equiv(info->new, tree->node->parent, info->model, info->keys);
+			xmlAddChild(parent, xmlCopyNode(tree->node, 1));
+		} else {
+			/* we are reconnecting the whole tree */
+			xmlnode = xmlDocCopyNode(tree->node, info->new, 1);
+			xmlDocSetRootElement(info->new, xmlnode);
+		}
 	} else if ((tree->op & XMLDIFF_MOD) && tree->node != NULL ) {
 		/* replace new node with the previous one */
 		for (child = tree->children; child != NULL; child = child->next) {
