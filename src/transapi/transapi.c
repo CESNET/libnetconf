@@ -235,24 +235,24 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 }
 
 /* will be called by library after change in running datastore */
-int transapi_running_changed(struct transapi_data_callbacks* c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct data_model *model, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error)
+int transapi_running_changed(struct ncds_ds* ds, xmlDocPtr old_doc, xmlDocPtr new_doc, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error)
 {
 	struct xmldiff_tree* diff = NULL;
 	struct transapi_callbacks_info info;
 	
-	if (xmldiff_diff(&diff, old_doc, new_doc, model->model_tree, ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
-		ERROR("Model \"%s\" transAPI: failed to create the tree of differences.", model->name);
+	if (xmldiff_diff(&diff, old_doc, new_doc, ds->ext_model_tree, ds->transapi.ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
+		ERROR("Model \"%s\" transAPI: failed to create the tree of differences.", ds->data_model->name);
 		xmldiff_free(diff);
 		return EXIT_FAILURE;
 	} else if (diff != NULL) {
-		if (xmldiff_set_priorities(diff, c) != EXIT_SUCCESS) {
-			VERB("Model \"%s\" transAPI: there was not a single callback found for the configuration change.", model->name);
+		if (xmldiff_set_priorities(diff, ds->transapi.data_clbks) != EXIT_SUCCESS) {
+			VERB("Model \"%s\" transAPI: there was not a single callback found for the configuration change.", ds->data_model->name);
 		} else {
 			info.old = old_doc;
 			info.new = new_doc;
-			info.model = model->xml;
+			info.model = ds->ext_model;
 			info.keys = get_keynode_list(info.model);
-			info.calls = c;
+			info.calls = ds->transapi.data_clbks;
 
 			if (transapi_apply_callbacks_recursive(&info, diff, erropt, error) != EXIT_SUCCESS) {
 				if (erropt != NC_EDIT_ERROPT_CONT) {
@@ -268,7 +268,7 @@ int transapi_running_changed(struct transapi_data_callbacks* c, const char * ns_
 			keyListFree(info.keys);
 		}
 	} else {
-		VERB("Model \"%s\" transAPI: nothing changed.", model->name);
+		VERB("Model \"%s\" transAPI: nothing changed.", ds->data_model->name);
 	}
 
 	xmldiff_free(diff);

@@ -386,8 +386,8 @@ int ncds_sysinit(int flags)
 
 		ds->data_model->path = NULL;
 		ncds_features_parse(ds->data_model);
-		ds->data_model->model_tree = NULL;
 		ds->ext_model = ds->data_model->xml;
+		ds->ext_model_tree = NULL;
 
 		/* resolve uses statements in groupings and augments definitions */
 		ncds_update_uses_groupings(ds->data_model);
@@ -1443,7 +1443,6 @@ static struct data_model* data_model_new(const char* model_path)
 	}
 	model->path = strdup(model_path);
 	ncds_features_parse(model);
-	model->model_tree = NULL;
 
 	/* resolve uses statements in groupings and augments */
 	ncds_update_uses_groupings(model);
@@ -2461,8 +2460,8 @@ int ncds_consolidate(void)
 		/* when using transapi */
 		if (ds_iter->datastore->transapi.module != NULL) {
 			/* parse only models not parsed yet */
-			if (ds_iter->datastore->data_model->model_tree == NULL) {
-				if ((ds_iter->datastore->data_model->model_tree = yinmodel_parse(ds_iter->datastore->ext_model, ds_iter->datastore->transapi.ns_mapping)) == NULL) {
+			if (ds_iter->datastore->ext_model_tree == NULL) {
+				if ((ds_iter->datastore->ext_model_tree = yinmodel_parse(ds_iter->datastore->ext_model, ds_iter->datastore->transapi.ns_mapping)) == NULL) {
 					WARN("Failed to parse model %s. Callbacks of transAPI modules using this model will not be executed.", ds_iter->datastore->data_model->name)
 				}
 			}
@@ -2988,6 +2987,7 @@ struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path)
 		goto cleanup;
 	}
 	ds->ext_model = ds->data_model->xml;
+	ds->ext_model_tree = NULL;
 
 #ifndef DISABLE_VALIDATION
 	if (nc_init_flags & NC_INIT_VALIDATE) {
@@ -3131,7 +3131,6 @@ void ncds_ds_model_free(struct data_model* model)
 		}
 		free(model->features);
 	}
-	yinmodel_free(model->model_tree);
 
 	free(model);
 }
@@ -3254,6 +3253,7 @@ void ncds_free(struct ncds_ds* datastore)
 			xmlFreeDoc(ds->ext_model);
 		}
 		ncds_ds_model_free(ds->data_model);
+		yinmodel_free(ds->ext_model_tree);
 
 		free (ds);
 	}
@@ -3743,7 +3743,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 		/* announce error-option to the TransAPI module, if error-option not set, announce default stop-on-error */
 		*(ds->transapi.erropt) = (erropt != NC_EDIT_ERROPT_NOTSET) ? erropt : NC_EDIT_ERROPT_STOP;
 		/* perform TransAPI transactions */
-		ret = transapi_running_changed(ds->transapi.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, &e);
+		ret = transapi_running_changed(ds, old, new, erropt, &e);
 		if (ret) {
 			e_new = nc_err_new(NC_ERR_OP_FAILED);
 			if (e != NULL) {
