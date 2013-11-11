@@ -374,7 +374,7 @@ int ncds_sysinit(int flags)
 		if (get_model_info(ds->data_model->ctxt,
 				&(ds->data_model->name),
 				&(ds->data_model->version),
-				&(ds->data_model->namespace),
+				&(ds->data_model->ns),
 				&(ds->data_model->prefix),
 				&(ds->data_model->rpcs),
 				&(ds->data_model->notifs)) != 0) {
@@ -386,8 +386,8 @@ int ncds_sysinit(int flags)
 
 		ds->data_model->path = NULL;
 		ncds_features_parse(ds->data_model);
-		ds->data_model->model_tree = NULL;
 		ds->ext_model = ds->data_model->xml;
+		ds->ext_model_tree = NULL;
 
 		/* resolve uses statements in groupings and augments definitions */
 		ncds_update_uses_groupings(ds->data_model);
@@ -518,19 +518,21 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 	struct ncds_ds * ds;
 	struct nc_session * dummy_session = NULL;
 	struct nc_err * err;
-	int nocpblts = 0, ret;
+	int nocpblts = 0, ret, retval = EXIT_SUCCESS;
 	xmlDocPtr running_doc = NULL;
-	char * new_running_config;
-	xmlBufferPtr running_buf;
+	char* new_running_config = NULL;
+	xmlBufferPtr running_buf = NULL;
 
-	if (id != NULL) { /* initialize given device */
+	if (id != NULL) {
+		/* initialize only the device connected with the given datastore ID */
 		if ((ds = datastores_get_ds(*id)) == NULL) {
 			ERROR("Unable to find module with id %d", *id);
-			goto fail;
+			return (EXIT_FAILURE);
 		}
-		start = calloc(1,sizeof(struct ncds_ds_list));
+		start = calloc(1, sizeof(struct ncds_ds_list));
 		start->datastore = ds;
-	} else { /* OR if not specified initialize all transAPI capable modules */
+	} else {
+		/* OR if datastore not specified, initialize all transAPI capable modules */
 		start = ncds.datastores;
 	}
 
@@ -542,7 +544,8 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 	/* create dummy session for applying copy-config (startup->running) */
 	if ((dummy_session = nc_session_dummy("dummy-internal", "server", NULL, cpblts)) == NULL) {
 		ERROR("%s: Creating dummy-internal session failed.", __func__);
-		goto fail;
+		retval = EXIT_FAILURE;
+		goto cleanup;
 	}
 
 	if (nocpblts) {
@@ -551,28 +554,30 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 	}
 
 	rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
+	running_buf = xmlBufferCreate();
 
 	for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
 		if (ds_iter->datastore->transapi.init) {
 			/* module can return current configuration of device */
 			if (ds_iter->datastore->transapi.init(&running_doc)) {
 				ERROR ("init function from module %s failed.", ds_iter->datastore->data_model->name);
-				goto fail;
+				retval = EXIT_FAILURE;
+				goto cleanup;
 			}
 		}
 
-		if (running_doc == NULL) {
-			new_running_config = strdup("");
-		} else {
-			running_buf = xmlBufferCreate();
-			xmlNodeDump(running_buf, running_doc, xmlDocGetRootElement(running_doc), 0, 0);
-			new_running_config = strdup((char*)xmlBufferContent(running_buf));
-			xmlBufferFree(running_buf);
-			xmlFreeDoc(running_doc);
-			running_doc = NULL;
-		}
+		if (first_after_close || force) {
+			/* if this process is first after a nc_close(system=1) or reinitialization is forced */
 
-		if (first_after_close || force) { /* if this process is first after a nc_close(system=1) or reinitialization is forced */
+			/* dump running configuration data returned by transapi_init() */
+			if (running_doc == NULL) {
+				new_running_config = strdup("");
+			} else {
+				xmlNodeDump(running_buf, running_doc, xmlDocGetRootElement(running_doc), 0, 0);
+				new_running_config = strdup((char*)xmlBufferContent(running_buf));
+				xmlBufferEmpty(running_buf);
+			}
+
 			/* Clean RUNNING datastore. This is important when transAPI is deployed and does not harm when not. */
 			/* It is done by calling low level function to avoid invoking transAPI now. */
 
@@ -581,53 +586,53 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 			 * reboots
 			 */
 			if (!nc_cpblts_enabled(dummy_session, NC_CAP_STARTUP_ID)) {
-				nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
-				nc_session_free(dummy_session);
-				goto success;
+				goto cleanup;
 			}
 
 			/* replace running datastore with current configuration provided by module, or erase it if none provided
 			 * this is done be low level function to bypass transapi */
 			ret = ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, new_running_config, &err);
 			if (ret != 0 && ret != EXIT_RPC_NOT_APPLICABLE) {
-				free(new_running_config);
 				ERROR("Failed to replace running with current configuration.");
-				goto fail;
+				retval = EXIT_FAILURE;
+				goto cleanup;
 			}
-			free(new_running_config);
+
 			/* initial copy of startup to running will cause full (re)configuration of module */
 			/* Here is used high level function ncds_apply_rpc to apply startup configuration and use transAPI */
 			reply_msg = ncds_apply_rpc(ds_iter->datastore->id, dummy_session, rpc_msg);
 			if (reply_msg == NULL || (reply_msg != NCDS_RPC_NOT_APPLICABLE && nc_reply_get_type (reply_msg) != NC_REPLY_OK)) {
 				ERROR ("Failed perform initial copy of startup to running.");
-				goto fail;
+				nc_reply_free(reply_msg);
+				retval = EXIT_FAILURE;
+				goto cleanup;
 			}
 			nc_reply_free(reply_msg);
-			
+
+			/* prepare variable for the next loop */
+			free(new_running_config);
+			new_running_config = NULL;
 		}
+
+		/* prepare variable for the next loop */
+		xmlFreeDoc(running_doc);
+		running_doc = NULL;
 	}
+
+cleanup:
+	xmlBufferFree(running_buf);
+	xmlFreeDoc(running_doc);
+	free(new_running_config);
+
 	nc_rpc_free(rpc_msg);
 	nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
 	nc_session_free(dummy_session);
 
-success:
 	if (id != NULL) {
 		free(start);
 	}
 
-	return EXIT_SUCCESS;
-fail:
-	if (dummy_session != NULL) {
-		nc_session_close(dummy_session, NC_SESSION_TERM_OTHER);
-		nc_session_free(dummy_session);
-	}
-	nc_rpc_free(rpc_msg);
-	nc_reply_free(reply_msg);
-	if (id != NULL) {
-		free(start);
-	}
-
-	return EXIT_FAILURE;
+	return (retval);
 }
 
 
@@ -893,7 +898,7 @@ char **get_schemas_capabilities(void)
 	}
 
 	for (i = 0, listitem = models_list; listitem != NULL; listitem = listitem->next, i++) {
-		if (asprintf(&(retval[i]), "%s?module=%s%s%s", listitem->model->namespace, listitem->model->name,
+		if (asprintf(&(retval[i]), "%s?module=%s%s%s", listitem->model->ns, listitem->model->name,
 				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? "&amp;revision=" : "",
 				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? listitem->model->version : "") == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
@@ -932,7 +937,7 @@ char* get_schemas()
 	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
 		aux = get_schemas_str(listitem->model->name,
 				listitem->model->version,
-				listitem->model->namespace);
+				listitem->model->ns);
 		if (schema == NULL) {
 			schema = aux;
 		} else if (aux != NULL) {
@@ -1426,7 +1431,7 @@ static struct data_model* data_model_new(const char* model_path)
 	if (get_model_info(model->ctxt,
 			&(model->name),
 			&(model->version),
-			&(model->namespace),
+			&(model->ns),
 			&(model->prefix),
 			&(model->rpcs),
 			&(model->notifs)) != 0) {
@@ -1438,7 +1443,6 @@ static struct data_model* data_model_new(const char* model_path)
 	}
 	model->path = strdup(model_path);
 	ncds_features_parse(model);
-	model->model_tree = NULL;
 
 	/* resolve uses statements in groupings and augments */
 	ncds_update_uses_groupings(model);
@@ -2116,7 +2120,7 @@ static int ncds_update_augment(struct data_model *augment)
 			xmlAddChild(path_node, node = xmlCopyNode(augments->nodesetval->nodeTab[i], 1));
 			ns = xmlNewNs(node, BAD_CAST "libnetconf", BAD_CAST "libnetconf");
 			xmlSetNsProp(node, ns, BAD_CAST "module", BAD_CAST augment->name);
-			xmlSetNsProp(node, ns, BAD_CAST "ns", BAD_CAST augment->namespace);
+			xmlSetNsProp(node, ns, BAD_CAST "ns", BAD_CAST augment->ns);
 		}
 
 		free(module_inpath);
@@ -2456,8 +2460,8 @@ int ncds_consolidate(void)
 		/* when using transapi */
 		if (ds_iter->datastore->transapi.module != NULL) {
 			/* parse only models not parsed yet */
-			if (ds_iter->datastore->data_model->model_tree == NULL) {
-				if ((ds_iter->datastore->data_model->model_tree = yinmodel_parse(ds_iter->datastore->ext_model, ds_iter->datastore->transapi.ns_mapping)) == NULL) {
+			if (ds_iter->datastore->ext_model_tree == NULL) {
+				if ((ds_iter->datastore->ext_model_tree = yinmodel_parse(ds_iter->datastore->ext_model, ds_iter->datastore->transapi.ns_mapping)) == NULL) {
 					WARN("Failed to parse model %s. Callbacks of transAPI modules using this model will not be executed.", ds_iter->datastore->data_model->name)
 				}
 			}
@@ -2487,14 +2491,14 @@ static xmlNodePtr get_model_root(xmlNodePtr roots, struct data_model *data_model
 		ERROR("%s: Invalid argument - data model is unknown.", __func__);
 		return NULL;
 	}
-	if (data_model->namespace == NULL) {
+	if (data_model->ns == NULL) {
 		ERROR("Invalid configuration data model '%s'- namespace is missing.", data_model->name);
 		return NULL;
 	}
 
 	retval = roots;
 	while (retval != NULL) {
-		if (retval->ns == NULL || xmlStrcmp(retval->ns->href, BAD_CAST (data_model->namespace)) == 0) {
+		if (retval->ns == NULL || xmlStrcmp(retval->ns->href, BAD_CAST (data_model->ns)) == 0) {
 			break;
 		}
 
@@ -2983,6 +2987,7 @@ struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path)
 		goto cleanup;
 	}
 	ds->ext_model = ds->data_model->xml;
+	ds->ext_model_tree = NULL;
 
 #ifndef DISABLE_VALIDATION
 	if (nc_init_flags & NC_INIT_VALIDATE) {
@@ -3099,7 +3104,7 @@ void ncds_ds_model_free(struct data_model* model)
 	free(model->path);
 	free(model->name);
 	free(model->version);
-	free(model->namespace);
+	free(model->ns);
 	free(model->prefix);
 	if (model->rpcs != NULL) {
 		for (i = 0; model->rpcs[i] != NULL; i++) {
@@ -3126,7 +3131,6 @@ void ncds_ds_model_free(struct data_model* model)
 		}
 		free(model->features);
 	}
-	yinmodel_free(model->model_tree);
 
 	free(model);
 }
@@ -3249,6 +3253,7 @@ void ncds_free(struct ncds_ds* datastore)
 			xmlFreeDoc(ds->ext_model);
 		}
 		ncds_ds_model_free(ds->data_model);
+		yinmodel_free(ds->ext_model_tree);
 
 		free (ds);
 	}
@@ -3719,6 +3724,9 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 		new = xmlNewDoc(BAD_CAST "1.0");
 	} else {
 		new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+
+		/* add default values */
+		ncdflt_default_values(new, ds->ext_model, NCWD_MODE_ALL_TAGGED);
 	}
 	free(new_data);
 	if (new == NULL ) { /* cannot get or parse data */
@@ -3735,7 +3743,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 		/* announce error-option to the TransAPI module, if error-option not set, announce default stop-on-error */
 		*(ds->transapi.erropt) = (erropt != NC_EDIT_ERROPT_NOTSET) ? erropt : NC_EDIT_ERROPT_STOP;
 		/* perform TransAPI transactions */
-		ret = transapi_running_changed(ds->transapi.data_clbks, ds->transapi.ns_mapping, old, new, ds->data_model, erropt, &e);
+		ret = transapi_running_changed(ds, old, new, erropt, &e);
 		if (ret) {
 			e_new = nc_err_new(NC_ERR_OP_FAILED);
 			if (e != NULL) {
@@ -3874,19 +3882,23 @@ process_datastore:
 			}
 			break;
 		}
-		doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 
 		if (ds->get_state_xml != NULL || ds->get_state != NULL) {
 			/* caller provided callback function to retrieve status data */
 
 			if (ds->get_state_xml != NULL) {
+				/* status data are directly in XML format */
 				doc2 = ds->get_state_xml(ds->ext_model, doc1, &e);
 			} else if (ds->get_state != NULL) {
+				/* status data are provided as string, convert it into XML structure */
 				xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
 				data2 = ds->get_state(model, data, &e);
 				doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 				free(model);
 				free(data2);
+			} else {
+				/* we have no status data */
+				doc2 = NULL;
 			}
 
 			if (e != NULL) {
@@ -3894,6 +3906,9 @@ process_datastore:
 				free(data);
 				break;
 			}
+
+			/* convert configuration data into XML structure */
+			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 
 			/* merge status and config data */
 			/* if merge fail (probably one of docs NULL)*/
@@ -4910,7 +4925,7 @@ const struct data_model* ncds_get_model_data(const char* namespace)
 	}
 
 	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
-		if (listitem->model->namespace != NULL && strcmp(listitem->model->namespace, namespace) == 0) {
+		if (listitem->model->ns != NULL && strcmp(listitem->model->ns, namespace) == 0) {
 			/* namespace matches */
 			model = listitem->model;
 			break;
