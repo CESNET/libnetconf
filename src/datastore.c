@@ -3724,6 +3724,9 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 		new = xmlNewDoc(BAD_CAST "1.0");
 	} else {
 		new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+
+		/* add default values */
+		ncdflt_default_values(new, ds->ext_model, NCWD_MODE_ALL_TAGGED);
 	}
 	free(new_data);
 	if (new == NULL ) { /* cannot get or parse data */
