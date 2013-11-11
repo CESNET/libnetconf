@@ -104,7 +104,7 @@ $(document).ready(function(){initNavTree('da/db3/server.html','../../');});
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h2>Server Architecture</h2>
-<p>It is [strongly] advised to set SUID (or SGID) bit on every application that is built on libnetconf for a user (or group) created for this purpose, as several internal functions behave based on this precondition. libnetconf uses a number of files which pose a security risk if they are accessible by untrustworthy users. This way it is possible not to restrict the use of an application but only the access to its files, so keep this in mind when creating any directories or files that are used.</p>
+<p>It is <b>strongly</b> advised to set SUID (or SGID) bit on every application that is built on libnetconf for a user (or group) created for this purpose, as several internal functions behave based on this precondition. libnetconf uses a number of files which pose a security risk if they are accessible by untrustworthy users. This way it is possible not to restrict the use of an application but only the access to its files, so keep this in mind when creating any directories or files that are used.</p>
 <p>Generally, there are two basic approaches of how to implement a NETCONF server using libnetconf.</p>
 <h3>Single-level Architecture</h3>
 <div class="image">
@@ -139,7 +139,7 @@ $(document).ready(function(){initNavTree('da/db3/server.html','../../');});
  Use <a class="el" href="../../db/de9/group__rpc.html#ga214fcc2c0095d56f4aa0d90c11da25fc" title="Receive &lt;rpc&gt; request from the specified NETCONF session. This function is supposed to be performed o...">nc_session_recv_rpc()</a> to get the next request from the client from the specified NETCONF session. In case of an error return code, the state of the session should be checked by <a class="el" href="../../db/d52/group__session.html#gacebd018e30c3eeb0638bbb428a1741b4" title="Get information about the session current status.">nc_session_get_status()</a> to learn if the session can be further used.<br/>
  According to the type of the request (<a class="el" href="../../db/de9/group__rpc.html#gaa502fb30575000775b29a764101c1bef" title="Get type of the rpc message.">nc_rpc_get_type()</a>), perform appropriate action:<ul>
 <li><em>NC_RPC_DATASTORE_READ</em> or <em>NC_RPC_DATASTORE_WRITE</em>: use <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore.">ncds_apply_rpc()</a> to perform the requested operation on the datastore. If the request affects the running datastore (<a class="el" href="../../db/de9/group__rpc.html#gab240067d45d58c945cdfd61948751379" title="Get the target datastore type (running, startup, candidate) of the rpc request.">nc_rpc_get_target()</a> == NC_DATASTORE_RUNNING), apply configuration changes to the controlled device. <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore.">ncds_apply_rpc()</a> applies the request to the specified datastore. Besides the datastores created explicitely by the <a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6" title="Create a new datastore structure of the specified implementation type.">ncds_new()</a> and <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use.">ncds_init()</a> calls, remember to apply the request to the internal libnetconf datastore with ID 0. To merge results of the separate <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore.">ncds_apply_rpc()</a> calls can be merged by <a class="el" href="../../d0/de2/group__reply.html#gab1f7b7f9be8153758e5b047fe70fd48d" title="Merge reply messages. All messages MUST be of the same type.">nc_reply_merge()</a> into a single reply message.</li>
-<li><em>NC_RPC_SESSION</em>: See example server source codes. Some common function will be added in a future to handle these requests.</li>
+<li><em>NC_RPC_SESSION</em>: See the <a href="https://code.google.com/p/netopeer">Netopeer</a> example server source codes. Some common function will be added in a future to handle these requests.</li>
 </ul>
 </li>
 <li><b>Reply to the client's request</b>.<br/>
@@ -159,7 +159,7 @@ $(document).ready(function(){initNavTree('da/db3/server.html','../../');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
-    <li class="footer">Generated on Tue Sep 24 2013 16:01:43 for libnetconf by
+    <li class="footer">Generated on Mon Nov 11 2013 08:40:30 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

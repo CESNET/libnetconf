@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Mon Nov 11 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -25,6 +25,18 @@ libnetconf's miscellaneous functions\&.
 .RI "void \fBnc_verbosity\fP (\fBNC_VERB_LEVEL\fP level)"
 .br
 .RI "\fISet libnetconf's verbosity level\&. \fP"
+.ti -1c
+.RI "void \fBnc_verb_error\fP (const char *format,\&.\&.\&.)"
+.br
+.RI "\fIFunction for logging error messages\&. \fP"
+.ti -1c
+.RI "void \fBnc_verb_warning\fP (const char *format,\&.\&.\&.)"
+.br
+.RI "\fIFunction for logging warning messages\&. \fP"
+.ti -1c
+.RI "void \fBnc_verb_verbose\fP (const char *format,\&.\&.\&.)"
+.br
+.RI "\fIFunction for logging verbose messages\&. \fP"
 .ti -1c
 .RI "int \fBnc_init\fP (int flags)"
 .br
@@ -123,6 +135,39 @@ Print all messages including some development debug messages\&.
 Set libnetconf's verbosity level\&. \fBParameters:\fP
 .RS 4
 \fIlevel\fP Enabled verbosity level (includes all the levels with higher priority)\&. 
+.RE
+.PP
+
+.SS "void nc_verb_error (const char *format, \&.\&.\&.)"
+
+.PP
+Function for logging error messages\&. \fBParameters:\fP
+.RS 4
+\fIformat\fP printf's format string 
+.br
+\fI\&.\&.\&.\fP list of arguments specified in format 
+.RE
+.PP
+
+.SS "void nc_verb_warning (const char *format, \&.\&.\&.)"
+
+.PP
+Function for logging warning messages\&. \fBParameters:\fP
+.RS 4
+\fIformat\fP printf's format string 
+.br
+\fI\&.\&.\&.\fP list of arguments specified in format 
+.RE
+.PP
+
+.SS "void nc_verb_verbose (const char *format, \&.\&.\&.)"
+
+.PP
+Function for logging verbose messages\&. \fBParameters:\fP
+.RS 4
+\fIformat\fP printf's format string 
+.br
+\fI\&.\&.\&.\fP list of arguments specified in format 
 .RE
 .PP
 

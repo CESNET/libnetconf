@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Mon Nov 11 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -134,6 +134,18 @@ libnetconf's general public functions and structures definitions\&.
 .RI "void \fBnc_verbosity\fP (\fBNC_VERB_LEVEL\fP level)"
 .br
 .RI "\fISet libnetconf's verbosity level\&. \fP"
+.ti -1c
+.RI "void \fBnc_verb_error\fP (const char *format,\&.\&.\&.)"
+.br
+.RI "\fIFunction for logging error messages\&. \fP"
+.ti -1c
+.RI "void \fBnc_verb_warning\fP (const char *format,\&.\&.\&.)"
+.br
+.RI "\fIFunction for logging warning messages\&. \fP"
+.ti -1c
+.RI "void \fBnc_verb_verbose\fP (const char *format,\&.\&.\&.)"
+.br
+.RI "\fIFunction for logging verbose messages\&. \fP"
 .ti -1c
 .RI "int \fBnc_init\fP (int flags)"
 .br

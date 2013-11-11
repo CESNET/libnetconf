@@ -1,4 +1,4 @@
-.TH "client" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "client" 3 "Mon Nov 11 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -31,11 +31,11 @@ Here is a description of using libnetconf functions in a NETCONF client:
 .br
  User credentials are received via the callback functions specific for each authentication method\&. There are default callbacks, but application can set their own via:
 .IP "  \(bu" 4
-\fIInteractive\fP - nc_callback_sshauth_interactive()
+\fIInteractive\fP - \fBnc_callback_sshauth_interactive()\fP
 .IP "  \(bu" 4
-\fIPassword\fP - nc_callback_sshauth_password()
+\fIPassword\fP - \fBnc_callback_sshauth_password()\fP
 .IP "  \(bu" 4
-\fIPubluc keys\fP - nc_callback_sshauth_passphrase()\&. Here can also the paths to the key files be specified by nc_set_publickey_path() and nc_set_privatekey_path()\&. If not set, libnetconf tries to find them in the default paths\&.
+\fIPubluc keys\fP - \fBnc_callback_sshauth_passphrase()\fP\&. Here can also the paths to the key files be specified by nc_set_publickey_path() and nc_set_privatekey_path()\&. If not set, libnetconf tries to find them in the default paths\&.
 .PP
 
 .IP "4." 4

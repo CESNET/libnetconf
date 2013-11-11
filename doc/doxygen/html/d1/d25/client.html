@@ -119,9 +119,9 @@ $(document).ready(function(){initNavTree('d1/d25/client.html','../../');});
 </li>
 <li><b>Set own callback(s) for the SSH authentication methods (optional)</b>.<br/>
  User credentials are received via the callback functions specific for each authentication method. There are default callbacks, but application can set their own via:<ul>
-<li><em>Interactive</em> - nc_callback_sshauth_interactive()</li>
-<li><em>Password</em> - nc_callback_sshauth_password()</li>
-<li><em>Publuc keys</em> - nc_callback_sshauth_passphrase(). Here can also the paths to the key files be specified by nc_set_publickey_path() and nc_set_privatekey_path(). If not set, libnetconf tries to find them in the default paths.</li>
+<li><em>Interactive</em> - <a class="el" href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb" title="Set a callback function for passing user credentials into the libssh2&#39;s keyboard-interactive authenti...">nc_callback_sshauth_interactive()</a></li>
+<li><em>Password</em> - <a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb" title="Set a callback function for passing the user password into the libssh2&#39;s password authentication meth...">nc_callback_sshauth_password()</a></li>
+<li><em>Publuc keys</em> - <a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726" title="Set a callback function for passing the user password into the libssh2&#39;s publickey authentication met...">nc_callback_sshauth_passphrase()</a>. Here can also the paths to the key files be specified by nc_set_publickey_path() and nc_set_privatekey_path(). If not set, libnetconf tries to find them in the default paths.</li>
 </ul>
 </li>
 <li><b>Connect to the NETCONF server(s)</b>.<br/>
@@ -142,7 +142,7 @@ $(document).ready(function(){initNavTree('d1/d25/client.html','../../');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
-    <li class="footer">Generated on Tue Sep 24 2013 16:01:43 for libnetconf by
+    <li class="footer">Generated on Mon Nov 11 2013 08:40:30 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

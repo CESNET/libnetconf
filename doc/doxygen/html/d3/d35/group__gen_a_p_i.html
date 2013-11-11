@@ -138,6 +138,15 @@ Functions</h2></td></tr>
 <tr class="memitem:gadd8fd7b3bb2e7cba580c9a4229fe02d7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7">nc_verbosity</a> (<a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060">NC_VERB_LEVEL</a> level)</td></tr>
 <tr class="memdesc:gadd8fd7b3bb2e7cba580c9a4229fe02d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set libnetconf's verbosity level.  <a href="#gadd8fd7b3bb2e7cba580c9a4229fe02d7">More...</a><br/></td></tr>
 <tr class="separator:gadd8fd7b3bb2e7cba580c9a4229fe02d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabd4e3697f3a1fe6b5853e692ad20c2bb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gabd4e3697f3a1fe6b5853e692ad20c2bb">nc_verb_error</a> (const char *format,...)</td></tr>
+<tr class="memdesc:gabd4e3697f3a1fe6b5853e692ad20c2bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function for logging error messages.  <a href="#gabd4e3697f3a1fe6b5853e692ad20c2bb">More...</a><br/></td></tr>
+<tr class="separator:gabd4e3697f3a1fe6b5853e692ad20c2bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga943a7c859f20bb1278964a7424762d8e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga943a7c859f20bb1278964a7424762d8e">nc_verb_warning</a> (const char *format,...)</td></tr>
+<tr class="memdesc:ga943a7c859f20bb1278964a7424762d8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function for logging warning messages.  <a href="#ga943a7c859f20bb1278964a7424762d8e">More...</a><br/></td></tr>
+<tr class="separator:ga943a7c859f20bb1278964a7424762d8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae4f0d22fb274269c0259497abb702f5d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gae4f0d22fb274269c0259497abb702f5d">nc_verb_verbose</a> (const char *format,...)</td></tr>
+<tr class="memdesc:gae4f0d22fb274269c0259497abb702f5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function for logging verbose messages.  <a href="#gae4f0d22fb274269c0259497abb702f5d">More...</a><br/></td></tr>
+<tr class="separator:gae4f0d22fb274269c0259497abb702f5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga40e32bd7c1404a76105b426219021cdc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc">nc_init</a> (int flags)</td></tr>
 <tr class="memdesc:ga40e32bd7c1404a76105b426219021cdc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize libnetconf for system-wide usage. This initialization is shared across all the processes.  <a href="#ga40e32bd7c1404a76105b426219021cdc">More...</a><br/></td></tr>
 <tr class="separator:ga40e32bd7c1404a76105b426219021cdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -252,6 +261,111 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">level</td><td>Enabled verbosity level (includes all the levels with higher priority). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gabd4e3697f3a1fe6b5853e692ad20c2bb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void nc_verb_error </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>format</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function for logging error messages. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>printf's format string </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>list of arguments specified in format </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga943a7c859f20bb1278964a7424762d8e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void nc_verb_warning </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>format</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function for logging warning messages. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>printf's format string </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>list of arguments specified in format </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gae4f0d22fb274269c0259497abb702f5d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void nc_verb_verbose </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>format</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function for logging verbose messages. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>printf's format string </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>list of arguments specified in format </td></tr>
   </table>
   </dd>
 </dl>
@@ -552,7 +666,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Sep 24 2013 16:01:43 for libnetconf by
+    <li class="footer">Generated on Mon Nov 11 2013 08:40:30 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

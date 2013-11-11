@@ -120,7 +120,7 @@ $(document).ready(function(){initNavTree('d3/df0/transapi_tutorial.html','../../
 </div><!-- fragment --></li>
 </ol>
 <h2>Filling up functionality</h2>
-<p>Here we show the simplest example of toaster simulating module. It is working but does not deal with multiple access and threads correctly. Better example may be seen in git repository (examples/server/transapi/toaster.c).</p>
+<p>Here we show the simplest example of toaster simulating module. It is working but does not deal with multiple access and threads correctly. Better example may be seen in the netopeer-server-sl source codes located in the <a href="https://code.google.com/p/netopeer">Netopeer project</a> repository (server-sl/toaster/toaster.c).</p>
 <ol type="1">
 <li>Open 'toaster.c' file with you favorite editor: <div class="fragment"><div class="line">$ vim toaster.c</div>
 </div><!-- fragment --></li>
@@ -210,7 +210,7 @@ $(document).ready(function(){initNavTree('d3/df0/transapi_tutorial.html','../../
 <div class="fragment"><div class="line">$ autoreconf</div>
 <div class="line">$ ./configure</div>
 <div class="line">$ make</div>
-</div><!-- fragment --><h2>Integrating to example server</h2>
+</div><!-- fragment --><h2>Integrating to a server</h2>
 <p>In server we use libnetconfs function <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support.">ncds_new_transapi()</a> instead of <a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6" title="Create a new datastore structure of the specified implementation type.">ncds_new()</a> to create transAPI capable data store. Then you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock) data-reading (get, get-config) and module data model defined RPC operations. All these operation are processed inside <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a> function. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
@@ -218,7 +218,7 @@ $(document).ready(function(){initNavTree('d3/df0/transapi_tutorial.html','../../
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../d9/d25/transapi.html">Transaction API (transAPI)</a></li>
-    <li class="footer">Generated on Tue Sep 24 2013 16:01:43 for libnetconf by
+    <li class="footer">Generated on Mon Nov 11 2013 08:40:30 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.3.1 </li>
   </ul>

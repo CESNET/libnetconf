@@ -1,11 +1,11 @@
-.TH "server" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "server" 3 "Mon Nov 11 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 server \- Server 
 .SS "Server Architecture"
 .PP
-It is [strongly] advised to set SUID (or SGID) bit on every application that is built on libnetconf for a user (or group) created for this purpose, as several internal functions behave based on this precondition\&. libnetconf uses a number of files which pose a security risk if they are accessible by untrustworthy users\&. This way it is possible not to restrict the use of an application but only the access to its files, so keep this in mind when creating any directories or files that are used\&.
+It is \fBstrongly\fP advised to set SUID (or SGID) bit on every application that is built on libnetconf for a user (or group) created for this purpose, as several internal functions behave based on this precondition\&. libnetconf uses a number of files which pose a security risk if they are accessible by untrustworthy users\&. This way it is possible not to restrict the use of an application but only the access to its files, so keep this in mind when creating any directories or files that are used\&.
 .PP
 Generally, there are two basic approaches of how to implement a NETCONF server using libnetconf\&.
 .PP
@@ -64,7 +64,7 @@ Here is a description of using libnetconf functions in a NETCONF server\&. Accor
 .IP "  \(bu" 4
 \fINC_RPC_DATASTORE_READ\fP or \fINC_RPC_DATASTORE_WRITE\fP: use \fBncds_apply_rpc()\fP to perform the requested operation on the datastore\&. If the request affects the running datastore (\fBnc_rpc_get_target()\fP == NC_DATASTORE_RUNNING), apply configuration changes to the controlled device\&. \fBncds_apply_rpc()\fP applies the request to the specified datastore\&. Besides the datastores created explicitely by the \fBncds_new()\fP and \fBncds_init()\fP calls, remember to apply the request to the internal libnetconf datastore with ID 0\&. To merge results of the separate \fBncds_apply_rpc()\fP calls can be merged by \fBnc_reply_merge()\fP into a single reply message\&.
 .IP "  \(bu" 4
-\fINC_RPC_SESSION\fP: See example server source codes\&. Some common function will be added in a future to handle these requests\&.
+\fINC_RPC_SESSION\fP: See the \fCNetopeer\fP example server source codes\&. Some common function will be added in a future to handle these requests\&.
 .PP
 
 .IP "8." 4

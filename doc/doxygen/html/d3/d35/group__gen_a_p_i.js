@@ -16,6 +16,9 @@ var group__gen_a_p_i =
       [ "NC_VERB_DEBUG", "d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a1ddf66190b3b38c4de213321e3ae6491", null ]
     ] ],
     [ "nc_verbosity", "d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7", null ],
+    [ "nc_verb_error", "d3/d35/group__gen_a_p_i.html#gabd4e3697f3a1fe6b5853e692ad20c2bb", null ],
+    [ "nc_verb_warning", "d3/d35/group__gen_a_p_i.html#ga943a7c859f20bb1278964a7424762d8e", null ],
+    [ "nc_verb_verbose", "d3/d35/group__gen_a_p_i.html#gae4f0d22fb274269c0259497abb702f5d", null ],
     [ "nc_init", "d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc", null ],
     [ "nc_close", "d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3", null ],
     [ "nc_callback_print", "d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7", null ],

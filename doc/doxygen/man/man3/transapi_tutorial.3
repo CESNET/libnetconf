@@ -1,4 +1,4 @@
-.TH "transapi_tutorial" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "transapi_tutorial" 3 "Mon Nov 11 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -55,7 +55,7 @@ $ lnc-creator --name toaster --paths paths_file --model toaster@2009-11-20\&.yin
 .PP
 .SS "Filling up functionality"
 .PP
-Here we show the simplest example of toaster simulating module\&. It is working but does not deal with multiple access and threads correctly\&. Better example may be seen in git repository (examples/server/transapi/toaster\&.c)\&.
+Here we show the simplest example of toaster simulating module\&. It is working but does not deal with multiple access and threads correctly\&. Better example may be seen in the netopeer-server-sl source codes located in the \fCNetopeer project\fP repository (server-sl/toaster/toaster\&.c)\&.
 .PP
 .IP "1." 4
 Open 'toaster\&.c' file with you favorite editor: 
@@ -208,6 +208,6 @@ $ make
 .fi
 .PP
 .PP
-.SS "Integrating to example server"
+.SS "Integrating to a server"
 .PP
 In server we use libnetconfs function \fBncds_new_transapi()\fP instead of \fBncds_new()\fP to create transAPI capable data store\&. Then you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock) data-reading (get, get-config) and module data model defined RPC operations\&. All these operation are processed inside \fBncds_apply_rpc2all()\fP function\&. 
