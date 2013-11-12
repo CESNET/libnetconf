@@ -3742,6 +3742,10 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 	} else {
 		/* announce error-option to the TransAPI module, if error-option not set, announce default stop-on-error */
 		*(ds->transapi.erropt) = (erropt != NC_EDIT_ERROPT_NOTSET) ? erropt : NC_EDIT_ERROPT_STOP;
+
+		/* add default values */
+		ncdflt_default_values(old, ds->ext_model, NCWD_MODE_ALL_TAGGED);
+
 		/* perform TransAPI transactions */
 		ret = transapi_running_changed(ds, old, new, erropt, &e);
 		if (ret) {
