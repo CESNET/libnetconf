@@ -232,7 +232,7 @@ struct data_model {
 	/**
 	 * @brief Namespace of the model
 	 */
-	char* namespace;
+	char* ns;
 	/**
 	 * @brief Prefix of the model
 	 */
@@ -257,10 +257,6 @@ struct data_model {
 	 * @brief The list of enabled features defined in the model
 	 */
 	struct model_feature** features;
-	/**
-	 * @brief Parsed data model structure.
-	 */
-	struct model_tree* model_tree;
 };
 
 struct model_list {
@@ -300,6 +296,10 @@ struct ncds_ds {
 	 * all augment models
 	 */
 	xmlDocPtr ext_model;
+	/**
+	 * @brief Parsed extended data model structure.
+	 */
+	struct model_tree* ext_model_tree;
 
 #ifndef DISABLE_VALIDATION
 	/**

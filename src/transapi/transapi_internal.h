@@ -20,15 +20,13 @@ typedef enum
  * @ingroup transapi
  * @brief Top level function of transaction API. Finds differences between old_doc and new_doc and calls specified callbacks.
  *
- * @param[in] c Structure binding callbacks with paths in XML document
- * @param[in] ns_mapping Pairing prefixes with URIs.
+ * @param[in] ds NETCONF datastore structure for access transAPI connected with this datastore
  * @param[in] old_doc Content of configuration datastore before change.
  * @param[in] new_doc Content of configuration datastore after change.
- * @param[in] model Structure holding document semantics.
  * @param[in] libxml2 Specify if the module uses libxml2 API
  *
  * @return EXIT_SUCESS or EXIT_FAILURE
  */
-int transapi_running_changed(struct transapi_data_callbacks* c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct data_model *model, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error);
+int transapi_running_changed(struct ncds_ds* ds, xmlDocPtr old_doc, xmlDocPtr new_doc, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error);
 
 #endif /* TRANSAPI_INTERNAL_H_ */

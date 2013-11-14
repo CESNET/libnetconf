@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# vim set fileencoding=utf-8
 #
 # @file generator.py
 # @author David Kupka <dkupka@cesnet.cz>
@@ -39,12 +40,57 @@ import libxml2
 import argparse
 import shutil
 import re
-import sys
 import os
+import subprocess
+import tempfile
 
 transapi_version = 3
 
 target_dir = './'
+
+RNGLIB='/usr/local/share/libnetconf/rnglib/'
+XSLTDIR='/usr/local/share/libnetconf/xslt/'
+
+# Find pyang and use it to convert model to YIN
+def convert_to_yin(input_file_name, search_path):
+	# convert model to YIN using pyang
+	yin_data = subprocess.check_output(['pyang', '-p', search_path, '-f', 'yin', input_file_name])
+	model = libxml2.parseMemory(yin_data, len(yin_data))
+	# infer name of file from input file name
+	(yin_file_name, ext) = os.path.splitext(os.path.abspath(input_file_name))
+	yin_file_name+='.yin'
+	# if the original model was not yin store converted yin
+	if yin_file_name != input_file_name:
+		yin_file = open(yin_file_name, 'w')
+		yin_file.write(str(model))
+		yin_file.close()
+
+	return(model)
+	
+def generate_validators(yin_model_path, augment_models_paths, search_path):
+	(yin_file_name, ext) = os.path.splitext(os.path.basename(yin_model_path))
+	#create temporary file fof DSDL schema
+	(dsdl_schema_fd,dsdl_schema_name) = tempfile.mkstemp(prefix='dsdl', suffix='.dsdl')
+	(xslt_tmp_fd,xslt_tmp_name) = tempfile.mkstemp(prefix='schxsl')
+	(xslt_tmp_inout_fd,xslt_tmp_inout_name) = tempfile.mkstemp()
+	#generate DSDL schema from YIN schema files
+	subprocess.check_call(['pyang', '-p', search_path, '-f', 'dsdl', '--dsdl-no-documentation', '--dsdl-no-dublin-core', '-o', os.path.abspath(dsdl_schema_name), yin_model_path ] + augment_models_paths)
+	#generate RNG files from DSDL
+	subprocess.check_call(['xsltproc', '--output', yin_file_name+'-data.rng', '--stringparam', 'basename', './'+yin_file_name, '--stringparam', 'target', 'data', '--stringparam', 'schema-dir', RNGLIB, os.path.join(XSLTDIR, 'gen-relaxng.xsl'), os.path.abspath(dsdl_schema_name)])
+	subprocess.check_call(['xsltproc', '--output', yin_file_name+'-gdefs.rng', '--stringparam', 'gdefs-only', '1', os.path.join(XSLTDIR, 'gen-relaxng.xsl'), os.path.abspath(dsdl_schema_name)])
+	#generate schematrom files form DSDL
+	subprocess.check_call(['xsltproc', '--output', os.path.abspath(xslt_tmp_name), '--stringparam', 'target', 'data', os.path.join(XSLTDIR, 'gen-schematron.xsl'), os.path.abspath(dsdl_schema_name)])
+	subprocess.check_call(['xsltproc', os.path.join(XSLTDIR, 'iso_abstract_expand.xsl'), os.path.abspath(xslt_tmp_name)], stdout=xslt_tmp_inout_fd)
+	subprocess.check_call(['xsltproc', '-o', os.path.basename(yin_model_path)+'-schematron.xsl', os.path.join(XSLTDIR, 'iso_svrl_for_xslt1.xsl')], stdin=xslt_tmp_inout_fd)
+	#close
+	os.close(dsdl_schema_fd)
+	os.close(xslt_tmp_fd)
+	os.close(xslt_tmp_inout_fd)
+	#and remove temporary files
+	os.remove(os.path.abspath(dsdl_schema_name))
+	os.remove(os.path.abspath(xslt_tmp_name))
+	os.remove(os.path.abspath(xslt_tmp_inout_name))
+	return(None)
 
 # Use configure.in.template and replace all variables with text
 def generate_configure_in(replace, template_dir):
@@ -70,26 +116,25 @@ def copy_template_files(name, template_dir):
 def separate_paths_and_namespaces(defs):
 	paths = []
 	namespaces = []
-	for d in defs:
-		d = d.rstrip()
-		# skip empty lines and lines starting with '#' (bash/python style single line comments)
-		if len(d) == 0 or d[0] == '#':
-			continue
+	if not defs is None:
+		for d in defs:
+			d = d.rstrip()
+			# skip empty lines and lines starting with '#' (bash/python style single line comments)
+			if len(d) == 0 or d[0] == '#':
+				continue
 
-		# path definition
-		if re.match(r'(/([\w]+:)?[\w]+)+', d):
-			paths.append(d)
-		elif re.match(r'[\w]+=.+', d):
-			namespaces.append(d.split('='))
-		else:
-			raise ValueError('Line '+d+' is not valid namespace definition nor XPath.')
+			# path definition
+			if re.match(r'(/([\w]+:)?[\w]+)+', d):
+				paths.append(d)
+			elif re.match(r'[\w]+=.+', d):
+				namespaces.append(d.split('='))
+			else:
+				raise ValueError('Line '+d+' is not valid namespace definition nor XPath.')
 
 	return (paths,namespaces)
 
 # 
-def generate_callbacks_file(name, defs, model, without_init, without_close):
-	if defs is None:
-		raise ValueError('Invalid paths file.')
+def generate_callbacks_file(name, defs, model):
 	# Create or rewrite .c file, will be generated
 	outf = open(target_dir+'/'+name+'.c', 'w')
 
@@ -113,27 +158,14 @@ def generate_callbacks_file(name, defs, model, without_init, without_close):
 	content += ' * 1 - data have been modified\n'
 	content += ' */\n'
 	content += 'int config_modified = 0;\n\n'
-	content += '/* Do not modify or set! This variable is set by libnetconf to announce edit-config\'s error-option\n'
-	content += 'Feel free to use it to distinguish module behavior for different error-option values.\n'
-	content += ' * Possible values:\n'
-	content += ' * NC_EDIT_ERROPT_STOP - Following callback after failure are not executed, all successful callbacks executed till\n'
-	content += '                         failure point must be applied to the device.\n'
-	content += ' * NC_EDIT_ERROPT_CONT - Failed callbacks are skipped, but all callbacks needed to apply configuration changes are executed\n'
-	content += ' * NC_EDIT_ERROPT_ROLLBACK - After failure, following callbacks are not executed, but previous successful callbacks are\n'
-	content += '                         executed again with previous configuration data to roll it back.\n'
-	content += ' */\n'
-	content += 'NC_EDIT_ERROPT_TYPE erropt = NC_EDIT_ERROPT_NOTSET;\n\n'
 	# init and close functions 
-	if not (without_init):
-		content += generate_init_callback()
-	if not (without_close):
-		content += generate_close_callback()
+	content += generate_init_callback()
+	content += generate_close_callback()
 	# Add get state data callback
 	content += generate_state_callback()
 	# Config callbacks part
 	(paths, namespaces) = separate_paths_and_namespaces(defs)
 	content += generate_config_callbacks(name, paths, namespaces)
-	# RPC callbacks part
 	if not (model is None):
 		content += generate_rpc_callbacks(model)
 
@@ -252,7 +284,7 @@ def generate_config_callbacks(name, paths, namespaces):
 
 	return(content);
 
-def generate_rpc_callbacks (doc):
+def generate_rpc_callbacks(doc):
 	content = ''
 	callbacks = ''
 
@@ -322,43 +354,91 @@ def find_templates():
 	raise Exception('Template directory not found. Use --template-dir parameter to specify its location.')
 
 # "main" starts here
-parser = argparse.ArgumentParser(description='Generate files for libnetconf transapi callbacks module.')
-parser.add_argument('--name', required=True, help='Name of module with callbacks.')
-parser.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
-parser.add_argument('--model', type=libxml2.parseFile, help='File holding data model. Used for generating rpc callbacks.')
-parser.add_argument('--template-dir', default=None, help='Path to the directory with teplate files')
-parser.add_argument('--without-init', action='store_const', const=1, default=0, help='Module does not need initialization when loaded.')
-parser.add_argument('--without-close', action='store_const', const=1, default=0, help='Module does not need closing before unloaded.')
+# create argument parser
+parser = argparse.ArgumentParser(description='libnetconf tool. Use it for converting YANG model to YIN model, generate validation schemas from model and generate files for libnetconf transapi callbacks module.')
+parser.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model.')
+parser.add_argument('--augment-models', nargs='*', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+parser.add_argument('--search-path', default='.', help='pyang search path.')
+
+#create subparsers
+subparsers = parser.add_subparsers(dest='subcommand')
+
+# convert to implement YANG -> YIN conversion
+parser_convert = subparsers.add_parser('convert')
+#parser_convert.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model.')
+#parser_convert.add_argument('--augment-models', nargs='*', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+
+# validation to implement validation schema generation
+parser_validation = subparsers.add_parser('validation')
+#parser_validation.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model.')
+#parser_validation.add_argument('--augment-models', nargs='*', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+
+# transapi to implement transapi module files generation
+parser_transapi = subparsers.add_parser('transapi')
+parser_transapi.add_argument('--name', help='Name of module with callbacks. If not supplied name of module in data model will be used.')
+#parser_transapi.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model. YIN and YANG formats are acceptable.')
+#parser_transapi.add_argument('--augment-models', nargs='*', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+parser_transapi.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
+parser_transapi.add_argument('--template-dir', default=None, help='Path to the directory with teplate files')
+
+# add common model option
 try:
+	augment_models = []
+	augment_models_paths = []
 	args = parser.parse_args()
 
-	# if --template-dir not specified try to find it
-	# Would be nicer to call this function in 'default' part of parsing argument
-	# --template-dir but then it gets called before trying to find and parse argument :(
-	if args.template_dir is None:
-		args.template_dir = find_templates()
-	# store paterns and text for replacing in configure.in
-	r = {'$$PROJECTNAME$$' : args.name}
-	# prepare output directory
-	target_dir = './'+args.name
-	os.mkdir(target_dir)
+	# process model and find module name
+	# whatever type the model is try to convert it to YIN
+	model = convert_to_yin(args.model.name, args.search_path)
+	(model_name, ext) = os.path.splitext(os.path.abspath(args.model.name))
 
-	#generate configure.in
-	generate_configure_in (r, args.template_dir)
-	#copy files for autotools (Makefile.in, ...)
-	copy_template_files(args.name, args.template_dir)
-	#generate callbacks code
-	generate_callbacks_file(args.name, args.paths, args.model, args.without_init, args.without_close)
+	if args.name is None:
+		(module_name,ext) = os.path.splitext(os.path.basename(args.model.name))
+	else:
+		module_name = args.name
+		
+	if not args.augment_models is None:
+		for l in args.augment_models:
+			for augment_model in l:
+				augment_models.append(convert_to_yin(augment_model.name, args.search_path))
+				(augment_model_name, ext) = os.path.splitext(os.path.abspath(augment_model.name))
+				augment_models_paths.append(augment_model_name+'.yin')
+
+	# when subcommand is 'validation' or 'transapi'
+	if args.subcommand != 'convert':
+		generate_validators(model_name+'.yin', augment_models_paths, args.search_path)
+		
+	if args.subcommand == 'transapi':
+		# if --template-dir not specified try to find it
+		# Would be nicer to call this function in 'default' part of parsing argument
+		# --template-dir but then it gets called before trying to find and parse argument :(
+		if args.template_dir is None:
+			args.template_dir = find_templates()
+		# store paterns and text for replacing in configure.in
+		r = {'$$PROJECTNAME$$' : module_name}
+		# prepare output directory
+		target_dir = './'+module_name
+		if not os.path.exists(target_dir):
+			os.makedirs(target_dir)
+	
+		#generate configure.in
+		generate_configure_in (r, args.template_dir)
+		#copy files for autotools (Makefile.in, ...)
+		copy_template_files(module_name, args.template_dir)
+		#generate callbacks code
+		generate_callbacks_file(module_name, args.paths, model)
 except ValueError as e:
 	print (e)
 except IOError as e:
-	print (e[1]+'('+str(e[0])+'): '+e.filename)
+	print(e[1]+'('+str(e[0])+'): '+e.filename)
 except libxml2.libxmlError as e:
 	print('Can not parse data model: '+e.msg)
+except subprocess.CalledProcessError as e:
+	print("Command '%s' returned %d!" % (' '.join(e.cmd), e.returncode))
 except KeyboardInterrupt:
 	print('Killed by user!')
-except Exception as e:
-	print(str(e[0]))
+#except Exception as e:
+#	print('Some unspecified error occured! '+str(e))
 
-sys.exit(0)
+os.sys.exit(0)
 

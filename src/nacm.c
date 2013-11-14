@@ -1254,7 +1254,7 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 				if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
 					/* process all default-deny-all elements */
 					for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
-						if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i]->parent, module->namespace) == 1) {
+						if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i]->parent, module->ns) == 1) {
 							xmlXPathFreeObject(defdeny);
 							xmlXPathFreeContext(model_ctxt);
 							retval = NACM_DENY;
@@ -1270,7 +1270,7 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 					if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
 						/* process all default-deny-all elements */
 						for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
-							if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i]->parent, module->namespace) == 1) {
+							if (compare_node_to_model(node, defdeny->nodesetval->nodeTab[i]->parent, module->ns) == 1) {
 								xmlXPathFreeObject(defdeny);
 								xmlXPathFreeContext(model_ctxt);
 								retval = NACM_DENY;
@@ -1446,7 +1446,7 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 				if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
 					/* process all default-deny-all elements */
 					for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
-						if (compare_node_to_model(ntfnode, defdeny->nodesetval->nodeTab[i]->parent, ntfmodule->namespace) == 1) {
+						if (compare_node_to_model(ntfnode, defdeny->nodesetval->nodeTab[i]->parent, ntfmodule->ns) == 1) {
 							xmlXPathFreeObject(defdeny);
 							xmlXPathFreeContext(model_ctxt);
 							return(NACM_DENY);
@@ -1572,7 +1572,7 @@ int nacm_check_operation(const nc_rpc* rpc)
 				if (!xmlXPathNodeSetIsEmpty(defdeny->nodesetval)) {
 					/* process all default-deny-all elements */
 					for (i = 0; i < defdeny->nodesetval->nodeNr; i++) {
-						if (compare_node_to_model(opnode, defdeny->nodesetval->nodeTab[i]->parent, opmodule->namespace) == 1) {
+						if (compare_node_to_model(opnode, defdeny->nodesetval->nodeTab[i]->parent, opmodule->ns) == 1) {
 							xmlXPathFreeObject(defdeny);
 							xmlXPathFreeContext(model_ctxt);
 							return(NACM_DENY);
