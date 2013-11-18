@@ -156,15 +156,13 @@ HDRS_PRIV = src/config.h.in \
 	src/transapi/yinparser.h \
 	src/transapi/xmldiff.h
 
-GENERATOR = src/transapi/generator/generator.py \
-
-GENERATOR_FILES = src/transapi/generator/Makefile.in \
-	src/transapi/generator/configure.in \
-	src/transapi/generator/install-sh \
-	src/transapi/generator/config.guess \
-	src/transapi/generator/config.sub \
-	src/transapi/generator/ltmain.sh \
-	src/transapi/generator/README
+GENERATOR_FILES = lnctool/generator/Makefile.in \
+	lnctool/generator/configure.in \
+	lnctool/generator/install-sh \
+	lnctool/generator/config.guess \
+	lnctool/generator/config.sub \
+	lnctool/generator/ltmain.sh \
+	lnctool/generator/README
 
 LOBJS = $(SRCS:%.c=$(OBJDIR)/%.lo)
 
@@ -175,7 +173,9 @@ $(NAME).la: $(LOBJS)
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined -o $@ $^ -rpath $(libdir)
 
 $(LNCTOOL): $(LNCTOOL).in
-	@sed "s/@RNGLIB@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/rnglib/)/g" $< | sed 's/@XSLTDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/xslt/)/g' > $@
+	@sed "s/@RNGLIB@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/rnglib/)/g" $< | \
+	 sed 's/@XSLTDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/xslt/)/g' | \
+	 sed 's/@TEMPLATEDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/templates/)/g' > $@
 	@chmod +x $@
 
 $(OBJDIR)/%.lo: %.c
@@ -199,10 +199,10 @@ dist: $(NAME).spec tarball rpm
 tarball: $(SRCS) $(HEADERS)
 	@rm -rf $(NAME)-$(VERSION);
 	@mkdir $(NAME)-$(VERSION);
-	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) $(GENERATOR) $(GENERATOR_FILES) configure.in configure \
+	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) configure.in configure \
 	    headers/libnetconf.h.in headers/libnetconf_xml.h.in \
 	    ltmain.sh Makefile.in VERSION $(NAME).spec.in $(NAME).pc.in \
-	    lnctool/lnctool.in lnctool/rnglib/* lnctool/xslt/* \
+	    lnctool/lnctool.in lnctool/rnglib/* lnctool/xslt/*  lnctool/generator/*\
 	    install-sh config.sub config.guess Doxyfile.in doc/img/*.png models/*; do \
 	    [ -d $(NAME)-$(VERSION)/$$(dirname $$i) ] || (mkdir -p $(NAME)-$(VERSION)/$$(dirname $$i)); \
 		cp $$i $(NAME)-$(VERSION)/$$i; \
@@ -226,7 +226,7 @@ rpm: tarball
 	fi
 
 .PHONY: install
-install: all install-devel install-doc install-generator
+install: all install-devel install-doc
 	$(INSTALL) -m 775 -d $(DESTDIR)/$(libdir)
 	$(LIBTOOL) --mode=install cp $(NAME).la $(DESTDIR)/$(libdir)
 	$(LIBTOOL) --mode=finish $(DESTDIR)/$(libdir)
@@ -253,17 +253,6 @@ install: all install-devel install-doc install-generator
 	[ -d $(DESTDIR)/$(DBUS_CONFDIR)/system.d/ ] || (mkdir -p $(DESTDIR)/$(DBUS_CONFDIR)/system.d/);
 	[ -z "@SRCS_NOTIFICATIONS@" ] || $(INSTALL_DATA) $(srcdir)/libnetconf.notifications.conf $(DESTDIR)/$(DBUS_CONFDIR)/system.d/
 
-.PHONY: install-generator
-install-generator:
-	@[ -d $(DESTDIR)/$(bindir) ] || \
-		(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir))
-	$(INSTALL_PROGRAM) $(GENERATOR) $(DESTDIR)/$(bindir)/lnc-creator
-	@[ -d $(DESTDIR)/$(datadir)/$(NAME)/templates ] || \
-		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/templates; chmod 755 $(DESTDIR)/$(datadir)/$(NAME)/templates)
-	for i in $(GENERATOR_FILES); do \
-		$(INSTALL_DATA) $$i $(DESTDIR)/$(datadir)/$(NAME)/templates/$$(basename $$i); \
-	done
-
 .PHONY: install-devel
 install-devel:
 	@[ -d $(DESTDIR)/$(libdir) ] || \
@@ -280,6 +269,8 @@ install-devel:
 		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/rnglib); \
 	[ -d $(DESTDIR)/$(datadir)/$(NAME)/xslt ] || \
 		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/xslt);
+	[ -d $(DESTDIR)/$(datadir)/$(NAME)/templates ] || \
+		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/templates);
 	$(LIBTOOL) --mode=install cp $(NAME).la $(DESTDIR)/$(libdir); \
 	for i in $(HDRS_PUBL_ROOT); do \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$$(basename $$i); \
@@ -291,6 +282,7 @@ install-devel:
 	$(INSTALL_PROGRAM) $(LNCTOOL) $(DESTDIR)/$(bindir);
 	$(INSTALL_DATA) lnctool/rnglib/* $(DESTDIR)/$(datadir)/$(NAME)/rnglib/;
 	$(INSTALL_DATA) lnctool/xslt/* $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
+	$(INSTALL_DATA) lnctool/generator/* $(DESTDIR)/$(datadir)/$(NAME)/templates/;
 
 .PHONY: install-doc
 install-doc:
