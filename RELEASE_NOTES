@@ -4,6 +4,7 @@ This release includes the following changes:
 
  * Dependency on D-Bus removed.
  * Example applications were moved to a separated Netopeer project.
+ * TransAPI moved to version 3.
 
 TODO
  * detection and correction of session monitoring inconsistency
