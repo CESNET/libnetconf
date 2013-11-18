@@ -45,7 +45,6 @@ ldconfig
 %files
 %{_libdir}/libnetconf.so.*
 %{_libdir}/libnetconf.la
-@DBUS_NOTIFICATION_CONF@
 @NC_WORKINGDIR_PATH@
 
 %files devel
