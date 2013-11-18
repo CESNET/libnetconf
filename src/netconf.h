@@ -391,7 +391,7 @@ void nc_verb_warning(const char * format, ...);
  * @param[in] ...	list of arguments specified in format
  * @ingroup genAPI
  */
-	void nc_verb_verbose(const char * format, ...);
+void nc_verb_verbose(const char * format, ...);
 
 /**
  * @ingroup genAPI

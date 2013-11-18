@@ -542,7 +542,6 @@
  *              - \-\-paths File with list of sensitive path. One per line.
  *              - \-\-model File holding data model. Used for generating rpc callbacks.
  *              - \-\-template\-dir Path to directory with template files for generator.
- *              - \-\-with\-libxml2 Use libxml2 structures for passing data to and returning from callbacks.
  *              - \-\-without\-init Module does not need initialization when loaded.
  *              - \-\-without\-close Module does not need closing before unloaded.
  * -# Open generated .c file and fill function bodies with code that has to be run
@@ -598,7 +597,7 @@
  * ~~~~~~~
  * -# Run `generator.py':
  * ~~~~~~~{.sh}
- * $ lnc-creator --name toaster --paths paths_file --model toaster@2009-11-20.yin --with-libxml2
+ * $ lnc-creator --name toaster --paths paths_file --model toaster@2009-11-20.yin
  * ~~~~~~~
  *
  * ## Filling up functionality ##

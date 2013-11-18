@@ -135,7 +135,11 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char 
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "case")) {
 			choice = yinmodel_parse_recursive (model_tmp, ns_mapping, &children[count-1], &case_count);
 			children = realloc (children, sizeof (struct model_tree) * (case_count+count));
+			free (children[count-1].name);
+			free (children[count-1].ns_prefix);
+			free (children[count-1].ns_uri);
 			memcpy (&children[count-1], choice, case_count*sizeof(struct model_tree));
+			free (choice);
 			count += case_count;
 			/* remove the increment of the case statement */
 			count--;

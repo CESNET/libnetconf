@@ -11,12 +11,7 @@ struct transapi_callbacks_info {
 	xmlDocPtr new;
 	xmlDocPtr model;
 	keyList keys;
-	int libxml2;
-	/*
-	 * according to libxml2 value one of struct transapi_xml_data_callbacks or
-	 * struct transapi_data_callbacks
-	 */
-	void *calls;
+	struct transapi_data_callbacks *calls;
 };
 
 static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree)
@@ -32,9 +27,15 @@ static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info,
 		xmlFreeNode(tree->node);
 		tree->node = NULL;
 	} else if ((tree->op & XMLDIFF_REM) && tree->node != NULL ) {
-		/* reconnect old node supposed to be romeved back to the new XML tree */
-		parent = find_element_equiv(info->new, tree->node->parent, info->model, info->keys);
-		xmlAddChild(parent, xmlCopyNode(tree->node, 1));
+		/* reconnect old node supposed to be removed back to the new XML tree */
+		if (tree->node->parent->type != XML_DOCUMENT_NODE) {
+			parent = find_element_equiv(info->new, tree->node->parent, info->model, info->keys);
+			xmlAddChild(parent, xmlCopyNode(tree->node, 1));
+		} else {
+			/* we are reconnecting the whole tree */
+			xmlnode = xmlDocCopyNode(tree->node, info->new, 1);
+			xmlDocSetRootElement(info->new, xmlnode);
+		}
 	} else if ((tree->op & XMLDIFF_MOD) && tree->node != NULL ) {
 		/* replace new node with the previous one */
 		for (child = tree->children; child != NULL; child = child->next) {
@@ -70,10 +71,6 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 {
 	struct xmldiff_tree *child;
 	xmlNodePtr parent, xmlnode = NULL;
-	struct transapi_xml_data_callbacks *xmlcalls = NULL;
-	struct transapi_data_callbacks *stdcalls = NULL;
-	xmlBufferPtr buf;
-	char* node;
 	int ret;
 	XMLDIFF_OP op = XMLDIFF_NONE;
 	struct nc_err *new_error = NULL;
@@ -161,18 +158,7 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 		DBG("Transapi revert callback %s with op %d.", tree->path, op);
 
 		/* revert changes */
-		if (info->libxml2) {
-			xmlcalls = (struct transapi_xml_data_callbacks*) (info->calls);
-			ret = xmlcalls->callbacks[tree->priority - 1].func(&xmlcalls->data, op, xmlnode, &new_error);
-		} else {
-			/* if node was removed, it was copied from old XML doc, else from new XML doc */
-			stdcalls = (struct transapi_data_callbacks*) (info->calls);
-			buf = xmlBufferCreate();
-			xmlNodeDump(buf, xmlnode->doc, xmlnode, 1, 0);
-			node = (char*) xmlBufferContent(buf);
-			ret = stdcalls->callbacks[tree->priority - 1].func(&stdcalls->data, op, node, &new_error);
-			xmlBufferFree(buf);
-		}
+		ret = info->calls->callbacks[tree->priority - 1].func(&info->calls->data, op, xmlnode, &new_error);
 
 		if (ret != EXIT_SUCCESS) {
 			WARN("Reverting configuration changes via transAPI failed, configuration may be inconsistent.");
@@ -195,10 +181,6 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error) {
 	struct xmldiff_tree* child, *cur_min;
 	int ret, retval = EXIT_SUCCESS;
-	xmlBufferPtr buf;
-	char* node;
-	struct transapi_xml_data_callbacks *xmlcalls = NULL;
-	struct transapi_data_callbacks *stdcalls = NULL;
 	struct nc_err *new_error = NULL;
 
 	do {
@@ -232,18 +214,7 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 	/* Finally call our callback */
 	if (tree->callback) {
 		DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
-		if (info->libxml2) {
-			xmlcalls = (struct transapi_xml_data_callbacks*)(info->calls);
-			ret = xmlcalls->callbacks[tree->priority-1].func(&xmlcalls->data, tree->op, tree->node, &new_error);
-		} else {
-			/* if node was removed, it was copied from old XML doc, else from new XML doc */
-			stdcalls = (struct transapi_data_callbacks*)(info->calls);
-			buf = xmlBufferCreate();
-			xmlNodeDump(buf, tree->op == XMLDIFF_REM ? info->old : info->new, tree->node, 1, 0);
-			node = (char*)xmlBufferContent(buf);
-			ret = stdcalls->callbacks[tree->priority-1].func(&stdcalls->data, tree->op, node, &new_error);
-			xmlBufferFree(buf);
-		}
+		ret = info->calls->callbacks[tree->priority-1].func(&info->calls->data, tree->op, tree->node, &new_error);
 		if (ret != EXIT_SUCCESS) {
 			ERROR("Callback for path %s failed (%d).", tree->path, ret);
 			if (*error != NULL) {
@@ -270,25 +241,24 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 }
 
 /* will be called by library after change in running datastore */
-int transapi_running_changed(void* c, const char * ns_mapping[], xmlDocPtr old_doc, xmlDocPtr new_doc, struct data_model *model, NC_EDIT_ERROPT_TYPE erropt, int libxml2, struct nc_err **error)
+int transapi_running_changed(struct ncds_ds* ds, xmlDocPtr old_doc, xmlDocPtr new_doc, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error)
 {
 	struct xmldiff_tree* diff = NULL;
 	struct transapi_callbacks_info info;
 	
-	if (xmldiff_diff(&diff, old_doc, new_doc, model->model_tree, ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
-		ERROR("Failed to create the tree of differences.");
+	if (xmldiff_diff(&diff, old_doc, new_doc, ds->ext_model_tree, ds->transapi.ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
+		ERROR("Model \"%s\" transAPI: failed to create the tree of differences.", ds->data_model->name);
 		xmldiff_free(diff);
 		return EXIT_FAILURE;
 	} else if (diff != NULL) {
-		if (xmldiff_set_priorities(diff, c) != EXIT_SUCCESS) {
-			VERB("There was not found a single callback for the configuration change.");
+		if (xmldiff_set_priorities(diff, ds->transapi.data_clbks) != EXIT_SUCCESS) {
+			VERB("Model \"%s\" transAPI: there was not a single callback found for the configuration change.", ds->data_model->name);
 		} else {
 			info.old = old_doc;
 			info.new = new_doc;
-			info.model = model->xml;
+			info.model = ds->ext_model;
 			info.keys = get_keynode_list(info.model);
-			info.libxml2 = libxml2;
-			info.calls = c;
+			info.calls = ds->transapi.data_clbks;
 
 			if (transapi_apply_callbacks_recursive(&info, diff, erropt, error) != EXIT_SUCCESS) {
 				if (erropt != NC_EDIT_ERROPT_CONT) {
@@ -304,7 +274,7 @@ int transapi_running_changed(void* c, const char * ns_mapping[], xmlDocPtr old_d
 			keyListFree(info.keys);
 		}
 	} else {
-		VERB("Nothing changed.");
+		VERB("Model \"%s\" transAPI: nothing changed.", ds->data_model->name);
 	}
 
 	xmldiff_free(diff);

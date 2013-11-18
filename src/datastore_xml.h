@@ -1,9 +1,9 @@
 /**
- * \file libnetconf_xml.h
- * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief libnetconf's main header for libxml2 variants of some functions.
+ * \file datastore_xml.h
+ * \author David Kupka <dkupka@cesnet.cz>
+ * \brief NETCONF datastore handling function prototypes and structures - XML variants.
  *
- * Copyright (C) 2012 CESNET, z.s.p.o.
+ * Copyright (C) 2013 CESNET, z.s.p.o.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,13 +37,39 @@
  *
  */
 
-#ifndef LIBNETCONF_XML_H_
-#define LIBNETCONF_XML_H_
+#ifndef DATASTORE_XML_H_
+#define DATASTORE_XML_H_
 
-@INCLUDE_NOTIFICATIONS_XML@
-#include "libnetconf/messages_xml.h"
-#include "libnetconf/datastore_xml.h"
-#include "libnetconf.h"
+#include <libxml/tree.h>
 
-#endif /* LIBNETCONF_XML_H_ */
+#include "datastore.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @ingroup store
+ * @brief Create a new datastore structure of the specified implementation type with get_state function using libxml2.
+ * @param[in] type Datastore implementation type for the new datastore structure.
+ * @param[in] model_path Base name of the configuration data model files.
+ * libnetconf expects model_path.yin as a data model, model_path.rng for
+ * grammar and data types validation, model_path.dsrl for default values
+ * validation and model_path.sch for semantic validation.
+ * @param[in] get_state Pointer to a callback function that returns a  XML document
+ * containing the state data of the device. The parameters it receives are
+ * a configuration data model in YIN format and the current content of the running
+ * datastore. If NULL is set, \<get\> operation is performed in the same way
+ * as \<get-config\>.
+ * @return Prepared (not configured) datastore structure. To configure the
+ * structure, caller must use the parameter setters of the specific datastore
+ * implementation type. Then, the datastore can be initiated (ncds_init()) and
+ * used to access the configuration data.
+ */
+struct ncds_ds* ncds_new2(NCDS_TYPE type, const char * model_path, xmlDocPtr (*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e));
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* DATASTORE_XML_H_ */

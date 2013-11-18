@@ -1,10 +1,14 @@
-#!/bin/sh
+#!/usr/bin/python
+# vim set fileencoding=utf-8
 #
-# lnctool : libnetconf helper shell script
-# Copyright (C) 2013  CESNET
-# Author(s): Radek KREJCI <rkrejci@cesnet.cz>
+# @file lnctool
+# @author David Kupka <dkupka@cesnet.cz>
+# @author Radek Krejci <rkrejci@cesnet.cz>
+# @brief libnetconf developer tool.
 #
-# LICENSE TERMS
+# Copyright (c) 2013, CESNET, z.s.p.o.
+# All rights reserved.
+#
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -15,212 +19,440 @@
 #    notice, this list of conditions and the following disclaimer in
 #    the documentation and/or other materials provided with the
 #    distribution.
-# 3. Neither the name of the Company nor the names of its contributors
-#    may be used to endorse or promote products derived from this
-#    software without specific prior written permission.
+# 3. Neither the name of the CESNET, z.s.p.o. nor the names of its
+#    contributors may be used to endorse or promote products derived
+#    from this software without specific prior written permission.
 #
-# ALTERNATIVELY, provided that this notice is retained in full, this
-# product may be distributed under the terms of the GNU General Public
-# License (GPL), in which case the provisions of the GPL apply INSTEAD
-# OF those given above.
-#
-# This software is provided ``as is'', and any express or implied
-# warranties, including, but not limited to, the implied warranties of
-# merchantability and fitness for a particular purpose are disclaimed.
-# In no event shall the company or contributors be liable for any
-# direct, indirect, incidental, special, exemplary, or consequential
-# damages (including, but not limited to, procurement of substitute
-# goods or services; loss of use, data, or profits; or business
-# interruption) however caused and on any theory of liability, whether
-# in contract, strict liability, or tort (including negligence or
-# otherwise) arising in any way out of the use of this software, even
-# if advised of the possibility of such damage.
-
-usage() {
-    cat <<EOF
-
-Usage: 
-  `basename ${0}`[-o <output dir>] [-p <path>] [-fhv] <yang model> [<augment models>]
-
-Generates data model files used by libnetconf applications
-instance documents.
-
-Options:
-  -f                Force rewriting existing output files.
-  -h                Displays this help message and exits.
-  <yang model>      Main YANG model of a libnetconf datastore. This file is used
-                    in ncds_new*() function.
-  <augment models>  All models augmenting the main YANG model.
-  -o <output dir>   Specifies the directory for output files
-                    (current directory by default).
-  -p <path>         Search path for additional YANG models.
-  -v                Generate also files for validation.
-EOF
-}
-
-missing() {
-    echo "Missing ${1} tool, please install it."
-    exit 1
-}
-
-yang2yin() {
-    for FILE in ${*}; do
-        if [ ! -f "$FILE" ]; then
-            if [ ! -f "${SEARCH_PATH}/${FILE}" ]; then
-                echo "File ${FILE} does not exist!"
-                exit 1
-            else
-                FILE=${SEARCH_PATH}/${FILE}
-            fi
-        fi
-        
-        FILE_BASE=`basename $FILE`
-        if [ -n "$FORCE" -o ! -f "${DIR}/${FILE_BASE%.yang}.yin" ]; then
-            echo -e "\t creating ${DIR}/${FILE_BASE%.yang}.yin"
-    	    $PYANG -p $SEARCH_PATH -f yin -o ${DIR}/${FILE_BASE%.yang}.yin $FILE
-    	    IMPORTED=`grep 'import ' $FILE | sed 's/.*import[ \t\r\n\v\f]*\([^ \t\r\n\v\f]*\).*/\1.yang/'`
-    	    yang2yin $IMPORTED
-        fi
-    done
-}
-
-gen_dsdl() {
-    if [ -z "$RANDTEXT" ]; then
-        RANDTEXT=$(mktemp -u .XXXXXX)
-        $PYANG -p $SEARCH_PATH -f dsdl -o ${DIR}/dsdl${RANDTEXT} --dsdl-no-documentation --dsdl-no-dublin-core ${*} || exit 1
-    fi
-}
-
-gen_relaxng() {
-    gen_dsdl ${*}
-    
-    FILE=`basename ${1%.yang}-data.rng`
-    if [ -n "$FORCE" -o ! -f "${DIR}/${FILE}" ]; then
-        echo -e "\t creating ${DIR}/${FILE}"
-        $XSLTPROC --output ${DIR}/${FILE} \
-            --stringparam basename ./`basename ${1%.yang}` \
-            --stringparam target data --stringparam schema-dir $RNGLIB \
-            ${XSLTDIR}/gen-relaxng.xsl ${DIR}/dsdl${RANDTEXT} || exit 1
-    fi
-    
-    FILE=`basename ${1%.yang}-gdefs.rng`
-    if [ -n "$FORCE" -o ! -f "${DIR}/${FILE}" ]; then
-        echo -e "\t creating ${DIR}/${FILE}"
-        $XSLTPROC --output ${DIR}/${FILE} \
-            --stringparam gdefs-only 1 \
-            ${XSLTDIR}/gen-relaxng.xsl ${DIR}/dsdl${RANDTEXT} || exit 1
-    fi
-}
-
-gen_schematron() {
-    gen_dsdl ${*}
-
-    FILE=`basename ${1%.yang}`
-    if [ -n "$FORCE" -o ! -f "${DIR}/${FILE}-schematron.xsl" ]; then
-        echo -e "\t creating ${DIR}/${FILE}-schematron.xsl"
-        $XSLTPROC --output ${DIR}/schxsl${RANDTEXT} --stringparam target data \
-                ${XSLTDIR}/gen-schematron.xsl ${DIR}/dsdl${RANDTEXT} || exit 1
-        $XSLTPROC ${XSLTDIR}/iso_abstract_expand.xsl ${DIR}/schxsl${RANDTEXT} | \
-                $XSLTPROC -o ${DIR}/${FILE}-schematron.xsl ${XSLTDIR}/iso_svrl_for_xslt1.xsl -
-    fi
-}
-
-cleanup() {
-    rm -rf ${DIR}/*${RANDTEXT}
-}
-
-# default arguments
-PYANG="pyang"
-XSLTPROC="xsltproc"
-DIR="."
-SEARCH_PATH="."
-RNGLIB=@RNGLIB@
-XSLTDIR=@XSLTDIR@
-
-VALIDATION=""
-FORCE=""
-
-
-#
-# Test for required tools
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 #
 
-# pyang
-which $PYANG 1>/dev/null 2>&1 || missing "pyang"
+try:
+	import libxml2
+	import argparse
+	import shutil
+	import re
+	import os
+	import subprocess
+	import tempfile
+except ImportError as e:
+	print(e.message+'. Please install missing package.')
+	exit(1)
 
-# xsltproc
-which $XSLTPROC 1>/dev/null 2>&1 || missing "xsltproc"
+# transAPI version built by this tool
+transapi_version = 3
 
-#
-# process command line parameters
-#
-while getopts "fho:p:v" opt ; do
-    case $opt in
-        f)
-            FORCE="yes"
-            ;;
-        h)
-            usage
-            exit 0
-            ;;
-        o)
-            DIR=$OPTARG
-            if [ ! -d $DIR ] ; then
-                mkdir $DIR || exit 1                
-            fi
-            ;;
-        p)
-            SEARCH_PATH=$OPTARG
-            if [ ! -d $SEARCH_PATH ] ; then
-                echo "Search directory $SEARCH_PATH does not exist!"
-                exit 1
-            fi
-            ;;
-        v)
-            VALIDATION="yes"
-            ;;
-        \?)
-            echo "Invalid option: -$OPTARG." >&2
-            usage
-            exit 1
-            ;;
-        :)
-            echo "Option -$OPTARG requires an argument."
-	    usage
-	    exit 1
-            ;;
-    esac
-done
+# paths to transformation stylesheets and schemas
+RNGLIB='@RNGLIB@'
+XSLTDIR='@XSLTDIR@'
+TEMPLATEDIR='@TEMPLATEDIR@'
 
-shift $(($OPTIND-1))
-SRC_MAIN=$1
+# Find pyang and use it to convert model to YIN
+def convert_to_yin(input_file_name, search_path):
+	# convert model to YIN using pyang
+	yin_data = subprocess.check_output(['pyang', '-p', search_path, '-f', 'yin', input_file_name])
+	model = libxml2.parseMemory(yin_data, len(yin_data))
+	# infer name of file from input file name
+	(yin_file_name, ext) = os.path.splitext(os.path.basename(input_file_name))
+	yin_file_name+='.yin'
+	# store converted yin
+	yin_file = open(args.output_dir+'/'+yin_file_name, 'w')
+	yin_file.write(str(model))
+	yin_file.close()
 
-if [ -z "$SRC_MAIN" ]; then
-    echo "Missing YANG model!"
-    usage
-    exit 1
-fi
+	return(model)
+	
+def generate_validators(yin_model_path, augment_models_paths, search_path):
+	(yin_file_name, ext) = os.path.splitext(os.path.basename(yin_model_path))
+	yin_file_name = args.output_dir+'/'+os.path.basename(yin_file_name)
+	#create temporary file fof DSDL schema
+	(dsdl_schema_fd,dsdl_schema_name) = tempfile.mkstemp(prefix='dsdl', suffix='.dsdl')
+	(xslt_tmp_fd,xslt_tmp_name) = tempfile.mkstemp(prefix='schxsl')
+	(xslt_tmp_inout_fd,xslt_tmp_inout_name) = tempfile.mkstemp()
+	#generate DSDL schema from YIN schema files
+	subprocess.check_call(['pyang', '-p', search_path, '-f', 'dsdl', '--dsdl-no-documentation', '--dsdl-no-dublin-core', '-o', os.path.abspath(dsdl_schema_name), yin_model_path ] + augment_models_paths)
+	#generate RNG files from DSDL
+	subprocess.check_call(['xsltproc', '--output', yin_file_name+'-data.rng', '--stringparam', 'basename', './'+os.path.basename(yin_file_name), '--stringparam', 'target', 'data', '--stringparam', 'schema-dir', RNGLIB, os.path.join(XSLTDIR, 'gen-relaxng.xsl'), os.path.abspath(dsdl_schema_name)])
+	subprocess.check_call(['xsltproc', '--output', yin_file_name+'-gdefs.rng', '--stringparam', 'gdefs-only', '1', os.path.join(XSLTDIR, 'gen-relaxng.xsl'), os.path.abspath(dsdl_schema_name)])
+	#generate schematrom files form DSDL
+	subprocess.check_call(['xsltproc', '--output', os.path.abspath(xslt_tmp_name), '--stringparam', 'target', 'data', os.path.join(XSLTDIR, 'gen-schematron.xsl'), os.path.abspath(dsdl_schema_name)])
+	subprocess.check_call(['xsltproc', os.path.join(XSLTDIR, 'iso_abstract_expand.xsl'), os.path.abspath(xslt_tmp_name)], stdout=xslt_tmp_inout_fd)
+	subprocess.check_call(['xsltproc', '-o', yin_file_name+'-schematron.xsl', os.path.join(XSLTDIR, 'iso_svrl_for_xslt1.xsl')], stdin=xslt_tmp_inout_fd)
+	#close
+	os.close(dsdl_schema_fd)
+	os.close(xslt_tmp_fd)
+	os.close(xslt_tmp_inout_fd)
+	#and remove temporary files
+	os.remove(os.path.abspath(dsdl_schema_name))
+	os.remove(os.path.abspath(xslt_tmp_name))
+	os.remove(os.path.abspath(xslt_tmp_inout_name))
+	return(None)
 
-shift 1
-SRC_AUGMENTS=$*
+# Use configure.in.template and replace all variables with text
+def generate_configure_in(replace):
+	inf = open (args.template_dir+'/configure.in', 'r')
+	outf = open (args.output_dir+'/configure.in', 'w')
 
-# convert yang to yin
-echo "### Converting YANG to YIN"
-yang2yin $SRC_MAIN $SRC_AUGMENTS
-echo "### Done"
+	conf_in = inf.read()
+	for pattern, value in replace.items():
+		conf_in = conf_in.replace(pattern, value)
 
-if [ "$VALIDATION" = "yes" ]; then
-    # create RelaxNG schemas
-    echo "### Generating Relax NG schemas for validation"
-    gen_relaxng $SRC_MAIN $SRC_AUGMENTS
-    echo "### Done"
+	outf.write(conf_in)
+	inf.close()
+	outf.close()
 
-    # create XSLT Stylesheet for Schematron validation
-    echo "### Generating Schematron Stylesheet"
-    gen_schematron $SRC_MAIN $SRC_AUGMENTS
-    echo "### Done"
-fi
+# Copy source files for autotools
+def generate_template_files(replace):
+	shutil.copy2(args.template_dir+'/install-sh', args.output_dir+'/install-sh')
+	shutil.copy2(args.template_dir+'/config.guess', args.output_dir+'/config.guess')
+	shutil.copy2(args.template_dir+'/config.sub', args.output_dir+'/config.sub')
+	shutil.copy2(args.template_dir+'/ltmain.sh', args.output_dir+'/ltmain.sh')
+	shutil.copy2(args.template_dir+'/Makefile.in', args.output_dir+'/Makefile.in')
+	generate_configure_in(replace)
 
-cleanup
+def separate_paths_and_namespaces(defs):
+	paths = []
+	namespaces = []
+	if not defs is None:
+		for d in defs:
+			d = d.rstrip()
+			# skip empty lines and lines starting with '#' (bash/python style single line comments)
+			if len(d) == 0 or d[0] == '#':
+				continue
 
-exit 0
+			# path definition
+			if re.match(r'(/([\w]+:)?[\w]+)+', d):
+				paths.append(d)
+			elif re.match(r'[\w]+=.+', d):
+				namespaces.append(d.split('='))
+			else:
+				raise ValueError('Line '+d+' is not valid namespace definition nor XPath.')
+
+	return (paths,namespaces)
+
+def generate_callbacks_file(name, defs, model):
+	# Create or rewrite .c file, will be generated
+	outf = open(args.output_dir+'/'+name+'.c', 'w')
+
+	content = ''
+	# License and description
+	content += '/*\n'
+	content += ' * This is automatically generated callbacks file\n'
+	content += ' * It contains 3 parts: Configuration callbacks, RPC callbacks and state data callbacks.\n'
+	content += ' * Do NOT alter function signatures or any structures unless you know exactly what you are doing.\n'
+	content += ' */\n\n'
+	# Include header files
+	content += '#include <stdlib.h>\n'
+	content += '#include <libxml/tree.h>\n'
+	content += '#include <libnetconf_xml.h>\n'
+	content += '\n'
+	# transAPI version
+	content += '/* transAPI version which must be compatible with libnetconf */\n'
+	content += 'int transapi_version = '+str(transapi_version)+';\n\n'
+	content += '/* Signal to libnetconf that configuration data were modified by any callback.\n'
+	content += ' * 0 - data not modified\n'
+	content += ' * 1 - data have been modified\n'
+	content += ' */\n'
+	content += 'int config_modified = 0;\n\n'
+	# init and close functions
+	content += generate_init_callback()
+	content += generate_close_callback()
+	# Add get state data callback
+	content += generate_state_callback()
+	# Config callbacks part
+	(paths, namespaces) = separate_paths_and_namespaces(defs)
+	content += generate_config_callbacks(name, paths, namespaces)
+	if not (model is None):
+		content += generate_rpc_callbacks(model)
+
+	# Write to file
+	outf.write(content)
+	outf.close()
+
+def generate_init_callback():
+	content = '';
+	content += '/**\n'
+	content += ' * @brief Initialize plugin after loaded and before any other functions are called.\n\n'
+	content += ' * This function should not apply any configuration data to the controlled device. If no\n'
+	content += ' * running is returned (it stays *NULL), complete startup configuration is consequently\n'
+	content += ' * applied via module callbacks. When a running configuration is returned, libnetconf\n'
+	content += ' * then applies (via module\'s callbacks) only the startup configuration data that\n'
+	content += ' * differ from the returned running configuration data.\n\n'
+	content += ' * Please note, that copying startup data to the running is performed only after the\n'
+	content += ' * libnetconf\'s system-wide close - see nc_close() function documentation for more\n'
+	content += ' * information.\n\n'
+	content += ' * @param[out] running\tCurrent configuration of managed device.\n\n'
+	content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
+	content += ' */\n'
+	content += 'int transapi_init(xmlDocPtr * running)\n'
+	content += '{\n\treturn EXIT_SUCCESS;\n}\n\n'
+
+	return (content)
+
+def generate_close_callback():
+	content = ''
+	content += '/**\n'
+	content += ' * @brief Free all resources allocated on plugin runtime and prepare plugin for removal.\n'
+	content += ' */\n'
+	content += 'void transapi_close(void)\n'
+	content += '{\n\treturn;\n}\n\n'
+
+	return (content)
+
+def generate_state_callback():
+	content = ''
+	# function for retrieving state data from device
+	content += '/**\n'
+	content += ' * @brief Retrieve state data from device and return them as XML document\n'
+	content += ' *\n'
+	content += ' * @param model\tDevice data model. libxml2 xmlDocPtr.\n'
+	content += ' * @param running\tRunning datastore content. libxml2 xmlDocPtr.\n'
+	content += ' * @param[out] err  Double pointer to error structure. Fill error when some occurs.\n'
+	content += ' * @return State data as libxml2 xmlDocPtr or NULL in case of error.\n'
+	content += ' */\n'
+	content += 'xmlDocPtr get_state_data (xmlDocPtr model, xmlDocPtr running, struct nc_err **err)\n'
+	content += '{\n\treturn(NULL);\n}\n'
+
+	return(content)
+
+def generate_config_callbacks(name, paths, namespaces):
+	if paths is None:
+		raise ValueError('At least one path is required.')
+
+	content = ''
+	callbacks = '\t.callbacks = {'
+	funcs_count = 0
+
+	# prefix to uri mapping
+	content += '/*\n'
+	content += ' * Mapping prefixes with namespaces.\n'
+	content += ' * Do NOT modify this structure!\n'
+	content += ' */\n'
+	namespace = 'char * namespace_mapping[] = {'
+	for ns in namespaces:
+		namespace += '"'+ns[0]+'", "'+ns[1]+'", '
+
+	content += namespace +'NULL, NULL};\n'
+	content += '\n'
+
+	# Add description and instructions
+	content += '/*\n'
+	content += '* CONFIGURATION callbacks\n'
+	content += '* Here follows set of callback functions run every time some change in associated part of running datastore occurs.\n'
+	content += '* You can safely modify the bodies of all function as well as add new functions for better lucidity of code.\n'
+	content += '*/\n\n'
+	# generate callback function for every given sensitive path
+	for path in paths:
+		func_name = 'callback'+re.sub(r'[^\w]', '_', path)
+		# first entry in callbacks without coma
+		if funcs_count != 0:
+			callbacks += ','
+
+		# single entry per generated function
+		callbacks += '\n\t\t{.path = "'+path+'", .func = '+func_name+'}'
+
+		# generate function with default doxygen documentation
+		content += '/**\n'
+		content += ' * @brief This callback will be run when node in path '+path+' changes\n'
+		content += ' *\n'
+		content += ' * @param[in] data\tDouble pointer to void. Its passed to every callback. You can share data using it.\n'
+		content += ' * @param[in] op\tObserved change in path. XMLDIFF_OP type.\n'
+		content += ' * @param[in] node\tModified node. if op == XMLDIFF_REM its copy of node removed.\n'
+		content += ' * @param[out] error\tIf callback fails, it can return libnetconf error structure with a failure description.\n'
+		content += ' *\n'
+		content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
+		content += ' */\n'
+		content += '/* !DO NOT ALTER FUNCTION SIGNATURE! */\n'
+		content += 'int '+func_name+' (void ** data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err** error)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
+		funcs_count += 1
+
+	# in the end of file write strucure connecting paths in XML data with callback function
+	content += '/*\n'
+	content += '* Structure transapi_config_callbacks provide mapping between callback and path in configuration datastore.\n'
+	content += '* It is used by libnetconf library to decide which callbacks will be run.\n'
+	content += '* DO NOT alter this structure\n'
+	content += '*/\n'
+	content += 'struct transapi_data_callbacks clbks =  {\n'
+	content += '\t.callbacks_count = '+str(funcs_count)+',\n'
+	content += '\t.data = NULL,\n'
+	content += callbacks+'\n\t}\n'
+	content += '};\n\n'
+
+	return(content);
+
+def generate_rpc_callbacks(doc):
+	content = ''
+	callbacks = ''
+
+	# Add description and instructions
+	content += '/*\n'
+	content += '* RPC callbacks\n'
+	content += '* Here follows set of callback functions run every time RPC specific for this device arrives.\n'
+	content += '* You can safely modify the bodies of all function as well as add new functions for better lucidity of code.\n'
+	content += '* Every function takes array of inputs as an argument. On few first lines they are assigned to named variables. Avoid accessing the array directly.\n'
+	content += '* If input was not set in RPC message argument in set to NULL.\n'
+	content += '*/\n\n'
+
+	# create xpath context
+	ctxt = doc.xpathNewContext()
+	ctxt.xpathRegisterNs('yang', 'urn:ietf:params:xml:ns:yang:yin:1')
+
+	# find all RPC defined in data model
+	rpcs = ctxt.xpathEval('//yang:rpc')
+
+	# for every RPC
+	for rpc in rpcs:
+		rpc_name = rpc.prop('name')
+		# create callback function
+		rpc_function = 'nc_reply * rpc_'+re.sub(r'[^\w]', '_', rpc_name)+' (xmlNodePtr input[])\n{\n'
+		# find all defined inputs
+		rpc_input = ctxt.xpathEval('//yang:rpc[@name="'+rpc.prop('name')+'"]/yang:input/*')
+		arg_order = '{'
+		for inp in rpc_input:
+			# assign inputs to named variables
+			rpc_function += '\txmlNodePtr '+re.sub(r'[^\w]', '_', inp.prop('name'))+' = input['+str(rpc_input.index(inp))+'];\n'
+			if not inp is rpc_input[0]:
+				arg_order += ', '
+			arg_order += '"'+inp.prop('name')+'"'
+
+		arg_order += '}'
+		rpc_function += '\n\treturn NULL; \n}\n'
+		content += rpc_function
+
+		if not rpc is rpcs[0]:
+			callbacks += ','
+		# add connection between callback and RPC message and order of arguments passed to the callback
+		callbacks += '\n\t\t{.name="'+rpc_name+'", .func=rpc_'+re.sub(r'[^\w]', '_', rpc_name)+', .arg_count='+str(len(rpc_input))+', .arg_order='+arg_order+'}'
+
+	content += '/*\n'
+	content += '* Structure transapi_rpc_callbacks provide mapping between callbacks and RPC messages.\n'
+	content += '* It is used by libnetconf library to decide which callbacks will be run when RPC arrives.\n'
+	content += '* DO NOT alter this structure\n'
+	content += '*/\n'
+	content += 'struct transapi_rpc_callbacks rpc_clbks = {\n'
+	content += '\t.callbacks_count = '+str(len(rpcs))+',\n'
+	content += '\t.callbacks = {'+callbacks+'\n\t}'
+	content += '\n};\n\n'
+
+	return(content)
+
+# Try to find template directory, if none of known candidates found raise exception
+def find_templates():
+	known_paths = ['/usr/share/libnetconf/templates/', '/usr/local/share/libnetconf/templates/', './templates/', './']
+
+	for path in known_paths:
+		if os.path.isdir(path):
+			if os.path.exists(path+'install-sh') and os.path.exists(path+'Makefile.in') and \
+					os.path.exists(path+'config.guess') and os.path.exists(path+'config.sub') and \
+					os.path.exists(path+'ltmain.sh'):
+				return(path)
+	
+	raise Exception('Template directory not found. Use --template-dir parameter to specify its location.')
+
+# "main" starts here
+# create argument parser
+parser = argparse.ArgumentParser(description="Actions have the following meanings:\n"
+								+"  convert    - convert YANG model to the YIN format\n"
+								+"  validation - generate validation files for a given model\n"
+								+"  transapi   - prepare transAPI module template (and perform both previous actions)\n\n"
+								+"For detailed instruction for transapi action (other commands don't need any\nadditional parameters), type:\n"
+								+"  $> "+os.sys.argv[0]+" transapi --help",
+								epilog="Examples:\n"
+								+"  Convert YANG model to the YIN format:\n"
+								+"\t$> "+os.sys.argv[0]+" --model ./model.yang convert\n\n"
+								+"  Generate validation files needed by libnetconf:\n"
+								+"\t$> "+os.sys.argv[0]+" --model ./model.yang validation\n\n"
+								+"  Generate C template for a transAPI module with functions mapped to the XML\n  paths specified in the ./mymodel.paths file:\n"
+								+"\t$> "+os.sys.argv[0]+" --model ./model.yang transapi --paths ./model.paths",
+								formatter_class=argparse.RawTextHelpFormatter)
+parser.add_argument('--version', action='version', version='libnetconf developer tool for transAPI v'+str(transapi_version))
+parser.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model.')
+parser.add_argument('--augment-models', nargs='*', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+parser.add_argument('--search-path', default='.', help='pyang search path.')
+parser.add_argument('--output-dir', default='./', help='Output directory for generated files (current directory by default).')
+
+#create subparsers
+subparsers = parser.add_subparsers(dest='subcommand')
+
+# convert to implement YANG -> YIN conversion
+parser_convert = subparsers.add_parser('convert', add_help=False)
+#parser_convert.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model.')
+#parser_convert.add_argument('--augment-models', nargs='*', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+
+# validation to implement validation schema generation
+parser_validation = subparsers.add_parser('validation', add_help=False)
+#parser_validation.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model.')
+#parser_validation.add_argument('--augment-models', nargs='*', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+
+# transapi to implement transapi module files generation
+parser_transapi = subparsers.add_parser('transapi')
+parser_transapi.add_argument('--name', help='Name of module with callbacks. If not supplied name of module in data model will be used.')
+#parser_transapi.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model. YIN and YANG formats are acceptable.')
+#parser_transapi.add_argument('--augment-models', nargs='*', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+parser_transapi.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
+parser_transapi.add_argument('--template-dir', default=TEMPLATEDIR, help='Path to the directory with template files')
+
+# add common model option
+try:
+	augment_models = []
+	augment_models_paths = []
+	args = parser.parse_args()
+
+	# prepare output directory
+	if not os.path.exists(args.output_dir):
+		os.makedirs(args.output_dir)
+
+	# process model and find module name
+	# whatever type the model is try to convert it to YIN
+	model = convert_to_yin(args.model.name, args.search_path)
+	(model_name, ext) = os.path.splitext(os.path.abspath(args.model.name))
+
+	if args.name is None:
+		(module_name,ext) = os.path.splitext(os.path.basename(args.model.name))
+	else:
+		module_name = args.name
+
+	if not args.augment_models is None:
+		for l in args.augment_models:
+			for augment_model in l:
+				augment_models.append(convert_to_yin(augment_model.name, args.search_path))
+				(augment_model_name, ext) = os.path.splitext(os.path.abspath(augment_model.name))
+				augment_models_paths.append(augment_model_name+'.yin')
+
+	# when subcommand is 'validation' or 'transapi'
+	if args.subcommand != 'convert':
+		generate_validators(model_name+'.yin', augment_models_paths, args.search_path)
+
+	if args.subcommand == 'transapi':
+		# store paterns and text for replacing in configure.in
+		replace = {'$$PROJECTNAME$$' : module_name}
+
+		# copy files for autotools (Makefile.in, ...)
+		generate_template_files(replace)
+		#generate callbacks code
+		generate_callbacks_file(module_name, args.paths, model)
+except ValueError as e:
+	print (e)
+except IOError as e:
+	print(e[1]+'('+str(e[0])+'): '+e.filename)
+except libxml2.libxmlError as e:
+	print('Can not parse data model: '+e.msg)
+except subprocess.CalledProcessError as e:
+	print("Command '%s' failed (%d)" % (' '.join(e.cmd), e.returncode))
+except KeyboardInterrupt:
+	print('Killed by user!')
+#except Exception as e:
+#	print('Some unspecified error occured! '+str(e))
+
+os.sys.exit(0)
+

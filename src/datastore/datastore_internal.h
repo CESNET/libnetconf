@@ -180,29 +180,19 @@ struct model_validators {
 };
 #endif
 
-union transapi_data_clbcks {
-	struct transapi_data_callbacks * data_clbks;
-	struct transapi_xml_data_callbacks * data_clbks_xml;
-};
-
-union transapi_rpc_clbcks {
-	struct transapi_rpc_callbacks * rpc_clbks;
-	struct transapi_xml_rpc_callbacks * rpc_clbks_xml;
-};
-
 struct transapi {
 	/**
 	 * @brief Loaded shared library with transapi callbacks.
 	 */
 	void * module;
 	/**
-	 * @brief Does module support libxml2?
-	 */
-	int libxml2;
-	/**
 	 * @brief Flag if configuration data passed to callbacks were modified
 	 */
 	int *config_modified;
+	/**
+	 * @brief edit-config's error-option for the current transaction
+	 */
+	NC_EDIT_ERROPT_TYPE *erropt;
 	/**
 	 * @brief Mapping prefixes with URIs
 	 */
@@ -210,15 +200,15 @@ struct transapi {
 	/**
 	 * @brief Transapi callback mapping structure.
 	 */
-	union transapi_data_clbcks data_clbks;
+	struct transapi_data_callbacks * data_clbks;
 	/**
 	 * @brief Transapi rpc callbacks mapping structure.
 	 */
-	union transapi_rpc_clbcks rpc_clbks;
+	struct transapi_rpc_callbacks * rpc_clbks;
 	/**
 	 * @brief Module initialization.
 	 */
-	int (*init)(void);
+	int (*init)(xmlDocPtr *);
 	/**
 	 * @brief Free module resources and prepare for closing.
 	 */
@@ -242,7 +232,7 @@ struct data_model {
 	/**
 	 * @brief Namespace of the model
 	 */
-	char* namespace;
+	char* ns;
 	/**
 	 * @brief Prefix of the model
 	 */
@@ -267,10 +257,6 @@ struct data_model {
 	 * @brief The list of enabled features defined in the model
 	 */
 	struct model_feature** features;
-	/**
-	 * @brief Parsed data model structure.
-	 */
-	struct model_tree* model_tree;
 };
 
 struct model_list {
@@ -297,6 +283,11 @@ struct ncds_ds {
 	 */
 	char* (*get_state)(const char* model, const char* running, struct nc_err ** e);
 	/**
+	 * @brief Pointer to a xml version of callback function implementing the
+	 * retrieval of the device status data.
+	 */
+	xmlDocPtr (*get_state_xml)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e);
+	/**
 	 * @brief Datastore implementation functions.
 	 */
 	struct ncds_funcs func;
@@ -305,6 +296,10 @@ struct ncds_ds {
 	 * all augment models
 	 */
 	xmlDocPtr ext_model;
+	/**
+	 * @brief Parsed extended data model structure.
+	 */
+	struct model_tree* ext_model_tree;
 
 #ifndef DISABLE_VALIDATION
 	/**
