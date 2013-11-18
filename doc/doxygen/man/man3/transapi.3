@@ -1,4 +1,4 @@
-.TH "Transaction API" 3 "Mon Nov 11 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "Transaction API" 3 "Mon Nov 18 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -12,17 +12,9 @@ libnetconf's implementation of transaction-based partial device reconfiguration\
 .ti -1c
 .RI "struct \fBtransapi_data_callbacks\fP"
 .br
-.RI "\fIStructure binding location in configuration XML data and function callback applying changes\&. \fP"
-.ti -1c
-.RI "struct \fBtransapi_rpc_callbacks\fP"
-.br
-.RI "\fIStructure binding location in configuration XML data and function callback processing RPC message\&. \fP"
-.ti -1c
-.RI "struct \fBtransapi_xml_data_callbacks\fP"
-.br
 .RI "\fISame as \fBtransapi_data_callbacks\fP\&. Using libxml2 structures for callbacks parameters\&. \fP"
 .ti -1c
-.RI "struct \fBtransapi_xml_rpc_callbacks\fP"
+.RI "struct \fBtransapi_rpc_callbacks\fP"
 .br
 .RI "\fISame as \fBtransapi_rpc_callbacks\fP\&. Using libxml2 structures for callbacks parameters\&. \fP"
 .in -1c
@@ -82,10 +74,12 @@ Some sibling nodes were added/removed/changed position\&. Only for LEAF and LEAF
 Some of the children nodes changed theirs position\&. None was added/removed\&. Only for LEAF and LEAF-LIST\&. 
 .SH "Function Documentation"
 .PP 
-.SS "struct ncds_ds* ncds_new_transapi (\fBNCDS_TYPE\fPtype, const char *model_path, const char *callbacks_path)\fC [read]\fP"
+.SS "struct ncds_ds* ncds_new_transapi (\fBNCDS_TYPE\fPtype, const char *model_path, const char *callbacks_path)"
 
 .PP
-Create new datastore structure with transaction API support\&. \fBParameters:\fP
+Create new datastore structure with transaction API support\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fItype\fP Datastore implementation type for the new datastore structure\&. 
 .br

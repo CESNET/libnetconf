@@ -1,4 +1,4 @@
-.TH "With-defaults capability" 3 "Mon Nov 11 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "With-defaults capability" 3 "Mon Nov 18 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -99,7 +99,9 @@ On the client side, this function does not have any effect of setting up a speci
 .SS "\fBNCWD_MODE\fP ncdflt_get_basic_mode (void)"
 
 .PP
-Get the current set basic mode of the with-defaults capability\&. \fBReturns:\fP
+Get the current set basic mode of the with-defaults capability\&. 
+.PP
+\fBReturns:\fP
 .RS 4
 Current value of the with-defaults' basic mode\&. 
 .RE
@@ -119,7 +121,9 @@ Set with-defaults modes that are supported\&. This function should be used befor
 .SS "\fBNCWD_MODE\fP ncdflt_get_supported (void)"
 
 .PP
-Get ORed value containing the currently supported with-defaults modes\&. \fBReturns:\fP
+Get ORed value containing the currently supported with-defaults modes\&. 
+.PP
+\fBReturns:\fP
 .RS 4
 ORed value containing the currently supported with-defaults modes\&. 
 .RE
@@ -128,7 +132,9 @@ ORed value containing the currently supported with-defaults modes\&.
 .SS "\fBNCWD_MODE\fP ncdflt_rpc_get_withdefaults (const \fBnc_rpc\fP *rpc)"
 
 .PP
-Get value of the <with-defaults> element from the rpc message\&. \fBParameters:\fP
+Get value of the <with-defaults> element from the rpc message\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIrpc\fP RPC message to be parsed\&. 
 .RE

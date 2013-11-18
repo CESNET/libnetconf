@@ -2,7 +2,5 @@ var annotated =
 [
     [ "ncds_custom_funcs", "d0/d28/structncds__custom__funcs.html", "d0/d28/structncds__custom__funcs" ],
     [ "transapi_data_callbacks", "d6/dcb/structtransapi__data__callbacks.html", "d6/dcb/structtransapi__data__callbacks" ],
-    [ "transapi_rpc_callbacks", "d0/df8/structtransapi__rpc__callbacks.html", "d0/df8/structtransapi__rpc__callbacks" ],
-    [ "transapi_xml_data_callbacks", "db/d0d/structtransapi__xml__data__callbacks.html", "db/d0d/structtransapi__xml__data__callbacks" ],
-    [ "transapi_xml_rpc_callbacks", "d6/d8c/structtransapi__xml__rpc__callbacks.html", "d6/d8c/structtransapi__xml__rpc__callbacks" ]
+    [ "transapi_rpc_callbacks", "d0/df8/structtransapi__rpc__callbacks.html", "d0/df8/structtransapi__rpc__callbacks" ]
 ];

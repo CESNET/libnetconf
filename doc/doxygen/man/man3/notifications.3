@@ -1,4 +1,4 @@
-.TH "NETCONF Event Notifications" 3 "Mon Nov 11 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Event Notifications" 3 "Mon Nov 18 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -179,7 +179,9 @@ event is caused by the user's action
 .SS "int nc_session_send_notif (struct nc_session *session, const \fBnc_ntf\fP *ntf)"
 
 .PP
-Send <notification> message from server to client\&. \fBParameters:\fP
+Send <notification> message from server to client\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session to use\&. 
 .br
@@ -197,7 +199,9 @@ Send <notification> message from server to client\&. \fBParameters:\fP
 .SS "\fBNC_MSG_TYPE\fP nc_session_recv_notif (struct nc_session *session, inttimeout, \fBnc_ntf\fP **ntf)"
 
 .PP
-Receive <notification> message from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fBParameters:\fP
+Receive <notification> message from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session to use\&. 
 .br
@@ -237,7 +241,9 @@ Created rpc message\&.
 .SS "char* ncntf_status (void)"
 
 .PP
-Get the status data in xml form describing the currently used streams\&. \fBReturns:\fP
+Get the status data in xml form describing the currently used streams\&. 
+.PP
+\fBReturns:\fP
 .RS 4
 Text containing streams status data in xml form (urn:ietf:params:xml:ns:netmod:notification in RFC 5277)\&. 
 .RE
@@ -246,7 +252,9 @@ Text containing streams status data in xml form (urn:ietf:params:xml:ns:netmod:n
 .SS "int ncntf_stream_new (const char *name, const char *desc, intreplay)"
 
 .PP
-Create a new NETCONF event stream\&. \fBParameters:\fP
+Create a new NETCONF event stream\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIname\fP Name of the stream\&. 
 .br
@@ -264,7 +272,9 @@ Create a new NETCONF event stream\&. \fBParameters:\fP
 .SS "int ncntf_stream_allow_events (const char *stream, const char *event)"
 
 .PP
-Set the rule to allow logging of the specified event on the given Notification stream\&. \fBParameters:\fP
+Set the rule to allow logging of the specified event on the given Notification stream\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIstream\fP Name of the stream where to allow event logging 
 .br
@@ -280,7 +290,9 @@ Set the rule to allow logging of the specified event on the given Notification s
 .SS "char** ncntf_stream_list (void)"
 
 .PP
-Get the list of NETCONF event notifications streams\&. \fBReturns:\fP
+Get the list of NETCONF event notifications streams\&. 
+.PP
+\fBReturns:\fP
 .RS 4
 NULL terminated list of stream names\&. It is up to the caller to free the list 
 .RE
@@ -289,7 +301,9 @@ NULL terminated list of stream names\&. It is up to the caller to free the list
 .SS "int ncntf_stream_info (const char *stream, char **desc, char **start)"
 
 .PP
-Get some more details about the specified NETCONF event notifications stream\&. \fBParameters:\fP
+Get some more details about the specified NETCONF event notifications stream\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIstream\fP Name of the stream\&. 
 .br
@@ -307,7 +321,9 @@ Get some more details about the specified NETCONF event notifications stream\&. 
 .SS "int ncntf_stream_isavailable (const char *name)"
 
 .PP
-Test if the given stream is already created and available\&. \fBParameters:\fP
+Test if the given stream is already created and available\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIname\fP Name of the stream to check\&. 
 .RE
@@ -323,7 +339,9 @@ Test if the given stream is already created and available\&. \fBParameters:\fP
 .SS "void ncntf_stream_iter_start (const char *stream)"
 
 .PP
-Start iteration on the events in the specified stream file\&. Iteration starts on the first event in the first part of the stream file\&. \fBTodo\fP
+Start iteration on the events in the specified stream file\&. Iteration starts on the first event in the first part of the stream file\&. 
+.PP
+\fBTodo\fP
 .RS 4
 : thread safety (?thread-specific variables)
 .RE
@@ -337,7 +355,9 @@ Start iteration on the events in the specified stream file\&. Iteration starts o
 .SS "char* ncntf_stream_iter_next (const char *stream, time_tstart, time_tstop, time_t *event_time)"
 
 .PP
-Pop the next event record from the stream file\&. The iteration must be started by nc_ntf_stream_iter_start() function\&. \fBTodo\fP
+Pop the next event record from the stream file\&. The iteration must be started by nc_ntf_stream_iter_start() function\&. 
+.PP
+\fBTodo\fP
 .RS 4
 : thread safety (?thread-specific variables)
 .RE
@@ -362,7 +382,9 @@ Content of the next event in the stream\&.
 .SS "void ncntf_stream_iter_finish (const char *stream)"
 
 .PP
-Clean all the structures used for iteration in the specified stream\&. This function must be called as a closing function to nc_ntf_stream_iter_start() \fBTodo\fP
+Clean all the structures used for iteration in the specified stream\&. This function must be called as a closing function to nc_ntf_stream_iter_start() 
+.PP
+\fBTodo\fP
 .RS 4
 : thread safety (?thread-specific variables)
 .RE
@@ -376,7 +398,8 @@ Clean all the structures used for iteration in the specified stream\&. This func
 .SS "int ncntf_event_new (time_tetime, \fBNCNTF_EVENT\fPevent, \&.\&.\&.)"
 
 .PP
-Store a new event in the specified stream\&. Parameters are specific for different events\&. .SS "Event parameters:"
+Store a new event in the specified stream\&. Parameters are specific for different events\&. 
+.SS "Event parameters:"
 .PP
 .IP "\(bu" 2
 \fBNCNTF_GENERIC\fP
@@ -468,7 +491,9 @@ ncntf_event_new(-1, NCNTF_BASE_SESSION_END, my_session, NC_SESSION_TERM_KILLED, 
 .SS "\fBnc_ntf\fP* ncntf_notif_create (time_tevent_time, const char *content)"
 
 .PP
-Create a new <notification> message with the given eventTime and content\&. \fBParameters:\fP
+Create a new <notification> message with the given eventTime and content\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIevent_time\fP Time of the event\&. 
 .br
@@ -484,7 +509,9 @@ Created notification message\&.
 .SS "void ncntf_notif_free (\fBnc_ntf\fP *ntf)"
 
 .PP
-Free the notification message\&. \fBParameters:\fP
+Free the notification message\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIntf\fP notification message to free\&. 
 .RE
@@ -493,7 +520,9 @@ Free the notification message\&. \fBParameters:\fP
 .SS "\fBNCNTF_EVENT\fP ncntf_notif_get_type (const \fBnc_ntf\fP *notif)"
 
 .PP
-Get a specific notification type\&. \fBParameters:\fP
+Get a specific notification type\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fInotif\fP Notification message to explore\&. 
 .RE
@@ -507,7 +536,9 @@ The same types as for \fBncntf_event_new()\fP can be returned\&. If the notifica
 .SS "char* ncntf_notif_get_content (const \fBnc_ntf\fP *notif)"
 
 .PP
-Get description of the event reported in the notification message\&. \fBParameters:\fP
+Get description of the event reported in the notification message\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fInotif\fP Notification message\&. 
 .RE
@@ -521,7 +552,9 @@ Content of the event description (serialized XML)\&.
 .SS "time_t ncntf_notif_get_time (const \fBnc_ntf\fP *notif)"
 
 .PP
-Get Time of the event reported in the notification message\&. \fBParameters:\fP
+Get Time of the event reported in the notification message\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fInotif\fP Notification message\&. 
 .RE
@@ -551,7 +584,9 @@ Reply message to the subscription - ok if tests passed and reply-error with prob
 .SS "long long int ncntf_dispatch_send (struct nc_session *session, const \fBnc_rpc\fP *subscribe_rpc)"
 
 .PP
-Start sending notifications according to the given <create-subscription> NETCONF RPC request\&. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated\&. \fBParameters:\fP
+Start sending notifications according to the given <create-subscription> NETCONF RPC request\&. All events from the specified stream are processed and sent to the client until the stop time is reached or until the session is terminated\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session where the notifications will be sent\&. 
 .br
@@ -567,7 +602,9 @@ number of sent notifications (including 0), -1 on error\&.
 .SS "long long int ncntf_dispatch_receive (struct nc_session *session, void(*)(time_t eventtime, const char *content)process_ntf)"
 
 .PP
-Subscribe for receiving notifications from the given session according to parameters in the given subscribtion RPC\&. Received notifications are processed by the given process_ntf callback function\&. Functions stops when the final notification <notificationComplete> is received or when the session is terminated\&. \fBParameters:\fP
+Subscribe for receiving notifications from the given session according to parameters in the given subscribtion RPC\&. Received notifications are processed by the given process_ntf callback function\&. Functions stops when the final notification <notificationComplete> is received or when the session is terminated\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIsession\fP NETCONF session where the notifications will be sent\&. 
 .br

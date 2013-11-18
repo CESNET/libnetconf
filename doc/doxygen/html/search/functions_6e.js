@@ -129,6 +129,7 @@ var searchData=
   ['ncds_5finit',['ncds_init',['../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff',1,'datastore.h']]],
   ['ncds_5fmodel_5finfo',['ncds_model_info',['../db/d67/group__store.html#ga9c0f401a6873e8778a80e6cc80c5219a',1,'datastore.h']]],
   ['ncds_5fnew',['ncds_new',['../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6',1,'datastore.h']]],
+  ['ncds_5fnew2',['ncds_new2',['../db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df',1,'datastore_xml.h']]],
   ['ncds_5fnew_5ftransapi',['ncds_new_transapi',['../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85',1,'datastore.h']]],
   ['ncds_5frollback',['ncds_rollback',['../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e',1,'datastore.h']]],
   ['ncds_5fset_5fvalidation',['ncds_set_validation',['../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31',1,'datastore.h']]],

@@ -18,6 +18,7 @@ var group__store =
       [ "NCDS_TYPE_FILE", "db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629", null ],
       [ "NCDS_TYPE_CUSTOM", "db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa962fdf56453d65bd49886f1f00820e85", null ]
     ] ],
+    [ "ncds_new2", "db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df", null ],
     [ "ncds_model_info", "db/d67/group__store.html#ga9c0f401a6873e8778a80e6cc80c5219a", null ],
     [ "ncds_new", "db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6", null ],
     [ "ncds_set_validation", "db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31", null ],

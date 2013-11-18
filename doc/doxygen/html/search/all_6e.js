@@ -1,7 +1,7 @@
 var searchData=
 [
   ['netconf_20access_20control_20module_20_28nacm_29',['NETCONF Access Control Module (NACM)',['../dd/d59/nacm.html',1,'']]],
-  ['name',['name',['../d0/df8/structtransapi__rpc__callbacks.html#a5ac083a645d964373f022d03df4849c8',1,'transapi_rpc_callbacks::name()'],['../d6/d8c/structtransapi__xml__rpc__callbacks.html#a5ac083a645d964373f022d03df4849c8',1,'transapi_xml_rpc_callbacks::name()']]],
+  ['name',['name',['../d0/df8/structtransapi__rpc__callbacks.html#a5ac083a645d964373f022d03df4849c8',1,'transapi_rpc_callbacks']]],
   ['nc_5fcallback_5ferror_5freply',['nc_callback_error_reply',['../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80',1,'callbacks.h']]],
   ['nc_5fcallback_5fprint',['nc_callback_print',['../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7',1,'callbacks.h']]],
   ['nc_5fcallback_5fssh_5fhost_5fauthenticity_5fcheck',['nc_callback_ssh_host_authenticity_check',['../db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a',1,'callbacks_ssh.h']]],
@@ -281,6 +281,7 @@ var searchData=
   ['ncds_5finternal_5fid',['NCDS_INTERNAL_ID',['../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a',1,'datastore.h']]],
   ['ncds_5fmodel_5finfo',['ncds_model_info',['../db/d67/group__store.html#ga9c0f401a6873e8778a80e6cc80c5219a',1,'datastore.h']]],
   ['ncds_5fnew',['ncds_new',['../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6',1,'datastore.h']]],
+  ['ncds_5fnew2',['ncds_new2',['../db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df',1,'datastore_xml.h']]],
   ['ncds_5fnew_5ftransapi',['ncds_new_transapi',['../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85',1,'datastore.h']]],
   ['ncds_5frollback',['ncds_rollback',['../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e',1,'datastore.h']]],
   ['ncds_5frpc_5fnot_5fapplicable',['NCDS_RPC_NOT_APPLICABLE',['../db/d67/group__store.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6',1,'datastore.h']]],

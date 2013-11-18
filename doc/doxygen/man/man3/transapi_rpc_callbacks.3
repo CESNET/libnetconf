@@ -1,10 +1,10 @@
-.TH "transapi_rpc_callbacks" 3 "Mon Nov 11 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "transapi_rpc_callbacks" 3 "Mon Nov 18 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 transapi_rpc_callbacks \- 
 .PP
-Structure binding location in configuration XML data and function callback processing RPC message\&.  
+Same as \fBtransapi_rpc_callbacks\fP\&. Using libxml2 structures for callbacks parameters\&.  
 
 .SH SYNOPSIS
 .br
@@ -27,7 +27,7 @@ Structure binding location in configuration XML data and function callback proce
 .RI "   int \fBarg_count\fP"
 .br
 .ti -1c
-.RI "   \fBnc_reply\fP *(* \fBfunc\fP )(char *[])"
+.RI "   \fBnc_reply\fP *(* \fBfunc\fP )(xmlNodePtr[])"
 .br
 .ti -1c
 .RI "   char * \fBarg_order\fP [MAX_RPC_INPUT_ARGS]"
@@ -38,7 +38,7 @@ Structure binding location in configuration XML data and function callback proce
 .in -1c
 .SH "Detailed Description"
 .PP 
-Structure binding location in configuration XML data and function callback processing RPC message\&. 
+Same as \fBtransapi_rpc_callbacks\fP\&. Using libxml2 structures for callbacks parameters\&. 
 .SH "Field Documentation"
 .PP 
 .SS "int callbacks_count"
@@ -47,7 +47,7 @@ Structure binding location in configuration XML data and function callback proce
 
 .SS "int arg_count"
 
-.SS "\fBnc_reply\fP*(* func)(char *[])"
+.SS "\fBnc_reply\fP*(* func)(xmlNodePtr[])"
 
 .SS "char* arg_order[MAX_RPC_INPUT_ARGS]"
 

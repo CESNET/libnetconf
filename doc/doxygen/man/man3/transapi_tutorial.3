@@ -1,4 +1,4 @@
-.TH "transapi_tutorial" 3 "Mon Nov 11 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "transapi_tutorial" 3 "Mon Nov 18 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -46,7 +46,7 @@ $ mkdir toaster && cd toaster/
 Run `generator\&.py': 
 .PP
 .nf
-$ lnc-creator --name toaster --paths paths_file --model toaster@2009-11-20\&.yin --with-libxml2
+$ lnc-creator --name toaster --paths paths_file --model toaster@2009-11-20\&.yin
 
 .fi
 .PP
@@ -66,9 +66,7 @@ $ vim toaster\&.c
 .fi
 .PP
 
-.PP
-.PP
-.IP "1." 4
+.IP "2." 4
 Add global variables and auxiliary functions 
 .PP
 .nf
@@ -81,7 +79,7 @@ void * auxiliary_make_toast(void * time)
 
         if (status == BUSY) {
                 status = ON;
-                ncntf_event_new(-1, NCNTF_GENERIC, '<toastDone><toastStatus>done</toastStatus></toastDone>');
+                ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>done</toastStatus></toastDone>");
         }
         return(NULL);
 }
@@ -89,45 +87,45 @@ void * auxiliary_make_toast(void * time)
 .fi
 .PP
 
-.IP "2." 4
+.IP "3." 4
 Complete 'init()' function with actions that will be run right after module loads and before any other function in module is called\&. 
 .PP
 .nf
 int init()
 {
         status = OFF;
-        printf('Toaster initialized!\n');
+        printf("Toaster initialized!\n");
         return(EXIT_SUCCESS);
 }
 
 .fi
 .PP
 
-.IP "3." 4
+.IP "4." 4
 Locate 'close()' function and fill it with actions that will be run just before the module unloads\&. No other function will be called after 'close()'\&. 
 .PP
 .nf
 void close()
 {
-        printf('Toaster ready for unplugging!\n');
-}
-
-.fi
-.PP
-
-.IP "4." 4
-Fill 'get_state_data()' function with code that will generate state information as defined in data model\&. 
-.PP
-.nf
-char * get_state_data(char * model, char * running, struct nc_err **err)
-{
-        return strdup('<?xml version='1\&.0'?><toaster xmlns='http://netconfcentral\&.org/ns/toaster'> \&.\&.\&. </toaster>');
+        printf("Toaster ready for unplugging!\n");
 }
 
 .fi
 .PP
 
 .IP "5." 4
+Fill 'get_state_data()' function with code that will generate state information as defined in data model\&. 
+.PP
+.nf
+char * get_state_data(char * model, char * running, struct nc_err **err)
+{
+        return strdup("<?xml version="1\&.0"?><toaster xmlns="http://netconfcentral\&.org/ns/toaster"> \&.\&.\&. </toaster>");
+}
+
+.fi
+.PP
+
+.IP "6." 4
 Complete configuration callbacks\&. The 'op' parameter may be used to determine operation which was done with the node\&. Parameter 'node' holds a copy of node after change (or before change if op == XMLDIFF_REM)\&. 
 .PP
 .nf
@@ -149,7 +147,7 @@ int callback_toaster_toaster (XMLDIFF_OP op, xmlNodePtr node, void ** data)
 .fi
 .PP
 
-.IP "6." 4
+.IP "7." 4
 Fill RPC message callback functions with code that will be run when message arrives\&. 
 .PP
 .nf
@@ -183,7 +181,7 @@ nc_reply * rpc_cancel_toast (xmlNodePtr input[])
 
      if (status == BUSY) {
         status = ON;
-        ncntf_event_new(-1, NCNTF_GENERIC, '<toastDone><toastStatus>canceled</toastStatus></toastDone>');
+        ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>canceled</toastStatus></toastDone>");
         reply = nc_reply_ok();
      } else {
         reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));

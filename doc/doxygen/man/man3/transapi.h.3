@@ -1,4 +1,4 @@
-.TH "src/transapi/transapi.h" 3 "Mon Nov 11 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/transapi/transapi.h" 3 "Mon Nov 18 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -6,6 +6,8 @@ src/transapi/transapi.h \-
 .SH SYNOPSIS
 .br
 .PP
+\fC#include <libxml/tree\&.h>\fP
+.br
 \fC#include '\&.\&./libnetconf\&.h'\fP
 .br
 
@@ -15,17 +17,17 @@ src/transapi/transapi.h \-
 .ti -1c
 .RI "struct \fBtransapi_data_callbacks\fP"
 .br
-.RI "\fIStructure binding location in configuration XML data and function callback applying changes\&. \fP"
+.RI "\fISame as \fBtransapi_data_callbacks\fP\&. Using libxml2 structures for callbacks parameters\&. \fP"
 .ti -1c
 .RI "struct \fBtransapi_rpc_callbacks\fP"
 .br
-.RI "\fIStructure binding location in configuration XML data and function callback processing RPC message\&. \fP"
+.RI "\fISame as \fBtransapi_rpc_callbacks\fP\&. Using libxml2 structures for callbacks parameters\&. \fP"
 .in -1c
 .SS "Macros"
 
 .in +1c
 .ti -1c
-.RI "#define \fBTRANSAPI_VERSION\fP   2"
+.RI "#define \fBTRANSAPI_VERSION\fP   3"
 .br
 .in -1c
 .SS "Enumerations"
@@ -38,7 +40,7 @@ src/transapi/transapi.h \-
 .in -1c
 .SH "Macro Definition Documentation"
 .PP 
-.SS "#define TRANSAPI_VERSION   2"
+.SS "#define TRANSAPI_VERSION   3"
 
 .SH "Author"
 .PP 
