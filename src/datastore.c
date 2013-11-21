@@ -3955,6 +3955,7 @@ process_datastore:
 			if (asprintf(&data, "<data>%s</data>", data2) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 				e = nc_err_new(NC_ERR_OP_FAILED);
+				free(data2);
 				break;
 			}
 			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
