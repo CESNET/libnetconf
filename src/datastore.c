@@ -3890,6 +3890,9 @@ process_datastore:
 		if (ds->get_state_xml != NULL || ds->get_state != NULL) {
 			/* caller provided callback function to retrieve status data */
 
+			/* convert configuration data into XML structure */
+			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+
 			if (ds->get_state_xml != NULL) {
 				/* status data are directly in XML format */
 				doc2 = ds->get_state_xml(ds->ext_model, doc1, &e);
@@ -3910,9 +3913,6 @@ process_datastore:
 				free(data);
 				break;
 			}
-
-			/* convert configuration data into XML structure */
-			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 
 			/* merge status and config data */
 			/* if merge fail (probably one of docs NULL)*/
