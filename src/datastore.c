@@ -3729,7 +3729,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 		} /* else success */
 
 		if (ret || *ds->transapi.config_modified) {
-			ds->transapi.config_modified = 0;
+			*ds->transapi.config_modified = 0;
 			DBG("Updating XML tree after TransAPI callbacks");
 			xmlDocDumpMemory(new, &config, NULL);
 			if (ds->func.copyconfig(ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, (char*)config, &e) == EXIT_FAILURE) {
