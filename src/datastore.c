@@ -3772,7 +3772,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 		} /* else success */
 
 		if (ret || *ds->transapi.config_modified) {
-			ds->transapi.config_modified = 0;
+			*ds->transapi.config_modified = 0;
 			DBG("Updating XML tree after TransAPI callbacks");
 			xmlDocDumpMemory(new, &config, NULL);
 			if (ds->func.copyconfig(ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, (char*)config, &e) == EXIT_FAILURE) {
@@ -3890,6 +3890,9 @@ process_datastore:
 		if (ds->get_state_xml != NULL || ds->get_state != NULL) {
 			/* caller provided callback function to retrieve status data */
 
+			/* convert configuration data into XML structure */
+			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+
 			if (ds->get_state_xml != NULL) {
 				/* status data are directly in XML format */
 				doc2 = ds->get_state_xml(ds->ext_model, doc1, &e);
@@ -3910,9 +3913,6 @@ process_datastore:
 				free(data);
 				break;
 			}
-
-			/* convert configuration data into XML structure */
-			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 
 			/* merge status and config data */
 			/* if merge fail (probably one of docs NULL)*/
@@ -3955,6 +3955,7 @@ process_datastore:
 			if (asprintf(&data, "<data>%s</data>", data2) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 				e = nc_err_new(NC_ERR_OP_FAILED);
+				free(data2);
 				break;
 			}
 			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
