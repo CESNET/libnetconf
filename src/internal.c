@@ -100,28 +100,33 @@ void prv_printf(NC_VERB_LEVEL level, const char *format, ...)
 void nc_verb_verbose(const char *format, ...)
 {
 	va_list argptr;
-
-	va_start(argptr, format);
-	prv_vprintf(NC_VERB_VERBOSE, format, argptr);
-	va_end(argptr);
+	if (verbose_level >= NC_VERB_VERBOSE) {
+		va_start(argptr, format);
+		prv_vprintf(NC_VERB_VERBOSE, format, argptr);
+		va_end(argptr);
+	}
 }
 
 void nc_verb_warning(const char *format, ...)
 {
 	va_list argptr;
 
-	va_start(argptr, format);
-	prv_vprintf(NC_VERB_WARNING, format, argptr);
-	va_end(argptr);
+	if (verbose_level >= NC_VERB_WARNING) {
+		va_start(argptr, format);
+		prv_vprintf(NC_VERB_WARNING, format, argptr);
+		va_end(argptr);
+	}
 }
 
 void nc_verb_error(const char *format, ...)
 {
 	va_list argptr;
 
-	va_start(argptr, format);
-	prv_vprintf(NC_VERB_ERROR, format, argptr);
-	va_end(argptr);
+	if (verbose_level >= NC_VERB_ERROR) {
+		va_start(argptr, format);
+		prv_vprintf(NC_VERB_ERROR, format, argptr);
+		va_end(argptr);
+	}
 }
 
 struct nc_shared_info *nc_info = NULL;
