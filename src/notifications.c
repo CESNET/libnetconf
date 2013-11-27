@@ -1092,6 +1092,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 				if (event_time != NULL) {
 					*event_time = tnow;
 				}
+				*replay_end = 0;
 				return (text);
 			} else {
 				/* reading data from the stream file as replay */
