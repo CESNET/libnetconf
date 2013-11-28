@@ -47,6 +47,8 @@
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
+#include <dirent.h>
+#include <libgen.h>
 
 #include <libxml/tree.h>
 
@@ -370,50 +372,139 @@ static void clip_occurences_with(char *str, char sought, char replacement)
 int ncds_file_init (struct ncds_ds* ds)
 {
 	struct stat st;
-	char* new_path, *sempath;
+	char* new_path = NULL, *sempath, *dir_name, *file_name, *dup_path;
+	struct dirent * file_info;
+	DIR * dir;
 	int fd;
 	mode_t mask;
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
-	file_ds->xml = xmlReadFile (file_ds->path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-	if (file_ds->xml == NULL || file_structure_check (file_ds->xml) == 0) {
-		WARN ("Failed to parse XML in the file.");
-		if (stat(file_ds->path, &st) || st.st_size > 0) {
-			/* Unable to determine size or size bigger than 0 */
-			WARN ("File %s contains some unknown data.", file_ds->path);
+	file_ds->xml = xmlReadFile(file_ds->path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	while (file_ds->xml == NULL || file_structure_check(file_ds->xml) == 0) { /* while is used for break */
+		WARN("Failed to parse the datastore (%s).", file_ds->path);
+		/*
+		 * Try to use a backup datastore that we can use instead the main one
+		 */
+		if (stat(file_ds->path, &st) == -1) {
+			ERROR("Unable to work with datastore file (%s), trying to use a backup datastore.", strerror(errno));
+		} else if (st.st_size > 0) {
+			/* there are some data in the datastore file */
+			WARN("Datastore file contains some data, trying to use a backup datastore...");
+		} else { /* st.st_size == 0 */
+			/* nothing needed, just use the datastore file and create an empty datastore inside it */
+			break;
+		}
 
-			/* cleanup so far structures because new will be created */
-			fclose (file_ds->file);
-			if (file_ds->xml != NULL) {
-				xmlFreeDoc (file_ds->xml);
+		/* create a temporary file where an empty datastore will be created */
+		dup_path = strdup(file_ds->path);
+		file_name = basename(dup_path);
+		dir_name = dirname(dup_path);
+
+		/* cleanup so far structures because new will be created */
+		fclose(file_ds->file);
+		xmlFreeDoc(file_ds->xml);
+		file_ds->file = NULL;
+		file_ds->xml = NULL;
+
+		/* checking if there are any valid backup datastores */
+		if ((dir = opendir(dir_name)) == NULL) {
+			ERROR("Unable to open datastore directory %s (%s).", dir_name, strerror(errno));
+			free(dup_path);
+			return (EXIT_FAILURE);
+		}
+
+		for (errno = 0; (file_info = readdir(dir)) != NULL;) {
+			if (errno) {
+				ERROR("Unable to read datastore directory %s (%s).", dir_name, strerror(errno));
+				free(dup_path);
+				return (EXIT_FAILURE);
 			}
-			file_ds->file = NULL;
-			file_ds->xml = NULL;
+
+			/* check if readed file contains original file name */
+			if (strncmp(file_info->d_name, file_name, strlen(file_name)) != 0) {
+				continue;
+			}
+
+			/* we have some file that could be a backup datastore from some previous run */
+			if (asprintf(&new_path, "%s/%s", dir_name, file_info->d_name) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				free(dup_path);
+				return (EXIT_FAILURE);
+			}
+			clip_occurences_with(new_path, '/', '/');
+
+			file_ds->xml = xmlReadFile(new_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			if (file_ds->xml == NULL || file_structure_check(file_ds->xml) == 0) {
+				/* bad backup datastore, try another one */
+				free(new_path);
+				new_path = NULL;
+				continue;
+			} else {
+				/* we found a correct backup datastore, use it */
+				WARN("Using %s as a backup datastore.", new_path);
+				file_ds->file = fopen(new_path, "r+");
+				if (file_ds->file == NULL) {
+					/* ok, that is not so correct as we thought, wtf?!? */
+					ERROR("Unable to open backup datastore (%s)", strerror(errno));
+					xmlFreeDoc(file_ds->xml);
+					file_ds->xml = NULL;
+					free(new_path);
+					new_path = NULL;
+
+					/* try another file in backup datastore directory */
+					continue;
+				}
+
+				/* now it is surely correct, not like a few lines above :) */
+				free(file_ds->path);
+				file_ds->path = new_path;
+				break;
+			}
+		}
+
+		free(dup_path);
+		closedir(dir);
+
+		if (file_ds->file == NULL) {
+			/* no previous backup datastore found, create a new one */
 
 			/* Create file based on original name */
-			if (asprintf (&new_path, "%s.XXXXXX", file_ds->path) == -1) {
+			if (asprintf(&new_path, "%s.XXXXXX", file_ds->path) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 				return (EXIT_FAILURE);
 			}
-			fd = mkstemp (new_path);
-			if (fd == -1 || (file_ds->file = fdopen(fd, "r+")) == NULL) {
-				ERROR ("Cannot create an alternate file %s (%s).", new_path, strerror(errno));
-				free (new_path);
+			clip_occurences_with(new_path, '/', '/');
+			WARN("Using %s as a backup datastore.", new_path);
+			if ((fd = mkstemp(new_path)) == -1) {
+				ERROR("Unable to create backup datastore (%s).", strerror(errno));
+				free(new_path);
 				return (EXIT_FAILURE);
 			}
-
-			/* store new path */
-			free (file_ds->path);
+			if ((file_ds->file = fdopen(fd, "r+")) == NULL) {
+				ERROR("Unable to open backup datastore (%s)", strerror(errno));
+				free(new_path);
+				return (EXIT_FAILURE);
+			}
+			free(file_ds->path);
 			file_ds->path = new_path;
-			WARN("Using a file %s to prevent data loss.", file_ds->path);
 		}
+
+		/* end the while loop */
+		break;
+	}
+
+	/* if necessary, create an empty datastore */
+	if (file_ds->xml == NULL) {
+
 		file_ds->xml = file_create_xmlframe();
 		if (file_ds->xml == NULL) {
 			return (EXIT_FAILURE);
 		}
 		xmlDocFormatDump(file_ds->file, file_ds->xml, 1);
-		WARN ("File %s was empty. Basic structure created.", file_ds->path);
+		WARN("File %s was empty. Basic structure created.", file_ds->path);
 	}
+
+	/* init value */
 	file_ds->xml_rollback = NULL;
 
 	/* get pointers to running, startup and candidate nodes in xml */
