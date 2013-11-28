@@ -354,6 +354,45 @@ char* nc_clrwspace (const char* in)
 	return (retval);
 }
 
+void nc_clip_occurences_with(char *str, char sought, char replacement)
+{
+	int adjacent = 0;
+	int clipped = 0;
+
+	if (str == NULL) {
+		return;
+	}
+
+	while (*str != '\0') {
+		if (*str != sought) {
+			if (clipped != 0) {
+				/* Hurl together. */
+				*(str - clipped) = *str;
+			}
+			adjacent = 0;
+		} else if (adjacent == 0) {
+			/*
+			 * Found first character from a possible sequence of
+			 * characters. The whole sequence is going to be
+			 * replaced by only one replacement character.
+			 */
+			*(str - clipped) = replacement;
+			/* Next occurrence will be adjacent. */
+			adjacent = 1;
+		} else {
+			++clipped;
+		}
+
+		/* Next character. */
+		++str;
+	}
+
+	if (clipped != 0) {
+		/* New string end. */
+		*(str - clipped) = '\0';
+	}
+}
+
 char* nc_skip_xmldecl(const char* xmldoc)
 {
 	char *s;

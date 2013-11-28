@@ -2960,6 +2960,7 @@ struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path)
 	 * derived
 	 */
 	basename = strdup(model_path);
+	nc_clip_occurences_with(basename, '/', '/');
 	if (strcmp(&(basename[strlen(basename)-4]), ".yin") == 0) {
 		path_yin = strdup(model_path);
 		basename[strlen(basename)-4] = 0; /* remove .yin suffix */

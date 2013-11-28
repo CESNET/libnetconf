@@ -322,45 +322,6 @@ int ncds_file_changed(struct ncds_ds* ds)
 	return (1);
 }
 
-static void clip_occurences_with(char *str, char sought, char replacement)
-{
-	int adjacent = 0;
-	int clipped = 0;
-
-	if (str == NULL) {
-		return;
-	}
-
-	while (*str != '\0') {
-		if (*str != sought) {
-			if (clipped != 0) {
-				/* Hurl together. */
-				*(str - clipped) = *str;
-			}
-			adjacent = 0;
-		} else if (adjacent == 0) {
-			/*
-			 * Found first character from a possible sequence of
-			 * characters. The whole sequence is going to be
-			 * replaced by only one replacement character.
-			 */
-			*(str - clipped) = replacement;
-			/* Next occurrence will be adjacent. */
-			adjacent = 1;
-		} else {
-			++clipped;
-		}
-
-		/* Next character. */
-		++str;
-	}
-
-	if (clipped != 0) {
-		/* New string end. */
-		*(str - clipped) = '\0';
-	}
-}
-
 /**
  * @ingroup store
  * @brief Initialization of the file datastore
@@ -431,7 +392,7 @@ int ncds_file_init (struct ncds_ds* ds)
 				free(dup_path);
 				return (EXIT_FAILURE);
 			}
-			clip_occurences_with(new_path, '/', '/');
+			nc_clip_occurences_with(new_path, '/', '/');
 
 			file_ds->xml = xmlReadFile(new_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			if (file_ds->xml == NULL || file_structure_check(file_ds->xml) == 0) {
@@ -473,7 +434,7 @@ int ncds_file_init (struct ncds_ds* ds)
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 				return (EXIT_FAILURE);
 			}
-			clip_occurences_with(new_path, '/', '/');
+			nc_clip_occurences_with(new_path, '/', '/');
 			WARN("Using %s as a backup datastore.", new_path);
 			if ((fd = mkstemp(new_path)) == -1) {
 				ERROR("Unable to create backup datastore (%s).", strerror(errno));
@@ -529,7 +490,7 @@ int ncds_file_init (struct ncds_ds* ds)
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		return (EXIT_FAILURE);
 	}
-	clip_occurences_with(sempath, '/', '_');
+	nc_clip_occurences_with(sempath, '/', '_');
 	/* recreate initial backslash in the semaphore name */
 	sempath[0] = '/';
 	/* and then create the lock (actually it is a semaphore) */
