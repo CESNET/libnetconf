@@ -1065,6 +1065,15 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 	}
 
 	replay_end = (off_t*) pthread_getspecific(ncntf_replay_end);
+	if (start == -1 && *replay_end != 0) {
+		/*
+		 * start time is not specified and we would do replay here, but
+		 * according to RFC 5277, sec 2.1.1, this is not a replay subscription
+		 * so skip to the end of the file and mark replay as done
+		 */
+		lseek(s->fd_events, *replay_end, SEEK_SET);
+		*replay_end = 0;
+	}
 
 	while (1) {
 		/* condition to read events from file (use replay):
