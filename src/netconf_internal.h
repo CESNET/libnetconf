@@ -517,6 +517,19 @@ struct nc_cpblts {
 char* nc_clrwspace (const char* in);
 
 /**
+ * @brief Replace (repeated) character in string with another one.
+ *
+ * Remember that given str parameter is being modified, so it cannot be a static
+ * string! Function replaces single as well as a sequence of the specified
+ * character with another (or the same - to eliminate sequences) character.
+ *
+ * @param[in,out] str String to modify.
+ * @param[in] sought Character to find and to replace.
+ * @param[in] replacement Character to be used as the replacement for sought.
+ */
+void nc_clip_occurences_with(char *str, char sought, char replacement);
+
+/**
  * @brief Skip XML declaration in the beginning of an XML document
  *
  * @param xmldoc String containing XML document where the XML declaration
