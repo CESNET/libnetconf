@@ -916,7 +916,7 @@ static struct nacm_rpc* nacm_rpc_struct(const struct nc_session* session)
 	char** groups = NULL;
 	int l, c, i, j, k;
 
-	if (session == NULL || session->status != NC_SESSION_STATUS_WORKING) {
+	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_DUMMY)) {
 		ERROR("%s: invalid session to use", __func__);
 		return (NULL);
 	}
