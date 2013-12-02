@@ -2091,7 +2091,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 
 			/* find matching element to children */
 			aux = orig_node->children;
-			while (aux != NULL && matching_elements(children, aux, keys, 0) == 0) {
+			while (aux != NULL && matching_elements(children, aux, keys, 1) == 0) {
 				aux = aux->next;
 			}
 		}
