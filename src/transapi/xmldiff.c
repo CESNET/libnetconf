@@ -474,8 +474,10 @@ model_type:
 				free (next_path);
 
 				/* Assuming there is only one child of this choice (as it should be), we return this child's operation, the choice itself is de-facto skipped */
-				if (tmp_op != XMLDIFF_NONE) {
-					ret_op = tmp_op;
+				if (tmp_op == XMLDIFF_ERR) {
+					return XMLDIFF_ERR;
+				} else if (tmp_op != XMLDIFF_NONE) {
+					ret_op |= tmp_op;
 					break;
 				}
 			}
@@ -581,10 +583,15 @@ model_type:
 
 					if (item_ret_op != XMLDIFF_NONE) {
 						/* There actually was a change, so we append those changes as our children and add our change as a sibling */
-						xmldiff_add_diff (tmp_diff, ns_mapping, path, list_new_tmp, XMLDIFF_CHAIN, XML_PARENT);
+						if (item_ret_op & XMLDIFF_SIBLING) {
+							ret_op |= XMLDIFF_REORDER;
+						}
+						if (item_ret_op & (XMLDIFF_ADD|XMLDIFF_REM|XMLDIFF_MOD|XMLDIFF_CHAIN)) {
+							ret_op |= XMLDIFF_CHAIN;
+						}
+						xmldiff_add_diff (tmp_diff, ns_mapping, path, list_new_tmp, ret_op, XML_PARENT);
 						*tmp_diff = (*tmp_diff)->parent;
 						xmldiff_addsibling_diff (diff, tmp_diff);
-						ret_op = XMLDIFF_CHAIN;
 					} else {
 						free(tmp_diff);
 					}
