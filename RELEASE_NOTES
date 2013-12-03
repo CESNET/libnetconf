@@ -1,3 +1,11 @@
+libnetconf 0.6.1
+
+This release includes the following changes:
+
+ * New ncds_set_validation2() to allow server to set its own validation callback
+   for the specific datastore.
+
+
 libnetconf 0.6.0
 
 This release includes the following changes:
