@@ -2645,7 +2645,7 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 	int ret = EXIT_FAILURE;
 	int len;
 	char *data_cfg = NULL, *data2, *model, *config_internal;
-	xmlDocPtr doc_cfg, doc_status, doc = NULL;
+	xmlDocPtr doc_cfg, doc_status = NULL, doc = NULL;
 	xmlNodePtr root;
 	xmlNsPtr ns;
 	xmlBufferPtr resultbuffer;
@@ -2672,7 +2672,7 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		doc = doc_cfg = xmlReadDoc(BAD_CAST data_cfg, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 		/* if the datastore is empty, doc1/aux_doc is NULL here */
 
-		if (ds->get_state != NULL ) {
+		if (ds->get_state != NULL) {
 			xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
 			data2 = ds->get_state(model, data_cfg, e);
 			free(model);
@@ -2681,28 +2681,39 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 				/* state data retrieval error */
 				free(data2);
 				free(data_cfg);
+				xmlFreeDoc(doc_cfg);
 				return (EXIT_FAILURE);
 			}
 
 			doc_status = xmlReadDoc(BAD_CAST data2, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 			free(data2);
+		} else if (ds->get_state_xml != NULL) {
+			doc_status = ds->get_state_xml(ds->ext_model, doc_cfg, e);
 
-			if (data_cfg == NULL || strisempty(data_cfg)) {
-				/* there are no configuration data, use only status, no merge is needed */
-				doc = doc_status;
-				/* doc_cfg is NULL and don't need to free() */
-			} else if ((doc = ncxml_merge(doc_cfg, doc_status, ds->ext_model)) == NULL ) {
-				xmlFreeDoc(doc_cfg);
-				xmlFreeDoc(doc_status);
+			if (*e != NULL ) {
+				/* state data retrieval error */
 				free(data_cfg);
-				*e = nc_err_new(NC_ERR_OP_FAILED);
-				return (EXIT_FAILURE);
-			} else {
-				/* cleanup */
 				xmlFreeDoc(doc_cfg);
-				xmlFreeDoc(doc_status);
+				return (EXIT_FAILURE);
 			}
 		}
+
+		if (data_cfg == NULL || strisempty(data_cfg)) {
+			/* there are no configuration data, use only status, no merge is needed */
+			doc = doc_status;
+			/* doc_cfg is NULL and don't need to free() */
+		} else if ((doc = ncxml_merge(doc_cfg, doc_status, ds->ext_model)) == NULL) {
+			xmlFreeDoc(doc_cfg);
+			xmlFreeDoc(doc_status);
+			free(data_cfg);
+			*e = nc_err_new(NC_ERR_OP_FAILED);
+			return (EXIT_FAILURE);
+		} else {
+			/* cleanup */
+			xmlFreeDoc(doc_cfg);
+			xmlFreeDoc(doc_status);
+		}
+
 		free(data_cfg);
 		data_cfg = NULL;
 		break;
