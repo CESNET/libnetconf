@@ -51,6 +51,9 @@ extern "C" {
 /**
  * @ingroup store
  * @brief Create a new datastore structure of the specified implementation type with get_state function using libxml2.
+ *
+ * To make this function available, you have to include libnetconf_xml.h.
+ *
  * @param[in] type Datastore implementation type for the new datastore structure.
  * @param[in] model_path Base name of the configuration data model files.
  * libnetconf expects model_path.yin as a data model, model_path.rng for
@@ -67,6 +70,34 @@ extern "C" {
  * used to access the configuration data.
  */
 struct ncds_ds* ncds_new2(NCDS_TYPE type, const char * model_path, xmlDocPtr (*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e));
+
+/**
+ * @ingroup store
+ * @brief Set validators (or disable validation) on the specified datastore.
+ *
+ * To make this function available, you have to include libnetconf_xml.h.
+ *
+ * @param[in] ds Datastore structure to be configured.
+ * @param[in] enable 1 to enable validation on the datastore according to the
+ * following parameters, 0 to disable validation (following parameters will be
+ * ignored as well as automatically or previously set validators).
+ * @param[in] relaxng Path to the Relax NG schema for validation of the
+ * datastore content syntax. To generate it, use the lnc-tool(1) script. NULL
+ * if syntactic validation not required.
+ * @param[in] schematron Path to the Schematron XSLT stylesheet for validation of
+ * the datastore content semantics. To generate it, use the lnc-tool(1) script.
+ * NULL if semantic validation not required.
+ * @param[in] valid_func Pointer to a callback function that is used for
+ * additional validation of the configuration data in the datastore. It can
+ * perform any specific check for the datastore (e.g. check for presence of
+ * referred files). If no such check is needed, parameter can be set to NULL.
+ * <BR>
+ * Validation callback function receives configuration data as a libxml2's
+ * xmlDocPtr. As a result it returns EXIT_SUCCESS if validation checks passed
+ * and EXIT_FAILURE when an error occurred.
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng, const char* schematron, int (*valid_func)(const xmlDocPtr config));
 
 #ifdef __cplusplus
 }

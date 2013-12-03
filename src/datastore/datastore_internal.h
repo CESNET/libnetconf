@@ -177,6 +177,7 @@ struct model_validators {
 	xmlRelaxNGValidCtxtPtr rng;
 	xmlRelaxNGPtr rng_schema;
 	xsltStylesheetPtr schematron;
+	int (*callback)(const xmlDocPtr);
 };
 #endif
 
