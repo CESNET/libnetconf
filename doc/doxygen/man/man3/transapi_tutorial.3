@@ -12,6 +12,8 @@ To install libnetconf follow instruction on \fBCompilation and Installation\fP p
 .PP
 .SS "Preparations"
 .PP
+In this example we will work with the data model of the toaster provided by Andy Bierman at NETCONF CENTRAL (http://dld.netconfcentral.org/src/toaster@2009-11-20.yang)\&.
+.PP
 First we need to identify important parts of configuration data\&. Since toaster data model describes only one configurable element we have easy choice\&. So we can create the 'paths_file' file containing specification of our chosen element and mapping prefixes with URIs for any used namespace\&.
 .PP
 Our file may look like this (irrespective of order): 
@@ -23,39 +25,41 @@ toaster=http://netconfcentral\&.org/ns/toaster
 .fi
 .PP
 .PP
-If we want (we do) to create call back functions for RPC messages defined for toaster we need its data model in YIN format\&. Data model in YANG format can be downloaded from NETCONF CENTRAL (http://dld.netconfcentral.org/src/toaster@2009-11-20.yang)\&. Then we convert model in YANG to YIN using \fCpyang\fP\&.
-.PP
-.PP
-.nf
-$ pyang -f yin -o toaster@2009-11-20\&.yin toaster@2009-11-20\&.yang
-.fi
-.PP
-.PP
 .SS "Generating code"
 .PP
 .IP "1." 4
-Create new directory for toaster module: 
+Create new directory for toaster module and move data model and path file into it: 
 .PP
 .nf
 $ mkdir toaster && cd toaster/
+$ mv \&.\&./toaster@2009-11-20\&.yin \&.\&./paths_file \&.
 
 .fi
 .PP
 
 .IP "2." 4
-Run `generator\&.py': 
+Run `lnctool' for transapi: 
 .PP
 .nf
-$ lnc-creator --name toaster --paths paths_file --model toaster@2009-11-20\&.yin
+$ lnctool --output-dir \&./toaster/ --model \&./toaster@2009-11-20\&.yin transapi --paths \&./paths_file
 
 .fi
 .PP
 
 .PP
 .PP
+Besides the generated source code of our transAPI module and GNU Build System files (Makefile\&.in, configure\&.in,\&.\&.\&.) lnctool also generates YIN format of the data model and validators accepted by the libnetconf's \fBncds_new_transapi()\fP and \fBncds_set_validation()\fP functions:
+.IP "\(bu" 2
+*\&.yin - YIN format of the data model
+.IP "\(bu" 2
+*\&.rng - RelagNG schem for syntax validation
+.IP "\(bu" 2
+*-schematron\&.xsl - Schematron XSL stylesheet for semantics validation *
+.PP
+.PP
 .SS "Filling up functionality"
 .PP
-Here we show the simplest example of toaster simulating module\&. It is working but does not deal with multiple access and threads correctly\&. Better example may be seen in the netopeer-server-sl source codes located in the \fCNetopeer project\fP repository (server-sl/toaster/toaster\&.c)\&.
+Here we show the simplest example of a toaster simulating module\&. It is working but does not deal with multiple access and threads correctly\&. Better example may be seen in the netopeer-server-sl source codes located in the \fCNetopeer project\fP repository (server-sl/toaster/toaster\&.c)\&.
 .PP
 .IP "1." 4
 Open 'toaster\&.c' file with you favorite editor: 

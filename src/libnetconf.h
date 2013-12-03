@@ -519,43 +519,26 @@
 /**
  * \page transapi Transaction API (transAPI)
  *
- * Libnetconf transAPI is a framework that will save developers time and let them
+ * Libnetconf transAPI is a framework that saves developers time and let them
  * focus on configuring and managing their device instead of fighting with NETCONF
  * protocol.
  *
  * It allows developer to choose parts of configuration that can be easily configured
- * as a single block. Based on list of so called 'sensitive paths' generator creates
+ * as a single block. Based on a list of so called 'sensitive paths' generator creates
  * C code containing single callback function for every 'sensitive path'. Whenever
- * something changes in configuration file appropriate callback function is called
- * and should reflect configuration changes to device behavior.
+ * something changes in configuration file, appropriate callback function is called
+ * and it is supposed to reflect configuration changes to device behavior.
  *
- * Additionaly, transAPI provides opportunity to implement behavior of RPC messages.
- * If you provide 'generator.py' with data model containing definition of RPC messages
- * it will generate callbacks for them too. Whenever server receives specified RPC message
- * it will call function implemented in module.
+ * Additionaly, transAPI provides opportunity to implement behavior of NETCONF
+ * RPC operation defined in the data model. In the case that lnctool finds an RPC
+ * definition inside a provided data model, it generates callbacks for it too.
+ * Whenever a server calls ncds_apply_rpc() or ncds_apply_rpc2all() with RPC
+ * message containing such defined RPC operation, libnetconf uses callback
+ * function implemented in the module.
  *
  * ### Getting started ###
  *
- * -# Create folder for your new module and enter it.
- * -# Run python script 'generator.py'. Description of parameters follows:
- *              - \-\-name  Name of your module. This is only one mandatory parameter.
- *              - \-\-paths File with list of sensitive path. One per line.
- *              - \-\-model File holding data model. Used for generating rpc callbacks.
- *              - \-\-template\-dir Path to directory with template files for generator.
- *              - \-\-without\-init Module does not need initialization when loaded.
- *              - \-\-without\-close Module does not need closing before unloaded.
- * -# Open generated .c file and fill function bodies with code that has to be run
- *        when configuration change or RPC message is received. You can add as many
- *        auxiliary function as you need.
- *        Do NOT modify structures or function headers.
- * -# Fill body of get_state_data() function so it returns all device state data
- *         defined in device data model.
- * -# Fill bodies of init and close functions (if your module needs them).
- * -# Run sequence 'autoreconf && ./configure && make'. If the build is succesful
- *        shared library is generated. You can use it with libnetconf for configuring
- *        your device.
- *
- * \subpage transapiTutorial
+ * See \subpage transapiTutorial.
  */
 /**
  * \page transapiTutorial transAPI Tutorial
@@ -567,6 +550,9 @@
  * \note To install libnetconf follow instruction on \ref install page.
  *
  * ## Preparations ##
+ *
+ * In this example we will work with the data model of the toaster provided
+ * by Andy Bierman at NETCONF CENTRAL (<http://dld.netconfcentral.org/src/toaster@2009-11-20.yang>).
  *
  * First we need to identify important parts of configuration data.
  * Since toaster data model describes only one configurable element
@@ -580,29 +566,29 @@
  * /toaster:toaster
  * ~~~~~~~
  *
- * If we want (we do) to create call back functions for RPC messages
- * defined for toaster we need its data model in YIN format. Data model
- * in YANG format can be downloaded from NETCONF CENTRAL (<http://dld.netconfcentral.org/src/toaster@2009-11-20.yang>).
- * Then we convert model in YANG to YIN using [pyang](http://code.google.com/p/pyang/).
- *
- * ~~~~~~~{.sh}
- * $ pyang -f yin -o toaster@2009-11-20.yin toaster@2009-11-20.yang
- * ~~~~~~~
- *
  * ## Generating code ##
  *
- * -# Create new directory for toaster module:
+ * -# Create new directory for toaster module and move data model and path file into it:
  * ~~~~~~~{.sh}
  * $ mkdir toaster && cd toaster/
+ * $ mv ../toaster@2009-11-20.yin ../paths_file .
  * ~~~~~~~
- * -# Run `generator.py':
+ * -# Run `lnctool' for transapi:
  * ~~~~~~~{.sh}
- * $ lnc-creator --name toaster --paths paths_file --model toaster@2009-11-20.yin
+ * $ lnctool --output-dir ./toaster/ --model ./toaster@2009-11-20.yin transapi --paths ./paths_file
  * ~~~~~~~
+ *
+ * Besides the generated source code of our transAPI module and GNU Build
+ * System files (Makefile.in, configure.in,...) lnctool also generates YIN
+ * format of the data model and validators accepted by the libnetconf's
+ * ncds_new_transapi() and ncds_set_validation() functions:
+ * - *.yin - YIN format of the data model
+ * - *.rng - RelagNG schem for syntax validation
+ * - *-schematron.xsl - Schematron XSL stylesheet for semantics validation *
  *
  * ## Filling up functionality ##
  *
- * Here we show the simplest example of toaster simulating module.
+ * Here we show the simplest example of a toaster simulating module.
  * It is working but does not deal with multiple access and threads correctly.
  * Better example may be seen in the netopeer-server-sl source codes located
  * in the [Netopeer project][netopeer] repository (server-sl/toaster/toaster.c).

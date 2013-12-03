@@ -106,21 +106,27 @@ $(document).ready(function(){initNavTree('d3/df0/transapi_tutorial.html','../../
 <div class="textblock"><p>On this page we will show how to write simple module for controlling <a href="http://netconfcentral.org/modulereport/toaster">example toaster</a>. </p>
 <dl class="section note"><dt>Note</dt><dd>To install libnetconf follow instruction on <a class="el" href="../../d9/d87/install.html">Compilation and Installation</a> page.</dd></dl>
 <h2>Preparations</h2>
+<p>In this example we will work with the data model of the toaster provided by Andy Bierman at NETCONF CENTRAL (<a href="http://dld.netconfcentral.org/src/toaster@2009-11-20.yang">http://dld.netconfcentral.org/src/toaster@2009-11-20.yang</a>).</p>
 <p>First we need to identify important parts of configuration data. Since toaster data model describes only one configurable element we have easy choice. So we can create the 'paths_file' file containing specification of our chosen element and mapping prefixes with URIs for any used namespace.</p>
 <p>Our file may look like this (irrespective of order): </p>
 <div class="fragment"><div class="line">toaster=http:<span class="comment">//netconfcentral.org/ns/toaster</span></div>
 <div class="line">/toaster:toaster</div>
-</div><!-- fragment --><p>If we want (we do) to create call back functions for RPC messages defined for toaster we need its data model in YIN format. Data model in YANG format can be downloaded from NETCONF CENTRAL (<a href="http://dld.netconfcentral.org/src/toaster@2009-11-20.yang">http://dld.netconfcentral.org/src/toaster@2009-11-20.yang</a>). Then we convert model in YANG to YIN using <a href="http://code.google.com/p/pyang/">pyang</a>.</p>
-<div class="fragment"><div class="line">$ pyang -f yin -o toaster@2009-11-20.yin toaster@2009-11-20.yang</div>
 </div><!-- fragment --><h2>Generating code</h2>
 <ol type="1">
-<li>Create new directory for toaster module: <div class="fragment"><div class="line">$ mkdir toaster &amp;&amp; cd toaster/</div>
+<li>Create new directory for toaster module and move data model and path file into it: <div class="fragment"><div class="line">$ mkdir toaster &amp;&amp; cd toaster/</div>
+<div class="line">$ mv ../toaster@2009-11-20.yin ../paths_file .</div>
 </div><!-- fragment --></li>
-<li>Run `generator.py': <div class="fragment"><div class="line">$ lnc-creator --name toaster --paths paths_file --model toaster@2009-11-20.yin</div>
+<li>Run `lnctool' for transapi: <div class="fragment"><div class="line">$ lnctool --output-dir ./toaster/ --model ./toaster@2009-11-20.yin transapi --paths ./paths_file</div>
 </div><!-- fragment --></li>
 </ol>
+<p>Besides the generated source code of our transAPI module and GNU Build System files (Makefile.in, configure.in,...) lnctool also generates YIN format of the data model and validators accepted by the libnetconf's <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support. ">ncds_new_transapi()</a> and <a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31" title="Set validators (or disable validation) on the specified datastore. ">ncds_set_validation()</a> functions:</p>
+<ul>
+<li>*.yin - YIN format of the data model</li>
+<li>*.rng - RelagNG schem for syntax validation</li>
+<li>*-schematron.xsl - Schematron XSL stylesheet for semantics validation *</li>
+</ul>
 <h2>Filling up functionality</h2>
-<p>Here we show the simplest example of toaster simulating module. It is working but does not deal with multiple access and threads correctly. Better example may be seen in the netopeer-server-sl source codes located in the <a href="https://code.google.com/p/netopeer">Netopeer project</a> repository (server-sl/toaster/toaster.c).</p>
+<p>Here we show the simplest example of a toaster simulating module. It is working but does not deal with multiple access and threads correctly. Better example may be seen in the netopeer-server-sl source codes located in the <a href="https://code.google.com/p/netopeer">Netopeer project</a> repository (server-sl/toaster/toaster.c).</p>
 <ol type="1">
 <li>Open 'toaster.c' file with you favorite editor: <div class="fragment"><div class="line">$ vim toaster.c</div>
 </div><!-- fragment --></li>
@@ -216,7 +222,7 @@ $(document).ready(function(){initNavTree('d3/df0/transapi_tutorial.html','../../
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../d9/d25/transapi.html">Transaction API (transAPI)</a></li>
-    <li class="footer">Generated on Tue Dec 3 2013 14:06:11 for libnetconf by
+    <li class="footer">Generated on Tue Dec 3 2013 17:21:21 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

@@ -103,33 +103,17 @@ $(document).ready(function(){initNavTree('d9/d25/transapi.html','../../');});
 <div class="title">Transaction API (transAPI) </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Libnetconf transAPI is a framework that will save developers time and let them focus on configuring and managing their device instead of fighting with NETCONF protocol.</p>
-<p>It allows developer to choose parts of configuration that can be easily configured as a single block. Based on list of so called 'sensitive paths' generator creates C code containing single callback function for every 'sensitive path'. Whenever something changes in configuration file appropriate callback function is called and should reflect configuration changes to device behavior.</p>
-<p>Additionaly, transAPI provides opportunity to implement behavior of RPC messages. If you provide 'generator.py' with data model containing definition of RPC messages it will generate callbacks for them too. Whenever server receives specified RPC message it will call function implemented in module.</p>
+<div class="textblock"><p>Libnetconf transAPI is a framework that saves developers time and let them focus on configuring and managing their device instead of fighting with NETCONF protocol.</p>
+<p>It allows developer to choose parts of configuration that can be easily configured as a single block. Based on a list of so called 'sensitive paths' generator creates C code containing single callback function for every 'sensitive path'. Whenever something changes in configuration file, appropriate callback function is called and it is supposed to reflect configuration changes to device behavior.</p>
+<p>Additionaly, transAPI provides opportunity to implement behavior of NETCONF RPC operation defined in the data model. In the case that lnctool finds an RPC definition inside a provided data model, it generates callbacks for it too. Whenever a server calls <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore. ">ncds_apply_rpc()</a> or <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a> with RPC message containing such defined RPC operation, libnetconf uses callback function implemented in the module.</p>
 <h3>Getting started</h3>
-<ol type="1">
-<li>Create folder for your new module and enter it.</li>
-<li>Run python script 'generator.py'. Description of parameters follows:<ul>
-<li>--name Name of your module. This is only one mandatory parameter.</li>
-<li>--paths File with list of sensitive path. One per line.</li>
-<li>--model File holding data model. Used for generating rpc callbacks.</li>
-<li>--template-dir Path to directory with template files for generator.</li>
-<li>--without-init Module does not need initialization when loaded.</li>
-<li>--without-close Module does not need closing before unloaded.</li>
-</ul>
-</li>
-<li>Open generated .c file and fill function bodies with code that has to be run when configuration change or RPC message is received. You can add as many auxiliary function as you need. Do NOT modify structures or function headers.</li>
-<li>Fill body of get_state_data() function so it returns all device state data defined in device data model.</li>
-<li>Fill bodies of init and close functions (if your module needs them).</li>
-<li>Run sequence 'autoreconf &amp;&amp; ./configure &amp;&amp; make'. If the build is succesful shared library is generated. You can use it with libnetconf for configuring your device.</li>
-</ol>
-<p><a class="el" href="../../d3/df0/transapi_tutorial.html">transAPI Tutorial</a> </p>
+<p>See <a class="el" href="../../d3/df0/transapi_tutorial.html">transAPI Tutorial</a>. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Dec 3 2013 14:06:11 for libnetconf by
+    <li class="footer">Generated on Tue Dec 3 2013 17:21:21 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

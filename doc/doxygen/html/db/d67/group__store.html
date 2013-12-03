@@ -1044,8 +1044,8 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ds</td><td>Datastore structure to be configured. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">enable</td><td>1 to enable validation on the datastore according to the following parameters, 0 to disable validation (following parameters will be ignored as well as automatically or previously set validators). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">relaxng</td><td>Path to the Relax NG schema for validation of the datastore content syntax. To generate it, use the lnc-tool(1) script. NULL if syntactic validation is not required. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">schematron</td><td>Path to the Schematron XSLT stylesheet for validation of the datastore content semantics. To generate it, use the lnc-tool(1) script. NULL if semantic validation is not required. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">relaxng</td><td>Path to the Relax NG schema for validation of the datastore content syntax. To generate it, use the lnctool(1) script. NULL if syntactic validation is not required. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">schematron</td><td>Path to the Schematron XSLT stylesheet for validation of the datastore content semantics. To generate it, use the lnctool(1) script. NULL if semantic validation is not required. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1101,8 +1101,8 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ds</td><td>Datastore structure to be configured. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">enable</td><td>1 to enable validation on the datastore according to the following parameters, 0 to disable validation (following parameters will be ignored as well as automatically or previously set validators). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">relaxng</td><td>Path to the Relax NG schema for validation of the datastore content syntax. To generate it, use the lnc-tool(1) script. NULL if syntactic validation not required. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">schematron</td><td>Path to the Schematron XSLT stylesheet for validation of the datastore content semantics. To generate it, use the lnc-tool(1) script. NULL if semantic validation not required. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">relaxng</td><td>Path to the Relax NG schema for validation of the datastore content syntax. To generate it, use the lnctool(1) script. NULL if syntactic validation not required. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">schematron</td><td>Path to the Schematron XSLT stylesheet for validation of the datastore content semantics. To generate it, use the lnctool(1) script. NULL if semantic validation not required. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">valid_func</td><td>Pointer to a callback function that is used for additional validation of the configuration data in the datastore. It can perform any specific check for the datastore (e.g. check for presence of referred files). If no such check is needed, parameter can be set to NULL. <br/>
  Validation callback function receives configuration data as a libxml2's xmlDocPtr. As a result it returns EXIT_SUCCESS if validation checks passed and EXIT_FAILURE when an error occurred. </td></tr>
   </table>
@@ -1117,7 +1117,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Dec 3 2013 14:06:11 for libnetconf by
+    <li class="footer">Generated on Tue Dec 3 2013 17:21:21 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

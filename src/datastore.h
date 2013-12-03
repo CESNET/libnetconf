@@ -302,10 +302,10 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
  * following parameters, 0 to disable validation (following parameters will be
  * ignored as well as automatically or previously set validators).
  * @param[in] relaxng Path to the Relax NG schema for validation of the
- * datastore content syntax. To generate it, use the lnc-tool(1) script. NULL
+ * datastore content syntax. To generate it, use the lnctool(1) script. NULL
  * if syntactic validation is not required.
  * @param[in] schematron Path to the Schematron XSLT stylesheet for validation of
- * the datastore content semantics. To generate it, use the lnc-tool(1) script.
+ * the datastore content semantics. To generate it, use the lnctool(1) script.
  * NULL if semantic validation is not required.
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */

@@ -569,9 +569,9 @@ Set validators (or disable validation) on the specified datastore\&.
 .br
 \fIenable\fP 1 to enable validation on the datastore according to the following parameters, 0 to disable validation (following parameters will be ignored as well as automatically or previously set validators)\&. 
 .br
-\fIrelaxng\fP Path to the Relax NG schema for validation of the datastore content syntax\&. To generate it, use the lnc-tool(1) script\&. NULL if syntactic validation is not required\&. 
+\fIrelaxng\fP Path to the Relax NG schema for validation of the datastore content syntax\&. To generate it, use the lnctool(1) script\&. NULL if syntactic validation is not required\&. 
 .br
-\fIschematron\fP Path to the Schematron XSLT stylesheet for validation of the datastore content semantics\&. To generate it, use the lnc-tool(1) script\&. NULL if semantic validation is not required\&. 
+\fIschematron\fP Path to the Schematron XSLT stylesheet for validation of the datastore content semantics\&. To generate it, use the lnctool(1) script\&. NULL if semantic validation is not required\&. 
 .RE
 .PP
 \fBReturns:\fP
@@ -591,9 +591,9 @@ Set validators (or disable validation) on the specified datastore\&. To make thi
 .br
 \fIenable\fP 1 to enable validation on the datastore according to the following parameters, 0 to disable validation (following parameters will be ignored as well as automatically or previously set validators)\&. 
 .br
-\fIrelaxng\fP Path to the Relax NG schema for validation of the datastore content syntax\&. To generate it, use the lnc-tool(1) script\&. NULL if syntactic validation not required\&. 
+\fIrelaxng\fP Path to the Relax NG schema for validation of the datastore content syntax\&. To generate it, use the lnctool(1) script\&. NULL if syntactic validation not required\&. 
 .br
-\fIschematron\fP Path to the Schematron XSLT stylesheet for validation of the datastore content semantics\&. To generate it, use the lnc-tool(1) script\&. NULL if semantic validation not required\&. 
+\fIschematron\fP Path to the Schematron XSLT stylesheet for validation of the datastore content semantics\&. To generate it, use the lnctool(1) script\&. NULL if semantic validation not required\&. 
 .br
 \fIvalid_func\fP Pointer to a callback function that is used for additional validation of the configuration data in the datastore\&. It can perform any specific check for the datastore (e\&.g\&. check for presence of referred files)\&. If no such check is needed, parameter can be set to NULL\&. 
 .br
