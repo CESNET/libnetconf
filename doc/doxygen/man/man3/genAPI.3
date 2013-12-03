@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Tue Dec 3 2013" "Version 0.6.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -22,24 +22,12 @@ libnetconf's miscellaneous functions\&.
 
 .in +1c
 .ti -1c
-.RI "void \fBnc_verbosity\fP (\fBNC_VERB_LEVEL\fP level)"
-.br
-.RI "\fISet libnetconf's verbosity level\&. \fP"
-.ti -1c
-.RI "int \fBnc_init\fP (int flags)"
-.br
-.RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all the processes\&. \fP"
-.ti -1c
-.RI "int \fBnc_close\fP (int system)"
-.br
-.ti -1c
 .RI "void \fBnc_callback_print\fP (void(*func)(\fBNC_VERB_LEVEL\fP level, const char *msg))"
 .br
 .RI "\fISet a callback function for printing libnetconf's messages\&. \fP"
 .ti -1c
-.RI "struct nc_err * \fBnc_err_new\fP (\fBNC_ERR\fP error)"
+.RI "int \fBnc_close\fP (int system)"
 .br
-.RI "\fICreate a new error description structure\&. \fP"
 .ti -1c
 .RI "struct nc_err * \fBnc_err_dup\fP (const struct nc_err *error)"
 .br
@@ -49,17 +37,29 @@ libnetconf's miscellaneous functions\&.
 .br
 .RI "\fIFree NETCONF error structure\&. \fP"
 .ti -1c
-.RI "int \fBnc_err_set\fP (struct nc_err *err, \fBNC_ERR_PARAM\fP param, const char *value)"
-.br
-.RI "\fISet selected parameter of the NETCONF error structure to the specified value\&. \fP"
-.ti -1c
 .RI "const char * \fBnc_err_get\fP (const struct nc_err *err, \fBNC_ERR_PARAM\fP param)"
 .br
 .RI "\fIGet value of the specified parameter of the NETCONF error structure\&. \fP"
 .ti -1c
+.RI "struct nc_err * \fBnc_err_new\fP (\fBNC_ERR\fP error)"
+.br
+.RI "\fICreate a new error description structure\&. \fP"
+.ti -1c
+.RI "int \fBnc_err_set\fP (struct nc_err *err, \fBNC_ERR_PARAM\fP param, const char *value)"
+.br
+.RI "\fISet selected parameter of the NETCONF error structure to the specified value\&. \fP"
+.ti -1c
+.RI "int \fBnc_init\fP (int flags)"
+.br
+.RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all the processes\&. \fP"
+.ti -1c
 .RI "int \fBnc_msgid_compare\fP (const \fBnc_msgid\fP id1, const \fBnc_msgid\fP id2)"
 .br
 .RI "\fICompare two message IDs if they are the same\&. \fP"
+.ti -1c
+.RI "void \fBnc_verbosity\fP (\fBNC_VERB_LEVEL\fP level)"
+.br
+.RI "\fISet libnetconf's verbosity level\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -117,19 +117,124 @@ Besides errors and warnings, print some other verbose messages\&.
 Print all messages including some development debug messages\&. 
 .SH "Function Documentation"
 .PP 
-.SS "void nc_verbosity (\fBNC_VERB_LEVEL\fPlevel)"
+.SS "void nc_callback_print (void(*)(\fBNC_VERB_LEVEL\fP level, const char *msg)func)"
 
 .PP
-Set libnetconf's verbosity level\&. \fBParameters:\fP
+Set a callback function for printing libnetconf's messages\&. 
+.PP
+\fBParameters:\fP
 .RS 4
-\fIlevel\fP Enabled verbosity level (includes all the levels with higher priority)\&. 
+\fIfunc\fP Callback function to use\&. 
+.RE
+.PP
+
+.SS "int nc_close (intsystem)"
+
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsystem\fP Flag if close should be applied as system-wide\&. System-wide \fBnc_close()\fP closes all the shared structures if no other libnetconf participant is currently running\&. Local release of the calling instance from the shared structures is done in both cases\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+-1 on error
+.br
+ 0 on success
+.br
+ 1 in case of system-wide when there is another participant using shared structures and system-wide close cannot be done\&. 
+.RE
+.PP
+
+.SS "struct nc_err* nc_err_dup (const struct nc_err *error)"
+
+.PP
+Duplicate an error description structure\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIerror\fP Existing NETCONF error description structure to be duplicated\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Duplicated NETCONF error structure on success, NULL on an error\&. 
+.RE
+.PP
+
+.SS "void nc_err_free (struct nc_err *err)"
+
+.PP
+Free NETCONF error structure\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIerr\fP NETCONF error structure to free\&. 
+.RE
+.PP
+
+.SS "const char* nc_err_get (const struct nc_err *err, \fBNC_ERR_PARAM\fPparam)"
+
+.PP
+Get value of the specified parameter of the NETCONF error structure\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIerr\fP NETCONF error structure from which the value will be read\&. 
+.br
+\fIparam\fP NETCONF error structure's parameter to be returned\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Constant string value of the requested parameter, NULL if the specified parameter is not set\&. 
+.RE
+.PP
+
+.SS "struct nc_err* nc_err_new (\fBNC_ERR\fPerror)"
+
+.PP
+Create a new error description structure\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIerror\fP Predefined NETCONF error (according to RFC 6241 Appendix A)\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Created NETCONF error structure on success, NULL on an error\&. 
+.RE
+.PP
+
+.SS "int nc_err_set (struct nc_err *err, \fBNC_ERR_PARAM\fPparam, const char *value)"
+
+.PP
+Set selected parameter of the NETCONF error structure to the specified value\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIerr\fP NETCONF error structure to be modified\&. 
+.br
+\fIparam\fP NETCONF error structure's parameter to be modified\&. 
+.br
+\fIvalue\fP New value for the specified parameter\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on success
+.br
+ non-zero on error 
 .RE
 .PP
 
 .SS "int nc_init (intflags)"
 
 .PP
-Initialize libnetconf for system-wide usage\&. This initialization is shared across all the processes\&. \fBParameters:\fP
+Initialize libnetconf for system-wide usage\&. This initialization is shared across all the processes\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIflags\fP ORed flags for libnetconf initialization\&. Accepted values include:
 .IP "\(bu" 2
@@ -155,108 +260,12 @@ Initialize libnetconf for system-wide usage\&. This initialization is shared acr
 .RE
 .PP
 
-.SS "int nc_close (intsystem)"
-\fBParameters:\fP
-.RS 4
-\fIsystem\fP Flag if close should be applied as system-wide\&. System-wide \fBnc_close()\fP closes all the shared structures if no other libnetconf participant is currently running\&. Local release of the calling instance from the shared structures is done in both cases\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
--1 on error
-.br
- 0 on success
-.br
- 1 in case of system-wide when there is another participant using shared structures and system-wide close cannot be done\&. 
-.RE
-.PP
-
-.SS "void nc_callback_print (void(*)(\fBNC_VERB_LEVEL\fP level, const char *msg)func)"
-
-.PP
-Set a callback function for printing libnetconf's messages\&. \fBParameters:\fP
-.RS 4
-\fIfunc\fP Callback function to use\&. 
-.RE
-.PP
-
-.SS "struct nc_err* nc_err_new (\fBNC_ERR\fPerror)\fC [read]\fP"
-
-.PP
-Create a new error description structure\&. \fBParameters:\fP
-.RS 4
-\fIerror\fP Predefined NETCONF error (according to RFC 6241 Appendix A)\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-Created NETCONF error structure on success, NULL on an error\&. 
-.RE
-.PP
-
-.SS "struct nc_err* nc_err_dup (const struct nc_err *error)\fC [read]\fP"
-
-.PP
-Duplicate an error description structure\&. \fBParameters:\fP
-.RS 4
-\fIerror\fP Existing NETCONF error description structure to be duplicated\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-Duplicated NETCONF error structure on success, NULL on an error\&. 
-.RE
-.PP
-
-.SS "void nc_err_free (struct nc_err *err)"
-
-.PP
-Free NETCONF error structure\&. \fBParameters:\fP
-.RS 4
-\fIerr\fP NETCONF error structure to free\&. 
-.RE
-.PP
-
-.SS "int nc_err_set (struct nc_err *err, \fBNC_ERR_PARAM\fPparam, const char *value)"
-
-.PP
-Set selected parameter of the NETCONF error structure to the specified value\&. \fBParameters:\fP
-.RS 4
-\fIerr\fP NETCONF error structure to be modified\&. 
-.br
-\fIparam\fP NETCONF error structure's parameter to be modified\&. 
-.br
-\fIvalue\fP New value for the specified parameter\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-0 on success
-.br
- non-zero on error 
-.RE
-.PP
-
-.SS "const char* nc_err_get (const struct nc_err *err, \fBNC_ERR_PARAM\fPparam)"
-
-.PP
-Get value of the specified parameter of the NETCONF error structure\&. \fBParameters:\fP
-.RS 4
-\fIerr\fP NETCONF error structure from which the value will be read\&. 
-.br
-\fIparam\fP NETCONF error structure's parameter to be returned\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-Constant string value of the requested parameter, NULL if the specified parameter is not set\&. 
-.RE
-.PP
-
 .SS "int nc_msgid_compare (const \fBnc_msgid\fPid1, const \fBnc_msgid\fPid2)"
 
 .PP
-Compare two message IDs if they are the same\&. \fBParameters:\fP
+Compare two message IDs if they are the same\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIid1\fP First message ID to compare\&. 
 .br
@@ -266,6 +275,17 @@ Compare two message IDs if they are the same\&. \fBParameters:\fP
 \fBReturns:\fP
 .RS 4
 0 if both IDs are the same\&. 
+.RE
+.PP
+
+.SS "void nc_verbosity (\fBNC_VERB_LEVEL\fPlevel)"
+
+.PP
+Set libnetconf's verbosity level\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIlevel\fP Enabled verbosity level (includes all the levels with higher priority)\&. 
 .RE
 .PP
 

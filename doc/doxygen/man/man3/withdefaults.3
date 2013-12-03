@@ -1,4 +1,4 @@
-.TH "With-defaults capability" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "With-defaults capability" 3 "Tue Dec 3 2013" "Version 0.6.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -26,17 +26,9 @@ libnetconf's settings for NETCONF :with-defaults capability as defined in RFC 62
 
 .in +1c
 .ti -1c
-.RI "void \fBncdflt_set_basic_mode\fP (\fBNCWD_MODE\fP mode)"
-.br
-.RI "\fISet the basic mode of the with-defaults capability for a NETCONF server\&. \fP"
-.ti -1c
 .RI "\fBNCWD_MODE\fP \fBncdflt_get_basic_mode\fP (void)"
 .br
 .RI "\fIGet the current set basic mode of the with-defaults capability\&. \fP"
-.ti -1c
-.RI "void \fBncdflt_set_supported\fP (\fBNCWD_MODE\fP modes)"
-.br
-.RI "\fISet with-defaults modes that are supported\&. \fP"
 .ti -1c
 .RI "\fBNCWD_MODE\fP \fBncdflt_get_supported\fP (void)"
 .br
@@ -45,6 +37,14 @@ libnetconf's settings for NETCONF :with-defaults capability as defined in RFC 62
 .RI "\fBNCWD_MODE\fP \fBncdflt_rpc_get_withdefaults\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet value of the <with-defaults> element from the rpc message\&. \fP"
+.ti -1c
+.RI "void \fBncdflt_set_basic_mode\fP (\fBNCWD_MODE\fP mode)"
+.br
+.RI "\fISet the basic mode of the with-defaults capability for a NETCONF server\&. \fP"
+.ti -1c
+.RI "void \fBncdflt_set_supported\fP (\fBNCWD_MODE\fP modes)"
+.br
+.RI "\fISet with-defaults modes that are supported\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -83,6 +83,44 @@ explicit mode (RFC 6243, sec\&. 3\&.3)
 report-all-tagged mode (RFC 6243, sec\&. 3\&.4) 
 .SH "Function Documentation"
 .PP 
+.SS "\fBNCWD_MODE\fP ncdflt_get_basic_mode (void)"
+
+.PP
+Get the current set basic mode of the with-defaults capability\&. 
+.PP
+\fBReturns:\fP
+.RS 4
+Current value of the with-defaults' basic mode\&. 
+.RE
+.PP
+
+.SS "\fBNCWD_MODE\fP ncdflt_get_supported (void)"
+
+.PP
+Get ORed value containing the currently supported with-defaults modes\&. 
+.PP
+\fBReturns:\fP
+.RS 4
+ORed value containing the currently supported with-defaults modes\&. 
+.RE
+.PP
+
+.SS "\fBNCWD_MODE\fP ncdflt_rpc_get_withdefaults (const \fBnc_rpc\fP *rpc)"
+
+.PP
+Get value of the <with-defaults> element from the rpc message\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIrpc\fP RPC message to be parsed\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+with-defaults mode of the NETCONF rpc message\&. 
+.RE
+.PP
+
 .SS "void ncdflt_set_basic_mode (\fBNCWD_MODE\fPmode)"
 
 .PP
@@ -96,15 +134,6 @@ On the client side, this function does not have any effect of setting up a speci
 .RE
 .PP
 
-.SS "\fBNCWD_MODE\fP ncdflt_get_basic_mode (void)"
-
-.PP
-Get the current set basic mode of the with-defaults capability\&. \fBReturns:\fP
-.RS 4
-Current value of the with-defaults' basic mode\&. 
-.RE
-.PP
-
 .SS "void ncdflt_set_supported (\fBNCWD_MODE\fPmodes)"
 
 .PP
@@ -113,29 +142,6 @@ Set with-defaults modes that are supported\&. This function should be used befor
 \fBParameters:\fP
 .RS 4
 \fImodes\fP ORed set of the supported NCDFLT_MODE modes\&. The basic mode is always supported automatically\&. 
-.RE
-.PP
-
-.SS "\fBNCWD_MODE\fP ncdflt_get_supported (void)"
-
-.PP
-Get ORed value containing the currently supported with-defaults modes\&. \fBReturns:\fP
-.RS 4
-ORed value containing the currently supported with-defaults modes\&. 
-.RE
-.PP
-
-.SS "\fBNCWD_MODE\fP ncdflt_rpc_get_withdefaults (const \fBnc_rpc\fP *rpc)"
-
-.PP
-Get value of the <with-defaults> element from the rpc message\&. \fBParameters:\fP
-.RS 4
-\fIrpc\fP RPC message to be parsed\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-with-defaults mode of the NETCONF rpc message\&. 
 .RE
 .PP
 

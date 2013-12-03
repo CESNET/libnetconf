@@ -1,4 +1,4 @@
-.TH "src/error.h" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/error.h" 3 "Tue Dec 3 2013" "Version 0.6.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -23,10 +23,6 @@ NETCONF error handling functions\&.
 
 .in +1c
 .ti -1c
-.RI "struct nc_err * \fBnc_err_new\fP (\fBNC_ERR\fP error)"
-.br
-.RI "\fICreate a new error description structure\&. \fP"
-.ti -1c
 .RI "struct nc_err * \fBnc_err_dup\fP (const struct nc_err *error)"
 .br
 .RI "\fIDuplicate an error description structure\&. \fP"
@@ -35,18 +31,24 @@ NETCONF error handling functions\&.
 .br
 .RI "\fIFree NETCONF error structure\&. \fP"
 .ti -1c
-.RI "int \fBnc_err_set\fP (struct nc_err *err, \fBNC_ERR_PARAM\fP param, const char *value)"
-.br
-.RI "\fISet selected parameter of the NETCONF error structure to the specified value\&. \fP"
-.ti -1c
 .RI "const char * \fBnc_err_get\fP (const struct nc_err *err, \fBNC_ERR_PARAM\fP param)"
 .br
 .RI "\fIGet value of the specified parameter of the NETCONF error structure\&. \fP"
+.ti -1c
+.RI "struct nc_err * \fBnc_err_new\fP (\fBNC_ERR\fP error)"
+.br
+.RI "\fICreate a new error description structure\&. \fP"
+.ti -1c
+.RI "int \fBnc_err_set\fP (struct nc_err *err, \fBNC_ERR_PARAM\fP param, const char *value)"
+.br
+.RI "\fISet selected parameter of the NETCONF error structure to the specified value\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
 NETCONF error handling functions\&. 
 
+
+.PP
 \fBAuthor:\fP
 .RS 4
 Radek Krejci rkrejci@cesnet.cz Copyright (C) 2012 CESNET, z\&.s\&.p\&.o\&.

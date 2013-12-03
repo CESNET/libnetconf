@@ -1,9 +1,8 @@
-.TH "src/callbacks.h" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/callbacks.h" 3 "Tue Dec 3 2013" "Version 0.6.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 src/callbacks.h \- 
-.PP
 Functions to set application's callbacks\&.  
 
 .SH SYNOPSIS
@@ -16,18 +15,20 @@ Functions to set application's callbacks\&.
 
 .in +1c
 .ti -1c
-.RI "void \fBnc_callback_print\fP (void(*func)(\fBNC_VERB_LEVEL\fP level, const char *msg))"
-.br
-.RI "\fISet a callback function for printing libnetconf's messages\&. \fP"
-.ti -1c
 .RI "void \fBnc_callback_error_reply\fP (void(*func)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid))"
 .br
 .RI "\fISet a callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fP"
+.ti -1c
+.RI "void \fBnc_callback_print\fP (void(*func)(\fBNC_VERB_LEVEL\fP level, const char *msg))"
+.br
+.RI "\fISet a callback function for printing libnetconf's messages\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
 Functions to set application's callbacks\&. 
 
+
+.PP
 \fBAuthor:\fP
 .RS 4
 Radek Krejci rkrejci@cesnet.cz Copyright (C) 2012 CESNET, z\&.s\&.p\&.o\&.

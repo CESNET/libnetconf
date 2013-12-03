@@ -1,4 +1,4 @@
-.TH "Transaction API" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "Transaction API" 3 "Tue Dec 3 2013" "Version 0.6.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -82,16 +82,18 @@ Some sibling nodes were added/removed/changed position\&. Only for LEAF and LEAF
 Some of the children nodes changed theirs position\&. None was added/removed\&. Only for LEAF and LEAF-LIST\&. 
 .SH "Function Documentation"
 .PP 
-.SS "struct ncds_ds* ncds_new_transapi (\fBNCDS_TYPE\fPtype, const char *model_path, const char *callbacks_path)\fC [read]\fP"
+.SS "struct ncds_ds* ncds_new_transapi (\fBNCDS_TYPE\fPtype, const char *model_path, const char *callbacks_path)"
 
 .PP
-Create new datastore structure with transaction API support\&. \fBParameters:\fP
+Create new datastore structure with transaction API support\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fItype\fP Datastore implementation type for the new datastore structure\&. 
 .br
 \fImodel_path\fP Base name of the configuration data model files\&. libnetconf expects model_path\&.yin as a data model, model_path\&.rng for grammar and data types validation, model_path\&.dsrl for default values validation and model_path\&.sch for semantic validation\&. 
 .br
-\fIcallbacks_path\fP Path to shared library with callbacks and other functions for transaction API\&.
+\fIcallbacks_path\fP Path to shared library with callbacks and other functions for transaction API\&. 
 .RE
 .PP
 \fBReturns:\fP

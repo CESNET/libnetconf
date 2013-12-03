@@ -1,8 +1,9 @@
-.TH "install" 3 "Tue Sep 24 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "install" 3 "Tue Dec 3 2013" "Version 0.6.1" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 install \- Compilation and Installation 
+
 .SS "Cloning git repository"
 .PP
 As written on libnetconfs \fCGoogle Code page\fP the repository can be cloned using following command:
@@ -42,40 +43,30 @@ This way the library will be installed in \fC/usr/local/lib/\fP (or lib64) and \
 Remove dependency on the \fClibssh2\fP library\&. By default, the \fClibssh2\fP library is used by the client side functions to create SSH connection to a remote host\&. If the usage of the \fClibssh2\fP is disabled, libnetconf will use a standalone \fCssh(1)\fP client located in a system path\&. \fCssh(1)\fP client is, for example, part of the OpenSSH\&.
 .PP
 
-.PP
-.PP
 .IP "\(bu" 2
 \fC--disable-notifications\fP
 .IP "  \(bu" 4
 Remove support for the NETCONF Notifications\&. As a side effect, D-Bus (libdbus) dependency is also removed\&.
 .PP
 
-.PP
-.PP
 .IP "\(bu" 2
 \fC--with-nacm-recovery-uid=<uid>\fP
 .IP "  \(bu" 4
 Specify user ID to be used for the identification of the \fBNACM Recovery Session\fP\&.
 .PP
 
-.PP
-.PP
 .IP "\(bu" 2
 \fC--enable-debug\fP
 .IP "  \(bu" 4
 Add debugging information for a debugger\&.
 .PP
 
-.PP
-.PP
 .IP "\(bu" 2
 \fC--with-suid=<user>\fP
 .IP "  \(bu" 4
 Limit usage of the libnetconf to the specific \fIuser\fP\&. With this option, libnetconf creates shared files and other resources with access rights limited to the specified \fIuser\fP\&. This option can be freely combined with the \fC--with-sgid\fP option\&. If neither \fC--with-suid\fP nor \fC--with-sgid\fP option is specified, full access rights for all users are granted\&.
 .PP
 
-.PP
-.PP
 .IP "\(bu" 2
 \fC--with-sgid=<group>\fP
 .IP "  \(bu" 4
