@@ -450,8 +450,10 @@ model_type:
 	
 				if (tmp_op == XMLDIFF_ERR) {
 					return XMLDIFF_ERR;
+				} else if (tmp_op == XMLDIFF_REORDER) {
+					ret_op |= XMLDIFF_REORDER;
 				} else if (tmp_op != XMLDIFF_NONE) {
-					ret_op = XMLDIFF_CHAIN;
+					ret_op |= XMLDIFF_CHAIN;
 				}
 			}
 			if (ret_op != XMLDIFF_NONE) {
