@@ -42,6 +42,7 @@
 
 @INCLUDE_NOTIFICATIONS_XML@
 #include "libnetconf/messages_xml.h"
+#include "libnetconf/datastore_xml.h"
 #include "libnetconf/transapi_xml.h"
 #include "libnetconf.h"
 

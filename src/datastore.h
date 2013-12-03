@@ -286,7 +286,6 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
  * validation and model_path.sch for semantic validation.
  * @param[in] callbacks_path Path to shared library with callbacks and other
  * functions for transaction API.
- *
  * @return Prepared (not configured) datastore structure. To configure the
  * structure, caller must use the parameter setters of the specific datastore
  * implementation type. Then, the datastore can be initiated (ncds_init()) and
@@ -301,11 +300,13 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
  * @param[in] ds Datastore structure to be configured.
  * @param[in] enable 1 to enable validation on the datastore according to the
  * following parameters, 0 to disable validation (following parameters will be
- * ignored).
+ * ignored as well as automatically or previously set validators).
  * @param[in] relaxng Path to the Relax NG schema for validation of the
- * datastore content syntax. To generate it, use the lnc-tool(1) script.
+ * datastore content syntax. To generate it, use the lnc-tool(1) script. NULL
+ * if syntactic validation is not required.
  * @param[in] schematron Path to the Schematron XSLT stylesheet for validation of
  * the datastore content semantics. To generate it, use the lnc-tool(1) script.
+ * NULL if semantic validation is not required.
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
 int ncds_set_validation(struct ncds_ds* ds, int enable, const char* relaxng, const char* schematron);
