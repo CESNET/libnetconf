@@ -1,4 +1,4 @@
-.TH "src/session.h" 3 "Mon Nov 18 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/session.h" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,125 +18,125 @@ Functions to handle NETCONF sessions\&.
 
 .in +1c
 .ti -1c
-.RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)"
-.br
-.RI "\fICreate a disconnected session structure\&. \fP"
-.ti -1c
-.RI "int \fBnc_session_monitor\fP (struct nc_session *session)"
-.br
-.RI "\fIAdd the session into the internal list of monitored sessions that are returned as part of netconf-state information defined in RFC 6022\&. \fP"
-.ti -1c
-.RI "void \fBnc_session_free\fP (struct nc_session *session)"
-.br
-.RI "\fICleanup the session structure and free all the allocated resources\&. \fP"
-.ti -1c
-.RI "\fBNC_SESSION_STATUS\fP \fBnc_session_get_status\fP (const struct nc_session *session)"
-.br
-.RI "\fIGet information about the session current status\&. \fP"
-.ti -1c
-.RI "int \fBnc_session_get_version\fP (const struct nc_session *session)"
-.br
-.RI "\fIGet NETCONF protocol version used in the given session\&. \fP"
-.ti -1c
-.RI "int \fBnc_session_get_eventfd\fP (const struct nc_session *session)"
-.br
-.RI "\fIGet the input file descriptor to asynchronous control of input events\&. \fP"
-.ti -1c
-.RI "const char * \fBnc_session_get_id\fP (const struct nc_session *session)"
-.br
-.RI "\fIGet NETCONF session ID\&. \fP"
-.ti -1c
-.RI "const char * \fBnc_session_get_host\fP (const struct nc_session *session)"
-.br
-.RI "\fIGet NETCONF session host\&. \fP"
-.ti -1c
-.RI "const char * \fBnc_session_get_port\fP (const struct nc_session *session)"
-.br
-.RI "\fIGet NETCONF session port number\&. \fP"
-.ti -1c
-.RI "const char * \fBnc_session_get_user\fP (const struct nc_session *session)"
-.br
-.RI "\fIGet NETCONF session username\&. \fP"
-.ti -1c
-.RI "int \fBnc_session_notif_allowed\fP (const struct nc_session *session)"
-.br
-.RI "\fITell me if the notification subscription is allowed on the given session\&. \fP"
-.ti -1c
-.RI "struct nc_cpblts * \fBnc_session_get_cpblts\fP (const struct nc_session *session)"
-.br
-.RI "\fIGet NULL terminated list of capabilities associated with the session\&. \fP"
-.ti -1c
-.RI "struct nc_cpblts * \fBnc_cpblts_new\fP (const char *const list[])"
-.br
-.RI "\fICreate a new NETCONF capabilities structure\&. \fP"
-.ti -1c
-.RI "void \fBnc_cpblts_free\fP (struct nc_cpblts *c)"
-.br
-.RI "\fIFree NETCONF capabilities structure\&. \fP"
-.ti -1c
 .RI "int \fBnc_cpblts_add\fP (struct nc_cpblts *capabilities, const char *capability_string)"
 .br
 .RI "\fIAdd another capability string into the NETCONF capabilities structure\&. \fP"
-.ti -1c
-.RI "int \fBnc_cpblts_remove\fP (struct nc_cpblts *capabilities, const char *capability_string)"
-.br
-.RI "\fIRemove the specified capability string from the NETCONF capabilities structure\&. \fP"
-.ti -1c
-.RI "int \fBnc_cpblts_enabled\fP (const struct nc_session *session, const char *capability_string)"
-.br
-.RI "\fICheck if the given capability is supported by the session\&. \fP"
-.ti -1c
-.RI "const char * \fBnc_cpblts_get\fP (const struct nc_cpblts *c, const char *capability_string)"
-.br
-.RI "\fIGet complete capability string including parameters\&. \fP"
-.ti -1c
-.RI "void \fBnc_cpblts_iter_start\fP (struct nc_cpblts *c)"
-.br
-.RI "\fIMove NETCONF capabilities structure iterator to the beginning of the capability strings list\&. \fP"
-.ti -1c
-.RI "const char * \fBnc_cpblts_iter_next\fP (struct nc_cpblts *c)"
-.br
-.RI "\fIGet the next capability string from the given NETCONF capabilities structure\&. \fP"
 .ti -1c
 .RI "int \fBnc_cpblts_count\fP (const struct nc_cpblts *c)"
 .br
 .RI "\fIGet the number of capabilities in the structure\&. \fP"
 .ti -1c
-.RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP (void)"
+.RI "int \fBnc_cpblts_enabled\fP (const struct nc_session *session, const char *capability_string)"
 .br
-.RI "\fIGet NULL terminated list of the default capabilities supported by libnetconf including the list of namespaces provided by the datastores created with \fBncds_new()\fP and initialized by \fBncds_init()\fP\&. \fP"
+.RI "\fICheck if the given capability is supported by the session\&. \fP"
 .ti -1c
-.RI "const \fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
+.RI "void \fBnc_cpblts_free\fP (struct nc_cpblts *c)"
 .br
-.RI "\fISend <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
+.RI "\fIFree NETCONF capabilities structure\&. \fP"
 .ti -1c
-.RI "const \fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
+.RI "const char * \fBnc_cpblts_get\fP (const struct nc_cpblts *c, const char *capability_string)"
 .br
-.RI "\fISend <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
+.RI "\fIGet complete capability string including parameters\&. \fP"
 .ti -1c
-.RI "int \fBnc_session_send_notif\fP (struct nc_session *session, const \fBnc_ntf\fP *ntf)"
+.RI "const char * \fBnc_cpblts_iter_next\fP (struct nc_cpblts *c)"
 .br
-.RI "\fISend <notification> message from server to client\&. \fP"
+.RI "\fIGet the next capability string from the given NETCONF capabilities structure\&. \fP"
 .ti -1c
-.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, int timeout, \fBnc_rpc\fP **rpc)"
+.RI "void \fBnc_cpblts_iter_start\fP (struct nc_cpblts *c)"
 .br
-.RI "\fIReceive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
+.RI "\fIMove NETCONF capabilities structure iterator to the beginning of the capability strings list\&. \fP"
 .ti -1c
-.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_reply\fP (struct nc_session *session, int timeout, \fBnc_reply\fP **reply)"
+.RI "struct nc_cpblts * \fBnc_cpblts_new\fP (const char *const list[])"
 .br
-.RI "\fIReceive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
+.RI "\fICreate a new NETCONF capabilities structure\&. \fP"
 .ti -1c
-.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_notif\fP (struct nc_session *session, int timeout, \fBnc_ntf\fP **ntf)"
+.RI "int \fBnc_cpblts_remove\fP (struct nc_cpblts *capabilities, const char *capability_string)"
 .br
-.RI "\fIReceive <notification> message from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
+.RI "\fIRemove the specified capability string from the NETCONF capabilities structure\&. \fP"
 .ti -1c
 .RI "int \fBnc_msgid_compare\fP (const \fBnc_msgid\fP id1, const \fBnc_msgid\fP id2)"
 .br
 .RI "\fICompare two message IDs if they are the same\&. \fP"
 .ti -1c
+.RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)"
+.br
+.RI "\fICreate a disconnected session structure\&. \fP"
+.ti -1c
+.RI "void \fBnc_session_free\fP (struct nc_session *session)"
+.br
+.RI "\fICleanup the session structure and free all the allocated resources\&. \fP"
+.ti -1c
+.RI "struct nc_cpblts * \fBnc_session_get_cpblts\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet NULL terminated list of capabilities associated with the session\&. \fP"
+.ti -1c
+.RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP (void)"
+.br
+.RI "\fIGet NULL terminated list of the default capabilities supported by libnetconf including the list of namespaces provided by the datastores created with \fBncds_new()\fP and initialized by \fBncds_init()\fP\&. \fP"
+.ti -1c
+.RI "int \fBnc_session_get_eventfd\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet the input file descriptor to asynchronous control of input events\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_session_get_host\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet NETCONF session host\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_session_get_id\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet NETCONF session ID\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_session_get_port\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet NETCONF session port number\&. \fP"
+.ti -1c
+.RI "\fBNC_SESSION_STATUS\fP \fBnc_session_get_status\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet information about the session current status\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_session_get_user\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet NETCONF session username\&. \fP"
+.ti -1c
+.RI "int \fBnc_session_get_version\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet NETCONF protocol version used in the given session\&. \fP"
+.ti -1c
+.RI "int \fBnc_session_monitor\fP (struct nc_session *session)"
+.br
+.RI "\fIAdd the session into the internal list of monitored sessions that are returned as part of netconf-state information defined in RFC 6022\&. \fP"
+.ti -1c
+.RI "int \fBnc_session_notif_allowed\fP (const struct nc_session *session)"
+.br
+.RI "\fITell me if the notification subscription is allowed on the given session\&. \fP"
+.ti -1c
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_notif\fP (struct nc_session *session, int timeout, \fBnc_ntf\fP **ntf)"
+.br
+.RI "\fIReceive <notification> message from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
+.ti -1c
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_reply\fP (struct nc_session *session, int timeout, \fBnc_reply\fP **reply)"
+.br
+.RI "\fIReceive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
+.ti -1c
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_rpc\fP (struct nc_session *session, int timeout, \fBnc_rpc\fP **rpc)"
+.br
+.RI "\fIReceive <rpc> request from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
+.ti -1c
+.RI "int \fBnc_session_send_notif\fP (struct nc_session *session, const \fBnc_ntf\fP *ntf)"
+.br
+.RI "\fISend <notification> message from server to client\&. \fP"
+.ti -1c
 .RI "\fBNC_MSG_TYPE\fP \fBnc_session_send_recv\fP (struct nc_session *session, \fBnc_rpc\fP *rpc, \fBnc_reply\fP **reply)"
 .br
 .RI "\fISend <rpc> and receive <rpc-reply> via the specified NETCONF session\&. \fP"
+.ti -1c
+.RI "const \fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
+.br
+.RI "\fISend <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
+.ti -1c
+.RI "const \fBnc_msgid\fP \fBnc_session_send_rpc\fP (struct nc_session *session, \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fISend <rpc> request via specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 

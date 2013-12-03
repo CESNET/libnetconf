@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Mon Nov 18 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -30,13 +30,13 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .br
 .RI "\fISet a callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fP"
 .ti -1c
-.RI "const \fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
+.RI "\fBnc_reply\fP * \fBnc_reply_build\fP (const char *reply_dump)"
 .br
-.RI "\fISend <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
+.RI "\fIBuild <rpc-reply> message from the string\&. This is the reverse function of the \fBnc_reply_dump()\fP\&. \fP"
 .ti -1c
-.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_reply\fP (struct nc_session *session, int timeout, \fBnc_reply\fP **reply)"
+.RI "\fBnc_reply\fP * \fBnc_reply_data\fP (const char *data)"
 .br
-.RI "\fIReceive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
+.RI "\fICreate rpc-reply response with <data> content\&. \fP"
 .ti -1c
 .RI "char * \fBnc_reply_dump\fP (const \fBnc_reply\fP *reply)"
 .br
@@ -46,17 +46,17 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .br
 .RI "\fIDuplicate <reply> message\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBnc_reply_build\fP (const char *reply_dump)"
+.RI "\fBnc_reply\fP * \fBnc_reply_error\fP (struct nc_err *error)"
 .br
-.RI "\fIBuild <rpc-reply> message from the string\&. This is the reverse function of the \fBnc_reply_dump()\fP\&. \fP"
+.RI "\fICreate rpc-reply response with <rpc-error> content\&. \fP"
 .ti -1c
-.RI "const \fBnc_msgid\fP \fBnc_reply_get_msgid\fP (const \fBnc_reply\fP *reply)"
+.RI "int \fBnc_reply_error_add\fP (\fBnc_reply\fP *reply, struct nc_err *error)"
 .br
-.RI "\fIGet message-id of the given rpc-reply\&. \fP"
+.RI "\fIAdd another error description into the existing rpc-reply with <rpc-error> content\&. \fP"
 .ti -1c
-.RI "\fBNC_REPLY_TYPE\fP \fBnc_reply_get_type\fP (const \fBnc_reply\fP *reply)"
+.RI "void \fBnc_reply_free\fP (\fBnc_reply\fP *reply)"
 .br
-.RI "\fIGet the type of the rpc-reply message\&. \fP"
+.RI "\fIFree reply message\&. \fP"
 .ti -1c
 .RI "char * \fBnc_reply_get_data\fP (const \fBnc_reply\fP *reply)"
 .br
@@ -66,29 +66,29 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .br
 .RI "\fIGet error-message from the server's <rpc-error> reply\&. \fP"
 .ti -1c
-.RI "void \fBnc_reply_free\fP (\fBnc_reply\fP *reply)"
+.RI "const \fBnc_msgid\fP \fBnc_reply_get_msgid\fP (const \fBnc_reply\fP *reply)"
 .br
-.RI "\fIFree reply message\&. \fP"
+.RI "\fIGet message-id of the given rpc-reply\&. \fP"
+.ti -1c
+.RI "\fBNC_REPLY_TYPE\fP \fBnc_reply_get_type\fP (const \fBnc_reply\fP *reply)"
+.br
+.RI "\fIGet the type of the rpc-reply message\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBnc_reply_merge\fP (int count,\&.\&.\&.)"
+.br
+.RI "\fIMerge reply messages\&. All messages MUST be of the same type\&. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_reply_ok\fP (void)"
 .br
 .RI "\fICreate <ok> rpc-reply response\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBnc_reply_data\fP (const char *data)"
+.RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_reply\fP (struct nc_session *session, int timeout, \fBnc_reply\fP **reply)"
 .br
-.RI "\fICreate rpc-reply response with <data> content\&. \fP"
+.RI "\fIReceive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
-.RI "\fBnc_reply\fP * \fBnc_reply_error\fP (struct nc_err *error)"
+.RI "const \fBnc_msgid\fP \fBnc_session_send_reply\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
 .br
-.RI "\fICreate rpc-reply response with <rpc-error> content\&. \fP"
-.ti -1c
-.RI "int \fBnc_reply_error_add\fP (\fBnc_reply\fP *reply, struct nc_err *error)"
-.br
-.RI "\fIAdd another error description into the existing rpc-reply with <rpc-error> content\&. \fP"
-.ti -1c
-.RI "\fBnc_reply\fP * \fBnc_reply_merge\fP (int count,\&.\&.\&.)"
-.br
-.RI "\fIMerge reply messages\&. All messages MUST be of the same type\&. \fP"
+.RI "\fISend <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -159,45 +159,35 @@ sid - session ID of the session holding the requested lock\&.
 .RE
 .PP
 
-.SS "const \fBnc_msgid\fP nc_session_send_reply (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
+.SS "\fBnc_reply\fP* nc_reply_build (const char *reply_dump)"
 
 .PP
-Send <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. This function IS thread safe\&.
+Build <rpc-reply> message from the string\&. This is the reverse function of the \fBnc_reply_dump()\fP\&. 
 .PP
 \fBParameters:\fP
 .RS 4
-\fIsession\fP NETCONF session to use\&. 
-.br
-\fIrpc\fP <rpc> message which is request for the sending reply 
-.br
-\fIreply\fP <repc-reply> message to send\&. 
+\fIreply_dump\fP String containing the NETCONF <rpc-reply> message\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-0 on error,
-.br
- message-id of sent message on success\&. 
+Complete reply structure used by libnetconf's functions\&. 
 .RE
 .PP
 
-.SS "\fBNC_MSG_TYPE\fP nc_session_recv_reply (struct nc_session *session, inttimeout, \fBnc_reply\fP **reply)"
+.SS "\fBnc_reply\fP* nc_reply_data (const char *data)"
 
 .PP
-Receive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. 
+Create rpc-reply response with <data> content\&. 
 .PP
 \fBParameters:\fP
 .RS 4
-\fIsession\fP NETCONF session to use\&. 
-.br
-\fItimeout\fP Timeout in milliseconds, -1 for infinite timeout, 0 for non-blocking 
-.br
-\fIreply\fP Received <rpc-reply> 
+\fIdata\fP Serialized XML content of the <data> element for the <rpc-reply> message being created\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
-Type of the received message\&. \fBNC_MSG_UNKNOWN\fP means error, \fBNC_MSG_REPLY\fP means that *reply points to the received <rpc-reply> message\&. 
+Created <rpc-reply> message\&. 
 .RE
 .PP
 
@@ -230,124 +220,6 @@ Duplicate <reply> message\&.
 \fBReturns:\fP
 .RS 4
 Copy of the given <reply> message\&. 
-.RE
-.PP
-
-.SS "\fBnc_reply\fP* nc_reply_build (const char *reply_dump)"
-
-.PP
-Build <rpc-reply> message from the string\&. This is the reverse function of the \fBnc_reply_dump()\fP\&. 
-.PP
-\fBParameters:\fP
-.RS 4
-\fIreply_dump\fP String containing the NETCONF <rpc-reply> message\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-Complete reply structure used by libnetconf's functions\&. 
-.RE
-.PP
-
-.SS "const \fBnc_msgid\fP nc_reply_get_msgid (const \fBnc_reply\fP *reply)"
-
-.PP
-Get message-id of the given rpc-reply\&. 
-.PP
-\fBParameters:\fP
-.RS 4
-\fIreply\fP rpc-reply message\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-message-id of the given rpc-reply message\&. 
-.RE
-.PP
-
-.SS "\fBNC_REPLY_TYPE\fP nc_reply_get_type (const \fBnc_reply\fP *reply)"
-
-.PP
-Get the type of the rpc-reply message\&. <rpc-reply> message can contain <ok>, <rpc-error> or <data>
-.PP
-\fBParameters:\fP
-.RS 4
-\fIreply\fP rpc-reply message 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-One of the \fBNC_REPLY_TYPE\fP\&. 
-.RE
-.PP
-
-.SS "char* nc_reply_get_data (const \fBnc_reply\fP *reply)"
-
-.PP
-Get content of the <data> element in <rpc-reply>\&. 
-.PP
-\fBParameters:\fP
-.RS 4
-\fIreply\fP rpc-reply message\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-String with the content of the <data> element\&. Caller is responsible for freeing the returned string with free()\&. 
-.RE
-.PP
-
-.SS "const char* nc_reply_get_errormsg (const \fBnc_reply\fP *reply)"
-
-.PP
-Get error-message from the server's <rpc-error> reply\&. 
-.PP
-\fBParameters:\fP
-.RS 4
-\fIreply\fP rpc-reply message of the \fBNC_REPLY_ERROR\fP type\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-String with the content of the <error-message> element\&. Referenced string is a part of the reply, so it can not be used after freeing the given reply\&. 
-.RE
-.PP
-
-.SS "void nc_reply_free (\fBnc_reply\fP *reply)"
-
-.PP
-Free reply message\&. 
-.PP
-\fBParameters:\fP
-.RS 4
-\fIreply\fP reply message to free\&. 
-.RE
-.PP
-
-.SS "\fBnc_reply\fP* nc_reply_ok (void)"
-
-.PP
-Create <ok> rpc-reply response\&. 
-.PP
-\fBReturns:\fP
-.RS 4
-Created <rpc-reply> message\&. 
-.RE
-.PP
-
-.SS "\fBnc_reply\fP* nc_reply_data (const char *data)"
-
-.PP
-Create rpc-reply response with <data> content\&. 
-.PP
-\fBParameters:\fP
-.RS 4
-\fIdata\fP Serialized XML content of the <data> element for the <rpc-reply> message being created\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-Created <rpc-reply> message\&. 
 .RE
 .PP
 
@@ -385,6 +257,81 @@ Add another error description into the existing rpc-reply with <rpc-error> conte
 .RE
 .PP
 
+.SS "void nc_reply_free (\fBnc_reply\fP *reply)"
+
+.PP
+Free reply message\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIreply\fP reply message to free\&. 
+.RE
+.PP
+
+.SS "char* nc_reply_get_data (const \fBnc_reply\fP *reply)"
+
+.PP
+Get content of the <data> element in <rpc-reply>\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIreply\fP rpc-reply message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+String with the content of the <data> element\&. Caller is responsible for freeing the returned string with free()\&. 
+.RE
+.PP
+
+.SS "const char* nc_reply_get_errormsg (const \fBnc_reply\fP *reply)"
+
+.PP
+Get error-message from the server's <rpc-error> reply\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIreply\fP rpc-reply message of the \fBNC_REPLY_ERROR\fP type\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+String with the content of the <error-message> element\&. Referenced string is a part of the reply, so it can not be used after freeing the given reply\&. 
+.RE
+.PP
+
+.SS "const \fBnc_msgid\fP nc_reply_get_msgid (const \fBnc_reply\fP *reply)"
+
+.PP
+Get message-id of the given rpc-reply\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIreply\fP rpc-reply message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+message-id of the given rpc-reply message\&. 
+.RE
+.PP
+
+.SS "\fBNC_REPLY_TYPE\fP nc_reply_get_type (const \fBnc_reply\fP *reply)"
+
+.PP
+Get the type of the rpc-reply message\&. <rpc-reply> message can contain <ok>, <rpc-error> or <data>
+.PP
+\fBParameters:\fP
+.RS 4
+\fIreply\fP rpc-reply message 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+One of the \fBNC_REPLY_TYPE\fP\&. 
+.RE
+.PP
+
 .SS "\fBnc_reply\fP* nc_reply_merge (intcount, \&.\&.\&.)"
 
 .PP
@@ -400,6 +347,59 @@ Merge reply messages\&. All messages MUST be of the same type\&. Function merges
 \fBReturns:\fP
 .RS 4
 Pointer to a new reply message with the merged content of the messages to merge\&. If an error occurs (due to the invalid input parameters), NULL is returned and the messages to merge are not freed\&. 
+.RE
+.PP
+
+.SS "\fBnc_reply\fP* nc_reply_ok (void)"
+
+.PP
+Create <ok> rpc-reply response\&. 
+.PP
+\fBReturns:\fP
+.RS 4
+Created <rpc-reply> message\&. 
+.RE
+.PP
+
+.SS "\fBNC_MSG_TYPE\fP nc_session_recv_reply (struct nc_session *session, inttimeout, \fBnc_reply\fP **reply)"
+
+.PP
+Receive <rpc-reply> response from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsession\fP NETCONF session to use\&. 
+.br
+\fItimeout\fP Timeout in milliseconds, -1 for infinite timeout, 0 for non-blocking 
+.br
+\fIreply\fP Received <rpc-reply> 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Type of the received message\&. \fBNC_MSG_UNKNOWN\fP means error, \fBNC_MSG_REPLY\fP means that *reply points to the received <rpc-reply> message\&. 
+.RE
+.PP
+
+.SS "const \fBnc_msgid\fP nc_session_send_reply (struct nc_session *session, const \fBnc_rpc\fP *rpc, const \fBnc_reply\fP *reply)"
+
+.PP
+Send <rpc-reply> response via specified NETCONF session\&. This function is supposed to be performed only by NETCONF servers\&. This function IS thread safe\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsession\fP NETCONF session to use\&. 
+.br
+\fIrpc\fP <rpc> message which is request for the sending reply 
+.br
+\fIreply\fP <repc-reply> message to send\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on error,
+.br
+ message-id of sent message on success\&. 
 .RE
 .PP
 

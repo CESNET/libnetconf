@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Mon Nov 18 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -46,6 +46,78 @@ NETCONF datastore handling function prototypes and structures\&.
 
 .in +1c
 .ti -1c
+.RI "int \fBncds_add_model\fP (const char *path)"
+.br
+.RI "\fIAdd an configuration data model to the internal list of models\&. Such model is used to resolve imports, includes and uses statements in base models\&. \fP"
+.ti -1c
+.RI "int \fBncds_add_models_path\fP (const char *path)"
+.br
+.RI "\fISpecify a directory path to the location where the required (imported or included) data models can be found\&. This function can be called repeatedly to specify multiple locations\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc\fP (\fBncds_id\fP id, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
+.br
+.RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
+.br
+.RI "\fIPerform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fP"
+.ti -1c
+.RI "void \fBncds_break_locks\fP (const struct nc_session *session)"
+.br
+.RI "\fIRemove all the locks that the given session is holding\&. \fP"
+.ti -1c
+.RI "int \fBncds_consolidate\fP (void)"
+.br
+.RI "\fIConsolidate all internal structures of created data stores and all data models\&. This function especially solves all YANG's \fCuses\fP and \fCaugment\fP statements\&. \fP"
+.ti -1c
+.RI "int \fBncds_device_init\fP (\fBncds_id\fP *id, struct nc_cpblts *cpblts, int force)"
+.br
+.RI "\fIInitialize transAPI module(s) (if present) and copy startup configuration to running\&. \fP"
+.ti -1c
+.RI "int \fBncds_feature_disable\fP (const char *module, const char *feature)"
+.br
+.RI "\fIDisable usage of the specified feature defined in the specified module By default, all features are disabled\&. \fP"
+.ti -1c
+.RI "int \fBncds_feature_enable\fP (const char *module, const char *feature)"
+.br
+.RI "\fIEnable usage of the specified feature defined in the specified module\&. By default, all features are disabled\&. \fP"
+.ti -1c
+.RI "int \fBncds_feature_isenabled\fP (const char *module, const char *feature)"
+.br
+.RI "\fICheck if the feature of the specified module is currently enabled or disabled\&. \fP"
+.ti -1c
+.RI "int \fBncds_features_disableall\fP (const char *module)"
+.br
+.RI "\fIDisable usage of all features defined in the specified module\&. By default, all features are disabled\&. To disable only the specific feature(s), use \fBncds_feature_disable()\fP\&. \fP"
+.ti -1c
+.RI "int \fBncds_features_enableall\fP (const char *module)"
+.br
+.RI "\fIEnable usage of all features defined in the specified module\&. By default, all features are disabled\&. To enable only the specific feature(s), use \fBncds_feature_enable()\fP\&. \fP"
+.ti -1c
+.RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
+.br
+.RI "\fIAssign the path of the datastore file into the datastore structure\&. \fP"
+.ti -1c
+.RI "void \fBncds_free\fP (struct ncds_ds *datastore)"
+.br
+.RI "\fIClose the specified datastore and free all the resources\&. \fP"
+.ti -1c
+.RI "void \fBncds_free2\fP (\fBncds_id\fP datastore_id)"
+.br
+.RI "\fIClose specified datastore and free all the resources\&. \fP"
+.ti -1c
+.RI "char * \fBncds_get_model\fP (\fBncds_id\fP id, int base)"
+.br
+.RI "\fIReturn a serialized XML containing the data model in the YIN format\&. \fP"
+.ti -1c
+.RI "const char * \fBncds_get_model_path\fP (\fBncds_id\fP id)"
+.br
+.RI "\fIReturn path to the file containing the datastore datamodel\&. \fP"
+.ti -1c
+.RI "\fBncds_id\fP \fBncds_init\fP (struct ncds_ds *datastore)"
+.br
+.RI "\fIActivate datastore structure for use\&. \fP"
+.ti -1c
 .RI "int \fBncds_model_info\fP (const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)"
 .br
 .RI "\fIInformational function to get basic information about configuration data model in the given file\&. \fP"
@@ -58,85 +130,13 @@ NETCONF datastore handling function prototypes and structures\&.
 .br
 .RI "\fICreate new datastore structure with transaction API support\&. \fP"
 .ti -1c
-.RI "int \fBncds_set_validation\fP (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron)"
-.br
-.RI "\fISet validators (or disable validation) on the specified datastore\&. \fP"
-.ti -1c
-.RI "int \fBncds_file_set_path\fP (struct ncds_ds *datastore, const char *path)"
-.br
-.RI "\fIAssign the path of the datastore file into the datastore structure\&. \fP"
-.ti -1c
-.RI "\fBncds_id\fP \fBncds_init\fP (struct ncds_ds *datastore)"
-.br
-.RI "\fIActivate datastore structure for use\&. \fP"
-.ti -1c
-.RI "int \fBncds_device_init\fP (\fBncds_id\fP *id, struct nc_cpblts *cpblts, int force)"
-.br
-.RI "\fIInitialize transAPI module(s) (if present) and copy startup configuration to running\&. \fP"
-.ti -1c
-.RI "void \fBncds_free\fP (struct ncds_ds *datastore)"
-.br
-.RI "\fIClose the specified datastore and free all the resources\&. \fP"
-.ti -1c
-.RI "void \fBncds_free2\fP (\fBncds_id\fP datastore_id)"
-.br
-.RI "\fIClose specified datastore and free all the resources\&. \fP"
-.ti -1c
-.RI "\fBnc_reply\fP * \fBncds_apply_rpc\fP (\fBncds_id\fP id, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
-.br
-.RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
-.ti -1c
-.RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
-.br
-.RI "\fIPerform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and \fBncds_init()\fP)\&. \fP"
-.ti -1c
 .RI "int \fBncds_rollback\fP (\fBncds_id\fP id)"
 .br
 .RI "\fIUndo the last change performed on the specified datastore\&. \fP"
 .ti -1c
-.RI "void \fBncds_break_locks\fP (const struct nc_session *session)"
+.RI "int \fBncds_set_validation\fP (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron)"
 .br
-.RI "\fIRemove all the locks that the given session is holding\&. \fP"
-.ti -1c
-.RI "char * \fBncds_get_model\fP (\fBncds_id\fP id, int base)"
-.br
-.RI "\fIReturn a serialized XML containing the data model in the YIN format\&. \fP"
-.ti -1c
-.RI "const char * \fBncds_get_model_path\fP (\fBncds_id\fP id)"
-.br
-.RI "\fIReturn path to the file containing the datastore datamodel\&. \fP"
-.ti -1c
-.RI "int \fBncds_add_models_path\fP (const char *path)"
-.br
-.RI "\fISpecify a directory path to the location where the required (imported or included) data models can be found\&. This function can be called repeatedly to specify multiple locations\&. \fP"
-.ti -1c
-.RI "int \fBncds_add_model\fP (const char *path)"
-.br
-.RI "\fIAdd an configuration data model to the internal list of models\&. Such model is used to resolve imports, includes and uses statements in base models\&. \fP"
-.ti -1c
-.RI "int \fBncds_feature_enable\fP (const char *module, const char *feature)"
-.br
-.RI "\fIEnable usage of the specified feature defined in the specified module\&. By default, all features are disabled\&. \fP"
-.ti -1c
-.RI "int \fBncds_feature_disable\fP (const char *module, const char *feature)"
-.br
-.RI "\fIDisable usage of the specified feature defined in the specified module By default, all features are disabled\&. \fP"
-.ti -1c
-.RI "int \fBncds_features_enableall\fP (const char *module)"
-.br
-.RI "\fIEnable usage of all features defined in the specified module\&. By default, all features are disabled\&. To enable only the specific feature(s), use \fBncds_feature_enable()\fP\&. \fP"
-.ti -1c
-.RI "int \fBncds_features_disableall\fP (const char *module)"
-.br
-.RI "\fIDisable usage of all features defined in the specified module\&. By default, all features are disabled\&. To disable only the specific feature(s), use \fBncds_feature_disable()\fP\&. \fP"
-.ti -1c
-.RI "int \fBncds_feature_isenabled\fP (const char *module, const char *feature)"
-.br
-.RI "\fICheck if the feature of the specified module is currently enabled or disabled\&. \fP"
-.ti -1c
-.RI "int \fBncds_consolidate\fP (void)"
-.br
-.RI "\fIConsolidate all internal structures of created data stores and all data models\&. This function especially solves all YANG's \fCuses\fP and \fCaugment\fP statements\&. \fP"
+.RI "\fISet validators (or disable validation) on the specified datastore\&. \fP"
 .in -1c
 .SS "Variables"
 

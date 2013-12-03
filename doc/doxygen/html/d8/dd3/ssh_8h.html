@@ -130,18 +130,18 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0">nc_ssh_pref</a> (<a class="el" href="../../db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10">NC_SSH_AUTH_TYPE</a> type, short int preference)</td></tr>
-<tr class="memdesc:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the preference of the SSH authentication methods.  <a href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0">More...</a><br/></td></tr>
-<tr class="separator:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad0e758dfee764ae9c2a032e0151c6707"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707">nc_session_accept</a> (const struct nc_cpblts *capabilities)</td></tr>
+<tr class="memdesc:gad0e758dfee764ae9c2a032e0151c6707"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept NETCONF session from a client.  <a href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707">More...</a><br/></td></tr>
+<tr class="separator:gad0e758dfee764ae9c2a032e0151c6707"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae3858d998d19cb2fb700b15fdf602f23"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23">nc_session_connect</a> (const char *host, unsigned short port, const char *username, const struct nc_cpblts *cpblts)</td></tr>
 <tr class="memdesc:gae3858d998d19cb2fb700b15fdf602f23"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create NETCONF session to the specified server.  <a href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23">More...</a><br/></td></tr>
 <tr class="separator:gae3858d998d19cb2fb700b15fdf602f23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga7d9e0f17bb4ca5b35c8343db59955060"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga7d9e0f17bb4ca5b35c8343db59955060">nc_session_connect_channel</a> (struct nc_session *session, const struct nc_cpblts *cpblts)</td></tr>
 <tr class="memdesc:ga7d9e0f17bb4ca5b35c8343db59955060"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create another NETCONF session using already established SSH session. No authentication is needed in this case.  <a href="../../db/d52/group__session.html#ga7d9e0f17bb4ca5b35c8343db59955060">More...</a><br/></td></tr>
 <tr class="separator:ga7d9e0f17bb4ca5b35c8343db59955060"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad0e758dfee764ae9c2a032e0151c6707"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707">nc_session_accept</a> (const struct nc_cpblts *capabilities)</td></tr>
-<tr class="memdesc:gad0e758dfee764ae9c2a032e0151c6707"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept NETCONF session from a client.  <a href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707">More...</a><br/></td></tr>
-<tr class="separator:gad0e758dfee764ae9c2a032e0151c6707"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0">nc_ssh_pref</a> (<a class="el" href="../../db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10">NC_SSH_AUTH_TYPE</a> type, short int preference)</td></tr>
+<tr class="memdesc:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the preference of the SSH authentication methods.  <a href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0">More...</a><br/></td></tr>
+<tr class="separator:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Functions to connect to NETCONF server via SSH2. </p>
@@ -160,7 +160,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d8/dd3/ssh_8h.html">ssh.h</a></li>
-    <li class="footer">Generated on Mon Nov 18 2013 12:59:03 for libnetconf by
+    <li class="footer">Generated on Tue Dec 3 2013 14:06:11 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

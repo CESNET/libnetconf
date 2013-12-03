@@ -1,4 +1,4 @@
-.TH "src/with_defaults.h" 3 "Mon Nov 18 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/with_defaults.h" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -26,17 +26,9 @@ Implementation of NETCONF's with-defaults capability defined in RFC 6243\&.
 
 .in +1c
 .ti -1c
-.RI "void \fBncdflt_set_basic_mode\fP (\fBNCWD_MODE\fP mode)"
-.br
-.RI "\fISet the basic mode of the with-defaults capability for a NETCONF server\&. \fP"
-.ti -1c
 .RI "\fBNCWD_MODE\fP \fBncdflt_get_basic_mode\fP (void)"
 .br
 .RI "\fIGet the current set basic mode of the with-defaults capability\&. \fP"
-.ti -1c
-.RI "void \fBncdflt_set_supported\fP (\fBNCWD_MODE\fP modes)"
-.br
-.RI "\fISet with-defaults modes that are supported\&. \fP"
 .ti -1c
 .RI "\fBNCWD_MODE\fP \fBncdflt_get_supported\fP (void)"
 .br
@@ -45,6 +37,14 @@ Implementation of NETCONF's with-defaults capability defined in RFC 6243\&.
 .RI "\fBNCWD_MODE\fP \fBncdflt_rpc_get_withdefaults\fP (const \fBnc_rpc\fP *rpc)"
 .br
 .RI "\fIGet value of the <with-defaults> element from the rpc message\&. \fP"
+.ti -1c
+.RI "void \fBncdflt_set_basic_mode\fP (\fBNCWD_MODE\fP mode)"
+.br
+.RI "\fISet the basic mode of the with-defaults capability for a NETCONF server\&. \fP"
+.ti -1c
+.RI "void \fBncdflt_set_supported\fP (\fBNCWD_MODE\fP modes)"
+.br
+.RI "\fISet with-defaults modes that are supported\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 

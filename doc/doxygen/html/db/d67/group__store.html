@@ -160,69 +160,72 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga18655a18464191a4aab1ef0b7d8ba5df"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df">ncds_new2</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, xmlDocPtr(*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e))</td></tr>
-<tr class="memdesc:ga18655a18464191a4aab1ef0b7d8ba5df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new datastore structure of the specified implementation type with get_state function using libxml2.  <a href="#ga18655a18464191a4aab1ef0b7d8ba5df">More...</a><br/></td></tr>
-<tr class="separator:ga18655a18464191a4aab1ef0b7d8ba5df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga9c0f401a6873e8778a80e6cc80c5219a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga9c0f401a6873e8778a80e6cc80c5219a">ncds_model_info</a> (const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)</td></tr>
-<tr class="memdesc:ga9c0f401a6873e8778a80e6cc80c5219a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Informational function to get basic information about configuration data model in the given file.  <a href="#ga9c0f401a6873e8778a80e6cc80c5219a">More...</a><br/></td></tr>
-<tr class="separator:ga9c0f401a6873e8778a80e6cc80c5219a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6">ncds_new</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, char *(*get_state)(const char *model, const char *running, struct nc_err **e))</td></tr>
-<tr class="memdesc:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new datastore structure of the specified implementation type.  <a href="#ga69009c5985f9eec3a6920f98a6a1a5e6">More...</a><br/></td></tr>
-<tr class="separator:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4777c16043f5856c5a65bcd20b5ecc31"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31">ncds_set_validation</a> (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron)</td></tr>
-<tr class="memdesc:ga4777c16043f5856c5a65bcd20b5ecc31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set validators (or disable validation) on the specified datastore.  <a href="#ga4777c16043f5856c5a65bcd20b5ecc31">More...</a><br/></td></tr>
-<tr class="separator:ga4777c16043f5856c5a65bcd20b5ecc31"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">ncds_init</a> (struct ncds_ds *datastore)</td></tr>
-<tr class="memdesc:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate datastore structure for use.  <a href="#gaabb1ae2c497726ad826fc6478f97e8ff">More...</a><br/></td></tr>
-<tr class="separator:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">ncds_free</a> (struct ncds_ds *datastore)</td></tr>
-<tr class="memdesc:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close the specified datastore and free all the resources.  <a href="#ga77b479cc1496b0c3883bb0f6bfe46754">More...</a><br/></td></tr>
-<tr class="separator:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga05e7f1ed8185b92a6dbf904172dba9d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2">ncds_free2</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> datastore_id)</td></tr>
-<tr class="memdesc:ga05e7f1ed8185b92a6dbf904172dba9d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close specified datastore and free all the resources.  <a href="#ga05e7f1ed8185b92a6dbf904172dba9d2">More...</a><br/></td></tr>
-<tr class="separator:ga05e7f1ed8185b92a6dbf904172dba9d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga145c9446fad8c350934c21ca86cbaf47"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47">ncds_add_model</a> (const char *path)</td></tr>
+<tr class="memdesc:ga145c9446fad8c350934c21ca86cbaf47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add an configuration data model to the internal list of models. Such model is used to resolve imports, includes and uses statements in base models.  <a href="#ga145c9446fad8c350934c21ca86cbaf47">More...</a><br/></td></tr>
+<tr class="separator:ga145c9446fad8c350934c21ca86cbaf47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga93c65facb061f1048674343ac94a993b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b">ncds_add_models_path</a> (const char *path)</td></tr>
+<tr class="memdesc:ga93c65facb061f1048674343ac94a993b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify a directory path to the location where the required (imported or included) data models can be found. This function can be called repeatedly to specify multiple locations.  <a href="#ga93c65facb061f1048674343ac94a993b">More...</a><br/></td></tr>
+<tr class="separator:ga93c65facb061f1048674343ac94a993b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaabfd0bf6abeaf40659043bf082e14801"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801">ncds_apply_rpc</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id, const struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc)</td></tr>
 <tr class="memdesc:gaabfd0bf6abeaf40659043bf082e14801"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the datastore.  <a href="#gaabfd0bf6abeaf40659043bf082e14801">More...</a><br/></td></tr>
 <tr class="separator:gaabfd0bf6abeaf40659043bf082e14801"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6e6e979bd82e50913c82b4dc37cb8759"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759">ncds_apply_rpc2all</a> (struct nc_session *session, const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *rpc, <a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *ids[])</td></tr>
 <tr class="memdesc:ga6e6e979bd82e50913c82b4dc37cb8759"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use. ">ncds_init()</a>).  <a href="#ga6e6e979bd82e50913c82b4dc37cb8759">More...</a><br/></td></tr>
 <tr class="separator:ga6e6e979bd82e50913c82b4dc37cb8759"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gabb9806e70f3399aed7da879095d9c64e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e">ncds_rollback</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id)</td></tr>
-<tr class="memdesc:gabb9806e70f3399aed7da879095d9c64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Undo the last change performed on the specified datastore.  <a href="#gabb9806e70f3399aed7da879095d9c64e">More...</a><br/></td></tr>
-<tr class="separator:gabb9806e70f3399aed7da879095d9c64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4158273f1ae0332638cc9343097c9f0a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a">ncds_break_locks</a> (const struct nc_session *session)</td></tr>
 <tr class="memdesc:ga4158273f1ae0332638cc9343097c9f0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove all the locks that the given session is holding.  <a href="#ga4158273f1ae0332638cc9343097c9f0a">More...</a><br/></td></tr>
 <tr class="separator:ga4158273f1ae0332638cc9343097c9f0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab2a27448a52972db6807571590a5c6da"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gab2a27448a52972db6807571590a5c6da">ncds_consolidate</a> (void)</td></tr>
+<tr class="memdesc:gab2a27448a52972db6807571590a5c6da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Consolidate all internal structures of created data stores and all data models. This function especially solves all YANG's <code>uses</code> and <code>augment</code> statements.  <a href="#gab2a27448a52972db6807571590a5c6da">More...</a><br/></td></tr>
+<tr class="separator:gab2a27448a52972db6807571590a5c6da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga11b6f6240911ddcc5e6b8cbb6d36fcc0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0">ncds_feature_disable</a> (const char *module, const char *feature)</td></tr>
+<tr class="memdesc:ga11b6f6240911ddcc5e6b8cbb6d36fcc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disable usage of the specified feature defined in the specified module By default, all features are disabled.  <a href="#ga11b6f6240911ddcc5e6b8cbb6d36fcc0">More...</a><br/></td></tr>
+<tr class="separator:ga11b6f6240911ddcc5e6b8cbb6d36fcc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1171ba251d855a3c9abbc57e526739b2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2">ncds_feature_enable</a> (const char *module, const char *feature)</td></tr>
+<tr class="memdesc:ga1171ba251d855a3c9abbc57e526739b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable usage of the specified feature defined in the specified module. By default, all features are disabled.  <a href="#ga1171ba251d855a3c9abbc57e526739b2">More...</a><br/></td></tr>
+<tr class="separator:ga1171ba251d855a3c9abbc57e526739b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac3644177deaaf308bb2ca218be99ea85"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gac3644177deaaf308bb2ca218be99ea85">ncds_feature_isenabled</a> (const char *module, const char *feature)</td></tr>
+<tr class="memdesc:gac3644177deaaf308bb2ca218be99ea85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the feature of the specified module is currently enabled or disabled.  <a href="#gac3644177deaaf308bb2ca218be99ea85">More...</a><br/></td></tr>
+<tr class="separator:gac3644177deaaf308bb2ca218be99ea85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga017491407c8d2c6f596d17e64eb10d84"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga017491407c8d2c6f596d17e64eb10d84">ncds_features_disableall</a> (const char *module)</td></tr>
+<tr class="memdesc:ga017491407c8d2c6f596d17e64eb10d84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disable usage of all features defined in the specified module. By default, all features are disabled. To disable only the specific feature(s), use <a class="el" href="../../db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0" title="Disable usage of the specified feature defined in the specified module By default, all features are disabled. ">ncds_feature_disable()</a>.  <a href="#ga017491407c8d2c6f596d17e64eb10d84">More...</a><br/></td></tr>
+<tr class="separator:ga017491407c8d2c6f596d17e64eb10d84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3c65e57d684b25885d3ccbeb84e9f4d9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga3c65e57d684b25885d3ccbeb84e9f4d9">ncds_features_enableall</a> (const char *module)</td></tr>
+<tr class="memdesc:ga3c65e57d684b25885d3ccbeb84e9f4d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable usage of all features defined in the specified module. By default, all features are disabled. To enable only the specific feature(s), use <a class="el" href="../../db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2" title="Enable usage of the specified feature defined in the specified module. By default, all features are disabled. ">ncds_feature_enable()</a>.  <a href="#ga3c65e57d684b25885d3ccbeb84e9f4d9">More...</a><br/></td></tr>
+<tr class="separator:ga3c65e57d684b25885d3ccbeb84e9f4d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754">ncds_free</a> (struct ncds_ds *datastore)</td></tr>
+<tr class="memdesc:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close the specified datastore and free all the resources.  <a href="#ga77b479cc1496b0c3883bb0f6bfe46754">More...</a><br/></td></tr>
+<tr class="separator:ga77b479cc1496b0c3883bb0f6bfe46754"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga05e7f1ed8185b92a6dbf904172dba9d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2">ncds_free2</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> datastore_id)</td></tr>
+<tr class="memdesc:ga05e7f1ed8185b92a6dbf904172dba9d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close specified datastore and free all the resources.  <a href="#ga05e7f1ed8185b92a6dbf904172dba9d2">More...</a><br/></td></tr>
+<tr class="separator:ga05e7f1ed8185b92a6dbf904172dba9d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga414b75711e49e0e1eea10ae15c14287e"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga414b75711e49e0e1eea10ae15c14287e">ncds_get_model</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id, int base)</td></tr>
 <tr class="memdesc:ga414b75711e49e0e1eea10ae15c14287e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a serialized XML containing the data model in the YIN format.  <a href="#ga414b75711e49e0e1eea10ae15c14287e">More...</a><br/></td></tr>
 <tr class="separator:ga414b75711e49e0e1eea10ae15c14287e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5ec9fea534bfd146019b7efb882648be"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga5ec9fea534bfd146019b7efb882648be">ncds_get_model_path</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id)</td></tr>
 <tr class="memdesc:ga5ec9fea534bfd146019b7efb882648be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return path to the file containing the datastore datamodel.  <a href="#ga5ec9fea534bfd146019b7efb882648be">More...</a><br/></td></tr>
 <tr class="separator:ga5ec9fea534bfd146019b7efb882648be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga93c65facb061f1048674343ac94a993b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b">ncds_add_models_path</a> (const char *path)</td></tr>
-<tr class="memdesc:ga93c65facb061f1048674343ac94a993b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify a directory path to the location where the required (imported or included) data models can be found. This function can be called repeatedly to specify multiple locations.  <a href="#ga93c65facb061f1048674343ac94a993b">More...</a><br/></td></tr>
-<tr class="separator:ga93c65facb061f1048674343ac94a993b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga145c9446fad8c350934c21ca86cbaf47"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47">ncds_add_model</a> (const char *path)</td></tr>
-<tr class="memdesc:ga145c9446fad8c350934c21ca86cbaf47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add an configuration data model to the internal list of models. Such model is used to resolve imports, includes and uses statements in base models.  <a href="#ga145c9446fad8c350934c21ca86cbaf47">More...</a><br/></td></tr>
-<tr class="separator:ga145c9446fad8c350934c21ca86cbaf47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1171ba251d855a3c9abbc57e526739b2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2">ncds_feature_enable</a> (const char *module, const char *feature)</td></tr>
-<tr class="memdesc:ga1171ba251d855a3c9abbc57e526739b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable usage of the specified feature defined in the specified module. By default, all features are disabled.  <a href="#ga1171ba251d855a3c9abbc57e526739b2">More...</a><br/></td></tr>
-<tr class="separator:ga1171ba251d855a3c9abbc57e526739b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga11b6f6240911ddcc5e6b8cbb6d36fcc0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0">ncds_feature_disable</a> (const char *module, const char *feature)</td></tr>
-<tr class="memdesc:ga11b6f6240911ddcc5e6b8cbb6d36fcc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disable usage of the specified feature defined in the specified module By default, all features are disabled.  <a href="#ga11b6f6240911ddcc5e6b8cbb6d36fcc0">More...</a><br/></td></tr>
-<tr class="separator:ga11b6f6240911ddcc5e6b8cbb6d36fcc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3c65e57d684b25885d3ccbeb84e9f4d9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga3c65e57d684b25885d3ccbeb84e9f4d9">ncds_features_enableall</a> (const char *module)</td></tr>
-<tr class="memdesc:ga3c65e57d684b25885d3ccbeb84e9f4d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable usage of all features defined in the specified module. By default, all features are disabled. To enable only the specific feature(s), use <a class="el" href="../../db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2" title="Enable usage of the specified feature defined in the specified module. By default, all features are disabled. ">ncds_feature_enable()</a>.  <a href="#ga3c65e57d684b25885d3ccbeb84e9f4d9">More...</a><br/></td></tr>
-<tr class="separator:ga3c65e57d684b25885d3ccbeb84e9f4d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga017491407c8d2c6f596d17e64eb10d84"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga017491407c8d2c6f596d17e64eb10d84">ncds_features_disableall</a> (const char *module)</td></tr>
-<tr class="memdesc:ga017491407c8d2c6f596d17e64eb10d84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disable usage of all features defined in the specified module. By default, all features are disabled. To disable only the specific feature(s), use <a class="el" href="../../db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0" title="Disable usage of the specified feature defined in the specified module By default, all features are disabled. ">ncds_feature_disable()</a>.  <a href="#ga017491407c8d2c6f596d17e64eb10d84">More...</a><br/></td></tr>
-<tr class="separator:ga017491407c8d2c6f596d17e64eb10d84"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac3644177deaaf308bb2ca218be99ea85"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gac3644177deaaf308bb2ca218be99ea85">ncds_feature_isenabled</a> (const char *module, const char *feature)</td></tr>
-<tr class="memdesc:gac3644177deaaf308bb2ca218be99ea85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the feature of the specified module is currently enabled or disabled.  <a href="#gac3644177deaaf308bb2ca218be99ea85">More...</a><br/></td></tr>
-<tr class="separator:gac3644177deaaf308bb2ca218be99ea85"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab2a27448a52972db6807571590a5c6da"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gab2a27448a52972db6807571590a5c6da">ncds_consolidate</a> (void)</td></tr>
-<tr class="memdesc:gab2a27448a52972db6807571590a5c6da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Consolidate all internal structures of created data stores and all data models. This function especially solves all YANG's <code>uses</code> and <code>augment</code> statements.  <a href="#gab2a27448a52972db6807571590a5c6da">More...</a><br/></td></tr>
-<tr class="separator:gab2a27448a52972db6807571590a5c6da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff">ncds_init</a> (struct ncds_ds *datastore)</td></tr>
+<tr class="memdesc:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate datastore structure for use.  <a href="#gaabb1ae2c497726ad826fc6478f97e8ff">More...</a><br/></td></tr>
+<tr class="separator:gaabb1ae2c497726ad826fc6478f97e8ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9c0f401a6873e8778a80e6cc80c5219a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga9c0f401a6873e8778a80e6cc80c5219a">ncds_model_info</a> (const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)</td></tr>
+<tr class="memdesc:ga9c0f401a6873e8778a80e6cc80c5219a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Informational function to get basic information about configuration data model in the given file.  <a href="#ga9c0f401a6873e8778a80e6cc80c5219a">More...</a><br/></td></tr>
+<tr class="separator:ga9c0f401a6873e8778a80e6cc80c5219a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6">ncds_new</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, char *(*get_state)(const char *model, const char *running, struct nc_err **e))</td></tr>
+<tr class="memdesc:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new datastore structure of the specified implementation type.  <a href="#ga69009c5985f9eec3a6920f98a6a1a5e6">More...</a><br/></td></tr>
+<tr class="separator:ga69009c5985f9eec3a6920f98a6a1a5e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga18655a18464191a4aab1ef0b7d8ba5df"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df">ncds_new2</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, xmlDocPtr(*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e))</td></tr>
+<tr class="memdesc:ga18655a18464191a4aab1ef0b7d8ba5df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new datastore structure of the specified implementation type with get_state function using libxml2.  <a href="#ga18655a18464191a4aab1ef0b7d8ba5df">More...</a><br/></td></tr>
+<tr class="separator:ga18655a18464191a4aab1ef0b7d8ba5df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabb9806e70f3399aed7da879095d9c64e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e">ncds_rollback</a> (<a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> id)</td></tr>
+<tr class="memdesc:gabb9806e70f3399aed7da879095d9c64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Undo the last change performed on the specified datastore.  <a href="#gabb9806e70f3399aed7da879095d9c64e">More...</a><br/></td></tr>
+<tr class="separator:gabb9806e70f3399aed7da879095d9c64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4777c16043f5856c5a65bcd20b5ecc31"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31">ncds_set_validation</a> (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron)</td></tr>
+<tr class="memdesc:ga4777c16043f5856c5a65bcd20b5ecc31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set validators (or disable validation) on the specified datastore.  <a href="#ga4777c16043f5856c5a65bcd20b5ecc31">More...</a><br/></td></tr>
+<tr class="separator:ga4777c16043f5856c5a65bcd20b5ecc31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad6120db4318bd6f3d023c92ed3f1474a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gad6120db4318bd6f3d023c92ed3f1474a">ncds_set_validation2</a> (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron, int(*valid_func)(const xmlDocPtr config))</td></tr>
+<tr class="memdesc:gad6120db4318bd6f3d023c92ed3f1474a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set validators (or disable validation) on the specified datastore.  <a href="#gad6120db4318bd6f3d023c92ed3f1474a">More...</a><br/></td></tr>
+<tr class="separator:gad6120db4318bd6f3d023c92ed3f1474a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>libnetconf's functions for handling NETCONF datastores. </p>
@@ -332,27 +335,77 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ga18655a18464191a4aab1ef0b7d8ba5df"></a>
+<a class="anchor" id="ga145c9446fad8c350934c21ca86cbaf47"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct ncds_ds* ncds_new2 </td>
+          <td class="memname">int ncds_add_model </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a>&#160;</td>
-          <td class="paramname"><em>type</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>model_path</em>, </td>
+          <td class="paramname"><em>path</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Add an configuration data model to the internal list of models. Such model is used to resolve imports, includes and uses statements in base models. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Path to the YIN format of the configuration data model. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga93c65facb061f1048674343ac94a993b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_add_models_path </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>path</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Specify a directory path to the location where the required (imported or included) data models can be found. This function can be called repeatedly to specify multiple locations. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Directory path </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gaabfd0bf6abeaf40659043bf082e14801"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* ncds_apply_rpc </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">xmlDocPtr(*)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e)&#160;</td>
-          <td class="paramname"><em>get_state</em>&#160;</td>
+          <td class="paramtype">const struct nc_session *&#160;</td>
+          <td class="paramname"><em>session</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
+          <td class="paramname"><em>rpc</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -362,16 +415,402 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Create a new datastore structure of the specified implementation type with get_state function using libxml2. </p>
+<p>Perform the requested RPC operation on the datastore. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Datastore implementation type for the new datastore structure. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">model_path</td><td>Base name of the configuration data model files. libnetconf expects model_path.yin as a data model, model_path.rng for grammar and data types validation, model_path.dsrl for default values validation and model_path.sch for semantic validation. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">get_state</td><td>Pointer to a callback function that returns a XML document containing the state data of the device. The parameters it receives are a configuration data model in YIN format and the current content of the running datastore. If NULL is set, &lt;get&gt; operation is performed in the same way as &lt;get-config&gt;. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Datastore ID. Use <a class="el" href="../../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a" title="Datastore ID to access libnetconf&#39;s internal datastores such as notifications, monitoring, etc. ">NCDS_INTERNAL_ID</a> (0) to apply request (typically &lt;get&gt;) onto the libnetconf's internal datastore. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session (a dummy session is acceptable) where the &lt;rpc&gt; came from. Capabilities checks are done according to this session. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>NETCONF &lt;rpc&gt; message specifying requested operation. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Prepared (not configured) datastore structure. To configure the structure, caller must use the parameter setters of the specific datastore implementation type. Then, the datastore can be initiated (<a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use. ">ncds_init()</a>) and used to access the configuration data. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else &lt;rpc-reply&gt; with &lt;ok&gt;, &lt;data&gt; or &lt;rpc-error&gt; according to the type and the result of the requested operation. When the requested operation is not applicable to the specified datastore (e.g. the namespace does not match), NCDS_RPC_NOT_APPLICABLE is returned. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga6e6e979bd82e50913c82b4dc37cb8759"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* ncds_apply_rpc2all </td>
+          <td>(</td>
+          <td class="paramtype">struct nc_session *&#160;</td>
+          <td class="paramname"><em>session</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
+          <td class="paramname"><em>rpc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *&#160;</td>
+          <td class="paramname"><em>ids</em>[]&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use. ">ncds_init()</a>). </p>
+<p><b>This function IS NOT thread safety.</b></p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session (a dummy session is acceptable) where the &lt;rpc&gt; came from. Capabilities checks are done according to this session. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>NETCONF &lt;rpc&gt; message specifying requested operation. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ids</td><td>Pointer to a static array containing list of datastore IDs where the RPC was successfully applied. The list is terminated by value a (ncds_id)(-1). The list is rewritten by any following call to <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else &lt;rpc-reply&gt; with &lt;ok&gt;, &lt;data&gt; or &lt;rpc-error&gt; according to the type and the result of the requested operation. When the requested operation is not applicable to any datastore (e.g. the namespace does not match no of the controlled datstores), NCDS_RPC_NOT_APPLICABLE is returned. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga4158273f1ae0332638cc9343097c9f0a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ncds_break_locks </td>
+          <td>(</td>
+          <td class="paramtype">const struct nc_session *&#160;</td>
+          <td class="paramname"><em>session</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Remove all the locks that the given session is holding. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>Session holding locks to remove </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gab2a27448a52972db6807571590a5c6da"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_consolidate </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Consolidate all internal structures of created data stores and all data models. This function especially solves all YANG's <code>uses</code> and <code>augment</code> statements. </p>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga11b6f6240911ddcc5e6b8cbb6d36fcc0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_feature_disable </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>module</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>feature</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Disable usage of the specified feature defined in the specified module By default, all features are disabled. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">module</td><td>Name of the module where the feature is defined. Module must be accessible - added via <a class="el" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47" title="Add an configuration data model to the internal list of models. Such model is used to resolve imports...">ncds_add_model()</a> or present in a directory specified via <a class="el" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b" title="Specify a directory path to the location where the required (imported or included) data models can be...">ncds_add_models_path()</a> function. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">feature</td><td>Name of the feature to be disabled. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga1171ba251d855a3c9abbc57e526739b2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_feature_enable </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>module</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>feature</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enable usage of the specified feature defined in the specified module. By default, all features are disabled. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">module</td><td>Name of the module where the feature is defined. Module must be accessible - added via <a class="el" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47" title="Add an configuration data model to the internal list of models. Such model is used to resolve imports...">ncds_add_model()</a> or present in a directory specified via <a class="el" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b" title="Specify a directory path to the location where the required (imported or included) data models can be...">ncds_add_models_path()</a> function. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">feature</td><td>Name of the feature to be enabled. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gac3644177deaaf308bb2ca218be99ea85"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_feature_isenabled </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>module</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>feature</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check if the feature of the specified module is currently enabled or disabled. </p>
+<dl class="section return"><dt>Returns</dt><dd><ul>
+<li>negative value in case of error</li>
+<li>0 if feature is disabled</li>
+<li>1 if feature is enabled </li>
+</ul>
+</dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga017491407c8d2c6f596d17e64eb10d84"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_features_disableall </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>module</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Disable usage of all features defined in the specified module. By default, all features are disabled. To disable only the specific feature(s), use <a class="el" href="../../db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0" title="Disable usage of the specified feature defined in the specified module By default, all features are disabled. ">ncds_feature_disable()</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">module</td><td>Name of the module where the features are defined. Module must be accessible - added via <a class="el" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47" title="Add an configuration data model to the internal list of models. Such model is used to resolve imports...">ncds_add_model()</a> or present in a directory specified via <a class="el" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b" title="Specify a directory path to the location where the required (imported or included) data models can be...">ncds_add_models_path()</a> function. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga3c65e57d684b25885d3ccbeb84e9f4d9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_features_enableall </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>module</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enable usage of all features defined in the specified module. By default, all features are disabled. To enable only the specific feature(s), use <a class="el" href="../../db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2" title="Enable usage of the specified feature defined in the specified module. By default, all features are disabled. ">ncds_feature_enable()</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">module</td><td>Name of the module where the features are defined. Module must be accessible - added via <a class="el" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47" title="Add an configuration data model to the internal list of models. Such model is used to resolve imports...">ncds_add_model()</a> or present in a directory specified via <a class="el" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b" title="Specify a directory path to the location where the required (imported or included) data models can be...">ncds_add_models_path()</a> function. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga77b479cc1496b0c3883bb0f6bfe46754"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ncds_free </td>
+          <td>(</td>
+          <td class="paramtype">struct ncds_ds *&#160;</td>
+          <td class="paramname"><em>datastore</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Close the specified datastore and free all the resources. </p>
+<p>Equivalent function to <a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2" title="Close specified datastore and free all the resources. ">ncds_free2()</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore to be closed. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga05e7f1ed8185b92a6dbf904172dba9d2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ncds_free2 </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
+          <td class="paramname"><em>datastore_id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Close specified datastore and free all the resources. </p>
+<p>Equivalent function to <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754" title="Close the specified datastore and free all the resources. ">ncds_free()</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">datastore_id</td><td>ID of the datastore to be closed. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga414b75711e49e0e1eea10ae15c14287e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* ncds_get_model </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>base</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return a serialized XML containing the data model in the YIN format. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID of the datastore whose data model we want </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">base</td><td>Set 1 to get only base model without any modification. Use 0 value to get complete data model including augmentation, substituted uses statements and removed disabled features of the model. In this case, returned string contains modified YIN format - there are &lt;augment&gt; elements inside the model including information about its namespace and module name.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>String containing YIN model. Caller must free the memory after use. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga5ec9fea534bfd146019b7efb882648be"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* ncds_get_model_path </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
+          <td class="paramname"><em>id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return path to the file containing the datastore datamodel. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID of the datastore whose data model we want</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>String containing the path to the file containing the datastore datamodel. The caller must NOT free the memory. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gaabb1ae2c497726ad826fc6478f97e8ff"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> ncds_init </td>
+          <td>(</td>
+          <td class="paramtype">struct ncds_ds *&#160;</td>
+          <td class="paramname"><em>datastore</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Activate datastore structure for use. </p>
+<p>The datastore configuration is checked and if everything is correct, datastore gets its unique ID to be used for datastore operations (<a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore. ">ncds_apply_rpc()</a>).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore to be initiated. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Positive integer with the datastore ID on success, negative value on error.<ul>
+<li>-1 Invalid datastore</li>
+<li>-2 Type-specific initialization failed</li>
+<li>-3 Unsupported datastore type</li>
+<li>-4 Memory allocation problem </li>
+</ul>
+</dd></dl>
 
 </div>
 </div>
@@ -495,6 +934,75 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga18655a18464191a4aab1ef0b7d8ba5df"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct ncds_ds* ncds_new2 </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a>&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>model_path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">xmlDocPtr(*)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e)&#160;</td>
+          <td class="paramname"><em>get_state</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create a new datastore structure of the specified implementation type with get_state function using libxml2. </p>
+<p>To make this function available, you have to include <a class="el" href="../../d5/d3e/libnetconf__xml_8h.html" title="libnetconf&#39;s main header for libxml2 variants of some functions. ">libnetconf_xml.h</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Datastore implementation type for the new datastore structure. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">model_path</td><td>Base name of the configuration data model files. libnetconf expects model_path.yin as a data model, model_path.rng for grammar and data types validation, model_path.dsrl for default values validation and model_path.sch for semantic validation. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">get_state</td><td>Pointer to a callback function that returns a XML document containing the state data of the device. The parameters it receives are a configuration data model in YIN format and the current content of the running datastore. If NULL is set, &lt;get&gt; operation is performed in the same way as &lt;get-config&gt;. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Prepared (not configured) datastore structure. To configure the structure, caller must use the parameter setters of the specific datastore implementation type. Then, the datastore can be initiated (<a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use. ">ncds_init()</a>) and used to access the configuration data. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gabb9806e70f3399aed7da879095d9c64e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ncds_rollback </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
+          <td class="paramname"><em>id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Undo the last change performed on the specified datastore. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID of the datastore where the rollback will be performed. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ga4777c16043f5856c5a65bcd20b5ecc31"></a>
 <div class="memitem">
 <div class="memproto">
@@ -535,9 +1043,9 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ds</td><td>Datastore structure to be configured. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">enable</td><td>1 to enable validation on the datastore according to the following parameters, 0 to disable validation (following parameters will be ignored). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">relaxng</td><td>Path to the Relax NG schema for validation of the datastore content syntax. To generate it, use the lnc-tool(1) script. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">schematron</td><td>Path to the Schematron XSLT stylesheet for validation of the datastore content semantics. To generate it, use the lnc-tool(1) script. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">enable</td><td>1 to enable validation on the datastore according to the following parameters, 0 to disable validation (following parameters will be ignored as well as automatically or previously set validators). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">relaxng</td><td>Path to the Relax NG schema for validation of the datastore content syntax. To generate it, use the lnc-tool(1) script. NULL if syntactic validation is not required. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">schematron</td><td>Path to the Schematron XSLT stylesheet for validation of the datastore content semantics. To generate it, use the lnc-tool(1) script. NULL if semantic validation is not required. </td></tr>
   </table>
   </dd>
 </dl>
@@ -545,472 +1053,39 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gaabb1ae2c497726ad826fc6478f97e8ff"></a>
+<a class="anchor" id="gad6120db4318bd6f3d023c92ed3f1474a"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> ncds_init </td>
+          <td class="memname">int ncds_set_validation2 </td>
           <td>(</td>
           <td class="paramtype">struct ncds_ds *&#160;</td>
-          <td class="paramname"><em>datastore</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Activate datastore structure for use. </p>
-<p>The datastore configuration is checked and if everything is correct, datastore gets its unique ID to be used for datastore operations (<a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore. ">ncds_apply_rpc()</a>).</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore to be initiated. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Positive integer with the datastore ID on success, negative value on error.<ul>
-<li>-1 Invalid datastore</li>
-<li>-2 Type-specific initialization failed</li>
-<li>-3 Unsupported datastore type</li>
-<li>-4 Memory allocation problem </li>
-</ul>
-</dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga77b479cc1496b0c3883bb0f6bfe46754"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void ncds_free </td>
-          <td>(</td>
-          <td class="paramtype">struct ncds_ds *&#160;</td>
-          <td class="paramname"><em>datastore</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Close the specified datastore and free all the resources. </p>
-<p>Equivalent function to <a class="el" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2" title="Close specified datastore and free all the resources. ">ncds_free2()</a>.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">datastore</td><td>Datastore to be closed. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga05e7f1ed8185b92a6dbf904172dba9d2"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void ncds_free2 </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
-          <td class="paramname"><em>datastore_id</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Close specified datastore and free all the resources. </p>
-<p>Equivalent function to <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754" title="Close the specified datastore and free all the resources. ">ncds_free()</a>.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">datastore_id</td><td>ID of the datastore to be closed. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="gaabfd0bf6abeaf40659043bf082e14801"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* ncds_apply_rpc </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
-          <td class="paramname"><em>id</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const struct nc_session *&#160;</td>
-          <td class="paramname"><em>session</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
-          <td class="paramname"><em>rpc</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Perform the requested RPC operation on the datastore. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Datastore ID. Use <a class="el" href="../../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a" title="Datastore ID to access libnetconf&#39;s internal datastores such as notifications, monitoring, etc. ">NCDS_INTERNAL_ID</a> (0) to apply request (typically &lt;get&gt;) onto the libnetconf's internal datastore. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session (a dummy session is acceptable) where the &lt;rpc&gt; came from. Capabilities checks are done according to this session. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>NETCONF &lt;rpc&gt; message specifying requested operation. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else &lt;rpc-reply&gt; with &lt;ok&gt;, &lt;data&gt; or &lt;rpc-error&gt; according to the type and the result of the requested operation. When the requested operation is not applicable to the specified datastore (e.g. the namespace does not match), NCDS_RPC_NOT_APPLICABLE is returned. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga6e6e979bd82e50913c82b4dc37cb8759"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* ncds_apply_rpc2all </td>
-          <td>(</td>
-          <td class="paramtype">struct nc_session *&#160;</td>
-          <td class="paramname"><em>session</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a> *&#160;</td>
-          <td class="paramname"><em>rpc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a> *&#160;</td>
-          <td class="paramname"><em>ids</em>[]&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by ncdsd_new() and <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use. ">ncds_init()</a>). </p>
-<p><b>This function IS NOT thread safety.</b></p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session (a dummy session is acceptable) where the &lt;rpc&gt; came from. Capabilities checks are done according to this session. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rpc</td><td>NETCONF &lt;rpc&gt; message specifying requested operation. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">ids</td><td>Pointer to a static array containing list of datastore IDs where the RPC was successfully applied. The list is terminated by value a (ncds_id)(-1). The list is rewritten by any following call to <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a>. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else &lt;rpc-reply&gt; with &lt;ok&gt;, &lt;data&gt; or &lt;rpc-error&gt; according to the type and the result of the requested operation. When the requested operation is not applicable to any datastore (e.g. the namespace does not match no of the controlled datstores), NCDS_RPC_NOT_APPLICABLE is returned. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="gabb9806e70f3399aed7da879095d9c64e"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ncds_rollback </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
-          <td class="paramname"><em>id</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Undo the last change performed on the specified datastore. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID of the datastore where the rollback will be performed. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga4158273f1ae0332638cc9343097c9f0a"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void ncds_break_locks </td>
-          <td>(</td>
-          <td class="paramtype">const struct nc_session *&#160;</td>
-          <td class="paramname"><em>session</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Remove all the locks that the given session is holding. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>Session holding locks to remove </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga414b75711e49e0e1eea10ae15c14287e"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">char* ncds_get_model </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
-          <td class="paramname"><em>id</em>, </td>
+          <td class="paramname"><em>ds</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>base</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Return a serialized XML containing the data model in the YIN format. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID of the datastore whose data model we want </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">base</td><td>Set 1 to get only base model without any modification. Use 0 value to get complete data model including augmentation, substituted uses statements and removed disabled features of the model. In this case, returned string contains modified YIN format - there are &lt;augment&gt; elements inside the model including information about its namespace and module name.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>String containing YIN model. Caller must free the memory after use. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga5ec9fea534bfd146019b7efb882648be"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">const char* ncds_get_model_path </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#ga8e6ae05c400975ba4d3f038c6d174c19">ncds_id</a>&#160;</td>
-          <td class="paramname"><em>id</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Return path to the file containing the datastore datamodel. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>ID of the datastore whose data model we want</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>String containing the path to the file containing the datastore datamodel. The caller must NOT free the memory. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga93c65facb061f1048674343ac94a993b"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ncds_add_models_path </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>path</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Specify a directory path to the location where the required (imported or included) data models can be found. This function can be called repeatedly to specify multiple locations. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Directory path </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga145c9446fad8c350934c21ca86cbaf47"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ncds_add_model </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>path</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Add an configuration data model to the internal list of models. Such model is used to resolve imports, includes and uses statements in base models. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Path to the YIN format of the configuration data model. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga1171ba251d855a3c9abbc57e526739b2"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ncds_feature_enable </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>module</em>, </td>
+          <td class="paramname"><em>enable</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>feature</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Enable usage of the specified feature defined in the specified module. By default, all features are disabled. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">module</td><td>Name of the module where the feature is defined. Module must be accessible - added via <a class="el" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47" title="Add an configuration data model to the internal list of models. Such model is used to resolve imports...">ncds_add_model()</a> or present in a directory specified via <a class="el" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b" title="Specify a directory path to the location where the required (imported or included) data models can be...">ncds_add_models_path()</a> function. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">feature</td><td>Name of the feature to be enabled. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga11b6f6240911ddcc5e6b8cbb6d36fcc0"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ncds_feature_disable </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>module</em>, </td>
+          <td class="paramname"><em>relaxng</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>feature</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Disable usage of the specified feature defined in the specified module By default, all features are disabled. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">module</td><td>Name of the module where the feature is defined. Module must be accessible - added via <a class="el" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47" title="Add an configuration data model to the internal list of models. Such model is used to resolve imports...">ncds_add_model()</a> or present in a directory specified via <a class="el" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b" title="Specify a directory path to the location where the required (imported or included) data models can be...">ncds_add_models_path()</a> function. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">feature</td><td>Name of the feature to be disabled. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga3c65e57d684b25885d3ccbeb84e9f4d9"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ncds_features_enableall </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>module</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Enable usage of all features defined in the specified module. By default, all features are disabled. To enable only the specific feature(s), use <a class="el" href="../../db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2" title="Enable usage of the specified feature defined in the specified module. By default, all features are disabled. ">ncds_feature_enable()</a>. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">module</td><td>Name of the module where the features are defined. Module must be accessible - added via <a class="el" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47" title="Add an configuration data model to the internal list of models. Such model is used to resolve imports...">ncds_add_model()</a> or present in a directory specified via <a class="el" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b" title="Specify a directory path to the location where the required (imported or included) data models can be...">ncds_add_models_path()</a> function. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga017491407c8d2c6f596d17e64eb10d84"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ncds_features_disableall </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>module</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Disable usage of all features defined in the specified module. By default, all features are disabled. To disable only the specific feature(s), use <a class="el" href="../../db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0" title="Disable usage of the specified feature defined in the specified module By default, all features are disabled. ">ncds_feature_disable()</a>. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">module</td><td>Name of the module where the features are defined. Module must be accessible - added via <a class="el" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47" title="Add an configuration data model to the internal list of models. Such model is used to resolve imports...">ncds_add_model()</a> or present in a directory specified via <a class="el" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b" title="Specify a directory path to the location where the required (imported or included) data models can be...">ncds_add_models_path()</a> function. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="gac3644177deaaf308bb2ca218be99ea85"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ncds_feature_isenabled </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>module</em>, </td>
+          <td class="paramname"><em>schematron</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>feature</em>&#160;</td>
+          <td class="paramtype">int(*)(const xmlDocPtr config)&#160;</td>
+          <td class="paramname"><em>valid_func</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1020,32 +1095,20 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Check if the feature of the specified module is currently enabled or disabled. </p>
-<dl class="section return"><dt>Returns</dt><dd><ul>
-<li>negative value in case of error</li>
-<li>0 if feature is disabled</li>
-<li>1 if feature is enabled </li>
-</ul>
-</dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="gab2a27448a52972db6807571590a5c6da"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ncds_consolidate </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Consolidate all internal structures of created data stores and all data models. This function especially solves all YANG's <code>uses</code> and <code>augment</code> statements. </p>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error. </dd></dl>
+<p>Set validators (or disable validation) on the specified datastore. </p>
+<p>To make this function available, you have to include <a class="el" href="../../d5/d3e/libnetconf__xml_8h.html" title="libnetconf&#39;s main header for libxml2 variants of some functions. ">libnetconf_xml.h</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ds</td><td>Datastore structure to be configured. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">enable</td><td>1 to enable validation on the datastore according to the following parameters, 0 to disable validation (following parameters will be ignored as well as automatically or previously set validators). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">relaxng</td><td>Path to the Relax NG schema for validation of the datastore content syntax. To generate it, use the lnc-tool(1) script. NULL if syntactic validation not required. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">schematron</td><td>Path to the Schematron XSLT stylesheet for validation of the datastore content semantics. To generate it, use the lnc-tool(1) script. NULL if semantic validation not required. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">valid_func</td><td>Pointer to a callback function that is used for additional validation of the configuration data in the datastore. It can perform any specific check for the datastore (e.g. check for presence of referred files). If no such check is needed, parameter can be set to NULL. <br/>
+ Validation callback function receives configuration data as a libxml2's xmlDocPtr. As a result it returns EXIT_SUCCESS if validation checks passed and EXIT_FAILURE when an error occurred. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCESS or EXIT_FAILURE </dd></dl>
 
 </div>
 </div>
@@ -1054,7 +1117,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon Nov 18 2013 12:59:04 for libnetconf by
+    <li class="footer">Generated on Tue Dec 3 2013 14:06:11 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

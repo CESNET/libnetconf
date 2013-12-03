@@ -1,4 +1,4 @@
-.TH "src/callbacks_ssh.h" 3 "Mon Nov 18 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/callbacks_ssh.h" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,21 +18,21 @@ Functions to set libssh2's callbacks\&.
 
 .in +1c
 .ti -1c
+.RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, int keytype, const char *fingerprint))"
+.br
+.RI "\fISet a callback function to authorize authenticity of an unknown host\&. \fP"
+.ti -1c
 .RI "void \fBnc_callback_sshauth_interactive\fP (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))"
 .br
 .RI "\fISet a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method\&. \fP"
-.ti -1c
-.RI "void \fBnc_callback_sshauth_password\fP (char *(*func)(const char *username, const char *hostname))"
-.br
-.RI "\fISet a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'\&. \fP"
 .ti -1c
 .RI "void \fBnc_callback_sshauth_passphrase\fP (char *(*func)(const char *username, const char *hostname, const char *priv_key_file))"
 .br
 .RI "\fISet a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'\&. \fP"
 .ti -1c
-.RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, int keytype, const char *fingerprint))"
+.RI "void \fBnc_callback_sshauth_password\fP (char *(*func)(const char *username, const char *hostname))"
 .br
-.RI "\fISet a callback function to authorize authenticity of an unknown host\&. \fP"
+.RI "\fISet a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'\&. \fP"
 .ti -1c
 .RI "void \fBnc_set_keypair_path\fP (const char *private, const char *public)"
 .br

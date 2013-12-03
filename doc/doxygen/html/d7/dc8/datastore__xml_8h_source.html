@@ -121,15 +121,18 @@ $(document).ready(function(){initNavTree('d7/dc8/datastore__xml_8h_source.html',
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="preprocessor"></span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="keyword">struct </span>ncds_ds* <a class="code" href="../../db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df">ncds_new2</a>(<a class="code" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, <span class="keyword">const</span> <span class="keywordtype">char</span> * model_path, xmlDocPtr (*get_state)(<span class="keyword">const</span> xmlDocPtr model, <span class="keyword">const</span> xmlDocPtr running, <span class="keyword">struct</span> nc_err **e));</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="preprocessor"></span>}</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* DATASTORE_XML_H_ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="keyword">struct </span>ncds_ds* <a class="code" href="../../db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df">ncds_new2</a>(<a class="code" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, <span class="keyword">const</span> <span class="keywordtype">char</span> * model_path, xmlDocPtr (*get_state)(<span class="keyword">const</span> xmlDocPtr model, <span class="keyword">const</span> xmlDocPtr running, <span class="keyword">struct</span> nc_err **e));</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#gad6120db4318bd6f3d023c92ed3f1474a">ncds_set_validation2</a>(<span class="keyword">struct</span> ncds_ds* ds, <span class="keywordtype">int</span> enable, <span class="keyword">const</span> <span class="keywordtype">char</span>* relaxng, <span class="keyword">const</span> <span class="keywordtype">char</span>* schematron, <span class="keywordtype">int</span> (*valid_func)(<span class="keyword">const</span> xmlDocPtr config));</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="preprocessor"></span>}</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* DATASTORE_XML_H_ */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="datastore_8h_html"><div class="ttname"><a href="../../d9/db6/datastore_8h.html">datastore.h</a></div><div class="ttdoc">NETCONF datastore handling function prototypes and structures. </div></div>
 <div class="ttc" id="group__store_html_gab0f0cbd5268577ec36fc76cf89c72a8f"><div class="ttname"><a href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a></div><div class="ttdeci">NCDS_TYPE</div><div class="ttdoc">Datastore implementation types provided by libnetconf. </div><div class="ttdef"><b>Definition:</b> datastore.h:54</div></div>
+<div class="ttc" id="group__store_html_gad6120db4318bd6f3d023c92ed3f1474a"><div class="ttname"><a href="../../db/d67/group__store.html#gad6120db4318bd6f3d023c92ed3f1474a">ncds_set_validation2</a></div><div class="ttdeci">int ncds_set_validation2(struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron, int(*valid_func)(const xmlDocPtr config))</div><div class="ttdoc">Set validators (or disable validation) on the specified datastore. </div></div>
 <div class="ttc" id="group__store_html_ga18655a18464191a4aab1ef0b7d8ba5df"><div class="ttname"><a href="../../db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df">ncds_new2</a></div><div class="ttdeci">struct ncds_ds * ncds_new2(NCDS_TYPE type, const char *model_path, xmlDocPtr(*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e))</div><div class="ttdoc">Create a new datastore structure of the specified implementation type with get_state function using l...</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
@@ -137,7 +140,7 @@ $(document).ready(function(){initNavTree('d7/dc8/datastore__xml_8h_source.html',
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d7/dc8/datastore__xml_8h.html">datastore_xml.h</a></li>
-    <li class="footer">Generated on Mon Nov 18 2013 12:59:03 for libnetconf by
+    <li class="footer">Generated on Tue Dec 3 2013 14:06:11 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

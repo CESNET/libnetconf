@@ -11,7 +11,7 @@ var group__url =
       [ "NC_URL_FILE", "d5/d7d/group__url.html#ggaeecc86d0808c9098b6a8694e88925ccda68d344995eae71ef85e07bb4a97c13e1", null ],
       [ "NC_URL_ALL", "d5/d7d/group__url.html#ggaeecc86d0808c9098b6a8694e88925ccda120f1a8076bbafe4bddd026d27ac54dd", null ]
     ] ],
-    [ "nc_url_set_protocols", "d5/d7d/group__url.html#ga61d005676d5582665a473229fc2180f7", null ],
+    [ "nc_url_disable", "d5/d7d/group__url.html#gadf6c3370da661ab29b0834086a0dfbfe", null ],
     [ "nc_url_enable", "d5/d7d/group__url.html#gafd033a4d3cafcd3f6af307dacaa18e50", null ],
-    [ "nc_url_disable", "d5/d7d/group__url.html#gadf6c3370da661ab29b0834086a0dfbfe", null ]
+    [ "nc_url_set_protocols", "d5/d7d/group__url.html#ga61d005676d5582665a473229fc2180f7", null ]
 ];

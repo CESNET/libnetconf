@@ -1,4 +1,4 @@
-.TH "src/url.h" 3 "Mon Nov 18 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/url.h" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -21,17 +21,17 @@ libnetconf's public API to use the URL capability\&.
 
 .in +1c
 .ti -1c
-.RI "void \fBnc_url_set_protocols\fP (int protocols)"
+.RI "void \fBnc_url_disable\fP (\fBNC_URL_PROTOCOLS\fP protocol)"
 .br
-.RI "\fIOverwrite enabled protocols for URL capability\&. \fP"
+.RI "\fIDisable specific protocol for use in URL capability\&. \fP"
 .ti -1c
 .RI "void \fBnc_url_enable\fP (\fBNC_URL_PROTOCOLS\fP protocol)"
 .br
 .RI "\fIEnable specific protocol for use in URL capability\&. \fP"
 .ti -1c
-.RI "void \fBnc_url_disable\fP (\fBNC_URL_PROTOCOLS\fP protocol)"
+.RI "void \fBnc_url_set_protocols\fP (int protocols)"
 .br
-.RI "\fIDisable specific protocol for use in URL capability\&. \fP"
+.RI "\fIOverwrite enabled protocols for URL capability\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
