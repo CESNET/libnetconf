@@ -1158,6 +1158,11 @@ int nacm_check_data(const xmlNodePtr node, const int access, const struct nacm_r
 		return (NACM_PERMIT);
 	}
 
+	if (node->type != XML_ELEMENT_NODE) {
+		/* skip comments or other elements not covered by NACM rules */
+		return (NACM_PERMIT);
+	}
+
 	/* get module name where the data node is defined */
 	module = ncds_get_model_data((node->ns != NULL) ? (char*)(node->ns->href) : NULL);
 
