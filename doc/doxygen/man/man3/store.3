@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Wed Dec 4 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -170,7 +170,7 @@ Datastore ID\&. Each datastore gets its ID after initialisation (\fBncds_init()\
 .PP
 Enumeration of the supported types of datastores defined by NETCONF\&. 
 .PP
-\fBEnumerator\fP
+\fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINC_DATASTORE_ERROR \fP\fP
@@ -195,7 +195,7 @@ separated working datastore as defined in Candidate Configuration Capability
 .PP
 Datastore implementation types provided by libnetconf\&. 
 .PP
-\fBEnumerator\fP
+\fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINCDS_TYPE_EMPTY \fP\fP
@@ -211,9 +211,7 @@ User-defined datastore
 .SS "int ncds_add_model (const char *path)"
 
 .PP
-Add an configuration data model to the internal list of models\&. Such model is used to resolve imports, includes and uses statements in base models\&. 
-.PP
-\fBParameters:\fP
+Add an configuration data model to the internal list of models\&. Such model is used to resolve imports, includes and uses statements in base models\&. \fBParameters:\fP
 .RS 4
 \fIpath\fP Path to the YIN format of the configuration data model\&. 
 .RE
@@ -227,9 +225,7 @@ Add an configuration data model to the internal list of models\&. Such model is 
 .SS "int ncds_add_models_path (const char *path)"
 
 .PP
-Specify a directory path to the location where the required (imported or included) data models can be found\&. This function can be called repeatedly to specify multiple locations\&. 
-.PP
-\fBParameters:\fP
+Specify a directory path to the location where the required (imported or included) data models can be found\&. This function can be called repeatedly to specify multiple locations\&. \fBParameters:\fP
 .RS 4
 \fIpath\fP Directory path 
 .RE
@@ -243,9 +239,7 @@ Specify a directory path to the location where the required (imported or include
 .SS "\fBnc_reply\fP* ncds_apply_rpc (\fBncds_id\fPid, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
 
 .PP
-Perform the requested RPC operation on the datastore\&. 
-.PP
-\fBParameters:\fP
+Perform the requested RPC operation on the datastore\&. \fBParameters:\fP
 .RS 4
 \fIid\fP Datastore ID\&. Use \fBNCDS_INTERNAL_ID\fP (0) to apply request (typically <get>) onto the libnetconf's internal datastore\&. 
 .br
@@ -283,9 +277,7 @@ NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter ses
 .SS "void ncds_break_locks (const struct nc_session *session)"
 
 .PP
-Remove all the locks that the given session is holding\&. 
-.PP
-\fBParameters:\fP
+Remove all the locks that the given session is holding\&. \fBParameters:\fP
 .RS 4
 \fIsession\fP Session holding locks to remove 
 .RE
@@ -294,9 +286,7 @@ Remove all the locks that the given session is holding\&.
 .SS "int ncds_consolidate (void)"
 
 .PP
-Consolidate all internal structures of created data stores and all data models\&. This function especially solves all YANG's \fCuses\fP and \fCaugment\fP statements\&. 
-.PP
-\fBReturns:\fP
+Consolidate all internal structures of created data stores and all data models\&. This function especially solves all YANG's \fCuses\fP and \fCaugment\fP statements\&. \fBReturns:\fP
 .RS 4
 0 on success, non-zero on error\&. 
 .RE
@@ -305,9 +295,7 @@ Consolidate all internal structures of created data stores and all data models\&
 .SS "int ncds_feature_disable (const char *module, const char *feature)"
 
 .PP
-Disable usage of the specified feature defined in the specified module By default, all features are disabled\&. 
-.PP
-\fBParameters:\fP
+Disable usage of the specified feature defined in the specified module By default, all features are disabled\&. \fBParameters:\fP
 .RS 4
 \fImodule\fP Name of the module where the feature is defined\&. Module must be accessible - added via \fBncds_add_model()\fP or present in a directory specified via \fBncds_add_models_path()\fP function\&. 
 .br
@@ -323,9 +311,7 @@ Disable usage of the specified feature defined in the specified module By defaul
 .SS "int ncds_feature_enable (const char *module, const char *feature)"
 
 .PP
-Enable usage of the specified feature defined in the specified module\&. By default, all features are disabled\&. 
-.PP
-\fBParameters:\fP
+Enable usage of the specified feature defined in the specified module\&. By default, all features are disabled\&. \fBParameters:\fP
 .RS 4
 \fImodule\fP Name of the module where the feature is defined\&. Module must be accessible - added via \fBncds_add_model()\fP or present in a directory specified via \fBncds_add_models_path()\fP function\&. 
 .br
@@ -341,11 +327,8 @@ Enable usage of the specified feature defined in the specified module\&. By defa
 .SS "int ncds_feature_isenabled (const char *module, const char *feature)"
 
 .PP
-Check if the feature of the specified module is currently enabled or disabled\&. 
-.PP
-\fBReturns:\fP
+Check if the feature of the specified module is currently enabled or disabled\&. \fBReturns:\fP
 .RS 4
-
 .IP "\(bu" 2
 negative value in case of error
 .IP "\(bu" 2
@@ -359,9 +342,7 @@ negative value in case of error
 .SS "int ncds_features_disableall (const char *module)"
 
 .PP
-Disable usage of all features defined in the specified module\&. By default, all features are disabled\&. To disable only the specific feature(s), use \fBncds_feature_disable()\fP\&. 
-.PP
-\fBParameters:\fP
+Disable usage of all features defined in the specified module\&. By default, all features are disabled\&. To disable only the specific feature(s), use \fBncds_feature_disable()\fP\&. \fBParameters:\fP
 .RS 4
 \fImodule\fP Name of the module where the features are defined\&. Module must be accessible - added via \fBncds_add_model()\fP or present in a directory specified via \fBncds_add_models_path()\fP function\&. 
 .RE
@@ -375,9 +356,7 @@ Disable usage of all features defined in the specified module\&. By default, all
 .SS "int ncds_features_enableall (const char *module)"
 
 .PP
-Enable usage of all features defined in the specified module\&. By default, all features are disabled\&. To enable only the specific feature(s), use \fBncds_feature_enable()\fP\&. 
-.PP
-\fBParameters:\fP
+Enable usage of all features defined in the specified module\&. By default, all features are disabled\&. To enable only the specific feature(s), use \fBncds_feature_enable()\fP\&. \fBParameters:\fP
 .RS 4
 \fImodule\fP Name of the module where the features are defined\&. Module must be accessible - added via \fBncds_add_model()\fP or present in a directory specified via \fBncds_add_models_path()\fP function\&. 
 .RE
@@ -413,9 +392,7 @@ Close specified datastore and free all the resources\&. Equivalent function to \
 .SS "char* ncds_get_model (\fBncds_id\fPid, intbase)"
 
 .PP
-Return a serialized XML containing the data model in the YIN format\&. 
-.PP
-\fBParameters:\fP
+Return a serialized XML containing the data model in the YIN format\&. \fBParameters:\fP
 .RS 4
 \fIid\fP ID of the datastore whose data model we want 
 .br
@@ -431,9 +408,7 @@ String containing YIN model\&. Caller must free the memory after use\&.
 .SS "const char* ncds_get_model_path (\fBncds_id\fPid)"
 
 .PP
-Return path to the file containing the datastore datamodel\&. 
-.PP
-\fBParameters:\fP
+Return path to the file containing the datastore datamodel\&. \fBParameters:\fP
 .RS 4
 \fIid\fP ID of the datastore whose data model we want
 .RE
@@ -472,9 +447,7 @@ Positive integer with the datastore ID on success, negative value on error\&.
 .SS "int ncds_model_info (const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)"
 
 .PP
-Informational function to get basic information about configuration data model in the given file\&. 
-.PP
-\fBParameters:\fP
+Informational function to get basic information about configuration data model in the given file\&. \fBParameters:\fP
 .RS 4
 \fIpath\fP Path to the *\&.yin file with the configuration data model in YIN format\&.
 .RE
@@ -502,12 +475,10 @@ EXIT_SUCCESS or EXIT_FAILURE on error\&.
 .RE
 .PP
 
-.SS "struct ncds_ds* ncds_new (\fBNCDS_TYPE\fPtype, const char *model_path, char *(*)(const char *model, const char *running, struct nc_err **e)get_state)"
+.SS "struct ncds_ds* ncds_new (\fBNCDS_TYPE\fPtype, const char *model_path, char *(*)(const char *model, const char *running, struct nc_err **e)get_state)\fC [read]\fP"
 
 .PP
-Create a new datastore structure of the specified implementation type\&. 
-.PP
-\fBParameters:\fP
+Create a new datastore structure of the specified implementation type\&. \fBParameters:\fP
 .RS 4
 \fItype\fP Datastore implementation type for the new datastore structure\&. 
 .br
@@ -522,7 +493,7 @@ Prepared (not configured) datastore structure\&. To configure the structure, cal
 .RE
 .PP
 
-.SS "struct ncds_ds* ncds_new2 (\fBNCDS_TYPE\fPtype, const char *model_path, xmlDocPtr(*)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e)get_state)"
+.SS "struct ncds_ds* ncds_new2 (\fBNCDS_TYPE\fPtype, const char *model_path, xmlDocPtr(*)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e)get_state)\fC [read]\fP"
 
 .PP
 Create a new datastore structure of the specified implementation type with get_state function using libxml2\&. To make this function available, you have to include \fBlibnetconf_xml\&.h\fP\&.
@@ -545,9 +516,7 @@ Prepared (not configured) datastore structure\&. To configure the structure, cal
 .SS "int ncds_rollback (\fBncds_id\fPid)"
 
 .PP
-Undo the last change performed on the specified datastore\&. 
-.PP
-\fBParameters:\fP
+Undo the last change performed on the specified datastore\&. \fBParameters:\fP
 .RS 4
 \fIid\fP ID of the datastore where the rollback will be performed\&. 
 .RE
@@ -561,9 +530,7 @@ Undo the last change performed on the specified datastore\&.
 .SS "int ncds_set_validation (struct ncds_ds *ds, intenable, const char *relaxng, const char *schematron)"
 
 .PP
-Set validators (or disable validation) on the specified datastore\&. 
-.PP
-\fBParameters:\fP
+Set validators (or disable validation) on the specified datastore\&. \fBParameters:\fP
 .RS 4
 \fIds\fP Datastore structure to be configured\&. 
 .br

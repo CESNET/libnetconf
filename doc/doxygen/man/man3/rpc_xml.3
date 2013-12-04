@@ -1,4 +1,4 @@
-.TH "NETCONF rpc (libxml2)" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc (libxml2)" 3 "Wed Dec 4 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -49,12 +49,10 @@ libnetconf's functions for handling the NETCONF <rpc> messages\&. These function
 
 .SH "Function Documentation"
 .PP 
-.SS "struct nc_filter* ncxml_filter_new (\fBNC_FILTER_TYPE\fPtype, \&.\&.\&.)"
+.SS "struct nc_filter* ncxml_filter_new (\fBNC_FILTER_TYPE\fPtype, \&.\&.\&.)\fC [read]\fP"
 
 .PP
-Create a new NETCONF filter of the specified type\&. 
-.PP
-\fBParameters:\fP
+Create a new NETCONF filter of the specified type\&. \fBParameters:\fP
 .RS 4
 \fItype\fP Type of the filter\&. 
 .br
@@ -73,9 +71,7 @@ Created NETCONF filter structure\&.
 .SS "\fBnc_rpc\fP* ncxml_rpc_build (xmlDocPtrrpc_dump, const struct nc_session *session)"
 
 .PP
-Build <rpc> message from the libxml2 document structure\&. This is the reverse function of the \fBncxml_rpc_dump()\fP\&. 
-.PP
-\fBParameters:\fP
+Build <rpc> message from the libxml2 document structure\&. This is the reverse function of the \fBncxml_rpc_dump()\fP\&. \fBParameters:\fP
 .RS 4
 \fIrpc_dump\fP XML document structure with the NETCONF <rpc> message\&. The structure is integrated into the internal rpc structure and caller should not access (or free) given XML document anymore\&. 
 .br
@@ -91,8 +87,7 @@ Complete rpc structure used by libnetconf's functions\&.
 .SS "\fBnc_rpc\fP* ncxml_rpc_copyconfig (\fBNC_DATASTORE\fPsource, \fBNC_DATASTORE\fPtarget, \&.\&.\&.)"
 
 .PP
-Create <copy-config> NETCONF rpc message\&. 
-.SS "Variadic parameters:"
+Create <copy-config> NETCONF rpc message\&. .SS "Variadic parameters:"
 .PP
 .IP "\(bu" 2
 the source is specified as \fBNC_DATASTORE_CONFIG\fP:
@@ -134,9 +129,7 @@ Created rpc message\&.
 .SS "xmlDocPtr ncxml_rpc_dump (const \fBnc_rpc\fP *rpc)"
 
 .PP
-Dump the rpc message into a libxml2 document structure\&. 
-.PP
-\fBParameters:\fP
+Dump the rpc message into a libxml2 document structure\&. \fBParameters:\fP
 .RS 4
 \fIrpc\fP rpc message\&. 
 .RE
@@ -150,9 +143,7 @@ XML document of the NETCONF's <rpc> message\&. Caller is supposed to free the re
 .SS "\fBnc_rpc\fP* ncxml_rpc_editconfig (\fBNC_DATASTORE\fPtarget, \fBNC_DATASTORE\fPsource, \fBNC_EDIT_DEFOP_TYPE\fPdefault_operation, \fBNC_EDIT_ERROPT_TYPE\fPerror_option, \fBNC_EDIT_TESTOPT_TYPE\fPtest_option, \&.\&.\&.)"
 
 .PP
-Create <edit-config> NETCONF rpc message\&. 
-.PP
-\fBParameters:\fP
+Create <edit-config> NETCONF rpc message\&. \fBParameters:\fP
 .RS 4
 \fItarget\fP Target configuration datastore type to be edited\&. 
 .br
@@ -197,9 +188,7 @@ Created rpc message\&.
 .SS "xmlNodePtr ncxml_rpc_get_config (const \fBnc_rpc\fP *rpc)"
 
 .PP
-Get <config> element from the RPC operation including its content\&. This function is valid only for <copy-config> and <edit-config> RPCs\&. 
-.PP
-\fBParameters:\fP
+Get <config> element from the RPC operation including its content\&. This function is valid only for <copy-config> and <edit-config> RPCs\&. \fBParameters:\fP
 .RS 4
 \fIrpc\fP <copy-config> or <edit-config> rpc message\&.
 .RE
@@ -213,9 +202,7 @@ XML node <config> with its content or NULL on error\&. Note that <config> can co
 .SS "xmlNodePtr ncxml_rpc_get_op_content (const \fBnc_rpc\fP *rpc)"
 
 .PP
-Get the content of the operation specification from the given rpc\&. 
-.PP
-\fBParameters:\fP
+Get the content of the operation specification from the given rpc\&. \fBParameters:\fP
 .RS 4
 \fIrpc\fP rpc message\&. 
 .RE

@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply (libxml2)" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply (libxml2)" 3 "Wed Dec 4 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -36,9 +36,7 @@ libnetconf's functions for handling the NETCONF <rpc-reply> messages\&. These fu
 .SS "\fBnc_reply\fP* ncxml_reply_build (xmlDocPtrreply_dump)"
 
 .PP
-Build <rpc-reply> message from the libxml2 document structure\&. This is the reverse function of the \fBncxml_reply_dump()\fP\&. 
-.PP
-\fBParameters:\fP
+Build <rpc-reply> message from the libxml2 document structure\&. This is the reverse function of the \fBncxml_reply_dump()\fP\&. \fBParameters:\fP
 .RS 4
 \fIreply_dump\fP XML document structure with the NETCONF <rpc-reply> message\&. The structure is integrated into the internal rpc structure and caller should not access (or free) the given XML document anymore\&. 
 .RE
@@ -52,9 +50,7 @@ Complete reply structure used by libnetconf's functions\&.
 .SS "\fBnc_reply\fP* ncxml_reply_data (const xmlNodePtrdata)"
 
 .PP
-Create rpc-reply response with <data> content\&. 
-.PP
-\fBParameters:\fP
+Create rpc-reply response with <data> content\&. \fBParameters:\fP
 .RS 4
 \fIdata\fP Content (possibly a node list) for the <rpc-reply>'s <data> element\&. 
 .RE
@@ -68,9 +64,7 @@ Created <rpc-reply> message\&.
 .SS "xmlDocPtr ncxml_reply_dump (const \fBnc_reply\fP *reply)"
 
 .PP
-Dump the rpc-reply message into a libxml2 document structure\&. 
-.PP
-\fBParameters:\fP
+Dump the rpc-reply message into a libxml2 document structure\&. \fBParameters:\fP
 .RS 4
 \fIreply\fP rpc-reply message\&. 
 .RE
@@ -84,9 +78,7 @@ XML document of the NETCONF's <rpc-reply> message\&. Caller is supposed to free 
 .SS "xmlNodePtr ncxml_reply_get_data (const \fBnc_reply\fP *reply)"
 
 .PP
-Get <data> element in <rpc-reply> including its content\&. 
-.PP
-\fBParameters:\fP
+Get <data> element in <rpc-reply> including its content\&. \fBParameters:\fP
 .RS 4
 \fIreply\fP rpc-reply message\&. 
 .RE

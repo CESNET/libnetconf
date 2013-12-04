@@ -1,4 +1,4 @@
-.TH "URL capability" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "URL capability" 3 "Wed Dec 4 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -42,7 +42,7 @@ libnetconf's settings for NETCONF :url capability as defined in RFC 6241\&.
 .PP
 List of protocol IDs supported by URL capability implementation\&. Values are used to enable/disable server support of these protocols (\fBnc_url_enable()\fP, \fBnc_url_disable()\fP)\&. 
 .PP
-\fBEnumerator\fP
+\fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fINC_URL_UNKNOWN \fP\fP
@@ -76,9 +76,7 @@ All supported protocols
 .SS "void nc_url_disable (\fBNC_URL_PROTOCOLS\fPprotocol)"
 
 .PP
-Disable specific protocol for use in URL capability\&. 
-.PP
-\fBParameters:\fP
+Disable specific protocol for use in URL capability\&. \fBParameters:\fP
 .RS 4
 \fIprotocol\fP ID of the protocol to disable\&. 
 .RE
@@ -87,9 +85,7 @@ Disable specific protocol for use in URL capability\&.
 .SS "void nc_url_enable (\fBNC_URL_PROTOCOLS\fPprotocol)"
 
 .PP
-Enable specific protocol for use in URL capability\&. 
-.PP
-\fBParameters:\fP
+Enable specific protocol for use in URL capability\&. \fBParameters:\fP
 .RS 4
 \fIprotocol\fP ID of the protocol to enable\&. 
 .RE
@@ -98,9 +94,7 @@ Enable specific protocol for use in URL capability\&.
 .SS "void nc_url_set_protocols (intprotocols)"
 
 .PP
-Overwrite enabled protocols for URL capability\&. 
-.PP
-\fBParameters:\fP
+Overwrite enabled protocols for URL capability\&. \fBParameters:\fP
 .RS 4
 \fIprotocols\fP binary array of protocol IDs (ORed NC_URL_PROTOCOLS) to be enabled\&. 
 .RE

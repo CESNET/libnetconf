@@ -1,4 +1,4 @@
-.TH "Transaction API" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "Transaction API" 3 "Wed Dec 4 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -46,7 +46,7 @@ libnetconf's implementation of transaction-based partial device reconfiguration\
 .PP
 Enum specifying states of node in document\&. 
 .PP
-\fBEnumerator\fP
+\fBEnumerator: \fP
 .in +1c
 .TP
 \fB\fIXMLDIFF_ERR \fP\fP
@@ -74,12 +74,10 @@ Some sibling nodes were added/removed/changed position\&. Only for LEAF and LEAF
 Some of the children nodes changed theirs position\&. None was added/removed\&. Only for LEAF and LEAF-LIST\&. 
 .SH "Function Documentation"
 .PP 
-.SS "struct ncds_ds* ncds_new_transapi (\fBNCDS_TYPE\fPtype, const char *model_path, const char *callbacks_path)"
+.SS "struct ncds_ds* ncds_new_transapi (\fBNCDS_TYPE\fPtype, const char *model_path, const char *callbacks_path)\fC [read]\fP"
 
 .PP
-Create new datastore structure with transaction API support\&. 
-.PP
-\fBParameters:\fP
+Create new datastore structure with transaction API support\&. \fBParameters:\fP
 .RS 4
 \fItype\fP Datastore implementation type for the new datastore structure\&. 
 .br

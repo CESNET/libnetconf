@@ -1,4 +1,4 @@
-.TH "ncds_custom_funcs" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "ncds_custom_funcs" 3 "Wed Dec 4 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -69,9 +69,7 @@ These are the callbacks that need to be provided by the server to be used from t
 .SS "int(* copyconfig)(void *data, \fBNC_DATASTORE\fP target, \fBNC_DATASTORE\fP source, char *config, struct nc_err **error)"
 
 .PP
-Copy config from one data store to another\&. 
-.PP
-\fBParameters:\fP
+Copy config from one data store to another\&. \fBParameters:\fP
 .RS 4
 \fIdata\fP The user data\&. 
 .br
@@ -93,9 +91,7 @@ EXIT_SUCCESS or EXIT_FAILURE\&.
 .SS "int(* deleteconfig)(void *data, \fBNC_DATASTORE\fP target, struct nc_err **error)"
 
 .PP
-Make the given data source empty\&. 
-.PP
-\fBParameters:\fP
+Make the given data source empty\&. \fBParameters:\fP
 .RS 4
 \fIdata\fP The user data\&. 
 .br
@@ -113,9 +109,7 @@ EXIT_SUCCESS or EXIT_FAILURE\&.
 .SS "int(* editconfig)(void *data, const \fBnc_rpc\fP *rpc, \fBNC_DATASTORE\fP target, const char *config, \fBNC_EDIT_DEFOP_TYPE\fP defop, \fBNC_EDIT_ERROPT_TYPE\fP errop, struct nc_err **error)"
 
 .PP
-Perform the editconfig operation\&. 
-.PP
-\fBParameters:\fP
+Perform the editconfig operation\&. \fBParameters:\fP
 .RS 4
 \fIdata\fP The user data\&. 
 .br
@@ -220,9 +214,7 @@ negative value - error
 .SS "int(* lock)(void *data, \fBNC_DATASTORE\fP target, const char *session_id, struct nc_err **error)"
 
 .PP
-Lock the data store from other processes\&. 
-.PP
-\fBParameters:\fP
+Lock the data store from other processes\&. \fBParameters:\fP
 .RS 4
 \fIdata\fP The user data\&. 
 .br
@@ -242,9 +234,7 @@ EXIT_SUCCESS or EXIT_FAILURE\&.
 .SS "int(* rollback)(void *data)"
 
 .PP
-Revert the last change\&. 
-.PP
-\fBParameters:\fP
+Revert the last change\&. \fBParameters:\fP
 .RS 4
 \fIdata\fP The user data\&. 
 .RE
@@ -280,9 +270,7 @@ EXIT_SUCCESS or EXIT_FAILURE\&.
 .SS "int(* was_changed)(void *data)"
 
 .PP
-Was the content of data store changed? 
-.PP
-\fBParameters:\fP
+Was the content of data store changed? \fBParameters:\fP
 .RS 4
 \fIdata\fP The user data\&. 
 .RE

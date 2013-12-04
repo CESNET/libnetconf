@@ -519,19 +519,19 @@
 /**
  * \page transapi Transaction API (transAPI)
  *
- * Libnetconf transAPI is a framework that saves developers time and let them
- * focus on configuring and managing their device instead of fighting with NETCONF
+ * Libnetconf transAPI is a framework designed to save developers time and let them
+ * focus on configuring and managing their device instead of fighting with the NETCONF
  * protocol.
  *
- * It allows developer to choose parts of configuration that can be easily configured
- * as a single block. Based on a list of so called 'sensitive paths' generator creates
- * C code containing single callback function for every 'sensitive path'. Whenever
- * something changes in configuration file, appropriate callback function is called
- * and it is supposed to reflect configuration changes to device behavior.
+ * It allows a developer to choose parts of a configuration that can be easily configured
+ * as a single block. Based on a list of so called 'sensitive paths' the generator creates
+ * C code containing a single callback function for every 'sensitive path'. Whenever
+ * something changes in the configuration file, the appropriate callback function is called
+ * and it is supposed to reflect configuration changes in the actual device behavior.
  *
- * Additionaly, transAPI provides opportunity to implement behavior of NETCONF
- * RPC operation defined in the data model. In the case that lnctool finds an RPC
- * definition inside a provided data model, it generates callbacks for it too.
+ * Additionaly, transAPI provides an opportunity to implement behavior of NETCONF
+ * RPC operation defined in the data model. In case lnctool finds an RPC
+ * definition inside the provided data model, it generates callbacks for it too.
  * Whenever a server calls ncds_apply_rpc() or ncds_apply_rpc2all() with RPC
  * message containing such defined RPC operation, libnetconf uses callback
  * function implemented in the module.
@@ -545,19 +545,19 @@
  *
  * [netopeer]: https://code.google.com/p/netopeer
  *
- * On this page we will show how to write simple module
+ * On this page we will show how to write a simple module
  * for controlling [example toaster](http://netconfcentral.org/modulereport/toaster).
- * \note To install libnetconf follow instruction on \ref install page.
+ * \note To install libnetconf follow the instructions on the \ref install page.
  *
  * ## Preparations ##
  *
  * In this example we will work with the data model of the toaster provided
  * by Andy Bierman at NETCONF CENTRAL (<http://dld.netconfcentral.org/src/toaster@2009-11-20.yang>).
  *
- * First we need to identify important parts of configuration data.
- * Since toaster data model describes only one configurable element
- * we have easy choice.
- * So we can create the 'paths_file' file containing specification of our
+ * First, we need to identify important parts of the configuration data.
+ * Since the toaster data model describes only one configurable element,
+ * we have an easy choice.
+ * So, we can create the 'paths_file' file containing the specification of our
  * chosen element and mapping prefixes with URIs for any used namespace.
  *
  * Our file may look like this (irrespective of order):
@@ -568,7 +568,7 @@
  *
  * ## Generating code ##
  *
- * -# Create new directory for toaster module and move data model and path file into it:
+ * -# Create a new directory for the toaster module and move the data model and the path file into it:
  * ~~~~~~~{.sh}
  * $ mkdir toaster && cd toaster/
  * $ mv ../toaster@2009-11-20.yin ../paths_file .
@@ -579,21 +579,21 @@
  * ~~~~~~~
  *
  * Besides the generated source code of our transAPI module and GNU Build
- * System files (Makefile.in, configure.in,...) lnctool also generates YIN
+ * System files (Makefile.in, configure.in,...), lnctool also generates YIN
  * format of the data model and validators accepted by the libnetconf's
  * ncds_new_transapi() and ncds_set_validation() functions:
  * - *.yin - YIN format of the data model
- * - *.rng - RelagNG schem for syntax validation
- * - *-schematron.xsl - Schematron XSL stylesheet for semantics validation *
+ * - *.rng - RelagNG schema for syntax validation
+ * - *-schematron.xsl - Schematron XSL stylesheet for semantics validation
  *
  * ## Filling up functionality ##
  *
  * Here we show the simplest example of a toaster simulating module.
  * It is working but does not deal with multiple access and threads correctly.
- * Better example may be seen in the netopeer-server-sl source codes located
+ * Better example may can be found in the netopeer-server-sl source codes located
  * in the [Netopeer project][netopeer] repository (server-sl/toaster/toaster.c).
  *
- * -# Open 'toaster.c' file with you favorite editor:
+ * -# Open 'toaster.c' file with your favorite editor:
  * ~~~~~~~{.sh}
  * $ vim toaster.c
  * ~~~~~~~
@@ -614,34 +614,34 @@
  * 	return(NULL);
  * }
  * ~~~~~~~
- * -# Complete 'init()' function with actions that will be run right after module loads and before any other function in module is called.
+ * -# Complete the 'transapi_init()' function with actions that will be run right after the module loads and before any other function in the module is called. We ignore the XML document pointer, since we wish the toaster to be always off when loading this module.
  * ~~~~~~~{.c}
- * int init()
+ * int transapi_init(xmlDocPtr * running)
  * {
  * 	status = OFF;
  * 	printf("Toaster initialized!\n");
  * 	return(EXIT_SUCCESS);
  * }
  * ~~~~~~~
- * -# Locate 'close()' function and fill it with actions that will be run just before the module unloads. No other function will be called after 'close()'.
+ * -# Locate the 'transapi_close()' function and fill it with actions that will be run just before the module unloads. No other function will be called after 'transapi_close()'.
  * ~~~~~~~{.c}
- * void close()
+ * void transapi_close()
  * {
  * 	printf("Toaster ready for unplugging!\n");
  * }
  * ~~~~~~~
- * -# Fill 'get_state_data()' function with code that will generate state information as defined in data model.
+ * -# Fill 'get_state_data()' function with code that will generate state information as defined in the data model.
  * ~~~~~~~{.c}
  * char * get_state_data(char * model, char * running, struct nc_err **err)
  * {
  * 	return strdup("<?xml version="1.0"?><toaster xmlns="http://netconfcentral.org/ns/toaster"> ... </toaster>");
  * }
  * ~~~~~~~
- * -# Complete configuration callbacks. The 'op' parameter may be
+ * -# Complete the configuration callbacks. The 'op' parameter may be
  * 		used to determine operation which was done with the node. Parameter 'node' holds a
  * 		copy of node after change (or before change if op == XMLDIFF_REM).
  * ~~~~~~~{.c}
- * int callback_toaster_toaster (XMLDIFF_OP op, xmlNodePtr node, void ** data)
+ * int callback_toaster_toaster (void ** data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err** error)
  * {
  * 	switch(op) {
  * 	case XMLDIFF_ADD:
@@ -651,20 +651,22 @@
  * 		status = OFF;
  * 		break;
  * 	default:
+ * 		*error = nc_err_new(NC_ERR_OP_FAILED);
+ * 		nc_err_set(*error, NC_ERR_PARAM_MSG, "Unsupported operation.");
  * 		return(EXIT_FAILURE);
  * 	}
  * 	return(EXIT_SUCCESS);
  * }
  * ~~~~~~~
- * -# Fill RPC message callback functions with code that will be run when message arrives.
+ * -# Fill the RPC message callback functions with code that will be run when a message arrives.
  * ~~~~~~~
  * nc_reply * rpc_make_toast (xmlNodePtr input[])
  * {
  * 	xmlNodePtr toasterDoneness = input[0];
- *	xmlNodePtr toasterToastType = input[1];
+ * 	xmlNodePtr toasterToastType = input[1];
  *
- *	nc_reply * reply;
- *	int doneness = atoi(xmlNodeGetContent(toasterDoneness));
+ * 	nc_reply * reply;
+ * 	int doneness = atoi(xmlNodeGetContent(toasterDoneness));
  *
  * 	if (status == ON) {
  * 		status = BUSY;
@@ -680,22 +682,22 @@
  * ~~~~~~~
  * nc_reply * rpc_cancel_toast (xmlNodePtr input[])
  * {
- *	nc_reply * reply;
+ * 	nc_reply * reply;
  *
- *	if (status == BUSY) {
- *		status = ON;
- *		ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>canceled</toastStatus></toastDone>");
- *		reply = nc_reply_ok();
- *	} else {
- *		reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
- *	}
- *	return(reply);
+ * 	if (status == BUSY) {
+ * 		status = ON;
+ * 		ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>canceled</toastStatus></toastDone>");
+ * 		reply = nc_reply_ok();
+ * 	} else {
+ * 		reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
+ * 	}
+ * 	return(reply);
  * }
  * ~~~~~~~
  *
  * ## Compiling module ##
  *
- * Following sequence of commands will produce shared library 'toaster.so' which may be loaded into libnetconf:
+ * Following sequence of commands will produce the shared library 'toaster.so' which may be loaded into libnetconf:
  * ~~~~~~~{.sh}
  * $ autoreconf
  * $ ./configure
@@ -704,9 +706,9 @@
  *
  * ## Integrating to a server ##
  *
- * In server we use libnetconfs function ncds_new_transapi() instead of ncds_new() to create transAPI capable data store.
- * Then you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock) data-reading (get, get-config)
- * and module data model defined RPC operations. All these operation are processed inside ncds_apply_rpc2all() function.
+ * In a server we use libnetconf's function ncds_new_transapi() instead of ncds_new() to create a transAPI-capable data store.
+ * Then, you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock), data-reading (get, get-config)
+ * or module data-model-defined RPC operations. All these operations are processed inside the ncds_apply_rpc2all() function.
  */
 
 /**

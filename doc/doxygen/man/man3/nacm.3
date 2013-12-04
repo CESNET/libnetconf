@@ -1,4 +1,4 @@
-.TH "nacm" 3 "Tue Dec 3 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "nacm" 3 "Wed Dec 4 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -9,7 +9,7 @@ libnetconf supports usage of the system groups (/etc/group) in the access contro
 .PP
 .PP
 .nf
-<nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
+<nacm xmlns='urn:ietf:params:xml:ns:yang:ietf-netconf-acm'>
   <enable-external-groups>false</enable-external-groups>
 </nacm>
 .fi
@@ -36,7 +36,7 @@ For example, to change default write rule from deny to permit, use edit-config o
 .PP
 .PP
 .nf
-<nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
+<nacm xmlns='urn:ietf:params:xml:ns:yang:ietf-netconf-acm'>
   <write-default>permit</write-default>
 </nacm>
 .fi
@@ -46,7 +46,7 @@ To guarantee all access rights to a specific users group, use edit-config operat
 .PP
 .PP
 .nf
-<nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
+<nacm xmlns='urn:ietf:params:xml:ns:yang:ietf-netconf-acm'>
   <rule-list>
     <name>admin-acl</name>
     <group>admin</group>
