@@ -106,7 +106,7 @@ $(document).ready(function(){initNavTree('d1/d25/client.html','../../');});
 <ol type="1">
 <li><b>Set verbosity (optional)</b>.<br/>
  The verbosity of the libnetconf can be set by <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7" title="Set libnetconf&#39;s verbosity level.">nc_verbosity()</a>. By default, libnetconf is completely silent.<br/>
- There is a default message printing function writing messages on the stderr. The application's specific message printing function can be set via <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7" title="Set a callback function for printing libnetconf&#39;s messages.">nc_callback_print()</a> function.</li>
+ There is a default message-printing function that writes messages on stderr. The application's specific message printing function can be set via <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7" title="Set a callback function for printing libnetconf&#39;s messages.">nc_callback_print()</a> function.</li>
 <li><b>Set SSH authentication methods priorities (optional)</b>.<br/>
  libnetconf supports several SSH authentication methods for connecting to a NETCONF server over SSH. However, the used method is selected from a list of supported authentication methods provided by the server. Client is allowed to specify the priority of each supported authentication method via <a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0" title="Set the preference of the SSH authentication methods.">nc_ssh_pref()</a> function. The authentication method can also be disabled using a negative priority value.<br/>
  Default priorities are following:<ul>
@@ -115,11 +115,11 @@ $(document).ready(function(){initNavTree('d1/d25/client.html','../../');});
 <li><em>Public keys</em> (value 1)</li>
 </ul>
 </li>
-<li><b>Set own callback(s) for the SSH authentication methods (optional)</b>.<br/>
+<li><b>Set your own callback(s) for the SSH authentication methods (optional)</b>.<br/>
  User credentials are received via the callback functions specific for each authentication method. There are default callbacks, but application can set their own via:<ul>
 <li><em>Interactive</em> - <a class="el" href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb" title="Set a callback function for passing user credentials into the libssh2&#39;s keyboard-interactive authenti...">nc_callback_sshauth_interactive()</a></li>
 <li><em>Password</em> - <a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb" title="Set a callback function for passing the user password into the libssh2&#39;s password authentication meth...">nc_callback_sshauth_password()</a></li>
-<li><em>Publuc keys</em> - <a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726" title="Set a callback function for passing the user password into the libssh2&#39;s publickey authentication met...">nc_callback_sshauth_passphrase()</a>. Here can also the paths to the key files be specified by nc_set_publickey_path() and nc_set_privatekey_path(). If not set, libnetconf tries to find them in the default paths.</li>
+<li><em>Publuc keys</em> - <a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726" title="Set a callback function for passing the user password into the libssh2&#39;s publickey authentication met...">nc_callback_sshauth_passphrase()</a>. Here can the paths to the key files be also specified by nc_set_publickey_path() and nc_set_privatekey_path(). If not set, libnetconf tries to find them in the default paths.</li>
 </ul>
 </li>
 <li><b>Connect to the NETCONF server(s)</b>.<br/>
@@ -140,7 +140,7 @@ $(document).ready(function(){initNavTree('d1/d25/client.html','../../');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
-    <li class="footer">Generated on Wed Dec 4 2013 15:19:05 for libnetconf by
+    <li class="footer">Generated on Fri Dec 6 2013 14:16:45 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.2 </li>
   </ul>

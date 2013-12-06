@@ -68,17 +68,17 @@
  * work with the configuration data in a datastore.
  *
  * libnetconf implements the NETCONF protocol introduced by IETF. More
- * information about NETCONF protocol can be found at [NETCONF WG][netconfwg].
+ * information about the NETCONF protocol can be found at [NETCONF WG][netconfwg].
  *
  * libnetconf is currently under development at the [TMC] department of [CESNET].
  * Any testing of the library is welcome. Please inform us about your
- * experiences with using libnetconf via our [mailing list][mlist] or the
+ * experiences with libnetconf via our [mailing list][mlist] or the
  * [Google Code's Issue section][issues]. Any feature suggestion or bugreport
  * is also appreciated.
  *
  * In November 2012, CESNET attended the NETCONF Interoperability Event held in
  * Atlanta, prior to the IETF 85 meeting. We went to the event with the
- * libnetconf based client and server and successfully tested interoperability
+ * libnetconf-based client and server and successfully tested interoperability
  * with other implementations. The notes from the event can be found
  * [here][interopevent].
  *
@@ -98,8 +98,8 @@
  *
  * ### Example Applications ###
  *
- * As examples of applications built on top of the libnetconf library, you can
- * see to the applications in the [Netopeer project][netopeer].
+ * Examples of applications built on top of the libnetconf library can be
+ * found in the [Netopeer project][netopeer].
  *
  * ### BSD License ###
  *
@@ -145,14 +145,14 @@
  *
  * ## Cloning git repository ##
  *
- * As written on libnetconfs [Google Code page](https://code.google.com/p/libnetconf/source/checkout)
- * the repository can be cloned using following command:
+ * As written on libnetconf's [Google Code page](https://code.google.com/p/libnetconf/source/checkout),
+ * the repository can be cloned using the following command:
  *
  * ~~~~~~~
  * $ git clone https://code.google.com/p/libnetconf/
  * ~~~~~~~
  *
- * \note In case that git fails to clone the repository make sure git is at least version 1.6.6.
+ * \note In case that git fails to clone the repository make sure your git is at least version 1.6.6.
  *
  * ## Compilation ##
  *
@@ -192,14 +192,14 @@
  *  - Add debugging information for a debugger.
  *
  * - `--with-suid=<user>`
- *  - Limit usage of the libnetconf to the specific _user_. With this option,
+ *  - Limit usage of libnetconf to the specific _user_. With this option,
  *    libnetconf creates shared files and other resources with access rights
  *    limited to the specified _user_. This option can be freely combined with
  *    the `--with-sgid` option. If neither `--with-suid` nor `--with-sgid`
  *    option is specified, full access rights for all users are granted.
  *
  * - `--with-sgid=<group>`
- *  - Limit usage of the libnetconf to the specific _group_. With this option,
+ *  - Limit usage of libnetconf to the specific _group_. With this option,
  *    libnetconf creates shared files and other resources with access rights
  *    limited to the specified _group_. This option can be freely combined with
  *    the `--with-suid` option. If neither `--with-suid` nor `--with-sgid`
@@ -207,8 +207,8 @@
  *
  * \note
  * If the library is built with `--with-suid` or `--with-sgid` options,
- * the proper suid or/and sgid bit should be properly set to the server-side
- * application binaries using the libnetconf library.
+ * the proper suid or/and sgid bit should be set to the server-side
+ * application binaries that use the libnetconf library.
  *
  */
 
@@ -243,7 +243,7 @@
  * -# **Set verbosity (optional)**.\n
  * The verbosity of the libnetconf can be set by nc_verbosity(). By default,
  * libnetconf is completely silent.\n
- * There is a default message printing function writing messages on the stderr.
+ * There is a default message-printing function that writes messages on stderr.
  * The application's specific message printing function can be set via
  * nc_callback_print() function.
  * -# **Set SSH authentication methods priorities (optional)**.\n
@@ -257,14 +257,14 @@
  *    - *Interactive* (value 3)
  *    - *Password* (value 2)
  *    - *Public keys* (value 1)
- * -# **Set own callback(s) for the SSH authentication methods (optional)**.\n
+ * -# **Set your own callback(s) for the SSH authentication methods (optional)**.\n
  * User credentials are received via the callback functions specific for each
  * authentication method. There are default callbacks, but application can set
  * their own via:
  *    - *Interactive* - nc_callback_sshauth_interactive()
  *    - *Password* - nc_callback_sshauth_password()
- *    - *Publuc keys* - nc_callback_sshauth_passphrase(). Here can also
- *    the paths to the key files be specified by nc_set_publickey_path() and
+ *    - *Publuc keys* - nc_callback_sshauth_passphrase(). Here can
+ *    the paths to the key files be also specified by nc_set_publickey_path() and
  *    nc_set_privatekey_path(). If not set, libnetconf tries to find them in
  *    the default paths.
  * -# **Connect to the NETCONF server(s)**.\n
@@ -303,7 +303,7 @@
  *
  * It is __strongly__ advised to set SUID (or SGID) bit on every application that is
  * built on libnetconf for a user (or group) created for this purpose, as several
- * internal functions behave based on this precondition. libnetconf uses a number
+ * internal functions behaviour is based on this precondition. libnetconf uses a number
  * of files which pose a security risk if they are accessible by untrustworthy users.
  * This way it is possible not to restrict the use of an application but only the
  * access to its files, so keep this in mind when creating any directories or files
@@ -330,7 +330,7 @@
  * In the second case, there is only one device manager (NETCONF server) running
  * as a system daemon. This solves the problem of concurrent device access from
  * multiple processes. On the other hand, there is a need for inter-process
- * communication between the device manager and the agents launched as the SSH
+ * communication between the device manager and the agents launched as SSH
  * Subsystems. These agents hold NETCONF sessions and receive requests from the
  * clients. libnetconf provides functions (nc_rpc_dump() and nc_rpc_build()) to
  * (de-)serialise content of the NETCONF messages. This allows the NETCONF messages
@@ -348,7 +348,7 @@
  * 1. **Set the verbosity** (optional).\n
  * The verbosity of the libnetconf can be set by nc_verbosity(). By default,
  * libnetconf is completely silent.\n
- * There is a default message printing function writing messages on the stderr.
+ * There is a default message printing function writing messages on stderr.
  * On the server side, this is not very useful, since server usually runs
  * as a daemon without stderr. In this case, something like syslog should be
  * used. The application's specific message printing function can be set via
@@ -356,7 +356,7 @@
  * 2. **Initiate libnetconf**\n
  * As the first step, libnetconf MUST be initiated using nc_init(). At this
  * moment, the libnetconf subsystems, such as NETCONF Notifications or NETCONF
- * Access Control, are initiated according to specified parameter of the
+ * Access Control, are initiated according to the specified parameter of the
  * nc_init() function.
  * 3. **Set With-defaults basic mode** (optional)\n
  * By default, libnetconf uses _explicit_ basic mode of the with-defaults
@@ -366,13 +366,13 @@
  * 4. **Initiate datastore**.\n
  * Now, a NETCONF datastore(s) can be created. Each libnetconf's datastore
  * is connected with a single configuration data model. This connection is
- * defined by calling ncds_new() function, which returns the datastore handler
- * for further manipulation with an uninitialized datastore. Usign this function,
+ * defined by calling the ncds_new() function, which returns a datastore handler
+ * for further manipulation with an uninitialized datastore. Using this function,
  * caller also specifies which datastore implementation type will be used.
  * Optionally, some implementation-type-specific parameters can be set (e.g.
  * ncds_file_set_path()). Finally, datastore must be initiated by ncds_init()
- * that returns datastore's ID which is used in subsequent calls. There is a set
- * of special implicit datastores with ID #NCDS_INTERNAL_ID, that refers
+ * that returns datastore's ID which is used in the subsequent calls. There is a set
+ * of special implicit datastores with ID #NCDS_INTERNAL_ID that refer
  * to the libnetconf's internal datastore(s).\n
  * Optionally, each datastore can be extended by an augment data model that can
  * be specified by ncds_add_model(). The same function can be used to specify
@@ -384,12 +384,12 @@
  * Caller can also switch on or off the YANG `feauters` in the specific module
  * using ncds_feature_enable(), ncds_feature_disable(), ncds_features_enableall()
  * and ncds_features_disableall() functions.\n
- * Finally, ncds_consolidate() must be called to check all internal structures
+ * Finally, ncds_consolidate() must be called to check all the internal structures
  * and to solve all `import`, `uses` and `augment` statements.
- * 5. **Initiate controlled device**\n
+ * 5. **Initiate the controlled device**\n
  * This step is actually out of the libnetconf scope. From the NETCONF point
- * of view, startup configuration data should be applied to the running data
- * store at this point. ncds_device_init() can be used to perform this task,
+ * of view, startup configuration data should be applied to the running datastore
+ * at this point. ncds_device_init() can be used to perform this task,
  * but applying running configuration data to the controlled device must be done
  * by a server specific (non-libnetconf) function.
  * 6. **Accept incoming NETCONF connection**.\n
@@ -400,7 +400,7 @@
  * specified NETCONF session. In case of an error return code, the state of the
  * session should be checked by nc_session_get_status() to learn if the
  * session can be further used.\n
- * According to the type of the request (nc_rpc_get_type()), perform appropriate
+ * According to the type of the request (nc_rpc_get_type()), perform an appropriate
  * action:
  *    - *NC_RPC_DATASTORE_READ* or *NC_RPC_DATASTORE_WRITE*: use ncds_apply_rpc()
  *    to perform the requested operation on the datastore. If the request affects
@@ -408,11 +408,11 @@
  *    apply configuration changes to the controlled device. ncds_apply_rpc()
  *    applies the request to the specified datastore. Besides the datastores
  *    created explicitely by the ncds_new() and ncds_init() calls, remember to
- *    apply the request to the internal libnetconf datastore with ID 0. To merge
- *    results of the separate ncds_apply_rpc() calls can be merged by
+ *    apply the request to the internal libnetconf datastore with ID 0.
+ *    Results of the separate ncds_apply_rpc() calls can be merged by
  *    nc_reply_merge() into a single reply message.
  *    - *NC_RPC_SESSION*: See the [Netopeer](https://code.google.com/p/netopeer)
- *    example server source codes. Some common function will be added in a
+ *    example server source codes. There will be a common function added in the
  *    future to handle these requests.
  * 8. **Reply to the client's request**.\n
  * The reply message is automatically generated by the ncds_apply_rpc() function.
@@ -445,7 +445,7 @@
  * #NC_INIT_NACM flag in the nc_init() function. No other action is required
  * to use NACM in libnetconf. All NACM rules and settings are controlled via
  * standard NETCONF operations since NACM subsystem provides implicit datastore
- * accessible with the ncds_apply_rpc() function with id parameter set to value
+ * accessible with the ncds_apply_rpc() function with the ID parameter set to the value
  * #NCDS_INTERNAL_ID (0).
  *
  * libnetconf supports usage of the system groups (/etc/group) in the access
@@ -462,13 +462,13 @@
  * ### Recovery Session ###
  * \anchor nacm-recovery
  *
- * Recovery session serves to set up initial access rules or to repair a broken
- * access control configuration. If a session is recognized as recovery NACM
+ * Recovery session serves for setting up initial access rules or to repair a broken
+ * access control configuration. If a session is recognized as recovery, NACM
  * subsystem is completely bypassed.
  *
- * By default, libnetconf consider all sessions of user with the system UID
+ * By default, libnetconf considers all sessions of the user with the system UID
  * equal zero as recovery. To change this default value to a UID of any user,
- * use  configure's \ref configure-nacm-recovery "--with-nacm-recovery-uid"
+ * use configure's \ref configure-nacm-recovery "--with-nacm-recovery-uid"
  * option.
  *
  *
@@ -479,11 +479,11 @@
  * write-default) and allow operation execution (permitted exec-default).
  *
  * \note Some operations or data have their specific access control settings
- * defined in their data models. These settings overrides described default
+ * defined in their data models. These settings override the described default
  * settings.
  *
  * To change this initial settings, user has to access NACM datastore via
- * recovery session (since any write operation is denied) and set required
+ * a recovery session (since any write operation is denied) and set required
  * access control rules.
  *
  * For example, to change default write rule from deny to permit, use
