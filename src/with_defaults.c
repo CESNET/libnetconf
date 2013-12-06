@@ -221,7 +221,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 	if (parents == NULL) {
 		if (created == NULL) {
 			if (retvals == NULL) {
-				for(i = created_count-1; i > 0; i--) {
+				for(i = created_count-1; i >= 0; i--) {
 					if (created_local[i]->children == NULL) {
 						/* created parent element, but default value was not finally
 						 * created and no other children element exists -> remove
