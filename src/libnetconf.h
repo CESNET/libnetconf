@@ -774,7 +774,6 @@
 #include "error.h"
 #include "datastore.h"
 #include "with_defaults.h"
-#include "transapi/transapi.h"
 
 #ifndef DISABLE_NOTIFICATIONS
 #  include "notifications.h"

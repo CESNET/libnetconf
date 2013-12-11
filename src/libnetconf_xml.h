@@ -88,6 +88,7 @@
 
 #include "messages_xml.h"
 #include "datastore_xml.h"
+#include "transapi/transapi.h"
 #ifndef DISABLE_NOTIFICATIONS
 #  include "notifications.h"
 #endif
