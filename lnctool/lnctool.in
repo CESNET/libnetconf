@@ -423,15 +423,9 @@ try:
 	if not os.path.exists(args.output_dir):
 		os.makedirs(args.output_dir)
 
-	# process model and find module name
 	# whatever type the model is try to convert it to YIN
 	model = convert_to_yin(args.model.name, args.search_path)
 	(model_name, ext) = os.path.splitext(os.path.abspath(args.model.name))
-
-	if args.name is None:
-		(module_name,ext) = os.path.splitext(os.path.basename(args.model.name))
-	else:
-		module_name = args.name
 
 	if not args.augment_models is None:
 		for l in args.augment_models:
@@ -445,6 +439,12 @@ try:
 		generate_validators(model_name+'.yin', augment_models_paths, args.search_path)
 
 	if args.subcommand == 'transapi':
+		# process model and find module name
+		if args.name is None:
+			(module_name,ext) = os.path.splitext(os.path.basename(args.model.name))
+		else:
+			module_name = args.name
+
 		# store paterns and text for replacing in configure.in
 		replace = {'$$PROJECTNAME$$' : module_name}
 

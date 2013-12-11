@@ -1,9 +1,9 @@
-.TH "nacm" 3 "Wed Dec 4 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "nacm" 3 "Fri Dec 6 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 nacm \- NETCONF Access Control Module (NACM) 
-NACM is a transparent subsystem of libnetconf\&. It is activated using \fBNC_INIT_NACM\fP flag in the \fBnc_init()\fP function\&. No other action is required to use NACM in libnetconf\&. All NACM rules and settings are controlled via standard NETCONF operations since NACM subsystem provides implicit datastore accessible with the \fBncds_apply_rpc()\fP function with id parameter set to value \fBNCDS_INTERNAL_ID\fP (0)\&.
+NACM is a transparent subsystem of libnetconf\&. It is activated using \fBNC_INIT_NACM\fP flag in the \fBnc_init()\fP function\&. No other action is required to use NACM in libnetconf\&. All NACM rules and settings are controlled via standard NETCONF operations since NACM subsystem provides implicit datastore accessible with the \fBncds_apply_rpc()\fP function with the ID parameter set to the value \fBNCDS_INTERNAL_ID\fP (0)\&.
 .PP
 libnetconf supports usage of the system groups (/etc/group) in the access control rule-lists\&. To disable this feature, <enable-external-groups> value must be set to false:
 .PP
@@ -17,9 +17,9 @@ libnetconf supports usage of the system groups (/etc/group) in the access contro
 .PP
 .SS "Recovery Session"
 .PP
- Recovery session serves to set up initial access rules or to repair a broken access control configuration\&. If a session is recognized as recovery NACM subsystem is completely bypassed\&.
+ Recovery session serves for setting up initial access rules or to repair a broken access control configuration\&. If a session is recognized as recovery, NACM subsystem is completely bypassed\&.
 .PP
-By default, libnetconf consider all sessions of user with the system UID equal zero as recovery\&. To change this default value to a UID of any user, use configure's \fB--with-nacm-recovery-uid\fP option\&.
+By default, libnetconf considers all sessions of the user with the system UID equal zero as recovery\&. To change this default value to a UID of any user, use configure's \fB--with-nacm-recovery-uid\fP option\&.
 .PP
 .SS "Initial operation"
 .PP
@@ -27,10 +27,10 @@ According to \fCRFC 6536\fP, libnetconf's NACM subsystem is initially set to all
 .PP
 \fBNote:\fP
 .RS 4
-Some operations or data have their specific access control settings defined in their data models\&. These settings overrides described default settings\&.
+Some operations or data have their specific access control settings defined in their data models\&. These settings override the described default settings\&.
 .RE
 .PP
-To change this initial settings, user has to access NACM datastore via recovery session (since any write operation is denied) and set required access control rules\&.
+To change this initial settings, user has to access NACM datastore via a recovery session (since any write operation is denied) and set required access control rules\&.
 .PP
 For example, to change default write rule from deny to permit, use edit-config operation to create (merge) the following configuration data:
 .PP

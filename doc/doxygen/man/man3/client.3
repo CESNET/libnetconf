@@ -1,4 +1,4 @@
-.TH "client" 3 "Wed Dec 4 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "client" 3 "Fri Dec 6 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -11,7 +11,7 @@ Here is a description of using libnetconf functions in a NETCONF client:
 .br
  The verbosity of the libnetconf can be set by \fBnc_verbosity()\fP\&. By default, libnetconf is completely silent\&.
 .br
- There is a default message printing function writing messages on the stderr\&. The application's specific message printing function can be set via \fBnc_callback_print()\fP function\&.
+ There is a default message-printing function that writes messages on stderr\&. The application's specific message printing function can be set via \fBnc_callback_print()\fP function\&.
 .IP "2." 4
 \fBSet SSH authentication methods priorities (optional)\fP\&.
 .br
@@ -27,7 +27,7 @@ Here is a description of using libnetconf functions in a NETCONF client:
 .PP
 
 .IP "3." 4
-\fBSet own callback(s) for the SSH authentication methods (optional)\fP\&.
+\fBSet your own callback(s) for the SSH authentication methods (optional)\fP\&.
 .br
  User credentials are received via the callback functions specific for each authentication method\&. There are default callbacks, but application can set their own via:
 .IP "  \(bu" 4
@@ -35,7 +35,7 @@ Here is a description of using libnetconf functions in a NETCONF client:
 .IP "  \(bu" 4
 \fIPassword\fP - \fBnc_callback_sshauth_password()\fP
 .IP "  \(bu" 4
-\fIPubluc keys\fP - \fBnc_callback_sshauth_passphrase()\fP\&. Here can also the paths to the key files be specified by nc_set_publickey_path() and nc_set_privatekey_path()\&. If not set, libnetconf tries to find them in the default paths\&.
+\fIPubluc keys\fP - \fBnc_callback_sshauth_passphrase()\fP\&. Here can the paths to the key files be also specified by nc_set_publickey_path() and nc_set_privatekey_path()\&. If not set, libnetconf tries to find them in the default paths\&.
 .PP
 
 .IP "4." 4

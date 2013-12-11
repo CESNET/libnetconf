@@ -1,11 +1,11 @@
-.TH "server" 3 "Wed Dec 4 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "server" 3 "Fri Dec 6 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 server \- Server 
 .SS "Server Architecture"
 .PP
-It is \fBstrongly\fP advised to set SUID (or SGID) bit on every application that is built on libnetconf for a user (or group) created for this purpose, as several internal functions behave based on this precondition\&. libnetconf uses a number of files which pose a security risk if they are accessible by untrustworthy users\&. This way it is possible not to restrict the use of an application but only the access to its files, so keep this in mind when creating any directories or files that are used\&.
+It is \fBstrongly\fP advised to set SUID (or SGID) bit on every application that is built on libnetconf for a user (or group) created for this purpose, as several internal functions behaviour is based on this precondition\&. libnetconf uses a number of files which pose a security risk if they are accessible by untrustworthy users\&. This way it is possible not to restrict the use of an application but only the access to its files, so keep this in mind when creating any directories or files that are used\&.
 .PP
 Generally, there are two basic approaches of how to implement a NETCONF server using libnetconf\&.
 .PP
@@ -17,7 +17,7 @@ In this case, all the server functionality is implemented as a single process\&.
 .SS "Multi-level Architecture"
 .PP
 .PP
-In the second case, there is only one device manager (NETCONF server) running as a system daemon\&. This solves the problem of concurrent device access from multiple processes\&. On the other hand, there is a need for inter-process communication between the device manager and the agents launched as the SSH Subsystems\&. These agents hold NETCONF sessions and receive requests from the clients\&. libnetconf provides functions (\fBnc_rpc_dump()\fP and \fBnc_rpc_build()\fP) to (de-)serialise content of the NETCONF messages\&. This allows the NETCONF messages to be passed between an agent and a device manager that applies requests to the operated device and a configuration datastore\&.
+In the second case, there is only one device manager (NETCONF server) running as a system daemon\&. This solves the problem of concurrent device access from multiple processes\&. On the other hand, there is a need for inter-process communication between the device manager and the agents launched as SSH Subsystems\&. These agents hold NETCONF sessions and receive requests from the clients\&. libnetconf provides functions (\fBnc_rpc_dump()\fP and \fBnc_rpc_build()\fP) to (de-)serialise content of the NETCONF messages\&. This allows the NETCONF messages to be passed between an agent and a device manager that applies requests to the operated device and a configuration datastore\&.
 .PP
 .SS "Server Workflow"
 .PP
@@ -28,11 +28,11 @@ Here is a description of using libnetconf functions in a NETCONF server\&. Accor
 .br
  The verbosity of the libnetconf can be set by \fBnc_verbosity()\fP\&. By default, libnetconf is completely silent\&.
 .br
- There is a default message printing function writing messages on the stderr\&. On the server side, this is not very useful, since server usually runs as a daemon without stderr\&. In this case, something like syslog should be used\&. The application's specific message printing function can be set via \fBnc_callback_print()\fP function\&.
+ There is a default message printing function writing messages on stderr\&. On the server side, this is not very useful, since server usually runs as a daemon without stderr\&. In this case, something like syslog should be used\&. The application's specific message printing function can be set via \fBnc_callback_print()\fP function\&.
 .IP "2." 4
 \fBInitiate libnetconf\fP
 .br
- As the first step, libnetconf MUST be initiated using \fBnc_init()\fP\&. At this moment, the libnetconf subsystems, such as NETCONF Notifications or NETCONF Access Control, are initiated according to specified parameter of the \fBnc_init()\fP function\&.
+ As the first step, libnetconf MUST be initiated using \fBnc_init()\fP\&. At this moment, the libnetconf subsystems, such as NETCONF Notifications or NETCONF Access Control, are initiated according to the specified parameter of the \fBnc_init()\fP function\&.
 .IP "3." 4
 \fBSet With-defaults basic mode\fP (optional)
 .br
@@ -40,17 +40,17 @@ Here is a description of using libnetconf functions in a NETCONF server\&. Accor
 .IP "4." 4
 \fBInitiate datastore\fP\&.
 .br
- Now, a NETCONF datastore(s) can be created\&. Each libnetconf's datastore is connected with a single configuration data model\&. This connection is defined by calling \fBncds_new()\fP function, which returns the datastore handler for further manipulation with an uninitialized datastore\&. Usign this function, caller also specifies which datastore implementation type will be used\&. Optionally, some implementation-type-specific parameters can be set (e\&.g\&. \fBncds_file_set_path()\fP)\&. Finally, datastore must be initiated by \fBncds_init()\fP that returns datastore's ID which is used in subsequent calls\&. There is a set of special implicit datastores with ID \fBNCDS_INTERNAL_ID\fP, that refers to the libnetconf's internal datastore(s)\&.
+ Now, a NETCONF datastore(s) can be created\&. Each libnetconf's datastore is connected with a single configuration data model\&. This connection is defined by calling the \fBncds_new()\fP function, which returns a datastore handler for further manipulation with an uninitialized datastore\&. Using this function, caller also specifies which datastore implementation type will be used\&. Optionally, some implementation-type-specific parameters can be set (e\&.g\&. \fBncds_file_set_path()\fP)\&. Finally, datastore must be initiated by \fBncds_init()\fP that returns datastore's ID which is used in the subsequent calls\&. There is a set of special implicit datastores with ID \fBNCDS_INTERNAL_ID\fP that refer to the libnetconf's internal datastore(s)\&.
 .br
  Optionally, each datastore can be extended by an augment data model that can be specified by \fBncds_add_model()\fP\&. The same function can be used to specify models to resolve YANG's \fCimport\fP statements\&. Alternatively, using \fBncds_add_models_path()\fP, caller can specify a directory where such models can be found automatically\&. libnetconf searches for the needed models based on the modules names\&. Filename of the model is expected in a form \fCmodule_name[@revision]\&.yin\fP\&.
 .br
  Caller can also switch on or off the YANG \fCfeauters\fP in the specific module using \fBncds_feature_enable()\fP, \fBncds_feature_disable()\fP, \fBncds_features_enableall()\fP and \fBncds_features_disableall()\fP functions\&.
 .br
- Finally, \fBncds_consolidate()\fP must be called to check all internal structures and to solve all \fCimport\fP, \fCuses\fP and \fCaugment\fP statements\&.
+ Finally, \fBncds_consolidate()\fP must be called to check all the internal structures and to solve all \fCimport\fP, \fCuses\fP and \fCaugment\fP statements\&.
 .IP "5." 4
-\fBInitiate controlled device\fP
+\fBInitiate the controlled device\fP
 .br
- This step is actually out of the libnetconf scope\&. From the NETCONF point of view, startup configuration data should be applied to the running data store at this point\&. \fBncds_device_init()\fP can be used to perform this task, but applying running configuration data to the controlled device must be done by a server specific (non-libnetconf) function\&.
+ This step is actually out of the libnetconf scope\&. From the NETCONF point of view, startup configuration data should be applied to the running datastore at this point\&. \fBncds_device_init()\fP can be used to perform this task, but applying running configuration data to the controlled device must be done by a server specific (non-libnetconf) function\&.
 .IP "6." 4
 \fBAccept incoming NETCONF connection\fP\&.
 .br
@@ -60,11 +60,11 @@ Here is a description of using libnetconf functions in a NETCONF server\&. Accor
 .br
  Use \fBnc_session_recv_rpc()\fP to get the next request from the client from the specified NETCONF session\&. In case of an error return code, the state of the session should be checked by \fBnc_session_get_status()\fP to learn if the session can be further used\&.
 .br
- According to the type of the request (\fBnc_rpc_get_type()\fP), perform appropriate action:
+ According to the type of the request (\fBnc_rpc_get_type()\fP), perform an appropriate action:
 .IP "  \(bu" 4
-\fINC_RPC_DATASTORE_READ\fP or \fINC_RPC_DATASTORE_WRITE\fP: use \fBncds_apply_rpc()\fP to perform the requested operation on the datastore\&. If the request affects the running datastore (\fBnc_rpc_get_target()\fP == NC_DATASTORE_RUNNING), apply configuration changes to the controlled device\&. \fBncds_apply_rpc()\fP applies the request to the specified datastore\&. Besides the datastores created explicitely by the \fBncds_new()\fP and \fBncds_init()\fP calls, remember to apply the request to the internal libnetconf datastore with ID 0\&. To merge results of the separate \fBncds_apply_rpc()\fP calls can be merged by \fBnc_reply_merge()\fP into a single reply message\&.
+\fINC_RPC_DATASTORE_READ\fP or \fINC_RPC_DATASTORE_WRITE\fP: use \fBncds_apply_rpc()\fP to perform the requested operation on the datastore\&. If the request affects the running datastore (\fBnc_rpc_get_target()\fP == NC_DATASTORE_RUNNING), apply configuration changes to the controlled device\&. \fBncds_apply_rpc()\fP applies the request to the specified datastore\&. Besides the datastores created explicitely by the \fBncds_new()\fP and \fBncds_init()\fP calls, remember to apply the request to the internal libnetconf datastore with ID 0\&. Results of the separate \fBncds_apply_rpc()\fP calls can be merged by \fBnc_reply_merge()\fP into a single reply message\&.
 .IP "  \(bu" 4
-\fINC_RPC_SESSION\fP: See the \fCNetopeer\fP example server source codes\&. Some common function will be added in a future to handle these requests\&.
+\fINC_RPC_SESSION\fP: See the \fCNetopeer\fP example server source codes\&. There will be a common function added in the future to handle these requests\&.
 .PP
 
 .IP "8." 4

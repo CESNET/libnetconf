@@ -102,9 +102,9 @@ $(document).ready(function(){initNavTree('d9/d87/install.html','../../');});
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h2>Cloning git repository</h2>
-<p>As written on libnetconfs <a href="https://code.google.com/p/libnetconf/source/checkout">Google Code page</a> the repository can be cloned using following command:</p>
+<p>As written on libnetconf's <a href="https://code.google.com/p/libnetconf/source/checkout">Google Code page</a>, the repository can be cloned using the following command:</p>
 <div class="fragment"><div class="line">$ git clone https:<span class="comment">//code.google.com/p/libnetconf/</span></div>
-</div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>In case that git fails to clone the repository make sure git is at least version 1.6.6.</dd></dl>
+</div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>In case that git fails to clone the repository make sure your git is at least version 1.6.6.</dd></dl>
 <h2>Compilation</h2>
 <p>libnetconf uses standard GNU Autotools toolchain. To compile and install libnetconf you have to go through the following three steps:</p>
 <div class="fragment"><div class="line">$ ./configure</div>
@@ -139,23 +139,23 @@ $(document).ready(function(){initNavTree('d9/d87/install.html','../../');});
 </ul>
 <ul>
 <li><code>--with-suid=&lt;user&gt;</code><ul>
-<li>Limit usage of the libnetconf to the specific <em>user</em>. With this option, libnetconf creates shared files and other resources with access rights limited to the specified <em>user</em>. This option can be freely combined with the <code>--with-sgid</code> option. If neither <code>--with-suid</code> nor <code>--with-sgid</code> option is specified, full access rights for all users are granted.</li>
+<li>Limit usage of libnetconf to the specific <em>user</em>. With this option, libnetconf creates shared files and other resources with access rights limited to the specified <em>user</em>. This option can be freely combined with the <code>--with-sgid</code> option. If neither <code>--with-suid</code> nor <code>--with-sgid</code> option is specified, full access rights for all users are granted.</li>
 </ul>
 </li>
 </ul>
 <ul>
 <li><code>--with-sgid=&lt;group&gt;</code><ul>
-<li>Limit usage of the libnetconf to the specific <em>group</em>. With this option, libnetconf creates shared files and other resources with access rights limited to the specified <em>group</em>. This option can be freely combined with the <code>--with-suid</code> option. If neither <code>--with-suid</code> nor <code>--with-sgid</code> option is specified, full access rights for all users are granted.</li>
+<li>Limit usage of libnetconf to the specific <em>group</em>. With this option, libnetconf creates shared files and other resources with access rights limited to the specified <em>group</em>. This option can be freely combined with the <code>--with-suid</code> option. If neither <code>--with-suid</code> nor <code>--with-sgid</code> option is specified, full access rights for all users are granted.</li>
 </ul>
 </li>
 </ul>
-<dl class="section note"><dt>Note</dt><dd>If the library is built with <code>--with-suid</code> or <code>--with-sgid</code> options, the proper suid or/and sgid bit should be properly set to the server-side application binaries using the libnetconf library. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>If the library is built with <code>--with-suid</code> or <code>--with-sgid</code> options, the proper suid or/and sgid bit should be set to the server-side application binaries that use the libnetconf library. </dd></dl>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Dec 4 2013 15:19:05 for libnetconf by
+    <li class="footer">Generated on Fri Dec 6 2013 14:16:45 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.2 </li>
   </ul>
