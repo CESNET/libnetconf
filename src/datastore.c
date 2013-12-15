@@ -2651,7 +2651,7 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 	int ret = EXIT_FAILURE;
 	int len;
 	char *data_cfg = NULL, *data2, *model, *config_internal;
-	xmlDocPtr doc_cfg, doc_status, doc;
+	xmlDocPtr doc_cfg, doc_status, doc = NULL;
 	xmlNodePtr root;
 	xmlNsPtr ns;
 	xmlBufferPtr resultbuffer;
