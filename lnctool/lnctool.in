@@ -126,7 +126,7 @@ gen_schematron() {
 }
 
 cleanup() {
-    rm -rf ${DIR}/*${RANDTEXT}
+    rm -f ${DIR}/dsdl${RANDTEXT} ${DIR}/schxsl${RANDTEXT}
 }
 
 # default arguments
@@ -139,6 +139,7 @@ XSLTDIR=@XSLTDIR@
 
 VALIDATION=""
 FORCE=""
+RANDTEXT=""
 
 
 #
