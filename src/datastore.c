@@ -2806,7 +2806,7 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		return (EXIT_FAILURE);
 	}
 
-	if (doc == NULL){
+	if (doc == NULL) {
 		if (*e != NULL) {
 			/* some error occurred */
 			ret = EXIT_FAILURE;
@@ -2866,7 +2866,7 @@ static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* sessi
 		 * document
 		 */
 		config = nc_rpc_get_config(rpc);
-		ret = apply_rpc_validate_(ds, session, NC_DATASTORE_CONFIG, NULL, e);
+		ret = apply_rpc_validate_(ds, session, NC_DATASTORE_CONFIG, config, e);
 		free(config);
 		break;
 	default:
