@@ -80,4 +80,6 @@
 int eaccess(const char *pathname, int mode);
 #endif
 
+@HAVE_UTMPX@
+
 #endif /* CONFIG_H_ */

@@ -375,26 +375,29 @@ fi
 ###################### Check for configure parameters ##########################
 
 ######################### Checks for header files ##############################
-AC_CHECK_HEADERS([fcntl.h limits.h netdb.h stddef.h stdint.h stdlib.h string.h sys/socket.h termios.h unistd.h utmpx.h], [], AC_MSG_ERROR([Missing system headers.]))
+AC_CHECK_HEADERS([fcntl.h limits.h netdb.h stddef.h stdint.h stdlib.h string.h sys/file.h sys/socket.h termios.h unistd.h], [], AC_MSG_ERROR([Missing system headers.]))
+AC_CHECK_HEADERS([utmpx.h], [HAVE_UTMPX="#define HAVE_UTMPX_H"], [HAVE_UTMPX="#undef HAVE_UTMPX_H"])
 
 ######## Checks for typedefs, structures, and compiler characteristics #########
 AC_CHECK_HEADER_STDBOOL
 AC_TYPE_UID_T
+AC_C_INLINE
 AC_TYPE_INT32_T
 AC_TYPE_MODE_T
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
+AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT64_T
-AC_TYPE_UINT8_T
 
 ######################## Checks for library functions ##########################
+AC_FUNC_GETGROUPS
 AC_FUNC_MALLOC
 AC_FUNC_MMAP
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([ftruncate memset mkdir munmap socket strchr strdup strerror strrchr strstr strtol strtoul])
+AC_CHECK_FUNCS([ftruncate memset mkdir munmap socket strcasecmp strchr strdup strerror strrchr strstr strtol strtoul])
 if test "$libssh2" = "no"; then
 	AC_CHECK_FUNCS([dup2])
 fi
@@ -424,6 +427,7 @@ AC_SUBST(SRCS_URL)
 AC_SUBST(INCLUDE_URL)
 AC_SUBST(CONFIGURE_PARAMS)
 AC_SUBST(HAVE_EACCESS)
+AC_SUBST(HAVE_UTMPX)
 AC_SUBST(SSH_PROG)
 AC_SUBST(CONFIGURE_ARGS)
 AC_SUBST(PTHREAD_LIBS)

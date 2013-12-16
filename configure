@@ -631,6 +631,7 @@ ac_includes_default="\
 ac_header_list=
 ac_subst_vars='LTLIBOBJS
 CONFIGURE_ARGS
+HAVE_UTMPX
 HAVE_EACCESS
 CONFIGURE_PARAMS
 INCLUDE_URL
@@ -12558,7 +12559,7 @@ fi
 ###################### Check for configure parameters ##########################
 
 ######################### Checks for header files ##############################
-for ac_header in fcntl.h limits.h netdb.h stddef.h stdint.h stdlib.h string.h sys/socket.h termios.h unistd.h utmpx.h
+for ac_header in fcntl.h limits.h netdb.h stddef.h stdint.h stdlib.h string.h sys/file.h sys/socket.h termios.h unistd.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -12569,6 +12570,20 @@ _ACEOF
 
 else
   as_fn_error $? "Missing system headers." "$LINENO" 5
+fi
+
+done
+
+for ac_header in utmpx.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "utmpx.h" "ac_cv_header_utmpx_h" "$ac_includes_default"
+if test "x$ac_cv_header_utmpx_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_UTMPX_H 1
+_ACEOF
+ HAVE_UTMPX="#define HAVE_UTMPX_H"
+else
+  HAVE_UTMPX="#undef HAVE_UTMPX_H"
 fi
 
 done
@@ -12692,6 +12707,48 @@ $as_echo "#define gid_t int" >>confdefs.h
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for inline" >&5
+$as_echo_n "checking for inline... " >&6; }
+if ${ac_cv_c_inline+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_cv_c_inline=no
+for ac_kw in inline __inline__ __inline; do
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#ifndef __cplusplus
+typedef int foo_t;
+static $ac_kw foo_t static_foo () {return 0; }
+$ac_kw foo_t foo () {return 0; }
+#endif
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_c_inline=$ac_kw
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  test "$ac_cv_c_inline" != no && break
+done
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_inline" >&5
+$as_echo "$ac_cv_c_inline" >&6; }
+
+case $ac_cv_c_inline in
+  inline | yes) ;;
+  *)
+    case $ac_cv_c_inline in
+      no) ac_val=;;
+      *) ac_val=$ac_cv_c_inline;;
+    esac
+    cat >>confdefs.h <<_ACEOF
+#ifndef __cplusplus
+#define inline $ac_val
+#endif
+_ACEOF
+    ;;
+esac
+
 ac_fn_c_find_intX_t "$LINENO" "32" "ac_cv_c_int32_t"
 case $ac_cv_c_int32_t in #(
   no|yes) ;; #(
@@ -12758,6 +12815,20 @@ _ACEOF
 
 fi
 
+ac_fn_c_find_uintX_t "$LINENO" "8" "ac_cv_c_uint8_t"
+case $ac_cv_c_uint8_t in #(
+  no|yes) ;; #(
+  *)
+
+$as_echo "#define _UINT8_T 1" >>confdefs.h
+
+
+cat >>confdefs.h <<_ACEOF
+#define uint8_t $ac_cv_c_uint8_t
+_ACEOF
+;;
+  esac
+
 ac_fn_c_find_uintX_t "$LINENO" "16" "ac_cv_c_uint16_t"
 case $ac_cv_c_uint16_t in #(
   no|yes) ;; #(
@@ -12784,22 +12855,173 @@ _ACEOF
 ;;
   esac
 
-ac_fn_c_find_uintX_t "$LINENO" "8" "ac_cv_c_uint8_t"
-case $ac_cv_c_uint8_t in #(
-  no|yes) ;; #(
-  *)
-
-$as_echo "#define _UINT8_T 1" >>confdefs.h
-
-
-cat >>confdefs.h <<_ACEOF
-#define uint8_t $ac_cv_c_uint8_t
-_ACEOF
-;;
-  esac
-
 
 ######################## Checks for library functions ##########################
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking type of array argument to getgroups" >&5
+$as_echo_n "checking type of array argument to getgroups... " >&6; }
+if ${ac_cv_type_getgroups+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test "$cross_compiling" = yes; then :
+  ac_cv_type_getgroups=cross
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+/* Thanks to Mike Rendell for this test.  */
+$ac_includes_default
+#define NGID 256
+#undef MAX
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+
+int
+main ()
+{
+  gid_t gidset[NGID];
+  int i, n;
+  union { gid_t gval; long int lval; }  val;
+
+  val.lval = -1;
+  for (i = 0; i < NGID; i++)
+    gidset[i] = val.gval;
+  n = getgroups (sizeof (gidset) / MAX (sizeof (int), sizeof (gid_t)) - 1,
+		 gidset);
+  /* Exit non-zero if getgroups seems to require an array of ints.  This
+     happens when gid_t is short int but getgroups modifies an array
+     of ints.  */
+  return n > 0 && gidset[n] != val.gval;
+}
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  ac_cv_type_getgroups=gid_t
+else
+  ac_cv_type_getgroups=int
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+if test $ac_cv_type_getgroups = cross; then
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+
+_ACEOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  $EGREP "getgroups.*int.*gid_t" >/dev/null 2>&1; then :
+  ac_cv_type_getgroups=gid_t
+else
+  ac_cv_type_getgroups=int
+fi
+rm -f conftest*
+
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_type_getgroups" >&5
+$as_echo "$ac_cv_type_getgroups" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define GETGROUPS_T $ac_cv_type_getgroups
+_ACEOF
+
+
+ac_fn_c_check_func "$LINENO" "getgroups" "ac_cv_func_getgroups"
+if test "x$ac_cv_func_getgroups" = xyes; then :
+
+fi
+
+
+# If we don't yet have getgroups, see if it's in -lbsd.
+# This is reported to be necessary on an ITOS 3000WS running SEIUX 3.1.
+ac_save_LIBS=$LIBS
+if test $ac_cv_func_getgroups = no; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for getgroups in -lbsd" >&5
+$as_echo_n "checking for getgroups in -lbsd... " >&6; }
+if ${ac_cv_lib_bsd_getgroups+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lbsd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char getgroups ();
+int
+main ()
+{
+return getgroups ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_bsd_getgroups=yes
+else
+  ac_cv_lib_bsd_getgroups=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_bsd_getgroups" >&5
+$as_echo "$ac_cv_lib_bsd_getgroups" >&6; }
+if test "x$ac_cv_lib_bsd_getgroups" = xyes; then :
+  GETGROUPS_LIB=-lbsd
+fi
+
+fi
+
+# Run the program to test the functionality of the system-supplied
+# getgroups function only if there is such a function.
+if test $ac_cv_func_getgroups = yes; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for working getgroups" >&5
+$as_echo_n "checking for working getgroups... " >&6; }
+if ${ac_cv_func_getgroups_works+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test "$cross_compiling" = yes; then :
+  ac_cv_func_getgroups_works=no
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_includes_default
+int
+main ()
+{
+/* On Ultrix 4.3, getgroups (0, 0) always fails.  */
+       return getgroups (0, 0) == -1;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  ac_cv_func_getgroups_works=yes
+else
+  ac_cv_func_getgroups_works=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_getgroups_works" >&5
+$as_echo "$ac_cv_func_getgroups_works" >&6; }
+else
+  ac_cv_func_getgroups_works=no
+fi
+if test $ac_cv_func_getgroups_works = yes; then
+
+$as_echo "#define HAVE_GETGROUPS 1" >>confdefs.h
+
+fi
+LIBS=$ac_save_LIBS
+
 for ac_header in stdlib.h
 do :
   ac_fn_c_check_header_mongrel "$LINENO" "stdlib.h" "ac_cv_header_stdlib_h" "$ac_includes_default"
@@ -13135,7 +13357,7 @@ $as_echo "#define realloc rpl_realloc" >>confdefs.h
 fi
 
 
-for ac_func in ftruncate memset mkdir munmap socket strchr strdup strerror strrchr strstr strtol strtoul
+for ac_func in ftruncate memset mkdir munmap socket strcasecmp strchr strdup strerror strrchr strstr strtol strtoul
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -13169,6 +13391,7 @@ fi
 
 
 ############################### Set output #####################################
+
 
 
 

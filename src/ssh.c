@@ -38,6 +38,9 @@
  */
 
 #define _GNU_SOURCE
+
+#include "config.h"
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -51,8 +54,11 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <utmpx.h>
 #include <pthread.h>
+
+#ifdef HAVE_UTMPX_H
+#	include <utmpx.h>
+#endif
 
 #ifdef DISABLE_LIBSSH
 #	include <ctype.h>
@@ -66,7 +72,6 @@
 #ifndef DISABLE_URL
 #	include "url_internal.h"
 #endif
-#include "config.h"
 
 #include "ssh.h"
 #include "callbacks.h"
@@ -737,11 +742,13 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	struct nc_cpblts *server_cpblts = NULL;
 	struct passwd *pw;
 	char *wdc, *wdc_aux, *straux;
-	struct utmpx protox, *utp;
 	char list[255];
 	NCWD_MODE mode;
 	char** nslist;
 	pthread_mutexattr_t mattr;
+#ifdef HAVE_UTMPX_H
+	struct utmpx protox, *utp;
+#endif
 
 	/* allocate netconf session structure */
 	retval = malloc(sizeof(struct nc_session));
@@ -908,6 +915,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		if ((straux = strchr(retval->hostname, ' ')) != NULL ) {
 			*straux = 0; /* null byte after IP in $SSH_CLIENT */
 		}
+#ifdef HAVE_UTMPX_H
 	} else {
 		/*
 		 * in other cases, we will try to get information from the utmpx
@@ -930,6 +938,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 				retval->hostname[sizeof(utp->ut_host)] = 0;
 			}
 		}
+#endif
 	}
 
 	/* set with-defaults capability flags */
