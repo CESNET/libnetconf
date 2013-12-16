@@ -754,13 +754,16 @@ int nacm_config_refresh(void)
 	/* /nacm/groups/group */
 	query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":groups/"NC_NS_NACM_ID":group", data_ctxt);
 	if (query_result != NULL) {
-		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			if (nacm_config.groups != NULL) {
-				for(i = 0; nacm_config.groups[i] != NULL; i++) {
-					nacm_group_free(nacm_config.groups[i]);
-				}
-				free(nacm_config.groups);
+		/* free previously parsed list of groups if any */
+		if (nacm_config.groups != NULL) {
+			for (i = 0; nacm_config.groups[i] != NULL; i++) {
+				nacm_group_free(nacm_config.groups[i]);
 			}
+			free(nacm_config.groups);
+			nacm_config.groups = NULL;
+		}
+		/* parse the currently set groups */
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			nacm_config.groups = malloc((query_result->nodesetval->nodeNr + 1) * sizeof(struct nacm_group*));
 			if (nacm_config.groups == NULL) {
 				ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
@@ -815,13 +818,15 @@ int nacm_config_refresh(void)
 	/* /nacm/rule-list */
 	query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_NACM_ID":nacm/"NC_NS_NACM_ID":rule-list", data_ctxt);
 	if (query_result != NULL) {
-		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			if (nacm_config.rule_lists != NULL) {
-				for(i = 0; nacm_config.rule_lists[i] != NULL; i++) {
-					nacm_rule_list_free(nacm_config.rule_lists[i]);
-				}
-				free(nacm_config.rule_lists);
+		/* free previously parsed list of rule-lists if any */
+		if (nacm_config.rule_lists != NULL) {
+			for (i = 0; nacm_config.rule_lists[i] != NULL; i++) {
+				nacm_rule_list_free(nacm_config.rule_lists[i]);
 			}
+			free(nacm_config.rule_lists);
+			nacm_config.rule_lists = NULL;
+		}
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			nacm_config.rule_lists = malloc((query_result->nodesetval->nodeNr + 1) * sizeof(struct rule_list*));
 			if (nacm_config.rule_lists == NULL) {
 				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
