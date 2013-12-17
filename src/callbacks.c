@@ -150,12 +150,13 @@ char* callback_sshauth_password_default (const char* username,
 
 	buf = malloc (buflen * sizeof(char));
 	if (buf == NULL) {
-		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 		return (NULL);
 	}
 
 	if (tcgetattr(STDIN_FILENO, &oldterm) != 0) {
-		ERROR("tcgetattr: %s", strerror(errno));
+		ERROR("Unable to get terminal settings (%d: %s).", __LINE__, strerror(errno));
+		return (NULL);
 	}
 
 	fprintf(stdout, "%s@%s password: ", username, hostname);
@@ -166,7 +167,8 @@ char* callback_sshauth_password_default (const char* username,
 	newterm.c_lflag &= ~ECHO;
 	tcflush(STDIN_FILENO, TCIFLUSH);
 	if (tcsetattr(STDIN_FILENO, TCSANOW, &newterm) != 0) {
-		ERROR("tcseattr: %s", strerror(errno));
+		ERROR("Unable to change terminal settings for hiding password (%d: %s).", __LINE__, strerror(errno));
+		return (NULL);
 	}
 
 	while (read(STDIN_FILENO, &c, 1) == 1 && c != '\n') {
@@ -180,7 +182,12 @@ char* callback_sshauth_password_default (const char* username,
 
 	/* system ("stty echo"); */
 	if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
-		ERROR("tcseattr: %s", strerror(errno));
+		ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
+		/*
+		 * terminal probably still hides input characters, but we have password
+		 * and anyway we are unable to set terminal to the previous state, so
+		 * just continue
+		 */
 	}
 
 	fprintf(stdout, "\n");
@@ -208,7 +215,8 @@ void callback_sshauth_interactive_default (const char*  UNUSED(name),
 	struct termios newterm, oldterm;
 
 	if (tcgetattr(STDIN_FILENO, &oldterm) != 0) {
-		ERROR("tcgetattr: %s", strerror(errno));
+		ERROR("Unable to get terminal settings (%d: %s).", __LINE__, strerror(errno));
+		return;
 	}
 
 	for (i=0; i<num_prompts; i++) {
@@ -223,11 +231,20 @@ void callback_sshauth_interactive_default (const char*  UNUSED(name),
 			newterm.c_lflag &= ~ECHO;
 			tcflush(STDIN_FILENO, TCIFLUSH);
 			if (tcsetattr(STDIN_FILENO, TCSANOW, &newterm) != 0) {
-				ERROR("tcseattr: %s", strerror(errno));
+				ERROR("Unable to change terminal settings for hiding password (%d: %s).", __LINE__, strerror(errno));
+				return;
 			}
 		}
-		responses[i].text = malloc (buflen*sizeof(char));
 		responses[i].length = 0;
+		responses[i].text = malloc (buflen*sizeof(char));
+		if (responses[i].text == 0) {
+			ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+			/* restore terminal settings */
+			if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+				ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
+			}
+			return;
+		}
 
 		while (read(STDIN_FILENO, &c, 1) == 1 && c != '\n') {
 			if (responses[i].length >= (buflen-1)) {
@@ -241,7 +258,12 @@ void callback_sshauth_interactive_default (const char*  UNUSED(name),
 
 		/* system ("stty echo"); */
 		if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
-			ERROR("tcseattr: %s", strerror(errno));
+			ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
+			/*
+			 * terminal probably still hides input characters, but we have password
+			 * and anyway we are unable to set terminal to the previous state, so
+			 * just continue
+			 */
 		}
 
 		fprintf(stdout, "\n");
@@ -256,19 +278,28 @@ char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 	int c;
 	char* buf;
 	int buflen = 1024, len = 0;
+	struct termios newterm, oldterm;
 
 	buf = malloc (buflen * sizeof(char));
 	if (buf == NULL) {
-		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+		return (NULL);
+	}
+
+	if (tcgetattr(STDIN_FILENO, &oldterm) != 0) {
+		ERROR("Unable to get terminal settings (%d: %s).", __LINE__, strerror(errno));
 		return (NULL);
 	}
 
 	fprintf(stdout, "Enter passphrase for the key '%s':", privatekey_filepath);
-	if (system("stty -echo") == -1) {
-		ERROR("system() call failed (stty -echo).");
+	/* system("stty -echo"); */
+	newterm = oldterm;
+	newterm.c_lflag &= ~ECHO;
+	tcflush(STDIN_FILENO, TCIFLUSH);
+	if (tcsetattr(STDIN_FILENO, TCSANOW, &newterm) != 0) {
+		ERROR("Unable to change terminal settings for hiding password (%d: %s).", __LINE__, strerror(errno));
 		return (NULL);
 	}
-	fflush(stdin);
 
 	while ((c = getchar ()) != '\n') {
 		if (len >= (buflen-1)) {
@@ -278,9 +309,15 @@ char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 		buf[len++] = (char)c;
 	}
 	buf[len++] = 0; /* terminating null byte */
-	if (system ("stty echo") == -1) {
-		ERROR("system() call failed (stty echo).");
-		return (NULL);
+
+	/* system ("stty echo"); */
+	if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+		ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
+		/*
+		 * terminal probably still hides input characters, but we have password
+		 * and anyway we are unable to set terminal to the previous state, so
+		 * just continue
+		 */
 	}
 	fprintf(stdout, "\n");
 
