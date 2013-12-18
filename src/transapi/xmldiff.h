@@ -49,11 +49,10 @@ void xmldiff_free (struct xmldiff_tree* diff);
  * @param old		old version of XML document
  * @param new		new version of XML document
  * @param model	data model in YANG format
- * @param ns_mapping Pairing prefixes with URIs
  *
  * @return xmldiff structure holding all differences between XML documents or NULL
  */
-XMLDIFF_OP xmldiff_diff (struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new, struct model_tree * model, const char * ns_mapping[]);
+XMLDIFF_OP xmldiff_diff (struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new, struct model_tree * model);
 
 /**
  * @ingroup transapi
