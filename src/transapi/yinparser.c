@@ -15,6 +15,7 @@ int get_node_namespace(const char * ns_mapping[], xmlNodePtr node, char ** prefi
 {
 	int i;
 
+	(*prefix) = NULL;
 	if (((*uri) = (char*)xmlGetNsProp(node, BAD_CAST "ns", BAD_CAST "libnetconf")) == NULL) {
 		return(EXIT_FAILURE);
 	} else {
