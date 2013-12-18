@@ -14,8 +14,8 @@
 #include "transapi_internal.h"
 
 /* adds a priority into priority buffer structure */
-void xmldiff_add_priority(int prio, struct xmldiff_prio** prios) {
-
+void xmldiff_add_priority(int prio, struct xmldiff_prio** prios)
+{
 	int *new_values;
 
 	if (*prios == NULL) {
@@ -39,8 +39,8 @@ void xmldiff_add_priority(int prio, struct xmldiff_prio** prios) {
 }
 
 /* appends two priority structures, handy for merging all children priorities into one for the parent */
-void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* new) {
-
+void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* new)
+{
 	int *new_values;
 	size_t alloc;
 
@@ -71,7 +71,8 @@ void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* ne
 }
 
 /* the recursive core of xmldiff_set_priorities() function */
-struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct transapi_data_callbacks* calls) {
+struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct transapi_data_callbacks* calls)
+{
 	int i, min_prio, children_count = 0, children_without_callback = 0;
 	struct xmldiff_prio* priorities = NULL, *tmp_prio;
 	struct xmldiff_tree* child;
@@ -146,7 +147,8 @@ struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, s
 	return priorities;
 }
 
-int xmldiff_set_priorities(struct xmldiff_tree* tree, void* callbacks) {
+int xmldiff_set_priorities(struct xmldiff_tree* tree, void* callbacks)
+{
 	struct transapi_data_callbacks* calls = callbacks;
 	struct xmldiff_prio* ret;
 
@@ -260,7 +262,8 @@ void xmldiff_add_diff(struct xmldiff_tree** diff, const char * ns_mapping[], con
 	}
 }
 
-void xmldiff_addsibling_diff(struct xmldiff_tree** siblings, struct xmldiff_tree** new_sibling) {
+void xmldiff_addsibling_diff(struct xmldiff_tree** siblings, struct xmldiff_tree** new_sibling)
+{
 	struct xmldiff_tree* last_sibling;
 
 	if (*siblings == NULL) {
@@ -377,7 +380,6 @@ cleanup:
 }
 
 XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, const char *ns_mapping[], char * path, xmlDocPtr old_doc, xmlNodePtr old_tmp, xmlDocPtr new_doc, xmlNodePtr new_tmp, struct model_tree * model);
-
 XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, const char *ns_mapping[], char * path, xmlDocPtr old_doc, xmlNodePtr old_tmp, xmlDocPtr new_doc, xmlNodePtr new_tmp, struct model_tree * model);
 
 /**
