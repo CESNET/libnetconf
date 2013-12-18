@@ -188,18 +188,6 @@ void xmldiff_free(struct xmldiff_tree* diff)
 	free(diff->path);
 }
 
-const char * get_prefix(char * uri, const char * ns_mapping[])
-{
-	int i;
-
-	for (i=0; ns_mapping[2*i] != NULL; i++) {
-		if (strcmp(uri, ns_mapping[2*i+1]) == 0) {
-			return(ns_mapping[2*i]);
-		}
-	}
-	return(NULL);
-}
-
 /**
  * @brief Add single diff record
  *
