@@ -38,6 +38,8 @@
  */
 
 #include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
@@ -105,7 +107,7 @@ NCWD_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc)
 
 static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* namespace, NCWD_MODE mode, xmlNodePtr** created)
 {
-	xmlNodePtr *parents = NULL, *retvals = NULL, *created_local = NULL;
+	xmlNodePtr *parents = NULL, *retvals = NULL, *created_local = NULL, *aux_nodeptr;
 	xmlNodePtr aux = NULL;
 	xmlNsPtr ns;
 	xmlChar* value = NULL, *name, *value2;
@@ -181,7 +183,14 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 				if (created_count == created_size-1) {
 					/* (re)allocate created list */
 					created_size += 32;
-					created_local = realloc(created_local, created_size * sizeof(xmlNodePtr));
+					aux_nodeptr = realloc(created_local, created_size * sizeof(xmlNodePtr));
+					if (aux_nodeptr == NULL) {
+						ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+						/* we're in real troubles here */
+						free(created_local);
+						return (NULL);
+					}
+					created_local = aux_nodeptr;
 				}
 				created_local[created_count++] = aux;
 				created_local[created_count] = NULL; /* list terminating byte */
@@ -297,7 +306,14 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 					if (size <= j+1) {
 						/* (re)allocate retvals list */
 						size += 32;
-						retvals = (xmlNodePtr*) realloc(retvals, size * sizeof(xmlNodePtr));
+						aux_nodeptr = (xmlNodePtr*) realloc(retvals, size * sizeof(xmlNodePtr));
+						if (aux_nodeptr == NULL) {
+							ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+							/* we're in real troubles here */
+							free(retvals);
+							return (NULL);
+						}
+						retvals = aux_nodeptr;
 					}
 
 					retvals[j] = aux;
@@ -324,7 +340,14 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 					if (size <= j + 1) {
 						/* (re)allocate retvals list */
 						size += 32;
-						retvals = (xmlNodePtr*) realloc(retvals, size * sizeof(xmlNodePtr));
+						aux_nodeptr = (xmlNodePtr*) realloc(retvals, size * sizeof(xmlNodePtr));
+						if (aux_nodeptr == NULL) {
+							ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+							/* we're in real troubles here */
+							free(retvals);
+							return (NULL);
+						}
+						retvals = aux_nodeptr;
 					}
 					/* no new equivalent node found -> create one */
 					retvals[j] = xmlNewChild(parents[i], parents[i]->ns, name, NULL);
@@ -335,7 +358,14 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 					if (created_count == created_size-1) {
 						/* (re)allocate created list */
 						created_size += 32;
-						created_local = realloc(created_local, created_size * sizeof(xmlNodePtr));
+						aux_nodeptr = realloc(created_local, created_size * sizeof(xmlNodePtr));
+						if (aux_nodeptr == NULL) {
+							ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+							/* we're in real troubles here */
+							free(created_local);
+							return (NULL);
+						}
+						created_local = aux_nodeptr;
 					}
 					created_local[created_count++] = retvals[j-1];
 					created_local[created_count] = NULL; /* list terminating byte */
@@ -440,7 +470,7 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
  */
 static xmlNodePtr* remove_default_node(xmlDocPtr config, xmlNodePtr node)
 {
-	xmlNodePtr *parents, *retvals = NULL;
+	xmlNodePtr *parents, *retvals = NULL, *aux_nodeptr;
 	xmlNodePtr aux = NULL;
 	xmlChar* value, *name, *value2;
 	int i, j, size = 0;
@@ -491,14 +521,20 @@ static xmlNodePtr* remove_default_node(xmlDocPtr config, xmlNodePtr node)
 		} else {
 			/* find node's equivalents in config */
 			name = xmlGetProp(node, BAD_CAST "name");
-			for (aux = parents[i]->children; aux != NULL;
-			                aux = aux->next) {
+			for (aux = parents[i]->children; aux != NULL; aux = aux->next) {
 				if (xmlStrcmp(aux->name, name) == 0) {
 					/* remember the node */
 					if (size <= j + 1) {
 						/* (re)allocate retvals list */
 						size += 32;
-						retvals = (xmlNodePtr*) realloc(retvals, size * sizeof(xmlNodePtr));
+						aux_nodeptr = (xmlNodePtr*) realloc(retvals, size * sizeof(xmlNodePtr));
+						if (aux_nodeptr == NULL) {
+							ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+							/* we're in real troubles here */
+							free(retvals);
+							return (NULL);
+						}
+						retvals = aux_nodeptr;
 					}
 
 					retvals[j] = aux;

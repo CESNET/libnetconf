@@ -1376,7 +1376,7 @@ cleanup:
 static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 {
 	char *content = NULL;
-	char *aux1 = NULL, *aux2 = NULL;
+	char *aux1 = NULL, *aux2 = NULL, *newstr;
 	NC_DATASTORE ds;
 	NCNTF_EVENT_BY by;
 	const struct nc_cpblts *old, *new;
@@ -1514,7 +1514,14 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 			if (aux1 != NULL) {
 				/* add new information to the previous one */
 				if (aux2 != NULL) {
-					aux2 = realloc(aux2, strlen(aux2) + strlen(aux1) + 1);
+					newstr = realloc(aux2, strlen(aux2) + strlen(aux1) + 1);
+					if (newstr == NULL) {
+						ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+						free(aux1);
+						free(aux2);
+						return (EXIT_FAILURE);
+					}
+					aux2 = newstr;
 				} else {
 					aux2 = calloc(strlen(aux1) + 1, sizeof(char));
 				}
@@ -1557,7 +1564,14 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 				} else {
 					if (aux2 != NULL) {
-						aux2 = realloc(aux2, strlen(aux2) + strlen(aux1) + 1);
+						newstr = realloc(aux2, strlen(aux2) + strlen(aux1) + 1);
+						if (newstr == NULL) {
+							ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+							free(aux1);
+							free(aux2);
+							return (EXIT_FAILURE);
+						}
+						aux2 = newstr;
 					} else {
 						aux2 = calloc(strlen(aux1) + 1, sizeof(char));
 					}

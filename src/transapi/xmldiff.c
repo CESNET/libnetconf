@@ -1,11 +1,13 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <string.h>
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 
+#include "netconf_internal.h"
 #include "xmldiff.h"
 #include "transapi.h"
 #include "yinparser.h"
@@ -13,6 +15,9 @@
 
 /* adds a priority into priority buffer structure */
 void xmldiff_add_priority(int prio, struct xmldiff_prio** prios) {
+
+	int *new_values;
+
 	if (*prios == NULL) {
 		*prios = malloc(sizeof(struct xmldiff_prio));
 		(*prios)->used = 0;
@@ -20,7 +25,13 @@ void xmldiff_add_priority(int prio, struct xmldiff_prio** prios) {
 		(*prios)->values = malloc(10 * sizeof(int));
 	} else if ((*prios)->used == (*prios)->alloc) {
 		(*prios)->alloc *= 2;
-		(*prios)->values = realloc((*prios)->values, (*prios)->alloc * sizeof(int));
+		new_values = realloc((*prios)->values, (*prios)->alloc * sizeof(int));
+		if (new_values == NULL) {
+			ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+			(*prios)->alloc /= 2;
+			return;
+		}
+		(*prios)->values = new_values;
 	}
 
 	(*prios)->values[(*prios)->used] = prio;
@@ -29,6 +40,10 @@ void xmldiff_add_priority(int prio, struct xmldiff_prio** prios) {
 
 /* appends two priority structures, handy for merging all children priorities into one for the parent */
 void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* new) {
+
+	int *new_values;
+	size_t alloc;
+
 	if (new == NULL || *old == NULL) {
 		if (*old == NULL) {
 			*old = new;
@@ -37,8 +52,15 @@ void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* ne
 	}
 
 	if ((*old)->alloc - (*old)->used < new->used) {
+		alloc = (*old)->alloc;
 		(*old)->alloc = (*old)->used + new->used + 10;
-		(*old)->values = realloc((*old)->values, (*old)->alloc * sizeof(int));
+		new_values = realloc((*old)->values, (*old)->alloc * sizeof(int));
+		if (new_values == NULL) {
+			ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+			(*old)->alloc = alloc;
+			return;
+		}
+		(*old)->values = new_values;
 	}
 
 	memcpy((*old)->values+(*old)->used, new->values, new->used * sizeof(int));
@@ -300,7 +322,7 @@ int list_node_cmp(xmlNodePtr node1, xmlNodePtr node2, struct model_tree * model)
 {
 	int i, ret = EXIT_FAILURE;
 	xmlNodePtr node_tmp;
-	xmlChar * tmp_str, *node1_keys, *node2_keys;
+	xmlChar * tmp_str, *node1_keys, *node2_keys, *new_keys;
 
 	if (node_cmp(node1, node2) == EXIT_SUCCESS) {
 		/* For every old node create string holding the concatenated key values */
@@ -311,9 +333,15 @@ int list_node_cmp(xmlNodePtr node1, xmlNodePtr node2, struct model_tree * model)
 			while (node_tmp) {
 				if (xmlStrEqual(node_tmp->name, BAD_CAST model->keys[i])) { /* Find matching leaf in old document */
 					tmp_str = xmlNodeGetContent (node_tmp);
-					node1_keys  = realloc (node1_keys, sizeof(char) * (strlen((const char*)node1_keys)+strlen((const char*)tmp_str)+1));
-					strcat ((char*)node1_keys, (char*)tmp_str); /* Concatenate key value */
-					xmlFree (tmp_str);
+					new_keys  = realloc (node1_keys, sizeof(char) * (strlen((const char*)node1_keys)+strlen((const char*)tmp_str)+1));
+					if (new_keys == NULL) {
+						ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+						ret = EXIT_FAILURE;
+						goto cleanup;
+					}
+					node1_keys = new_keys;
+					strcat((char*)node1_keys, (char*)tmp_str); /* Concatenate key value */
+					xmlFree(tmp_str);
 					break;
 				}
 				node_tmp = node_tmp->next;
@@ -322,7 +350,13 @@ int list_node_cmp(xmlNodePtr node1, xmlNodePtr node2, struct model_tree * model)
 			while (node_tmp) {
 				if (xmlStrEqual(node_tmp->name, BAD_CAST model->keys[i])) { /* Find matching leaf in old document */
 					tmp_str = xmlNodeGetContent (node_tmp);
-					node2_keys = realloc (node2_keys, sizeof(char) * (strlen((const char*)node2_keys)+strlen((const char*)tmp_str)+1));
+					new_keys = realloc (node2_keys, sizeof(char) * (strlen((const char*)node2_keys)+strlen((const char*)tmp_str)+1));
+					if (new_keys == NULL) {
+						ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+						ret = EXIT_FAILURE;
+						goto cleanup;
+					}
+					node2_keys = new_keys;
 					strcat ((char*)node2_keys, (char*)tmp_str); /* Concatenate key value */
 					xmlFree (tmp_str);
 					break;
@@ -333,6 +367,8 @@ int list_node_cmp(xmlNodePtr node1, xmlNodePtr node2, struct model_tree * model)
 		if (xmlStrEqual(node1_keys, node2_keys)) {
 			ret = EXIT_SUCCESS;
 		}
+
+cleanup:
 		xmlFree(node1_keys);
 		xmlFree(node2_keys);
 	}
@@ -420,7 +456,7 @@ XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, const char *ns_mapping[
 			if (tmp_op & XMLDIFF_SIBLING) {
 				ret_op |= XMLDIFF_REORDER;
 			}
-			if (tmp_op & (XMLDIFF_ADD | XMLDIFF_REM | XMLDIFF_MOD | XMLDIFF_CHAIN) && !(ret_op & (XMLDIFF_ADD | XMLDIFF_REM))) {
+			if ((tmp_op & (XMLDIFF_ADD | XMLDIFF_REM | XMLDIFF_MOD | XMLDIFF_CHAIN)) && !(ret_op & (XMLDIFF_ADD | XMLDIFF_REM))) {
 				ret_op |= XMLDIFF_CHAIN;
 			}
 		}
@@ -531,7 +567,7 @@ XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, const char *ns_mapping[], ch
 	XMLDIFF_OP item_ret_op, tmp_op, ret_op = XMLDIFF_NONE;
 	xmlNodePtr* list_added = NULL, *list_removed = NULL, *realloc_tmp;
 	xmlNodePtr list_old_tmp, list_new_tmp, list_old_inter, list_new_inter;
-	xmlChar* old_keys, *new_keys, *old_str, *new_str;
+	xmlChar* old_keys, *new_keys, *old_str, *new_str, *aux_str;
 	struct xmldiff_tree** tmp_diff;
 	int i, list_added_cnt = 0, list_removed_cnt = 0;
 	char* next_path;
@@ -557,7 +593,14 @@ XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, const char *ns_mapping[], ch
 			while (list_old_inter) {
 				if (xmlStrEqual(list_old_inter->name, BAD_CAST model->keys[i])) { /* Find matching leaf in old document */
 					old_str = xmlNodeGetContent(list_old_inter);
-					old_keys  = realloc(old_keys, sizeof(char) * (strlen((const char*)old_keys)+strlen((const char*)old_str)+1));
+					aux_str  = realloc(old_keys, sizeof(char) * (strlen((const char*)old_keys)+strlen((const char*)old_str)+1));
+					if (aux_str == NULL) {
+						ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+						xmlFree(old_str);
+						xmlFree(old_keys);
+						return (XMLDIFF_ERR);
+					}
+					old_keys = aux_str;
 					strcat((char*)old_keys, (char*)old_str); /* Concatenate key value */
 					xmlFree(old_str);
 					break;
@@ -580,7 +623,14 @@ XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, const char *ns_mapping[], ch
 				while (list_new_inter) {
 					if (xmlStrEqual(list_new_inter->name, BAD_CAST model->keys[i])) {
 						new_str = xmlNodeGetContent(list_new_inter);
-						new_keys  = realloc(new_keys, sizeof(char) * (strlen((const char*)new_keys)+strlen((const char*)new_str)+1));
+						aux_str  = realloc(new_keys, sizeof(char) * (strlen((const char*)new_keys)+strlen((const char*)new_str)+1));
+						if (aux_str == NULL) {
+							ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+							xmlFree(new_keys);
+							xmlFree(new_str);
+							return (XMLDIFF_ERR);
+						}
+						new_keys = aux_str;
 						strcat((char*)new_keys, (char*)new_str);
 						xmlFree(new_str);
 						break;
@@ -589,13 +639,13 @@ XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, const char *ns_mapping[], ch
 				}
 			}
 			if (strcmp((const char*)old_keys, (const char*)new_keys) == 0) { /* Matching item found */
-				free(new_keys);
+				xmlFree(new_keys);
 				break;
 			}
-			free(new_keys);
+			xmlFree(new_keys);
 			list_new_tmp = list_new_tmp->next;
 		}
-		free(old_keys);
+		xmlFree(old_keys);
 
 		if (list_new_tmp == NULL) { /* Item NOT found in the new document -> removed */
 			xmldiff_add_diff(diff, ns_mapping, path, list_old_tmp, XMLDIFF_REM, XML_SIBLING);
@@ -657,7 +707,14 @@ XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, const char *ns_mapping[], ch
 			while (list_new_inter) {
 				if (xmlStrEqual(list_new_inter->name, BAD_CAST model->keys[i])) { /* Find matching leaf in the old document */
 					new_str = xmlNodeGetContent(list_new_inter);
-					new_keys  = realloc (new_keys, sizeof(char) * (strlen((const char*)new_keys)+strlen((const char*)new_str)+1));
+					aux_str  = realloc (new_keys, sizeof(char) * (strlen((const char*)new_keys)+strlen((const char*)new_str)+1));
+					if (aux_str == NULL) {
+						ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+						xmlFree(new_keys);
+						xmlFree(new_str);
+						return (XMLDIFF_ERR);
+					}
+					new_keys = aux_str;
 					strcat((char*)new_keys, (char*)new_str); /* Concatenate key value */
 					xmlFree(new_str);
 					break;
@@ -679,7 +736,14 @@ XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, const char *ns_mapping[], ch
 				while (list_old_inter) {
 					if (xmlStrEqual(list_old_inter->name, BAD_CAST model->keys[i])) {
 						old_str = xmlNodeGetContent(list_old_inter);
-						old_keys = realloc(old_keys, sizeof(char) * (strlen((const char*)old_keys)+strlen((const char*)old_str)+1));
+						aux_str = realloc(old_keys, sizeof(char) * (strlen((const char*)old_keys)+strlen((const char*)old_str)+1));
+						if (aux_str == NULL) {
+							ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+							xmlFree(old_keys);
+							xmlFree(old_str);
+							return (XMLDIFF_ERR);
+						}
+						old_keys = aux_str;
 						strcat((char*)old_keys, (char*)old_str);
 						xmlFree(old_str);
 						break;
@@ -691,10 +755,10 @@ XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, const char *ns_mapping[], ch
 				free(old_keys);
 				break;
 			}
-			free(old_keys);
+			xmlFree(old_keys);
 			list_old_tmp = list_old_tmp->next;
 		}
-		free(new_keys);
+		xmlFree(new_keys);
 
 		if (list_old_tmp == NULL) { /* Item NOT found in the old document -> added */
 			xmldiff_add_diff(diff, ns_mapping, path, list_new_tmp, XMLDIFF_ADD, XML_SIBLING);

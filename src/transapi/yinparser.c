@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <string.h>
 
 #include <libxml/tree.h>
@@ -33,16 +34,22 @@ int get_node_namespace(const char * ns_mapping[], xmlNodePtr node, char ** prefi
 
 struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char * ns_mapping[], struct model_tree * parent, int *children_count)
 {
-	struct model_tree * children, * choice;
+	struct model_tree *children = NULL, *choice, *new_tree;
 	xmlNodePtr int_tmp, list_tmp, model_tmp = model_node->children;
 	int count = 0, case_count, config;
 	char * keys, * key, * config_text;
+	char **new_strlist;
 	xmlChar *value;
 
-	children = NULL;
 	while (model_tmp) {
+		new_tree = realloc(children, sizeof (struct model_tree) * count);
+		if (new_tree == NULL) {
+			ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+			return (children);
+		}
+		children = new_tree;
 		count++;
-		children = realloc (children, sizeof (struct model_tree) * count);
+
 		/* first check if node holds configuration */
 		int_tmp = model_tmp->children;
 		config = 1;
@@ -117,8 +124,14 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char 
 					key = strtok (keys, " ");
 					while (key) {
 						children[count-1].keys_count++;
-						children[count-1].keys = realloc (children[count-1].keys, sizeof (char*) * children[count-1].keys_count);
-						children[count-1].keys[children[count-1].keys_count-1] = strdup (key);
+						new_strlist = realloc (children[count-1].keys, sizeof (char*) * children[count-1].keys_count);
+						if (new_strlist == NULL) {
+							ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+							/* try to continue */
+						} else {
+							children[count-1].keys  = new_strlist;
+							children[count-1].keys[children[count-1].keys_count-1] = strdup (key);
+						}
 						key = strtok (NULL, " ");
 					}
 					free (keys);
@@ -134,13 +147,20 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char 
 			children[count-1].children_count = 0;
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "case")) {
 			choice = yinmodel_parse_recursive (model_tmp, ns_mapping, &children[count-1], &case_count);
-			children = realloc (children, sizeof (struct model_tree) * (case_count+count));
-			free (children[count-1].name);
-			free (children[count-1].ns_prefix);
-			free (children[count-1].ns_uri);
-			memcpy (&children[count-1], choice, case_count*sizeof(struct model_tree));
+			new_tree = realloc (children, sizeof (struct model_tree) * (case_count+count));
+			if (new_tree == NULL) {
+				ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+				/* try to continue */
+			} else {
+				children = new_tree;
+				free (children[count-1].name);
+				free (children[count-1].ns_prefix);
+				free (children[count-1].ns_uri);
+				memcpy (&children[count-1], choice, case_count*sizeof(struct model_tree));
+				count += case_count;
+			}
 			free (choice);
-			count += case_count;
+
 			/* remove the increment of the case statement */
 			count--;
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "augment")) {
@@ -269,7 +289,13 @@ struct model_tree * yinmodel_parse (xmlDocPtr model_doc, const char * ns_mapping
 
 	if (config_top) {
 		yin->children_count++;
-		yin->children = realloc (yin->children, yin->children_count * sizeof (struct model_tree));
+		yin_act = realloc (yin->children, yin->children_count * sizeof (struct model_tree));
+		if (yin_act == NULL) {
+			yin->children_count--;
+			yinmodel_free(yin);
+			return(NULL);
+		}
+		yin->children = yin_act;
 		yin->children[yin->children_count-1].type = YIN_TYPE_CONTAINER;
 		yin->children[yin->children_count-1].name = (char*)xmlGetProp (model_top, BAD_CAST "name");
 		yin->children[yin->children_count-1].keys_count = 0;

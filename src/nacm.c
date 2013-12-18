@@ -415,6 +415,7 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 	xmlNodePtr node;
 	struct nacm_rule* rule;
 	char *s, *s_orig, *t;
+	char **new_strlist;
 	int c, l;
 	bool action = false;
 
@@ -450,13 +451,14 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 					}
 					if (c == l) {
 						l += 10;
-						rule->type_data.rpc_names = realloc(rule->type_data.rpc_names, l * sizeof(char*));
-						if (rule->type_data.rpc_names == NULL) {
+						new_strlist = realloc(rule->type_data.rpc_names, l * sizeof(char*));
+						if (new_strlist == NULL) {
 							ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 							nacm_rule_free(rule);
 							free(s_orig);
 							return (NULL);
 						}
+						rule->type_data.rpc_names = new_strlist;
 					}
 					rule->type_data.rpc_names[c++] = strdup(t);
 					rule->type_data.rpc_names[c] = NULL; /* list terminating NULL byte */
@@ -477,13 +479,14 @@ static struct nacm_rule* nacm_get_rule(xmlNodePtr rulenode)
 					}
 					if (c == l) {
 						l += 10;
-						rule->type_data.ntf_names = realloc(rule->type_data.ntf_names, l * sizeof(char*));
-						if (rule->type_data.ntf_names == NULL) {
+						new_strlist = realloc(rule->type_data.ntf_names, l * sizeof(char*));
+						if (new_strlist == NULL) {
 							ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 							nacm_rule_free(rule);
 							free(s_orig);
 							return (NULL);
 						}
+						rule->type_data.ntf_names = new_strlist;
 					}
 					rule->type_data.ntf_names[c++] = strdup(t);
 					rule->type_data.ntf_names[c] = NULL; /* list terminating NULL byte */
@@ -606,6 +609,7 @@ int nacm_config_refresh(void)
 	xmlXPathContextPtr data_ctxt = NULL;
 	xmlXPathObjectPtr query_result = NULL;
 	char* data;
+	char** new_strlist;
 	xmlNodePtr node;
 	xmlChar* content = NULL;
 	xmlDocPtr data_doc = NULL;
@@ -613,6 +617,7 @@ int nacm_config_refresh(void)
 	bool allgroups;
 	struct nacm_group* gr;
 	struct rule_list* rlist;
+	struct nacm_rule** new_rules;
 
 	if (nacm_initiated == 0) {
 		ERROR("%s: NACM Subsystem not initialized.", __func__);
@@ -787,11 +792,12 @@ int nacm_config_refresh(void)
 						} else if (xmlStrcmp(node->name, BAD_CAST "user-name") == 0) {
 							if (gc == gl) {
 								gl += 10;
-								gr->users = realloc(gr->users, gl * sizeof(char*));
-								if (gr->users == NULL) {
+								new_strlist = realloc(gr->users, gl * sizeof(char*));
+								if (new_strlist == NULL) {
 									ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 									goto errorcleanup;
 								}
+								gr->users = new_strlist;
 							}
 							gr->users[gc] = nc_clrwspace((char*)node->children->content);
 							if (gr->users[gc] != NULL) {
@@ -848,11 +854,12 @@ int nacm_config_refresh(void)
 						if (!allgroups && node->children != NULL && node->children->type == XML_TEXT_NODE && xmlStrcmp(node->name, BAD_CAST "group") == 0) {
 							if (gc == gl) {
 								gl += 10;
-								rlist->groups = realloc(rlist->groups, gl * sizeof(char*));
-								if (rlist->groups == NULL) {
+								new_strlist = realloc(rlist->groups, gl * sizeof(char*));
+								if (new_strlist == NULL) {
 									ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 									goto errorcleanup;
 								}
+								rlist->groups = new_strlist;
 							}
 							rlist->groups[gc] = nc_clrwspace((char*) node->children->content);
 							if (rlist->groups[gc] != NULL) {
@@ -872,11 +879,12 @@ int nacm_config_refresh(void)
 						} else if (node->children != NULL && xmlStrcmp(node->name, BAD_CAST "rule") == 0) {
 							if (rc == rl) {
 								rl += 10;
-								rlist->rules = realloc(rlist->rules, rl * sizeof(struct nacm_rule*));
-								if (rlist->rules == NULL) {
+								new_rules = realloc(rlist->rules, rl * sizeof(struct nacm_rule*));
+								if (new_rules == NULL) {
 									ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 									goto errorcleanup;
 								}
+								rlist->rules = new_rules;
 							}
 							rlist->rules[rc] = nacm_get_rule(node);
 							if (rlist->rules[rc] != NULL) {
@@ -918,7 +926,8 @@ errorcleanup:
 static struct nacm_rpc* nacm_rpc_struct(const struct nc_session* session)
 {
 	struct nacm_rpc* nacm_rpc;
-	char** groups = NULL;
+	struct rule_list** new_rulelist;
+	char** groups = NULL, **new_groups;
 	int l, c, i, j, k;
 
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_DUMMY)) {
@@ -943,12 +952,13 @@ static struct nacm_rpc* nacm_rpc_struct(const struct nc_session* session)
 			if (strcmp(nacm_config.groups[i]->users[j], session->username) == 0) {
 				if (c == l) {
 					l += 10;
-					groups = realloc(groups, l * sizeof(char*));
-					if (groups == NULL) {
+					new_groups = realloc(groups, l * sizeof(char*));
+					if (new_groups == NULL) {
 						ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 						free(nacm_rpc);
 						return (NULL);
 					}
+					groups = new_groups;
 				}
 				groups[c] = strdup(nacm_config.groups[i]->name);
 				c++;
@@ -960,12 +970,13 @@ static struct nacm_rpc* nacm_rpc_struct(const struct nc_session* session)
 		for (i = 0; session->groups[i] != NULL; i++) {
 			if (c == l) {
 				l += 10;
-				groups = realloc(groups, l * sizeof(char*));
-				if (groups == NULL) {
+				new_groups = realloc(groups, l * sizeof(char*));
+				if (new_groups == NULL) {
 					ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 					free(nacm_rpc);
 					return (NULL);
 				}
+				groups = new_groups;
 			}
 			groups[c] = strdup(session->groups[i]);
 			c++;
@@ -988,8 +999,8 @@ static struct nacm_rpc* nacm_rpc_struct(const struct nc_session* session)
 					/* we have found matching groups - add rule list to the rpc */
 					if (c == l) {
 						l += 10;
-						nacm_rpc->rule_lists = realloc(nacm_rpc->rule_lists, l * sizeof(struct rule_list*));
-						if (nacm_rpc->rule_lists == NULL) {
+						new_rulelist = realloc(nacm_rpc->rule_lists, l * sizeof(struct rule_list*));
+						if (new_rulelist == NULL) {
 							ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 							for(k = 0; groups[k] != NULL; k++) {
 								free(groups[k]);
@@ -998,6 +1009,7 @@ static struct nacm_rpc* nacm_rpc_struct(const struct nc_session* session)
 							free(nacm_rpc);
 							return (NULL);
 						}
+						nacm_rpc->rule_lists = new_rulelist;
 					}
 					nacm_rpc->rule_lists[c] = nacm_rule_list_dup(nacm_config.rule_lists[i]);
 					if (nacm_rpc->rule_lists[c] != NULL) {

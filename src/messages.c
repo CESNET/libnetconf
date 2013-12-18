@@ -2042,7 +2042,7 @@ nc_reply* nc_reply_merge(int count, ...)
 	va_list ap;
 	struct nc_err *err;
 	int i, j, t, len = 0;
-	char * tmp, * data = NULL;
+	char * tmp, * data = NULL, *new_str;
 
 	/* params check */
 	if (count < 2) {
@@ -2124,7 +2124,16 @@ nc_reply* nc_reply_merge(int count, ...)
 				data = strdup(tmp);
 			} else {
 				len += strlen(tmp);
-				data = realloc(data, sizeof(char) * (len + 1));
+				new_str = realloc(data, sizeof(char) * (len + 1));
+				if (new_str == NULL) {
+					ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+					free(data);
+					free(tmp);
+					free(to_merge);
+					va_end(ap);
+					return (NULL);
+				}
+				data = new_str;
 				strcat(data, tmp);
 			}
 			free(tmp);

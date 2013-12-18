@@ -143,7 +143,7 @@ void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
 char* callback_sshauth_password_default (const char* username,
 		const char* hostname)
 {
-	char* buf;
+	char* buf, *newbuf;
 	int buflen = 1024, len = 0;
 	int c = 0;
 	struct termios newterm, oldterm;
@@ -174,7 +174,22 @@ char* callback_sshauth_password_default (const char* username,
 	while (read(STDIN_FILENO, &c, 1) == 1 && c != '\n') {
 		if (len >= (buflen-1)) {
 			buflen *= 2;
-			buf = realloc (buf, buflen*sizeof (char));
+			newbuf = realloc(buf, buflen*sizeof (char));
+			if (newbuf == NULL) {
+				ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+
+				/* remove content of the buffer */
+				memset(buf, 0, len);
+				free(buf);
+
+				/*restore terminal settings */
+				if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+					ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
+				}
+				return (NULL);
+			} else {
+				buf = newbuf;
+			}
 		}
 		buf[len++] = (char)c;
 	}
@@ -213,6 +228,7 @@ void callback_sshauth_interactive_default (const char*  UNUSED(name),
 	unsigned int buflen = 8;
 	int c = 0;
 	struct termios newterm, oldterm;
+	char* newtext;
 
 	if (tcgetattr(STDIN_FILENO, &oldterm) != 0) {
 		ERROR("Unable to get terminal settings (%d: %s).", __LINE__, strerror(errno));
@@ -249,7 +265,23 @@ void callback_sshauth_interactive_default (const char*  UNUSED(name),
 		while (read(STDIN_FILENO, &c, 1) == 1 && c != '\n') {
 			if (responses[i].length >= (buflen-1)) {
 				buflen *= 2;
-				responses[i].text = realloc (responses[i].text, buflen*sizeof (char));
+				newtext = realloc(responses[i].text, buflen*sizeof (char));
+				if (newtext == NULL) {
+					ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+					/* remove all answers, something really bad is happening */
+					for(; i >= 0; i--) {
+						memset(responses[i].text, 0, responses[i].length);
+						free(responses[i].text);
+						responses[i].length = 0;
+					}
+					/* restore terminal settings */
+					if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+						ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
+					}
+					return;
+				} else {
+					responses[i].text = newtext;
+				}
 			}
 			responses[i].text[responses[i].length++] = c;
 		}
@@ -276,7 +308,7 @@ char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 		const char* privatekey_filepath)
 {
 	int c;
-	char* buf;
+	char* buf, *newbuf;
 	int buflen = 1024, len = 0;
 	struct termios newterm, oldterm;
 
@@ -304,7 +336,21 @@ char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 	while ((c = getchar ()) != '\n') {
 		if (len >= (buflen-1)) {
 			buflen *= 2;
-			buf = realloc (buf, buflen*sizeof (char));
+			newbuf = realloc (buf, buflen*sizeof (char));
+			if (newbuf == NULL) {
+				ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+				/* remove content of the buffer */
+				memset(buf, 0, len);
+				free(buf);
+
+				/* restore terminal settings */
+				if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+					ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
+				}
+
+				return (NULL);
+			}
+			buf = newbuf;
 		}
 		buf[len++] = (char)c;
 	}
