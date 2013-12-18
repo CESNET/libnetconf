@@ -402,7 +402,9 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 	old_tmp = old_node;
 	while (old_tmp) {
 		if (xmlStrEqual(old_tmp->name, BAD_CAST model->name)) {
-			break;
+			if (old_tmp->ns->href == BAD_CAST model->ns_uri || ((old_tmp->ns->href != NULL && model->ns_uri != NULL) && xmlStrEqual(old_tmp->ns->href, BAD_CAST model->ns_uri))) {
+				break;
+			}
 		}
 		old_tmp = old_tmp->next;
 	}
