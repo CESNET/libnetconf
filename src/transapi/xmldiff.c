@@ -14,7 +14,7 @@
 #include "transapi_internal.h"
 
 /* adds a priority into priority buffer structure */
-void xmldiff_add_priority(int prio, struct xmldiff_prio** prios)
+static void xmldiff_add_priority(int prio, struct xmldiff_prio** prios)
 {
 	int *new_values;
 
@@ -39,7 +39,7 @@ void xmldiff_add_priority(int prio, struct xmldiff_prio** prios)
 }
 
 /* appends two priority structures, handy for merging all children priorities into one for the parent */
-void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* new)
+static void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* new)
 {
 	int *new_values;
 	size_t alloc;
@@ -71,7 +71,7 @@ void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_prio* ne
 }
 
 /* the recursive core of xmldiff_set_priorities() function */
-struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct transapi_data_callbacks* calls)
+static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct transapi_data_callbacks* calls)
 {
 	int i, min_prio, children_count = 0, children_without_callback = 0;
 	struct xmldiff_prio* priorities = NULL, *tmp_prio;
@@ -197,7 +197,7 @@ void xmldiff_free(struct xmldiff_tree* diff)
  *
  * return EXIT_SUCCESS or EXIT_FAILURE
  */
-void xmldiff_add_diff(struct xmldiff_tree** diff, const char * path, xmlNodePtr node, XMLDIFF_OP op, XML_RELATION rel)
+static void xmldiff_add_diff(struct xmldiff_tree** diff, const char * path, xmlNodePtr node, XMLDIFF_OP op, XML_RELATION rel)
 {
 	struct xmldiff_tree* new, *cur;
 
@@ -250,7 +250,7 @@ void xmldiff_add_diff(struct xmldiff_tree** diff, const char * path, xmlNodePtr 
 	}
 }
 
-void xmldiff_addsibling_diff(struct xmldiff_tree** siblings, struct xmldiff_tree** new_sibling)
+static void xmldiff_addsibling_diff(struct xmldiff_tree** siblings, struct xmldiff_tree** new_sibling)
 {
 	struct xmldiff_tree* last_sibling;
 
@@ -281,7 +281,7 @@ void xmldiff_addsibling_diff(struct xmldiff_tree** siblings, struct xmldiff_tree
  *
  * @return EXIT_SUCCESS when equivalent EXIT_FAILURE otherwise
  */
-int node_cmp(xmlNodePtr node1, xmlNodePtr node2)
+static int node_cmp(xmlNodePtr node1, xmlNodePtr node2)
 {
 	int ret = EXIT_FAILURE;
 	
@@ -309,7 +309,7 @@ int node_cmp(xmlNodePtr node1, xmlNodePtr node2)
  *
  * @return EXIT_SUCCESS when equivalent EXIT_FAILURE otherwise
  */
-int list_node_cmp(xmlNodePtr node1, xmlNodePtr node2, struct model_tree * model)
+static int list_node_cmp(xmlNodePtr node1, xmlNodePtr node2, struct model_tree * model)
 {
 	int i, ret = EXIT_FAILURE;
 	xmlNodePtr node_tmp;
@@ -367,8 +367,8 @@ cleanup:
 	return(ret);
 }
 
-XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_tmp, xmlDocPtr new_doc, xmlNodePtr new_tmp, struct model_tree * model);
-XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, char * path, xmlNodePtr old_tmp, xmlNodePtr new_tmp, struct model_tree * model);
+static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_tmp, xmlDocPtr new_doc, xmlNodePtr new_tmp, struct model_tree * model);
+static XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, char * path, xmlNodePtr old_tmp, xmlNodePtr new_tmp, struct model_tree * model);
 
 /**
  * @brief Recursively go through documents and search for differences. Build
@@ -382,7 +382,7 @@ XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, char * path, xmlNodePtr 
  * @param new_node	current node (or sibling) in the new configuration
  * @param model	current node in the model
  */
-XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_node, xmlDocPtr new_doc, xmlNodePtr new_node, struct model_tree * model)
+static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_node, xmlDocPtr new_doc, xmlNodePtr new_node, struct model_tree * model)
 {
 	char * next_path;
 	xmlNodePtr old_tmp, new_tmp;
@@ -553,7 +553,7 @@ XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xmlDocPtr 
 	return ret_op;
 }
 
-XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_tmp, xmlDocPtr new_doc, xmlNodePtr new_tmp, struct model_tree * model)
+static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_tmp, xmlDocPtr new_doc, xmlNodePtr new_tmp, struct model_tree * model)
 {
 	XMLDIFF_OP item_ret_op, tmp_op, ret_op = XMLDIFF_NONE;
 	xmlNodePtr* list_added = NULL, *list_removed = NULL, *realloc_tmp;
@@ -824,7 +824,7 @@ XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPtr old_d
 	return ret_op;
 }
 
-XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, char * path, xmlNodePtr old_tmp, xmlNodePtr new_tmp, struct model_tree * model)
+static XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, char * path, xmlNodePtr old_tmp, xmlNodePtr new_tmp, struct model_tree * model)
 {
 	XMLDIFF_OP ret_op = XMLDIFF_NONE;
 	char* list_name = strrchr(path, ':')+1;
