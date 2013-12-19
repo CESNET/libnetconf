@@ -1,3 +1,11 @@
+libnetconf 0.6.2
+
+This release includes the following changes:
+
+ * Changed ncds_set_validation2() to allow the callback to return error information
+   structure.
+
+
 libnetconf 0.6.1
 
 This release includes the following changes:
