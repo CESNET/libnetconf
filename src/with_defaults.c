@@ -133,7 +133,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 	if (node->parent == NULL) {
 		if (created == NULL) {
 			if (retvals == NULL) {
-				for(i = created_count-1; i > 0; i--) {
+				for(i = created_count-1; i >= 0; i--) {
 					if (created_local[i]->children == NULL) {
 						/* created parent element, but default value was not finally
 						 * created and no other children element exists -> remove
@@ -145,6 +145,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 				}
 			}
 			/* free in last recursion call */
+			created_count = 0;
 			free(created_local);
 		}
 		return (NULL);
@@ -161,6 +162,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 			retvals = (xmlNodePtr*) malloc(2 * sizeof(xmlNodePtr));
 			if (retvals == NULL) {
 				ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+				created_count = 0;
 				free(created_local);
 				if (created) {
 					*created = NULL;
@@ -195,6 +197,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 					if (aux_nodeptr == NULL) {
 						ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 						/* we're in real troubles here */
+						created_count = 0;
 						free(created_local);
 						if (created) {
 							*created = NULL;
@@ -233,6 +236,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 				if (retvals == NULL) {
 					ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 					xmlFree(name);
+					created_count = 0;
 					free(created_local);
 					if (created) {
 						*created = NULL;
@@ -266,6 +270,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 			}
 			/* free in last recursion call */
 			free(created_local);
+			created_count = 0;
 		}
 		return (NULL);
 	}
@@ -385,7 +390,11 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 						if (aux_nodeptr == NULL) {
 							ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 							/* we're in real troubles here */
+							created_count = 0;
 							free(created_local);
+							if (created) {
+								*created = NULL;
+							}
 							return (NULL);
 						}
 						created_local = aux_nodeptr;
@@ -422,6 +431,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 		}
 		/* free in last recursion call */
 		free(created_local);
+		created_count = 0;
 	}
 
 	return (retvals);
