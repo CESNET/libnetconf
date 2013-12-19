@@ -101,7 +101,7 @@ var NAVTREEINDEX1 =
 "d7/d62/notifications_8h.html#ggadcf8c532762d57f7d9a5491e6abb9977af6adea71e2edc918ae1f7ade6f11ca59":[10,0,0,12,2,5],
 "d7/d62/notifications_8h_source.html":[10,0,0,12],
 "d7/dc8/datastore__xml_8h.html":[10,0,0,4],
-"d7/dc8/datastore__xml_8h.html#gad6120db4318bd6f3d023c92ed3f1474a":[10,0,0,4,0],
+"d7/dc8/datastore__xml_8h.html#ga31c6fa81cf4c62c32561c1047903477f":[10,0,0,4,0],
 "d7/dc8/datastore__xml_8h_source.html":[10,0,0,4],
 "d7/dda/group__rpc__xml.html":[8,9],
 "d7/dda/group__rpc__xml.html#ga16f3dd2aaa13922eae37551179913b18":[8,9,6],

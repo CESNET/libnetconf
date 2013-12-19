@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Tue Dec 3 2013" "Version 0.6.1" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Thu Dec 19 2013" "Version 0.6.2" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -134,7 +134,7 @@ libnetconf's functions for handling NETCONF datastores\&.
 .br
 .RI "\fISet validators (or disable validation) on the specified datastore\&. \fP"
 .ti -1c
-.RI "int \fBncds_set_validation2\fP (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron, int(*valid_func)(const xmlDocPtr config))"
+.RI "int \fBncds_set_validation2\fP (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron, int(*valid_func)(const xmlDocPtr config, struct nc_err **err))"
 .br
 .RI "\fISet validators (or disable validation) on the specified datastore\&. \fP"
 .in -1c
@@ -556,7 +556,7 @@ EXIT_SUCCESS or EXIT_FAILURE
 .RE
 .PP
 
-.SS "int ncds_set_validation2 (struct ncds_ds *ds, intenable, const char *relaxng, const char *schematron, int(*)(const xmlDocPtr config)valid_func)"
+.SS "int ncds_set_validation2 (struct ncds_ds *ds, intenable, const char *relaxng, const char *schematron, int(*)(const xmlDocPtr config, struct nc_err **err)valid_func)"
 
 .PP
 Set validators (or disable validation) on the specified datastore\&. To make this function available, you have to include \fBlibnetconf_xml\&.h\fP\&.
@@ -573,7 +573,7 @@ Set validators (or disable validation) on the specified datastore\&. To make thi
 .br
 \fIvalid_func\fP Pointer to a callback function that is used for additional validation of the configuration data in the datastore\&. It can perform any specific check for the datastore (e\&.g\&. check for presence of referred files)\&. If no such check is needed, parameter can be set to NULL\&. 
 .br
- Validation callback function receives configuration data as a libxml2's xmlDocPtr\&. As a result it returns EXIT_SUCCESS if validation checks passed and EXIT_FAILURE when an error occurred\&. 
+ Validation callback function receives configuration data as a libxml2's xmlDocPtr\&. As a result it returns EXIT_SUCCESS if validation checks passed and EXIT_FAILURE when an error occurred\&. An error description may be returned via the \fCerr\fP parameter\&. 
 .RE
 .PP
 \fBReturns:\fP

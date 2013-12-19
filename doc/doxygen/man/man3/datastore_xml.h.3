@@ -1,4 +1,4 @@
-.TH "src/datastore_xml.h" 3 "Tue Dec 3 2013" "Version 0.6.1" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore_xml.h" 3 "Thu Dec 19 2013" "Version 0.6.2" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,7 +18,7 @@ NETCONF datastore handling function prototypes and structures - XML variants\&.
 
 .in +1c
 .ti -1c
-.RI "int \fBncds_set_validation2\fP (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron, int(*valid_func)(const xmlDocPtr config))"
+.RI "int \fBncds_set_validation2\fP (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron, int(*valid_func)(const xmlDocPtr config, struct nc_err **err))"
 .br
 .RI "\fISet validators (or disable validation) on the specified datastore\&. \fP"
 .in -1c
