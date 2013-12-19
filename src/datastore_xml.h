@@ -71,10 +71,13 @@ extern "C" {
  * <BR>
  * Validation callback function receives configuration data as a libxml2's
  * xmlDocPtr. As a result it returns EXIT_SUCCESS if validation checks passed
- * and EXIT_FAILURE when an error occurred.
+ * and EXIT_FAILURE when an error occurred. An error description may be
+ * returned via the \p err parameter.
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng, const char* schematron, int (*valid_func)(const xmlDocPtr config));
+int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng,
+    const char* schematron,
+    int (*valid_func)(const xmlDocPtr config, struct nc_err **err));
 
 #ifdef __cplusplus
 }
