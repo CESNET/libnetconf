@@ -51,6 +51,7 @@
 #include <poll.h>
 #include <pthread.h>
 #include <pwd.h>
+#include <ctype.h>
 
 #ifndef DISABLE_LIBSSH
 #	include <libssh2.h>
@@ -1612,7 +1613,7 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 	struct nc_msg *retval;
 	nc_reply* reply;
 	const char* id;
-	char *text = NULL, *chunk = NULL;
+	char *text = NULL, *tmp_text, *chunk = NULL;
 	size_t len;
 	unsigned long long int text_size = 0, total_len = 0;
 	size_t chunk_length;
@@ -1799,8 +1800,13 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		goto malformed_msg;
 	}
 
+	/* skip leading whitespaces */
+	tmp_text=text;
+	while (isspace(*tmp_text)) {
+		tmp_text++;
+	}
 	/* store the received message in libxml2 format */
-	retval->doc = xmlReadDoc (BAD_CAST text, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	retval->doc = xmlReadDoc (BAD_CAST tmp_text, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
 	if (retval->doc == NULL) {
 		free (retval);
 		free (text);
