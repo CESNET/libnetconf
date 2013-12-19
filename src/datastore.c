@@ -2641,12 +2641,13 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 		/* datastore specific validation function */
 		DBG("Datastore-specific validation on subdatastore %d", ds->id);
 
-		retval = ds->validators.callback(doc);
+		retval = ds->validators.callback(doc, error);
 		if (retval != EXIT_SUCCESS) {
 			VERB("subdatastore %d fails to validate with datastore-specific validation", ds->id);
 			if (*error == NULL) {
 				*error = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore fails to validate.");
+				nc_err_set(*error, NC_ERR_PARAM_MSG,
+				    "Datastore fails to validate via registered callback.");
 			}
 			return (EXIT_FAILURE);
 		}
@@ -2967,7 +2968,9 @@ cleanup:
 }
 
 
-int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng, const char* schematron, int (*valid_func)(const xmlDocPtr config))
+int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng,
+    const char* schematron,
+    int (*valid_func)(const xmlDocPtr config, struct nc_err **err))
 {
 #ifdef DISABLE_VALIDATION
 	return (EXIT_SUCCESS);
