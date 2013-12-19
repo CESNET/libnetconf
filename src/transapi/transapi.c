@@ -246,7 +246,7 @@ int transapi_running_changed(struct ncds_ds* ds, xmlDocPtr old_doc, xmlDocPtr ne
 	struct xmldiff_tree* diff = NULL;
 	struct transapi_callbacks_info info;
 	
-	if (xmldiff_diff(&diff, old_doc, new_doc, ds->ext_model_tree, ds->transapi.ns_mapping) == XMLDIFF_ERR) { /* failed to create diff list */
+	if (xmldiff_diff(&diff, old_doc, new_doc, ds->ext_model_tree) == XMLDIFF_ERR) { /* failed to create diff list */
 		ERROR("Model \"%s\" transAPI: failed to create the tree of differences.", ds->data_model->name);
 		xmldiff_free(diff);
 		return EXIT_FAILURE;

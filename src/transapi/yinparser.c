@@ -15,6 +15,7 @@ int get_node_namespace(const char * ns_mapping[], xmlNodePtr node, char ** prefi
 {
 	int i;
 
+	(*prefix) = NULL;
 	if (((*uri) = (char*)xmlGetNsProp(node, BAD_CAST "ns", BAD_CAST "libnetconf")) == NULL) {
 		return(EXIT_FAILURE);
 	} else {
@@ -42,13 +43,13 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char 
 	xmlChar *value;
 
 	while (model_tmp) {
+		count++;
 		new_tree = realloc(children, sizeof (struct model_tree) * count);
 		if (new_tree == NULL) {
 			ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 			return (children);
 		}
 		children = new_tree;
-		count++;
 
 		/* first check if node holds configuration */
 		int_tmp = model_tmp->children;
