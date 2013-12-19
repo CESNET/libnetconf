@@ -159,6 +159,14 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 		case NCWD_MODE_ALL_TAGGED:
 			/* return root element, create it if it does not exist */
 			retvals = (xmlNodePtr*) malloc(2 * sizeof(xmlNodePtr));
+			if (retvals == NULL) {
+				ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+				free(created_local);
+				if (created) {
+					*created = NULL;
+				}
+				return (NULL);
+			}
 			retvals[1] = NULL;
 			/* create root element */
 			name = xmlGetProp(node, BAD_CAST "name");
@@ -188,9 +196,15 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 						ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 						/* we're in real troubles here */
 						free(created_local);
+						if (created) {
+							*created = NULL;
+						}
 						return (NULL);
 					}
 					created_local = aux_nodeptr;
+					if (created) {
+						*created = aux_nodeptr;
+					}
 				}
 				created_local[created_count++] = aux;
 				created_local[created_count] = NULL; /* list terminating byte */
@@ -216,6 +230,15 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 			/* return root element, do not create it if it does not exist */
 			if (aux != NULL) {
 				retvals = (xmlNodePtr*) malloc(2 * sizeof(xmlNodePtr));
+				if (retvals == NULL) {
+					ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+					xmlFree(name);
+					free(created_local);
+					if (created) {
+						*created = NULL;
+					}
+					return (NULL);
+				}
 				retvals[0] = aux;
 				retvals[1] = NULL;
 			}
