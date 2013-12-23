@@ -152,6 +152,12 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 	} else if (xmlStrcmp(node->parent->name, BAD_CAST "module") != 0) {
 		/* we will get parent of the config's equivalent of the node */
 		parents = fill_default(config, node->parent, namespace, mode, &created_local);
+
+		/* if we are in augment node, just go through */
+		if ((xmlStrcmp(node->name, BAD_CAST "augment") == 0) &&
+				(xmlStrcmp(node->ns->href, BAD_CAST NC_NS_YIN) == 0)) {
+			return (parents);
+		}
 	} else {
 		/* we are in the root */
 		aux = config->children;
