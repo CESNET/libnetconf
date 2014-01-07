@@ -87,7 +87,8 @@ def generate_validators(yin_model_path, augment_models_paths, search_path):
 	#generate schematrom files form DSDL
 	subprocess.check_call(['xsltproc', '--output', os.path.abspath(xslt_tmp_name), '--stringparam', 'target', 'data', os.path.join(XSLTDIR, 'gen-schematron.xsl'), os.path.abspath(dsdl_schema_name)])
 	subprocess.check_call(['xsltproc', os.path.join(XSLTDIR, 'iso_abstract_expand.xsl'), os.path.abspath(xslt_tmp_name)], stdout=xslt_tmp_inout_fd)
-	subprocess.check_call(['xsltproc', '-o', yin_file_name+'-schematron.xsl', os.path.join(XSLTDIR, 'iso_svrl_for_xslt1.xsl')], stdin=xslt_tmp_inout_fd)
+	os.lseek(xslt_tmp_inout_fd, 0, 0) # SEEK_SET
+	subprocess.check_call(['xsltproc', '-o', yin_file_name+'-schematron.xsl', os.path.join(XSLTDIR, 'iso_svrl_for_xslt1.xsl'), '-'], stdin=xslt_tmp_inout_fd)
 	#close
 	os.close(dsdl_schema_fd)
 	os.close(xslt_tmp_fd)
