@@ -173,8 +173,11 @@ $(NAME).la: $(LOBJS)
 $(LNCTOOL): $(LNCTOOL).in
 	@sed "s/@RNGLIB@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/rnglib/)/g" $< | \
 	 sed 's/@XSLTDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/xslt/)/g' | \
-	 sed 's/@TEMPLATEDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/templates/)/g' > $@
-	@chmod +x $@
+	 sed 's/@TEMPLATEDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/templates/)/g' > $(LNCTOOL).install
+	@sed "s/@RNGLIB@/$(subst /,\/,$(abs_srcdir)/lnctool/rnglib/)/g" $< | \
+	 sed 's/@XSLTDIR@/$(subst /,\/,$(abs_srcdir)/lnctool/xslt/)/g' | \
+	 sed 's/@TEMPLATEDIR@/$(subst /,\/,$(abs_srcdir)/lnctool/templates/)/g' > $(LNCTOOL)
+	@chmod +x $(LNCTOOL) $(LNCTOOL).install
 
 $(OBJDIR)/%.lo: %.c
 	@[ -d $$(dirname $@) ] || \
@@ -274,7 +277,7 @@ install-devel:
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
 	done;
 	$(INSTALL_DATA) $(NAME).pc $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc;
-	$(INSTALL_PROGRAM) $(LNCTOOL) $(DESTDIR)/$(bindir);
+	$(INSTALL_PROGRAM) $(LNCTOOL).install $(DESTDIR)/$(bindir)/lnctool;
 	$(INSTALL_DATA) lnctool/rnglib/* $(DESTDIR)/$(datadir)/$(NAME)/rnglib/;
 	$(INSTALL_DATA) lnctool/xslt/* $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 	$(INSTALL_DATA) lnctool/generator/* $(DESTDIR)/$(datadir)/$(NAME)/templates/;
