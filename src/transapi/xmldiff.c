@@ -269,6 +269,92 @@ static void xmldiff_addsibling_diff(struct xmldiff_tree** siblings, struct xmldi
 }
 
 /**
+ * @brief Add diff for all descendants of the node
+ */
+static void xmldiff_add_diff_recursive(struct xmldiff_tree **diff, const char *path, xmlNodePtr node, XMLDIFF_OP op, XML_RELATION rel, struct model_tree * model)
+{
+	char * tmp_path;
+	struct xmldiff_tree * last_diff;
+	xmlNodePtr tmp;
+	int i, j;
+	struct model_tree * model_child = NULL, *empty_child;
+	static int level = 0;
+
+	if (level == 0) {
+		xmldiff_add_diff(diff, path, node, op, rel);
+		switch (rel) {
+		case XML_PARENT:
+			last_diff = (*diff)->parent;
+			break;
+		case XML_CHILD:
+			last_diff = (*diff)->children;
+			while (last_diff->next) {
+				last_diff = last_diff->next;
+			}
+			break;
+		case XML_SIBLING:
+			last_diff = (*diff);
+			while (last_diff->next) {
+				last_diff = last_diff->next;
+			}
+			break;
+		}
+	} else {
+		xmldiff_add_diff(diff, path, node, op, XML_CHILD);
+		last_diff = (*diff)->children;
+		while (last_diff->next) {
+			last_diff = last_diff->next;
+		}
+	}
+
+	++level;
+
+	tmp = node->children;
+	while(tmp) {
+		if (tmp->type == XML_ELEMENT_NODE) {
+			for (i = 0; i < model->children_count; i++) {
+				if (model->children[i].type == YIN_TYPE_AUGMENT || model->children[i].type == YIN_TYPE_CHOICE) {
+					/* AUGMENT and CHOICE nodes are actually empty, go through its children */
+					empty_child = model->children[i].children;
+					for (j = 0; j < model->children[i].children_count; j++) {
+						/* search for the correct model node */
+						if (xmlStrEqual(BAD_CAST empty_child[j].name, tmp->name)) {
+							if ((empty_child[j].ns_uri == NULL && (tmp->ns == NULL || tmp->ns->href == NULL)) ||
+								((empty_child[j].ns_uri != NULL && tmp->ns != NULL && tmp->ns->href != NULL) &&
+								 xmlStrEqual(BAD_CAST empty_child[j].ns_uri, tmp->ns->href))) {
+								model_child = &empty_child[j];
+								break;
+							}
+						}
+					}
+				} else if (xmlStrEqual(BAD_CAST model->children[i].name, tmp->name)) {
+					/* check for the correct model node */
+					if ((model->children[i].ns_uri == NULL && (tmp->ns == NULL || tmp->ns->href == NULL)) ||
+						((model->children[i].ns_uri != NULL && tmp->ns != NULL && tmp->ns->href != NULL) &&
+						 xmlStrEqual(BAD_CAST model->children[i].ns_uri, tmp->ns->href))) {
+						model_child = &model->children[i];
+					}
+				}
+
+				/* are we done for the current tmp? */
+				if (model_child) {
+					asprintf(&tmp_path, "%s/%s:%s", path, model_child->ns_prefix, model_child->name);
+					xmldiff_add_diff_recursive(&last_diff, tmp_path, tmp, op, XML_CHILD, model_child);
+					free(tmp_path);
+					model_child = NULL;
+					/* yes, we're done, leave the for loop and go for another tmp */
+					break;
+				}
+			}
+		}
+		tmp = tmp->next;
+	}
+
+	--level;
+
+}
+
+/**
  * @brief Return EXIT_SUCCESS if node1 and node2 have same name and are in the same namespace.
  *
  * This function is used in xmldiff_recursive() for determining that we have
@@ -463,6 +549,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 
 	/* -- CHOICE -- */
 	case YIN_TYPE_CHOICE: 
+	case YIN_TYPE_AUGMENT:
 		ret_op = XMLDIFF_NONE;
 		/* Trim the choice path, replace it with the children directly */
 		*strrchr(path, '/') = '\0';
@@ -641,7 +728,7 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 		xmlFree(old_keys);
 
 		if (list_new_tmp == NULL) { /* Item NOT found in the new document -> removed */
-			xmldiff_add_diff(diff, path, list_old_tmp, XMLDIFF_REM, XML_SIBLING);
+			xmldiff_add_diff_recursive(diff, path, list_old_tmp, XMLDIFF_REM, XML_SIBLING, model);
 			ret_op = XMLDIFF_REM;
 			/* Remember that the node was removed */
 			if ((realloc_tmp = realloc(list_removed, ++list_removed_cnt * sizeof(xmlNodePtr))) == NULL) {
@@ -754,7 +841,7 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 		xmlFree(new_keys);
 
 		if (list_old_tmp == NULL) { /* Item NOT found in the old document -> added */
-			xmldiff_add_diff(diff, path, list_new_tmp, XMLDIFF_ADD, XML_SIBLING);
+			xmldiff_add_diff_recursive(diff, path, list_new_tmp, XMLDIFF_ADD, XML_SIBLING, model);
 			ret_op = XMLDIFF_ADD;
 			/* Remember that the node was added */
 			if ((realloc_tmp = realloc(list_added, ++list_added_cnt * sizeof(xmlNodePtr))) == NULL) {
