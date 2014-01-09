@@ -642,7 +642,7 @@ int nacm_config_refresh(void)
 	if (strcmp(data, "") == 0) {
 		data_doc = xmlNewDoc(BAD_CAST "1.0");
 	} else {
-		data_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		data_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, NC_XMLREAD_OPTIONS);
 	}
 	free(data);
 

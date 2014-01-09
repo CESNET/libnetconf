@@ -242,7 +242,7 @@ static xmlDocPtr file_create_xmlframe ()
 {
 	xmlDocPtr doc;
 
-	doc = xmlReadDoc(BAD_CAST FILEDSFRAME, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	doc = xmlReadDoc(BAD_CAST FILEDSFRAME, NULL, NULL, NC_XMLREAD_OPTIONS);
 	if (doc == NULL) {
 		ERROR ("%s: creating an empty file datastore failed.", __func__);
 		return (NULL);
@@ -340,7 +340,7 @@ int ncds_file_init (struct ncds_ds* ds)
 	mode_t mask;
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 
-	file_ds->xml = xmlReadFile(file_ds->path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	file_ds->xml = xmlReadFile(file_ds->path, NULL, NC_XMLREAD_OPTIONS);
 	while (file_ds->xml == NULL || file_structure_check(file_ds->xml) == 0) { /* while is used for break */
 		WARN("Failed to parse the datastore (%s).", file_ds->path);
 		/*
@@ -394,7 +394,7 @@ int ncds_file_init (struct ncds_ds* ds)
 			}
 			nc_clip_occurences_with(new_path, '/', '/');
 
-			file_ds->xml = xmlReadFile(new_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+			file_ds->xml = xmlReadFile(new_path, NULL, NC_XMLREAD_OPTIONS);
 			if (file_ds->xml == NULL || file_structure_check(file_ds->xml) == 0) {
 				/* bad backup datastore, try another one */
 				free(new_path);
@@ -565,7 +565,7 @@ static int file_reload (struct ncds_ds_file* file_ds)
 
 	memcpy (&new, file_ds, sizeof (struct ncds_ds_file));
 
-	new.xml = xmlReadFile (new.path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	new.xml = xmlReadFile (new.path, NULL, NC_XMLREAD_OPTIONS);
 	if (new.xml == NULL) {
 		return EXIT_FAILURE;
 	}
@@ -1014,7 +1014,7 @@ int ncds_file_copyconfig (struct ncds_ds *ds, const struct nc_session *session, 
 			nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "config");
 			return EXIT_FAILURE;
 		}
-		config_doc = xmlReadMemory (config, strlen(config), NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		config_doc = xmlReadMemory (config, strlen(config), NULL, NULL, NC_XMLREAD_OPTIONS);
 		source_ds = xmlDocGetRootElement (config_doc);
 		break;
 	default:
@@ -1250,7 +1250,7 @@ int ncds_file_editconfig (struct ncds_ds *ds, const struct nc_session * session,
 	}
 
 	/* read config to XML doc */
-	if ((config_doc = xmlReadMemory (config, strlen(config), NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING )) == NULL) {
+	if ((config_doc = xmlReadMemory (config, strlen(config), NULL, NULL, NC_XMLREAD_OPTIONS)) == NULL) {
 		UNLOCK(file_ds);
 		return EXIT_FAILURE;
 	}

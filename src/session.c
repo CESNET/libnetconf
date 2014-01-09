@@ -1806,7 +1806,7 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 		tmp_text++;
 	}
 	/* store the received message in libxml2 format */
-	retval->doc = xmlReadDoc (BAD_CAST tmp_text, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	retval->doc = xmlReadDoc (BAD_CAST tmp_text, NULL, NULL, NC_XMLREAD_OPTIONS);
 	if (retval->doc == NULL) {
 		free (retval);
 		free (text);
