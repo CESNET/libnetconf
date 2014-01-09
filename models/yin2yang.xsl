@@ -73,7 +73,7 @@
   <xsl:value-of select="local-name(.)" /><xsl:text>
 </xsl:text>
   <xsl:call-template name="indent"><xsl:with-param name="count" select="$pLevel"/></xsl:call-template>
-  <xsl:text>  "</xsl:text><xsl:value-of disable-output-escaping="yes" select="yin:text" /><xsl:text>";
+  <xsl:text>  "</xsl:text><xsl:value-of disable-output-escaping="no" select="yin:text" /><xsl:text>";
 </xsl:text>
 </xsl:template>
 
