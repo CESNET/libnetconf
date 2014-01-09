@@ -58,6 +58,11 @@
 #  include <libxml/relaxng.h>
 #  include <libxslt/transform.h>
 #  include <libxslt/xsltInternals.h>
+#else
+#  ifndef DISABLE_YANGSCHEMA
+#    include <libxslt/transform.h>
+#    include <libxslt/xsltInternals.h>
+#  endif
 #endif
 
 #include "netconf_internal.h"
@@ -144,6 +149,12 @@ char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(runn
 #endif
 
 static struct ncds_ds *datastores_get_ds(ncds_id id);
+
+#ifndef DISABLE_YANGFORMAT
+/* XSL stylesheet for transformation from YIN to YANG format */
+#define YIN2YANG NC_WORKINGDIR_PATH"/yin2yang.xsl"
+static xsltStylesheetPtr yin2yang_xsl = NULL;
+#endif
 
 /* Allocate and fill the ncds func structure based on the type. */
 static struct ncds_ds* ncds_fill_func(NCDS_TYPE type)
@@ -441,6 +452,15 @@ int ncds_sysinit(int flags)
 
 		ds = NULL;
 	}
+
+#ifndef DISABLE_YANGFORMAT
+	/* try to get yin2yang XSLT stylesheet */
+	errno = 0;
+	if (eaccess(YIN2YANG, R_OK) == -1 || (yin2yang_xsl = xsltParseStylesheetFile(BAD_CAST YIN2YANG)) == NULL) {
+		WARN("Unable to use %s (%s).", YIN2YANG, errno == 0 ? "XSLT parser failed" : strerror(errno));
+		WARN("YANG format data models will not be available via get-schema.");
+	}
+#endif
 
 	return (EXIT_SUCCESS);
 }
@@ -919,10 +939,20 @@ static char* get_schemas_str(const char* name, const char* version, const char* 
 			"<format>yin</format>"
 			"<namespace>%s</namespace>"
 			"<location>NETCONF</location>"
-			"</schema>",
-			name,
-			version,
-			ns) == -1) {
+			"</schema>"
+#ifndef DISABLE_YANGFORMAT
+			"<schema><identifier>%s</identifier>"
+			"<version>%s</version>"
+			"<format>yang</format>"
+			"<namespace>%s</namespace>"
+			"<location>NETCONF</location>"
+			"</schema>"
+#endif
+			,name,version,ns
+#ifndef DISABLE_YANGFORMAT
+			,name,version,ns
+#endif
+			) == -1) {
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		retval = NULL;
 	}
@@ -1164,6 +1194,11 @@ static char* compare_schemas(struct data_model* model, char* name, char* version
 char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 {
 	xmlXPathObjectPtr query_result = NULL;
+#ifndef DISABLE_YANGFORMAT
+	xmlBufferPtr data_buf;
+	xmlDocPtr yang_doc, yin_doc;
+	xmlNodePtr node;
+#endif
 	char *name = NULL, *version = NULL, *format = NULL;
 	char *retval = NULL, *r = NULL;
 	struct model_list* listitem;
@@ -1220,52 +1255,83 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 				return (NULL);
 			}
 			format = (char*) xmlNodeGetContent(query_result->nodesetval->nodeTab[0]);
-
-			/* only yin format is supported now */
-			if (strcmp(format, "yin") != 0) {
-				if (e != NULL) {
-					*e = nc_err_new(NC_ERR_INVALID_VALUE);
-					nc_err_set(*e, NC_ERR_PARAM_INFO_BADELEM, "format");
-				}
-				free(format);
-				free(version);
-				free(name);
-				xmlXPathFreeObject(query_result);
-				return(NULL);
-			}
-
-			/* only yin is supported now, so we do not use this parametes now */
-			free(format);
-			format = NULL;
 		}
 		xmlXPathFreeObject(query_result);
+	}
+
+	if (format == NULL) {
+		/* format is missing, use yin as default format */
+		format = strdup("yin");
 	}
 
 	/* process all data models */
 	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
 		r = compare_schemas(listitem->model, name, version);
 		if (r == ERROR_POINTER) {
-			free(version);
-			free(name);
 			if (e != NULL ) {
 				*e = nc_err_new(NC_ERR_OP_FAILED);
 			}
-			return NULL ;
+			free(retval);
+			retval = NULL;
+			goto cleanup;
 		} else if (r && retval) {
 			/* schema is not unique according to request */
 			free(r);
-			free(retval);
-			free(version);
-			free(name);
 			if (e != NULL ) {
 				*e = nc_err_new(NC_ERR_OP_FAILED);
 				nc_err_set(*e, NC_ERR_PARAM_APPTAG, "data-not-unique");
 			}
-			return (NULL );
+			free(retval);
+			retval = NULL;
+			goto cleanup;
 		} else if (r != NULL ) {
 			/* the first matching schema found */
 			retval = r;
 		}
+	}
+
+	/* return correct format */
+#ifndef DISABLE_YANGFORMAT
+	if (retval != NULL && strcmp(format, "yang") == 0) {
+		/* convert YIN to YANG */
+		yin_doc = xmlReadDoc(BAD_CAST retval, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+		yang_doc = xsltApplyStylesheet(yin2yang_xsl, yin_doc, NULL);
+		xmlFreeDoc(yin_doc);
+		free(retval);
+		if (yang_doc == NULL || yang_doc->children == NULL) {
+			if (e != NULL ) {
+				*e = nc_err_new(NC_ERR_OP_FAILED);
+			}
+			retval = NULL;
+			goto cleanup;
+		}
+
+		data_buf = xmlBufferCreate();
+		for (node = yang_doc->children; node != NULL; node = node->next) {
+			if (node->type == XML_TEXT_NODE) {
+				xmlNodeDump(data_buf, yang_doc, node, 1, 1);
+			}
+		}
+		r = (char*) xmlBufferContent(data_buf);
+		if (r != NULL) {
+			retval = strdup(r);
+		} else {
+			if (e != NULL ) {
+				*e = nc_err_new(NC_ERR_OP_FAILED);
+			}
+			retval = NULL;
+			goto cleanup;
+		}
+		xmlBufferFree(data_buf);
+		xmlFreeDoc(yang_doc);
+	} else
+#endif
+		if (retval != NULL && strcmp(format, "yin") == 0) {
+		/* default format */
+	} else if (retval != NULL) {
+		/* unsupported format */
+		free(retval);
+		retval = NULL;
 	}
 
 	if (retval == NULL) {
@@ -1274,9 +1340,11 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 		nc_err_set(*e, NC_ERR_PARAM_MSG, "The requested schema does not exist.");
 	}
 
+cleanup:
 	/* cleanup */
 	free(version);
 	free(name);
+	free(format);
 
 	return (retval);
 }
@@ -3255,6 +3323,11 @@ void ncds_cleanall()
 	}
 	free(models_dirs);
 	models_dirs = NULL;
+
+#ifndef DISABLE_YANGFORMAT
+	xsltFreeStylesheet(yin2yang_xsl);
+	yin2yang_xsl = NULL;
+#endif
 }
 
 void ncds_free(struct ncds_ds* datastore)

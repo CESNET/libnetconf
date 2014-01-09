@@ -125,6 +125,22 @@ AC_ARG_ENABLE([libssh2],
 	libssh2="yes"
 )
 
+AC_ARG_ENABLE([yang-schemas],
+	AC_HELP_STRING([--disable-yang-schemas], [Disable support for YANG format in <get-schema> operation.]),
+	[
+	if test "$enableval" = "no"; then
+		yang="no"
+	else
+		yang="yes"
+	fi
+	],
+	# it is supported by default
+	yang="yes"
+)
+if test "$yang" = "no"; then
+	CPPFLAGS="$CPPFLAGS -DDISABLE_YANGFORMAT"
+fi	
+
 AC_ARG_ENABLE([notifications],
 	AC_HELP_STRING([--disable-notifications], [Disable support of NETCONF Notifications (RFC 5277)]),
 	[

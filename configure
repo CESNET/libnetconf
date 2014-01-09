@@ -770,6 +770,7 @@ with_libxml2
 with_libxslt
 with_libssh2
 enable_libssh2
+enable_yang_schemas
 enable_notifications
 enable_url
 enable_validation
@@ -1419,6 +1420,8 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-libssh2       Use ssh client program instead of libssh2.
+  --disable-yang-schemas  Disable support for YANG format in <get-schema>
+                          operation.
   --disable-notifications Disable support of NETCONF Notifications (RFC 5277)
   --disable-url           Disable support of NETCONF URL Capability (RFC 6241)
   --disable-validation    Disable support for configuration data validation
@@ -2862,6 +2865,25 @@ else
 
 fi
 
+
+# Check whether --enable-yang-schemas was given.
+if test "${enable_yang_schemas+set}" = set; then :
+  enableval=$enable_yang_schemas;
+	if test "$enableval" = "no"; then
+		yang="no"
+	else
+		yang="yes"
+	fi
+
+else
+  # it is supported by default
+	yang="yes"
+
+fi
+
+if test "$yang" = "no"; then
+	CPPFLAGS="$CPPFLAGS -DDISABLE_YANGFORMAT"
+fi
 
 # Check whether --enable-notifications was given.
 if test "${enable_notifications+set}" = set; then :
