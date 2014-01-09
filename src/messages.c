@@ -1395,7 +1395,7 @@ char *nc_reply_get_data(const nc_reply *reply)
 	aux_doc = xmlNewDoc(BAD_CAST "1.0");
 	xmlDocSetRootElement(aux_doc, data);
 	for (aux_data = aux_doc->children->children; aux_data != NULL; aux_data = aux_data->next) {
-		if (aux_data->type == XML_ELEMENT_NODE) {
+		if (aux_data->type == XML_ELEMENT_NODE || aux_data->type == XML_TEXT_NODE) {
 			xmlNodeDump(data_buf, aux_doc, aux_data, 1, 1);
 			gotdata = 1;
 		}
