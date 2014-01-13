@@ -1,4 +1,4 @@
-.TH "transapi_rpc_callbacks" 3 "Fri Dec 6 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "transapi_rpc_callbacks" 3 "Mon Jan 13 2014" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -21,7 +21,7 @@ Same as \fBtransapi_rpc_callbacks\fP\&. Using libxml2 structures for callbacks p
 .RI "   int \fBarg_count\fP"
 .br
 .ti -1c
-.RI "   char * \fBarg_order\fP [MAX_RPC_INPUT_ARGS]"
+.RI "   char * \fBarg_order\fP [\fBMAX_RPC_INPUT_ARGS\fP]"
 .br
 .ti -1c
 .RI "   \fBnc_reply\fP *(* \fBfunc\fP )(xmlNodePtr[])"
@@ -43,7 +43,7 @@ Same as \fBtransapi_rpc_callbacks\fP\&. Using libxml2 structures for callbacks p
 .PP 
 .SS "int arg_count"
 
-.SS "char* arg_order[MAX_RPC_INPUT_ARGS]"
+.SS "char* arg_order[\fBMAX_RPC_INPUT_ARGS\fP]"
 
 .SS "struct { \&.\&.\&. }   callbacks[]"
 

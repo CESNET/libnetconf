@@ -571,11 +571,11 @@
  * -# Create a new directory for the toaster module and move the data model and the path file into it:
  * ~~~~~~~{.sh}
  * $ mkdir toaster && cd toaster/
- * $ mv ../toaster@2009-11-20.yin ../paths_file .
+ * $ mv ../toaster@2009-11-20.yang ../paths_file .
  * ~~~~~~~
  * -# Run `lnctool' for transapi:
  * ~~~~~~~{.sh}
- * $ lnctool --output-dir ./toaster/ --model ./toaster@2009-11-20.yin transapi --paths ./paths_file
+ * $ lnctool --output-dir ./toaster/ --model ./toaster@2009-11-20.yang transapi --paths ./paths_file
  * ~~~~~~~
  *
  * Besides the generated source code of our transAPI module and GNU Build

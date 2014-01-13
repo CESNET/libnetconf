@@ -1,4 +1,4 @@
-.TH "transapi_tutorial" 3 "Fri Dec 6 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "transapi_tutorial" 3 "Mon Jan 13 2014" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -32,7 +32,7 @@ Create a new directory for the toaster module and move the data model and the pa
 .PP
 .nf
 $ mkdir toaster && cd toaster/
-$ mv \&.\&./toaster@2009-11-20\&.yin \&.\&./paths_file \&.
+$ mv \&.\&./toaster@2009-11-20\&.yang \&.\&./paths_file \&.
 
 .fi
 .PP
@@ -41,7 +41,7 @@ $ mv \&.\&./toaster@2009-11-20\&.yin \&.\&./paths_file \&.
 Run `lnctool' for transapi: 
 .PP
 .nf
-$ lnctool --output-dir \&./toaster/ --model \&./toaster@2009-11-20\&.yin transapi --paths \&./paths_file
+$ lnctool --output-dir \&./toaster/ --model \&./toaster@2009-11-20\&.yang transapi --paths \&./paths_file
 
 .fi
 .PP
@@ -70,9 +70,7 @@ $ vim toaster\&.c
 .fi
 .PP
 
-.PP
-.PP
-.IP "1." 4
+.IP "2." 4
 Add global variables and auxiliary functions 
 .PP
 .nf
@@ -85,7 +83,7 @@ void * auxiliary_make_toast(void * time)
 
         if (status == BUSY) {
                 status = ON;
-                ncntf_event_new(-1, NCNTF_GENERIC, '<toastDone><toastStatus>done</toastStatus></toastDone>');
+                ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>done</toastStatus></toastDone>");
         }
         return(NULL);
 }
@@ -93,45 +91,45 @@ void * auxiliary_make_toast(void * time)
 .fi
 .PP
 
-.IP "2." 4
+.IP "3." 4
 Complete the 'transapi_init()' function with actions that will be run right after the module loads and before any other function in the module is called\&. We ignore the XML document pointer, since we wish the toaster to be always off when loading this module\&. 
 .PP
 .nf
 int transapi_init(xmlDocPtr * running)
 {
         status = OFF;
-        printf('Toaster initialized!\n');
+        printf("Toaster initialized!\n");
         return(EXIT_SUCCESS);
 }
 
 .fi
 .PP
 
-.IP "3." 4
+.IP "4." 4
 Locate the 'transapi_close()' function and fill it with actions that will be run just before the module unloads\&. No other function will be called after 'transapi_close()'\&. 
 .PP
 .nf
 void transapi_close()
 {
-        printf('Toaster ready for unplugging!\n');
-}
-
-.fi
-.PP
-
-.IP "4." 4
-Fill 'get_state_data()' function with code that will generate state information as defined in the data model\&. 
-.PP
-.nf
-char * get_state_data(char * model, char * running, struct nc_err **err)
-{
-        return strdup('<?xml version='1\&.0'?><toaster xmlns='http://netconfcentral\&.org/ns/toaster'> \&.\&.\&. </toaster>');
+        printf("Toaster ready for unplugging!\n");
 }
 
 .fi
 .PP
 
 .IP "5." 4
+Fill 'get_state_data()' function with code that will generate state information as defined in the data model\&. 
+.PP
+.nf
+char * get_state_data(char * model, char * running, struct nc_err **err)
+{
+        return strdup("<?xml version="1\&.0"?><toaster xmlns="http://netconfcentral\&.org/ns/toaster"> \&.\&.\&. </toaster>");
+}
+
+.fi
+.PP
+
+.IP "6." 4
 Complete the configuration callbacks\&. The 'op' parameter may be used to determine operation which was done with the node\&. Parameter 'node' holds a copy of node after change (or before change if op == XMLDIFF_REM)\&. 
 .PP
 .nf
@@ -146,7 +144,7 @@ int callback_toaster_toaster (void ** data, XMLDIFF_OP op, xmlNodePtr node, stru
                 break;
         default:
                 *error = nc_err_new(NC_ERR_OP_FAILED);
-                nc_err_set(*error, NC_ERR_PARAM_MSG, 'Unsupported operation\&.');
+                nc_err_set(*error, NC_ERR_PARAM_MSG, "Unsupported operation\&.");
                 return(EXIT_FAILURE);
         }
         return(EXIT_SUCCESS);
@@ -155,7 +153,7 @@ int callback_toaster_toaster (void ** data, XMLDIFF_OP op, xmlNodePtr node, stru
 .fi
 .PP
 
-.IP "6." 4
+.IP "7." 4
 Fill the RPC message callback functions with code that will be run when a message arrives\&. 
 .PP
 .nf
@@ -189,7 +187,7 @@ nc_reply * rpc_cancel_toast (xmlNodePtr input[])
 
         if (status == BUSY) {
                 status = ON;
-                ncntf_event_new(-1, NCNTF_GENERIC, '<toastDone><toastStatus>canceled</toastStatus></toastDone>');
+                ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>canceled</toastStatus></toastDone>");
                 reply = nc_reply_ok();
         } else {
                 reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));

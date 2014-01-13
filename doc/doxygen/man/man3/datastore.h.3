@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Fri Dec 6 2013" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Mon Jan 13 2014" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -149,6 +149,8 @@ NETCONF datastore handling function prototypes and structures\&.
 .PP 
 NETCONF datastore handling function prototypes and structures\&. 
 
+
+.PP
 \fBAuthor:\fP
 .RS 4
 Radek Krejci rkrejci@cesnet.cz Copyright (C) 2012 CESNET, z\&.s\&.p\&.o\&.
@@ -171,7 +173,9 @@ This software is provided ``as is, and any express or implied warranties, includ
 .SS "int ncds_device_init (\fBncds_id\fP *id, struct nc_cpblts *cpblts, intforce)"
 
 .PP
-Initialize transAPI module(s) (if present) and copy startup configuration to running\&. \fBParameters:\fP
+Initialize transAPI module(s) (if present) and copy startup configuration to running\&. 
+.PP
+\fBParameters:\fP
 .RS 4
 \fIid\fP Pointer to ncds_id of device to initialize, if NULL all found transapi-capable devices will be initialized 
 .br
