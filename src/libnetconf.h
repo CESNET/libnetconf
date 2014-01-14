@@ -575,7 +575,7 @@
  * ~~~~~~~
  * -# Run `lnctool' for transapi:
  * ~~~~~~~{.sh}
- * $ lnctool --output-dir ./toaster/ --model ./toaster@2009-11-20.yang transapi --paths ./paths_file
+ * $ lnctool --model ./toaster@2009-11-20.yang transapi --paths ./paths_file
  * ~~~~~~~
  *
  * Besides the generated source code of our transAPI module and GNU Build
