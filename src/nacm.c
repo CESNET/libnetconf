@@ -3,7 +3,7 @@
  * \author Radek Krejci <rkrejci@cesnet.cz>
  * \brief Implementation of NETCONF Access Control Module defined in RFC 6536
  *
- * Copyright (C) 2012-2013 CESNET, z.s.p.o.
+ * Copyright (c) 2012-2014 CESNET, z.s.p.o.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions

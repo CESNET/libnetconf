@@ -2,7 +2,7 @@
 # Makefile for libnetconf example applications
 #
 # Author: Radek Krejci <rkrejci@cesnet.cz>
-# Copyright (C) 2013 CESNET, z.s.p.o.
+# Copyright (c) 2012-2014 CESNET, z.s.p.o.
 #
 
 CC      = gcc
