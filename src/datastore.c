@@ -3914,11 +3914,52 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 	return (new_reply);
 }
 
+static struct rpc2all_data_s {
+	struct nc_filter *filter;
+} rpc2all_data = {NULL};
+
+/*
+ * returns:
+ *  0 - filter removes data from this datastore, do not continue
+ *  1 - filter includes data from this datastore, continue with processing
+ */
+static int rpc_get_prefilter(struct nc_filter **filter, const struct ncds_ds* ds, const nc_rpc* rpc)
+{
+	xmlNodePtr filter_node;
+	int retval = 1;
+
+	/* get filter if specified for this request */
+	if (rpc2all_data.filter == NULL) {
+		*filter = nc_rpc_get_filter(rpc);
+	} else {
+		*filter = rpc2all_data.filter;
+	}
+
+	/* check root element according to the filter (if any) */
+	if (*filter != NULL && (*filter)->type == NC_FILTER_SUBTREE &&
+			ds->data_model && ds->data_model->ns) {
+		retval = 0;
+		for (filter_node = (*filter)->subtree_filter->children; filter_node != NULL; filter_node = filter_node->next) {
+			if (filter_node->ns && xmlStrcmp(BAD_CAST ds->data_model->ns, filter_node->ns->href) == 0) {
+				return (1);
+			}
+		}
+	}
+
+	if (retval == 0 && rpc2all_data.filter == NULL) {
+		/* we will not continue, so filter structure can be removed if not shared */
+		nc_filter_free(*filter);
+		*filter = NULL;
+	}
+
+	return (retval);
+}
+
 nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
 	struct ncds_ds* ds = NULL;
-	struct nc_filter * filter = NULL;
+	struct nc_filter *filter = NULL;
 	char* data = NULL, *config, *model = NULL, *data2, *op_name;
 	xmlDocPtr doc1, doc2, doc_merged = NULL, aux_doc;
 	int len, dsid, i, j;
@@ -3999,6 +4040,8 @@ process_datastore:
 		}
 	}
 
+	filter = NULL;
+
 	switch (op) {
 	case NC_OP_LOCK:
 		ret = ds->func.lock(ds, session, nc_rpc_get_target(rpc), &e);
@@ -4007,6 +4050,16 @@ process_datastore:
 		ret = ds->func.unlock(ds, session, nc_rpc_get_target(rpc), &e);
 		break;
 	case NC_OP_GET:
+		/* pre-filter the request for the current datastore part */
+		if (!rpc_get_prefilter(&filter, ds, rpc)) {
+			/*
+			 * filter completely removes content of this repository, so do not
+			 * continue with the following operations
+			 */
+			data = strdup("");
+			break;
+		}
+
 		if ((data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e)) == NULL ) {
 			if (e == NULL ) {
 				ERROR("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
@@ -4126,7 +4179,6 @@ process_datastore:
 		}
 
 		/* if filter specified, now is good time to apply it */
-		filter = nc_rpc_get_filter(rpc);
 		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
 			if (filter != NULL) {
 				if (ncxml_filter(aux_node, filter, &node, ds->ext_model) != 0) {
@@ -4145,13 +4197,22 @@ process_datastore:
 				node = NULL;
 			}
 		}
-		nc_filter_free(filter);
 		data = strdup((char *) xmlBufferContent(resultbuffer));
 		xmlBufferFree(resultbuffer);
 		xmlFreeDoc(doc_merged);
 
 		break;
 	case NC_OP_GETCONFIG:
+		/* pre-filter the request for the current datastore part */
+		if (!rpc_get_prefilter(&filter, ds, rpc)) {
+			/*
+			 * filter completely removes content of this repository, so do not
+			 * continue with the following operations
+			 */
+			data = strdup("");
+			break;
+		}
+
 		if ((data = ds->func.getconfig(ds, session, nc_rpc_get_source(rpc), &e)) == NULL) {
 			if (e == NULL) {
 				ERROR ("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
@@ -4209,7 +4270,7 @@ process_datastore:
 
 		/* if filter specified, now is good time to apply it */
 		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
-			if ((filter = nc_rpc_get_filter(rpc)) != NULL) {
+			if (filter != NULL) {
 				if (ncxml_filter(aux_node, filter, &node, ds->ext_model) != 0) {
 					ERROR("Filter failed.");
 					e = nc_err_new(NC_ERR_BAD_ELEM);
@@ -4226,7 +4287,6 @@ process_datastore:
 				node = NULL;
 			}
 		}
-		nc_filter_free(filter);
 		data = strdup((char *) xmlBufferContent(resultbuffer));
 		xmlBufferFree(resultbuffer);
 		xmlFreeDoc(doc_merged);
@@ -4793,6 +4853,15 @@ apply_editcopyconfig:
 		break;
 	}
 
+	/*
+	 * remove various unneeded variables from the switch
+	 */
+	/* filter from <get> and <get-config> */
+	if (rpc2all_data.filter == NULL) {
+		/* filter is not shared, free it */
+		nc_filter_free(filter);
+	}
+
 	/* if reply was not already created */
 	if (reply == NULL) {
 		if (e != NULL) {
@@ -4876,11 +4945,6 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 		return (NULL);
 	}
 
-	req_type = nc_rpc_get_type(rpc);
-	if (nc_rpc_get_op(rpc) == NC_OP_EDITCONFIG) {
-		erropt = nc_rpc_get_erropt(rpc);
-	}
-
 	/* check that we have a valid definition of the requested RPC */
 	op_name = nc_rpc_get_op_name(rpc);
 	op_namespace = nc_rpc_get_op_namespace(rpc);
@@ -4898,6 +4962,21 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 		*ids = ncds.datastores_ids;
 	}
 
+	/* get flags and data for the following loop */
+	req_type = nc_rpc_get_type(rpc);
+	op = nc_rpc_get_op(rpc);
+	switch (op) {
+	case NC_OP_EDITCONFIG:
+		erropt = nc_rpc_get_erropt(rpc);
+		break;
+	case NC_OP_GET:
+	case NC_OP_GETCONFIG:
+		rpc2all_data.filter = nc_rpc_get_filter(rpc);
+		break;
+	default:
+		/* do nothing */
+		break;
+	}
 	
 	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
 		/* skip internal datastores */
@@ -4918,6 +4997,8 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 			old_reply = reply;
 		} else if (old_reply != NCDS_RPC_NOT_APPLICABLE || reply != NCDS_RPC_NOT_APPLICABLE) {
 			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
+				nc_filter_free(rpc2all_data.filter);
+				rpc2all_data.filter = NULL;
 				if (nc_reply_get_type(old_reply) == NC_REPLY_ERROR) {
 					return (old_reply);
 				} else if (nc_reply_get_type(reply) == NC_REPLY_ERROR) {
@@ -4936,7 +5017,6 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 				} else if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
 					/* rollback previously changed datastores */
 					/* do not skip internal datastores */
-					op = nc_rpc_get_op(rpc);
 					target = nc_rpc_get_target(rpc);
 					for (ds_rollback = ncds.datastores; ds_rollback != ds; ds_rollback = ds_rollback->next) {
 						if (ds_rollback->datastore->transapi.module != NULL
@@ -4972,10 +5052,16 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 				   * just continue
 				   */
 			} else if (req_type == NC_RPC_DATASTORE_READ) {
+				nc_filter_free(rpc2all_data.filter);
+				rpc2all_data.filter = NULL;
 				return (reply);
 			}
 		}
 	}
+
+	/* clean up the common data for calling nc_apply_rpc() */
+	nc_filter_free(rpc2all_data.filter);
+	rpc2all_data.filter = NULL;
 	
 	return (reply);
 }
