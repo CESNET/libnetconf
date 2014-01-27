@@ -2361,7 +2361,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 					/* do not filter replayComplete notification */
 					if (xmlStrcmp(event_node->name, BAD_CAST "replayComplete")) {
 						/* filter the data */
-						if (ncxml_filter(event_node, filter, &aux_node) != 0) {
+						if (ncxml_filter(event_node, filter, &aux_node, NULL) != 0) {
 							ERROR("Filter failed.");
 							aux_node = xmlCopyNode(event_node, 1);
 						}

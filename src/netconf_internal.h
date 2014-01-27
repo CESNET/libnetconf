@@ -611,9 +611,10 @@ struct nc_err* nc_err_parse(nc_reply* reply);
  * @brief Apply filter on the given XML document.
  * @param data XML document to be filtered.
  * @param filter Filter to apply. Only 'subtree' filters are supported.
+ * @param data_model Data model of the filtered document.
  * @return 0 on success,\n non-zero else
  */
-int ncxml_filter(xmlNodePtr old, const struct nc_filter * filter, xmlNodePtr *new);
+int ncxml_filter(xmlNodePtr old, const struct nc_filter * filter, xmlNodePtr *new, const xmlDocPtr data_model);
 
 /**
  * @brief Get state information about sessions. Only information about monitored

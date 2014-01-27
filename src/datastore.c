@@ -3697,7 +3697,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 	return filter_in;
 }
 
-int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new)
+int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new, const xmlDocPtr data_model)
 {
 	xmlDocPtr result, data_filtered[2] = {NULL, NULL};
 	xmlNodePtr filter_item, node;
@@ -3726,7 +3726,13 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 					xmlDocSetRootElement(data_filtered[1], node);
 				}
 			} else {
-				result = ncxml_merge(data_filtered[0], data_filtered[1], NULL);
+				if (data_model != NULL) {
+					result = ncxml_merge(data_filtered[0], data_filtered[1], data_model);
+				} else {
+					result = data_filtered[1];
+					data_filtered[1] = NULL;
+					xmlDocCopyNodeList(result, data_filtered[0]->children);
+				}
 				node = data_filtered[0]->children;
 				xmlUnlinkNode(node);
 				xmlFreeNode(node);
@@ -4123,7 +4129,7 @@ process_datastore:
 		filter = nc_rpc_get_filter(rpc);
 		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
 			if (filter != NULL) {
-				if (ncxml_filter(aux_node, filter, &node) != 0) {
+				if (ncxml_filter(aux_node, filter, &node, ds->ext_model) != 0) {
 					ERROR("Filter failed.");
 					e = nc_err_new(NC_ERR_BAD_ELEM);
 					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
@@ -4204,7 +4210,7 @@ process_datastore:
 		/* if filter specified, now is good time to apply it */
 		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
 			if ((filter = nc_rpc_get_filter(rpc)) != NULL) {
-				if (ncxml_filter(aux_node, filter, &node) != 0) {
+				if (ncxml_filter(aux_node, filter, &node, ds->ext_model) != 0) {
 					ERROR("Filter failed.");
 					e = nc_err_new(NC_ERR_BAD_ELEM);
 					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
