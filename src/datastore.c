@@ -272,8 +272,8 @@ int ncds_sysinit(int flags)
 			NULL, /* ietf-netconf */
 			get_state_monitoring, /* ietf-netconf-monitoring */
 #ifndef DISABLE_NOTIFICATIONS
-			get_state_notifications, /* ietf-netconf-notifications */
-			NULL, /* nc-notifications */
+			NULL, /* ietf-netconf-notifications */
+			get_state_notifications, /* nc-notifications */
 			NULL, /* notifications */
 #endif
 			NULL, /* ietf-netconf-with-defaults */
