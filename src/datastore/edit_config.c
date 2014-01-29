@@ -1981,9 +1981,26 @@ static int edit_merge_lists(xmlNodePtr merged_node, xmlNodePtr edit_node, xmlDoc
 	return (0);
 }
 
+static int is_leaf_list(xmlNodePtr node, xmlDocPtr model, struct nc_err** error)
+{
+	xmlNodePtr model_node;
+
+	model_node = find_element_model(node, model);
+	if (model_node == NULL) {
+		ERROR("unknown element %s!", (char* )(node->name));
+		*error = nc_err_new(NC_ERR_UNKNOWN_ELEM);
+		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, (char*) (node->name));
+		return (-1);
+	} else if (xmlStrcmp(model_node->name, BAD_CAST "leaf-list") == 0) {
+		return (1);
+	} else {
+		return (0);
+	}
+}
+
 static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
-	xmlNodePtr children, aux, next, nextchild, parent, model_node;
+	xmlNodePtr children, aux, next, nextchild, parent;
 	int r, access, duplicates;
 	int leaf_list;
 	char *msg = NULL;
@@ -2090,8 +2107,11 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 			}
 
 			/* find matching element to children */
+			if ((leaf_list = is_leaf_list(children, model, error)) == -1) {
+				return (EXIT_FAILURE);
+			}
 			aux = orig_node->children;
-			while (aux != NULL && matching_elements(children, aux, keys, 0) == 0) {
+			while (aux != NULL && matching_elements(children, aux, keys, leaf_list) == 0) {
 				aux = aux->next;
 			}
 		}
@@ -2131,16 +2151,8 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 				 * to move the node. In other cases (mainly leafs) we
 				 * don't care the content, because we want to change it.
 				 */
-				model_node = find_element_model(children, model);
-				if (model_node == NULL) {
-					ERROR("unknown element %s!", (char*)(children->name));
-					*error = nc_err_new(NC_ERR_UNKNOWN_ELEM);
-					nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, (char*)(children->name));
+				if ((leaf_list = is_leaf_list(children, model, error)) == -1) {
 					return (EXIT_FAILURE);
-				} else if (xmlStrcmp(model_node->name, BAD_CAST "leaf-list") == 0) {
-					leaf_list = 1;
-				} else {
-					leaf_list = 0;
 				}
 
 				while (aux != NULL) {
