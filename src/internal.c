@@ -226,6 +226,9 @@ int nc_init(int flags)
 		nc_init_flags |= NC_INIT_URL;
 	}
 #endif
+	if (flags & NC_INIT_KEEPALIVECHECK) {
+		nc_init_flags |= NC_INIT_KEEPALIVECHECK;
+	}
 
 	/*
 	 * init internal datastores - they have to be initiated before they are

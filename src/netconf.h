@@ -416,6 +416,14 @@ int nc_init(int flags);
 #define NC_INIT_WD         0x00000010 /**< nc_init()'s flag to enable with-default capability */
 #define NC_INIT_VALIDATE   0x00000020 /**< nc_init()'s flag to enable server's validation capability */
 #define NC_INIT_URL        0x00000040 /**< nc_init()'s flag to enable server's URL capability */
+#define NC_INIT_KEEPALIVECHECK  0x00000080 /**< nc_init()'s flag to enable check of monitored sessions.
+ * Sometimes the process holding a monitored session crashes and status information
+ * of the session is not properly removed from the monitored sessions list.
+ * If this option is used, libnetconf checks if the process holding the session
+ * is still alive. To do this properly, the session is connected with the PID
+ * of the nc_session_monitor() caller. If the PID changes (e.g. after fork() or
+ * daemon()), the process is supposed to call nc_session_monitor() againg.
+ */
 
 /**
  * @ingroup genAPI

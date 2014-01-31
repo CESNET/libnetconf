@@ -46,6 +46,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <poll.h>
@@ -108,6 +109,7 @@ struct session_list_item {
 	int active; /* flag if the non-dummy session is connected to this record */
 	int scounter; /* number of sessions connected with this record */
 	char session_id[SID_SIZE];
+	pid_t pid;
 	enum nc_transport transport;
 	struct nc_session_stats stats;
 	char login_time[TIME_LENGTH];
@@ -268,6 +270,10 @@ int nc_session_monitor(struct nc_session* session)
 				 */
 				if (session->status == NC_SESSION_STATUS_DUMMY) {
 					litem->scounter++;
+					/*
+					 * PID is not updated, since the keep-alive check should
+					 * focus on processes holding the real session, not the dummies
+					 */
 					pthread_rwlock_unlock(&(session_list->lock));
 
 					/* connect session statistics to the shared memory segment */
@@ -278,6 +284,8 @@ int nc_session_monitor(struct nc_session* session)
 				} else if (session->status == NC_SESSION_STATUS_WORKING && litem->active == 0) {
 					litem->scounter++;
 					litem->active = 1;
+					/* update PID for keep-alive check */
+					litem->pid = getpid();
 					pthread_rwlock_unlock(&(session_list->lock));
 
 					/* connect session statistics to the shared memory segment */
@@ -285,15 +293,14 @@ int nc_session_monitor(struct nc_session* session)
 					session->stats = &(litem->stats);
 					session->monitored = 1;
 					return (EXIT_SUCCESS);
-				} else {
-					litem->scounter++;
+				} else if (litem->active == 1) {
+					/* update PID for keep-alive check */
+					litem->pid = getpid();
 					pthread_rwlock_unlock(&(session_list->lock));
-
-					if (litem->active == 1) {
-						ERROR("%s: specified session is already monitored.", __func__);
-					} else {
-						ERROR("%s: specified session is in invalid state and cannot be monitored.", __func__);
-					}
+					return (EXIT_SUCCESS);
+				} else {
+					ERROR("%s: specified session is in invalid state and cannot be monitored.", __func__);
+					pthread_rwlock_unlock(&(session_list->lock));
 					return (EXIT_FAILURE);
 				}
 			}
@@ -373,6 +380,7 @@ int nc_session_monitor(struct nc_session* session)
 	/* fill new structure */
 	litem->size = size;
 	strncpy(litem->session_id, session->session_id, SID_SIZE);
+	litem->pid = getpid();
 	litem->transport = NC_TRTANSPORT_SSH;
 	if (session->stats != NULL) {
 		memcpy(&(litem->stats), session->stats, sizeof(struct nc_session_stats));
@@ -403,6 +411,98 @@ int nc_session_monitor(struct nc_session* session)
 	return (EXIT_SUCCESS);
 }
 
+static void nc_session_monitor_remove(struct session_list_item *litem)
+{
+	struct session_list_item *aux;
+
+	/* reconnect the list */
+	if (litem->offset_prev == 0) { /* first item in the list */
+		session_list->first_offset += litem->offset_next;
+	} else {
+		aux = (struct session_list_item*) ((char*) litem - litem->offset_prev);
+		aux->offset_next = (litem->offset_next == 0) ? 0 : (aux->offset_next + litem->offset_next);
+	}
+	aux = (struct session_list_item*) ((char*) litem + litem->offset_next);
+	aux->offset_prev = (litem->offset_prev == 0) ? 0 : (aux->offset_prev + litem->offset_prev);
+	session_list->count--;
+}
+
+/* length of path of /proc/<PID>/fd/<FDNUM> */
+#define ALIVECHECK_PATH_LENGTH 32
+static void nc_session_monitor_alive_check(void)
+{
+	struct session_list_item *litem;
+	char dirpath[ALIVECHECK_PATH_LENGTH];
+	char linkpath[ALIVECHECK_PATH_LENGTH];
+	char linkname[sizeof(SESSIONSFILE_PATH) + 1];
+	char* aux = NULL;
+	int len;
+	DIR *dir;
+	struct dirent* pfd;
+
+	if (session_list != NULL) {
+		aux = strdup(SESSIONSFILE_PATH);
+		nc_clip_occurences_with(aux, '/', '/');
+
+		pthread_rwlock_wrlock(&(session_list->lock));
+
+		/* check the whole list of monitored sessions */
+		for (litem = (struct session_list_item*) ((char*) (session_list->record) + session_list->first_offset);
+				;
+		        litem = (struct session_list_item*) ((char*) litem + litem->offset_next)) {
+
+			/* check that the monitored process is still alive */
+			snprintf(dirpath, ALIVECHECK_PATH_LENGTH, "/proc/%d/fd", litem->pid);
+			if (access(dirpath, F_OK) == -1) {
+				/* no such a process exists, remove not alive session item */
+				litem->scounter = 0;
+				nc_session_monitor_remove(litem);
+			} else {
+				/* check that the process is still the same (is using libnetconf) */
+				dir = opendir(dirpath);
+				if (dir == NULL) {
+					if (errno == ENOENT) {
+						/* process /proc directory actually does not exist */
+						litem->scounter = 0;
+						nc_session_monitor_remove(litem);
+					} /* else we cannot do more checks */
+					goto alivecheck_next;
+				}
+
+				/* search in all file descriptors for the sessions stats file */
+				errno = 0;
+				while((pfd = readdir(dir)) != NULL) {
+					snprintf(linkpath, ALIVECHECK_PATH_LENGTH, "%s/%s", dirpath, pfd->d_name);
+					if ((len = readlink(linkpath, linkname, sizeof(linkname))) > 0) {
+						linkname[len] = 0;
+						if (strcmp(linkname, aux) == 0) {
+							/* we have match, the process uses libnetconf */
+							break;
+						}
+					} /* not a symlink or other problem - simply it doesn't match, continue */
+				}
+				if (pfd == NULL) {
+					/* the process does not use libnetconf, remove not alive session item */
+					litem->scounter = 0;
+					nc_session_monitor_remove(litem);
+				}
+				closedir(dir);
+			}
+
+alivecheck_next:
+			/* end loop condition */
+			if (litem->offset_next == 0) {
+				/* no other item in the list */
+				break;
+			}
+		}
+
+		pthread_rwlock_unlock(&(session_list->lock));
+		free(aux);
+	}
+
+}
+
 char* nc_session_stats(void)
 {
 	char *aux, *sessions = NULL, *session = NULL;
@@ -411,9 +511,11 @@ char* nc_session_stats(void)
 	if (session_list == NULL) {
 		return (NULL);
 	}
-
+	if (nc_init_flags & NC_INIT_KEEPALIVECHECK) {
+		nc_session_monitor_alive_check();
+	}
 	pthread_rwlock_rdlock(&(session_list->lock));
-	for (litem = (struct session_list_item*)((char*)(session_list->record) + session_list->first_offset); litem != NULL;) {
+	for (litem = (struct session_list_item*)((char*)(session_list->record) + session_list->first_offset); session_list->count > 0 && litem != NULL;) {
 		aux = NULL;
 		if (asprintf(&aux, "<session><session-id>%s</session-id>"
 				"<transport>netconf-ssh</transport>"
@@ -1106,9 +1208,10 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 	session->prev = NULL;
 }
 
+
 void nc_session_free (struct nc_session* session)
 {
-	struct session_list_item *litem, *aux;
+	struct session_list_item* litem;
 	int i;
 
 	if (session == NULL) {
@@ -1142,25 +1245,14 @@ void nc_session_free (struct nc_session* session)
 		/* remove from internal list if session is monitored */
 		pthread_rwlock_wrlock(&(session_list->lock));
 		if (session_list->count > 0) {
-			for (litem = (struct session_list_item*)((char*)(session_list->record) + session_list->first_offset);
+			for (litem = (struct session_list_item*) ((char*) (session_list->record) + session_list->first_offset);
 					;
-					litem = (struct session_list_item*)((char*)litem + litem->offset_next)) {
+					litem = (struct session_list_item*) ((char*) litem + litem->offset_next)) {
 				if (strcmp(litem->session_id, session->session_id) == 0) {
 					/* we have matching record */
 					litem->scounter--;
-
 					if (litem->scounter == 0) {
-						/* reconnect the list */
-						if (litem->offset_prev == 0) { /* first item in the list */
-							session_list->first_offset += litem->offset_next;
-						} else {
-							aux = (struct session_list_item*) ((char*) litem - litem->offset_prev);
-							aux->offset_next = (litem->offset_next == 0) ? 0 : (aux->offset_next + litem->offset_next);
-						}
-						aux = (struct session_list_item*) ((char*) litem + litem->offset_next);
-						aux->offset_prev = (litem->offset_prev == 0) ? 0 : (aux->offset_prev + litem->offset_prev);
-
-						session_list->count--;
+						nc_session_monitor_remove(litem);
 					}
 
 					/* remove link from session statistics into the mapped file */
@@ -1174,7 +1266,7 @@ void nc_session_free (struct nc_session* session)
 				if (litem->offset_next == 0) {
 					/* no other item in the list */
 
-					/* the session's stats were not connected
+					/* if the session's stats were not connected
 					 * with internal monitoring list, so free it
 					 */
 					free(session->stats);
