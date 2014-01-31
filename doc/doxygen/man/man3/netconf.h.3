@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Tue Jan 14 2014" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Fri Jan 31 2014" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -17,6 +17,9 @@ libnetconf's general public functions and structures definitions\&.
 .in +1c
 .ti -1c
 .RI "#define \fBNC_INIT_ALL\fP   0xffffffff"
+.br
+.ti -1c
+.RI "#define \fBNC_INIT_KEEPALIVECHECK\fP   0x00000080"
 .br
 .ti -1c
 .RI "#define \fBNC_INIT_MONITORING\fP   0x00000008"
@@ -162,7 +165,7 @@ libnetconf's general public functions and structures definitions\&.
 .PP
 \fBAuthor:\fP
 .RS 4
-Radek Krejci rkrejci@cesnet.cz Copyright (C) 2012 CESNET, z\&.s\&.p\&.o\&.
+Radek Krejci rkrejci@cesnet.cz Copyright (c) 2012-2014 CESNET, z\&.s\&.p\&.o\&.
 .RE
 .PP
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -181,6 +184,8 @@ This software is provided ``as is, and any express or implied warranties, includ
 .PP 
 .SS "#define NC_INIT_ALL   0xffffffff"
 \fBnc_init()\fP's flag to enable all optional features/subsystems 
+.SS "#define NC_INIT_KEEPALIVECHECK   0x00000080"
+\fBnc_init()\fP's flag to enable check of monitored sessions\&. Sometimes the process holding a monitored session crashes and status information of the session is not properly removed from the monitored sessions list\&. If this option is used, libnetconf checks if the process holding the session is still alive\&. To do this properly, the session is connected with the PID of the \fBnc_session_monitor()\fP caller\&. If the PID changes (e\&.g\&. after fork() or daemon()), the process is supposed to call \fBnc_session_monitor()\fP againg\&. 
 .SS "#define NC_INIT_MONITORING   0x00000008"
 \fBnc_init()\fP's flag to enable ietf-netconf-monitoring module 
 .SS "#define NC_INIT_NACM   0x00000004"

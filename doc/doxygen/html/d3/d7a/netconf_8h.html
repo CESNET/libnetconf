@@ -125,6 +125,8 @@ $(document).ready(function(){initNavTree('d3/d7a/netconf_8h.html','../../');});
 Macros</h2></td></tr>
 <tr class="memitem:abad7c8a3763fd854f67b3cbb1f703b72"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d7a/netconf_8h.html#abad7c8a3763fd854f67b3cbb1f703b72">NC_INIT_ALL</a>&#160;&#160;&#160;0xffffffff</td></tr>
 <tr class="separator:abad7c8a3763fd854f67b3cbb1f703b72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a296598fe488d5cb69257e2ba1def790c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d7a/netconf_8h.html#a296598fe488d5cb69257e2ba1def790c">NC_INIT_KEEPALIVECHECK</a>&#160;&#160;&#160;0x00000080</td></tr>
+<tr class="separator:a296598fe488d5cb69257e2ba1def790c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3523107c9618d5c1b061ce12b73a7d8e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d7a/netconf_8h.html#a3523107c9618d5c1b061ce12b73a7d8e">NC_INIT_MONITORING</a>&#160;&#160;&#160;0x00000008</td></tr>
 <tr class="separator:a3523107c9618d5c1b061ce12b73a7d8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b36db75cd94b518671d692b66549aa6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6">NC_INIT_NACM</a>&#160;&#160;&#160;0x00000004</td></tr>
@@ -364,7 +366,7 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>libnetconf's general public functions and structures definitions. </p>
-<dl class="section author"><dt>Author</dt><dd>Radek Krejci <a href="#" onclick="location.href='mai'+'lto:'+'rkr'+'ej'+'ci@'+'ce'+'sne'+'t.'+'cz'; return false;">rkrej<span style="display: none;">.nosp@m.</span>ci@c<span style="display: none;">.nosp@m.</span>esnet<span style="display: none;">.nosp@m.</span>.cz</a> Copyright (C) 2012 CESNET, z.s.p.o.</dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Radek Krejci <a href="#" onclick="location.href='mai'+'lto:'+'rkr'+'ej'+'ci@'+'ce'+'sne'+'t.'+'cz'; return false;">rkrej<span style="display: none;">.nosp@m.</span>ci@c<span style="display: none;">.nosp@m.</span>esnet<span style="display: none;">.nosp@m.</span>.cz</a> Copyright (c) 2012-2014 CESNET, z.s.p.o.</dd></dl>
 <p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
 <ol type="1">
 <li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
@@ -384,6 +386,19 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a>'s flag to enable all optional features/subsystems </p>
+
+</div>
+</div>
+<a class="anchor" id="a296598fe488d5cb69257e2ba1def790c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NC_INIT_KEEPALIVECHECK&#160;&#160;&#160;0x00000080</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a>'s flag to enable check of monitored sessions. Sometimes the process holding a monitored session crashes and status information of the session is not properly removed from the monitored sessions list. If this option is used, libnetconf checks if the process holding the session is still alive. To do this properly, the session is connected with the PID of the <a class="el" href="../../db/d52/group__session.html#ga023c9c813c59588ab938108f3f063d41" title="Add the session into the internal list of monitored sessions that are returned as part of netconf-sta...">nc_session_monitor()</a> caller. If the PID changes (e.g. after fork() or daemon()), the process is supposed to call <a class="el" href="../../db/d52/group__session.html#ga023c9c813c59588ab938108f3f063d41" title="Add the session into the internal list of monitored sessions that are returned as part of netconf-sta...">nc_session_monitor()</a> againg. </p>
 
 </div>
 </div>
@@ -534,7 +549,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d3/d7a/netconf_8h.html">netconf.h</a></li>
-    <li class="footer">Generated on Tue Jan 14 2014 10:44:35 for libnetconf by
+    <li class="footer">Generated on Fri Jan 31 2014 14:31:10 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>
