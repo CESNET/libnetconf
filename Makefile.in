@@ -162,9 +162,16 @@ GENERATOR_FILES = lnctool/generator/Makefile.in \
 	lnctool/generator/ltmain.sh \
 	lnctool/generator/README
 
+XML_SRCS = models/ietf-netconf-acm-data.rng.in
+
+BUILT_RNGS = $(XML_SRCS:models/%.rng.in=models/%.rng)
+
+models/%.rng: models/%.rng.in
+	@sed -e "s/\@DATAROOTDIR\@/$(subst /,\/,$(datarootdir))/g" $< > $@
+
 LOBJS = $(SRCS:%.c=$(OBJDIR)/%.lo)
 
-all: $(LNCTOOL) $(NAME).la
+all: $(LNCTOOL) $(NAME).la $(BUILT_RNGS)
 
 $(NAME).la: $(LOBJS)
 	@rm -f $@
@@ -319,7 +326,7 @@ uninstall-doc:
 
 .PHONY: clean clean-all clean-doc clean-rpm
 clean:
-	rm -rf *.a *.so* .obj $(OBJS)
+	rm -rf *.a *.so* .obj $(OBJS) $(BUILT_RNGS)
 	$(LIBTOOL) --mode clean rm -f $(LOBJS)
 	$(LIBTOOL) --mode clean rm -f $(NAME).la
 
