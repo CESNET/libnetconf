@@ -373,7 +373,7 @@ AX_PTHREAD([
 	CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 	CC="$PTHREAD_CC"], AC_MSG_ERROR([Missing POSIX threads support.]))
 #AC_CHECK_LIB([pthread], [pthread_create], [], AC_MSG_ERROR([Missing POSIX threads library.]))
-#AC_CHECK_HEADERS([pthread.h], [], AC_MSG_ERROR([Missing POSIX threads headers.]))
+AC_CHECK_HEADERS([pthread.h], [], AC_MSG_ERROR([Missing POSIX threads headers.]))
 
 # This must be after pthread detection
 AC_SEARCH_LIBS([sem_init], [pthread rt], ,

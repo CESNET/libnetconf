@@ -12358,7 +12358,20 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 #AC_CHECK_LIB([pthread], [pthread_create], [], AC_MSG_ERROR([Missing POSIX threads library.]))
-#AC_CHECK_HEADERS([pthread.h], [], AC_MSG_ERROR([Missing POSIX threads headers.]))
+for ac_header in pthread.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "pthread.h" "ac_cv_header_pthread_h" "$ac_includes_default"
+if test "x$ac_cv_header_pthread_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_PTHREAD_H 1
+_ACEOF
+
+else
+  as_fn_error $? "Missing POSIX threads headers." "$LINENO" 5
+fi
+
+done
+
 
 # This must be after pthread detection
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing sem_init" >&5
