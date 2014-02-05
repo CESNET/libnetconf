@@ -35,9 +35,9 @@ int get_node_namespace(const char * ns_mapping[], xmlNodePtr node, char ** prefi
 
 struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char * ns_mapping[], struct model_tree * parent, int *children_count)
 {
-	struct model_tree *children = NULL, *choice, *new_tree;
+	struct model_tree *children = NULL, *choice, *new_tree, *augment_children;
 	xmlNodePtr int_tmp, list_tmp, model_tmp = model_node->children;
-	int count = 0, case_count, config;
+	int count = 0, case_count, config, augment_children_count;
 	char * keys, * key, * config_text;
 	char **new_strlist;
 	xmlChar *value;
@@ -165,8 +165,20 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char 
 			/* remove the increment of the case statement */
 			count--;
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "augment")) {
-			children[count-1].type = YIN_TYPE_AUGMENT;
-			children[count-1].children = yinmodel_parse_recursive (model_tmp, ns_mapping, &children[count-1], &children[count-1].children_count);
+			augment_children = yinmodel_parse_recursive(model_tmp, ns_mapping, parent, &augment_children_count);
+			if ((new_tree = realloc(children, sizeof(struct model_tree) * (augment_children_count+count))) == NULL) {
+				ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+				/* try to continue */
+			} else {
+				children = new_tree;
+				free(children[count-1].name);
+				free(children[count-1].ns_prefix);
+				free(children[count-1].ns_uri);
+				memcpy(&children[count-1], augment_children, augment_children_count*sizeof(struct model_tree));
+				count += augment_children_count;
+			}
+			free(augment_children);
+			count--;
 		} else {
 			free (children[count-1].name);
 			free (children[count-1].ns_prefix);
