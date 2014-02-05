@@ -1666,6 +1666,7 @@ static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_no
 	char *msg = NULL;
 	xmlNodePtr retval = NULL;
 	xmlNodePtr parent = NULL;
+	xmlNsPtr ns_aux;
 
 	if (edit_node == NULL || orig_doc == NULL) {
 		ERROR("%s: invalid input parameter.", __func__);
@@ -1692,6 +1693,18 @@ static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_no
 				}
 				return (NULL);
 			}
+		}
+
+		if (edit_node->parent->type == XML_DOCUMENT_NODE) {
+			/* original document is empty */
+			VERB("Creating the parent %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
+			retval = xmlCopyNode(edit_node, 0);
+			if (edit_node->ns) {
+				ns_aux = xmlNewNs(retval, edit_node->ns->href, NULL);
+				xmlSetNs(retval, ns_aux);
+			}
+			xmlDocSetRootElement(orig_doc, retval);
+			return (retval);
 		}
 
 		parent = edit_create_recursively(orig_doc, edit_node->parent, model, keys, nacm, error);
