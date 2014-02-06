@@ -5,7 +5,10 @@ This release includes the following changes:
  * Dependency on D-Bus removed.
  * Example applications were moved to a separated Netopeer project.
  * TransAPI moved to version 3.
- * detection and correction of session monitoring inconsistency
+ * Detection and correction of session monitoring inconsistency.
+ * Support for using static transAPI modules via ncds_new_transapi_static().
+ * New nc_verb_* functions mainly for transAPI modules to print messages
+   via libnetconf printing callback.
 
 For API/ABI compatibility to previous versions, see reports in
 'doc/compat_reports/' directory.
