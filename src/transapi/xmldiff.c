@@ -9,7 +9,7 @@
 
 #include "netconf_internal.h"
 #include "xmldiff.h"
-#include "transapi.h"
+#include "../transapi.h"
 #include "yinparser.h"
 #include "transapi_internal.h"
 

@@ -1386,33 +1386,33 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	}
 
 	if ((modified = dlsym(transapi_module, "config_modified")) == NULL) {
-		ERROR("Unable to get config_modified variable from shared library.");
+		ERROR("Missing config_modified variable in %s transAPI module.", callbacks_path);
 		dlclose (transapi_module);
 		return (NULL);
 	}
 
 	if ((erropt = dlsym(transapi_module, "erropt")) == NULL) {
-		ERROR("Unable to get erropt variable from shared library.");
+		ERROR("Missing erropt variable in %s transAPI module.", callbacks_path);
 		dlclose (transapi_module);
 		return (NULL);
 	}
 
 	/* find get_state function */
 	if ((get_state = dlsym (transapi_module, "get_state_data")) == NULL) {
-		ERROR("Unable to get addresses of functions from shared library.");
+		ERROR("Missing get_state_data() function in %s transAPI module.", callbacks_path);
 		dlclose (transapi_module);
 		return (NULL);
 	}
 
 	if ((ns_mapping = dlsym(transapi_module, "namespace_mapping")) == NULL) {
-		ERROR("Unable to get mapping of prefixes with uris.");
+		ERROR("Missing mapping of prefixes with URIs in %s transAPI module.", callbacks_path);
 		dlclose(transapi_module);
 		return(NULL);
 	}
 
 	/* find rpc callback functions mapping structure */
 	if ((rpc_clbks = dlsym(transapi_module, "rpc_clbks")) == NULL) {
-		WARN("Unable to get addresses of rpc callback functions from shared library.");
+		VERB("No RPC callbacks in %s transAPI module.", callbacks_path);
 	}
 
 	/* callbacks work with configuration data */
@@ -1420,23 +1420,23 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	if (type != NCDS_TYPE_EMPTY) {
 		/* get clbks structure */
 		if ((data_clbks = dlsym (transapi_module, "clbks")) == NULL) {
-			ERROR("Unable to get addresses of functions from shared library.");
+			ERROR("%s: Missing data callbacks in %s transAPI module.", callbacks_path);
 			dlclose (transapi_module);
 			return (NULL);
 		}
 	}
 
 	if ((init_func = dlsym (transapi_module, "transapi_init")) == NULL) {
-		WARN("%s: Unable to find \"transapi_init\" function.", __func__);
+		VERB("No transapi_init() function in %s transAPI module.", callbacks_path);
 	}
 
 	if ((close_func = dlsym (transapi_module, "transapi_close")) == NULL) {
-		WARN("%s: Unable to find \"transapi_close\" function.", __func__);
+		VERB("No transapi_close() function in %s transAPI module.", callbacks_path);
 	}
 
 	/* create basic ncds_ds structure */
 	if ((ds = ncds_new2(type, model_path, get_state)) == NULL) {
-		ERROR ("Failed to create ncds_ds structure.");
+		ERROR ("%s: Failed to create ncds_ds structure.", __func__);
 		dlclose (transapi_module);
 		return (NULL);
 	}
@@ -1452,6 +1452,57 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	ds->transapi.close = close_func;
 
 	return ds;
+}
+
+struct ncds_ds* ncds_new_transapi_static(NCDS_TYPE type, const char* model_path, const struct transapi* transapi)
+{
+	struct ncds_ds* ds = NULL;
+
+	/* transAPI module information checks */
+	if (transapi->config_modified == NULL) {
+		ERROR("%s: Missing config_modified variable in transAPI module description.", __func__);
+		return (NULL);
+	}
+	if (transapi->erropt == NULL) {
+		ERROR("%s: Missing erropt variable in transAPI module description.", __func__);
+		return (NULL);
+	}
+	if (transapi->get_state == NULL) {
+		ERROR("%s: Missing get_state() function in transAPI module description.", __func__);
+		return (NULL);
+	}
+	if (transapi->ns_mapping == NULL) {
+		ERROR("%s: Missing mapping of prefixes with URIs in transAPI module description.", __func__);
+		return (NULL);
+	}
+	/* empty datastore has no data */
+	if (type != NCDS_TYPE_EMPTY) {
+		/* get clbks structure */
+		if (transapi->data_clbks == NULL) {
+			ERROR("%s: Missing data callbacks in transAPI module description.", __func__);
+			return (NULL);
+		}
+	}
+
+	/* create basic ncds_ds structure */
+	if ((ds = ncds_new2(type, model_path, transapi->get_state)) == NULL) {
+		ERROR ("%s: Failed to create ncds_ds structure.", __func__);
+		return (NULL);
+	}
+
+	/* copy transAPI module info into a internal structure
+	 * NOTE: copy only the beginning part common for struct transapi and
+	 * struct transapi_internal
+	 */
+	memcpy(&(ds->transapi), transapi, offsetof(struct transapi, get_state));
+
+	/*
+	 * mark it as transAPI (non-NULL), but remmeber that it is not a dynamically
+	 * linked transAPI module
+	 */
+	ds->transapi.module = &error_area;
+
+	return (ds);
 }
 
 static struct data_model* data_model_new(const char* model_path)
@@ -3356,7 +3407,7 @@ void ncds_free(struct ncds_ds* datastore)
 				ds->transapi.close();
 			}
 			/* unloading transapi module failed */
-			if (dlclose(ds->transapi.module)) {
+			if (ds->transapi.module != &error_area && dlclose(ds->transapi.module)) {
 				ERROR("%s: Unloading transAPI module failed: %s:", __func__, dlerror());
 			}
 		}

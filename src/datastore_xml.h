@@ -43,6 +43,7 @@
 #include <libxml/tree.h>
 
 #include "datastore.h"
+#include "transapi.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,6 +71,28 @@ extern "C" {
  * used to access the configuration data.
  */
 struct ncds_ds* ncds_new2(NCDS_TYPE type, const char * model_path, xmlDocPtr (*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e));
+
+/**
+ * @ingroup transapi
+ * @brief Create new datastore structure with transaction API support
+ * @param[in] type Datastore implementation type for the new datastore structure.
+ * @param[in] model_path Base name of the configuration data model files.
+ * libnetconf expects model_path.yin as a data model, model_path.rng for
+ * grammar and data types validation, model_path.dsrl for default values
+ * validation and model_path.sch for semantic validation.
+ * @param[in] transapi Structure describing transAPI module. This way the module
+ * can be connected with the libnetconf library statically. The structure itself
+ * can be freed after the call, but the structure contains only pointers to
+ * other structures and variables that will be accessed directly from the
+ * subsequent functions using the returned datastore structure. These objects
+ * must not be freed during the existence of the returned datastore structure.
+ * After ncds_free(), these transAPI variables/structures are not freed.
+ * @return Prepared (not configured) datastore structure. To configure the
+ * structure, caller must use the parameter setters of the specific datastore
+ * implementation type. Then, the datastore can be initiated (ncds_init()) and
+ * used to access the configuration data.
+ */
+struct ncds_ds* ncds_new_transapi_static(NCDS_TYPE type, const char* model_path, const struct transapi* transapi);
 
 /**
  * @ingroup store

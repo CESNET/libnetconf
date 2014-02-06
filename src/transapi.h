@@ -2,7 +2,8 @@
 #define _TRANSAPI_H
 
 #include <libxml/tree.h>
-#include "../libnetconf.h"
+#include "netconf.h"
+#include "error.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,6 +32,46 @@ typedef enum
 	XMLDIFF_SIBLING = 16 /**< Some sibling nodes were added/removed/changed position. Only for LEAF and LEAF-LIST. */,
 	XMLDIFF_REORDER = 32 /**< Some of the children nodes changed theirs position. None was added/removed. Only for LEAF and LEAF-LIST. */,
 } XMLDIFF_OP;
+
+/**
+ * @ingroup transapi
+ * @brief Structure to describe transAPI module and connect it statically with
+ * libnetconf using ncds_new_transapi_static().
+ */
+struct transapi {
+	/**
+	 * @brief Module initialization.
+	 */
+	int (*init)(xmlDocPtr *);
+	/**
+	 * @brief Free module resources and prepare for closing.
+	 */
+	void (*close)(void);
+	/**
+	 * @brief Transapi callback mapping structure.
+	 */
+	struct transapi_data_callbacks * data_clbks;
+	/**
+	 * @brief Transapi rpc callbacks mapping structure.
+	 */
+	struct transapi_rpc_callbacks * rpc_clbks;
+	/**
+	 * @brief Mapping prefixes with URIs
+	 */
+	const char ** ns_mapping;
+	/**
+	 * @brief Flag if configuration data passed to callbacks were modified
+	 */
+	int *config_modified;
+	/**
+	 * @brief edit-config's error-option for the current transaction
+	 */
+	NC_EDIT_ERROPT_TYPE *erropt;
+	/**
+	 * @brief Function returning the module status information.
+	 */
+	xmlDocPtr (*get_state)(const xmlDocPtr, const xmlDocPtr, struct nc_err **);
+};
 
 /**
  * @ingroup transapi

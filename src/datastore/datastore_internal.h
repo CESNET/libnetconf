@@ -181,23 +181,25 @@ struct model_validators {
 };
 #endif
 
-struct transapi {
+/*
+ * internal transAPI structure covering both ways how to handle transAPI
+ * modules:
+ * 1) dynamic linking using ncds_new_transapi()
+ * 2) static linking using ncds_new_transapi_static()
+ *
+ * For the 2) there is a public struct transapi that is the same (it can be
+ * mapped to this structure) except the last item module which refers to a
+ * dynamically loaded object (dlopen()).
+ */
+struct transapi_internal {
 	/**
-	 * @brief Loaded shared library with transapi callbacks.
+	 * @brief Module initialization.
 	 */
-	void * module;
+	int (*init)(xmlDocPtr *);
 	/**
-	 * @brief Flag if configuration data passed to callbacks were modified
+	 * @brief Free module resources and prepare for closing.
 	 */
-	int *config_modified;
-	/**
-	 * @brief edit-config's error-option for the current transaction
-	 */
-	NC_EDIT_ERROPT_TYPE *erropt;
-	/**
-	 * @brief Mapping prefixes with URIs
-	 */
-	const char ** ns_mapping;
+	void (*close)(void);
 	/**
 	 * @brief Transapi callback mapping structure.
 	 */
@@ -207,13 +209,23 @@ struct transapi {
 	 */
 	struct transapi_rpc_callbacks * rpc_clbks;
 	/**
-	 * @brief Module initialization.
+	 * @brief Mapping prefixes with URIs
 	 */
-	int (*init)(xmlDocPtr *);
+	const char ** ns_mapping;
 	/**
-	 * @brief Free module resources and prepare for closing.
+	 * @brief Flag if configuration data passed to callbacks were modified
 	 */
-	void (*close)(void);
+	int *config_modified;
+	/**
+	 * @brief edit-config's error-option for the current transaction
+	 */
+	NC_EDIT_ERROPT_TYPE *erropt;
+
+	/* internal specific part */
+	/**
+	 * @brief Loaded shared library with transapi callbacks.
+	 */
+	void * module;
 };
 
 struct model_list;
@@ -316,7 +328,7 @@ struct ncds_ds {
 	/**
 	 * @brief TransAPI information
 	 */
-	struct transapi transapi;
+	struct transapi_internal transapi;
 };
 
 /**
