@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <libxml/tree.h>
 #include "yinparser.h"
-#include "transapi.h"
+#include "../transapi.h"
 
 /**
  * @ingroup transapi

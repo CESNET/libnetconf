@@ -1,7 +1,7 @@
 #ifndef TRANSAPI_INTERNAL_H_
 #define TRANSAPI_INTERNAL_H_
 
-#include "transapi.h"
+#include "../transapi.h"
 #include "yinparser.h"
 #include "../datastore/datastore_internal.h"
 

@@ -2,7 +2,8 @@
 #define _TRANSAPI_H
 
 #include <libxml/tree.h>
-#include "../libnetconf.h"
+#include "netconf.h"
+#include "error.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -122,7 +122,7 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/datastore.h \
 	src/datastore_xml.h \
 	src/datastore/custom/datastore_custom.h \
-	src/transapi/transapi.h
+	src/transapi.h
 		
 HDRS_PUBL = $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR)
 SUBHEADERS_DIR = libnetconf

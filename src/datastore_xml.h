@@ -43,7 +43,7 @@
 #include <libxml/tree.h>
 
 #include "datastore.h"
-#include "transapi/transapi.h"
+#include "transapi.h"
 
 #ifdef __cplusplus
 extern "C" {
