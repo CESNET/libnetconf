@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.6.0</span>
+   &#160;<span id="projectnumber">0.7.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -116,7 +116,7 @@ $(document).ready(function(){initNavTree('d3/df0/transapi_tutorial.html','../../
 <li>Create a new directory for the toaster module and move the data model and the path file into it: <div class="fragment"><div class="line">$ mkdir toaster &amp;&amp; cd toaster/</div>
 <div class="line">$ mv ../toaster@2009-11-20.yang ../paths_file .</div>
 </div><!-- fragment --></li>
-<li>Run `lnctool' for transapi: <div class="fragment"><div class="line">$ lnctool --model ./toaster@2009-11-20.yang transapi --paths ./paths_file</div>
+<li>Run `lnctool' for transapi: <div class="fragment"><div class="line">$ lnctool --model ./toaster@2009-11-20.yang <a class="code" href="../../d9/dc0/structtransapi.html">transapi</a> --paths ./paths_file</div>
 </div><!-- fragment --></li>
 </ol>
 <p>Besides the generated source code of our transAPI module and GNU Build System files (Makefile.in, configure.in,...), lnctool also generates YIN format of the data model and validators accepted by the libnetconf's <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support. ">ncds_new_transapi()</a> and <a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31" title="Set validators (or disable validation) on the specified datastore. ">ncds_set_validation()</a> functions:</p>
@@ -224,7 +224,7 @@ $(document).ready(function(){initNavTree('d3/df0/transapi_tutorial.html','../../
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../d9/d25/transapi.html">Transaction API (transAPI)</a></li>
-    <li class="footer">Generated on Fri Jan 31 2014 14:31:10 for libnetconf by
+    <li class="footer">Generated on Thu Feb 6 2014 16:01:55 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

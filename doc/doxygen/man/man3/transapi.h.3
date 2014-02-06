@@ -1,19 +1,25 @@
-.TH "src/transapi/transapi.h" 3 "Fri Jan 31 2014" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/transapi.h" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
-src/transapi/transapi.h \- 
+src/transapi.h \- 
 .SH SYNOPSIS
 .br
 .PP
 \fC#include <libxml/tree\&.h>\fP
 .br
-\fC#include '\&.\&./libnetconf\&.h'\fP
+\fC#include 'netconf\&.h'\fP
+.br
+\fC#include 'error\&.h'\fP
 .br
 
 .SS "Data Structures"
 
 .in +1c
+.ti -1c
+.RI "struct \fBtransapi\fP"
+.br
+.RI "\fIStructure to describe transAPI module and connect it statically with libnetconf using \fBncds_new_transapi_static()\fP\&. \fP"
 .ti -1c
 .RI "struct \fBtransapi_data_callbacks\fP"
 .br

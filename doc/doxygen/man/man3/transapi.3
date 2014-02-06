@@ -1,98 +1,89 @@
-.TH "Transaction API" 3 "Fri Jan 31 2014" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "transapi" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
-Transaction API \- 
+transapi \- 
 .PP
-libnetconf's implementation of transaction-based partial device reconfiguration\&.  
+Structure to describe transAPI module and connect it statically with libnetconf using \fBncds_new_transapi_static()\fP\&.  
 
-.SS "Data Structures"
-
-.in +1c
-.ti -1c
-.RI "struct \fBtransapi_data_callbacks\fP"
+.SH SYNOPSIS
 .br
-.RI "\fISame as \fBtransapi_data_callbacks\fP\&. Using libxml2 structures for callbacks parameters\&. \fP"
-.ti -1c
-.RI "struct \fBtransapi_rpc_callbacks\fP"
-.br
-.RI "\fISame as \fBtransapi_rpc_callbacks\fP\&. Using libxml2 structures for callbacks parameters\&. \fP"
-.in -1c
-.SS "Enumerations"
+.PP
+.PP
+\fC#include <transapi\&.h>\fP
+.SS "Data Fields"
 
 .in +1c
 .ti -1c
-.RI "enum \fBXMLDIFF_OP\fP { \fBXMLDIFF_ERR\fP = -1, \fBXMLDIFF_NONE\fP = 0, \fBXMLDIFF_ADD\fP = 1, \fBXMLDIFF_REM\fP = 2, \fBXMLDIFF_MOD\fP = 4, \fBXMLDIFF_CHAIN\fP = 8, \fBXMLDIFF_SIBLING\fP = 16, \fBXMLDIFF_REORDER\fP = 32 }"
+.RI "void(* \fBclose\fP )(void)"
 .br
-.RI "\fIEnum specifying states of node in document\&. \fP"
-.in -1c
-.SS "Functions"
-
-.in +1c
+.RI "\fIFree module resources and prepare for closing\&. \fP"
 .ti -1c
-.RI "struct ncds_ds * \fBncds_new_transapi\fP (\fBNCDS_TYPE\fP type, const char *model_path, const char *callbacks_path)"
+.RI "int * \fBconfig_modified\fP"
 .br
-.RI "\fICreate new datastore structure with transaction API support\&. \fP"
+.RI "\fIFlag if configuration data passed to callbacks were modified\&. \fP"
+.ti -1c
+.RI "struct \fBtransapi_data_callbacks\fP * \fBdata_clbks\fP"
+.br
+.RI "\fITransapi callback mapping structure\&. \fP"
+.ti -1c
+.RI "\fBNC_EDIT_ERROPT_TYPE\fP * \fBerropt\fP"
+.br
+.RI "\fIedit-config's error-option for the current transaction \fP"
+.ti -1c
+.RI "xmlDocPtr(* \fBget_state\fP )(const xmlDocPtr, const xmlDocPtr, struct nc_err **)"
+.br
+.RI "\fIFunction returning the module status information\&. \fP"
+.ti -1c
+.RI "int(* \fBinit\fP )(xmlDocPtr *)"
+.br
+.RI "\fIModule initialization\&. \fP"
+.ti -1c
+.RI "const char ** \fBns_mapping\fP"
+.br
+.RI "\fIMapping prefixes with URIs\&. \fP"
+.ti -1c
+.RI "struct \fBtransapi_rpc_callbacks\fP * \fBrpc_clbks\fP"
+.br
+.RI "\fITransapi rpc callbacks mapping structure\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
-libnetconf's implementation of transaction-based partial device reconfiguration\&. 
-
-
-.SH "Enumeration Type Documentation"
+Structure to describe transAPI module and connect it statically with libnetconf using \fBncds_new_transapi_static()\fP\&. 
+.SH "Field Documentation"
 .PP 
-.SS "enum \fBXMLDIFF_OP\fP"
+.SS "void(* close)(void)"
 
 .PP
-Enum specifying states of node in document\&. 
-.PP
-\fBEnumerator\fP
-.in +1c
-.TP
-\fB\fIXMLDIFF_ERR \fP\fP
-Error while creating XML difftree\&. 
-.TP
-\fB\fIXMLDIFF_NONE \fP\fP
-Last operation did not cause any change in configuration\&. 
-.TP
-\fB\fIXMLDIFF_ADD \fP\fP
-Element was added to configuration\&. 
-.TP
-\fB\fIXMLDIFF_REM \fP\fP
-Element was removed from configuration\&. 
-.TP
-\fB\fIXMLDIFF_MOD \fP\fP
-Element was modified\&. 
-.TP
-\fB\fIXMLDIFF_CHAIN \fP\fP
-Some of children of element was modified/added/removed\&. 
-.TP
-\fB\fIXMLDIFF_SIBLING \fP\fP
-Some sibling nodes were added/removed/changed position\&. Only for LEAF and LEAF-LIST\&. 
-.TP
-\fB\fIXMLDIFF_REORDER \fP\fP
-Some of the children nodes changed theirs position\&. None was added/removed\&. Only for LEAF and LEAF-LIST\&. 
-.SH "Function Documentation"
-.PP 
-.SS "struct ncds_ds* ncds_new_transapi (\fBNCDS_TYPE\fPtype, const char *model_path, const char *callbacks_path)"
+Free module resources and prepare for closing\&. 
+.SS "int* config_modified"
 
 .PP
-Create new datastore structure with transaction API support\&. 
+Flag if configuration data passed to callbacks were modified\&. 
+.SS "struct \fBtransapi_data_callbacks\fP* data_clbks"
+
 .PP
-\fBParameters:\fP
-.RS 4
-\fItype\fP Datastore implementation type for the new datastore structure\&. 
-.br
-\fImodel_path\fP Base name of the configuration data model files\&. libnetconf expects model_path\&.yin as a data model, model_path\&.rng for grammar and data types validation, model_path\&.dsrl for default values validation and model_path\&.sch for semantic validation\&. 
-.br
-\fIcallbacks_path\fP Path to shared library with callbacks and other functions for transaction API\&. 
-.RE
+Transapi callback mapping structure\&. 
+.SS "\fBNC_EDIT_ERROPT_TYPE\fP* erropt"
+
 .PP
-\fBReturns:\fP
-.RS 4
-Prepared (not configured) datastore structure\&. To configure the structure, caller must use the parameter setters of the specific datastore implementation type\&. Then, the datastore can be initiated (\fBncds_init()\fP) and used to access the configuration data\&. 
-.RE
+edit-config's error-option for the current transaction 
+.SS "xmlDocPtr(* get_state)(const xmlDocPtr, const xmlDocPtr, struct nc_err **)"
+
 .PP
+Function returning the module status information\&. 
+.SS "int(* init)(xmlDocPtr *)"
+
+.PP
+Module initialization\&. 
+.SS "const char** ns_mapping"
+
+.PP
+Mapping prefixes with URIs\&. 
+.SS "struct \fBtransapi_rpc_callbacks\fP* rpc_clbks"
+
+.PP
+Transapi rpc callbacks mapping structure\&. 
 
 .SH "Author"
 .PP 

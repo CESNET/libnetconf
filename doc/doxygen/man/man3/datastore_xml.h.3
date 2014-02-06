@@ -1,4 +1,4 @@
-.TH "src/datastore_xml.h" 3 "Fri Jan 31 2014" "Version 0.6.0" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore_xml.h" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -13,6 +13,8 @@ NETCONF datastore handling function prototypes and structures - XML variants\&.
 .br
 \fC#include 'datastore\&.h'\fP
 .br
+\fC#include 'transapi\&.h'\fP
+.br
 
 .SS "Functions"
 
@@ -21,6 +23,10 @@ NETCONF datastore handling function prototypes and structures - XML variants\&.
 .RI "struct ncds_ds * \fBncds_new2\fP (\fBNCDS_TYPE\fP type, const char *model_path, xmlDocPtr(*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e))"
 .br
 .RI "\fICreate a new datastore structure of the specified implementation type with get_state function using libxml2\&. \fP"
+.ti -1c
+.RI "struct ncds_ds * \fBncds_new_transapi_static\fP (\fBNCDS_TYPE\fP type, const char *model_path, const struct \fBtransapi\fP *\fBtransapi\fP)"
+.br
+.RI "\fICreate new datastore structure with transaction API support\&. \fP"
 .ti -1c
 .RI "int \fBncds_set_validation2\fP (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron, int(*valid_func)(const xmlDocPtr config, struct nc_err **err))"
 .br

@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.6.0</span>
+   &#160;<span id="projectnumber">0.7.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -116,33 +116,39 @@ $(document).ready(function(){initNavTree('d7/dc8/datastore__xml_8h_source.html',
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#include &lt;libxml/tree.h&gt;</span></div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d9/db6/datastore_8h.html">datastore.h</a>&quot;</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="preprocessor"></span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="keyword">struct </span>ncds_ds* <a class="code" href="../../db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df">ncds_new2</a>(<a class="code" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, <span class="keyword">const</span> <span class="keywordtype">char</span> * model_path, xmlDocPtr (*get_state)(<span class="keyword">const</span> xmlDocPtr model, <span class="keyword">const</span> xmlDocPtr running, <span class="keyword">struct</span> nc_err **e));</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga31c6fa81cf4c62c32561c1047903477f">ncds_set_validation2</a>(<span class="keyword">struct</span> ncds_ds* ds, <span class="keywordtype">int</span> enable, <span class="keyword">const</span> <span class="keywordtype">char</span>* relaxng,</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* schematron,</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <span class="keywordtype">int</span> (*valid_func)(<span class="keyword">const</span> xmlDocPtr config, <span class="keyword">struct</span> nc_err **err));</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="preprocessor"></span>}</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* DATASTORE_XML_H_ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d0/db0/transapi_8h.html">transapi.h</a>&quot;</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor"></span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="keyword">struct </span>ncds_ds* <a class="code" href="../../db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df">ncds_new2</a>(<a class="code" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, <span class="keyword">const</span> <span class="keywordtype">char</span> * model_path, xmlDocPtr (*get_state)(<span class="keyword">const</span> xmlDocPtr model, <span class="keyword">const</span> xmlDocPtr running, <span class="keyword">struct</span> nc_err **e));</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="keyword">struct </span>ncds_ds* <a class="code" href="../../d8/d55/group__transapi.html#gaaf4e4daa7fa8be965ded41eb006a6713">ncds_new_transapi_static</a>(<a class="code" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, <span class="keyword">const</span> <span class="keywordtype">char</span>* model_path, <span class="keyword">const</span> <span class="keyword">struct</span> <a class="code" href="../../d9/dc0/structtransapi.html">transapi</a>* <a class="code" href="../../d9/dc0/structtransapi.html">transapi</a>);</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga31c6fa81cf4c62c32561c1047903477f">ncds_set_validation2</a>(<span class="keyword">struct</span> ncds_ds* ds, <span class="keywordtype">int</span> enable, <span class="keyword">const</span> <span class="keywordtype">char</span>* relaxng,</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* schematron,</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <span class="keywordtype">int</span> (*valid_func)(<span class="keyword">const</span> xmlDocPtr config, <span class="keyword">struct</span> nc_err **err));</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="preprocessor"></span>}</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* DATASTORE_XML_H_ */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="datastore_8h_html"><div class="ttname"><a href="../../d9/db6/datastore_8h.html">datastore.h</a></div><div class="ttdoc">NETCONF datastore handling function prototypes and structures. </div></div>
+<div class="ttc" id="group__transapi_html_gaaf4e4daa7fa8be965ded41eb006a6713"><div class="ttname"><a href="../../d8/d55/group__transapi.html#gaaf4e4daa7fa8be965ded41eb006a6713">ncds_new_transapi_static</a></div><div class="ttdeci">struct ncds_ds * ncds_new_transapi_static(NCDS_TYPE type, const char *model_path, const struct transapi *transapi)</div><div class="ttdoc">Create new datastore structure with transaction API support. </div></div>
 <div class="ttc" id="group__store_html_gab0f0cbd5268577ec36fc76cf89c72a8f"><div class="ttname"><a href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a></div><div class="ttdeci">NCDS_TYPE</div><div class="ttdoc">Datastore implementation types provided by libnetconf. </div><div class="ttdef"><b>Definition:</b> datastore.h:54</div></div>
+<div class="ttc" id="transapi_8h_html"><div class="ttname"><a href="../../d0/db0/transapi_8h.html">transapi.h</a></div></div>
 <div class="ttc" id="group__store_html_ga31c6fa81cf4c62c32561c1047903477f"><div class="ttname"><a href="../../db/d67/group__store.html#ga31c6fa81cf4c62c32561c1047903477f">ncds_set_validation2</a></div><div class="ttdeci">int ncds_set_validation2(struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron, int(*valid_func)(const xmlDocPtr config, struct nc_err **err))</div><div class="ttdoc">Set validators (or disable validation) on the specified datastore. </div></div>
 <div class="ttc" id="group__store_html_ga18655a18464191a4aab1ef0b7d8ba5df"><div class="ttname"><a href="../../db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df">ncds_new2</a></div><div class="ttdeci">struct ncds_ds * ncds_new2(NCDS_TYPE type, const char *model_path, xmlDocPtr(*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e))</div><div class="ttdoc">Create a new datastore structure of the specified implementation type with get_state function using l...</div></div>
+<div class="ttc" id="structtransapi_html"><div class="ttname"><a href="../../d9/dc0/structtransapi.html">transapi</a></div><div class="ttdoc">Structure to describe transAPI module and connect it statically with libnetconf using ncds_new_transa...</div><div class="ttdef"><b>Definition:</b> transapi.h:41</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d7/dc8/datastore__xml_8h.html">datastore_xml.h</a></li>
-    <li class="footer">Generated on Fri Jan 31 2014 14:31:10 for libnetconf by
+    <li class="footer">Generated on Thu Feb 6 2014 16:01:55 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

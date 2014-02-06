@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.6.0</span>
+   &#160;<span id="projectnumber">0.7.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -116,6 +116,7 @@ $(document).ready(function(){initNavTree('d7/dc8/datastore__xml_8h.html','../../
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;libxml/tree.h&gt;</code><br/>
 <code>#include &quot;<a class="el" href="../../d9/db6/datastore_8h_source.html">datastore.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="../../d0/db0/transapi_8h_source.html">transapi.h</a>&quot;</code><br/>
 </div>
 <p><a href="../../d7/dc8/datastore__xml_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -124,6 +125,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga18655a18464191a4aab1ef0b7d8ba5df"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df">ncds_new2</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, xmlDocPtr(*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e))</td></tr>
 <tr class="memdesc:ga18655a18464191a4aab1ef0b7d8ba5df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new datastore structure of the specified implementation type with get_state function using libxml2.  <a href="../../db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df">More...</a><br/></td></tr>
 <tr class="separator:ga18655a18464191a4aab1ef0b7d8ba5df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaaf4e4daa7fa8be965ded41eb006a6713"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#gaaf4e4daa7fa8be965ded41eb006a6713">ncds_new_transapi_static</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, const struct <a class="el" href="../../d9/dc0/structtransapi.html">transapi</a> *<a class="el" href="../../d9/dc0/structtransapi.html">transapi</a>)</td></tr>
+<tr class="memdesc:gaaf4e4daa7fa8be965ded41eb006a6713"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new datastore structure with transaction API support.  <a href="../../d8/d55/group__transapi.html#gaaf4e4daa7fa8be965ded41eb006a6713">More...</a><br/></td></tr>
+<tr class="separator:gaaf4e4daa7fa8be965ded41eb006a6713"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga31c6fa81cf4c62c32561c1047903477f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga31c6fa81cf4c62c32561c1047903477f">ncds_set_validation2</a> (struct ncds_ds *ds, int enable, const char *relaxng, const char *schematron, int(*valid_func)(const xmlDocPtr config, struct nc_err **err))</td></tr>
 <tr class="memdesc:ga31c6fa81cf4c62c32561c1047903477f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set validators (or disable validation) on the specified datastore.  <a href="../../db/d67/group__store.html#ga31c6fa81cf4c62c32561c1047903477f">More...</a><br/></td></tr>
 <tr class="separator:ga31c6fa81cf4c62c32561c1047903477f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -145,7 +149,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d7/dc8/datastore__xml_8h.html">datastore_xml.h</a></li>
-    <li class="footer">Generated on Fri Jan 31 2014 14:31:10 for libnetconf by
+    <li class="footer">Generated on Thu Feb 6 2014 16:01:55 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

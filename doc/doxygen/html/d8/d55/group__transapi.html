@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.6.0</span>
+   &#160;<span id="projectnumber">0.7.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -113,6 +113,9 @@ $(document).ready(function(){initNavTree('d8/d55/group__transapi.html','../../')
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/dc0/structtransapi.html">transapi</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to describe transAPI module and connect it statically with libnetconf using <a class="el" href="../../d8/d55/group__transapi.html#gaaf4e4daa7fa8be965ded41eb006a6713" title="Create new datastore structure with transaction API support. ">ncds_new_transapi_static()</a>.  <a href="../../d9/dc0/structtransapi.html#details">More...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html">transapi_data_callbacks</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html" title="Same as transapi_data_callbacks. Using libxml2 structures for callbacks parameters. ">transapi_data_callbacks</a>. Using libxml2 structures for callbacks parameters.  <a href="../../d6/dcb/structtransapi__data__callbacks.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -142,6 +145,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga80e69b4cada8c35e5e358287e8af3d85"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85">ncds_new_transapi</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, const char *callbacks_path)</td></tr>
 <tr class="memdesc:ga80e69b4cada8c35e5e358287e8af3d85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new datastore structure with transaction API support.  <a href="#ga80e69b4cada8c35e5e358287e8af3d85">More...</a><br/></td></tr>
 <tr class="separator:ga80e69b4cada8c35e5e358287e8af3d85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaaf4e4daa7fa8be965ded41eb006a6713"><td class="memItemLeft" align="right" valign="top">struct ncds_ds *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#gaaf4e4daa7fa8be965ded41eb006a6713">ncds_new_transapi_static</a> (<a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> type, const char *model_path, const struct <a class="el" href="../../d9/dc0/structtransapi.html">transapi</a> *<a class="el" href="../../d9/dc0/structtransapi.html">transapi</a>)</td></tr>
+<tr class="memdesc:gaaf4e4daa7fa8be965ded41eb006a6713"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new datastore structure with transaction API support.  <a href="#gaaf4e4daa7fa8be965ded41eb006a6713">More...</a><br/></td></tr>
+<tr class="separator:gaaf4e4daa7fa8be965ded41eb006a6713"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>libnetconf's implementation of transaction-based partial device reconfiguration. </p>
@@ -230,12 +236,55 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="gaaf4e4daa7fa8be965ded41eb006a6713"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct ncds_ds* ncds_new_transapi_static </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a>&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>model_path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const struct <a class="el" href="../../d9/dc0/structtransapi.html">transapi</a> *&#160;</td>
+          <td class="paramname"><em>transapi</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create new datastore structure with transaction API support. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Datastore implementation type for the new datastore structure. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">model_path</td><td>Base name of the configuration data model files. libnetconf expects model_path.yin as a data model, model_path.rng for grammar and data types validation, model_path.dsrl for default values validation and model_path.sch for semantic validation. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">transapi</td><td>Structure describing transAPI module. This way the module can be connected with the libnetconf library statically. The structure itself can be freed after the call, but the structure contains only pointers to other structures and variables that will be accessed directly from the subsequent functions using the returned datastore structure. These objects must not be freed during the existence of the returned datastore structure. After <a class="el" href="../../db/d67/group__store.html#ga77b479cc1496b0c3883bb0f6bfe46754" title="Close the specified datastore and free all the resources. ">ncds_free()</a>, these transAPI variables/structures are not freed. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Prepared (not configured) datastore structure. To configure the structure, caller must use the parameter setters of the specific datastore implementation type. Then, the datastore can be initiated (<a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use. ">ncds_init()</a>) and used to access the configuration data. </dd></dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jan 31 2014 14:31:10 for libnetconf by
+    <li class="footer">Generated on Thu Feb 6 2014 16:01:55 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

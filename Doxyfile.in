@@ -681,8 +681,7 @@ INPUT                  = src/libnetconf.h \
                          src/datastore/custom/datastore_custom.h \
                          src/notifications.h \
                          src/notifications_xml.h \
-                         src/transapi/transapi.h \
-                         src/transapi/transapi_xml.h \
+                         src/transapi.h \
                          src/url.h \
                          src/with_defaults.h
 
