@@ -350,35 +350,43 @@ int ncds_sysinit(int flags)
 			/* The error was reported already. */
 			return (EXIT_FAILURE);
 		}
+		ds->id = internal_ds_count++;
 		ds->type = internal_ds_desc[i].type;
 		if (ds->type == NCDS_TYPE_FILE && ncds_file_set_path(ds, internal_ds_desc[i].filename) != 0) {
 			ERROR("Linking internal datastore to a file (%s) failed.", internal_ds_desc[i].filename);
+			ncds_free(ds);
+			internal_ds_count--;
 			return (EXIT_FAILURE);
 		}
 
-		ds->id = internal_ds_count++;
-
-		ds->data_model = malloc(sizeof(struct data_model));
+		ds->data_model = calloc(1, sizeof(struct data_model));
 		if (model == NULL) {
 			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			ncds_free(ds);
+			internal_ds_count--;
 			return (EXIT_FAILURE);
 		}
 
 		ds->data_model->xml = xmlReadMemory ((char*)model[i], model_len[i], NULL, NULL, NC_XMLREAD_OPTIONS);
 		if (ds->data_model->xml == NULL ) {
 			ERROR("Unable to read the internal monitoring data model.");
-			free (ds);
+			ncds_free(ds);
+			internal_ds_count--;
 			return (EXIT_FAILURE);
 		}
 
 		/* prepare xpath evaluation context of the model for XPath */
 		if ((ds->data_model->ctxt = xmlXPathNewContext(ds->data_model->xml)) == NULL) {
 			ERROR("%s: Creating XPath context failed.", __func__);
+			ncds_free(ds);
+			internal_ds_count--;
 			/* with-defaults cannot be found */
 			return (EXIT_FAILURE);
 		}
 		if (xmlXPathRegisterNs(ds->data_model->ctxt, BAD_CAST NC_NS_YIN_ID, BAD_CAST NC_NS_YIN) != 0) {
 			xmlXPathFreeContext(ds->data_model->ctxt);
+			ncds_free(ds);
+			internal_ds_count--;
 			return (EXIT_FAILURE);
 		}
 
@@ -390,8 +398,8 @@ int ncds_sysinit(int flags)
 				&(ds->data_model->rpcs),
 				&(ds->data_model->notifs)) != 0) {
 			ERROR("Unable to process internal configuration data model.");
-			xmlFreeDoc(ds->data_model->xml);
-			free(ds);
+			ncds_free(ds);
+			internal_ds_count--;
 			return (EXIT_FAILURE);
 		}
 
@@ -411,6 +419,8 @@ int ncds_sysinit(int flags)
 		list_item = malloc(sizeof(struct model_list));
 		if (list_item == NULL) {
 			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			ncds_free(ds);
+			internal_ds_count--;
 			return (EXIT_FAILURE);
 		}
 		list_item->model = ds->data_model;
@@ -429,6 +439,9 @@ int ncds_sysinit(int flags)
 
 		/* add to a datastore list */
 		if ((dsitem = malloc (sizeof(struct ncds_ds_list))) == NULL ) {
+			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+			ncds_free(ds);
+			internal_ds_count--;
 			return (EXIT_FAILURE);
 		}
 		if (i == NACM_DS_INDEX) {
@@ -443,6 +456,10 @@ int ncds_sysinit(int flags)
 			void *tmp = realloc(ncds.datastores_ids, (ncds.array_size + 10) * sizeof(ncds_id));
 			if (tmp == NULL) {
 				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+				ncds_free(ds);
+				internal_ds_count--;
+				ncds.datastores = NULL;
+				ncds.count--;
 				return (EXIT_FAILURE);
 			}
 
@@ -503,7 +520,7 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	struct ncds_ds_list *ds_prev = NULL;
 	struct ncds_ds * retval = NULL;
 
-	if (id == 0) {
+	if (id < internal_ds_count && !(nc_init_flags & NC_INIT_CLOSING)) {
 		/* ignore a try to detach some uninitialized or internal datastore */
 		return (NULL);
 	}
@@ -3361,6 +3378,11 @@ void ncds_cleanall()
 		ncds_free(ds_item->datastore);
 		ds_item = dsnext;
 	}
+	free(ncds.datastores_ids);
+	ncds.datastores = NULL;
+	ncds.datastores_ids = NULL;
+	ncds.count = 0;
+	ncds.array_size = 0;
 
 	for (listitem = models_list; listitem != NULL; ) {
 		listnext = listitem->next;
@@ -3419,10 +3441,10 @@ void ncds_free(struct ncds_ds* datastore)
 		xsltFreeStylesheet(ds->validators.schematron);
 #endif
 		/* free all implementation specific resources */
-		datastore->func.free(ds);
+		ds->func.free(ds);
 
 		/* free models */
-		if (ds->data_model->xml != ds->ext_model) {
+		if (ds->data_model == NULL || (ds->data_model->xml != ds->ext_model)) {
 			xmlFreeDoc(ds->ext_model);
 		}
 		ncds_ds_model_free(ds->data_model);

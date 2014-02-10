@@ -55,6 +55,9 @@
 #include <grp.h>
 #include <pwd.h>
 
+#include <libxslt/xslt.h>
+#include <libxml/parser.h>
+
 #include "netconf_internal.h"
 #include "nacm.h"
 
@@ -132,7 +135,6 @@ void nc_verb_error(const char *format, ...)
 struct nc_shared_info *nc_info = NULL;
 static int shmid = -1;
 
-#define NC_INIT_DONE  0x00000001
 int nc_init_flags = 0;
 
 int nc_init(int flags)
@@ -289,10 +291,12 @@ int nc_close(int system)
 		/* we've not been initiated */
 		return (-1);
 	}
+	nc_init_flags |= NC_INIT_CLOSING;
 
 	if (system) {
 		if (shmctl(shmid, IPC_STAT, &ds) == -1) {
 			ERROR("Unable to get the status of shared memory (%s).", strerror(errno));
+			nc_init_flags &= ~NC_INIT_CLOSING;
 			return (-1);
 		}
 		if (ds.shm_nattch == 1) {
@@ -324,6 +328,9 @@ int nc_close(int system)
 	if (nc_init_flags & NC_INIT_NACM) {
 		nacm_close();
 	}
+
+	xsltCleanupGlobals();
+	xmlCleanupParser();
 
 	nc_init_flags = 0;
 	return (retval);

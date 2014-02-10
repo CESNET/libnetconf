@@ -671,6 +671,12 @@ void ncntf_dispatch_stop(struct nc_session *session);
 #endif /* DISABLE_NOTIFICATIONS */
 
 /**
+ * @brief internal values for nc_init_flags variable
+ */
+#define NC_INIT_DONE     0x00000001
+#define NC_INIT_CLOSING  0x80000000
+
+/**
  * @brief remove all internal datastore structures
  */
 void ncds_cleanall();
