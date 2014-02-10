@@ -488,11 +488,12 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 	if ((defaults = xmlXPathEvalExpression(BAD_CAST "/yin:module/yin:container//yin:default", model_ctxt)) != NULL) {
 		if (!xmlXPathNodeSetIsEmpty(defaults->nodesetval)) {
 			/* if report-all-tagged, add namespace for default attribute into the whole doc */
-			if (mode == NCWD_MODE_ALL_TAGGED) {
-				xmlNewNs(root = xmlDocGetRootElement(config), BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
+			root = xmlDocGetRootElement(config);
+			if (mode == NCWD_MODE_ALL_TAGGED && root != NULL) {
+				xmlNewNs(root, BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
 			}
 			/* process all defaults elements */
-			for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
+			for (i = 0; root != NULL && i < defaults->nodesetval->nodeNr; i++) {
 				fill_default(config, defaults->nodesetval->nodeTab[i], (char*)namespace, mode, NULL);
 			}
 		}
