@@ -541,7 +541,9 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 		}
 		if (ret_op != XMLDIFF_NONE) {
 			xmldiff_add_diff(tmp_diff, path, new_tmp, ret_op, XML_PARENT);
-			*tmp_diff = (*tmp_diff)->parent;
+			if ((*tmp_diff) && (*tmp_diff)->parent) {
+				*tmp_diff = (*tmp_diff)->parent;
+			}
 			xmldiff_addsibling_diff(diff, tmp_diff);
 		}
 		free(tmp_diff);
