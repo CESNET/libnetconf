@@ -1511,7 +1511,7 @@ struct ncds_ds* ncds_new_transapi_static(NCDS_TYPE type, const char* model_path,
 	 * NOTE: copy only the beginning part common for struct transapi and
 	 * struct transapi_internal
 	 */
-	memcpy(&(ds->transapi), transapi, offsetof(struct transapi, get_state));
+	memcpy(&(ds->transapi), transapi, ((size_t) &((struct transapi *)0)->get_state));
 
 	/*
 	 * mark it as transAPI (non-NULL), but remmeber that it is not a dynamically
