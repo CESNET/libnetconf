@@ -68,6 +68,7 @@ SETUSER=""
 SETGROUP=""
 CONFIGURE_ARGS=""
 
+LIBS="$LIBS -ldl"
 
 # Check for pkg-config.
 AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
@@ -83,7 +84,7 @@ AC_ARG_WITH([libxml2],
 			AC_MSG_ERROR([Missing development package of libxml2.])
 		fi
 		CFLAGS="`$withval/xml2-config --cflags` $CFLAGS"
-		LDFLAGS="`$withval/xml2-config --libs` $LDFLAGS"
+		LIBS="`$withval/xml2-config --libs` $LIBS"
 		WITH_LIBXML2="$withval"
 		CONFIGURE_ARGS="--with-libxml2=$withval $CONFIGURE_ARGS"
 	]
@@ -97,7 +98,7 @@ AC_ARG_WITH([libxslt],
 			AC_MSG_ERROR([Missing development package of libxslt.])
 		fi
 		CFLAGS="`$withval/xslt-config --cflags` $CFLAGS"
-		LDFLAGS="`$withval/xslt-config --libs` $LDFLAGS"
+		LIBS="`$withval/xslt-config --libs` $LIBS"
 		WITH_LIBXSLT="$withval"
 		CONFIGURE_ARGS="--with-libxslt=$withval $CONFIGURE_ARGS"
 	]
@@ -343,9 +344,10 @@ if test -z "$WITH_LIBXML2" ; then
 		AC_MSG_ERROR([Missing development package of libxml2.])
 	fi
 	CFLAGS="`xml2-config --cflags` $CFLAGS"
-	LDFLAGS="`xml2-config --libs` $LDFLAGS"
+	LIBS="`xml2-config --libs` $LIBS"
 fi
-
+AC_CHECK_LIB([xml2], [xmlDOMWrapReconcileNamespaces], [HAVE_LIBXML2_RECONNS="#define HAVE_XMLDOMWRAPRECONCILENAMESPACE"], [HAVE_LIBXML2_RECONNS="#undef HAVE_XMLDOMWRAPRECONCILENAMESPACE"]
+)
 
 ### libxslt ###
 if test "$validation" = "yes" -a -z "$WITH_LIBXSLT" ; then
@@ -354,7 +356,7 @@ if test "$validation" = "yes" -a -z "$WITH_LIBXSLT" ; then
 		AC_MSG_ERROR([Missing development package of libxslt.])
 	fi
 	CFLAGS="`xslt-config --cflags` $CFLAGS"
-	LDFLAGS="`xslt-config --libs` $LDFLAGS"
+	LIBS="`xslt-config --libs` $LIBS"
 fi
 
 if test "$libssh2" = "yes"; then
@@ -444,6 +446,7 @@ AC_SUBST(INCLUDE_URL)
 AC_SUBST(CONFIGURE_PARAMS)
 AC_SUBST(HAVE_EACCESS)
 AC_SUBST(HAVE_UTMPX)
+AC_SUBST(HAVE_LIBXML2_RECONNS)
 AC_SUBST(SSH_PROG)
 AC_SUBST(CONFIGURE_ARGS)
 AC_SUBST(PTHREAD_LIBS)

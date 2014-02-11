@@ -1731,8 +1731,10 @@ struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 		return NULL;
 	}
 
+#ifdef HAVE_XMLDOMWRAPRECONCILENAMESPACE
 	/* remove duplicated namespace definitions */
 	xmlDOMWrapReconcileNamespaces(NULL, msg->doc->children, 1);
+#endif
 
 	return (msg);
 }

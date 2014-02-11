@@ -82,4 +82,6 @@ int eaccess(const char *pathname, int mode);
 
 @HAVE_UTMPX@
 
+@HAVE_LIBXML2_RECONNS@
+
 #endif /* CONFIG_H_ */
