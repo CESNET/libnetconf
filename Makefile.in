@@ -301,13 +301,13 @@ install-doc:
 
 .PHONY: uninstall
 uninstall: uninstall-devel uninstall-doc
-	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libldns.la
+	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libnetconf.la
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
 	rm $(NC_WORKINGDIR_PATH)/ietf-netconf-acm*.rng $(NC_WORKINGDIR_PATH)/ietf-netconf-acm-schematron.xsl;
 
 .PHONY: uninstall-devel
 uninstall-devel:
-	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libldns.la \
+	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libnetconf.la \
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
 	for i in $(HDRS_PUBL_ROOT); do \
 		rm -f $(DESTDIR)/$(includedir)/$$(basename $$i); \
