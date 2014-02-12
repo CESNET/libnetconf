@@ -493,7 +493,7 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 				xmlNewNs(root, BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
 			}
 			/* process all defaults elements */
-			for (i = 0; root != NULL && i < defaults->nodesetval->nodeNr; i++) {
+			for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
 				fill_default(config, defaults->nodesetval->nodeTab[i], (char*)namespace, mode, NULL);
 			}
 		}
