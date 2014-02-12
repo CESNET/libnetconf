@@ -7,7 +7,7 @@
 
 CC      = gcc
 CFLAGS  = -Wall
-INCLUDE = 
+INCLUDE = -I../../src/ 
 LIB     = -lnetconf
 LIBPATH	= -L../../.libs/
 
