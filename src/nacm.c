@@ -950,7 +950,7 @@ static struct nacm_rpc* nacm_rpc_struct(const struct nc_session* session)
 	for (i = 0; nacm_config.groups != NULL && nacm_config.groups[i] != NULL; i++) {
 		for (j = 0; nacm_config.groups[i]->users != NULL && nacm_config.groups[i]->users[j] != NULL; j++) {
 			if (strcmp(nacm_config.groups[i]->users[j], session->username) == 0) {
-				if (c == l) {
+				if (c+1 >= l) {
 					l += 10;
 					new_groups = realloc(groups, l * sizeof(char*));
 					if (new_groups == NULL) {
@@ -968,7 +968,7 @@ static struct nacm_rpc* nacm_rpc_struct(const struct nc_session* session)
 	/* if enabled, add a list of system groups for the user */
 	if (nacm_config.external_groups == true && session->groups != NULL) {
 		for (i = 0; session->groups[i] != NULL; i++) {
-			if (c == l) {
+			if (c+1 >= l) {
 				l += 10;
 				new_groups = realloc(groups, l * sizeof(char*));
 				if (new_groups == NULL) {
@@ -997,7 +997,7 @@ static struct nacm_rpc* nacm_rpc_struct(const struct nc_session* session)
 				}
 				if (groups[k] != NULL) {
 					/* we have found matching groups - add rule list to the rpc */
-					if (c == l) {
+					if (c+1 >= l) {
 						l += 10;
 						new_rulelist = realloc(nacm_rpc->rule_lists, l * sizeof(struct rule_list*));
 						if (new_rulelist == NULL) {
