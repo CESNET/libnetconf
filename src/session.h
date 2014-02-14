@@ -159,10 +159,9 @@ int nc_session_notif_allowed (const struct nc_session *session);
 
 /**
  * @ingroup session
- * @brief Get NULL terminated list of capabilities associated with the session.
+ * @brief Get list of capabilities associated with the session.
  *
- * Returned list is a copy of the original list associated with the session.
- * The caller is supposed to free all the returned strings.
+ * Returned structure is connected with the session. Do not free or modify it.
  *
  * @param[in] session NETCONF session structure
  * @return NETCONF capabilities structure containing capabilities associated
