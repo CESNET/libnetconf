@@ -19,6 +19,7 @@ struct transapi_callbacks_info {
 	xmlDocPtr new;
 	xmlDocPtr model;
 	keyList keys;
+	TRANSAPI_CLBCKS_ORDER_TYPE order;
 	struct transapi_data_callbacks *calls;
 };
 
@@ -87,7 +88,7 @@ static int transapi_revert_callbacks_recursive_own(const struct transapi_callbac
 	if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_STOP) {
 		/* process the current node */
 		if (tree->priority != 0) {
-			if (info->calls->clbks_order == TRANSAPI_CLBCKS_LEAF_TO_ROOT) {
+			if (info->order == TRANSAPI_CLBCKS_LEAF_TO_ROOT) {
 				/* discard proposed changes */
 				transapi_revert_xml_tree(info, tree);
 			} else {
@@ -193,7 +194,7 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 {
 	int ret = EXIT_SUCCESS;
 
-	if (info->calls->clbks_order == TRANSAPI_CLBCKS_LEAF_TO_ROOT) {
+	if (info->order == TRANSAPI_CLBCKS_LEAF_TO_ROOT) {
 		transapi_revert_callbacks_recursive_children(info, tree, erropt, error);
 		ret = transapi_revert_callbacks_recursive_own(info, tree, erropt, error);
 		if (ret == REVERT_CALLBACK_ERROR)
@@ -279,7 +280,7 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 {
 	int retval;
 
-	if (info->calls->clbks_order == TRANSAPI_CLBCKS_LEAF_TO_ROOT) {
+	if (info->order == TRANSAPI_CLBCKS_LEAF_TO_ROOT) {
 		tree->applied = CLBCKS_APPLYING_CHILDREN;
 
 		retval = transapi_apply_callbacks_recursive_children(info, tree, erropt, error);
@@ -346,6 +347,7 @@ int transapi_running_changed(struct ncds_ds* ds, xmlDocPtr old_doc, xmlDocPtr ne
 			info.new = new_doc;
 			info.model = ds->ext_model;
 			info.keys = get_keynode_list(info.model);
+			info.order = ds->transapi.clbks_order;
 			info.calls = ds->transapi.data_clbks;
 
 			if (transapi_apply_callbacks_recursive(&info, diff, erropt, error) != EXIT_SUCCESS) {

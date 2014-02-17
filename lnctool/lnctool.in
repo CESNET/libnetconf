@@ -168,10 +168,10 @@ def generate_callbacks_file(name, defs, model):
 	# callbacks order
 	content += '/*\n'
 	content += ' * Determines the callbacks order.\n'
-	content += ' * 0 - leaf to root\n'
-	content += ' * 1 - root to leaf\n'
+	content += ' * TRANSAPI_CLBCKS_LEAF_TO_ROOT (default)\n'
+	content += ' * TRANSAPI_CLBCKS_ROOT_TO_LEAF\n'
 	content += ' */\n'
-	content += 'int callbacks_order = 0;\n\n'
+	content += 'TRANSAPI_CLBCKS_ORDER_TYPE callbacks_order = TRANSAPI_CLBCKS_ORDER_DEFAULT;\n\n'
 	content += '/* Do not modify or set! This variable is set by libnetconf to announce edit-config\'s error-option\n'
 	content += 'Feel free to use it to distinguish module behavior for different error-option values.\n'
 	content += ' * Possible values:\n'

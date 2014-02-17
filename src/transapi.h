@@ -35,7 +35,8 @@ typedef enum
 
 typedef enum TRANSAPI_CLBCKS_ORDER_TYPE {
 	TRANSAPI_CLBCKS_LEAF_TO_ROOT,
-	TRANSAPI_CLBCKS_ROOT_TO_LEAF
+	TRANSAPI_CLBCKS_ROOT_TO_LEAF,
+	TRANSAPI_CLBCKS_ORDER_DEFAULT = TRANSAPI_CLBCKS_LEAF_TO_ROOT,
 } TRANSAPI_CLBCKS_ORDER_TYPE;
 
 typedef enum
@@ -64,6 +65,10 @@ struct transapi {
 	 * @brief Free module resources and prepare for closing.
 	 */
 	void (*close)(void);
+	/**
+	 * @brief Callbacks order settings.
+	 */
+	TRANSAPI_CLBCKS_ORDER_TYPE clbks_order;
 	/**
 	 * @brief Transapi callback mapping structure.
 	 */
@@ -97,7 +102,6 @@ struct transapi {
 struct transapi_data_callbacks {
 	int callbacks_count;
 	void * data;
-	TRANSAPI_CLBCKS_ORDER_TYPE clbks_order;
 	struct {
 		char * path;
 		int (*func)(void**, XMLDIFF_OP, xmlNodePtr, struct nc_err**);

@@ -1379,7 +1379,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	int *modified;
 	NC_EDIT_ERROPT_TYPE *erropt;
 	char * ns_mapping = NULL;
-	int *clbks_order;
+	TRANSAPI_CLBCKS_ORDER_TYPE *clbks_order;
 
 	if (callbacks_path == NULL) {
 		ERROR("%s: missing callbacks path parameter.", __func__);
@@ -1470,10 +1470,10 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	ds->transapi.ns_mapping = (const char**)ns_mapping;
 	ds->transapi.data_clbks = data_clbks;
 	ds->transapi.rpc_clbks = rpc_clbks;
-	/* Convert clbks_order to enum, TRANSAPI_CLBCKS_LEAF_TO_ROOT as default */
-	ds->transapi.data_clbks->clbks_order = TRANSAPI_CLBCKS_LEAF_TO_ROOT;
-	if ((clbks_order != NULL) && (*clbks_order) == TRANSAPI_CLBCKS_ROOT_TO_LEAF)
-		ds->transapi.data_clbks->clbks_order = TRANSAPI_CLBCKS_ROOT_TO_LEAF;
+	/* Convert clbks_order to enum */
+	ds->transapi.clbks_order = TRANSAPI_CLBCKS_ORDER_DEFAULT;
+	if (clbks_order != NULL)
+		ds->transapi.clbks_order = *clbks_order;
 	ds->transapi.init = init_func;
 	ds->transapi.close = close_func;
 
@@ -1523,7 +1523,7 @@ struct ncds_ds* ncds_new_transapi_static(NCDS_TYPE type, const char* model_path,
 	memcpy(&(ds->transapi), transapi, ((size_t) &((struct transapi *)0)->get_state));
 
 	/*
-	 * mark it as transAPI (non-NULL), but remmeber that it is not a dynamically
+	 * mark it as transAPI (non-NULL), but remember that it is not a dynamically
 	 * linked transAPI module
 	 */
 	ds->transapi.module = &error_area;
