@@ -27,7 +27,7 @@ struct xmldiff_tree {
 
 	int priority;
 	bool callback;
-	bool applied;
+	CLBCKS_APPLIED applied;
 
 	struct xmldiff_tree* next;
 	struct xmldiff_tree* parent;

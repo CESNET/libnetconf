@@ -207,6 +207,7 @@ static void xmldiff_add_diff(struct xmldiff_tree** diff, const char * path, xmlN
 	new->path = strdup(path);
 	new->node = node;
 	new->op = op;
+	new->applied = CLBCKS_APPLIED_NONE;
 
 	if (*diff == NULL) {
 		*diff = new;
