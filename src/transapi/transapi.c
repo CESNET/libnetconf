@@ -123,11 +123,6 @@ static int transapi_revert_callbacks_recursive_own(const struct transapi_callbac
 		} else if (((tree->op & XMLDIFF_MOD) || (tree->op & XMLDIFF_CHAIN)) && tree->node != NULL ) {
 			/* node was modified, replace it with previous version */
 			xmlnode = find_element_equiv(info->old, tree->node, info->model, info->keys);
-//			for (xmlnode = parent->children; xmlnode != NULL; xmlnode = xmlnode->next) {
-//				if (matching_elements(tree->node, xmlnode, info->keys, 0)) {
-//					break;
-//				}
-//			}
 			if (xmlnode != NULL ) {
 				op = tree->op;
 				/* xmlnode already set */
