@@ -506,7 +506,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 		new_tmp = new_tmp->next;
 	}
 
-	if (new_tmp == NULL && old_tmp == NULL) {
+	if (new_tmp == NULL && old_tmp == NULL && model->type != YIN_TYPE_CHOICE && model->type != YIN_TYPE_AUGMENT) {
 		return XMLDIFF_NONE;
 	}
 
