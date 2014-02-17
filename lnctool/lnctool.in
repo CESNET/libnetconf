@@ -50,7 +50,7 @@ except ImportError as e:
 	exit(1)
 
 # transAPI version built by this tool
-transapi_version = 3
+transapi_version = 4
 
 # paths to transformation stylesheets and schemas
 RNGLIB='@RNGLIB@'
