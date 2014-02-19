@@ -13,3 +13,10 @@ This release includes the following changes:
 For API/ABI compatibility to previous versions, see reports in
 'doc/compat_reports/' directory.
 
+libnetconf 0.7.1
+
+This release includes the following changes:
+ * Fixing transAPI issue with adding/removing root element
+ * Fixing xmldiff problem with parsing augment and choice nodes
+ * Fixing withdefault ignoring empty data stores
+ * Fixing some memory issues	
