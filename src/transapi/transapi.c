@@ -6,13 +6,25 @@
 #include "../netconf_internal.h"
 #include "../datastore/edit_config.h"
 
+#define REVERT_CALLBACK_SUCCESS		0
+#define REVERT_CALLBACK_ERROR		1
+#define REVERT_CALLBACK_CONTINUE	2
+
+#define APPLY_CALLBACK_SUCCESS		0
+#define APPLY_CALLBACK_ERROR		1
+#define APPLY_CALLBACK_CONTINUE		2
+
 struct transapi_callbacks_info {
 	xmlDocPtr old;
 	xmlDocPtr new;
 	xmlDocPtr model;
 	keyList keys;
+	TRANSAPI_CLBCKS_ORDER_TYPE order;
 	struct transapi_data_callbacks *calls;
 };
+
+static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err** error);
+static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error);
 
 static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree)
 {
@@ -64,70 +76,40 @@ static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info,
 			}
 		}
 	} /* else XMLDIFF_CHAIN is not interesting here (stop-on-error) */
-	tree->applied = true;
 }
 
-static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err** error)
+static int transapi_revert_callbacks_recursive_own(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err** error)
 {
-	struct xmldiff_tree *child;
-	xmlNodePtr parent, xmlnode = NULL;
+	xmlNodePtr xmlnode = NULL;
 	int ret;
 	XMLDIFF_OP op = XMLDIFF_NONE;
 	struct nc_err *new_error = NULL;
 
-	/*
-	 * On Rollback-on-error, we have to revert applied changes, but we can
-	 * tracing the tree when the node priority is 0. It means that the node
-	 * neither its children do not contain any callback.
-	 * In case of other operations, we can stop the tree tracing based on
-	 * applied value - if the node changes were applied, because
-	 * we are not calling the callbacks (we are not reverting applied changes),
-	 * but we are reverting only changes made to the XML tree but not applied
-	 * via transAPI.
-	 */
-
 	if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_STOP) {
-		/* do the recursion - process children */
-		for(child = tree->children; child != NULL; child = child->next) {
-			/*
-			 * current node either all its children were applied and we
-			 * don't need to revert xorresponding XML tree changes
-			 */
-			if (child->applied) {
-				continue;
-			}
-
-			/* do the recursion */
-			transapi_revert_callbacks_recursive(info, child, erropt, error);
-		}
-
 		/* process the current node */
 		if (tree->priority != 0) {
-			/* discard proposed changes */
-			transapi_revert_xml_tree(info, tree);
+			if (info->order == TRANSAPI_CLBCKS_LEAF_TO_ROOT) {
+				/* discard proposed changes */
+				transapi_revert_xml_tree(info, tree);
+			} else {
+				if (tree->applied == CLBCKS_APPLIED_NONE || tree->applied == CLBCKS_APPLIED_ERROR) {
+					/* discard proposed changes */
+					transapi_revert_xml_tree(info, tree);
+					return (REVERT_CALLBACK_CONTINUE);
+				}
+			}
 		}
 
 	} else if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
-		/* do the recursion - process children */
-		for(child = tree->children; child != NULL; child = child->next) {
-			/* if priority == 0 then the node neither its children have no callbacks */
-			if (child->priority == 0) {
-				continue;
-			}
-
-			/* do the recursion */
-			transapi_revert_callbacks_recursive(info, child, erropt, error);
-		}
-
 		/* process the current node */
 		/* current node has no callback function or it was not applied */
-		if (!tree->callback || !tree->applied) {
-			return (EXIT_SUCCESS);
+		if (!tree->callback || tree->applied == CLBCKS_APPLIED_NONE || tree->applied == CLBCKS_APPLYING_CHILDREN) {
+			return (REVERT_CALLBACK_CONTINUE);
 		}
 
 		/*
 		 * do not affect XML tree, just use transAPI callbacks
-		 * to revert applied chenges. XML tree is reverted in
+		 * to revert applied changes. XML tree is reverted in
 		 * nc_rpc_apply()
 		 */
 		if ((tree->op & XMLDIFF_ADD) && tree->node != NULL ) {
@@ -140,18 +122,14 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 			xmlnode = tree->node;
 		} else if (((tree->op & XMLDIFF_MOD) || (tree->op & XMLDIFF_CHAIN)) && tree->node != NULL ) {
 			/* node was modified, replace it with previous version */
-			parent = find_element_equiv(info->old, tree->node->parent, info->model, info->keys);
-			for (xmlnode = parent->children; xmlnode != NULL; xmlnode = xmlnode->next) {
-				if (matching_elements(tree->node, xmlnode, info->keys, 0)) {
-					break;
-				}
-			}
+			xmlnode = find_element_equiv(info->old, tree->node, info->model, info->keys);
 			if (xmlnode != NULL ) {
 				op = tree->op;
 				/* xmlnode already set */
 			} else {
 				ERROR("Unable to revert executed changes: previous subtree version not found.");
-				return (EXIT_FAILURE);
+				/* Previous subtree not found: no need to process children nodes */
+				return (REVERT_CALLBACK_ERROR);
 			}
 		}
 
@@ -169,49 +147,68 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 			} else if (new_error != NULL) {
 				*error = new_error;
 			}
-
-			return (EXIT_FAILURE);
+			return (REVERT_CALLBACK_ERROR);
 		}
 	}
-
-	return (EXIT_SUCCESS);
+	return (REVERT_CALLBACK_SUCCESS);
 }
 
-/* call the callbacks in the order set by the priority of each change */
-static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error) {
-	struct xmldiff_tree* child, *cur_min;
-	int ret, retval = EXIT_SUCCESS;
+static void transapi_revert_callbacks_recursive_children(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err** error)
+{
+	struct xmldiff_tree *child;
+
+	if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_STOP) {
+		/* do the recursion - process children */
+		for(child = tree->children; child != NULL; child = child->next) {
+			/*
+			 * current node either all its children were applied and we
+			 * don't need to revert corresponding XML tree changes
+			 */
+			if (child->applied == CLBCKS_APPLIED_FULLY) {
+				continue;
+			}
+
+			/* do the recursion */
+			transapi_revert_callbacks_recursive(info, child, erropt, error);
+		}
+	} else if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
+		/* do the recursion - process children */
+		for(child = tree->children; child != NULL; child = child->next) {
+			/* if priority == 0 then the node neither its children have no callbacks */
+			if (child->priority == 0 || child->applied == CLBCKS_APPLIED_NONE) {
+				continue;
+			}
+
+			/* do the recursion */
+			transapi_revert_callbacks_recursive(info, child, erropt, error);
+		}
+	}
+}
+
+static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err** error)
+{
+	int ret = EXIT_SUCCESS;
+
+	if (info->order == TRANSAPI_CLBCKS_LEAF_TO_ROOT) {
+		transapi_revert_callbacks_recursive_children(info, tree, erropt, error);
+		ret = transapi_revert_callbacks_recursive_own(info, tree, erropt, error);
+		if (ret == REVERT_CALLBACK_ERROR)
+			return (EXIT_FAILURE);
+	} else {
+		ret = transapi_revert_callbacks_recursive_own(info, tree, erropt, error);
+		if (ret == REVERT_CALLBACK_SUCCESS)
+			transapi_revert_callbacks_recursive_children(info, tree, erropt, error);
+		else if (ret == REVERT_CALLBACK_ERROR)
+			return (EXIT_FAILURE);
+	}
+
+	return ret;
+}
+
+static int transapi_apply_callbacks_recursive_own(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error) {
+	int ret;
 	struct nc_err *new_error = NULL;
 
-	do {
-		cur_min = NULL;
-		child = tree->children;
-		while (child != NULL) {
-			if (child->priority && !child->applied) {
-				/* Valid change with a callback or callback in child (priority > 0) not yet applied */
-				if (cur_min == NULL || cur_min->priority > child->priority) {
-					cur_min = child;
-				}
-			}
-			child = child->next;
-		}
-
-		if (cur_min != NULL) {
-			/* Process this child recursively */
-			if (transapi_apply_callbacks_recursive(info, cur_min, erropt, error) != EXIT_SUCCESS) {
-				if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_STOP || erropt == NC_EDIT_ERROPT_ROLLBACK) {
-					return (EXIT_FAILURE);
-				}
-				/*
-				 * on continue-on-error, continue with processing next
-				 * change, but remember that we have failed
-				 */
-				retval = EXIT_FAILURE;
-			}
-		}
-	} while (cur_min != NULL);
-
-	/* Finally call our callback */
 	if (tree->callback) {
 		DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
 		ret = info->calls->callbacks[tree->priority-1].func(&info->calls->data, tree->op, tree->node, &new_error);
@@ -228,16 +225,103 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 			if (erropt == NC_EDIT_ERROPT_CONT) {
 				/* on continue-on-error, return not applied changes immediately and then continue */
 				transapi_revert_xml_tree(info, tree);
-				tree->applied = true;
 			}
 
-			return (EXIT_FAILURE);
+			return (APPLY_CALLBACK_ERROR);
 		}
 	}
-	/* mark subtree as solved */
-	tree->applied = true;
 
-	return (retval);
+	return (APPLY_CALLBACK_SUCCESS);
+}
+
+static int transapi_apply_callbacks_recursive_children(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error)
+{
+	struct xmldiff_tree* child, *cur_min;
+	int retval = APPLY_CALLBACK_SUCCESS;
+
+	do {
+		cur_min = NULL;
+		child = tree->children;
+		while (child != NULL) {
+			if (child->priority && child->applied==CLBCKS_APPLIED_NONE) {
+				/* Valid change with a callback or callback in child (priority > 0) not yet applied */
+				if (cur_min == NULL || cur_min->priority > child->priority) {
+					cur_min = child;
+				}
+			}
+			child = child->next;
+		}
+
+		if (cur_min != NULL) {
+			/* Process this child recursively */
+			if (transapi_apply_callbacks_recursive(info, cur_min, erropt, error) != EXIT_SUCCESS) {
+				if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_STOP || erropt == NC_EDIT_ERROPT_ROLLBACK) {
+					return (APPLY_CALLBACK_ERROR);
+				}
+				/*
+				 * on continue-on-error, continue with processing next
+				 * change, but remember that we have failed
+				 */
+				retval = APPLY_CALLBACK_CONTINUE;
+			}
+		}
+	} while (cur_min != NULL);
+
+	return retval;
+}
+
+/* call the callbacks in the order set by the priority of each change */
+static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error)
+{
+	int retval;
+
+	if (info->order == TRANSAPI_CLBCKS_LEAF_TO_ROOT) {
+		tree->applied = CLBCKS_APPLYING_CHILDREN;
+
+		retval = transapi_apply_callbacks_recursive_children(info, tree, erropt, error);
+		if (retval == APPLY_CALLBACK_ERROR) {
+			return EXIT_FAILURE;
+		}
+
+		/* Update applied status */
+		if (retval == APPLY_CALLBACK_SUCCESS)
+			tree->applied = CLBCKS_APPLIED_CHILDREN_NO_ERROR;
+		else
+			/* continue on error */
+			tree->applied = CLBCKS_APPLIED_CHILDREN_ERROR;
+
+		/* Finally call our callback */
+		retval = transapi_apply_callbacks_recursive_own(info, tree, erropt, error);
+
+		if (retval == APPLY_CALLBACK_SUCCESS) {
+			if (tree->applied == CLBCKS_APPLIED_CHILDREN_NO_ERROR)
+				tree->applied = CLBCKS_APPLIED_FULLY;
+			else
+				tree->applied = CLBCKS_APPLIED_NOT_FULLY;
+		} else {
+			tree->applied = CLBCKS_APPLIED_ERROR;
+			return (EXIT_FAILURE);
+		}
+	} else {
+		retval = transapi_apply_callbacks_recursive_own(info, tree, erropt, error);
+		if (retval == APPLY_CALLBACK_ERROR) {
+			tree->applied = CLBCKS_APPLIED_ERROR;
+			return EXIT_FAILURE;
+		}
+
+		/* Callback applied successfully. Applying children callbacks */
+		tree->applied = CLBCKS_APPLYING_CHILDREN;
+		retval = transapi_apply_callbacks_recursive_children(info, tree, erropt, error);
+		if (retval == APPLY_CALLBACK_ERROR) {
+			tree->applied = CLBCKS_APPLIED_NOT_FULLY;
+			return EXIT_FAILURE;
+		} else if (retval == APPLY_CALLBACK_SUCCESS)
+			tree->applied = CLBCKS_APPLIED_FULLY;
+		else
+			/* continue on error */
+			tree->applied = CLBCKS_APPLIED_NOT_FULLY;
+	}
+	return (EXIT_SUCCESS);
 }
 
 /* will be called by library after change in running datastore */
@@ -258,6 +342,7 @@ int transapi_running_changed(struct ncds_ds* ds, xmlDocPtr old_doc, xmlDocPtr ne
 			info.new = new_doc;
 			info.model = ds->ext_model;
 			info.keys = get_keynode_list(info.model);
+			info.order = ds->transapi.clbks_order;
 			info.calls = ds->transapi.data_clbks;
 
 			if (transapi_apply_callbacks_recursive(&info, diff, erropt, error) != EXIT_SUCCESS) {

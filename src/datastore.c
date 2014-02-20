@@ -1379,6 +1379,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	int *modified;
 	NC_EDIT_ERROPT_TYPE *erropt;
 	char * ns_mapping = NULL;
+	TRANSAPI_CLBCKS_ORDER_TYPE *clbks_order;
 
 	if (callbacks_path == NULL) {
 		ERROR("%s: missing callbacks path parameter.", __func__);
@@ -1432,6 +1433,10 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 		VERB("No RPC callbacks in %s transAPI module.", callbacks_path);
 	}
 
+	if ((clbks_order = dlsym (transapi_module, "callbacks_order")) == NULL) {
+		WARN("%s: Unable to find \"callbacks_order\" variable. Guessing Leaf To Root.", __func__);
+	}
+
 	/* callbacks work with configuration data */
 	/* empty datastore has no data */
 	if (type != NCDS_TYPE_EMPTY) {
@@ -1465,6 +1470,10 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	ds->transapi.ns_mapping = (const char**)ns_mapping;
 	ds->transapi.data_clbks = data_clbks;
 	ds->transapi.rpc_clbks = rpc_clbks;
+	/* Convert clbks_order to enum */
+	ds->transapi.clbks_order = TRANSAPI_CLBCKS_ORDER_DEFAULT;
+	if (clbks_order != NULL)
+		ds->transapi.clbks_order = *clbks_order;
 	ds->transapi.init = init_func;
 	ds->transapi.close = close_func;
 
@@ -1514,7 +1523,7 @@ struct ncds_ds* ncds_new_transapi_static(NCDS_TYPE type, const char* model_path,
 	memcpy(&(ds->transapi), transapi, ((size_t) &((struct transapi *)0)->get_state));
 
 	/*
-	 * mark it as transAPI (non-NULL), but remmeber that it is not a dynamically
+	 * mark it as transAPI (non-NULL), but remember that it is not a dynamically
 	 * linked transAPI module
 	 */
 	ds->transapi.module = &error_area;
@@ -3913,6 +3922,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 	int ret;
 	struct nc_err *e = NULL, *e_new;
 	nc_reply *new_reply = NULL;
+	int skip_copyconfig = 0;
 
 	if (reply != NULL && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
 		/* use some reply to add new error messages */
@@ -3972,7 +3982,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 			}
 		} /* else success */
 
-		if (ret || *ds->transapi.config_modified) {
+		if ((!skip_copyconfig) && (ret || *ds->transapi.config_modified)) {
 			*ds->transapi.config_modified = 0;
 			DBG("Updating XML tree after TransAPI callbacks");
 			xmlDocDumpMemory(new, &config, NULL);

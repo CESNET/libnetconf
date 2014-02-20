@@ -50,7 +50,7 @@ except ImportError as e:
 	exit(1)
 
 # transAPI version built by this tool
-transapi_version = 3
+transapi_version = 4
 
 # paths to transformation stylesheets and schemas
 RNGLIB='@RNGLIB@'
@@ -165,6 +165,14 @@ def generate_callbacks_file(name, defs, model):
 	content += ' * 1 - data have been modified\n'
 	content += ' */\n'
 	content += 'int config_modified = 0;\n\n'
+	# callbacks order
+	content += '/*\n'
+	content += ' * Determines the callbacks order.\n'
+	content += ' * Set this variable before compilation and DO NOT modify it in runtime.\n'
+	content += ' * TRANSAPI_CLBCKS_LEAF_TO_ROOT (default)\n'
+	content += ' * TRANSAPI_CLBCKS_ROOT_TO_LEAF\n'
+	content += ' */\n'
+	content += 'const TRANSAPI_CLBCKS_ORDER_TYPE callbacks_order = TRANSAPI_CLBCKS_ORDER_DEFAULT;\n\n'
 	content += '/* Do not modify or set! This variable is set by libnetconf to announce edit-config\'s error-option\n'
 	content += 'Feel free to use it to distinguish module behavior for different error-option values.\n'
 	content += ' * Possible values:\n'
@@ -357,19 +365,6 @@ def generate_rpc_callbacks(doc):
 	content += '\n};\n\n'
 
 	return(content)
-
-# Try to find template directory, if none of known candidates found raise exception
-def find_templates():
-	known_paths = ['/usr/share/libnetconf/templates/', '/usr/local/share/libnetconf/templates/', './templates/', './']
-
-	for path in known_paths:
-		if os.path.isdir(path):
-			if os.path.exists(path+'install-sh') and os.path.exists(path+'Makefile.in') and \
-					os.path.exists(path+'config.guess') and os.path.exists(path+'config.sub') and \
-					os.path.exists(path+'ltmain.sh'):
-				return(path)
-	
-	raise Exception('Template directory not found. Use --template-dir parameter to specify its location.')
 
 # "main" starts here
 # create argument parser

@@ -48,6 +48,7 @@
 #  include <libxslt/xsltInternals.h>
 #endif
 
+#include "../transapi.h"
 #include "../datastore.h"
 
 #define EXIT_RPC_NOT_APPLICABLE -2
@@ -200,6 +201,10 @@ struct transapi_internal {
 	 * @brief Free module resources and prepare for closing.
 	 */
 	void (*close)(void);
+	/**
+	 * @brief Callbacks order settings.
+	 */
+	TRANSAPI_CLBCKS_ORDER_TYPE clbks_order;
 	/**
 	 * @brief Transapi callback mapping structure.
 	 */

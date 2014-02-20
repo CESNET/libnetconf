@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
 /* Current transAPI version */
-#define TRANSAPI_VERSION 3
+#define TRANSAPI_VERSION 4
 
 /* maximal number of input arguments every defined RPC can have */
 #ifndef MAX_RPC_INPUT_ARGS
@@ -33,6 +33,24 @@ typedef enum
 	XMLDIFF_REORDER = 32 /**< Some of the children nodes changed theirs position. None was added/removed. Only for LEAF and LEAF-LIST. */,
 } XMLDIFF_OP;
 
+typedef enum TRANSAPI_CLBCKS_ORDER_TYPE {
+	TRANSAPI_CLBCKS_LEAF_TO_ROOT,
+	TRANSAPI_CLBCKS_ROOT_TO_LEAF,
+	TRANSAPI_CLBCKS_ORDER_DEFAULT = TRANSAPI_CLBCKS_LEAF_TO_ROOT,
+} TRANSAPI_CLBCKS_ORDER_TYPE;
+
+typedef enum
+{
+	CLBCKS_APPLIED_NONE,
+	CLBCKS_APPLYING_CHILDREN,
+	CLBCKS_APPLIED_ERROR,
+	CLBCKS_APPLIED_NO_ERROR,
+	CLBCKS_APPLIED_CHILDREN_ERROR,
+	CLBCKS_APPLIED_CHILDREN_NO_ERROR,
+	CLBCKS_APPLIED_NOT_FULLY,
+	CLBCKS_APPLIED_FULLY
+} CLBCKS_APPLIED;
+
 /**
  * @ingroup transapi
  * @brief Structure to describe transAPI module and connect it statically with
@@ -47,6 +65,10 @@ struct transapi {
 	 * @brief Free module resources and prepare for closing.
 	 */
 	void (*close)(void);
+	/**
+	 * @brief Callbacks order settings.
+	 */
+	TRANSAPI_CLBCKS_ORDER_TYPE clbks_order;
 	/**
 	 * @brief Transapi callback mapping structure.
 	 */
