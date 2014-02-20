@@ -233,7 +233,6 @@ struct transapi_internal {
 	void * module;
 };
 
-struct model_list;
 struct data_model {
 	/**
 	 * @brief Path to the file containing YIN configuration data model
