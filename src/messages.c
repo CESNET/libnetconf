@@ -495,6 +495,7 @@ nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump, const struct nc_session* session)
 NC_REPLY_TYPE nc_reply_parse_type(nc_reply* reply)
 {
 	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr node;
 
 	if (reply == NULL) {
 		return (NC_REPLY_UNKNOWN);
@@ -517,9 +518,18 @@ NC_REPLY_TYPE nc_reply_parse_type(nc_reply* reply)
 		}
 		xmlXPathFreeObject(query_result);
 	}
-	if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":data", reply->ctxt)) != NULL) {
+	/* NOTE: data element's namespace can vary (e.g. for get-schema) */
+	if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply", reply->ctxt)) != NULL) {
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
-			reply->type.reply = NC_REPLY_DATA;
+			for (node = query_result->nodesetval->nodeTab[0]->children; node != NULL; node = node->next) {
+				if (node->type != XML_ELEMENT_NODE) {
+					continue;
+				}
+				if (xmlStrcmp(node->name, BAD_CAST "data") == 0) {
+					reply->type.reply = NC_REPLY_DATA;
+					break;
+				}
+			}
 		}
 		xmlXPathFreeObject(query_result);
 	}
@@ -1362,6 +1372,43 @@ NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
 	}
 }
 
+const char *nc_reply_get_data_ns(const nc_reply *reply)
+{
+	xmlXPathObjectPtr query_result = NULL;
+	xmlNodePtr data = NULL;
+	const char* retval = NULL;
+
+	/* NOTE: <data> in rpc-reply can be in various namespaces (e.g. for get-schema) */
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply", reply->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			if (query_result->nodesetval->nodeNr > 1) {
+				ERROR("%s: multiple rpc-reply elements found", __func__);
+				xmlXPathFreeObject(query_result);
+				return (NULL);
+			}
+			for (data = query_result->nodesetval->nodeTab[0]->children; data != NULL; data = data->next) {
+				if (data->type != XML_ELEMENT_NODE) {
+					continue;
+				}
+				if (xmlStrcmp(data->name, BAD_CAST "data") == 0) {
+					break;
+				}
+			}
+			if (data == NULL) {
+				ERROR("%s: no data element found", __func__);
+				xmlXPathFreeObject(query_result);
+				return (NULL);
+			}
+			if (data->ns != NULL) {
+				retval = (const char*)(data->ns->href);
+			}
+		}
+		xmlXPathFreeObject(query_result);
+	}
+
+	return (retval);
+}
+
 char *nc_reply_get_data(const nc_reply *reply)
 {
 	xmlXPathObjectPtr query_result = NULL;
@@ -1371,14 +1418,28 @@ char *nc_reply_get_data(const nc_reply *reply)
 	xmlDocPtr aux_doc;
 	int gotdata = 0;
 
-	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply/"NC_NS_BASE10_ID":data", reply->ctxt)) != NULL) {
+	/* NOTE: <data> in rpc-reply can be in various namespaces (e.g. for get-schema) */
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply", reply->ctxt)) != NULL) {
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
 			if (query_result->nodesetval->nodeNr > 1) {
-				ERROR("%s: multiple data elements found", __func__);
+				ERROR("%s: multiple rpc-reply elements found", __func__);
 				xmlXPathFreeObject(query_result);
 				return (NULL);
 			}
-			data = xmlCopyNode(query_result->nodesetval->nodeTab[0], 1);
+			for (aux_data = query_result->nodesetval->nodeTab[0]->children; aux_data != NULL; aux_data = aux_data->next) {
+				if (aux_data->type != XML_ELEMENT_NODE) {
+					continue;
+				}
+				if (xmlStrcmp(aux_data->name, BAD_CAST "data") == 0) {
+					break;
+				}
+			}
+			if (aux_data == NULL) {
+				ERROR("%s: no data element found", __func__);
+				xmlXPathFreeObject(query_result);
+				return (NULL);
+			}
+			data = xmlCopyNode(aux_data, 1);
 		}
 		xmlXPathFreeObject(query_result);
 	}
@@ -1801,12 +1862,23 @@ nc_reply *nc_reply_ok()
 
 nc_reply *nc_reply_data(const char* data)
 {
+	return (nc_reply_data_ns(data, NC_NS_BASE10));
+}
+
+nc_reply *nc_reply_data_ns(const char* data, const char* ns)
+{
 	nc_reply *reply;
 	xmlDocPtr doc_data;
 	char* data_env;
 	struct nc_err* e;
+	int r;
 
-	if (asprintf(&data_env, "<data xmlns=\"%s\">%s</data>", NC_NS_BASE10, (data == NULL) ? "" : data) == -1) {
+	if (ns != NULL) {
+		r = asprintf(&data_env, "<data xmlns=\"%s\">%s</data>", ns, (data == NULL) ? "" : data);
+	} else {
+		r = asprintf(&data_env, "<data>%s</data>", (data == NULL) ? "" : data);
+	}
+	if (r == -1) {
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 	}
@@ -2045,6 +2117,7 @@ nc_reply* nc_reply_merge(int count, ...)
 	struct nc_err *err;
 	int i, j, t, len = 0;
 	char * tmp, * data = NULL, *new_str;
+	const char* data_ns = NULL;
 
 	/* params check */
 	if (count < 2) {
@@ -2118,6 +2191,7 @@ nc_reply* nc_reply_merge(int count, ...)
 		merged_reply = nc_reply_ok();
 		break;
 	case NC_REPLY_DATA:
+		data_ns = nc_reply_get_data_ns(to_merge[0]);
 		/* join <data/> */
 		for (i = 0; i < count; i++) {
 			tmp = nc_reply_get_data(to_merge[i]);
@@ -2140,7 +2214,7 @@ nc_reply* nc_reply_merge(int count, ...)
 			}
 			free(tmp);
 		}
-		merged_reply = nc_reply_data(data);
+		merged_reply = nc_reply_data_ns(data, data_ns);
 		free(data);
 		break;
 	case NC_REPLY_ERROR:

@@ -4062,6 +4062,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	int pos;
 	int transapi_callbacks_count;
 	const char * rpc_name;
+	const char *data_ns = NULL;
 	char *end = NULL, *aux = NULL;
 #ifndef DISABLE_VALIDATION
 	NC_EDIT_TESTOPT_TYPE testopt;
@@ -4856,6 +4857,7 @@ apply_editcopyconfig:
 		}
 		break;
 	case NC_OP_GETSCHEMA:
+		data_ns = NC_NS_MONITORING;
 		if (nc_cpblts_enabled (session, NC_CAP_MONITORING_ID)) {
 			if (dsid == NCDS_INTERNAL_ID) {
 				if ((data = get_schema (rpc, &e)) == NULL) {
@@ -4960,7 +4962,11 @@ apply_editcopyconfig:
 			}
 		} else {
 			if (data != NULL) {
-				reply = nc_reply_data(data);
+				if (data_ns != NULL) {
+					reply = nc_reply_data_ns(data, data_ns);
+				} else {
+					reply = nc_reply_data(data);
+				}
 				free(data);
 			} else {
 				reply = nc_reply_ok();

@@ -296,6 +296,14 @@ char *nc_reply_get_data(const nc_reply *reply);
 
 /**
  * @ingroup reply
+ * @brief Get namespace of the \<data\> element in \<rpc-reply\>.
+ * @param reply rpc-reply message.
+ * @return Namespace of the \<data\> element. Do not free.
+ */
+const char *nc_reply_get_data_ns(const nc_reply *reply);
+
+/**
+ * @ingroup reply
  * @brief Get error-message from the server's \<rpc-error\> reply.
  * @param reply rpc-reply message of the #NC_REPLY_ERROR type.
  * @return String with the content of the \<error-message\> element. Referenced
@@ -333,6 +341,16 @@ nc_reply *nc_reply_ok(void);
  * @return Created \<rpc-reply\> message.
  */
 nc_reply *nc_reply_data(const char* data);
+
+/**
+ * @ingroup reply
+ * @brief Create rpc-reply response with \<data\> content in the specified namespace.
+ * @param[in] data Serialized XML content of the \<data\> element for the
+ * \<rpc-reply\> message being created.
+ * @param[in] ns Default namespace for the data element.
+ * @return Created \<rpc-reply\> message.
+ */
+nc_reply *nc_reply_data_ns(const char* data, const char* ns);
 
 /**
  * @ingroup reply
