@@ -71,7 +71,7 @@ static void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_p
 }
 
 /* the recursive core of xmldiff_set_priorities() function */
-static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct transapi_data_callbacks* calls)
+static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct clbk *callbacks, int clbk_count)
 {
 	int i, min_prio, children_count = 0, children_without_callback = 0;
 	struct xmldiff_prio* priorities = NULL, *tmp_prio;
@@ -81,7 +81,7 @@ static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* 
 	child = tree->children;
 	while (child != NULL) {
 		++children_count;
-		tmp_prio = xmldiff_set_priority_recursive(child, calls);
+		tmp_prio = xmldiff_set_priority_recursive(child, callbacks, clbk_count);
 		if (tmp_prio == NULL) {
 			++children_without_callback;
 		}
@@ -117,14 +117,22 @@ static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* 
 	}
 
 	/* Search for the callback */
-	for (i = 0; i < calls->callbacks_count; ++i) {
-		if (strcmp(calls->callbacks[i].path, tree->path) == 0) {
+	for (i = 0; i < clbk_count; i++) {
+		if (strcmp(callbacks[i].path, tree->path) == 0) {
+			/* We have a callback */
+			tree->callback = callbacks[i].func;
+			tree->priority = i;
+
+			/* Save our priority */
+			xmldiff_add_priority(tree->priority, &priorities);
+
+			/* stop the loop */
 			break;
 		}
 	}
 
-	if (i == calls->callbacks_count && priorities != NULL) {
-		/* We do not have a callback, so we use the lowest priority from our children callbacks */
+	if (tree->callback == NULL && priorities != NULL) {
+		/* We do not have a callback, so we set the lowest priority from our children callbacks */
 		min_prio = priorities->values[0];
 		for (i = 1; (unsigned int) i < priorities->used; ++i) {
 			if (priorities->values[i] < min_prio) {
@@ -133,13 +141,6 @@ static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* 
 		}
 
 		tree->priority = min_prio;
-	} else if (i < calls->callbacks_count) {
-		/* We have a callback */
-		tree->callback = true;
-		tree->priority = i+1;
-
-		/* Save our priority */
-		xmldiff_add_priority(i+1, &priorities);
 	} else {
 		/* We do not have a callback and neither does any of our children, maybe our parent does */
 	}
@@ -147,12 +148,11 @@ static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* 
 	return priorities;
 }
 
-int xmldiff_set_priorities(struct xmldiff_tree* tree, void* callbacks)
+int xmldiff_set_priorities(struct xmldiff_tree* tree, struct clbk *callbacks, int clbk_count)
 {
-	struct transapi_data_callbacks* calls = callbacks;
 	struct xmldiff_prio* ret;
 
-	ret = xmldiff_set_priority_recursive(tree, calls);
+	ret = xmldiff_set_priority_recursive(tree, callbacks, clbk_count);
 
 	/* There is no callback to call for the configuration change, that probably should not happen */
 	if (ret == NULL) {
@@ -208,6 +208,7 @@ static void xmldiff_add_diff(struct xmldiff_tree** diff, const char * path, xmlN
 	new->node = node;
 	new->op = op;
 	new->applied = CLBCKS_APPLIED_NONE;
+	new->priority = PRIORITY_NONE;
 
 	if (*diff == NULL) {
 		*diff = new;

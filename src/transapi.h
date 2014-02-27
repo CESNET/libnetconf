@@ -51,6 +51,12 @@ typedef enum
 	CLBCKS_APPLIED_FULLY
 } CLBCKS_APPLIED;
 
+
+struct ns_pair {
+	const char *prefix;
+	const char *href;
+};
+
 /**
  * @ingroup transapi
  * @brief Structure to describe transAPI module and connect it statically with
@@ -66,6 +72,10 @@ struct transapi {
 	 */
 	void (*close)(void);
 	/**
+	 * @brief Function returning status information
+	 */
+	xmlDocPtr (*get_state)(const xmlDocPtr, const xmlDocPtr, struct nc_err **);
+	/**
 	 * @brief Callbacks order settings.
 	 */
 	TRANSAPI_CLBCKS_ORDER_TYPE clbks_order;
@@ -80,7 +90,7 @@ struct transapi {
 	/**
 	 * @brief Mapping prefixes with URIs
 	 */
-	const char ** ns_mapping;
+	struct ns_pair *ns_mapping;
 	/**
 	 * @brief Flag if configuration data passed to callbacks were modified
 	 */
@@ -89,10 +99,15 @@ struct transapi {
 	 * @brief edit-config's error-option for the current transaction
 	 */
 	NC_EDIT_ERROPT_TYPE *erropt;
-	/**
-	 * @brief Function returning the module status information.
-	 */
-	xmlDocPtr (*get_state)(const xmlDocPtr, const xmlDocPtr, struct nc_err **);
+};
+
+/**
+ * @ingroup transapi
+ * @brief Structure describing callback - path + function
+ */
+struct clbk {
+	char *path;
+	int (*func)(void**, XMLDIFF_OP, xmlNodePtr, struct nc_err**);
 };
 
 /**
@@ -102,10 +117,7 @@ struct transapi {
 struct transapi_data_callbacks {
 	int callbacks_count;
 	void * data;
-	struct {
-		char * path;
-		int (*func)(void**, XMLDIFF_OP, xmlNodePtr, struct nc_err**);
-	} callbacks[];
+	struct clbk callbacks[];
 };
 
 /**

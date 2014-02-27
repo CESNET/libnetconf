@@ -20,7 +20,7 @@ struct transapi_callbacks_info {
 	xmlDocPtr model;
 	keyList keys;
 	TRANSAPI_CLBCKS_ORDER_TYPE order;
-	struct transapi_data_callbacks *calls;
+	struct transapi_list *transapis;
 };
 
 static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err** error);
@@ -51,7 +51,7 @@ static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info,
 	} else if ((tree->op & XMLDIFF_MOD) && tree->node != NULL ) {
 		/* replace new node with the previous one */
 		for (child = tree->children; child != NULL; child = child->next) {
-			if (child->priority != 0) {
+			if (child->priority != PRIORITY_NONE) {
 				/* this node is already solved by previous recursion */
 				continue;
 			}
@@ -87,7 +87,7 @@ static int transapi_revert_callbacks_recursive_own(const struct transapi_callbac
 
 	if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_STOP) {
 		/* process the current node */
-		if (tree->priority != 0) {
+		if (tree->priority != PRIORITY_NONE) {
 			if (info->order == TRANSAPI_CLBCKS_LEAF_TO_ROOT) {
 				/* discard proposed changes */
 				transapi_revert_xml_tree(info, tree);
@@ -136,7 +136,7 @@ static int transapi_revert_callbacks_recursive_own(const struct transapi_callbac
 		DBG("Transapi revert callback %s with op %d.", tree->path, op);
 
 		/* revert changes */
-		ret = info->calls->callbacks[tree->priority - 1].func(&info->calls->data, op, xmlnode, &new_error);
+		ret = tree->callback(&(info->transapis->tapi->data_clbks->data), op, xmlnode, &new_error);
 
 		if (ret != EXIT_SUCCESS) {
 			WARN("Reverting configuration changes via transAPI failed, configuration may be inconsistent.");
@@ -175,7 +175,7 @@ static void transapi_revert_callbacks_recursive_children(const struct transapi_c
 		/* do the recursion - process children */
 		for(child = tree->children; child != NULL; child = child->next) {
 			/* if priority == 0 then the node neither its children have no callbacks */
-			if (child->priority == 0 || child->applied == CLBCKS_APPLIED_NONE) {
+			if (child->priority == PRIORITY_NONE || child->applied == CLBCKS_APPLIED_NONE) {
 				continue;
 			}
 
@@ -211,7 +211,7 @@ static int transapi_apply_callbacks_recursive_own(const struct transapi_callback
 
 	if (tree->callback) {
 		DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
-		ret = info->calls->callbacks[tree->priority-1].func(&info->calls->data, tree->op, tree->node, &new_error);
+		ret = tree->callback(&(info->transapis->tapi->data_clbks->data), tree->op, tree->node, &new_error);
 		if (ret != EXIT_SUCCESS) {
 			ERROR("Callback for path %s failed (%d).", tree->path, ret);
 			if (*error != NULL) {
@@ -243,7 +243,7 @@ static int transapi_apply_callbacks_recursive_children(const struct transapi_cal
 		cur_min = NULL;
 		child = tree->children;
 		while (child != NULL) {
-			if (child->priority && child->applied==CLBCKS_APPLIED_NONE) {
+			if ((child->priority != PRIORITY_NONE) && child->applied==CLBCKS_APPLIED_NONE) {
 				/* Valid change with a callback or callback in child (priority > 0) not yet applied */
 				if (cur_min == NULL || cur_min->priority > child->priority) {
 					cur_min = child;
@@ -335,15 +335,15 @@ int transapi_running_changed(struct ncds_ds* ds, xmlDocPtr old_doc, xmlDocPtr ne
 		xmldiff_free(diff);
 		return EXIT_FAILURE;
 	} else if (diff != NULL) {
-		if (xmldiff_set_priorities(diff, ds->transapi.data_clbks) != EXIT_SUCCESS) {
+		if (xmldiff_set_priorities(diff, ds->tapi_callbacks, ds->tapi_callbacks_count) != EXIT_SUCCESS) {
 			VERB("Model \"%s\" transAPI: there was not a single callback found for the configuration change.", ds->data_model->name);
 		} else {
 			info.old = old_doc;
 			info.new = new_doc;
 			info.model = ds->ext_model;
 			info.keys = get_keynode_list(info.model);
-			info.order = ds->transapi.clbks_order;
-			info.calls = ds->transapi.data_clbks;
+			info.order = ds->transapis->tapi->clbks_order;
+			info.transapis = ds->transapis;
 
 			if (transapi_apply_callbacks_recursive(&info, diff, erropt, error) != EXIT_SUCCESS) {
 				if (erropt != NC_EDIT_ERROPT_CONT) {

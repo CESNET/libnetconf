@@ -535,6 +535,20 @@ char* nc_clrwspace (const char* in);
 void nc_clip_occurences_with(char *str, char sought, char replacement);
 
 /**
+ * @brief Replace substr in str by replacement
+ *
+ * Remember to free the returned string. Even if no replacement is done, new
+ * (copy of the original) string is returned.
+ *
+ * @param[in] str String to modify.
+ * @param[in] substr Substring to be replaced.
+ * @param[in] replacement Replacement for the substr.
+ *
+ * return Resulting string or NULL on error.
+ */
+char* nc_str_replace(const char *str, const char *substr, const char *replacement);
+
+/**
  * @brief Skip XML declaration in the beginning of an XML document
  *
  * @param xmldoc String containing XML document where the XML declaration
