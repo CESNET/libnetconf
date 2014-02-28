@@ -1487,6 +1487,7 @@ static struct transapi_internal* transapi_new_shared(const char* callbacks_path)
 struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const char* callbacks_path)
 {
 	struct ncds_ds* ds = NULL;
+	struct transapi_list *item;
 	struct transapi_internal* transapi;
 
 	if (callbacks_path == NULL) {
@@ -1504,6 +1505,21 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 		ERROR ("%s: Failed to create ncds_ds structure.", __func__);
 		return (NULL);
 	}
+
+	/* create transpi list item */
+	if ((item = malloc(sizeof(struct transapi_list))) == NULL) {
+		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	/*
+	 * base transAPI module directly connected with the datastore has non-zero
+	 * ref_count since it is not stored in the global augment_tapi_list
+	 */
+	item->tapi = transapi;
+	item->ref_count = 1;
+	item->next = NULL;
+	ds->transapis = item;
 
 	return ds;
 }
@@ -1595,7 +1611,7 @@ static struct data_model* data_model_new(const char* model_path)
 		return (NULL);
 	}
 
-	model = malloc(sizeof(struct data_model));
+	model = calloc(1, sizeof(struct data_model));
 	if (model == NULL) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
@@ -2788,8 +2804,14 @@ static int ncds_update_callbacks(struct ncds_ds* ds)
 	ext_ns_mapping[i].prefix = NULL;
 	ext_ns_mapping[i].href = NULL;
 
+	if (ds->tapi_callbacks_count != 0) {
+		for (i = 0; i < ds->tapi_callbacks_count; i++) {
+			free(ds->tapi_callbacks[i].path);
+		}
+		free(ds->tapi_callbacks);
+		ds->tapi_callbacks = NULL;
+	}
 	/* create list of callbacks */
-	free(ds->tapi_callbacks);
 	ds->tapi_callbacks_count = clbk_count;
 	ds->tapi_callbacks = malloc(clbk_count * sizeof(struct clbk));
 	for (i = 0, tapi_iter = ds->transapis; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
@@ -2853,7 +2875,7 @@ static void transapi_unload(struct transapi_internal* tapi)
 	}
 }
 
-static void transapis_cleanup(struct transapi_list **list)
+static void transapis_cleanup(struct transapi_list **list, int force)
 {
 	struct transapi_list *iter, *prev = NULL;
 
@@ -2862,7 +2884,7 @@ static void transapis_cleanup(struct transapi_list **list)
 	}
 
 	for (iter = *list; iter != NULL; ) {
-		if (iter->ref_count == 0) {
+		if (force || iter->ref_count == 0) {
 			transapi_unload(iter->tapi);
 			free(iter->tapi);
 			if (prev == NULL) {
@@ -2889,7 +2911,7 @@ int ncds_consolidate(void)
 
 	/* cleanup all datastore's properties built by previous ncds_consolidate() */
 	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
-		transapis_cleanup(&(ds_iter->datastore->transapis));
+		transapis_cleanup(&(ds_iter->datastore->transapis), 0);
 
 		if (ds_iter->datastore->ext_model != ds_iter->datastore->data_model->xml) {
 			xmlFreeDoc(ds_iter->datastore->ext_model);
@@ -2937,7 +2959,7 @@ int ncds_consolidate(void)
 		}
 	}
 
-	transapis_cleanup(&(augment_tapi_list));
+	transapis_cleanup(&(augment_tapi_list), 0);
 	return (EXIT_SUCCESS);
 }
 
@@ -3730,6 +3752,8 @@ void ncds_cleanall()
 	}
 	free(models_dirs);
 	models_dirs = NULL;
+
+	transapis_cleanup(&(augment_tapi_list), 1);
 
 #ifndef DISABLE_YANGFORMAT
 	xsltFreeStylesheet(yin2yang_xsl);
