@@ -38,6 +38,7 @@
  */
 
 #define _GNU_SOURCE
+#include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -2947,7 +2948,6 @@ int ncds_consolidate(void)
 		ncds_update_features(ds_iter->datastore);
 	}
 
-
 	/* parse models to get aux structure for TransAPI's internal purposes */
 	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
 		/* when using transapi */
@@ -3768,7 +3768,6 @@ void ncds_free(struct ncds_ds* datastore)
 	int i;
 
 	if (datastore == NULL) {
-		WARN("%s: no datastore to free.", __func__);
 		return;
 	}
 
