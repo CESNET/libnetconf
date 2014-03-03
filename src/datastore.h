@@ -52,6 +52,7 @@ extern "C" {
  * @brief Datastore implementation types provided by libnetconf
  */
 typedef enum {
+	NCDS_TYPE_ERROR = -1, /**< virtual enum value for internal purposes */
 	NCDS_TYPE_EMPTY, /**< No real datastore. For read-only devices. */
 	NCDS_TYPE_FILE, /**< Datastores implemented as files */
 	NCDS_TYPE_CUSTOM /**< User-defined datastore */
