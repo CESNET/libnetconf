@@ -4,6 +4,7 @@ includedir = @includedir@
 libdir =  @libdir@
 datarootdir = @datarootdir@
 datadir = @datadir@
+ncworkingdir = @NC_WORKINGDIR_PATH@ 
 
 Name: libnetconf
 Version: @PACKAGE_VERSION@
