@@ -134,6 +134,17 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
  */
 struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities);
 
+/**
+ * @ingroup session
+ * @brief Start listening on client side for incoming Reverse SSH connection.
+ *
+ * Part of Reverse SSH for NETCONF implementation.
+ *
+ * @param[in] port Port number where to listen.
+ * @return EXIT_SUCCESS or EXIT_FAILURE on error.
+ */
+int nc_session_reverse_listen(unsigned int port);
+
 #ifdef __cplusplus
 }
 #endif

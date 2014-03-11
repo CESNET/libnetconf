@@ -91,6 +91,8 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define BUFFER_SIZE 4096
 #define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
 
+static int reverse_listen_socket = -1;
+
 extern struct nc_shared_info *nc_info;
 extern char* server_capabilities; /* from datastore, only for server side */
 
@@ -733,6 +735,86 @@ static char* serialize_cpblts(const struct nc_cpblts *capabilities)
 	}
 	free(aux);
 	return(retval);
+}
+
+int nc_session_reverse_listen(unsigned int port)
+{
+	struct addrinfo hints, *res_list, *res;
+	char port_s[SHORT_INT_LENGTH];
+	int i;
+
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+
+	/* set default values */
+	if (port == 0) {
+		port = NC_REVERSE_PORT;
+	}
+
+	if (snprintf(port_s, SHORT_INT_LENGTH, "%d", port) < 0) {
+		/* converting short int to the string failed */
+		ERROR("Unable to convert the port number to a string.");
+		return (EXIT_FAILURE);
+	}
+	/* Connect to SSH server */
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	i = getaddrinfo(NULL, port_s, &hints, &res_list);
+	if (i != 0) {
+		ERROR("Unable to translate the host address (%s).", gai_strerror(i));
+		return (EXIT_FAILURE);
+	}
+
+	for (i = 0, res = res_list; res != NULL; res = res->ai_next) {
+		reverse_listen_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (reverse_listen_socket == -1) {
+			/* socket was not created, try another resource */
+			i = errno;
+			continue;
+		}
+
+		if (bind(reverse_listen_socket, res->ai_addr, res->ai_addrlen) == -1) {
+			/* binding the port failedd, try another resource */
+			i = errno;
+			close(reverse_listen_socket);
+			reverse_listen_socket = -1;
+			continue;
+		}
+
+	    if (listen(reverse_listen_socket, NC_REVERSE_QUEUE) == -1) {
+			i = errno;
+			close(reverse_listen_socket);
+			reverse_listen_socket = -1;
+			continue;
+	    }
+
+		/* we're done, network connection established */
+		break;
+	}
+	freeaddrinfo(res_list);
+
+	if (reverse_listen_socket == -1) {
+		ERROR("Unable to start listening on port %s (%s).", port_s, strerror(i));
+		return (EXIT_FAILURE);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+struct nc_session *nc_session_reverse_accept(const char *username, const struct nc_cpblts* cpblts)
+{
+	if (reverse_listen_socket == -1) {
+		ERROR("No listening socket, use nc_session_reverse_listen() first.");
+		return (NULL);
+	}
+
+	VERB("Waiting for incoming Reverse SSH connections...");
+
+	return (NULL);
 }
 
 struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
