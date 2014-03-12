@@ -117,8 +117,11 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/session.h \
 	src/messages.h \
 	src/messages_xml.h \
-	src/ssh.h @HDRS_PUBL_SUBDIR_NOTIFICATIONS@ \
-	src/with_defaults.h @HDRS_PUBL_SUBDIR_URL@ \
+	src/ssh.h \
+	src/reverse_ssh \
+	@HDRS_PUBL_SUBDIR_NOTIFICATIONS@ \
+	src/with_defaults.h \
+	@HDRS_PUBL_SUBDIR_URL@ \
 	src/datastore.h \
 	src/datastore_xml.h \
 	src/datastore/custom/datastore_custom.h \
@@ -140,8 +143,11 @@ HDRS_PRIV = src/config.h.in \
 	src/netconf.h \
 	src/netconf_internal.h \
 	src/session.h \
-	src/ssh.h @HDRS_PRIV_NOTIFICATIONS@ \
-	src/with_defaults.h @HDRS_PRIV_URL@ \
+	src/ssh.h \
+	src/reverse_ssh.h \
+	@HDRS_PRIV_NOTIFICATIONS@ \
+	src/with_defaults.h \
+	@HDRS_PRIV_URL@ \
 	src/nacm.h \
 	src/datastore.h \
 	src/datastore/datastore_internal.h \
