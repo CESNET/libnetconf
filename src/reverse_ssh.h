@@ -52,6 +52,8 @@ extern "C" {
  * @ingroup callhome
  * @brief Start listening on client side for incoming Reverse SSH connection.
  *
+ * This function is not available with configure's --disable-libssh2 option.
+ *
  * @param[in] port Port number where to listen.
  * @return EXIT_SUCCESS or EXIT_FAILURE on error.
  */
@@ -59,7 +61,9 @@ int nc_session_reverse_listen(unsigned int port);
 
 /**
  * @ingroup callhome
- * @brief Stop listening on client sode for incoming Reverse SSH connection.
+ * @brief Stop listening on client side for incoming Reverse SSH connection.
+ *
+ * This function is not available with configure's --disable-libssh2 option.
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE if libnetconf is not listening.
  */
@@ -67,7 +71,17 @@ int nc_session_reverse_listen_stop(void);
 
 /**
  * @ingroup callhome
- * @brief
+ * @brief Accept incoming Reverse SSH connection and create NETCONF session on it.
+ *
+ * This function is not available with configure's --disable-libssh2 option.
+ *
+ * @param[in] username Name of the user to login to the server. The user running the
+ * application (detected from the effective UID) is used if NULL is specified.
+ * @param[in] cpblts NETCONF capabilities structure with capabilities supported
+ * by the client. Client can use nc_session_get_cpblts_default() to get the
+ * structure with the list of all the capabilities supported by libnetconf (this is
+ * used in case of a NULL parameter).
+ * @return Structure describing the NETCONF session or NULL in case of an error.
  */
 struct nc_session *nc_session_reverse_accept(const char *username, const struct nc_cpblts* cpblts);
 

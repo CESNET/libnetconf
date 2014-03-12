@@ -68,6 +68,8 @@ typedef enum
  * 2. password (2)
  * 3. public keys (1)
  *
+ * This function has no effect with configure's --disable-libssh2 option.
+ *
  * @param[in] type Setting preference for the given authentication type.
  * @param[in] preference Preference value. Higher value means higher preference.
  * Negative value disables the given authentication type. On equality of values,
