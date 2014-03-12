@@ -9,9 +9,10 @@
 
 #include "../netconf_internal.h"
 #include "../datastore.h"
+#include "../transapi.h"
 #include "yinparser.h"
 
-int get_node_namespace(const char * ns_mapping[], xmlNodePtr node, char ** prefix, char ** uri)
+int get_node_namespace(struct ns_pair ns_mapping[], xmlNodePtr node, char ** prefix, char ** uri)
 {
 	int i;
 
@@ -19,9 +20,9 @@ int get_node_namespace(const char * ns_mapping[], xmlNodePtr node, char ** prefi
 	if (((*uri) = (char*)xmlGetNsProp(node, BAD_CAST "ns", BAD_CAST "libnetconf")) == NULL) {
 		return(EXIT_FAILURE);
 	} else {
-		for (i=0; ns_mapping[2*i] != NULL; i++) {
-			if (strcmp(ns_mapping[2*i+1], (*uri)) == 0) {
-				(*prefix) = strdup(ns_mapping[2*i]);
+		for (i=0; ns_mapping[i].href != NULL; i++) {
+			if (strcmp(ns_mapping[i].href, (*uri)) == 0) {
+				(*prefix) = strdup(ns_mapping[i].prefix);
 				break;
 			}
 		}
@@ -33,7 +34,7 @@ int get_node_namespace(const char * ns_mapping[], xmlNodePtr node, char ** prefi
 	return(EXIT_SUCCESS);
 }
 
-struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, const char * ns_mapping[], struct model_tree * parent, int *children_count)
+struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, struct ns_pair ns_mapping[], struct model_tree * parent, int *children_count)
 {
 	struct model_tree *children = NULL, *choice, *new_tree, *augment_children;
 	xmlNodePtr int_tmp, list_tmp, model_tmp = model_node->children;
@@ -228,7 +229,7 @@ void yinmodel_free (struct model_tree * yin)
 	}
 }
 
-struct model_tree * yinmodel_parse (xmlDocPtr model_doc, const char * ns_mapping[])
+struct model_tree * yinmodel_parse (xmlDocPtr model_doc, struct ns_pair ns_mapping[])
 {
 	xmlNodePtr model_root, model_top = NULL, model_tmp, model_tmp2;
 	struct model_tree * yin, * yin_act;
@@ -255,9 +256,9 @@ struct model_tree * yinmodel_parse (xmlDocPtr model_doc, const char * ns_mapping
 	while (model_tmp) {
 		if (xmlStrEqual(model_tmp->name, BAD_CAST "namespace")) {
 			yin->ns_uri = (char*)xmlGetProp(model_tmp, BAD_CAST "uri");
-			for (i=0; ns_mapping[2*i] != NULL; i++) {
-				if (strcmp(ns_mapping[2*i+1], yin->ns_uri) == 0) {
-					yin->ns_prefix = strdup(ns_mapping[2*i]);
+			for (i = 0; ns_mapping[i].href != NULL; i++) {
+				if (strcmp(ns_mapping[i].href, yin->ns_uri) == 0) {
+					yin->ns_prefix = strdup(ns_mapping[i].prefix);
 					break;
 				}
 			}

@@ -52,7 +52,8 @@ extern "C" {
  * @brief Datastore implementation types provided by libnetconf
  */
 typedef enum {
-	NCDS_TYPE_EMPTY, /**< No datastore. For read-only devices. */
+	NCDS_TYPE_ERROR = -1, /**< virtual enum value for internal purposes */
+	NCDS_TYPE_EMPTY, /**< No real datastore. For read-only devices. */
 	NCDS_TYPE_FILE, /**< Datastores implemented as files */
 	NCDS_TYPE_CUSTOM /**< User-defined datastore */
 } NCDS_TYPE;
@@ -292,6 +293,21 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
  * used to access the configuration data.
  */
 struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const char* callbacks_path);
+
+/**
+ * @ingroup transapi
+ * @brief Extend datastore(s) with an augment model and its transAPI callbacks.
+ *
+ * The function must be called before ncds_consolidate().
+ *
+ * @param[in] model_path Path of the file containing augment data model in the
+ * YIN format. libnetconf accepts data model augmenting multiple base data
+ * models linked with the datastores using ncds_new_transapi() function.
+ * @param[in] callbacks_path Path to shared library with callbacks and other
+ * functions for transaction API.
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int ncds_add_augment_transapi(const char* model_path, const char* callbacks_path);
 
 /**
  * @ingroup store

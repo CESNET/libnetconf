@@ -258,11 +258,11 @@ def generate_config_callbacks(name, paths, namespaces):
 	content += ' * Mapping prefixes with namespaces.\n'
 	content += ' * Do NOT modify this structure!\n'
 	content += ' */\n'
-	namespace = 'char * namespace_mapping[] = {'
+	namespace = 'struct ns_pair namespace_mapping[] = {'
 	for ns in namespaces:
-		namespace += '"'+ns[0]+'", "'+ns[1]+'", '
+		namespace += '{"'+ns[0]+'", "'+ns[1]+'"}, '
 
-	content += namespace +'NULL, NULL};\n'
+	content += namespace +'{NULL, NULL}};\n'
 	content += '\n'
 
 	# Add description and instructions
