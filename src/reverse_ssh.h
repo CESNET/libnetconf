@@ -40,11 +40,67 @@
 #ifndef REVERSE_SSH_H_
 #define REVERSE_SSH_H_
 
+#include <stdint.h>
+
 #include "netconf.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @ingroup callhome
+ * @brief Structure describing a management server where the NETCONF server connects to.
+ *
+ * The structure is public, but, except moving inside the list to specify the
+ * server which should be used as first one in nc_session_reverse_connect(),
+ * it is HIGHLY recommended to use nc_session_reverse_mngmt_server_*() functions
+ * to manipulate with the management servers list.
+ */
+struct nc_mngmt_server {
+	struct addrinfo *addr;
+	struct nc_mngmt_server* next;
+};
+
+/**
+ * @ingroup callhome
+ * @brief Add a new management server specification to the end of a list.
+ *
+ * @param[in] list Current list where the server description will be added. If
+ * NULL, a new list is created and returned by the function.
+ * @param[in] host Host name of the management server. It specifies either a
+ * numerical network address (for IPv4, numbers-and-dots notation as supported
+ * by inet_aton(3); for IPv6, hexadecimal string format as supported by
+ * inet_pton(3)), or a network host-name, whose network addresses are looked up
+ * and resolved.
+ * @param[in] port Port of the management server. If this argument is a service
+ * name (see services(5)), it is translated to the corresponding port number.
+ * @return NULL on error, created/modified management servers list.
+ */
+struct nc_mngmt_server *nc_session_reverse_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port);
+
+/**
+ * @ingroup callhome
+ * @brief Remove the specified management server description from the list.
+ *
+ * @param[in,out] list Management servers list to be modified.
+ * @param[in,out] remove Management server to be removed from the given list.
+ * The structure itself is not freed, use nc_session_reverse_mngmt_server_free()
+ * to free it after calling nc_session_reverse_mngmt_server_rm().
+ * @return EXIT_SUCCESS or EXIT_FAILURE.
+ */
+int nc_session_reverse_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_server* remove);
+
+/**
+ * @ingroup callhome
+ * @brief Free a management server description structure(s). The function doesn't
+ * free only the item refered by given pointer, but the complete list of
+ * management servers is freed.
+ *
+ * @param[in] list List of management servers to be freed.
+ * @return EXIT_SUCCESS or EXIT_FAILURE.
+ */
+int nc_session_reverse_mngmt_server_free(struct nc_mngmt_server* list);
 
 #ifndef DISABLE_LIBSSH
 
@@ -86,6 +142,29 @@ int nc_session_reverse_listen_stop(void);
 struct nc_session *nc_session_reverse_accept(const char *username, const struct nc_cpblts* cpblts);
 
 #endif /* not DISABLE_LIBSSH */
+
+/**
+ * @ingroup callhome
+ * @brief Connect NETCONF server to a management center (NETCONF client) using
+ * Reverse SSH mechanism
+ *
+ * @param[in] host_list List of management servers descriptions where the
+ * function will try to connect to. The list can be (is expected to be) ring
+ * to allow keep trying to connect to the server(s).
+ * @param[in] reconnect_secs Time delay in seconds between connection attempts
+ * (even to the same server but it depends on reconnect_count). See
+ * /netconf/ssh/call-home/applications/application/reconnect-strategy/interval-secs
+ * value in ietf-netconf-server YANG data model.
+ * @param[in] reconnect_count Number times the function tries to connect to a
+ * single server before moving on to the next server in the host_list. See
+ * /netconf/ssh/call-home/applications/application/reconnect-strategy/count-max
+ * value in ietf-netconf-server YANG data model.
+ * @param sshd_path Optional parameter to specify path to the OpenSSH server.
+ * If not specified, default path '/usr/sbin/sshd' is used if parameter is NULL.
+ * @return -1 on error. In case of success, function forks the current process
+ * running SSH daemon and returns its PID.
+ */
+int nc_session_reverse_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* sshd_path);
 
 #ifdef __cplusplus
 }

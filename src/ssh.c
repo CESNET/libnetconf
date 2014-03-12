@@ -1772,7 +1772,198 @@ static struct nc_session *nc_session_connect_openssh(const char* username, const
 }
 #endif /* DISABLE_LIBSSH */
 
-struct nc_session *nc_session_connect(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts)
+struct nc_mngmt_server *nc_session_reverse_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port)
+{
+	struct nc_mngmt_server* item, *start, *end;
+	struct addrinfo hints;
+	int r;
+
+	if (host == NULL || port == NULL) {
+		return (NULL);
+	}
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	item = malloc(sizeof(struct nc_mngmt_server));
+	if ((r = getaddrinfo(host, port, &hints, &(item->addr))) != 0) {
+		ERROR("Unable to get information about remote server %s (%s)", host, gai_strerror(r));
+		free(item);
+		return (NULL);
+	}
+
+	if (list == NULL) {
+		start = item;
+		end = item;
+	} else {
+		start = list;
+		/* find end of the ring list */
+		for(end = list; end->next != list; end = end->next) {
+			if (end->next == NULL) {
+				/* it was not ring list, make it */
+				end->next = list;
+				break;
+			}
+		}
+	}
+
+	/* add the new item into the ring list */
+	end->next = item;
+	item->next = start;
+
+	return (start);
+}
+
+int nc_session_reverse_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_server* remove)
+{
+	struct nc_mngmt_server *iter;
+
+	/* locate the item to remove */
+	for(iter = list; iter != NULL && iter->next != remove && iter->next != list; iter = iter->next);
+
+	if (iter == NULL) {
+		/* list is empty or remove is not present in the list (and list is not ring list) */
+		return (EXIT_FAILURE);
+	} else if (iter->next == list) {
+		/* remove was not found in the list, yet check the first item in the list */
+		if (list != remove) {
+			return (EXIT_FAILURE);
+		}
+	}
+	/* else remove found, modify the list */
+	iter->next = remove->next;
+	remove->next = remove; /* keep it ring */
+
+	return (EXIT_SUCCESS);
+}
+
+int nc_session_reverse_mngmt_server_free(struct nc_mngmt_server* list)
+{
+	struct nc_mngmt_server *iter, *aux;
+
+	if (list == NULL) {
+		return (EXIT_FAILURE);
+	} else if (list->next == NULL) {
+		freeaddrinfo(list->addr);
+		free(list);
+	} else {
+		for(iter = list->next, list->next = NULL; iter != NULL; ) {
+			if (iter->next == NULL && iter != list) {
+				/* the list was not ring, so we have to free the start of the list */
+				freeaddrinfo(list->addr);
+				free(list);
+			}
+			aux = iter->next;
+			freeaddrinfo(iter->addr);
+			free(iter);
+			iter = aux;
+		}
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+int nc_session_reverse_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* sshd_path)
+{
+	struct nc_mngmt_server *srv_iter;
+	struct addrinfo *addr;
+	int sock, sock6, sock4;
+	int i;
+	int pid = -1;
+
+	if (sshd_path == NULL) {
+		sshd_path = "/usr/sbin/sshd";
+	}
+
+	/* prepare a socket */
+	if ((sock4 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
+		ERROR("%s: creating IPv4 socket failed (%s)", __func__, strerror(errno));
+		WARN("%s: IPv4 connection to management servers will not be available.", __func__);
+	}
+	if ((sock6 = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP)) == -1) {
+		ERROR("%s: creating IPv6 socket failed (%s)", __func__, strerror(errno));
+		WARN("%s: IPv6 connection to management servers will not be available.", __func__);
+	}
+	if (sock4 == -1 && sock6 == -1) {
+		ERROR("%s: Unable to connect to any management server, creating sockets failed.", __func__);
+		return (-1);
+	}
+
+	/* since host_list is supposed to be ring list, this is potentially never ending loop */
+	for (srv_iter = host_list; srv_iter != NULL; srv_iter = srv_iter->next) {
+		for (addr = srv_iter->addr; addr != NULL; addr = addr->ai_next) {
+			switch (addr->ai_family) {
+			case AF_INET:
+				if (sock4 == -1) {
+					continue;
+				} else {
+					sock = sock4;
+				}
+				break;
+			case AF_INET6:
+				if (sock6 == -1) {
+					continue;
+				} else {
+					sock = sock6;
+				}
+				break;
+			default:
+				continue;
+			}
+
+			for (i = 0; i < reconnect_count; i++) {
+				if (connect(sock, addr->ai_addr, addr->ai_addrlen) == -1) {
+					WARN("Connecting to %s failed (%s)", addr->ai_canonname, strerror(errno));
+					sleep(reconnect_secs);
+					continue;
+				}
+				VERB("Connected to %s.", addr->ai_canonname);
+				/* close unused socket */
+				if (sock == sock4) {
+					close(sock6);
+				} else {
+					close(sock4);
+				}
+
+				/* go to start SSH daemon */
+				goto connected;
+			}
+		}
+	}
+
+	close(sock4);
+	close(sock6);
+	return(-1);
+
+connected:
+	/* execute sshd */
+	pid = fork();
+	if (pid == -1) {
+		ERROR("Forking process for SSH server failed (%s)", strerror(errno));
+		close(sock);
+	} else if (pid == 0) {
+		/* child (future sshd) process */
+		/* redirect stdin/stdout to the communication socket */
+		dup2(sock, STDIN_FILENO);
+		dup2(sock, STDOUT_FILENO);
+
+		/* start the sshd */
+		execl(sshd_path, sshd_path, "-i", NULL);
+
+		/* you never should be here! */
+		ERROR("Executing SSH daemon (%s) failed (%s).", sshd_path, strerror(errno));
+		exit(1);
+	} else {
+		/* parent (current app) */
+		close(sock);
+	}
+
+	return (pid);
+}
+
+struct nc_session* nc_session_connect(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts)
 {
 	struct nc_session *retval = NULL;
 	struct nc_cpblts *client_cpblts = NULL;
