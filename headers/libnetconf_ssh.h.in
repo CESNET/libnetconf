@@ -40,6 +40,8 @@
 #ifndef LIBNETCONF_SSH_H_
 #define LIBNETCONF_SSH_H_
 
+@LIBSSH2_DIRECTIVE@
+
 #include "libnetconf/callbacks_ssh.h"
 #include "libnetconf/reverse_ssh.h"
 
@@ -48,8 +50,9 @@ extern "C" {
 #endif
 
 /**
- * @brief Available SSH authentication mechanisms.
  * @ingroup session
+ * @brief Available SSH authentication mechanisms.
+ *
  */
 typedef enum
 {
@@ -67,6 +70,8 @@ typedef enum
  * 1. interactive (3)
  * 2. password (2)
  * 3. public keys (1)
+ *
+ * This function has no effect with configure's --disable-libssh2 option.
  *
  * @param[in] type Setting preference for the given authentication type.
  * @param[in] preference Preference value. Higher value means higher preference.

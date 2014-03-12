@@ -631,6 +631,7 @@ ac_includes_default="\
 ac_header_list=
 ac_subst_vars='LTLIBOBJS
 CONFIGURE_ARGS
+LIBSSH2_DIRECTIVE
 HAVE_LIBXML2_RECONNS
 HAVE_UTMPX
 HAVE_EACCESS
@@ -2857,6 +2858,7 @@ if test "${enable_libssh2+set}" = set; then :
 		libssh2="no"
 		CPPFLAGS="$CPPFLAGS -DDISABLE_LIBSSH"
 		LIBS="$LIBS -lutil" # forkpty()
+		LIBSSH2_DIRECTIVE="#define DISABLE_LIBSSH"
 	else
 		libssh2="yes"
 	fi
@@ -13500,6 +13502,7 @@ fi
 
 
 
+
 if test -z "$DOXYGEN"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Due to missing doxygen you will not able to generate Doxygen documentation." >&5
 $as_echo "$as_me: WARNING: Due to missing doxygen you will not able to generate Doxygen documentation." >&2;}
@@ -13513,7 +13516,7 @@ fi
 
 ac_config_files="$ac_config_files Makefile src/config.h libnetconf.spec libnetconf.pc Doxyfile"
 
-ac_config_files="$ac_config_files headers/libnetconf.h headers/libnetconf_xml.h"
+ac_config_files="$ac_config_files headers/libnetconf.h headers/libnetconf_xml.h headers/libnetconf_ssh.h"
 
 
 cat >confcache <<\_ACEOF
@@ -14516,6 +14519,7 @@ do
     "Doxyfile") CONFIG_FILES="$CONFIG_FILES Doxyfile" ;;
     "headers/libnetconf.h") CONFIG_FILES="$CONFIG_FILES headers/libnetconf.h" ;;
     "headers/libnetconf_xml.h") CONFIG_FILES="$CONFIG_FILES headers/libnetconf_xml.h" ;;
+    "headers/libnetconf_ssh.h") CONFIG_FILES="$CONFIG_FILES headers/libnetconf_ssh.h" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

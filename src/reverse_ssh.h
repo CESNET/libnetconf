@@ -46,6 +46,8 @@
 extern "C" {
 #endif
 
+#ifndef DISABLE_LIBSSH
+
 /**
  * @ingroup callhome
  * @brief Start listening on client side for incoming Reverse SSH connection.
@@ -68,6 +70,8 @@ int nc_session_reverse_listen_stop(void);
  * @brief
  */
 struct nc_session *nc_session_reverse_accept(const char *username, const struct nc_cpblts* cpblts);
+
+#endif /* not DISABLE_LIBSSH */
 
 #ifdef __cplusplus
 }

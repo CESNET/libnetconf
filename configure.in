@@ -118,6 +118,7 @@ AC_ARG_ENABLE([libssh2],
 		libssh2="no"
 		CPPFLAGS="$CPPFLAGS -DDISABLE_LIBSSH"
 		LIBS="$LIBS -lutil" # forkpty()
+		LIBSSH2_DIRECTIVE="#define DISABLE_LIBSSH"
 	else
 		libssh2="yes"
 	fi
@@ -447,6 +448,7 @@ AC_SUBST(CONFIGURE_PARAMS)
 AC_SUBST(HAVE_EACCESS)
 AC_SUBST(HAVE_UTMPX)
 AC_SUBST(HAVE_LIBXML2_RECONNS)
+AC_SUBST(LIBSSH2_DIRECTIVE)
 AC_SUBST(SSH_PROG)
 AC_SUBST(CONFIGURE_ARGS)
 AC_SUBST(PTHREAD_LIBS)
@@ -462,6 +464,6 @@ if test -z "$RPMBUILD"; then
 fi
 
 AC_CONFIG_FILES(Makefile src/config.h libnetconf.spec libnetconf.pc Doxyfile)
-AC_CONFIG_FILES(headers/libnetconf.h headers/libnetconf_xml.h)
+AC_CONFIG_FILES(headers/libnetconf.h headers/libnetconf_xml.h headers/libnetconf_ssh.h)
 
 AC_OUTPUT
