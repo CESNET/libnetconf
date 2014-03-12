@@ -118,7 +118,7 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/messages.h \
 	src/messages_xml.h \
 	src/ssh.h \
-	src/reverse_ssh \
+	src/reverse_ssh.h \
 	@HDRS_PUBL_SUBDIR_NOTIFICATIONS@ \
 	src/with_defaults.h \
 	@HDRS_PUBL_SUBDIR_URL@ \
