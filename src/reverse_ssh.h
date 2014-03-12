@@ -1,7 +1,7 @@
 /**
- * \file libnetconf_ssh.h
+ * \file reverse_ssh.h
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief libnetconf's header for control libssh2.
+ * \brief Functions to connect NETCONF server to a NETCONF client (Reverse SSH).
  *
  * Copyright (c) 2012-2014 CESNET, z.s.p.o.
  *
@@ -37,47 +37,40 @@
  *
  */
 
-#ifndef LIBNETCONF_SSH_H_
-#define LIBNETCONF_SSH_H_
+#ifndef REVERSE_SSH_H_
+#define REVERSE_SSH_H_
 
-#include "callbacks_ssh.h"
-#include "reverse_ssh.h"
+#include "netconf.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * @brief Available SSH authentication mechanisms.
- * @ingroup session
+ * @ingroup callhome
+ * @brief Start listening on client side for incoming Reverse SSH connection.
+ *
+ * @param[in] port Port number where to listen.
+ * @return EXIT_SUCCESS or EXIT_FAILURE on error.
  */
-typedef enum
-{
-	NC_SSH_AUTH_PUBLIC_KEYS = 1, /**< SSH user authorization via publickeys */
-	NC_SSH_AUTH_PASSWORD = 2,   /**< SSH user authorization via password */
-	NC_SSH_AUTH_INTERACTIVE = 4 /**< interactive SSH user authorization */
-} NC_SSH_AUTH_TYPE;
+int nc_session_reverse_listen(unsigned int port);
 
 /**
- * @ingroup session
- * @brief Set the preference of the SSH authentication methods.
+ * @ingroup callhome
+ * @brief Stop listening on client sode for incoming Reverse SSH connection.
  *
- * Allowed authentication types are defined as NC_SSH_AUTH_TYPE type.
- * The default preferences are:
- * 1. interactive (3)
- * 2. password (2)
- * 3. public keys (1)
- *
- * @param[in] type Setting preference for the given authentication type.
- * @param[in] preference Preference value. Higher value means higher preference.
- * Negative value disables the given authentication type. On equality of values,
- * the last set authentication type is preferred.
+ * @return EXIT_SUCCESS or EXIT_FAILURE if libnetconf is not listening.
  */
-void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference);
+int nc_session_reverse_listen_stop(void);
+
+/**
+ * @ingroup callhome
+ * @brief
+ */
+struct nc_session *nc_session_reverse_accept(const char *username, const struct nc_cpblts* cpblts);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBNETCONF_H_ */
-
+#endif /* REVERSE_SSH_H_ */

@@ -73,6 +73,7 @@
 #	include "url_internal.h"
 #endif
 
+#include "libnetconf_ssh.h"
 #include "ssh.h"
 #include "callbacks.h"
 #include "callbacks_ssh.h"

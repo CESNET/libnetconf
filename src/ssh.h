@@ -47,34 +47,6 @@ extern "C" {
 #endif
 
 /**
- * @brief Available SSH authentication mechanisms.
- * @ingroup session
- */
-typedef enum
-{
-	NC_SSH_AUTH_PUBLIC_KEYS = 1, /**< SSH user authorization via publickeys */
-	NC_SSH_AUTH_PASSWORD = 2,   /**< SSH user authorization via password */
-	NC_SSH_AUTH_INTERACTIVE = 4 /**< interactive SSH user authorization */
-} NC_SSH_AUTH_TYPE;
-
-/**
- * @ingroup session
- * @brief Set the preference of the SSH authentication methods.
- *
- * Allowed authentication types are defined as NC_SSH_AUTH_TYPE type.
- * The default preferences are:
- * 1. interactive (3)
- * 2. password (2)
- * 3. public keys (1)
- *
- * @param[in] type Setting preference for the given authentication type.
- * @param[in] preference Preference value. Higher value means higher preference.
- * Negative value disables the given authentication type. On equality of values,
- * the last set authentication type is preferred.
- */
-void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference);
-
-/**
  * @ingroup session
  * @brief Create NETCONF session to the specified server.
  *
@@ -133,17 +105,6 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
  * @return Structure describing the accepted NETCONF session or NULL in case of an error.
  */
 struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities);
-
-/**
- * @ingroup session
- * @brief Start listening on client side for incoming Reverse SSH connection.
- *
- * Part of Reverse SSH for NETCONF implementation.
- *
- * @param[in] port Port number where to listen.
- * @return EXIT_SUCCESS or EXIT_FAILURE on error.
- */
-int nc_session_reverse_listen(unsigned int port);
 
 #ifdef __cplusplus
 }
