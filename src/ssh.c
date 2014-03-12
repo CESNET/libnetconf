@@ -1356,6 +1356,7 @@ static struct nc_session *nc_session_connect_libssh2(const char* username, const
 struct nc_session *nc_session_reverse_accept(const char *username, const struct nc_cpblts* cpblts)
 {
 	struct nc_session* retval;
+	struct nc_cpblts *client_cpblts;
 	int sock;
 	struct sockaddr_storage remote;
 	socklen_t sin_size;
@@ -1397,7 +1398,37 @@ struct nc_session *nc_session_reverse_accept(const char *username, const struct 
 		sock = -1;
 	}
 
+	retval->status = NC_SESSION_STATUS_WORKING;
+
+	if (cpblts == NULL) {
+		if ((client_cpblts = nc_session_get_cpblts_default()) == NULL) {
+			VERB("Unable to set the client's NETCONF capabilities.");
+			goto shutdown;
+		}
+	} else {
+		client_cpblts = nc_cpblts_new((const char* const*)(cpblts->list));
+	}
+
+	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
+		goto shutdown;
+	}
+
+	/* set with-defaults capability flags */
+	parse_wdcap(retval->capabilities, &(retval->wd_basic), &(retval->wd_modes));
+
+	/* cleanup */
+	nc_cpblts_free(client_cpblts);
+
 	return (retval);
+
+shutdown:
+
+	/* cleanup */
+	nc_session_close(retval, NC_SESSION_TERM_OTHER);
+	nc_session_free(retval);
+	nc_cpblts_free(client_cpblts);
+
+	return (NULL);
 }
 
 int nc_session_reverse_listen_stop(void)
@@ -1945,12 +1976,14 @@ connected:
 		close(sock);
 	} else if (pid == 0) {
 		/* child (future sshd) process */
+		int log = open("/tmp/reversessh.log", O_RDWR | O_CREAT, 0666);
 		/* redirect stdin/stdout to the communication socket */
 		dup2(sock, STDIN_FILENO);
 		dup2(sock, STDOUT_FILENO);
+		dup2(log, STDERR_FILENO);
 
 		/* start the sshd */
-		execl(sshd_path, sshd_path, "-i", NULL);
+		execl(sshd_path, sshd_path, "-ddd", "-e", "-i", NULL);
 
 		/* you never should be here! */
 		ERROR("Executing SSH daemon (%s) failed (%s).", sshd_path, strerror(errno));
