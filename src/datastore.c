@@ -2604,6 +2604,89 @@ int ncds_add_augment_transapi(const char* model_path, const char* callbacks_path
 	return (EXIT_SUCCESS);
 }
 
+int ncds_add_augment_transapi_static(const char* model_path, const struct transapi* transapi)
+{
+	struct data_model *model;
+	struct transapi_list *tapi_item;
+
+	if (model_path == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	/* get model */
+	if ((model = read_model(model_path)) == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (model->transapi == NULL) {
+		/* transAPI module information checks */
+		if (transapi == NULL) {
+			ERROR("%s: Missing transAPI module description.", __func__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+		if (transapi->config_modified == NULL) {
+			ERROR("%s: Missing config_modified variable in transAPI module description.", __func__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+		if (transapi->erropt == NULL) {
+			ERROR("%s: Missing erropt variable in transAPI module description.", __func__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+		if (transapi->get_state == NULL) {
+			ERROR("%s: Missing get_state() function in transAPI module description.", __func__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+		if (transapi->ns_mapping == NULL) {
+			ERROR("%s: Missing mapping of prefixes with URIs in transAPI module description.", __func__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+		/* ok, checks passed */
+
+		tapi_item = malloc(sizeof(struct transapi_list));
+		if (tapi_item == NULL) {
+			ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+
+		/* allocate transapi structure */
+		if ((model->transapi = malloc(sizeof(struct transapi_internal))) == NULL) {
+			ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+		/* fill created transapi structure with given pointers to transAPI functions */
+
+		/* copy transAPI module info into a internal structure
+		 * NOTE: copy only the beginning part common for struct transapi and
+		 * struct transapi_internal
+		 */
+		memcpy(model->transapi, transapi, (sizeof(struct transapi)));
+		/*
+		 * mark it as transAPI (non-NULL), but remember that it is not a dynamically
+		 * linked transAPI module
+		 */
+		model->transapi->module = &error_area;
+
+		/* link created transapi with the model */
+		model->transapi->model = model;
+
+		/* add transapi module into internal list of loaded modules */
+		tapi_item->tapi = model->transapi;
+		tapi_item->ref_count = 0;
+		tapi_item->next = augment_tapi_list;
+		augment_tapi_list = tapi_item;
+	}
+
+	return (EXIT_SUCCESS);
+}
+
 int ncds_add_model(const char* model_path)
 {
 	if (model_path == NULL) {
