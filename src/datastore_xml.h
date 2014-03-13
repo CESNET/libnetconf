@@ -75,6 +75,9 @@ struct ncds_ds* ncds_new2(NCDS_TYPE type, const char * model_path, xmlDocPtr (*g
 /**
  * @ingroup transapi
  * @brief Create new datastore structure with transaction API support
+ *
+ * To make this function available, you have to include libnetconf_xml.h.
+ *
  * @param[in] type Datastore implementation type for the new datastore structure.
  * @param[in] model_path Base name of the configuration data model files.
  * libnetconf expects model_path.yin as a data model, model_path.rng for
