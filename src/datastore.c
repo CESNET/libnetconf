@@ -2578,6 +2578,7 @@ int ncds_add_augment_transapi(const char* model_path, const char* callbacks_path
 	if (model->transapi == NULL) {
 		tapi_item = malloc(sizeof(struct transapi_list));
 		if (tapi_item == NULL) {
+			ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 			ncds_ds_model_free(model);
 			return (EXIT_FAILURE);
 		}
