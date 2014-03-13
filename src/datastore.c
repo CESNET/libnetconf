@@ -1531,6 +1531,10 @@ struct ncds_ds* ncds_new_transapi_static(NCDS_TYPE type, const char* model_path,
 	struct ncds_ds *ds = NULL;
 
 	/* transAPI module information checks */
+	if (transapi == NULL) {
+		ERROR("%s: Missing transAPI module description.", __func__);
+		return (NULL);
+	}
 	if (transapi->config_modified == NULL) {
 		ERROR("%s: Missing config_modified variable in transAPI module description.", __func__);
 		return (NULL);
