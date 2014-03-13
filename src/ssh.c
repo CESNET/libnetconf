@@ -1353,7 +1353,7 @@ static struct nc_session *nc_session_connect_libssh2(const char* username, const
 }
 
 #define PORTLEN 6
-struct nc_session *nc_session_reverse_accept(const char *username, const struct nc_cpblts* cpblts)
+struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpblts* cpblts)
 {
 	struct nc_session* retval;
 	struct nc_cpblts *client_cpblts;
@@ -1431,7 +1431,7 @@ shutdown:
 	return (NULL);
 }
 
-int nc_session_reverse_listen_stop(void)
+int nc_callhome_listen_stop(void)
 {
 	if (reverse_listen_socket == -1) {
 		ERROR("%s: libnetconf is not listening for incoming call home.", __func__);
@@ -1444,7 +1444,7 @@ int nc_session_reverse_listen_stop(void)
 	return (EXIT_SUCCESS);
 }
 
-int nc_session_reverse_listen(unsigned int port)
+int nc_callhome_listen(unsigned int port)
 {
 	struct addrinfo hints, *res_list, *res;
 	char port_s[SHORT_INT_LENGTH];
@@ -1803,7 +1803,7 @@ static struct nc_session *nc_session_connect_openssh(const char* username, const
 }
 #endif /* DISABLE_LIBSSH */
 
-struct nc_mngmt_server *nc_session_reverse_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port)
+struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port)
 {
 	struct nc_mngmt_server* item, *start, *end;
 	struct addrinfo hints;
@@ -1847,7 +1847,7 @@ struct nc_mngmt_server *nc_session_reverse_mngmt_server_add(struct nc_mngmt_serv
 	return (start);
 }
 
-int nc_session_reverse_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_server* remove)
+int nc_callhome_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_server* remove)
 {
 	struct nc_mngmt_server *iter;
 
@@ -1870,7 +1870,7 @@ int nc_session_reverse_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_m
 	return (EXIT_SUCCESS);
 }
 
-int nc_session_reverse_mngmt_server_free(struct nc_mngmt_server* list)
+int nc_callhome_mngmt_server_free(struct nc_mngmt_server* list)
 {
 	struct nc_mngmt_server *iter, *aux;
 
@@ -1896,7 +1896,7 @@ int nc_session_reverse_mngmt_server_free(struct nc_mngmt_server* list)
 	return (EXIT_SUCCESS);
 }
 
-int nc_session_reverse_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* sshd_path)
+int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* sshd_path)
 {
 	struct nc_mngmt_server *srv_iter;
 	struct addrinfo *addr;

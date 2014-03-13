@@ -66,6 +66,8 @@ struct nc_mngmt_server {
  * @ingroup callhome
  * @brief Add a new management server specification to the end of a list.
  *
+ * To make this function available, you have to include libnetconf_ssh.h.
+ *
  * @param[in] list Current list where the server description will be added. If
  * NULL, a new list is created and returned by the function.
  * @param[in] host Host name of the management server. It specifies either a
@@ -77,11 +79,13 @@ struct nc_mngmt_server {
  * name (see services(5)), it is translated to the corresponding port number.
  * @return NULL on error, created/modified management servers list.
  */
-struct nc_mngmt_server *nc_session_reverse_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port);
+struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port);
 
 /**
  * @ingroup callhome
  * @brief Remove the specified management server description from the list.
+ *
+ * To make this function available, you have to include libnetconf_ssh.h.
  *
  * @param[in,out] list Management servers list to be modified.
  * @param[in,out] remove Management server to be removed from the given list.
@@ -89,7 +93,7 @@ struct nc_mngmt_server *nc_session_reverse_mngmt_server_add(struct nc_mngmt_serv
  * to free it after calling nc_session_reverse_mngmt_server_rm().
  * @return EXIT_SUCCESS or EXIT_FAILURE.
  */
-int nc_session_reverse_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_server* remove);
+int nc_callhome_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_server* remove);
 
 /**
  * @ingroup callhome
@@ -97,10 +101,12 @@ int nc_session_reverse_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_m
  * free only the item refered by given pointer, but the complete list of
  * management servers is freed.
  *
+ * To make this function available, you have to include libnetconf_ssh.h.
+ *
  * @param[in] list List of management servers to be freed.
  * @return EXIT_SUCCESS or EXIT_FAILURE.
  */
-int nc_session_reverse_mngmt_server_free(struct nc_mngmt_server* list);
+int nc_callhome_mngmt_server_free(struct nc_mngmt_server* list);
 
 #ifndef DISABLE_LIBSSH
 
@@ -109,27 +115,30 @@ int nc_session_reverse_mngmt_server_free(struct nc_mngmt_server* list);
  * @brief Start listening on client side for incoming Reverse SSH connection.
  *
  * This function is not available with configure's --disable-libssh2 option.
+ * To make this function available, you have to include libnetconf_ssh.h.
  *
  * @param[in] port Port number where to listen.
  * @return EXIT_SUCCESS or EXIT_FAILURE on error.
  */
-int nc_session_reverse_listen(unsigned int port);
+int nc_callhome_listen(unsigned int port);
 
 /**
  * @ingroup callhome
  * @brief Stop listening on client side for incoming Reverse SSH connection.
  *
  * This function is not available with configure's --disable-libssh2 option.
+ * To make this function available, you have to include libnetconf_ssh.h.
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE if libnetconf is not listening.
  */
-int nc_session_reverse_listen_stop(void);
+int nc_callhome_listen_stop(void);
 
 /**
  * @ingroup callhome
  * @brief Accept incoming Reverse SSH connection and create NETCONF session on it.
  *
  * This function is not available with configure's --disable-libssh2 option.
+ * To make this function available, you have to include libnetconf_ssh.h.
  *
  * @param[in] username Name of the user to login to the server. The user running the
  * application (detected from the effective UID) is used if NULL is specified.
@@ -139,7 +148,7 @@ int nc_session_reverse_listen_stop(void);
  * used in case of a NULL parameter).
  * @return Structure describing the NETCONF session or NULL in case of an error.
  */
-struct nc_session *nc_session_reverse_accept(const char *username, const struct nc_cpblts* cpblts);
+struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpblts* cpblts);
 
 #endif /* not DISABLE_LIBSSH */
 
@@ -147,6 +156,8 @@ struct nc_session *nc_session_reverse_accept(const char *username, const struct 
  * @ingroup callhome
  * @brief Connect NETCONF server to a management center (NETCONF client) using
  * Reverse SSH mechanism
+ *
+ * To make this function available, you have to include libnetconf_ssh.h.
  *
  * @param[in] host_list List of management servers descriptions where the
  * function will try to connect to. The list can be (is expected to be) ring
@@ -164,7 +175,7 @@ struct nc_session *nc_session_reverse_accept(const char *username, const struct 
  * @return -1 on error. In case of success, function forks the current process
  * running SSH daemon and returns its PID.
  */
-int nc_session_reverse_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* sshd_path);
+int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* sshd_path);
 
 #ifdef __cplusplus
 }
