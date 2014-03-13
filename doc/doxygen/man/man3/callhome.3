@@ -1,0 +1,179 @@
+.TH "Reverse SSH" 3 "Thu Mar 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Reverse SSH \- 
+.PP
+libnetconf's functions implementing Reverse SSH (Call Home) for NETCONF\&.  
+
+.SS "Data Structures"
+
+.in +1c
+.ti -1c
+.RI "struct \fBnc_mngmt_server\fP"
+.br
+.RI "\fIStructure describing a management server where the NETCONF server connects to\&. \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "struct nc_session * \fBnc_callhome_accept\fP (const char *username, const struct nc_cpblts *cpblts)"
+.br
+.RI "\fIAccept incoming Reverse SSH connection and create NETCONF session on it\&. \fP"
+.ti -1c
+.RI "int \fBnc_callhome_connect\fP (struct \fBnc_mngmt_server\fP *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char *sshd_path)"
+.br
+.RI "\fIConnect NETCONF server to a management center (NETCONF client) using Reverse SSH mechanism\&. \fP"
+.ti -1c
+.RI "int \fBnc_callhome_listen\fP (unsigned int port)"
+.br
+.RI "\fIStart listening on client side for incoming Reverse SSH connection\&. \fP"
+.ti -1c
+.RI "int \fBnc_callhome_listen_stop\fP (void)"
+.br
+.RI "\fIStop listening on client side for incoming Reverse SSH connection\&. \fP"
+.ti -1c
+.RI "struct \fBnc_mngmt_server\fP * \fBnc_callhome_mngmt_server_add\fP (struct \fBnc_mngmt_server\fP *list, const char *host, const char *port)"
+.br
+.RI "\fIAdd a new management server specification to the end of a list\&. \fP"
+.ti -1c
+.RI "int \fBnc_callhome_mngmt_server_free\fP (struct \fBnc_mngmt_server\fP *list)"
+.br
+.RI "\fIFree a management server description structure(s)\&. The function doesn't free only the item refered by given pointer, but the complete list of management servers is freed\&. \fP"
+.ti -1c
+.RI "int \fBnc_callhome_mngmt_server_rm\fP (struct \fBnc_mngmt_server\fP *list, struct \fBnc_mngmt_server\fP *remove)"
+.br
+.RI "\fIRemove the specified management server description from the list\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+libnetconf's functions implementing Reverse SSH (Call Home) for NETCONF\&. 
+
+
+.SH "Function Documentation"
+.PP 
+.SS "struct nc_session* nc_callhome_accept (const char *username, const struct nc_cpblts *cpblts)"
+
+.PP
+Accept incoming Reverse SSH connection and create NETCONF session on it\&. This function is not available with configure's --disable-libssh2 option\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIusername\fP Name of the user to login to the server\&. The user running the application (detected from the effective UID) is used if NULL is specified\&. 
+.br
+\fIcpblts\fP NETCONF capabilities structure with capabilities supported by the client\&. Client can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter)\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Structure describing the NETCONF session or NULL in case of an error\&. 
+.RE
+.PP
+
+.SS "int nc_callhome_connect (struct \fBnc_mngmt_server\fP *host_list, uint8_treconnect_secs, uint8_treconnect_count, const char *sshd_path)"
+
+.PP
+Connect NETCONF server to a management center (NETCONF client) using Reverse SSH mechanism\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIhost_list\fP List of management servers descriptions where the function will try to connect to\&. The list can be (is expected to be) ring to allow keep trying to connect to the server(s)\&. 
+.br
+\fIreconnect_secs\fP Time delay in seconds between connection attempts (even to the same server but it depends on reconnect_count)\&. See /netconf/ssh/call-home/applications/application/reconnect-strategy/interval-secs value in ietf-netconf-server YANG data model\&. 
+.br
+\fIreconnect_count\fP Number times the function tries to connect to a single server before moving on to the next server in the host_list\&. See /netconf/ssh/call-home/applications/application/reconnect-strategy/count-max value in ietf-netconf-server YANG data model\&. 
+.br
+\fIsshd_path\fP Optional parameter to specify path to the OpenSSH server\&. If not specified, default path '/usr/sbin/sshd' is used if parameter is NULL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+-1 on error\&. In case of success, function forks the current process running SSH daemon and returns its PID\&. 
+.RE
+.PP
+
+.SS "int nc_callhome_listen (unsigned intport)"
+
+.PP
+Start listening on client side for incoming Reverse SSH connection\&. This function is not available with configure's --disable-libssh2 option\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIport\fP Port number where to listen\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCESS or EXIT_FAILURE on error\&. 
+.RE
+.PP
+
+.SS "int nc_callhome_listen_stop (void)"
+
+.PP
+Stop listening on client side for incoming Reverse SSH connection\&. This function is not available with configure's --disable-libssh2 option\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCESS or EXIT_FAILURE if libnetconf is not listening\&. 
+.RE
+.PP
+
+.SS "struct \fBnc_mngmt_server\fP* nc_callhome_mngmt_server_add (struct \fBnc_mngmt_server\fP *list, const char *host, const char *port)"
+
+.PP
+Add a new management server specification to the end of a list\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIlist\fP Current list where the server description will be added\&. If NULL, a new list is created and returned by the function\&. 
+.br
+\fIhost\fP Host name of the management server\&. It specifies either a numerical network address (for IPv4, numbers-and-dots notation as supported by inet_aton(3); for IPv6, hexadecimal string format as supported by inet_pton(3)), or a network host-name, whose network addresses are looked up and resolved\&. 
+.br
+\fIport\fP Port of the management server\&. If this argument is a service name (see services(5)), it is translated to the corresponding port number\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+NULL on error, created/modified management servers list\&. 
+.RE
+.PP
+
+.SS "int nc_callhome_mngmt_server_free (struct \fBnc_mngmt_server\fP *list)"
+
+.PP
+Free a management server description structure(s)\&. The function doesn't free only the item refered by given pointer, but the complete list of management servers is freed\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIlist\fP List of management servers to be freed\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCESS or EXIT_FAILURE\&. 
+.RE
+.PP
+
+.SS "int nc_callhome_mngmt_server_rm (struct \fBnc_mngmt_server\fP *list, struct \fBnc_mngmt_server\fP *remove)"
+
+.PP
+Remove the specified management server description from the list\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIlist\fP Management servers list to be modified\&. 
+.br
+\fIremove\fP Management server to be removed from the given list\&. The structure itself is not freed, use nc_session_reverse_mngmt_server_free() to free it after calling nc_session_reverse_mngmt_server_rm()\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCESS or EXIT_FAILURE\&. 
+.RE
+.PP
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.

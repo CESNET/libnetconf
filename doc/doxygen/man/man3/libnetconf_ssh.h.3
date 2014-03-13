@@ -11,7 +11,25 @@ libnetconf's header for control libssh2\&.
 .PP
 \fC#include 'callbacks_ssh\&.h'\fP
 .br
+\fC#include 'reverse_ssh\&.h'\fP
+.br
 
+.SS "Enumerations"
+
+.in +1c
+.ti -1c
+.RI "enum \fBNC_SSH_AUTH_TYPE\fP { \fBNC_SSH_AUTH_PUBLIC_KEYS\fP = 1, \fBNC_SSH_AUTH_PASSWORD\fP = 2, \fBNC_SSH_AUTH_INTERACTIVE\fP = 4 }"
+.br
+.RI "\fIAvailable SSH authentication mechanisms\&. \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBnc_ssh_pref\fP (\fBNC_SSH_AUTH_TYPE\fP type, short int preference)"
+.br
+.RI "\fISet the preference of the SSH authentication methods\&. \fP"
+.in -1c
 .SH "Detailed Description"
 .PP 
 libnetconf's header for control libssh2\&. 
