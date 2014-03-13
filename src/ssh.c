@@ -615,9 +615,9 @@ static int check_hostkey(const char *host, const char* knownhosts_dir, LIBSSH2_S
 				 */
 				free(knownhosts_file);
 				knownhosts_file = NULL;
+				libssh2_knownhost_free(knownhosts);
 				if (asprintf(&knownhosts_file, "%s/netconf_known_hosts", knownhosts_dir) == -1) {
 					ERROR("%s: asprintf() failed.", __func__);
-					libssh2_knownhost_free(knownhosts);
 					return(EXIT_FAILURE);
 				}
 				/* create own knownhosts file if it does not exist */
@@ -626,6 +626,7 @@ static int check_hostkey(const char *host, const char* knownhosts_dir, LIBSSH2_S
 						close(fd);
 					}
 				}
+				knownhosts = libssh2_knownhost_init(ssh_session);
 				ret = libssh2_knownhost_readfile(knownhosts, knownhosts_file, LIBSSH2_KNOWNHOST_FILE_OPENSSH);
 			}
 		}
