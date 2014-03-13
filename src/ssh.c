@@ -1359,7 +1359,7 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 	struct nc_cpblts *client_cpblts;
 	int sock;
 	struct sockaddr_storage remote;
-	socklen_t sin_size;
+	socklen_t addr_size = sizeof(remote);
 	char port[PORTLEN];
 	char host[INET6_ADDRSTRLEN];
 
@@ -1369,7 +1369,7 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 	}
 
 	VERB("Waiting for incoming Reverse SSH connections...");
-	sock = accept(reverse_listen_socket, (struct sockaddr*)&remote, &sin_size);
+	sock = accept(reverse_listen_socket, (struct sockaddr*)&remote, &addr_size);
 	if (sock == -1) {
 		ERROR("Accepting call home failed (%s)", strerror(errno));
 		return (NULL);
