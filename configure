@@ -778,7 +778,7 @@ enable_url
 enable_validation
 enable_debug
 enable_debug_threads
-with_ncworkingdirpath
+with_workingdir
 with_suid
 with_sgid
 with_nacm_recovery_uid
@@ -1441,10 +1441,8 @@ Optional Packages:
   --with-libxml2          specific libxml2 location
   --with-libxslt          specific libxslt location
   --with-libssh2=DIR      Specifies libssh2 installation directory.
-  --with-ncworkingdirpath=path
-                          Path to a working directory of libnetconf, where all
-                          the system files are stored, the default value is
-                          /var/lib/libnetconf/
+  --with-workingdir=path  Path to a working directory of libnetconf, the
+                          default value is /var/lib/libnetconf/
   --with-suid=user        When creating files or directories using libnetconf,
                           rely on the SUID bit set and change their ownership
                           to the specified user
@@ -2986,9 +2984,9 @@ if test "${enable_debug_threads+set}" = set; then :
 fi
 
 
-# Check whether --with-ncworkingdirpath was given.
-if test "${with_ncworkingdirpath+set}" = set; then :
-  withval=$with_ncworkingdirpath; NC_WORKINGDIR_PATH="$withval"
+# Check whether --with-workingdir was given.
+if test "${with_workingdir+set}" = set; then :
+  withval=$with_workingdir; NC_WORKINGDIR_PATH="$withval"
 
 fi
 

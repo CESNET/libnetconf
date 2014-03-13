@@ -1,4 +1,4 @@
-.TH "transapi_data_callbacks" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
+.TH "transapi_data_callbacks" 3 "Thu Mar 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -15,18 +15,7 @@ Same as \fBtransapi_data_callbacks\fP\&. Using libxml2 structures for callbacks 
 
 .in +1c
 .ti -1c
-.RI "struct {"
-.br
-.ti -1c
-.RI "   int(* \fBfunc\fP )(void **, \fBXMLDIFF_OP\fP, 
-.br
-      xmlNodePtr, struct nc_err **)"
-.br
-.ti -1c
-.RI "   char * \fBpath\fP"
-.br
-.ti -1c
-.RI "} \fBcallbacks\fP []"
+.RI "struct \fBclbk\fP \fBcallbacks\fP []"
 .br
 .ti -1c
 .RI "int \fBcallbacks_count\fP"
@@ -40,15 +29,11 @@ Same as \fBtransapi_data_callbacks\fP\&. Using libxml2 structures for callbacks 
 Same as \fBtransapi_data_callbacks\fP\&. Using libxml2 structures for callbacks parameters\&. 
 .SH "Field Documentation"
 .PP 
-.SS "struct { \&.\&.\&. }   callbacks[]"
+.SS "struct \fBclbk\fP callbacks[]"
 
 .SS "int callbacks_count"
 
 .SS "void* data"
-
-.SS "int(* func)(void **, \fBXMLDIFF_OP\fP, xmlNodePtr, struct nc_err **)"
-
-.SS "char* path"
 
 
 .SH "Author"

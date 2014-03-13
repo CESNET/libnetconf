@@ -108,6 +108,8 @@ var searchData=
   ['ncdflt_5frpc_5fget_5fwithdefaults',['ncdflt_rpc_get_withdefaults',['../d1/df7/group__withdefaults.html#gacdabc187c9ca8f1faa7d9016decf3561',1,'with_defaults.h']]],
   ['ncdflt_5fset_5fbasic_5fmode',['ncdflt_set_basic_mode',['../d1/df7/group__withdefaults.html#ga69f613716993c78f10032958929553f3',1,'with_defaults.h']]],
   ['ncdflt_5fset_5fsupported',['ncdflt_set_supported',['../d1/df7/group__withdefaults.html#gaacdfebb053cae501e72e32220305d55b',1,'with_defaults.h']]],
+  ['ncds_5fadd_5faugment_5ftransapi',['ncds_add_augment_transapi',['../d8/d55/group__transapi.html#gacd42f4efcc256fa4ecdaa021f82d6d1f',1,'datastore.h']]],
+  ['ncds_5fadd_5faugment_5ftransapi_5fstatic',['ncds_add_augment_transapi_static',['../d8/d55/group__transapi.html#ga7f6f5af711045d8598f283ec09b9167a',1,'datastore_xml.h']]],
   ['ncds_5fadd_5fmodel',['ncds_add_model',['../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47',1,'datastore.h']]],
   ['ncds_5fadd_5fmodels_5fpath',['ncds_add_models_path',['../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b',1,'datastore.h']]],
   ['ncds_5fapply_5frpc',['ncds_apply_rpc',['../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801',1,'datastore.h']]],

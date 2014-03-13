@@ -1,26 +1,29 @@
 var group__transapi =
 [
+    [ "clbk", "d0/dd1/structclbk.html", [
+      [ "func", "d0/dd1/structclbk.html#a32d40f1c10b08061196dc6b7a9ab072c", null ],
+      [ "path", "d0/dd1/structclbk.html#a44196e6a5696d10442c29e639437196e", null ]
+    ] ],
     [ "transapi", "d9/dc0/structtransapi.html", [
+      [ "clbks_order", "d9/dc0/structtransapi.html#a9da1a4a7373fb09e2f82fb7f1a81f9b2", null ],
       [ "close", "d9/dc0/structtransapi.html#a414e48f893be7474f64d2c61a9c012b9", null ],
       [ "config_modified", "d9/dc0/structtransapi.html#aa234e35582e991cd6e5c43047e315528", null ],
       [ "data_clbks", "d9/dc0/structtransapi.html#a44e5e883d6586faf97047d23c7bcebf7", null ],
       [ "erropt", "d9/dc0/structtransapi.html#acb50180a0bc032bef4b6af94d8596528", null ],
       [ "get_state", "d9/dc0/structtransapi.html#a6c403c3ae7c1ca5654fdaf60b60ba16b", null ],
       [ "init", "d9/dc0/structtransapi.html#a8cb29ceda55d20ecbec3784d536851db", null ],
-      [ "ns_mapping", "d9/dc0/structtransapi.html#afea037e397efab982d5e7d85f554d8b7", null ],
+      [ "ns_mapping", "d9/dc0/structtransapi.html#a517eb18d6321490a3439ae595edbf9a4", null ],
       [ "rpc_clbks", "d9/dc0/structtransapi.html#ae40968626e78bf37871565d98292b1b7", null ]
     ] ],
     [ "transapi_data_callbacks", "d6/dcb/structtransapi__data__callbacks.html", [
-      [ "callbacks", "d6/dcb/structtransapi__data__callbacks.html#a73c5d3c3573277311516698443f0744e", null ],
+      [ "callbacks", "d6/dcb/structtransapi__data__callbacks.html#a37c3f849c79cfe4991c6d0a6526b12d7", null ],
       [ "callbacks_count", "d6/dcb/structtransapi__data__callbacks.html#a853d73f0f495147dba4842e9f860d1f0", null ],
-      [ "data", "d6/dcb/structtransapi__data__callbacks.html#a735984d41155bc1032e09bece8f8d66d", null ],
-      [ "func", "d6/dcb/structtransapi__data__callbacks.html#a32d40f1c10b08061196dc6b7a9ab072c", null ],
-      [ "path", "d6/dcb/structtransapi__data__callbacks.html#a44196e6a5696d10442c29e639437196e", null ]
+      [ "data", "d6/dcb/structtransapi__data__callbacks.html#a735984d41155bc1032e09bece8f8d66d", null ]
     ] ],
     [ "transapi_rpc_callbacks", "d0/df8/structtransapi__rpc__callbacks.html", [
       [ "arg_count", "d0/df8/structtransapi__rpc__callbacks.html#ad4e017d16d393756e4e27927d06084ec", null ],
       [ "arg_order", "d0/df8/structtransapi__rpc__callbacks.html#ae5d4a40ee77a8f12e0cb49f592719338", null ],
-      [ "callbacks", "d0/df8/structtransapi__rpc__callbacks.html#a2c8dfb52332ae15f1cf7bffeca999f5b", null ],
+      [ "callbacks", "d0/df8/structtransapi__rpc__callbacks.html#a0ad28c1d0d3518ca0b3d631a20eaf48d", null ],
       [ "callbacks_count", "d0/df8/structtransapi__rpc__callbacks.html#a853d73f0f495147dba4842e9f860d1f0", null ],
       [ "func", "d0/df8/structtransapi__rpc__callbacks.html#a15569b8737513da9b760834a5e5be80c", null ],
       [ "name", "d0/df8/structtransapi__rpc__callbacks.html#a5ac083a645d964373f022d03df4849c8", null ]
@@ -35,6 +38,8 @@ var group__transapi =
       [ "XMLDIFF_SIBLING", "d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488afed6f3e2b762ffe2cad87676c48c488f", null ],
       [ "XMLDIFF_REORDER", "d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a732f013a15b9125ea90d20f16d2f2d8e", null ]
     ] ],
+    [ "ncds_add_augment_transapi", "d8/d55/group__transapi.html#gacd42f4efcc256fa4ecdaa021f82d6d1f", null ],
+    [ "ncds_add_augment_transapi_static", "d8/d55/group__transapi.html#ga7f6f5af711045d8598f283ec09b9167a", null ],
     [ "ncds_new_transapi", "d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85", null ],
     [ "ncds_new_transapi_static", "d8/d55/group__transapi.html#gaaf4e4daa7fa8be965ded41eb006a6713", null ]
 ];

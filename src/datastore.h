@@ -99,25 +99,31 @@ extern char error_area;
  * In addition to the described NETCONF point of view, libnetconf divides all
  * datastores (running, startup and candidate) into datastore parts connected
  * with a specific (basic) configuration data model. Each datastore part is
- * created by ncds_new() or ncds_new_transapi() function. According to the
- * specified datastore type, server should set up additional datastore settings
- * (see section \ref ds_settings). If some specific validation settings are needed,
- * ncds_set_validation() function can be used (more information about validation
- * can be found at a separated \ref validation "page". Finnaly, to activate
- * datastore and to get its unique identifier, ncds_init() function must be
- * called.
+ * created by ncds_new(), ncds_new2() or ncds_new_transapi() function. According
+ * to the specified datastore type, server should set up additional datastore
+ * settings (see section \ref ds_settings). If some specific validation settings
+ * are needed, ncds_set_validation() function can be used (more information
+ * about validation can be found at a separated \ref validation "page". Finnaly,
+ * to activate datastore and to get its unique identifier, ncds_init() function
+ * must be called.
  *
  * If you want to use some data model that extends (by import or augment
  * statement) any of the used data models, functions ncds_add_model() or
  * ncds_add_models_path() can be used to specify location of the extension data
- * model(s).
+ * model(s). As ncds_new_transapi() connects base data model, its datastore and
+ * transAPI module (for more information about transAPI, see \ref transapi
+ * "separated page"), also an augment model can be connected with a transAPI
+ * module using ncds_add_augment_transapi. In both cases, transAPI can be
+ * provided not only as a shared object (*.so file), but also statically using
+ * ncds_new_transapi_static() for base data model and
+ * ncds_add_augment_transapi_static() in case of augment data model.
  *
  * By default, all features defined in configuration data models are disabled.
  * To enable specific features or all features at once, you can use
  * ncds_feature_enable() and ncds_features_enableall() functions.
  *
  * To finish changes made to the datastores (adding augment data models,
- * enabling and disabling features, etc.), server must call ncds_consolidate()
+ * enabling and disabling features, etc.), server MUST call ncds_consolidate()
  * function.
  *
  * As a next step, device controlled by the server should be initialized. This
