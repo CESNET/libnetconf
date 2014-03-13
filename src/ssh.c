@@ -1396,6 +1396,8 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 	} else {
 		close(sock);
 		sock = -1;
+
+		return(NULL);
 	}
 
 	retval->status = NC_SESSION_STATUS_WORKING;
