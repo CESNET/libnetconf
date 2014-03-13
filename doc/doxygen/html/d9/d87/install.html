@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.7.0</span>
+   &#160;<span id="projectnumber">0.7.99</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -116,16 +116,32 @@ $(document).ready(function(){initNavTree('d9/d87/install.html','../../');});
 <h3>Configure Options</h3>
 <p><code>configure</code> script supports the following options. The full list of the accepted options can be shown by <code>--help</code> option.</p>
 <ul>
-<li><code>--disable--ssh2</code><ul>
-<li>Remove dependency on the <code>libssh2</code> library. By default, the <code>libssh2</code> library is used by the client side functions to create SSH connection to a remote host. If the usage of the <code>libssh2</code> is disabled, libnetconf will use a standalone <code>ssh(1)</code> client located in a system path. <code>ssh(1)</code> client is, for example, part of the OpenSSH.</li>
+<li><code>--disable--libssh2</code><ul>
+<li>Remove dependency on the <code>libssh2</code> library. By default, the <code>libssh2</code> library is used by the client side functions to create SSH connection to a remote host. If the usage of the <code>libssh2</code> is disabled, libnetconf will use a standalone <code>ssh(1)</code> client located in a system path. <code>ssh(1)</code> client is, for example, part of the OpenSSH. This option has no effect for server-side functionality.</li>
 </ul>
 </li>
 <li><code>--disable-notifications</code><ul>
 <li>Remove support for the NETCONF Notifications. As a side effect, D-Bus (libdbus) dependency is also removed.</li>
 </ul>
 </li>
+<li><code>--disable-url</code><ul>
+<li>Remove support for NETCONF :url capability. cURL dependency is also removed.</li>
+</ul>
+</li>
+<li><code>--disable-validation</code><ul>
+<li>Remove support for NETCONF :validate capability.</li>
+</ul>
+</li>
 <li><code>--with-nacm-recovery-uid=&lt;uid&gt;</code><a class="anchor" id="configure-nacm-recovery"></a><ul>
 <li>Specify user ID to be used for the identification of the <a class="el" href="../../dd/d59/nacm.html#nacm-recovery">NACM Recovery Session</a>.</li>
+</ul>
+</li>
+<li><code>--disable-yang-schemas</code><ul>
+<li>Remove support for YANG data model format for &lt;get-schema&gt; opration. With this option, only YIN format is available.</li>
+</ul>
+</li>
+<li><code>--with-workingdir=&lt;path&gt;</code><ul>
+<li>Change location of libnetconf's working directory. Default path is <code>/var/lib/libnetconf/</code>. Note that applications using libnetconf should have permissions to read/write to this path, with <code>--with-suid</code> and <code>--with-sgid</code> this is set automatically.</li>
 </ul>
 </li>
 <li><code>--enable-debug</code><ul>
@@ -147,7 +163,7 @@ $(document).ready(function(){initNavTree('d9/d87/install.html','../../');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Feb 6 2014 16:01:55 for libnetconf by
+    <li class="footer">Generated on Thu Mar 13 2014 11:40:53 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

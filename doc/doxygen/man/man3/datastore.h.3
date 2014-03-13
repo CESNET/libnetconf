@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Thu Mar 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -38,13 +38,17 @@ NETCONF datastore handling function prototypes and structures\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNCDS_TYPE\fP { \fBNCDS_TYPE_EMPTY\fP, \fBNCDS_TYPE_FILE\fP, \fBNCDS_TYPE_CUSTOM\fP }"
+.RI "enum \fBNCDS_TYPE\fP { \fBNCDS_TYPE_ERROR\fP = -1, \fBNCDS_TYPE_EMPTY\fP, \fBNCDS_TYPE_FILE\fP, \fBNCDS_TYPE_CUSTOM\fP }"
 .br
 .RI "\fIDatastore implementation types provided by libnetconf\&. \fP"
 .in -1c
 .SS "Functions"
 
 .in +1c
+.ti -1c
+.RI "int \fBncds_add_augment_transapi\fP (const char *model_path, const char *callbacks_path)"
+.br
+.RI "\fIExtend datastore(s) with an augment model and its transAPI callbacks\&. \fP"
 .ti -1c
 .RI "int \fBncds_add_model\fP (const char *path)"
 .br

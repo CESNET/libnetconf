@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Thu Mar 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -108,7 +108,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .ti -1c
 .RI "struct nc_cpblts * \fBnc_session_get_cpblts\fP (const struct nc_session *session)"
 .br
-.RI "\fIGet NULL terminated list of capabilities associated with the session\&. \fP"
+.RI "\fIGet list of capabilities associated with the session\&. \fP"
 .ti -1c
 .RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP (void)"
 .br
@@ -530,7 +530,7 @@ Cleanup the session structure and free all the allocated resources\&. Do not use
 .SS "struct nc_cpblts* nc_session_get_cpblts (const struct nc_session *session)"
 
 .PP
-Get NULL terminated list of capabilities associated with the session\&. Returned list is a copy of the original list associated with the session\&. The caller is supposed to free all the returned strings\&.
+Get list of capabilities associated with the session\&. Returned structure is connected with the session\&. Do not free or modify it\&.
 .PP
 \fBParameters:\fP
 .RS 4
