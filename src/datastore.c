@@ -2351,16 +2351,142 @@ static int ncds_transapi_enlink(struct ncds_ds* ds, struct transapi_internal* ta
 	return (EXIT_SUCCESS);
 }
 
+static xmlNodePtr model_node_path(xmlNodePtr current, const char* current_prefix, const char* current_module_name, char *path, xmlXPathObjectPtr imports, int relative_path, struct ncds_ds** ds)
+{
+	char *token, *name, *module_inpath = NULL, *module;
+	const char *prefix;
+	struct ncds_ds_list *ds_iter;
+	xmlNodePtr path_node = NULL, node;
+	int match;
+
+	if (path == NULL) {
+		return (NULL);
+	}
+
+	*ds = NULL;
+
+	/* path processing - check that we already have such an element */
+	for (token = strtok(path, "/"); token != NULL; token = strtok(NULL, "/")) {
+		if ((name = strchr(token, ':')) == NULL) {
+			name = token;
+			prefix = NULL;
+		} else {
+			name[0] = 0;
+			name = &(name[1]);
+			prefix = token;
+		}
+
+		if (*ds == NULL) {
+			/* locate corresponding datastore - we are at the beginning of the path */
+			module = NULL;
+			if (prefix == NULL) {
+				/* model is augmenting itself - get the module's name to be able to find it */
+				module = (char*) xmlGetProp(xmlDocGetRootElement(current->doc), BAD_CAST "name");
+			} else { /* (prefix != NULL) */
+				/* find the prefix in imports */
+				module = get_module_with_prefix(prefix, imports);
+			}
+
+			/* locate the correct datastore to augment */
+			for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
+				if (ds_iter->datastore != NULL && strcmp(ds_iter->datastore->data_model->name, module) == 0) {
+					*ds = ds_iter->datastore;
+					break;
+				}
+			}
+			if (*ds == NULL) {
+				/* no such a datastore containing model with this path */
+				return (NULL);
+			}
+
+			if ((*ds)->ext_model == (*ds)->data_model->xml) {
+				/* we have the first augment model */
+				(*ds)->ext_model = xmlCopyDoc((*ds)->data_model->xml, 1);
+			}
+
+			if (!relative_path) {
+				/* start path parsing with module root */
+				path_node = (*ds)->ext_model->children;
+			} else {
+				/* start relative path parsing with the node's parent */
+				path_node = current->parent;
+
+				/* move it if needed according to the start of the relative path */
+				if (strcmp("..", name) == 0) {
+					path_node = path_node->parent;
+				}
+			}
+			module_inpath = strdup((*ds)->data_model->name);
+		} else {
+			/* we are somewhere in the path and we need to connect declared prefix with the corresponding module */
+			if (prefix == NULL) {
+				prefix = current_prefix;
+			}
+
+			if (strcmp(prefix, current_prefix) == 0) {
+				/* the path is augmenting the self module */
+				module = strdup(current_module_name);
+			} else {
+				/* find the prefix in imports */
+				module = get_module_with_prefix(prefix, imports);
+			}
+			if (module == NULL ) {
+				/* unknown name of the module to augment */
+				free(module_inpath);
+				return (NULL);
+			}
+		}
+
+		match = 0;
+		if (strcmp("..", name) == 0) {
+			path_node = path_node->parent;
+			match = 1;
+		} else if (strcmp(".", name) == 0) {
+			/* do nothing */
+			match = 1;
+		} else {
+			/* go into children */
+			path_node = path_node->children;
+			if (module_inpath != NULL && strcmp(module, module_inpath) != 0) {
+				/* the prefix is changing, so there must be an augment element */
+				for (node = path_node; node != NULL && match == 0; node = node->next) {
+					if (xmlStrcmp(node->name, BAD_CAST "augment") != 0) {
+						continue;
+					}
+					/* some augment found, now check it */
+					free(module_inpath);
+					module_inpath = (char*) xmlGetNsProp(path_node, BAD_CAST "module", BAD_CAST "libnetconf");
+
+					path_node = node->children;
+					match = match_module_node(module_inpath, module, name, &path_node);
+				}
+			} else if (module_inpath != NULL && strcmp(module, module_inpath) == 0) {
+				/* we have the match - move into the specified element */
+				match = match_module_node(module_inpath, module, name, &path_node);
+			}
+		}
+		free(module);
+
+		if (match == 0) {
+			/* we didn't find the matching path */
+			free(module_inpath);
+			return (NULL);
+		}
+	}
+
+	free(module_inpath);
+
+	return (path_node);
+}
+
 static int _update_augment(xmlDocPtr aug_xml, xmlXPathContextPtr aug_ctxt, const char* aug_prefix, const char* aug_name, const char* aug_ns, struct transapi_internal* aug_transapi, int relative_path)
 {
 	xmlXPathObjectPtr imports = NULL, augments = NULL;
 	xmlNodePtr node, path_node;
 	xmlNsPtr ns;
-	int i, match;
-	char *path, *token, *name, *module, *module_inpath = NULL;
-	const char *prefix;
+	int i;
+	char *path;
 	struct ncds_ds* ds = NULL;
-	struct ncds_ds_list *ds_iter;
 
 	/* get all augment definitions */
 	if ((augments = xmlXPathEvalExpression(BAD_CAST "//"NC_NS_YIN_ID":augment", aug_ctxt)) != NULL ) {
@@ -2396,124 +2522,9 @@ static int _update_augment(xmlDocPtr aug_xml, xmlXPathContextPtr aug_ctxt, const
 			continue;
 		}
 
-		/* search for correct datastore in each augment according to its path */
-		ds = NULL;
-
-		/* path processing - check that we already have such an element */
-		for (token = strtok(path, "/"); token != NULL; token = strtok(NULL, "/")) {
-			if ((name = strchr(token, ':')) == NULL) {
-				name = token;
-				prefix = NULL;
-			} else {
-				name[0] = 0;
-				name = &(name[1]);
-				prefix = token;
-			}
-
-			if (ds == NULL) {
-				/* locate corresponding datastore - we are at the beginning of the path */
-				module = NULL;
-				if (prefix == NULL) {
-					/* model is augmenting itself - get the module's name to be able to find it */
-					module = (char*) xmlGetProp(xmlDocGetRootElement(aug_xml), BAD_CAST "name");
-				} else { /* (prefix != NULL) */
-					/* find the prefix in imports */
-					module = get_module_with_prefix(prefix, imports);
-				}
-
-				if (module == NULL) {
-					/* unknown name of the module to augment */
-					break;
-				}
-
-				/* locate the correct datastore to augment */
-				for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
-					if (ds_iter->datastore != NULL && strcmp(ds_iter->datastore->data_model->name, module) == 0) {
-						ds = ds_iter->datastore;
-						break;
-					}
-				}
-				if (ds == NULL) {
-					free(module);
-					/* no such a datastore -> skip this augment */
-					break; /* path processing */
-				}
-
-				if (ds->ext_model == ds->data_model->xml) {
-					/* we have the first augment model */
-					ds->ext_model = xmlCopyDoc(ds->data_model->xml, 1);
-				}
-
-				if (!relative_path) {
-					/* start path parsing with module root */
-					path_node = ds->ext_model->children;
-				} else {
-					/* start relative path parsing with the node's parent */
-					path_node = augments->nodesetval->nodeTab[i]->parent;
-
-					/* move it if needed according to the start of the relative path */
-					if (strcmp("..", name) == 0) {
-						path_node = path_node->parent;
-					}
-				}
-				module_inpath = strdup(ds->data_model->name);
-			} else {
-				/* we are somewhere in the path and we need to connect declared prefix with the corresponding module */
-
-				if (prefix == NULL) {
-					prefix = aug_prefix;
-				}
-
-				if (strcmp(prefix, aug_prefix) == 0) {
-					/* the path is augmenting the self module */
-					module = strdup(aug_name);
-				} else {
-					/* find the prefix in imports */
-					module = get_module_with_prefix(prefix, imports);
-				}
-				if (module == NULL ) {
-					/* unknown name of the module to augment */
-					break;
-				}
-			}
-
-			match = 0;
-			if (strcmp("..", name) == 0) {
-				path_node = path_node->parent;
-				match = 1;
-			} else if (strcmp(".", name) == 0) {
-				/* do nothing */
-				match = 1;
-			} else {
-				/* go into children */
-				path_node = path_node->children;
-				if (module_inpath != NULL && strcmp(module, module_inpath) != 0) {
-					/* the prefix is changing, so there must be an augment element */
-					for (node = path_node; node != NULL && match == 0; node = node->next) {
-						if (xmlStrcmp(node->name, BAD_CAST "augment") != 0) {
-							continue;
-						}
-						/* some augment found, now check it */
-						free(module_inpath);
-						module_inpath = (char*) xmlGetNsProp(path_node, BAD_CAST "module", BAD_CAST "libnetconf");
-
-						path_node = node->children;
-						match = match_module_node(module_inpath, module, name, &path_node);
-					}
-				} else if (module_inpath != NULL && strcmp(module, module_inpath) == 0) {
-					/* we have the match - move into the specified element */
-					match = match_module_node(module_inpath, module, name, &path_node);
-				}
-			}
-			free(module);
-
-			if (match == 0) {
-				/* we didn't find the matching path */
-				break;
-			}
-		}
-		if (token == NULL) {
-			/* whole path is correct - add the subtree */
+		path_node = model_node_path(augments->nodesetval->nodeTab[i], aug_prefix, aug_name, path, imports, relative_path, &ds);
+		if (path_node != NULL) {
+			/* path is correct - add the subtree */
 			xmlAddChild(path_node, node = xmlCopyNode(augments->nodesetval->nodeTab[i], 1));
 			ns = xmlNewNs(node, BAD_CAST "libnetconf", BAD_CAST "libnetconf");
 			xmlSetNsProp(node, ns, BAD_CAST "module", BAD_CAST aug_name);
@@ -2527,9 +2538,6 @@ static int _update_augment(xmlDocPtr aug_xml, xmlXPathContextPtr aug_ctxt, const
 				ncds_transapi_enlink(ds, aug_transapi);
 			}
 		}
-
-		free(module_inpath);
-		module_inpath = NULL;
 		free(path);
 	}
 	xmlXPathFreeObject(augments);
@@ -2623,6 +2631,9 @@ static int ncds_update_augment_cleanup(struct ncds_ds *ds)
 			xmlFreeNode(augments->nodesetval->nodeTab[i]);
 		}
 	}
+
+	xmlXPathFreeObject(augments);
+	xmlXPathFreeContext(ext_model_ctxt);
 
 	return (EXIT_SUCCESS);
 }
