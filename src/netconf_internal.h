@@ -77,6 +77,8 @@
  * @ingroup internalAPI
  */
 #define NC_PORT             830
+#define NC_REVERSE_PORT     6666
+#define NC_REVERSE_QUEUE    10
 
 /* NETCONF namespaces */
 #define NC_NS_BASE10		"urn:ietf:params:xml:ns:netconf:base:1.0"

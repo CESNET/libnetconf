@@ -674,6 +674,7 @@ INPUT                  = src/libnetconf.h \
                          src/error.h \
                          src/session.h \
                          src/ssh.h \
+                         src/reverse_ssh.h \
                          src/messages.h \
                          src/messages_xml.h \
                          src/datastore_xml.h \

@@ -739,6 +739,11 @@
  */
 
 /**
+ * \defgroup callhome Reverse SSH
+ * \brief libnetconf's functions implementing Reverse SSH (Call Home) for NETCONF.
+ */
+
+/**
  * \defgroup rpc NETCONF rpc
  * \brief libnetconf's functions for handling NETCONF \<rpc\> messages.
  */

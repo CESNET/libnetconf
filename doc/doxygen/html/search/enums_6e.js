@@ -16,7 +16,7 @@ var searchData=
   ['nc_5frpc_5ftype',['NC_RPC_TYPE',['../db/de9/group__rpc.html#ga4088fac1dd592062b27ff5b0e1708d00',1,'netconf.h']]],
   ['nc_5fsession_5fstatus',['NC_SESSION_STATUS',['../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c',1,'netconf.h']]],
   ['nc_5fsession_5fterm_5freason',['NC_SESSION_TERM_REASON',['../db/d52/group__session.html#gab8fb6ff96d652b9aeb1223729e5694c2',1,'netconf.h']]],
-  ['nc_5fssh_5fauth_5ftype',['NC_SSH_AUTH_TYPE',['../db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10',1,'ssh.h']]],
+  ['nc_5fssh_5fauth_5ftype',['NC_SSH_AUTH_TYPE',['../db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10',1,'libnetconf_ssh.h']]],
   ['nc_5furl_5fprotocols',['NC_URL_PROTOCOLS',['../d5/d7d/group__url.html#gaeecc86d0808c9098b6a8694e88925ccd',1,'url.h']]],
   ['nc_5fverb_5flevel',['NC_VERB_LEVEL',['../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060',1,'netconf.h']]],
   ['ncds_5ftype',['NCDS_TYPE',['../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f',1,'datastore.h']]],

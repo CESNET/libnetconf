@@ -2,6 +2,7 @@ var modules =
 [
     [ "General functions", "d3/d35/group__gen_a_p_i.html", "d3/d35/group__gen_a_p_i" ],
     [ "NETCONF Session", "db/d52/group__session.html", "db/d52/group__session" ],
+    [ "Reverse SSH", "db/de7/group__callhome.html", "db/de7/group__callhome" ],
     [ "NETCONF rpc", "db/de9/group__rpc.html", "db/de9/group__rpc" ],
     [ "NETCONF rpc-reply", "d0/de2/group__reply.html", "d0/de2/group__reply" ],
     [ "Datastore operations", "db/d67/group__store.html", "db/d67/group__store" ],
