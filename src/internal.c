@@ -403,6 +403,53 @@ void nc_clip_occurences_with(char *str, char sought, char replacement)
 	}
 }
 
+char* nc_str_replace(const char *str, const char *substr, const char *replacement)
+{
+	int i, j, len;
+	const char *aux;
+	char *ret;
+
+	if ((len = strlen(replacement) - strlen(substr) ) > 0) {
+		/* we are going to enlarge the string - get to know how much */
+		for (i = 0, aux = strstr(str, substr); aux != NULL; aux = strstr(aux, substr)) {
+			i++;
+			aux = &(aux[strlen(substr)]);
+		}
+		if (i == 0) {
+			/* there is no occurrence of the needle, return just a copy of str */
+			return (strdup(str));
+		}
+
+		/* length of original string +
+		 * (# of needle occurrence * difference between needle and replacement) +
+		 * terminating NULL byte
+		 */
+		ret = malloc((strlen(str) + (i * len) + 1) * sizeof(char));
+	} else {
+		/* it's not going to be longer than original string */
+		ret = malloc((strlen(str) + 1) * sizeof(char));
+	}
+	if (ret == NULL) {
+		return (NULL);
+	}
+
+	for (i = j = 0, aux = strstr(str, substr); aux != NULL; aux = strstr(aux, substr)) {
+		while (&(str[i]) != aux) {
+			ret[j] = str[i];
+			i++;
+			j++;
+		}
+		strcpy(&(ret[j]), replacement);
+		j += strlen(replacement);
+		i += strlen(substr);
+		aux = &(str[i]);
+	}
+	/* copy the rest of the string */
+	strcpy(&(ret[j]), &(str[i]));
+
+	return(ret);
+}
+
 char* nc_skip_xmldecl(const char* xmldoc)
 {
 	char *s;

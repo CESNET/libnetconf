@@ -16,6 +16,8 @@ typedef enum
 	XML_SIBLING /**< Represent XML sibling role. */
 } XML_RELATION;
 
+#define PRIORITY_NONE -1
+
 /**
  * @ingroup transapi
  * @brief Top level function of transaction API. Finds differences between old_doc and new_doc and calls specified callbacks.

@@ -4,10 +4,12 @@ var datastore_8h =
     [ "NCDS_RPC_NOT_APPLICABLE", "d9/db6/datastore_8h.html#ga0d3d0d7c86b14e2eb3c3f48ef3dac8a6", null ],
     [ "ncds_id", "d9/db6/datastore_8h.html#ga8e6ae05c400975ba4d3f038c6d174c19", null ],
     [ "NCDS_TYPE", "d9/db6/datastore_8h.html#gab0f0cbd5268577ec36fc76cf89c72a8f", [
+      [ "NCDS_TYPE_ERROR", "d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa05f1d06d9fae17a9a967096ecdc01edf", null ],
       [ "NCDS_TYPE_EMPTY", "d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b", null ],
       [ "NCDS_TYPE_FILE", "d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629", null ],
       [ "NCDS_TYPE_CUSTOM", "d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa962fdf56453d65bd49886f1f00820e85", null ]
     ] ],
+    [ "ncds_add_augment_transapi", "d9/db6/datastore_8h.html#gacd42f4efcc256fa4ecdaa021f82d6d1f", null ],
     [ "ncds_add_model", "d9/db6/datastore_8h.html#ga145c9446fad8c350934c21ca86cbaf47", null ],
     [ "ncds_add_models_path", "d9/db6/datastore_8h.html#ga93c65facb061f1048674343ac94a993b", null ],
     [ "ncds_apply_rpc", "d9/db6/datastore_8h.html#gaabfd0bf6abeaf40659043bf082e14801", null ],

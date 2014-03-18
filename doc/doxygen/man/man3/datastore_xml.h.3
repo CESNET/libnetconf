@@ -1,4 +1,4 @@
-.TH "src/datastore_xml.h" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore_xml.h" 3 "Thu Mar 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -19,6 +19,10 @@ NETCONF datastore handling function prototypes and structures - XML variants\&.
 .SS "Functions"
 
 .in +1c
+.ti -1c
+.RI "int \fBncds_add_augment_transapi_static\fP (const char *model_path, const struct \fBtransapi\fP *\fBtransapi\fP)"
+.br
+.RI "\fIExtend datastore(s) with an augment model and its transAPI callbacks\&. \fP"
 .ti -1c
 .RI "struct ncds_ds * \fBncds_new2\fP (\fBNCDS_TYPE\fP type, const char *model_path, xmlDocPtr(*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e))"
 .br

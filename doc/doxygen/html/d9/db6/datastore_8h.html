@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.7.0</span>
+   &#160;<span id="projectnumber">0.7.99</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -140,7 +140,8 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:gab0f0cbd5268577ec36fc76cf89c72a8f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> { <a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b">NCDS_TYPE_EMPTY</a>, 
+<tr class="memitem:gab0f0cbd5268577ec36fc76cf89c72a8f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f">NCDS_TYPE</a> { <a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa05f1d06d9fae17a9a967096ecdc01edf">NCDS_TYPE_ERROR</a> = -1, 
+<a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b">NCDS_TYPE_EMPTY</a>, 
 <a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629">NCDS_TYPE_FILE</a>, 
 <a class="el" href="../../db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa962fdf56453d65bd49886f1f00820e85">NCDS_TYPE_CUSTOM</a>
  }</td></tr>
@@ -149,6 +150,9 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:gacd42f4efcc256fa4ecdaa021f82d6d1f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d55/group__transapi.html#gacd42f4efcc256fa4ecdaa021f82d6d1f">ncds_add_augment_transapi</a> (const char *model_path, const char *callbacks_path)</td></tr>
+<tr class="memdesc:gacd42f4efcc256fa4ecdaa021f82d6d1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extend datastore(s) with an augment model and its transAPI callbacks.  <a href="../../d8/d55/group__transapi.html#gacd42f4efcc256fa4ecdaa021f82d6d1f">More...</a><br/></td></tr>
+<tr class="separator:gacd42f4efcc256fa4ecdaa021f82d6d1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga145c9446fad8c350934c21ca86cbaf47"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47">ncds_add_model</a> (const char *path)</td></tr>
 <tr class="memdesc:ga145c9446fad8c350934c21ca86cbaf47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add an configuration data model to the internal list of models. Such model is used to resolve imports, includes and uses statements in base models.  <a href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47">More...</a><br/></td></tr>
 <tr class="separator:ga145c9446fad8c350934c21ca86cbaf47"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -298,7 +302,7 @@ Variables</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d9/db6/datastore_8h.html">datastore.h</a></li>
-    <li class="footer">Generated on Thu Feb 6 2014 16:01:55 for libnetconf by
+    <li class="footer">Generated on Thu Mar 13 2014 11:40:53 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

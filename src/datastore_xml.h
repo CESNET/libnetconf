@@ -75,6 +75,9 @@ struct ncds_ds* ncds_new2(NCDS_TYPE type, const char * model_path, xmlDocPtr (*g
 /**
  * @ingroup transapi
  * @brief Create new datastore structure with transaction API support
+ *
+ * To make this function available, you have to include libnetconf_xml.h.
+ *
  * @param[in] type Datastore implementation type for the new datastore structure.
  * @param[in] model_path Base name of the configuration data model files.
  * libnetconf expects model_path.yin as a data model, model_path.rng for
@@ -93,6 +96,28 @@ struct ncds_ds* ncds_new2(NCDS_TYPE type, const char * model_path, xmlDocPtr (*g
  * used to access the configuration data.
  */
 struct ncds_ds* ncds_new_transapi_static(NCDS_TYPE type, const char* model_path, const struct transapi* transapi);
+
+/**
+ * @ingroup transapi
+ * @brief Extend datastore(s) with an augment model and its transAPI callbacks.
+ *
+ * To make this function available, you have to include libnetconf_xml.h.
+ *
+ * The function must be called before ncds_consolidate().
+ *
+ * @param[in] model_path Path of the file containing augment data model in the
+ * YIN format. libnetconf accepts data model augmenting multiple base data
+ * models linked with the datastores using ncds_new_transapi() function.
+ * @param[in] transapi Structure describing transAPI module. This way the module
+ * can be connected with the libnetconf library statically. The structure itself
+ * can be freed after the call, but the structure contains only pointers to
+ * other structures and variables that will be accessed directly from the
+ * subsequent functions using the returned datastore structure. These objects
+ * must not be freed during the existence of the returned datastore structure.
+ * However, these transAPI variables/structures are not freed by libnetconf.
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int ncds_add_augment_transapi_static(const char* model_path, const struct transapi* transapi);
 
 /**
  * @ingroup store
