@@ -40,7 +40,7 @@
 #ifndef SESSION_H_
 #define SESSION_H_
 
-#include "ssh.h"
+#include "transport.h"
 #include "netconf.h"
 
 #ifdef __cplusplus

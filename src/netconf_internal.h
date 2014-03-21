@@ -48,12 +48,18 @@
 #	include <libssh2.h>
 #endif
 
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 
 #include "netconf.h"
 #include "callbacks.h"
 #include "with_defaults.h"
+
+/* number of characters to store short number */
+#define SHORT_INT_LENGTH 6
 
 #define SID_SIZE 	16
 
@@ -320,6 +326,10 @@ struct nc_session {
 	long long unsigned int msgid;
 	/**< @brief only for clients using libssh2 for communication */
 	int libssh2_socket;
+#ifdef ENABLE_TLS
+	/**< @brief TLS handler */
+	SSL *tls;
+#endif
 	/**< @brief Input file descriptor for communication with (reading from) the other side of the NETCONF session */
 	int fd_input;
 #ifdef DISABLE_LIBSSH

@@ -673,7 +673,7 @@ INPUT                  = src/libnetconf.h \
                          src/callbacks_ssh.h \
                          src/error.h \
                          src/session.h \
-                         src/ssh.h \
+                         src/transport.h \
                          src/reverse_ssh.h \
                          src/messages.h \
                          src/messages_xml.h \

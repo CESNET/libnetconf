@@ -1,7 +1,7 @@
 /**
  * \file ssh.h
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief Functions to connect to NETCONF server via SSH2.
+ * \brief Functions implementing NETCONF over SSH transport.
  *
  * Copyright (c) 2012-2014 CESNET, z.s.p.o.
  *
@@ -46,65 +46,22 @@
 extern "C" {
 #endif
 
-/**
- * @ingroup session
- * @brief Create NETCONF session to the specified server.
- *
- * This function can internally use various callbacks set by the client to perform
- * SSH authentication. It selects authentication mechanism from the list
- * provided by the SSH server and based on the preferences set by the client via
- * nc_ssh_pref(). Then, appropriate callback function (set by
- * nc_callback_sshauth_password(), nc_callback_sshauth_passphrase(),
- * nc_set_publickey_path() or nc_set_privatekey_path()) is used to perform the
- * authentication.
- *
- * @param[in] host Hostname or address (both Ipv4 and IPv6 are accepted). 'localhost'
- * is used by default if NULL is specified.
- * @param[in] port Port number of the server. Default value 830 is used if 0 is
- * specified.
- * @param[in] username Name of the user to login to the server. The user running the
- * application (detected from the effective UID) is used if NULL is specified.
- * @param[in] cpblts NETCONF capabilities structure with capabilities supported
- * by the client. Client can use nc_session_get_cpblts_default() to get the
- * structure with the list of all the capabilities supported by libnetconf (this is
- * used in case of a NULL parameter).
- * @return Structure describing the NETCONF session or NULL in case of an error.
- */
-struct nc_session *nc_session_connect(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts);
 
-/**
- * @ingroup session
- * @brief Create another NETCONF session using already established SSH session.
- * No authentication is needed in this case.
- *
- * This function works only if libnetconf is compiled with using libssh2.
- *
- * @param[in] session Already established NETCONF session.
- * @param[in] cpblts NETCONF capabilities structure with capabilities supported
- * by the client. Client can use nc_session_get_cpblts_default() to get the
- * structure with the list of all the capabilities supported by libnetconf (this is
- * used in case of a NULL parameter).
- * @return Structure describing the NETCONF session or NULL in case of an error.
- *
- */
-struct nc_session *nc_session_connect_channel(struct nc_session *session, const struct nc_cpblts* cpblts);
+#ifndef DISABLE_LIBSSH
 
-/**
- * @ingroup session
- * @brief Accept NETCONF session from a client.
- *
- * The caller process of this function is supposed to run as SSH Subsystem
- * application launched automatically by SSH server when the NETCONF subsystem
- * request comes to the SSH server. Only one NETCONF session can be accepted in
- * a single SSH Subsystem.
- *
- * @param[in] capabilities NETCONF capabilities structure with the capabilities supported
- * by the server. The caller can use nc_session_get_cpblts_default() to get the
- * structure with the list of all the capabilities supported by libnetconf (this is
- * used in case of a NULL parameter).
- * @return Structure describing the accepted NETCONF session or NULL in case of an error.
- */
-struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities);
+struct nc_session *nc_session_connect_libssh2(const char* username, const char* host, const char* port);
+
+struct nc_session *nc_session_connect_libssh2_socket(const char* username, const char* host, int sock);
+
+struct nc_session *nc_session_connect_libssh2_channel(struct nc_session *session);
+
+#else /* DISABLE_LIBSSH */
+
+struct nc_msg* read_hello_openssh(struct nc_session *session);
+
+struct nc_session *nc_session_connect_openssh(const char* username, const char* host, const char* port);
+
+#endif /* DISABLE_LIBSSH */
 
 #ifdef __cplusplus
 }

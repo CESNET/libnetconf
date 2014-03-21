@@ -39,69 +39,38 @@
 
 #define _GNU_SOURCE
 
-#include "config.h"
-
-#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <netdb.h>
-#include <pwd.h>
-#include <grp.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #include <pthread.h>
-
-#ifdef HAVE_UTMPX_H
-#	include <utmpx.h>
-#endif
+#include <pwd.h>
+#include <fcntl.h>
 
 #ifdef DISABLE_LIBSSH
+#	include <sys/ioctl.h>
 #	include <ctype.h>
-#	include <pty.h>
 #	include <termios.h>
+#	include <pty.h>
+#	include <grp.h>
 #	include <libxml/xpath.h>
 #	include <libxml/xpathInternals.h>
-#else
-#	include <arpa/inet.h>
-#	include <libssh2.h>
-#endif
-#ifndef DISABLE_URL
-#	include "url_internal.h"
+
+#	define BUFFER_SIZE 4096
 #endif
 
+#include "config.h"
 #include "libnetconf_ssh.h"
-#include "ssh.h"
-#include "callbacks.h"
-#include "callbacks_ssh.h"
-#include "messages.h"
-#include "session.h"
 #include "netconf_internal.h"
+#include "ssh.h"
+#include "session.h"
 #include "messages_internal.h"
-#include "with_defaults.h"
 
-#ifndef DISABLE_NOTIFICATIONS
-#  include "notifications.h"
-#endif
-
-static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
-
-#define BUFFER_SIZE 4096
-#define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
-
-static int reverse_listen_socket = -1;
-
-extern struct nc_shared_info *nc_info;
-extern char* server_capabilities; /* from datastore, only for server side */
-
-#ifndef DISABLE_URL
-	extern int nc_url_protocols;
-#endif
-	
 struct auth_pref_couple
 {
 	NC_SSH_AUTH_TYPE type;
@@ -114,14 +83,6 @@ static struct auth_pref_couple sshauth_pref[AUTH_COUNT] = {
 		{ NC_SSH_AUTH_PASSWORD, 2 },
 		{ NC_SSH_AUTH_PUBLIC_KEYS, 1 }
 };
-
-/* number of characters to store short number */
-#define SHORT_INT_LENGTH 6
-
-/* definition in session.c */
-void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supported);
-/* definition in datastore.c */
-char **get_schemas_capabilities(void);
 
 void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 {
@@ -168,392 +129,44 @@ void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 	}
 }
 
-static char** nc_accept_server_cpblts(char ** server_cpblts_list, char ** client_cpblts_list, int *version)
-{
-	int i, j, c;
-	char **result = NULL;
-
-	if (server_cpblts_list == NULL || client_cpblts_list == NULL) {
-		ERROR("%s: Invalid parameters.", __func__);
-		return (NULL);
-	}
-
-	if (version != NULL) {
-		(*version) = NETCONFVUNK;
-	}
-
-	/* count max size of the resulting list */
-	for (c = 0; server_cpblts_list[c] != NULL; c++);
-
-	if ((result = malloc((c + 1) * sizeof(char*))) == NULL) {
-		ERROR("Memory allocation failed: %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-		return (NULL);
-	}
-
-	c = 0;
-	for (i = 0; server_cpblts_list[i] != NULL; i++) {
-		if (strstr(server_cpblts_list[i], "urn:ietf:params:netconf:base:") == NULL) {
-			result[c++] = strdup(server_cpblts_list[i]);
-		} else {
-			/* some of the base capability detected - check that both sides support it */
-			for (j = 0; client_cpblts_list[j] != NULL; j++) {
-				if (strcmp(server_cpblts_list[i], client_cpblts_list[j]) == 0) {
-					result[c++] = strdup(server_cpblts_list[i]);
-					break;
-				}
-			}
-		}
-	}
-	result[c] = NULL;
-
-	for (i = 0; result[i] != NULL; i++) { /* Try to find one of the netconf base capability */
-		if (strcmp(NC_CAP_BASE11_ID, result[i]) == 0) {
-			(*version) = NETCONFV11;
-			break;
-			/* v 1.1 is preferred */
-		}
-		if (strcmp(NC_CAP_BASE10_ID, result[i]) == 0) {
-			(*version) = NETCONFV10;
-			/* continue in searching for higher version */
-		}
-	}
-
-	if ((*version) == NETCONFVUNK) {
-		ERROR("No base capability found in the capabilities intersection.");
-		free(result);
-		return (NULL);
-	}
-
-	return (result);
-}
-
-static char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
-{
-	xmlNodePtr node, capnode;
-	char *cap = NULL, *str = NULL;
-	char **capabilities = NULL;
-	int c;
-
-	if ((node = xmlDocGetRootElement(msg->doc)) == NULL) {
-		ERROR("Parsing a <hello> message failed - the document is empty.");
-		return (NULL);
-	}
-
-	if (xmlStrcmp(node->name, BAD_CAST "hello")) {
-		ERROR("Parsing a <hello> message failed - received a non-<hello> message.");
-		return (NULL);
-	}
-
-	for (node = node->children; node != NULL; node = node->next) {
-		if (xmlStrcmp(node->name, BAD_CAST "capabilities") == 0) {
-			/* <capabilities> node */
-
-			/* count capabilities */
-			for (capnode = node->children, c = 0; capnode != NULL;
-			                capnode = capnode->next) {
-				c++;
-			}
-
-			/* allocate memory for the capability list */
-			if ((capabilities = malloc((c + 1) * sizeof(char*))) == NULL) {
-				ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-				return (NULL);
-			}
-
-			/* fill up capabilities list */
-			for (capnode = node->children, c = 0; capnode != NULL;
-			                capnode = capnode->next) {
-				str = (char*) xmlNodeGetContent(capnode);
-				if ((str == NULL) || (cap = nc_clrwspace(str)) == NULL) {
-					ERROR("Parsing a <hello> message failed - unable to read the capabilities.");
-					return (NULL);
-				}
-				xmlFree(BAD_CAST str);
-				if (strnonempty(cap)) {
-					capabilities[c++] = cap;
-				}
-			}
-			/* list termination NULL */
-			capabilities[c] = NULL;
-		} else if (xmlStrcmp(node->name, BAD_CAST "session-id") == 0) {
-			/* session-id - available only if the caller of this parsing is a client */
-			if (session->session_id[0] == '\0') {
-				str = (char*) xmlNodeGetContent(node);
-				if (strlen(str) >= (size_t) SID_SIZE) {
-					/* Session ID is too long and we cannot store it */
-					ERROR("Received <session-id> is too long - terminating the session.");
-					return (NULL);
-				}
-				strncpy(session->session_id, str, SID_SIZE - 1);
-				xmlFree(BAD_CAST str);
-			} else {
-				/* as defined by RFC, we have to terminate the session */
-				ERROR("Received <hello> message with <session-id> - terminating the session.");
-				return (NULL);
-			}
-		} else {
-			/* something unknown - log it now, maybe in the future we will be more strict and will be returning error */
-			WARN("Unknown content of the <hello> message (%s), ignoring and trying to continue.", (char*) node->name);
-		}
-	}
-
-	if (capabilities == NULL || capabilities[0] == NULL) {
-		/* no capability received */
-		ERROR("Parsing a <hello> message failed - no capabilities detected.");
-		return (NULL);
-	}
-
-	/* everything OK, return the received list of supported capabilities */
-	return (capabilities);
-}
-
-#ifdef DISABLE_LIBSSH
-struct nc_msg* read_hello(struct nc_session *session)
-{
-	struct nc_msg *retval;
-	nc_reply* reply;
-	xmlNodePtr root;
-	unsigned int i, size = BUFFER_SIZE;
-	char *buffer = NULL, c, *aux_buffer;
-
-	if (!(buffer = (char *) malloc(size * sizeof (char)))) {
-		return NULL;
-	}
-	memset(buffer, '\0', size * sizeof (char));
-
-	/* initial reading */
-	while(isspace(buffer[0] = (char) fgetc(session->f_input)));
-	for (i = 1; i < strlen(NC_V10_END_MSG); i++) {
-		if ((!feof(session->f_input)) && (!ferror(session->f_input))) {
-			buffer[i] = (char) fgetc(session->f_input);
-		} else {
-			free(buffer);
-			return NULL;
-		}
-	}
-
-	/*
-	 * read next character and check ending character sequence for
-	 * NC_V10_END_MSG
-	 */
-	if (strcmp(NC_V10_END_MSG, &buffer[i - (unsigned int)strlen(NC_V10_END_MSG)])) {
-		while ((!feof(session->f_input)) && (!ferror(session->f_input)) && ((c = (char) fgetc(session->f_input)) != EOF)) {
-			if (i == size - 1) { /* buffer is too small */
-				/* allocate larger buffer */
-				size = 2 * size;
-				if (!(aux_buffer = (char *) realloc(buffer, size))) {
-					free(buffer); /* free buffer that was too small and reallocation failed */
-					return NULL;
-				}
-				buffer = aux_buffer;
-			}
-			/* store read character */
-			buffer[i] = c;
-			i++;
-
-			/* check if the ending character sequence was read */
-			if (!(strncmp(NC_V10_END_MSG, &buffer[i - (unsigned int)strlen(NC_V10_END_MSG)], strlen(NC_V10_END_MSG)))) {
-				buffer[i - strlen(NC_V10_END_MSG)] = '\0';
-				break;
-			}
-		}
-	} else {
-		/* message is empty and contains only END-MESSAGE marker */
-		/* one option is to return NULL as error:
-		 free(buffer);
-		 return NULL;
-		 * or return empty string (buffer): */
-		buffer[0] = '\0';
-	}
-	fclose(session->f_input);
-	session->f_input = NULL;
-
-	/* create the message structure */
-	retval = calloc (1, sizeof(struct nc_msg));
-	if (retval == NULL) {
-		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
-		free (buffer);
-		goto malformed_msg;
-	}
-
-	/* store the received message in libxml2 format */
-	retval->doc = xmlReadDoc (BAD_CAST buffer, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
-	if (retval->doc == NULL) {
-		free (retval);
-		free (buffer);
-		ERROR("Invalid XML data received.");
-		goto malformed_msg;
-	}
-	free (buffer);
-
-	/* create xpath evaluation context */
-	if ((retval->ctxt = xmlXPathNewContext(retval->doc)) == NULL) {
-		ERROR("%s: rpc message XPath context cannot be created.", __func__);
-		nc_msg_free(retval);
-		goto malformed_msg;
-	}
-
-	/* register base namespace for the rpc */
-	if (xmlXPathRegisterNs(retval->ctxt, BAD_CAST NC_NS_BASE10_ID, BAD_CAST NC_NS_BASE10) != 0) {
-		ERROR("Registering base namespace for the message xpath context failed.");
-		nc_msg_free(retval);
-		goto malformed_msg;
-	}
-
-	/* parse and store message type */
-	root = xmlDocGetRootElement(retval->doc);
-	if (xmlStrcmp (root->name, BAD_CAST "hello") != 0) {
-		ERROR("Unexpected (non-hello) message received.");
-		nc_msg_free(retval);
-		goto malformed_msg;
-	} else {
-		/* set message type, we have <hello> message */
-		retval->type.reply = NC_REPLY_HELLO;
-		retval->msgid = NULL;
-	}
-
-	return (retval);
-
-malformed_msg:
-
-	if (session->version == NETCONFV11 && session->ssh_session == NULL) {
-		/* NETCONF version 1.1 define sending error reply from the server */
-		reply = nc_reply_error(nc_err_new(NC_ERR_MALFORMED_MSG));
-		if (reply == NULL) {
-			ERROR("Unable to create a \'Malformed message\' reply");
-			nc_session_close(session, NC_SESSION_TERM_OTHER);
-			return (NULL);
-		}
-
-		nc_session_send_reply(session, NULL, reply);
-		nc_reply_free(reply);
-	}
-
-	ERROR("Malformed message received, closing the session %s.", session->session_id);
-	nc_session_close(session, NC_SESSION_TERM_OTHER);
-
-	return (NULL);
-}
-#endif /* DISABLE_LIBSSH */
-
-#define HANDSHAKE_SIDE_SERVER 1
-#define HANDSHAKE_SIDE_CLIENT 2
-static int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello, int side)
-{
-	int retval = EXIT_SUCCESS;
-	int i;
-	nc_reply *recv_hello = NULL;
-	char **recv_cpblts = NULL, **merged_cpblts = NULL;
-
-	if (nc_session_send_rpc(session, hello) == 0) {
-		return (EXIT_FAILURE);
-	}
-
-#ifdef DISABLE_LIBSSH
-	if (side == HANDSHAKE_SIDE_CLIENT) {
-		recv_hello = read_hello(session);
-	} else {
-		nc_session_recv_reply(session, -1, &recv_hello);
-	}
-#else
-	nc_session_recv_reply(session, -1, &recv_hello);
-#endif
-	if (recv_hello == NULL) {
-		return (EXIT_FAILURE);
-	}
-
-	if ((recv_cpblts = nc_parse_hello((struct nc_msg*) recv_hello, session)) == NULL) {
-		nc_reply_free(recv_hello);
-		return (EXIT_FAILURE);
-	}
-	nc_reply_free(recv_hello);
-
-	if (side == HANDSHAKE_SIDE_CLIENT) {
-		merged_cpblts = nc_accept_server_cpblts(recv_cpblts, cpblts, &(session->version));
-	} else if (side == HANDSHAKE_SIDE_SERVER) {
-		merged_cpblts = nc_accept_server_cpblts(cpblts, recv_cpblts, &(session->version));
-	}
-	if (merged_cpblts == NULL) {
-		retval = EXIT_FAILURE;
-	} else if ((session->capabilities = nc_cpblts_new((const char* const*) merged_cpblts)) == NULL) {
-		retval = EXIT_FAILURE;
-	}
-
-	if (recv_cpblts) {
-		i = 0;
-		while (recv_cpblts[i]) {
-			free(recv_cpblts[i]);
-			i++;
-		}
-		free(recv_cpblts);
-	}
-
-	if (merged_cpblts) {
-		i = 0;
-		while (merged_cpblts[i]) {
-			free(merged_cpblts[i]);
-			i++;
-		}
-		free(merged_cpblts);
-	}
-
-	return (retval);
-}
-
-static int nc_client_handshake(struct nc_session *session, char** cpblts)
-{
-	nc_rpc *hello;
-	int retval;
-
-	/* just to be sure, it should be already done */
-	memset(session->session_id, '\0', SID_SIZE);
-
-	/* create client's <hello> message */
-	hello = nc_msg_client_hello(cpblts);
-	if (hello == NULL) {
-		return (EXIT_FAILURE);
-	}
-
-	retval = nc_handshake(session, cpblts, hello, HANDSHAKE_SIDE_CLIENT);
-	nc_rpc_free(hello);
-
-	return (retval);
-}
-
-static int nc_server_handshake(struct nc_session *session, char** cpblts)
-{
-	nc_rpc *hello;
-	int pid;
-	int retval;
-
-	/* set session ID == PID */
-	pid = (int)getpid();
-	if (snprintf(session->session_id, SID_SIZE, "%d", pid) <= 0) {
-		ERROR("Unable to generate the NETCONF session ID.");
-		return (EXIT_FAILURE);
-	}
-
-	/* create server's <hello> message */
-	hello = nc_msg_server_hello(cpblts, session->session_id);
-	if (hello == NULL) {
-		return (EXIT_FAILURE);
-	}
-
-	retval = nc_handshake(session, cpblts, hello, HANDSHAKE_SIDE_SERVER);
-	nc_rpc_free(hello);
-
-	if (retval != EXIT_SUCCESS) {
-		if (nc_info) {
-			pthread_rwlock_wrlock(&(nc_info->lock));
-			nc_info->stats.bad_hellos++;
-			pthread_rwlock_unlock(&(nc_info->lock));
-		}
-	}
-
-	return (retval);
-}
-
 #ifndef DISABLE_LIBSSH
+
+#define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
+
+static int find_ssh_keys ()
+{
+	struct passwd *pw;
+	char * user_home, *key_pub_path = NULL, *key_priv_path = NULL;
+	char * key_names[SSH2_KEYS] = {"id_rsa", "id_dsa", "id_ecdsa"};
+	int i, x, y, retval = EXIT_FAILURE;
+
+	if ((pw = getpwuid(getuid())) == NULL) {
+		ERROR("Determining user's home directory for getting SSH keys failed (%s)", strerror(errno));
+		return EXIT_FAILURE;
+	}
+	user_home = pw->pw_dir;
+
+	/* search in the same location as ssh do (~/.ssh/) */
+	VERB ("Searching for the key pairs in the standard ssh directory.");
+	for (i = 0; i < SSH2_KEYS; i++) {
+		x = asprintf (&key_priv_path, "%s/.ssh/%s", user_home, key_names[i]);
+		y = asprintf (&key_pub_path, "%s/.ssh/%s.pub", user_home, key_names[i]);
+		if (x == -1 || y == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			continue;
+		}
+		if (eaccess(key_priv_path, R_OK) == 0 && eaccess(key_pub_path, R_OK) == 0) {
+			VERB("Found a pair %s[.pub]", key_priv_path);
+			nc_set_keypair_path(key_priv_path, key_pub_path);
+			retval = EXIT_SUCCESS;
+		}
+		free (key_priv_path);
+		free (key_pub_path);
+	}
+
+	return retval;
+}
+
 static int check_hostkey(const char *host, const char* knownhosts_dir, LIBSSH2_SESSION* ssh_session)
 {
 	int ret, knownhost_check, i;
@@ -710,299 +323,8 @@ static int check_hostkey(const char *host, const char* knownhosts_dir, LIBSSH2_S
 
 	return (EXIT_FAILURE);
 }
-#endif /* not DISABLE_LIBSSH */
 
-static char* serialize_cpblts(const struct nc_cpblts *capabilities)
-{
-	char *aux = NULL, *retval = NULL;
-	int i;
-
-	if (capabilities == NULL) {
-		return (NULL);
-	}
-
-	for (i = 0; i < capabilities->items; i++) {
-		if (asprintf(&retval, "%s<capability>%s</capability>",
-				(aux == NULL) ? "" : aux,
-				capabilities->list[i]) == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-			continue;
-		}
-		free(aux);
-		aux = retval;
-		retval = NULL;
-	}
-	if (asprintf(&retval, "<capabilities>%s</capabilities>", aux) == -1) {
-		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		retval = NULL;
-	}
-	free(aux);
-	return(retval);
-}
-
-struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
-{
-	int r, i;
-	struct nc_session *retval = NULL;
-	struct nc_cpblts *server_cpblts = NULL;
-	struct passwd *pw;
-	char *wdc, *wdc_aux, *straux;
-	char list[255];
-	NCWD_MODE mode;
-	char** nslist;
-	pthread_mutexattr_t mattr;
-#ifdef HAVE_UTMPX_H
-	struct utmpx protox, *utp;
-#endif
-
-	/* allocate netconf session structure */
-	retval = malloc(sizeof(struct nc_session));
-	if (retval == NULL) {
-		ERROR("Memory allocation failed (%s)", strerror(errno));
-		return (NULL);
-	}
-	memset(retval, 0, sizeof(struct nc_session));
-	if ((retval->stats = malloc (sizeof (struct nc_session_stats))) == NULL) {
-		ERROR("Memory allocation failed (%s)", strerror(errno));
-		free(retval);
-		return NULL;
-	}
-	retval->is_server = 1;
-	retval->libssh2_socket = -1;
-	retval->fd_input = STDIN_FILENO;
-	retval->fd_output = STDOUT_FILENO;
-	retval->msgid = 1;
-	retval->queue_event = NULL;
-	retval->queue_msg = NULL;
-	retval->monitored = 0;
-	retval->stats->in_rpcs = 0;
-	retval->stats->in_bad_rpcs = 0;
-	retval->stats->out_rpc_errors = 0;
-	retval->stats->out_notifications = 0;
-	
-	if (pthread_mutexattr_init(&mattr) != 0) {
-		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-		return (NULL);
-	}
-	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	retval->mut_libssh2_channels = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
-	if ((r = pthread_mutex_init(retval->mut_libssh2_channels, &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
-		ERROR("Mutex initialization failed (%s).", strerror(r));
-		pthread_mutexattr_destroy(&mattr);
-		return (NULL);
-	}
-	pthread_mutexattr_destroy(&mattr);
-
-	/*
-	 * get username - we are running as SSH Subsystem which was started
-	 * under the user which was connecting to NETCONF server
-	 */
-	pw = getpwuid(getuid());
-	if (pw == NULL) {
-		/* unable to get correct username */
-		ERROR("Unable to set an username for the SSH connection (%s).", strerror(errno));
-		nc_session_close(retval, NC_SESSION_TERM_OTHER);
-		return (NULL);
-	}
-	retval->username = strdup(pw->pw_name);
-	retval->groups = nc_get_grouplist(retval->username);
-	/* detect if user ID is nacm_recovery_uid -> then the session is recovery */
-	if (pw->pw_uid == NACM_RECOVERY_UID) {
-		retval->nacm_recovery = 1;
-	} else {
-		retval->nacm_recovery = 0;
-	}
-
-	if (capabilities == NULL) {
-		if ((server_cpblts = nc_session_get_cpblts_default()) == NULL) {
-			VERB("Unable to set the client's NETCONF capabilities.");
-			nc_session_close(retval, NC_SESSION_TERM_OTHER);
-			return (NULL);
-		}
-	} else {
-		server_cpblts = nc_cpblts_new((const char* const*)(capabilities->list));
-	}
-	/* set with-defaults capability announcement */
-	if ((nc_cpblts_get(server_cpblts, NC_CAP_WITHDEFAULTS_ID) != NULL)
-         && ((mode = ncdflt_get_basic_mode()) != NCWD_MODE_NOTSET)) {
-		switch(mode) {
-		case NCWD_MODE_ALL:
-			wdc_aux = "?basic-mode=report-all";
-			break;
-		case NCWD_MODE_TRIM:
-			wdc_aux = "?basic-mode=trim";
-			break;
-		case NCWD_MODE_EXPLICIT:
-			wdc_aux = "?basic-mode=explicit";
-			break;
-		default:
-			wdc_aux = NULL;
-			break;
-		}
-		if (wdc_aux != NULL) {
-			mode = ncdflt_get_supported();
-			list[0] = 0;
-			if ((mode & NCWD_MODE_ALL) != 0) {
-				strcat(list, ",report-all");
-			}
-			if ((mode & NCWD_MODE_ALL_TAGGED) != 0) {
-				strcat(list, ",report-all-tagged");
-			}
-			if ((mode & NCWD_MODE_TRIM) != 0) {
-				strcat(list, ",trim");
-			}
-			if ((mode & NCWD_MODE_EXPLICIT) != 0) {
-				strcat(list, ",explicit");
-			}
-
-			if (strnonempty(list)) {
-				list[0] = '='; /* replace initial comma */
-				r = asprintf(&wdc, "urn:ietf:params:netconf:capability:with-defaults:1.0%s&amp;also-supported%s", wdc_aux, list);
-			} else {
-				/* no also-supported */
-				r = asprintf(&wdc, "urn:ietf:params:netconf:capability:with-defaults:1.0%s", wdc_aux);
-			}
-
-			if (r != -1) {
-				/* add/update capabilities list */
-				nc_cpblts_add(server_cpblts, wdc);
-				free(wdc);
-			} else {
-				WARN("asprintf() failed - with-defaults capability parameters may not be set properly (%s:%d).", __FILE__, __LINE__);
-			}
-		}
-	}
-
-#ifndef DISABLE_URL
-	if (nc_cpblts_get(server_cpblts, NC_CAP_URL_ID) != NULL) {
-		/* update URL capability with enabled protocols */
-		straux = nc_url_gencap();
-		nc_cpblts_add(server_cpblts, straux);
-		free(straux);
-	}
-#endif
-
-	if (server_capabilities != NULL) {
-		free (server_capabilities);
-		server_capabilities = serialize_cpblts(server_cpblts);
-	}
-
-	retval->status = NC_SESSION_STATUS_WORKING;
-
-	/* add namespaces of used datastores as announced capabilities */
-	if ((nslist = get_schemas_capabilities()) != NULL) {
-		for(i = 0; nslist[i] != NULL; i++) {
-			nc_cpblts_add(server_cpblts, nslist[i]);
-			free(nslist[i]);
-		}
-		free(nslist);
-	}
-
-	if (nc_server_handshake(retval, server_cpblts->list) != 0) {
-		nc_session_close(retval, NC_SESSION_TERM_BADHELLO);
-		nc_session_free(retval);
-		nc_cpblts_free(server_cpblts);
-		return (NULL);
-	}
-
-	/* get client's hostname */
-	/*
-	 * This is not a critical information, so only warnings are generated if
-	 * the following process fails. The hostname of the client is used by
-	 * server to generate NETCONF base notifications.
-	 */
-	if ((straux = getenv("SSH_CLIENT")) != NULL) {
-		/* OpenSSH implementation provides SSH_CLIENT environment variable */
-		retval->hostname = strdup(straux);
-		if ((straux = strchr(retval->hostname, ' ')) != NULL ) {
-			*straux = 0; /* null byte after IP in $SSH_CLIENT */
-		}
-#ifdef HAVE_UTMPX_H
-	} else {
-		/*
-		 * in other cases, we will try to get information from the utmpx
-		 * file of this session
-		 */
-		if ((straux = ttyname(fileno(stdin))) == 0) {
-			WARN("Unable to get tty (%s) to get the client's hostname (session %s).", strerror(errno), retval->session_id);
-		} else {
-			if (strncmp(straux, "/dev/", 5) == 0) {
-				straux += 5;
-			}
-			memset(&protox, 0, sizeof protox);
-			strcpy(protox.ut_line, straux);
-
-			if ((utp = getutxline(&protox)) == 0) {
-				WARN("Unable to locate UTMPX for \'%s\' to get the client's hostname (session %s).", straux, retval->session_id);
-			} else {
-				retval->hostname = malloc(sizeof(char) * (1 + sizeof(utp->ut_host)));
-				memcpy(retval->hostname, utp->ut_host, sizeof(utp->ut_host));
-				retval->hostname[sizeof(utp->ut_host)] = 0;
-			}
-		}
-#endif
-	}
-
-	/* set with-defaults capability flags */
-	parse_wdcap(retval->capabilities, &(retval->wd_basic), &(retval->wd_modes));
-
-	/* cleanup */
-	nc_cpblts_free(server_cpblts);
-
-#ifndef DISABLE_NOTIFICATIONS
-	/* log start of the session */
-	ncntf_event_new(-1, NCNTF_BASE_SESSION_START, retval);
-#endif
-
-	retval->logintime = nc_time2datetime(time(NULL));
-	if (nc_info) {
-		pthread_rwlock_wrlock(&(nc_info->lock));
-		nc_info->stats.sessions_in++;
-		pthread_rwlock_unlock(&(nc_info->lock));
-	}
-
-	return (retval);
-}
-
-#ifndef DISABLE_LIBSSH
-static int find_ssh_keys ()
-{
-	struct passwd *pw;
-	char * user_home, *key_pub_path = NULL, *key_priv_path = NULL;
-	char * key_names[SSH2_KEYS] = {"id_rsa", "id_dsa", "id_ecdsa"};
-	int i, x, y, retval = EXIT_FAILURE;
-
-	if ((pw = getpwuid(getuid())) == NULL) {
-		ERROR("Determining user's home directory for getting SSH keys failed (%s)", strerror(errno));
-		return EXIT_FAILURE;
-	}
-	user_home = pw->pw_dir;
-
-	/* search in the same location as ssh do (~/.ssh/) */
-	VERB ("Searching for the key pairs in the standard ssh directory.");
-	for (i = 0; i < SSH2_KEYS; i++) {
-		x = asprintf (&key_priv_path, "%s/.ssh/%s", user_home, key_names[i]);
-		y = asprintf (&key_pub_path, "%s/.ssh/%s.pub", user_home, key_names[i]);
-		if (x == -1 || y == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-			continue;
-		}
-		if (eaccess(key_priv_path, R_OK) == 0 && eaccess(key_pub_path, R_OK) == 0) {
-			VERB("Found a pair %s[.pub]", key_priv_path);
-			nc_set_keypair_path(key_priv_path, key_pub_path);
-			retval = EXIT_SUCCESS;
-		}
-		free (key_priv_path);
-		free (key_pub_path);
-	}
-
-	return retval;
-}
-
-static struct nc_session *nc_session_connect_libssh2_socket(const char* username, const char* host, int sock)
+struct nc_session *nc_session_connect_libssh2_socket(const char* username, const char* host, int sock)
 {
 	struct nc_session *retval = NULL;
 	struct passwd *pw;
@@ -1296,7 +618,7 @@ shutdown:
 	return (NULL);
 }
 
-static struct nc_session *nc_session_connect_libssh2(const char* username, const char* host, const char* port)
+struct nc_session *nc_session_connect_libssh2(const char* username, const char* host, const char* port)
 {
 	struct nc_session *retval = NULL;
 	int i;
@@ -1353,176 +675,245 @@ static struct nc_session *nc_session_connect_libssh2(const char* username, const
 	return (retval);
 }
 
-#define PORTLEN 6
-struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpblts* cpblts)
+struct nc_session *nc_session_connect_libssh2_channel(struct nc_session *session)
 {
-	struct nc_session* retval;
-	struct nc_cpblts *client_cpblts;
-	int sock;
-	struct sockaddr_storage remote;
-	socklen_t addr_size = sizeof(remote);
-	char port[PORTLEN];
-	char host[INET6_ADDRSTRLEN];
+	struct nc_session *retval;
+	pthread_mutexattr_t mattr;
+	char* err_msg;
+	int r;
 
-	if (reverse_listen_socket == -1) {
-		ERROR("No listening socket, use nc_session_reverse_listen() first.");
+	if (session == NULL || session->is_server) {
+		/* we can open channel only for client-side, no-dummy sessions */
+		ERROR("Invalid session for opening another channel");
 		return (NULL);
 	}
 
-	VERB("Waiting for incoming Reverse SSH connections...");
-	sock = accept(reverse_listen_socket, (struct sockaddr*)&remote, &addr_size);
-	if (sock == -1) {
-		ERROR("Accepting call home failed (%s)", strerror(errno));
+	/* allocate netconf session structure */
+	retval = malloc(sizeof(struct nc_session));
+	if (retval == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
 		return (NULL);
 	}
-
-	port[0] = '\0';
-	host[0] = '\0';
-	if (remote.ss_family == AF_INET) {
-		struct sockaddr_in* remote_in = (struct sockaddr_in*)&remote;
-		snprintf(port, PORTLEN, "%5u", ntohs(remote_in->sin_port));
-		inet_ntop(AF_INET, &(remote_in->sin_addr), host, INET6_ADDRSTRLEN);
-	} else if (remote.ss_family == AF_INET6) {
-		struct sockaddr_in6* remote_in = (struct sockaddr_in6*)&remote;
-		snprintf(port, PORTLEN, "%5u", ntohs(remote_in->sin6_port));
-		inet_ntop(AF_INET6, &(remote_in->sin6_addr), host, INET6_ADDRSTRLEN);
-	} else {
-		/* wtf?!? */
+	memset(retval, 0, sizeof(struct nc_session));
+	if ((retval->stats = malloc (sizeof (struct nc_session_stats))) == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
+		free(retval);
+		return NULL;
 	}
 
-	retval = nc_session_connect_libssh2_socket(username, host, sock);
-	if (retval != NULL) {
-		retval->hostname = strdup(host);
-		retval->port = strdup(port);
-	} else {
-		close(sock);
-		sock = -1;
+	retval->is_server = 0;
+	retval->libssh2_socket = session->libssh2_socket;
+	retval->fd_input = -1;
+	retval->fd_output = -1;
+	retval->hostname = session->hostname;
+	retval->username = session->username;
+	retval->groups = NULL; /* client side does not need this information */
+	retval->port = session->port;
+	retval->msgid = 1;
+	retval->queue_event = NULL;
+	retval->queue_msg = NULL;
+	retval->logintime = NULL;
+	session->ntf_active = 0;
+	retval->monitored = 0;
+	retval->nacm_recovery = 0; /* not needed/decidable on the client side */
+	retval->stats->in_rpcs = 0;
+	retval->stats->in_bad_rpcs = 0;
+	retval->stats->out_rpc_errors = 0;
+	retval->stats->out_notifications = 0;
 
-		return(NULL);
+	/* shared resources with the original session */
+	retval->ssh_session = session->ssh_session;
+	/*
+	 * libssh2 is quite stupid - it provides multiple channels inside a single
+	 * session, but it does not allow multiple threads to work with these
+	 * channels, so we have to share mutex of the master
+	 * session to control access to each SSH channel
+	 */
+	retval->mut_libssh2_channels = session->mut_libssh2_channels;
+
+	if (pthread_mutexattr_init(&mattr) != 0) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
+	if ((r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
+		ERROR("Mutex initialization failed (%s).", strerror(r));
+		pthread_mutexattr_destroy(&mattr);
+		return (NULL);
+	}
+	pthread_mutexattr_destroy(&mattr);
+
+	/* open a separated channel */
+	retval->ssh_channel = libssh2_channel_open_session(retval->ssh_session);
+	if (retval->ssh_channel == NULL) {
+		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+		ERROR("Opening the SSH channel failed (%s)", err_msg);
+		goto shutdown;
+	}
+
+	/* execute the NETCONF subsystem on the channel */
+	if (libssh2_channel_subsystem(retval->ssh_channel, "netconf")) {
+		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+		ERROR("Starting the netconf SSH subsystem failed (%s)", err_msg);
+		goto shutdown;
 	}
 
 	retval->status = NC_SESSION_STATUS_WORKING;
 
-	if (cpblts == NULL) {
-		if ((client_cpblts = nc_session_get_cpblts_default()) == NULL) {
-			VERB("Unable to set the client's NETCONF capabilities.");
-			goto shutdown;
-		}
-	} else {
-		client_cpblts = nc_cpblts_new((const char* const*)(cpblts->list));
-	}
-
-	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
-		goto shutdown;
-	}
-
-	/* set with-defaults capability flags */
-	parse_wdcap(retval->capabilities, &(retval->wd_basic), &(retval->wd_modes));
-
-	/* cleanup */
-	nc_cpblts_free(client_cpblts);
-
 	return (retval);
-
 shutdown:
 
 	/* cleanup */
-	nc_session_close(retval, NC_SESSION_TERM_OTHER);
-	nc_session_free(retval);
-	nc_cpblts_free(client_cpblts);
-
+	if (retval->ssh_channel != NULL) {
+		libssh2_channel_free(retval->ssh_channel);
+	}
+	if (retval) {
+		free(retval->stats);
+		if (retval->mut_libssh2_channels != NULL) {
+			pthread_mutex_destroy(retval->mut_libssh2_channels);
+			free(retval->mut_libssh2_channels);
+			retval->mut_libssh2_channels = NULL;
+		}
+		pthread_mutex_destroy(&(retval->mut_mqueue));
+		pthread_mutex_destroy(&(retval->mut_equeue));
+		pthread_mutex_destroy(&(retval->mut_session));
+		free(retval);
+	}
 	return (NULL);
-}
-
-int nc_callhome_listen_stop(void)
-{
-	if (reverse_listen_socket == -1) {
-		ERROR("%s: libnetconf is not listening for incoming call home.", __func__);
-		return (EXIT_FAILURE);
-	}
-
-	close(reverse_listen_socket);
-	reverse_listen_socket = -1;
-
-	return (EXIT_SUCCESS);
-}
-
-int nc_callhome_listen(unsigned int port)
-{
-	struct addrinfo hints, *res_list, *res;
-	char port_s[SHORT_INT_LENGTH];
-	int i;
-
-	if (reverse_listen_socket != -1) {
-		ERROR("%s: libnetconf is already listening for incoming call home.", __func__);
-		return (EXIT_FAILURE);
-	}
-
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
-
-	/* set default values */
-	if (port == 0) {
-		port = NC_REVERSE_PORT;
-	}
-
-	if (snprintf(port_s, SHORT_INT_LENGTH, "%d", port) < 0) {
-		/* converting short int to the string failed */
-		ERROR("Unable to convert the port number to a string.");
-		return (EXIT_FAILURE);
-	}
-	/* Connect to SSH server */
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	i = getaddrinfo(NULL, port_s, &hints, &res_list);
-	if (i != 0) {
-		ERROR("Unable to translate the host address (%s).", gai_strerror(i));
-		return (EXIT_FAILURE);
-	}
-
-	for (i = 0, res = res_list; res != NULL; res = res->ai_next) {
-		reverse_listen_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-		if (reverse_listen_socket == -1) {
-			/* socket was not created, try another resource */
-			i = errno;
-			continue;
-		}
-
-		if (bind(reverse_listen_socket, res->ai_addr, res->ai_addrlen) == -1) {
-			/* binding the port failedd, try another resource */
-			i = errno;
-			close(reverse_listen_socket);
-			reverse_listen_socket = -1;
-			continue;
-		}
-
-	    if (listen(reverse_listen_socket, NC_REVERSE_QUEUE) == -1) {
-			i = errno;
-			close(reverse_listen_socket);
-			reverse_listen_socket = -1;
-			continue;
-	    }
-
-		/* we're done, network connection established */
-		break;
-	}
-	freeaddrinfo(res_list);
-
-	if (reverse_listen_socket == -1) {
-		ERROR("Unable to start listening on port %s (%s).", port_s, strerror(i));
-		return (EXIT_FAILURE);
-	}
-
-	return (EXIT_SUCCESS);
 }
 
 #else /* DISABLE_LIBSSH */
 
-static struct nc_session *nc_session_connect_openssh(const char* username, const char* host, const char* port)
+struct nc_msg* read_hello_openssh(struct nc_session *session)
+{
+	struct nc_msg *retval;
+	nc_reply* reply;
+	xmlNodePtr root;
+	unsigned int i, size = BUFFER_SIZE;
+	char *buffer = NULL, c, *aux_buffer;
+
+	if (!(buffer = (char *) malloc(size * sizeof (char)))) {
+		return NULL;
+	}
+	memset(buffer, '\0', size * sizeof (char));
+
+	/* initial reading */
+	while(isspace(buffer[0] = (char) fgetc(session->f_input)));
+	for (i = 1; i < strlen(NC_V10_END_MSG); i++) {
+		if ((!feof(session->f_input)) && (!ferror(session->f_input))) {
+			buffer[i] = (char) fgetc(session->f_input);
+		} else {
+			free(buffer);
+			return NULL;
+		}
+	}
+
+	/*
+	 * read next character and check ending character sequence for
+	 * NC_V10_END_MSG
+	 */
+	if (strcmp(NC_V10_END_MSG, &buffer[i - (unsigned int)strlen(NC_V10_END_MSG)])) {
+		while ((!feof(session->f_input)) && (!ferror(session->f_input)) && ((c = (char) fgetc(session->f_input)) != EOF)) {
+			if (i == size - 1) { /* buffer is too small */
+				/* allocate larger buffer */
+				size = 2 * size;
+				if (!(aux_buffer = (char *) realloc(buffer, size))) {
+					free(buffer); /* free buffer that was too small and reallocation failed */
+					return NULL;
+				}
+				buffer = aux_buffer;
+			}
+			/* store read character */
+			buffer[i] = c;
+			i++;
+
+			/* check if the ending character sequence was read */
+			if (!(strncmp(NC_V10_END_MSG, &buffer[i - (unsigned int)strlen(NC_V10_END_MSG)], strlen(NC_V10_END_MSG)))) {
+				buffer[i - strlen(NC_V10_END_MSG)] = '\0';
+				break;
+			}
+		}
+	} else {
+		/* message is empty and contains only END-MESSAGE marker */
+		/* one option is to return NULL as error:
+		 free(buffer);
+		 return NULL;
+		 * or return empty string (buffer): */
+		buffer[0] = '\0';
+	}
+	fclose(session->f_input);
+	session->f_input = NULL;
+
+	/* create the message structure */
+	retval = calloc (1, sizeof(struct nc_msg));
+	if (retval == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		free (buffer);
+		goto malformed_msg;
+	}
+
+	/* store the received message in libxml2 format */
+	retval->doc = xmlReadDoc (BAD_CAST buffer, NULL, NULL, XML_PARSE_NOBLANKS | XML_PARSE_NSCLEAN | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+	if (retval->doc == NULL) {
+		free (retval);
+		free (buffer);
+		ERROR("Invalid XML data received.");
+		goto malformed_msg;
+	}
+	free (buffer);
+
+	/* create xpath evaluation context */
+	if ((retval->ctxt = xmlXPathNewContext(retval->doc)) == NULL) {
+		ERROR("%s: rpc message XPath context cannot be created.", __func__);
+		nc_msg_free(retval);
+		goto malformed_msg;
+	}
+
+	/* register base namespace for the rpc */
+	if (xmlXPathRegisterNs(retval->ctxt, BAD_CAST NC_NS_BASE10_ID, BAD_CAST NC_NS_BASE10) != 0) {
+		ERROR("Registering base namespace for the message xpath context failed.");
+		nc_msg_free(retval);
+		goto malformed_msg;
+	}
+
+	/* parse and store message type */
+	root = xmlDocGetRootElement(retval->doc);
+	if (xmlStrcmp (root->name, BAD_CAST "hello") != 0) {
+		ERROR("Unexpected (non-hello) message received.");
+		nc_msg_free(retval);
+		goto malformed_msg;
+	} else {
+		/* set message type, we have <hello> message */
+		retval->type.reply = NC_REPLY_HELLO;
+		retval->msgid = NULL;
+	}
+
+	return (retval);
+
+malformed_msg:
+
+	if (session->version == NETCONFV11 && session->ssh_session == NULL) {
+		/* NETCONF version 1.1 define sending error reply from the server */
+		reply = nc_reply_error(nc_err_new(NC_ERR_MALFORMED_MSG));
+		if (reply == NULL) {
+			ERROR("Unable to create a \'Malformed message\' reply");
+			nc_session_close(session, NC_SESSION_TERM_OTHER);
+			return (NULL);
+		}
+
+		nc_session_send_reply(session, NULL, reply);
+		nc_reply_free(reply);
+	}
+
+	ERROR("Malformed message received, closing the session %s.", session->session_id);
+	nc_session_close(session, NC_SESSION_TERM_OTHER);
+
+	return (NULL);
+}
+
+struct nc_session *nc_session_connect_openssh(const char* username, const char* host, const char* port)
 {
 	struct nc_session *retval = NULL;
 	struct passwd *pw;
@@ -1804,411 +1195,5 @@ static struct nc_session *nc_session_connect_openssh(const char* username, const
 
 	return (retval);
 }
+
 #endif /* DISABLE_LIBSSH */
-
-struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port)
-{
-	struct nc_mngmt_server* item, *start, *end;
-	struct addrinfo hints;
-	int r;
-
-	if (host == NULL || port == NULL) {
-		return (NULL);
-	}
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-
-	item = malloc(sizeof(struct nc_mngmt_server));
-	if ((r = getaddrinfo(host, port, &hints, &(item->addr))) != 0) {
-		ERROR("Unable to get information about remote server %s (%s)", host, gai_strerror(r));
-		free(item);
-		return (NULL);
-	}
-
-	if (list == NULL) {
-		start = item;
-		end = item;
-	} else {
-		start = list;
-		/* find end of the ring list */
-		for(end = list; end->next != list; end = end->next) {
-			if (end->next == NULL) {
-				/* it was not ring list, make it */
-				end->next = list;
-				break;
-			}
-		}
-	}
-
-	/* add the new item into the ring list */
-	end->next = item;
-	item->next = start;
-
-	return (start);
-}
-
-int nc_callhome_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_server* remove)
-{
-	struct nc_mngmt_server *iter;
-
-	/* locate the item to remove */
-	for(iter = list; iter != NULL && iter->next != remove && iter->next != list; iter = iter->next);
-
-	if (iter == NULL) {
-		/* list is empty or remove is not present in the list (and list is not ring list) */
-		return (EXIT_FAILURE);
-	} else if (iter->next == list) {
-		/* remove was not found in the list, yet check the first item in the list */
-		if (list != remove) {
-			return (EXIT_FAILURE);
-		}
-	}
-	/* else remove found, modify the list */
-	iter->next = remove->next;
-	remove->next = remove; /* keep it ring */
-
-	return (EXIT_SUCCESS);
-}
-
-int nc_callhome_mngmt_server_free(struct nc_mngmt_server* list)
-{
-	struct nc_mngmt_server *iter, *aux;
-
-	if (list == NULL) {
-		return (EXIT_FAILURE);
-	} else if (list->next == NULL) {
-		freeaddrinfo(list->addr);
-		free(list);
-	} else {
-		for(iter = list->next, list->next = NULL; iter != NULL; ) {
-			if (iter->next == NULL && iter != list) {
-				/* the list was not ring, so we have to free the start of the list */
-				freeaddrinfo(list->addr);
-				free(list);
-			}
-			aux = iter->next;
-			freeaddrinfo(iter->addr);
-			free(iter);
-			iter = aux;
-		}
-	}
-
-	return (EXIT_SUCCESS);
-}
-
-int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* sshd_path)
-{
-	struct nc_mngmt_server *srv_iter;
-	struct addrinfo *addr;
-	int sock, sock6, sock4;
-	int i;
-	int pid = -1;
-
-	if (sshd_path == NULL) {
-		sshd_path = "/usr/sbin/sshd";
-	}
-
-	/* prepare a socket */
-	if ((sock4 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
-		ERROR("%s: creating IPv4 socket failed (%s)", __func__, strerror(errno));
-		WARN("%s: IPv4 connection to management servers will not be available.", __func__);
-	}
-	if ((sock6 = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP)) == -1) {
-		ERROR("%s: creating IPv6 socket failed (%s)", __func__, strerror(errno));
-		WARN("%s: IPv6 connection to management servers will not be available.", __func__);
-	}
-	if (sock4 == -1 && sock6 == -1) {
-		ERROR("%s: Unable to connect to any management server, creating sockets failed.", __func__);
-		return (-1);
-	}
-
-	/* since host_list is supposed to be ring list, this is potentially never ending loop */
-	for (srv_iter = host_list; srv_iter != NULL; srv_iter = srv_iter->next) {
-		for (addr = srv_iter->addr; addr != NULL; addr = addr->ai_next) {
-			switch (addr->ai_family) {
-			case AF_INET:
-				if (sock4 == -1) {
-					continue;
-				} else {
-					sock = sock4;
-				}
-				break;
-			case AF_INET6:
-				if (sock6 == -1) {
-					continue;
-				} else {
-					sock = sock6;
-				}
-				break;
-			default:
-				continue;
-			}
-
-			for (i = 0; i < reconnect_count; i++) {
-				if (connect(sock, addr->ai_addr, addr->ai_addrlen) == -1) {
-					WARN("Connecting to %s failed (%s)", addr->ai_canonname, strerror(errno));
-					sleep(reconnect_secs);
-					continue;
-				}
-				VERB("Connected to %s.", addr->ai_canonname);
-				/* close unused socket */
-				if (sock == sock4) {
-					close(sock6);
-				} else {
-					close(sock4);
-				}
-
-				/* go to start SSH daemon */
-				goto connected;
-			}
-		}
-	}
-
-	close(sock4);
-	close(sock6);
-	return(-1);
-
-connected:
-	/* execute sshd */
-	pid = fork();
-	if (pid == -1) {
-		ERROR("Forking process for SSH server failed (%s)", strerror(errno));
-		close(sock);
-	} else if (pid == 0) {
-		/* child (future sshd) process */
-		int log = open("/tmp/reversessh.log", O_RDWR | O_CREAT, 0666);
-		/* redirect stdin/stdout to the communication socket */
-		dup2(sock, STDIN_FILENO);
-		dup2(sock, STDOUT_FILENO);
-		dup2(log, STDERR_FILENO);
-
-		/* start the sshd */
-		execl(sshd_path, sshd_path, "-ddd", "-e", "-i", NULL);
-
-		/* you never should be here! */
-		ERROR("Executing SSH daemon (%s) failed (%s).", sshd_path, strerror(errno));
-		exit(1);
-	} else {
-		/* parent (current app) */
-		close(sock);
-	}
-
-	return (pid);
-}
-
-struct nc_session* nc_session_connect(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts)
-{
-	struct nc_session *retval = NULL;
-	struct nc_cpblts *client_cpblts = NULL;
-	char port_s[SHORT_INT_LENGTH];
-
-	/* set default values */
-	if (host == NULL || strisempty(host)) {
-		host = "localhost";
-	}
-	if (port == 0) {
-		port = NC_PORT;
-	}
-
-	if (snprintf(port_s, SHORT_INT_LENGTH, "%d", port) < 0) {
-		/* converting short int to the string failed */
-		ERROR("Unable to convert the port number to a string.");
-		return (NULL);
-	}
-
-#ifdef DISABLE_LIBSSH
-	retval = nc_session_connect_openssh(username, host, port_s);
-#else
-	retval = nc_session_connect_libssh2(username, host, port_s);
-#endif /* not DISABLE_LIBSSH */
-	if (retval == NULL) {
-		return (NULL);
-	}
-
-	retval->status = NC_SESSION_STATUS_WORKING;
-
-	if (cpblts == NULL) {
-		if ((client_cpblts = nc_session_get_cpblts_default()) == NULL) {
-			VERB("Unable to set the client's NETCONF capabilities.");
-			goto shutdown;
-		}
-	} else {
-		client_cpblts = nc_cpblts_new((const char* const*)(cpblts->list));
-	}
-
-	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
-		goto shutdown;
-	}
-
-	/* set with-defaults capability flags */
-	parse_wdcap(retval->capabilities, &(retval->wd_basic), &(retval->wd_modes));
-
-	/* cleanup */
-	nc_cpblts_free(client_cpblts);
-
-	return (retval);
-
-shutdown:
-
-	/* cleanup */
-	nc_session_close(retval, NC_SESSION_TERM_OTHER);
-	nc_session_free(retval);
-	nc_cpblts_free(client_cpblts);
-
-	return (NULL);
-}
-
-
-struct nc_session *nc_session_connect_channel(struct nc_session *session, const struct nc_cpblts* cpblts)
-{
-#ifdef DISABLE_LIBSSH
-	ERROR("%s: SSH channels are provided only with libssh2.", __func__);
-	return (NULL);
-#else
-	struct nc_session *retval, *session_aux;
-	struct nc_cpblts *client_cpblts = NULL;
-	pthread_mutexattr_t mattr;
-	char* err_msg;
-	int r;
-
-	if (session == NULL || session->is_server) {
-		/* we can open channel only for client-side, no-dummy sessions */
-		ERROR("Invalid session for opening another channel");
-		return (NULL);
-	}
-
-	/* allocate netconf session structure */
-	retval = malloc(sizeof(struct nc_session));
-	if (retval == NULL) {
-		ERROR("Memory allocation failed (%s)", strerror(errno));
-		return (NULL);
-	}
-	memset(retval, 0, sizeof(struct nc_session));
-	if ((retval->stats = malloc (sizeof (struct nc_session_stats))) == NULL) {
-		ERROR("Memory allocation failed (%s)", strerror(errno));
-		free(retval);
-		return NULL;
-	}
-
-	retval->is_server = 0;
-	retval->libssh2_socket = session->libssh2_socket;
-	retval->fd_input = -1;
-	retval->fd_output = -1;
-	retval->hostname = session->hostname;
-	retval->username = session->username;
-	retval->groups = NULL; /* client side does not need this information */
-	retval->port = session->port;
-	retval->msgid = 1;
-	retval->queue_event = NULL;
-	retval->queue_msg = NULL;
-	retval->logintime = NULL;
-	session->ntf_active = 0;
-	retval->monitored = 0;
-	retval->nacm_recovery = 0; /* not needed/decidable on the client side */
-	retval->stats->in_rpcs = 0;
-	retval->stats->in_bad_rpcs = 0;
-	retval->stats->out_rpc_errors = 0;
-	retval->stats->out_notifications = 0;
-
-	/* shared resources with the original session */
-	retval->ssh_session = session->ssh_session;
-	/*
-	 * libssh2 is quite stupid - it provides multiple channels inside a single
-	 * session, but it does not allow multiple threads to work with these
-	 * channels, so we have to share mutex of the master
-	 * session to control access to each SSH channel
-	 */
-	retval->mut_libssh2_channels = session->mut_libssh2_channels;
-
-	if (pthread_mutexattr_init(&mattr) != 0) {
-		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-		return (NULL);
-	}
-	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	if ((r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
-			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
-		ERROR("Mutex initialization failed (%s).", strerror(r));
-		pthread_mutexattr_destroy(&mattr);
-		return (NULL);
-	}
-	pthread_mutexattr_destroy(&mattr);
-
-	/* open a separated channel */
-	retval->ssh_channel = libssh2_channel_open_session(retval->ssh_session);
-	if (retval->ssh_channel == NULL) {
-		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-		ERROR("Opening the SSH channel failed (%s)", err_msg);
-		goto shutdown;
-	}
-
-	/* execute the NETCONF subsystem on the channel */
-	if (libssh2_channel_subsystem(retval->ssh_channel, "netconf")) {
-		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-		ERROR("Starting the netconf SSH subsystem failed (%s)", err_msg);
-		goto shutdown;
-	}
-	retval->status = NC_SESSION_STATUS_WORKING;
-
-	if (cpblts == NULL) {
-		if ((client_cpblts = nc_session_get_cpblts_default()) == NULL) {
-			VERB("Unable to set the client's NETCONF capabilities.");
-			goto shutdown;
-		}
-	} else {
-		client_cpblts = nc_cpblts_new((const char* const*)(cpblts->list));
-	}
-
-	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
-		goto shutdown;
-	}
-
-	/* set with-defaults capability flags */
-	parse_wdcap(retval->capabilities, &(retval->wd_basic), &(retval->wd_modes));
-
-	/* cleanup */
-	nc_cpblts_free(client_cpblts);
-
-	/*
-	 * link sessions:
-	 * session <-> retval <-> session_aux
-	 */
-	session_aux = session->next;
-	if (session_aux != NULL) {
-		session_aux->prev = retval;
-	}
-	session->next = retval;
-	retval->next = session_aux;
-	retval->prev = session;
-
-	return (retval);
-
-shutdown:
-
-	/* cleanup */
-	if (retval->ssh_channel != NULL) {
-		libssh2_channel_free(retval->ssh_channel);
-	}
-	if (retval) {
-		free(retval->stats);
-		if (retval->mut_libssh2_channels != NULL) {
-			pthread_mutex_destroy(retval->mut_libssh2_channels);
-			free(retval->mut_libssh2_channels);
-			retval->mut_libssh2_channels = NULL;
-		}
-		pthread_mutex_destroy(&(retval->mut_mqueue));
-		pthread_mutex_destroy(&(retval->mut_equeue));
-		pthread_mutex_destroy(&(retval->mut_session));
-		nc_cpblts_free(retval->capabilities);
-		free(retval);
-	}
-	nc_cpblts_free(client_cpblts);
-
-	return (NULL);
-
-#endif /* not DISABLE_LIBSSH */
-}
-

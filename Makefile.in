@@ -94,8 +94,11 @@ SRCS =  src/callbacks.c \
 	src/compat.c \
 	src/messages.c \
 	src/session.c \
-	src/ssh.c @SRCS_NOTIFICATIONS@ \
-	src/with_defaults.c @SRCS_URL@ \
+	src/transport.c \
+	src/ssh.c \
+	@SRCS_NOTIFICATIONS@ \
+	src/with_defaults.c \
+	@SRCS_URL@ \
 	src/nacm.c \
 	src/datastore.c \
 	src/datastore/edit_config.c \
@@ -117,7 +120,7 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/session.h \
 	src/messages.h \
 	src/messages_xml.h \
-	src/ssh.h \
+	src/transport.h \
 	src/reverse_ssh.h \
 	@HDRS_PUBL_SUBDIR_NOTIFICATIONS@ \
 	src/with_defaults.h \
@@ -143,6 +146,7 @@ HDRS_PRIV = src/config.h.in \
 	src/netconf.h \
 	src/netconf_internal.h \
 	src/session.h \
+	src/transport.h \
 	src/ssh.h \
 	src/reverse_ssh.h \
 	@HDRS_PRIV_NOTIFICATIONS@ \
