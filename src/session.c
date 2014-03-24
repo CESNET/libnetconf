@@ -72,6 +72,10 @@
 #include "datastore.h"
 #include "nacm.h"
 
+#ifdef ENABLE_TLS
+# 	include "openssl/ssl.h"
+#endif
+
 #ifndef DISABLE_NOTIFICATIONS
 #  include "notifications.h"
 #endif
@@ -138,13 +142,40 @@ static struct session_list_map *session_list = NULL;
  */
 #define NC_READ_SLEEP 100
 #ifdef DISABLE_LIBSSH
+#ifdef ENABLE_TLS
+#define NC_WRITE(session,buf,c,ret) \
+	if (session->fd_output != -1) {ret = write (session->fd_output, (buf), strlen(buf)); \
+		if (ret > 0) {c += ret;} \
+	} else if (session->tls){ \
+		ret = SSL_write(session->tls, (buf), strlen(buf)); \
+		if (ret > 0) {c += ret;} \
+	} else { \
+		ret = -1; \
+	}
+#else /* not ENABLE_TLS (but DISABLE_LIBSSH) */
 #define NC_WRITE(session,buf,c,ret) \
 	if (session->fd_output != -1) {ret = write (session->fd_output, (buf), strlen(buf)); \
 		if (ret > 0) {c += ret;} \
 	} else { \
 		ret = -1; \
 	}
-#else
+#endif /* not ENABLE_TLS */
+#else /* not DISABLE_LIBSSH */
+#ifdef ENABLE_TLS
+#define NC_WRITE(session,buf,c,ret) \
+	if(session->ssh_channel){ \
+		ret = libssh2_channel_write (session->ssh_channel, (buf), strlen(buf)); \
+		if (ret > 0) {c += ret;} \
+	} else if (session->tls){ \
+		ret = SSL_write(session->tls, (buf), strlen(buf)); \
+		if (ret > 0) {c += ret;} \
+	} else if (session->fd_output != -1) { \
+		ret = write (session->fd_output, (buf), strlen(buf)); \
+		if (ret > 0) {c += ret;} \
+	} else { \
+		ret = -1; \
+	}
+#else /* not ENABLE_TLS */
 #define NC_WRITE(session,buf,c,ret) \
 	if(session->ssh_channel){ \
 		ret = libssh2_channel_write (session->ssh_channel, (buf), strlen(buf)); \
@@ -155,7 +186,8 @@ static struct session_list_map *session_list = NULL;
 	} else { \
 		ret = -1; \
 	}
-#endif
+#endif /* not ENABLE_TLS */
+#endif /* not DISABLE_LIBSSH */
 
 #define SIZE_STEP (1024*16)
 int nc_session_monitoring_init(void)
@@ -618,6 +650,11 @@ int nc_session_get_eventfd (const struct nc_session *session)
 		return -1;
 	}
 
+#ifdef ENABLE_TLS
+	if (session->tls != NULL) {
+		return (SSL_get_fd(session->tls));
+	}
+#endif
 	if (session->libssh2_socket != -1) {
 		return (session->libssh2_socket);
 	} else if (session->fd_input != -1) {
@@ -1065,11 +1102,33 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	return session;
 }
 
+static void announce_nc_session_closing(struct nc_session* session)
+{
+	nc_rpc *rpc_close = NULL;
+	nc_reply *reply = NULL;
+
+	/* prevent infinite recursion when socket is corrupted -> stack overflow */
+	session->status = NC_SESSION_STATUS_CLOSING;
+
+	/* close NETCONF session */
+	rpc_close = nc_rpc_closesession();
+	if (rpc_close != NULL) {
+		if (nc_session_send_rpc(session, rpc_close) != 0) {
+			nc_session_recv_reply(session, 10000, &reply); /* wait max 10 seconds */
+			if (reply != NULL) {
+				nc_reply_free(reply);
+			}
+		}
+		if (rpc_close != NULL) {
+			nc_rpc_free(rpc_close);
+		}
+	}
+
+}
+
 void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 {
 	int i;
-	nc_rpc *rpc_close = NULL;
-	nc_reply *reply = NULL;
 	struct nc_msg *qmsg, *qmsg_aux;
 	NC_SESSION_STATUS sstatus = session->status;
 
@@ -1097,49 +1156,36 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			ncds_break_locks(session);
 		}
 
-		/* close ssh session */
+		/* close NETCONF session */
 #ifdef DISABLE_LIBSSH
-		if (session->status == NC_SESSION_STATUS_WORKING && !session->is_server) {
-			/* prevent infinite recursion when socket is corrupted -> stack overflow */
-			session->status = NC_SESSION_STATUS_CLOSING;
-
-			/* close NETCONF session */
-			rpc_close = nc_rpc_closesession();
-			if (rpc_close != NULL) {
-				if (nc_session_send_rpc(session, rpc_close) != 0) {
-					nc_session_recv_reply(session, 10000, &reply); /* wait max 10 seconds */
-					if (reply != NULL) {
-						nc_reply_free(reply);
-					}
-				}
-				nc_rpc_free(rpc_close);
+		if (session->f_input != NULL) {
+			if (session->status == NC_SESSION_STATUS_WORKING && !session->is_server) {
+				announce_nc_session_closing(session);
 			}
-		}
+		} else
 #else
 		if (session->ssh_channel != NULL) {
 			if (session->status == NC_SESSION_STATUS_WORKING && libssh2_channel_eof(session->ssh_channel) == 0 && !session->is_server) {
-				/* prevent infinite recursion when socket is corrupted -> stack overflow */
-				session->status = NC_SESSION_STATUS_CLOSING;
-
-				/* close NETCONF session */
-				rpc_close = nc_rpc_closesession();
-				if (rpc_close != NULL) {
-					if (nc_session_send_rpc(session, rpc_close) != 0) {
-						nc_session_recv_reply(session, 10000, &reply); /* wait max 10 seconds */
-						if (reply != NULL) {
-							nc_reply_free(reply);
-						}
-					}
-					if (rpc_close != NULL) {
-						nc_rpc_free(rpc_close);
-					}
-				}
+				announce_nc_session_closing(session);
 			}
 
 			libssh2_channel_free(session->ssh_channel);
 			session->ssh_channel = NULL;
+		} else
+#endif
+#ifdef ENABLE_TLS
+		if (session->tls != NULL) {
+			if (session->status == NC_SESSION_STATUS_WORKING && !session->is_server) {
+				announce_nc_session_closing(session);
+			}
+			SSL_shutdown(session->tls);
+			SSL_free(session->tls);
+			session->tls = NULL;
 		}
-
+#else
+		{} /* close else which is not needed */
+#endif
+#ifndef DISABLE_LIBSSH
 		if (session->ssh_session != NULL && session->next == NULL && session->prev == NULL) {
 			/* close and free only if there is no other session using it */
 			libssh2_session_disconnect(session->ssh_session, nc_session_term_string(reason));
@@ -1150,6 +1196,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 		}
 		session->libssh2_socket = -1;
 #endif
+
 		/* also destroy shared mutexes */
 		if (session->mut_libssh2_channels != NULL) {
 			pthread_mutex_destroy(session->mut_libssh2_channels);
@@ -1306,7 +1353,14 @@ int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	struct pollfd fds;
 	int ret;
 
-	if ((session->ssh_channel == NULL) && (session->fd_output == -1)) {
+	if ((session->fd_output == -1)
+#ifndef DISABLE_LIBSSH
+			&& (session->ssh_channel == NULL)
+#endif
+#ifdef ENABLE_TLS
+			&& (session->tls == NULL)
+#endif
+		) {
 		return (EXIT_FAILURE);
 	}
 
@@ -1431,6 +1485,9 @@ static int nc_session_read_len (struct nc_session* session, size_t chunk_length,
 	char *buf;
 	ssize_t c;
 	size_t rd = 0;
+#ifdef ENABLE_TLS
+	int r;
+#endif
 
 	/* check if we can work with the session */
 	if (session->status != NC_SESSION_STATUS_WORKING &&
@@ -1471,6 +1528,24 @@ static int nc_session_read_len (struct nc_session* session, size_t chunk_length,
 				}
 				usleep (NC_READ_SLEEP);
 				continue;
+			}
+		} else
+#endif
+#ifdef ENABLE_TLS
+		if (session->tls) {
+			/* read via OpenSSL */
+			c = SSL_read(session->tls, &(buf[rd]), chunk_length - rd);
+			if (c < 0 && (r = SSL_get_error(session->tls, c))) {
+				if (r == SSL_ERROR_WANT_READ) {
+					usleep(NC_READ_SLEEP);
+					continue;
+				} else {
+					ERROR("Reading from the TLS session failed (%d: %s)", r);
+					free (buf);
+					*len = 0;
+					*text = NULL;
+					return (EXIT_FAILURE);
+				}
 			}
 		} else
 #endif
@@ -1517,6 +1592,9 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 	ssize_t c;
 	char *buf = NULL;
 	size_t buflen = 0;
+#ifdef ENABLE_TLS
+	int r;
+#endif
 
 	/* check if we can work with the session */
 	if (session->status != NC_SESSION_STATUS_WORKING &&
@@ -1574,6 +1652,24 @@ static int nc_session_read_until (struct nc_session* session, const char* endtag
 				}
 				usleep (NC_READ_SLEEP);
 				continue;
+			}
+		} else
+#endif
+#ifdef ENABLE_TLS
+		if (session->tls) {
+			/* read via OpenSSL */
+			c = SSL_read(session->tls, &(buf[rd]), 1);
+			if (c < 0 && (r = SSL_get_error(session->tls, c))) {
+				if (r == SSL_ERROR_WANT_READ) {
+					usleep(NC_READ_SLEEP);
+					continue;
+				} else {
+					ERROR("Reading from the TLS session failed (%d)", r);
+					free (buf);
+					*len = 0;
+					*text = NULL;
+					return (EXIT_FAILURE);
+				}
 			}
 		} else
 #endif
@@ -1730,17 +1826,8 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 
 	/* use while for possibility of repeating test */
 	while(1) {
-		if (session->ssh_channel == NULL && session->fd_input != -1) {
-			/* we are getting data from standard file descriptor */
-			fds.fd = session->fd_input;
-			fds.events = POLLIN;
-			fds.revents = 0;
-			status = poll(&fds, 1, timeout);
-
-			revents = (unsigned long int) fds.revents;
-		}
 #ifndef DISABLE_LIBSSH
-		else if (session->ssh_channel != NULL) {
+		if (session->ssh_channel != NULL) {
 			/* we are getting data from libssh's channel */
 			fds_ssh.type = LIBSSH2_POLLFD_CHANNEL;
 			fds_ssh.fd.channel = session->ssh_channel;
@@ -1760,8 +1847,31 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 			status = libssh2_poll(&fds_ssh, 1, timeout);
 
 			revents = fds_ssh.revents;
-		}
+		} else
 #endif
+#ifdef ENABLE_TLS
+		if (session->tls != NULL) {
+			/* we are getting data from TLS session using OpenSSL */
+			fds.fd = nc_session_get_eventfd(session);
+			fds.events = POLLIN;
+			fds.revents = 0;
+			status = poll(&fds, 1, timeout);
+
+			revents = (unsigned long int) fds.revents;
+		} else
+#endif
+		if (session->fd_input != -1) {
+			/* we are getting data from standard file descriptor */
+			fds.fd = session->fd_input;
+			fds.events = POLLIN;
+			fds.revents = 0;
+			status = poll(&fds, 1, timeout);
+
+			revents = (unsigned long int) fds.revents;
+		} else {
+			ERROR("Invalid session to receive data.");
+			return (NC_MSG_UNKNOWN);
+		}
 
 		/* process the result */
 		if (status == 0) {

@@ -95,7 +95,7 @@ SRCS =  src/callbacks.c \
 	src/messages.c \
 	src/session.c \
 	src/transport.c \
-	src/ssh.c \
+	@SRCS_TRANSPORT@ \
 	@SRCS_NOTIFICATIONS@ \
 	src/with_defaults.c \
 	@SRCS_URL@ \
@@ -147,7 +147,7 @@ HDRS_PRIV = src/config.h.in \
 	src/netconf_internal.h \
 	src/session.h \
 	src/transport.h \
-	src/ssh.h \
+	@HDRS_PRIV_TRANSPORT@ \
 	src/reverse_ssh.h \
 	@HDRS_PRIV_NOTIFICATIONS@ \
 	src/with_defaults.h \

@@ -60,11 +60,15 @@
 #include <libxml/tree.h>
 
 #include "netconf_internal.h"
+#include "session.h"
+#include "messages_internal.h"
 #include "transport.h"
 #include "reverse_ssh.h"
 #include "ssh.h"
-#include "session.h"
-#include "messages_internal.h"
+
+#ifdef ENABLE_TLS
+#	include "tls.h"
+#endif
 
 #ifndef DISABLE_URL
 #	include "url_internal.h"
@@ -83,6 +87,66 @@ char **get_schemas_capabilities(void);
 
 extern struct nc_shared_info *nc_info;
 extern char* server_capabilities; /* from datastore, only for server side */
+
+NC_TRANSPORT transport_proto = NC_TRANSPORT_SSH;
+
+int nc_session_transport(NC_TRANSPORT proto)
+{
+#ifndef ENABLE_TLS
+	if (proto == NC_TRANSPORT_TLS) {
+		ERROR("NETCONF over TLS is not supported, recompile libnetconf with --enable-tls option");
+		return (EXIT_FAILURE);
+	}
+#endif
+	transport_proto = proto;
+
+	return (EXIT_SUCCESS);
+}
+
+int transport_connect_socket(const char* username, const char* host, const char* port)
+{
+	int sock = -1;
+	int i;
+	struct addrinfo hints, *res_list, *res;
+
+	/* Connect to a server */
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	i = getaddrinfo(host, port, &hints, &res_list);
+	if (i != 0) {
+		ERROR("Unable to translate the host address (%s).", gai_strerror(i));
+		return (-1);
+	}
+
+	for (i = 0, res = res_list; res != NULL; res = res->ai_next) {
+		sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (sock == -1) {
+			/* socket was not created, try another resource */
+			i = errno;
+			continue;
+		}
+
+		if (connect(sock, res->ai_addr, res->ai_addrlen) == -1) {
+			/* network connection failed, try another resource */
+			i = errno;
+			close(sock);
+			sock = -1;
+			continue;
+		}
+
+		/* we're done, network connection established */
+		break;
+	}
+	freeaddrinfo(res_list);
+
+	if (sock == -1) {
+		ERROR("Unable to connect to the server (%s).", strerror(i));
+	}
+
+	return (sock);
+}
 
 static char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 {
@@ -388,11 +452,16 @@ struct nc_session* nc_session_connect(const char *host, unsigned short port, con
 		return (NULL);
 	}
 
-#ifdef DISABLE_LIBSSH
-	retval = nc_session_connect_openssh(username, host, port_s);
-#else
-	retval = nc_session_connect_libssh2(username, host, port_s);
-#endif /* not DISABLE_LIBSSH */
+#ifdef ENABLE_TLS
+	if (transport_proto == NC_TRANSPORT_TLS) {
+		retval = nc_session_connect_tls(username, host, port_s);
+	} else {
+		retval = nc_session_connect_ssh(username, host, port_s);
+	}
+#else  /* not ENABLE_TLS */
+	retval = nc_session_connect_ssh(username, host, port_s);
+#endif /* not ENABLE_TLS */
+
 	if (retval == NULL) {
 		return (NULL);
 	}
@@ -440,7 +509,21 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 	struct nc_session *retval, *session_aux;
 	struct nc_cpblts *client_cpblts = NULL;
 
+#ifdef ENABLE_TLS
+	if (session == NULL || session->is_server || session->tls) {
+		/* we cannot open SSH channel in TLS connection */
+#else /* not ENABLE_TLS */
+	if (session == NULL || session->is_server) {
+#endif
+		/* we can open channel only for client-side, no-dummy sessions */
+		ERROR("Invalid session for opening another channel");
+		return (NULL);
+	}
+
 	retval = nc_session_connect_libssh2_channel(session);
+	if (retval == NULL) {
+		return (NULL);
+	}
 
 	if (cpblts == NULL) {
 		if ((client_cpblts = nc_session_get_cpblts_default()) == NULL) {
@@ -946,7 +1029,18 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 		/* wtf?!? */
 	}
 
+#ifdef ENABLE_TLS
+	/* we can choose from transport protocol according to nc_session_transport() */
+	if (transport_proto == NC_TRANSPORT_TLS) {
+		retval = nc_session_connect_tls_socket(username, host, sock);
+	} else {
+		retval = nc_session_connect_libssh2_socket(username, host, sock);
+	}
+#else /* not ENABLE_TLS */
+	/* we have to use the only transport implementation - SSH */
 	retval = nc_session_connect_libssh2_socket(username, host, sock);
+#endif /* not ENABLE_TLS */
+
 	if (retval != NULL) {
 		retval->hostname = strdup(host);
 		retval->port = strdup(port);

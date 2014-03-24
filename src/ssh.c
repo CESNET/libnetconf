@@ -618,48 +618,19 @@ shutdown:
 	return (NULL);
 }
 
-struct nc_session *nc_session_connect_libssh2(const char* username, const char* host, const char* port)
+/* definition in transport.c */
+int transport_connect_socket(const char* username, const char* host, const char* port);
+
+/*
+ * libssh2 variant - use internal SSH client implementation using libssh2
+ */
+struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port)
 {
 	struct nc_session *retval = NULL;
-	int i;
 	int sock = -1;
-	struct addrinfo hints, *res_list, *res;
 
-
-	/* Connect to SSH server */
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	i = getaddrinfo(host, port, &hints, &res_list);
-	if (i != 0) {
-		ERROR("Unable to translate the host address (%s).", gai_strerror(i));
-		return (NULL);
-	}
-
-	for (i = 0, res = res_list; res != NULL; res = res->ai_next) {
-		sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-		if (sock == -1) {
-			/* socket was not created, try another resource */
-			i = errno;
-			continue;
-		}
-
-		if (connect(sock, res->ai_addr, res->ai_addrlen) == -1) {
-			/* network connection failed, try another resource */
-			i = errno;
-			close(sock);
-			sock = -1;
-			continue;
-		}
-
-		/* we're done, network connection established */
-		break;
-	}
-	freeaddrinfo(res_list);
-
+	sock = transport_connect_socket(username, host, port);
 	if (sock == -1) {
-		ERROR("Unable to connect to the server (%s).", strerror(i));
 		return (NULL);
 	}
 
@@ -669,7 +640,6 @@ struct nc_session *nc_session_connect_libssh2(const char* username, const char* 
 		retval->port = strdup(port);
 	} else {
 		close(sock);
-		sock = -1;
 	}
 
 	return (retval);
@@ -681,12 +651,6 @@ struct nc_session *nc_session_connect_libssh2_channel(struct nc_session *session
 	pthread_mutexattr_t mattr;
 	char* err_msg;
 	int r;
-
-	if (session == NULL || session->is_server) {
-		/* we can open channel only for client-side, no-dummy sessions */
-		ERROR("Invalid session for opening another channel");
-		return (NULL);
-	}
 
 	/* allocate netconf session structure */
 	retval = malloc(sizeof(struct nc_session));
@@ -913,7 +877,10 @@ malformed_msg:
 	return (NULL);
 }
 
-struct nc_session *nc_session_connect_openssh(const char* username, const char* host, const char* port)
+/*
+ * OpenSSH variant - use a standalone ssh client from OpenSSH
+ */
+struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port)
 {
 	struct nc_session *retval = NULL;
 	struct passwd *pw;

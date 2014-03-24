@@ -1,7 +1,7 @@
 /**
- * \file ssh.h
+ * \file tls.h
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief Functions implementing NETCONF over SSH transport.
+ * \brief Functions implementing NETCONF over TLS transport.
  *
  * Copyright (c) 2012-2014 CESNET, z.s.p.o.
  *
@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef SSH_H_
-#define SSH_H_
+#ifndef TLS_H_
+#define TLS_H_
 
 #include "netconf.h"
 
@@ -46,23 +46,12 @@
 extern "C" {
 #endif
 
+struct nc_session *nc_session_connect_tls(const char* username, const char* host, const char* port);
 
-struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port);
-
-#ifndef DISABLE_LIBSSH
-
-struct nc_session *nc_session_connect_libssh2_socket(const char* username, const char* host, int sock);
-
-struct nc_session *nc_session_connect_libssh2_channel(struct nc_session *session);
-
-#else /* DISABLE_LIBSSH */
-
-struct nc_msg* read_hello_openssh(struct nc_session *session);
-
-#endif /* DISABLE_LIBSSH */
+struct nc_session *nc_session_connect_tls_socket(const char* username, const char* host, int sock);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SSH_H_ */
+#endif /* TLS_H_ */
