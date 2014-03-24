@@ -3253,16 +3253,9 @@ int ncds_consolidate(void)
 		ncds_update_refine(ds_iter->datastore);
 	}
 
-	char* dump;
 	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
 		/* remove disabled feature subtrees */
 		ncds_update_features(ds_iter->datastore);
-
-		if (ds_iter->datastore->id > 10) {
-			dump = ncds_get_model(ds_iter->datastore->id, 0);
-			fprintf(stdout, "dump c3:\n%s\n\n", dump);
-			free(dump);
-		}
 	}
 
 	/* parse models to get aux structure for TransAPI's internal purposes */
