@@ -262,6 +262,7 @@ struct nc_session *nc_session_accept_tls(const struct nc_cpblts* capabilities, X
 	int len;
 
 	if (cert == NULL) {
+#ifdef ENABLE_TLS_CN
 		/* try to get information from environment variable */
 		subj = getenv("SSL_CLIENT_DN");
 		if (!subj) {
@@ -285,6 +286,10 @@ struct nc_session *nc_session_accept_tls(const struct nc_cpblts* capabilities, X
 			strncpy(common_name, cn, 256);
 			common_name[255] = '\0';
 		}
+#else /* not ENABLE_TLS_CN */
+		ERROR("%s: Missing X509 client certificate, unable to get username");
+		return (NULL);
+#endif /* not ENABLE_TLS_CN */
 	} else {
 		/* get username from certificate directly */
 		X509_NAME_get_text_by_NID(X509_get_subject_name(cert), NID_commonName, common_name, 256);

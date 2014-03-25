@@ -137,6 +137,13 @@ AC_ARG_ENABLE([tls],
 	fi
 )	
 
+AC_ARG_ENABLE([tls],
+	AC_HELP_STRING([--enable-tls-cn], [Allow extracting username from CN in all client certificates. For more info, see documentation of nc_session_accept_tls().]),
+	if test "$enableval" = "yes"; then
+		CPPFLAGS="$CPPFLAGS -DENABLE_TLS_CN"
+	fi
+)
+
 AC_ARG_ENABLE([yang-schemas],
 	AC_HELP_STRING([--disable-yang-schemas], [Disable support for YANG format in <get-schema> operation.]),
 	[
