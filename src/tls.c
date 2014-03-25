@@ -57,11 +57,11 @@
 /* global SSL context */
 SSL_CTX *ssl_ctx = NULL;
 
-int tls_init(void)
+int nc_tls_init()
 {
 	if (ssl_ctx) {
-		ERROR("TLS subsystem already initiated.");
-		return (EXIT_FAILURE);
+		VERB("TLS subsystem already initiated.");
+		return (EXIT_SUCCESS);
 	}
 
 	/* init OpenSSL */
@@ -83,6 +83,40 @@ int tls_init(void)
 	return (EXIT_SUCCESS);
 }
 
+int nc_tls_cert(const char* cert, const char* key)
+{
+	const char* key_ = key;
+
+	if (!ssl_ctx && nc_tls_init() != EXIT_SUCCESS) {
+		return (EXIT_FAILURE);
+	}
+
+	if (cert == NULL) {
+		ERROR("%s: Invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	/* get peer certificate */
+	if (SSL_CTX_use_certificate_file(ssl_ctx, cert, SSL_FILETYPE_PEM) != 1) {
+		ERROR("Loading a peer certificate from \'%s\' failed (%s).", cert, ERR_reason_error_string(ERR_get_error()));
+		return (EXIT_FAILURE);
+	}
+
+	if (key_ == NULL) {
+		/*
+		 * if the file with private key not specified, expect that the private
+		 * key is stored altogether with the certificate
+		 */
+		key_ = cert;
+	}
+	if (SSL_CTX_use_PrivateKey_file(ssl_ctx, key_, SSL_FILETYPE_PEM) != 1) {
+		ERROR("Loading a peer certificate from \'%s\' failed (%s).", key_, ERR_reason_error_string(ERR_get_error()));
+		return (EXIT_FAILURE);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
 struct nc_session *nc_session_connect_tls_socket(const char* username, const char* host, int sock)
 {
 	struct nc_session *retval;
@@ -91,9 +125,8 @@ struct nc_session *nc_session_connect_tls_socket(const char* username, const cha
 	int verify, r;
 
 	if (ssl_ctx == NULL) {
-		if (tls_init() != EXIT_SUCCESS) {
-			return (NULL);
-		}
+		ERROR("TLS subsystem not initiated.");
+		return (NULL);
 	}
 
 	/* get current user if username not explicitely specified */
@@ -216,4 +249,47 @@ struct nc_session *nc_session_connect_tls(const char* username, const char* host
 	}
 
 	return (retval);
+}
+
+/* from transport.c */
+struct nc_session *nc_session_accept_generic(const struct nc_cpblts* capabilities, const char* username);
+
+struct nc_session *nc_session_accept_tls(const struct nc_cpblts* capabilities, X509 *cert)
+{
+	char common_name[256];
+	char *subj;
+	char *cn, *aux;
+	int len;
+
+	if (cert == NULL) {
+		/* try to get information from environment variable */
+		subj = getenv("SSL_CLIENT_DN");
+		if (!subj) {
+			/* we are not able to get correct username */
+			ERROR("Missing \'SSL_CLIENT_DN\' enviornment variable, unable to get username.");
+			return (NULL);
+		}
+		/* parse subject to get CN */
+		cn = strstr(subj, "CN=");
+		if (!cn) {
+			ERROR("Client certificate does not include commonName, unable to get username.");
+			return (NULL);
+		}
+		cn = cn + 3;
+		aux = strchr(cn, '/');
+		if (aux != NULL) {
+			len = aux - cn;
+			strncpy(common_name, cn, len);
+			common_name[len] = '\0';
+		} else {
+			strncpy(common_name, cn, 256);
+			common_name[255] = '\0';
+		}
+	} else {
+		/* get username from certificate directly */
+		X509_NAME_get_text_by_NID(X509_get_subject_name(cert), NID_commonName, common_name, 256);
+		common_name[255] = '\0';
+	}
+
+	return (nc_session_accept_generic(capabilities, common_name));
 }

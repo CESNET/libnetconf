@@ -111,6 +111,7 @@ SRCS =  src/callbacks.c \
 
 HDRS_PUBL_ROOT = headers/libnetconf.h \
 		 headers/libnetconf_ssh.h \
+		 @HDRS_PUBL_TLS@ \
 		 headers/libnetconf_xml.h
 
 HDRS_PUBL_SUBDIR = src/netconf.h \
@@ -137,6 +138,7 @@ HDRS_PRIV = src/config.h.in \
 	src/libnetconf.h \
 	src/libnetconf_xml.h \
 	src/libnetconf_ssh.h \
+	@HDRS_PRIV_TLS@ \
 	src/callbacks.h \
 	src/callbacks_ssh.h \
 	src/error.h \

@@ -643,6 +643,10 @@ HDRS_PUBL_SUBDIR_URL
 INCLUDE_NOTIFICATIONS_XML
 INCLUDE_NOTIFICATIONS
 SRCS_NOTIFICATIONS
+HDRS_PRIV_TRANSPORT
+SRCS_TRANSPORT
+HDRS_PUBL_TLS
+HDRS_PRIV_TLS
 HDRS_PRIV_NOTIFICATIONS
 HDRS_PUBL_SUBDIR_NOTIFICATIONS
 SETGROUP
@@ -664,8 +668,6 @@ PTHREAD_CFLAGS
 PTHREAD_LIBS
 PTHREAD_CC
 ax_pthread_config
-HDRS_PRIV_TRANSPORT
-SRCS_TRANSPORT
 LIBSSH2_SET_TIMEOUT
 LIBSSH2_SESSION_HANDSHAKE
 LIBSSH2_TIMEOUT_LIBS
@@ -12067,7 +12069,7 @@ _ACEOF
   LIBS="-lssl $LIBS"
 
 else
-  as_fn_error $? "" "$LINENO" 5Missing OpenSSL library.
+  as_fn_error $? "Missing OpenSSL library." "$LINENO" 5
 fi
 
 	for ac_header in openssl/bio.h openssl/ssl.h openssl/err.h openssl/pem.h
@@ -12087,9 +12089,9 @@ done
 
 	SRCS_TRANSPORT="$SRCS_TRANSPORT src/tls.c"
 	HDRS_PRIV_TRANSPORT="$HDRS_PRIV_TRANSPORT src/tls.h"
+	HDRS_PRIV_TLS="src/libnetconf_tls.h"
+	HDRS_PUBL_TLS="headers/libnetconf_tls.h"
 fi
-
-
 
 ### pthread ###
 
@@ -13558,6 +13560,10 @@ fi
 
 
 ############################### Set output #####################################
+
+
+
+
 
 
 

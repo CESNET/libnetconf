@@ -68,7 +68,7 @@ typedef enum NC_TRANSPORT {
  * nc_session_connect() calls. By default, transport protocol is set to
  * #NC_TRANSPORT_SSH
  */
-int nc_session_transport(NC_TRANSPORT proto);
+int nc_session_transport(NC_TRANSPORT proto, const char* cert_path);
 
 /**
  * @ingroup session

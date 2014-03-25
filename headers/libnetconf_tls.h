@@ -1,7 +1,7 @@
 /**
- * \file tls.h
+ * \file libnetconf_tls.h
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief Functions implementing NETCONF over TLS transport.
+ * \brief libnetconf's header for control openssl.
  *
  * Copyright (c) 2012-2014 CESNET, z.s.p.o.
  *
@@ -37,23 +37,21 @@
  *
  */
 
-#ifndef TLS_H_
-#define TLS_H_
+#ifndef LIBNETCONF_TLS_H_
+#define LIBNETCONF_TLS_H_
 
-#include "netconf.h"
+#include <libnetconf/netconf.h>
+#include <openssl/x509.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int nc_tls_init();
-
-struct nc_session *nc_session_connect_tls(const char* username, const char* host, const char* port);
-
-struct nc_session *nc_session_connect_tls_socket(const char* username, const char* host, int sock);
+struct nc_session *nc_session_accept_tls(const struct nc_cpblts* capabilities, X509 *cert);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* TLS_H_ */
+#endif /* LIBNETCONF_H_ */
+

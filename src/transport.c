@@ -68,6 +68,8 @@
 
 #ifdef ENABLE_TLS
 #	include "tls.h"
+#	include "openssl/pem.h"
+#	include "openssl/x509.h"
 #endif
 
 #ifndef DISABLE_URL
@@ -90,14 +92,21 @@ extern char* server_capabilities; /* from datastore, only for server side */
 
 NC_TRANSPORT transport_proto = NC_TRANSPORT_SSH;
 
-int nc_session_transport(NC_TRANSPORT proto)
+int nc_session_transport(NC_TRANSPORT proto, const char* cert_path)
 {
 #ifndef ENABLE_TLS
 	if (proto == NC_TRANSPORT_TLS) {
 		ERROR("NETCONF over TLS is not supported, recompile libnetconf with --enable-tls option");
 		return (EXIT_FAILURE);
 	}
+#else
+	if (proto == NC_TRANSPORT_TLS) {
+		if (nc_tls_init() != EXIT_SUCCESS) {
+			return (EXIT_FAILURE);
+		}
+	}
 #endif
+
 	transport_proto = proto;
 
 	return (EXIT_SUCCESS);
@@ -570,7 +579,7 @@ shutdown:
 #endif /* not DISABLE_LIBSSH */
 }
 
-struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
+struct nc_session *nc_session_accept_generic(const struct nc_cpblts* capabilities, const char* username)
 {
 	int r, i;
 	struct nc_session *retval = NULL;
@@ -626,21 +635,11 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	}
 	pthread_mutexattr_destroy(&mattr);
 
-	/*
-	 * get username - we are running as SSH Subsystem which was started
-	 * under the user which was connecting to NETCONF server
-	 */
-	pw = getpwuid(getuid());
-	if (pw == NULL) {
-		/* unable to get correct username */
-		ERROR("Unable to set an username for the SSH connection (%s).", strerror(errno));
-		nc_session_close(retval, NC_SESSION_TERM_OTHER);
-		return (NULL);
-	}
-	retval->username = strdup(pw->pw_name);
+	retval->username = strdup(username);
 	retval->groups = nc_get_grouplist(retval->username);
 	/* detect if user ID is nacm_recovery_uid -> then the session is recovery */
-	if (pw->pw_uid == NACM_RECOVERY_UID) {
+	pw = getpwnam(retval->username);
+	if (pw && pw->pw_uid == NACM_RECOVERY_UID) {
 		retval->nacm_recovery = 1;
 	} else {
 		retval->nacm_recovery = 0;
@@ -795,6 +794,24 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	}
 
 	return (retval);
+}
+
+struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
+{
+	struct passwd *pw;
+
+	/*
+	 * get username - we are running as SSH Subsystem which was started
+	 * under the user which was connecting to NETCONF server
+	 */
+	pw = getpwuid(getuid());
+	if (pw == NULL) {
+		/* unable to get correct username */
+		ERROR("Unable to get username for the NETCONF session (%s).", strerror(errno))
+		return (NULL);
+	}
+
+	return (nc_session_accept_generic(capabilities, pw->pw_name));
 }
 
 /*
