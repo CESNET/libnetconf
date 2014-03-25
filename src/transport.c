@@ -92,7 +92,7 @@ extern char* server_capabilities; /* from datastore, only for server side */
 
 NC_TRANSPORT transport_proto = NC_TRANSPORT_SSH;
 
-int nc_session_transport(NC_TRANSPORT proto, const char* cert_path)
+int nc_session_transport(NC_TRANSPORT proto)
 {
 #ifndef ENABLE_TLS
 	if (proto == NC_TRANSPORT_TLS) {
