@@ -107,6 +107,10 @@ int nc_session_transport(NC_TRANSPORT proto)
 	}
 #endif
 
+	if (proto < 0) {
+		return (EXIT_FAILURE);
+	}
+
 	transport_proto = proto;
 
 	return (EXIT_SUCCESS);
@@ -906,17 +910,38 @@ int nc_callhome_listen_stop(void)
 }
 
 
-int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* sshd_path)
+int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* server_path, char *const argv[])
 {
 	struct nc_mngmt_server *srv_iter;
 	struct addrinfo *addr;
+	void *addr_p;
+	char addr_buf[INET6_ADDRSTRLEN];
+	unsigned short port;
 	int sock, sock6, sock4;
 	int i;
 	int pid = -1;
+	char* const *server_argv;
+	char* const sshd_argv[] = {"/usr/sbin/sshd", "-ddd", "-e", "-i", NULL};
+	char* const stunnel_argv[] = {"/usr/sbin/stunnel", NULL};
 
-	if (sshd_path == NULL) {
-		sshd_path = "/usr/sbin/sshd";
+	if (server_path == NULL) {
+		switch(transport_proto) {
+		case NC_TRANSPORT_SSH:
+			server_path = "/usr/sbin/sshd";
+			server_argv = sshd_argv;
+			break;
+		case NC_TRANSPORT_TLS:
+			server_path = "/usr/sbin/stunnel";
+			server_argv = stunnel_argv;
+			break;
+		default:
+			ERROR("%s: Unknown transport protocol (%d)", __func__, transport_proto);
+			return (-1);
+		}
+	} else {
+		server_argv = argv;
 	}
+	VERB("Call home using \'%s\' server.", server_path);
 
 	/* prepare a socket */
 	if ((sock4 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
@@ -941,6 +966,8 @@ int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_sec
 					continue;
 				} else {
 					sock = sock4;
+					addr_p = &(((struct sockaddr_in *)addr->ai_addr)->sin_addr);
+					port = ntohs(((struct sockaddr_in *)addr->ai_addr)->sin_port);
 				}
 				break;
 			case AF_INET6:
@@ -948,6 +975,8 @@ int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_sec
 					continue;
 				} else {
 					sock = sock6;
+					addr_p = &(((struct sockaddr_in6 *)addr->ai_addr)->sin6_addr);
+					port = ntohs(((struct sockaddr_in6 *)addr->ai_addr)->sin6_port);
 				}
 				break;
 			default:
@@ -955,12 +984,13 @@ int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_sec
 			}
 
 			for (i = 0; i < reconnect_count; i++) {
+				inet_ntop(addr->ai_family, addr_p, addr_buf, INET6_ADDRSTRLEN);
 				if (connect(sock, addr->ai_addr, addr->ai_addrlen) == -1) {
-					WARN("Connecting to %s failed (%s)", addr->ai_canonname, strerror(errno));
+					WARN("Connecting to %s:%u failed (%s)", addr_p, port, strerror(errno));
 					sleep(reconnect_secs);
 					continue;
 				}
-				VERB("Connected to %s.", addr->ai_canonname);
+				VERB("Connected to %s:%u.", addr_buf, port);
 				/* close unused socket */
 				if (sock == sock4) {
 					close(sock6);
@@ -979,24 +1009,24 @@ int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_sec
 	return(-1);
 
 connected:
-	/* execute sshd */
+	/* execute a transport protocol server */
 	pid = fork();
 	if (pid == -1) {
-		ERROR("Forking process for SSH server failed (%s)", strerror(errno));
+		ERROR("Forking process for a transport server failed (%s)", strerror(errno));
 		close(sock);
 	} else if (pid == 0) {
 		/* child (future sshd) process */
-		int log = open("/tmp/reversessh.log", O_RDWR | O_CREAT, 0666);
+		int log = open("/tmp/netconf_callhome.log", O_RDWR | O_CREAT, 0666);
 		/* redirect stdin/stdout to the communication socket */
 		dup2(sock, STDIN_FILENO);
 		dup2(sock, STDOUT_FILENO);
 		dup2(log, STDERR_FILENO);
 
 		/* start the sshd */
-		execl(sshd_path, sshd_path, "-ddd", "-e", "-i", NULL);
+		execv(server_path, server_argv);
 
 		/* you never should be here! */
-		ERROR("Executing SSH daemon (%s) failed (%s).", sshd_path, strerror(errno));
+		ERROR("Executing transport server (%s) failed (%s).", server_path, strerror(errno));
 		exit(1);
 	} else {
 		/* parent (current app) */
@@ -1008,10 +1038,6 @@ connected:
 
 struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpblts* cpblts)
 {
-#ifdef DISABLE_LIBSSH
-	ERROR("%s: call home is provided only with libssh2.", __func__);
-	return (NULL);
-#else
 	struct nc_session* retval;
 	struct nc_cpblts *client_cpblts;
 	int sock;
@@ -1019,6 +1045,18 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 	socklen_t addr_size = sizeof(remote);
 	char port[SHORT_INT_LENGTH];
 	char host[INET6_ADDRSTRLEN];
+
+	if (transport_proto == NC_TRANSPORT_SSH) {
+#ifdef DISABLE_LIBSSH
+	ERROR("%s: call home via SSH is provided only without --disable-libssh2 option.", __func__);
+	return (NULL);
+#else
+	} else {
+#ifndef ENABLE_TLS
+		ERROR("%s: call home via TLS is provided only with --enable-tls option.", __func__);
+		return (NULL);
+#endif
+	}
 
 	if (reverse_listen_socket == -1) {
 		ERROR("No listening socket, use nc_session_reverse_listen() first.");

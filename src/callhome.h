@@ -182,12 +182,18 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
  * single server before moving on to the next server in the host_list. See
  * /netconf/ssh/call-home/applications/application/reconnect-strategy/count-max
  * value in ietf-netconf-server YANG data model.
- * @param sshd_path Optional parameter to specify path to the OpenSSH server.
- * If not specified, default path '/usr/sbin/sshd' is used if parameter is NULL.
+ * @param server_path Optional parameter to specify path to the transport server.
+ * If not specified, the function get transport protocol according to value
+ * set by nc_session_transport() (default value is SSH transport). For the
+ * NC_TRANSPORT_SSH the '/usr/sbin/sshd' path is used (OpenSSH server), in case
+ * of NC_TRANSPORT_TLS the '/usr/sbin/stunnel' path is used (OpenSSL server).
+ * @param argv List of arguments to be used by execv() when starting the server
+ * specified in server_path parameter. If server_path not specified (NULL), argv
+ * is ignored.
  * @return -1 on error. In case of success, function forks the current process
  * running SSH daemon and returns its PID.
  */
-int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* sshd_path);
+int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* server_path, char *const argv[]);
 
 #ifdef __cplusplus
 }
