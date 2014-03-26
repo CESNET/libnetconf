@@ -151,6 +151,14 @@ const char* nc_session_get_user(const struct nc_session* session);
 
 /**
  * @ingroup session
+ * @brief Get transport protocol used for the NETCONF session
+ * @param[in] session NETCONF session structure
+ * @return one of NC_TRANSPORT enumeration values.
+ */
+NC_TRANSPORT nc_session_get_transport(const struct nc_session* session);
+
+/**
+ * @ingroup session
  * @brief Tell me if the notification subscription is allowed on the given session.
  * @param[in] session NETCONF session structure
  * @return 0 if not, 1 if subscription is currently allowed.

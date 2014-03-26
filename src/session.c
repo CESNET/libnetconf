@@ -71,6 +71,7 @@
 #include "session.h"
 #include "datastore.h"
 #include "nacm.h"
+#include "transport.h"
 
 #ifdef ENABLE_TLS
 # 	include "openssl/ssl.h"
@@ -634,6 +635,25 @@ const char* nc_session_get_user(const struct nc_session* session)
 		return (NULL);
 	}
 	return (session->username);
+}
+
+NC_TRANSPORT nc_session_get_transport(const struct nc_session* session)
+{
+	if (session == NULL) {
+		return (NC_TRANSPORT_UNKNOWN);
+	}
+
+	if (session->libssh2_socket != -1) {
+		return (NC_TRANSPORT_SSH);
+	}
+
+#ifdef ENABLE_TLS
+	if (session->tls != NULL) {
+		return (NC_TRANSPORT_TLS);
+	}
+#endif
+
+	return (NC_TRANSPORT_UNKNOWN);
 }
 
 int nc_session_get_version (const struct nc_session *session)

@@ -58,6 +58,7 @@ extern "C" {
  * This setting is valuable only for client side NETCONF applications.
  */
 typedef enum NC_TRANSPORT {
+	NC_TRANSPORT_UNKNOWN = -1, /**< Unknown transport protocol, this is not acceptable as input value */
 	NC_TRANSPORT_SSH, /**< NETCONF over SSH, this value is used by default */
 	NC_TRANSPORT_TLS /**< NETCONF over TLS */
 } NC_TRANSPORT;
