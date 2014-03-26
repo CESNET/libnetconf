@@ -187,7 +187,7 @@ struct nc_session *nc_session_connect_tls_socket(const char* username, const cha
 	}
 
 	/* fill session structure */
-	retval->libssh2_socket = sock;
+	retval->libssh2_socket = -1;
 	retval->fd_input = -1;
 	retval->fd_output = -1;
 	retval->username = strdup(username);
