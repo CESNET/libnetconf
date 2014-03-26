@@ -40,8 +40,11 @@
 #ifndef LIBNETCONF_TLS_H_
 #define LIBNETCONF_TLS_H_
 
-#include <netconf.h>
 #include <openssl/x509.h>
+
+#include "netconf.h"
+#include "transport.h"
+#include "callhome.h"
 
 #ifdef __cplusplus
 extern "C" {

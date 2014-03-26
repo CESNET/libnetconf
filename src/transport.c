@@ -63,7 +63,7 @@
 #include "session.h"
 #include "messages_internal.h"
 #include "transport.h"
-#include "reverse_ssh.h"
+#include "callhome.h"
 #include "ssh.h"
 
 #ifdef ENABLE_TLS

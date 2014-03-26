@@ -122,7 +122,7 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/messages.h \
 	src/messages_xml.h \
 	src/transport.h \
-	src/reverse_ssh.h \
+	src/callhome.h \
 	@HDRS_PUBL_SUBDIR_NOTIFICATIONS@ \
 	src/with_defaults.h \
 	@HDRS_PUBL_SUBDIR_URL@ \
@@ -150,7 +150,7 @@ HDRS_PRIV = src/config.h.in \
 	src/session.h \
 	src/transport.h \
 	@HDRS_PRIV_TRANSPORT@ \
-	src/reverse_ssh.h \
+	src/callhome.h \
 	@HDRS_PRIV_NOTIFICATIONS@ \
 	src/with_defaults.h \
 	@HDRS_PRIV_URL@ \

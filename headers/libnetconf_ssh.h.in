@@ -43,7 +43,8 @@
 @LIBSSH2_DIRECTIVE@
 
 #include "libnetconf/callbacks_ssh.h"
-#include "libnetconf/reverse_ssh.h"
+#include "libnetconf/transport.h"
+#include "libnetconf/callhome.h"
 
 #ifdef __cplusplus
 extern "C" {

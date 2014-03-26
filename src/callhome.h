@@ -1,7 +1,7 @@
 /**
- * \file reverse_ssh.h
+ * \file callhome.h
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief Functions to connect NETCONF server to a NETCONF client (Reverse SSH).
+ * \brief Functions to connect NETCONF server to a NETCONF client (Call Home).
  *
  * Copyright (c) 2012-2014 CESNET, z.s.p.o.
  *
@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef REVERSE_SSH_H_
-#define REVERSE_SSH_H_
+#ifndef CALLHOME_H_
+#define CALLHOME_H_
 
 #include <stdint.h>
 
@@ -53,8 +53,8 @@ extern "C" {
  * @brief Structure describing a management server where the NETCONF server connects to.
  *
  * The structure is public, but, except moving inside the list to specify the
- * server which should be used as first one in nc_session_reverse_connect(),
- * it is HIGHLY recommended to use nc_session_reverse_mngmt_server_*() functions
+ * server which should be used as first one in nc_callhome_connect(),
+ * it is HIGHLY recommended to use nc_callhome_mngmt_server_*() functions
  * to manipulate with the management servers list.
  */
 struct nc_mngmt_server {
@@ -66,7 +66,8 @@ struct nc_mngmt_server {
  * @ingroup callhome
  * @brief Add a new management server specification to the end of a list.
  *
- * To make this function available, you have to include libnetconf_ssh.h.
+ * To make this function available, you have to include libnetconf_ssh.h or
+ * libnetconf_tls.h.
  *
  * @param[in] list Current list where the server description will be added. If
  * NULL, a new list is created and returned by the function.
@@ -85,12 +86,13 @@ struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* lis
  * @ingroup callhome
  * @brief Remove the specified management server description from the list.
  *
- * To make this function available, you have to include libnetconf_ssh.h.
+ * To make this function available, you have to include libnetconf_ssh.h or
+ * libnetconf_tls.h.
  *
  * @param[in,out] list Management servers list to be modified.
  * @param[in,out] remove Management server to be removed from the given list.
- * The structure itself is not freed, use nc_session_reverse_mngmt_server_free()
- * to free it after calling nc_session_reverse_mngmt_server_rm().
+ * The structure itself is not freed, use nc_callhome_mngmt_server_free()
+ * to free it after calling nc_callhome_mngmt_server_rm().
  * @return EXIT_SUCCESS or EXIT_FAILURE.
  */
 int nc_callhome_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_server* remove);
@@ -101,7 +103,8 @@ int nc_callhome_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_se
  * free only the item refered by given pointer, but the complete list of
  * management servers is freed.
  *
- * To make this function available, you have to include libnetconf_ssh.h.
+ * To make this function available, you have to include libnetconf_ssh.h or
+ * libnetconf_tls.h.
  *
  * @param[in] list List of management servers to be freed.
  * @return EXIT_SUCCESS or EXIT_FAILURE.
@@ -112,10 +115,10 @@ int nc_callhome_mngmt_server_free(struct nc_mngmt_server* list);
 
 /**
  * @ingroup callhome
- * @brief Start listening on client side for incoming Reverse SSH connection.
+ * @brief Start listening on client side for incoming Call Home connection.
  *
- * This function is not available with configure's --disable-libssh2 option.
- * To make this function available, you have to include libnetconf_ssh.h.
+ * To make this function available, you have to include libnetconf_ssh.h or
+ * libnetconf_tls.h.
  *
  * @param[in] port Port number where to listen.
  * @return EXIT_SUCCESS or EXIT_FAILURE on error.
@@ -124,10 +127,10 @@ int nc_callhome_listen(unsigned int port);
 
 /**
  * @ingroup callhome
- * @brief Stop listening on client side for incoming Reverse SSH connection.
+ * @brief Stop listening on client side for incoming Call Home connection.
  *
- * This function is not available with configure's --disable-libssh2 option.
- * To make this function available, you have to include libnetconf_ssh.h.
+ * To make this function available, you have to include libnetconf_ssh.h or
+ * libnetconf_tls.h.
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE if libnetconf is not listening.
  */
@@ -135,10 +138,15 @@ int nc_callhome_listen_stop(void);
 
 /**
  * @ingroup callhome
- * @brief Accept incoming Reverse SSH connection and create NETCONF session on it.
+ * @brief Accept incoming Call Home connection and create NETCONF session on it.
  *
- * This function is not available with configure's --disable-libssh2 option.
- * To make this function available, you have to include libnetconf_ssh.h.
+ * This function uses transport protocol set by nc_session_transport(). If
+ * NC_TRANSPORT_SSH (default value) is set, configure's --disable-libssh2 option
+ * cannot be used. If NC_TRANSPORT_TLS is set, configure's --enable-tls must be
+ * used
+ *
+ * To make this function available, you have to include libnetconf_ssh.h or
+ * libnetconf_tls.h.
  *
  * @param[in] username Name of the user to login to the server. The user running the
  * application (detected from the effective UID) is used if NULL is specified.
@@ -155,9 +163,13 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 /**
  * @ingroup callhome
  * @brief Connect NETCONF server to a management center (NETCONF client) using
- * Reverse SSH mechanism
+ * Call Home mechanism
  *
- * To make this function available, you have to include libnetconf_ssh.h.
+ * Use nc_session_transport() function to specify which transport protocol
+ * should be used.
+ *
+ * To make this function available, you have to include libnetconf_ssh.h or
+ * libnetconf_tls.h.
  *
  * @param[in] host_list List of management servers descriptions where the
  * function will try to connect to. The list can be (is expected to be) ring
@@ -181,4 +193,4 @@ int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_sec
 }
 #endif
 
-#endif /* REVERSE_SSH_H_ */
+#endif /* CALLHOME_H_ */

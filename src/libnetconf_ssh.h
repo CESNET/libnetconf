@@ -41,7 +41,8 @@
 #define LIBNETCONF_SSH_H_
 
 #include "callbacks_ssh.h"
-#include "reverse_ssh.h"
+#include "transport.h"
+#include "callhome.h"
 
 #ifdef __cplusplus
 extern "C" {
