@@ -823,16 +823,17 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
  * CALL HOME PART
  */
 /* 0 is IPv4, 1 is IPv6 */
-static struct pollfd reverse_listen_socket[1] = {{-1, POLLIN, 0}};
+static struct pollfd reverse_listen_socket[2] = {{-1, POLLIN, 0}, {-1, POLLIN, 0}};
 
-static int get_listening_socket(const char* port)
+static int get_socket(const char* port, int family)
 {
 	struct addrinfo hints, *res_list, *res;
 	int sock = -1;
-	int i = 1;;
+	int i = 1;
+	int optval;
 
 	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_INET6;
+	hints.ai_family = family;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_flags = AI_PASSIVE;
@@ -844,9 +845,6 @@ static int get_listening_socket(const char* port)
 	}
 
 	for (i = 1, res = res_list; res != NULL; res = res->ai_next) {
-		/* bind to all addresses, including the IPv4s */
-		((struct sockaddr_in6*)(res->ai_addr))->sin6_addr = in6addr_any;
-
 		sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 		if (sock == -1) {
 			/* socket was not created, try another resource */
@@ -854,20 +852,22 @@ static int get_listening_socket(const char* port)
 			continue;
 		}
 
+		/* allow both IPv4 and IPv6 sockets to listen on the same port */
+		optval = 1;
+		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
+			ERROR("Unable to set SO_REUSEADDR (%s)", strerror(errno));
+		}
+		if (family == AF_INET6 && setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &optval, sizeof(optval)) == -1) {
+			ERROR("Unable to limit IPv6 socket only to IPv6 (IPV6_V6ONLY) (%s)", strerror(errno));
+		}
+
 		if (bind(sock, res->ai_addr, res->ai_addrlen) == -1) {
-			/* binding the port failedd, try another resource */
+			/* binding the port failed, try another resource */
 			i = errno;
 			close(sock);
 			sock = -1;
 			continue;
 		}
-
-	    if (listen(sock, NC_REVERSE_QUEUE) == -1) {
-			i = errno;
-			close(sock);
-			sock = -1;
-			continue;
-	    }
 
 		/* we're done, network connection established */
 		break;
@@ -875,18 +875,33 @@ static int get_listening_socket(const char* port)
 	freeaddrinfo(res_list);
 
 	if (sock == -1) {
-		ERROR("Unable to start listening on port %s (%s).", port, strerror(i));
+		ERROR("Unable to start prepare socket on port %s (%s).", port, strerror(i));
 	} else {
-		VERB("Listening on port %s.", port);
+		VERB("Socket %d on port %s.", sock, port);
 	}
 	return (sock);
+}
+
+static int set_socket_listening(int sock)
+{
+	if (sock == -1) {
+		return (0);
+	}
+
+    if (listen(sock, NC_REVERSE_QUEUE) == -1) {
+		ERROR("Unable to start listening (%s).", strerror(errno));
+		return (-1);
+    }
+
+	VERB("Listening on socket %d.", sock);
+    return (0);
 }
 
 int nc_callhome_listen(unsigned int port)
 {
 	char port_s[SHORT_INT_LENGTH];
 
-	if (reverse_listen_socket[0].fd != -1) {
+	if (reverse_listen_socket[0].fd != -1 || reverse_listen_socket[1].fd != -1) {
 		ERROR("%s: libnetconf is already listening for incoming call home.", __func__);
 		return (EXIT_FAILURE);
 	}
@@ -902,9 +917,18 @@ int nc_callhome_listen(unsigned int port)
 		return (EXIT_FAILURE);
 	}
 
-	reverse_listen_socket[0].fd = get_listening_socket(port_s);
+	reverse_listen_socket[0].fd = get_socket(port_s, AF_INET);
+	reverse_listen_socket[1].fd = get_socket(port_s, AF_INET6);
+	if (set_socket_listening(reverse_listen_socket[0].fd) ||
+			set_socket_listening(reverse_listen_socket[1].fd)) {
+		close(reverse_listen_socket[0].fd);
+		close(reverse_listen_socket[1].fd);
+		reverse_listen_socket[0].fd = -1;
+		reverse_listen_socket[1].fd = -1;
+		return (EXIT_FAILURE);
+	}
 
-	if (reverse_listen_socket[0].fd == -1) {
+	if (reverse_listen_socket[0].fd == -1 && reverse_listen_socket[1].fd == -1) {
 		return (EXIT_FAILURE);
 	}
 
@@ -913,13 +937,15 @@ int nc_callhome_listen(unsigned int port)
 
 int nc_callhome_listen_stop(void)
 {
-	if (reverse_listen_socket[0].fd == -1) {
+	if (reverse_listen_socket[0].fd == -1 && reverse_listen_socket[1].fd == -1) {
 		ERROR("%s: libnetconf is not listening for incoming call home.", __func__);
 		return (EXIT_FAILURE);
 	}
 
 	close(reverse_listen_socket[0].fd);
+	close(reverse_listen_socket[1].fd);
 	reverse_listen_socket[0].fd = -1;
+	reverse_listen_socket[1].fd = -1;
 
 	return (EXIT_SUCCESS);
 }
@@ -1060,7 +1086,7 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 	socklen_t addr_size = sizeof(remote);
 	char port[SHORT_INT_LENGTH];
 	char host[INET6_ADDRSTRLEN];
-	int status;
+	int status, i;
 
 	if (transport_proto == NC_TRANSPORT_SSH) {
 #ifdef DISABLE_LIBSSH
@@ -1074,15 +1100,16 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 #endif
 	}
 
-	if (reverse_listen_socket[0].fd == -1) {
+	if (reverse_listen_socket[0].fd == -1 && reverse_listen_socket[1].fd == -1) {
 		ERROR("No listening socket, use nc_session_reverse_listen() first.");
 		return (NULL);
 	}
 
 	reverse_listen_socket[0].revents = 0;
+	reverse_listen_socket[1].revents = 0;
 	while (1) {
 		VERB("Waiting %dms for incoming call home connections...", *timeout);
-		status = poll(reverse_listen_socket, 1, *timeout);
+		status = poll(reverse_listen_socket, 2, *timeout);
 
 		if (status == 0) {
 			/* timeout */
@@ -1096,15 +1123,17 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 			ERROR("Polling call home sockets failed (%s)", strerror(errno));
 			return (NULL);
 		} else if (status > 0) {
-			if ((reverse_listen_socket[0].revents & POLLHUP) || (reverse_listen_socket[0].revents & POLLERR)) {
-				/* close pipe/fd - other side already did it */
-				ERROR("Listening socket is down.");
-				close(reverse_listen_socket[0].fd);
-				return (NULL );
-			} else {
-				/* accept call home */
-				sock = accept(reverse_listen_socket[0].fd, (struct sockaddr*) &remote, &addr_size);
-				break;
+			for (i = 0; i < 2; i++) {
+				if ((reverse_listen_socket[i].revents & POLLHUP) || (reverse_listen_socket[i].revents & POLLERR)) {
+					/* close pipe/fd - other side already did it */
+					ERROR("Listening socket is down.");
+					close(reverse_listen_socket[i].fd);
+					return (NULL );
+				} else if (reverse_listen_socket[i].revents & POLLIN) {
+					/* accept call home */
+					sock = accept(reverse_listen_socket[i].fd, (struct sockaddr*) &remote, &addr_size);
+					break;
+				}
 			}
 		}
 	}
