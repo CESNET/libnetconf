@@ -882,13 +882,13 @@ static int set_socket_listening(int sock)
 		return (0);
 	}
 
-    if (listen(sock, NC_REVERSE_QUEUE) == -1) {
+	if (listen(sock, NC_REVERSE_QUEUE) == -1) {
 		ERROR("Unable to start listening (%s).", strerror(errno));
 		return (-1);
-    }
+	}
 
 	VERB("Listening on socket %d.", sock);
-    return (0);
+	return (0);
 }
 
 int nc_callhome_listen(unsigned int port)
