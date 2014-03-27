@@ -1780,11 +1780,6 @@ shutdown:
 	}
 	if (retval) {
 		free(retval->stats);
-		if (retval->mut_libssh2_channels != NULL) {
-			pthread_mutex_destroy(retval->mut_libssh2_channels);
-			free(retval->mut_libssh2_channels);
-			retval->mut_libssh2_channels = NULL;
-		}
 		pthread_mutex_destroy(&(retval->mut_mqueue));
 		pthread_mutex_destroy(&(retval->mut_equeue));
 		pthread_mutex_destroy(&(retval->mut_session));

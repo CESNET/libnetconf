@@ -1150,12 +1150,6 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 		}
 		session->libssh2_socket = -1;
 #endif
-		/* also destroy shared mutexes */
-		if (session->mut_libssh2_channels != NULL) {
-			pthread_mutex_destroy(session->mut_libssh2_channels);
-			free(session->mut_libssh2_channels);
-			session->mut_libssh2_channels = NULL;
-		}
 
 		free(session->logintime);
 		session->logintime = NULL;
@@ -1165,9 +1159,13 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			free(session->hostname);
 			free(session->username);
 			free(session->port);
-		} else {
 
-
+			/* also destroy shared mutexes */
+			if (session->mut_libssh2_channels != NULL) {
+				pthread_mutex_destroy(session->mut_libssh2_channels);
+				free(session->mut_libssh2_channels);
+				session->mut_libssh2_channels = NULL;
+			}
 		}
 		session->username = NULL;
 		session->hostname = NULL;
