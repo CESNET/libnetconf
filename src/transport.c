@@ -1126,12 +1126,13 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 				} else if (reverse_listen_socket[i].revents & POLLIN) {
 					/* accept call home */
 					sock = accept(reverse_listen_socket[i].fd, (struct sockaddr*) &remote, &addr_size);
-					break;
+					goto netconf_connect;
 				}
 			}
 		}
 	}
 
+netconf_connect:
 	if (sock == -1) {
 		ERROR("Accepting call home failed (%s)", strerror(errno));
 		return (NULL);
