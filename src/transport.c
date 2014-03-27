@@ -100,12 +100,6 @@ int nc_session_transport(NC_TRANSPORT proto)
 		ERROR("NETCONF over TLS is not supported, recompile libnetconf with --enable-tls option");
 		return (EXIT_FAILURE);
 	}
-#else
-	if (proto == NC_TRANSPORT_TLS) {
-		if (nc_tls_init() != EXIT_SUCCESS) {
-			return (EXIT_FAILURE);
-		}
-	}
 #endif
 
 	if (proto < 0) {

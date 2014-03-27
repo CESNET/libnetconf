@@ -46,8 +46,6 @@
 extern "C" {
 #endif
 
-int nc_tls_init();
-
 struct nc_session *nc_session_connect_tls(const char* username, const char* host, const char* port);
 
 struct nc_session *nc_session_connect_tls_socket(const char* username, const char* host, int sock);

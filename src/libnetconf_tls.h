@@ -62,17 +62,22 @@ extern "C" {
  * @ingroup tls
  * @brief Set paths to the client certificate and its private key
  *
- * This function takes effect only on client side. If it is not used, no
- * certificate is sent to the server and the connection will be probably
- * refused.
+ * This function takes effect only on client side. It must be used before
+ * establishing NETCONF session (including call home) over TLS.
  *
- * @param[in] cert Path to the file containing client certificate
- * @param[in] key Path to the file containing private key for the client
+ * @param[in] peer_cert Path to the file containing client certificate
+ * @param[in] peer_key Path to the file containing private key for the client
  * certificate. If NULL, key is expected to be stored in the file specified in
  * cert parameter.
+ * @param[in] CAfile Location of the CA certificate used to verify the server
+ * certificates. For More info, see documentation for
+ * SSL_CTX_load_verify_locations() function from OpenSSL.
+ * @param[in] CApath Location of the CA certificates used to verify the server
+ * certificates. For More info, see documentation for
+ * SSL_CTX_load_verify_locations() function from OpenSSL.
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int nc_tls_cert(const char* cert, const char* key);
+int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath);
 
 /**
  * @ingroup tls

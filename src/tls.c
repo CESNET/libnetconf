@@ -57,11 +57,18 @@
 /* global SSL context */
 SSL_CTX *ssl_ctx = NULL;
 
-int nc_tls_init()
+int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath)
 {
+	const char* key_ = peer_key;
+
+	if (peer_cert == NULL) {
+		ERROR("%s: Invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
 	if (ssl_ctx) {
-		VERB("TLS subsystem already initiated.");
-		return (EXIT_SUCCESS);
+		VERB("TLS subsystem already initiated. Resetting certificates settings");
+		goto certset;
 	}
 
 	/* init OpenSSL */
@@ -75,30 +82,10 @@ int nc_tls_init()
 		return (EXIT_FAILURE);
 	}
 
-	if(! SSL_CTX_load_verify_locations(ssl_ctx, NC_WORKINGDIR_PATH"/certs/TrustStore.pem", NULL))	{
-		ERROR("Loading a trust store from \'%s\' failed (%s).", NC_WORKINGDIR_PATH"/certs/TrustStore.pem", ERR_reason_error_string(ERR_get_error()));
-		return (EXIT_FAILURE);
-	}
-
-	return (EXIT_SUCCESS);
-}
-
-int nc_tls_cert(const char* cert, const char* key)
-{
-	const char* key_ = key;
-
-	if (!ssl_ctx && nc_tls_init() != EXIT_SUCCESS) {
-		return (EXIT_FAILURE);
-	}
-
-	if (cert == NULL) {
-		ERROR("%s: Invalid parameter.", __func__);
-		return (EXIT_FAILURE);
-	}
-
+certset:
 	/* get peer certificate */
-	if (SSL_CTX_use_certificate_file(ssl_ctx, cert, SSL_FILETYPE_PEM) != 1) {
-		ERROR("Loading a peer certificate from \'%s\' failed (%s).", cert, ERR_reason_error_string(ERR_get_error()));
+	if (SSL_CTX_use_certificate_file(ssl_ctx, peer_cert, SSL_FILETYPE_PEM) != 1) {
+		ERROR("Loading a peer certificate from \'%s\' failed (%s).", peer_cert, ERR_reason_error_string(ERR_get_error()));
 		return (EXIT_FAILURE);
 	}
 
@@ -107,11 +94,15 @@ int nc_tls_cert(const char* cert, const char* key)
 		 * if the file with private key not specified, expect that the private
 		 * key is stored altogether with the certificate
 		 */
-		key_ = cert;
+		key_ = peer_cert;
 	}
 	if (SSL_CTX_use_PrivateKey_file(ssl_ctx, key_, SSL_FILETYPE_PEM) != 1) {
 		ERROR("Loading a peer certificate from \'%s\' failed (%s).", key_, ERR_reason_error_string(ERR_get_error()));
 		return (EXIT_FAILURE);
+	}
+
+	if(! SSL_CTX_load_verify_locations(ssl_ctx, CAfile, CApath))	{
+		WARN("SSL_CTX_load_verify_locations() failed (%s).", ERR_reason_error_string(ERR_get_error()));
 	}
 
 	return (EXIT_SUCCESS);
