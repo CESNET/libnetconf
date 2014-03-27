@@ -48,6 +48,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
+#include <poll.h>
 #include <pwd.h>
 #include <netdb.h>
 #include <fcntl.h>
@@ -821,23 +822,74 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 /*
  * CALL HOME PART
  */
-static int reverse_listen_socket = -1;
+/* 0 is IPv4, 1 is IPv6 */
+static struct pollfd reverse_listen_socket[1] = {{-1, POLLIN, 0}};
 
-int nc_callhome_listen(unsigned int port)
+static int get_listening_socket(const char* port)
 {
 	struct addrinfo hints, *res_list, *res;
-	char port_s[SHORT_INT_LENGTH];
-	int i;
+	int sock = -1;
+	int i = 1;;
 
-	if (reverse_listen_socket != -1) {
-		ERROR("%s: libnetconf is already listening for incoming call home.", __func__);
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_INET6;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	hints.ai_flags = AI_PASSIVE;
+
+	i = getaddrinfo(NULL, port, &hints, &res_list);
+	if (i != 0) {
+		ERROR("Unable to translate the host address (%s).", gai_strerror(i));
 		return (EXIT_FAILURE);
 	}
 
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
+	for (i = 1, res = res_list; res != NULL; res = res->ai_next) {
+		/* bind to all addresses, including the IPv4s */
+		((struct sockaddr_in6*)(res->ai_addr))->sin6_addr = in6addr_any;
+
+		sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (sock == -1) {
+			/* socket was not created, try another resource */
+			i = errno;
+			continue;
+		}
+
+		if (bind(sock, res->ai_addr, res->ai_addrlen) == -1) {
+			/* binding the port failedd, try another resource */
+			i = errno;
+			close(sock);
+			sock = -1;
+			continue;
+		}
+
+	    if (listen(sock, NC_REVERSE_QUEUE) == -1) {
+			i = errno;
+			close(sock);
+			sock = -1;
+			continue;
+	    }
+
+		/* we're done, network connection established */
+		break;
+	}
+	freeaddrinfo(res_list);
+
+	if (sock == -1) {
+		ERROR("Unable to start listening on port %s (%s).", port, strerror(i));
+	} else {
+		VERB("Listening on port %s.", port);
+	}
+	return (sock);
+}
+
+int nc_callhome_listen(unsigned int port)
+{
+	char port_s[SHORT_INT_LENGTH];
+
+	if (reverse_listen_socket[0].fd != -1) {
+		ERROR("%s: libnetconf is already listening for incoming call home.", __func__);
+		return (EXIT_FAILURE);
+	}
 
 	/* set default values */
 	if (port == 0) {
@@ -849,47 +901,10 @@ int nc_callhome_listen(unsigned int port)
 		ERROR("Unable to convert the port number to a string.");
 		return (EXIT_FAILURE);
 	}
-	/* Connect to SSH server */
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	i = getaddrinfo(NULL, port_s, &hints, &res_list);
-	if (i != 0) {
-		ERROR("Unable to translate the host address (%s).", gai_strerror(i));
-		return (EXIT_FAILURE);
-	}
 
-	for (i = 0, res = res_list; res != NULL; res = res->ai_next) {
-		reverse_listen_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-		if (reverse_listen_socket == -1) {
-			/* socket was not created, try another resource */
-			i = errno;
-			continue;
-		}
+	reverse_listen_socket[0].fd = get_listening_socket(port_s);
 
-		if (bind(reverse_listen_socket, res->ai_addr, res->ai_addrlen) == -1) {
-			/* binding the port failedd, try another resource */
-			i = errno;
-			close(reverse_listen_socket);
-			reverse_listen_socket = -1;
-			continue;
-		}
-
-	    if (listen(reverse_listen_socket, NC_REVERSE_QUEUE) == -1) {
-			i = errno;
-			close(reverse_listen_socket);
-			reverse_listen_socket = -1;
-			continue;
-	    }
-
-		/* we're done, network connection established */
-		break;
-	}
-	freeaddrinfo(res_list);
-
-	if (reverse_listen_socket == -1) {
-		ERROR("Unable to start listening on port %s (%s).", port_s, strerror(i));
+	if (reverse_listen_socket[0].fd == -1) {
 		return (EXIT_FAILURE);
 	}
 
@@ -898,13 +913,13 @@ int nc_callhome_listen(unsigned int port)
 
 int nc_callhome_listen_stop(void)
 {
-	if (reverse_listen_socket == -1) {
+	if (reverse_listen_socket[0].fd == -1) {
 		ERROR("%s: libnetconf is not listening for incoming call home.", __func__);
 		return (EXIT_FAILURE);
 	}
 
-	close(reverse_listen_socket);
-	reverse_listen_socket = -1;
+	close(reverse_listen_socket[0].fd);
+	reverse_listen_socket[0].fd = -1;
 
 	return (EXIT_SUCCESS);
 }
@@ -983,10 +998,10 @@ int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_sec
 				continue;
 			}
 
+			inet_ntop(addr->ai_family, addr_p, addr_buf, INET6_ADDRSTRLEN);
 			for (i = 0; i < reconnect_count; i++) {
-				inet_ntop(addr->ai_family, addr_p, addr_buf, INET6_ADDRSTRLEN);
 				if (connect(sock, addr->ai_addr, addr->ai_addrlen) == -1) {
-					WARN("Connecting to %s:%u failed (%s)", addr_p, port, strerror(errno));
+					WARN("Connecting to %s:%u failed (%s)", addr_buf, port, strerror(errno));
 					sleep(reconnect_secs);
 					continue;
 				}
@@ -1036,7 +1051,7 @@ connected:
 	return (pid);
 }
 
-struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpblts* cpblts)
+struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpblts* cpblts, int *timeout)
 {
 	struct nc_session* retval;
 	struct nc_cpblts *client_cpblts;
@@ -1045,6 +1060,7 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 	socklen_t addr_size = sizeof(remote);
 	char port[SHORT_INT_LENGTH];
 	char host[INET6_ADDRSTRLEN];
+	int status;
 
 	if (transport_proto == NC_TRANSPORT_SSH) {
 #ifdef DISABLE_LIBSSH
@@ -1058,13 +1074,41 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 #endif
 	}
 
-	if (reverse_listen_socket == -1) {
+	if (reverse_listen_socket[0].fd == -1) {
 		ERROR("No listening socket, use nc_session_reverse_listen() first.");
 		return (NULL);
 	}
 
-	VERB("Waiting for incoming Reverse SSH connections...");
-	sock = accept(reverse_listen_socket, (struct sockaddr*)&remote, &addr_size);
+	reverse_listen_socket[0].revents = 0;
+	while (1) {
+		VERB("Waiting %dms for incoming call home connections...", *timeout);
+		status = poll(reverse_listen_socket, 1, *timeout);
+
+		if (status == 0) {
+			/* timeout */
+			*timeout = 0;
+			return (NULL);
+		} else if ((status == -1) && (errno == EINTR)) {
+			/* poll was interrupted - try it again */
+			continue;
+		} else if (status < 0) {
+			/* poll failed - something wrong happened */
+			ERROR("Polling call home sockets failed (%s)", strerror(errno));
+			return (NULL);
+		} else if (status > 0) {
+			if ((reverse_listen_socket[0].revents & POLLHUP) || (reverse_listen_socket[0].revents & POLLERR)) {
+				/* close pipe/fd - other side already did it */
+				ERROR("Listening socket is down.");
+				close(reverse_listen_socket[0].fd);
+				return (NULL );
+			} else {
+				/* accept call home */
+				sock = accept(reverse_listen_socket[0].fd, (struct sockaddr*) &remote, &addr_size);
+				break;
+			}
+		}
+	}
+
 	if (sock == -1) {
 		ERROR("Accepting call home failed (%s)", strerror(errno));
 		return (NULL);
