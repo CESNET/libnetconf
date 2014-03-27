@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 		pid = nc_callhome_connect(srv, 5, 3, NULL, NULL);
 	}
 
-	printf("Working in background...");
+	printf("Working in background...\n");
 	retpid = waitpid(pid, &status, 0); // wait for child process to end
 	if (retpid != pid) {
 		if (retpid == -1) {
