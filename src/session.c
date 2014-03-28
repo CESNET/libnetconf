@@ -2099,6 +2099,8 @@ try_again:
 		break;
 	case NC_MSG_NOTIFICATION:
 		/* add event notification into the session's list of notification messages */
+		DBG_LOCK("mut_equeue");
+		pthread_mutex_lock(&(session->mut_equeue));
 		msg_aux = session->queue_event;
 		if (msg_aux == NULL) {
 			msg->next = session->queue_event;
@@ -2107,6 +2109,8 @@ try_again:
 			for (; msg_aux->next != NULL; msg_aux = msg_aux->next);
 			msg_aux->next = msg;
 		}
+		DBG_UNLOCK("mut_equeue");
+		pthread_mutex_unlock(&(session->mut_equeue));
 
 		break;
 	default:
