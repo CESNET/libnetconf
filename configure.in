@@ -137,7 +137,7 @@ AC_ARG_ENABLE([tls],
 	fi
 )	
 
-AC_ARG_ENABLE([tls],
+AC_ARG_ENABLE([tls-cn],
 	AC_HELP_STRING([--enable-tls-cn], [Allow extracting username from CN in all client certificates. For more info, see documentation of nc_session_accept_tls().]),
 	if test "$enableval" = "yes"; then
 		CPPFLAGS="$CPPFLAGS -DENABLE_TLS_CN"

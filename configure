@@ -777,6 +777,7 @@ with_libxslt
 with_libssh2
 enable_libssh2
 enable_tls
+enable_tls_cn
 enable_yang_schemas
 enable_notifications
 enable_url
@@ -2889,9 +2890,9 @@ if test "${enable_tls+set}" = set; then :
 fi
 
 
-# Check whether --enable-tls was given.
-if test "${enable_tls+set}" = set; then :
-  enableval=$enable_tls; if test "$enableval" = "yes"; then
+# Check whether --enable-tls-cn was given.
+if test "${enable_tls_cn+set}" = set; then :
+  enableval=$enable_tls_cn; if test "$enableval" = "yes"; then
 		CPPFLAGS="$CPPFLAGS -DENABLE_TLS_CN"
 	fi
 
