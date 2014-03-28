@@ -1724,9 +1724,13 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 	pthread_mutexattr_destroy(&mattr);
 
 	/* open a separated channel */
+	DBG_LOCK("mut_libssh2_channels");
+	pthread_mutex_lock(session->mut_libssh2_channels);
 	retval->ssh_channel = libssh2_channel_open_session(retval->ssh_session);
 	if (retval->ssh_channel == NULL) {
 		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+		DBG_UNLOCK("mut_libssh2_channels");
+		pthread_mutex_unlock(session->mut_libssh2_channels);
 		ERROR("Opening the SSH channel failed (%s)", err_msg);
 		goto shutdown;
 	}
@@ -1734,9 +1738,14 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 	/* execute the NETCONF subsystem on the channel */
 	if (libssh2_channel_subsystem(retval->ssh_channel, "netconf")) {
 		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+		DBG_UNLOCK("mut_libssh2_channels");
+		pthread_mutex_unlock(session->mut_libssh2_channels);
 		ERROR("Starting the netconf SSH subsystem failed (%s)", err_msg);
 		goto shutdown;
 	}
+	DBG_UNLOCK("mut_libssh2_channels");
+	pthread_mutex_unlock(session->mut_libssh2_channels);
+
 	retval->status = NC_SESSION_STATUS_WORKING;
 
 	if (cpblts == NULL) {
@@ -1776,7 +1785,11 @@ shutdown:
 
 	/* cleanup */
 	if (retval->ssh_channel != NULL) {
+		DBG_LOCK("mut_libssh2_channels");
+		pthread_mutex_lock(session->mut_libssh2_channels);
 		libssh2_channel_free(retval->ssh_channel);
+		DBG_UNLOCK("mut_libssh2_channels");
+		pthread_mutex_unlock(session->mut_libssh2_channels);
 	}
 	if (retval) {
 		free(retval->stats);

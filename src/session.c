@@ -1117,7 +1117,12 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 		}
 #else
 		if (session->ssh_channel != NULL) {
-			if (session->status == NC_SESSION_STATUS_WORKING && libssh2_channel_eof(session->ssh_channel) == 0 && !session->is_server) {
+			DBG_LOCK("mut_libssh2_channels");
+			pthread_mutex_lock(session->mut_libssh2_channels);
+			i = libssh2_channel_eof(session->ssh_channel)
+			DBG_UNLOCK("mut_libssh2_channels");
+			pthread_mutex_unlock(session->mut_libssh2_channels);
+			if (session->status == NC_SESSION_STATUS_WORKING &&  i == 0 && !session->is_server) {
 				/* prevent infinite recursion when socket is corrupted -> stack overflow */
 				session->status = NC_SESSION_STATUS_CLOSING;
 
@@ -1136,7 +1141,11 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 				}
 			}
 
+			DBG_LOCK("mut_libssh2_channels");
+			pthread_mutex_lock(session->mut_libssh2_channels);
 			libssh2_channel_free(session->ssh_channel);
+			DBG_UNLOCK("mut_libssh2_channels");
+			pthread_mutex_unlock(session->mut_libssh2_channels);
 			session->ssh_channel = NULL;
 		}
 
