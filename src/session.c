@@ -1119,7 +1119,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 		if (session->ssh_channel != NULL) {
 			DBG_LOCK("mut_libssh2_channels");
 			pthread_mutex_lock(session->mut_libssh2_channels);
-			i = libssh2_channel_eof(session->ssh_channel)
+			i = libssh2_channel_eof(session->ssh_channel);
 			DBG_UNLOCK("mut_libssh2_channels");
 			pthread_mutex_unlock(session->mut_libssh2_channels);
 			if (session->status == NC_SESSION_STATUS_WORKING &&  i == 0 && !session->is_server) {
