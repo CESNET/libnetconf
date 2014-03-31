@@ -74,7 +74,7 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define NCNTF_STREAMS_NS "urn:ietf:params:xml:ns:netmod:notification"
 
 /* sleep time in dispatch loops in microseconds */
-#define NCNTF_DISPATCH_SLEEP 100
+#define NCNTF_DISPATCH_SLEEP 10000
 
 /* path to the Event stream files, the default path is defined in config.h */
 static char* streams_path = NULL;
@@ -1040,7 +1040,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 	struct stream *s;
 	int32_t len;
 	uint64_t t;
-	off_t offset;
+	off_t offset, aux;
 	char* text = NULL;
 	off_t* replay_end;
 	char* time_s;
@@ -1109,7 +1109,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 		}
 
 		/* check that we have something to read */
-		if (offset == lseek(s->fd_events, 0, SEEK_END)) {
+		if (offset == (aux = lseek(s->fd_events, 0, SEEK_END))) {
 			/* nothing to read */
 			DBG_UNLOCK("streams_mut");
 			pthread_mutex_unlock(streams_mut);
@@ -1121,10 +1121,14 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 		if (ncntf_stream_lock(s) == 0) {
 			if ((r = read(s->fd_events, &len, sizeof(int32_t))) <= 0) {
 				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+				DBG_UNLOCK("streams_mut");
+				pthread_mutex_unlock(streams_mut);
 				return (NULL);
 			}
 			if ((r = read(s->fd_events, &t, sizeof(uint64_t))) <= 0) {
 				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+				DBG_UNLOCK("streams_mut");
+				pthread_mutex_unlock(streams_mut);
 				return (NULL);
 			}
 
@@ -1154,6 +1158,8 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 			text = malloc(len * sizeof(char));
 			if ((r = read(s->fd_events, text, len)) <= 0) {
 				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+				DBG_UNLOCK("streams_mut");
+				pthread_mutex_unlock(streams_mut);
 				return (NULL);
 			}
 			ncntf_stream_unlock(s);
@@ -2252,12 +2258,20 @@ cleanup:
  */
 void ncntf_dispatch_stop(struct nc_session *session)
 {
+	DBG_LOCK("mut_ntf");
+	pthread_mutex_lock(&(session->mut_ntf));
 	if (session != NULL && session->ntf_active) {
 		session->ntf_stop = 1;
 		while (session->ntf_active) {
-			usleep(20);
+			DBG_UNLOCK("mut_ntf");
+			pthread_mutex_unlock(&(session->mut_ntf));
+			usleep(NCNTF_DISPATCH_SLEEP);
+			DBG_LOCK("mut_ntf");
+			pthread_mutex_lock(&(session->mut_ntf));
 		}
 	}
+	DBG_UNLOCK("mut_ntf");
+	pthread_mutex_unlock(&(session->mut_ntf));
 }
 
 /**
@@ -2308,11 +2322,11 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	}
 
 	/* check if there is another notification subscription */
-	DBG_LOCK("mut_session");
-	pthread_mutex_lock(&(session->mut_session));
+	DBG_LOCK("mut_ntf");
+	pthread_mutex_lock(&(session->mut_ntf));
 	if (nc_session_notif_allowed(session) == 0) {
-		DBG_UNLOCK("mut_session");
-		pthread_mutex_unlock(&(session->mut_session));
+		DBG_UNLOCK("mut_ntf");
+		pthread_mutex_unlock(&(session->mut_ntf));
 		WARN("%s: Notification subscription is not allowed on the given session.", __func__);
 		nc_filter_free(filter);
 		free(stream);
@@ -2320,15 +2334,25 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	}
 	/* set flag, notification subscription is now activated */
 	session->ntf_active = 1;
-	DBG_UNLOCK("mut_session");
-	pthread_mutex_unlock(&(session->mut_session));
+	DBG_UNLOCK("mut_ntf");
+	pthread_mutex_unlock(&(session->mut_ntf));
 
 	/* prepare xml doc for filtering */
 	filter_doc = xmlNewDoc(BAD_CAST "1.0");
 	filter_doc->encoding = xmlStrdup(BAD_CAST UTF8);
 
 	ncntf_stream_iter_start(stream);
-	while(ncntf_config != NULL && !(session->ntf_stop)) {
+	while(ncntf_config != NULL) {
+		DBG_LOCK("mut_ntf");
+		pthread_mutex_lock(&(session->mut_ntf));
+		if (session->ntf_stop) {
+			DBG_UNLOCK("mut_ntf");
+			pthread_mutex_unlock(&(session->mut_ntf));
+			break;
+		}
+		DBG_UNLOCK("mut_ntf");
+		pthread_mutex_unlock(&(session->mut_ntf));
+
 		if ((event = ncntf_stream_iter_next(stream, start, stop, NULL)) == NULL) {
 			if ((stop == -1) || ((stop != -1) && (stop > time(NULL)))) {
 				usleep(NCNTF_DISPATCH_SLEEP);
@@ -2394,7 +2418,11 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 			ntf = malloc(sizeof(nc_rpc));
 			if (ntf == NULL) {
 				ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+				DBG_LOCK("mut_ntf");
+				pthread_mutex_lock(&(session->mut_ntf));
 				session->ntf_active = 0;
+				DBG_UNLOCK("mut_ntf");
+				pthread_mutex_unlock(&(session->mut_ntf));
 				nc_filter_free(filter);
 				free(stream);
 				return (-1);
@@ -2410,7 +2438,11 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 			/* create xpath evaluation context */
 			if ((ntf->ctxt = xmlXPathNewContext(ntf->doc)) == NULL) {
 				ERROR("%s: notification message XPath context cannot be created.", __func__);
+				DBG_LOCK("mut_ntf");
+				pthread_mutex_lock(&(session->mut_ntf));
 				session->ntf_active = 0;
+				DBG_UNLOCK("mut_ntf");
+				pthread_mutex_unlock(&(session->mut_ntf));
 				nc_filter_free(filter);
 				free(stream);
 				return (-1);
@@ -2419,7 +2451,11 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 			/* register base namespace for the rpc */
 			if (xmlXPathRegisterNs(ntf->ctxt, BAD_CAST NC_NS_NOTIFICATIONS_ID, BAD_CAST NC_NS_NOTIFICATIONS) != 0) {
 				ERROR("Registering notification namespace for the message xpath context failed.");
+				DBG_LOCK("mut_ntf");
+				pthread_mutex_lock(&(session->mut_ntf));
 				session->ntf_active = 0;
+				DBG_UNLOCK("mut_ntf");
+				pthread_mutex_unlock(&(session->mut_ntf));
 				nc_filter_free(filter);
 				free(stream);
 				return (-1);
@@ -2427,7 +2463,20 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 
 			/* NACM - check notification permition */
 			if (nacm_check_notification(ntf, session) == NACM_PERMIT) {
-				nc_session_send_notif(session, ntf);
+				DBG_LOCK("mut_session");
+				pthread_mutex_lock(&(session->mut_session));
+				DBG_LOCK("mut_ntf");
+				pthread_mutex_lock(&(session->mut_ntf));
+				if (!session->ntf_stop) {
+					DBG_UNLOCK("mut_ntf");
+					pthread_mutex_unlock(&(session->mut_ntf));
+					nc_session_send_notif(session, ntf);
+				} else {
+					DBG_UNLOCK("mut_ntf");
+					pthread_mutex_unlock(&(session->mut_ntf));
+				}
+				DBG_UNLOCK("mut_session");
+				pthread_mutex_unlock(&(session->mut_session));
 			} else {
 				/* update stats */
 				if (nc_info) {
@@ -2450,35 +2499,39 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 	nc_filter_free(filter);
 	free(stream);
 
-	/* send notificationComplete Notification */
-	ntf = calloc(1, sizeof(nc_rpc));
-	if (ntf == NULL) {
-		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
-		session->ntf_active = 0;
-		return (-1);
-	}
-	if (asprintf(&event, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
-			"<eventTime>%s</eventTime><notificationComplete xmlns=\"urn:ietf:params:xml:ns:netmod:notification\"/>"
-			"</notification>", time_s = nc_time2datetime(time(NULL))) == -1) {
-		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		WARN("Sending notificationComplete failed due to previous error.");
-		ncntf_notif_free(ntf);
-		session->ntf_active = 0;
-		return(count);
-	}
-	free (time_s);
-	ntf->doc = xmlReadMemory(event, strlen(event), NULL, NULL, NC_XMLREAD_OPTIONS);
-	ntf->msgid = NULL;
-	ntf->error = NULL;
-	ntf->with_defaults = NCWD_MODE_NOTSET;
-	ntf->nacm = NULL;
-
-	/* do not use ACM - notificationComplete is always permitted */
-	nc_session_send_notif(session, ntf);
-	ncntf_notif_free(ntf);
-	free(event);
-
+	DBG_LOCK("mut_ntf");
+	pthread_mutex_lock(&(session->mut_ntf));
 	session->ntf_active = 0;
+	if (!session->ntf_stop) {
+		/* if not finished by external stop, send notificationComplete Notification */
+		ntf = calloc(1, sizeof(nc_rpc));
+		if (ntf == NULL) {
+			ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+			return (-1);
+		}
+		if (asprintf(&event, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
+				"<eventTime>%s</eventTime><notificationComplete xmlns=\"urn:ietf:params:xml:ns:netmod:notification\"/>"
+				"</notification>", time_s = nc_time2datetime(time(NULL))) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			WARN("Sending notificationComplete failed due to previous error.");
+			ncntf_notif_free(ntf);
+			return (count);
+		}
+		free(time_s);
+		ntf->doc = xmlReadMemory(event, strlen(event), NULL, NULL, NC_XMLREAD_OPTIONS);
+		ntf->msgid = NULL;
+		ntf->error = NULL;
+		ntf->with_defaults = NCWD_MODE_NOTSET;
+		ntf->nacm = NULL;
+
+		/* do not use ACM - notificationComplete is always permitted */
+		nc_session_send_notif(session, ntf);
+		ncntf_notif_free(ntf);
+		free(event);
+	}
+	DBG_UNLOCK("mut_ntf");
+	pthread_mutex_unlock(&(session->mut_ntf));
+
 	return (count);
 }
 
@@ -2522,19 +2575,19 @@ long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_
 		return (-1);
 	}
 
-	DBG_LOCK("mut_session");
-	pthread_mutex_lock(&(session->mut_session));
+	DBG_LOCK("mut_ntf");
+	pthread_mutex_lock(&(session->mut_ntf));
 	if (session->ntf_active == 0) {
 		session->ntf_active = 1;
 		session->ntf_stop = 0;
 	} else {
-		DBG_UNLOCK("mut_session");
-		pthread_mutex_unlock(&(session->mut_session));
+		DBG_UNLOCK("mut_ntf");
+		pthread_mutex_unlock(&(session->mut_ntf));
 		ERROR("Another ncntf_dispatch_receive() function active on the session.")
 		return (-1);
 	}
-	DBG_UNLOCK("mut_session");
-	pthread_mutex_unlock(&(session->mut_session));
+	DBG_UNLOCK("mut_ntf");
+	pthread_mutex_unlock(&(session->mut_ntf));
 
 	/* check function for notifications processing */
 	if (process_ntf == NULL) {
@@ -2542,12 +2595,23 @@ long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_
 	}
 
 	/* main loop for receiving notifications */
-	while(session != NULL && !(session->ntf_stop) && session->status == NC_SESSION_STATUS_WORKING) {
+	while(session != NULL && session->status == NC_SESSION_STATUS_WORKING) {
+		DBG_LOCK("mut_ntf");
+		pthread_mutex_lock(&(session->mut_ntf));
+		if (session->ntf_stop) {
+			DBG_UNLOCK("mut_ntf");
+			pthread_mutex_unlock(&(session->mut_ntf));
+			break;
+		}
+
 		/* process current notification */
 		switch (type = nc_session_recv_notif(session, 0, &ntf)) {
 		case NC_MSG_UNKNOWN: /* error */
 			session->ntf_stop = 1;
-			continue; /* end the dispatch loop */
+			DBG_UNLOCK("mut_ntf");
+			pthread_mutex_unlock(&(session->mut_ntf));
+
+			continue;
 			break;
 		case NC_MSG_NOTIFICATION:
 			/* check for <notificationComplete> */
@@ -2555,6 +2619,8 @@ long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_
 				/* end of the Notification stream */
 				session->ntf_stop = 1;
 			}
+			DBG_UNLOCK("mut_ntf");
+			pthread_mutex_unlock(&(session->mut_ntf));
 
 			/* Parse XML to get parameters for callback function */
 			event_time = ncntf_notif_get_time(ntf);
@@ -2570,15 +2636,21 @@ long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_
 			free(content);
 			break;
 		default:
+			DBG_UNLOCK("mut_ntf");
+			pthread_mutex_unlock(&(session->mut_ntf));
 			/* no notification to read now */
-			usleep(100);
+			usleep(NCNTF_DISPATCH_SLEEP);
 			continue;
 			break;
 		}
 	}
 
 	if (session != NULL) {
+		DBG_LOCK("mut_ntf");
+		pthread_mutex_lock(&(session->mut_ntf));
 		session->ntf_active = 0;
+		DBG_UNLOCK("mut_ntf");
+		pthread_mutex_unlock(&(session->mut_ntf));
 	}
 
 	return (count);

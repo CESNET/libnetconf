@@ -627,8 +627,10 @@ int nc_session_get_eventfd (const struct nc_session *session)
 	}
 }
 
-int nc_session_notif_allowed (const struct nc_session *session)
+int nc_session_notif_allowed(struct nc_session *session)
 {
+	int ret;
+
 	if (session == NULL) {
 		/* notification subscription is not allowed */
 		return 0;
@@ -638,7 +640,13 @@ int nc_session_notif_allowed (const struct nc_session *session)
 	/* check capabilities */
 	if (nc_cpblts_enabled(session, NC_CAP_NOTIFICATION_ID) == 1) {
 		/* subscription is allowed only if another subscription is not active */
-		return ((session->ntf_active == 0) ? 1 : 0);
+		DBG_LOCK("mut_ntf");
+		pthread_mutex_lock(&(session->mut_ntf));
+		ret = (session->ntf_active == 0) ? 1 : 0;
+		DBG_UNLOCK("mut_ntf");
+		pthread_mutex_unlock(&(session->mut_ntf));
+
+		return (ret);
 	} else
 #endif
 	{
@@ -1083,6 +1091,9 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 	if (session != NULL && session->status != NC_SESSION_STATUS_CLOSING && session->status != NC_SESSION_STATUS_CLOSED) {
 
 #ifndef DISABLE_NOTIFICATIONS
+		/* let notification receiving/sending function stop, if any */
+		ncntf_dispatch_stop(session);
+
 		/* log closing of the session */
 		if (sstatus != NC_SESSION_STATUS_DUMMY) {
 			ncntf_event_new(-1, NCNTF_BASE_SESSION_END, session, reason, NULL);
@@ -1227,10 +1238,6 @@ void nc_session_free (struct nc_session* session)
 
 	if (session->status != NC_SESSION_STATUS_CLOSED) {
 		nc_session_close(session, NC_SESSION_TERM_CLOSED);
-#ifndef DISABLE_NOTIFICATIONS
-		/* let notification receiving function stop, if any */
-		ncntf_dispatch_stop(session);
-#endif
 	}
 
 	if (session->groups != NULL) {
@@ -1246,6 +1253,7 @@ void nc_session_free (struct nc_session* session)
 	/* destroy mutexes */
 	pthread_mutex_destroy(&(session->mut_mqueue));
 	pthread_mutex_destroy(&(session->mut_equeue));
+	pthread_mutex_destroy(&(session->mut_ntf));
 	pthread_mutex_destroy(&(session->mut_session));
 
 	if (session_list != NULL && session->monitored == 1) {
@@ -2133,8 +2141,13 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf)
 	int ret;
 	struct nc_msg *msg;
 
+	DBG_LOCK("mut_session");
+	pthread_mutex_lock(&(session->mut_session));
+
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to send <notification>.");
+		DBG_UNLOCK("mut_session");
+		pthread_mutex_unlock(&(session->mut_session));
 		return (EXIT_FAILURE);
 	}
 
@@ -2142,6 +2155,9 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf)
 
 	/* send message */
 	ret = nc_session_send (session, msg);
+
+	DBG_UNLOCK("mut_session");
+	pthread_mutex_unlock(&(session->mut_session));
 
 	nc_msg_free (msg);
 
@@ -2496,11 +2512,6 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 	xmlNsPtr ns;
 	xmlNodePtr msg_root, rpc_root;
 
-	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
-		ERROR("Invalid session to send <rpc-reply>.");
-		return (0); /* failure */
-	}
-
 	if (rpc == NULL) {
 		ERROR("%s: Invalid <rpc> message to answer.", __func__);
 		return (0); /* failure */
@@ -2516,6 +2527,17 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 		retval = nc_msg_parse_msgid(rpc);
 	} else {
 		retval = rpc->msgid;
+	}
+
+	DBG_LOCK("mut_session");
+	pthread_mutex_lock(&(session->mut_session));
+
+	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
+		DBG_UNLOCK("mut_session");
+		pthread_mutex_unlock(&(session->mut_session));
+
+		ERROR("Invalid session to send <rpc-reply>.");
+		return (0); /* failure */
 	}
 
 	msg = nc_msg_dup ((struct nc_msg*) reply);
@@ -2557,6 +2579,9 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
 
 	/* send message */
 	ret = nc_session_send (session, msg);
+
+	DBG_UNLOCK("mut_session");
+	pthread_mutex_unlock(&(session->mut_session));
 
 	nc_msg_free (msg);
 

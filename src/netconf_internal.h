@@ -383,6 +383,8 @@ struct nc_session {
 	int ntf_active;
 	/**< @brief flag for stopping notification subscription on the session */
 	int ntf_stop;
+	/**< @brief thread lock for notifications */
+	pthread_mutex_t mut_ntf;
 	/**< @brief flag for NACM Recovery session - set if session user ID is 0 */
 	int nacm_recovery;
 	/**< @brief Flag if the session is monitored and connected to the shared memory segment */
@@ -658,7 +660,7 @@ int ncntf_init(void);
 void ncntf_close(void);
 
 /**
- * @brief Stop the running ncntf_dispatch_receive()
+ * @brief Stop the running ncntf_dispatch_*()
  *
  * When we are going to close an active session and receiving/sending
  * notifications is active, we should properly stop it before freeing session
