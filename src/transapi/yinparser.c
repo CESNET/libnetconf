@@ -166,7 +166,7 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, struct ns_p
 			/* remove the increment of the case statement */
 			count--;
 		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "augment")) {
-			augment_children = yinmodel_parse_recursive(model_tmp, ns_mapping, parent, &augment_children_count);
+			augment_children = yinmodel_parse_recursive(model_tmp, ns_mapping, &children[count-1], &augment_children_count);
 			if ((new_tree = realloc(children, sizeof(struct model_tree) * (augment_children_count+count))) == NULL) {
 				ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 				/* try to continue */
