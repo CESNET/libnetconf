@@ -527,7 +527,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 		*tmp_diff = NULL;
 		tmp_op = XMLDIFF_NONE;
 		for (i = 0; i < model->children_count; i++) {
-			asprintf(&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
+			asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name);
 			tmp_op = xmldiff_recursive(tmp_diff, next_path, old_doc, (old_tmp ? old_tmp->children : NULL), new_doc, (new_tmp ? new_tmp->children : NULL), &model->children[i]);
 			free(next_path);
 	
@@ -563,7 +563,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 		*strrchr(path, '/') = '\0';
 
 		for (i = 0; i < model->children_count; i++) {
-			asprintf(&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
+			asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name);
 			/* We are moving down the model only (not in the configuration) */
 			tmp_op = xmldiff_recursive(diff, next_path, old_doc, old_node, new_doc, new_node, &model->children[i]);
 			free(next_path);
@@ -748,7 +748,7 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 			tmp_diff = malloc(sizeof(struct xmldiff_tree*));
 			*tmp_diff = NULL;
 			for (i = 0; i < model->children_count; i++) {
-				asprintf(&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
+				asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name);
 				tmp_op = xmldiff_recursive(tmp_diff, next_path, old_doc, list_old_tmp->children, new_doc, list_new_tmp->children, &model->children[i]);
 				free(next_path);
 
