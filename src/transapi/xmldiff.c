@@ -568,12 +568,10 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 			tmp_op = xmldiff_recursive(diff, next_path, old_doc, old_node, new_doc, new_node, &model->children[i]);
 			free(next_path);
 
-			/* Assuming there is only one child of this choice (as it should be), we return this child's operation, the choice itself is de-facto skipped */
 			if (tmp_op == XMLDIFF_ERR) {
 				return XMLDIFF_ERR;
 			} else if (tmp_op != XMLDIFF_NONE) {
 				ret_op |= tmp_op;
-				break;
 			}
 		}
 
