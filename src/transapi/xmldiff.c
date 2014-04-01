@@ -542,7 +542,11 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 			}
 		}
 		if (ret_op != XMLDIFF_NONE) {
-			xmldiff_add_diff(tmp_diff, path, new_tmp, ret_op, XML_PARENT);
+			if (ret_op & XMLDIFF_REM) {
+				xmldiff_add_diff(tmp_diff, path, old_tmp, ret_op, XML_PARENT);
+			} else {
+				xmldiff_add_diff(tmp_diff, path, new_tmp, ret_op, XML_PARENT);
+			}
 			if ((*tmp_diff) && (*tmp_diff)->parent) {
 				*tmp_diff = (*tmp_diff)->parent;
 			}
@@ -583,7 +587,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 			break;
 		} else if (new_tmp == NULL) {
 			ret_op = XMLDIFF_REM;
-			xmldiff_add_diff(diff, path, new_tmp, XMLDIFF_REM, XML_SIBLING);
+			xmldiff_add_diff(diff, path, old_tmp, XMLDIFF_REM, XML_SIBLING);
 			break;
 		}
 		old_content = xmlNodeGetContent(old_tmp);
@@ -617,7 +621,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 			xmldiff_add_diff(diff, path, new_tmp, XMLDIFF_ADD, XML_SIBLING);
 		} else if (new_tmp == NULL) {
 			ret_op = XMLDIFF_REM;
-			xmldiff_add_diff(diff, path, new_tmp, XMLDIFF_REM, XML_SIBLING);
+			xmldiff_add_diff(diff, path, old_tmp, XMLDIFF_REM, XML_SIBLING);
 		}
 
 		buf = xmlBufferCreate();
@@ -765,7 +769,11 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 				if (item_ret_op & (XMLDIFF_ADD | XMLDIFF_REM | XMLDIFF_MOD | XMLDIFF_CHAIN)) {
 					ret_op |= XMLDIFF_CHAIN;
 				}
-				xmldiff_add_diff(tmp_diff, path, list_new_tmp, ret_op, XML_PARENT);
+				if (item_ret_op & XMLDIFF_REM) {
+					xmldiff_add_diff(tmp_diff, path, list_old_tmp, ret_op, XML_PARENT);
+				} else {
+					xmldiff_add_diff(tmp_diff, path, list_new_tmp, ret_op, XML_PARENT);
+				}
 				*tmp_diff = (*tmp_diff)->parent;
 				xmldiff_addsibling_diff(diff, tmp_diff);
 			} else {
