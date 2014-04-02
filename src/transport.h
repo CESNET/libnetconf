@@ -118,10 +118,17 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
  * @ingroup session
  * @brief Accept NETCONF session from a client.
  *
- * The caller process of this function is supposed to run as SSH Subsystem
- * application launched automatically by SSH server when the NETCONF subsystem
- * request comes to the SSH server. Only one NETCONF session can be accepted in
- * a single SSH Subsystem.
+ * The caller process of this function is supposed to be launched as a
+ * subprocess of the transport protocol server (in case of SSH, it is called
+ * SSH Subsystem). Username assigned to the NETCONF session is guessed from the
+ * process's UID. This approach supposes that the transport protocol server
+ * launches the caller process with the changed UID according to the user
+ * logged in (OpenSSH's sshd does this, stunnel does not - see
+ * nc_session_accept_username() instead of this function).
+ *
+ * Only one NETCONF session can be accepted in a single caller since it
+ * communicates with the transport protocol server directly via (redirected)
+ * stdin and stdout streams.
  *
  * @param[in] capabilities NETCONF capabilities structure with the capabilities supported
  * by the server. The caller can use nc_session_get_cpblts_default() to get the
@@ -130,6 +137,26 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
  * @return Structure describing the accepted NETCONF session or NULL in case of an error.
  */
 struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities);
+
+/**
+ * @ingroup session
+ * @brief Accept NETCONF session from a client and assign it to the specified
+ * username.
+ *
+ * The same as nc_session_accept() except that instead of guessing username
+ * from the process's UID, the specified username is assigned to the NETCONF
+ * session. This can be used especially in case that the transport protocol
+ * server (sshd, stunnel,...) does not change process's UID automatically.
+ *
+ * @param[in] capabilities NETCONF capabilities structure with the capabilities supported
+ * by the server. The caller can use nc_session_get_cpblts_default() to get the
+ * structure with the list of all the capabilities supported by libnetconf (this is
+ * used in case of a NULL parameter).
+ * @param[in[ username Name of the user which will be assigned to the NETCONF
+ * session. This information is used for example by NACM subsystem.
+ * @return Structure describing the accepted NETCONF session or NULL in case of an error.
+ */
+struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabilities, const char* username);
 
 #ifdef __cplusplus
 }

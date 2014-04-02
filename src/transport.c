@@ -578,7 +578,7 @@ shutdown:
 #endif /* not DISABLE_LIBSSH */
 }
 
-struct nc_session *nc_session_accept_generic(const struct nc_cpblts* capabilities, const char* username)
+struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabilities, const char* username)
 {
 	int r, i;
 	struct nc_session *retval = NULL;
@@ -810,7 +810,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 		return (NULL);
 	}
 
-	return (nc_session_accept_generic(capabilities, pw->pw_name));
+	return (nc_session_accept_username(capabilities, pw->pw_name));
 }
 
 /*

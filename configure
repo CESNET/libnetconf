@@ -777,7 +777,6 @@ with_libxslt
 with_libssh2
 enable_libssh2
 enable_tls
-enable_tls_cn
 enable_yang_schemas
 enable_notifications
 enable_url
@@ -1429,9 +1428,6 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-libssh2       Use ssh client program instead of libssh2.
   --enable-tls            Enable support for NETCONF over TLS using OpenSSL.
-  --enable-tls-cn         Allow extracting username from CN in all client
-                          certificates. For more info, see documentation of
-                          nc_session_accept_tls().
   --disable-yang-schemas  Disable support for YANG format in <get-schema>
                           operation.
   --disable-notifications Disable support of NETCONF Notifications (RFC 5277)
@@ -2885,15 +2881,6 @@ if test "${enable_tls+set}" = set; then :
 		tls="yes"
 		CPPFLAGS="$CPPFLAGS -DENABLE_TLS"
 		LIBS="$LIBS -lssl"
-	fi
-
-fi
-
-
-# Check whether --enable-tls-cn was given.
-if test "${enable_tls_cn+set}" = set; then :
-  enableval=$enable_tls_cn; if test "$enableval" = "yes"; then
-		CPPFLAGS="$CPPFLAGS -DENABLE_TLS_CN"
 	fi
 
 fi

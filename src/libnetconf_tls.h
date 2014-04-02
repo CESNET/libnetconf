@@ -79,34 +79,6 @@ extern "C" {
  */
 int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath);
 
-/**
- * @ingroup tls
- * @brief Accept NETCONF session from a client using TLS transport.
- *
- * This functions does the same work as nc_session_accept() except getting
- * username. In the case of TLS transport, username is get from the client
- * certificate.
- *
- * If the --enable-tls-cn configure's option is used, libnetconf tries
- * to get username from SSL_CLIENT_DN environment variable provided e.g. by
- * stunnel. Userneme is expected in commonName field. Note, that this approach
- * is not specified by NETCONF over TLS specification since it accepts all
- * valid certificates with filled commonName field. Normally, NETCONF server
- * has the list of allowed certificates with specified method to map certificate
- * to a username.
- *
- * @param[in] capabilities NETCONF capabilities structure with the capabilities
- * supported by the server. The caller can use nc_session_get_cpblts_default()
- * to get the structure with the list of all the capabilities supported by
- * libnetconf (this is used in case of a NULL parameter).
- * @param[in] cert TLS certificate from a client. If NULL and --enable-tls-cn
- * was used, username is get from SSL_CLIENT_DN environment variable (if
- * available) as described above.
- * @return Structure describing the accepted NETCONF session or NULL in case of
- * an error.
- */
-struct nc_session *nc_session_accept_tls(const struct nc_cpblts* capabilities, X509 *cert);
-
 #ifdef __cplusplus
 }
 #endif
