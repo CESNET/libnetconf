@@ -155,7 +155,7 @@ const char* nc_session_get_user(const struct nc_session* session);
  * @param[in] session NETCONF session structure
  * @return 0 if not, 1 if subscription is currently allowed.
  */
-int nc_session_notif_allowed (const struct nc_session *session);
+int nc_session_notif_allowed (struct nc_session *session);
 
 /**
  * @ingroup session

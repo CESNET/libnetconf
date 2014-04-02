@@ -784,6 +784,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	if ((r = pthread_mutex_init(retval->mut_libssh2_channels, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_ntf), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
 		pthread_mutexattr_destroy(&mattr);
@@ -1411,6 +1412,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
 	if ((r = pthread_mutex_init(retval->mut_libssh2_channels, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_ntf), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
 		pthread_mutexattr_destroy(&mattr);
@@ -1688,11 +1690,6 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 	retval->groups = NULL; /* client side does not need this information */
 	retval->port = session->port;
 	retval->msgid = 1;
-	retval->queue_event = NULL;
-	retval->queue_msg = NULL;
-	retval->logintime = NULL;
-	session->ntf_active = 0;
-	retval->monitored = 0;
 	retval->nacm_recovery = 0; /* not needed/decidable on the client side */
 	retval->stats->in_rpcs = 0;
 	retval->stats->in_bad_rpcs = 0;
@@ -1716,6 +1713,7 @@ struct nc_session *nc_session_connect_channel(struct nc_session *session, const 
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
 	if ((r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_ntf), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
 		pthread_mutexattr_destroy(&mattr);
@@ -1795,6 +1793,7 @@ shutdown:
 		free(retval->stats);
 		pthread_mutex_destroy(&(retval->mut_mqueue));
 		pthread_mutex_destroy(&(retval->mut_equeue));
+		pthread_mutex_destroy(&(retval->mut_ntf));
 		pthread_mutex_destroy(&(retval->mut_session));
 		nc_cpblts_free(retval->capabilities);
 		free(retval);
