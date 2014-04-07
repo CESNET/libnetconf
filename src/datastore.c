@@ -2588,11 +2588,12 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 						}
 						xmlAddChild(path_node, xmlCopyNode(node, 1));
 					}
-					/* remove refine definition */
-					xmlUnlinkNode(nodes->nodesetval->nodeTab[i]);
-					xmlFreeNode(nodes->nodesetval->nodeTab[i]);
-					nodes->nodesetval->nodeTab[i] = NULL;
 				}
+				/* remove refine definition */
+				xmlUnlinkNode(nodes->nodesetval->nodeTab[i]);
+				xmlFreeNode(nodes->nodesetval->nodeTab[i]);
+				nodes->nodesetval->nodeTab[i] = NULL;
+
 				break;
 			default: /* wtf */
 				return (EXIT_FAILURE);
@@ -2715,6 +2716,7 @@ static int ncds_update_augment_cleanup(struct ncds_ds *ds)
 			/* no more needed augment definition, remove it */
 			xmlUnlinkNode(augments->nodesetval->nodeTab[i]);
 			xmlFreeNode(augments->nodesetval->nodeTab[i]);
+			augments->nodesetval->nodeTab[i] = NULL;
 		}
 	}
 
