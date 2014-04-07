@@ -108,10 +108,11 @@ NCWD_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc)
 static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* namespace, NCWD_MODE mode, xmlNodePtr** created)
 {
 	xmlNodePtr *parents = NULL, *retvals = NULL, *created_local = NULL, *aux_nodeptr;
-	xmlNodePtr aux = NULL;
+	xmlNodePtr aux = NULL, aux2;
+	xmlNodePtr branch;
 	xmlNsPtr ns;
 	xmlChar* value = NULL, *name, *value2;
-	int i, j, k, size = 0;
+	int i, j, k, size = 0, case_flag;
 	static int created_count = 0;
 	static int created_size = 0;
 
@@ -153,8 +154,98 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 		/* we will get parent of the config's equivalent of the node */
 		parents = fill_default(config, node->parent, namespace, mode, &created_local);
 
-		/* if we are in augment node, just go through */
-		if ((xmlStrcmp(node->name, BAD_CAST "augment") == 0) &&
+		if (parents && xmlStrcmp(node->parent->name, BAD_CAST "choice") == 0) {
+			/* we are processing a default data inside a choice */
+			/*
+			 * get know which branch exists (if any), if we are in such a branch
+			 * continue with processing, get out otherwise
+			 */
+			/* get the name of the current branch */
+			value = xmlGetProp(node, BAD_CAST "name");
+
+			for (i = 0; parents[i] != NULL; i++) {
+				/* we are going to compare configuration elements on the same
+				 * level as choice with the elements in the choice's branches.
+				 * We need to get know if some branch is present in the
+				 * configuration data. If some branch is present and we are in
+				 * a different branch, default data will not be added. If no
+				 * branch is present and we are in the default branch, the
+				 * default data will be added and we are continuing.
+				 */
+				for (aux = parents[i]->children; aux != NULL; aux = aux->next) {
+					/* go through all configuration nodes on the same level as choice */
+					for (branch = node->parent->children; branch != NULL; branch = branch->next) {
+						/* go through all branches of the choice */
+						if (branch->type != XML_ELEMENT_NODE) {
+							continue;
+						} else if (xmlStrcmp(branch->name, BAD_CAST "case") == 0) {
+							name = xmlGetProp(branch, BAD_CAST "name");
+							for (aux2 = branch->children; aux2 != NULL; aux2 = aux2->next) {
+								/* go through all elements inside the case */
+								if (aux2->type != XML_ELEMENT_NODE) {
+									continue;
+								}
+								value2 = xmlGetProp(aux2, BAD_CAST "name");
+								if (xmlStrcmp(aux->name, value2) == 0) {
+									/* we have match between config and model */
+									if (xmlStrcmp(value, name) != 0) {
+										/*
+										 * and it is not our current branch
+										 * so stop the processing in this subtree
+										 */
+										parents[i] = NULL;
+										goto next_parent;
+									}
+									xmlFree(name);
+									xmlFree(value2);
+									goto next_parent;
+								}
+								xmlFree(value2);
+							}
+							xmlFree(name);
+						} else if ((xmlStrcmp(branch->name, BAD_CAST "anyxml") == 0) ||
+								(xmlStrcmp(branch->name, BAD_CAST "container") == 0) ||
+								(xmlStrcmp(branch->name, BAD_CAST "leaf") == 0) ||
+								(xmlStrcmp(branch->name, BAD_CAST "list") == 0) ||
+								(xmlStrcmp(branch->name, BAD_CAST "leaf-list") == 0)) {
+							name = xmlGetProp(branch, BAD_CAST "name");
+							if (xmlStrcmp(aux->name, name) == 0) {
+								/* we have match between config and model */
+								if (xmlStrcmp(value, name) != 0) {
+									/*
+									 * and it is not our current branch
+									 * so stop the processing in this subtree
+									 */
+									parents[i] = NULL;
+								}
+								xmlFree(name);
+								goto next_parent;
+							}
+							xmlFree(name);
+						} else {
+							continue;
+						}
+					} /* branches */
+				} /* configuration nodes */
+next_parent:	;
+			} /* all parents */
+			/* consolidate parents */
+			for (j = 0, k = 0; k < i; k++) {
+				if (parents[k]) {
+					parents[j] = parents[k];
+					j++;
+				}
+			}
+			if (j == 0) {
+				free(parents);
+				parents = NULL;
+			}
+		}
+
+		/* if we are in augment or choice node, just go through */
+		if (((xmlStrcmp(node->name, BAD_CAST "augment") == 0) ||
+				(xmlStrcmp(node->name, BAD_CAST "choice") == 0) ||
+				(xmlStrcmp(node->name, BAD_CAST "case") == 0)) &&
 				(xmlStrcmp(node->ns->href, BAD_CAST NC_NS_YIN) == 0)) {
 			return (parents);
 		}
@@ -310,7 +401,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 
 				xmlFree(value);
 				/* continue to another parent node in the list to process */
-				continue;
+				break;
 			case NCWD_MODE_TRIM:
 				/* we are at the end - remove element if it contains default value */
 				if (parents[i]->children != NULL) {
@@ -494,6 +585,10 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 			}
 			/* process all defaults elements */
 			for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
+				if (xmlStrcmp(defaults->nodesetval->nodeTab[i]->parent->name, BAD_CAST "choice") == 0) {
+					/* skip defaults for choices */
+					continue;
+				}
 				fill_default(config, defaults->nodesetval->nodeTab[i], (char*)namespace, mode, NULL);
 			}
 		}
