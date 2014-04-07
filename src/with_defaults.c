@@ -112,7 +112,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 	xmlNodePtr branch;
 	xmlNsPtr ns;
 	xmlChar* value = NULL, *name, *value2;
-	int i, j, k, size = 0, case_flag;
+	int i, j, k, size = 0;
 	static int created_count = 0;
 	static int created_size = 0;
 
