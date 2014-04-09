@@ -10,13 +10,17 @@ CFLAGS  = -Wall
 INCLUDE = -I../../src/ 
 LIB     = -lnetconf
 LIBPATH	= -L../../.libs/
+TARGETS = get notif
 
-all: get
+all: $(TARGETS)
 
 get: get.c
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $< $(LIBPATH) $(LIB)
 
+notif: notif.c
+	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $< $(LIBPATH) $(LIB)
+
 clean:
 	rm -f *.o
-	rm -f get
+	rm -f $(TARGETS)
 
