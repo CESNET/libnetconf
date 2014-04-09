@@ -189,6 +189,8 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 								if (xmlStrcmp(aux->name, value2) == 0) {
 									/* we have match between config and model */
 									if (xmlStrcmp(value, name) != 0) {
+										xmlFree(name);
+										xmlFree(value2);
 										/*
 										 * and it is not our current branch
 										 * so stop the processing in this subtree
@@ -212,6 +214,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 							if (xmlStrcmp(aux->name, name) == 0) {
 								/* we have match between config and model */
 								if (xmlStrcmp(value, name) != 0) {
+									xmlFree(name);
 									/*
 									 * and it is not our current branch
 									 * so stop the processing in this subtree
@@ -240,6 +243,8 @@ next_parent:	;
 				free(parents);
 				parents = NULL;
 			}
+
+			xmlFree(value);
 		}
 
 		/* if we are in augment or choice node, just go through */
