@@ -65,6 +65,7 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 /* defined in datastore.c */
 int ncds_sysinit(int flags);
+void ncds_startup_internal(void);
 
 int verbose_level = 0;
 
@@ -240,6 +241,11 @@ int nc_init(int flags)
 		shmdt(nc_info);
 		nc_init_flags = 0;
 		return (-1);
+	}
+
+	if (first_after_close) {
+		/* apply startup to running in internal datastores */
+		ncds_startup_internal();
 	}
 
 	/* init NETCONF sessions statistics */

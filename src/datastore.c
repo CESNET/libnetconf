@@ -484,6 +484,16 @@ int ncds_sysinit(int flags)
 	return (EXIT_SUCCESS);
 }
 
+void ncds_startup_internal(void)
+{
+	struct ncds_ds_list *ds_iter;
+
+	for (ds_iter = ncds.datastores; ds_iter != NULL ; ds_iter = ds_iter->next) {
+		/* apply startup to running */
+		ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_STARTUP, NULL, NULL);
+	}
+}
+
 /**
  * @brief Get ncds_ds structure from the datastore list containing storage
  * information with the specified ID.
