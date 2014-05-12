@@ -105,11 +105,37 @@ NCWD_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc)
 	return (rpc->with_defaults);
 }
 
+/*
+ * 0 - no match
+ * 1 - match found
+ */
+static int search_choice_match(xmlNodePtr parent, xmlChar* name)
+{
+	xmlNodePtr aux;
+
+	/* go through all existing elements on the appropriate level in the
+	 * configuration data to check if the currently processed default
+	 * value is created and the node with default value is supposed to
+	 * be created
+	 */
+	for (aux = parent->children; aux != NULL; aux = aux->next) {
+		if (aux->type != XML_ELEMENT_NODE) {
+			continue;
+		}
+
+		if (xmlStrcmp(aux->name, name) == 0) {
+			/* we have a match */
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
 static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* namespace, NCWD_MODE mode, xmlNodePtr** created)
 {
 	xmlNodePtr *parents = NULL, *retvals = NULL, *created_local = NULL, *aux_nodeptr;
-	xmlNodePtr aux = NULL, aux2;
-	xmlNodePtr branch;
+	xmlNodePtr aux = NULL;
 	xmlNsPtr ns;
 	xmlChar* value = NULL, *name, *value2;
 	int i, j, k, size = 0;
@@ -155,83 +181,59 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 		parents = fill_default(config, node->parent, namespace, mode, &created_local);
 
 		if (parents && xmlStrcmp(node->parent->name, BAD_CAST "choice") == 0) {
-			/* we are processing a default data inside a choice */
-			/*
-			 * get know which branch exists (if any), if we are in such a branch
-			 * continue with processing, get out otherwise
-			 */
-			/* get the name of the current branch */
-			value = xmlGetProp(node, BAD_CAST "name");
+			/* process choices */
 
-			for (i = 0; parents[i] != NULL; i++) {
-				/* we are going to compare configuration elements on the same
-				 * level as choice with the elements in the choice's branches.
-				 * We need to get know if some branch is present in the
-				 * configuration data. If some branch is present and we are in
-				 * a different branch, default data will not be added. If no
-				 * branch is present and we are in the default branch, the
-				 * default data will be added and we are continuing.
+			if (xmlStrcmp(node->name, BAD_CAST "case") == 0) {
+				/*
+				 * if there is case defined, we have to skip it and search for
+				 * its subelements since case node itself is not present in
+				 * configuration data
 				 */
-				for (aux = parents[i]->children; aux != NULL; aux = aux->next) {
-					/* go through all configuration nodes on the same level as choice */
-					for (branch = node->parent->children; branch != NULL; branch = branch->next) {
-						/* go through all branches of the choice */
-						if (branch->type != XML_ELEMENT_NODE) {
-							continue;
-						} else if (xmlStrcmp(branch->name, BAD_CAST "case") == 0) {
-							name = xmlGetProp(branch, BAD_CAST "name");
-							for (aux2 = branch->children; aux2 != NULL; aux2 = aux2->next) {
-								/* go through all elements inside the case */
-								if (aux2->type != XML_ELEMENT_NODE) {
-									continue;
-								}
-								value2 = xmlGetProp(aux2, BAD_CAST "name");
-								if (xmlStrcmp(aux->name, value2) == 0) {
-									/* we have match between config and model */
-									if (xmlStrcmp(value, name) != 0) {
-										xmlFree(name);
-										xmlFree(value2);
-										/*
-										 * and it is not our current branch
-										 * so stop the processing in this subtree
-										 */
-										parents[i] = NULL;
-										goto next_parent;
-									}
-									xmlFree(name);
-									xmlFree(value2);
-									goto next_parent;
-								}
-								xmlFree(value2);
-							}
-							xmlFree(name);
-						} else if ((xmlStrcmp(branch->name, BAD_CAST "anyxml") == 0) ||
-								(xmlStrcmp(branch->name, BAD_CAST "container") == 0) ||
-								(xmlStrcmp(branch->name, BAD_CAST "leaf") == 0) ||
-								(xmlStrcmp(branch->name, BAD_CAST "list") == 0) ||
-								(xmlStrcmp(branch->name, BAD_CAST "leaf-list") == 0)) {
-							name = xmlGetProp(branch, BAD_CAST "name");
-							if (xmlStrcmp(aux->name, name) == 0) {
-								/* we have match between config and model */
-								if (xmlStrcmp(value, name) != 0) {
-									xmlFree(name);
-									/*
-									 * and it is not our current branch
-									 * so stop the processing in this subtree
-									 */
-									parents[i] = NULL;
-								}
-								xmlFree(name);
-								goto next_parent;
-							}
-							xmlFree(name);
-						} else {
+
+				/* so do it for all given parent nodes */
+				for (i = 0; parents[i] != NULL; i++) {
+					/*
+					 * at least one of the case children is supposed to be
+					 * present, if no such element is found, the parent is
+					 * removed from further processing
+					 */
+					for (aux = node->children; aux != NULL; aux = aux->next) {
+						if (aux->type != XML_ELEMENT_NODE) {
 							continue;
 						}
-					} /* branches */
-				} /* configuration nodes */
-next_parent:	;
-			} /* all parents */
+
+						if ((xmlStrcmp(aux->name, BAD_CAST "anyxml") == 0) ||
+								(xmlStrcmp(aux->name, BAD_CAST "container") == 0) ||
+								(xmlStrcmp(aux->name, BAD_CAST "leaf") == 0) ||
+								(xmlStrcmp(aux->name, BAD_CAST "list") == 0) ||
+								(xmlStrcmp(aux->name, BAD_CAST "leaf-list") == 0)) {
+							value = xmlGetProp(aux, BAD_CAST "name");
+							if (search_choice_match(parents[i], value) == 0) {
+								xmlFree(value);
+								break;
+							}
+							xmlFree(value);
+						}
+					}
+					if (aux == NULL) {
+						/* match not found */
+						parents[i] = NULL;
+					}
+				}
+			} else {
+				/*
+				 * if there is no case, the element itself is supposed to be
+				 * present in the configuration data, so search for it
+				 */
+				value = xmlGetProp(node, BAD_CAST "name");
+				for (i = 0; parents[i] != NULL; i++) {
+					if (search_choice_match(parents[i], value) == 0) {
+						parents[i] = NULL;
+					}
+				}
+				xmlFree(value);
+			}
+
 			/* consolidate parents */
 			for (j = 0, k = 0; k < i; k++) {
 				if (parents[k]) {
@@ -244,7 +246,6 @@ next_parent:	;
 				parents = NULL;
 			}
 
-			xmlFree(value);
 		}
 
 		/* if we are in augment or choice node, just go through */
