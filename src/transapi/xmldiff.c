@@ -71,7 +71,7 @@ static void xmldiff_merge_priorities(struct xmldiff_prio** old, struct xmldiff_p
 }
 
 /* the recursive core of xmldiff_set_priorities() function */
-static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct transapi_data_callbacks* calls)
+static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* tree, struct clbk *callbacks, int clbk_count)
 {
 	int i, min_prio, children_count = 0, children_without_callback = 0;
 	struct xmldiff_prio* priorities = NULL, *tmp_prio;
@@ -81,7 +81,7 @@ static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* 
 	child = tree->children;
 	while (child != NULL) {
 		++children_count;
-		tmp_prio = xmldiff_set_priority_recursive(child, calls);
+		tmp_prio = xmldiff_set_priority_recursive(child, callbacks, clbk_count);
 		if (tmp_prio == NULL) {
 			++children_without_callback;
 		}
@@ -117,14 +117,22 @@ static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* 
 	}
 
 	/* Search for the callback */
-	for (i = 0; i < calls->callbacks_count; ++i) {
-		if (strcmp(calls->callbacks[i].path, tree->path) == 0) {
+	for (i = 0; i < clbk_count; i++) {
+		if (strcmp(callbacks[i].path, tree->path) == 0) {
+			/* We have a callback */
+			tree->callback = callbacks[i].func;
+			tree->priority = i;
+
+			/* Save our priority */
+			xmldiff_add_priority(tree->priority, &priorities);
+
+			/* stop the loop */
 			break;
 		}
 	}
 
-	if (i == calls->callbacks_count && priorities != NULL) {
-		/* We do not have a callback, so we use the lowest priority from our children callbacks */
+	if (tree->callback == NULL && priorities != NULL) {
+		/* We do not have a callback, so we set the lowest priority from our children callbacks */
 		min_prio = priorities->values[0];
 		for (i = 1; (unsigned int) i < priorities->used; ++i) {
 			if (priorities->values[i] < min_prio) {
@@ -133,13 +141,6 @@ static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* 
 		}
 
 		tree->priority = min_prio;
-	} else if (i < calls->callbacks_count) {
-		/* We have a callback */
-		tree->callback = true;
-		tree->priority = i+1;
-
-		/* Save our priority */
-		xmldiff_add_priority(i+1, &priorities);
 	} else {
 		/* We do not have a callback and neither does any of our children, maybe our parent does */
 	}
@@ -147,12 +148,11 @@ static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* 
 	return priorities;
 }
 
-int xmldiff_set_priorities(struct xmldiff_tree* tree, void* callbacks)
+int xmldiff_set_priorities(struct xmldiff_tree* tree, struct clbk *callbacks, int clbk_count)
 {
-	struct transapi_data_callbacks* calls = callbacks;
 	struct xmldiff_prio* ret;
 
-	ret = xmldiff_set_priority_recursive(tree, calls);
+	ret = xmldiff_set_priority_recursive(tree, callbacks, clbk_count);
 
 	/* There is no callback to call for the configuration change, that probably should not happen */
 	if (ret == NULL) {
@@ -208,6 +208,7 @@ static void xmldiff_add_diff(struct xmldiff_tree** diff, const char * path, xmlN
 	new->node = node;
 	new->op = op;
 	new->applied = CLBCKS_APPLIED_NONE;
+	new->priority = PRIORITY_NONE;
 
 	if (*diff == NULL) {
 		*diff = new;
@@ -526,7 +527,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 		*tmp_diff = NULL;
 		tmp_op = XMLDIFF_NONE;
 		for (i = 0; i < model->children_count; i++) {
-			asprintf(&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
+			asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name);
 			tmp_op = xmldiff_recursive(tmp_diff, next_path, old_doc, (old_tmp ? old_tmp->children : NULL), new_doc, (new_tmp ? new_tmp->children : NULL), &model->children[i]);
 			free(next_path);
 	
@@ -541,7 +542,11 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 			}
 		}
 		if (ret_op != XMLDIFF_NONE) {
-			xmldiff_add_diff(tmp_diff, path, new_tmp, ret_op, XML_PARENT);
+			if (ret_op & XMLDIFF_REM) {
+				xmldiff_add_diff(tmp_diff, path, old_tmp, ret_op, XML_PARENT);
+			} else {
+				xmldiff_add_diff(tmp_diff, path, new_tmp, ret_op, XML_PARENT);
+			}
 			if ((*tmp_diff) && (*tmp_diff)->parent) {
 				*tmp_diff = (*tmp_diff)->parent;
 			}
@@ -558,17 +563,15 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 		*strrchr(path, '/') = '\0';
 
 		for (i = 0; i < model->children_count; i++) {
-			asprintf(&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
+			asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name);
 			/* We are moving down the model only (not in the configuration) */
 			tmp_op = xmldiff_recursive(diff, next_path, old_doc, old_node, new_doc, new_node, &model->children[i]);
 			free(next_path);
 
-			/* Assuming there is only one child of this choice (as it should be), we return this child's operation, the choice itself is de-facto skipped */
 			if (tmp_op == XMLDIFF_ERR) {
 				return XMLDIFF_ERR;
 			} else if (tmp_op != XMLDIFF_NONE) {
 				ret_op |= tmp_op;
-				break;
 			}
 		}
 
@@ -582,7 +585,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 			break;
 		} else if (new_tmp == NULL) {
 			ret_op = XMLDIFF_REM;
-			xmldiff_add_diff(diff, path, new_tmp, XMLDIFF_REM, XML_SIBLING);
+			xmldiff_add_diff(diff, path, old_tmp, XMLDIFF_REM, XML_SIBLING);
 			break;
 		}
 		old_content = xmlNodeGetContent(old_tmp);
@@ -616,7 +619,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 			xmldiff_add_diff(diff, path, new_tmp, XMLDIFF_ADD, XML_SIBLING);
 		} else if (new_tmp == NULL) {
 			ret_op = XMLDIFF_REM;
-			xmldiff_add_diff(diff, path, new_tmp, XMLDIFF_REM, XML_SIBLING);
+			xmldiff_add_diff(diff, path, old_tmp, XMLDIFF_REM, XML_SIBLING);
 		}
 
 		buf = xmlBufferCreate();
@@ -745,7 +748,7 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 			tmp_diff = malloc(sizeof(struct xmldiff_tree*));
 			*tmp_diff = NULL;
 			for (i = 0; i < model->children_count; i++) {
-				asprintf(&next_path, "%s/%s:%s", path, model->children->ns_prefix, model->children[i].name);
+				asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name);
 				tmp_op = xmldiff_recursive(tmp_diff, next_path, old_doc, list_old_tmp->children, new_doc, list_new_tmp->children, &model->children[i]);
 				free(next_path);
 
@@ -764,7 +767,11 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 				if (item_ret_op & (XMLDIFF_ADD | XMLDIFF_REM | XMLDIFF_MOD | XMLDIFF_CHAIN)) {
 					ret_op |= XMLDIFF_CHAIN;
 				}
-				xmldiff_add_diff(tmp_diff, path, list_new_tmp, ret_op, XML_PARENT);
+				if (item_ret_op & XMLDIFF_REM) {
+					xmldiff_add_diff(tmp_diff, path, list_old_tmp, ret_op, XML_PARENT);
+				} else {
+					xmldiff_add_diff(tmp_diff, path, list_new_tmp, ret_op, XML_PARENT);
+				}
 				*tmp_diff = (*tmp_diff)->parent;
 				xmldiff_addsibling_diff(diff, tmp_diff);
 			} else {

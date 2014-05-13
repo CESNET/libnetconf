@@ -48,12 +48,18 @@
 #	include <libssh2.h>
 #endif
 
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 
 #include "netconf.h"
 #include "callbacks.h"
 #include "with_defaults.h"
+
+/* number of characters to store short number */
+#define SHORT_INT_LENGTH 6
 
 #define SID_SIZE 	16
 
@@ -77,6 +83,8 @@
  * @ingroup internalAPI
  */
 #define NC_PORT             830
+#define NC_REVERSE_PORT     6666
+#define NC_REVERSE_QUEUE    10
 
 /* NETCONF namespaces */
 #define NC_NS_BASE10		"urn:ietf:params:xml:ns:netconf:base:1.0"
@@ -318,6 +326,10 @@ struct nc_session {
 	long long unsigned int msgid;
 	/**< @brief only for clients using libssh2 for communication */
 	int libssh2_socket;
+#ifdef ENABLE_TLS
+	/**< @brief TLS handler */
+	SSL *tls;
+#endif
 	/**< @brief Input file descriptor for communication with (reading from) the other side of the NETCONF session */
 	int fd_input;
 #ifdef DISABLE_LIBSSH
@@ -359,18 +371,8 @@ struct nc_session {
 	NC_SESSION_STATUS status;
 	/**< @brief thread lock for accessing session items */
 	pthread_mutex_t mut_session;
-	/**< @brief thread lock for libssh2 channels
-	 *
-	 * Tests of libssh2 in multithread application showed, that libssh2_channel_read()
-	 * and libssh_channel_write() shouldn't be called in the same time.
-	 * Therefore, we replaced mut_in and mut_out with one shared mutex
-	 * mut_libssh2_channels.
-	 * Unfortunately, even though we use this mutex in nc_session_receive() and
-	 * nc_session_send(), there is still some problem in libssh2 that causes
-	 * application failure. \note{The problem appeares mainly during notification history
-	 * replay usage with other NETCONF operations in the same time. (Tomas Cejka)}
-	 */
-	pthread_mutex_t *mut_libssh2_channels;
+	/**< @brief thread lock for communication channel */
+	pthread_mutex_t *mut_channel;
 	/**< @brief thread lock for accessing queue_event */
 	pthread_mutex_t mut_equeue;
 	/**< @brief thread lock for accessing queue_msg */
@@ -535,6 +537,20 @@ char* nc_clrwspace (const char* in);
  * @param[in] replacement Character to be used as the replacement for sought.
  */
 void nc_clip_occurences_with(char *str, char sought, char replacement);
+
+/**
+ * @brief Replace substr in str by replacement
+ *
+ * Remember to free the returned string. Even if no replacement is done, new
+ * (copy of the original) string is returned.
+ *
+ * @param[in] str String to modify.
+ * @param[in] substr Substring to be replaced.
+ * @param[in] replacement Replacement for the substr.
+ *
+ * return Resulting string or NULL on error.
+ */
+char* nc_str_replace(const char *str, const char *substr, const char *replacement);
 
 /**
  * @brief Skip XML declaration in the beginning of an XML document

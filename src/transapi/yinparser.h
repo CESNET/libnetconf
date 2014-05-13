@@ -2,6 +2,9 @@
 #define _YINPARSER_H
 
 #include <libxml/tree.h>
+
+#include "../transapi.h"
+
 /**
  * @ingroup transapi
  * @brief enum type for yin/yang constructs
@@ -49,7 +52,7 @@ struct model_tree {
  *
  * @return yinmodel structure or NULL
  */
-struct model_tree * yinmodel_parse (xmlDocPtr model_doc, const char * ns_mapping[]);
+struct model_tree * yinmodel_parse (xmlDocPtr model_doc, struct ns_pair ns_mapping[]);
 
 /**
  * @ingroup transapi

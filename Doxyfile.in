@@ -668,12 +668,14 @@ WARN_LOGFILE           =
 INPUT                  = src/libnetconf.h \
                          src/libnetconf_xml.h \
                          src/libnetconf_ssh.h \
+			 src/libnetconf_tls.h \
                          src/netconf.h \
                          src/callbacks.h \
                          src/callbacks_ssh.h \
                          src/error.h \
                          src/session.h \
-                         src/ssh.h \
+                         src/transport.h \
+                         src/callhome.h \
                          src/messages.h \
                          src/messages_xml.h \
                          src/datastore_xml.h \

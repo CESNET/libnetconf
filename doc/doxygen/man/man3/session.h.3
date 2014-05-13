@@ -1,4 +1,4 @@
-.TH "src/session.h" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
+.TH "src/session.h" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -9,7 +9,7 @@ Functions to handle NETCONF sessions\&.
 .SH SYNOPSIS
 .br
 .PP
-\fC#include 'ssh\&.h'\fP
+\fC#include 'transport\&.h'\fP
 .br
 \fC#include 'netconf\&.h'\fP
 .br
@@ -68,7 +68,7 @@ Functions to handle NETCONF sessions\&.
 .ti -1c
 .RI "struct nc_cpblts * \fBnc_session_get_cpblts\fP (const struct nc_session *session)"
 .br
-.RI "\fIGet NULL terminated list of capabilities associated with the session\&. \fP"
+.RI "\fIGet list of capabilities associated with the session\&. \fP"
 .ti -1c
 .RI "struct nc_cpblts * \fBnc_session_get_cpblts_default\fP (void)"
 .br
@@ -94,6 +94,10 @@ Functions to handle NETCONF sessions\&.
 .br
 .RI "\fIGet information about the session current status\&. \fP"
 .ti -1c
+.RI "\fBNC_TRANSPORT\fP \fBnc_session_get_transport\fP (const struct nc_session *session)"
+.br
+.RI "\fIGet transport protocol used for the NETCONF session\&. \fP"
+.ti -1c
 .RI "const char * \fBnc_session_get_user\fP (const struct nc_session *session)"
 .br
 .RI "\fIGet NETCONF session username\&. \fP"
@@ -106,7 +110,7 @@ Functions to handle NETCONF sessions\&.
 .br
 .RI "\fIAdd the session into the internal list of monitored sessions that are returned as part of netconf-state information defined in RFC 6022\&. \fP"
 .ti -1c
-.RI "int \fBnc_session_notif_allowed\fP (const struct nc_session *session)"
+.RI "int \fBnc_session_notif_allowed\fP (struct nc_session *session)"
 .br
 .RI "\fITell me if the notification subscription is allowed on the given session\&. \fP"
 .ti -1c

@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.7.0</span>
+   &#160;<span id="projectnumber">0.7.99</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -142,6 +142,27 @@ $(document).ready(function(){initNavTree('globals_func.html','');});
 <li>nc_callback_sshauth_password()
 : <a class="el" href="db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb">callbacks_ssh.h</a>
 </li>
+<li>nc_callhome_accept()
+: <a class="el" href="db/de7/group__callhome.html#ga556966a9c54e814e02b4afadf128b9b7">callhome.h</a>
+</li>
+<li>nc_callhome_connect()
+: <a class="el" href="db/de7/group__callhome.html#gadabe3c1cbda6a74768a6d98c1a1f9bc1">callhome.h</a>
+</li>
+<li>nc_callhome_listen()
+: <a class="el" href="db/de7/group__callhome.html#gafa8e04fb09dcafcd7c06d086e835f25f">callhome.h</a>
+</li>
+<li>nc_callhome_listen_stop()
+: <a class="el" href="db/de7/group__callhome.html#ga93a36d2d6c0e1d1eb0c65d70c6ded3cc">callhome.h</a>
+</li>
+<li>nc_callhome_mngmt_server_add()
+: <a class="el" href="db/de7/group__callhome.html#gaa08ac6e90c2b70dd2461bab461f3ed08">callhome.h</a>
+</li>
+<li>nc_callhome_mngmt_server_free()
+: <a class="el" href="db/de7/group__callhome.html#ga3db211a665c56160c167619b633b6cb0">callhome.h</a>
+</li>
+<li>nc_callhome_mngmt_server_rm()
+: <a class="el" href="db/de7/group__callhome.html#ga1c2942e68d263d674adf1381bc5e7083">callhome.h</a>
+</li>
 <li>nc_close()
 : <a class="el" href="d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">netconf.h</a>
 </li>
@@ -205,6 +226,9 @@ $(document).ready(function(){initNavTree('globals_func.html','');});
 <li>nc_reply_data()
 : <a class="el" href="d0/de2/group__reply.html#ga4543351c89208bb06fa895be334d59ad">messages.h</a>
 </li>
+<li>nc_reply_data_ns()
+: <a class="el" href="d0/de2/group__reply.html#ga8c365a22efcaab4f1c29b3f51f254aea">messages.h</a>
+</li>
 <li>nc_reply_dump()
 : <a class="el" href="d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8">messages.h</a>
 </li>
@@ -222,6 +246,9 @@ $(document).ready(function(){initNavTree('globals_func.html','');});
 </li>
 <li>nc_reply_get_data()
 : <a class="el" href="d0/de2/group__reply.html#gaac62fb3d427985311cf71a2c3ab8d424">messages.h</a>
+</li>
+<li>nc_reply_get_data_ns()
+: <a class="el" href="d0/de2/group__reply.html#ga4a5c880080d3044f1564192cd3780534">messages.h</a>
 </li>
 <li>nc_reply_get_errormsg()
 : <a class="el" href="d0/de2/group__reply.html#ga121d66d8f7437d87a995b82187e7e7ff">messages.h</a>
@@ -338,13 +365,16 @@ $(document).ready(function(){initNavTree('globals_func.html','');});
 : <a class="el" href="db/de9/group__rpc.html#ga14fa1c78362457a646d5d820206d5158">messages.h</a>
 </li>
 <li>nc_session_accept()
-: <a class="el" href="db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707">ssh.h</a>
+: <a class="el" href="db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707">transport.h</a>
+</li>
+<li>nc_session_accept_username()
+: <a class="el" href="db/d52/group__session.html#ga7ee207cac84fd5cd82419af41e14c06f">transport.h</a>
 </li>
 <li>nc_session_connect()
-: <a class="el" href="db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23">ssh.h</a>
+: <a class="el" href="db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23">transport.h</a>
 </li>
 <li>nc_session_connect_channel()
-: <a class="el" href="db/d52/group__session.html#ga7d9e0f17bb4ca5b35c8343db59955060">ssh.h</a>
+: <a class="el" href="db/d52/group__session.html#ga7d9e0f17bb4ca5b35c8343db59955060">transport.h</a>
 </li>
 <li>nc_session_dummy()
 : <a class="el" href="db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851">session.h</a>
@@ -373,6 +403,9 @@ $(document).ready(function(){initNavTree('globals_func.html','');});
 <li>nc_session_get_status()
 : <a class="el" href="db/d52/group__session.html#gacebd018e30c3eeb0638bbb428a1741b4">session.h</a>
 </li>
+<li>nc_session_get_transport()
+: <a class="el" href="db/d52/group__session.html#ga1eae5ae3f6460dcc849733f0965c133c">session.h</a>
+</li>
 <li>nc_session_get_user()
 : <a class="el" href="db/d52/group__session.html#gabdd090cbc50a8f7db58e5be8062296d6">session.h</a>
 </li>
@@ -383,7 +416,7 @@ $(document).ready(function(){initNavTree('globals_func.html','');});
 : <a class="el" href="db/d52/group__session.html#ga023c9c813c59588ab938108f3f063d41">session.h</a>
 </li>
 <li>nc_session_notif_allowed()
-: <a class="el" href="db/d52/group__session.html#ga65786746e736c6c0d5b74cc0d816bf9e">session.h</a>
+: <a class="el" href="db/d52/group__session.html#gafd3b69869e102a4625a5ffb490b4d70f">session.h</a>
 </li>
 <li>nc_session_recv_notif()
 : <a class="el" href="da/d54/group__notifications.html#gad7ffa424401e8004fb24f9f77f0bb5be">session.h</a>
@@ -406,11 +439,17 @@ $(document).ready(function(){initNavTree('globals_func.html','');});
 <li>nc_session_send_rpc()
 : <a class="el" href="db/de9/group__rpc.html#gaeb0d93ea1b5ef0c22c9e5372425fb5c3">session.h</a>
 </li>
+<li>nc_session_transport()
+: <a class="el" href="db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806">transport.h</a>
+</li>
 <li>nc_set_keypair_path()
 : <a class="el" href="db/d52/group__session.html#gab5beccc3acd15a5ad6499992e24fbe59">callbacks_ssh.h</a>
 </li>
 <li>nc_ssh_pref()
-: <a class="el" href="db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0">ssh.h</a>
+: <a class="el" href="db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0">libnetconf_ssh.h</a>
+</li>
+<li>nc_tls_init()
+: <a class="el" href="db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17">libnetconf_tls.h</a>
 </li>
 <li>nc_url_disable()
 : <a class="el" href="d5/d7d/group__url.html#gadf6c3370da661ab29b0834086a0dfbfe">url.h</a>
@@ -447,6 +486,12 @@ $(document).ready(function(){initNavTree('globals_func.html','');});
 </li>
 <li>ncdflt_set_supported()
 : <a class="el" href="d1/df7/group__withdefaults.html#gaacdfebb053cae501e72e32220305d55b">with_defaults.h</a>
+</li>
+<li>ncds_add_augment_transapi()
+: <a class="el" href="d8/d55/group__transapi.html#gacd42f4efcc256fa4ecdaa021f82d6d1f">datastore.h</a>
+</li>
+<li>ncds_add_augment_transapi_static()
+: <a class="el" href="d8/d55/group__transapi.html#ga7f6f5af711045d8598f283ec09b9167a">datastore_xml.h</a>
 </li>
 <li>ncds_add_model()
 : <a class="el" href="db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47">datastore.h</a>
@@ -634,7 +679,7 @@ $(document).ready(function(){initNavTree('globals_func.html','');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Feb 6 2014 16:01:55 for libnetconf by
+    <li class="footer">Generated on Tue May 13 2014 15:16:50 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

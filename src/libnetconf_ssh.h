@@ -41,6 +41,46 @@
 #define LIBNETCONF_SSH_H_
 
 #include "callbacks_ssh.h"
+#include "transport.h"
+#include "callhome.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Available SSH authentication mechanisms.
+ * @ingroup session
+ */
+typedef enum
+{
+	NC_SSH_AUTH_PUBLIC_KEYS = 1, /**< SSH user authorization via publickeys */
+	NC_SSH_AUTH_PASSWORD = 2,   /**< SSH user authorization via password */
+	NC_SSH_AUTH_INTERACTIVE = 4 /**< interactive SSH user authorization */
+} NC_SSH_AUTH_TYPE;
+
+/**
+ * @ingroup session
+ * @brief Set the preference of the SSH authentication methods.
+ *
+ * Allowed authentication types are defined as NC_SSH_AUTH_TYPE type.
+ * The default preferences are:
+ * 1. interactive (3)
+ * 2. password (2)
+ * 3. public keys (1)
+ *
+ * This function has no effect with configure's --disable-libssh2 option.
+ *
+ * @param[in] type Setting preference for the given authentication type.
+ * @param[in] preference Preference value. Higher value means higher preference.
+ * Negative value disables the given authentication type. On equality of values,
+ * the last set authentication type is preferred.
+ */
+void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LIBNETCONF_H_ */
 

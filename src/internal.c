@@ -65,6 +65,7 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 /* defined in datastore.c */
 int ncds_sysinit(int flags);
+void ncds_startup_internal(void);
 
 int verbose_level = 0;
 
@@ -242,6 +243,11 @@ int nc_init(int flags)
 		return (-1);
 	}
 
+	if (first_after_close) {
+		/* apply startup to running in internal datastores */
+		ncds_startup_internal();
+	}
+
 	/* init NETCONF sessions statistics */
 	if (nc_init_flags & NC_INIT_MONITORING) {
 		nc_session_monitoring_init();
@@ -401,6 +407,53 @@ void nc_clip_occurences_with(char *str, char sought, char replacement)
 		/* New string end. */
 		*(str - clipped) = '\0';
 	}
+}
+
+char* nc_str_replace(const char *str, const char *substr, const char *replacement)
+{
+	int i, j, len;
+	const char *aux;
+	char *ret;
+
+	if ((len = strlen(replacement) - strlen(substr) ) > 0) {
+		/* we are going to enlarge the string - get to know how much */
+		for (i = 0, aux = strstr(str, substr); aux != NULL; aux = strstr(aux, substr)) {
+			i++;
+			aux = &(aux[strlen(substr)]);
+		}
+		if (i == 0) {
+			/* there is no occurrence of the needle, return just a copy of str */
+			return (strdup(str));
+		}
+
+		/* length of original string +
+		 * (# of needle occurrence * difference between needle and replacement) +
+		 * terminating NULL byte
+		 */
+		ret = malloc((strlen(str) + (i * len) + 1) * sizeof(char));
+	} else {
+		/* it's not going to be longer than original string */
+		ret = malloc((strlen(str) + 1) * sizeof(char));
+	}
+	if (ret == NULL) {
+		return (NULL);
+	}
+
+	for (i = j = 0, aux = strstr(str, substr); aux != NULL; aux = strstr(aux, substr)) {
+		while (&(str[i]) != aux) {
+			ret[j] = str[i];
+			i++;
+			j++;
+		}
+		strcpy(&(ret[j]), replacement);
+		j += strlen(replacement);
+		i += strlen(substr);
+		aux = &(str[i]);
+	}
+	/* copy the rest of the string */
+	strcpy(&(ret[j]), &(str[i]));
+
+	return(ret);
 }
 
 char* nc_skip_xmldecl(const char* xmldoc)

@@ -94,7 +94,6 @@
  * - NETCONF Event Notifications ([RFC 5277][RFC5277] and [RFC 6470][RFC6470])
  * - NETCONF With-defaults capability ([RFC 6243][RFC6243])
  * - NETCONF Access Control ([RFC 6536][RFC6536])
- * - NETCONF CLI client for GNU/Linux
  *
  * ### Example Applications ###
  *
@@ -173,20 +172,38 @@
  * `configure` script supports the following options. The full list of the
  * accepted options can be shown by `--help` option.
  *
- * - `--disable--ssh2`
+ * - `--disable--libssh2`
  *  - Remove dependency on the `libssh2` library. By default,
  *    the `libssh2` library is used by the client side functions to create SSH
  *    connection to a remote host. If the usage of the `libssh2` is disabled,
  *    libnetconf will use a standalone `ssh(1)` client located in a system path.
- *    `ssh(1)` client is, for example, part of the OpenSSH.
+ *    `ssh(1)` client is, for example, part of the OpenSSH. This option has no
+ *    effect for server-side functionality.
  *
  * - `--disable-notifications`
  *  - Remove support for the NETCONF Notifications. As a side effect, D-Bus
  *    (libdbus) dependency is also removed.
  *
+ * - `--disable-url`
+ *  - Remove support for NETCONF :url capability. cURL dependency is also
+ *    removed.
+ *
+ * - `--disable-validation`
+ *  - Remove support for NETCONF :validate capability.
+ *
  * - `--with-nacm-recovery-uid=<uid>` \anchor configure-nacm-recovery
  *  - Specify user ID to be used for the identification of the \ref
  *  nacm-recovery "NACM Recovery Session".
+ *
+ * - `--disable-yang-schemas`
+ *  - Remove support for YANG data model format for <get-schema> opration. With
+ *    this option, only YIN format is available.
+ *
+ * - `--with-workingdir=<path>`
+ *  - Change location of libnetconf's working directory. Default path is
+ *    `/var/lib/libnetconf/`. Note that applications using libnetconf should
+ *    have permissions to read/write to this path, with `--with-suid` and
+ *    `--with-sgid` this is set automatically.
  *
  * - `--enable-debug`
  *  - Add debugging information for a debugger.
@@ -719,6 +736,12 @@
 /**
  * \defgroup session NETCONF Session
  * \brief libnetconf's functions for handling NETCONF sessions.
+ */
+
+/**
+ * \defgroup callhome Call Home
+ * \brief libnetconf's functions implementing NETCONF Call Home (both SSH and
+ * TLS) mechanism.
  */
 
 /**

@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.7.0</span>
+   &#160;<span id="projectnumber">0.7.99</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -149,6 +149,12 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:gad9081cbe1edde22e8612e07ba4c3be10"><td class="mdescLeft">&#160;</td><td class="mdescRight">Available SSH authentication mechanisms.  <a href="../../db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10">More...</a><br/></td></tr>
 <tr class="separator:gad9081cbe1edde22e8612e07ba4c3be10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8be6ccea205129b05c38331a7a42174a"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a> { <a class="el" href="../../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa914942ddb1fbb24a094f8e6ec5188e6e">NC_TRANSPORT_UNKNOWN</a> = -1, 
+<a class="el" href="../../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa7878cac9e93258d6bb1a2f166377606a">NC_TRANSPORT_SSH</a>, 
+<a class="el" href="../../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa9dfde07fbf3ce02396167716ef70c612">NC_TRANSPORT_TLS</a>
+ }</td></tr>
+<tr class="memdesc:ga8be6ccea205129b05c38331a7a42174a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Supported NETCONF transport protocols enumeration. To change currently used transport protocol, call <a class="el" href="db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806" title="Set transport protocol for the sessions created by subsequent nc_session_connect() calls...">nc_session_transport()</a>.  <a href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">More...</a><br/></td></tr>
+<tr class="separator:ga8be6ccea205129b05c38331a7a42174a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -194,6 +200,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gad0e758dfee764ae9c2a032e0151c6707"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707">nc_session_accept</a> (const struct nc_cpblts *capabilities)</td></tr>
 <tr class="memdesc:gad0e758dfee764ae9c2a032e0151c6707"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept NETCONF session from a client.  <a href="#gad0e758dfee764ae9c2a032e0151c6707">More...</a><br/></td></tr>
 <tr class="separator:gad0e758dfee764ae9c2a032e0151c6707"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7ee207cac84fd5cd82419af41e14c06f"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga7ee207cac84fd5cd82419af41e14c06f">nc_session_accept_username</a> (const struct nc_cpblts *capabilities, const char *username)</td></tr>
+<tr class="memdesc:ga7ee207cac84fd5cd82419af41e14c06f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept NETCONF session from a client and assign it to the specified username.  <a href="#ga7ee207cac84fd5cd82419af41e14c06f">More...</a><br/></td></tr>
+<tr class="separator:ga7ee207cac84fd5cd82419af41e14c06f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae3858d998d19cb2fb700b15fdf602f23"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23">nc_session_connect</a> (const char *host, unsigned short port, const char *username, const struct nc_cpblts *cpblts)</td></tr>
 <tr class="memdesc:gae3858d998d19cb2fb700b15fdf602f23"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create NETCONF session to the specified server.  <a href="#gae3858d998d19cb2fb700b15fdf602f23">More...</a><br/></td></tr>
 <tr class="separator:gae3858d998d19cb2fb700b15fdf602f23"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -207,7 +216,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaa5994f45a7031dc931bdf4a3acebedee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cleanup the session structure and free all the allocated resources.  <a href="#gaa5994f45a7031dc931bdf4a3acebedee">More...</a><br/></td></tr>
 <tr class="separator:gaa5994f45a7031dc931bdf4a3acebedee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga09bdf1d9eacf9f53bf3f05557ffe0821"><td class="memItemLeft" align="right" valign="top">struct nc_cpblts *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga09bdf1d9eacf9f53bf3f05557ffe0821">nc_session_get_cpblts</a> (const struct nc_session *session)</td></tr>
-<tr class="memdesc:ga09bdf1d9eacf9f53bf3f05557ffe0821"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NULL terminated list of capabilities associated with the session.  <a href="#ga09bdf1d9eacf9f53bf3f05557ffe0821">More...</a><br/></td></tr>
+<tr class="memdesc:ga09bdf1d9eacf9f53bf3f05557ffe0821"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get list of capabilities associated with the session.  <a href="#ga09bdf1d9eacf9f53bf3f05557ffe0821">More...</a><br/></td></tr>
 <tr class="separator:ga09bdf1d9eacf9f53bf3f05557ffe0821"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga8283673aa18f079a89a437efb436a55a"><td class="memItemLeft" align="right" valign="top">struct nc_cpblts *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga8283673aa18f079a89a437efb436a55a">nc_session_get_cpblts_default</a> (void)</td></tr>
 <tr class="memdesc:ga8283673aa18f079a89a437efb436a55a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NULL terminated list of the default capabilities supported by libnetconf including the list of namespaces provided by the datastores created with <a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6" title="Create a new datastore structure of the specified implementation type. ">ncds_new()</a> and initialized by <a class="el" href="../../db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff" title="Activate datastore structure for use. ">ncds_init()</a>.  <a href="#ga8283673aa18f079a89a437efb436a55a">More...</a><br/></td></tr>
@@ -227,6 +236,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gacebd018e30c3eeb0638bbb428a1741b4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga9fba5da8e4c50d2427d0d24e8e7b630c">NC_SESSION_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacebd018e30c3eeb0638bbb428a1741b4">nc_session_get_status</a> (const struct nc_session *session)</td></tr>
 <tr class="memdesc:gacebd018e30c3eeb0638bbb428a1741b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information about the session current status.  <a href="#gacebd018e30c3eeb0638bbb428a1741b4">More...</a><br/></td></tr>
 <tr class="separator:gacebd018e30c3eeb0638bbb428a1741b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1eae5ae3f6460dcc849733f0965c133c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga1eae5ae3f6460dcc849733f0965c133c">nc_session_get_transport</a> (const struct nc_session *session)</td></tr>
+<tr class="memdesc:ga1eae5ae3f6460dcc849733f0965c133c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get transport protocol used for the NETCONF session.  <a href="#ga1eae5ae3f6460dcc849733f0965c133c">More...</a><br/></td></tr>
+<tr class="separator:ga1eae5ae3f6460dcc849733f0965c133c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabdd090cbc50a8f7db58e5be8062296d6"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gabdd090cbc50a8f7db58e5be8062296d6">nc_session_get_user</a> (const struct nc_session *session)</td></tr>
 <tr class="memdesc:gabdd090cbc50a8f7db58e5be8062296d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get NETCONF session username.  <a href="#gabdd090cbc50a8f7db58e5be8062296d6">More...</a><br/></td></tr>
 <tr class="separator:gabdd090cbc50a8f7db58e5be8062296d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -236,9 +248,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ga023c9c813c59588ab938108f3f063d41"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga023c9c813c59588ab938108f3f063d41">nc_session_monitor</a> (struct nc_session *session)</td></tr>
 <tr class="memdesc:ga023c9c813c59588ab938108f3f063d41"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add the session into the internal list of monitored sessions that are returned as part of netconf-state information defined in RFC 6022.  <a href="#ga023c9c813c59588ab938108f3f063d41">More...</a><br/></td></tr>
 <tr class="separator:ga023c9c813c59588ab938108f3f063d41"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga65786746e736c6c0d5b74cc0d816bf9e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga65786746e736c6c0d5b74cc0d816bf9e">nc_session_notif_allowed</a> (const struct nc_session *session)</td></tr>
-<tr class="memdesc:ga65786746e736c6c0d5b74cc0d816bf9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tell me if the notification subscription is allowed on the given session.  <a href="#ga65786746e736c6c0d5b74cc0d816bf9e">More...</a><br/></td></tr>
-<tr class="separator:ga65786746e736c6c0d5b74cc0d816bf9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafd3b69869e102a4625a5ffb490b4d70f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gafd3b69869e102a4625a5ffb490b4d70f">nc_session_notif_allowed</a> (struct nc_session *session)</td></tr>
+<tr class="memdesc:gafd3b69869e102a4625a5ffb490b4d70f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tell me if the notification subscription is allowed on the given session.  <a href="#gafd3b69869e102a4625a5ffb490b4d70f">More...</a><br/></td></tr>
+<tr class="separator:gafd3b69869e102a4625a5ffb490b4d70f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6e125c035cdebae8c49ff962866c0806"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806">nc_session_transport</a> (<a class="el" href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a> proto)</td></tr>
+<tr class="memdesc:ga6e125c035cdebae8c49ff962866c0806"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set transport protocol for the sessions created by subsequent <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a> calls. By default, transport protocol is set to <a class="el" href="../../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa7878cac9e93258d6bb1a2f166377606a">NC_TRANSPORT_SSH</a>.  <a href="#ga6e125c035cdebae8c49ff962866c0806">More...</a><br/></td></tr>
+<tr class="separator:ga6e125c035cdebae8c49ff962866c0806"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab5beccc3acd15a5ad6499992e24fbe59"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gab5beccc3acd15a5ad6499992e24fbe59">nc_set_keypair_path</a> (const char *private, const char *public)</td></tr>
 <tr class="memdesc:gab5beccc3acd15a5ad6499992e24fbe59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism.  <a href="#gab5beccc3acd15a5ad6499992e24fbe59">More...</a><br/></td></tr>
 <tr class="separator:gab5beccc3acd15a5ad6499992e24fbe59"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -356,6 +371,33 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </td></tr>
 <tr><td class="fieldname"><em><a class="anchor" id="ggad9081cbe1edde22e8612e07ba4c3be10a497854e455f81123847c1ba089c40158"></a>NC_SSH_AUTH_INTERACTIVE</em>&nbsp;</td><td class="fielddoc">
 <p>interactive SSH user authorization </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="ga8be6ccea205129b05c38331a7a42174a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Supported NETCONF transport protocols enumeration. To change currently used transport protocol, call <a class="el" href="../../db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806" title="Set transport protocol for the sessions created by subsequent nc_session_connect() calls...">nc_session_transport()</a>. </p>
+<p>Note that NC_TRANSPORT_TLS is supported only when libnetconf is compiled with &ndash;enable-tls configure's option. If the option is not used, <a class="el" href="../../db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806" title="Set transport protocol for the sessions created by subsequent nc_session_connect() calls...">nc_session_transport()</a> returns EXIT_FAILURE with NC_TRANSPORT_TLS value.</p>
+<p>This setting is valuable only for client side NETCONF applications. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="gga8be6ccea205129b05c38331a7a42174aa914942ddb1fbb24a094f8e6ec5188e6e"></a>NC_TRANSPORT_UNKNOWN</em>&nbsp;</td><td class="fielddoc">
+<p>Unknown transport protocol, this is not acceptable as input value </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="gga8be6ccea205129b05c38331a7a42174aa7878cac9e93258d6bb1a2f166377606a"></a>NC_TRANSPORT_SSH</em>&nbsp;</td><td class="fielddoc">
+<p>NETCONF over SSH, this value is used by default </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="gga8be6ccea205129b05c38331a7a42174aa9dfde07fbf3ce02396167716ef70c612"></a>NC_TRANSPORT_TLS</em>&nbsp;</td><td class="fielddoc">
+<p>NETCONF over TLS </p>
 </td></tr>
 </table>
 
@@ -749,10 +791,48 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div><div class="memdoc">
 
 <p>Accept NETCONF session from a client. </p>
-<p>The caller process of this function is supposed to run as SSH Subsystem application launched automatically by SSH server when the NETCONF subsystem request comes to the SSH server. Only one NETCONF session can be accepted in a single SSH Subsystem.</p>
+<p>The caller process of this function is supposed to be launched as a subprocess of the transport protocol server (in case of SSH, it is called SSH Subsystem). Username assigned to the NETCONF session is guessed from the process's UID. This approach supposes that the transport protocol server launches the caller process with the changed UID according to the user logged in (OpenSSH's sshd does this, stunnel does not - see <a class="el" href="../../db/d52/group__session.html#ga7ee207cac84fd5cd82419af41e14c06f" title="Accept NETCONF session from a client and assign it to the specified username. ">nc_session_accept_username()</a> instead of this function).</p>
+<p>Only one NETCONF session can be accepted in a single caller since it communicates with the transport protocol server directly via (redirected) stdin and stdout streams.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">capabilities</td><td>NETCONF capabilities structure with the capabilities supported by the server. The caller can use <a class="el" href="../../db/d52/group__session.html#ga8283673aa18f079a89a437efb436a55a" title="Get NULL terminated list of the default capabilities supported by libnetconf including the list of na...">nc_session_get_cpblts_default()</a> to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Structure describing the accepted NETCONF session or NULL in case of an error. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga7ee207cac84fd5cd82419af41e14c06f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct nc_session* nc_session_accept_username </td>
+          <td>(</td>
+          <td class="paramtype">const struct nc_cpblts *&#160;</td>
+          <td class="paramname"><em>capabilities</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>username</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Accept NETCONF session from a client and assign it to the specified username. </p>
+<p>The same as <a class="el" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707" title="Accept NETCONF session from a client. ">nc_session_accept()</a> except that instead of guessing username from the process's UID, the specified username is assigned to the NETCONF session. This can be used especially in case that the transport protocol server (sshd, stunnel,...) does not change process's UID automatically.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">capabilities</td><td>NETCONF capabilities structure with the capabilities supported by the server. The caller can use <a class="el" href="../../db/d52/group__session.html#ga8283673aa18f079a89a437efb436a55a" title="Get NULL terminated list of the default capabilities supported by libnetconf including the list of na...">nc_session_get_cpblts_default()</a> to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">username</td><td>Name of the user which will be assigned to the NETCONF session. This information is used for example by NACM subsystem. </td></tr>
   </table>
   </dd>
 </dl>
@@ -886,7 +966,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 <p>Create a disconnected session structure. </p>
 <p>This creates a dummy session structure which is not supposed to exchange NETCONF messages between client and server. Instead, it can be successfully used by server (e.g. detached process that doesn't hold the real session structure) to access NETCONF datastores via libnetconf.</p>
-<p>All the required parameters can be obtained from the real session structure by the session getter functions (<a class="el" href="../../db/d52/group__session.html#ga91012cb5ae50651916ee2239661d7603" title="Get NETCONF session ID. ">nc_session_get_id()</a>, <a class="el" href="../../db/d52/group__session.html#gabdd090cbc50a8f7db58e5be8062296d6" title="Get NETCONF session username. ">nc_session_get_user()</a> and <a class="el" href="../../db/d52/group__session.html#ga09bdf1d9eacf9f53bf3f05557ffe0821" title="Get NULL terminated list of capabilities associated with the session. ">nc_session_get_cpblts()</a>). NULL values are not allowed.</p>
+<p>All the required parameters can be obtained from the real session structure by the session getter functions (<a class="el" href="../../db/d52/group__session.html#ga91012cb5ae50651916ee2239661d7603" title="Get NETCONF session ID. ">nc_session_get_id()</a>, <a class="el" href="../../db/d52/group__session.html#gabdd090cbc50a8f7db58e5be8062296d6" title="Get NETCONF session username. ">nc_session_get_user()</a> and <a class="el" href="../../db/d52/group__session.html#ga09bdf1d9eacf9f53bf3f05557ffe0821" title="Get list of capabilities associated with the session. ">nc_session_get_cpblts()</a>). NULL values are not allowed.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">sid</td><td>Session ID. </td></tr>
@@ -939,8 +1019,8 @@ string)", but I want to be clear from the API, that function returns pointer to 
       </table>
 </div><div class="memdoc">
 
-<p>Get NULL terminated list of capabilities associated with the session. </p>
-<p>Returned list is a copy of the original list associated with the session. The caller is supposed to free all the returned strings.</p>
+<p>Get list of capabilities associated with the session. </p>
+<p>Returned structure is connected with the session. Do not free or modify it.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session structure </td></tr>
@@ -1097,6 +1177,31 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 </div>
 </div>
+<a class="anchor" id="ga1eae5ae3f6460dcc849733f0965c133c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a> nc_session_get_transport </td>
+          <td>(</td>
+          <td class="paramtype">const struct nc_session *&#160;</td>
+          <td class="paramname"><em>session</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get transport protocol used for the NETCONF session. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session structure </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>one of NC_TRANSPORT enumeration values. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="gabdd090cbc50a8f7db58e5be8062296d6"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1172,14 +1277,14 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 </div>
 </div>
-<a class="anchor" id="ga65786746e736c6c0d5b74cc0d816bf9e"></a>
+<a class="anchor" id="gafd3b69869e102a4625a5ffb490b4d70f"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">int nc_session_notif_allowed </td>
           <td>(</td>
-          <td class="paramtype">const struct nc_session *&#160;</td>
+          <td class="paramtype">struct nc_session *&#160;</td>
           <td class="paramname"><em>session</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1194,6 +1299,24 @@ string)", but I want to be clear from the API, that function returns pointer to 
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>0 if not, 1 if subscription is currently allowed. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga6e125c035cdebae8c49ff962866c0806"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int nc_session_transport </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a>&#160;</td>
+          <td class="paramname"><em>proto</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set transport protocol for the sessions created by subsequent <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a> calls. By default, transport protocol is set to <a class="el" href="../../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa7878cac9e93258d6bb1a2f166377606a">NC_TRANSPORT_SSH</a>. </p>
 
 </div>
 </div>
@@ -1263,6 +1386,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <li>password (2)</li>
 <li>public keys (1)</li>
 </ol>
+<p>This function has no effect with configure's &ndash;disable-libssh2 option.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Setting preference for the given authentication type. </td></tr>
@@ -1278,7 +1402,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Feb 6 2014 16:01:55 for libnetconf by
+    <li class="footer">Generated on Tue May 13 2014 15:16:49 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

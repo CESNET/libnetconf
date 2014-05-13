@@ -40,7 +40,7 @@
 #ifndef SESSION_H_
 #define SESSION_H_
 
-#include "ssh.h"
+#include "transport.h"
 #include "netconf.h"
 
 #ifdef __cplusplus
@@ -148,6 +148,14 @@ const char* nc_session_get_port(const struct nc_session* session);
  * @return Constant string identifying NETCONF session server host.
  */
 const char* nc_session_get_user(const struct nc_session* session);
+
+/**
+ * @ingroup session
+ * @brief Get transport protocol used for the NETCONF session
+ * @param[in] session NETCONF session structure
+ * @return one of NC_TRANSPORT enumeration values.
+ */
+NC_TRANSPORT nc_session_get_transport(const struct nc_session* session);
 
 /**
  * @ingroup session

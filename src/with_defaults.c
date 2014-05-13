@@ -105,6 +105,33 @@ NCWD_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc)
 	return (rpc->with_defaults);
 }
 
+/*
+ * 0 - no match
+ * 1 - match found
+ */
+static int search_choice_match(xmlNodePtr parent, xmlChar* name)
+{
+	xmlNodePtr aux;
+
+	/* go through all existing elements on the appropriate level in the
+	 * configuration data to check if the currently processed default
+	 * value is created and the node with default value is supposed to
+	 * be created
+	 */
+	for (aux = parent->children; aux != NULL; aux = aux->next) {
+		if (aux->type != XML_ELEMENT_NODE) {
+			continue;
+		}
+
+		if (xmlStrcmp(aux->name, name) == 0) {
+			/* we have a match */
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
 static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* namespace, NCWD_MODE mode, xmlNodePtr** created)
 {
 	xmlNodePtr *parents = NULL, *retvals = NULL, *created_local = NULL, *aux_nodeptr;
@@ -153,8 +180,78 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 		/* we will get parent of the config's equivalent of the node */
 		parents = fill_default(config, node->parent, namespace, mode, &created_local);
 
-		/* if we are in augment node, just go through */
-		if ((xmlStrcmp(node->name, BAD_CAST "augment") == 0) &&
+		if (parents && xmlStrcmp(node->parent->name, BAD_CAST "choice") == 0) {
+			/* process choices */
+
+			if (xmlStrcmp(node->name, BAD_CAST "case") == 0) {
+				/*
+				 * if there is case defined, we have to skip it and search for
+				 * its subelements since case node itself is not present in
+				 * configuration data
+				 */
+
+				/* so do it for all given parent nodes */
+				for (i = 0; parents[i] != NULL; i++) {
+					/*
+					 * at least one of the case children is supposed to be
+					 * present, if no such element is found, the parent is
+					 * removed from further processing
+					 */
+					for (aux = node->children; aux != NULL; aux = aux->next) {
+						if (aux->type != XML_ELEMENT_NODE) {
+							continue;
+						}
+
+						if ((xmlStrcmp(aux->name, BAD_CAST "anyxml") == 0) ||
+								(xmlStrcmp(aux->name, BAD_CAST "container") == 0) ||
+								(xmlStrcmp(aux->name, BAD_CAST "leaf") == 0) ||
+								(xmlStrcmp(aux->name, BAD_CAST "list") == 0) ||
+								(xmlStrcmp(aux->name, BAD_CAST "leaf-list") == 0)) {
+							value = xmlGetProp(aux, BAD_CAST "name");
+							if (search_choice_match(parents[i], value) == 0) {
+								xmlFree(value);
+								break;
+							}
+							xmlFree(value);
+						}
+					}
+					if (aux == NULL) {
+						/* match not found */
+						parents[i] = NULL;
+					}
+				}
+			} else {
+				/*
+				 * if there is no case, the element itself is supposed to be
+				 * present in the configuration data, so search for it
+				 */
+				value = xmlGetProp(node, BAD_CAST "name");
+				for (i = 0; parents[i] != NULL; i++) {
+					if (search_choice_match(parents[i], value) == 0) {
+						parents[i] = NULL;
+					}
+				}
+				xmlFree(value);
+			}
+
+			/* consolidate parents */
+			for (j = 0, k = 0; k < i; k++) {
+				if (parents[k]) {
+					parents[j] = parents[k];
+					j++;
+				}
+			}
+			if (j == 0) {
+				free(parents);
+				parents = NULL;
+			}
+
+		}
+
+		/* if we are in augment or choice node, just go through */
+		if (((xmlStrcmp(node->name, BAD_CAST "augment") == 0) ||
+				(xmlStrcmp(node->name, BAD_CAST "choice") == 0) ||
+				(xmlStrcmp(node->name, BAD_CAST "case") == 0)) &&
 				(xmlStrcmp(node->ns->href, BAD_CAST NC_NS_YIN) == 0)) {
 			return (parents);
 		}
@@ -310,7 +407,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 
 				xmlFree(value);
 				/* continue to another parent node in the list to process */
-				continue;
+				break;
 			case NCWD_MODE_TRIM:
 				/* we are at the end - remove element if it contains default value */
 				if (parents[i]->children != NULL) {
@@ -494,6 +591,10 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 			}
 			/* process all defaults elements */
 			for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
+				if (xmlStrcmp(defaults->nodesetval->nodeTab[i]->parent->name, BAD_CAST "choice") == 0) {
+					/* skip defaults for choices */
+					continue;
+				}
 				fill_default(config, defaults->nodesetval->nodeTab[i], (char*)namespace, mode, NULL);
 			}
 		}

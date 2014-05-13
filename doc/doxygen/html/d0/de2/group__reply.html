@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.7.0</span>
+   &#160;<span id="projectnumber">0.7.99</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -142,6 +142,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga4543351c89208bb06fa895be334d59ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga4543351c89208bb06fa895be334d59ad">nc_reply_data</a> (const char *data)</td></tr>
 <tr class="memdesc:ga4543351c89208bb06fa895be334d59ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create rpc-reply response with &lt;data&gt; content.  <a href="#ga4543351c89208bb06fa895be334d59ad">More...</a><br/></td></tr>
 <tr class="separator:ga4543351c89208bb06fa895be334d59ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8c365a22efcaab4f1c29b3f51f254aea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga8c365a22efcaab4f1c29b3f51f254aea">nc_reply_data_ns</a> (const char *data, const char *ns)</td></tr>
+<tr class="memdesc:ga8c365a22efcaab4f1c29b3f51f254aea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create rpc-reply response with &lt;data&gt; content in the specified namespace.  <a href="#ga8c365a22efcaab4f1c29b3f51f254aea">More...</a><br/></td></tr>
+<tr class="separator:ga8c365a22efcaab4f1c29b3f51f254aea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga279c8b48bfdf590c15a043b7d385dfb8"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga279c8b48bfdf590c15a043b7d385dfb8">nc_reply_dump</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:ga279c8b48bfdf590c15a043b7d385dfb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the rpc-reply message into a string.  <a href="#ga279c8b48bfdf590c15a043b7d385dfb8">More...</a><br/></td></tr>
 <tr class="separator:ga279c8b48bfdf590c15a043b7d385dfb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -160,6 +163,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaac62fb3d427985311cf71a2c3ab8d424"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#gaac62fb3d427985311cf71a2c3ab8d424">nc_reply_get_data</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:gaac62fb3d427985311cf71a2c3ab8d424"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get content of the &lt;data&gt; element in &lt;rpc-reply&gt;.  <a href="#gaac62fb3d427985311cf71a2c3ab8d424">More...</a><br/></td></tr>
 <tr class="separator:gaac62fb3d427985311cf71a2c3ab8d424"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4a5c880080d3044f1564192cd3780534"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga4a5c880080d3044f1564192cd3780534">nc_reply_get_data_ns</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
+<tr class="memdesc:ga4a5c880080d3044f1564192cd3780534"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get namespace of the &lt;data&gt; element in &lt;rpc-reply&gt;.  <a href="#ga4a5c880080d3044f1564192cd3780534">More...</a><br/></td></tr>
+<tr class="separator:ga4a5c880080d3044f1564192cd3780534"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga121d66d8f7437d87a995b82187e7e7ff"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/de2/group__reply.html#ga121d66d8f7437d87a995b82187e7e7ff">nc_reply_get_errormsg</a> (const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *reply)</td></tr>
 <tr class="memdesc:ga121d66d8f7437d87a995b82187e7e7ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get error-message from the server's &lt;rpc-error&gt; reply.  <a href="#ga121d66d8f7437d87a995b82187e7e7ff">More...</a><br/></td></tr>
 <tr class="separator:ga121d66d8f7437d87a995b82187e7e7ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -311,6 +317,42 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Serialized XML content of the &lt;data&gt; element for the &lt;rpc-reply&gt; message being created. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Created &lt;rpc-reply&gt; message. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga8c365a22efcaab4f1c29b3f51f254aea"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* nc_reply_data_ns </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>ns</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create rpc-reply response with &lt;data&gt; content in the specified namespace. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Serialized XML content of the &lt;data&gt; element for the &lt;rpc-reply&gt; message being created. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ns</td><td>Default namespace for the data element. </td></tr>
   </table>
   </dd>
 </dl>
@@ -476,6 +518,31 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>String with the content of the &lt;data&gt; element. Caller is responsible for freeing the returned string with free(). </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga4a5c880080d3044f1564192cd3780534"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* nc_reply_get_data_ns </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *&#160;</td>
+          <td class="paramname"><em>reply</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get namespace of the &lt;data&gt; element in &lt;rpc-reply&gt;. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">reply</td><td>rpc-reply message. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Namespace of the &lt;data&gt; element. Do not free. </dd></dl>
 
 </div>
 </div>
@@ -704,7 +771,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Feb 6 2014 16:01:55 for libnetconf by
+    <li class="footer">Generated on Tue May 13 2014 15:16:49 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

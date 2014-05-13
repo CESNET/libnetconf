@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -38,6 +38,10 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .br
 .RI "\fICreate rpc-reply response with <data> content\&. \fP"
 .ti -1c
+.RI "\fBnc_reply\fP * \fBnc_reply_data_ns\fP (const char *data, const char *ns)"
+.br
+.RI "\fICreate rpc-reply response with <data> content in the specified namespace\&. \fP"
+.ti -1c
 .RI "char * \fBnc_reply_dump\fP (const \fBnc_reply\fP *reply)"
 .br
 .RI "\fIDump the rpc-reply message into a string\&. \fP"
@@ -61,6 +65,10 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .RI "char * \fBnc_reply_get_data\fP (const \fBnc_reply\fP *reply)"
 .br
 .RI "\fIGet content of the <data> element in <rpc-reply>\&. \fP"
+.ti -1c
+.RI "const char * \fBnc_reply_get_data_ns\fP (const \fBnc_reply\fP *reply)"
+.br
+.RI "\fIGet namespace of the <data> element in <rpc-reply>\&. \fP"
 .ti -1c
 .RI "const char * \fBnc_reply_get_errormsg\fP (const \fBnc_reply\fP *reply)"
 .br
@@ -191,6 +199,24 @@ Created <rpc-reply> message\&.
 .RE
 .PP
 
+.SS "\fBnc_reply\fP* nc_reply_data_ns (const char *data, const char *ns)"
+
+.PP
+Create rpc-reply response with <data> content in the specified namespace\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdata\fP Serialized XML content of the <data> element for the <rpc-reply> message being created\&. 
+.br
+\fIns\fP Default namespace for the data element\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Created <rpc-reply> message\&. 
+.RE
+.PP
+
 .SS "char* nc_reply_dump (const \fBnc_reply\fP *reply)"
 
 .PP
@@ -281,6 +307,22 @@ Get content of the <data> element in <rpc-reply>\&.
 \fBReturns:\fP
 .RS 4
 String with the content of the <data> element\&. Caller is responsible for freeing the returned string with free()\&. 
+.RE
+.PP
+
+.SS "const char* nc_reply_get_data_ns (const \fBnc_reply\fP *reply)"
+
+.PP
+Get namespace of the <data> element in <rpc-reply>\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIreply\fP rpc-reply message\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Namespace of the <data> element\&. Do not free\&. 
 .RE
 .PP
 

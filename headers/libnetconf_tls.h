@@ -1,7 +1,7 @@
 /**
- * \file libnetconf_ssh.h
+ * \file libnetconf_tls.h
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief libnetconf's header for control libssh2.
+ * \brief libnetconf's header for control openssl.
  *
  * Copyright (c) 2012-2014 CESNET, z.s.p.o.
  *
@@ -37,10 +37,51 @@
  *
  */
 
-#ifndef LIBNETCONF_SSH_H_
-#define LIBNETCONF_SSH_H_
+#ifndef LIBNETCONF_TLS_H_
+#define LIBNETCONF_TLS_H_
 
-#include "libnetconf/callbacks_ssh.h"
+#include <openssl/x509.h>
+
+#include "libnetconf/netconf.h"
+#include "libnetconf/transport.h"
+#include "libnetconf/callhome.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * \defgroup tls NETCONF over TLS
+ * \brief libnetconf's functions to use TLS
+ *
+ * Remember, that to make these functions available, libnetconf must be
+ * compiled with --enable-tls configure's option.
+ */
+
+/**
+ * @ingroup tls
+ * @brief Set paths to the client certificate and its private key
+ *
+ * This function takes effect only on client side. It must be used before
+ * establishing NETCONF session (including call home) over TLS.
+ *
+ * @param[in] peer_cert Path to the file containing client certificate
+ * @param[in] peer_key Path to the file containing private key for the client
+ * certificate. If NULL, key is expected to be stored in the file specified in
+ * cert parameter.
+ * @param[in] CAfile Location of the CA certificate used to verify the server
+ * certificates. For More info, see documentation for
+ * SSL_CTX_load_verify_locations() function from OpenSSL.
+ * @param[in] CApath Location of the CA certificates used to verify the server
+ * certificates. For More info, see documentation for
+ * SSL_CTX_load_verify_locations() function from OpenSSL.
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LIBNETCONF_H_ */
 

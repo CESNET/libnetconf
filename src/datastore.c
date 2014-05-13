@@ -38,6 +38,7 @@
  */
 
 #define _GNU_SOURCE
+#include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -133,6 +134,7 @@ struct ncds {
 struct ncds_ds *nacm_ds = NULL; /* for NACM subsystem */
 static struct ncds ncds = {NULL, NULL, 0, 0};
 static struct model_list *models_list = NULL;
+static struct transapi_list* augment_tapi_list = NULL;
 static char** models_dirs = NULL;
 
 char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
@@ -482,6 +484,16 @@ int ncds_sysinit(int flags)
 	return (EXIT_SUCCESS);
 }
 
+void ncds_startup_internal(void)
+{
+	struct ncds_ds_list *ds_iter;
+
+	for (ds_iter = ncds.datastores; ds_iter != NULL ; ds_iter = ds_iter->next) {
+		/* apply startup to running */
+		ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_STARTUP, NULL, NULL);
+	}
+}
+
 /**
  * @brief Get ncds_ds structure from the datastore list containing storage
  * information with the specified ID.
@@ -556,9 +568,10 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 	struct nc_session * dummy_session = NULL;
 	struct nc_err * err;
 	int nocpblts = 0, ret, retval = EXIT_SUCCESS;
-	xmlDocPtr running_doc = NULL;
+	xmlDocPtr running_doc = NULL, aux_doc1 = NULL, aux_doc2;
 	char* new_running_config = NULL;
 	xmlBufferPtr running_buf = NULL;
+	struct transapi_list *tapi_iter;
 
 	if (id != NULL) {
 		/* initialize only the device connected with the given datastore ID */
@@ -593,13 +606,24 @@ int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
 	rpc_msg = nc_rpc_copyconfig(NC_DATASTORE_STARTUP, NC_DATASTORE_RUNNING);
 	running_buf = xmlBufferCreate();
 
-	for (ds_iter=start; ds_iter != NULL; ds_iter=ds_iter->next) {
-		if (ds_iter->datastore->transapi.init) {
-			/* module can return current configuration of device */
-			if (ds_iter->datastore->transapi.init(&running_doc)) {
-				ERROR ("init function from module %s failed.", ds_iter->datastore->data_model->name);
-				retval = EXIT_FAILURE;
-				goto cleanup;
+	for (ds_iter = start; ds_iter != NULL ; ds_iter = ds_iter->next) {
+		for (tapi_iter = ds_iter->datastore->transapis; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
+			if (tapi_iter->tapi->init != NULL) {
+				/* module can return current configuration of device */
+				if (tapi_iter->tapi->init(&aux_doc1)) {
+					ERROR("init function from module %s failed.",
+					        ds_iter->datastore->data_model->name);
+					retval = EXIT_FAILURE;
+					goto cleanup;
+				}
+				if (running_doc == NULL) {
+					running_doc = aux_doc1;
+				} else {
+					aux_doc2 = running_doc;
+					running_doc = ncxml_merge(aux_doc2, aux_doc1, ds_iter->datastore->ext_model);
+					xmlFreeDoc(aux_doc1);
+					xmlFreeDoc(aux_doc2);
+				}
 			}
 		}
 
@@ -1366,23 +1390,24 @@ cleanup:
 	return (retval);
 }
 
-struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const char* callbacks_path)
+static struct transapi_internal* transapi_new_shared(const char* callbacks_path)
 {
-	struct ncds_ds* ds = NULL;
-	void * transapi_module = NULL;
+	void *transapi_module = NULL;
 	xmlDocPtr (*get_state)(const xmlDocPtr, const xmlDocPtr, struct nc_err **) = NULL;
 	void (*close_func)(void) = NULL;
 	int (*init_func)(xmlDocPtr *) = NULL;
-	struct transapi_data_callbacks * data_clbks = NULL;
-	struct transapi_rpc_callbacks * rpc_clbks = NULL;
+	struct transapi_data_callbacks *data_clbks = NULL;
+	struct transapi_rpc_callbacks *rpc_clbks = NULL;
 	int *ver, ver_default = 1;
 	int *modified;
 	NC_EDIT_ERROPT_TYPE *erropt;
 	char * ns_mapping = NULL;
 	TRANSAPI_CLBCKS_ORDER_TYPE *clbks_order;
+	struct transapi_internal* transapi;
 
-	if (callbacks_path == NULL) {
-		ERROR("%s: missing callbacks path parameter.", __func__);
+	/* allocate transapi structure */
+	if ((transapi = malloc(sizeof(struct transapi_internal))) == NULL) {
+		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return (NULL);
 	}
 
@@ -1438,14 +1463,10 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	}
 
 	/* callbacks work with configuration data */
-	/* empty datastore has no data */
-	if (type != NCDS_TYPE_EMPTY) {
-		/* get clbks structure */
-		if ((data_clbks = dlsym (transapi_module, "clbks")) == NULL) {
-			ERROR("%s: Missing data callbacks in %s transAPI module.", callbacks_path);
-			dlclose (transapi_module);
-			return (NULL);
-		}
+	/* get clbks structure */
+	if ((data_clbks = dlsym (transapi_module, "clbks")) == NULL) {
+		WARN("%s: No data callbacks in %s transAPI module.", callbacks_path);
+		return (NULL);
 	}
 
 	if ((init_func = dlsym (transapi_module, "transapi_init")) == NULL) {
@@ -1456,35 +1477,74 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 		VERB("No transapi_close() function in %s transAPI module.", callbacks_path);
 	}
 
-	/* create basic ncds_ds structure */
-	if ((ds = ncds_new2(type, model_path, get_state)) == NULL) {
-		ERROR ("%s: Failed to create ncds_ds structure.", __func__);
-		dlclose (transapi_module);
+	/* fill transapi structure */
+	transapi->module = transapi_module;
+	transapi->config_modified = modified;
+	transapi->erropt = erropt;
+	transapi->ns_mapping = (struct ns_pair*)ns_mapping;
+	transapi->data_clbks = data_clbks;
+	transapi->rpc_clbks = rpc_clbks;
+	/* Convert clbks_order to enum */
+	transapi->clbks_order = TRANSAPI_CLBCKS_ORDER_DEFAULT;
+	if (clbks_order != NULL)
+		transapi->clbks_order = *clbks_order;
+	transapi->init = init_func;
+	transapi->close = close_func;
+	transapi->get_state = get_state;
+
+	return (transapi);
+}
+
+struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const char* callbacks_path)
+{
+	struct ncds_ds* ds = NULL;
+	struct transapi_list *item;
+	struct transapi_internal* transapi;
+
+	if (callbacks_path == NULL) {
+		ERROR("%s: missing callbacks path parameter.", __func__);
 		return (NULL);
 	}
 
-	/* add pointers for transaction API */
-	ds->transapi.module = transapi_module;
-	ds->transapi.config_modified = modified;
-	ds->transapi.erropt = erropt;
-	ds->transapi.ns_mapping = (const char**)ns_mapping;
-	ds->transapi.data_clbks = data_clbks;
-	ds->transapi.rpc_clbks = rpc_clbks;
-	/* Convert clbks_order to enum */
-	ds->transapi.clbks_order = TRANSAPI_CLBCKS_ORDER_DEFAULT;
-	if (clbks_order != NULL)
-		ds->transapi.clbks_order = *clbks_order;
-	ds->transapi.init = init_func;
-	ds->transapi.close = close_func;
+	if ((transapi = transapi_new_shared(callbacks_path)) == NULL) {
+		ERROR ("%s: Failed to prepare transAPI structures.", __func__);
+		return (NULL);
+	}
+
+	/* create basic ncds_ds structure */
+	if ((ds = ncds_new2(type, model_path, transapi->get_state)) == NULL) {
+		ERROR ("%s: Failed to create ncds_ds structure.", __func__);
+		return (NULL);
+	}
+
+	/* create transpi list item */
+	if ((item = malloc(sizeof(struct transapi_list))) == NULL) {
+		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	/*
+	 * base transAPI module directly connected with the datastore has non-zero
+	 * ref_count since it is not stored in the global augment_tapi_list
+	 */
+	item->tapi = transapi;
+	item->ref_count = 1;
+	item->next = NULL;
+	ds->transapis = item;
 
 	return ds;
 }
 
 struct ncds_ds* ncds_new_transapi_static(NCDS_TYPE type, const char* model_path, const struct transapi* transapi)
 {
-	struct ncds_ds* ds = NULL;
+	struct transapi_list *item;
+	struct ncds_ds *ds = NULL;
 
 	/* transAPI module information checks */
+	if (transapi == NULL) {
+		ERROR("%s: Missing transAPI module description.", __func__);
+		return (NULL);
+	}
 	if (transapi->config_modified == NULL) {
 		ERROR("%s: Missing config_modified variable in transAPI module description.", __func__);
 		return (NULL);
@@ -1510,23 +1570,43 @@ struct ncds_ds* ncds_new_transapi_static(NCDS_TYPE type, const char* model_path,
 		}
 	}
 
+	if ((item = malloc(sizeof(struct transapi_list))) == NULL) {
+		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
+	}
+	/* allocate transapi structure */
+	if ((item->tapi = malloc(sizeof(struct transapi_internal))) == NULL) {
+		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		free(item);
+		return (NULL);
+	}
 	/* create basic ncds_ds structure */
 	if ((ds = ncds_new2(type, model_path, transapi->get_state)) == NULL) {
 		ERROR ("%s: Failed to create ncds_ds structure.", __func__);
+		free(item->tapi);
+		free(item);
 		return (NULL);
 	}
+	/*
+	 * base transAPI module directly connected with the datastore has non-zero
+	 * ref_count since it is not stored in the global augment_tapi_list
+	 */
+	item->ref_count = 1;
+	item->next = NULL;
+	ds->transapis = item;
 
 	/* copy transAPI module info into a internal structure
 	 * NOTE: copy only the beginning part common for struct transapi and
 	 * struct transapi_internal
 	 */
-	memcpy(&(ds->transapi), transapi, ((size_t) &((struct transapi *)0)->get_state));
-
+	memcpy(ds->transapis->tapi, transapi, (sizeof(struct transapi)));
 	/*
 	 * mark it as transAPI (non-NULL), but remember that it is not a dynamically
 	 * linked transAPI module
 	 */
-	ds->transapi.module = &error_area;
+	ds->transapis->tapi->module = &error_area;
+
+
 
 	return (ds);
 }
@@ -1546,7 +1626,7 @@ static struct data_model* data_model_new(const char* model_path)
 		return (NULL);
 	}
 
-	model = malloc(sizeof(struct data_model));
+	model = calloc(1, sizeof(struct data_model));
 	if (model == NULL) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
@@ -1644,7 +1724,10 @@ static int match_module_node(char* path_module, char* module, char* name, xmlNod
 			    xmlStrcmp((*node)->name, BAD_CAST "list") == 0 ||
 			    xmlStrcmp((*node)->name, BAD_CAST "choice") == 0 ||
 			    xmlStrcmp((*node)->name, BAD_CAST "case") == 0 ||
-			    xmlStrcmp((*node)->name, BAD_CAST "notification") == 0) {
+			    xmlStrcmp((*node)->name, BAD_CAST "notification") == 0 ||
+			    xmlStrcmp((*node)->name, BAD_CAST "leaf") == 0 ||
+			    xmlStrcmp((*node)->name, BAD_CAST "leaf-list") == 0 ||
+			    xmlStrcmp((*node)->name, BAD_CAST "anyxml") == 0) {
 				/* if the target is one of these, check its name attribute */
 				if ((name_aux = (char*) xmlGetProp(*node, BAD_CAST "name")) == NULL ) {
 					*node = (*node)->next;
@@ -1710,6 +1793,25 @@ static char* get_module_with_prefix(const char* prefix, xmlXPathObjectPtr import
 	return (NULL);
 }
 
+static struct data_model* get_model2(const char* model_path)
+{
+	struct model_list* listitem;
+
+	if (model_path == NULL) {
+		return (NULL);
+	}
+
+	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
+		if (listitem->model && listitem->model->path &&
+				strcmp(listitem->model->path, model_path) == 0) {
+			/* module found */
+			return (listitem->model);
+		}
+	}
+
+	return (NULL);
+}
+
 static struct data_model *read_model(const char* model_path)
 {
 	struct data_model *model;
@@ -1717,6 +1819,11 @@ static struct data_model *read_model(const char* model_path)
 	if (model_path == NULL) {
 		ERROR("%s: invalid parameter model_path.", __func__);
 		return (NULL);
+	}
+
+	if ((model = get_model2(model_path)) != NULL) {
+		/* model is already loaded */
+		return (model);
 	}
 
 	/* get configuration data model information */
@@ -1729,6 +1836,90 @@ static struct data_model *read_model(const char* model_path)
 		ERROR("Adding new data model failed.");
 		ncds_ds_model_free(model);
 		return (NULL);
+	}
+
+	return (model);
+}
+
+static struct data_model* get_model(const char* module, const char* version)
+{
+	struct model_list* listitem;
+	struct data_model* model = NULL;
+	int i;
+	char* aux, *aux2;
+	DIR* dir;
+	struct dirent* file;
+
+	if (module == NULL) {
+		return (NULL);
+	}
+
+	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
+		if (listitem->model && strcmp(listitem->model->name, module) == 0) {
+			if (version != NULL) {
+				if (strcmp(listitem->model->version, version) == 0) {
+					/* module found */
+					return (listitem->model);
+				} else {
+					/* module version does not match */
+					continue;
+				}
+			} else {
+				/* module found - specific version is not required */
+				return (listitem->model);
+			}
+		}
+	}
+
+	/* module not found - try to find it in a models directories */
+	if (models_dirs != NULL) {
+		for (i = 0; models_dirs[i]; i++) {
+			aux = NULL;
+			asprintf(&aux, "%s/%s.yin", models_dirs[i], module);
+			if (access(aux, R_OK) == 0) {
+				/* we have found the correct module - probably */
+				model = read_model(aux);
+				if (model != NULL) {
+					if (strcmp(model->name, module) != 0) {
+						/* read module is incorrect */
+						ncds_ds_model_free(model);
+						model = NULL;
+					}
+				}
+			} else {
+				/*
+				 * filename can contain also revision, so try to open
+				 * all suitable files
+				 */
+				free(aux);
+				if (version == NULL) {
+					asprintf(&aux, "%s@", module);
+				} else {
+					asprintf(&aux, "%s@%s", module, version);
+				}
+				dir = opendir(models_dirs[i]);
+				while((file = readdir(dir)) != NULL) {
+					if (strncmp(file->d_name, aux, strlen(aux)) == 0 &&
+					    strcmp(&(file->d_name[strlen(file->d_name)-4]), ".yin") == 0) {
+						asprintf(&aux2, "%s/%s", models_dirs[i], file->d_name);
+						model = read_model(aux2);
+						free(aux2);
+						if (model != NULL) {
+							if (strcmp(model->name, module) != 0) {
+								/* read module is incorrect */
+								ncds_ds_model_free(model);
+								model = NULL;
+							}
+						}
+					}
+				}
+				closedir(dir);
+			}
+			free(aux);
+			if (model != NULL) {
+				return (model);
+			}
+		}
 	}
 
 	return (model);
@@ -1869,6 +2060,7 @@ static int ncds_update_uses(const char* module_name, xmlXPathContextPtr *model_c
 {
 	xmlXPathObjectPtr uses, groupings = NULL;
 	xmlDocPtr doc;
+	xmlNodePtr node, nodenext;
 	char *grouping_ref, *grouping_name;
 	int i, j, flag = 0;
 
@@ -1924,7 +2116,15 @@ static int ncds_update_uses(const char* module_name, xmlXPathContextPtr *model_c
 					/* copy grouping content instead of uses statement */
 					xmlAddChildList(uses->nodesetval->nodeTab[i]->parent, xmlCopyNodeList(groupings->nodesetval->nodeTab[j]->children));
 
-					/* remove uses statement */
+					/* move uses's content next to the grouping content */
+					for (node = uses->nodesetval->nodeTab[i]->children; node != NULL; ) {
+						nodenext = node->next;
+						xmlUnlinkNode(node);
+						xmlAddChild(uses->nodesetval->nodeTab[i]->parent, node);
+						node = nodenext;
+					}
+
+					/* remove uses statement from the tree */
 					xmlUnlinkNode(uses->nodesetval->nodeTab[i]);
 					xmlFreeNode(uses->nodesetval->nodeTab[i]);
 					uses->nodesetval->nodeTab[i] = NULL;
@@ -1995,7 +2195,7 @@ static int ncds_update_uses_augments(struct data_model* model)
 		return (EXIT_FAILURE);
 	}
 
-	query = "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":augment//"NC_NS_YIN_ID":uses";
+	query = "//"NC_NS_YIN_ID":augment//"NC_NS_YIN_ID":uses";
 	return(ncds_update_uses(model->name, &(model->ctxt), query));
 }
 
@@ -2120,121 +2320,150 @@ static int ncds_update_features(struct ncds_ds* datastore)
 	return (EXIT_SUCCESS);
 }
 
-static int ncds_update_augment(struct data_model *augment)
+static int ncds_transapi_enlink(struct ncds_ds* ds, struct transapi_internal* tapi)
 {
-	xmlXPathObjectPtr imports = NULL, augments = NULL;
-	xmlNodePtr node, path_node;
-	xmlNsPtr ns;
-	int i, match;
-	char *path, *token, *name, *prefix, *module, *module_inpath = NULL;
-	struct ncds_ds* ds = NULL;
-	struct ncds_ds_list *ds_iter;
+	struct transapi_list *tapi_item, *tapi_iter;
 
-	if (augment == NULL) {
-		ERROR("%s: invalid parameter augment.", __func__);
+	if (ds == NULL || tapi == NULL) {
 		return (EXIT_FAILURE);
 	}
 
-	/* get all top-level's augment definitions */
-	if ((augments = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":augment", augment->ctxt)) != NULL ) {
-		if (xmlXPathNodeSetIsEmpty(augments->nodesetval)) {
-			/* there is no <augment> part so it cannot be augment model and we have nothing to do */
-			xmlXPathFreeObject(augments);
-			return (EXIT_SUCCESS);
+	/* search for the transapi module in the internal list */
+	for (tapi_iter = augment_tapi_list; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
+		if (tapi_iter->tapi == tapi) {
+			break;
 		}
+	}
+	if (tapi_iter == NULL) {
+		ERROR("%s: Unknown transAPI module. libnetconf internal error.");
+		return (EXIT_FAILURE);
+	}
+
+	tapi_item = malloc(sizeof(struct transapi_list));
+	if (tapi_item == NULL) {
+		ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+		return (EXIT_FAILURE);
+	}
+	tapi_item->next = NULL;
+	tapi_item->tapi = tapi;
+	/* ref_count in datastore's transAPIs list MUST be always 0 */
+	tapi_item->ref_count = 0;
+
+	/* update reference count */
+	tapi_iter->ref_count++;
+
+	/* enlink into the datastore's list */
+	if (ds->transapis == NULL) {
+		ds->transapis = tapi_item;
 	} else {
-		ERROR("%s: Evaluating XPath expression failed.", __func__);
-		goto error_cleanup;
+		for (tapi_iter = ds->transapis; tapi_iter->next != NULL; tapi_iter = tapi_iter->next);
+		tapi_iter->next = tapi_item;
 	}
 
-	/* get all <import> nodes for their prefix specification to be used with augment statement */
-	if ((imports = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":import", augment->ctxt)) == NULL ) {
-		ERROR("%s: Evaluating XPath expression failed.", __func__);
-		return (EXIT_FAILURE);
+
+	return (EXIT_SUCCESS);
+}
+
+static xmlNodePtr model_node_path(xmlNodePtr current, const char* current_prefix, const char* current_module_name, char *path, xmlXPathObjectPtr imports, struct ncds_ds** ds)
+{
+	char *token, *name, *module_inpath = NULL, *module;
+	const char *prefix;
+	struct ncds_ds_list *ds_iter;
+	xmlNodePtr path_node = NULL, node;
+	int match, path_type;
+
+	if (path == NULL) {
+		return (NULL);
 	}
 
-	/* process all augments from this model */
-	for (i = 0; i < augments->nodesetval->nodeNr; i++) {
+	if (path[0] == '/') {
+		path_type = 0; /* absolute */
+	} else {
+		path_type = 1; /* relative */
+	}
+	*ds = NULL;
 
-		/* get path to the augmented element */
-		if ((path = (char*) xmlGetProp (augments->nodesetval->nodeTab[i], BAD_CAST "target-node")) == NULL) {
-			ERROR("%s: Missing 'target-node' attribute in <augment>.", __func__);
-			goto error_cleanup;
+	/* path processing - check that we already have such an element */
+	for (token = strtok(path, "/"); token != NULL; token = strtok(NULL, "/")) {
+		if ((name = strchr(token, ':')) == NULL) {
+			name = token;
+			prefix = NULL;
+		} else {
+			name[0] = 0;
+			name = &(name[1]);
+			prefix = token;
 		}
 
-		/* search for correct datastore in each augment according to its path */
-		ds = NULL;
-
-		/* path processing - check that we already have such an element */
-		for (token = strtok(path, "/"); token != NULL; token = strtok(NULL, "/")) {
-			if ((name = strchr(token, ':')) == NULL) {
-				name = token;
-				prefix = NULL;
-			} else {
-				name[0] = 0;
-				name = &(name[1]);
-				prefix = token;
+		if (*ds == NULL) {
+			/* locate corresponding datastore - we are at the beginning of the path */
+			module = NULL;
+			if (prefix == NULL) {
+				/* model is augmenting itself - get the module's name to be able to find it */
+				module = (char*) xmlGetProp(xmlDocGetRootElement(current->doc), BAD_CAST "name");
+			} else { /* (prefix != NULL) */
+				/* find the prefix in imports */
+				module = get_module_with_prefix(prefix, imports);
 			}
 
-			if (ds == NULL) {
-				/* locate corresponding datastore - we are at the beginning of the path */
-				module = NULL;
-				if (prefix == NULL) {
-					/* model is augmenting itself - get the module's name to be able to find it */
-					module = (char*) xmlGetProp(xmlDocGetRootElement(augment->xml), BAD_CAST "name");
-				} else { /* (prefix != NULL) */
-					/* find the prefix in imports */
-					module = get_module_with_prefix(prefix, imports);
-				}
-
-				if (module == NULL) {
-					/* unknown name of the module to augment */
+			/* locate the correct datastore to augment */
+			for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
+				if (ds_iter->datastore != NULL && strcmp(ds_iter->datastore->data_model->name, module) == 0) {
+					*ds = ds_iter->datastore;
 					break;
 				}
+			}
+			if (*ds == NULL) {
+				/* no such a datastore containing model with this path */
+				return (NULL);
+			}
 
-				/* locate the correct datastore to augment */
-				for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
-					if (ds_iter->datastore != NULL && strcmp(ds_iter->datastore->data_model->name, module) == 0) {
-						ds = ds_iter->datastore;
-						break;
-					}
-				}
-				if (ds == NULL) {
-					free(module);
-					/* no such a datastore -> skip this augment */
-					break; /* path processing */
-				}
+			if ((*ds)->ext_model == (*ds)->data_model->xml) {
+				/* we have the first augment model */
+				(*ds)->ext_model = xmlCopyDoc((*ds)->data_model->xml, 1);
+			}
 
-				if (ds->ext_model == ds->data_model->xml) {
-					/* we have the first augment model */
-					ds->ext_model = xmlCopyDoc(ds->data_model->xml, 1);
-				}
-
+			if (path_type == 0) { /* absolute path */
 				/* start path parsing with module root */
-				path_node = ds->ext_model->children;
-
-				module_inpath = strdup(ds->data_model->name);
+				path_node = (*ds)->ext_model->children;
 			} else {
-				/* we are somewhere in the path and we need to connect declared prefix with the corresponding module */
+				/* start relative path parsing with the node's parent */
+				path_node = current->parent;
 
-				if (prefix == NULL) {
-					prefix = augment->prefix;
-				}
-
-				if (strcmp(prefix, augment->prefix) == 0) {
-					/* the path is augmenting the self module */
-					module = strdup(augment->name);
-				} else {
-					/* find the prefix in imports */
-					module = get_module_with_prefix(prefix, imports);
-				}
-				if (module == NULL ) {
-					/* unknown name of the module to augment */
-					break;
+				/* move it if needed according to the start of the relative path */
+				if (strcmp("..", name) == 0) {
+					path_node = path_node->parent;
 				}
 			}
+			module_inpath = strdup((*ds)->data_model->name);
+		} else {
+			/* we are somewhere in the path and we need to connect declared prefix with the corresponding module */
+			if (prefix == NULL) {
+				prefix = current_prefix;
+			}
 
-			match = 0;
+			if (strcmp(prefix, current_prefix) == 0) {
+				/* the path is augmenting the self module */
+				module = strdup(current_module_name);
+			} else {
+				/* find the prefix in imports */
+				module = get_module_with_prefix(prefix, imports);
+			}
+			if (module == NULL ) {
+				/* unknown name of the module to augment */
+				free(module_inpath);
+				return (NULL);
+			}
+		}
+
+		match = 0;
+		if (strcmp("..", name) == 0) {
+			path_node = path_node->parent;
+			match = 1;
+		} else if (strcmp(".", name) == 0) {
+			/* do nothing */
+			match = 1;
+		} else {
+			/* go into children */
 			path_node = path_node->children;
 			if (module_inpath != NULL && strcmp(module, module_inpath) != 0) {
 				/* the prefix is changing, so there must be an augment element */
@@ -2253,35 +2482,258 @@ static int ncds_update_augment(struct data_model *augment)
 				/* we have the match - move into the specified element */
 				match = match_module_node(module_inpath, module, name, &path_node);
 			}
-			free(module);
+		}
+		free(module);
 
-			if (match == 0) {
-				/* we didn't find the matching path */
+		if (match == 0) {
+			/* we didn't find the matching path */
+			free(module_inpath);
+			return (NULL);
+		}
+	}
+
+	free(module_inpath);
+
+	return (path_node);
+}
+
+/**
+ * supported types:
+ *  'augment' 1
+ *  'refine'  2
+ *
+ * supported path_types:
+ *  'absolute' 0
+ *  'relative' 1
+ *  'both'
+ */
+static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* model_prefix, const char* model_name, const char* model_ns, struct transapi_internal* aug_transapi, int path_type)
+{
+	xmlXPathObjectPtr imports = NULL, nodes = NULL;
+	xmlNodePtr node, node_aux, path_node;
+	xmlNsPtr ns;
+	int i;
+	char *path;
+	struct ncds_ds* ds = NULL;
+
+	/* get all definitions of nodes to modify */
+	switch (type) {
+	case 1: /* augment */
+		nodes = xmlXPathEvalExpression(BAD_CAST "//"NC_NS_YIN_ID":augment", model_ctxt);
+		break;
+	case 2: /* refine */
+		nodes = xmlXPathEvalExpression(BAD_CAST "//"NC_NS_YIN_ID":refine", model_ctxt);
+		break;
+	default: /* wtf */
+		return (EXIT_FAILURE);
+	}
+
+	if (nodes != NULL ) {
+		if (xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
+			/* there is no element modifying the model so we have nothing to do */
+			xmlXPathFreeObject(nodes);
+			return (EXIT_SUCCESS);
+		}
+	} else {
+		ERROR("%s: Evaluating XPath expression failed.", __func__);
+		goto error_cleanup;
+	}
+
+	/* get all <import> nodes for their prefix specification to be used with augment statement */
+	if ((imports = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":import", model_ctxt)) == NULL ) {
+		ERROR("%s: Evaluating XPath expression failed.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	/* process all modifying nodes from this model */
+	for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
+
+		/* get path to the target element */
+		if ((path = (char*) xmlGetProp (nodes->nodesetval->nodeTab[i], BAD_CAST "target-node")) == NULL) {
+			ERROR("%s: Missing 'target-node' attribute in <augment>.", __func__);
+			goto error_cleanup;
+		}
+
+		/* according to set option, skip relative/absolute paths */
+		if ((path[0] == '/' && path_type == 1) || /* we are processing only absolute paths */
+			(path[0] != '/' && path_type == 0)) {
+			free(path);
+			continue;
+		}
+
+		path_node = model_node_path(nodes->nodesetval->nodeTab[i], model_prefix, model_name, path, imports, &ds);
+		if (path_node != NULL) {
+			/* path is correct, process the requested modification */
+			switch (type) {
+			case 1: /* augment */
+				xmlAddChild(path_node, node = xmlCopyNode(nodes->nodesetval->nodeTab[i], 1));
+				ns = xmlNewNs(node, BAD_CAST "libnetconf", BAD_CAST "libnetconf");
+				xmlSetNsProp(node, ns, BAD_CAST "module", BAD_CAST model_name);
+				xmlSetNsProp(node, ns, BAD_CAST "ns", BAD_CAST model_ns);
+
+				/*
+				 * if the model is connected with the transAPI module, add it to the
+				 * list of transAPI modules of the datastore
+				 */
+				if (path_type == 0 && aug_transapi != NULL) {
+					ncds_transapi_enlink(ds, aug_transapi);
+				}
 				break;
+			case 2: /* refine */
+				for (node = nodes->nodesetval->nodeTab[i]->children; node != NULL; node = node->next) {
+					if (xmlStrcmp(node->name, BAD_CAST "must") == 0) {
+						/* always add to the target_node */
+						xmlAddChild(path_node, xmlCopyNode(node, 1));
+					} else {
+						/* detect if the node exists, then replace it, add it otherwise */
+						for (node_aux = path_node->children; node_aux != NULL; node_aux = node_aux->next) {
+							if (node_aux->type != XML_ELEMENT_NODE) {
+								continue;
+							}
+							if (xmlStrcmp(node_aux->name, node->name) == 0) {
+								xmlUnlinkNode(node_aux);
+								xmlFreeNode(node_aux);
+								break;
+							}
+						}
+						xmlAddChild(path_node, xmlCopyNode(node, 1));
+					}
+				}
+				/* remove refine definition */
+				xmlUnlinkNode(nodes->nodesetval->nodeTab[i]);
+				xmlFreeNode(nodes->nodesetval->nodeTab[i]);
+				nodes->nodesetval->nodeTab[i] = NULL;
+
+				break;
+			default: /* wtf */
+				return (EXIT_FAILURE);
 			}
 		}
-		if (token == NULL) {
-			/* whole path is correct - add the subtree */
-			xmlAddChild(path_node, node = xmlCopyNode(augments->nodesetval->nodeTab[i], 1));
-			ns = xmlNewNs(node, BAD_CAST "libnetconf", BAD_CAST "libnetconf");
-			xmlSetNsProp(node, ns, BAD_CAST "module", BAD_CAST augment->name);
-			xmlSetNsProp(node, ns, BAD_CAST "ns", BAD_CAST augment->ns);
-		}
-
-		free(module_inpath);
-		module_inpath = NULL;
 		free(path);
 	}
-	xmlXPathFreeObject(augments);
+	xmlXPathFreeObject(nodes);
 	xmlXPathFreeObject(imports);
 
 	return (EXIT_SUCCESS);
 
 error_cleanup:
 
-	if (imports) {xmlXPathFreeObject(imports);}
-	if (augments) {xmlXPathFreeObject(augments);}
+	xmlXPathFreeObject(imports);
+	xmlXPathFreeObject(nodes);
+
 	return (EXIT_FAILURE);
+}
+
+static int ncds_update_refine(struct ncds_ds *ds)
+{
+	int ret;
+	xmlXPathContextPtr ext_model_ctxt;
+
+	if (ds == NULL) {
+		ERROR("%s: invalid parameter ds.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	if ((ext_model_ctxt = xmlXPathNewContext(ds->ext_model)) == NULL) {
+		ERROR("%s: Creating XPath context failed.", __func__);
+		return (EXIT_FAILURE);
+	}
+	if (xmlXPathRegisterNs(ext_model_ctxt, BAD_CAST NC_NS_YIN_ID, BAD_CAST NC_NS_YIN) != 0) {
+		xmlXPathFreeContext(ext_model_ctxt);
+		return (EXIT_FAILURE);
+	}
+
+	ret = _update_model(2, ext_model_ctxt, ds->data_model->prefix, ds->data_model->name, ds->data_model->ns, NULL, 2);
+
+	xmlXPathFreeContext(ext_model_ctxt);
+	return (ret);
+}
+
+static int ncds_update_augment_absolute(struct data_model *augment)
+{
+	if (augment == NULL) {
+		ERROR("%s: invalid parameter augment.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	return(_update_model(1, augment->ctxt, augment->prefix, augment->name, augment->ns, augment->transapi, 0));
+}
+
+static int ncds_update_augment_relative(struct ncds_ds *ds)
+{
+	int ret;
+	xmlXPathContextPtr ext_model_ctxt;
+
+	if (ds == NULL) {
+		ERROR("%s: invalid parameter ds.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	if ((ext_model_ctxt = xmlXPathNewContext(ds->ext_model)) == NULL) {
+		ERROR("%s: Creating XPath context failed.", __func__);
+		return (EXIT_FAILURE);
+	}
+	if (xmlXPathRegisterNs(ext_model_ctxt, BAD_CAST NC_NS_YIN_ID, BAD_CAST NC_NS_YIN) != 0) {
+		xmlXPathFreeContext(ext_model_ctxt);
+		return (EXIT_FAILURE);
+	}
+
+	ret = _update_model(1, ext_model_ctxt, ds->data_model->prefix, ds->data_model->name, ds->data_model->ns, NULL, 1);
+
+	xmlXPathFreeContext(ext_model_ctxt);
+	return (ret);
+}
+
+static int ncds_update_augment_cleanup(struct ncds_ds *ds)
+{
+	int i;
+	xmlXPathContextPtr ext_model_ctxt;
+	xmlXPathObjectPtr augments;
+
+	if (ds == NULL) {
+		ERROR("%s: invalid parameter ds.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	if ((ext_model_ctxt = xmlXPathNewContext(ds->ext_model)) == NULL) {
+		ERROR("%s: Creating XPath context failed.", __func__);
+		return (EXIT_FAILURE);
+	}
+	if (xmlXPathRegisterNs(ext_model_ctxt, BAD_CAST NC_NS_YIN_ID, BAD_CAST NC_NS_YIN) != 0) {
+		xmlXPathFreeContext(ext_model_ctxt);
+		return (EXIT_FAILURE);
+	}
+
+	/* get all augment definitions */
+	if ((augments = xmlXPathEvalExpression(BAD_CAST "//"NC_NS_YIN_ID":augment", ext_model_ctxt)) != NULL ) {
+		if (xmlXPathNodeSetIsEmpty(augments->nodesetval)) {
+			/* there is no <augment> part so we have nothing to do */
+			xmlXPathFreeObject(augments);
+			xmlXPathFreeContext(ext_model_ctxt);
+			return (EXIT_SUCCESS);
+		}
+	} else {
+		ERROR("%s: Evaluating XPath expression failed.", __func__);
+		xmlXPathFreeContext(ext_model_ctxt);
+		return (EXIT_FAILURE);
+	}
+
+	for (i = 0; i < augments->nodesetval->nodeNr; i++) {
+		if (xmlHasNsProp(augments->nodesetval->nodeTab[i], BAD_CAST "module", BAD_CAST "libnetconf") != NULL) {
+			/* substituted augment, do not remove it */
+			continue;
+		} else {
+			/* no more needed augment definition, remove it */
+			xmlUnlinkNode(augments->nodesetval->nodeTab[i]);
+			xmlFreeNode(augments->nodesetval->nodeTab[i]);
+			augments->nodesetval->nodeTab[i] = NULL;
+		}
+	}
+
+	xmlXPathFreeObject(augments);
+	xmlXPathFreeContext(ext_model_ctxt);
+
+	return (EXIT_SUCCESS);
 }
 
 int ncds_add_models_path(const char* path)
@@ -2328,6 +2780,135 @@ int ncds_add_models_path(const char* path)
 	return (EXIT_SUCCESS);
 }
 
+int ncds_add_augment_transapi(const char* model_path, const char* callbacks_path)
+{
+	struct data_model *model;
+	struct transapi_internal* transapi;
+	struct transapi_list *tapi_item;
+
+	if (model_path == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	/* get model */
+	if ((model = read_model(model_path)) == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	/* load transapi module */
+	if (model->transapi == NULL) {
+		tapi_item = malloc(sizeof(struct transapi_list));
+		if (tapi_item == NULL) {
+			ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+
+		transapi = transapi_new_shared(callbacks_path);
+		if (transapi == NULL) {
+			ncds_ds_model_free(model);
+			free(tapi_item);
+			return (EXIT_FAILURE);
+		}
+
+		/* link model with transapi module (and vice versa) */
+		transapi->model = model;
+		model->transapi = transapi;
+
+		/* add transapi module into internal list of loaded modules */
+		tapi_item->tapi = transapi;
+		tapi_item->ref_count = 0;
+		tapi_item->next = augment_tapi_list;
+		augment_tapi_list = tapi_item;
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+int ncds_add_augment_transapi_static(const char* model_path, const struct transapi* transapi)
+{
+	struct data_model *model;
+	struct transapi_list *tapi_item;
+
+	if (model_path == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (EXIT_FAILURE);
+	}
+
+	/* get model */
+	if ((model = read_model(model_path)) == NULL) {
+		return (EXIT_FAILURE);
+	}
+
+	if (model->transapi == NULL) {
+		/* transAPI module information checks */
+		if (transapi == NULL) {
+			ERROR("%s: Missing transAPI module description.", __func__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+		if (transapi->config_modified == NULL) {
+			ERROR("%s: Missing config_modified variable in transAPI module description.", __func__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+		if (transapi->erropt == NULL) {
+			ERROR("%s: Missing erropt variable in transAPI module description.", __func__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+		if (transapi->get_state == NULL) {
+			ERROR("%s: Missing get_state() function in transAPI module description.", __func__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+		if (transapi->ns_mapping == NULL) {
+			ERROR("%s: Missing mapping of prefixes with URIs in transAPI module description.", __func__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+		/* ok, checks passed */
+
+		tapi_item = malloc(sizeof(struct transapi_list));
+		if (tapi_item == NULL) {
+			ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+
+		/* allocate transapi structure */
+		if ((model->transapi = malloc(sizeof(struct transapi_internal))) == NULL) {
+			ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+			ncds_ds_model_free(model);
+			return (EXIT_FAILURE);
+		}
+		/* fill created transapi structure with given pointers to transAPI functions */
+
+		/* copy transAPI module info into a internal structure
+		 * NOTE: copy only the beginning part common for struct transapi and
+		 * struct transapi_internal
+		 */
+		memcpy(model->transapi, transapi, (sizeof(struct transapi)));
+		/*
+		 * mark it as transAPI (non-NULL), but remember that it is not a dynamically
+		 * linked transAPI module
+		 */
+		model->transapi->module = &error_area;
+
+		/* link created transapi with the model */
+		model->transapi->model = model;
+
+		/* add transapi module into internal list of loaded modules */
+		tapi_item->tapi = model->transapi;
+		tapi_item->ref_count = 0;
+		tapi_item->next = augment_tapi_list;
+		augment_tapi_list = tapi_item;
+	}
+
+	return (EXIT_SUCCESS);
+}
+
 int ncds_add_model(const char* model_path)
 {
 	if (model_path == NULL) {
@@ -2340,90 +2921,6 @@ int ncds_add_model(const char* model_path)
 	} else {
 		return (EXIT_SUCCESS);
 	}
-}
-
-static struct data_model* get_model(const char* module, const char* version)
-{
-	struct model_list* listitem;
-	struct data_model* model = NULL;
-	int i;
-	char* aux, *aux2;
-	DIR* dir;
-	struct dirent* file;
-
-	if (module == NULL) {
-		return (NULL);
-	}
-
-	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
-		if (listitem->model && strcmp(listitem->model->name, module) == 0) {
-			if (version != NULL) {
-				if (strcmp(listitem->model->version, version) == 0) {
-					/* module found */
-					return (listitem->model);
-				} else {
-					/* module version does not match */
-					continue;
-				}
-			} else {
-				/* module found - specific version is not required */
-				return (listitem->model);
-			}
-		}
-	}
-
-	/* module not found - try to find it in a models directories */
-	if (models_dirs != NULL) {
-		for (i = 0; models_dirs[i]; i++) {
-			aux = NULL;
-			asprintf(&aux, "%s/%s.yin", models_dirs[i], module);
-			if (access(aux, R_OK) == 0) {
-				/* we have found the correct module - probably */
-				model = read_model(aux);
-				if (model != NULL) {
-					if (strcmp(model->name, module) != 0) {
-						/* read module is incorrect */
-						ncds_ds_model_free(model);
-						model = NULL;
-					}
-				}
-			} else {
-				/*
-				 * filename can contain also revision, so try to open
-				 * all suitable files
-				 */
-				free(aux);
-				if (version == NULL) {
-					asprintf(&aux, "%s@", module);
-				} else {
-					asprintf(&aux, "%s@%s", module, version);
-				}
-				dir = opendir(models_dirs[i]);
-				while((file = readdir(dir)) != NULL) {
-					if (strncmp(file->d_name, aux, strlen(aux)) == 0 &&
-					    strcmp(&(file->d_name[strlen(file->d_name)-4]), ".yin") == 0) {
-						asprintf(&aux2, "%s/%s", models_dirs[i], file->d_name);
-						model = read_model(aux2);
-						free(aux2);
-						if (model != NULL) {
-							if (strcmp(model->name, module) != 0) {
-								/* read module is incorrect */
-								ncds_ds_model_free(model);
-								model = NULL;
-							}
-						}
-					}
-				}
-				closedir(dir);
-			}
-			free(aux);
-			if (model != NULL) {
-				return (model);
-			}
-		}
-	}
-
-	return (model);
 }
 
 static int ncds_features_parse(struct data_model* model)
@@ -2468,7 +2965,7 @@ static int ncds_features_parse(struct data_model* model)
 				return (EXIT_FAILURE);
 			}
 			/* by default, all features are disabled */
-			model->features[i]->enabled = false;
+			model->features[i]->enabled = 0;
 		}
 		model->features[i] = NULL; /* list terminating NULL byte */
 
@@ -2574,10 +3071,171 @@ int ncds_features_disableall(const char* module)
 	return (_features_switchall(module, 1));
 }
 
+static int ncds_update_callbacks(struct ncds_ds* ds)
+{
+	struct transapi_list *tapi_iter;
+	int i, j, k, l, clbk_count, len;
+	char *path, *path_aux;
+#define PREFIX_BUFFER_SIZE 128
+	char buffer[PREFIX_BUFFER_SIZE];
+
+#define MAPPING_SIZE 26+1 /* # of letters used as prefixes + terminating item */
+	char ext_ns_mapping_buffer[3] = {' ',':','\0'};
+	struct ns_pair ext_ns_mapping[MAPPING_SIZE] = {
+			{"A",NULL},{"B",NULL},{"C",NULL},{"D",NULL},{"E",NULL},{"F",NULL},
+			{"G",NULL},{"H",NULL},{"I",NULL},{"J",NULL},{"K",NULL},{"L",NULL},{"M",NULL},
+			{"N",NULL},{"O",NULL},{"P",NULL},{"Q",NULL},{"R",NULL},{"S",NULL},{"T",NULL},
+			{"U",NULL},{"V",NULL},{"W",NULL},{"X",NULL},{"Y",NULL},{"Z",NULL},{NULL,NULL},};
+
+	i = 0;
+	clbk_count = 0;
+	/* compound namespace mappings from all transapi modules connected with this datastore */
+	for (tapi_iter = ds->transapis; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
+		for (j = 0; tapi_iter->tapi->ns_mapping[j].href != NULL; j++) {
+			/* check that we don't have already such a namespace mapping */
+			for (k = 0; k < i; k++) {
+				if (strcmp(ext_ns_mapping[k].href, tapi_iter->tapi->ns_mapping[j].href) == 0) {
+					break;
+				}
+			}
+
+			/* allocate array for namespace mapping */
+			if (i >= MAPPING_SIZE) {
+				ERROR("Too many namespaces to process. Limit is %d.", MAPPING_SIZE);
+				return (EXIT_FAILURE);
+			}
+			ext_ns_mapping[i].href = tapi_iter->tapi->ns_mapping[j].href;
+			i++;
+		}
+
+		/* as a side effect of the loop, count the callbacks */
+		clbk_count += tapi_iter->tapi->data_clbks->callbacks_count;
+	}
+	/* terminating item */
+	ext_ns_mapping[i].prefix = NULL;
+	ext_ns_mapping[i].href = NULL;
+
+	if (ds->tapi_callbacks_count != 0) {
+		for (i = 0; i < ds->tapi_callbacks_count; i++) {
+			free(ds->tapi_callbacks[i].path);
+		}
+		free(ds->tapi_callbacks);
+		ds->tapi_callbacks = NULL;
+	}
+	/* create list of callbacks */
+	ds->tapi_callbacks_count = clbk_count;
+	ds->tapi_callbacks = malloc(clbk_count * sizeof(struct clbk));
+	for (i = 0, tapi_iter = ds->transapis; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
+		for (j = 0; j < tapi_iter->tapi->data_clbks->callbacks_count; j++) {
+			ds->tapi_callbacks[i].func = tapi_iter->tapi->data_clbks->callbacks[j].func;
+			/* correct prefixes in path */
+			path = strdup(tapi_iter->tapi->data_clbks->callbacks[j].path);
+			for (k = 0; tapi_iter->tapi->ns_mapping[k].href != NULL; k++) {
+				/* search for remapped prefix of the namespace */
+				for (l = 0; ext_ns_mapping[l].href != NULL; l++) {
+					if (strcmp(ext_ns_mapping[l].href, tapi_iter->tapi->ns_mapping[k].href) == 0) {
+						break;
+					}
+				}
+				if (ext_ns_mapping[l].href == NULL) {
+					ERROR("Processing unknown namespace, internal error.");
+					free(path);
+					return (EXIT_FAILURE);
+				}
+
+				path_aux = path;
+				len = strlen(tapi_iter->tapi->ns_mapping[k].prefix);
+				if (len >= PREFIX_BUFFER_SIZE) {
+					ERROR("Namespace prefix \'%s\' is too long. libnetconf is able to process prefixes up to %d characters.",
+							tapi_iter->tapi->ns_mapping[k].prefix, PREFIX_BUFFER_SIZE - 1);
+					free(path);
+					return (EXIT_FAILURE);
+				}
+				/* magic */
+				strcpy(buffer, tapi_iter->tapi->ns_mapping[k].prefix);
+				buffer[len] = ':';
+				buffer[len+1] = '\0';
+				ext_ns_mapping_buffer[0] = ext_ns_mapping[l].prefix[0];
+				path = nc_str_replace(path_aux, buffer, ext_ns_mapping_buffer);
+				free(path_aux);
+			}
+			ds->tapi_callbacks[i].path = path;
+			i++;
+		}
+	}
+
+	/* rewrite previously created model */
+	yinmodel_free(ds->ext_model_tree);
+
+	/* parse model */
+	if ((ds->ext_model_tree = yinmodel_parse(ds->ext_model, ext_ns_mapping)) == NULL) {
+		WARN("Failed to parse model %s. Callbacks of transAPI modules using this model will not be executed.", ds->data_model->name)
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+static void transapi_unload(struct transapi_internal* tapi)
+{
+	/* and close function is defined */
+	if (tapi->close != NULL) {
+		tapi->close();
+	}
+	if (tapi->module != &error_area && dlclose(tapi->module)) {
+		ERROR("%s: Unloading transAPI module failed: %s:", __func__, dlerror());
+	}
+}
+
+static void transapis_cleanup(struct transapi_list **list, int force)
+{
+	struct transapi_list *iter, *prev = NULL;
+
+	if (list == NULL || *list == NULL) {
+		return;
+	}
+
+	for (iter = *list; iter != NULL; ) {
+		if (force || iter->ref_count == 0) {
+			transapi_unload(iter->tapi);
+			free(iter->tapi);
+			if (prev == NULL) {
+				*list = iter->next;
+				free(iter);
+				iter = *list;
+			} else {
+				prev->next = iter->next;
+				free(iter);
+				iter = prev->next;
+			}
+		} else {
+			prev = iter;
+			iter = iter->next;
+		}
+	}
+}
+
 int ncds_consolidate(void)
 {
 	struct ncds_ds_list *ds_iter;
 	struct model_list* listitem;
+	struct transapi_list *tapi_iter;
+
+	/* cleanup all datastore's properties built by previous ncds_consolidate() */
+	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
+		transapis_cleanup(&(ds_iter->datastore->transapis), 0);
+
+		if (ds_iter->datastore->ext_model != ds_iter->datastore->data_model->xml) {
+			xmlFreeDoc(ds_iter->datastore->ext_model);
+			ds_iter->datastore->ext_model = ds_iter->datastore->data_model->xml;
+		}
+
+		yinmodel_free(ds_iter->datastore->ext_model_tree);
+		ds_iter->datastore->ext_model_tree = NULL;
+	}
+	/* set ref_count of all transAPIs to 0 to recount it in ncds_update_augment() */
+	for (tapi_iter = augment_tapi_list; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
+		tapi_iter->ref_count = 0;
+	}
 
 	/* process uses statements in the configuration datastores */
 	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
@@ -2587,12 +3245,24 @@ int ncds_consolidate(void)
 		}
 	}
 
-	/* augment statement processing */
+	/* augment statement processing - absolute paths to modify other (datastore's extended models) data models */
 	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
-		if (listitem->model != NULL && ncds_update_augment(listitem->model) != EXIT_SUCCESS) {
+		if (listitem->model != NULL && ncds_update_augment_absolute(listitem->model) != EXIT_SUCCESS) {
 			ERROR("Augmenting configuration data models failed.");
 			return (EXIT_FAILURE);
 		}
+	}
+	/* augment statement processing - relative paths to modify always the data model (datastore's extended model) itself */
+	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
+		if (ds_iter->datastore->ext_model != NULL && ncds_update_augment_relative(ds_iter->datastore) != EXIT_SUCCESS) {
+			ERROR("Augmenting configuration data models failed.");
+			return (EXIT_FAILURE);
+		}
+		/* clean datastore's extended models from augment definitions */
+		ncds_update_augment_cleanup(ds_iter->datastore);
+
+		/* resolve refines */
+		ncds_update_refine(ds_iter->datastore);
 	}
 
 	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
@@ -2603,16 +3273,15 @@ int ncds_consolidate(void)
 	/* parse models to get aux structure for TransAPI's internal purposes */
 	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
 		/* when using transapi */
-		if (ds_iter->datastore->transapi.module != NULL) {
-			/* parse only models not parsed yet */
-			if (ds_iter->datastore->ext_model_tree == NULL) {
-				if ((ds_iter->datastore->ext_model_tree = yinmodel_parse(ds_iter->datastore->ext_model, ds_iter->datastore->transapi.ns_mapping)) == NULL) {
-					WARN("Failed to parse model %s. Callbacks of transAPI modules using this model will not be executed.", ds_iter->datastore->data_model->name)
-				}
+		if (ds_iter->datastore->transapis != NULL) {
+			if (ncds_update_callbacks(ds_iter->datastore) != EXIT_SUCCESS) {
+				ERROR("Preparing transAPI failed.");
+				return (EXIT_FAILURE);
 			}
 		}
 	}
 
+	transapis_cleanup(&(augment_tapi_list), 0);
 	return (EXIT_SUCCESS);
 }
 
@@ -3406,6 +4075,8 @@ void ncds_cleanall()
 	free(models_dirs);
 	models_dirs = NULL;
 
+	transapis_cleanup(&(augment_tapi_list), 1);
+
 #ifndef DISABLE_YANGFORMAT
 	xsltFreeStylesheet(yin2yang_xsl);
 	yin2yang_xsl = NULL;
@@ -3415,9 +4086,10 @@ void ncds_cleanall()
 void ncds_free(struct ncds_ds* datastore)
 {
 	struct ncds_ds *ds = NULL;
+	struct transapi_list* tapi_iter;
+	int i;
 
 	if (datastore == NULL) {
-		WARN("%s: no datastore to free.", __func__);
 		return;
 	}
 
@@ -3432,14 +4104,25 @@ void ncds_free(struct ncds_ds* datastore)
 	/* close and free the datastore itself */
 	if (ds != NULL) {
 		/* if using transapi */
-		if (ds->transapi.module != NULL) {
-			/* and close function is defined */
-			if (ds->transapi.close != NULL) {
-				ds->transapi.close();
+		if (ds->transapis != NULL) {
+			/*
+			 * free the list, but not directly the transAPI structures, they are
+			 * still part of internal list
+			 */
+			while (ds->transapis != NULL) {
+				tapi_iter = ds->transapis->next;
+				if (ds->transapis->ref_count != 0) {
+					transapi_unload(ds->transapis->tapi);
+					free(ds->transapis->tapi);
+				}
+				free(ds->transapis);
+				ds->transapis = tapi_iter;
 			}
-			/* unloading transapi module failed */
-			if (ds->transapi.module != &error_area && dlclose(ds->transapi.module)) {
-				ERROR("%s: Unloading transAPI module failed: %s:", __func__, dlerror());
+			if (ds->tapi_callbacks != NULL) {
+				for (i = 0; i < ds->tapi_callbacks_count; i++) {
+					free(ds->tapi_callbacks[i].path);
+				}
+				free(ds->tapi_callbacks);
 			}
 		}
 
@@ -3922,7 +4605,8 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 	int ret;
 	struct nc_err *e = NULL, *e_new;
 	nc_reply *new_reply = NULL;
-	int skip_copyconfig = 0;
+	int modified;
+	struct transapi_list* tapi_iter;
 
 	if (reply != NULL && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
 		/* use some reply to add new error messages */
@@ -3952,7 +4636,9 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 		}
 	} else {
 		/* announce error-option to the TransAPI module, if error-option not set, announce default stop-on-error */
-		*(ds->transapi.erropt) = (erropt != NC_EDIT_ERROPT_NOTSET) ? erropt : NC_EDIT_ERROPT_STOP;
+		for (tapi_iter = ds->transapis; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
+			*(tapi_iter->tapi->erropt) = (erropt != NC_EDIT_ERROPT_NOTSET) ? erropt : NC_EDIT_ERROPT_STOP;
+		}
 
 		/* add default values */
 		ncdflt_default_values(old, ds->ext_model, NCWD_MODE_ALL_TAGGED);
@@ -3982,10 +4668,22 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 			}
 		} /* else success */
 
-		if ((!skip_copyconfig) && (ret || *ds->transapi.config_modified)) {
-			*ds->transapi.config_modified = 0;
+		modified = 0;
+		for (tapi_iter = ds->transapis; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
+			if (*(tapi_iter->tapi->config_modified)) {
+				*tapi_iter->tapi->config_modified = 0;
+				modified = 1;
+			}
+		}
+		if (ret || modified) {
 			DBG("Updating XML tree after TransAPI callbacks");
-			xmlDocDumpMemory(new, &config, NULL);
+			if (ret) {
+				/* revert changes */
+				xmlDocDumpMemory(old, &config, NULL);
+			} else { /* modified != 0 */
+				/* update config data according to changes made by transAPI module */
+				xmlDocDumpMemory(new, &config, NULL);
+			}
 			if (ds->func.copyconfig(ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, (char*)config, &e) == EXIT_FAILURE) {
 				ERROR("transAPI apply failed");
 			}
@@ -4060,7 +4758,7 @@ nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_
 	xmlNodePtr op_node;
 	xmlNodePtr op_input;
 	int pos;
-	int transapi_callbacks_count;
+	struct transapi_list* tapi_iter;
 	const char * rpc_name;
 	const char *data_ns = NULL;
 	char *end = NULL, *aux = NULL;
@@ -4104,7 +4802,7 @@ process_datastore:
 	op = nc_rpc_get_op(rpc);
 	/* if transapi used AND operation will affect running repository => store current running content */
 
-	if (ds->transapi.module != NULL
+	if (ds->transapis != NULL
 		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING)) {
 
@@ -4884,15 +5582,14 @@ apply_editcopyconfig:
 		op_name = nc_rpc_get_op_name (rpc);
 		/* prepare for case RPC is not supported by this datastore */
 		reply = NCDS_RPC_NOT_APPLICABLE;
-		/* go through all RPC implemented by datastore */
-		if (ds->transapi.module) {
-			transapi_callbacks_count = ds->transapi.rpc_clbks->callbacks_count;
-			for (i=0; i<transapi_callbacks_count; i++) {
+		/* go through all RPC implemented by datastore's transAPI modules */
+		for (tapi_iter = ds->transapis; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
+			for (i = 0; i < tapi_iter->tapi->rpc_clbks->callbacks_count; i++) {
 				/* find matching rpc and call rpc callback function */
-				rpc_name = ds->transapi.rpc_clbks->callbacks[i].name;
+				rpc_name = tapi_iter->tapi->rpc_clbks->callbacks[i].name;
 				if (strcmp(op_name, rpc_name) == 0) {
 					/* create array of input parameters */
-					op_input_array = calloc(ds->transapi.rpc_clbks->callbacks[i].arg_count, sizeof (xmlNodePtr));
+					op_input_array = calloc(tapi_iter->tapi->rpc_clbks->callbacks[i].arg_count, sizeof (xmlNodePtr));
 					/* get operation node */
 					op_node = ncxml_rpc_get_op_content(rpc);
 					op_input = op_node->children;
@@ -4900,8 +5597,8 @@ apply_editcopyconfig:
 						if (op_input->type == XML_ELEMENT_NODE) {
 							/* find position of this parameter */
 							pos = 0;
-							while (pos < ds->transapi.rpc_clbks->callbacks[i].arg_count) {
-								if (xmlStrEqual(BAD_CAST ds->transapi.rpc_clbks->callbacks[i].arg_order[pos], op_input->name)) {
+							while (pos < tapi_iter->tapi->rpc_clbks->callbacks[i].arg_count) {
+								if (xmlStrEqual(BAD_CAST tapi_iter->tapi->rpc_clbks->callbacks[i].arg_order[pos], op_input->name)) {
 									/* store copy of node to position */
 									((xmlNodePtr*)op_input_array)[pos] = xmlCopyNode(op_input, 1);
 									break;
@@ -4909,8 +5606,8 @@ apply_editcopyconfig:
 								pos++;
 							}
 							/* input node with this name not found in model defined inputs of RPC */
-							if (pos == ds->transapi.rpc_clbks->callbacks[i].arg_count) {
-								WARN("%s: input parameter %s not defined for RPC %s",__func__, op_input->name, ds->transapi.rpc_clbks->callbacks[i].name);
+							if (pos == tapi_iter->tapi->rpc_clbks->callbacks[i].arg_count) {
+								WARN("%s: input parameter %s not defined for RPC %s",__func__, op_input->name, tapi_iter->tapi->rpc_clbks->callbacks[i].name);
 							}
 						}
 						op_input = op_input->next;
@@ -4918,15 +5615,20 @@ apply_editcopyconfig:
 
 					/* call RPC callback function */
 					VERB("Calling %s RPC function\n", rpc_name);
-					reply = ds->transapi.rpc_clbks->callbacks[i].func(op_input_array);
+					reply = tapi_iter->tapi->rpc_clbks->callbacks[i].func(op_input_array);
 					/* clean array */
-					for (j=0; j<ds->transapi.rpc_clbks->callbacks[i].arg_count; j++) {
+					for (j = 0; j < tapi_iter->tapi->rpc_clbks->callbacks[i].arg_count; j++) {
 						xmlFreeNode(((xmlNodePtr*)op_input_array)[j]);
 					}
 					free (op_input_array);
+
 					/* end RPC search, there can be only one RPC with name == op_name */
 					break;
 				}
+			}
+			if (i >= tapi_iter->tapi->rpc_clbks->callbacks_count) {
+				/* propagate break to outer for loop */
+				break;
 			}
 		}
 
@@ -4979,7 +5681,7 @@ apply_editcopyconfig:
 	 * skip transapi if <edit-config> was performed with test-option set
 	 * to test-only value
 	 */
-	if (ds->transapi.module != NULL
+	if (ds->transapis != NULL
 		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK)) {
 
@@ -5108,7 +5810,7 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 					/* do not skip internal datastores */
 					target = nc_rpc_get_target(rpc);
 					for (ds_rollback = ncds.datastores; ds_rollback != ds; ds_rollback = ds_rollback->next) {
-						if (ds_rollback->datastore->transapi.module != NULL
+						if (ds_rollback->datastore->transapis != NULL
 								&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST)))
 								&& ( target == NC_DATASTORE_RUNNING)) {
 							transapi = 1;

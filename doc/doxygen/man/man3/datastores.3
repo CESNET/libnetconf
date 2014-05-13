@@ -1,17 +1,17 @@
-.TH "datastores" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
+.TH "datastores" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 datastores \- Datastores Usage 
 NETCONF defines usage of three datastores: running (mandatory), startup (optional via :startup capability) and candidate (optional via :candidate capability)\&. libnetconf provides all these datastores\&.
 .PP
-In addition to the described NETCONF point of view, libnetconf divides all datastores (running, startup and candidate) into datastore parts connected with a specific (basic) configuration data model\&. Each datastore part is created by \fBncds_new()\fP or \fBncds_new_transapi()\fP function\&. According to the specified datastore type, server should set up additional datastore settings (see section \fBds_settings\fP)\&. If some specific validation settings are needed, \fBncds_set_validation()\fP function can be used (more information about validation can be found at a separated \fBpage\fP\&. Finnaly, to activate datastore and to get its unique identifier, \fBncds_init()\fP function must be called\&.
+In addition to the described NETCONF point of view, libnetconf divides all datastores (running, startup and candidate) into datastore parts connected with a specific (basic) configuration data model\&. Each datastore part is created by \fBncds_new()\fP, \fBncds_new2()\fP or \fBncds_new_transapi()\fP function\&. According to the specified datastore type, server should set up additional datastore settings (see section \fBds_settings\fP)\&. If some specific validation settings are needed, \fBncds_set_validation()\fP function can be used (more information about validation can be found at a separated \fBpage\fP\&. Finnaly, to activate datastore and to get its unique identifier, \fBncds_init()\fP function must be called\&.
 .PP
-If you want to use some data model that extends (by import or augment statement) any of the used data models, functions \fBncds_add_model()\fP or \fBncds_add_models_path()\fP can be used to specify location of the extension data model(s)\&.
+If you want to use some data model that extends (by import or augment statement) any of the used data models, functions \fBncds_add_model()\fP or \fBncds_add_models_path()\fP can be used to specify location of the extension data model(s)\&. As \fBncds_new_transapi()\fP connects base data model, its datastore and transAPI module (for more information about transAPI, see \fBseparated page\fP), also an augment model can be connected with a transAPI module using ncds_add_augment_transapi\&. In both cases, transAPI can be provided not only as a shared object (*\&.so file), but also statically using \fBncds_new_transapi_static()\fP for base data model and \fBncds_add_augment_transapi_static()\fP in case of augment data model\&.
 .PP
 By default, all features defined in configuration data models are disabled\&. To enable specific features or all features at once, you can use \fBncds_feature_enable()\fP and \fBncds_features_enableall()\fP functions\&.
 .PP
-To finish changes made to the datastores (adding augment data models, enabling and disabling features, etc\&.), server must call \fBncds_consolidate()\fP function\&.
+To finish changes made to the datastores (adding augment data models, enabling and disabling features, etc\&.), server MUST call \fBncds_consolidate()\fP function\&.
 .PP
 As a next step, device controlled by the server should be initialized\&. This should includes copying startup configuration data into the running datastore (and applying them to the current device settings)\&.
 .PP

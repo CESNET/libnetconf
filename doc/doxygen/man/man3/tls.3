@@ -1,0 +1,50 @@
+.TH "NETCONF over TLS" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+NETCONF over TLS \- 
+.PP
+libnetconf's functions to use TLS  
+
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "int \fBnc_tls_init\fP (const char *peer_cert, const char *peer_key, const char *CAfile, const char *CApath)"
+.br
+.RI "\fISet paths to the client certificate and its private key\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+libnetconf's functions to use TLS 
+
+These functions are experimental\&. It is possible, that TLS transport (and mainly certificates management) is not fully implemented in this version\&.
+.PP
+Remember, that to make these functions available, libnetconf must be compiled with --enable-tls configure's option\&. 
+.SH "Function Documentation"
+.PP 
+.SS "int nc_tls_init (const char *peer_cert, const char *peer_key, const char *CAfile, const char *CApath)"
+
+.PP
+Set paths to the client certificate and its private key\&. This function takes effect only on client side\&. It must be used before establishing NETCONF session (including call home) over TLS\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIpeer_cert\fP Path to the file containing client certificate 
+.br
+\fIpeer_key\fP Path to the file containing private key for the client certificate\&. If NULL, key is expected to be stored in the file specified in cert parameter\&. 
+.br
+\fICAfile\fP Location of the CA certificate used to verify the server certificates\&. For More info, see documentation for SSL_CTX_load_verify_locations() function from OpenSSL\&. 
+.br
+\fICApath\fP Location of the CA certificates used to verify the server certificates\&. For More info, see documentation for SSL_CTX_load_verify_locations() function from OpenSSL\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCESS or EXIT_FAILURE 
+.RE
+.PP
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for libnetconf from the source code\&.

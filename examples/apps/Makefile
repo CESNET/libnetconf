@@ -6,7 +6,7 @@
 #
 
 CC      = gcc
-CFLAGS  = -Wall
+CFLAGS  = -Wall -g
 INCLUDE = -I../../src/ 
 LIB     = -lnetconf
 LIBPATH	= -L../../.libs/
@@ -18,6 +18,9 @@ get: get.c
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $< $(LIBPATH) $(LIB)
 
 notif: notif.c
+	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $< $(LIBPATH) $(LIB)
+
+callhome: callhome.c
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $< $(LIBPATH) $(LIB)
 
 clean:

@@ -94,8 +94,11 @@ SRCS =  src/callbacks.c \
 	src/compat.c \
 	src/messages.c \
 	src/session.c \
-	src/ssh.c @SRCS_NOTIFICATIONS@ \
-	src/with_defaults.c @SRCS_URL@ \
+	src/transport.c \
+	@SRCS_TRANSPORT@ \
+	@SRCS_NOTIFICATIONS@ \
+	src/with_defaults.c \
+	@SRCS_URL@ \
 	src/nacm.c \
 	src/datastore.c \
 	src/datastore/edit_config.c \
@@ -108,6 +111,7 @@ SRCS =  src/callbacks.c \
 
 HDRS_PUBL_ROOT = headers/libnetconf.h \
 		 headers/libnetconf_ssh.h \
+		 @HDRS_PUBL_TLS@ \
 		 headers/libnetconf_xml.h
 
 HDRS_PUBL_SUBDIR = src/netconf.h \
@@ -117,8 +121,11 @@ HDRS_PUBL_SUBDIR = src/netconf.h \
 	src/session.h \
 	src/messages.h \
 	src/messages_xml.h \
-	src/ssh.h @HDRS_PUBL_SUBDIR_NOTIFICATIONS@ \
-	src/with_defaults.h @HDRS_PUBL_SUBDIR_URL@ \
+	src/transport.h \
+	src/callhome.h \
+	@HDRS_PUBL_SUBDIR_NOTIFICATIONS@ \
+	src/with_defaults.h \
+	@HDRS_PUBL_SUBDIR_URL@ \
 	src/datastore.h \
 	src/datastore_xml.h \
 	src/datastore/custom/datastore_custom.h \
@@ -131,6 +138,7 @@ HDRS_PRIV = src/config.h.in \
 	src/libnetconf.h \
 	src/libnetconf_xml.h \
 	src/libnetconf_ssh.h \
+	@HDRS_PRIV_TLS@ \
 	src/callbacks.h \
 	src/callbacks_ssh.h \
 	src/error.h \
@@ -140,8 +148,12 @@ HDRS_PRIV = src/config.h.in \
 	src/netconf.h \
 	src/netconf_internal.h \
 	src/session.h \
-	src/ssh.h @HDRS_PRIV_NOTIFICATIONS@ \
-	src/with_defaults.h @HDRS_PRIV_URL@ \
+	src/transport.h \
+	@HDRS_PRIV_TRANSPORT@ \
+	src/callhome.h \
+	@HDRS_PRIV_NOTIFICATIONS@ \
+	src/with_defaults.h \
+	@HDRS_PRIV_URL@ \
 	src/nacm.h \
 	src/datastore.h \
 	src/datastore/datastore_internal.h \

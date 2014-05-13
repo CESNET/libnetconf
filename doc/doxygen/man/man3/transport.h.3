@@ -1,10 +1,10 @@
-.TH "src/ssh.h" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
+.TH "src/transport.h" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
-src/ssh.h \- 
+src/transport.h \- 
 .PP
-Functions to connect to NETCONF server via SSH2\&.  
+Functions implementing transport layer for NETCONF\&.  
 
 .SH SYNOPSIS
 .br
@@ -16,9 +16,9 @@ Functions to connect to NETCONF server via SSH2\&.
 
 .in +1c
 .ti -1c
-.RI "enum \fBNC_SSH_AUTH_TYPE\fP { \fBNC_SSH_AUTH_PUBLIC_KEYS\fP = 1, \fBNC_SSH_AUTH_PASSWORD\fP = 2, \fBNC_SSH_AUTH_INTERACTIVE\fP = 4 }"
+.RI "enum \fBNC_TRANSPORT\fP { \fBNC_TRANSPORT_UNKNOWN\fP = -1, \fBNC_TRANSPORT_SSH\fP, \fBNC_TRANSPORT_TLS\fP }"
 .br
-.RI "\fIAvailable SSH authentication mechanisms\&. \fP"
+.RI "\fISupported NETCONF transport protocols enumeration\&. To change currently used transport protocol, call \fBnc_session_transport()\fP\&. \fP"
 .in -1c
 .SS "Functions"
 
@@ -28,6 +28,10 @@ Functions to connect to NETCONF server via SSH2\&.
 .br
 .RI "\fIAccept NETCONF session from a client\&. \fP"
 .ti -1c
+.RI "struct nc_session * \fBnc_session_accept_username\fP (const struct nc_cpblts *capabilities, const char *username)"
+.br
+.RI "\fIAccept NETCONF session from a client and assign it to the specified username\&. \fP"
+.ti -1c
 .RI "struct nc_session * \fBnc_session_connect\fP (const char *host, unsigned short port, const char *username, const struct nc_cpblts *cpblts)"
 .br
 .RI "\fICreate NETCONF session to the specified server\&. \fP"
@@ -36,13 +40,13 @@ Functions to connect to NETCONF server via SSH2\&.
 .br
 .RI "\fICreate another NETCONF session using already established SSH session\&. No authentication is needed in this case\&. \fP"
 .ti -1c
-.RI "void \fBnc_ssh_pref\fP (\fBNC_SSH_AUTH_TYPE\fP type, short int preference)"
+.RI "int \fBnc_session_transport\fP (\fBNC_TRANSPORT\fP proto)"
 .br
-.RI "\fISet the preference of the SSH authentication methods\&. \fP"
+.RI "\fISet transport protocol for the sessions created by subsequent \fBnc_session_connect()\fP calls\&. By default, transport protocol is set to \fBNC_TRANSPORT_SSH\fP\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
-Functions to connect to NETCONF server via SSH2\&. 
+Functions implementing transport layer for NETCONF\&. 
 
 
 .PP

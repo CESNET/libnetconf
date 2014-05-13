@@ -182,58 +182,12 @@ struct model_validators {
 };
 #endif
 
-/*
- * internal transAPI structure covering both ways how to handle transAPI
- * modules:
- * 1) dynamic linking using ncds_new_transapi()
- * 2) static linking using ncds_new_transapi_static()
- *
- * For the 2) there is a public struct transapi that is the same (it can be
- * mapped to this structure) except the last item module which refers to a
- * dynamically loaded object (dlopen()).
- */
-struct transapi_internal {
-	/**
-	 * @brief Module initialization.
-	 */
-	int (*init)(xmlDocPtr *);
-	/**
-	 * @brief Free module resources and prepare for closing.
-	 */
-	void (*close)(void);
-	/**
-	 * @brief Callbacks order settings.
-	 */
-	TRANSAPI_CLBCKS_ORDER_TYPE clbks_order;
-	/**
-	 * @brief Transapi callback mapping structure.
-	 */
-	struct transapi_data_callbacks * data_clbks;
-	/**
-	 * @brief Transapi rpc callbacks mapping structure.
-	 */
-	struct transapi_rpc_callbacks * rpc_clbks;
-	/**
-	 * @brief Mapping prefixes with URIs
-	 */
-	const char ** ns_mapping;
-	/**
-	 * @brief Flag if configuration data passed to callbacks were modified
-	 */
-	int *config_modified;
-	/**
-	 * @brief edit-config's error-option for the current transaction
-	 */
-	NC_EDIT_ERROPT_TYPE *erropt;
-
-	/* internal specific part */
-	/**
-	 * @brief Loaded shared library with transapi callbacks.
-	 */
-	void * module;
+struct transapi_list {
+	struct transapi_internal *tapi;
+	int ref_count;
+	struct transapi_list *next;
 };
 
-struct model_list;
 struct data_model {
 	/**
 	 * @brief Path to the file containing YIN configuration data model
@@ -275,6 +229,69 @@ struct data_model {
 	 * @brief The list of enabled features defined in the model
 	 */
 	struct model_feature** features;
+	/**
+	 * @brief Link with the appropriate transAPI module, if exists
+	 */
+	struct transapi_internal* transapi;
+};
+
+/*
+ * internal transAPI structure covering both ways how to handle transAPI
+ * modules:
+ * 1) dynamic linking using ncds_new_transapi()
+ * 2) static linking using ncds_new_transapi_static()
+ *
+ * For the 2) there is a public struct transapi that is the same (it can be
+ * mapped to this structure) except the last item module which refers to a
+ * dynamically loaded object (dlopen()).
+ */
+struct transapi_internal {
+	/**
+	 * @brief Module initialization.
+	 */
+	int (*init)(xmlDocPtr *);
+	/**
+	 * @brief Free module resources and prepare for closing.
+	 */
+	void (*close)(void);
+	/**
+	 * @brief Function returning status information
+	 */
+	xmlDocPtr (*get_state)(const xmlDocPtr, const xmlDocPtr, struct nc_err **);
+	/**
+	 * @brief Callbacks order settings.
+	 */
+	TRANSAPI_CLBCKS_ORDER_TYPE clbks_order;
+	/**
+	 * @brief Transapi callback mapping structure.
+	 */
+	struct transapi_data_callbacks * data_clbks;
+	/**
+	 * @brief Transapi rpc callbacks mapping structure.
+	 */
+	struct transapi_rpc_callbacks * rpc_clbks;
+	/**
+	 * @brief Mapping prefixes with URIs
+	 */
+	struct ns_pair *ns_mapping;
+	/**
+	 * @brief Flag if configuration data passed to callbacks were modified
+	 */
+	int *config_modified;
+	/**
+	 * @brief edit-config's error-option for the current transaction
+	 */
+	NC_EDIT_ERROPT_TYPE *erropt;
+
+	/* internal specific part */
+	/**
+	 * @brief Loaded shared library with transapi callbacks.
+	 */
+	void *module;
+	/**
+	 * @brief Link with the appropriate data_model structure
+	 */
+	struct data_model* model;
 };
 
 struct model_list {
@@ -333,7 +350,12 @@ struct ncds_ds {
 	/**
 	 * @brief TransAPI information
 	 */
-	struct transapi_internal transapi;
+	struct transapi_list* transapis;
+	/**
+	 * @brief Compound list of all transAPI callbacks applicable to this datastore
+	 */
+	struct clbk *tapi_callbacks;
+	int tapi_callbacks_count;
 };
 
 /**

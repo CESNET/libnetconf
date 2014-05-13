@@ -1,4 +1,4 @@
-.TH "src/transapi.h" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
+.TH "src/transapi.h" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -16,6 +16,13 @@ src/transapi.h \-
 .SS "Data Structures"
 
 .in +1c
+.ti -1c
+.RI "struct \fBclbk\fP"
+.br
+.RI "\fIStructure describing callback - path + function\&. \fP"
+.ti -1c
+.RI "struct \fBns_pair\fP"
+.br
 .ti -1c
 .RI "struct \fBtransapi\fP"
 .br
@@ -36,12 +43,18 @@ src/transapi.h \-
 .RI "#define \fBMAX_RPC_INPUT_ARGS\fP   64"
 .br
 .ti -1c
-.RI "#define \fBTRANSAPI_VERSION\fP   3"
+.RI "#define \fBTRANSAPI_VERSION\fP   4"
 .br
 .in -1c
 .SS "Enumerations"
 
 .in +1c
+.ti -1c
+.RI "enum \fBCLBCKS_APPLIED\fP { \fBCLBCKS_APPLIED_NONE\fP, \fBCLBCKS_APPLYING_CHILDREN\fP, \fBCLBCKS_APPLIED_ERROR\fP, \fBCLBCKS_APPLIED_NO_ERROR\fP, \fBCLBCKS_APPLIED_CHILDREN_ERROR\fP, \fBCLBCKS_APPLIED_CHILDREN_NO_ERROR\fP, \fBCLBCKS_APPLIED_NOT_FULLY\fP, \fBCLBCKS_APPLIED_FULLY\fP }"
+.br
+.ti -1c
+.RI "enum \fBTRANSAPI_CLBCKS_ORDER_TYPE\fP { \fBTRANSAPI_CLBCKS_LEAF_TO_ROOT\fP, \fBTRANSAPI_CLBCKS_ROOT_TO_LEAF\fP, \fBTRANSAPI_CLBCKS_ORDER_DEFAULT\fP = TRANSAPI_CLBCKS_LEAF_TO_ROOT }"
+.br
 .ti -1c
 .RI "enum \fBXMLDIFF_OP\fP { \fBXMLDIFF_ERR\fP = -1, \fBXMLDIFF_NONE\fP = 0, \fBXMLDIFF_ADD\fP = 1, \fBXMLDIFF_REM\fP = 2, \fBXMLDIFF_MOD\fP = 4, \fBXMLDIFF_CHAIN\fP = 8, \fBXMLDIFF_SIBLING\fP = 16, \fBXMLDIFF_REORDER\fP = 32 }"
 .br
@@ -51,8 +64,42 @@ src/transapi.h \-
 .PP 
 .SS "#define MAX_RPC_INPUT_ARGS   64"
 
-.SS "#define TRANSAPI_VERSION   3"
+.SS "#define TRANSAPI_VERSION   4"
 
+.SH "Enumeration Type Documentation"
+.PP 
+.SS "enum \fBCLBCKS_APPLIED\fP"
+
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fICLBCKS_APPLIED_NONE \fP\fP
+.TP
+\fB\fICLBCKS_APPLYING_CHILDREN \fP\fP
+.TP
+\fB\fICLBCKS_APPLIED_ERROR \fP\fP
+.TP
+\fB\fICLBCKS_APPLIED_NO_ERROR \fP\fP
+.TP
+\fB\fICLBCKS_APPLIED_CHILDREN_ERROR \fP\fP
+.TP
+\fB\fICLBCKS_APPLIED_CHILDREN_NO_ERROR \fP\fP
+.TP
+\fB\fICLBCKS_APPLIED_NOT_FULLY \fP\fP
+.TP
+\fB\fICLBCKS_APPLIED_FULLY \fP\fP
+.SS "enum \fBTRANSAPI_CLBCKS_ORDER_TYPE\fP"
+
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fITRANSAPI_CLBCKS_LEAF_TO_ROOT \fP\fP
+.TP
+\fB\fITRANSAPI_CLBCKS_ROOT_TO_LEAF \fP\fP
+.TP
+\fB\fITRANSAPI_CLBCKS_ORDER_DEFAULT \fP\fP
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

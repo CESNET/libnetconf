@@ -1,4 +1,4 @@
-.TH "transapi" 3 "Thu Feb 6 2014" "Version 0.7.0" "libnetconf" \" -*- nroff -*-
+.TH "transapi" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -14,6 +14,10 @@ Structure to describe transAPI module and connect it statically with libnetconf 
 .SS "Data Fields"
 
 .in +1c
+.ti -1c
+.RI "\fBTRANSAPI_CLBCKS_ORDER_TYPE\fP \fBclbks_order\fP"
+.br
+.RI "\fICallbacks order settings\&. \fP"
 .ti -1c
 .RI "void(* \fBclose\fP )(void)"
 .br
@@ -33,13 +37,13 @@ Structure to describe transAPI module and connect it statically with libnetconf 
 .ti -1c
 .RI "xmlDocPtr(* \fBget_state\fP )(const xmlDocPtr, const xmlDocPtr, struct nc_err **)"
 .br
-.RI "\fIFunction returning the module status information\&. \fP"
+.RI "\fIFunction returning status information\&. \fP"
 .ti -1c
 .RI "int(* \fBinit\fP )(xmlDocPtr *)"
 .br
 .RI "\fIModule initialization\&. \fP"
 .ti -1c
-.RI "const char ** \fBns_mapping\fP"
+.RI "struct \fBns_pair\fP * \fBns_mapping\fP"
 .br
 .RI "\fIMapping prefixes with URIs\&. \fP"
 .ti -1c
@@ -52,6 +56,10 @@ Structure to describe transAPI module and connect it statically with libnetconf 
 Structure to describe transAPI module and connect it statically with libnetconf using \fBncds_new_transapi_static()\fP\&. 
 .SH "Field Documentation"
 .PP 
+.SS "\fBTRANSAPI_CLBCKS_ORDER_TYPE\fP clbks_order"
+
+.PP
+Callbacks order settings\&. 
 .SS "void(* close)(void)"
 
 .PP
@@ -71,12 +79,12 @@ edit-config's error-option for the current transaction
 .SS "xmlDocPtr(* get_state)(const xmlDocPtr, const xmlDocPtr, struct nc_err **)"
 
 .PP
-Function returning the module status information\&. 
+Function returning status information\&. 
 .SS "int(* init)(xmlDocPtr *)"
 
 .PP
 Module initialization\&. 
-.SS "const char** ns_mapping"
+.SS "struct \fBns_pair\fP* ns_mapping"
 
 .PP
 Mapping prefixes with URIs\&. 
