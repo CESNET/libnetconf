@@ -152,7 +152,7 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities);
  * by the server. The caller can use nc_session_get_cpblts_default() to get the
  * structure with the list of all the capabilities supported by libnetconf (this is
  * used in case of a NULL parameter).
- * @param[in[ username Name of the user which will be assigned to the NETCONF
+ * @param[in] username Name of the user which will be assigned to the NETCONF
  * session. This information is used for example by NACM subsystem.
  * @return Structure describing the accepted NETCONF session or NULL in case of an error.
  */
