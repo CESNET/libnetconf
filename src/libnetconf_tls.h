@@ -54,6 +54,9 @@ extern "C" {
  * \defgroup tls NETCONF over TLS
  * \brief libnetconf's functions to use TLS
  *
+ * These functions are experimental. It is possible, that TLS transport (and
+ * mainly certificates management) is not fully implemented in this version.
+ *
  * Remember, that to make these functions available, libnetconf must be
  * compiled with --enable-tls configure's option.
  */
