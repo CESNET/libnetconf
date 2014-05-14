@@ -45,6 +45,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <pthread.h>
 #include <pwd.h>
 
 #include <openssl/bio.h>
@@ -54,37 +55,62 @@
 
 #include "netconf_internal.h"
 
-/* global SSL context */
-SSL_CTX *ssl_ctx = NULL;
+/* global SSL context (SSL_CTX*) */
+static pthread_key_t tls_ctx_key;
+static pthread_once_t tls_ctx_once = PTHREAD_ONCE_INIT;
+
+static void tls_ctx_init(void)
+{
+	pthread_key_create(&tls_ctx_key, NULL);
+
+	/* init OpenSSL */
+	SSL_load_error_strings();
+	ERR_load_BIO_strings();
+	SSL_library_init();
+}
+
+void nc_tls_destroy(void)
+{
+	SSL_CTX* tls_ctx;
+
+	tls_ctx = pthread_getspecific(tls_ctx_key);
+	if (tls_ctx) {
+		SSL_CTX_free(tls_ctx);
+	}
+	pthread_setspecific(tls_ctx_key, NULL);
+}
 
 int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath)
 {
 	const char* key_ = peer_key;
+	SSL_CTX* tls_ctx;
+	int destroy = 0;
 
 	if (peer_cert == NULL) {
 		ERROR("%s: Invalid parameter.", __func__);
 		return (EXIT_FAILURE);
 	}
 
-	if (ssl_ctx) {
-		VERB("TLS subsystem already initiated. Resetting certificates settings");
-		goto certset;
+	pthread_once(&tls_ctx_once, tls_ctx_init);
+
+	tls_ctx = pthread_getspecific(tls_ctx_key);
+	if (tls_ctx) {
+		VERB("TLS subsystem reinitiation. Resetting certificates settings");
+		/*
+		 * continue with creation of a new TLS context, the current will be
+		 * destroyed after everything successes
+		 */
+		destroy = 1;
 	}
 
-	/* init OpenSSL */
-	SSL_load_error_strings();
-	ERR_load_BIO_strings();
-	SSL_library_init();
-
 	/* prepare global SSL context, allow only mandatory TLS 1.2  */
-	if ((ssl_ctx = SSL_CTX_new(TLSv1_2_client_method())) == NULL) {
+	if ((tls_ctx = SSL_CTX_new(TLSv1_2_client_method())) == NULL) {
 		ERROR("Unable to create OpenSSL context (%s)", ERR_reason_error_string(ERR_get_error()));
 		return (EXIT_FAILURE);
 	}
 
-certset:
 	/* get peer certificate */
-	if (SSL_CTX_use_certificate_file(ssl_ctx, peer_cert, SSL_FILETYPE_PEM) != 1) {
+	if (SSL_CTX_use_certificate_file(tls_ctx, peer_cert, SSL_FILETYPE_PEM) != 1) {
 		ERROR("Loading a peer certificate from \'%s\' failed (%s).", peer_cert, ERR_reason_error_string(ERR_get_error()));
 		return (EXIT_FAILURE);
 	}
@@ -96,14 +122,20 @@ certset:
 		 */
 		key_ = peer_cert;
 	}
-	if (SSL_CTX_use_PrivateKey_file(ssl_ctx, key_, SSL_FILETYPE_PEM) != 1) {
+	if (SSL_CTX_use_PrivateKey_file(tls_ctx, key_, SSL_FILETYPE_PEM) != 1) {
 		ERROR("Loading a peer certificate from \'%s\' failed (%s).", key_, ERR_reason_error_string(ERR_get_error()));
 		return (EXIT_FAILURE);
 	}
 
-	if(! SSL_CTX_load_verify_locations(ssl_ctx, CAfile, CApath))	{
+	if(! SSL_CTX_load_verify_locations(tls_ctx, CAfile, CApath))	{
 		WARN("SSL_CTX_load_verify_locations() failed (%s).", ERR_reason_error_string(ERR_get_error()));
 	}
+
+	/* store TLS context for thread */
+	if (destroy) {
+		nc_tls_destroy();
+	}
+	pthread_setspecific(tls_ctx_key, tls_ctx);
 
 	return (EXIT_SUCCESS);
 }
@@ -114,8 +146,10 @@ struct nc_session *nc_session_connect_tls_socket(const char* username, const cha
 	struct passwd *pw;
 	pthread_mutexattr_t mattr;
 	int verify, r;
+	SSL_CTX* tls_ctx;
 
-	if (ssl_ctx == NULL) {
+	tls_ctx = pthread_getspecific(tls_ctx_key);
+	if (tls_ctx == NULL) {
 		ERROR("TLS subsystem not initiated.");
 		return (NULL);
 	}
@@ -145,7 +179,7 @@ struct nc_session *nc_session_connect_tls_socket(const char* username, const cha
 	}
 
 	/* prepare a new TLS structure */
-	if ((retval->tls = SSL_new(ssl_ctx)) == NULL) {
+	if ((retval->tls = SSL_new(tls_ctx)) == NULL) {
 		ERROR("%s: Unable to prepare TLS structure (%s)", __func__, ERR_reason_error_string(ERR_get_error()));
 		free(retval->stats);
 		free(retval);

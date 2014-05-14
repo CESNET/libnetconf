@@ -68,6 +68,19 @@ extern "C" {
  * This function takes effect only on client side. It must be used before
  * establishing NETCONF session (including call home) over TLS.
  *
+ * This function is thread-safe. It is supposed to be part of the process of
+ * establishing NETCONF session within a single thread:
+ * -# Use nc_tls_init() to set client certificate and CA for server certificate
+ * verification. Calling this function repeatedly with different parameters
+ * changes those parameter for new NETCONF session created after the call. Any
+ * currently used NETCONF session will be still using the settings specified
+ * before the creation of the NETCONF session.
+ * -# Establish NETCONF session using nc_session_connect(). If you don't need
+ * to change parameters set in nc_tls_init(), you can call nc_session_connect()
+ * repeatedly.
+ * -# To properly clean all resources, call nc_tls_destroy(). It will destroy
+ * TLS connection context in the current thread.
+ *
  * @param[in] peer_cert Path to the file containing client certificate
  * @param[in] peer_key Path to the file containing private key for the client
  * certificate. If NULL, key is expected to be stored in the file specified in
@@ -81,6 +94,14 @@ extern "C" {
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
 int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath);
+
+/**
+ * @ingroup tls
+ * @brief Destroy all resources allocated for preparation of TLS connections.
+ *
+ * See nc_tls_init() for more information about NETCONF session preparation.
+ */
+void nc_tls_destroy(void);
 
 #ifdef __cplusplus
 }
