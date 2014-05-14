@@ -68,6 +68,9 @@ typedef enum NC_TRANSPORT {
  * @brief Set transport protocol for the sessions created by subsequent
  * nc_session_connect() calls. By default, transport protocol is set to
  * #NC_TRANSPORT_SSH
+ *
+ * This function is thread-safe. Change made by calling this function applies
+ * only to the current thread.
  */
 int nc_session_transport(NC_TRANSPORT proto);
 

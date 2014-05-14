@@ -49,6 +49,7 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <poll.h>
+#include <pthread.h>
 #include <pwd.h>
 #include <netdb.h>
 #include <fcntl.h>
@@ -91,7 +92,15 @@ char **get_schemas_capabilities(void);
 extern struct nc_shared_info *nc_info;
 extern char* server_capabilities; /* from datastore, only for server side */
 
-NC_TRANSPORT transport_proto = NC_TRANSPORT_SSH;
+static pthread_key_t transproto_key;
+static pthread_once_t transproto_key_once = PTHREAD_ONCE_INIT;
+static NC_TRANSPORT proto_ssh = NC_TRANSPORT_SSH;
+static NC_TRANSPORT proto_tls = NC_TRANSPORT_TLS;
+static void transproto_init(void)
+{
+	pthread_key_create(&transproto_key, NULL);
+	pthread_setspecific(transproto_key, &proto_ssh);
+}
 
 int nc_session_transport(NC_TRANSPORT proto)
 {
@@ -102,11 +111,18 @@ int nc_session_transport(NC_TRANSPORT proto)
 	}
 #endif
 
-	if (proto < 0) {
+	pthread_once(&transproto_key_once, transproto_init);
+
+	switch(proto) {
+	case NC_TRANSPORT_SSH:
+		pthread_setspecific(transproto_key, &proto_ssh);
+		break;
+	case NC_TRANSPORT_TLS:
+		pthread_setspecific(transproto_key, &proto_tls);
+		break;
+	default:
 		return (EXIT_FAILURE);
 	}
-
-	transport_proto = proto;
 
 	return (EXIT_SUCCESS);
 }
@@ -445,6 +461,7 @@ struct nc_session* nc_session_connect(const char *host, unsigned short port, con
 	struct nc_session *retval = NULL;
 	struct nc_cpblts *client_cpblts = NULL;
 	char port_s[SHORT_INT_LENGTH];
+	NC_TRANSPORT *transport_proto;
 
 	/* set default values */
 	if (host == NULL || strisempty(host)) {
@@ -460,8 +477,11 @@ struct nc_session* nc_session_connect(const char *host, unsigned short port, con
 		return (NULL);
 	}
 
+	pthread_once(&transproto_key_once, transproto_init);
+	transport_proto = pthread_getspecific(transproto_key);
+
 #ifdef ENABLE_TLS
-	if (transport_proto == NC_TRANSPORT_TLS) {
+	if (*transport_proto == NC_TRANSPORT_TLS) {
 		retval = nc_session_connect_tls(username, host, port_s);
 	} else {
 		retval = nc_session_connect_ssh(username, host, port_s);
@@ -959,9 +979,13 @@ int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_sec
 	char* const *server_argv;
 	char* const sshd_argv[] = {"/usr/sbin/sshd", "-ddd", "-e", "-i", NULL};
 	char* const stunnel_argv[] = {"/usr/sbin/stunnel", NULL};
+	NC_TRANSPORT *transport_proto;
 
 	if (server_path == NULL) {
-		switch(transport_proto) {
+		pthread_once(&transproto_key_once, transproto_init);
+		transport_proto = pthread_getspecific(transproto_key);
+
+		switch(*transport_proto) {
 		case NC_TRANSPORT_SSH:
 			server_path = "/usr/sbin/sshd";
 			server_argv = sshd_argv;
@@ -971,7 +995,7 @@ int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_sec
 			server_argv = stunnel_argv;
 			break;
 		default:
-			ERROR("%s: Unknown transport protocol (%d)", __func__, transport_proto);
+			ERROR("%s: Unknown transport protocol (%d)", __func__, *transport_proto);
 			return (-1);
 		}
 	} else {
@@ -1082,16 +1106,20 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 	char port[SHORT_INT_LENGTH];
 	char host[INET6_ADDRSTRLEN];
 	int status, i;
+	NC_TRANSPORT *transport_proto;
+
+	pthread_once(&transproto_key_once, transproto_init);
+	transport_proto = pthread_getspecific(transproto_key);
 
 #ifdef DISABLE_LIBSSH
-	if (transport_proto == NC_TRANSPORT_SSH) {
+	if (*transport_proto == NC_TRANSPORT_SSH) {
 		ERROR("%s: call home via SSH is provided only without --disable-libssh2 option.", __func__);
 		return (NULL);
 	}
 #endif
 
 #ifndef ENABLE_TLS
-	if (transport_proto == NC_TRANSPORT_TLS) {
+	if (*transport_proto == NC_TRANSPORT_TLS) {
 		ERROR("%s: call home via TLS is provided only with --enable-tls option.", __func__);
 		return (NULL);
 	}
@@ -1157,7 +1185,7 @@ netconf_connect:
 
 #ifdef ENABLE_TLS
 	/* we can choose from transport protocol according to nc_session_transport() */
-	if (transport_proto == NC_TRANSPORT_TLS) {
+	if (*transport_proto == NC_TRANSPORT_TLS) {
 		retval = nc_session_connect_tls_socket(username, host, sock);
 	} else {
 #else
