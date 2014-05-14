@@ -220,7 +220,7 @@ tarball: $(SRCS) $(HEADERS)
 	@rm -rf $(NAME)-$(VERSION);
 	@mkdir $(NAME)-$(VERSION);
 	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) configure.in configure \
-	    headers/libnetconf.h.in headers/libnetconf_xml.h.in \
+	    headers/libnetconf.h.in headers/libnetconf_xml.h.in headers/libnetconf_ssh.h.in \
 	    ltmain.sh Makefile.in VERSION $(NAME).spec.in $(NAME).pc.in \
 	    lnctool/lnctool.in lnctool/rnglib/* lnctool/xslt/*  lnctool/generator/*\
 	    install-sh config.sub config.guess Doxyfile.in doc/img/*.png models/*; do \
