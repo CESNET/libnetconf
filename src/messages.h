@@ -335,7 +335,8 @@ nc_reply *nc_reply_ok(void);
 
 /**
  * @ingroup reply
- * @brief Create rpc-reply response with \<data\> content.
+ * @brief Create rpc-reply response with \<data\> content (in
+ * urn:ietf:params:xml:ns:netconf:base:1.0 namespace).
  * @param[in] data Serialized XML content of the \<data\> element for the
  * \<rpc-reply\> message being created.
  * @return Created \<rpc-reply\> message.
