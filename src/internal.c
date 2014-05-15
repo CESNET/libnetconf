@@ -42,6 +42,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -67,7 +68,7 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 int ncds_sysinit(int flags);
 void ncds_startup_internal(void);
 
-int verbose_level = 0;
+volatile uint8_t verbose_level = 0;
 
 /* this instance is running as first after reboot or system-wide nc_close */
 /* used in nc_device_init to decide if erase running or not */

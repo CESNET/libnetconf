@@ -42,6 +42,7 @@
 
 #include <time.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <pthread.h>
 
 #ifndef DISABLE_LIBSSH
@@ -203,7 +204,7 @@
 
 /* libnetconf's message printing */
 void prv_printf(NC_VERB_LEVEL level, const char *format, ...);
-extern int verbose_level;
+extern uint8_t verbose_level;
 #define ERROR(format,args...) if(verbose_level>=NC_VERB_ERROR){prv_printf(NC_VERB_ERROR,format,##args);}
 #define WARN(format,args...) if(verbose_level>=NC_VERB_WARNING){prv_printf(NC_VERB_WARNING,format,##args);}
 #define VERB(format,args...) if(verbose_level>=NC_VERB_VERBOSE){prv_printf(NC_VERB_VERBOSE,format,##args);}
