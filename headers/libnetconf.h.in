@@ -50,7 +50,6 @@
 #include "libnetconf/error.h"
 #include "libnetconf/datastore.h"
 #include "libnetconf/transport.h"
-#include "libnetconf/callhome.h"
 
 #endif /* LIBNETCONF_H_ */
 

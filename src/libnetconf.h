@@ -847,7 +847,6 @@
 #include "datastore.h"
 #include "with_defaults.h"
 #include "transport.h"
-#include "callhome.h"
 
 #ifndef DISABLE_NOTIFICATIONS
 #  include "notifications.h"
