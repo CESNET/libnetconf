@@ -42,10 +42,18 @@
  *
  */
 
+#include <stdio.h>
+
 #include <libnetconf.h>
 
-int main()
+int main(int argc, char* argv[])
 {
+	if (argc != 1) {
+		printf("Generate <example-event/> NETCONF event record.\n");
+		printf("Usage %s [-h]\n", argv[0]);
+		return 0;
+	}
+
 	/* init libnetconf (at least) with Notification subsystem */
 	nc_init(NC_INIT_NOTIF);
 
