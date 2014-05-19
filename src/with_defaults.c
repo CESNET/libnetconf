@@ -132,6 +132,56 @@ static int search_choice_match(xmlNodePtr parent, xmlChar* name)
 	return (0);
 }
 
+xmlChar* check_default_case(xmlNodePtr config_choice, xmlNodePtr model_choice)
+{
+	xmlNodePtr def, aux_model, case_child;
+	xmlChar *name;
+
+	/*
+	 * for all cases if the model, check that there is no case in config
+	 * and then return name of the default case
+	 */
+
+	/* first, get the name of default case, if no defined, terminate */
+	for (def = model_choice->children; def != NULL; def = def->next) {
+		if (def->type != XML_ELEMENT_NODE || xmlStrcmp(def->name, BAD_CAST "default")) {
+			continue;
+		}
+		/* default definition */
+		break;
+	}
+	if (def == NULL) {
+		return (NULL);
+	}
+
+	/* now search for any existing case */
+	for (aux_model = model_choice->children; aux_model != NULL; aux_model = aux_model->next) {
+		if (aux_model->type != XML_ELEMENT_NODE || xmlStrcmp(aux_model->name, BAD_CAST "case")) {
+			continue;
+		}
+		for (case_child = aux_model->children; case_child != NULL; case_child = case_child->next) {
+			if (case_child->type != XML_ELEMENT_NODE) {
+				continue;
+			}
+
+			if ((xmlStrcmp(case_child->name, BAD_CAST "anyxml") == 0) ||
+					(xmlStrcmp(case_child->name, BAD_CAST "container") == 0) ||
+					(xmlStrcmp(case_child->name, BAD_CAST "leaf") == 0) ||
+					(xmlStrcmp(case_child->name, BAD_CAST "list") == 0) ||
+					(xmlStrcmp(case_child->name, BAD_CAST "leaf-list") == 0)) {
+				name = xmlGetProp(case_child, BAD_CAST "name");
+				if (search_choice_match(config_choice, name) == 1) {
+					xmlFree(name);
+					return (NULL);
+				}
+				xmlFree(name);
+			}
+		}
+	}
+
+	return(xmlGetProp(def, BAD_CAST "value"));
+}
+
 static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* namespace, NCWD_MODE mode, xmlNodePtr** created)
 {
 	xmlNodePtr *parents = NULL, *retvals = NULL, *created_local = NULL, *aux_nodeptr;
@@ -143,6 +193,11 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 	static int created_size = 0;
 
 	if (mode == NCWD_MODE_NOTSET || mode == NCWD_MODE_EXPLICIT) {
+		return (NULL);
+	}
+
+	if (xmlStrcmp(node->name, BAD_CAST "default") == 0 && xmlStrcmp(node->parent->name, BAD_CAST "choice") == 0) {
+		/* skip default branches of a choice */
 		return (NULL);
 	}
 
@@ -208,7 +263,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 								(xmlStrcmp(aux->name, BAD_CAST "list") == 0) ||
 								(xmlStrcmp(aux->name, BAD_CAST "leaf-list") == 0)) {
 							value = xmlGetProp(aux, BAD_CAST "name");
-							if (search_choice_match(parents[i], value) == 0) {
+							if (search_choice_match(parents[i], value) != 0) {
 								xmlFree(value);
 								break;
 							}
@@ -217,7 +272,35 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 					}
 					if (aux == NULL) {
 						/* match not found */
-						parents[i] = NULL;
+
+						/* check default case */
+						if ((value = check_default_case(parents[i], node->parent)) != NULL) {
+							/*
+							 * there is no case in config data and default case
+							 * is specified in the model (named value), check
+							 * if it is the currently processed node
+							 */
+							name = xmlGetProp(node, BAD_CAST "name");
+							if (xmlStrcmp(value, name) != 0) {
+								/*
+								 * we are in a different case, remove parent
+								 * from further processing
+								 */
+								parents[i] = NULL;
+							}
+
+							/* cleanup */
+							xmlFree(value);
+							xmlFree(name);
+
+						} else {
+							/*
+							 * there is already some case in config data or no
+							 * default case is specified. Remove parent from
+							 * further processing
+							 */
+							parents[i] = NULL;
+						}
 					}
 				}
 			} else {
@@ -228,7 +311,11 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 				value = xmlGetProp(node, BAD_CAST "name");
 				for (i = 0; parents[i] != NULL; i++) {
 					if (search_choice_match(parents[i], value) == 0) {
-						parents[i] = NULL;
+						name = check_default_case(parents[i], node->parent);
+						if (name == NULL || xmlStrcmp(name, value) != 0) {
+							/* we are not in a default branch */
+							parents[i] = NULL;
+						}
 					}
 				}
 				xmlFree(value);
