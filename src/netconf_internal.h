@@ -369,7 +369,7 @@ struct nc_session {
 	/**< @brief session's with-defaults ORed supported modes */
 	int wd_modes;
 	/**< @brief status of the NETCONF session */
-	NC_SESSION_STATUS status;
+	volatile uint8_t status;
 	/**< @brief thread lock for accessing session items */
 	pthread_mutex_t mut_session;
 	/**< @brief thread lock for communication channel */

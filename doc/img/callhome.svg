@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="670.05255"
+   height="333.30786"
+   id="svg2"
+   inkscape:label="Pozadí"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="callhome.svg"
+   inkscape:export-filename="/home/krejci/svn/libnetconf/doc/img/callhome.png"
+   inkscape:export-xdpi="75.083664"
+   inkscape:export-ydpi="75.083664">
+  <defs
+     id="defs3">
+    <marker
+       inkscape:stockid="Arrow2Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow2Lend"
+       style="overflow:visible">
+      <path
+         id="path4140"
+         style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round"
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
+         transform="matrix(-1.1,0,0,-1.1,-1.1,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend"
+       style="overflow:visible">
+      <path
+         id="path4122"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow2Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow2Lend-2"
+       style="overflow:visible">
+      <path
+         id="path4140-5"
+         style="fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round"
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
+         transform="matrix(-1.1,0,0,-1.1,-1.1,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="240.6241"
+     inkscape:cy="170.14575"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1145"
+     inkscape:window-x="-2"
+     inkscape:window-y="-3"
+     inkscape:window-maximized="1"
+     fit-margin-top="10"
+     fit-margin-left="10"
+     fit-margin-right="10"
+     fit-margin-bottom="10" />
+  <metadata
+     id="metadata6">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Vrstva 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-47.607601,-100.61091)">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 197.85714,395.33093 369.99817,-38.34334 c 12.47812,-1.29312 15.71612,5.263 16.25183,33.29871"
+       id="path4745-8"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="csc" />
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="56.582211"
+       y="179.59039"
+       id="text3179"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3181"
+         x="56.582211"
+         y="179.59039">1. nc_session_transport()</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="56.582211"
+       y="248.28076"
+       id="text3183"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3185"
+         x="56.582211"
+         y="248.28076">2. nc_callhome_listen()</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="56.582211"
+       y="325.05234"
+       id="text3187"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3189"
+         x="56.582211"
+         y="325.05234">3. nc_callhome_accept()</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="354.57721"
+       y="212.92543"
+       id="text3191"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3193"
+         x="354.57721"
+         y="212.92543">2. nc_callhome_mngmt_server_add()</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="354.57721"
+       y="285.6564"
+       id="text3195"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3197"
+         x="354.57721"
+         y="285.6564">3. nc_callhome_connect()</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="354.56354"
+       y="121.00153"
+       id="text3199"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3201"
+         x="354.56354"
+         y="121.00153"
+         style="font-weight:bold;-inkscape-font-specification:Sans Bold">NETCONF server</tspan><tspan
+         sodipodi:role="line"
+         x="354.56354"
+         y="138.50153"
+         style="font-weight:normal;-inkscape-font-specification:Sans"
+         id="tspan4906">(Call Home client)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="56.568539"
+       y="121.24763"
+       id="text3203"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3205"
+         x="56.568539"
+         y="121.24763"
+         style="font-weight:bold;-inkscape-font-specification:Sans Bold">NETCONF client</tspan><tspan
+         sodipodi:role="line"
+         x="56.568539"
+         y="138.74762"
+         style="font-weight:normal;-inkscape-font-specification:Sans"
+         id="tspan4904">(Call Home server)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="642.14795"
+       y="347.78079"
+       id="text3207"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="642.14795"
+         y="347.78079"
+         id="tspan3211"
+         style="font-weight:bold;text-align:center;text-anchor:middle;-inkscape-font-specification:Sans Bold">Transport server</tspan><tspan
+         sodipodi:role="line"
+         x="642.14795"
+         y="365.28079"
+         id="tspan3215"
+         style="text-align:center;text-anchor:middle">(sshd/stunnel)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="472.52988"
+       y="329.82828"
+       id="text3217"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3219"
+         x="472.52988"
+         y="329.82828"
+         style="font-size:12px;font-style:italic;-inkscape-font-specification:Sans Italic">fork()</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="354.57721"
+       y="179.59039"
+       id="text3179-0"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3181-3"
+         x="354.57721"
+         y="179.59039">1. nc_session_transport()</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="359.59561"
+       y="397.18982"
+       id="text3217-5"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3219-7"
+         x="359.59561"
+         y="397.18982"
+         style="font-size:12px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:Sans Italic">NETCONF session</tspan><tspan
+         sodipodi:role="line"
+         x="359.59561"
+         y="412.18982"
+         style="font-size:12px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:Sans Italic"
+         id="tspan4902">over SSH/TLS</tspan></text>
+    <g
+       id="g4108"
+       transform="translate(15,-28.571429)">
+      <rect
+         ry="5"
+         rx="5"
+         y="406.01685"
+         x="49.413036"
+         height="30"
+         width="139.64285"
+         id="rect3338"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3187-8"
+         y="424.68433"
+         x="59.177334"
+         style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         xml:space="preserve"><tspan
+           y="424.68433"
+           x="59.177334"
+           id="tspan3189-2"
+           sodipodi:role="line">struct nc_session</tspan></text>
+    </g>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Lend)"
+       d="m 446.42857,295.93361 120,41.42857"
+       id="path4113"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="641.67627"
+       y="403.50665"
+       id="text3207-4"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="641.67627"
+         y="403.50665"
+         id="tspan3211-3"
+         style="font-weight:bold;text-align:center;text-anchor:middle;-inkscape-font-specification:Sans Bold">NETCONF agent</tspan><tspan
+         sodipodi:role="line"
+         x="641.67627"
+         y="421.00665"
+         id="tspan3215-5"
+         style="text-align:center;text-anchor:middle">(SSH Subsystem)</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Lend)"
+       d="m 134.21685,331.45958 0,41.42857"
+       id="path4113-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+  </g>
+</svg>
