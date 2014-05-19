@@ -982,7 +982,7 @@ int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_sec
 	int i;
 	int pid = -1;
 	char* const *server_argv;
-	char* const sshd_argv[] = {"/usr/sbin/sshd", "-ddd", "-e", "-i", NULL};
+	char* const sshd_argv[] = {"/usr/sbin/sshd", "-ddd", "-i", NULL};
 	char* const stunnel_argv[] = {"/usr/sbin/stunnel", NULL};
 	NC_TRANSPORT *transport_proto;
 
