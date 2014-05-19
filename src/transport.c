@@ -82,6 +82,11 @@
 #  include "notifications.h"
 #endif
 
+struct nc_mngmt_server {
+	int active;
+	struct addrinfo *addr;
+	struct nc_mngmt_server* next;
+};
 
 /* definition in session.c */
 void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supported);
@@ -1017,6 +1022,12 @@ int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_sec
 		return (-1);
 	}
 
+	/* remove active flag from the last connected management server information */
+	srv_iter = nc_callhome_mngmt_server_getactive(host_list);
+	if (srv_iter) {
+		srv_iter->active = 0;
+	}
+
 	/* since host_list is supposed to be ring list, this is potentially never ending loop */
 	for (srv_iter = host_list; srv_iter != NULL; srv_iter = srv_iter->next) {
 		for (addr = srv_iter->addr; addr != NULL; addr = addr->ai_next) {
@@ -1092,6 +1103,9 @@ connected:
 		/* parent (current app) */
 		close(sock);
 	}
+
+	/* mark the management server as connected */
+	srv_iter->active = 1;
 
 	return (pid);
 }
@@ -1241,7 +1255,7 @@ shutdown:
 
 struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port)
 {
-	struct nc_mngmt_server* item, *start, *end;
+	struct nc_mngmt_server *item, *start, *end;
 	struct addrinfo hints;
 	int r;
 
@@ -1260,6 +1274,7 @@ struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* lis
 		free(item);
 		return (NULL);
 	}
+	item->active = 0;
 
 	if (list == NULL) {
 		start = item;
@@ -1330,4 +1345,17 @@ int nc_callhome_mngmt_server_free(struct nc_mngmt_server* list)
 	}
 
 	return (EXIT_SUCCESS);
+}
+
+struct nc_mngmt_server *nc_callhome_mngmt_server_getactive(struct nc_mngmt_server* list)
+{
+	struct nc_mngmt_server* srv_iter;
+
+	for (srv_iter = list; srv_iter != NULL && srv_iter->next != list && srv_iter->active == 0; srv_iter = srv_iter->next);
+
+	if (srv_iter && srv_iter->active == 1) {
+		return (srv_iter);
+	} else {
+		return (NULL);
+	}
 }

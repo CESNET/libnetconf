@@ -52,15 +52,10 @@ extern "C" {
  * @ingroup callhome
  * @brief Structure describing a management server where the NETCONF server connects to.
  *
- * The structure is public, but, except moving inside the list to specify the
- * server which should be used as first one in nc_callhome_connect(),
- * it is HIGHLY recommended to use nc_callhome_mngmt_server_*() functions
- * to manipulate with the management servers list.
+ * Any manipulation with the structure is allowed only via
+ * nc_callhome_mngmt_server_*() functions.
  */
-struct nc_mngmt_server {
-	struct addrinfo *addr;
-	struct nc_mngmt_server* next;
-};
+struct nc_mngmt_server;
 
 /**
  * @ingroup callhome
@@ -110,6 +105,17 @@ int nc_callhome_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_se
  * @return EXIT_SUCCESS or EXIT_FAILURE.
  */
 int nc_callhome_mngmt_server_free(struct nc_mngmt_server* list);
+
+/**
+ * @ingroup callhome
+ * @brief Searches for the item from the list, which was marked and used by the
+ * last call to nc_callhome_connect() to a successfully establish Call Home
+ * connection.
+ *
+ * @param[in] list List of management servers.
+ * @return Pointer to the last connected management server.
+ */
+struct nc_mngmt_server *nc_callhome_mngmt_server_getactive(struct nc_mngmt_server* list);
 
 #ifndef DISABLE_LIBSSH
 
@@ -176,8 +182,7 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
  * libnetconf_tls.h.
  *
  * @param[in] host_list List of management servers descriptions where the
- * function will try to connect to. The list can be (is expected to be) ring
- * to allow keep trying to connect to the server(s).
+ * function will try to connect to.
  * @param[in] reconnect_secs Time delay in seconds between connection attempts
  * (even to the same server but it depends on reconnect_count). See
  * /netconf/ssh/call-home/applications/application/reconnect-strategy/interval-secs
