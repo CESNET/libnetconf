@@ -178,6 +178,10 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
  * Use nc_session_transport() function to specify which transport protocol
  * should be used.
  *
+ * Note that reconnect_secs and reconnect_count parameters are used only before
+ * a connection is established, then the function returns. It's up to the caller
+ * to reconnect if the session goes down. It can be detected using returned PID.
+ *
  * To make this function available, you have to include libnetconf_ssh.h or
  * libnetconf_tls.h.
  *
@@ -205,7 +209,7 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
  * Call Home connection. Caller is supposed to close returned socket when it is
  * no more needed.
  * @return -1 on error. In case of success, function forks the current process
- * running SSH daemon and returns its PID.
+ * running the transport protocol server and returns its PID.
  */
 int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* server_path, char *const argv[], int *com_socket);
 

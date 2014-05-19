@@ -52,7 +52,8 @@ extern "C" {
 
 /**
  * \defgroup tls NETCONF over TLS
- * \brief libnetconf's functions to use TLS
+ * \brief libnetconf's functions to use TLS. More information can be found at
+ * \ref transport page.
  *
  * These functions are experimental. It is possible, that TLS transport (and
  * mainly certificates management) is not fully implemented in this version.

@@ -191,22 +191,26 @@
  * - `--disable-validation`
  *  - Remove support for NETCONF :validate capability.
  *
- * - `--with-nacm-recovery-uid=<uid>` \anchor configure-nacm-recovery
- *  - Specify user ID to be used for the identification of the \ref
- *  nacm-recovery "NACM Recovery Session".
- *
  * - `--disable-yang-schemas`
  *  - Remove support for YANG data model format for <get-schema> opration. With
  *    this option, only YIN format is available.
+ *
+ * - `--enable-debug`
+ *  - Add debugging information for a debugger.
+ *
+ * - `--enable-tls`
+ *  - Enable experimental support for TLS transport. More information about the
+ *    TLS transport can be found in \ref transport section.
+ *
+ * - `--with-nacm-recovery-uid=<uid>` \anchor configure-nacm-recovery
+ *  - Specify user ID to be used for the identification of the \ref
+ *  nacm-recovery "NACM Recovery Session".
  *
  * - `--with-workingdir=<path>`
  *  - Change location of libnetconf's working directory. Default path is
  *    `/var/lib/libnetconf/`. Note that applications using libnetconf should
  *    have permissions to read/write to this path, with `--with-suid` and
  *    `--with-sgid` this is set automatically.
- *
- * - `--enable-debug`
- *  - Add debugging information for a debugger.
  *
  * - `--with-suid=<user>`
  *  - Limit usage of libnetconf to the specific _user_. With this option,
@@ -230,6 +234,87 @@
  */
 
 /**
+ * \page nacm NETCONF Access Control Module (NACM)
+ *
+ * [RFC6536]: http://tools.ietf.org/html/rfc6536 "RFC 6536"
+ * [NACMExamples]: http://tools.ietf.org/html/rfc6536#appendix-A
+ *
+ * NACM is a transparent subsystem of libnetconf. It is activated using
+ * #NC_INIT_NACM flag in the nc_init() function. No other action is required
+ * to use NACM in libnetconf. All NACM rules and settings are controlled via
+ * standard NETCONF operations since NACM subsystem provides implicit datastore
+ * accessible with the ncds_apply_rpc() function with the ID parameter set to the value
+ * #NCDS_INTERNAL_ID (0).
+ *
+ * libnetconf supports usage of the system groups (/etc/group) in the access
+ * control rule-lists. To disable this feature, <enable-external-groups> value
+ * must be set to false:
+ *
+ * ~~~~~~~
+ * <nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
+ *   <enable-external-groups>false</enable-external-groups>
+ * </nacm>
+ * ~~~~~~~
+ *
+ *
+ * ### Recovery Session ###
+ * \anchor nacm-recovery
+ *
+ * Recovery session serves for setting up initial access rules or to repair a broken
+ * access control configuration. If a session is recognized as recovery, NACM
+ * subsystem is completely bypassed.
+ *
+ * By default, libnetconf considers all sessions of the user with the system UID
+ * equal zero as recovery. To change this default value to a UID of any user,
+ * use configure's \ref configure-nacm-recovery "--with-nacm-recovery-uid"
+ * option.
+ *
+ *
+ * ### Initial operation ###
+ *
+ * According to [RFC 6536][RFC6536], libnetconf's NACM subsystem is initially
+ * set to allow reading (permitted read-default), refuse writing (denied
+ * write-default) and allow operation execution (permitted exec-default).
+ *
+ * \note Some operations or data have their specific access control settings
+ * defined in their data models. These settings override the described default
+ * settings.
+ *
+ * To change this initial settings, user has to access NACM datastore via
+ * a recovery session (since any write operation is denied) and set required
+ * access control rules.
+ *
+ * For example, to change default write rule from deny to permit, use
+ * edit-config operation to create (merge) the following configuration data:
+ *
+ * ~~~~~~~
+ * <nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
+ *   <write-default>permit</write-default>
+ * </nacm>
+ * ~~~~~~~
+ *
+ * To guarantee all access rights to a specific users group, use edit-config
+ * operation to create (merge) the following rule:
+ *
+ * ~~~~~~~
+ * <nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
+ *   <rule-list>
+ *     <name>admin-acl</name>
+ *     <group>admin</group>
+ *     <rule>
+ *       <name>permit-all</name>
+ *       <module-name>*</module-name>
+ *       <access-operations>*</access-operations>
+ *       <action>permit</action>
+ *     </rule>
+ *   </rule-list>
+ * </nacm>
+ * ~~~~~~~
+ *
+ * More examples can be found in the [Appendix A. of RFC 6536][NACMExamples].
+ */
+
+/**
  * \page usage Using libnetconf
  *
  * [netopeer]: https://code.google.com/p/netopeer
@@ -242,6 +327,9 @@
  * - \subpage client
  * - \subpage server
  * - \subpage transport
+ * - \subpage callhome
+ * - \subpage datastores
+ * - \subpage validation
  *
  * GLOSSARY
  * --------
@@ -458,9 +546,7 @@
  *
  * [RFC6241]: http://tools.ietf.org/html/rfc6241 "RFC 6241"
  * [RFC5539bis]:http://tools.ietf.org/html/draft-ietf-netconf-rfc5539bis-05 "RFC 5539bis"
- *
- * Transport Protocol
- * ------------------
+ * [netopeer]:https://code.google.com/p/netopeer/ "Netopeer"
  *
  * NETCONF protocol specifies the set of requirements for the transport protocol
  * in [RFC 6241][RFC6241]. There are currently 2 specifications how to use
@@ -477,7 +563,10 @@
  * ./configure --enable-tls
  * ~~~~
  *
- * ### TLS Transport Support on the Client Side ###
+ * See the [Netopeer project][netopeer] as a reference implementation.
+ *
+ * Transport Support on the Client Side
+ * ------------------------------------
  *
  * To switch from the default SSH transport to the TLS transport, application
  * must call nc_session_transport() with #NC_TRANSPORT_TLS parameter. Remember,
@@ -498,88 +587,97 @@
  * after calling nc_tls_destroy() - the client has to call nc_tls_init() again.
  *
  * The whole process described here is supposed to be performed in a single
- * thread.
+ * thread. SSH transport works out of the box, so no specific step, as mentioned
+ * for TLS in this section, is required.
+ *
+ * Transport Support on the Server Side
+ * ------------------------------------
+ *
+ * There is no specific support for neither SSH or TLS on the server side.
+ * libnetconf doesn't implement SSH nor TLS server - it is expected, that
+ * NETCONF server application uses external application (sshd, stunnel,...)
+ * serving as SSH/TLS server and providing NETCONF data to the NETCONF server
+ * stdin, where libnetconf can read the data, and getting data from the NETCONF
+ * server stdout to encapsulate the data and send to a client.
+ *
+ * For both cases, SSH as well as TLS, there are two functions: nc_session_accept()
+ * and nc_session_accept_username(), that serve to accept incoming connection
+ * despite the transport protocol. As mentioned, they read data from stdin and
+ * write data to the stdout. Difference between those functions is in recognizing
+ * NETCONF username. nc_session_accept() guesses username from the process's UID.
+ * For example, in case of using SSH Subsystem mechanism in OpenSSH
+ * implementation, SSH daemon automatically changes UID of the launched SSH
+ * Subsystem process (NETCONF server/agent) to the UID of the logged user. But
+ * in case of other SSH/TLS server, this doesn't have to be done. In such a case,
+ * NETCONF server itself is supposed to correctly recognize the NETCONF username
+ * and specify it explicitly when establishing NETCONF session using
+ * nc_session_accept_username().
+ *
  */
 
 /**
- * \page nacm NETCONF Access Control Module (NACM)
+ * \page callhome Call Home
  *
- * [RFC6536]: http://tools.ietf.org/html/rfc6536 "RFC 6536"
- * [NACMExamples]: http://tools.ietf.org/html/rfc6536#appendix-A
+ * [callhomessh]: http://tools.ietf.org/html/draft-ietf-netconf-reverse-ssh-05 "NETCONF over SSH Call Home Draft"
+ * [callhometls]: hhttp://tools.ietf.org/html/draft-ietf-netconf-rfc5539bis-05 "RFC 5539bis (NETCONF over TLS)"
+ * [servercfg]: http://tools.ietf.org/html/draft-kwatsen-netconf-server-01 "NETCONF Server Configuration Data Model"
+ * [netopeer]: https://code.google.com/p/netopeer
  *
- * NACM is a transparent subsystem of libnetconf. It is activated using
- * #NC_INIT_NACM flag in the nc_init() function. No other action is required
- * to use NACM in libnetconf. All NACM rules and settings are controlled via
- * standard NETCONF operations since NACM subsystem provides implicit datastore
- * accessible with the ncds_apply_rpc() function with the ID parameter set to the value
- * #NCDS_INTERNAL_ID (0).
+ * Call Home is a mechanism how a NETCONF server can initiate connection to a
+ * NETCONF client. Specification for this technique can be found in [NETCONF
+ * over SSH Call Home draft][callhomessh] and in [NETCONF over TLS RFC]
+ * [callhometls]. Some other aspects of this are also described in [NETCONF
+ * Server Configuration Data Model][servercfg].
  *
- * libnetconf supports usage of the system groups (/etc/group) in the access
- * control rule-lists. To disable this feature, <enable-external-groups> value
- * must be set to false:
+ * This Mechanism is extremely useful especially in case the device (NETCONF
+ * server) is deployed behind a NAT and management application is not able to
+ * connect (NETCONF client) to such a device.
  *
- * ~~~~~~~
- * <nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
- *   <enable-external-groups>false</enable-external-groups>
- * </nacm>
- * ~~~~~~~
+ * See the [Netopeer project][netopeer] as a reference implementation.
  *
+ * Call Home on the Client Side
+ * ----------------------------
  *
- * ### Recovery Session ###
- * \anchor nacm-recovery
+ * This section describes how to receive Call Home connection.
  *
- * Recovery session serves for setting up initial access rules or to repair a broken
- * access control configuration. If a session is recognized as recovery, NACM
- * subsystem is completely bypassed.
+ * Because the client usually doesn't except incoming connection, it is
+ * necessary to explicitly start listening for Call Home. For this, libnetconf
+ * provides nc_callhome_listen() function that allows to specify port where
+ * it will wait for incoming Call Home connections. The function makes the
+ * caller listening on all interfaces supporting both, IPv4 and IPv6 addresses.
+ * To stop listening, nc_callhome_listen_stop() can be used.
  *
- * By default, libnetconf considers all sessions of the user with the system UID
- * equal zero as recovery. To change this default value to a UID of any user,
- * use configure's \ref configure-nacm-recovery "--with-nacm-recovery-uid"
- * option.
+ * To get the first connection request from the queue of pending Call Home
+ * connections, use nc_callhome_accept(). It gets incoming Call Home TCP socket
+ * and uses it to establish a new NETCONF session according to given parameters
+ * similarly to nc_session_connect() function.
  *
+ * From this point, client can work with returned NETCONF session as usual.
+ * There is no special termination function for NETCONF session from Call Home.
  *
- * ### Initial operation ###
+ * Call Home on the Server Side
+ * ----------------------------
  *
- * According to [RFC 6536][RFC6536], libnetconf's NACM subsystem is initially
- * set to allow reading (permitted read-default), refuse writing (denied
- * write-default) and allow operation execution (permitted exec-default).
+ * For Call Home, the server initiate connection. Therefore, transport protocol
+ * must be set before starting Call Home. It is done by nc_session_transport()
+ * function.
  *
- * \note Some operations or data have their specific access control settings
- * defined in their data models. These settings override the described default
- * settings.
+ * Next, server is supposed to prepare the list of servers, where libnetconf
+ * will be trying to establish the Call Home connection. There is a set of
+ * nc_callhome_mngmt_server_*() functions, used for this purpose.
  *
- * To change this initial settings, user has to access NACM datastore via
- * a recovery session (since any write operation is denied) and set required
- * access control rules.
+ * Finally, there is nc_callhome_connect() to establish new NETCONF session
+ * based on Call Home mechanism. Note, that the function doesn't return a
+ * NETCONF session. It forks the process to start a standalone transport
+ * protocol server (SSH/TLS) according to the given parameters. It returns PID
+ * of the started process and TCP socket used for the communication. This socket
+ * can be used for monitoring state of the connection. Do not read any data from
+ * this socket.
  *
- * For example, to change default write rule from deny to permit, use
- * edit-config operation to create (merge) the following configuration data:
+ * Call Home workflow in libnetconf
+ * --------------------------------
+ * ![callhome workflow](../../img/callhome.png "Call Home workflow in libnetconf")
  *
- * ~~~~~~~
- * <nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
- *   <write-default>permit</write-default>
- * </nacm>
- * ~~~~~~~
- *
- * To guarantee all access rights to a specific users group, use edit-config
- * operation to create (merge) the following rule:
- *
- * ~~~~~~~
- * <nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
- *   <rule-list>
- *     <name>admin-acl</name>
- *     <group>admin</group>
- *     <rule>
- *       <name>permit-all</name>
- *       <module-name>*</module-name>
- *       <access-operations>*</access-operations>
- *       <action>permit</action>
- *     </rule>
- *   </rule-list>
- * </nacm>
- * ~~~~~~~
- *
- * More examples can be found in the [Appendix A. of RFC 6536][NACMExamples].
  */
 
 /**
@@ -790,7 +888,7 @@
 /**
  * \defgroup callhome Call Home
  * \brief libnetconf's functions implementing NETCONF Call Home (both SSH and
- * TLS) mechanism.
+ * TLS) mechanism. More information can be found at \ref callhome page.
  */
 
 /**
@@ -805,7 +903,8 @@
 
 /**
  * \defgroup store Datastore operations
- * \brief libnetconf's functions for handling NETCONF datastores.
+ * \brief libnetconf's functions for handling NETCONF datastores. More information
+ * can be found at \ref datastores page.
  */
 
 /**
