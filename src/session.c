@@ -1378,7 +1378,7 @@ NC_SESSION_STATUS nc_session_get_status (const struct nc_session* session)
 	return (session->status);
 }
 
-int nc_session_send (struct nc_session* session, struct nc_msg *msg)
+static int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 {
 	ssize_t c = 0;
 	int len, status;
