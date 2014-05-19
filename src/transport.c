@@ -971,7 +971,7 @@ int nc_callhome_listen_stop(void)
 }
 
 
-int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* server_path, char *const argv[])
+int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* server_path, char *const argv[], int *com_socket)
 {
 	struct nc_mngmt_server *srv_iter;
 	struct addrinfo *addr;
@@ -1101,7 +1101,15 @@ connected:
 		exit(1);
 	} else {
 		/* parent (current app) */
-		close(sock);
+		if (com_socket) {
+			/*
+			 * do not close sock, it can be used by caller
+			 * to monitor communication activities
+			 */
+			*com_socket = sock;
+		} else {
+			close(sock);
+		}
 	}
 
 	/* mark the management server as connected */

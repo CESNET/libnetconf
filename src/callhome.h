@@ -198,11 +198,16 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
  * of NC_TRANSPORT_TLS the '/usr/sbin/stunnel' path is used (OpenSSL server).
  * @param argv List of arguments to be used by execv() when starting the server
  * specified in server_path parameter. If server_path not specified (NULL), argv
- * is ignored.
+ * is ignored. Remember, that the server is supposed to read data from stdin and
+ * write data to stdout (inetd mode). So, for example sshd is running with -i
+ * option.
+ * @param[out] com_socket If not NULL, function returns TCP socket used for
+ * Call Home connection. Caller is supposed to close returned socket when it is
+ * no more needed.
  * @return -1 on error. In case of success, function forks the current process
  * running SSH daemon and returns its PID.
  */
-int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* server_path, char *const argv[]);
+int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* server_path, char *const argv[], int *com_socket);
 
 #ifdef __cplusplus
 }
