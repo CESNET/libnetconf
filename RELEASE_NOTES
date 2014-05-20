@@ -1,14 +1,17 @@
-libnetconf 0.7.0
+libnetconf 0.8.0
 
 This release includes the following changes:
 
- * Dependency on D-Bus removed.
- * Example applications were moved to a separated Netopeer project.
- * TransAPI moved to version 3.
- * Detection and correction of session monitoring inconsistency.
- * Support for using static transAPI modules via ncds_new_transapi_static().
- * New nc_verb_* functions mainly for transAPI modules to print messages
-   via libnetconf printing callback.
+ * NETCONF Call Home implementation
+ * TLS transport support (experimental)
+ * TransAPI moved to version 4 (allow TransAPI module to change order
+   of the callback execution)
+ * Many bugfixes in :with-defaults capability
+ * Support for standalone transAPI modules for augmenting data models
+ * New functions nc_datetime2time() and nc_time2datetime() to handle
+   NETCONF date and time format (RFC 3339)
+ * Improved support for multithreading applications
+ * Improved support for embedded systems
 
 For API/ABI compatibility to previous versions, see reports in
 'doc/compat_reports/' directory.
