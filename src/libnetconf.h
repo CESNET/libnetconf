@@ -56,9 +56,11 @@
  * [url]: http://tools.ietf.org/html/rfc6241#section-8.8
  * [RFC6242]: http://tools.ietf.org/html/rfc6242 "RFC 6242"
  * [RFC5277]: http://tools.ietf.org/html/rfc5277 "RFC 5277"
+ * [RFC5539bis]: http://tools.ietf.org/html/draft-ietf-netconf-rfc5539bis-05 "RFC 5539bis"
  * [RFC6470]: http://tools.ietf.org/html/rfc6470 "RFC 6470"
  * [RFC6243]: http://tools.ietf.org/html/rfc6243 "RFC 6243"
  * [RFC6536]: http://tools.ietf.org/html/rfc6536 "RFC 6536"
+ * [reversessh]: http://tools.ietf.org/html/draft-ietf-netconf-reverse-ssh-05 "Reverse SSH draft"
  * [interopevent]: http://www.internetsociety.org/articles/successful-netconf-interoperability-testing-announced-ietf-85
  * [netopeer]: https://code.google.com/p/netopeer
  *
@@ -86,6 +88,7 @@
  *
  * - NETCONF v1.0 and v1.1 compliant ([RFC 6241][RFC6241])
  * - NETCONF over SSH ([RFC 6242][RFC6242]) including Chunked Framing Mechanism
+ * - NETCONF over TLS ([RFC 5539bis][RFC5539bis])
  * - NETCONF Writable-running capability ([RFC 6241][wrunning])
  * - NETCONF Candidate configuration capability ([RFC 6241][candidate])
  * - NETCONF Validate capability ([RFC 6241][validate])
@@ -94,6 +97,7 @@
  * - NETCONF Event Notifications ([RFC 5277][RFC5277] and [RFC 6470][RFC6470])
  * - NETCONF With-defaults capability ([RFC 6243][RFC6243])
  * - NETCONF Access Control ([RFC 6536][RFC6536])
+ * - NETCONF Call Home ([Reverse SSH draft][reversessh], [RFC 5539bis][RFC5539bis])
  *
  * ### Example Applications ###
  *
