@@ -1082,7 +1082,7 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	session->libssh2_socket = -1;
 
 	/* init stats values */
-	session->logintime = nc_time2datetime(time(NULL));
+	session->logintime = nc_time2datetime(time(NULL), NULL);
 	session->monitored = 0;
 	session->stats->in_rpcs = 0;
 	session->stats->in_bad_rpcs = 0;

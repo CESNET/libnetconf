@@ -3404,7 +3404,7 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 
 	/* add <startTime> specification if set */
 	if (start != NULL) {
-		time = nc_time2datetime(*start);
+		time = nc_time2datetime(*start, NULL);
 		if (time == NULL || xmlNewChild(content, ns, BAD_CAST "startTime", BAD_CAST time) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode(content);
@@ -3418,7 +3418,7 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 
 	/* add <stopTime> specification if set */
 	if (stop != NULL) {
-		time = nc_time2datetime(*stop);
+		time = nc_time2datetime(*stop, NULL);
 		if (time == NULL || xmlNewChild(content, ns, BAD_CAST "stopTime", BAD_CAST time) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			xmlFreeNode(content);

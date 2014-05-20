@@ -778,7 +778,7 @@ int ncds_file_lock (struct ncds_ds* ds, const struct nc_session* session, NC_DAT
 			retval = EXIT_FAILURE;
 		} else {
 			xmlSetProp (target_ds, BAD_CAST "lock", BAD_CAST session->session_id);
-			xmlSetProp (target_ds, BAD_CAST "locktime", BAD_CAST (t = nc_time2datetime(time(NULL))));
+			xmlSetProp (target_ds, BAD_CAST "locktime", BAD_CAST (t = nc_time2datetime(time(NULL), NULL)));
 			free(t);
 			if (file_sync(file_ds)) {
 				*error = nc_err_new(NC_ERR_OP_FAILED);

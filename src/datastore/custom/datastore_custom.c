@@ -270,7 +270,7 @@ int ncds_custom_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DA
 
 	/* update localinfo structure */
 	if (retval == EXIT_SUCCESS) {
-		linfo->time = nc_time2datetime(time(NULL));
+		linfo->time = nc_time2datetime(time(NULL), NULL);
 		linfo->sid = strdup(session->session_id);
 	}
 

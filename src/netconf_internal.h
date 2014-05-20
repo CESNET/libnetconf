@@ -591,31 +591,6 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 int ncdflt_default_clear(xmlDocPtr config, const xmlDocPtr model);
 
 /**
- * @ingroup internalAPI
- * @brief Transform given time_t (seconds since the epoch) into the RFC 3339 format
- * accepted by NETCONF functions.
- *
- * This is a reverse function to nc_datetime2time().
- *
- * @param[in] time time_t type value returned e.g. by time().
- * @return Printed string in a format compliant to RFC 3339. It is up to the
- * caller to free the returned string.
- */
-char* nc_time2datetime(time_t time);
-
-/**
- * @ingroup internalAPI
- * @brief Transform given string in RFC 3339 compliant format to the time_t
- * (seconds since the epoch) accepted by most Linux functions.
- *
- * This is a reverse function to nc_time2datetime().
- *
- * @param[in] time Time structure returned e.g. by localtime().
- * @return time_t value of the given string.
- */
-time_t nc_datetime2time(const char* datetime);
-
-/**
  * @brief Parse the given reply message and create a NETCONF error structure
  * describing the error from the reply. The reply must be of #NC_REPLY_ERROR type.
  * @param[in] reply \<rpc-reply\> message to be parsed.

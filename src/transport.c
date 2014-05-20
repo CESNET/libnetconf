@@ -811,7 +811,7 @@ struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabiliti
 	ncntf_event_new(-1, NCNTF_BASE_SESSION_START, retval);
 #endif
 
-	retval->logintime = nc_time2datetime(time(NULL));
+	retval->logintime = nc_time2datetime(time(NULL), NULL);
 	if (nc_info) {
 		pthread_rwlock_wrlock(&(nc_info->lock));
 		nc_info->stats.sessions_in++;

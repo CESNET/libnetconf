@@ -281,7 +281,7 @@ static xmlDocPtr streams_to_xml(void)
 		xmlNewChild(node_stream, NULL, BAD_CAST "description", BAD_CAST s->desc);
 		xmlNewChild(node_stream, NULL, BAD_CAST "replaySupport", (s->replay == 1) ? BAD_CAST "true" : BAD_CAST "false");
 		if (s->replay == 1) {
-			time = nc_time2datetime(s->created);
+			time = nc_time2datetime(s->created, NULL);
 			xmlNewChild(node_stream, NULL, BAD_CAST "replayLogCreationTime", BAD_CAST time);
 			free (time);
 		}
@@ -988,7 +988,7 @@ int ncntf_stream_info(const char* stream, char** desc, char** start)
 		*desc = strdup(s->desc);
 	}
 	if (start != NULL) {
-		*start = nc_time2datetime(s->created);
+		*start = nc_time2datetime(s->created, NULL);
 	}
 
 	return (EXIT_SUCCESS);
@@ -1092,7 +1092,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 
 				/* send replayComplete notification */
 				if (asprintf(&text, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
-							"<eventTime>%s</eventTime><replayComplete xmlns=\"urn:ietf:params:xml:ns:netmod:notification\"/></notification>", time_s = nc_time2datetime(tnow = time(NULL))) == -1) {
+							"<eventTime>%s</eventTime><replayComplete xmlns=\"urn:ietf:params:xml:ns:netmod:notification\"/></notification>", time_s = nc_time2datetime(tnow = time(NULL), NULL)) == -1) {
 					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 					WARN("Sending replayComplete failed due to the previous error.");
 					text = NULL;
@@ -1186,7 +1186,7 @@ static void ncntf_event_stdoutprint (time_t eventtime, const char* content)
 {
 	char* t = NULL;
 
-	fprintf(stdout, "eventTime: %s\n%s\n", t = nc_time2datetime(eventtime), content);
+	fprintf(stdout, "eventTime: %s\n%s\n", t = nc_time2datetime(eventtime, NULL), content);
 	if (t != NULL) {
 		free(t);
 	}
@@ -1253,7 +1253,7 @@ static int ncntf_event_store(time_t etime, const char* content)
 		ret = EXIT_FAILURE;
 		goto cleanup;
 	}
-	if ((event_time = nc_time2datetime(etime)) == NULL) {
+	if ((event_time = nc_time2datetime(etime, NULL)) == NULL) {
 		ERROR("Internal error when converting time formats (%s:%d).", __FILE__, __LINE__);
 		ret = EXIT_FAILURE;
 		goto cleanup;
@@ -1760,7 +1760,7 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 	xmlDocPtr notif_doc;
 	nc_ntf* retval;
 
-	if ((etime = nc_time2datetime(event_time)) == NULL) {
+	if ((etime = nc_time2datetime(event_time, NULL)) == NULL) {
 		ERROR("Converting the time to a string failed (%s:%d)", __FILE__, __LINE__);
 		return (NULL);
 	}
@@ -1824,7 +1824,7 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 	xmlNsPtr ns;
 	nc_ntf* retval;
 
-	if ((etime = nc_time2datetime(event_time)) == NULL) {
+	if ((etime = nc_time2datetime(event_time, NULL)) == NULL) {
 		ERROR("Converting the time to a string failed (%s:%d)", __FILE__, __LINE__);
 		return (NULL);
 	}
@@ -2511,7 +2511,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
 		}
 		if (asprintf(&event, "<notification xmlns=\"urn:ietf:params:xml:ns:netconf:notification:1.0\">"
 				"<eventTime>%s</eventTime><notificationComplete xmlns=\"urn:ietf:params:xml:ns:netmod:notification\"/>"
-				"</notification>", time_s = nc_time2datetime(time(NULL))) == -1) {
+				"</notification>", time_s = nc_time2datetime(time(NULL), NULL)) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			WARN("Sending notificationComplete failed due to previous error.");
 			ncntf_notif_free(ntf);

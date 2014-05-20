@@ -195,7 +195,7 @@ int nc_init(int flags)
 
 		/* init the information structure */
 		pthread_rwlock_wrlock(&(nc_info->lock));
-		strncpy(nc_info->stats.start_time, t = nc_time2datetime(time(NULL)), TIME_LENGTH);
+		strncpy(nc_info->stats.start_time, t = nc_time2datetime(time(NULL), NULL), TIME_LENGTH);
 		free(t);
 	} else {
 		pthread_rwlock_wrlock(&(nc_info->lock));
@@ -588,15 +588,27 @@ time_t nc_datetime2time(const char* datetime)
 	return (retval);
 }
 
-char* nc_time2datetime(time_t time)
+char* nc_time2datetime(time_t time, const char* tz)
 {
 	char* date = NULL;
 	char* zoneshift = NULL;
-        int zonediff, zonediff_h, zonediff_m;
-        struct tm tm;
+	int zonediff, zonediff_h, zonediff_m;
+	struct tm tm, *tm_ret;
+	char *tz_origin;
 
-	if (gmtime_r(&time, &tm) == NULL) {
-		return (NULL);
+	if (tz) {
+		tz_origin = getenv("TZ");
+		setenv("TZ", tz, 1);
+		tm_ret = localtime_r(&time, &tm);
+		setenv("TZ", tz_origin, 1);
+
+		if (tm_ret == NULL) {
+			return (NULL);
+		}
+	} else {
+		if (gmtime_r(&time, &tm) == NULL) {
+			return (NULL);
+		}
 	}
 
 	if (tm.tm_isdst < 0) {

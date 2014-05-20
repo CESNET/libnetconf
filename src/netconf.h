@@ -437,6 +437,33 @@ int nc_init(int flags);
  */
 int nc_close(int system);
 
+/**
+ * @ingroup genAPI
+ * @brief Transform given time_t (seconds since the epoch) into the RFC 3339 format
+ * accepted by NETCONF functions.
+ *
+ * This is a reverse function to nc_datetime2time().
+ *
+ * @param[in] time time_t type value returned e.g. by time().
+ * @param[in] tz timezone name for the result. See tzselect(1) for list of
+ * correct values. If not specified (NULL), the result is provided in UTC (Zulu).
+ * @return Printed string in a format compliant to RFC 3339. It is up to the
+ * caller to free the returned string.
+ */
+char* nc_time2datetime(time_t time, const char* tz);
+
+/**
+ * @ingroup genAPI
+ * @brief Transform given string in RFC 3339 compliant format to the time_t
+ * (seconds since the epoch) accepted by most Linux functions.
+ *
+ * This is a reverse function to nc_time2datetime().
+ *
+ * @param[in] datetime Time structure returned e.g. by localtime().
+ * @return time_t value of the given string.
+ */
+time_t nc_datetime2time(const char* datetime);
+
 #ifdef __cplusplus
 }
 #endif
