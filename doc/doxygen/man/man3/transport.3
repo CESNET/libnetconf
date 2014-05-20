@@ -1,0 +1,38 @@
+.TH "transport" 3 "Tue May 20 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+transport \- Transport Protocol 
+NETCONF protocol specifies the set of requirements for the transport protocol in \fCRFC 6241\fP\&. There are currently 2 specifications how to use specific transport protocols for NETCONF: [RFC 6242][RFC6242] for Secure SHell (SSH) and \fCRFC 5539bis\fP for Transport Layer Security (TLS)\&. SSH is mandatory transport for NETCONF implementations\&.
+.PP
+libnetconf supports SSH transport out of the box\&. From version 0\&.8, there is also experimental support for TLS transport\&. By default, this is not available by default\&. To enable TLS transport, following action must be performed:
+.IP "\(bu" 2
+run configure with \fC--enable-tls\fP option: 
+.PP
+.nf
+\&./configure --enable-tls
+
+.fi
+.PP
+
+.PP
+.PP
+See the \fCNetopeer project\fP as a reference implementation\&.
+.PP
+.SS "Transport Support on the Client Side "
+.PP
+To switch from the default SSH transport to the TLS transport, application must call \fBnc_session_transport()\fP with \fBNC_TRANSPORT_TLS\fP parameter\&. Remember, that this change applies only to the current thread\&.
+.PP
+Next step is to initiate TLS context for the new NETCONF session\&. Using \fBnc_tls_init()\fP function, client is supposed to set its client certificate and CA for server certificate validation\&.
+.PP
+Now the TLS context is ready and new NETCONF session over TLS can be established using \fBnc_session_connect()\fP\&. Application can run \fBnc_tls_init()\fP again, but the changed parameters will be applied only to the newly created NETCONF sessions\&.
+.PP
+To properly clean all resources, call \fBnc_tls_destroy()\fP\&. It will destroy TLS connection context\&. This function can be called despite the running NETCONF session, but creating a new NETCONF session over TLS is not allowed after calling \fBnc_tls_destroy()\fP - the client has to call \fBnc_tls_init()\fP again\&.
+.PP
+The whole process described here is supposed to be performed in a single thread\&. SSH transport works out of the box, so no specific step, as mentioned for TLS in this section, is required\&.
+.PP
+.SS "Transport Support on the Server Side "
+.PP
+There is no specific support for neither SSH or TLS on the server side\&. libnetconf doesn't implement SSH nor TLS server - it is expected, that NETCONF server application uses external application (sshd, stunnel,\&.\&.\&.) serving as SSH/TLS server and providing NETCONF data to the NETCONF server stdin, where libnetconf can read the data, and getting data from the NETCONF server stdout to encapsulate the data and send to a client\&.
+.PP
+For both cases, SSH as well as TLS, there are two functions: \fBnc_session_accept()\fP and \fBnc_session_accept_username()\fP, that serve to accept incoming connection despite the transport protocol\&. As mentioned, they read data from stdin and write data to the stdout\&. Difference between those functions is in recognizing NETCONF username\&. \fBnc_session_accept()\fP guesses username from the process's UID\&. For example, in case of using SSH Subsystem mechanism in OpenSSH implementation, SSH daemon automatically changes UID of the launched SSH Subsystem process (NETCONF server/agent) to the UID of the logged user\&. But in case of other SSH/TLS server, this doesn't have to be done\&. In such a case, NETCONF server itself is supposed to correctly recognize the NETCONF username and specify it explicitly when establishing NETCONF session using \fBnc_session_accept_username()\fP\&. 

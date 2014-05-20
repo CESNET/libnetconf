@@ -1,4 +1,4 @@
-.TH "src/libnetconf_tls.h" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
+.TH "src/libnetconf_tls.h" 3 "Tue May 20 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -21,6 +21,10 @@ libnetconf's header for control openssl\&.
 .SS "Functions"
 
 .in +1c
+.ti -1c
+.RI "void \fBnc_tls_destroy\fP (void)"
+.br
+.RI "\fIDestroy all resources allocated for preparation of TLS connections\&. \fP"
 .ti -1c
 .RI "int \fBnc_tls_init\fP (const char *peer_cert, const char *peer_key, const char *CAfile, const char *CApath)"
 .br

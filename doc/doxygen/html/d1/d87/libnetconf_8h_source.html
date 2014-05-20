@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.7.99</span>
+   &#160;<span id="projectnumber">0.8.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -113,25 +113,27 @@ $(document).ready(function(){initNavTree('d1/d87/libnetconf_8h_source.html','../
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#ifndef LIBNETCONF_H_</span></div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define LIBNETCONF_H_</span></div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00791"></a><span class="lineno">  791</span>&#160;<span class="preprocessor">#include &quot;config.h&quot;</span></div>
-<div class="line"><a name="l00792"></a><span class="lineno">  792</span>&#160;</div>
-<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d3/d7a/netconf_8h.html">netconf.h</a>&quot;</span></div>
-<div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../dd/d49/callbacks_8h.html">callbacks.h</a>&quot;</span></div>
-<div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../da/d46/session_8h.html">session.h</a>&quot;</span></div>
-<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d5/d48/messages_8h.html">messages.h</a>&quot;</span></div>
-<div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../da/d41/error_8h.html">error.h</a>&quot;</span></div>
-<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d9/db6/datastore_8h.html">datastore.h</a>&quot;</span></div>
-<div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../da/dbe/with__defaults_8h.html">with_defaults.h</a>&quot;</span></div>
-<div class="line"><a name="l00800"></a><span class="lineno">  800</span>&#160;</div>
-<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;<span class="preprocessor">#ifndef DISABLE_NOTIFICATIONS</span></div>
-<div class="line"><a name="l00802"></a><span class="lineno">  802</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  include &quot;<a class="code" href="../../d7/d62/notifications_8h.html">notifications.h</a>&quot;</span></div>
-<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160;<span class="preprocessor">#ifndef DISABLE_URL</span></div>
-<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  include &quot;<a class="code" href="../../df/db8/url_8h.html">url.h</a>&quot;</span></div>
-<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* LIBNETCONF_H_ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00943"></a><span class="lineno">  943</span>&#160;<span class="preprocessor">#include &quot;config.h&quot;</span></div>
+<div class="line"><a name="l00944"></a><span class="lineno">  944</span>&#160;</div>
+<div class="line"><a name="l00945"></a><span class="lineno">  945</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d3/d7a/netconf_8h.html">netconf.h</a>&quot;</span></div>
+<div class="line"><a name="l00946"></a><span class="lineno">  946</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../dd/d49/callbacks_8h.html">callbacks.h</a>&quot;</span></div>
+<div class="line"><a name="l00947"></a><span class="lineno">  947</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../da/d46/session_8h.html">session.h</a>&quot;</span></div>
+<div class="line"><a name="l00948"></a><span class="lineno">  948</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d5/d48/messages_8h.html">messages.h</a>&quot;</span></div>
+<div class="line"><a name="l00949"></a><span class="lineno">  949</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../da/d41/error_8h.html">error.h</a>&quot;</span></div>
+<div class="line"><a name="l00950"></a><span class="lineno">  950</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d9/db6/datastore_8h.html">datastore.h</a>&quot;</span></div>
+<div class="line"><a name="l00951"></a><span class="lineno">  951</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../da/dbe/with__defaults_8h.html">with_defaults.h</a>&quot;</span></div>
+<div class="line"><a name="l00952"></a><span class="lineno">  952</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d2/d02/transport_8h.html">transport.h</a>&quot;</span></div>
+<div class="line"><a name="l00953"></a><span class="lineno">  953</span>&#160;</div>
+<div class="line"><a name="l00954"></a><span class="lineno">  954</span>&#160;<span class="preprocessor">#ifndef DISABLE_NOTIFICATIONS</span></div>
+<div class="line"><a name="l00955"></a><span class="lineno">  955</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  include &quot;<a class="code" href="../../d7/d62/notifications_8h.html">notifications.h</a>&quot;</span></div>
+<div class="line"><a name="l00956"></a><span class="lineno">  956</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00957"></a><span class="lineno">  957</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00958"></a><span class="lineno">  958</span>&#160;<span class="preprocessor">#ifndef DISABLE_URL</span></div>
+<div class="line"><a name="l00959"></a><span class="lineno">  959</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#  include &quot;<a class="code" href="../../df/db8/url_8h.html">url.h</a>&quot;</span></div>
+<div class="line"><a name="l00960"></a><span class="lineno">  960</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00961"></a><span class="lineno">  961</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00962"></a><span class="lineno">  962</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* LIBNETCONF_H_ */</span><span class="preprocessor"></span></div>
+<div class="ttc" id="transport_8h_html"><div class="ttname"><a href="../../d2/d02/transport_8h.html">transport.h</a></div><div class="ttdoc">Functions implementing transport layer for NETCONF. </div></div>
 <div class="ttc" id="messages_8h_html"><div class="ttname"><a href="../../d5/d48/messages_8h.html">messages.h</a></div><div class="ttdoc">Functions to create NETCONF messages. </div></div>
 <div class="ttc" id="session_8h_html"><div class="ttname"><a href="../../da/d46/session_8h.html">session.h</a></div><div class="ttdoc">Functions to handle NETCONF sessions. </div></div>
 <div class="ttc" id="with__defaults_8h_html"><div class="ttname"><a href="../../da/dbe/with__defaults_8h.html">with_defaults.h</a></div><div class="ttdoc">Implementation of NETCONF&amp;#39;s with-defaults capability defined in RFC 6243. </div></div>
@@ -147,7 +149,7 @@ $(document).ready(function(){initNavTree('d1/d87/libnetconf_8h_source.html','../
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d1/d87/libnetconf_8h.html">libnetconf.h</a></li>
-    <li class="footer">Generated on Tue May 13 2014 15:16:49 for libnetconf by
+    <li class="footer">Generated on Tue May 20 2014 10:26:17 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.5"/>
-<title>libnetconf: Todo List</title>
+<title>libnetconf: Transport Protocol</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -81,7 +81,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
   </div>
 </div>
 <script type="text/javascript">
-$(document).ready(function(){initNavTree('dd/da0/todo.html','../../');});
+$(document).ready(function(){initNavTree('d4/d76/transport.html','../../');});
 </script>
 <div id="doc-content">
 <!-- window showing the filter options -->
@@ -100,28 +100,31 @@ $(document).ready(function(){initNavTree('dd/da0/todo.html','../../');});
 
 <div class="header">
   <div class="headertitle">
-<div class="title">Todo List </div>  </div>
+<div class="title">Transport Protocol </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><dl class="reflist">
-<dt><a class="anchor" id="_todo000003"></a>Global <a class="el" href="../../da/d54/group__notifications.html#ga1f45b88f42bd06a4518433f79c5999a3">ncntf_stream_iter_finish</a>  (const char *stream)</dt>
-<dd><p class="startdd">: thread safety (?thread-specific variables)</p>
-<p class="enddd"></p>
-</dd>
-<dt><a class="anchor" id="_todo000002"></a>Global <a class="el" href="../../da/d54/group__notifications.html#gae9e1a02911f865bbc0f2b4e702b82ed7">ncntf_stream_iter_next</a>  (const char *stream, time_t start, time_t stop, time_t *event_time)</dt>
-<dd><p class="startdd">: thread safety (?thread-specific variables)</p>
-<p class="enddd"></p>
-</dd>
-<dt><a class="anchor" id="_todo000001"></a>Global <a class="el" href="../../da/d54/group__notifications.html#ga999c0dc786381fe91f1158b76bcbdee9">ncntf_stream_iter_start</a>  (const char *stream)</dt>
-<dd><p class="startdd">: thread safety (?thread-specific variables)</p>
-<p class="enddd"></p>
-</dd>
-</dl>
+<div class="textblock"><p>NETCONF protocol specifies the set of requirements for the transport protocol in <a href="http://tools.ietf.org/html/rfc6241" title="RFC 6241">RFC 6241</a>. There are currently 2 specifications how to use specific transport protocols for NETCONF: [RFC 6242][RFC6242] for Secure SHell (SSH) and <a href="http://tools.ietf.org/html/draft-ietf-netconf-rfc5539bis-05" title="RFC 5539bis">RFC 5539bis</a> for Transport Layer Security (TLS). SSH is mandatory transport for NETCONF implementations.</p>
+<p>libnetconf supports SSH transport out of the box. From version 0.8, there is also experimental support for TLS transport. By default, this is not available by default. To enable TLS transport, following action must be performed:</p>
+<ul>
+<li>run configure with <code>--enable-tls</code> option: <div class="fragment"><div class="line">./configure --enable-tls</div>
+</div><!-- fragment --></li>
+</ul>
+<p>See the <a href="https://code.google.com/p/netopeer/" title="Netopeer">Netopeer project</a> as a reference implementation.</p>
+<h2>Transport Support on the Client Side </h2>
+<p>To switch from the default SSH transport to the TLS transport, application must call <a class="el" href="../../db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806" title="Set transport protocol for the sessions created by subsequent nc_session_connect() calls...">nc_session_transport()</a> with <a class="el" href="../../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa9dfde07fbf3ce02396167716ef70c612">NC_TRANSPORT_TLS</a> parameter. Remember, that this change applies only to the current thread.</p>
+<p>Next step is to initiate TLS context for the new NETCONF session. Using <a class="el" href="../../db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17" title="Set paths to the client certificate and its private key. ">nc_tls_init()</a> function, client is supposed to set its client certificate and CA for server certificate validation.</p>
+<p>Now the TLS context is ready and new NETCONF session over TLS can be established using <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a>. Application can run <a class="el" href="../../db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17" title="Set paths to the client certificate and its private key. ">nc_tls_init()</a> again, but the changed parameters will be applied only to the newly created NETCONF sessions.</p>
+<p>To properly clean all resources, call <a class="el" href="../../db/db4/group__tls.html#gacf3aed5cccac55d0548f46761707ece9" title="Destroy all resources allocated for preparation of TLS connections. ">nc_tls_destroy()</a>. It will destroy TLS connection context. This function can be called despite the running NETCONF session, but creating a new NETCONF session over TLS is not allowed after calling <a class="el" href="../../db/db4/group__tls.html#gacf3aed5cccac55d0548f46761707ece9" title="Destroy all resources allocated for preparation of TLS connections. ">nc_tls_destroy()</a> - the client has to call <a class="el" href="../../db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17" title="Set paths to the client certificate and its private key. ">nc_tls_init()</a> again.</p>
+<p>The whole process described here is supposed to be performed in a single thread. SSH transport works out of the box, so no specific step, as mentioned for TLS in this section, is required.</p>
+<h2>Transport Support on the Server Side </h2>
+<p>There is no specific support for neither SSH or TLS on the server side. libnetconf doesn't implement SSH nor TLS server - it is expected, that NETCONF server application uses external application (sshd, stunnel,...) serving as SSH/TLS server and providing NETCONF data to the NETCONF server stdin, where libnetconf can read the data, and getting data from the NETCONF server stdout to encapsulate the data and send to a client.</p>
+<p>For both cases, SSH as well as TLS, there are two functions: <a class="el" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707" title="Accept NETCONF session from a client. ">nc_session_accept()</a> and <a class="el" href="../../db/d52/group__session.html#ga7ee207cac84fd5cd82419af41e14c06f" title="Accept NETCONF session from a client and assign it to the specified username. ">nc_session_accept_username()</a>, that serve to accept incoming connection despite the transport protocol. As mentioned, they read data from stdin and write data to the stdout. Difference between those functions is in recognizing NETCONF username. <a class="el" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707" title="Accept NETCONF session from a client. ">nc_session_accept()</a> guesses username from the process's UID. For example, in case of using SSH Subsystem mechanism in OpenSSH implementation, SSH daemon automatically changes UID of the launched SSH Subsystem process (NETCONF server/agent) to the UID of the logged user. But in case of other SSH/TLS server, this doesn't have to be done. In such a case, NETCONF server itself is supposed to correctly recognize the NETCONF username and specify it explicitly when establishing NETCONF session using <a class="el" href="../../db/d52/group__session.html#ga7ee207cac84fd5cd82419af41e14c06f" title="Accept NETCONF session from a client and assign it to the specified username. ">nc_session_accept_username()</a>. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
     <li class="footer">Generated on Tue May 20 2014 10:26:17 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>

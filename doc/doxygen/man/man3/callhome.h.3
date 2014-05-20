@@ -1,4 +1,4 @@
-.TH "src/callhome.h" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
+.TH "src/callhome.h" 3 "Tue May 20 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -14,14 +14,6 @@ Functions to connect NETCONF server to a NETCONF client (Call Home)\&.
 \fC#include 'netconf\&.h'\fP
 .br
 
-.SS "Data Structures"
-
-.in +1c
-.ti -1c
-.RI "struct \fBnc_mngmt_server\fP"
-.br
-.RI "\fIStructure describing a management server where the NETCONF server connects to\&. \fP"
-.in -1c
 .SS "Functions"
 
 .in +1c
@@ -30,7 +22,7 @@ Functions to connect NETCONF server to a NETCONF client (Call Home)\&.
 .br
 .RI "\fIAccept incoming Call Home connection and create NETCONF session on it\&. \fP"
 .ti -1c
-.RI "int \fBnc_callhome_connect\fP (struct \fBnc_mngmt_server\fP *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char *server_path, char *const argv[])"
+.RI "int \fBnc_callhome_connect\fP (struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char *server_path, char *const argv[], int *com_socket)"
 .br
 .RI "\fIConnect NETCONF server to a management center (NETCONF client) using Call Home mechanism\&. \fP"
 .ti -1c
@@ -42,15 +34,19 @@ Functions to connect NETCONF server to a NETCONF client (Call Home)\&.
 .br
 .RI "\fIStop listening on client side for incoming Call Home connection\&. \fP"
 .ti -1c
-.RI "struct \fBnc_mngmt_server\fP * \fBnc_callhome_mngmt_server_add\fP (struct \fBnc_mngmt_server\fP *list, const char *host, const char *port)"
+.RI "struct nc_mngmt_server * \fBnc_callhome_mngmt_server_add\fP (struct nc_mngmt_server *list, const char *host, const char *port)"
 .br
 .RI "\fIAdd a new management server specification to the end of a list\&. \fP"
 .ti -1c
-.RI "int \fBnc_callhome_mngmt_server_free\fP (struct \fBnc_mngmt_server\fP *list)"
+.RI "int \fBnc_callhome_mngmt_server_free\fP (struct nc_mngmt_server *list)"
 .br
 .RI "\fIFree a management server description structure(s)\&. The function doesn't free only the item refered by given pointer, but the complete list of management servers is freed\&. \fP"
 .ti -1c
-.RI "int \fBnc_callhome_mngmt_server_rm\fP (struct \fBnc_mngmt_server\fP *list, struct \fBnc_mngmt_server\fP *remove)"
+.RI "struct nc_mngmt_server * \fBnc_callhome_mngmt_server_getactive\fP (struct nc_mngmt_server *list)"
+.br
+.RI "\fISearches for the item from the list, which was marked and used by the last call to \fBnc_callhome_connect()\fP to a successfully establish Call Home connection\&. \fP"
+.ti -1c
+.RI "int \fBnc_callhome_mngmt_server_rm\fP (struct nc_mngmt_server *list, struct nc_mngmt_server *remove)"
 .br
 .RI "\fIRemove the specified management server description from the list\&. \fP"
 .in -1c

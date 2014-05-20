@@ -142,7 +142,9 @@ var netconf_8h =
       [ "NCWD_MODE_ALL_TAGGED", "d3/d7a/netconf_8h.html#gga3d13afb72bb0c0098f47e8b612cdeb81a0bd005f27bf5b0dd51aa8d61656f8089", null ]
     ] ],
     [ "nc_close", "d3/d7a/netconf_8h.html#ga85cd52f975436e64f9f128e980b77ed3", null ],
+    [ "nc_datetime2time", "d3/d7a/netconf_8h.html#ga4dfd796fda30d3ad8588b4c30c4c1583", null ],
     [ "nc_init", "d3/d7a/netconf_8h.html#ga40e32bd7c1404a76105b426219021cdc", null ],
+    [ "nc_time2datetime", "d3/d7a/netconf_8h.html#ga90a44b60b04512fd0a3507ab35a1ccc4", null ],
     [ "nc_verb_error", "d3/d7a/netconf_8h.html#gabd4e3697f3a1fe6b5853e692ad20c2bb", null ],
     [ "nc_verb_verbose", "d3/d7a/netconf_8h.html#gae4f0d22fb274269c0259497abb702f5d", null ],
     [ "nc_verb_warning", "d3/d7a/netconf_8h.html#ga943a7c859f20bb1278964a7424762d8e", null ],

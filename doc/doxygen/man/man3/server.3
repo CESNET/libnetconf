@@ -1,4 +1,4 @@
-.TH "server" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
+.TH "server" 3 "Tue May 20 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -25,7 +25,7 @@ In the second case, there is only one device manager (NETCONF server) running as
 Here is a description of using libnetconf functions in a NETCONF server\&. According to the used architecture, the workflow can be split between an agent and a server\&. For this purpose, functions \fBnc_rpc_dump()\fP, \fBnc_rpc_build()\fP and \fBnc_session_dummy()\fP can be very helpful\&.
 .PP
 .IP "1." 4
-\fBSet the verbosity\fP (optional)\&.
+\fBSet the verbosity\fP (optional)
 .br
 The verbosity of the libnetconf can be set by \fBnc_verbosity()\fP\&. By default, libnetconf is completely silent\&.
 .br
@@ -39,7 +39,7 @@ As the first step, libnetconf MUST be initiated using \fBnc_init()\fP\&. At this
 .br
 By default, libnetconf uses \fIexplicit\fP basic mode of the with-defaults capability\&. The basic mode can be changed via \fBncdflt_set_basic_mode()\fP function\&. libnetconf supports \fIexplicit\fP, \fItrim\fP, \fIreport-all\fP and \fIreport-all-tagged\fP basic modes of the with-defaults capability\&.
 .IP "4." 4
-\fBInitiate datastore\fP\&.
+\fBInitiate datastore\fP
 .br
 Now, a NETCONF datastore(s) can be created\&. Each libnetconf's datastore is connected with a single configuration data model\&. This connection is defined by calling the \fBncds_new()\fP function, which returns a datastore handler for further manipulation with an uninitialized datastore\&. Using this function, caller also specifies which datastore implementation type will be used\&. Optionally, some implementation-type-specific parameters can be set (e\&.g\&. \fBncds_file_set_path()\fP)\&. Finally, datastore must be initiated by \fBncds_init()\fP that returns datastore's ID which is used in the subsequent calls\&. There is a set of special implicit datastores with ID \fBNCDS_INTERNAL_ID\fP that refer to the libnetconf's internal datastore(s)\&.
 .br
@@ -55,36 +55,38 @@ This step is actually out of the libnetconf scope\&. From the NETCONF point of v
 .IP "6." 4
 \fBAccept incoming NETCONF connection\fP\&.
 .br
-This is done by a single call of \fBnc_session_accept()\fP\&. Optionally, any specific capabilities supported by the server can be set as the function's parameter\&.
+This is done by a single call of \fBnc_session_accept()\fP or nc_session_Accept_username() alternatively\&. Optionally, any specific capabilities supported by the server can be set as the function's parameter\&.
 .IP "7." 4
+Server loop
+.br
+ Repeat these three steps:
+.IP "  1." 6
 \fBProcess incoming requests\fP\&.
 .br
-Use \fBnc_session_recv_rpc()\fP to get the next request from the client from the specified NETCONF session\&. In case of an error return code, the state of the session should be checked by \fBnc_session_get_status()\fP to learn if the session can be further used\&.
+ Use \fBnc_session_recv_rpc()\fP to get the next request from the client from the specified NETCONF session\&. In case of an error return code, the state of the session should be checked by \fBnc_session_get_status()\fP to learn if the session can be further used\&.
 .br
-According to the type of the request (\fBnc_rpc_get_type()\fP), perform an appropriate action:
-.IP "  \(bu" 4
-\fINC_RPC_DATASTORE_READ\fP or \fINC_RPC_DATASTORE_WRITE\fP: use \fBncds_apply_rpc()\fP to perform the requested operation on the datastore\&. If the request affects the running datastore (\fBnc_rpc_get_target()\fP == NC_DATASTORE_RUNNING), apply configuration changes to the controlled device\&. \fBncds_apply_rpc()\fP applies the request to the specified datastore\&. Besides the datastores created explicitely by the \fBncds_new()\fP and \fBncds_init()\fP calls, remember to apply the request to the internal libnetconf datastore with ID 0\&. Results of the separate \fBncds_apply_rpc()\fP calls can be merged by \fBnc_reply_merge()\fP into a single reply message\&.
-.IP "  \(bu" 4
+ According to the type of the request (\fBnc_rpc_get_type()\fP), perform an appropriate action:
+.IP "    \(bu" 6
+\fINC_RPC_DATASTORE_READ\fP or \fINC_RPC_DATASTORE_WRITE\fP: use \fBncds_apply_rpc()\fP to perform the requested operation on the datastore\&. If the request affects the running datastore (\fBnc_rpc_get_target()\fP returns NC_DATASTORE_RUNNING), apply configuration changes to the controlled device\&. \fBncds_apply_rpc()\fP applies the request to the specified datastore\&. Besides the datastores created explicitely by the \fBncds_new()\fP and \fBncds_init()\fP calls, remember to apply the request to the internal libnetconf datastore with ID 0\&. Results of the separate \fBncds_apply_rpc()\fP calls can be merged by \fBnc_reply_merge()\fP into a single reply message\&.
+.IP "    \(bu" 6
 \fINC_RPC_SESSION\fP: See the \fCNetopeer\fP example server source codes\&. There will be a common function added in the future to handle these requests\&.
 .PP
 
-.IP "8." 4
+.IP "  2." 6
 \fBReply to the client's request\fP\&.
 .br
-The reply message is automatically generated by the \fBncds_apply_rpc()\fP function\&. However, server can generate its own replies using \fBnc_reply_ok()\fP, \fBnc_reply_data()\fP or \fBnc_reply_error()\fP functions\&. The reply is sent to the client using \fBnc_session_send_reply()\fP call\&.
-.IP "9." 4
+ The reply message is automatically generated by the \fBncds_apply_rpc()\fP function\&. However, server can generate its own replies using \fBnc_reply_ok()\fP, \fBnc_reply_data()\fP (\fBnc_reply_data_ns()\fP) or \fBnc_reply_error()\fP functions\&. The reply is sent to the client using \fBnc_session_send_reply()\fP call\&.
+.IP "  3." 6
 \fBFree all unused objects\fP\&.
 .br
-Do not forget to free received rpc messages (\fBnc_rpc_free()\fP) and any created replies (\fBnc_reply_free()\fP)\&.
-.IP "10." 4
-\fBServer loop\fP\&.
-.br
-Repeat previous three steps\&.
-.IP "11." 4
+ Do not forget to free received rpc messages (\fBnc_rpc_free()\fP) and any created replies (\fBnc_reply_free()\fP)\&.
+.PP
+
+.IP "8." 4
 \fBClose the NETCONF session\fP\&.
 .br
 Use functions \fBnc_session_free()\fP to close and free all the used sources and structures connected with the session\&. Server should close the session when a nc_session_* function fails and libnetconf set the status of the session as non-working (nc_session_get_status != NC_SESSION_STATUS_WORKING)\&.
-.IP "12." 4
+.IP "9." 4
 \fBClose the libnetconf instance\fP
 .br
 Close internal libnetconf structures and subsystems by the \fBnc_close()\fP call\&. 

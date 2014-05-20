@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Tue May 20 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -771,7 +771,7 @@ Tell me if the notification subscription is allowed on the given session\&.
 .SS "int nc_session_transport (\fBNC_TRANSPORT\fPproto)"
 
 .PP
-Set transport protocol for the sessions created by subsequent \fBnc_session_connect()\fP calls\&. By default, transport protocol is set to \fBNC_TRANSPORT_SSH\fP\&. 
+Set transport protocol for the sessions created by subsequent \fBnc_session_connect()\fP calls\&. By default, transport protocol is set to \fBNC_TRANSPORT_SSH\fP\&. This function is thread-safe\&. Change made by calling this function applies only to the current thread\&. 
 .SS "void nc_set_keypair_path (const char *private, const char *public)"
 
 .PP

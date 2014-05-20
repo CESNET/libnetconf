@@ -1,4 +1,4 @@
-.TH "install" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
+.TH "install" 3 "Tue May 20 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -62,27 +62,33 @@ Remove support for NETCONF :validate capability\&.
 .PP
 
 .IP "\(bu" 2
-\fC--with-nacm-recovery-uid=<uid>\fP
-.IP "  \(bu" 4
-Specify user ID to be used for the identification of the \fBNACM Recovery Session\fP\&.
-.PP
-
-.IP "\(bu" 2
 \fC--disable-yang-schemas\fP
 .IP "  \(bu" 4
 Remove support for YANG data model format for <get-schema> opration\&. With this option, only YIN format is available\&.
 .PP
 
 .IP "\(bu" 2
-\fC--with-workingdir=<path>\fP
-.IP "  \(bu" 4
-Change location of libnetconf's working directory\&. Default path is \fC/var/lib/libnetconf/\fP\&. Note that applications using libnetconf should have permissions to read/write to this path, with \fC--with-suid\fP and \fC--with-sgid\fP this is set automatically\&.
-.PP
-
-.IP "\(bu" 2
 \fC--enable-debug\fP
 .IP "  \(bu" 4
 Add debugging information for a debugger\&.
+.PP
+
+.IP "\(bu" 2
+\fC--enable-tls\fP
+.IP "  \(bu" 4
+Enable experimental support for TLS transport\&. More information about the TLS transport can be found in \fBTransport Protocol\fP section\&.
+.PP
+
+.IP "\(bu" 2
+\fC--with-nacm-recovery-uid=<uid>\fP
+.IP "  \(bu" 4
+Specify user ID to be used for the identification of the \fBNACM Recovery Session\fP\&.
+.PP
+
+.IP "\(bu" 2
+\fC--with-workingdir=<path>\fP
+.IP "  \(bu" 4
+Change location of libnetconf's working directory\&. Default path is \fC/var/lib/libnetconf/\fP\&. Note that applications using libnetconf should have permissions to read/write to this path, with \fC--with-suid\fP and \fC--with-sgid\fP this is set automatically\&.
 .PP
 
 .IP "\(bu" 2

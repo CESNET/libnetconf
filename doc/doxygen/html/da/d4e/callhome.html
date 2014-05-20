@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.5"/>
-<title>libnetconf: nc_mngmt_server Struct Reference</title>
+<title>libnetconf: Call Home</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.7.99</span>
+   &#160;<span id="projectnumber">0.8.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -47,9 +47,9 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="../../index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="../../pages.html"><span>Related&#160;Pages</span></a></li>
+      <li class="current"><a href="../../pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="../../modules.html"><span>Modules</span></a></li>
-      <li class="current"><a href="../../annotated.html"><span>Data&#160;Structures</span></a></li>
+      <li><a href="../../annotated.html"><span>Data&#160;Structures</span></a></li>
       <li><a href="../../files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -69,13 +69,6 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
       </li>
     </ul>
   </div>
-  <div id="navrow2" class="tabs2">
-    <ul class="tablist">
-      <li><a href="../../annotated.html"><span>Data&#160;Structures</span></a></li>
-      <li><a href="../../classes.html"><span>Data&#160;Structure&#160;Index</span></a></li>
-      <li><a href="../../functions.html"><span>Data&#160;Fields</span></a></li>
-    </ul>
-  </div>
 </div><!-- top -->
 <div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
@@ -88,7 +81,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
   </div>
 </div>
 <script type="text/javascript">
-$(document).ready(function(){initNavTree('d3/d8e/structnc__mngmt__server.html','../../');});
+$(document).ready(function(){initNavTree('da/d4e/callhome.html','../../');});
 </script>
 <div id="doc-content">
 <!-- window showing the filter options -->
@@ -106,63 +99,33 @@ $(document).ready(function(){initNavTree('d3/d8e/structnc__mngmt__server.html','
 </div>
 
 <div class="header">
-  <div class="summary">
-<a href="#pub-attribs">Data Fields</a>  </div>
   <div class="headertitle">
-<div class="title">nc_mngmt_server Struct Reference<div class="ingroups"><a class="el" href="../../db/de7/group__callhome.html">Call Home</a></div></div>  </div>
+<div class="title">Call Home </div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p>Structure describing a management server where the NETCONF server connects to.  
- <a href="../../d3/d8e/structnc__mngmt__server.html#details">More...</a></p>
-
-<p><code>#include &lt;<a class="el" href="../../d2/d50/callhome_8h_source.html">callhome.h</a>&gt;</code></p>
-<table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Data Fields</h2></td></tr>
-<tr class="memitem:abf6dc3901a5139f2f7f093db3003b798"><td class="memItemLeft" align="right" valign="top">struct addrinfo *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d8e/structnc__mngmt__server.html#abf6dc3901a5139f2f7f093db3003b798">addr</a></td></tr>
-<tr class="separator:abf6dc3901a5139f2f7f093db3003b798"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a53832fb642c45ba49c7b9b2a8e298aac"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../d3/d8e/structnc__mngmt__server.html">nc_mngmt_server</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d8e/structnc__mngmt__server.html#a53832fb642c45ba49c7b9b2a8e298aac">next</a></td></tr>
-<tr class="separator:a53832fb642c45ba49c7b9b2a8e298aac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Structure describing a management server where the NETCONF server connects to. </p>
-<p>The structure is public, but, except moving inside the list to specify the server which should be used as first one in <a class="el" href="../../db/de7/group__callhome.html#gadabe3c1cbda6a74768a6d98c1a1f9bc1" title="Connect NETCONF server to a management center (NETCONF client) using Call Home mechanism. ">nc_callhome_connect()</a>, it is HIGHLY recommended to use nc_callhome_mngmt_server_*() functions to manipulate with the management servers list. </p>
-</div><h2 class="groupheader">Field Documentation</h2>
-<a class="anchor" id="abf6dc3901a5139f2f7f093db3003b798"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct addrinfo* addr</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
+<div class="textblock"><p>Call Home is a mechanism how a NETCONF server can initiate connection to a NETCONF client. Specification for this technique can be found in <a href="http://tools.ietf.org/html/draft-ietf-netconf-reverse-ssh-05" title="NETCONF over SSH Call Home Draft">NETCONF over SSH Call Home draft</a> and in <a href="../../hhttp://tools.ietf.org/html/draft-ietf-netconf-rfc5539bis-05" title="RFC 5539bis (NETCONF over TLS)">NETCONF over TLS RFC</a>. Some other aspects of this are also described in <a href="http://tools.ietf.org/html/draft-kwatsen-netconf-server-01" title="NETCONF Server Configuration Data Model">NETCONF Server Configuration Data Model</a>.</p>
+<p>This Mechanism is extremely useful especially in case the device (NETCONF server) is deployed behind a NAT and management application is not able to connect (NETCONF client) to such a device.</p>
+<p>See the <a href="https://code.google.com/p/netopeer">Netopeer project</a> as a reference implementation.</p>
+<h2>Call Home on the Client Side </h2>
+<p>This section describes how to receive Call Home connection.</p>
+<p>Because the client usually doesn't except incoming connection, it is necessary to explicitly start listening for Call Home. For this, libnetconf provides <a class="el" href="../../db/de7/group__callhome.html#gafa8e04fb09dcafcd7c06d086e835f25f" title="Start listening on client side for incoming Call Home connection. ">nc_callhome_listen()</a> function that allows to specify port where it will wait for incoming Call Home connections. The function makes the caller listening on all interfaces supporting both, IPv4 and IPv6 addresses. To stop listening, <a class="el" href="../../db/de7/group__callhome.html#ga93a36d2d6c0e1d1eb0c65d70c6ded3cc" title="Stop listening on client side for incoming Call Home connection. ">nc_callhome_listen_stop()</a> can be used.</p>
+<p>To get the first connection request from the queue of pending Call Home connections, use <a class="el" href="../../db/de7/group__callhome.html#ga556966a9c54e814e02b4afadf128b9b7" title="Accept incoming Call Home connection and create NETCONF session on it. ">nc_callhome_accept()</a>. It gets incoming Call Home TCP socket and uses it to establish a new NETCONF session according to given parameters similarly to <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a> function.</p>
+<p>From this point, client can work with returned NETCONF session as usual. There is no special termination function for NETCONF session from Call Home.</p>
+<h2>Call Home on the Server Side </h2>
+<p>For Call Home, the server initiate connection. Therefore, transport protocol must be set before starting Call Home. It is done by <a class="el" href="../../db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806" title="Set transport protocol for the sessions created by subsequent nc_session_connect() calls...">nc_session_transport()</a> function.</p>
+<p>Next, server is supposed to prepare the list of servers, where libnetconf will be trying to establish the Call Home connection. There is a set of nc_callhome_mngmt_server_*() functions, used for this purpose.</p>
+<p>Finally, there is <a class="el" href="../../db/de7/group__callhome.html#ga5c1437b22b1ccac95d0ba15c34912f78" title="Connect NETCONF server to a management center (NETCONF client) using Call Home mechanism. ">nc_callhome_connect()</a> to establish new NETCONF session based on Call Home mechanism. Note, that the function doesn't return a NETCONF session. It forks the process to start a standalone transport protocol server (SSH/TLS) according to the given parameters. It returns PID of the started process and TCP socket used for the communication. This socket can be used for monitoring state of the connection. Do not read any data from this socket.</p>
+<h2>Call Home workflow in libnetconf </h2>
+<div class="image">
+<img src="../../../../img/callhome.png"  alt="callhome workflow" title="Call Home workflow in libnetconf"/>
 </div>
-</div>
-<a class="anchor" id="a53832fb642c45ba49c7b9b2a8e298aac"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct <a class="el" href="../../d3/d8e/structnc__mngmt__server.html">nc_mngmt_server</a>* next</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<hr/>The documentation for this struct was generated from the following file:<ul>
-<li>src/<a class="el" href="../../d2/d50/callhome_8h_source.html">callhome.h</a></li>
-</ul>
-</div><!-- contents -->
+ </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../d3/d8e/structnc__mngmt__server.html">nc_mngmt_server</a></li>
-    <li class="footer">Generated on Tue May 13 2014 15:16:49 for libnetconf by
+    <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
+    <li class="footer">Generated on Tue May 20 2014 10:26:17 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

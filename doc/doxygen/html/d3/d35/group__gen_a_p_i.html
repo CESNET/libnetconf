@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.7.99</span>
+   &#160;<span id="projectnumber">0.8.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -140,6 +140,9 @@ Functions</h2></td></tr>
 <tr class="separator:ga806dfa9c27d2b8076bae21bcd549cce7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga85cd52f975436e64f9f128e980b77ed3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">nc_close</a> (int system)</td></tr>
 <tr class="separator:ga85cd52f975436e64f9f128e980b77ed3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4dfd796fda30d3ad8588b4c30c4c1583"><td class="memItemLeft" align="right" valign="top">time_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga4dfd796fda30d3ad8588b4c30c4c1583">nc_datetime2time</a> (const char *datetime)</td></tr>
+<tr class="memdesc:ga4dfd796fda30d3ad8588b4c30c4c1583"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform given string in RFC 3339 compliant format to the time_t (seconds since the epoch) accepted by most Linux functions.  <a href="#ga4dfd796fda30d3ad8588b4c30c4c1583">More...</a><br/></td></tr>
+<tr class="separator:ga4dfd796fda30d3ad8588b4c30c4c1583"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga316faef1140f1b48a2ed1de6d84d2bef"><td class="memItemLeft" align="right" valign="top">struct nc_err *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga316faef1140f1b48a2ed1de6d84d2bef">nc_err_dup</a> (const struct nc_err *error)</td></tr>
 <tr class="memdesc:ga316faef1140f1b48a2ed1de6d84d2bef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Duplicate an error description structure.  <a href="#ga316faef1140f1b48a2ed1de6d84d2bef">More...</a><br/></td></tr>
 <tr class="separator:ga316faef1140f1b48a2ed1de6d84d2bef"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -161,6 +164,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gae160a70158f957344eb3204987329632"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gae160a70158f957344eb3204987329632">nc_msgid_compare</a> (const <a class="el" href="../../db/d52/group__session.html#ga85043314eec3f4f8c53234d9af1f2d41">nc_msgid</a> id1, const <a class="el" href="../../db/d52/group__session.html#ga85043314eec3f4f8c53234d9af1f2d41">nc_msgid</a> id2)</td></tr>
 <tr class="memdesc:gae160a70158f957344eb3204987329632"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare two message IDs if they are the same.  <a href="#gae160a70158f957344eb3204987329632">More...</a><br/></td></tr>
 <tr class="separator:gae160a70158f957344eb3204987329632"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga90a44b60b04512fd0a3507ab35a1ccc4"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga90a44b60b04512fd0a3507ab35a1ccc4">nc_time2datetime</a> (time_t time, const char *tz)</td></tr>
+<tr class="memdesc:ga90a44b60b04512fd0a3507ab35a1ccc4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform given time_t (seconds since the epoch) into the RFC 3339 format accepted by NETCONF functions.  <a href="#ga90a44b60b04512fd0a3507ab35a1ccc4">More...</a><br/></td></tr>
+<tr class="separator:ga90a44b60b04512fd0a3507ab35a1ccc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabd4e3697f3a1fe6b5853e692ad20c2bb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gabd4e3697f3a1fe6b5853e692ad20c2bb">nc_verb_error</a> (const char *format,...)</td></tr>
 <tr class="memdesc:gabd4e3697f3a1fe6b5853e692ad20c2bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function for logging error messages.  <a href="#gabd4e3697f3a1fe6b5853e692ad20c2bb">More...</a><br/></td></tr>
 <tr class="separator:gabd4e3697f3a1fe6b5853e692ad20c2bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -289,6 +295,32 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>-1 on error<br/>
  0 on success<br/>
  1 in case of system-wide when there is another participant using shared structures and system-wide close cannot be done. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga4dfd796fda30d3ad8588b4c30c4c1583"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">time_t nc_datetime2time </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>datetime</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Transform given string in RFC 3339 compliant format to the time_t (seconds since the epoch) accepted by most Linux functions. </p>
+<p>This is a reverse function to <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga90a44b60b04512fd0a3507ab35a1ccc4" title="Transform given time_t (seconds since the epoch) into the RFC 3339 format accepted by NETCONF functio...">nc_time2datetime()</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">datetime</td><td>Time structure returned e.g. by localtime(). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>time_t value of the given string. </dd></dl>
 
 </div>
 </div>
@@ -516,6 +548,43 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga90a44b60b04512fd0a3507ab35a1ccc4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* nc_time2datetime </td>
+          <td>(</td>
+          <td class="paramtype">time_t&#160;</td>
+          <td class="paramname"><em>time</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>tz</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Transform given time_t (seconds since the epoch) into the RFC 3339 format accepted by NETCONF functions. </p>
+<p>This is a reverse function to <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga4dfd796fda30d3ad8588b4c30c4c1583" title="Transform given string in RFC 3339 compliant format to the time_t (seconds since the epoch) accepted ...">nc_datetime2time()</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">time</td><td>time_t type value returned e.g. by time(). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tz</td><td>timezone name for the result. See tzselect(1) for list of correct values. If not specified (NULL), the result is provided in UTC (Zulu). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Printed string in a format compliant to RFC 3339. It is up to the caller to free the returned string. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="gabd4e3697f3a1fe6b5853e692ad20c2bb"></a>
 <div class="memitem">
 <div class="memproto">
@@ -650,7 +719,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue May 13 2014 15:16:49 for libnetconf by
+    <li class="footer">Generated on Tue May 20 2014 10:26:17 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

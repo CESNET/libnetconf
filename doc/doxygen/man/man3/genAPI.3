@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Tue May 20 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -29,6 +29,10 @@ libnetconf's miscellaneous functions\&.
 .RI "int \fBnc_close\fP (int system)"
 .br
 .ti -1c
+.RI "time_t \fBnc_datetime2time\fP (const char *datetime)"
+.br
+.RI "\fITransform given string in RFC 3339 compliant format to the time_t (seconds since the epoch) accepted by most Linux functions\&. \fP"
+.ti -1c
 .RI "struct nc_err * \fBnc_err_dup\fP (const struct nc_err *error)"
 .br
 .RI "\fIDuplicate an error description structure\&. \fP"
@@ -56,6 +60,10 @@ libnetconf's miscellaneous functions\&.
 .RI "int \fBnc_msgid_compare\fP (const \fBnc_msgid\fP id1, const \fBnc_msgid\fP id2)"
 .br
 .RI "\fICompare two message IDs if they are the same\&. \fP"
+.ti -1c
+.RI "char * \fBnc_time2datetime\fP (time_t time, const char *tz)"
+.br
+.RI "\fITransform given time_t (seconds since the epoch) into the RFC 3339 format accepted by NETCONF functions\&. \fP"
 .ti -1c
 .RI "void \fBnc_verb_error\fP (const char *format,\&.\&.\&.)"
 .br
@@ -155,6 +163,22 @@ Set a callback function for printing libnetconf's messages\&.
  0 on success
 .br
  1 in case of system-wide when there is another participant using shared structures and system-wide close cannot be done\&. 
+.RE
+.PP
+
+.SS "time_t nc_datetime2time (const char *datetime)"
+
+.PP
+Transform given string in RFC 3339 compliant format to the time_t (seconds since the epoch) accepted by most Linux functions\&. This is a reverse function to \fBnc_time2datetime()\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIdatetime\fP Time structure returned e\&.g\&. by localtime()\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+time_t value of the given string\&. 
 .RE
 .PP
 
@@ -287,6 +311,24 @@ Compare two message IDs if they are the same\&.
 \fBReturns:\fP
 .RS 4
 0 if both IDs are the same\&. 
+.RE
+.PP
+
+.SS "char* nc_time2datetime (time_ttime, const char *tz)"
+
+.PP
+Transform given time_t (seconds since the epoch) into the RFC 3339 format accepted by NETCONF functions\&. This is a reverse function to \fBnc_datetime2time()\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fItime\fP time_t type value returned e\&.g\&. by time()\&. 
+.br
+\fItz\fP timezone name for the result\&. See tzselect(1) for list of correct values\&. If not specified (NULL), the result is provided in UTC (Zulu)\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Printed string in a format compliant to RFC 3339\&. It is up to the caller to free the returned string\&. 
 .RE
 .PP
 

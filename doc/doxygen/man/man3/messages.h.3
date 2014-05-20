@@ -1,4 +1,4 @@
-.TH "src/messages.h" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
+.TH "src/messages.h" 3 "Tue May 20 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -34,7 +34,7 @@ Functions to create NETCONF messages\&.
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_reply_data\fP (const char *data)"
 .br
-.RI "\fICreate rpc-reply response with <data> content\&. \fP"
+.RI "\fICreate rpc-reply response with <data> content (in urn:ietf:params:xml:ns:netconf:base:1\&.0 namespace)\&. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_reply_data_ns\fP (const char *data, const char *ns)"
 .br

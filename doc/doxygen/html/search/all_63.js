@@ -4,7 +4,7 @@ var searchData=
   ['callbacks_2eh',['callbacks.h',['../dd/d49/callbacks_8h.html',1,'']]],
   ['callbacks_5fcount',['callbacks_count',['../d6/dcb/structtransapi__data__callbacks.html#a853d73f0f495147dba4842e9f860d1f0',1,'transapi_data_callbacks::callbacks_count()'],['../d0/df8/structtransapi__rpc__callbacks.html#a853d73f0f495147dba4842e9f860d1f0',1,'transapi_rpc_callbacks::callbacks_count()']]],
   ['callbacks_5fssh_2eh',['callbacks_ssh.h',['../dc/d3a/callbacks__ssh_8h.html',1,'']]],
-  ['call_20home',['Call Home',['../db/de7/group__callhome.html',1,'']]],
+  ['call_20home',['Call Home',['../db/de7/group__callhome.html',1,'(Global Namespace)'],['../da/d4e/callhome.html',1,'usage']]],
   ['callhome_2eh',['callhome.h',['../d2/d50/callhome_8h.html',1,'']]],
   ['clbcks_5fapplied',['CLBCKS_APPLIED',['../d0/db0/transapi_8h.html#a2af5216eb9ecb26064be099ccb8464b1',1,'transapi.h']]],
   ['clbcks_5fapplied_5fchildren_5ferror',['CLBCKS_APPLIED_CHILDREN_ERROR',['../d0/db0/transapi_8h.html#a2af5216eb9ecb26064be099ccb8464b1afaf72f8ab2b660b41cd12c9b6221dcaf',1,'transapi.h']]],

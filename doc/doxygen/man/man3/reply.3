@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Tue May 20 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -36,7 +36,7 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_reply_data\fP (const char *data)"
 .br
-.RI "\fICreate rpc-reply response with <data> content\&. \fP"
+.RI "\fICreate rpc-reply response with <data> content (in urn:ietf:params:xml:ns:netconf:base:1\&.0 namespace)\&. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_reply_data_ns\fP (const char *data, const char *ns)"
 .br
@@ -186,7 +186,7 @@ Complete reply structure used by libnetconf's functions\&.
 .SS "\fBnc_reply\fP* nc_reply_data (const char *data)"
 
 .PP
-Create rpc-reply response with <data> content\&. 
+Create rpc-reply response with <data> content (in urn:ietf:params:xml:ns:netconf:base:1\&.0 namespace)\&. 
 .PP
 \fBParameters:\fP
 .RS 4

@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Tue May 20 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -137,9 +137,17 @@ libnetconf's general public functions and structures definitions\&.
 .RI "int \fBnc_close\fP (int system)"
 .br
 .ti -1c
+.RI "time_t \fBnc_datetime2time\fP (const char *datetime)"
+.br
+.RI "\fITransform given string in RFC 3339 compliant format to the time_t (seconds since the epoch) accepted by most Linux functions\&. \fP"
+.ti -1c
 .RI "int \fBnc_init\fP (int flags)"
 .br
 .RI "\fIInitialize libnetconf for system-wide usage\&. This initialization is shared across all the processes\&. \fP"
+.ti -1c
+.RI "char * \fBnc_time2datetime\fP (time_t time, const char *tz)"
+.br
+.RI "\fITransform given time_t (seconds since the epoch) into the RFC 3339 format accepted by NETCONF functions\&. \fP"
 .ti -1c
 .RI "void \fBnc_verb_error\fP (const char *format,\&.\&.\&.)"
 .br

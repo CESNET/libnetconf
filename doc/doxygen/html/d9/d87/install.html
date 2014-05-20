@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.7.99</span>
+   &#160;<span id="projectnumber">0.8.0</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -132,20 +132,24 @@ $(document).ready(function(){initNavTree('d9/d87/install.html','../../');});
 <li>Remove support for NETCONF :validate capability.</li>
 </ul>
 </li>
-<li><code>--with-nacm-recovery-uid=&lt;uid&gt;</code><a class="anchor" id="configure-nacm-recovery"></a><ul>
-<li>Specify user ID to be used for the identification of the <a class="el" href="../../dd/d59/nacm.html#nacm-recovery">NACM Recovery Session</a>.</li>
-</ul>
-</li>
 <li><code>--disable-yang-schemas</code><ul>
 <li>Remove support for YANG data model format for &lt;get-schema&gt; opration. With this option, only YIN format is available.</li>
 </ul>
 </li>
-<li><code>--with-workingdir=&lt;path&gt;</code><ul>
-<li>Change location of libnetconf's working directory. Default path is <code>/var/lib/libnetconf/</code>. Note that applications using libnetconf should have permissions to read/write to this path, with <code>--with-suid</code> and <code>--with-sgid</code> this is set automatically.</li>
-</ul>
-</li>
 <li><code>--enable-debug</code><ul>
 <li>Add debugging information for a debugger.</li>
+</ul>
+</li>
+<li><code>--enable-tls</code><ul>
+<li>Enable experimental support for TLS transport. More information about the TLS transport can be found in <a class="el" href="../../d4/d76/transport.html">Transport Protocol</a> section.</li>
+</ul>
+</li>
+<li><code>--with-nacm-recovery-uid=&lt;uid&gt;</code><a class="anchor" id="configure-nacm-recovery"></a><ul>
+<li>Specify user ID to be used for the identification of the <a class="el" href="../../dd/d59/nacm.html#nacm-recovery">NACM Recovery Session</a>.</li>
+</ul>
+</li>
+<li><code>--with-workingdir=&lt;path&gt;</code><ul>
+<li>Change location of libnetconf's working directory. Default path is <code>/var/lib/libnetconf/</code>. Note that applications using libnetconf should have permissions to read/write to this path, with <code>--with-suid</code> and <code>--with-sgid</code> this is set automatically.</li>
 </ul>
 </li>
 <li><code>--with-suid=&lt;user&gt;</code><ul>
@@ -163,7 +167,7 @@ $(document).ready(function(){initNavTree('d9/d87/install.html','../../');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue May 13 2014 15:16:49 for libnetconf by
+    <li class="footer">Generated on Tue May 20 2014 10:26:17 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

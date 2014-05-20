@@ -1,19 +1,11 @@
-.TH "Call Home" 3 "Tue May 13 2014" "Version 0.7.99" "libnetconf" \" -*- nroff -*-
+.TH "Call Home" 3 "Tue May 20 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 Call Home \- 
 .PP
-libnetconf's functions implementing NETCONF Call Home (both SSH and TLS) mechanism\&.  
+libnetconf's functions implementing NETCONF Call Home (both SSH and TLS) mechanism\&. More information can be found at \fBCall Home\fP page\&.  
 
-.SS "Data Structures"
-
-.in +1c
-.ti -1c
-.RI "struct \fBnc_mngmt_server\fP"
-.br
-.RI "\fIStructure describing a management server where the NETCONF server connects to\&. \fP"
-.in -1c
 .SS "Functions"
 
 .in +1c
@@ -22,7 +14,7 @@ libnetconf's functions implementing NETCONF Call Home (both SSH and TLS) mechani
 .br
 .RI "\fIAccept incoming Call Home connection and create NETCONF session on it\&. \fP"
 .ti -1c
-.RI "int \fBnc_callhome_connect\fP (struct \fBnc_mngmt_server\fP *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char *server_path, char *const argv[])"
+.RI "int \fBnc_callhome_connect\fP (struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char *server_path, char *const argv[], int *com_socket)"
 .br
 .RI "\fIConnect NETCONF server to a management center (NETCONF client) using Call Home mechanism\&. \fP"
 .ti -1c
@@ -34,21 +26,25 @@ libnetconf's functions implementing NETCONF Call Home (both SSH and TLS) mechani
 .br
 .RI "\fIStop listening on client side for incoming Call Home connection\&. \fP"
 .ti -1c
-.RI "struct \fBnc_mngmt_server\fP * \fBnc_callhome_mngmt_server_add\fP (struct \fBnc_mngmt_server\fP *list, const char *host, const char *port)"
+.RI "struct nc_mngmt_server * \fBnc_callhome_mngmt_server_add\fP (struct nc_mngmt_server *list, const char *host, const char *port)"
 .br
 .RI "\fIAdd a new management server specification to the end of a list\&. \fP"
 .ti -1c
-.RI "int \fBnc_callhome_mngmt_server_free\fP (struct \fBnc_mngmt_server\fP *list)"
+.RI "int \fBnc_callhome_mngmt_server_free\fP (struct nc_mngmt_server *list)"
 .br
 .RI "\fIFree a management server description structure(s)\&. The function doesn't free only the item refered by given pointer, but the complete list of management servers is freed\&. \fP"
 .ti -1c
-.RI "int \fBnc_callhome_mngmt_server_rm\fP (struct \fBnc_mngmt_server\fP *list, struct \fBnc_mngmt_server\fP *remove)"
+.RI "struct nc_mngmt_server * \fBnc_callhome_mngmt_server_getactive\fP (struct nc_mngmt_server *list)"
+.br
+.RI "\fISearches for the item from the list, which was marked and used by the last call to \fBnc_callhome_connect()\fP to a successfully establish Call Home connection\&. \fP"
+.ti -1c
+.RI "int \fBnc_callhome_mngmt_server_rm\fP (struct nc_mngmt_server *list, struct nc_mngmt_server *remove)"
 .br
 .RI "\fIRemove the specified management server description from the list\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
-libnetconf's functions implementing NETCONF Call Home (both SSH and TLS) mechanism\&. 
+libnetconf's functions implementing NETCONF Call Home (both SSH and TLS) mechanism\&. More information can be found at \fBCall Home\fP page\&. 
 
 
 .SH "Function Documentation"
@@ -75,16 +71,18 @@ Structure describing the NETCONF session or NULL in case of an error\&. NULL is 
 .RE
 .PP
 
-.SS "int nc_callhome_connect (struct \fBnc_mngmt_server\fP *host_list, uint8_treconnect_secs, uint8_treconnect_count, const char *server_path, char *constargv[])"
+.SS "int nc_callhome_connect (struct nc_mngmt_server *host_list, uint8_treconnect_secs, uint8_treconnect_count, const char *server_path, char *constargv[], int *com_socket)"
 
 .PP
 Connect NETCONF server to a management center (NETCONF client) using Call Home mechanism\&. Use \fBnc_session_transport()\fP function to specify which transport protocol should be used\&.
+.PP
+Note that reconnect_secs and reconnect_count parameters are used only before a connection is established, then the function returns\&. It's up to the caller to reconnect if the session goes down\&. It can be detected using returned PID\&.
 .PP
 To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP or \fBlibnetconf_tls\&.h\fP\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIhost_list\fP List of management servers descriptions where the function will try to connect to\&. The list can be (is expected to be) ring to allow keep trying to connect to the server(s)\&. 
+\fIhost_list\fP List of management servers descriptions where the function will try to connect to\&. 
 .br
 \fIreconnect_secs\fP Time delay in seconds between connection attempts (even to the same server but it depends on reconnect_count)\&. See /netconf/ssh/call-home/applications/application/reconnect-strategy/interval-secs value in ietf-netconf-server YANG data model\&. 
 .br
@@ -92,12 +90,14 @@ To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP or
 .br
 \fIserver_path\fP Optional parameter to specify path to the transport server\&. If not specified, the function get transport protocol according to value set by \fBnc_session_transport()\fP (default value is SSH transport)\&. For the NC_TRANSPORT_SSH the '/usr/sbin/sshd' path is used (OpenSSH server), in case of NC_TRANSPORT_TLS the '/usr/sbin/stunnel' path is used (OpenSSL server)\&. 
 .br
-\fIargv\fP List of arguments to be used by execv() when starting the server specified in server_path parameter\&. If server_path not specified (NULL), argv is ignored\&. 
+\fIargv\fP List of arguments to be used by execv() when starting the server specified in server_path parameter\&. If server_path not specified (NULL), argv is ignored\&. Remember, that the server is supposed to read data from stdin and write data to stdout (inetd mode)\&. So, for example sshd is running with -i option\&. 
+.br
+\fIcom_socket\fP If not NULL, function returns TCP socket used for Call Home connection\&. Caller is supposed to close returned socket when it is no more needed\&. 
 .RE
 .PP
 \fBReturns:\fP
 .RS 4
--1 on error\&. In case of success, function forks the current process running SSH daemon and returns its PID\&. 
+-1 on error\&. In case of success, function forks the current process running the transport protocol server and returns its PID\&. 
 .RE
 .PP
 
@@ -128,7 +128,7 @@ EXIT_SUCCESS or EXIT_FAILURE if libnetconf is not listening\&.
 .RE
 .PP
 
-.SS "struct \fBnc_mngmt_server\fP* nc_callhome_mngmt_server_add (struct \fBnc_mngmt_server\fP *list, const char *host, const char *port)"
+.SS "struct nc_mngmt_server* nc_callhome_mngmt_server_add (struct nc_mngmt_server *list, const char *host, const char *port)"
 
 .PP
 Add a new management server specification to the end of a list\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP or \fBlibnetconf_tls\&.h\fP\&.
@@ -148,7 +148,7 @@ NULL on error, created/modified management servers list\&.
 .RE
 .PP
 
-.SS "int nc_callhome_mngmt_server_free (struct \fBnc_mngmt_server\fP *list)"
+.SS "int nc_callhome_mngmt_server_free (struct nc_mngmt_server *list)"
 
 .PP
 Free a management server description structure(s)\&. The function doesn't free only the item refered by given pointer, but the complete list of management servers is freed\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP or \fBlibnetconf_tls\&.h\fP\&.
@@ -164,7 +164,23 @@ EXIT_SUCCESS or EXIT_FAILURE\&.
 .RE
 .PP
 
-.SS "int nc_callhome_mngmt_server_rm (struct \fBnc_mngmt_server\fP *list, struct \fBnc_mngmt_server\fP *remove)"
+.SS "struct nc_mngmt_server* nc_callhome_mngmt_server_getactive (struct nc_mngmt_server *list)"
+
+.PP
+Searches for the item from the list, which was marked and used by the last call to \fBnc_callhome_connect()\fP to a successfully establish Call Home connection\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIlist\fP List of management servers\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Pointer to the last connected management server\&. 
+.RE
+.PP
+
+.SS "int nc_callhome_mngmt_server_rm (struct nc_mngmt_server *list, struct nc_mngmt_server *remove)"
 
 .PP
 Remove the specified management server description from the list\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP or \fBlibnetconf_tls\&.h\fP\&.
