@@ -1866,14 +1866,16 @@ static NC_MSG_TYPE nc_session_receive (struct nc_session* session, int timeout, 
 			fds_ssh.revents = LIBSSH2_POLLFD_POLLIN;
 			/*
 			 * According to libssh2 documentation, standard poll should work, but it does not.
-			 * It seems, that some data are stored in internal buffers and they are not seen
-			 * by poll, but libssh2_poll on the channel.
+			 * Using standard poll, we are not able to detect data on a specific channel, it
+			 * is possible only using libssh2_poll(). Unfortunatelly, using libssh2_poll()
+			 * we are not able to detect closed socket and close it either, so it can remain
+			 * in CLOSE_WAIT status.
 			 */
 			/*
-			fds.fd = eventfd;
+			fds.fd = nc_session_get_eventfd(session);
 			fds.events = POLLIN;
 			fds.revents = 0;
-			status = poll(&fds, 1, 100);
+			status = poll(&fds, 1, timeout);
 			*/
 			status = libssh2_poll(&fds_ssh, 1, timeout);
 
