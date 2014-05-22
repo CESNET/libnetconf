@@ -378,7 +378,7 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 		free(knownhosts_dir);
 		return NULL;
 	}
-	retval->libssh2_socket = sock;
+	retval->transport_socket = sock;
 	retval->fd_input = -1;
 	retval->fd_output = -1;
 	retval->username = strdup(username);
@@ -432,7 +432,7 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 	/*
 	 * Set up the SSH session, deprecated variant is libssh2_session_startup()
 	 */
-	if ((r = LIBSSH2_SESSION_HANDSHAKE(retval->ssh_session, retval->libssh2_socket)) != 0) {
+	if ((r = LIBSSH2_SESSION_HANDSHAKE(retval->ssh_session, retval->transport_socket)) != 0) {
 		switch(r) {
 		case LIBSSH2_ERROR_SOCKET_NONE:
 			s = "Invalid socket";
@@ -667,7 +667,7 @@ struct nc_session *nc_session_connect_libssh2_channel(struct nc_session *session
 	}
 
 	retval->is_server = 0;
-	retval->libssh2_socket = session->libssh2_socket;
+	retval->transport_socket = session->transport_socket;
 	retval->fd_input = -1;
 	retval->fd_output = -1;
 	retval->hostname = session->hostname;

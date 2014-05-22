@@ -326,7 +326,7 @@ struct nc_session {
 	/**< @brief Last message ID */
 	long long unsigned int msgid;
 	/**< @brief only for clients using libssh2 for communication */
-	int libssh2_socket;
+	int transport_socket;
 #ifdef ENABLE_TLS
 	/**< @brief TLS handler */
 	SSL *tls;

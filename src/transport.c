@@ -631,7 +631,7 @@ struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabiliti
 		return NULL;
 	}
 	retval->is_server = 1;
-	retval->libssh2_socket = -1;
+	retval->transport_socket = -1;
 	retval->fd_input = STDIN_FILENO;
 	retval->fd_output = STDOUT_FILENO;
 	retval->msgid = 1;

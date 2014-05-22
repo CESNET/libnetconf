@@ -643,17 +643,13 @@ NC_TRANSPORT nc_session_get_transport(const struct nc_session* session)
 		return (NC_TRANSPORT_UNKNOWN);
 	}
 
-	if (session->libssh2_socket != -1) {
-		return (NC_TRANSPORT_SSH);
-	}
-
 #ifdef ENABLE_TLS
 	if (session->tls != NULL) {
 		return (NC_TRANSPORT_TLS);
 	}
 #endif
 
-	return (NC_TRANSPORT_UNKNOWN);
+	return (NC_TRANSPORT_SSH);
 }
 
 int nc_session_get_version (const struct nc_session *session)
@@ -670,13 +666,8 @@ int nc_session_get_eventfd (const struct nc_session *session)
 		return -1;
 	}
 
-#ifdef ENABLE_TLS
-	if (session->tls != NULL) {
-		return (SSL_get_fd(session->tls));
-	}
-#endif
-	if (session->libssh2_socket != -1) {
-		return (session->libssh2_socket);
+	if (session->transport_socket != -1) {
+		return (session->transport_socket);
 	} else if (session->fd_input != -1) {
 		return (session->fd_input);
 	} else {
@@ -1079,7 +1070,7 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	/* set invalid fd values to prevent comunication */
 	session->fd_input = -1;
 	session->fd_output = -1;
-	session->libssh2_socket = -1;
+	session->transport_socket = -1;
 
 	/* init stats values */
 	session->logintime = nc_time2datetime(time(NULL), NULL);
@@ -1232,9 +1223,9 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			libssh2_session_free(session->ssh_session);
 			session->ssh_session = NULL;
 
-			close(session->libssh2_socket);
+			close(session->transport_socket);
 		}
-		session->libssh2_socket = -1;
+		session->transport_socket = -1;
 #endif
 
 		free(session->logintime);
