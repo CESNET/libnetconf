@@ -1399,8 +1399,14 @@ static int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 	}
 
 	/* check that we are able to write data */
-	while (session->fd_input != -1) {
-		fds.fd = session->fd_input;
+	do {
+		fds.fd = (session->transport_socket != -1) ? session->transport_socket : session->fd_output;
+		if (fds.fd == -1) {
+			ERROR("Invalid transport channel.");
+			nc_session_close(session, NC_SESSION_TERM_DROPPED);
+			return (EXIT_FAILURE);
+		}
+
 		fds.events = POLLOUT;
 		fds.revents = 0;
 		status = poll(&fds, 1, 0);
@@ -1420,7 +1426,7 @@ static int nc_session_send (struct nc_session* session, struct nc_msg *msg)
 			return (EXIT_FAILURE);
 		}
 		break;
-	}
+	} while (session->fd_input != -1);
 
 	/* lock the session for sending the data */
 
