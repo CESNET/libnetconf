@@ -940,7 +940,7 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 		return NULL;
 	}
 	retval->is_server = 0;
-	retval->libssh2_socket = -1;
+	retval->transport_socket = -1;
 	retval->ssh_session = NULL;
 	retval->hostname = strdup(host);
 	retval->username = strdup(username);
