@@ -138,7 +138,8 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Destroy all resources allocated for preparation of TLS connections. </p>
-<p>See <a class="el" href="../../db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17" title="Set paths to the client certificate and its private key. ">nc_tls_init()</a> for more information about NETCONF session preparation. </p>
+<p>See <a class="el" href="../../db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17" title="Set paths to the client certificate and its private key. ">nc_tls_init()</a> for more information about NETCONF session preparation.</p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a> header file. </p>
 
 </div>
 </div>
@@ -186,6 +187,7 @@ Functions</h2></td></tr>
 <li>Establish NETCONF session using <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a>. If you don't need to change parameters set in <a class="el" href="../../db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17" title="Set paths to the client certificate and its private key. ">nc_tls_init()</a>, you can call <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a> repeatedly.</li>
 <li>To properly clean all resources, call <a class="el" href="../../db/db4/group__tls.html#gacf3aed5cccac55d0548f46761707ece9" title="Destroy all resources allocated for preparation of TLS connections. ">nc_tls_destroy()</a>. It will destroy TLS connection context in the current thread.</li>
 </ol>
+<p>To make this function available, you have to include <a class="el" href="../../d5/d22/libnetconf__tls_8h.html" title="libnetconf&#39;s header for control openssl. ">libnetconf_tls.h</a> header file.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">peer_cert</td><td>Path to the file containing client certificate </td></tr>
@@ -204,7 +206,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue May 20 2014 10:26:17 for libnetconf by
+    <li class="footer">Generated on Mon May 26 2014 11:19:50 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

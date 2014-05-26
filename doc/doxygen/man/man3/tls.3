@@ -1,4 +1,4 @@
-.TH "NETCONF over TLS" 3 "Tue May 20 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF over TLS" 3 "Mon May 26 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -30,7 +30,9 @@ Remember, that to make these functions available, libnetconf must be compiled wi
 .SS "void nc_tls_destroy (void)"
 
 .PP
-Destroy all resources allocated for preparation of TLS connections\&. See \fBnc_tls_init()\fP for more information about NETCONF session preparation\&. 
+Destroy all resources allocated for preparation of TLS connections\&. See \fBnc_tls_init()\fP for more information about NETCONF session preparation\&.
+.PP
+To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP header file\&. 
 .SS "int nc_tls_init (const char *peer_cert, const char *peer_key, const char *CAfile, const char *CApath)"
 
 .PP
@@ -44,6 +46,8 @@ Establish NETCONF session using \fBnc_session_connect()\fP\&. If you don't need 
 .IP "3." 4
 To properly clean all resources, call \fBnc_tls_destroy()\fP\&. It will destroy TLS connection context in the current thread\&.
 .PP
+.PP
+To make this function available, you have to include \fBlibnetconf_tls\&.h\fP header file\&.
 .PP
 \fBParameters:\fP
 .RS 4
