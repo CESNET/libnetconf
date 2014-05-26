@@ -71,6 +71,9 @@ typedef enum
  *
  * This function has no effect with configure's --disable-libssh2 option.
  *
+ * To make this function available, you have to include libnetconf_ssh.h header
+ * file.
+ *
  * @param[in] type Setting preference for the given authentication type.
  * @param[in] preference Preference value. Higher value means higher preference.
  * Negative value disables the given authentication type. On equality of values,
