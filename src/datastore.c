@@ -4826,10 +4826,42 @@ process_datastore:
 
 	switch (op) {
 	case NC_OP_LOCK:
-		ret = ds->func.lock(ds, session, nc_rpc_get_target(rpc), &e);
-		break;
 	case NC_OP_UNLOCK:
-		ret = ds->func.unlock(ds, session, nc_rpc_get_target(rpc), &e);
+		if (op == NC_OP_LOCK) {
+			op_name = "lock";
+			ret = ds->func.lock(ds, session, target_ds = nc_rpc_get_target(rpc), &e);
+		} else { /* NC_OP_UNLOCK */
+			op_name = "unlock";
+			ret = ds->func.unlock(ds, session, target_ds = nc_rpc_get_target(rpc), &e);
+		}
+#ifndef DISABLE_NOTIFICATIONS
+		/* log the event */
+		if (dsid == NCDS_INTERNAL_ID && ret == EXIT_SUCCESS) {
+			switch (target_ds) {
+			case NC_DATASTORE_RUNNING:
+				aux = "running";
+				break;
+			case NC_DATASTORE_CANDIDATE:
+				aux = "candidate";
+				break;
+			case NC_DATASTORE_STARTUP:
+				aux = "startup";
+				break;
+			default:
+				/* wtf, (un)lock had to fail already */
+				aux = "unknown";
+			}
+			asprintf(&data, "<datastore-%s xmlns=\"%s\"><datastore>%s</datastore><session-id>%s</session-id></datastore-%s>",
+					op_name,
+					NC_NS_LNC_NOTIFICATIONS,
+					aux,
+					session->session_id,
+					op_name);
+			ncntf_event_new(-1, NCNTF_GENERIC, data);
+			free(data);
+			data = NULL;
+		}
+#endif /* DISABLE_NOTIFICATIONS */
 		break;
 	case NC_OP_GET:
 		/* pre-filter the request for the current datastore part */
@@ -5445,7 +5477,7 @@ apply_editcopyconfig:
 
 #ifndef DISABLE_NOTIFICATIONS
 		/* log the event */
-		if (ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
+		if (dsid == NCDS_INTERNAL_ID && ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
 			ncntf_event_new(-1, NCNTF_BASE_CFG_CHANGE, target_ds, NCNTF_EVENT_BY_USER, session);
 		}
 #endif /* DISABLE_NOTIFICATIONS */
@@ -5500,7 +5532,7 @@ apply_editcopyconfig:
 		}
 #ifndef DISABLE_NOTIFICATIONS
 		/* log the event */
-		if (ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
+		if (dsid == NCDS_INTERNAL_ID && ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
 			ncntf_event_new(-1, NCNTF_BASE_CFG_CHANGE, target_ds, NCNTF_EVENT_BY_USER, session);
 		}
 #endif /* DISABLE_NOTIFICATIONS */
@@ -5521,7 +5553,7 @@ apply_editcopyconfig:
 
 #ifndef DISABLE_NOTIFICATIONS
 			/* log the event */
-			if (ret == EXIT_SUCCESS) {
+			if (dsid == NCDS_INTERNAL_ID && ret == EXIT_SUCCESS) {
 				ncntf_event_new (-1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, session);
 			}
 #endif /* DISABLE_NOTIFICATIONS */
@@ -5867,6 +5899,8 @@ void ncds_break_locks(const struct nc_session* session)
 	int number_sessions = 0, i, j;
 	NC_DATASTORE ds_type[3] = {NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NC_DATASTORE_STARTUP};
 	struct nc_cpblts * cpblts;
+	char *ds_name, *data = NULL;
+	int *flag, flag_r, flag_s, flag_c;
 
 	if (session == NULL) {
 		/* if session NULL, get all sessions that hold lock from first file datastore */
@@ -5898,6 +5932,9 @@ void ncds_break_locks(const struct nc_session* session)
 	/* for all prepared sessions */
 	for (i=0; i<number_sessions; i++) {
 		ds = ncds.datastores;
+		flag_r = 0;
+		flag_s = 0;
+		flag_c = 0;
 		/* every datastore */
 		while (ds) {
 			if (ds->datastore) {
@@ -5908,10 +5945,43 @@ void ncds_break_locks(const struct nc_session* session)
 					if (e) {
 						nc_err_free(e);
 						e = NULL;
+#ifndef DISABLE_NOTIFICATIONS
+					} else {
+						/* log the event */
+						if (ds->datastore->type == NCDS_TYPE_FILE) {
+							switch (ds_type[j]) {
+							case NC_DATASTORE_RUNNING:
+								ds_name = "running";
+								flag = &flag_r;
+								break;
+							case NC_DATASTORE_CANDIDATE:
+								ds_name = "candidate";
+								flag = &flag_s;
+								break;
+							case NC_DATASTORE_STARTUP:
+								ds_name = "startup";
+								flag = &flag_s;
+								break;
+							default:
+								/* wtf, (un)lock had to fail already */
+								flag = NULL;
+							}
+
+							if (flag && !(*flag)) {
+								asprintf(&data, "<datastore-unlock xmlns=\"%s\"><datastore>%s</datastore><session-id>%s</session-id></datastore-unlock>",
+								NC_NS_LNC_NOTIFICATIONS, ds_name, session->session_id);
+								ncntf_event_new(-1, NCNTF_GENERIC, data);
+								free(data);
+								data = NULL;
+								*flag = 1;
+							}
+						}
+#endif /* DISABLE_NOTIFICATIONS */
 					}
 				}
 			}
 			ds = ds->next;
+			flag = 0;
 		}
 	}
 

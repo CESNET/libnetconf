@@ -125,6 +125,8 @@
 #define NC_NS_YIN               "urn:ietf:params:xml:ns:yang:yin:1"
 #define NC_NS_YIN_ID            "yin"
 
+#define NC_NS_LNC_NOTIFICATIONS "urn:cesnet:params:xml:ns:libnetconf:notifications"
+
 /* NETCONF versions identificators */
 #define NETCONFV10	0
 #define NETCONFV11	1
