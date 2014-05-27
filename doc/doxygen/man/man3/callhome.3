@@ -1,4 +1,4 @@
-.TH "Call Home" 3 "Mon May 26 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "Call Home" 3 "Tue May 27 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -62,7 +62,7 @@ To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP or
 .br
 \fIcpblts\fP NETCONF capabilities structure with capabilities supported by the client\&. Client can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter)\&. 
 .br
-\fItimeout\fP Timeout for waiting for incoming call home in milliseconds\&. Negative value means an infinite timeout, zero causes to return immediately\&. 
+\fItimeout\fP Timeout for waiting for incoming call home in milliseconds\&. Negative value means an infinite timeout, zero causes to return immediately\&. If a positive value is set and timeout is reached, NULL is returned and timeout is changed to 0\&. 
 .RE
 .PP
 \fBReturns:\fP

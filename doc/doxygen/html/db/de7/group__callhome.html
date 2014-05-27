@@ -176,7 +176,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">username</td><td>Name of the user to login to the server. The user running the application (detected from the effective UID) is used if NULL is specified. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">cpblts</td><td>NETCONF capabilities structure with capabilities supported by the client. Client can use <a class="el" href="../../db/d52/group__session.html#ga8283673aa18f079a89a437efb436a55a" title="Get NULL terminated list of the default capabilities supported by libnetconf including the list of na...">nc_session_get_cpblts_default()</a> to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">timeout</td><td>Timeout for waiting for incoming call home in milliseconds. Negative value means an infinite timeout, zero causes to return immediately. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">timeout</td><td>Timeout for waiting for incoming call home in milliseconds. Negative value means an infinite timeout, zero causes to return immediately. If a positive value is set and timeout is reached, NULL is returned and timeout is changed to 0. </td></tr>
   </table>
   </dd>
 </dl>
@@ -434,7 +434,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon May 26 2014 11:19:50 for libnetconf by
+    <li class="footer">Generated on Tue May 27 2014 13:53:47 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>
