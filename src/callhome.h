@@ -160,8 +160,10 @@ int nc_callhome_listen_stop(void);
  * by the client. Client can use nc_session_get_cpblts_default() to get the
  * structure with the list of all the capabilities supported by libnetconf (this is
  * used in case of a NULL parameter).
- * @param[in] timeout Timeout for waiting for incoming call home in milliseconds.
+ * @param[in,out] timeout Timeout for waiting for incoming call home in milliseconds.
  * Negative value means an infinite timeout, zero causes to return immediately.
+ * If a positive value is set and timeout is reached, NULL is returned and
+ * timeout is changed to 0.
  * @return Structure describing the NETCONF session or NULL in case of an error.
  * NULL is also returned in case of timeout, but in that case also timeout
  * value is changed to 0.
