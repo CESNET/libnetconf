@@ -466,7 +466,9 @@ struct nc_session* nc_session_connect(const char *host, unsigned short port, con
 	struct nc_session *retval = NULL;
 	struct nc_cpblts *client_cpblts = NULL;
 	char port_s[SHORT_INT_LENGTH];
+#ifdef ENABLE_TLS
 	NC_TRANSPORT *transport_proto;
+#endif
 
 	/* set default values */
 	if (host == NULL || strisempty(host)) {
@@ -482,10 +484,10 @@ struct nc_session* nc_session_connect(const char *host, unsigned short port, con
 		return (NULL);
 	}
 
+#ifdef ENABLE_TLS
 	pthread_once(&transproto_key_once, transproto_init);
 	transport_proto = pthread_getspecific(transproto_key);
 
-#ifdef ENABLE_TLS
 	if (*transport_proto == NC_TRANSPORT_TLS) {
 		retval = nc_session_connect_tls(username, host, port_s);
 	} else {
