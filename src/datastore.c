@@ -5956,7 +5956,7 @@ void ncds_break_locks(const struct nc_session* session)
 								break;
 							case NC_DATASTORE_CANDIDATE:
 								ds_name = "candidate";
-								flag = &flag_s;
+								flag = &flag_c;
 								break;
 							case NC_DATASTORE_STARTUP:
 								ds_name = "startup";
