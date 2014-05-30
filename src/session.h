@@ -335,8 +335,11 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf);
  * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
  * non-blocking
  * @param[out] rpc Received \<rpc\>
- * @return Type of the received message. #NC_MSG_UNKNOWN means error, #NC_MSG_RPC
- * means that *rpc points to the received \<rpc\> message.
+ * @return
+ * - #NC_MSG_RPC - success, *rpc points to the received \<rpc\> message.
+ * - #NC_MSG_HELLO - success, *rpc points to the received \<hello\> message.
+ * - #NC_MSG_UNKNOWN - error occurred
+ * - #NC_MSG_WOULDBLOCK - receiving timeouted without any received message.
  */
 NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, int timeout, nc_rpc** rpc);
 
@@ -349,23 +352,38 @@ NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, int timeout, nc_rpc
  * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
  * non-blocking
  * @param[out] reply Received \<rpc-reply\>
- * @return Type of the received message. #NC_MSG_UNKNOWN means error, #NC_MSG_REPLY
- * means that *reply points to the received \<rpc-reply\> message.
+ * @return
+ * - #NC_MSG_REPLY - success, *reply points to the received \<rpc-reply\> message.
+ * - #NC_MSG_HELLO - success, *reply points to the received \<hello\> message.
+ * - #NC_MSG_NONE - success, but \<rpc-reply\> with error information was
+ *   processed automatically using callback specified with nc_callback_error_reply()
+ *   function. *reply was not changed.
+ * - #NC_MSG_UNKNOWN - error occurred
+ * - #NC_MSG_NOTIFICATION - \<notification\> message was received and enqueued
+ *   to the internal queue until the nc_session_recv_notif() function is called.
+ *   Caller is supposed to repeat the function call to receive another
+ *   \<rpc-reply\> message.
+ * - #NC_MSG_WOULDBLOCK - receiving timeouted without any received message.
  */
 NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_reply** reply);
 
 /**
  * @ingroup notifications
- * @brief Receive \<notification\> message from the specified NETCONF session.
+ * @brief Receive a \<notification\> message from the specified NETCONF session.
  * This function is supposed to be performed only by NETCONF clients.
  *
  * @param[in] session NETCONF session to use.
  * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
  * non-blocking
  * @param[out] ntf Received \<notification\> message
- * @return Type of the received message. #NC_MSG_UNKNOWN means error,
- * #NC_MSG_NOTIFICATION means that *ntf points to the received \<notification\>
- * message.
+ * @return
+ * - #NC_MSG_NOTIFICATION - success, *ntf points to the received \<notification\>
+ * - #NC_MSG_UNKNOWN - error occurred
+ * - #NC_MSG_REPLY - \<rpc-reply\> to some request received and enqueued to the
+ *   internal queue until the nc_session_recv_reply() function is called. Caller
+ *   is supposed to repeat the function call to receive another \<notification\>
+ *   message.
+ * - #NC_MSG_WOULDBLOCK - receiving timeouted without any received message.
  */
 NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, int timeout, nc_ntf** ntf);
 
@@ -385,8 +403,12 @@ int nc_msgid_compare (const nc_msgid id1, const nc_msgid id2);
  * @param[in] session NETCONF session to use.
  * @param[in] rpc RPC message to send.
  * @param[out] reply Received \<rpc-reply\>
- * @return Type of the received message. #NC_MSG_UNKNOWN means error, #NC_MSG_REPLY
- * means that *reply points to the received \<rpc-reply\> message.
+ * @return
+ * - #NC_MSG_REPLY - success, *reply points to the received \<rpc-reply\> message.
+ * - #NC_MSG_NONE - success, but \<rpc-reply\> with error information was
+ *   processed automatically using callback specified with nc_callback_error_reply()
+ *   function. *reply was not changed.
+ * - #NC_MSG_UNKNOWN - error occurred
  */
 NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_reply** reply);
 
