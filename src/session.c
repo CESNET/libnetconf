@@ -2262,8 +2262,6 @@ try_again:
 	DBG_UNLOCK("mut_mqueue");
 	pthread_mutex_unlock(&(session->mut_mqueue));
 
-	
-	
 	return (ret);
 }
 
