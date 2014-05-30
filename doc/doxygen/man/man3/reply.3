@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Tue May 27 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Fri May 30 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -419,7 +419,19 @@ Receive <rpc-reply> response from the specified NETCONF session\&. This function
 .PP
 \fBReturns:\fP
 .RS 4
-Type of the received message\&. \fBNC_MSG_UNKNOWN\fP means error, \fBNC_MSG_REPLY\fP means that *reply points to the received <rpc-reply> message\&. 
+.IP "\(bu" 2
+\fBNC_MSG_REPLY\fP - success, *reply points to the received <rpc-reply> message\&.
+.IP "\(bu" 2
+\fBNC_MSG_HELLO\fP - success, *reply points to the received <hello> message\&.
+.IP "\(bu" 2
+\fBNC_MSG_NONE\fP - success, but <rpc-reply> with error information was processed automatically using callback specified with \fBnc_callback_error_reply()\fP function\&. *reply was not changed\&.
+.IP "\(bu" 2
+\fBNC_MSG_UNKNOWN\fP - error occurred
+.IP "\(bu" 2
+\fBNC_MSG_NOTIFICATION\fP - <notification> message was received and enqueued to the internal queue until the \fBnc_session_recv_notif()\fP function is called\&. Caller is supposed to repeat the function call to receive another <rpc-reply> message\&.
+.IP "\(bu" 2
+\fBNC_MSG_WOULDBLOCK\fP - receiving timeouted without any received message\&. 
+.PP
 .RE
 .PP
 

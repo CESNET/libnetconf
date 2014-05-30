@@ -1,4 +1,4 @@
-.TH "NETCONF Event Notifications" 3 "Tue May 27 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Event Notifications" 3 "Fri May 30 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -36,7 +36,7 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 .ti -1c
 .RI "\fBNC_MSG_TYPE\fP \fBnc_session_recv_notif\fP (struct nc_session *session, int timeout, \fBnc_ntf\fP **ntf)"
 .br
-.RI "\fIReceive <notification> message from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
+.RI "\fIReceive a <notification> message from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. \fP"
 .ti -1c
 .RI "int \fBnc_session_send_notif\fP (struct nc_session *session, const \fBnc_ntf\fP *ntf)"
 .br
@@ -201,7 +201,7 @@ Created rpc message\&.
 .SS "\fBNC_MSG_TYPE\fP nc_session_recv_notif (struct nc_session *session, inttimeout, \fBnc_ntf\fP **ntf)"
 
 .PP
-Receive <notification> message from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. 
+Receive a <notification> message from the specified NETCONF session\&. This function is supposed to be performed only by NETCONF clients\&. 
 .PP
 \fBParameters:\fP
 .RS 4
@@ -214,7 +214,15 @@ Receive <notification> message from the specified NETCONF session\&. This functi
 .PP
 \fBReturns:\fP
 .RS 4
-Type of the received message\&. \fBNC_MSG_UNKNOWN\fP means error, \fBNC_MSG_NOTIFICATION\fP means that *ntf points to the received <notification> message\&. 
+.IP "\(bu" 2
+\fBNC_MSG_NOTIFICATION\fP - success, *ntf points to the received <notification>
+.IP "\(bu" 2
+\fBNC_MSG_UNKNOWN\fP - error occurred
+.IP "\(bu" 2
+\fBNC_MSG_REPLY\fP - <rpc-reply> to some request received and enqueued to the internal queue until the \fBnc_session_recv_reply()\fP function is called\&. Caller is supposed to repeat the function call to receive another <notification> message\&.
+.IP "\(bu" 2
+\fBNC_MSG_WOULDBLOCK\fP - receiving timeouted without any received message\&. 
+.PP
 .RE
 .PP
 

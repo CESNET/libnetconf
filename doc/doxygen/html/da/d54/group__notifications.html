@@ -147,7 +147,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:gafda56cbfe02d24877d0740618aa2de98"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create &lt;create-subsciption&gt; NETCONF rpc message.  <a href="#gafda56cbfe02d24877d0740618aa2de98">More...</a><br/></td></tr>
 <tr class="separator:gafda56cbfe02d24877d0740618aa2de98"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad7ffa424401e8004fb24f9f77f0bb5be"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga298c7a4ad5cc76169a211f86df90f057">NC_MSG_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#gad7ffa424401e8004fb24f9f77f0bb5be">nc_session_recv_notif</a> (struct nc_session *session, int timeout, <a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> **ntf)</td></tr>
-<tr class="memdesc:gad7ffa424401e8004fb24f9f77f0bb5be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive &lt;notification&gt; message from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="#gad7ffa424401e8004fb24f9f77f0bb5be">More...</a><br/></td></tr>
+<tr class="memdesc:gad7ffa424401e8004fb24f9f77f0bb5be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive a &lt;notification&gt; message from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients.  <a href="#gad7ffa424401e8004fb24f9f77f0bb5be">More...</a><br/></td></tr>
 <tr class="separator:gad7ffa424401e8004fb24f9f77f0bb5be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga2a6cd8e0aaaaf4e1b84d3a498a2a710c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d54/group__notifications.html#ga2a6cd8e0aaaaf4e1b84d3a498a2a710c">nc_session_send_notif</a> (struct nc_session *session, const <a class="el" href="../../da/d54/group__notifications.html#ga3c2f8ca237327fcf3c871544f414bdfe">nc_ntf</a> *ntf)</td></tr>
 <tr class="memdesc:ga2a6cd8e0aaaaf4e1b84d3a498a2a710c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send &lt;notification&gt; message from server to client.  <a href="#ga2a6cd8e0aaaaf4e1b84d3a498a2a710c">More...</a><br/></td></tr>
@@ -372,7 +372,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Receive &lt;notification&gt; message from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients. </p>
+<p>Receive a &lt;notification&gt; message from the specified NETCONF session. This function is supposed to be performed only by NETCONF clients. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>NETCONF session to use. </td></tr>
@@ -381,7 +381,13 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Type of the received message. <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a> means error, <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057ab4e4b148e14bdf9f320331b0cbe1dc6d">NC_MSG_NOTIFICATION</a> means that *ntf points to the received &lt;notification&gt; message. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd><ul>
+<li><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057ab4e4b148e14bdf9f320331b0cbe1dc6d">NC_MSG_NOTIFICATION</a> - success, *ntf points to the received &lt;notification&gt;</li>
+<li><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a> - error occurred</li>
+<li><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a827b3c9c898a48ec8e9f8f9af11f1bdd">NC_MSG_REPLY</a> - &lt;rpc-reply&gt; to some request received and enqueued to the internal queue until the <a class="el" href="../../d0/de2/group__reply.html#ga1b8c8ca9516003938e8f647bd870beaa" title="Receive &lt;rpc-reply&gt; response from the specified NETCONF session. This function is supposed to be perf...">nc_session_recv_reply()</a> function is called. Caller is supposed to repeat the function call to receive another &lt;notification&gt; message.</li>
+<li><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a5b0ce1ca54b15ef3ca1ef901263c1b72">NC_MSG_WOULDBLOCK</a> - receiving timeouted without any received message. </li>
+</ul>
+</dd></dl>
 
 </div>
 </div>
@@ -1037,7 +1043,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue May 27 2014 13:53:48 for libnetconf by
+    <li class="footer">Generated on Fri May 30 2014 15:56:28 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

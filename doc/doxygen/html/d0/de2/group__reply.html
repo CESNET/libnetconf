@@ -717,7 +717,15 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Type of the received message. <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a> means error, <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a827b3c9c898a48ec8e9f8f9af11f1bdd">NC_MSG_REPLY</a> means that *reply points to the received &lt;rpc-reply&gt; message. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd><ul>
+<li><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a827b3c9c898a48ec8e9f8f9af11f1bdd">NC_MSG_REPLY</a> - success, *reply points to the received &lt;rpc-reply&gt; message.</li>
+<li><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a7cd0f4a4edef33489e675b080645288d">NC_MSG_HELLO</a> - success, *reply points to the received &lt;hello&gt; message.</li>
+<li><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a1272e268199e52e368957b6a3b288d50">NC_MSG_NONE</a> - success, but &lt;rpc-reply&gt; with error information was processed automatically using callback specified with <a class="el" href="../../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80" title="Set a callback function to process (e.g. print) NETCONF &lt;rpc-error&gt; message items. ">nc_callback_error_reply()</a> function. *reply was not changed.</li>
+<li><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a43e894ea69b22c6080016fe210da4305">NC_MSG_UNKNOWN</a> - error occurred</li>
+<li><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057ab4e4b148e14bdf9f320331b0cbe1dc6d">NC_MSG_NOTIFICATION</a> - &lt;notification&gt; message was received and enqueued to the internal queue until the <a class="el" href="../../da/d54/group__notifications.html#gad7ffa424401e8004fb24f9f77f0bb5be" title="Receive a &lt;notification&gt; message from the specified NETCONF session. This function is supposed to be ...">nc_session_recv_notif()</a> function is called. Caller is supposed to repeat the function call to receive another &lt;rpc-reply&gt; message.</li>
+<li><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a5b0ce1ca54b15ef3ca1ef901263c1b72">NC_MSG_WOULDBLOCK</a> - receiving timeouted without any received message. </li>
+</ul>
+</dd></dl>
 
 </div>
 </div>
@@ -771,7 +779,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue May 27 2014 13:53:48 for libnetconf by
+    <li class="footer">Generated on Fri May 30 2014 15:56:28 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>
