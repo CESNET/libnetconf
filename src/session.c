@@ -2168,17 +2168,20 @@ static NC_MSG_TYPE nc_session_recv_msg (struct nc_session* session, int timeout,
 	return (ret);
 }
 
+#define LOCAL_RECEIVE_TIMEOUT 100
 NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_reply** reply)
 {
 	struct nc_msg *msg_aux, *msg = NULL;
 	NC_MSG_TYPE ret;
-	int local_timeout;
 	struct nc_err* error;
+
+	/* use local timeout to avoid continual long time blocking */
+	int local_timeout;
 
 	if (timeout == 0) {
 		local_timeout = 0;
 	} else {
-		local_timeout = 100;
+		local_timeout = LOCAL_RECEIVE_TIMEOUT;
 	}
 
 	DBG_LOCK("mut_mqueue");
@@ -2229,7 +2232,7 @@ try_again:
 		/* <rpc-reply> with error information was processed automatically */
 		break;
 	case NC_MSG_WOULDBLOCK:
-		if ((timeout == -1) || ((timeout > 0) && ((local_timeout = local_timeout - 100) > 0))) {
+		if ((timeout == -1) || ((timeout > 0) && ((timeout = timeout - local_timeout) > 0))) {
 			goto try_again;
 		}
 		break;
@@ -2306,12 +2309,14 @@ NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, int timeout, nc_n
 {
 	struct nc_msg *msg_aux, *msg=NULL;
 	NC_MSG_TYPE ret;
+
+	/* use local timeout to avoid continual long time blocking */
 	int local_timeout;
 
 	if (timeout == 0) {
 		local_timeout = 0;
 	} else {
-		local_timeout = 100;
+		local_timeout = LOCAL_RECEIVE_TIMEOUT;
 	}
 
 	DBG_LOCK("mut_equeue");
@@ -2346,9 +2351,10 @@ try_again:
 		/* <rpc-reply> with error information was processed
 		 * automatically, but we are waiting for a notification
 		 */
+		goto try_again;
 		break;
 	case NC_MSG_WOULDBLOCK:
-		if ((timeout == -1) || ((timeout > 0) && ((local_timeout = local_timeout - 100) > 0))) {
+		if ((timeout == -1) || ((timeout > 0) && ((timeout = timeout - local_timeout) > 0))) {
 			goto try_again;
 		}
 		break;
@@ -2371,12 +2377,14 @@ NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, int timeout, nc_rpc
 	NC_MSG_TYPE ret;
 	struct nc_err* e = NULL;
 	nc_reply* reply;
+
+	/* use local timeout to avoid continual long time blocking */
 	int local_timeout;
 
 	if (timeout == 0) {
 		local_timeout = 0;
 	} else {
-		local_timeout = 100;
+		local_timeout = LOCAL_RECEIVE_TIMEOUT;
 	}
 
 try_again:
@@ -2489,7 +2497,7 @@ try_again:
 		/* do nothing, just return the type */
 		break;
 	case NC_MSG_WOULDBLOCK:
-		if ((timeout == -1) || ((timeout > 0) && ((local_timeout = local_timeout - 100) > 0))) {
+		if ((timeout == -1) || ((timeout > 0) && ((timeout = timeout - local_timeout) > 0))) {
 			goto try_again;
 		}
 		break;
