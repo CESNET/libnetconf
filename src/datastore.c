@@ -1301,8 +1301,14 @@ char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 	}
 
 	if (format == NULL) {
-		/* format is missing, use yin as default format */
-		format = strdup("yin");
+		/*
+		 * format is missing, use the default format - RFC 6022 specifies YANG
+		 * as a default format. Due to intercompatibility, it must be used
+		 * even if the YANG format is not available (it was turned off by
+		 * --disable-yang-schemas), because clients expects to get YANG format
+		 * when they explicitly do not specify the schema format.
+		 */
+		format = strdup("yang");
 	}
 
 	/* process all data models */
