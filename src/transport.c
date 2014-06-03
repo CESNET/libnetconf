@@ -1157,7 +1157,7 @@ struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpbl
 	reverse_listen_socket[0].revents = 0;
 	reverse_listen_socket[1].revents = 0;
 	while (1) {
-		VERB("Waiting %dms for incoming call home connections...", *timeout);
+		DBG("Waiting %dms for incoming call home connections...", *timeout);
 		status = poll(reverse_listen_socket, 2, *timeout);
 
 		if (status == 0) {
