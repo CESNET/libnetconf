@@ -2,7 +2,7 @@ var searchData=
 [
   ['nc_5fcallback_5ferror_5freply',['nc_callback_error_reply',['../d0/de2/group__reply.html#ga771a110143440bcd3b7d4c0e98388e80',1,'callbacks.h']]],
   ['nc_5fcallback_5fprint',['nc_callback_print',['../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7',1,'callbacks.h']]],
-  ['nc_5fcallback_5fssh_5fhost_5fauthenticity_5fcheck',['nc_callback_ssh_host_authenticity_check',['../db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a',1,'callbacks_ssh.h']]],
+  ['nc_5fcallback_5fssh_5fhost_5fauthenticity_5fcheck',['nc_callback_ssh_host_authenticity_check',['../db/d52/group__session.html#gaacafd4dbd19385fc395f965deaff0c86',1,'callbacks_ssh.h']]],
   ['nc_5fcallback_5fsshauth_5finteractive',['nc_callback_sshauth_interactive',['../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb',1,'callbacks_ssh.h']]],
   ['nc_5fcallback_5fsshauth_5fpassphrase',['nc_callback_sshauth_passphrase',['../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726',1,'callbacks_ssh.h']]],
   ['nc_5fcallback_5fsshauth_5fpassword',['nc_callback_sshauth_password',['../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb',1,'callbacks_ssh.h']]],

@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Fri May 30 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Wed Jun 4 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -38,7 +38,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 
 .in +1c
 .ti -1c
-.RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, int keytype, const char *fingerprint))"
+.RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, LIBSSH2_SESSION *session))"
 .br
 .RI "\fISet a callback function to authorize authenticity of an unknown host\&. \fP"
 .ti -1c
@@ -278,14 +278,19 @@ NETCONF over SSH, this value is used by default
 NETCONF over TLS 
 .SH "Function Documentation"
 .PP 
-.SS "void nc_callback_ssh_host_authenticity_check (int(*)(const char *hostname, int keytype, const char *fingerprint)func)"
+.SS "void nc_callback_ssh_host_authenticity_check (int(*)(const char *hostname, LIBSSH2_SESSION *session)func)"
 
 .PP
 Set a callback function to authorize authenticity of an unknown host\&. 
 .PP
 \fBParameters:\fP
 .RS 4
-\fIfunc\fP Callback function to use\&. 
+\fIfunc\fP Callback function to use\&. Expected callback return values are:
+.IP "\(bu" 2
+EXIT_SUCCESS - hosts and keys match, the SSH session establishment will continue\&.
+.IP "\(bu" 2
+EXIT_FAILURE - keys do not match or an error occurred\&. 
+.PP
 .RE
 .PP
 

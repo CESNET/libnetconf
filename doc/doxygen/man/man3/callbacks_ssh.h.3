@@ -1,4 +1,4 @@
-.TH "src/callbacks_ssh.h" 3 "Fri May 30 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "src/callbacks_ssh.h" 3 "Wed Jun 4 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,7 +18,7 @@ Functions to set libssh2's callbacks\&.
 
 .in +1c
 .ti -1c
-.RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, int keytype, const char *fingerprint))"
+.RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, LIBSSH2_SESSION *session))"
 .br
 .RI "\fISet a callback function to authorize authenticity of an unknown host\&. \fP"
 .ti -1c

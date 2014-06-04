@@ -158,9 +158,9 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga9810aff5060e374925933d41913fbe5a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga9810aff5060e374925933d41913fbe5a">nc_callback_ssh_host_authenticity_check</a> (int(*func)(const char *hostname, int keytype, const char *fingerprint))</td></tr>
-<tr class="memdesc:ga9810aff5060e374925933d41913fbe5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function to authorize authenticity of an unknown host.  <a href="#ga9810aff5060e374925933d41913fbe5a">More...</a><br/></td></tr>
-<tr class="separator:ga9810aff5060e374925933d41913fbe5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaacafd4dbd19385fc395f965deaff0c86"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaacafd4dbd19385fc395f965deaff0c86">nc_callback_ssh_host_authenticity_check</a> (int(*func)(const char *hostname, LIBSSH2_SESSION *session))</td></tr>
+<tr class="memdesc:gaacafd4dbd19385fc395f965deaff0c86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function to authorize authenticity of an unknown host.  <a href="#gaacafd4dbd19385fc395f965deaff0c86">More...</a><br/></td></tr>
+<tr class="separator:gaacafd4dbd19385fc395f965deaff0c86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb">nc_callback_sshauth_interactive</a> (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))</td></tr>
 <tr class="memdesc:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method.  <a href="#gacb6042fe2f3cfe5d79e01de599c546eb">More...</a><br/></td></tr>
 <tr class="separator:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -404,14 +404,14 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ga9810aff5060e374925933d41913fbe5a"></a>
+<a class="anchor" id="gaacafd4dbd19385fc395f965deaff0c86"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void nc_callback_ssh_host_authenticity_check </td>
           <td>(</td>
-          <td class="paramtype">int(*)(const char *hostname, int keytype, const char *fingerprint)&#160;</td>
+          <td class="paramtype">int(*)(const char *hostname, LIBSSH2_SESSION *session)&#160;</td>
           <td class="paramname"><em>func</em></td><td>)</td>
           <td></td>
         </tr>
@@ -421,7 +421,11 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <p>Set a callback function to authorize authenticity of an unknown host. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. Expected callback return values are:<ul>
+<li>EXIT_SUCCESS - hosts and keys match, the SSH session establishment will continue.</li>
+<li>EXIT_FAILURE - keys do not match or an error occurred. </li>
+</ul>
+</td></tr>
   </table>
   </dd>
 </dl>
@@ -1404,7 +1408,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri May 30 2014 15:56:28 for libnetconf by
+    <li class="footer">Generated on Wed Jun 4 2014 14:09:35 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>
