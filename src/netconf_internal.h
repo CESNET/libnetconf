@@ -256,7 +256,7 @@ struct callbacks {
 	/**< @brief Callback for passing the passphrase for libssh2's 'publickey' authentication method */
 	char* (*sshauth_passphrase)(const char* username, const char* hostname, const char* privatekey_filepath);
 	/**< @brief Callback to check the host authenticity: 0 ok, 1 failed */
-	int (*hostkey_check)(const char* hostname, int keytype, const char* fingerprint);
+	int (*hostkey_check)(const char* hostname, LIBSSH2_SESSION *session);
 	/**< @brief */
 	char *publickey_filename[SSH2_KEYS];
 	/**< @brief */

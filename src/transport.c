@@ -132,7 +132,7 @@ int nc_session_transport(NC_TRANSPORT proto)
 	return (EXIT_SUCCESS);
 }
 
-int transport_connect_socket(const char* username, const char* host, const char* port)
+int transport_connect_socket(const char* host, const char* port)
 {
 	int sock = -1;
 	int i;

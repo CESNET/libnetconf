@@ -43,7 +43,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <termios.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <pwd.h>
 #include <unistd.h>
 
 #include "netconf_internal.h"
@@ -65,7 +69,7 @@ char* callback_sshauth_publickey_default (const char* username,
 		const char* privatekey_filepath);
 
 char* callback_sshauth_password_default (const char* username, const char* hostname);
-int callback_ssh_hostkey_check_default (const char* hostname, int keytype, const char* fingerprint);
+int callback_ssh_hostkey_check_default (const char* hostname, LIBSSH2_SESSION *session);
 #endif
 
 struct callbacks callbacks = {
@@ -133,7 +137,7 @@ void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
 }
 
 void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
-		int keytype, const char* fingerprint))
+		LIBSSH2_SESSION *session))
 {
 	if (func != NULL) {
 		callbacks.hostkey_check = func;
@@ -370,31 +374,196 @@ char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 	return (buf);
 }
 
-int callback_ssh_hostkey_check_default (const char* hostname, int keytype, const char* fingerprint)
+int callback_ssh_hostkey_check_default (const char* hostname, LIBSSH2_SESSION *session)
 {
-	int c;
+	struct passwd *pw;
+	char *knownhosts_dir = NULL;
+	char *knownhosts_file = NULL;
+	LIBSSH2_KNOWNHOSTS *knownhosts;
+	int c, i;
+	int ret, knownhost_check = -1;
+	int fd;
+	int hostkey_type, hostkey_typebit;
+	size_t len;
+	struct libssh2_knownhost *ssh_host = NULL;
 	char answer[5];
+	const char *remotekey, *fingerprint_raw;
+	/*
+	 * to print MD5 raw hash, we need 3*16 + 1 bytes (4 characters are printed
+	 * all the time, but except the last one, NULL terminating bytes are
+	 * rewritten by the following value). In the end, the last ':' is removed
+	 * for nicer output, so there are two terminating NULL bytes in the end.
+	 */
+	char fingerprint_md5[49];
 
-	fprintf(stdout, "The authenticity of the host \'%s\' cannot be established.\n", hostname);
-	fprintf(stdout, "%s key fingerprint is %s.\n", (keytype == 2) ? "DSS" : "RSA", fingerprint);
-	fprintf(stdout, "Are you sure you want to continue connecting (yes/no)? ");
-
-again:
-	if (fscanf(stdin, "%4s", answer) == EOF) {
-		ERROR("fscanf() failed (%s).", strerror(errno));
+	/* get current user to locate SSH known_hosts file */
+	pw = getpwuid(getuid());
+	if (pw == NULL) {
+		/* unable to get correct username (errno from getpwuid) */
+		ERROR("Unable to set a username for the SSH connection (%s).", strerror(errno));
+		return (EXIT_FAILURE);
+	} else if (asprintf(&knownhosts_dir, "%s/.ssh", pw->pw_dir) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		return (EXIT_FAILURE);
 	}
-	while ((c = getchar ()) != EOF && c != '\n');
 
-	fflush(stdin);
-	if (strcmp("yes", answer) == 0) {
-		return (EXIT_SUCCESS);
-	} else if (strcmp("no", answer) == 0) {
+	knownhosts = libssh2_knownhost_init(session);
+	if (knownhosts == NULL) {
+		ERROR("Unable to create knownhosts structure (%s:%d).", __FILE__, __LINE__);
+		free(knownhosts_dir);
 		return (EXIT_FAILURE);
+	}
+
+	/* set general knownhosts file used also by OpenSSH's applications */
+	if (asprintf(&knownhosts_file, "%s/known_hosts", knownhosts_dir) == -1) {
+		ERROR("%s: asprintf() failed.", __func__);
+		free(knownhosts_dir);
+		libssh2_knownhost_free(knownhosts);
+		return(EXIT_FAILURE);
+	}
+
+	/* get all the hosts */
+	ret = libssh2_knownhost_readfile(knownhosts, knownhosts_file, LIBSSH2_KNOWNHOST_FILE_OPENSSH);
+	if (ret < 0) {
+		/*
+		 * default known_hosts may contain keys that are not supported
+		 * by libssh2, so try to use libnetconf's specific known_hosts
+		 * file located in the same directory and named
+		 * 'netconf_known_hosts'
+		 */
+		free(knownhosts_file);
+		knownhosts_file = NULL;
+		libssh2_knownhost_free(knownhosts);
+		if (asprintf(&knownhosts_file, "%s/netconf_known_hosts", knownhosts_dir) == -1) {
+			ERROR("%s: asprintf() failed.", __func__);
+			return(EXIT_FAILURE);
+		}
+		/* create own knownhosts file if it does not exist */
+		if (eaccess(knownhosts_file, F_OK) != 0) {
+			if ((fd = creat(knownhosts_file, S_IWUSR | S_IRUSR |S_IRGRP | S_IROTH)) != -1) {
+				close(fd);
+			}
+		}
+		knownhosts = libssh2_knownhost_init(session);
+		if (knownhosts == NULL) {
+			ERROR("Unable to create knownhosts structure (%s:%d).", __FILE__, __LINE__);
+			return (EXIT_FAILURE);
+		}
+		ret = libssh2_knownhost_readfile(knownhosts, knownhosts_file, LIBSSH2_KNOWNHOST_FILE_OPENSSH);
+	}
+	free(knownhosts_dir);
+
+	/* get host's key */
+	remotekey = libssh2_session_hostkey(session, &len, &hostkey_type);
+	if (remotekey == NULL && hostkey_type == LIBSSH2_HOSTKEY_TYPE_UNKNOWN) {
+		ERROR("Unable to get host key.");
+		libssh2_knownhost_free(knownhosts);
+		return (EXIT_FAILURE);
+	}
+	hostkey_typebit = (hostkey_type == LIBSSH2_HOSTKEY_TYPE_RSA) ? LIBSSH2_KNOWNHOST_KEY_SSHRSA : LIBSSH2_KNOWNHOST_KEY_SSHDSS;
+
+	if (ret < 0) {
+		WARN("Unable to check against the knownhost file (%s).", knownhosts_file);
+		libssh2_knownhost_free(knownhosts);
+		knownhosts = libssh2_knownhost_init(session);
+keynotfound:
+
+		if (stdin >= 0 && stdout >= 0) {
+			/* MD5 hash size is 16B, SHA1 hash size is 20B */
+			fingerprint_raw = libssh2_hostkey_hash(session, LIBSSH2_HOSTKEY_HASH_MD5);
+			for (i = 0; i < 16; i++) {
+				sprintf(&fingerprint_md5[i * 3], "%02x:", (uint8_t) fingerprint_raw[i]);
+			}
+			fingerprint_md5[47] = 0;
+
+			/* try to get result from user */
+			fprintf(stdout, "The authenticity of the host \'%s\' cannot be established.\n", hostname);
+			fprintf(stdout, "%s key fingerprint is %s.\n", (hostkey_type == LIBSSH2_HOSTKEY_TYPE_RSA) ? "RSA" : "DSS", fingerprint_md5);
+			fprintf(stdout, "Are you sure you want to continue connecting (yes/no)? ");
+
+askuseragain:
+			if (fscanf(stdin, "%4s", answer) == EOF) {
+				ERROR("fscanf() failed (%s).", strerror(errno));
+				free(knownhosts_file);
+				return (EXIT_FAILURE);
+			}
+			while ((c = getchar()) != EOF && c != '\n');
+
+			fflush(stdin);
+			if (strcmp("yes", answer) == 0) {
+				/* store the key into the host file */
+				ret = libssh2_knownhost_add(knownhosts,
+						hostname,
+						NULL,
+						remotekey,
+						len,
+						LIBSSH2_KNOWNHOST_TYPE_PLAIN | LIBSSH2_KNOWNHOST_KEYENC_RAW | hostkey_typebit,
+						NULL);
+				if (ret != 0) {
+					WARN("Adding the known host %s failed!", hostname);
+				} else if (knownhosts_file != NULL) {
+					ret = libssh2_knownhost_writefile(knownhosts,
+							knownhosts_file,
+							LIBSSH2_KNOWNHOST_FILE_OPENSSH);
+					if (ret) {
+						WARN("Writing %s failed!", knownhosts_file);
+					}
+				} else {
+					WARN("Unknown known_hosts file location, skipping the writing of your decision.");
+				}
+				libssh2_knownhost_free(knownhosts);
+				free(knownhosts_file);
+				return (EXIT_SUCCESS);
+			} else if (strcmp("no", answer) == 0) {
+				libssh2_knownhost_free(knownhosts);
+				free(knownhosts_file);
+				return (EXIT_FAILURE);
+			} else {
+				fprintf(stdout, "Please type 'yes' or 'no': ");
+				goto askuseragain;
+			}
+		} else {
+			ERROR("Unable to check host interactively.");
+			libssh2_knownhost_free(knownhosts);
+			free(knownhosts_file);
+			return (EXIT_FAILURE);
+		}
 	} else {
-		fprintf(stdout, "Please type 'yes' or 'no': ");
-		goto again;
+		knownhost_check = libssh2_knownhost_check(knownhosts,
+				hostname,
+				remotekey,
+				len,
+				LIBSSH2_KNOWNHOST_TYPE_PLAIN | LIBSSH2_KNOWNHOST_KEYENC_RAW | hostkey_typebit,
+				&ssh_host);
+
+		DBG("Host check result: %d, \nmatching key: %s\n", knownhost_check, (ssh_host && ssh_host->key) ? ssh_host->key : "<none>");
+
+		switch (knownhost_check) {
+		case LIBSSH2_KNOWNHOST_CHECK_MISMATCH:
+			ERROR("Remote host %s identification changed!", hostname);
+			ret = EXIT_FAILURE;
+			break;
+		case LIBSSH2_KNOWNHOST_CHECK_FAILURE:
+			ERROR("Knownhost checking failed.");
+			ret = EXIT_FAILURE;
+			break;
+		case LIBSSH2_KNOWNHOST_CHECK_MATCH:
+			ret = EXIT_SUCCESS;
+			break;
+		case LIBSSH2_KNOWNHOST_CHECK_NOTFOUND:
+			goto keynotfound;
+		default:
+			ERROR("Unknown result (%d) of the libssh2_knownhost_check().", knownhost_check);
+			ret = EXIT_FAILURE;
+		}
+
+		libssh2_knownhost_free(knownhosts);
+		free(knownhosts_file);
+		return (ret);
 	}
+
+	/* it never should be here */
+	return (EXIT_FAILURE);
 }
 
 void nc_set_publickey_path (const char* path)

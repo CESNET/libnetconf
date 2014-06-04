@@ -86,10 +86,12 @@ void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
 /**
  * @ingroup session
  * @brief Set a callback function to authorize authenticity of an unknown host.
- * @param[in] func Callback function to use.
+ * @param[in] func Callback function to use. Expected callback return values are:
+ * - EXIT_SUCCESS - hosts and keys match, the SSH session establishment will continue.
+ * - EXIT_FAILURE - keys do not match or an error occurred.
  */
 void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
-		int keytype, const char* fingerprint));
+		LIBSSH2_SESSION *session));
 
 /**
  * @brief Set path to a private and a public key file used in case of SSH authentication via

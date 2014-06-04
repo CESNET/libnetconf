@@ -251,7 +251,7 @@ struct nc_session *nc_session_connect_tls_socket(const char* username, const cha
 }
 
 /* definition in transport.c */
-int transport_connect_socket(const char* username, const char* host, const char* port);
+int transport_connect_socket(const char* host, const char* port);
 
 /*
  * libssh2 variant - use internal SSH client implementation using libssh2
@@ -261,7 +261,7 @@ struct nc_session *nc_session_connect_tls(const char* username, const char* host
 	struct nc_session *retval = NULL;
 	int sock = -1;
 
-	sock = transport_connect_socket(username, host, port);
+	sock = transport_connect_socket(host, port);
 	if (sock == -1) {
 		return (NULL);
 	}
