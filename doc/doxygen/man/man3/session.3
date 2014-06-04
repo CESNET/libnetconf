@@ -40,7 +40,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .ti -1c
 .RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, LIBSSH2_SESSION *session))"
 .br
-.RI "\fISet a callback function to authorize authenticity of an unknown host\&. \fP"
+.RI "\fISet a callback function to authorize authenticity of the remote host\&. \fP"
 .ti -1c
 .RI "void \fBnc_callback_sshauth_interactive\fP (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))"
 .br
@@ -281,7 +281,7 @@ NETCONF over TLS
 .SS "void nc_callback_ssh_host_authenticity_check (int(*)(const char *hostname, LIBSSH2_SESSION *session)func)"
 
 .PP
-Set a callback function to authorize authenticity of an unknown host\&. 
+Set a callback function to authorize authenticity of the remote host\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
 .PP
 \fBParameters:\fP
 .RS 4
@@ -297,18 +297,18 @@ EXIT_FAILURE - keys do not match or an error occurred\&.
 .SS "void nc_callback_sshauth_interactive (void(*)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract)func)"
 
 .PP
-Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method\&. 
+Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIfunc\fP Callback function to use\&. 
+\fIfunc\fP Callback function to use\&. For more information about the callback parameters, see libssh2_userauth_keyboard_interactive() description in libssh2 documentation\&. 
 .RE
 .PP
 
 .SS "void nc_callback_sshauth_passphrase (char *(*)(const char *username, const char *hostname, const char *priv_key_file)func)"
 
 .PP
-Set a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'\&. 
+Set a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
 .PP
 \fBParameters:\fP
 .RS 4
@@ -319,11 +319,11 @@ Set a callback function for passing the user password into the libssh2's publick
 .SS "void nc_callback_sshauth_password (char *(*)(const char *username, const char *hostname)func)"
 
 .PP
-Set a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'\&. 
+Set a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIfunc\fP Callback function to use\&. 
+\fIfunc\fP Callback function to use\&. The callback function should return a password string for the given username and name of the remote host\&. 
 .RE
 .PP
 
@@ -780,7 +780,7 @@ Set transport protocol for the sessions created by subsequent \fBnc_session_conn
 .SS "void nc_set_keypair_path (const char *private, const char *public)"
 
 .PP
-Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism\&. 
+Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
 .PP
 \fBParameters:\fP
 .RS 4

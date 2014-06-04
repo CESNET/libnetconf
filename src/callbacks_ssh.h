@@ -53,8 +53,13 @@ extern "C" {
 /**
  * @brief Set a callback function for passing user credentials into the libssh2's
  * keyboard-interactive authentication method
+ *
+ * To make this function available, you have to include libnetconf_ssh.h.
+ *
  * @ingroup session
- * @param[in] func Callback function to use.
+ * @param[in] func Callback function to use. For more information about the
+ * callback parameters, see libssh2_userauth_keyboard_interactive() description
+ * in libssh2 documentation.
  */
 void nc_callback_sshauth_interactive(void (*func)(const char* name,
 		int name_len,
@@ -68,8 +73,12 @@ void nc_callback_sshauth_interactive(void (*func)(const char* name,
 /**
  * @brief Set a callback function for passing the user password into the libssh2's
  * password authentication method when connecting to 'hostname' as 'username'.
+ *
+ * To make this function available, you have to include libnetconf_ssh.h.
+ *
  * @ingroup session
- * @param[in] func Callback function to use.
+ * @param[in] func Callback function to use. The callback function should return
+ * a password string for the given username and name of the remote host.
  */
 void nc_callback_sshauth_password(char* (*func)(const char* username,
 		const char* hostname));
@@ -77,6 +86,9 @@ void nc_callback_sshauth_password(char* (*func)(const char* username,
 /**
  * @brief Set a callback function for passing the user password into the libssh2's
  * publickey authentication method when connecting to 'hostname' as 'username'.
+ *
+ * To make this function available, you have to include libnetconf_ssh.h.
+ *
  * @ingroup session
  * @param[in] func Callback function to use.
  */
@@ -85,7 +97,10 @@ void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
 
 /**
  * @ingroup session
- * @brief Set a callback function to authorize authenticity of an unknown host.
+ * @brief Set a callback function to authorize authenticity of the remote host.
+ *
+ * To make this function available, you have to include libnetconf_ssh.h.
+ *
  * @param[in] func Callback function to use. Expected callback return values are:
  * - EXIT_SUCCESS - hosts and keys match, the SSH session establishment will continue.
  * - EXIT_FAILURE - keys do not match or an error occurred.
@@ -96,6 +111,9 @@ void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
 /**
  * @brief Set path to a private and a public key file used in case of SSH authentication via
  * a publickey mechanism.
+ *
+ * To make this function available, you have to include libnetconf_ssh.h.
+ *
  * @ingroup session
  * @param[in] private
  * @param[in] public

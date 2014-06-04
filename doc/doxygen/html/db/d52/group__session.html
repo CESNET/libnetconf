@@ -159,7 +159,7 @@ Enumerations</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:gaacafd4dbd19385fc395f965deaff0c86"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaacafd4dbd19385fc395f965deaff0c86">nc_callback_ssh_host_authenticity_check</a> (int(*func)(const char *hostname, LIBSSH2_SESSION *session))</td></tr>
-<tr class="memdesc:gaacafd4dbd19385fc395f965deaff0c86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function to authorize authenticity of an unknown host.  <a href="#gaacafd4dbd19385fc395f965deaff0c86">More...</a><br/></td></tr>
+<tr class="memdesc:gaacafd4dbd19385fc395f965deaff0c86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function to authorize authenticity of the remote host.  <a href="#gaacafd4dbd19385fc395f965deaff0c86">More...</a><br/></td></tr>
 <tr class="separator:gaacafd4dbd19385fc395f965deaff0c86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb">nc_callback_sshauth_interactive</a> (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))</td></tr>
 <tr class="memdesc:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method.  <a href="#gacb6042fe2f3cfe5d79e01de599c546eb">More...</a><br/></td></tr>
@@ -418,7 +418,8 @@ string)", but I want to be clear from the API, that function returns pointer to 
       </table>
 </div><div class="memdoc">
 
-<p>Set a callback function to authorize authenticity of an unknown host. </p>
+<p>Set a callback function to authorize authenticity of the remote host. </p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. Expected callback return values are:<ul>
@@ -447,9 +448,10 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div><div class="memdoc">
 
 <p>Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method. </p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. For more information about the callback parameters, see libssh2_userauth_keyboard_interactive() description in libssh2 documentation. </td></tr>
   </table>
   </dd>
 </dl>
@@ -471,6 +473,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div><div class="memdoc">
 
 <p>Set a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'. </p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. </td></tr>
@@ -495,9 +498,10 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div><div class="memdoc">
 
 <p>Set a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'. </p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. The callback function should return a password string for the given username and name of the remote host. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1350,6 +1354,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div><div class="memdoc">
 
 <p>Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism. </p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">private</td><td></td></tr>
@@ -1408,7 +1413,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Jun 4 2014 14:09:35 for libnetconf by
+    <li class="footer">Generated on Wed Jun 4 2014 14:23:10 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

@@ -20,7 +20,7 @@ Functions to set libssh2's callbacks\&.
 .ti -1c
 .RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, LIBSSH2_SESSION *session))"
 .br
-.RI "\fISet a callback function to authorize authenticity of an unknown host\&. \fP"
+.RI "\fISet a callback function to authorize authenticity of the remote host\&. \fP"
 .ti -1c
 .RI "void \fBnc_callback_sshauth_interactive\fP (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))"
 .br
