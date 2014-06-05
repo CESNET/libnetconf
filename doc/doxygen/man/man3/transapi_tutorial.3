@@ -1,4 +1,4 @@
-.TH "transapi_tutorial" 3 "Wed Jun 4 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "transapi_tutorial" 3 "Thu Jun 5 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -10,7 +10,7 @@ On this page we will show how to write a simple module for controlling \fCexampl
 To install libnetconf follow the instructions on the \fBCompilation and Installation\fP page\&.
 .RE
 .PP
-.SS "Preparations"
+.SH "Preparations"
 .PP
 In this example we will work with the data model of the toaster provided by Andy Bierman at NETCONF CENTRAL (http://dld.netconfcentral.org/src/toaster@2009-11-20.yang)\&.
 .PP
@@ -24,8 +24,7 @@ toaster=http://netconfcentral\&.org/ns/toaster
 
 .fi
 .PP
-.PP
-.SS "Generating code"
+.SH "Generating code"
 .PP
 .IP "1." 4
 Create a new directory for the toaster module and move the data model and the path file into it: 
@@ -56,8 +55,7 @@ Besides the generated source code of our transAPI module and GNU Build System fi
 .IP "\(bu" 2
 *-schematron\&.xsl - Schematron XSL stylesheet for semantics validation
 .PP
-.PP
-.SS "Filling up functionality"
+.SH "Filling up functionality"
 .PP
 Here we show the simplest example of a toaster simulating module\&. It is working but does not deal with multiple access and threads correctly\&. Better example may can be found in the netopeer-server-sl source codes located in the \fCNetopeer project\fP repository (server-sl/toaster/toaster\&.c)\&.
 .PP
@@ -199,8 +197,7 @@ nc_reply * rpc_cancel_toast (xmlNodePtr input[])
 .PP
 
 .PP
-.PP
-.SS "Compiling module"
+.SH "Compiling module"
 .PP
 Following sequence of commands will produce the shared library 'toaster\&.so' which may be loaded into libnetconf: 
 .PP
@@ -211,7 +208,6 @@ $ make
 
 .fi
 .PP
-.PP
-.SS "Integrating to a server"
+.SH "Integrating to a server"
 .PP
 In a server we use libnetconf's function \fBncds_new_transapi()\fP instead of \fBncds_new()\fP to create a transAPI-capable data store\&. Then, you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock), data-reading (get, get-config) or module data-model-defined RPC operations\&. All these operations are processed inside the \fBncds_apply_rpc2all()\fP function\&. 

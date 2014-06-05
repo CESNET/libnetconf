@@ -84,7 +84,7 @@
  * with other implementations. The notes from the event can be found
  * [here][interopevent].
  *
- * ### Features ###
+ * \section about-features Features
  *
  * - NETCONF v1.0 and v1.1 compliant ([RFC 6241][RFC6241])
  * - NETCONF over SSH ([RFC 6242][RFC6242]) including Chunked Framing Mechanism
@@ -99,12 +99,12 @@
  * - NETCONF Access Control ([RFC 6536][RFC6536])
  * - NETCONF Call Home ([Reverse SSH draft][reversessh], [RFC 5539bis][RFC5539bis])
  *
- * ### Example Applications ###
+ * \section about-apps Example Applications
  *
  * Examples of applications built on top of the libnetconf library can be
  * found in the [Netopeer project][netopeer].
  *
- * ### BSD License ###
+ * \section about-license BSD License
  *
  * Copyright (c) 2012-2014 CESNET, z.s.p.o.
  *
@@ -146,7 +146,7 @@
 /**
  * \page install Compilation and Installation
  *
- * ## Cloning git repository ##
+ * \section install-getting Cloning git repository
  *
  * As written on libnetconf's [Google Code page](https://code.google.com/p/libnetconf/source/checkout),
  * the repository can be cloned using the following command:
@@ -157,7 +157,7 @@
  *
  * \note In case that git fails to clone the repository make sure your git is at least version 1.6.6.
  *
- * ## Compilation ##
+ * \section install-compilation Compilation
  *
  * libnetconf uses standard GNU Autotools toolchain. To compile and install
  * libnetconf you have to go through the following three steps:
@@ -171,7 +171,7 @@
  * This way the library will be installed in `/usr/local/lib/` (or lib64) and
  * `/usr/local/include/` respectively.
  *
- * ### Configure Options ###
+ * \subsection install-compilation-options Configure Options
  *
  * `configure` script supports the following options. The full list of the
  * accepted options can be shown by `--help` option.
@@ -261,8 +261,7 @@
  * ~~~~~~~
  *
  *
- * ### Recovery Session ###
- * \anchor nacm-recovery
+ * \section nacm-recovery Recovery Session
  *
  * Recovery session serves for setting up initial access rules or to repair a broken
  * access control configuration. If a session is recognized as recovery, NACM
@@ -274,7 +273,7 @@
  * option.
  *
  *
- * ### Initial operation ###
+ * \subsection nacm-recovery-init Initial operation
  *
  * According to [RFC 6536][RFC6536], libnetconf's NACM subsystem is initially
  * set to allow reading (permitted read-default), refuse writing (denied
@@ -334,9 +333,12 @@
  * - \subpage callhome
  * - \subpage datastores
  * - \subpage validation
+ * - \subpage misc
+ *   - \ref misc-datetime
+ *   - \ref misc-errors
+ *   - \ref misc-logging
  *
- * GLOSSARY
- * --------
+ * \section usage-glossary GLOSSARY
  *
  * - **message** - all the types of messages passing through NETCONF. It
  * includes rpc, rpc-reply and notification.
@@ -346,8 +348,7 @@
 /**
  * \page client Client
  *
- * Client Workflow
- * ---------------
+ * \section client-workflow Client Workflow
  *
  * Here is a description of using libnetconf functions in a NETCONF client:
  * -# **Set verbosity (optional)**.\n
@@ -408,8 +409,7 @@
 /**
  * \page server Server
  *
- * Server Architecture
- * -------------------
+ * \section server-arch Server Architecture
  *
  * It is __strongly__ advised to set SUID (or SGID) bit on every application that is
  * built on libnetconf for a user (or group) created for this purpose, as several
@@ -422,7 +422,7 @@
  * Generally, there are two basic approaches of how to implement
  * a NETCONF server using libnetconf.
  *
- * ###Single-level Architecture###
+ * \subsection server-arch-singlelevel Single-level Architecture
  *
  * ![Single-level architecture](../../img/sl_arch.png "Single-level architecture")
  *
@@ -433,7 +433,7 @@
  * controlled device from its multiple instances. libnetconf itself has to deal
  * with simultaneous access to a shared configuration datastore.
  *
- * ###Multi-level Architecture###
+ * \subsection server-arch-multilevel Multi-level Architecture
  *
  * ![Multi-level architecture](../../img/ml_arch.png "Multi-level architecture")
  *
@@ -447,8 +447,7 @@
  * to be passed between an agent and a device manager that applies requests to
  * the operated device and a configuration datastore.
  *
- * Server Workflow
- * ---------------
+ * \section server-workflow Server Workflow
  *
  * Here is a description of using libnetconf functions in a NETCONF server.
  * According to the used architecture, the workflow can be split between an agent
@@ -569,8 +568,7 @@
  *
  * See the [Netopeer project][netopeer] as a reference implementation.
  *
- * Transport Support on the Client Side
- * ------------------------------------
+ * \section transport-client Transport Support on the Client Side
  *
  * To switch from the default SSH transport to the TLS transport, application
  * must call nc_session_transport() with #NC_TRANSPORT_TLS parameter. Remember,
@@ -594,8 +592,7 @@
  * thread. SSH transport works out of the box, so no specific step, as mentioned
  * for TLS in this section, is required.
  *
- * Transport Support on the Server Side
- * ------------------------------------
+ * \section transport-server Transport Support on the Server Side
  *
  * There is no specific support for neither SSH or TLS on the server side.
  * libnetconf doesn't implement SSH nor TLS server - it is expected, that
@@ -639,8 +636,7 @@
  *
  * See the [Netopeer project][netopeer] as a reference implementation.
  *
- * Call Home on the Client Side
- * ----------------------------
+ * \section callhome-client Call Home on the Client Side
  *
  * This section describes how to receive Call Home connection.
  *
@@ -659,8 +655,7 @@
  * From this point, client can work with returned NETCONF session as usual.
  * There is no special termination function for NETCONF session from Call Home.
  *
- * Call Home on the Server Side
- * ----------------------------
+ * \section callhome-server Call Home on the Server Side
  *
  * For Call Home, the server initiate connection. Therefore, transport protocol
  * must be set before starting Call Home. It is done by nc_session_transport()
@@ -678,8 +673,8 @@
  * can be used for monitoring state of the connection. Do not read any data from
  * this socket.
  *
- * Call Home workflow in libnetconf
- * --------------------------------
+ * \section callhome-workflow Call Home workflow in libnetconf
+ *
  * ![callhome workflow](../../img/callhome.png "Call Home workflow in libnetconf")
  *
  */
@@ -704,7 +699,7 @@
  * message containing such defined RPC operation, libnetconf uses callback
  * function implemented in the module.
  *
- * ### Getting started ###
+ * \section transapi-intro Getting started
  *
  * See \subpage transapiTutorial.
  */
@@ -717,7 +712,7 @@
  * for controlling [example toaster](http://netconfcentral.org/modulereport/toaster).
  * \note To install libnetconf follow the instructions on the \ref install page.
  *
- * ## Preparations ##
+ * \section transapiTutorial-prepare Preparations
  *
  * In this example we will work with the data model of the toaster provided
  * by Andy Bierman at NETCONF CENTRAL (<http://dld.netconfcentral.org/src/toaster@2009-11-20.yang>).
@@ -734,7 +729,7 @@
  * /toaster:toaster
  * ~~~~~~~
  *
- * ## Generating code ##
+ * \section transapiTutorial-generating Generating code
  *
  * -# Create a new directory for the toaster module and move the data model and the path file into it:
  * ~~~~~~~{.sh}
@@ -754,7 +749,7 @@
  * - *.rng - RelagNG schema for syntax validation
  * - *-schematron.xsl - Schematron XSL stylesheet for semantics validation
  *
- * ## Filling up functionality ##
+ * \section transapiTutorial-coding Filling up functionality
  *
  * Here we show the simplest example of a toaster simulating module.
  * It is working but does not deal with multiple access and threads correctly.
@@ -863,7 +858,7 @@
  * }
  * ~~~~~~~
  *
- * ## Compiling module ##
+ * \section transapiTutorial-compiling Compiling module
  *
  * Following sequence of commands will produce the shared library 'toaster.so' which may be loaded into libnetconf:
  * ~~~~~~~{.sh}
@@ -872,11 +867,84 @@
  * $ make
  * ~~~~~~~
  *
- * ## Integrating to a server ##
+ * \section transapiTutorial-using Integrating to a server
  *
  * In a server we use libnetconf's function ncds_new_transapi() instead of ncds_new() to create a transAPI-capable data store.
  * Then, you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock), data-reading (get, get-config)
  * or module data-model-defined RPC operations. All these operations are processed inside the ncds_apply_rpc2all() function.
+ */
+
+/**
+ * \page misc Miscelaneous
+ *
+ * [RFC6021]: http://tools.ietf.org/html/rfc6021 "RFC 6021"
+ * [RFC6241]: http://tools.ietf.org/html/rfc6241 "RFC 6241"
+ *
+ * \section misc-datetime Date and Time
+ *
+ * Various YANG data models uses YANG date-and-time type for representation of
+ * dates and times. The type is defined in ietf-yang-types module that comes from
+ * [RFC 6021][RFC6021]. The date-and-time type is, for example, used in all
+ * NETCONF event notifications.
+ *
+ * The date-and-time format examples:
+ * ~~~~~~~
+ *  2014-06-05T12:19:58Z
+ *  2014-06-05T14:19:58+02:00
+ * ~~~~~~~
+ *
+ * libnetconf provides two functions to handle timestamps:
+ * - nc_datetime2time() to convert YANG date-and-time value to ISO C time_t data
+ *   type representing the time as the number of seconds since Epoch
+ *   (1970-01-01 00:00:00 +0000 UTC). This data type is used by various standard
+ *   functions such as localtime() or ctime().
+ * - nc_time2datetime() is a reverse function to the previous one. Optionally,
+ *   it accepts specification of the timezone in which the resulting
+ *   date-and-time value will be returned.
+ *
+ * \section misc-errors NETCONF Errors Handling
+ *
+ * NETCONF protocol specifications ([RFC 6241][RFC6241]) defines list of errors
+ * that can be returned by the server. libnetconf provides a set of functions
+ * that server to create, manipulate and process NETCONF errors.
+ *
+ * NETCONF error is represented by `struct nc_err`. Specifying one of the \link
+ * #NC_ERR basic errors\endlink, a new error structure can be created by calling
+ * the nc_err_new() function. If the caller want to change a \link #NC_ERR_PARAM
+ * specific attribute\endlink, the nc_err_set() function can be used. To get
+ * the value of the \link #NC_ERR_PARAM specific error attribute\endlink, there
+ * is nc_err_get() function. If the caller want to create a copy of some existing
+ * error structure, nc_err_dup() can be used. And finally to free all allocated
+ * resources, the nc_err_free() is available.
+ *
+ * To create \<rpc-error\> reply, the application is supposed to use
+ * nc_reply_error() and nc_reply_error_add() to add another error structure to
+ * the reply.
+ *
+ * On the client side, \<rpc-error\> replies can be handled manually as any
+ * other \<rpc-reply\> recognizing its type using nc_reply_get_type() and then
+ * by getting the error message via nc_reply_get_errormsg() and parsing its
+ * content manually. The other, recomended, way how to handle incoming \<rpc-error\>
+ * replies is to specify the callback function via nc_callback_error_reply().
+ * The callback is automatically invoked to process (e.g. print) \<rpc-error\>
+ * message. In this case, all NETCONF error attributes are parsed and passed to
+ * the callback function.
+ *
+ * \section misc-logging Logging Messages
+ *
+ * libnetconf provides information about the data processing on several \link
+ * #NC_VERB_LEVEL verbose levels\endlink. However, by default there is no
+ * printing routine, so no message from libnetconf appears until the printing
+ * callback is specified using nc_callback_print() function. Application is able
+ * to set (and change) the current \link #NC_VERB_LEVEL verbose levels\endlink
+ * via the nc_verbosity() function.
+ *
+ * Mainly for \ref transapi "transAPI" modules, there is a set of functions
+ * to access message printing callback outside the library:
+ * - nc_verb_error()
+ * - nc_verb_warning()
+ * - nc_verb_verbose()
+ *
  */
 
 /**

@@ -84,7 +84,8 @@ var NAVTREEINDEX0 =
 "d0/df8/structtransapi__rpc__callbacks.html#a853d73f0f495147dba4842e9f860d1f0":[6,9,3,3],
 "d0/df8/structtransapi__rpc__callbacks.html#ad4e017d16d393756e4e27927d06084ec":[6,9,3,0],
 "d0/df8/structtransapi__rpc__callbacks.html#ae5d4a40ee77a8f12e0cb49f592719338":[6,9,3,1],
-"d1/d25/client.html":[3,0],
+"d1/d25/client.html":[3,1],
+"d1/d25/client.html#client-workflow":[3,1,0],
 "d1/d87/libnetconf_8h.html":[8,0,0,7],
 "d1/d87/libnetconf_8h_source.html":[8,0,0,7],
 "d1/da1/libnetconf__ssh_8h.html":[8,0,0,8],
@@ -94,7 +95,7 @@ var NAVTREEINDEX0 =
 "d1/da1/libnetconf__ssh_8h.html#ggad9081cbe1edde22e8612e07ba4c3be10a497854e455f81123847c1ba089c40158":[8,0,0,8,0,2],
 "d1/da1/libnetconf__ssh_8h.html#ggad9081cbe1edde22e8612e07ba4c3be10a57ebf13ab1802ab10650d4c4c77e7eef":[8,0,0,8,0,1],
 "d1/da1/libnetconf__ssh_8h_source.html":[8,0,0,8],
-"d1/deb/datastores.html":[3,4],
+"d1/deb/datastores.html":[3,5],
 "d1/df7/group__withdefaults.html":[6,6],
 "d1/df7/group__withdefaults.html#ga2f7ad46580c9d311a31ed090baa7e22e":[6,6,0],
 "d1/df7/group__withdefaults.html#ga3d13afb72bb0c0098f47e8b612cdeb81":[6,6,1],
@@ -248,6 +249,5 @@ var NAVTREEINDEX0 =
 "d3/d7a/netconf_8h.html#gga5852fd110198481afb37cc8dcf0bf454ae959e6f9ed31a8e4441ad84eae8b43d2":[8,0,0,13,14,1],
 "d3/d7a/netconf_8h.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830":[8,0,0,13,13,5],
 "d3/d7a/netconf_8h.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a431a59cb5a2f00f50ab887ee0931156a":[8,0,0,13,13,3],
-"d3/d7a/netconf_8h.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e":[8,0,0,13,13,1],
-"d3/d7a/netconf_8h.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b":[8,0,0,13,13,0]
+"d3/d7a/netconf_8h.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e":[8,0,0,13,13,1]
 };

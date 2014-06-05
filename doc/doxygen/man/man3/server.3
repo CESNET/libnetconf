@@ -1,26 +1,21 @@
-.TH "server" 3 "Wed Jun 4 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "server" 3 "Thu Jun 5 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 server \- Server 
 
-.SS "Server Architecture "
+.SH "Server Architecture"
 .PP
 It is \fBstrongly\fP advised to set SUID (or SGID) bit on every application that is built on libnetconf for a user (or group) created for this purpose, as several internal functions behaviour is based on this precondition\&. libnetconf uses a number of files which pose a security risk if they are accessible by untrustworthy users\&. This way it is possible not to restrict the use of an application but only the access to its files, so keep this in mind when creating any directories or files that are used\&.
 .PP
 Generally, there are two basic approaches of how to implement a NETCONF server using libnetconf\&.
-.PP
 .SS "Single-level Architecture"
 .PP
-.PP
 In this case, all the server functionality is implemented as a single process\&. It is started by SSH daemon as its Subsystem for each incoming NETCONF session connection\&. The main issue of this approach is a simultaneous access to shared resources\&. The device manager has to solve concurrent access to the controlled device from its multiple instances\&. libnetconf itself has to deal with simultaneous access to a shared configuration datastore\&.
-.PP
 .SS "Multi-level Architecture"
 .PP
-.PP
 In the second case, there is only one device manager (NETCONF server) running as a system daemon\&. This solves the problem of concurrent device access from multiple processes\&. On the other hand, there is a need for inter-process communication between the device manager and the agents launched as SSH Subsystems\&. These agents hold NETCONF sessions and receive requests from the clients\&. libnetconf provides functions (\fBnc_rpc_dump()\fP and \fBnc_rpc_build()\fP) to (de-)serialise content of the NETCONF messages\&. This allows the NETCONF messages to be passed between an agent and a device manager that applies requests to the operated device and a configuration datastore\&.
-.PP
-.SS "Server Workflow "
+.SH "Server Workflow"
 .PP
 Here is a description of using libnetconf functions in a NETCONF server\&. According to the used architecture, the workflow can be split between an agent and a server\&. For this purpose, functions \fBnc_rpc_dump()\fP, \fBnc_rpc_build()\fP and \fBnc_session_dummy()\fP can be very helpful\&.
 .PP

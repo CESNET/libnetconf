@@ -105,13 +105,15 @@ $(document).ready(function(){initNavTree('d3/df0/transapi_tutorial.html','../../
 <div class="contents">
 <div class="textblock"><p>On this page we will show how to write a simple module for controlling <a href="http://netconfcentral.org/modulereport/toaster">example toaster</a>. </p>
 <dl class="section note"><dt>Note</dt><dd>To install libnetconf follow the instructions on the <a class="el" href="../../d9/d87/install.html">Compilation and Installation</a> page.</dd></dl>
-<h2>Preparations</h2>
+<h1><a class="anchor" id="transapiTutorial-prepare"></a>
+Preparations</h1>
 <p>In this example we will work with the data model of the toaster provided by Andy Bierman at NETCONF CENTRAL (<a href="http://dld.netconfcentral.org/src/toaster@2009-11-20.yang">http://dld.netconfcentral.org/src/toaster@2009-11-20.yang</a>).</p>
 <p>First, we need to identify important parts of the configuration data. Since the toaster data model describes only one configurable element, we have an easy choice. So, we can create the 'paths_file' file containing the specification of our chosen element and mapping prefixes with URIs for any used namespace.</p>
 <p>Our file may look like this (irrespective of order): </p>
 <div class="fragment"><div class="line">toaster=http:<span class="comment">//netconfcentral.org/ns/toaster</span></div>
 <div class="line">/toaster:toaster</div>
-</div><!-- fragment --><h2>Generating code</h2>
+</div><!-- fragment --><h1><a class="anchor" id="transapiTutorial-generating"></a>
+Generating code</h1>
 <ol type="1">
 <li>Create a new directory for the toaster module and move the data model and the path file into it: <div class="fragment"><div class="line">$ mkdir toaster &amp;&amp; cd toaster/</div>
 <div class="line">$ mv ../toaster@2009-11-20.yang ../paths_file .</div>
@@ -125,7 +127,8 @@ $(document).ready(function(){initNavTree('d3/df0/transapi_tutorial.html','../../
 <li>*.rng - RelagNG schema for syntax validation</li>
 <li>*-schematron.xsl - Schematron XSL stylesheet for semantics validation</li>
 </ul>
-<h2>Filling up functionality</h2>
+<h1><a class="anchor" id="transapiTutorial-coding"></a>
+Filling up functionality</h1>
 <p>Here we show the simplest example of a toaster simulating module. It is working but does not deal with multiple access and threads correctly. Better example may can be found in the netopeer-server-sl source codes located in the <a href="https://code.google.com/p/netopeer">Netopeer project</a> repository (server-sl/toaster/toaster.c).</p>
 <ol type="1">
 <li>Open 'toaster.c' file with your favorite editor: <div class="fragment"><div class="line">$ vim toaster.c</div>
@@ -211,12 +214,14 @@ $(document).ready(function(){initNavTree('d3/df0/transapi_tutorial.html','../../
 <div class="line">}</div>
 </div><!-- fragment --></li>
 </ol>
-<h2>Compiling module</h2>
+<h1><a class="anchor" id="transapiTutorial-compiling"></a>
+Compiling module</h1>
 <p>Following sequence of commands will produce the shared library 'toaster.so' which may be loaded into libnetconf: </p>
 <div class="fragment"><div class="line">$ autoreconf</div>
 <div class="line">$ ./configure</div>
 <div class="line">$ make</div>
-</div><!-- fragment --><h2>Integrating to a server</h2>
+</div><!-- fragment --><h1><a class="anchor" id="transapiTutorial-using"></a>
+Integrating to a server</h1>
 <p>In a server we use libnetconf's function <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support. ">ncds_new_transapi()</a> instead of <a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6" title="Create a new datastore structure of the specified implementation type. ">ncds_new()</a> to create a transAPI-capable data store. Then, you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock), data-reading (get, get-config) or module data-model-defined RPC operations. All these operations are processed inside the <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a> function. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
@@ -224,7 +229,7 @@ $(document).ready(function(){initNavTree('d3/df0/transapi_tutorial.html','../../
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../d9/d25/transapi.html">Transaction API (transAPI)</a></li>
-    <li class="footer">Generated on Wed Jun 4 2014 14:23:10 for libnetconf by
+    <li class="footer">Generated on Thu Jun 5 2014 15:07:22 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

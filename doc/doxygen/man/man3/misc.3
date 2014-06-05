@@ -1,0 +1,47 @@
+.TH "misc" 3 "Thu Jun 5 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+misc \- Miscelaneous 
+
+.SH "Date and Time"
+.PP
+Various YANG data models uses YANG date-and-time type for representation of dates and times\&. The type is defined in ietf-yang-types module that comes from \fCRFC 6021\fP\&. The date-and-time type is, for example, used in all NETCONF event notifications\&.
+.PP
+The date-and-time format examples: 
+.PP
+.nf
+2014-06-05T12:19:58Z
+2014-06-05T14:19:58+02:00
+
+.fi
+.PP
+.PP
+libnetconf provides two functions to handle timestamps:
+.IP "\(bu" 2
+\fBnc_datetime2time()\fP to convert YANG date-and-time value to ISO C time_t data type representing the time as the number of seconds since Epoch (1970-01-01 00:00:00 +0000 UTC)\&. This data type is used by various standard functions such as localtime() or ctime()\&.
+.IP "\(bu" 2
+\fBnc_time2datetime()\fP is a reverse function to the previous one\&. Optionally, it accepts specification of the timezone in which the resulting date-and-time value will be returned\&.
+.PP
+.SH "NETCONF Errors Handling"
+.PP
+NETCONF protocol specifications (\fCRFC 6241\fP) defines list of errors that can be returned by the server\&. libnetconf provides a set of functions that server to create, manipulate and process NETCONF errors\&.
+.PP
+NETCONF error is represented by \fCstruct nc_err\fP\&. Specifying one of the \fBbasic errors\fP, a new error structure can be created by calling the \fBnc_err_new()\fP function\&. If the caller want to change a \fBspecific attribute\fP, the \fBnc_err_set()\fP function can be used\&. To get the value of the \fBspecific error attribute\fP, there is \fBnc_err_get()\fP function\&. If the caller want to create a copy of some existing error structure, \fBnc_err_dup()\fP can be used\&. And finally to free all allocated resources, the \fBnc_err_free()\fP is available\&.
+.PP
+To create <rpc-error> reply, the application is supposed to use \fBnc_reply_error()\fP and \fBnc_reply_error_add()\fP to add another error structure to the reply\&.
+.PP
+On the client side, <rpc-error> replies can be handled manually as any other <rpc-reply> recognizing its type using \fBnc_reply_get_type()\fP and then by getting the error message via \fBnc_reply_get_errormsg()\fP and parsing its content manually\&. The other, recomended, way how to handle incoming <rpc-error> replies is to specify the callback function via \fBnc_callback_error_reply()\fP\&. The callback is automatically invoked to process (e\&.g\&. print) <rpc-error> message\&. In this case, all NETCONF error attributes are parsed and passed to the callback function\&.
+.SH "Logging Messages"
+.PP
+libnetconf provides information about the data processing on several \fBverbose levels\fP\&. However, by default there is no printing routine, so no message from libnetconf appears until the printing callback is specified using \fBnc_callback_print()\fP function\&. Application is able to set (and change) the current \fBverbose levels\fP via the \fBnc_verbosity()\fP function\&.
+.PP
+Mainly for \fBtransAPI\fP modules, there is a set of functions to access message printing callback outside the library:
+.IP "\(bu" 2
+\fBnc_verb_error()\fP
+.IP "\(bu" 2
+\fBnc_verb_warning()\fP
+.IP "\(bu" 2
+\fBnc_verb_verbose()\fP 
+.PP
+

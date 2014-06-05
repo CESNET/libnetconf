@@ -106,16 +106,19 @@ $(document).ready(function(){initNavTree('da/d4e/callhome.html','../../');});
 <div class="textblock"><p>Call Home is a mechanism how a NETCONF server can initiate connection to a NETCONF client. Specification for this technique can be found in <a href="http://tools.ietf.org/html/draft-ietf-netconf-reverse-ssh-05" title="NETCONF over SSH Call Home Draft">NETCONF over SSH Call Home draft</a> and in <a href="../../hhttp://tools.ietf.org/html/draft-ietf-netconf-rfc5539bis-05" title="RFC 5539bis (NETCONF over TLS)">NETCONF over TLS RFC</a>. Some other aspects of this are also described in <a href="http://tools.ietf.org/html/draft-kwatsen-netconf-server-01" title="NETCONF Server Configuration Data Model">NETCONF Server Configuration Data Model</a>.</p>
 <p>This Mechanism is extremely useful especially in case the device (NETCONF server) is deployed behind a NAT and management application is not able to connect (NETCONF client) to such a device.</p>
 <p>See the <a href="https://code.google.com/p/netopeer">Netopeer project</a> as a reference implementation.</p>
-<h2>Call Home on the Client Side </h2>
+<h1><a class="anchor" id="callhome-client"></a>
+Call Home on the Client Side</h1>
 <p>This section describes how to receive Call Home connection.</p>
 <p>Because the client usually doesn't except incoming connection, it is necessary to explicitly start listening for Call Home. For this, libnetconf provides <a class="el" href="../../db/de7/group__callhome.html#gafa8e04fb09dcafcd7c06d086e835f25f" title="Start listening on client side for incoming Call Home connection. ">nc_callhome_listen()</a> function that allows to specify port where it will wait for incoming Call Home connections. The function makes the caller listening on all interfaces supporting both, IPv4 and IPv6 addresses. To stop listening, <a class="el" href="../../db/de7/group__callhome.html#ga93a36d2d6c0e1d1eb0c65d70c6ded3cc" title="Stop listening on client side for incoming Call Home connection. ">nc_callhome_listen_stop()</a> can be used.</p>
 <p>To get the first connection request from the queue of pending Call Home connections, use <a class="el" href="../../db/de7/group__callhome.html#ga556966a9c54e814e02b4afadf128b9b7" title="Accept incoming Call Home connection and create NETCONF session on it. ">nc_callhome_accept()</a>. It gets incoming Call Home TCP socket and uses it to establish a new NETCONF session according to given parameters similarly to <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a> function.</p>
 <p>From this point, client can work with returned NETCONF session as usual. There is no special termination function for NETCONF session from Call Home.</p>
-<h2>Call Home on the Server Side </h2>
+<h1><a class="anchor" id="callhome-server"></a>
+Call Home on the Server Side</h1>
 <p>For Call Home, the server initiate connection. Therefore, transport protocol must be set before starting Call Home. It is done by <a class="el" href="../../db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806" title="Set transport protocol for the sessions created by subsequent nc_session_connect() calls...">nc_session_transport()</a> function.</p>
 <p>Next, server is supposed to prepare the list of servers, where libnetconf will be trying to establish the Call Home connection. There is a set of nc_callhome_mngmt_server_*() functions, used for this purpose.</p>
 <p>Finally, there is <a class="el" href="../../db/de7/group__callhome.html#ga5c1437b22b1ccac95d0ba15c34912f78" title="Connect NETCONF server to a management center (NETCONF client) using Call Home mechanism. ">nc_callhome_connect()</a> to establish new NETCONF session based on Call Home mechanism. Note, that the function doesn't return a NETCONF session. It forks the process to start a standalone transport protocol server (SSH/TLS) according to the given parameters. It returns PID of the started process and TCP socket used for the communication. This socket can be used for monitoring state of the connection. Do not read any data from this socket.</p>
-<h2>Call Home workflow in libnetconf </h2>
+<h1><a class="anchor" id="callhome-workflow"></a>
+Call Home workflow in libnetconf</h1>
 <div class="image">
 <img src="../../../../img/callhome.png"  alt="callhome workflow" title="Call Home workflow in libnetconf"/>
 </div>
@@ -125,7 +128,7 @@ $(document).ready(function(){initNavTree('da/d4e/callhome.html','../../');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
-    <li class="footer">Generated on Wed Jun 4 2014 14:23:10 for libnetconf by
+    <li class="footer">Generated on Thu Jun 5 2014 15:07:22 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

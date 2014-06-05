@@ -108,10 +108,12 @@ $(document).ready(function(){initNavTree('dd/d59/nacm.html','../../');});
 <div class="fragment"><div class="line">&lt;nacm xmlns=<span class="stringliteral">&quot;urn:ietf:params:xml:ns:yang:ietf-netconf-acm&quot;</span>&gt;</div>
 <div class="line">  &lt;enable-external-groups&gt;<span class="keyword">false</span>&lt;/enable-external-groups&gt;</div>
 <div class="line">&lt;/nacm&gt;</div>
-</div><!-- fragment --><h3>Recovery Session</h3>
-<p><a class="anchor" id="nacm-recovery"></a> Recovery session serves for setting up initial access rules or to repair a broken access control configuration. If a session is recognized as recovery, NACM subsystem is completely bypassed.</p>
+</div><!-- fragment --><h1><a class="anchor" id="nacm-recovery"></a>
+Recovery Session</h1>
+<p>Recovery session serves for setting up initial access rules or to repair a broken access control configuration. If a session is recognized as recovery, NACM subsystem is completely bypassed.</p>
 <p>By default, libnetconf considers all sessions of the user with the system UID equal zero as recovery. To change this default value to a UID of any user, use configure's <a class="el" href="../../d9/d87/install.html#configure-nacm-recovery">--with-nacm-recovery-uid</a> option.</p>
-<h3>Initial operation</h3>
+<h2><a class="anchor" id="nacm-recovery-init"></a>
+Initial operation</h2>
 <p>According to <a href="http://tools.ietf.org/html/rfc6536" title="RFC 6536">RFC 6536</a>, libnetconf's NACM subsystem is initially set to allow reading (permitted read-default), refuse writing (denied write-default) and allow operation execution (permitted exec-default).</p>
 <dl class="section note"><dt>Note</dt><dd>Some operations or data have their specific access control settings defined in their data models. These settings override the described default settings.</dd></dl>
 <p>To change this initial settings, user has to access NACM datastore via a recovery session (since any write operation is denied) and set required access control rules.</p>
@@ -138,7 +140,7 @@ $(document).ready(function(){initNavTree('dd/d59/nacm.html','../../');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Jun 4 2014 14:23:10 for libnetconf by
+    <li class="footer">Generated on Thu Jun 5 2014 15:07:22 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

@@ -103,17 +103,20 @@ $(document).ready(function(){initNavTree('d9/d87/install.html','../../');});
 <div class="title">Compilation and Installation </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h2>Cloning git repository</h2>
+<div class="textblock"><h1><a class="anchor" id="install-getting"></a>
+Cloning git repository</h1>
 <p>As written on libnetconf's <a href="https://code.google.com/p/libnetconf/source/checkout">Google Code page</a>, the repository can be cloned using the following command:</p>
 <div class="fragment"><div class="line">$ git clone https:<span class="comment">//code.google.com/p/libnetconf/</span></div>
 </div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>In case that git fails to clone the repository make sure your git is at least version 1.6.6.</dd></dl>
-<h2>Compilation</h2>
+<h1><a class="anchor" id="install-compilation"></a>
+Compilation</h1>
 <p>libnetconf uses standard GNU Autotools toolchain. To compile and install libnetconf you have to go through the following three steps:</p>
 <div class="fragment"><div class="line">$ ./configure</div>
 <div class="line">$ make</div>
 <div class="line"><span class="preprocessor"># make install</span></div>
 </div><!-- fragment --><p>This way the library will be installed in <code>/usr/local/lib/</code> (or lib64) and <code>/usr/local/include/</code> respectively.</p>
-<h3>Configure Options</h3>
+<h2><a class="anchor" id="install-compilation-options"></a>
+Configure Options</h2>
 <p><code>configure</code> script supports the following options. The full list of the accepted options can be shown by <code>--help</code> option.</p>
 <ul>
 <li><code>--disable--libssh2</code><ul>
@@ -167,7 +170,7 @@ $(document).ready(function(){initNavTree('d9/d87/install.html','../../');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Jun 4 2014 14:23:10 for libnetconf by
+    <li class="footer">Generated on Thu Jun 5 2014 15:07:22 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

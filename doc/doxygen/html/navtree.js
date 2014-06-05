@@ -1,9 +1,22 @@
 var NAVTREE =
 [
   [ "libnetconf", "index.html", [
-    [ "About", "index.html", null ],
-    [ "Compilation and Installation", "d9/d87/install.html", null ],
-    [ "NETCONF Access Control Module (NACM)", "dd/d59/nacm.html", null ],
+    [ "About", "index.html", [
+      [ "Features", "index.html#about-features", null ],
+      [ "Example Applications", "index.html#about-apps", null ],
+      [ "BSD License", "index.html#about-license", null ]
+    ] ],
+    [ "Compilation and Installation", "d9/d87/install.html", [
+      [ "Cloning git repository", "d9/d87/install.html#install-getting", null ],
+      [ "Compilation", "d9/d87/install.html#install-compilation", [
+        [ "Configure Options", "d9/d87/install.html#install-compilation-options", null ]
+      ] ]
+    ] ],
+    [ "NETCONF Access Control Module (NACM)", "dd/d59/nacm.html", [
+      [ "Recovery Session", "dd/d59/nacm.html#nacm-recovery", [
+        [ "Initial operation", "dd/d59/nacm.html#nacm-recovery-init", null ]
+      ] ]
+    ] ],
     [ "Using libnetconf", "da/d1b/usage.html", "da/d1b/usage" ],
     [ "Transaction API (transAPI)", "d9/d25/transapi.html", "d9/d25/transapi" ],
     [ "Todo List", "dd/da0/todo.html", null ],
@@ -34,9 +47,9 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d3/d7a/netconf_8h.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a8507d8c0a99ba9da1cb38287b26b911c",
-"d9/de5/messages__xml_8h.html#gaad5d888e8c4a07a5f59b31555f7413bb",
-"db/de9/group__rpc.html#ga6818afbecf7fedf78f620162de78b4fd"
+"d3/d7a/netconf_8h.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b",
+"d9/dc0/structtransapi.html#a517eb18d6321490a3439ae595edbf9a4",
+"db/de7/group__callhome.html#gafa8e04fb09dcafcd7c06d086e835f25f"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

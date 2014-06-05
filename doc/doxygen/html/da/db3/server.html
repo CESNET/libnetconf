@@ -103,20 +103,24 @@ $(document).ready(function(){initNavTree('da/db3/server.html','../../');});
 <div class="title">Server </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h2>Server Architecture </h2>
+<div class="textblock"><h1><a class="anchor" id="server-arch"></a>
+Server Architecture</h1>
 <p>It is <b>strongly</b> advised to set SUID (or SGID) bit on every application that is built on libnetconf for a user (or group) created for this purpose, as several internal functions behaviour is based on this precondition. libnetconf uses a number of files which pose a security risk if they are accessible by untrustworthy users. This way it is possible not to restrict the use of an application but only the access to its files, so keep this in mind when creating any directories or files that are used.</p>
 <p>Generally, there are two basic approaches of how to implement a NETCONF server using libnetconf.</p>
-<h3>Single-level Architecture</h3>
+<h2><a class="anchor" id="server-arch-singlelevel"></a>
+Single-level Architecture</h2>
 <div class="image">
 <img src="../../../../img/sl_arch.png"  alt="Single-level architecture" title="Single-level architecture"/>
 </div>
 <p>In this case, all the server functionality is implemented as a single process. It is started by SSH daemon as its Subsystem for each incoming NETCONF session connection. The main issue of this approach is a simultaneous access to shared resources. The device manager has to solve concurrent access to the controlled device from its multiple instances. libnetconf itself has to deal with simultaneous access to a shared configuration datastore.</p>
-<h3>Multi-level Architecture</h3>
+<h2><a class="anchor" id="server-arch-multilevel"></a>
+Multi-level Architecture</h2>
 <div class="image">
 <img src="../../../../img/ml_arch.png"  alt="Multi-level architecture" title="Multi-level architecture"/>
 </div>
 <p>In the second case, there is only one device manager (NETCONF server) running as a system daemon. This solves the problem of concurrent device access from multiple processes. On the other hand, there is a need for inter-process communication between the device manager and the agents launched as SSH Subsystems. These agents hold NETCONF sessions and receive requests from the clients. libnetconf provides functions (<a class="el" href="../../db/de9/group__rpc.html#ga3e840368c40be2ea4d5201edbd3adaca" title="Dump the rpc message into a string. ">nc_rpc_dump()</a> and <a class="el" href="../../db/de9/group__rpc.html#ga5c4348c96b0d5e6a64f94dbbdeaf4100" title="Build &lt;rpc&gt; message from the string. This is the reverse function of the nc_rpc_dump(). ">nc_rpc_build()</a>) to (de-)serialise content of the NETCONF messages. This allows the NETCONF messages to be passed between an agent and a device manager that applies requests to the operated device and a configuration datastore.</p>
-<h2>Server Workflow </h2>
+<h1><a class="anchor" id="server-workflow"></a>
+Server Workflow</h1>
 <p>Here is a description of using libnetconf functions in a NETCONF server. According to the used architecture, the workflow can be split between an agent and a server. For this purpose, functions <a class="el" href="../../db/de9/group__rpc.html#ga3e840368c40be2ea4d5201edbd3adaca" title="Dump the rpc message into a string. ">nc_rpc_dump()</a>, <a class="el" href="../../db/de9/group__rpc.html#ga5c4348c96b0d5e6a64f94dbbdeaf4100" title="Build &lt;rpc&gt; message from the string. This is the reverse function of the nc_rpc_dump(). ">nc_rpc_build()</a> and <a class="el" href="../../db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851" title="Create a disconnected session structure. ">nc_session_dummy()</a> can be very helpful.</p>
 <ol type="1">
 <li><b>Set the verbosity</b> (optional)<br/>
@@ -161,7 +165,7 @@ Close internal libnetconf structures and subsystems by the <a class="el" href=".
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
-    <li class="footer">Generated on Wed Jun 4 2014 14:23:10 for libnetconf by
+    <li class="footer">Generated on Thu Jun 5 2014 15:07:22 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>
