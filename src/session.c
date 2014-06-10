@@ -1118,6 +1118,14 @@ struct nc_session* nc_session_dummy(const char* sid, const char* username, const
 	/* set with defaults capability flags */
 	parse_wdcap(session->capabilities, &(session->wd_basic), &(session->wd_modes));
 
+	if (p) {
+		VERB("Created dummy session %s for user \'%s\' (UID %d)%s",
+			session->session_id,
+			session->username,
+			p->pw_uid,
+			session->nacm_recovery ? " - recovery session" : "");
+	}
+
 	return session;
 }
 
