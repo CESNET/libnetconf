@@ -820,6 +820,14 @@ struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabiliti
 		pthread_rwlock_unlock(&(nc_info->lock));
 	}
 
+	if (pw) {
+		VERB("Created session %s for user \'%s\' (UID %d)%s",
+			retval->session_id,
+			retval->username,
+			pw->pw_uid,
+			retval->nacm_recovery ? " (recovery)" : "");
+	}
+
 	return (retval);
 }
 
