@@ -152,56 +152,59 @@ int nc_init(int flags)
 		return (-1);
 	}
 
-	DBG("Shared memory key: %d", key);
-	shmid = shmget(key, sizeof(struct nc_shared_info), IPC_CREAT | IPC_EXCL | FILE_PERM);
-	if (shmid == -1 && errno == EEXIST) {
-		shmid = shmget(key, sizeof(struct nc_shared_info), FILE_PERM);
-		retval = 1;
-		first_after_close = 0;
-	}
-	if (shmid == -1) {
-		ERROR("Accessing shared memory failed (%s).", strerror(errno));
-		return (-1);
-	}
-	DBG("Shared memory ID: %d", shmid);
+	if (nc_init_flags & (NC_INIT_DATASTORES | NC_INIT_MONITORING | NC_INIT_NACM)) {
 
-	/* attach memory */
-	nc_info = shmat(shmid, NULL, 0);
-	if (nc_info == (void*) -1) {
-		ERROR("Attaching shared memory failed (%s).", strerror(errno));
-		nc_info = NULL;
-		return (-1);
-	}
-
-	/* todo use locks */
-	if (first_after_close) {
-		/* remove the global session information file if left over a previous libnetconf instance */
-		if ((unlink(SESSIONSFILE_PATH) == -1) && (errno != ENOENT)) {
-			ERROR("Unable to remove the session information file (%s)", strerror(errno));
-			shmdt(nc_info);
+		DBG("Shared memory key: %d", key);
+		shmid = shmget(key, sizeof(struct nc_shared_info), IPC_CREAT | IPC_EXCL | FILE_PERM);
+		if (shmid == -1 && errno == EEXIST) {
+			shmid = shmget(key, sizeof(struct nc_shared_info), FILE_PERM);
+			retval = 1;
+			first_after_close = 0;
+		}
+		if (shmid == -1) {
+			ERROR("Accessing shared memory failed (%s).", strerror(errno));
 			return (-1);
 		}
-		
-		/* lock */
-		pthread_rwlockattr_init(&rwlockattr);
-		pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
-		if ((r = pthread_rwlock_init(&(nc_info->lock), &rwlockattr)) != 0) {
-			ERROR("Shared information lock initialization failed (%s)", strerror(r));
-			shmdt(nc_info);
+		DBG("Shared memory ID: %d", shmid);
+
+		/* attach memory */
+		nc_info = shmat(shmid, NULL, 0);
+		if (nc_info == (void*) -1) {
+			ERROR("Attaching shared memory failed (%s).", strerror(errno));
+			nc_info = NULL;
 			return (-1);
 		}
-		pthread_rwlockattr_destroy(&rwlockattr);
-		memset(nc_info, 0, sizeof(struct nc_shared_info));
 
-		/* init the information structure */
-		pthread_rwlock_wrlock(&(nc_info->lock));
-		strncpy(nc_info->stats.start_time, t = nc_time2datetime(time(NULL), NULL), TIME_LENGTH);
-		free(t);
-	} else {
-		pthread_rwlock_wrlock(&(nc_info->lock));
+		/* todo use locks */
+		if (first_after_close) {
+			/* remove the global session information file if left over a previous libnetconf instance */
+			if ((unlink(SESSIONSFILE_PATH) == -1) && (errno != ENOENT)) {
+				ERROR("Unable to remove the session information file (%s)", strerror(errno));
+				shmdt(nc_info);
+				return (-1);
+			}
+
+			/* lock */
+			pthread_rwlockattr_init(&rwlockattr);
+			pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
+			if ((r = pthread_rwlock_init(&(nc_info->lock), &rwlockattr)) != 0) {
+				ERROR("Shared information lock initialization failed (%s)", strerror(r));
+				shmdt(nc_info);
+				return (-1);
+			}
+			pthread_rwlockattr_destroy(&rwlockattr);
+			memset(nc_info, 0, sizeof(struct nc_shared_info));
+
+			/* init the information structure */
+			pthread_rwlock_wrlock(&(nc_info->lock));
+			strncpy(nc_info->stats.start_time, t = nc_time2datetime(time(NULL), NULL), TIME_LENGTH);
+			free(t);
+		} else {
+			pthread_rwlock_wrlock(&(nc_info->lock));
+		}
+		nc_info->stats.participants++;
+		pthread_rwlock_unlock(&(nc_info->lock));
 	}
-	nc_info->stats.participants++;
-	pthread_rwlock_unlock(&(nc_info->lock));
 
 	/*
 	 * check used flags according to a compile time settings
@@ -216,6 +219,9 @@ int nc_init(int flags)
 	}
 	if (flags & NC_INIT_MONITORING) {
 		nc_init_flags |= NC_INIT_MONITORING;
+	}
+	if (flags & NC_INIT_DATASTORES) {
+		nc_init_flags |= NC_INIT_DATASTORES;
 	}
 	if (flags & NC_INIT_WD) {
 		nc_init_flags |= NC_INIT_WD;
@@ -234,19 +240,21 @@ int nc_init(int flags)
 		nc_init_flags |= NC_INIT_KEEPALIVECHECK;
 	}
 
-	/*
-	 * init internal datastores - they have to be initiated before they are
-	 * used by their subsystems initiated below
-	 */
-	if (ncds_sysinit(nc_init_flags) != EXIT_SUCCESS) {
-		shmdt(nc_info);
-		nc_init_flags = 0;
-		return (-1);
-	}
+	if (nc_init_flags & NC_INIT_DATASTORES) {
+		/*
+		 * init internal datastores - they have to be initiated before they are
+		 * used by their subsystems initiated below
+		 */
+		if (ncds_sysinit(nc_init_flags) != EXIT_SUCCESS) {
+			nc_init_flags = 0;
+			nc_init_flags &= !(NC_INIT_NOTIF & NC_INIT_NACM & NC_INIT_MONITORING & NC_INIT_DATASTORES);
+			return (-1);
+		}
 
-	if (first_after_close) {
-		/* apply startup to running in internal datastores */
-		ncds_startup_internal();
+		if (first_after_close) {
+			/* apply startup to running in internal datastores */
+			ncds_startup_internal();
+		}
 	}
 
 	/* init NETCONF sessions statistics */
@@ -267,9 +275,10 @@ int nc_init(int flags)
 	/* init Notification subsystem */
 	if (nc_init_flags & NC_INIT_NOTIF) {
 		if (ncntf_init() != EXIT_SUCCESS) {
-			shmdt(nc_info);
 			/* remove flags of uninitiated subsystems */
 			nc_init_flags &= !(NC_INIT_NOTIF & NC_INIT_NACM);
+
+			nc_close(first_after_close);
 			return (-1);
 		}
 	}
@@ -278,9 +287,10 @@ int nc_init(int flags)
 	/* init Access Control subsystem */
 	if (nc_init_flags & NC_INIT_NACM) {
 		if (nacm_init() != EXIT_SUCCESS) {
-			shmdt(nc_info);
 			/* remove flags of uninitiated subsystems */
 			nc_init_flags &= !NC_INIT_NACM;
+
+			nc_close(first_after_close);
 			return (-1);
 		}
 	}
@@ -294,13 +304,9 @@ int nc_close(int system)
 	struct shmid_ds ds;
 	int retval = 0;
 
-	if (shmid == -1 || nc_info == NULL) {
-		/* we've not been initiated */
-		return (-1);
-	}
 	nc_init_flags |= NC_INIT_CLOSING;
 
-	if (system) {
+	if (system && shmid != -1) {
 		if (shmctl(shmid, IPC_STAT, &ds) == -1) {
 			ERROR("Unable to get the status of shared memory (%s).", strerror(errno));
 			nc_init_flags &= ~NC_INIT_CLOSING;
@@ -313,17 +319,23 @@ int nc_close(int system)
 		}
 	}
 
-	pthread_rwlock_wrlock(&(nc_info->lock));
-	nc_info->stats.participants--;
-	pthread_rwlock_unlock(&(nc_info->lock));
-	shmdt(nc_info);
-	nc_info = NULL;
+	if (nc_info) {
+		pthread_rwlock_wrlock(&(nc_info->lock));
+		nc_info->stats.participants--;
+		pthread_rwlock_unlock(&(nc_info->lock));
+		shmdt(nc_info);
+		nc_info = NULL;
+	}
 
 	/* close NETCONF session statistics */
-	nc_session_monitoring_close();
+	if (nc_init_flags & NC_INIT_MONITORING) {
+		nc_session_monitoring_close();
+	}
 
 	/* close all remaining datastores */
-	ncds_cleanall();
+	if (nc_init_flags & NC_INIT_DATASTORES) {
+		ncds_cleanall();
+	}
 
 #ifndef DISABLE_NOTIFICATIONS
 	/* close Notification subsystem */
