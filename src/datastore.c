@@ -4288,6 +4288,12 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 		 */
 		sibling_selection = 0;
 
+		/* init */
+		if ((content1 = nc_clrwspace((char *) filter_node->children->content)) == NULL) {
+			/* internal error - memory allocation failed, do not continue! */
+			return 0;
+		}
+
 		/* try to find required node */
 		config_node = config;
 		while (config_node) {
@@ -4295,11 +4301,9 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 					!nc_nscmp(filter_node, config_node) &&
 					!attrcmp(filter_node, config_node)) {
 				/* init */
-				content1 = NULL;
 				content2 = NULL;
 				/* get node's content without leading and trailing spaces */
-				if ((content1 = nc_clrwspace((char *) filter_node->children->content)) == NULL ||
-						(content2 = nc_clrwspace((char *) config_node->children->content)) == NULL) {
+				if ((content2 = nc_clrwspace((char *) config_node->children->content)) == NULL) {
 					free(content1);
 					free(content2);
 					/* internal error - memory allocation failed, do not continue! */
@@ -4316,10 +4320,12 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 				} else if (strcmp(content1, content2) == 0) {
 					filter_in = 1;
 				}
-				free(content1);
 				free(content2);
 
 				if (filter_in) {
+					free(content1);
+					content1 = NULL;
+
 					/* we have the matching node, now decide what to do */
 					if (filter_node->next || filter_node->prev || sibling_selection == 1) {
 						/* check if all filter sibling nodes are content match nodes -> then no config sibling node will be removed */
@@ -4337,7 +4343,9 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 						/* select and remove all unwanted nodes */
 						config_node = config;
 						while (config_node) {
+							/* init */
 							sibling_in = 0;
+
 							/* go to the first filter sibing node */
 							filter_node = filter;
 							/* pass all filter sibling nodes */
@@ -4348,21 +4356,18 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 									if (filter_node->children && (filter_node->children->type == XML_TEXT_NODE) &&
 											config_node->children && (config_node->children->type == XML_TEXT_NODE)) {
 										/* get filter's text node content ignoring whitespaces */
-										if ((content1 = nc_clrwspace((char *) filter_node->children->content)) == NULL || (content2 = nc_clrwspace((char *) config_node->children->content)) == NULL) {
+										if ((content2 = nc_clrwspace((char *) filter_node->children->content)) == NULL ||
+												(content1 = nc_clrwspace((char *) config_node->children->content)) == NULL) {
 											free(content1);
 											free(content2);
 											/* internal error - memory allocation failed, do not continue! */
 											return 0;
 										}
-										if (strisempty(content1)) {
-											/* we have an empty content match node, so interpret it as a selection node,
-											 * which means that it will be included in the filter result
-											 */
-										} else if (strcmp(content1, content2) != 0) {
+										if (strcmp(content1, content2) != 0) {
 											free(content1);
 											free(content2);
-											/* content match node doesn't match */
-											return 0;
+											filter_node = filter_node->next;
+											continue;
 										}
 										free(content1);
 										free(content2);
@@ -4372,6 +4377,8 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 								}
 								filter_node = filter_node->next;
 							}
+							content1 = NULL;
+
 							/* if this config node is not in filter, remove it */
 							if (sibling_selection && !sibling_in) {
 								delete = config_node;
@@ -4407,6 +4414,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 			}
 			config_node = config_node->next;
 		}
+		free(content1);
 	} else {
 		/* this is containment node (no sibling node is content match node */
 		filter_node = filter;
