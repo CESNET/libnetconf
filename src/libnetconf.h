@@ -768,12 +768,7 @@
  *
  *   libnetconf's error structure. May (and should) be used to specify error when it occurs and callback returns EXIT_FAILURE. Error description is forwarded to client.
  *
- * \section transapi-intro Getting started
- *
- * See \subpage transapiTutorial.
- */
-/**
- * \page transapiTutorial transAPI Tutorial
+ * \section transapi-intro transAPI Tutorial
  *
  * [netopeer]: https://code.google.com/p/netopeer
  *
@@ -781,7 +776,7 @@
  * for controlling [example toaster](http://netconfcentral.org/modulereport/toaster).
  * \note To install libnetconf follow the instructions on the \ref install page.
  *
- * \section transapiTutorial-prepare Preparations
+ * \subsection transapiTutorial-prepare Preparations
  *
  * In this example we will work with the data model of the toaster provided
  * by Andy Bierman at NETCONF CENTRAL (<http://dld.netconfcentral.org/src/toaster@2009-11-20.yang>).
@@ -798,7 +793,7 @@
  * /toaster:toaster
  * ~~~~~~~
  *
- * \section transapiTutorial-generating Generating code
+ * \subsection transapiTutorial-generating Generating code
  *
  * -# Create a new directory for the toaster module and move the data model and the path file into it:
  * ~~~~~~~{.sh}
@@ -818,7 +813,7 @@
  * - *.rng - RelagNG schema for syntax validation
  * - *-schematron.xsl - Schematron XSL stylesheet for semantics validation
  *
- * \section transapiTutorial-coding Filling up functionality
+ * \subsection transapiTutorial-coding Filling up functionality
  *
  * Here we show the simplest example of a toaster simulating module.
  * It is working but does not deal with multiple access and threads correctly.
@@ -924,7 +919,7 @@
  * }
  * ~~~~~~~
  *
- * \section transapiTutorial-compiling Compiling module
+ * \subsection transapiTutorial-compiling Compiling module
  *
  * Following sequence of commands will produce the shared library 'toaster.so' which may be loaded into libnetconf:
  * ~~~~~~~{.sh}
@@ -933,7 +928,7 @@
  * $ make
  * ~~~~~~~
  *
- * \section transapiTutorial-using Integrating to a server
+ * \subsection transapiTutorial-using Integrating to a server
  *
  * In a server we use libnetconf's function ncds_new_transapi() instead of ncds_new() to create a transAPI-capable data store.
  * Then, you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock), data-reading (get, get-config)
