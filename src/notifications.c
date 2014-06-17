@@ -1314,8 +1314,8 @@ write_failed:
 					if (ftruncate(s->fd_events, offset) == -1) {
 						ERROR("ftruncate() on the stream file \'%s\' failed (%s).", s->name, strerror(errno));
 					}
-					lseek(s->fd_events, offset, SEEK_SET);
 				}
+				lseek(s->fd_events, offset, SEEK_SET);
 				ncntf_stream_unlock(s);
 			} else {
 				WARN("Unable to write the event %s into the stream file %s (locking failed).", ename, s->name);
