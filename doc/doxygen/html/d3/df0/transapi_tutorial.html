@@ -166,14 +166,11 @@ Filling up functionality</h1>
 </div><!-- fragment --></li>
 <li>Complete the configuration callbacks. The 'op' parameter may be used to determine operation which was done with the node. Parameter 'node' holds a copy of node after change (or before change if op == XMLDIFF_REM). <div class="fragment"><div class="line"><span class="keywordtype">int</span> callback_toaster_toaster (<span class="keywordtype">void</span> ** data, <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> op, xmlNodePtr node, <span class="keyword">struct</span> nc_err** error)</div>
 <div class="line">{</div>
-<div class="line">        <span class="keywordflow">switch</span>(op) {</div>
-<div class="line">        <span class="keywordflow">case</span> <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488adc0f4fc8354a1e293db5efd4f8e6f0b1">XMLDIFF_ADD</a>:</div>
+<div class="line">        <span class="keywordflow">if</span> (op &amp; XMLDIFF_ADD) {</div>
 <div class="line">                status = ON;</div>
-<div class="line">                <span class="keywordflow">break</span>;</div>
-<div class="line">        <span class="keywordflow">case</span> <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a149cdeec9d87bdbb700861f773759129">XMLDIFF_REM</a>:</div>
+<div class="line">        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (op &amp; XMLDIFF_REM) {</div>
 <div class="line">                status = OFF;</div>
-<div class="line">                <span class="keywordflow">break</span>;</div>
-<div class="line">        <span class="keywordflow">default</span>:</div>
+<div class="line">        } <span class="keywordflow">else</span> {</div>
 <div class="line">                *error = <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga057524ba5256c428b6bf88710f000e0c">nc_err_new</a>(<a class="code" href="../../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2ae9d2e7a938b0fb4583b961a7079aabe3">NC_ERR_OP_FAILED</a>);</div>
 <div class="line">                <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gab28d881eeebd79d485391ae1ffc97299">nc_err_set</a>(*error, <a class="code" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73da1695230cad67458870f4cf93a2d530a5">NC_ERR_PARAM_MSG</a>, <span class="stringliteral">&quot;Unsupported operation.&quot;</span>);</div>
 <div class="line">                <span class="keywordflow">return</span>(EXIT_FAILURE);</div>
@@ -229,7 +226,7 @@ Integrating to a server</h1>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../d9/d25/transapi.html">Transaction API (transAPI)</a></li>
-    <li class="footer">Generated on Thu Jun 5 2014 15:07:22 for libnetconf by
+    <li class="footer">Generated on Tue Jun 17 2014 14:29:02 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

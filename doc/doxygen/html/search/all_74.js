@@ -10,7 +10,6 @@ var searchData=
   ['transapi_5fdata_5fcallbacks',['transapi_data_callbacks',['../d6/dcb/structtransapi__data__callbacks.html',1,'']]],
   ['transapi_5frpc_5fcallbacks',['transapi_rpc_callbacks',['../d0/df8/structtransapi__rpc__callbacks.html',1,'']]],
   ['transapi_5fversion',['TRANSAPI_VERSION',['../d0/db0/transapi_8h.html#ab6b46fdad05fdb764492fcdea3cdeaba',1,'transapi.h']]],
-  ['transapi_20tutorial',['transAPI Tutorial',['../d3/df0/transapi_tutorial.html',1,'transapi']]],
   ['transport_20protocol',['Transport Protocol',['../d4/d76/transport.html',1,'usage']]],
   ['transport_2eh',['transport.h',['../d2/d02/transport_8h.html',1,'']]]
 ];
