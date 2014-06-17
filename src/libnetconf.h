@@ -806,14 +806,11 @@
  * ~~~~~~~{.c}
  * int callback_toaster_toaster (void ** data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err** error)
  * {
- * 	switch(op) {
- * 	case XMLDIFF_ADD:
+ * 	if (op & XMLDIFF_ADD) {
  * 		status = ON;
- * 		break;
- * 	case XMLDIFF_REM:
+ * 	} else if (op & XMLDIFF_REM) {
  * 		status = OFF;
- * 		break;
- * 	default:
+ * 	} else {
  * 		*error = nc_err_new(NC_ERR_OP_FAILED);
  * 		nc_err_set(*error, NC_ERR_PARAM_MSG, "Unsupported operation.");
  * 		return(EXIT_FAILURE);
