@@ -1,6 +1,7 @@
 var netconf_8h =
 [
     [ "NC_INIT_ALL", "d3/d7a/netconf_8h.html#abad7c8a3763fd854f67b3cbb1f703b72", null ],
+    [ "NC_INIT_DATASTORES", "d3/d7a/netconf_8h.html#a27037322b92e9fcc59de966566a62389", null ],
     [ "NC_INIT_KEEPALIVECHECK", "d3/d7a/netconf_8h.html#a296598fe488d5cb69257e2ba1def790c", null ],
     [ "NC_INIT_MONITORING", "d3/d7a/netconf_8h.html#a3523107c9618d5c1b061ce12b73a7d8e", null ],
     [ "NC_INIT_NACM", "d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6", null ],

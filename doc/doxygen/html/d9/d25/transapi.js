@@ -1,5 +1,13 @@
 var transapi =
 [
+    [ "Understanding callback parameters", "d9/d25/transapi.html#understanding-parameters", [
+      [ "void **data", "d9/d25/transapi.html#data", null ],
+      [ "XMLDIFF_OP op", "d9/d25/transapi.html#op", [
+        [ "Valid combinations of events", "d9/d25/transapi.html#combinations", null ]
+      ] ],
+      [ "xmlNodePtr node", "d9/d25/transapi.html#node", null ],
+      [ "strict nc_err **error", "d9/d25/transapi.html#error", null ]
+    ] ],
     [ "Getting started", "d9/d25/transapi.html#transapi-intro", null ],
     [ "transAPI Tutorial", "d3/df0/transapi_tutorial.html", [
       [ "Preparations", "d3/df0/transapi_tutorial.html#transapiTutorial-prepare", null ],

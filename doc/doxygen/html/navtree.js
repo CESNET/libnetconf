@@ -18,7 +18,23 @@ var NAVTREE =
       ] ]
     ] ],
     [ "Using libnetconf", "da/d1b/usage.html", "da/d1b/usage" ],
-    [ "Transaction API (transAPI)", "d9/d25/transapi.html", "d9/d25/transapi" ],
+    [ "Transaction API (transAPI)", "d9/d25/transapi.html", [
+      [ "Understanding callback parameters", "d9/d25/transapi.html#understanding-parameters", [
+        [ "void **data", "d9/d25/transapi.html#data", null ],
+        [ "XMLDIFF_OP op", "d9/d25/transapi.html#op", [
+          [ "Valid combinations of events", "d9/d25/transapi.html#combinations", null ]
+        ] ],
+        [ "xmlNodePtr node", "d9/d25/transapi.html#node", null ],
+        [ "strict nc_err **error", "d9/d25/transapi.html#error", null ]
+      ] ],
+      [ "transAPI Tutorial", "d9/d25/transapi.html#transapi-intro", [
+        [ "Preparations", "d9/d25/transapi.html#transapiTutorial-prepare", null ],
+        [ "Generating code", "d9/d25/transapi.html#transapiTutorial-generating", null ],
+        [ "Filling up functionality", "d9/d25/transapi.html#transapiTutorial-coding", null ],
+        [ "Compiling module", "d9/d25/transapi.html#transapiTutorial-compiling", null ],
+        [ "Integrating to a server", "d9/d25/transapi.html#transapiTutorial-using", null ]
+      ] ]
+    ] ],
     [ "Todo List", "dd/da0/todo.html", null ],
     [ "Modules", "modules.html", "modules" ],
     [ "Data Structures", null, [
@@ -47,9 +63,9 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d3/d7a/netconf_8h.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a790d421ac3a36ea64a24aae83bad6f2b",
-"d9/dc0/structtransapi.html#a517eb18d6321490a3439ae595edbf9a4",
-"db/de7/group__callhome.html#gafa8e04fb09dcafcd7c06d086e835f25f"
+"d3/d7a/netconf_8h.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e",
+"d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b",
+"db/de7/group__callhome.html#ga3db211a665c56160c167619b633b6cb0"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

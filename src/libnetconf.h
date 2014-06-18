@@ -699,12 +699,76 @@
  * message containing such defined RPC operation, libnetconf uses callback
  * function implemented in the module.
  *
- * \section transapi-intro Getting started
+ * \section understanding-parameters Understanding callback parameters
+ *  Every transapi callback function has fixed set of parameters. Function header looks like this:
  *
- * See \subpage transapiTutorial.
- */
-/**
- * \page transapiTutorial transAPI Tutorial
+ *  ~~~~~~~{.c}
+ *  int callback_path_into_configuration_xml(void **data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err **error)
+ *  ~~~~~~~
+ *
+ *  \subsection data void **data
+ *
+ *   This parameter was added to provide a way to share any data between callbacks.
+ *   libnetconf never change (or even access) content of this parameter. Initialy content of 'data' is NULL.
+ *   transapi module may use 'data' as it like but is also fully responsible for correct memory handling
+ *   and freeing of no longer needed memory referenced by 'data'.
+ *
+ *  \subsection op XMLDIFF_OP op
+ *
+ *   Parameter op indicates what event(s) was occured on node. All events are bitwise ored. To test if certaint event occured on node use bitwise and (&).
+ *
+ *   - Node can be added or removed.
+ *    - XMLDIFF_ADD = Node was added.
+ *    - XMLDIFF_REM = Node was removed.
+ *   - Nodes of type leaf can be changed.
+ *    - XMLDIFF_MOD = node content was changed
+ *   - Container nodes are informed about events occured on descendants. It can be distinguished whether the event was processed or not.
+ *    - XMLDIFF_MOD = Some of node children was changed and there is not callback specified for it.
+ *    - XMLDIFF_CHAIN = Some of node children was changed and associated callback was called.
+ *   - Additionaly, user-ordered lists and leaf-lists are notified when change in order occurs.
+ *    - XMLDIFF_SIBLING = Change in order. Some of siblings was added, removed or changed place.
+ *    - XMLDIFF_REORDER = Undrelying user-ordered list has changed order.
+ *
+ *   \subsubsection combinations Valid combinations of events
+ *
+ *    - XMLDIFF_ADD and XMLDIFF_REM can never be specified simutaneously.
+ *    - other restrictions depend on node type:
+ *     - Leaf: exactly one of XMLDIFF_ADD, XMLDIFF_REM, XMLDIFF_MOD
+ *     - Container: at least one of XMLDIFF_ADD, XMLDIFF_REM, XMLDIFF_MOD, XMLDIFF_CHAIN and posibly XMLDIFF_REORDER when node holds user-ordered list
+ *     - List (system-ordered): at least one of XMLDIFF_ADD, XMLDIFF_REM, XMLDIFF_MOD, XMLDIFF_CHAIN and posibly XMLDIFF_REORDER when node holds user-ordered list
+ *     - List (user-ordered): at least one of XMLDIFF_ADD, XMLDIFF_REM, XMLDIFF_MOD, XMLDIFF_CHAIN, XMLDIFF_SIBLING and posibly XMLDIFF_REORDER when node holds user-ordered list
+ *     - Leaf-list (system-ordered): exactly one of XMLDIFF_ADD, XMLDIFF_REM
+ *     - Leaf-list (user-ordered): at least one of XMLDIFF_ADD, XMLDIFF_REM, XMLDIFF_SIBLING
+ *
+ * Ex.: Leaf processing
+ * ~~~~~~~{.c}
+ * int callback_some_leaf(void **data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err **error)
+ * {
+ *   if (op & XMLDIFF_MOD) {
+ *     // change configured value
+ *   } else if (op & XMLDIFF_REM) {
+ *     // leaf removed (disable service, close port, ...)
+ *   } else if (op & XMLDIFF_ADD) {
+ *     // leaf added (enable service, open port, ...)
+ *   } else {
+ *     *error = nc_err_new(NC_ERR_OP_FAILED);
+ *     nc_err_set(error, NC_ERR_PARAM_MSG, "Invalid event for leaf node /some/leaf.");
+ *     return(EXIT_FAILURE);
+ *   }
+ *   return(EXIT_SUCCESS);
+ * }
+ * ~~~~~~~
+ *
+ *  \subsection node xmlNodePtr node
+ *
+ *   Pointer to a particular node instance in configuration document where the event was detected.
+ *   When the node was removed pointer is set to its instance in old configuration snapshot.
+ *
+ *  \subsection error strict nc_err **error
+ *
+ *   libnetconf's error structure. May (and should) be used to specify error when it occurs and callback returns EXIT_FAILURE. Error description is forwarded to client.
+ *
+ * \section transapi-intro transAPI Tutorial
  *
  * [netopeer]: https://code.google.com/p/netopeer
  *
@@ -712,7 +776,7 @@
  * for controlling [example toaster](http://netconfcentral.org/modulereport/toaster).
  * \note To install libnetconf follow the instructions on the \ref install page.
  *
- * \section transapiTutorial-prepare Preparations
+ * \subsection transapiTutorial-prepare Preparations
  *
  * In this example we will work with the data model of the toaster provided
  * by Andy Bierman at NETCONF CENTRAL (<http://dld.netconfcentral.org/src/toaster@2009-11-20.yang>).
@@ -729,7 +793,7 @@
  * /toaster:toaster
  * ~~~~~~~
  *
- * \section transapiTutorial-generating Generating code
+ * \subsection transapiTutorial-generating Generating code
  *
  * -# Create a new directory for the toaster module and move the data model and the path file into it:
  * ~~~~~~~{.sh}
@@ -749,7 +813,7 @@
  * - *.rng - RelagNG schema for syntax validation
  * - *-schematron.xsl - Schematron XSL stylesheet for semantics validation
  *
- * \section transapiTutorial-coding Filling up functionality
+ * \subsection transapiTutorial-coding Filling up functionality
  *
  * Here we show the simplest example of a toaster simulating module.
  * It is working but does not deal with multiple access and threads correctly.
@@ -806,14 +870,11 @@
  * ~~~~~~~{.c}
  * int callback_toaster_toaster (void ** data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err** error)
  * {
- * 	switch(op) {
- * 	case XMLDIFF_ADD:
+ * 	if (op & XMLDIFF_ADD) {
  * 		status = ON;
- * 		break;
- * 	case XMLDIFF_REM:
+ * 	} else if (op & XMLDIFF_REM) {
  * 		status = OFF;
- * 		break;
- * 	default:
+ * 	} else {
  * 		*error = nc_err_new(NC_ERR_OP_FAILED);
  * 		nc_err_set(*error, NC_ERR_PARAM_MSG, "Unsupported operation.");
  * 		return(EXIT_FAILURE);
@@ -858,7 +919,7 @@
  * }
  * ~~~~~~~
  *
- * \section transapiTutorial-compiling Compiling module
+ * \subsection transapiTutorial-compiling Compiling module
  *
  * Following sequence of commands will produce the shared library 'toaster.so' which may be loaded into libnetconf:
  * ~~~~~~~{.sh}
@@ -867,7 +928,7 @@
  * $ make
  * ~~~~~~~
  *
- * \section transapiTutorial-using Integrating to a server
+ * \subsection transapiTutorial-using Integrating to a server
  *
  * In a server we use libnetconf's function ncds_new_transapi() instead of ncds_new() to create a transAPI-capable data store.
  * Then, you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock), data-reading (get, get-config)

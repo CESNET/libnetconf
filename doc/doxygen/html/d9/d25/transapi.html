@@ -106,15 +106,198 @@ $(document).ready(function(){initNavTree('d9/d25/transapi.html','../../');});
 <div class="textblock"><p>Libnetconf transAPI is a framework designed to save developers time and let them focus on configuring and managing their device instead of fighting with the NETCONF protocol.</p>
 <p>It allows a developer to choose parts of a configuration that can be easily configured as a single block. Based on a list of so called 'sensitive paths' the generator creates C code containing a single callback function for every 'sensitive path'. Whenever something changes in the configuration file, the appropriate callback function is called and it is supposed to reflect configuration changes in the actual device behavior.</p>
 <p>Additionaly, transAPI provides an opportunity to implement behavior of NETCONF RPC operation defined in the data model. In case lnctool finds an RPC definition inside the provided data model, it generates callbacks for it too. Whenever a server calls <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore. ">ncds_apply_rpc()</a> or <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a> with RPC message containing such defined RPC operation, libnetconf uses callback function implemented in the module.</p>
+<h1><a class="anchor" id="understanding-parameters"></a>
+Understanding callback parameters</h1>
+<p>Every transapi callback function has fixed set of parameters. Function header looks like this:</p>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> callback_path_into_configuration_xml(<span class="keywordtype">void</span> **data, <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> op, xmlNodePtr node, <span class="keyword">struct</span> nc_err **error)</div>
+</div><!-- fragment --><h2><a class="anchor" id="data"></a>
+void **data</h2>
+<p>This parameter was added to provide a way to share any data between callbacks. libnetconf never change (or even access) content of this parameter. Initialy content of 'data' is NULL. transapi module may use 'data' as it like but is also fully responsible for correct memory handling and freeing of no longer needed memory referenced by 'data'.</p>
+<h2><a class="anchor" id="op"></a>
+XMLDIFF_OP op</h2>
+<p>Parameter op indicates what event(s) was occured on node. All events are bitwise ored. To test if certaint event occured on node use bitwise and (&amp;).</p>
+<ul>
+<li>Node can be added or removed.<ul>
+<li>XMLDIFF_ADD = Node was added.</li>
+<li>XMLDIFF_REM = Node was removed.</li>
+</ul>
+</li>
+<li>Nodes of type leaf can be changed.<ul>
+<li>XMLDIFF_MOD = node content was changed</li>
+</ul>
+</li>
+<li>Container nodes are informed about events occured on descendants. It can be distinguished whether the event was processed or not.<ul>
+<li>XMLDIFF_MOD = Some of node children was changed and there is not callback specified for it.</li>
+<li>XMLDIFF_CHAIN = Some of node children was changed and associated callback was called.</li>
+</ul>
+</li>
+<li>Additionaly, user-ordered lists and leaf-lists are notified when change in order occurs.<ul>
+<li>XMLDIFF_SIBLING = Change in order. Some of siblings was added, removed or changed place.</li>
+<li>XMLDIFF_REORDER = Undrelying user-ordered list has changed order.</li>
+</ul>
+</li>
+</ul>
+<h3><a class="anchor" id="combinations"></a>
+Valid combinations of events</h3>
+<ul>
+<li>XMLDIFF_ADD and XMLDIFF_REM can never be specified simutaneously.</li>
+<li>other restrictions depend on node type:<ul>
+<li>Leaf: exactly one of XMLDIFF_ADD, XMLDIFF_REM, XMLDIFF_MOD</li>
+<li>Container: at least one of XMLDIFF_ADD, XMLDIFF_REM, XMLDIFF_MOD, XMLDIFF_CHAIN and posibly XMLDIFF_REORDER when node holds user-ordered list</li>
+<li>List (system-ordered): at least one of XMLDIFF_ADD, XMLDIFF_REM, XMLDIFF_MOD, XMLDIFF_CHAIN and posibly XMLDIFF_REORDER when node holds user-ordered list</li>
+<li>List (user-ordered): at least one of XMLDIFF_ADD, XMLDIFF_REM, XMLDIFF_MOD, XMLDIFF_CHAIN, XMLDIFF_SIBLING and posibly XMLDIFF_REORDER when node holds user-ordered list</li>
+<li>Leaf-list (system-ordered): exactly one of XMLDIFF_ADD, XMLDIFF_REM</li>
+<li>Leaf-list (user-ordered): at least one of XMLDIFF_ADD, XMLDIFF_REM, XMLDIFF_SIBLING</li>
+</ul>
+</li>
+</ul>
+<p>Ex.: Leaf processing </p>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> callback_some_leaf(<span class="keywordtype">void</span> **data, <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> op, xmlNodePtr node, <span class="keyword">struct</span> nc_err **error)</div>
+<div class="line">{</div>
+<div class="line">  <span class="keywordflow">if</span> (op &amp; <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a27c20d1fff6c4a35673bea8c6bbe23c4">XMLDIFF_MOD</a>) {</div>
+<div class="line">    <span class="comment">// change configured value</span></div>
+<div class="line">  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (op &amp; <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a149cdeec9d87bdbb700861f773759129">XMLDIFF_REM</a>) {</div>
+<div class="line">    <span class="comment">// leaf removed (disable service, close port, ...)</span></div>
+<div class="line">  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (op &amp; <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488adc0f4fc8354a1e293db5efd4f8e6f0b1">XMLDIFF_ADD</a>) {</div>
+<div class="line">    <span class="comment">// leaf added (enable service, open port, ...)</span></div>
+<div class="line">  } <span class="keywordflow">else</span> {</div>
+<div class="line">    *error = <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga057524ba5256c428b6bf88710f000e0c">nc_err_new</a>(<a class="code" href="../../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2ae9d2e7a938b0fb4583b961a7079aabe3">NC_ERR_OP_FAILED</a>);</div>
+<div class="line">    <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gab28d881eeebd79d485391ae1ffc97299">nc_err_set</a>(error, <a class="code" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73da1695230cad67458870f4cf93a2d530a5">NC_ERR_PARAM_MSG</a>, <span class="stringliteral">&quot;Invalid event for leaf node /some/leaf.&quot;</span>);</div>
+<div class="line">    <span class="keywordflow">return</span>(EXIT_FAILURE);</div>
+<div class="line">  }</div>
+<div class="line">  <span class="keywordflow">return</span>(EXIT_SUCCESS);</div>
+<div class="line">}</div>
+</div><!-- fragment --><h2><a class="anchor" id="node"></a>
+xmlNodePtr node</h2>
+<p>Pointer to a particular node instance in configuration document where the event was detected. When the node was removed pointer is set to its instance in old configuration snapshot.</p>
+<h2><a class="anchor" id="error"></a>
+strict nc_err **error</h2>
+<p>libnetconf's error structure. May (and should) be used to specify error when it occurs and callback returns EXIT_FAILURE. Error description is forwarded to client.</p>
 <h1><a class="anchor" id="transapi-intro"></a>
-Getting started</h1>
-<p>See <a class="el" href="../../d3/df0/transapi_tutorial.html">transAPI Tutorial</a>. </p>
+transAPI Tutorial</h1>
+<p>On this page we will show how to write a simple module for controlling <a href="http://netconfcentral.org/modulereport/toaster">example toaster</a>. </p>
+<dl class="section note"><dt>Note</dt><dd>To install libnetconf follow the instructions on the <a class="el" href="../../d9/d87/install.html">Compilation and Installation</a> page.</dd></dl>
+<h2><a class="anchor" id="transapiTutorial-prepare"></a>
+Preparations</h2>
+<p>In this example we will work with the data model of the toaster provided by Andy Bierman at NETCONF CENTRAL (<a href="http://dld.netconfcentral.org/src/toaster@2009-11-20.yang">http://dld.netconfcentral.org/src/toaster@2009-11-20.yang</a>).</p>
+<p>First, we need to identify important parts of the configuration data. Since the toaster data model describes only one configurable element, we have an easy choice. So, we can create the 'paths_file' file containing the specification of our chosen element and mapping prefixes with URIs for any used namespace.</p>
+<p>Our file may look like this (irrespective of order): </p>
+<div class="fragment"><div class="line">toaster=http:<span class="comment">//netconfcentral.org/ns/toaster</span></div>
+<div class="line">/toaster:toaster</div>
+</div><!-- fragment --><h2><a class="anchor" id="transapiTutorial-generating"></a>
+Generating code</h2>
+<ol type="1">
+<li>Create a new directory for the toaster module and move the data model and the path file into it: <div class="fragment"><div class="line">$ mkdir toaster &amp;&amp; cd toaster/</div>
+<div class="line">$ mv ../toaster@2009-11-20.yang ../paths_file .</div>
+</div><!-- fragment --></li>
+<li>Run `lnctool' for transapi: <div class="fragment"><div class="line">$ lnctool --model ./toaster@2009-11-20.yang <a class="code" href="../../d9/dc0/structtransapi.html">transapi</a> --paths ./paths_file</div>
+</div><!-- fragment --></li>
+</ol>
+<p>Besides the generated source code of our transAPI module and GNU Build System files (Makefile.in, configure.in,...), lnctool also generates YIN format of the data model and validators accepted by the libnetconf's <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support. ">ncds_new_transapi()</a> and <a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31" title="Set validators (or disable validation) on the specified datastore. ">ncds_set_validation()</a> functions:</p>
+<ul>
+<li>*.yin - YIN format of the data model</li>
+<li>*.rng - RelagNG schema for syntax validation</li>
+<li>*-schematron.xsl - Schematron XSL stylesheet for semantics validation</li>
+</ul>
+<h2><a class="anchor" id="transapiTutorial-coding"></a>
+Filling up functionality</h2>
+<p>Here we show the simplest example of a toaster simulating module. It is working but does not deal with multiple access and threads correctly. Better example may can be found in the netopeer-server-sl source codes located in the <a href="https://code.google.com/p/netopeer">Netopeer project</a> repository (server-sl/toaster/toaster.c).</p>
+<ol type="1">
+<li>Open 'toaster.c' file with your favorite editor: <div class="fragment"><div class="line">$ vim toaster.c</div>
+</div><!-- fragment --></li>
+<li>Add global variables and auxiliary functions <div class="fragment"><div class="line"><span class="keyword">enum</span> {ON, OFF, BUSY} status;</div>
+<div class="line">pthread_t thread;</div>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">void</span> * auxiliary_make_toast(<span class="keywordtype">void</span> * time)</div>
+<div class="line">{</div>
+<div class="line">        sleep(*(<span class="keywordtype">int</span>*)time);</div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">if</span> (status == BUSY) {</div>
+<div class="line">                status = ON;</div>
+<div class="line">                <a class="code" href="../../da/d54/group__notifications.html#ga9641deaca934bcd7ff66ac3ae60fc722">ncntf_event_new</a>(-1, <a class="code" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1f1e3c2032baf2542b06052243bd42c9">NCNTF_GENERIC</a>, <span class="stringliteral">&quot;&lt;toastDone&gt;&lt;toastStatus&gt;done&lt;/toastStatus&gt;&lt;/toastDone&gt;&quot;</span>);</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span>(NULL);</div>
+<div class="line">}</div>
+</div><!-- fragment --></li>
+<li>Complete the 'transapi_init()' function with actions that will be run right after the module loads and before any other function in the module is called. We ignore the XML document pointer, since we wish the toaster to be always off when loading this module. <div class="fragment"><div class="line"><span class="keywordtype">int</span> transapi_init(xmlDocPtr * running)</div>
+<div class="line">{</div>
+<div class="line">        status = OFF;</div>
+<div class="line">        printf(<span class="stringliteral">&quot;Toaster initialized!\n&quot;</span>);</div>
+<div class="line">        <span class="keywordflow">return</span>(EXIT_SUCCESS);</div>
+<div class="line">}</div>
+</div><!-- fragment --></li>
+<li>Locate the 'transapi_close()' function and fill it with actions that will be run just before the module unloads. No other function will be called after 'transapi_close()'. <div class="fragment"><div class="line"><span class="keywordtype">void</span> transapi_close()</div>
+<div class="line">{</div>
+<div class="line">        printf(<span class="stringliteral">&quot;Toaster ready for unplugging!\n&quot;</span>);</div>
+<div class="line">}</div>
+</div><!-- fragment --></li>
+<li>Fill 'get_state_data()' function with code that will generate state information as defined in the data model. <div class="fragment"><div class="line"><span class="keywordtype">char</span> * get_state_data(<span class="keywordtype">char</span> * model, <span class="keywordtype">char</span> * running, <span class="keyword">struct</span> nc_err **err)</div>
+<div class="line">{</div>
+<div class="line">        <span class="keywordflow">return</span> strdup(<span class="stringliteral">&quot;&lt;?xml version=&quot;</span>1.0<span class="stringliteral">&quot;?&gt;&lt;toaster xmlns=&quot;</span>http:<span class="comment">//netconfcentral.org/ns/toaster&quot;&gt; ... &lt;/toaster&gt;&quot;);</span></div>
+<div class="line">}</div>
+</div><!-- fragment --></li>
+<li>Complete the configuration callbacks. The 'op' parameter may be used to determine operation which was done with the node. Parameter 'node' holds a copy of node after change (or before change if op == XMLDIFF_REM). <div class="fragment"><div class="line"><span class="keywordtype">int</span> callback_toaster_toaster (<span class="keywordtype">void</span> ** data, <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> op, xmlNodePtr node, <span class="keyword">struct</span> nc_err** error)</div>
+<div class="line">{</div>
+<div class="line">        <span class="keywordflow">if</span> (op &amp; XMLDIFF_ADD) {</div>
+<div class="line">                status = ON;</div>
+<div class="line">        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (op &amp; XMLDIFF_REM) {</div>
+<div class="line">                status = OFF;</div>
+<div class="line">        } <span class="keywordflow">else</span> {</div>
+<div class="line">                *error = <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga057524ba5256c428b6bf88710f000e0c">nc_err_new</a>(<a class="code" href="../../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2ae9d2e7a938b0fb4583b961a7079aabe3">NC_ERR_OP_FAILED</a>);</div>
+<div class="line">                <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gab28d881eeebd79d485391ae1ffc97299">nc_err_set</a>(*error, <a class="code" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73da1695230cad67458870f4cf93a2d530a5">NC_ERR_PARAM_MSG</a>, <span class="stringliteral">&quot;Unsupported operation.&quot;</span>);</div>
+<div class="line">                <span class="keywordflow">return</span>(EXIT_FAILURE);</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span>(EXIT_SUCCESS);</div>
+<div class="line">}</div>
+</div><!-- fragment --></li>
+<li>Fill the RPC message callback functions with code that will be run when a message arrives. <div class="fragment"><div class="line"><a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> * rpc_make_toast (xmlNodePtr input[])</div>
+<div class="line">{</div>
+<div class="line">        xmlNodePtr toasterDoneness = input[0];</div>
+<div class="line">        xmlNodePtr toasterToastType = input[1];</div>
+<div class="line"></div>
+<div class="line">        <a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> * reply;</div>
+<div class="line">        <span class="keywordtype">int</span> doneness = atoi(xmlNodeGetContent(toasterDoneness));</div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">if</span> (status == ON) {</div>
+<div class="line">                status = BUSY;</div>
+<div class="line">                pthread_create(&amp;thread, NULL, auxiliary_make_toast, (<span class="keywordtype">void</span>*)&amp;doneness);</div>
+<div class="line">                pthread_detach(thread);</div>
+<div class="line">                reply = <a class="code" href="../../d0/de2/group__reply.html#ga047f565bb3671ec4016fef5461e8f67e">nc_reply_ok</a>();</div>
+<div class="line">        } <span class="keywordflow">else</span> {</div>
+<div class="line">                reply = <a class="code" href="../../d0/de2/group__reply.html#ga12fd89263289491b84398279e0e449fd">nc_reply_error</a>(<a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga057524ba5256c428b6bf88710f000e0c">nc_err_new</a>(<a class="code" href="../../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2ae9d2e7a938b0fb4583b961a7079aabe3">NC_ERR_OP_FAILED</a>));</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span>(reply);</div>
+<div class="line">}</div>
+</div><!-- fragment --> <div class="fragment"><div class="line"><a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> * rpc_cancel_toast (xmlNodePtr input[])</div>
+<div class="line">{</div>
+<div class="line">        <a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> * reply;</div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">if</span> (status == BUSY) {</div>
+<div class="line">                status = ON;</div>
+<div class="line">                <a class="code" href="../../da/d54/group__notifications.html#ga9641deaca934bcd7ff66ac3ae60fc722">ncntf_event_new</a>(-1, <a class="code" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1f1e3c2032baf2542b06052243bd42c9">NCNTF_GENERIC</a>, <span class="stringliteral">&quot;&lt;toastDone&gt;&lt;toastStatus&gt;canceled&lt;/toastStatus&gt;&lt;/toastDone&gt;&quot;</span>);</div>
+<div class="line">                reply = <a class="code" href="../../d0/de2/group__reply.html#ga047f565bb3671ec4016fef5461e8f67e">nc_reply_ok</a>();</div>
+<div class="line">        } <span class="keywordflow">else</span> {</div>
+<div class="line">                reply = <a class="code" href="../../d0/de2/group__reply.html#ga12fd89263289491b84398279e0e449fd">nc_reply_error</a>(<a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga057524ba5256c428b6bf88710f000e0c">nc_err_new</a>(<a class="code" href="../../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2ae9d2e7a938b0fb4583b961a7079aabe3">NC_ERR_OP_FAILED</a>));</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span>(reply);</div>
+<div class="line">}</div>
+</div><!-- fragment --></li>
+</ol>
+<h2><a class="anchor" id="transapiTutorial-compiling"></a>
+Compiling module</h2>
+<p>Following sequence of commands will produce the shared library 'toaster.so' which may be loaded into libnetconf: </p>
+<div class="fragment"><div class="line">$ autoreconf</div>
+<div class="line">$ ./configure</div>
+<div class="line">$ make</div>
+</div><!-- fragment --><h2><a class="anchor" id="transapiTutorial-using"></a>
+Integrating to a server</h2>
+<p>In a server we use libnetconf's function <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support. ">ncds_new_transapi()</a> instead of <a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6" title="Create a new datastore structure of the specified implementation type. ">ncds_new()</a> to create a transAPI-capable data store. Then, you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock), data-reading (get, get-config) or module data-model-defined RPC operations. All these operations are processed inside the <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a> function. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Jun 5 2014 15:07:22 for libnetconf by
+    <li class="footer">Generated on Tue Jun 17 2014 14:34:43 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

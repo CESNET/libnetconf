@@ -1,6 +1,7 @@
 var searchData=
 [
   ['nc_5finit_5fall',['NC_INIT_ALL',['../d3/d7a/netconf_8h.html#abad7c8a3763fd854f67b3cbb1f703b72',1,'netconf.h']]],
+  ['nc_5finit_5fdatastores',['NC_INIT_DATASTORES',['../d3/d7a/netconf_8h.html#a27037322b92e9fcc59de966566a62389',1,'netconf.h']]],
   ['nc_5finit_5fkeepalivecheck',['NC_INIT_KEEPALIVECHECK',['../d3/d7a/netconf_8h.html#a296598fe488d5cb69257e2ba1def790c',1,'netconf.h']]],
   ['nc_5finit_5fmonitoring',['NC_INIT_MONITORING',['../d3/d7a/netconf_8h.html#a3523107c9618d5c1b061ce12b73a7d8e',1,'netconf.h']]],
   ['nc_5finit_5fnacm',['NC_INIT_NACM',['../d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6',1,'netconf.h']]],
