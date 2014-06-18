@@ -6,7 +6,7 @@ setup(name='netconf',
       author_email='rkrejci@cesnet.cz',
       description='libnetconf Python bindings.',
       url='https://libnetconf.googlecode.com',
-      ext_modules=[Extension("netconf", ["netconf.c"], libraries=["netconf"], extra_compile_args=["-g"])],
+      ext_modules=[Extension("netconf", ["netconf.c", "session.c"], libraries=["netconf"], extra_compile_args=["-g"])],
       platforms=['Linux'],
       license='BSD License',
       )
