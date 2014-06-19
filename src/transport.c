@@ -620,6 +620,20 @@ struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabiliti
 	struct utmpx protox, *utp;
 #endif
 
+	if (username == NULL) {
+		/*
+		 * get username - we are running as SSH Subsystem (or some other process)
+		 * which was started under the user which was connecting to NETCONF server
+		 */
+		pw = getpwuid(getuid());
+		if (pw == NULL) {
+			/* unable to get correct username */
+			ERROR("Unable to get username for the NETCONF session (%s).", strerror(errno))
+			return (NULL);
+		}
+		username = pw->pw_name;
+	}
+
 	/* allocate netconf session structure */
 	retval = malloc(sizeof(struct nc_session));
 	if (retval == NULL) {
@@ -833,20 +847,12 @@ struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabiliti
 
 struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 {
-	struct passwd *pw;
-
 	/*
-	 * get username - we are running as SSH Subsystem which was started
-	 * under the user which was connecting to NETCONF server
+	 * just a wrapper (backward compatibility) for the
+	 * nc_session_accept_username(), which gets the current user of the running
+	 * process in case the username argument is NULL.
 	 */
-	pw = getpwuid(getuid());
-	if (pw == NULL) {
-		/* unable to get correct username */
-		ERROR("Unable to get username for the NETCONF session (%s).", strerror(errno))
-		return (NULL);
-	}
-
-	return (nc_session_accept_username(capabilities, pw->pw_name));
+	return (nc_session_accept_username(capabilities, NULL));
 }
 
 /*
