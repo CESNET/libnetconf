@@ -14,7 +14,16 @@ static PyMemberDef ncSessionMembers[] = {
 
 static void ncSessionFree(ncSessionObject *self)
 {
+	PyObject *err_type, *err_value, *err_traceback;
+
+	/* save the current exception state */
+	PyErr_Fetch(&err_type, &err_value, &err_traceback);
+
 	nc_session_free(self->session);
+
+	/* restore the saved exception state */
+	PyErr_Restore(err_type, err_value, err_traceback);
+
 	Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
