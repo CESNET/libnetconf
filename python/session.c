@@ -35,23 +35,27 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 	struct nc_session *session;
 	struct nc_cpblts *cpblts = NULL;
 	char* item = NULL;
+	const char* errstr = NULL;
 	Py_ssize_t l, i;
 	int ret;
 
 	char *kwlist[] = {"host", "port", "user", "transport", "capabilities", NULL};
 
 	/* Get input parameters */
-	if (! PyArg_ParseTupleAndKeywords(args, keywords, "s|HssO!", kwlist, &host, &port, &user, &transport_s, &PyList_Type, &(PyCpblts))) {
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "|sHssO!", kwlist, &host, &port, &user, &transport_s, &PyList_Type, &(PyCpblts))) {
 		return -1;
 	}
 
-	if (transport_s && strcasecmp(transport_s, "tls") == 0) {
-		ret = nc_session_transport(NC_TRANSPORT_TLS);
-	} else {
-		ret = nc_session_transport(NC_TRANSPORT_SSH);
-	}
-	if (ret != EXIT_SUCCESS) {
-		return -1;
+	if (host != NULL) {
+		/* Client side */
+		if (transport_s && strcasecmp(transport_s, "tls") == 0) {
+			ret = nc_session_transport(NC_TRANSPORT_TLS);
+		} else {
+			ret = nc_session_transport(NC_TRANSPORT_SSH);
+		}
+		if (ret != EXIT_SUCCESS) {
+			return -1;
+		}
 	}
 
 	if (PyCpblts != NULL) {
@@ -85,10 +89,20 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 		}
 	}
 
-	session = nc_session_connect(host, port, user, cpblts);
+	if (host != NULL) {
+		/* Client side */
+		session = nc_session_connect(host, port, user, cpblts);
+		errstr = "Connecting to the NETCONF server failed.";
+	} else {
+		/* Server side */
+		session = nc_session_accept_username(cpblts, user);
+		errstr = "Accepting incoming NETCONF session failed.";
+	}
+
 	nc_cpblts_free(cpblts);
+
 	if (session == NULL) {
-		PyErr_SetString(PyExc_Exception, "Connecting to the NETCONF server failed.");
+		PyErr_SetString(PyExc_Exception, errstr);
 		return -1;
 	}
 
@@ -199,7 +213,7 @@ static PyMethodDef ncSessionMethods[] = {
 PyDoc_STRVAR(sessionDoc,
 "Create the NETCONF Session\n\
 netconf.Session(host, [port, user, transport, capabilities]) -> connect to the NETCONF server\n\
-netconf.Session([capabilities]) -> accept incomming connection from stdin\n\
+netconf.Session([user, capabilities]) -> accept incomming connection from stdin\n\
 \n\
 Arguments:\n\
 \thost         - hostname or address of the server\n\
