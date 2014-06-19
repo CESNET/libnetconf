@@ -62,12 +62,15 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 		if (PyList_Check(PyCpblts) && ((l = PyList_Size(PyCpblts)) > 0)) {
 			for (i = 0; i < l; i++) {
 				PyObject *PyUni = PyList_GetItem(PyCpblts, i);
+				Py_INCREF(PyUni);
 				if (! PyUnicode_Check(PyUni)) {
 					PyErr_SetString(PyExc_TypeError, "Capabilities list must contain strings.");
 					nc_cpblts_free(cpblts);
+					Py_DECREF(PyUni);
 					return -1;
 				}
 				PyObject *PyStr = PyUnicode_AsEncodedString(PyUni, "UTF-8", NULL);
+				Py_DECREF(PyUni);
 				if (PyStr == NULL) {
 					nc_cpblts_free(cpblts);
 					return -1;
@@ -75,11 +78,11 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 				item = PyBytes_AsString(PyStr);
 				if (item == NULL) {
 					nc_cpblts_free(cpblts);
-					Py_XDECREF(PyStr);
+					Py_DECREF(PyStr);
 					return -1;
 				}
 				ret = nc_cpblts_add(cpblts, item);
-				Py_XDECREF(PyStr);
+				Py_DECREF(PyStr);
 				if (ret != EXIT_SUCCESS) {
 					nc_cpblts_free(cpblts);
 					return -1;
