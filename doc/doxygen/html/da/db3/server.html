@@ -125,7 +125,7 @@ Server Workflow</h1>
 <ol type="1">
 <li><b>Set the verbosity</b> (optional)<br/>
 The verbosity of the libnetconf can be set by <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7" title="Set libnetconf&#39;s verbosity level. ">nc_verbosity()</a>. By default, libnetconf is completely silent.<br/>
-There is a default message printing function writing messages on stderr. On the server side, this is not very useful, since server usually runs as a daemon without stderr. In this case, something like syslog should be used. The application's specific message printing function can be set via <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7" title="Set a callback function for printing libnetconf&#39;s messages. ">nc_callback_print()</a> function.</li>
+There is a default message printing function writing messages on stderr. On the server side, this is not very useful, since server usually runs as a daemon without stderr. In this case, something like syslog should be used. The application's specific message printing function can be set via <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7" title="Set a callback function for printing libnetconf&#39;s messages.If the func parameter is NULL...">nc_callback_print()</a> function.</li>
 <li><b>Initiate libnetconf</b><br/>
 As the first step, libnetconf MUST be initiated using <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a>. At this moment, the libnetconf subsystems, such as NETCONF Notifications or NETCONF Access Control, are initiated according to the specified parameter of the <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a> function.</li>
 <li><b>Set With-defaults basic mode</b> (optional)<br/>
@@ -165,7 +165,7 @@ Close internal libnetconf structures and subsystems by the <a class="el" href=".
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
-    <li class="footer">Generated on Tue Jun 17 2014 14:34:43 for libnetconf by
+    <li class="footer">Generated on Thu Jun 19 2014 11:16:15 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

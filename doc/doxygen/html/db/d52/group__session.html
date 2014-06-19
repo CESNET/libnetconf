@@ -420,6 +420,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 <p>Set a callback function to authorize authenticity of the remote host. </p>
 <p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
+<p>If the func parameter is NULL, the callback is set back to the default function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. Expected callback return values are:<ul>
@@ -449,6 +450,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 <p>Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method. </p>
 <p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
+<p>If the func parameter is NULL, the callback is set back to the default function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. For more information about the callback parameters, see libssh2_userauth_keyboard_interactive() description in libssh2 documentation. </td></tr>
@@ -474,6 +476,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 <p>Set a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'. </p>
 <p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
+<p>If the func parameter is NULL, the callback is set back to the default function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. </td></tr>
@@ -499,6 +502,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 <p>Set a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'. </p>
 <p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
+<p>If the func parameter is NULL, the callback is set back to the default function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. The callback function should return a password string for the given username and name of the remote host. </td></tr>
@@ -1413,7 +1417,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Jun 17 2014 14:34:43 for libnetconf by
+    <li class="footer">Generated on Thu Jun 19 2014 11:16:15 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

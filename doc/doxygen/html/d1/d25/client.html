@@ -109,7 +109,7 @@ Client Workflow</h1>
 <ol type="1">
 <li><b>Set verbosity (optional)</b>.<br/>
 The verbosity of the libnetconf can be set by <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7" title="Set libnetconf&#39;s verbosity level. ">nc_verbosity()</a>. By default, libnetconf is completely silent.<br/>
-There is a default message-printing function that writes messages on stderr. The application's specific message printing function can be set via <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7" title="Set a callback function for printing libnetconf&#39;s messages. ">nc_callback_print()</a> function.</li>
+There is a default message-printing function that writes messages on stderr. The application's specific message printing function can be set via <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7" title="Set a callback function for printing libnetconf&#39;s messages.If the func parameter is NULL...">nc_callback_print()</a> function.</li>
 <li><b>Set SSH authentication methods priorities (optional)</b>.<br/>
 libnetconf supports several SSH authentication methods for connecting to a NETCONF server over SSH. However, the used method is selected from a list of supported authentication methods provided by the server. Client is allowed to specify the priority of each supported authentication method via <a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0" title="Set the preference of the SSH authentication methods. ">nc_ssh_pref()</a> function. The authentication method can also be disabled using a negative priority value.<br/>
 Default priorities are following:<ul>
@@ -143,7 +143,7 @@ Do not forget to free created rpc messages (<a class="el" href="../../db/de9/gro
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
-    <li class="footer">Generated on Tue Jun 17 2014 14:34:43 for libnetconf by
+    <li class="footer">Generated on Thu Jun 19 2014 11:16:15 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

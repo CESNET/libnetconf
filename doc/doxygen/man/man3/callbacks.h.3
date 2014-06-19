@@ -1,4 +1,4 @@
-.TH "src/callbacks.h" 3 "Tue Jun 17 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "src/callbacks.h" 3 "Thu Jun 19 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -17,11 +17,15 @@ Functions to set application's callbacks\&.
 .ti -1c
 .RI "void \fBnc_callback_error_reply\fP (void(*func)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid))"
 .br
-.RI "\fISet a callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fP"
+.RI "\fISet a callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&.
+.PP
+If the func parameter is NULL, the callback is set back to the default (no) function\&. \fP"
 .ti -1c
 .RI "void \fBnc_callback_print\fP (void(*func)(\fBNC_VERB_LEVEL\fP level, const char *msg))"
 .br
-.RI "\fISet a callback function for printing libnetconf's messages\&. \fP"
+.RI "\fISet a callback function for printing libnetconf's messages\&.
+.PP
+If the func parameter is NULL, the callback is set back to the default (no) function\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 

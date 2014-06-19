@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Tue Jun 17 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Thu Jun 19 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -283,6 +283,8 @@ NETCONF over TLS
 .PP
 Set a callback function to authorize authenticity of the remote host\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
 .PP
+If the func parameter is NULL, the callback is set back to the default function\&.
+.PP
 \fBParameters:\fP
 .RS 4
 \fIfunc\fP Callback function to use\&. Expected callback return values are:
@@ -299,6 +301,8 @@ EXIT_FAILURE - keys do not match or an error occurred\&.
 .PP
 Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
 .PP
+If the func parameter is NULL, the callback is set back to the default function\&.
+.PP
 \fBParameters:\fP
 .RS 4
 \fIfunc\fP Callback function to use\&. For more information about the callback parameters, see libssh2_userauth_keyboard_interactive() description in libssh2 documentation\&. 
@@ -310,6 +314,8 @@ Set a callback function for passing user credentials into the libssh2's keyboard
 .PP
 Set a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
 .PP
+If the func parameter is NULL, the callback is set back to the default function\&.
+.PP
 \fBParameters:\fP
 .RS 4
 \fIfunc\fP Callback function to use\&. 
@@ -320,6 +326,8 @@ Set a callback function for passing the user password into the libssh2's publick
 
 .PP
 Set a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
+.PP
+If the func parameter is NULL, the callback is set back to the default function\&.
 .PP
 \fBParameters:\fP
 .RS 4

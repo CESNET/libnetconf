@@ -1,4 +1,4 @@
-.TH "NETCONF rpc-reply" 3 "Tue Jun 17 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc-reply" 3 "Thu Jun 19 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -28,7 +28,9 @@ libnetconf's functions for handling NETCONF <rpc-reply> messages\&.
 .ti -1c
 .RI "void \fBnc_callback_error_reply\fP (void(*func)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid))"
 .br
-.RI "\fISet a callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. \fP"
+.RI "\fISet a callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&.
+.PP
+If the func parameter is NULL, the callback is set back to the default (no) function\&. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBnc_reply_build\fP (const char *reply_dump)"
 .br
@@ -138,7 +140,9 @@ rpc-reply message containing <data>
 .SS "void nc_callback_error_reply (void(*)(const char *tag, const char *type, const char *severity, const char *apptag, const char *path, const char *message, const char *attribute, const char *element, const char *ns, const char *sid)func)"
 
 .PP
-Set a callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&. 
+Set a callback function to process (e\&.g\&. print) NETCONF <rpc-error> message items\&.
+.PP
+If the func parameter is NULL, the callback is set back to the default (no) function\&. 
 .PP
 \fBParameters:\fP
 .RS 4

@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Tue Jun 17 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Thu Jun 19 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -34,13 +34,13 @@ libnetconf's general public functions and structures definitions\&.
 .RI "#define \fBNC_INIT_NOTIF\fP   0x00000002"
 .br
 .ti -1c
-.RI "#define \fBNC_INIT_URL\fP   0x00000140"
+.RI "#define \fBNC_INIT_URL\fP   0x00000040"
 .br
 .ti -1c
-.RI "#define \fBNC_INIT_VALIDATE\fP   0x00000120"
+.RI "#define \fBNC_INIT_VALIDATE\fP   0x00000020"
 .br
 .ti -1c
-.RI "#define \fBNC_INIT_WD\fP   0x00000110"
+.RI "#define \fBNC_INIT_WD\fP   0x00000010"
 .br
 .ti -1c
 .RI "#define \fBnc_msgid\fP   char*"
@@ -205,11 +205,11 @@ This software is provided ``as is, and any express or implied warranties, includ
 \fBnc_init()\fP's flag to enable Acccess Control subsystem 
 .SS "#define NC_INIT_NOTIF   0x00000002"
 \fBnc_init()\fP's flag to enable Notification subsystem\&. 
-.SS "#define NC_INIT_URL   0x00000140"
+.SS "#define NC_INIT_URL   0x00000040"
 \fBnc_init()\fP's flag to enable server's URL capability 
-.SS "#define NC_INIT_VALIDATE   0x00000120"
+.SS "#define NC_INIT_VALIDATE   0x00000020"
 \fBnc_init()\fP's flag to enable server's validation capability 
-.SS "#define NC_INIT_WD   0x00000110"
+.SS "#define NC_INIT_WD   0x00000010"
 \fBnc_init()\fP's flag to enable with-default capability 
 .SH "Enumeration Type Documentation"
 .PP 

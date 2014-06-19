@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Tue Jun 17 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Thu Jun 19 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -24,7 +24,9 @@ libnetconf's miscellaneous functions\&.
 .ti -1c
 .RI "void \fBnc_callback_print\fP (void(*func)(\fBNC_VERB_LEVEL\fP level, const char *msg))"
 .br
-.RI "\fISet a callback function for printing libnetconf's messages\&. \fP"
+.RI "\fISet a callback function for printing libnetconf's messages\&.
+.PP
+If the func parameter is NULL, the callback is set back to the default (no) function\&. \fP"
 .ti -1c
 .RI "int \fBnc_close\fP (int system)"
 .br
@@ -140,7 +142,9 @@ Print all messages including some development debug messages\&.
 .SS "void nc_callback_print (void(*)(\fBNC_VERB_LEVEL\fP level, const char *msg)func)"
 
 .PP
-Set a callback function for printing libnetconf's messages\&. 
+Set a callback function for printing libnetconf's messages\&.
+.PP
+If the func parameter is NULL, the callback is set back to the default (no) function\&. 
 .PP
 \fBParameters:\fP
 .RS 4
