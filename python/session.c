@@ -35,7 +35,6 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 	struct nc_session *session;
 	struct nc_cpblts *cpblts = NULL;
 	char* item = NULL;
-	const char* errstr = NULL;
 	Py_ssize_t l, i;
 	int ret;
 
@@ -92,17 +91,14 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 	if (host != NULL) {
 		/* Client side */
 		session = nc_session_connect(host, port, user, cpblts);
-		errstr = "Connecting to the NETCONF server failed.";
 	} else {
 		/* Server side */
 		session = nc_session_accept_username(cpblts, user);
-		errstr = "Accepting incoming NETCONF session failed.";
 	}
 
 	nc_cpblts_free(cpblts);
 
 	if (session == NULL) {
-		PyErr_SetString(PyExc_Exception, errstr);
 		return -1;
 	}
 

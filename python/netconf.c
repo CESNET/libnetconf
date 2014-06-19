@@ -6,12 +6,14 @@
 
 extern PyTypeObject ncSessionType;
 
+static PyObject *libnetconfError;
+
 static int syslogEnabled = 1;
 static void clb_print(NC_VERB_LEVEL level, const char* msg)
 {
 	switch (level) {
 	case NC_VERB_ERROR:
-		PyErr_SetString(PyExc_Exception, msg);
+		PyErr_SetString(libnetconfError, msg);
 		if (syslogEnabled) {syslog(LOG_ERR, "%s", msg);}
 		break;
 	case NC_VERB_WARNING:
@@ -108,6 +110,11 @@ PyMODINIT_FUNC PyInit_netconf(void)
 
     Py_INCREF(&ncSessionType);
     PyModule_AddObject(nc, "Session", (PyObject *)&ncSessionType);
+
+	/* init libnetconf exception for use in clb_print() */
+	libnetconfError = PyErr_NewException("netconf.Error", NULL, NULL);
+	Py_INCREF(libnetconfError);
+	PyModule_AddObject(nc, "Error", libnetconfError);
 
 	return nc;
 }
