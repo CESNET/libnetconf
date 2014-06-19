@@ -7,6 +7,7 @@
 extern PyTypeObject ncSessionType;
 
 static PyObject *libnetconfError;
+static PyObject *libnetconfWarning;
 
 static int syslogEnabled = 1;
 static void clb_print(NC_VERB_LEVEL level, const char* msg)
@@ -18,6 +19,7 @@ static void clb_print(NC_VERB_LEVEL level, const char* msg)
 		break;
 	case NC_VERB_WARNING:
 		if (syslogEnabled) {syslog(LOG_WARNING, "%s", msg);}
+		PyErr_WarnEx(libnetconfWarning, msg, 1);
 		break;
 	case NC_VERB_VERBOSE:
 		if (syslogEnabled) {syslog(LOG_INFO, "%s", msg);}
@@ -111,10 +113,14 @@ PyMODINIT_FUNC PyInit_netconf(void)
     Py_INCREF(&ncSessionType);
     PyModule_AddObject(nc, "Session", (PyObject *)&ncSessionType);
 
-	/* init libnetconf exception for use in clb_print() */
+	/* init libnetconf exceptions for use in clb_print() */
 	libnetconfError = PyErr_NewException("netconf.Error", NULL, NULL);
 	Py_INCREF(libnetconfError);
 	PyModule_AddObject(nc, "Error", libnetconfError);
+
+	libnetconfWarning = PyErr_NewException("netconf.Warning", PyExc_Warning, NULL);
+	Py_INCREF(libnetconfWarning);
+	PyModule_AddObject(nc, "Warning", libnetconfWarning);
 
 	return nc;
 }
