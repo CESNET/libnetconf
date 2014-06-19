@@ -124,6 +124,14 @@ static PyObject *ncSessionGetTransport(ncSessionObject *self, void *closure)
 	return PyUnicode_FromFormat("%s", (t == NC_TRANSPORT_TLS) ? "TLS" : "SSH");
 }
 
+static PyObject *ncSessionStr(ncSessionObject *self)
+{
+	return PyUnicode_FromFormat("NETCONF Session %s to %s:%s",
+			nc_session_get_id(self->session),
+			nc_session_get_host(self->session),
+			nc_session_get_port(self->session));
+}
+
 static PyObject *ncSessionGetCapabilities(ncSessionObject *self, void *closure)
 {
 	struct nc_cpblts* cpblts;
@@ -198,13 +206,13 @@ PyTypeObject ncSessionType = {
 		0, /* tp_getattr */
 		0, /* tp_setattr */
 		0, /* tp_reserved */
-		0, /* tp_repr */
+		(reprfunc)ncSessionStr, /* tp_repr */
 		0, /* tp_as_number */
 		0, /* tp_as_sequence */
 		0, /* tp_as_mapping */
 		0, /* tp_hash  */
 		0, /* tp_call */
-		0, /* tp_str */
+		(reprfunc)ncSessionStr, /* tp_str */
 		0, /* tp_getattro */
 		0, /* tp_setattro */
 		0, /* tp_as_buffer */
