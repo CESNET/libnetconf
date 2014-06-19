@@ -114,11 +114,11 @@ PyMODINIT_FUNC PyInit_netconf(void)
     PyModule_AddObject(nc, "Session", (PyObject *)&ncSessionType);
 
 	/* init libnetconf exceptions for use in clb_print() */
-	libnetconfError = PyErr_NewException("netconf.Error", NULL, NULL);
+	libnetconfError = PyErr_NewExceptionWithDoc("netconf.Error", "Error passed from the underlying libnetconf library.", NULL, NULL);
 	Py_INCREF(libnetconfError);
 	PyModule_AddObject(nc, "Error", libnetconfError);
 
-	libnetconfWarning = PyErr_NewException("netconf.Warning", PyExc_Warning, NULL);
+	libnetconfWarning = PyErr_NewExceptionWithDoc("netconf.Warning", "Warning passed from the underlying libnetconf library.", PyExc_Warning, NULL);
 	Py_INCREF(libnetconfWarning);
 	PyModule_AddObject(nc, "Warning", libnetconfWarning);
 
