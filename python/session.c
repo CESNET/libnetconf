@@ -148,26 +148,20 @@ static PyObject *ncSessionStr(ncSessionObject *self)
 static PyObject *ncSessionGetCapabilities(ncSessionObject *self, void *closure)
 {
 	struct nc_cpblts* cpblts;
-	PyObject *list, *pyItem;
+	PyObject *list;
 	const char *item;
-	int pos;
+	ssize_t pos;
 
 	cpblts = nc_session_get_cpblts(self->session);
 	if (cpblts == NULL) {
 		return (NULL);
 	}
 
-	list = PyList_New(0);
+	list = PyList_New(nc_cpblts_count(cpblts));
 	nc_cpblts_iter_start(cpblts);
-	while((item = nc_cpblts_iter_next(cpblts)) != NULL) {
-		if (PyList_Append(list, PyUnicode_FromFormat("%s", item)) != 0) {
-			for (pos = 0; PyList_GET_SIZE(list); pos++) {
-				pyItem = PyList_GetItem(list, pos);
-				Py_DECREF(pyItem);
-			}
-			Py_DECREF(list);
-			return NULL;
-		}
+	for (pos = 0; pos < nc_cpblts_count(cpblts); pos++) {
+		item = nc_cpblts_iter_next(cpblts);
+		PyList_SetItem(list, pos, PyUnicode_FromFormat("%s", item));
 	}
 
 	return list;
