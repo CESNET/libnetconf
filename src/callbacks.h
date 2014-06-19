@@ -49,6 +49,10 @@ extern "C" {
 /**
  * @brief Set a callback function for printing libnetconf's messages.
  * @ingroup genAPI
+ *
+ * If the func parameter is NULL, the callback is set back to the default (no)
+ * function.
+ *
  * @param[in] func Callback function to use.
  */
 void nc_callback_print(void (*func)(NC_VERB_LEVEL level, const char* msg));
@@ -56,6 +60,10 @@ void nc_callback_print(void (*func)(NC_VERB_LEVEL level, const char* msg));
 /**
  * @brief Set a callback function to process (e.g. print) NETCONF \<rpc-error\> message items.
  * @ingroup reply
+ *
+ * If the func parameter is NULL, the callback is set back to the default (no)
+ * function.
+ *
  * @param[in] func Callback function to use. Passed parameters are:
  * - tag - error tag,
  * - type - error layer where the error occurred,

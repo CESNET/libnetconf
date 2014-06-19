@@ -56,6 +56,8 @@ extern "C" {
  *
  * To make this function available, you have to include libnetconf_ssh.h.
  *
+ * If the func parameter is NULL, the callback is set back to the default function.
+ *
  * @ingroup session
  * @param[in] func Callback function to use. For more information about the
  * callback parameters, see libssh2_userauth_keyboard_interactive() description
@@ -76,6 +78,8 @@ void nc_callback_sshauth_interactive(void (*func)(const char* name,
  *
  * To make this function available, you have to include libnetconf_ssh.h.
  *
+ * If the func parameter is NULL, the callback is set back to the default function.
+ *
  * @ingroup session
  * @param[in] func Callback function to use. The callback function should return
  * a password string for the given username and name of the remote host.
@@ -89,6 +93,8 @@ void nc_callback_sshauth_password(char* (*func)(const char* username,
  *
  * To make this function available, you have to include libnetconf_ssh.h.
  *
+ * If the func parameter is NULL, the callback is set back to the default function.
+ *
  * @ingroup session
  * @param[in] func Callback function to use.
  */
@@ -100,6 +106,8 @@ void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
  * @brief Set a callback function to authorize authenticity of the remote host.
  *
  * To make this function available, you have to include libnetconf_ssh.h.
+ *
+ * If the func parameter is NULL, the callback is set back to the default function.
  *
  * @param[in] func Callback function to use. Expected callback return values are:
  * - EXIT_SUCCESS - hosts and keys match, the SSH session establishment will continue.

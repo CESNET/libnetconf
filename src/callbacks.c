@@ -117,6 +117,8 @@ void nc_callback_sshauth_interactive(void (*func)(const char* name,
 {
 	if (func != NULL) {
 		callbacks.sshauth_interactive = func;
+	} else {
+		callbacks.sshauth_interactive = callback_sshauth_interactive_default;
 	}
 }
 
@@ -125,6 +127,8 @@ void nc_callback_sshauth_password(char* (*func)(const char* username,
 {
 	if (func != NULL) {
 		callbacks.sshauth_password = func;
+	} else {
+		callbacks.sshauth_password = callback_sshauth_password_default;
 	}
 }
 
@@ -133,6 +137,8 @@ void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
 {
 	if (func != NULL) {
 		callbacks.sshauth_passphrase = func;
+	} else {
+		callbacks.sshauth_passphrase = callback_sshauth_publickey_default;
 	}
 }
 
@@ -141,6 +147,8 @@ void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
 {
 	if (func != NULL) {
 		callbacks.hostkey_check = func;
+	} else {
+		callbacks.hostkey_check = callback_ssh_hostkey_check_default;
 	}
 }
 
