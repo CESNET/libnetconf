@@ -844,7 +844,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">capabilities</td><td>NETCONF capabilities structure with the capabilities supported by the server. The caller can use <a class="el" href="../../db/d52/group__session.html#ga8283673aa18f079a89a437efb436a55a" title="Get NULL terminated list of the default capabilities supported by libnetconf including the list of na...">nc_session_get_cpblts_default()</a> to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">username</td><td>Name of the user which will be assigned to the NETCONF session. This information is used for example by NACM subsystem. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">username</td><td>Name of the user which will be assigned to the NETCONF session. This information is used for example by NACM subsystem. If NULL, the function act the same way as the <a class="el" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707" title="Accept NETCONF session from a client. ">nc_session_accept()</a> function. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1417,7 +1417,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Jun 19 2014 11:16:15 for libnetconf by
+    <li class="footer">Generated on Thu Jun 19 2014 11:37:24 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

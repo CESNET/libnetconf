@@ -510,7 +510,7 @@ Accept NETCONF session from a client and assign it to the specified username\&. 
 .RS 4
 \fIcapabilities\fP NETCONF capabilities structure with the capabilities supported by the server\&. The caller can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter)\&. 
 .br
-\fIusername\fP Name of the user which will be assigned to the NETCONF session\&. This information is used for example by NACM subsystem\&. 
+\fIusername\fP Name of the user which will be assigned to the NETCONF session\&. This information is used for example by NACM subsystem\&. If NULL, the function act the same way as the \fBnc_session_accept()\fP function\&. 
 .RE
 .PP
 \fBReturns:\fP
