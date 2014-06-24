@@ -152,7 +152,7 @@ int nc_init(int flags)
 		return (-1);
 	}
 
-	if (nc_init_flags & (NC_INIT_DATASTORES | NC_INIT_MONITORING | NC_INIT_NACM)) {
+	if (flags & (NC_INIT_DATASTORES | NC_INIT_MONITORING | NC_INIT_NACM)) {
 
 		DBG("Shared memory key: %d", key);
 		shmid = shmget(key, sizeof(struct nc_shared_info), IPC_CREAT | IPC_EXCL | FILE_PERM);
