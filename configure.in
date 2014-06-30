@@ -48,7 +48,13 @@ AC_SUBST(PACKAGE_VERSION)
 LIBTOOL_VERSION_INFO=`echo ${PACKAGE_VERSION} | sed -e 's/\./:/g' `
 AC_SUBST(LIBTOOL_VERSION_INFO)
 
-RELEASE=1
+if test -n "`git branch | grep '\* *master'`"; then
+	RELEASE_TAG="_trunk"
+fi
+RELEASE="`git log | grep '^commit' | sed "/$(git log | grep -B 4 -m 1 VERSION: | grep ^commit)/q" | wc -l`$RELEASE_TAG"
+if test -z "${RELEASE}"; then
+	RELEASE=1
+fi
 AC_SUBST(RELEASE)
 
 if test "`git show > /dev/null 2>&1;echo $?`" = "0"; then
