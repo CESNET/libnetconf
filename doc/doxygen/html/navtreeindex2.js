@@ -1,5 +1,6 @@
 var NAVTREEINDEX2 =
 {
+"d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa962fdf56453d65bd49886f1f00820e85":[8,0,0,4,3,3],
 "d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b":[8,0,0,4,3,1],
 "d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629":[8,0,0,4,3,2],
 "d9/db6/datastore_8h_source.html":[8,0,0,4],
@@ -248,6 +249,5 @@ var NAVTREEINDEX2 =
 "db/db4/group__tls.html":[6,13],
 "db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17":[6,13,1],
 "db/db4/group__tls.html#gacf3aed5cccac55d0548f46761707ece9":[6,13,0],
-"db/de7/group__callhome.html":[6,2],
-"db/de7/group__callhome.html#ga1c2942e68d263d674adf1381bc5e7083":[6,2,7]
+"db/de7/group__callhome.html":[6,2]
 };

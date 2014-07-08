@@ -8,6 +8,7 @@ var NAVTREE =
     ] ],
     [ "Compilation and Installation", "d9/d87/install.html", [
       [ "Cloning git repository", "d9/d87/install.html#install-getting", null ],
+      [ "Requirements", "d9/d87/install.html#install-reqs", null ],
       [ "Compilation", "d9/d87/install.html#install-compilation", [
         [ "Configure Options", "d9/d87/install.html#install-compilation-options", null ]
       ] ]
@@ -64,8 +65,8 @@ var NAVTREEINDEX =
 [
 "annotated.html",
 "d3/d7a/netconf_8h.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a735c5d45557d1545fcb65bfdf484290e",
-"d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b",
-"db/de7/group__callhome.html#ga3db211a665c56160c167619b633b6cb0"
+"d9/db6/datastore_8h.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa962fdf56453d65bd49886f1f00820e85",
+"db/de7/group__callhome.html#ga1c2942e68d263d674adf1381bc5e7083"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

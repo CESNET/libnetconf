@@ -108,6 +108,36 @@ Cloning git repository</h1>
 <p>As written on libnetconf's <a href="https://code.google.com/p/libnetconf/source/checkout">Google Code page</a>, the repository can be cloned using the following command:</p>
 <div class="fragment"><div class="line">$ git clone https:<span class="comment">//code.google.com/p/libnetconf/</span></div>
 </div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>In case that git fails to clone the repository make sure your git is at least version 1.6.6.</dd></dl>
+<h1><a class="anchor" id="install-reqs"></a>
+Requirements</h1>
+<p>Before compiling the source code make sure that your system provides the following libraries or applications. Some of them are optional or can be avoided in cost of missing of some feature - see the notes for the specific item. All requirements are checked by the <code>configure</code> script.</p>
+<ul>
+<li>compiler (<em>gcc</em>, <em>clang</em>, ...) and standard headers</li>
+<li><em>pkg-config</em></li>
+<li><em>libpthreads</em></li>
+<li><em>libxml2</em> (including headers from the devel package)</li>
+<li><em>libxslt</em> (including headers from the devel package)</li>
+<li><em>libssh2</em> (including headers from the devel package)<ul>
+<li>can be omitted by <code>--disable-libssh2</code> option, but in that case a standalone SSH client (usually from the openSSH) is required. For more details, see <a class="el" href="../../d9/d87/install.html#configure-disable-libssh2">--disable-libssh2</a> description.</li>
+</ul>
+</li>
+<li><em>libcurl</em> (including headers from the devel package)<ul>
+<li>can be omitted by <code>--disable-url</code> option, but in that case the NETCONF :url capability is disabled.</li>
+</ul>
+</li>
+<li><em>libopenssl</em> (including headers from the devel package)<ul>
+<li>required only when the TLS transport is enabled by <code>--enable-tls</code> option. More information about the TLS transport can be found in <a class="el" href="../../d4/d76/transport.html">Transport Protocol</a> section.</li>
+</ul>
+</li>
+<li><em>doxygen</em><ul>
+<li>optional, required to (re)build documentation (<code>make doc</code>)</li>
+</ul>
+</li>
+<li><em>rpmbuild</em><ul>
+<li>optional, required to build RPM package (<code>make rpm</code>)</li>
+</ul>
+</li>
+</ul>
 <h1><a class="anchor" id="install-compilation"></a>
 Compilation</h1>
 <p>libnetconf uses standard GNU Autotools toolchain. To compile and install libnetconf you have to go through the following three steps:</p>
@@ -119,12 +149,12 @@ Compilation</h1>
 Configure Options</h2>
 <p><code>configure</code> script supports the following options. The full list of the accepted options can be shown by <code>--help</code> option.</p>
 <ul>
-<li><code>--disable--libssh2</code><ul>
+<li><code>--disable--libssh2</code><a class="anchor" id="configure-disable-libssh2"></a><ul>
 <li>Remove dependency on the <code>libssh2</code> library. By default, the <code>libssh2</code> library is used by the client side functions to create SSH connection to a remote host. If the usage of the <code>libssh2</code> is disabled, libnetconf will use a standalone <code>ssh(1)</code> client located in a system path. <code>ssh(1)</code> client is, for example, part of the OpenSSH. This option has no effect for server-side functionality.</li>
 </ul>
 </li>
 <li><code>--disable-notifications</code><ul>
-<li>Remove support for the NETCONF Notifications. As a side effect, D-Bus (libdbus) dependency is also removed.</li>
+<li>Remove support for the NETCONF Notifications.</li>
 </ul>
 </li>
 <li><code>--disable-url</code><ul>
@@ -170,7 +200,7 @@ Configure Options</h2>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Jun 19 2014 11:37:24 for libnetconf by
+    <li class="footer">Generated on Tue Jul 8 2014 13:36:50 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

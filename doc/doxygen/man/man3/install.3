@@ -1,4 +1,4 @@
-.TH "install" 3 "Thu Jun 19 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "install" 3 "Tue Jul 8 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,6 +18,51 @@ $ git clone https://code\&.google\&.com/p/libnetconf/
 .RS 4
 In case that git fails to clone the repository make sure your git is at least version 1\&.6\&.6\&.
 .RE
+.PP
+.SH "Requirements"
+.PP
+Before compiling the source code make sure that your system provides the following libraries or applications\&. Some of them are optional or can be avoided in cost of missing of some feature - see the notes for the specific item\&. All requirements are checked by the \fCconfigure\fP script\&.
+.PP
+.IP "\(bu" 2
+compiler (\fIgcc\fP, \fIclang\fP, \&.\&.\&.) and standard headers
+.IP "\(bu" 2
+\fIpkg-config\fP
+.IP "\(bu" 2
+\fIlibpthreads\fP
+.IP "\(bu" 2
+\fIlibxml2\fP (including headers from the devel package)
+.IP "\(bu" 2
+\fIlibxslt\fP (including headers from the devel package)
+.IP "\(bu" 2
+\fIlibssh2\fP (including headers from the devel package)
+.IP "  \(bu" 4
+can be omitted by \fC--disable-libssh2\fP option, but in that case a standalone SSH client (usually from the openSSH) is required\&. For more details, see \fB--disable-libssh2\fP description\&.
+.PP
+
+.IP "\(bu" 2
+\fIlibcurl\fP (including headers from the devel package)
+.IP "  \(bu" 4
+can be omitted by \fC--disable-url\fP option, but in that case the NETCONF :url capability is disabled\&.
+.PP
+
+.IP "\(bu" 2
+\fIlibopenssl\fP (including headers from the devel package)
+.IP "  \(bu" 4
+required only when the TLS transport is enabled by \fC--enable-tls\fP option\&. More information about the TLS transport can be found in \fBTransport Protocol\fP section\&.
+.PP
+
+.IP "\(bu" 2
+\fIdoxygen\fP
+.IP "  \(bu" 4
+optional, required to (re)build documentation (\fCmake doc\fP)
+.PP
+
+.IP "\(bu" 2
+\fIrpmbuild\fP
+.IP "  \(bu" 4
+optional, required to build RPM package (\fCmake rpm\fP)
+.PP
+
 .PP
 .SH "Compilation"
 .PP
@@ -44,7 +89,7 @@ Remove dependency on the \fClibssh2\fP library\&. By default, the \fClibssh2\fP 
 .IP "\(bu" 2
 \fC--disable-notifications\fP
 .IP "  \(bu" 4
-Remove support for the NETCONF Notifications\&. As a side effect, D-Bus (libdbus) dependency is also removed\&.
+Remove support for the NETCONF Notifications\&.
 .PP
 
 .IP "\(bu" 2

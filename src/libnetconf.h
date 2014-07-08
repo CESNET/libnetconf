@@ -157,6 +157,34 @@
  *
  * \note In case that git fails to clone the repository make sure your git is at least version 1.6.6.
  *
+ * \section install-reqs Requirements
+ *
+ * Before compiling the source code make sure that your system provides the
+ * following libraries or applications. Some of them are optional or can be
+ * avoided in cost of missing of some feature - see the notes for the specific
+ * item. All requirements are checked by the `configure` script.
+ *
+ * - compiler (_gcc_, _clang_, ...) and standard headers
+ * - _pkg-config_
+ * - _libpthreads_
+ * - _libxml2_ (including headers from the devel package)
+ * - _libxslt_ (including headers from the devel package)
+ * - _libssh2_ (including headers from the devel package)
+ *  - can be omitted by `--disable-libssh2` option, but in that case a
+ *    standalone SSH client (usually from the openSSH) is required. For more
+ *    details, see \ref configure-disable-libssh2 "--disable-libssh2" description.
+ * - _libcurl_ (including headers from the devel package)
+ *  - can be omitted by `--disable-url` option, but in that case the NETCONF
+ *    :url capability is disabled.
+ * - _libopenssl_ (including headers from the devel package)
+ *  - required only when the TLS transport is enabled by `--enable-tls` option.
+ *    More information about the TLS transport can be found in \ref transport
+ *    section.
+ * - _doxygen_
+ *  - optional, required to (re)build documentation (`make doc`)
+ * - _rpmbuild_
+ *  - optional, required to build RPM package (`make rpm`)
+ *
  * \section install-compilation Compilation
  *
  * libnetconf uses standard GNU Autotools toolchain. To compile and install
@@ -176,7 +204,7 @@
  * `configure` script supports the following options. The full list of the
  * accepted options can be shown by `--help` option.
  *
- * - `--disable--libssh2`
+ * - `--disable--libssh2` \anchor configure-disable-libssh2
  *  - Remove dependency on the `libssh2` library. By default,
  *    the `libssh2` library is used by the client side functions to create SSH
  *    connection to a remote host. If the usage of the `libssh2` is disabled,
@@ -185,8 +213,7 @@
  *    effect for server-side functionality.
  *
  * - `--disable-notifications`
- *  - Remove support for the NETCONF Notifications. As a side effect, D-Bus
- *    (libdbus) dependency is also removed.
+ *  - Remove support for the NETCONF Notifications.
  *
  * - `--disable-url`
  *  - Remove support for NETCONF :url capability. cURL dependency is also
