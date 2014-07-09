@@ -205,7 +205,7 @@ if test "$url" = "yes"; then
 	HDRS_PRIV_URL="src/url_internal.h src/url.h"
 	SRCS_URL="src/url.c"
 	[INCLUDE_URL="#include \"libnetconf/url.h\""]
-	PROVIDES="$PROVIDES libnetconf-notifications"
+	PROVIDES="$PROVIDES libnetconf-url"
 else
 	CONFIGURE_PARAMS="$CONFIGURE_PARAMS --disable-url"
 	CPPFLAGS="$CPPFLAGS -DDISABLE_URL"
