@@ -491,6 +491,10 @@ AC_SUBST(PTHREAD_LIBS)
 AC_SUBST(DOXYGEN)
 if test -z "$DOXYGEN"; then
 	AC_MSG_WARN([Due to missing doxygen you will not able to generate Doxygen documentation.])
+else
+	# check for dot if we are able to use it
+	AC_CHECK_PROG([GRAPHS], [dot], [YES], [NO])
+	AC_SUBST(GRAPHS)
 fi
 
 AC_SUBST(RPMBUILD)
