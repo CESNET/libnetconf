@@ -75,7 +75,6 @@
 #include "session.h"
 #include "datastore_xml.h"
 #include "nacm.h"
-#include "url_internal.h"
 #include "datastore/edit_config.h"
 #include "datastore/datastore_internal.h"
 #include "datastore/file/datastore_file.h"
@@ -83,6 +82,10 @@
 #include "datastore/custom/datastore_custom_private.h"
 #include "transapi/transapi_internal.h"
 #include "config.h"
+
+#ifndef DISABLE_URL
+#	include "url_internal.h"
+#endif
 
 #ifndef DISABLE_NOTIFICATIONS
 #  include "notifications.h"
