@@ -51,7 +51,7 @@ AC_SUBST(LIBTOOL_VERSION_INFO)
 if test -n "`git branch | grep '\* *master'`"; then
 	RELEASE_TAG="_trunk"
 fi
-RELEASE="`git log | grep '^commit' | sed "/$(git log | grep -B 4 -m 1 VERSION: | grep ^commit)/q" | wc -l`$RELEASE_TAG"
+RELEASE="`git log | grep '^commit' | sed "/$(git log | grep -B 4 -m 1 "VERSION: bump to" | grep ^commit)/q" | wc -l`$RELEASE_TAG"
 if test -z "${RELEASE}"; then
 	RELEASE=1
 fi
