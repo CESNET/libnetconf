@@ -1,0 +1,16 @@
+<map id="src/libnetconf_xml.h" name="src/libnetconf_xml.h">
+<area shape="rect" id="node3" href="$d9/de5/messages__xml_8h.html" title="messages_xml.h" alt="" coords="159,229,283,256"/>
+<area shape="rect" id="node16" href="$d7/dc8/datastore__xml_8h.html" title="NETCONF datastore handling function prototypes and structures &#45; XML variants. " alt="" coords="81,155,197,181"/>
+<area shape="rect" id="node23" href="$d0/db0/transapi_8h.html" title="transapi.h" alt="" coords="5,229,83,256"/>
+<area shape="rect" id="node29" href="$d7/d62/notifications_8h.html" title="Functions to handle NETCONF Notifications. " alt="" coords="878,229,980,256"/>
+<area shape="rect" id="node33" href="$d1/d87/libnetconf_8h.html" title="libnetconf&#39;s main header. " alt="" coords="652,80,740,107"/>
+<area shape="rect" id="node9" href="$d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="543,379,616,405"/>
+<area shape="rect" id="node13" href="$da/d41/error_8h.html" title="NETCONF error handling functions. " alt="" coords="294,304,353,331"/>
+<area shape="rect" id="node19" href="$d9/db6/datastore_8h.html" title="NETCONF datastore handling function prototypes and structures. " alt="" coords="359,229,448,256"/>
+<area shape="rect" id="node38" href="$dd/d49/callbacks_8h.html" title="Functions to set application&#39;s callbacks. " alt="" coords="618,304,707,331"/>
+<area shape="rect" id="node41" href="$da/d46/session_8h.html" title="Functions to handle NETCONF sessions. " alt="" coords="695,155,773,181"/>
+<area shape="rect" id="node43" href="$d2/d02/transport_8h.html" title="Functions implementing transport layer for NETCONF. " alt="" coords="771,229,852,256"/>
+<area shape="rect" id="node47" href="$d5/d48/messages_8h.html" title="Functions to create NETCONF messages. " alt="" coords="473,229,569,256"/>
+<area shape="rect" id="node54" href="$da/dbe/with__defaults_8h.html" title="Implementation of NETCONF&#39;s with&#45;defaults capability defined in RFC 6243. " alt="" coords="511,155,620,181"/>
+<area shape="rect" id="node60" href="$df/db8/url_8h.html" title="libnetconf&#39;s public API to use the URL capability. " alt="" coords="993,155,1039,181"/>
+</map>
