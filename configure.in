@@ -384,6 +384,8 @@ if test "$libssh2" = "yes"; then
 	PKG_CHECK_MODULES([LIBSSH2_TIMEOUT], [libssh2 >= "1.2.9"], [LIBSSH2_SET_TIMEOUT="libssh2_session_set_timeout(session,timeout)"],[LIBSSH2_SET_TIMEOUT=""])
 	AC_SUBST(LIBSSH2_SESSION_HANDSHAKE)
 	AC_SUBST(LIBSSH2_SET_TIMEOUT)
+	BUILDREQS="$BUILDREQS libssh2-devel >= 1.2.0"
+	DEVELREQS="$DEVELREQS libssh2-devel >= 1.2.0"
 fi
 
 SRCS_TRANSPORT="src/ssh.c"
@@ -396,6 +398,8 @@ if test "$tls" = "yes"; then
 	HDRS_PRIV_TRANSPORT="$HDRS_PRIV_TRANSPORT src/tls.h"
 	HDRS_PRIV_TLS="src/libnetconf_tls.h"
 	HDRS_PUBL_TLS="headers/libnetconf_tls.h"
+	BUILDREQS="$BUILDREQS openssl-devel >= 1.0.0"
+	DEVELREQS="$DEVELREQS openssl-devel >= 1.0.0"
 fi
 
 ### pthread ###
@@ -416,7 +420,6 @@ if test "$url" = "yes"; then
 	AC_CHECK_LIB([curl], [curl_global_init], [], AC_MSG_ERROR([Missing libcurl.]))
 	AC_CHECK_HEADERS([curl/curl.h], [], AC_MSG_ERROR([Missing libcurl headers.]))
 	BUILDREQS="$BUILDREQS libcurl-devel"
-	REQS="$REQS libcurl"
 fi
 
 ###################### Check for configure parameters ##########################
@@ -456,7 +459,7 @@ AC_SUBST(V_SHLIB_OPT)
 AC_SUBST(V_SONAME_OPT)
 AC_SUBST(NACM_RECOVERY_UID)
 AC_SUBST(BUILDREQS)
-AC_SUBST(REQS)
+AC_SUBST(DEVELREQS)
 AC_SUBST(PROVIDES)
 AC_SUBST(DISTRO)
 AC_SUBST(NC_WORKINGDIR_PATH)

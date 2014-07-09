@@ -655,7 +655,7 @@ SETBIT
 NC_WORKINGDIR_PATH
 DISTRO
 PROVIDES
-REQS
+DEVELREQS
 BUILDREQS
 NACM_RECOVERY_UID
 V_SONAME_OPT
@@ -12025,6 +12025,8 @@ $as_echo "yes" >&6; }
 fi
 
 
+	BUILDREQS="$BUILDREQS libssh2-devel >= 1.2.0"
+	DEVELREQS="$DEVELREQS libssh2-devel >= 1.2.0"
 fi
 
 SRCS_TRANSPORT="src/ssh.c"
@@ -12097,6 +12099,8 @@ done
 	HDRS_PRIV_TRANSPORT="$HDRS_PRIV_TRANSPORT src/tls.h"
 	HDRS_PRIV_TLS="src/libnetconf_tls.h"
 	HDRS_PUBL_TLS="headers/libnetconf_tls.h"
+	BUILDREQS="$BUILDREQS openssl-devel >= 1.0.0"
+	DEVELREQS="$DEVELREQS openssl-devel >= 1.0.0"
 fi
 
 ### pthread ###
@@ -12728,7 +12732,6 @@ fi
 done
 
 	BUILDREQS="$BUILDREQS libcurl-devel"
-	REQS="$REQS libcurl"
 fi
 
 ###################### Check for configure parameters ##########################
