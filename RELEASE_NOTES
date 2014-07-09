@@ -16,3 +16,10 @@ This release includes the following changes:
 For API/ABI compatibility to previous versions, see reports in
 'doc/compat_reports/' directory.
 
+libnetconf 0.8.1
+
+This release includes the following changes:
+ * event logging of datastore lock/unlock
+ * fixed timeout handling when receiving messages
+ * fixed NULL username issue in nc_session_accept_username()
+ * fixed libnetconf-devel RPM package dependencies
