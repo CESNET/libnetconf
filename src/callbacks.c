@@ -476,7 +476,7 @@ int callback_ssh_hostkey_check_default (const char* hostname, LIBSSH2_SESSION *s
 		knownhosts = libssh2_knownhost_init(session);
 keynotfound:
 
-		if (stdin >= 0 && stdout >= 0) {
+		if (stdin != NULL && stdout != NULL) {
 			/* MD5 hash size is 16B, SHA1 hash size is 20B */
 			fingerprint_raw = libssh2_hostkey_hash(session, LIBSSH2_HOSTKEY_HASH_MD5);
 			for (i = 0; i < 16; i++) {
