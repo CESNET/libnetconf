@@ -831,7 +831,11 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 			setegid(newgid);
 			setgid(newgid);
 #else
-			setregid(newgid, newgid);
+			/*
+			 * ignore result using empty if(...) that get rid of a compiler
+			 * warning on unused-result
+			 */
+			if (setregid(newgid, newgid)){}
 #endif
 		}
 		/* drop user privileges */
@@ -840,7 +844,11 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 			seteuid(newuid);
 			setuid(newuid);
 #else
-			setreuid(newuid, newuid);
+			/*
+			 * ignore result using empty if(...) that get rid of a compiler
+			 * warning on unused-result
+			 */
+			if (setreuid(newuid, newuid)){}
 #endif
 		}
 
@@ -935,11 +943,14 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 				}
 				fprintf(retval->f_input, "\n");
 				fflush(retval->f_input);
-				if (fgets(line, 81, retval->f_input) == NULL)
-					; /* read written line from terminal */
-				line[0] = '\0'; /* and forget */
-				strcpy(buffer, "\0");
-				count = 0; /* reset search string */
+				/*
+				 * read written line from terminal to remove it from read buffer,
+				 * if(...) just checks results and do nothing to get rid of
+				 * a compiler warning on unused-result
+				 */
+				if (fgets(line, 81, retval->f_input)){}
+				line[0] = '\0';                   /* and forget what we read */
+				strcpy(buffer, "\0"); count = 0;  /* finally, reset search string */
 			}
 			if ((int *) strcasestr(buffer, "to the list of known hosts.") != NULL) {
 				if (forced != 1) {
