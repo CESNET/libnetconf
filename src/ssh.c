@@ -584,7 +584,7 @@ struct nc_msg* read_hello_openssh(struct nc_session *session)
 	struct nc_msg *retval;
 	nc_reply* reply;
 	xmlNodePtr root;
-	unsigned int i, size = BUFFER_SIZE;
+	unsigned long long int i, size = BUFFER_SIZE;
 	char *buffer = NULL, c, *aux_buffer;
 
 	if (!(buffer = (char *) malloc(size * sizeof (char)))) {
