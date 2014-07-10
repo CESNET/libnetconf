@@ -677,6 +677,7 @@ int nc_session_get_eventfd (const struct nc_session *session)
 
 int nc_session_notif_allowed(struct nc_session *session)
 {
+#ifndef DISABLE_NOTIFICATIONS
 	int ret;
 
 	if (session == NULL) {
@@ -684,7 +685,6 @@ int nc_session_notif_allowed(struct nc_session *session)
 		return 0;
 	}
 
-#ifndef DISABLE_NOTIFICATIONS
 	/* check capabilities */
 	if (nc_cpblts_enabled(session, NC_CAP_NOTIFICATION_ID) == 1) {
 		/* subscription is allowed only if another subscription is not active */

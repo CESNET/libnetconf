@@ -5967,8 +5967,11 @@ void ncds_break_locks(const struct nc_session* session)
 	int number_sessions = 0, i, j;
 	NC_DATASTORE ds_type[3] = {NC_DATASTORE_CANDIDATE, NC_DATASTORE_RUNNING, NC_DATASTORE_STARTUP};
 	struct nc_cpblts * cpblts;
+
+#ifndef DISABLE_NOTIFICATIONS
 	char *ds_name, *data = NULL;
 	int *flag, flag_r, flag_s, flag_c;
+#endif
 
 	if (session == NULL) {
 		/* if session NULL, get all sessions that hold lock from first file datastore */
@@ -6000,9 +6003,11 @@ void ncds_break_locks(const struct nc_session* session)
 	/* for all prepared sessions */
 	for (i=0; i<number_sessions; i++) {
 		ds = ncds.datastores;
+#ifndef DISABLE_NOTIFICATIONS
 		flag_r = 0;
 		flag_s = 0;
 		flag_c = 0;
+#endif /* DISABLE_NOTIFICATIONS */
 		/* every datastore */
 		while (ds) {
 			if (ds->datastore) {
@@ -6053,7 +6058,9 @@ void ncds_break_locks(const struct nc_session* session)
 				}
 			}
 			ds = ds->next;
+#ifndef DISABLE_NOTIFICATIONS
 			flag = 0;
+#endif /* DISABLE_NOTIFICATIONS */
 		}
 	}
 
