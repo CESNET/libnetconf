@@ -646,7 +646,7 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 
 	/* create xpath evaluation context */
 	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
-		WARN("%s: Creating the XPath context failed.", __func__)
+		WARN("%s: Creating the XPath context failed.", __func__);
 		/* with-defaults cannot be found */
 		return (EXIT_FAILURE);
 	}
@@ -798,7 +798,7 @@ int ncdflt_default_clear(xmlDocPtr config, const xmlDocPtr model)
 
 	/* create xpath evaluation context */
 	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
-		WARN("%s: Creating the XPath context failed.", __func__)
+		WARN("%s: Creating the XPath context failed.", __func__);
 		/* with-defaults cannot be found */
 		return (EXIT_FAILURE);
 	}

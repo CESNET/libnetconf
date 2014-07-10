@@ -3198,7 +3198,7 @@ static int ncds_update_callbacks(struct ncds_ds* ds)
 
 	/* parse model */
 	if ((ds->ext_model_tree = yinmodel_parse(ds->ext_model, ext_ns_mapping)) == NULL) {
-		WARN("Failed to parse model %s. Callbacks of transAPI modules using this model will not be executed.", ds->data_model->name)
+		WARN("Failed to parse model %s. Callbacks of transAPI modules using this model will not be executed.", ds->data_model->name);
 	}
 
 	return (EXIT_SUCCESS);

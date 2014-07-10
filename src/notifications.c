@@ -2105,7 +2105,7 @@ time_t ncntf_notif_get_time(const nc_ntf* notif)
 
 	/* create xpath evaluation context */
 	if ((notif_ctxt = xmlXPathNewContext(notif->doc)) == NULL) {
-		WARN("%s: Creating the XPath context failed.", __func__)
+		WARN("%s: Creating the XPath context failed.", __func__);
 		/* with-defaults cannot be found */
 		return (-1);
 	}
