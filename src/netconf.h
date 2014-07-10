@@ -40,6 +40,7 @@
 #ifndef NETCONF_H_
 #define NETCONF_H_
 
+#include <stdint.h>
 #include <sys/types.h>
 
 #ifdef __cplusplus

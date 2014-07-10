@@ -127,11 +127,9 @@ void nc_verb_error(const char *format, ...)
 {
 	va_list argptr;
 
-	if (verbose_level >= NC_VERB_ERROR) {
-		va_start(argptr, format);
-		prv_vprintf(NC_VERB_ERROR, format, argptr);
-		va_end(argptr);
-	}
+	va_start(argptr, format);
+	prv_vprintf(NC_VERB_ERROR, format, argptr);
+	va_end(argptr);
 }
 
 struct nc_shared_info *nc_info = NULL;

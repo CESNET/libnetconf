@@ -1277,7 +1277,7 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 				} else if (xmlStrEqual(defop->children->content, BAD_CAST "none")) {
 					retval = NC_EDIT_DEFOP_NONE;
 				} else {
-					ERROR("%s: unknown default-operation specified (%s)", __func__, defop->children->content)
+					ERROR("%s: unknown default-operation specified (%s)", __func__, defop->children->content);
 					retval = NC_EDIT_DEFOP_ERROR;
 				}
 			}
@@ -1314,7 +1314,7 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 				} else if (xmlStrEqual(erropt->children->content, BAD_CAST "rollback-on-error")) {
 					retval = NC_EDIT_ERROPT_ROLLBACK;
 				} else {
-					ERROR("%s: unknown error-option specified (%s)", __func__, erropt->children->content)
+					ERROR("%s: unknown error-option specified (%s)", __func__, erropt->children->content);
 					retval = NC_EDIT_ERROPT_ERROR;
 				}
 			}
@@ -1351,7 +1351,7 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 				} else if (xmlStrcmp(testopt->children->content, BAD_CAST "test-then-set") == 0) {
 					retval = NC_EDIT_TESTOPT_TESTSET;
 				} else {
-					ERROR("%s: unknown test-option specified (%s)", __func__, testopt->children->content)
+					ERROR("%s: unknown test-option specified (%s)", __func__, testopt->children->content);
 					retval = NC_EDIT_TESTOPT_ERROR;
 				}
 			}

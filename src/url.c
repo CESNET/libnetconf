@@ -191,7 +191,7 @@ int nc_url_upload(char *data, const char *url)
 	xmlNodePtr root_element;
 
 	if (strcmp(data, "") == 0) {
-		ERROR("%s: source file is empty", __func__)
+		ERROR("%s: source file is empty", __func__);
 		return EXIT_FAILURE;
 	}
 

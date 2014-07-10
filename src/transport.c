@@ -628,7 +628,7 @@ struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabiliti
 		pw = getpwuid(getuid());
 		if (pw == NULL) {
 			/* unable to get correct username */
-			ERROR("Unable to get username for the NETCONF session (%s).", strerror(errno))
+			ERROR("Unable to get username for the NETCONF session (%s).", strerror(errno));
 			return (NULL);
 		}
 		username = pw->pw_name;

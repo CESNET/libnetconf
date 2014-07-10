@@ -2583,7 +2583,7 @@ long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_
 	} else {
 		DBG_UNLOCK("mut_ntf");
 		pthread_mutex_unlock(&(session->mut_ntf));
-		ERROR("Another ncntf_dispatch_receive() function active on the session.")
+		ERROR("Another ncntf_dispatch_receive() function active on the session.");
 		return (-1);
 	}
 	DBG_UNLOCK("mut_ntf");
