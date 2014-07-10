@@ -140,7 +140,7 @@ int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile,
 	return (EXIT_SUCCESS);
 }
 
-struct nc_session *nc_session_connect_tls_socket(const char* username, const char* host, int sock)
+struct nc_session *nc_session_connect_tls_socket(const char* username, const char* UNUSED(host), int sock)
 {
 	struct nc_session *retval;
 	struct passwd *pw;
