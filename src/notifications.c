@@ -82,7 +82,29 @@ static char* streams_path = NULL;
 /* access to the NACM statistics */
 extern struct nc_shared_info *nc_info;
 
-static pthread_key_t ncntf_replay_end;
+struct stream_offset {
+	const char* stream;
+	off_t eof_offset;
+	struct stream_offset* next;
+};
+
+static pthread_key_t ncntf_replay_ends;
+static pthread_once_t ncntf_replay_ends_once = PTHREAD_ONCE_INIT;
+static void ncntf_replay_ends_init(void)
+{
+	pthread_setspecific(ncntf_replay_ends, NULL);
+}
+static void ncntf_replay_ends_free(void* data)
+{
+	struct stream_offset *list = (struct stream_offset*)data;
+	struct stream_offset *item;
+
+	while (list != NULL) {
+		item = list;
+		list = list->next;
+		free(item);
+	}
+}
 
 /*
  * STREAM FILE FORMAT
@@ -797,7 +819,7 @@ int ncntf_init(void)
 		pthread_mutexattr_destroy(&mattr);
 	}
 
-	pthread_key_create(&ncntf_replay_end, free);
+	pthread_key_create(&ncntf_replay_ends, ncntf_replay_ends_free);
 
 	/* initiate streams */
 	if ((ret = ncntf_streams_init()) != 0) {
@@ -994,16 +1016,36 @@ int ncntf_stream_info(const char* stream, char** desc, char** start)
 	return (EXIT_SUCCESS);
 }
 
+static struct stream_offset* get_stream_offset_struct(const char* stream, struct stream_offset* list)
+{
+	struct stream_offset *item;
+
+	for (item = list; item != NULL; item = item->next) {
+		if (strcmp(item->stream, stream) == 0) {
+			break;
+		}
+	}
+	return (item);
+}
+
 void ncntf_stream_iter_start(const char* stream)
 {
 	struct stream *s;
-	off_t *eof_offset; /* to mark where the replay ends */
+	struct stream_offset *str_off, *off_list; /* to mark where the replay ends */
 
 	if (ncntf_config == NULL) {
 		return;
 	}
 
-	eof_offset = malloc(sizeof(off_t));
+	pthread_once(&ncntf_replay_ends_once, ncntf_replay_ends_init);
+	off_list = (struct stream_offset*)pthread_getspecific(ncntf_replay_ends);
+	if (off_list == NULL || (str_off = get_stream_offset_struct(stream, off_list)) == NULL) {
+		/* the list of opened streams is empty */
+		str_off = malloc(sizeof(struct stream_offset));
+		str_off->stream = stream;
+		str_off->next = off_list;
+		pthread_setspecific(ncntf_replay_ends, (void*)str_off);
+	}
 
 	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
@@ -1013,21 +1055,22 @@ void ncntf_stream_iter_start(const char* stream)
 		return;
 	}
 	/* remember the current end of file position */
-	*eof_offset = lseek(s->fd_events, 0, SEEK_END);
+	str_off->eof_offset = lseek(s->fd_events, 0, SEEK_END);
 	/* move to the start of records section */
 	lseek(s->fd_events, s->data, SEEK_SET);
 	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
-
-	pthread_setspecific(ncntf_replay_end, (void*)eof_offset);
 }
 
 void ncntf_stream_iter_finish(const char* stream)
 {
-	off_t *replay_end;
+	struct stream_offset *str_off;
 
-	replay_end = (off_t*) pthread_getspecific(ncntf_replay_end);
-	*replay_end = 0;
+	pthread_once(&ncntf_replay_ends_once, ncntf_replay_ends_init);
+	str_off = get_stream_offset_struct(stream, (struct stream_offset*)pthread_getspecific(ncntf_replay_ends));
+	if (str_off) {
+		str_off->eof_offset = 0;
+	}
 }
 
 /*
@@ -1046,6 +1089,7 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 	char* time_s;
 	time_t tnow;
 	int r;
+	struct stream_offset *str_off, *off_list;
 
 	if (ncntf_config == NULL) {
 		return (NULL);
@@ -1064,7 +1108,21 @@ char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time
 		return (NULL);
 	}
 
-	replay_end = (off_t*) pthread_getspecific(ncntf_replay_end);
+	pthread_once(&ncntf_replay_ends_once, ncntf_replay_ends_init);
+	off_list = (struct stream_offset*)pthread_getspecific(ncntf_replay_ends);
+	str_off = get_stream_offset_struct(stream, off_list);
+	if (str_off == NULL) {
+		ncntf_stream_iter_start(stream);
+		str_off = get_stream_offset_struct(stream, off_list);
+		if (str_off == NULL) {
+			ERROR("Unable to start iteration on stream \"%s\".", stream);
+			DBG_UNLOCK("streams_mut");
+			pthread_mutex_unlock(streams_mut);
+			return (NULL);
+		}
+	}
+	replay_end = &(str_off->eof_offset);
+
 	if (start == -1 && *replay_end != 0) {
 		/*
 		 * start time is not specified and we would do replay here, but
