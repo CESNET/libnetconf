@@ -535,12 +535,18 @@ shutdown:
 }
 
 
-struct nc_session *nc_session_connect_channel(struct nc_session *session, const struct nc_cpblts* cpblts)
-{
 #ifdef DISABLE_LIBSSH
+
+struct nc_session *nc_session_connect_channel(struct nc_session* UNUSED(session), const struct nc_cpblts* UNUSED(cpblts))
+{
 	ERROR("%s: SSH channels are provided only with libssh2.", __func__);
 	return (NULL);
+}
+
 #else
+
+struct nc_session *nc_session_connect_channel(struct nc_session* session, const struct nc_cpblts* cpblts)
+{
 	struct nc_session *retval, *session_aux;
 	struct nc_cpblts *client_cpblts = NULL;
 
@@ -601,9 +607,9 @@ shutdown:
 	nc_cpblts_free(client_cpblts);
 
 	return (NULL);
+}
 
 #endif /* not DISABLE_LIBSSH */
-}
 
 struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabilities, const char* username)
 {
