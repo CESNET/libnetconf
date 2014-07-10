@@ -235,10 +235,12 @@ static struct nc_msg* nc_msg_build (const char * msg_dump)
 	const char* id;
 
 	if ((msg = calloc (1, sizeof(struct nc_msg))) == NULL) {
+		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 		return NULL;
 	}
 
 	if ((msg->doc = xmlReadMemory (msg_dump, strlen(msg_dump), NULL, NULL, NC_XMLREAD_OPTIONS)) == NULL) {
+		ERROR("%s: parsing message dump failed.", __func__);
 		free (msg);
 		return NULL;
 	}
