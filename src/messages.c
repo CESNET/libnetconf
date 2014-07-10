@@ -1040,16 +1040,22 @@ static char* nc_rpc_get_cfg_copyconfig(const nc_rpc* rpc)
 	char* query = NULL;
 	char* retval;
 
-	asprintf(&query, "/%s"":rpc/%s:copy-config/%s:source/%s:config",
-			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	if (asprintf(&query, "/%s"":rpc/%s:copy-config/%s:source/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
 	retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "copy-config", 0);
 	free(query);
 
 #ifndef DISABLE_URL
 	if (retval == NCDS_RPC_NOT_APPLICABLE) {
 		/* try URL */
-		asprintf(&query, "/%s"":rpc/%s:copy-config/%s:source/%s:url",
-				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+		if (asprintf(&query, "/%s"":rpc/%s:copy-config/%s:source/%s:url",
+				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
 		retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "copy-config", 1);
 		free(query);
 	}
@@ -1063,15 +1069,21 @@ static char* nc_rpc_get_cfg_editconfig(const nc_rpc* rpc)
 	char* query = NULL;
 	char* retval;
 
-	asprintf(&query, "/%s"":rpc/%s:edit-config/%s:config",
-			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	if (asprintf(&query, "/%s"":rpc/%s:edit-config/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
 	retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "edit-config", 0);
 	free(query);
 
 #ifndef DISABLE_URL
 	if (retval == NCDS_RPC_NOT_APPLICABLE) {
-		asprintf(&query, "/%s"":rpc/%s:edit-config/%s:url",
-				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+		if (asprintf(&query, "/%s"":rpc/%s:edit-config/%s:url",
+				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
 		retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "edit-config", 0);
 		free(query);
 	}
@@ -1085,15 +1097,21 @@ static char* nc_rpc_get_cfg_validate(const nc_rpc* rpc)
 	char* query = NULL;
 	char* retval;
 
-	asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:config",
-			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	if (asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
 	retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "validate", 0);
 	free(query);
 
 #ifndef DISABLE_URL
 	if (retval == NCDS_RPC_NOT_APPLICABLE) {
-		asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:url",
-				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+		if (asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:url",
+				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
 		retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "validate", 0);
 		free(query);
 	}
@@ -1107,16 +1125,22 @@ static xmlNodePtr ncxml_rpc_get_cfg_copyconfig(const nc_rpc* rpc)
 	char* query = NULL;
 	xmlNodePtr retval;
 
-	asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:config",
-			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	if (asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
 	retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "copy-config", 0);
 	free(query);
 
 #ifndef DISABLE_URL
 	if (retval == NCDS_RPC_NOT_APPLICABLE) {
 		/* try URL */
-		asprintf(&query, "/%s"":rpc/%s:copy-config/%s:source/%s:url",
-				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+		if (asprintf(&query, "/%s"":rpc/%s:copy-config/%s:source/%s:url",
+				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
 		retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "copy-config", 1);
 		free(query);
 	}
@@ -1130,15 +1154,21 @@ static xmlNodePtr ncxml_rpc_get_cfg_editconfig(const nc_rpc* rpc)
 	char* query = NULL;
 	xmlNodePtr retval;
 
-	asprintf(&query, "/%s"":rpc/%s:edit-config/%s:config",
-			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	if (asprintf(&query, "/%s"":rpc/%s:edit-config/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
 	retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "edit-config", 0);
 	free(query);
 
 #ifndef DISABLE_URL
 	if (retval == NCDS_RPC_NOT_APPLICABLE) {
-		asprintf(&query, "/%s"":rpc/%s:edit-config/%s:url",
-				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+		if (asprintf(&query, "/%s"":rpc/%s:edit-config/%s:url",
+				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
 		retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "edit-config", 0);
 		free(query);
 	}
@@ -1152,15 +1182,21 @@ static xmlNodePtr ncxml_rpc_get_cfg_validate(const nc_rpc* rpc)
 	char* query = NULL;
 	xmlNodePtr retval;
 
-	asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:config",
-			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+	if (asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:config",
+			NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
 	retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "validate", 0);
 	free(query);
 
 #ifndef DISABLE_URL
 	if (retval == NCDS_RPC_NOT_APPLICABLE) {
-		asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:url",
-				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID);
+		if (asprintf(&query, "/%s"":rpc/%s:validate/%s:source/%s:url",
+				NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID, NC_NS_BASE10_ID) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
 		retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "validate", 0);
 		free(query);
 	}

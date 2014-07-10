@@ -340,9 +340,12 @@ static void xmldiff_add_diff_recursive(struct xmldiff_tree **diff, const char *p
 
 				/* are we done for the current tmp? */
 				if (model_child) {
-					asprintf(&tmp_path, "%s/%s:%s", path, model_child->ns_prefix, model_child->name);
-					xmldiff_add_diff_recursive(&last_diff, tmp_path, tmp, op, XML_CHILD, model_child);
-					free(tmp_path);
+					if (asprintf(&tmp_path, "%s/%s:%s", path, model_child->ns_prefix, model_child->name) == -1) {
+						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+					} else {
+						xmldiff_add_diff_recursive(&last_diff, tmp_path, tmp, op, XML_CHILD, model_child);
+						free(tmp_path);
+					}
 					model_child = NULL;
 					/* yes, we're done, leave the for loop and go for another tmp */
 					break;
@@ -527,12 +530,15 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 		*tmp_diff = NULL;
 		tmp_op = XMLDIFF_NONE;
 		for (i = 0; i < model->children_count; i++) {
-			asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name);
+			if (asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				return (XMLDIFF_ERR);
+			}
 			tmp_op = xmldiff_recursive(tmp_diff, next_path, old_doc, (old_tmp ? old_tmp->children : NULL), new_doc, (new_tmp ? new_tmp->children : NULL), &model->children[i]);
 			free(next_path);
 	
 			if (tmp_op == XMLDIFF_ERR) {
-				return XMLDIFF_ERR;
+				return (XMLDIFF_ERR);
 			}
 			if (tmp_op & XMLDIFF_SIBLING) {
 				ret_op |= XMLDIFF_REORDER;
@@ -563,13 +569,16 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 		*strrchr(path, '/') = '\0';
 
 		for (i = 0; i < model->children_count; i++) {
-			asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name);
+			if (asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				return (XMLDIFF_ERR);
+			}
 			/* We are moving down the model only (not in the configuration) */
 			tmp_op = xmldiff_recursive(diff, next_path, old_doc, old_node, new_doc, new_node, &model->children[i]);
 			free(next_path);
 
 			if (tmp_op == XMLDIFF_ERR) {
-				return XMLDIFF_ERR;
+				return (XMLDIFF_ERR);
 			} else if (tmp_op != XMLDIFF_NONE) {
 				ret_op |= tmp_op;
 			}
@@ -748,12 +757,15 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 			tmp_diff = malloc(sizeof(struct xmldiff_tree*));
 			*tmp_diff = NULL;
 			for (i = 0; i < model->children_count; i++) {
-				asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name);
+				if (asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name) == -1) {
+					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+					return (XMLDIFF_ERR);
+				}
 				tmp_op = xmldiff_recursive(tmp_diff, next_path, old_doc, list_old_tmp->children, new_doc, list_new_tmp->children, &model->children[i]);
 				free(next_path);
 
 				if (tmp_op == XMLDIFF_ERR) {
-					return XMLDIFF_ERR;
+					return (XMLDIFF_ERR);
 				} else {
 					item_ret_op |= tmp_op;
 				}
@@ -1085,9 +1097,12 @@ XMLDIFF_OP xmldiff_diff(struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new
 		return XMLDIFF_ERR;
 	}
 
-	asprintf (&path, "/%s:%s", model->children->ns_prefix, model->children->name);
-	ret_op = xmldiff_recursive (diff, path, old, old->children, new, new->children, &model->children[0]);
-	free (path);
+	if (asprintf(&path, "/%s:%s", model->children->ns_prefix, model->children->name) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		return (XMLDIFF_ERR);
+	}
+	ret_op = xmldiff_recursive(diff, path, old, old->children, new, new->children, &model->children[0]);
+	free(path);
 
-	return ret_op;
+	return (ret_op);
 }

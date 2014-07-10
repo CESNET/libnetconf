@@ -1854,7 +1854,7 @@ static struct data_model* get_model(const char* module, const char* version)
 {
 	struct model_list* listitem;
 	struct data_model* model = NULL;
-	int i;
+	int i, r;
 	char* aux, *aux2;
 	DIR* dir;
 	struct dirent* file;
@@ -1884,7 +1884,10 @@ static struct data_model* get_model(const char* module, const char* version)
 	if (models_dirs != NULL) {
 		for (i = 0; models_dirs[i]; i++) {
 			aux = NULL;
-			asprintf(&aux, "%s/%s.yin", models_dirs[i], module);
+			if (asprintf(&aux, "%s/%s.yin", models_dirs[i], module) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				aux = NULL;
+			}
 			if (access(aux, R_OK) == 0) {
 				/* we have found the correct module - probably */
 				model = read_model(aux);
@@ -1902,15 +1905,23 @@ static struct data_model* get_model(const char* module, const char* version)
 				 */
 				free(aux);
 				if (version == NULL) {
-					asprintf(&aux, "%s@", module);
+					r = asprintf(&aux, "%s@", module);
 				} else {
-					asprintf(&aux, "%s@%s", module, version);
+					r = asprintf(&aux, "%s@%s", module, version);
+				}
+				if (r == -1) {
+					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+					/* try next item in models_dirs list */
+					continue;
 				}
 				dir = opendir(models_dirs[i]);
 				while((file = readdir(dir)) != NULL) {
 					if (strncmp(file->d_name, aux, strlen(aux)) == 0 &&
 					    strcmp(&(file->d_name[strlen(file->d_name)-4]), ".yin") == 0) {
-						asprintf(&aux2, "%s/%s", models_dirs[i], file->d_name);
+						if (asprintf(&aux2, "%s/%s", models_dirs[i], file->d_name) == -1) {
+							ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+							continue;
+						}
 						model = read_model(aux2);
 						free(aux2);
 						if (model != NULL) {
@@ -1945,7 +1956,7 @@ static int import_groupings(const char* module_name, xmlXPathContextPtr model_ct
 	xmlNsPtr ns;
 	struct data_model* model;
 	char *module, *revision, *prefix, *grouping_name, *aux;
-	int i, j;
+	int i, j, r;
 
 	aux = (char*) xmlGetNsProp(xmlDocGetRootElement(model_ctxt->doc), BAD_CAST "import", BAD_CAST "libnetconf");
 	if (aux != NULL && strcmp(aux, "done") == 0) {
@@ -2005,17 +2016,26 @@ static int import_groupings(const char* module_name, xmlXPathContextPtr model_ct
 			/* import grouping definitions */
 			if ((groupings = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":grouping", model->ctxt)) != NULL ) {
 				/* add prefix into the grouping names and add imported grouping into the overall data model */
-				for (j = 0; j < groupings->nodesetval->nodeNr; j++) {
+				r = 0;
+				for (j = 0; (r != -1) && (j < groupings->nodesetval->nodeNr); j++) {
 					node = xmlCopyNode(groupings->nodesetval->nodeTab[j], 1);
 					grouping_name = (char*) xmlGetProp(node, BAD_CAST "name");
-					asprintf(&aux, "%s:%s", prefix, grouping_name);
-					xmlSetProp(node, BAD_CAST "name", BAD_CAST aux);
+					if ((r = asprintf(&aux, "%s:%s", prefix, grouping_name)) == -1) {
+						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+					} else {
+						xmlSetProp(node, BAD_CAST "name", BAD_CAST aux);
+						xmlAddChild(xmlDocGetRootElement(model_ctxt->doc), node);
+					}
 					free(aux);
 					free(grouping_name);
-					xmlAddChild(xmlDocGetRootElement(model_ctxt->doc), node);
 				}
 				free(prefix);
 				xmlXPathFreeObject(groupings);
+
+				if (r == -1) {
+					/* asprintf() in for loop failed */
+					return (EXIT_FAILURE);
+				}
 			} else {
 				ERROR("%s: Evaluating XPath expression failed.", __func__);
 				free(prefix);
@@ -3335,22 +3355,39 @@ static xmlNodePtr get_model_root(xmlNodePtr roots, struct data_model *data_model
 static void relaxng_error_callback(void *error, const char * msg, ...)
 {
 	struct nc_err **e = (struct nc_err**)(error);
+	struct nc_err *err_aux;
 	va_list args;
 	char* s = NULL, *m = NULL;
+	int r;
 
-	if (e != NULL && *e == NULL) {
-		/*
-		 * if the callback is invoked multiply, only the first error message
-		 * will be stored as NETCONF error
-		 */
-
+	if (e != NULL) {
 		va_start(args, msg);
-		vasprintf(&s, msg, args);
+		r = vasprintf(&s, msg, args);
 		va_end(args);
 
-		asprintf(&m, "Datastore fails to validate (%s)", s);
-		*e = nc_err_new(NC_ERR_OP_FAILED);
-		nc_err_set(*e, NC_ERR_PARAM_MSG, m);
+		if (r == -1) {
+			ERROR("vasprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return;
+		}
+
+		err_aux = nc_err_new(NC_ERR_OP_FAILED);
+		if (*e != NULL) {
+			err_aux->next = *e;
+		}
+		*e = err_aux;
+
+		if (asprintf(&m, "Datastore fails to validate (%s)", s) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			m = NULL;
+
+			nc_err_set(*e, NC_ERR_PARAM_MSG, "Datastore fails to validate");
+			err_aux = nc_err_new(NC_ERR_OP_FAILED);
+			nc_err_set(err_aux, NC_ERR_PARAM_MSG, s);
+			err_aux->next = (*e)->next;
+			(*e)->next = err_aux;
+		} else {
+			nc_err_set(*e, NC_ERR_PARAM_MSG, m);
+		}
 
 		free(s);
 		free(m);
@@ -3370,6 +3407,7 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 	xmlXPathContextPtr ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;
 	char* schematron_error = NULL, *error_string = NULL;
+	struct nc_err *err_aux;
 
 	assert(error != NULL);
 
@@ -3436,11 +3474,20 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 		if ((result = xmlXPathEvalExpression(BAD_CAST "/svrl:schematron-output/svrl:successful-report/svrl:text", ctxt)) != NULL) {
 			if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
 				schematron_error = (char*)xmlNodeGetContent(result->nodesetval->nodeTab[0]);
-				asprintf(&error_string, "Datastore fails to validate: %s", schematron_error);
-				ERROR(error_string);
 				*error = nc_err_new(NC_ERR_OP_FAILED);
-				nc_err_set(*error, NC_ERR_PARAM_MSG, error_string);
-				free(error_string);
+				if (asprintf(&error_string, "Datastore fails to validate: %s", schematron_error) == -1) {
+					/* create two error records */
+					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+					nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore fails to validate");
+					err_aux = nc_err_new(NC_ERR_OP_FAILED);
+					nc_err_set(err_aux, NC_ERR_PARAM_MSG, schematron_error);
+					err_aux->next = (*error)->next;
+					(*error)->next = err_aux;
+				} else {
+					ERROR(error_string);
+					nc_err_set(*error, NC_ERR_PARAM_MSG, error_string);
+					free(error_string);
+				}
 				free(schematron_error);
 
 				xmlXPathFreeObject(result);
@@ -3836,11 +3883,20 @@ struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path)
 		path_yin = strdup(model_path);
 		basename[strlen(basename)-4] = 0; /* remove .yin suffix */
 	} else {
-		asprintf(&path_yin, "%s.yin", basename);
+		if (asprintf(&path_yin, "%s.yin", basename) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			path_yin = NULL;
+		}
 	}
 #ifndef DISABLE_VALIDATION
-	asprintf(&path_rng, "%s-data.rng", basename);
-	asprintf(&path_sch, "%s-schematron.xsl", basename);
+	if (asprintf(&path_rng, "%s-data.rng", basename) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		path_rng = NULL;
+	}
+	if (asprintf(&path_sch, "%s-schematron.xsl", basename) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		path_sch = NULL;
+	}
 #endif
 
 	ds = ncds_fill_func(type);
@@ -4863,15 +4919,15 @@ process_datastore:
 				/* wtf, (un)lock had to fail already */
 				aux = "unknown";
 			}
-			asprintf(&data, "<datastore-%s xmlns=\"%s\"><datastore>%s</datastore><session-id>%s</session-id></datastore-%s>",
-					op_name,
-					NC_NS_LNC_NOTIFICATIONS,
-					aux,
-					session->session_id,
-					op_name);
-			ncntf_event_new(-1, NCNTF_GENERIC, data);
-			free(data);
-			data = NULL;
+			if (asprintf(&data, "<datastore-%s xmlns=\"%s\"><datastore>%s</datastore><session-id>%s</session-id></datastore-%s>",
+					op_name, NC_NS_LNC_NOTIFICATIONS, aux, session->session_id, op_name) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				ERROR("Generating datastore-(un)lock event failed.");
+			} else {
+				ncntf_event_new(-1, NCNTF_GENERIC, data);
+				free(data);
+				data = NULL;
+			}
 		}
 #endif /* DISABLE_NOTIFICATIONS */
 		break;
@@ -5980,11 +6036,15 @@ void ncds_break_locks(const struct nc_session* session)
 							}
 
 							if (flag && !(*flag)) {
-								asprintf(&data, "<datastore-unlock xmlns=\"%s\"><datastore>%s</datastore><session-id>%s</session-id></datastore-unlock>",
-								NC_NS_LNC_NOTIFICATIONS, ds_name, session->session_id);
-								ncntf_event_new(-1, NCNTF_GENERIC, data);
-								free(data);
-								data = NULL;
+								if (asprintf(&data, "<datastore-unlock xmlns=\"%s\"><datastore>%s</datastore><session-id>%s</session-id></datastore-unlock>",
+										NC_NS_LNC_NOTIFICATIONS, ds_name, session->session_id) == -1) {
+									ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+									ERROR("Generating datastore-unlock event failed.");
+								} else {
+									ncntf_event_new(-1, NCNTF_GENERIC, data);
+									free(data);
+									data = NULL;
+								}
 								*flag = 1;
 							}
 						}
