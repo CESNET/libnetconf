@@ -51,14 +51,14 @@
  * @param url source url
  * @return fd on tmp file with remote rpc or -1 on error
  */
-int nc_url_open(const char * url);
+int nc_url_open(const char* url);
 
 /**
  * @brief Replaces target file with empty <config> element.
  * @param url target url
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int nc_url_delete_config(const char *url);
+int nc_url_delete_config(const char* url);
 
 /**
  * @brief Uploads data to remote target
@@ -66,7 +66,7 @@ int nc_url_delete_config(const char *url);
  * @param url target url
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int nc_url_upload(char *data, const char *url);
+int nc_url_upload(char* data, const char* url);
 
 /**
  * @brief Generate URL capability string from enabled protocols
@@ -86,6 +86,6 @@ int nc_url_is_enabled(NC_URL_PROTOCOLS protocol);
  * @param url url to check
  * @return protocol ID
  */
-NC_URL_PROTOCOLS nc_url_get_protocol(const char *url);
+NC_URL_PROTOCOLS nc_url_get_protocol(const char* url);
 
 #endif /* URL_INTERNAL_H_ */

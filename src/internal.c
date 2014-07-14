@@ -79,7 +79,7 @@ void nc_verbosity(NC_VERB_LEVEL level)
 	verbose_level = level;
 }
 
-void prv_vprintf(NC_VERB_LEVEL level, const char *format, va_list args)
+static void prv_vprintf(NC_VERB_LEVEL level, const char *format, va_list args)
 {
 #define PRV_MSG_SIZE 4096
 	char prv_msg[PRV_MSG_SIZE];
@@ -420,82 +420,6 @@ void nc_clip_occurences_with(char *str, char sought, char replacement)
 	}
 }
 
-char* nc_str_replace(const char *str, const char *substr, const char *replacement)
-{
-	int i, j, len;
-	const char *aux;
-	char *ret;
-
-	if ((len = strlen(replacement) - strlen(substr) ) > 0) {
-		/* we are going to enlarge the string - get to know how much */
-		for (i = 0, aux = strstr(str, substr); aux != NULL; aux = strstr(aux, substr)) {
-			i++;
-			aux = &(aux[strlen(substr)]);
-		}
-		if (i == 0) {
-			/* there is no occurrence of the needle, return just a copy of str */
-			return (strdup(str));
-		}
-
-		/* length of original string +
-		 * (# of needle occurrence * difference between needle and replacement) +
-		 * terminating NULL byte
-		 */
-		ret = malloc((strlen(str) + (i * len) + 1) * sizeof(char));
-	} else {
-		/* it's not going to be longer than original string */
-		ret = malloc((strlen(str) + 1) * sizeof(char));
-	}
-	if (ret == NULL) {
-		return (NULL);
-	}
-
-	for (i = j = 0, aux = strstr(str, substr); aux != NULL; aux = strstr(aux, substr)) {
-		while (&(str[i]) != aux) {
-			ret[j] = str[i];
-			i++;
-			j++;
-		}
-		strcpy(&(ret[j]), replacement);
-		j += strlen(replacement);
-		i += strlen(substr);
-		aux = &(str[i]);
-	}
-	/* copy the rest of the string */
-	strcpy(&(ret[j]), &(str[i]));
-
-	return(ret);
-}
-
-char* nc_skip_xmldecl(const char* xmldoc)
-{
-	char *s;
-
-	if (xmldoc == NULL) {
-		return (NULL);
-	}
-
-	/* skip leading whitespaces */
-	s = index(xmldoc, '<');
-	if (s == NULL) {
-		/* not a valid XML document */
-		return (NULL);
-	}
-
-	/* see http://www.w3.org/TR/REC-xml/#NT-XMLDecl */
-	if (strncmp(s, "<?xml", 5) == 0) {
-		/* We got a "real" XML document. Now move after the XML declaration */
-		s = index(s, '>');
-		if (s == NULL || s[-1] != '?') {
-			/* invalid XML declaration, corrupted document */
-			return (NULL);
-		}
-		s++; /* move after ?> */
-	}
-
-	return (s);
-}
-
 char** nc_get_grouplist(const char* username)
 {
 	struct passwd* p;
@@ -658,70 +582,4 @@ char* nc_time2datetime(time_t time, const char* tz)
 	free (zoneshift);
 
 	return (date);
-}
-
-/**
- * @brief Learn whether the namespace definition is used as namespace in the
- * subtree.
- * @param[in] node Node where to start checking.
- * @param[in] ns Namespace to find.
- * @return 0 if the namespace is not used, 1 if the usage of the namespace was found
- */
-static int nc_find_namespace_usage(xmlNodePtr node, xmlNsPtr ns)
-{
-	xmlNodePtr child;
-	xmlAttrPtr prop;
-
-	/* check the element itself */
-	if (node->ns == ns) {
-		return 1;
-	} else {
-		/* check attributes of the element */
-		for (prop = node->properties; prop != NULL; prop = prop->next) {
-			if (prop->ns == ns) {
-				return 1;
-			}
-		}
-
-		/* go recursive into children */
-		for (child = node->children; child != NULL; child = child->next) {
-			if (child->type == XML_ELEMENT_NODE && nc_find_namespace_usage(child, ns) == 1) {
-				return 1;
-			}
-		}
-	}
-
-	return 0;
-}
-
-/**
- * @brief Remove namespace definition from the node which are no longer used.
- * @param[in] node XML element node where to check for namespace definitions
- */
-void nc_clear_namespaces(xmlNodePtr node)
-{
-	xmlNsPtr ns, prev = NULL;
-
-	if (node == NULL || node->type != XML_ELEMENT_NODE) {
-		return;
-	}
-
-	for (ns = node->nsDef; ns != NULL; ) {
-		if (nc_find_namespace_usage(node, ns) == 0) {
-			/* no one use the namespace - remove it */
-			if (prev == NULL) {
-				node->nsDef = ns->next;
-				xmlFreeNs(ns);
-				ns = node->nsDef;
-			} else {
-				prev->next = ns->next;
-				xmlFreeNs(ns);
-				ns = prev->next;
-			}
-		} else {
-			/* check another namespace definition */
-			prev = ns;
-			ns = ns->next;
-		}
-	}
 }

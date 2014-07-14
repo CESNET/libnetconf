@@ -61,7 +61,7 @@ extern int nc_init_flags;
 static NCWD_MODE ncdflt_basic_mode = NCWD_MODE_NOTSET;
 static NCWD_MODE ncdflt_supported = NCWD_MODE_NOTSET;
 
-NCWD_MODE ncdflt_get_basic_mode()
+NCWD_MODE ncdflt_get_basic_mode(void)
 {
 	return (ncdflt_basic_mode);
 }
@@ -95,7 +95,7 @@ void ncdflt_set_supported(NCWD_MODE modes)
 	}
 }
 
-NCWD_MODE ncdflt_get_supported()
+NCWD_MODE ncdflt_get_supported(void)
 {
 	return (ncdflt_supported);
 }
@@ -132,7 +132,7 @@ static int search_choice_match(xmlNodePtr parent, xmlChar* name)
 	return (0);
 }
 
-xmlChar* check_default_case(xmlNodePtr config_choice, xmlNodePtr model_choice)
+static xmlChar* check_default_case(xmlNodePtr config_choice, xmlNodePtr model_choice)
 {
 	xmlNodePtr def, aux_model, case_child;
 	xmlChar *name;

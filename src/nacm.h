@@ -64,12 +64,6 @@ int nacm_init(void);
 void nacm_close(void);
 
 /**
- * @brief Refresh internal structures according to the NACM configuration data.
- * @return 0 on success, -1 on error
- */
-int nacm_config_refresh(void);
-
-/**
  * @brief Connect current NACM rules with the specified NETCONF RPC
  *
  * This function only prepares NACM structures to be used with the given RPC.

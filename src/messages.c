@@ -66,6 +66,44 @@
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
+/**
+ * @brief Skip XML declaration in the beginning of an XML document
+ *
+ * @param xmldoc String containing XML document where the XML declaration
+ * should be skipped.
+ * @return Pointer into the given string pointing after the xml declaration if
+ * any. Leading whitespaces are also skipped. Original string is not modified
+ * in any way and if it was dynamically allocated, it should be freed via xmldoc
+ * pointer.
+ */
+static char* nc_skip_xmldecl(const char* xmldoc)
+{
+	char *s;
+
+	if (xmldoc == NULL) {
+		return (NULL);
+	}
+
+	/* skip leading whitespaces */
+	s = index(xmldoc, '<');
+	if (s == NULL) {
+		/* not a valid XML document */
+		return (NULL);
+	}
+
+	/* see http://www.w3.org/TR/REC-xml/#NT-XMLDecl */
+	if (strncmp(s, "<?xml", 5) == 0) {
+		/* We got a "real" XML document. Now move after the XML declaration */
+		s = index(s, '>');
+		if (s == NULL || s[-1] != '?') {
+			/* invalid XML declaration, corrupted document */
+			return (NULL);
+		}
+		s++; /* move after ?> */
+	}
+
+	return (s);
+}
 
 static struct nc_filter *nc_filter_new_subtree(const xmlNodePtr filter)
 {
@@ -103,7 +141,7 @@ static struct nc_filter *nc_filter_new_subtree(const xmlNodePtr filter)
 	return (retval);
 }
 
-struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, ...)
+struct nc_filter* nc_filter_new(NC_FILTER_TYPE type, ...)
 {
 	struct nc_filter *retval;
 	char* filter_s = NULL;
@@ -149,7 +187,7 @@ struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, ...)
 	return (retval);
 }
 
-struct nc_filter *ncxml_filter_new(NC_FILTER_TYPE type, ...)
+struct nc_filter* ncxml_filter_new(NC_FILTER_TYPE type, ...)
 {
 	struct nc_filter *retval;
 	xmlNodePtr filter;
@@ -174,7 +212,7 @@ struct nc_filter *ncxml_filter_new(NC_FILTER_TYPE type, ...)
 	return (retval);
 }
 
-void nc_filter_free(struct nc_filter *filter)
+void nc_filter_free(struct nc_filter* filter)
 {
 	if (filter != NULL) {
 		if (filter->subtree_filter) {
@@ -204,12 +242,12 @@ static char* nc_msg_dump(const struct nc_msg *msg)
 	return ((char*) buf);
 }
 
-char* nc_reply_dump(const nc_reply *reply)
+char* nc_reply_dump(const nc_reply* reply)
 {
 	return (nc_msg_dump((struct nc_msg*)reply));
 }
 
-xmlDocPtr ncxml_reply_dump(const nc_reply *reply)
+xmlDocPtr ncxml_reply_dump(const nc_reply* reply)
 {
 	if (reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE || reply->doc == NULL) {
 		ERROR("%s: invalid input parameter.", __func__);
@@ -219,17 +257,17 @@ xmlDocPtr ncxml_reply_dump(const nc_reply *reply)
 	return (xmlCopyDoc(reply->doc, 1));
 }
 
-char* nc_rpc_dump(const nc_rpc *rpc)
+char* nc_rpc_dump(const nc_rpc* rpc)
 {
 	return (nc_msg_dump((struct nc_msg*)rpc));
 }
 
-xmlDocPtr ncxml_rpc_dump(const nc_rpc *rpc)
+xmlDocPtr ncxml_rpc_dump(const nc_rpc* rpc)
 {
 	return (xmlCopyDoc(rpc->doc, 1));
 }
 
-static struct nc_msg* nc_msg_build (const char * msg_dump)
+static struct nc_msg* nc_msg_build (const char* msg_dump)
 {
 	struct nc_msg * msg;
 	const char* id;
@@ -342,7 +380,7 @@ static struct nc_msg* ncxml_msg_build(xmlDocPtr msg_dump)
 	return (msg);
 }
 
-NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session *session)
+NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session* session)
 {
 	xmlXPathContextPtr rpc_ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;
@@ -453,7 +491,7 @@ NC_RPC_TYPE nc_rpc_parse_type(nc_rpc* rpc)
 	return (rpc->type.rpc);
 }
 
-nc_rpc * nc_rpc_build (const char* rpc_dump, const struct nc_session* session)
+nc_rpc* nc_rpc_build(const char* rpc_dump, const struct nc_session* session)
 {
 	nc_rpc* rpc;
 
@@ -542,7 +580,7 @@ NC_REPLY_TYPE nc_reply_parse_type(nc_reply* reply)
 	return (reply->type.reply);
 }
 
-nc_reply * nc_reply_build (const char* reply_dump)
+nc_reply* nc_reply_build(const char* reply_dump)
 {
 	nc_reply * reply;
 
@@ -570,7 +608,7 @@ nc_reply* ncxml_reply_build(xmlDocPtr reply_dump)
 	return (reply);
 }
 
-const nc_msgid nc_reply_get_msgid(const nc_reply *reply)
+const nc_msgid nc_reply_get_msgid(const nc_reply* reply)
 {
 	if (reply != NULL && reply != NCDS_RPC_NOT_APPLICABLE) {
 		return (reply->msgid);
@@ -579,7 +617,7 @@ const nc_msgid nc_reply_get_msgid(const nc_reply *reply)
 	}
 }
 
-const nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc)
+const nc_msgid nc_rpc_get_msgid(const nc_rpc* rpc)
 {
 	if (rpc != NULL) {
 		return (rpc->msgid);
@@ -588,7 +626,7 @@ const nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc)
 	}
 }
 
-char *nc_rpc_get_ns(const nc_rpc *rpc)
+char* nc_rpc_get_ns(const nc_rpc* rpc)
 {
 	xmlNodePtr root, opnode;
 
@@ -619,7 +657,7 @@ char *nc_rpc_get_ns(const nc_rpc *rpc)
 	}
 }
 
-NC_OP nc_rpc_get_op(const nc_rpc *rpc)
+NC_OP nc_rpc_get_op(const nc_rpc* rpc)
 {
 	xmlNodePtr root, auxnode;
 
@@ -698,7 +736,7 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc)
 	return (NC_OP_UNKNOWN);
 }
 
-char * nc_rpc_get_op_name (const nc_rpc* rpc)
+char* nc_rpc_get_op_name(const nc_rpc* rpc)
 {
 	xmlNodePtr root, auxnode;
 
@@ -730,7 +768,7 @@ char * nc_rpc_get_op_name (const nc_rpc* rpc)
 	return (strdup((char*)(auxnode->name)));
 }
 
-char * nc_rpc_get_op_namespace (const nc_rpc* rpc)
+char* nc_rpc_get_op_namespace(const nc_rpc* rpc)
 {
 	xmlNodePtr root, auxnode;
 
@@ -766,7 +804,7 @@ char * nc_rpc_get_op_namespace (const nc_rpc* rpc)
 	}
 }
 
-char* nc_rpc_get_op_content (const nc_rpc* rpc)
+char* nc_rpc_get_op_content(const nc_rpc* rpc)
 {
 	char *retval = NULL;
 	xmlDocPtr aux_doc;
@@ -805,7 +843,7 @@ char* nc_rpc_get_op_content (const nc_rpc* rpc)
 	return retval;
 }
 
-xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc *rpc)
+xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc* rpc)
 {
 	xmlNodePtr root;
 
@@ -820,7 +858,7 @@ xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc *rpc)
 	return (xmlCopyNodeList(root->children));
 }
 
-NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc)
+NC_RPC_TYPE nc_rpc_get_type(const nc_rpc* rpc)
 {
 	if (rpc != NULL) {
 		return (rpc->type.rpc);
@@ -834,7 +872,7 @@ NC_RPC_TYPE nc_rpc_get_type(const nc_rpc *rpc)
  * @param rpc RPC message
  * @param ds_type 'target' or 'source'
  */
-static NC_DATASTORE nc_rpc_get_ds (const nc_rpc *rpc, const char* ds_type)
+static NC_DATASTORE nc_rpc_get_ds(const nc_rpc* rpc, const char* ds_type)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	NC_DATASTORE retval = NC_DATASTORE_ERROR;
@@ -891,12 +929,12 @@ static NC_DATASTORE nc_rpc_get_ds (const nc_rpc *rpc, const char* ds_type)
 	return(retval);
 }
 
-NC_DATASTORE nc_rpc_get_source (const nc_rpc *rpc)
+NC_DATASTORE nc_rpc_get_source(const nc_rpc* rpc)
 {
 	return (nc_rpc_get_ds(rpc, "source"));
 }
 
-NC_DATASTORE nc_rpc_get_target (const nc_rpc *rpc)
+NC_DATASTORE nc_rpc_get_target(const nc_rpc* rpc)
 {
 	return (nc_rpc_get_ds(rpc, "target"));
 }
@@ -1205,7 +1243,7 @@ static xmlNodePtr ncxml_rpc_get_cfg_validate(const nc_rpc* rpc)
 	return (retval);
 }
 
-char* nc_rpc_get_config(const nc_rpc *rpc)
+char* nc_rpc_get_config(const nc_rpc* rpc)
 {
 	char* retval = NULL;
 
@@ -1228,7 +1266,7 @@ char* nc_rpc_get_config(const nc_rpc *rpc)
 	return ((retval == (char*)NCDS_RPC_NOT_APPLICABLE) ? NULL : retval);
 }
 
-xmlNodePtr ncxml_rpc_get_config(const nc_rpc *rpc)
+xmlNodePtr ncxml_rpc_get_config(const nc_rpc* rpc)
 {
 	xmlNodePtr retval = NULL;
 
@@ -1251,7 +1289,7 @@ xmlNodePtr ncxml_rpc_get_config(const nc_rpc *rpc)
 	return ((retval == (xmlNodePtr)NCDS_RPC_NOT_APPLICABLE) ? NULL : retval);
 }
 
-NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
+NC_EDIT_DEFOP_TYPE nc_rpc_get_defop(const nc_rpc* rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr defop = NULL;
@@ -1288,7 +1326,7 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc)
 	return retval;
 }
 
-NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
+NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt(const nc_rpc* rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr erropt = NULL;
@@ -1325,7 +1363,7 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc)
 	return retval;
 }
 
-NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
+NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt(const nc_rpc* rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr testopt = NULL;
@@ -1362,7 +1400,7 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc)
 	return (retval);
 }
 
-struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
+struct nc_filter* nc_rpc_get_filter(const nc_rpc* rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	struct nc_filter * retval = NULL;
@@ -1403,7 +1441,7 @@ struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc)
 	return retval;
 }
 
-NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
+NC_REPLY_TYPE nc_reply_get_type(const nc_reply* reply)
 {
 
 	if (reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE) {
@@ -1413,7 +1451,7 @@ NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply)
 	}
 }
 
-const char *nc_reply_get_data_ns(const nc_reply *reply)
+const char* nc_reply_get_data_ns(const nc_reply* reply)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr data = NULL;
@@ -1450,7 +1488,7 @@ const char *nc_reply_get_data_ns(const nc_reply *reply)
 	return (retval);
 }
 
-char *nc_reply_get_data(const nc_reply *reply)
+char* nc_reply_get_data(const nc_reply* reply)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	char *buf;
@@ -1543,7 +1581,7 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 	return (data);
 }
 
-const char *nc_reply_get_errormsg(const nc_reply *reply)
+const char* nc_reply_get_errormsg(const nc_reply* reply)
 {
 	if (reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE || reply->type.reply != NC_REPLY_ERROR) {
 		return (NULL);
@@ -1552,62 +1590,7 @@ const char *nc_reply_get_errormsg(const nc_reply *reply)
 	return ((reply->error == NULL) ? NULL : reply->error->message);
 }
 
-nc_rpc *nc_msg_client_hello(char **cpblts)
-{
-	nc_rpc *msg;
-	xmlNodePtr node;
-	int i;
-	xmlNsPtr ns;
-
-	if (cpblts == NULL || cpblts[0] == NULL) {
-		ERROR("hello: no capability specified");
-		return (NULL);
-	}
-
-	msg = calloc(1, sizeof(nc_rpc));
-	if (msg == NULL) {
-		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
-		return (NULL);
-	}
-
-	msg->error = NULL;
-	msg->doc = xmlNewDoc(BAD_CAST "1.0");
-	msg->doc->encoding = xmlStrdup(BAD_CAST UTF8);
-	msg->msgid = NULL;
-	msg->with_defaults = NCWD_MODE_NOTSET;
-	msg->type.rpc = NC_RPC_HELLO;
-
-	/* create root element */
-	msg->doc->children = xmlNewDocNode(msg->doc, NULL, BAD_CAST NC_HELLO_MSG, NULL);
-
-	/* set namespace */
-	ns = xmlNewNs(msg->doc->children, (xmlChar *) NC_NS_BASE10, NULL);
-	xmlSetNs(msg->doc->children, ns);
-
-	/* create capabilities node */
-	node = xmlNewChild(msg->doc->children, ns, BAD_CAST "capabilities", NULL);
-	for (i = 0; cpblts[i] != NULL; i++) {
-		xmlNewChild(node, ns, BAD_CAST "capability", BAD_CAST cpblts[i]);
-	}
-
-	/* create xpath evaluation context */
-	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
-		ERROR("%s: rpc message XPath context cannot be created.", __func__);
-		nc_msg_free(msg);
-		return NULL;
-	}
-
-	/* register base namespace for the rpc */
-	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_BASE10_ID, BAD_CAST NC_NS_BASE10) != 0) {
-		ERROR("Registering base namespace for the message xpath context failed.");
-		nc_msg_free(msg);
-		return NULL;
-	}
-
-	return (msg);
-}
-
-void nc_msg_free(struct nc_msg *msg)
+void nc_msg_free(struct nc_msg* msg)
 {
 	struct nc_err* e, *efree;
 	int i;
@@ -1724,32 +1707,6 @@ nc_reply *nc_reply_dup(const nc_reply* reply)
 	return ((nc_reply*)nc_msg_dup((struct nc_msg*)reply));
 }
 
-nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
-{
-	nc_rpc *msg;
-
-	msg = nc_msg_client_hello(cpblts);
-	if (msg == NULL) {
-		return (NULL);
-	}
-	msg->error = NULL;
-
-	/* assign session-id */
-	/* check if session-id is prepared */
-	if (session_id == NULL || strisempty(session_id)) {
-		/* no session-id set */
-		ERROR("Hello: session ID is empty");
-		xmlFreeDoc(msg->doc);
-		free(msg);
-		return (NULL);
-	}
-
-	/* create <session-id> node */
-	xmlNewChild(msg->doc->children, msg->doc->children->ns, BAD_CAST "session-id", BAD_CAST session_id);
-
-	return (msg);
-}
-
 /**
  * @brief Create a generic NETCONF message envelope according to the given
  * type (rpc or rpc-reply) and insert the given data
@@ -1759,7 +1716,7 @@ nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
  *
  * @return Prepared nc_msg structure.
  */
-struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
+static struct nc_msg* nc_msg_create(const xmlNodePtr content, char* msgtype)
 {
 	struct nc_msg* msg;
 
@@ -2486,7 +2443,7 @@ nc_rpc_capability_attr_new_elem:
 	return (EXIT_SUCCESS);
 }
 
-nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
+nc_rpc* nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node;
@@ -2546,7 +2503,7 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_get(const struct nc_filter *filter)
+nc_rpc* nc_rpc_get(const struct nc_filter *filter)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
@@ -2575,7 +2532,7 @@ nc_rpc *nc_rpc_get(const struct nc_filter *filter)
 
 }
 
-nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...)
+nc_rpc* nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 {
 	nc_rpc *rpc;
 	va_list argp;
@@ -2647,7 +2604,7 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_lock(NC_DATASTORE target)
+nc_rpc* nc_rpc_lock(NC_DATASTORE target)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_target;
@@ -2698,7 +2655,7 @@ nc_rpc *nc_rpc_lock(NC_DATASTORE target)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_unlock(NC_DATASTORE target)
+nc_rpc* nc_rpc_unlock(NC_DATASTORE target)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_target;
@@ -2749,7 +2706,7 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE target)
 	return (rpc);
 }
 
-nc_rpc * nc_rpc_validate(NC_DATASTORE source, ...)
+nc_rpc* nc_rpc_validate(NC_DATASTORE source, ...)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_source, node_config;
@@ -2888,7 +2845,7 @@ nc_rpc * nc_rpc_validate(NC_DATASTORE source, ...)
 }
 
 
-static nc_rpc *_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const xmlNodePtr config, const char* source_url, const char* target_url)
+static nc_rpc* _rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const xmlNodePtr config, const char* source_url, const char* target_url)
 {
 	nc_rpc *rpc = NULL;
 	xmlNodePtr content, node_target, node_source, node_config;
@@ -3251,7 +3208,7 @@ cleanup:
 	return (rpc);
 }
 
-nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...)
+nc_rpc* ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...)
 {
 	xmlNodePtr config = NULL;
 	const char* url = NULL;
@@ -3278,7 +3235,7 @@ nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_D
 	return(retval);
 }
 
-nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...)
+nc_rpc* nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...)
 {
 	xmlDocPtr config = NULL;
 	const char* url = NULL, *config_s = NULL;
@@ -3330,7 +3287,7 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFO
 	return(retval);
 }
 
-nc_rpc *nc_rpc_killsession(const char *kill_sid)
+nc_rpc* nc_rpc_killsession(const char *kill_sid)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_sid;
@@ -3365,7 +3322,7 @@ nc_rpc *nc_rpc_killsession(const char *kill_sid)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* format)
+nc_rpc* nc_rpc_getschema(const char* name, const char* version, const char* format)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
@@ -3414,7 +3371,7 @@ nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* form
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, const time_t* start, const time_t* stop)
+nc_rpc* nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, const time_t* start, const time_t* stop)
 {
 	nc_rpc *rpc = NULL;
 	xmlNodePtr content;
@@ -3480,7 +3437,7 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_commit(void)
+nc_rpc* nc_rpc_commit(void)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
@@ -3502,7 +3459,7 @@ nc_rpc *nc_rpc_commit(void)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_discardchanges(void)
+nc_rpc* nc_rpc_discardchanges(void)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
@@ -3524,7 +3481,7 @@ nc_rpc *nc_rpc_discardchanges(void)
 	return (rpc);
 }
 
-nc_rpc *ncxml_rpc_generic(const xmlNodePtr data)
+nc_rpc* ncxml_rpc_generic(const xmlNodePtr data)
 {
 	nc_rpc *rpc;
 
@@ -3539,7 +3496,7 @@ nc_rpc *ncxml_rpc_generic(const xmlNodePtr data)
 	return (rpc);
 }
 
-nc_rpc *nc_rpc_generic(const char* data)
+nc_rpc* nc_rpc_generic(const char* data)
 {
 	nc_rpc *rpc;
 	xmlDocPtr doc_data;

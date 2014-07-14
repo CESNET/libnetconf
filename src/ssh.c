@@ -131,7 +131,7 @@ void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 
 #define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
 
-static int find_ssh_keys ()
+static int find_ssh_keys(void)
 {
 	struct passwd *pw;
 	char * user_home, *key_pub_path = NULL, *key_priv_path = NULL;

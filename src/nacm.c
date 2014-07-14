@@ -109,7 +109,7 @@ struct rule_list {
 	struct nacm_rule** rules;
 };
 
-struct nacm_config {
+static struct nacm_config {
 	bool enabled;
 	bool default_read; /* false (0) for permit, true (1) for deny */
 	bool default_write; /* false (0) for permit, true (1) for deny */
@@ -122,7 +122,7 @@ struct nacm_config {
 /* access to the NACM statistics */
 extern struct nc_shared_info *nc_info;
 
-int nacm_config_refresh(void);
+static int nacm_config_refresh(void);
 
 static void nacm_path_free(struct nacm_path* path)
 {
@@ -604,7 +604,11 @@ static int check_query_result(xmlXPathObjectPtr query_result, const char* object
 	return (EXIT_SUCCESS);
 }
 
-int nacm_config_refresh(void)
+/**
+ * @brief Refresh internal structures according to the NACM configuration data.
+ * @return 0 on success, -1 on error
+ */
+static int nacm_config_refresh(void)
 {
 	xmlXPathContextPtr data_ctxt = NULL;
 	xmlXPathObjectPtr query_result = NULL;

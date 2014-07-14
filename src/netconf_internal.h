@@ -542,32 +542,6 @@ char* nc_clrwspace (const char* in);
 void nc_clip_occurences_with(char *str, char sought, char replacement);
 
 /**
- * @brief Replace substr in str by replacement
- *
- * Remember to free the returned string. Even if no replacement is done, new
- * (copy of the original) string is returned.
- *
- * @param[in] str String to modify.
- * @param[in] substr Substring to be replaced.
- * @param[in] replacement Replacement for the substr.
- *
- * return Resulting string or NULL on error.
- */
-char* nc_str_replace(const char *str, const char *substr, const char *replacement);
-
-/**
- * @brief Skip XML declaration in the beginning of an XML document
- *
- * @param xmldoc String containing XML document where the XML declaration
- * should be skipped.
- * @return Pointer into the given string pointing after the xml declaration if
- * any. Leading whitespaces are also skipped. Original string is not modified
- * in any way and if it was dynamically allocated, it should be freed via xmldoc
- * pointer.
- */
-char* nc_skip_xmldecl(const char* xmldoc);
-
-/**
  * @brief Process config data according to with-defaults' mode and data model
  * @param[in] config XML configuration data document in which the default values will
  * be modified (added for report-all and removed for trim mode).
@@ -679,12 +653,6 @@ void ncds_cleanall();
 
 int nc_session_monitoring_init(void);
 void nc_session_monitoring_close(void);
-
-/**
- * @brief Remove namespace definitions from the node which are no longer used.
- * @param[in] node XML element node which is to be checked for namespace definitions
- */
-void nc_clear_namespaces(xmlNodePtr node);
 
 const struct data_model* ncds_get_model_data(const char* namespace);
 const struct data_model* ncds_get_model_operation(const char* operation, const char* namespace);

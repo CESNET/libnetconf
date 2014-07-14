@@ -55,7 +55,7 @@
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 #ifndef DISABLE_LIBSSH
-void callback_sshauth_interactive_default (const char* name,
+static void callback_sshauth_interactive_default (const char* name,
 		int name_len,
 		const char* instruction,
 		int instruction_len,
@@ -64,12 +64,12 @@ void callback_sshauth_interactive_default (const char* name,
 		LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
 		void** abstract);
 
-char* callback_sshauth_publickey_default (const char* username,
+static char* callback_sshauth_publickey_default (const char* username,
 		const char* hostname,
 		const char* privatekey_filepath);
 
-char* callback_sshauth_password_default (const char* username, const char* hostname);
-int callback_ssh_hostkey_check_default (const char* hostname, LIBSSH2_SESSION *session);
+static char* callback_sshauth_password_default (const char* username, const char* hostname);
+static int callback_ssh_hostkey_check_default (const char* hostname, LIBSSH2_SESSION *session);
 #endif
 
 struct callbacks callbacks = {
@@ -152,7 +152,7 @@ void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
 	}
 }
 
-char* callback_sshauth_password_default (const char* username,
+static char* callback_sshauth_password_default (const char* username,
 		const char* hostname)
 {
 	char* buf, *newbuf;
@@ -227,7 +227,7 @@ char* callback_sshauth_password_default (const char* username,
  *
  * called by libssh2, see http://www.libssh2.org/libssh2_userauth_keyboard_interactive.html for details
  */
-void callback_sshauth_interactive_default (const char*  UNUSED(name),
+static void callback_sshauth_interactive_default (const char*  UNUSED(name),
 		int  UNUSED(name_len),
 		const char*  UNUSED(instruction),
 		int  UNUSED(instruction_len),
@@ -315,7 +315,7 @@ void callback_sshauth_interactive_default (const char*  UNUSED(name),
 	return;
 }
 
-char* callback_sshauth_publickey_default (const char*  UNUSED(username),
+static char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 		const char*  UNUSED(hostname),
 		const char* privatekey_filepath)
 {
@@ -382,7 +382,7 @@ char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 	return (buf);
 }
 
-int callback_ssh_hostkey_check_default (const char* hostname, LIBSSH2_SESSION *session)
+static int callback_ssh_hostkey_check_default (const char* hostname, LIBSSH2_SESSION *session)
 {
 	struct passwd *pw;
 	char *knownhosts_dir = NULL;
@@ -574,7 +574,7 @@ askuseragain:
 	return (EXIT_FAILURE);
 }
 
-void nc_set_publickey_path (const char* path)
+static void nc_set_publickey_path (const char* path)
 {
 	static int i = 0;
 	if (path != NULL) {
@@ -582,7 +582,7 @@ void nc_set_publickey_path (const char* path)
 	}
 }
 
-void nc_set_privatekey_path (const char* path)
+static void nc_set_privatekey_path (const char* path)
 {
 	FILE * key;
 	char line[128];

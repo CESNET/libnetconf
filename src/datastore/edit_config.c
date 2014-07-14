@@ -144,43 +144,6 @@ static NC_EDIT_OP_TYPE get_operation(xmlNodePtr node, NC_EDIT_DEFOP_TYPE defop, 
 }
 
 /**
- * @brief Get all the nodes that have a default value defined in the model.
- * @param[in] model Configuration data model to search for nodes with defined
- * default values.
- * @return The list of found nodes with default value definitions.
- */
-xmlXPathObjectPtr get_defaults_list(xmlDocPtr model)
-{
-	xmlXPathContextPtr model_ctxt = NULL;
-	xmlXPathObjectPtr defaults = NULL;
-
-	if (model == NULL) {
-		return (NULL);
-	}
-
-	/* create xpath evaluation context */
-	if ((model_ctxt = xmlXPathNewContext(model)) == NULL) {
-		return (NULL);
-	}
-
-	if (xmlXPathRegisterNs(model_ctxt, BAD_CAST "yin", BAD_CAST NC_NS_YIN) != 0) {
-		xmlXPathFreeContext(model_ctxt);
-		return (NULL);
-	}
-
-	defaults = xmlXPathEvalExpression(BAD_CAST "//yin:default", model_ctxt);
-	if (defaults != NULL) {
-		if (xmlXPathNodeSetIsEmpty(defaults->nodesetval)) {
-			xmlXPathFreeObject(defaults);
-			defaults = (NULL);
-		}
-	}
-	xmlXPathFreeContext(model_ctxt);
-
-	return (defaults);
-}
-
-/**
  * \brief Get all the key elements from the configuration data model
  *
  * \param model         XML form (YIN) of the configuration data model.
@@ -1445,6 +1408,72 @@ static xmlNodePtr get_ref_leaflist(xmlNodePtr parent, xmlNodePtr edit_node, stru
 }
 
 /**
+ * @brief Learn whether the namespace definition is used as namespace in the
+ * subtree.
+ * @param[in] node Node where to start checking.
+ * @param[in] ns Namespace to find.
+ * @return 0 if the namespace is not used, 1 if the usage of the namespace was found
+ */
+static int nc_find_namespace_usage(xmlNodePtr node, xmlNsPtr ns)
+{
+	xmlNodePtr child;
+	xmlAttrPtr prop;
+
+	/* check the element itself */
+	if (node->ns == ns) {
+		return 1;
+	} else {
+		/* check attributes of the element */
+		for (prop = node->properties; prop != NULL; prop = prop->next) {
+			if (prop->ns == ns) {
+				return 1;
+			}
+		}
+
+		/* go recursive into children */
+		for (child = node->children; child != NULL; child = child->next) {
+			if (child->type == XML_ELEMENT_NODE && nc_find_namespace_usage(child, ns) == 1) {
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * @brief Remove namespace definition from the node which are no longer used.
+ * @param[in] node XML element node where to check for namespace definitions
+ */
+static void nc_clear_namespaces(xmlNodePtr node)
+{
+	xmlNsPtr ns, prev = NULL;
+
+	if (node == NULL || node->type != XML_ELEMENT_NODE) {
+		return;
+	}
+
+	for (ns = node->nsDef; ns != NULL; ) {
+		if (nc_find_namespace_usage(node, ns) == 0) {
+			/* no one use the namespace - remove it */
+			if (prev == NULL) {
+				node->nsDef = ns->next;
+				xmlFreeNs(ns);
+				ns = node->nsDef;
+			} else {
+				prev->next = ns->next;
+				xmlFreeNs(ns);
+				ns = prev->next;
+			}
+		} else {
+			/* check another namespace definition */
+			prev = ns;
+			ns = ns->next;
+		}
+	}
+}
+
+/**
  * Common routine to create a node
  */
 static int edit_create_routine(xmlNodePtr parent, xmlNodePtr edit_node)
@@ -1843,7 +1872,7 @@ int edit_replace_nacmcheck(xmlNodePtr orig_node, xmlDocPtr edit_doc, xmlDocPtr m
  *
  * \return Zero on success, non-zero otherwise.
  */
-int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+static int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr old;
 	int r;

@@ -140,17 +140,19 @@ static struct model_list *models_list = NULL;
 static struct transapi_list* augment_tapi_list = NULL;
 static char** models_dirs = NULL;
 
-char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
-char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
+static char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
+static char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs);
 static struct data_model* get_model(const char* module, const char* version);
 static int ncds_features_parse(struct data_model* model);
 static int ncds_update_uses_groupings(struct data_model* model);
 static int ncds_update_uses_augments(struct data_model* model);
+static void ncds_ds_model_free(struct data_model* model);
+static xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model);
 extern int first_after_close;
 
 #ifndef DISABLE_NOTIFICATIONS
-char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
+static char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 #endif
 
 static struct ncds_ds *datastores_get_ds(ncds_id id);
@@ -562,7 +564,7 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
-int ncds_device_init (ncds_id * id, struct nc_cpblts *cpblts, int force)
+int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 {
 	nc_rpc * rpc_msg = NULL;
 	nc_reply * reply_msg = NULL;
@@ -700,7 +702,7 @@ cleanup:
 }
 
 
-char * ncds_get_model(ncds_id id, int base)
+char* ncds_get_model(ncds_id id, int base)
 {
 	struct ncds_ds * datastore = datastores_get_ds(id);
 	xmlBufferPtr buf;
@@ -724,7 +726,7 @@ char * ncds_get_model(ncds_id id, int base)
 	return retval;
 }
 
-const char * ncds_get_model_path(ncds_id id)
+const char* ncds_get_model_path(ncds_id id)
 {
 	struct ncds_ds * datastore = datastores_get_ds(id);
 
@@ -735,7 +737,7 @@ const char * ncds_get_model_path(ncds_id id)
 	return (datastore->data_model->path);
 }
 
-int ncds_model_info(const char* path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)
+int ncds_model_info(const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)
 {
 	int retval;
 	xmlXPathContextPtr model_ctxt;
@@ -946,7 +948,7 @@ errorcleanup:
 }
 
 /* used in ssh.c and session.c */
-char **get_schemas_capabilities(void)
+char** get_schemas_capabilities(void)
 {
 	struct model_list* listitem;
 	int i;
@@ -1003,7 +1005,7 @@ static char* get_schemas_str(const char* name, const char* version, const char* 
 	return (retval);
 }
 
-char* get_schemas()
+static char* get_schemas(void)
 {
 	char *schema = NULL, *schemas = NULL, *aux = NULL;
 	struct model_list* listitem;
@@ -1040,7 +1042,7 @@ char* get_schemas()
 }
 
 #ifndef DISABLE_NOTIFICATIONS
-char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e))
+static char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e))
 {
 	char *retval = NULL;
 
@@ -1056,7 +1058,7 @@ char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(runn
 }
 #endif /* DISABLE_NOTIFICATIONS */
 
-char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e))
+static char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err** UNUSED(e))
 {
 	char *schemas = NULL, *sessions = NULL, *retval = NULL, *ds_stats = NULL, *ds_startup = NULL, *ds_cand = NULL, *stats = NULL, *aux = NULL;
 	struct ncds_ds_list* ds = NULL;
@@ -1187,7 +1189,7 @@ char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running
 	return (retval);
 }
 
-char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e))
+static char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(running), struct nc_err** UNUSED(e))
 {
 	char* retval = NULL;
 
@@ -1235,7 +1237,7 @@ static char* compare_schemas(struct data_model* model, char* name, char* version
 	return (retval);
 }
 
-char* get_schema(const nc_rpc* rpc, struct nc_err** e)
+static char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 {
 	xmlXPathObjectPtr query_result = NULL;
 #ifndef DISABLE_YANGFORMAT
@@ -3100,6 +3102,65 @@ int ncds_features_disableall(const char* module)
 	return (_features_switchall(module, 1));
 }
 
+/**
+ * @brief Replace substr in str by replacement
+ *
+ * Remember to free the returned string. Even if no replacement is done, new
+ * (copy of the original) string is returned.
+ *
+ * @param[in] str String to modify.
+ * @param[in] substr Substring to be replaced.
+ * @param[in] replacement Replacement for the substr.
+ *
+ * return Resulting string or NULL on error.
+ */
+static char* nc_str_replace(const char *str, const char *substr, const char *replacement)
+{
+	int i, j, len;
+	const char *aux;
+	char *ret;
+
+	if ((len = strlen(replacement) - strlen(substr) ) > 0) {
+		/* we are going to enlarge the string - get to know how much */
+		for (i = 0, aux = strstr(str, substr); aux != NULL; aux = strstr(aux, substr)) {
+			i++;
+			aux = &(aux[strlen(substr)]);
+		}
+		if (i == 0) {
+			/* there is no occurrence of the needle, return just a copy of str */
+			return (strdup(str));
+		}
+
+		/* length of original string +
+		 * (# of needle occurrence * difference between needle and replacement) +
+		 * terminating NULL byte
+		 */
+		ret = malloc((strlen(str) + (i * len) + 1) * sizeof(char));
+	} else {
+		/* it's not going to be longer than original string */
+		ret = malloc((strlen(str) + 1) * sizeof(char));
+	}
+	if (ret == NULL) {
+		return (NULL);
+	}
+
+	for (i = j = 0, aux = strstr(str, substr); aux != NULL; aux = strstr(aux, substr)) {
+		while (&(str[i]) != aux) {
+			ret[j] = str[i];
+			i++;
+			j++;
+		}
+		strcpy(&(ret[j]), replacement);
+		j += strlen(replacement);
+		i += strlen(substr);
+		aux = &(str[i]);
+	}
+	/* copy the rest of the string */
+	strcpy(&(ret[j]), &(str[i]));
+
+	return(ret);
+}
+
 static int ncds_update_callbacks(struct ncds_ds* ds)
 {
 	struct transapi_list *tapi_iter;
@@ -3858,7 +3919,7 @@ int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng,
 #endif
 }
 
-struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path)
+static struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path)
 {
 	struct ncds_ds* ds = NULL;
 	char *basename, *path_yin;
@@ -3992,7 +4053,7 @@ struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_sta
 	return(ds);
 }
 
-ncds_id generate_id(void)
+static ncds_id generate_id(void)
 {
 	ncds_id current_id;
 
@@ -4005,7 +4066,7 @@ ncds_id generate_id(void)
 	return current_id;
 }
 
-void ncds_ds_model_free(struct data_model* model)
+static void ncds_ds_model_free(struct data_model* model)
 {
 	int i;
 	struct model_list *listitem, *listprev;
@@ -4240,7 +4301,7 @@ void ncds_free2(ncds_id datastore_id)
 	}
 }
 
-xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model)
+static xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model)
 {
 	int ret;
 	keyList keys;
@@ -4286,7 +4347,7 @@ xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDo
  * \return              0 if compared node contains all the properties (with
  *						the same values) as reference node, 1 otherwise
  */
-int attrcmp(xmlNodePtr reference, xmlNodePtr node)
+static int attrcmp(xmlNodePtr reference, xmlNodePtr node)
 {
 	xmlAttrPtr attr = reference->properties;
 	xmlChar *value = NULL, *refvalue = NULL;
@@ -4611,7 +4672,7 @@ int ncds_rollback(ncds_id id)
  * @param session
  * @return 
  */
-int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
+static int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
 {
 	NC_DATASTORE source, target;
 #ifndef DISABLE_URL

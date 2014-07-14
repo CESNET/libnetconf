@@ -34,11 +34,11 @@ typedef enum {
 struct model_tree {
 	YIN_TYPE type;
 	YIN_ORDER ordering; /** < list ordering valid only when type=={YIN_TYPE_LIST|YIN_TYPE_LEAFLIST} */
-	char * name;
-	char ** keys;
-	char * ns_uri;
-	char * ns_prefix;
-	struct model_tree * children;
+	char* name;
+	char** keys;
+	char* ns_uri;
+	char* ns_prefix;
+	struct model_tree* children;
 	int keys_count;
 	int children_count;
 };
@@ -52,7 +52,7 @@ struct model_tree {
  *
  * @return yinmodel structure or NULL
  */
-struct model_tree * yinmodel_parse (xmlDocPtr model_doc, struct ns_pair ns_mapping[]);
+struct model_tree* yinmodel_parse(xmlDocPtr model_doc, struct ns_pair ns_mapping[]);
 
 /**
  * @ingroup transapi
@@ -60,6 +60,6 @@ struct model_tree * yinmodel_parse (xmlDocPtr model_doc, struct ns_pair ns_mappi
  *
  * @param yin	Structure to be freed.
  */
-void yinmodel_free (struct model_tree * yin);
+void yinmodel_free(struct model_tree * yin);
 
 #endif

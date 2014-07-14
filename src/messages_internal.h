@@ -44,23 +44,6 @@
 #include "with_defaults.h"
 
 /**
- * @brief Create the client \<hello\> message.
- * @ingroup internalAPI
- * @param caps List of client capabilities.
- * @return rpc structure with the created client \<hello\> message.
- */
-nc_rpc *nc_msg_client_hello(char **caps);
-
-/**
- * @brief Create the server \<hello\> message.
- * @ingroup internalAPI
- * @param caps List of server capabilities.
- * @param session_id Generated NETCONF session ID string.
- * @return rpc structure with the created server \<hello\> message.
- */
-nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id);
-
-/**
  * @brief Get the message id string from the NETCONF message
  *
  * @param[in] msg NETCONF message to parse.
@@ -100,17 +83,6 @@ NCWD_MODE nc_rpc_parse_withdefaults(nc_rpc* rpc, const struct nc_session* sessio
  * @return Created rpc message.
  */
 nc_rpc *nc_rpc_closesession();
-
-/**
- * @brief Create a generic NETCONF message envelope according to the given type
- * (rpc or rpc-reply) and insert the given data
- *
- * @param[in] content pointer to the xml node containing data
- * @param[in] msgtype string of the envelope element (rpc, rpc-reply)
- *
- * @return Prepared nc_msg structure.
- */
-struct nc_msg* nc_msg_create(xmlNodePtr content, char* msgtype);
 
 /**
  * @brief Free a generic message.

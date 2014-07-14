@@ -60,6 +60,7 @@
 #endif
 
 #include <libxml/tree.h>
+#include <libxml/xpathInternals.h>
 
 #include "netconf_internal.h"
 #include "session.h"
@@ -92,7 +93,7 @@ struct nc_mngmt_server {
 void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supported);
 
 /* definition in datastore.c */
-char **get_schemas_capabilities(void);
+char** get_schemas_capabilities(void);
 
 extern struct nc_shared_info *nc_info;
 extern char* server_capabilities; /* from datastore, only for server side */
@@ -342,6 +343,100 @@ static char** nc_accept_server_cpblts(char ** server_cpblts_list, char ** client
 	}
 
 	return (result);
+}
+
+/**
+ * @brief Create the client \<hello\> message.
+ * @ingroup internalAPI
+ * @param caps List of client capabilities.
+ * @return rpc structure with the created client \<hello\> message.
+ */
+static nc_rpc* nc_msg_client_hello(char** cpblts)
+{
+	nc_rpc *msg;
+	xmlNodePtr node;
+	int i;
+	xmlNsPtr ns;
+
+	if (cpblts == NULL || cpblts[0] == NULL) {
+		ERROR("hello: no capability specified");
+		return (NULL);
+	}
+
+	msg = calloc(1, sizeof(nc_rpc));
+	if (msg == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}
+
+	msg->error = NULL;
+	msg->doc = xmlNewDoc(BAD_CAST "1.0");
+	msg->doc->encoding = xmlStrdup(BAD_CAST UTF8);
+	msg->msgid = NULL;
+	msg->with_defaults = NCWD_MODE_NOTSET;
+	msg->type.rpc = NC_RPC_HELLO;
+
+	/* create root element */
+	msg->doc->children = xmlNewDocNode(msg->doc, NULL, BAD_CAST NC_HELLO_MSG, NULL);
+
+	/* set namespace */
+	ns = xmlNewNs(msg->doc->children, (xmlChar *) NC_NS_BASE10, NULL);
+	xmlSetNs(msg->doc->children, ns);
+
+	/* create capabilities node */
+	node = xmlNewChild(msg->doc->children, ns, BAD_CAST "capabilities", NULL);
+	for (i = 0; cpblts[i] != NULL; i++) {
+		xmlNewChild(node, ns, BAD_CAST "capability", BAD_CAST cpblts[i]);
+	}
+
+	/* create xpath evaluation context */
+	if ((msg->ctxt = xmlXPathNewContext(msg->doc)) == NULL) {
+		ERROR("%s: rpc message XPath context cannot be created.", __func__);
+		nc_msg_free(msg);
+		return NULL;
+	}
+
+	/* register base namespace for the rpc */
+	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_BASE10_ID, BAD_CAST NC_NS_BASE10) != 0) {
+		ERROR("Registering base namespace for the message xpath context failed.");
+		nc_msg_free(msg);
+		return NULL;
+	}
+
+	return (msg);
+}
+
+/**
+ * @brief Create the server \<hello\> message.
+ * @ingroup internalAPI
+ * @param caps List of server capabilities.
+ * @param session_id Generated NETCONF session ID string.
+ * @return rpc structure with the created server \<hello\> message.
+ */
+static nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
+{
+	nc_rpc *msg;
+
+	msg = nc_msg_client_hello(cpblts);
+	if (msg == NULL) {
+		return (NULL);
+	}
+	msg->error = NULL;
+
+	/* assign session-id */
+	/* check if session-id is prepared */
+	if (session_id == NULL || strisempty(session_id)) {
+		/* no session-id set */
+		ERROR("Hello: session ID is empty");
+		xmlFreeDoc(msg->doc);
+		free(msg);
+		return (NULL);
+	}
+
+	/* create <session-id> node */
+	xmlNewChild(msg->doc->children, msg->doc->children->ns, BAD_CAST "session-id", BAD_CAST session_id);
+
+	return (msg);
 }
 
 #define HANDSHAKE_SIDE_SERVER 1

@@ -358,28 +358,4 @@ struct ncds_ds {
 	int tapi_callbacks_count;
 };
 
-/**
- * @brief Free data_model structure from ncds_ds structure (model itself is not
- * freed)
- * @param[in] model Data model structure to free its content.
- */
-void ncds_ds_model_free(struct data_model* model);
-
-/**
- * @brief Generate a unique datastore id
- * @return unique datastore id
- */
-ncds_id generate_id (void);
-
-/**
- * @brief Merge two XML documents with a common data model.
- * @param first First XML document to merge.
- * @param second Second XML document to merge.
- * @param data_model XML document containing the data model of the merged documents
- * in the YIN format.
- * @return Resulting XML document merged from the input documents. It is up to the
- * caller to free the memory with xmlFreeDoc().
- */
-xmlDocPtr ncxml_merge (const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model);
-
 #endif /* DATASTORE_INTERNAL_H_ */

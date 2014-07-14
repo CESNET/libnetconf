@@ -89,7 +89,7 @@ int nc_url_is_enabled(NC_URL_PROTOCOLS protocol)
 	return nc_url_protocols & protocol;
 }
 
-static xmlChar * url_protocols[] = {
+static xmlChar* url_protocols[] = {
 		BAD_CAST "scp",
 		BAD_CAST "http",
 		BAD_CAST "https",

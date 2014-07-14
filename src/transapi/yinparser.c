@@ -12,7 +12,7 @@
 #include "../transapi.h"
 #include "yinparser.h"
 
-int get_node_namespace(struct ns_pair ns_mapping[], xmlNodePtr node, char ** prefix, char ** uri)
+static int get_node_namespace(struct ns_pair ns_mapping[], xmlNodePtr node, char** prefix, char** uri)
 {
 	int i;
 
@@ -34,7 +34,7 @@ int get_node_namespace(struct ns_pair ns_mapping[], xmlNodePtr node, char ** pre
 	return(EXIT_SUCCESS);
 }
 
-struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, struct ns_pair ns_mapping[], struct model_tree * parent, int *children_count)
+static struct model_tree* yinmodel_parse_recursive(xmlNodePtr model_node, struct ns_pair ns_mapping[], struct model_tree* parent, int* children_count)
 {
 	struct model_tree *children = NULL, *choice, *new_tree, *augment_children;
 	xmlNodePtr int_tmp, list_tmp, model_tmp = model_node->children;
@@ -197,7 +197,7 @@ struct model_tree * yinmodel_parse_recursive (xmlNodePtr model_node, struct ns_p
 	return children;
 }
 
-void yinmodel_free_recursive (struct model_tree * yin)
+static void yinmodel_free_recursive(struct model_tree* yin)
 {
 	int i;
 
@@ -221,7 +221,7 @@ void yinmodel_free_recursive (struct model_tree * yin)
 	free (yin->name);
 }
 
-void yinmodel_free (struct model_tree * yin)
+void yinmodel_free(struct model_tree* yin)
 {
 	if (yin != NULL) {
 		yinmodel_free_recursive (yin);
@@ -229,7 +229,7 @@ void yinmodel_free (struct model_tree * yin)
 	}
 }
 
-struct model_tree * yinmodel_parse (xmlDocPtr model_doc, struct ns_pair ns_mapping[])
+struct model_tree* yinmodel_parse(xmlDocPtr model_doc, struct ns_pair ns_mapping[])
 {
 	xmlNodePtr model_root, model_top = NULL, model_tmp, model_tmp2;
 	struct model_tree * yin, * yin_act;
