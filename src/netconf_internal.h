@@ -55,6 +55,7 @@
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 
+#include "config.h"
 #include "netconf.h"
 #include "callbacks.h"
 #include "with_defaults.h"

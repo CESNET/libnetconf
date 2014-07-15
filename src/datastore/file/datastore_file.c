@@ -138,7 +138,7 @@ static int file_ds_access(struct ncds_ds_file* file_ds, NC_DATASTORE target, con
 	return retval;
 }
 
-int ncds_file_set_path(struct ncds_ds* datastore, const char* path)
+API int ncds_file_set_path(struct ncds_ds* datastore, const char* path)
 {
 	struct ncds_ds_file * file_ds = (struct ncds_ds_file*)datastore;
 	mode_t mask;

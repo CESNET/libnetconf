@@ -51,7 +51,7 @@
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
-struct nc_err* nc_err_new(NC_ERR error)
+API struct nc_err* nc_err_new(NC_ERR error)
 {
 	struct nc_err* err = NULL;
 
@@ -185,7 +185,7 @@ struct nc_err* nc_err_new(NC_ERR error)
 	return (err);
 }
 
-struct nc_err* nc_err_dup(const struct nc_err* err)
+API struct nc_err* nc_err_dup(const struct nc_err* err)
 {
 	struct nc_err *duperr;
 
@@ -234,7 +234,7 @@ struct nc_err* nc_err_dup(const struct nc_err* err)
 	return (duperr);
 }
 
-void nc_err_free(struct nc_err* err)
+API void nc_err_free(struct nc_err* err)
 {
 	if (err != NULL) {
 		if (err->apptag) {
@@ -271,7 +271,7 @@ void nc_err_free(struct nc_err* err)
 	}
 }
 
-const char* nc_err_get(const struct nc_err* err, NC_ERR_PARAM param)
+API const char* nc_err_get(const struct nc_err* err, NC_ERR_PARAM param)
 {
 
 	if (err == NULL) {
@@ -306,7 +306,7 @@ const char* nc_err_get(const struct nc_err* err, NC_ERR_PARAM param)
 	}
 }
 
-int nc_err_set(struct nc_err* err, NC_ERR_PARAM param, const char* value)
+API int nc_err_set(struct nc_err* err, NC_ERR_PARAM param, const char* value)
 {
 	char** param_item = NULL;
 

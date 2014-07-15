@@ -141,7 +141,7 @@ static struct nc_filter *nc_filter_new_subtree(const xmlNodePtr filter)
 	return (retval);
 }
 
-struct nc_filter* nc_filter_new(NC_FILTER_TYPE type, ...)
+API struct nc_filter* nc_filter_new(NC_FILTER_TYPE type, ...)
 {
 	struct nc_filter *retval;
 	char* filter_s = NULL;
@@ -187,7 +187,7 @@ struct nc_filter* nc_filter_new(NC_FILTER_TYPE type, ...)
 	return (retval);
 }
 
-struct nc_filter* ncxml_filter_new(NC_FILTER_TYPE type, ...)
+API struct nc_filter* ncxml_filter_new(NC_FILTER_TYPE type, ...)
 {
 	struct nc_filter *retval;
 	xmlNodePtr filter;
@@ -212,7 +212,7 @@ struct nc_filter* ncxml_filter_new(NC_FILTER_TYPE type, ...)
 	return (retval);
 }
 
-void nc_filter_free(struct nc_filter* filter)
+API void nc_filter_free(struct nc_filter* filter)
 {
 	if (filter != NULL) {
 		if (filter->subtree_filter) {
@@ -242,12 +242,12 @@ static char* nc_msg_dump(const struct nc_msg *msg)
 	return ((char*) buf);
 }
 
-char* nc_reply_dump(const nc_reply* reply)
+API char* nc_reply_dump(const nc_reply* reply)
 {
 	return (nc_msg_dump((struct nc_msg*)reply));
 }
 
-xmlDocPtr ncxml_reply_dump(const nc_reply* reply)
+API xmlDocPtr ncxml_reply_dump(const nc_reply* reply)
 {
 	if (reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE || reply->doc == NULL) {
 		ERROR("%s: invalid input parameter.", __func__);
@@ -257,12 +257,12 @@ xmlDocPtr ncxml_reply_dump(const nc_reply* reply)
 	return (xmlCopyDoc(reply->doc, 1));
 }
 
-char* nc_rpc_dump(const nc_rpc* rpc)
+API char* nc_rpc_dump(const nc_rpc* rpc)
 {
 	return (nc_msg_dump((struct nc_msg*)rpc));
 }
 
-xmlDocPtr ncxml_rpc_dump(const nc_rpc* rpc)
+API xmlDocPtr ncxml_rpc_dump(const nc_rpc* rpc)
 {
 	return (xmlCopyDoc(rpc->doc, 1));
 }
@@ -491,7 +491,7 @@ NC_RPC_TYPE nc_rpc_parse_type(nc_rpc* rpc)
 	return (rpc->type.rpc);
 }
 
-nc_rpc* nc_rpc_build(const char* rpc_dump, const struct nc_session* session)
+API nc_rpc* nc_rpc_build(const char* rpc_dump, const struct nc_session* session)
 {
 	nc_rpc* rpc;
 
@@ -513,7 +513,7 @@ nc_rpc* nc_rpc_build(const char* rpc_dump, const struct nc_session* session)
 	return rpc;
 }
 
-nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump, const struct nc_session* session)
+API nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump, const struct nc_session* session)
 {
 	nc_rpc* rpc;
 
@@ -580,7 +580,7 @@ NC_REPLY_TYPE nc_reply_parse_type(nc_reply* reply)
 	return (reply->type.reply);
 }
 
-nc_reply* nc_reply_build(const char* reply_dump)
+API nc_reply* nc_reply_build(const char* reply_dump)
 {
 	nc_reply * reply;
 
@@ -594,7 +594,7 @@ nc_reply* nc_reply_build(const char* reply_dump)
 	return (reply);
 }
 
-nc_reply* ncxml_reply_build(xmlDocPtr reply_dump)
+API nc_reply* ncxml_reply_build(xmlDocPtr reply_dump)
 {
 	nc_reply * reply;
 
@@ -608,7 +608,7 @@ nc_reply* ncxml_reply_build(xmlDocPtr reply_dump)
 	return (reply);
 }
 
-const nc_msgid nc_reply_get_msgid(const nc_reply* reply)
+API const nc_msgid nc_reply_get_msgid(const nc_reply* reply)
 {
 	if (reply != NULL && reply != NCDS_RPC_NOT_APPLICABLE) {
 		return (reply->msgid);
@@ -617,7 +617,7 @@ const nc_msgid nc_reply_get_msgid(const nc_reply* reply)
 	}
 }
 
-const nc_msgid nc_rpc_get_msgid(const nc_rpc* rpc)
+API const nc_msgid nc_rpc_get_msgid(const nc_rpc* rpc)
 {
 	if (rpc != NULL) {
 		return (rpc->msgid);
@@ -626,7 +626,7 @@ const nc_msgid nc_rpc_get_msgid(const nc_rpc* rpc)
 	}
 }
 
-char* nc_rpc_get_ns(const nc_rpc* rpc)
+API char* nc_rpc_get_ns(const nc_rpc* rpc)
 {
 	xmlNodePtr root, opnode;
 
@@ -657,7 +657,7 @@ char* nc_rpc_get_ns(const nc_rpc* rpc)
 	}
 }
 
-NC_OP nc_rpc_get_op(const nc_rpc* rpc)
+API NC_OP nc_rpc_get_op(const nc_rpc* rpc)
 {
 	xmlNodePtr root, auxnode;
 
@@ -736,7 +736,7 @@ NC_OP nc_rpc_get_op(const nc_rpc* rpc)
 	return (NC_OP_UNKNOWN);
 }
 
-char* nc_rpc_get_op_name(const nc_rpc* rpc)
+API char* nc_rpc_get_op_name(const nc_rpc* rpc)
 {
 	xmlNodePtr root, auxnode;
 
@@ -768,7 +768,7 @@ char* nc_rpc_get_op_name(const nc_rpc* rpc)
 	return (strdup((char*)(auxnode->name)));
 }
 
-char* nc_rpc_get_op_namespace(const nc_rpc* rpc)
+API char* nc_rpc_get_op_namespace(const nc_rpc* rpc)
 {
 	xmlNodePtr root, auxnode;
 
@@ -804,7 +804,7 @@ char* nc_rpc_get_op_namespace(const nc_rpc* rpc)
 	}
 }
 
-char* nc_rpc_get_op_content(const nc_rpc* rpc)
+API char* nc_rpc_get_op_content(const nc_rpc* rpc)
 {
 	char *retval = NULL;
 	xmlDocPtr aux_doc;
@@ -843,7 +843,7 @@ char* nc_rpc_get_op_content(const nc_rpc* rpc)
 	return retval;
 }
 
-xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc* rpc)
+API xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc* rpc)
 {
 	xmlNodePtr root;
 
@@ -858,7 +858,7 @@ xmlNodePtr ncxml_rpc_get_op_content(const nc_rpc* rpc)
 	return (xmlCopyNodeList(root->children));
 }
 
-NC_RPC_TYPE nc_rpc_get_type(const nc_rpc* rpc)
+API NC_RPC_TYPE nc_rpc_get_type(const nc_rpc* rpc)
 {
 	if (rpc != NULL) {
 		return (rpc->type.rpc);
@@ -929,12 +929,12 @@ static NC_DATASTORE nc_rpc_get_ds(const nc_rpc* rpc, const char* ds_type)
 	return(retval);
 }
 
-NC_DATASTORE nc_rpc_get_source(const nc_rpc* rpc)
+API NC_DATASTORE nc_rpc_get_source(const nc_rpc* rpc)
 {
 	return (nc_rpc_get_ds(rpc, "source"));
 }
 
-NC_DATASTORE nc_rpc_get_target(const nc_rpc* rpc)
+API NC_DATASTORE nc_rpc_get_target(const nc_rpc* rpc)
 {
 	return (nc_rpc_get_ds(rpc, "target"));
 }
@@ -1243,7 +1243,7 @@ static xmlNodePtr ncxml_rpc_get_cfg_validate(const nc_rpc* rpc)
 	return (retval);
 }
 
-char* nc_rpc_get_config(const nc_rpc* rpc)
+API char* nc_rpc_get_config(const nc_rpc* rpc)
 {
 	char* retval = NULL;
 
@@ -1266,7 +1266,7 @@ char* nc_rpc_get_config(const nc_rpc* rpc)
 	return ((retval == (char*)NCDS_RPC_NOT_APPLICABLE) ? NULL : retval);
 }
 
-xmlNodePtr ncxml_rpc_get_config(const nc_rpc* rpc)
+API xmlNodePtr ncxml_rpc_get_config(const nc_rpc* rpc)
 {
 	xmlNodePtr retval = NULL;
 
@@ -1289,7 +1289,7 @@ xmlNodePtr ncxml_rpc_get_config(const nc_rpc* rpc)
 	return ((retval == (xmlNodePtr)NCDS_RPC_NOT_APPLICABLE) ? NULL : retval);
 }
 
-NC_EDIT_DEFOP_TYPE nc_rpc_get_defop(const nc_rpc* rpc)
+API NC_EDIT_DEFOP_TYPE nc_rpc_get_defop(const nc_rpc* rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr defop = NULL;
@@ -1326,7 +1326,7 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop(const nc_rpc* rpc)
 	return retval;
 }
 
-NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt(const nc_rpc* rpc)
+API NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt(const nc_rpc* rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr erropt = NULL;
@@ -1363,7 +1363,7 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt(const nc_rpc* rpc)
 	return retval;
 }
 
-NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt(const nc_rpc* rpc)
+API NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt(const nc_rpc* rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr testopt = NULL;
@@ -1400,7 +1400,7 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt(const nc_rpc* rpc)
 	return (retval);
 }
 
-struct nc_filter* nc_rpc_get_filter(const nc_rpc* rpc)
+API struct nc_filter* nc_rpc_get_filter(const nc_rpc* rpc)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	struct nc_filter * retval = NULL;
@@ -1441,7 +1441,7 @@ struct nc_filter* nc_rpc_get_filter(const nc_rpc* rpc)
 	return retval;
 }
 
-NC_REPLY_TYPE nc_reply_get_type(const nc_reply* reply)
+API NC_REPLY_TYPE nc_reply_get_type(const nc_reply* reply)
 {
 
 	if (reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE) {
@@ -1451,7 +1451,7 @@ NC_REPLY_TYPE nc_reply_get_type(const nc_reply* reply)
 	}
 }
 
-const char* nc_reply_get_data_ns(const nc_reply* reply)
+API const char* nc_reply_get_data_ns(const nc_reply* reply)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr data = NULL;
@@ -1488,7 +1488,7 @@ const char* nc_reply_get_data_ns(const nc_reply* reply)
 	return (retval);
 }
 
-char* nc_reply_get_data(const nc_reply* reply)
+API char* nc_reply_get_data(const nc_reply* reply)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	char *buf;
@@ -1556,7 +1556,7 @@ char* nc_reply_get_data(const nc_reply* reply)
 	return (buf);
 }
 
-xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
+API xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	xmlNodePtr data = NULL;
@@ -1581,7 +1581,7 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply)
 	return (data);
 }
 
-const char* nc_reply_get_errormsg(const nc_reply* reply)
+API const char* nc_reply_get_errormsg(const nc_reply* reply)
 {
 	if (reply == NULL || reply == NCDS_RPC_NOT_APPLICABLE || reply->type.reply != NC_REPLY_ERROR) {
 		return (NULL);
@@ -1623,12 +1623,12 @@ void nc_msg_free(struct nc_msg* msg)
 	}
 }
 
-void nc_rpc_free(nc_rpc *rpc)
+API void nc_rpc_free(nc_rpc *rpc)
 {
 	nc_msg_free((struct nc_msg*) rpc);
 }
 
-void nc_reply_free(nc_reply *reply)
+API void nc_reply_free(nc_reply *reply)
 {
 	nc_msg_free((struct nc_msg*) reply);
 }
@@ -1697,12 +1697,12 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 	return (dupmsg);
 }
 
-nc_rpc *nc_rpc_dup(const nc_rpc* rpc)
+API nc_rpc *nc_rpc_dup(const nc_rpc* rpc)
 {
 	return ((nc_rpc*)nc_msg_dup((struct nc_msg*)rpc));
 }
 
-nc_reply *nc_reply_dup(const nc_reply* reply)
+API nc_reply *nc_reply_dup(const nc_reply* reply)
 {
 	return ((nc_reply*)nc_msg_dup((struct nc_msg*)reply));
 }
@@ -1836,7 +1836,7 @@ static nc_reply* nc_reply_create(const xmlNodePtr content)
 	return (reply);
 }
 
-nc_reply *nc_reply_ok()
+API nc_reply* nc_reply_ok(void)
 {
 	nc_reply *reply;
 	xmlNodePtr content;
@@ -1858,12 +1858,12 @@ nc_reply *nc_reply_ok()
 	return (reply);
 }
 
-nc_reply *nc_reply_data(const char* data)
+API nc_reply *nc_reply_data(const char* data)
 {
 	return (nc_reply_data_ns(data, NC_NS_BASE10));
 }
 
-nc_reply *nc_reply_data_ns(const char* data, const char* ns)
+API nc_reply *nc_reply_data_ns(const char* data, const char* ns)
 {
 	nc_reply *reply;
 	xmlDocPtr doc_data;
@@ -1899,7 +1899,7 @@ nc_reply *nc_reply_data_ns(const char* data, const char* ns)
 	return (reply);
 }
 
-nc_reply *ncxml_reply_data(const xmlNodePtr data)
+API nc_reply *ncxml_reply_data(const xmlNodePtr data)
 {
 	nc_reply *reply;
 	xmlNodePtr content;
@@ -2046,7 +2046,7 @@ static xmlNodePtr new_reply_error_content(struct nc_err* error)
 	return(first);
 }
 
-nc_reply *nc_reply_error(struct nc_err* error)
+API nc_reply *nc_reply_error(struct nc_err* error)
 {
 	nc_reply *reply;
 	xmlNodePtr content;
@@ -2069,7 +2069,7 @@ nc_reply *nc_reply_error(struct nc_err* error)
 	return (reply);
 }
 
-int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
+API int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 {
 	xmlNodePtr content;
 
@@ -2106,7 +2106,7 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error)
 	return (EXIT_SUCCESS);
 }
 
-nc_reply* nc_reply_merge(int count, ...)
+API nc_reply* nc_reply_merge(int count, ...)
 {
 	nc_reply *merged_reply = NULL;
 	nc_reply ** to_merge = NULL;
@@ -2327,7 +2327,7 @@ static int process_filter_param (xmlNodePtr content, const struct nc_filter* fil
 	return (EXIT_SUCCESS);
 }
 
-int nc_rpc_capability_attr(nc_rpc* rpc, NC_CAP_ATTR attr, ...)
+API int nc_rpc_capability_attr(nc_rpc* rpc, NC_CAP_ATTR attr, ...)
 {
 	va_list argp;
 	xmlXPathObjectPtr query_result = NULL;
@@ -2443,7 +2443,7 @@ nc_rpc_capability_attr_new_elem:
 	return (EXIT_SUCCESS);
 }
 
-nc_rpc* nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
+API nc_rpc* nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node;
@@ -2503,7 +2503,7 @@ nc_rpc* nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter)
 	return (rpc);
 }
 
-nc_rpc* nc_rpc_get(const struct nc_filter *filter)
+API nc_rpc* nc_rpc_get(const struct nc_filter *filter)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
@@ -2532,7 +2532,7 @@ nc_rpc* nc_rpc_get(const struct nc_filter *filter)
 
 }
 
-nc_rpc* nc_rpc_deleteconfig(NC_DATASTORE target, ...)
+API nc_rpc* nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 {
 	nc_rpc *rpc;
 	va_list argp;
@@ -2604,7 +2604,7 @@ nc_rpc* nc_rpc_deleteconfig(NC_DATASTORE target, ...)
 	return (rpc);
 }
 
-nc_rpc* nc_rpc_lock(NC_DATASTORE target)
+API nc_rpc* nc_rpc_lock(NC_DATASTORE target)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_target;
@@ -2655,7 +2655,7 @@ nc_rpc* nc_rpc_lock(NC_DATASTORE target)
 	return (rpc);
 }
 
-nc_rpc* nc_rpc_unlock(NC_DATASTORE target)
+API nc_rpc* nc_rpc_unlock(NC_DATASTORE target)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_target;
@@ -2706,7 +2706,7 @@ nc_rpc* nc_rpc_unlock(NC_DATASTORE target)
 	return (rpc);
 }
 
-nc_rpc* nc_rpc_validate(NC_DATASTORE source, ...)
+API nc_rpc* nc_rpc_validate(NC_DATASTORE source, ...)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_source, node_config;
@@ -2973,7 +2973,7 @@ cleanup:
 
 }
 
-nc_rpc *ncxml_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
+API nc_rpc *ncxml_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
 {
 	xmlNodePtr config = NULL;
 	const char *source_url = NULL, *target_url = NULL;
@@ -2997,7 +2997,7 @@ nc_rpc *ncxml_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
 	return (retval);
 }
 
-nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
+API nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...)
 {
 	xmlDocPtr config = NULL;
 	const char* config_s;
@@ -3208,7 +3208,7 @@ cleanup:
 	return (rpc);
 }
 
-nc_rpc* ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...)
+API nc_rpc* ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...)
 {
 	xmlNodePtr config = NULL;
 	const char* url = NULL;
@@ -3235,7 +3235,7 @@ nc_rpc* ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_D
 	return(retval);
 }
 
-nc_rpc* nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...)
+API nc_rpc* nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...)
 {
 	xmlDocPtr config = NULL;
 	const char* url = NULL, *config_s = NULL;
@@ -3287,7 +3287,7 @@ nc_rpc* nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFO
 	return(retval);
 }
 
-nc_rpc* nc_rpc_killsession(const char *kill_sid)
+API nc_rpc* nc_rpc_killsession(const char *kill_sid)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content, node_sid;
@@ -3322,7 +3322,7 @@ nc_rpc* nc_rpc_killsession(const char *kill_sid)
 	return (rpc);
 }
 
-nc_rpc* nc_rpc_getschema(const char* name, const char* version, const char* format)
+API nc_rpc* nc_rpc_getschema(const char* name, const char* version, const char* format)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
@@ -3371,7 +3371,7 @@ nc_rpc* nc_rpc_getschema(const char* name, const char* version, const char* form
 	return (rpc);
 }
 
-nc_rpc* nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, const time_t* start, const time_t* stop)
+API nc_rpc* nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, const time_t* start, const time_t* stop)
 {
 	nc_rpc *rpc = NULL;
 	xmlNodePtr content;
@@ -3437,7 +3437,7 @@ nc_rpc* nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
 	return (rpc);
 }
 
-nc_rpc* nc_rpc_commit(void)
+API nc_rpc* nc_rpc_commit(void)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
@@ -3459,7 +3459,7 @@ nc_rpc* nc_rpc_commit(void)
 	return (rpc);
 }
 
-nc_rpc* nc_rpc_discardchanges(void)
+API nc_rpc* nc_rpc_discardchanges(void)
 {
 	nc_rpc *rpc;
 	xmlNodePtr content;
@@ -3481,7 +3481,7 @@ nc_rpc* nc_rpc_discardchanges(void)
 	return (rpc);
 }
 
-nc_rpc* ncxml_rpc_generic(const xmlNodePtr data)
+API nc_rpc* ncxml_rpc_generic(const xmlNodePtr data)
 {
 	nc_rpc *rpc;
 
@@ -3496,7 +3496,7 @@ nc_rpc* ncxml_rpc_generic(const xmlNodePtr data)
 	return (rpc);
 }
 
-nc_rpc* nc_rpc_generic(const char* data)
+API nc_rpc* nc_rpc_generic(const char* data)
 {
 	nc_rpc *rpc;
 	xmlDocPtr doc_data;

@@ -82,7 +82,7 @@ static struct auth_pref_couple sshauth_pref[AUTH_COUNT] = {
 		{ NC_SSH_AUTH_PUBLIC_KEYS, 1 }
 };
 
-void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
+API void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 {
 	int dir = 0;
 	unsigned short i;

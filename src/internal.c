@@ -74,7 +74,7 @@ volatile uint8_t verbose_level = 0;
 /* used in nc_device_init to decide if erase running or not */
 int first_after_close = 0;
 
-void nc_verbosity(NC_VERB_LEVEL level)
+API void nc_verbosity(NC_VERB_LEVEL level)
 {
 	verbose_level = level;
 }
@@ -102,7 +102,7 @@ void prv_printf(NC_VERB_LEVEL level, const char *format, ...)
 	va_end(ap);
 }
 
-void nc_verb_verbose(const char *format, ...)
+API void nc_verb_verbose(const char *format, ...)
 {
 	va_list argptr;
 	if (verbose_level >= NC_VERB_VERBOSE) {
@@ -112,7 +112,7 @@ void nc_verb_verbose(const char *format, ...)
 	}
 }
 
-void nc_verb_warning(const char *format, ...)
+API void nc_verb_warning(const char *format, ...)
 {
 	va_list argptr;
 
@@ -123,7 +123,7 @@ void nc_verb_warning(const char *format, ...)
 	}
 }
 
-void nc_verb_error(const char *format, ...)
+API void nc_verb_error(const char *format, ...)
 {
 	va_list argptr;
 
@@ -137,7 +137,7 @@ static int shmid = -1;
 
 int nc_init_flags = 0;
 
-int nc_init(int flags)
+API int nc_init(int flags)
 {
 	int retval = 0, r;
 	key_t key = -4;
@@ -297,7 +297,7 @@ int nc_init(int flags)
 	return (retval);
 }
 
-int nc_close(int system)
+API int nc_close(int system)
 {
 	struct shmid_ds ds;
 	int retval = 0;
@@ -461,7 +461,7 @@ char** nc_get_grouplist(const char* username)
 	return (retval);
 }
 
-time_t nc_datetime2time(const char* datetime)
+API time_t nc_datetime2time(const char* datetime)
 {
 	struct tm time;
 	char* dt;
@@ -522,7 +522,7 @@ time_t nc_datetime2time(const char* datetime)
 	return (retval);
 }
 
-char* nc_time2datetime(time_t time, const char* tz)
+API char* nc_time2datetime(time_t time, const char* tz)
 {
 	char* date = NULL;
 	char* zoneshift = NULL;

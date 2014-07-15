@@ -69,7 +69,7 @@ static void tls_ctx_init(void)
 	SSL_library_init();
 }
 
-void nc_tls_destroy(void)
+API void nc_tls_destroy(void)
 {
 	SSL_CTX* tls_ctx;
 
@@ -80,7 +80,7 @@ void nc_tls_destroy(void)
 	pthread_setspecific(tls_ctx_key, NULL);
 }
 
-int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath)
+API int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath)
 {
 	const char* key_ = peer_key;
 	SSL_CTX* tls_ctx;

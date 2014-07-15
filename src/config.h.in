@@ -40,6 +40,13 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+/*
+ * If the compiler supports attribute to mark objects as hidden, mark all
+ * objects as hidden and export only objects explicitly marked to be part of
+ * the public API.
+ */
+#define API @API@
+
 #ifndef DISABLE_LIBSSH
 /*
  * libssh2_session_startup() is deprecated in libssh2 >= 1.2.8 and replaced by

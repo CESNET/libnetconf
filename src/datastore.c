@@ -112,7 +112,7 @@ extern int nc_init_flags;
 extern struct nc_shared_info *nc_info;
 
 /* reserve memory for error pointers such as ERROR_POINTER or NCDS_RPC_NOT_APPLICABLE */
-char error_area;
+API char error_area;
 #define ERROR_POINTER ((void*)(&error_area))
 
 char* server_capabilities = NULL;
@@ -564,7 +564,7 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
-int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
+API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 {
 	nc_rpc * rpc_msg = NULL;
 	nc_reply * reply_msg = NULL;
@@ -702,7 +702,7 @@ cleanup:
 }
 
 
-char* ncds_get_model(ncds_id id, int base)
+API char* ncds_get_model(ncds_id id, int base)
 {
 	struct ncds_ds * datastore = datastores_get_ds(id);
 	xmlBufferPtr buf;
@@ -726,7 +726,7 @@ char* ncds_get_model(ncds_id id, int base)
 	return retval;
 }
 
-const char* ncds_get_model_path(ncds_id id)
+API const char* ncds_get_model_path(ncds_id id)
 {
 	struct ncds_ds * datastore = datastores_get_ds(id);
 
@@ -737,7 +737,7 @@ const char* ncds_get_model_path(ncds_id id)
 	return (datastore->data_model->path);
 }
 
-int ncds_model_info(const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)
+API int ncds_model_info(const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)
 {
 	int retval;
 	xmlXPathContextPtr model_ctxt;
@@ -1506,7 +1506,7 @@ static struct transapi_internal* transapi_new_shared(const char* callbacks_path)
 	return (transapi);
 }
 
-struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const char* callbacks_path)
+API struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const char* callbacks_path)
 {
 	struct ncds_ds* ds = NULL;
 	struct transapi_list *item;
@@ -1546,7 +1546,7 @@ struct ncds_ds* ncds_new_transapi(NCDS_TYPE type, const char* model_path, const 
 	return ds;
 }
 
-struct ncds_ds* ncds_new_transapi_static(NCDS_TYPE type, const char* model_path, const struct transapi* transapi)
+API struct ncds_ds* ncds_new_transapi_static(NCDS_TYPE type, const char* model_path, const struct transapi* transapi)
 {
 	struct transapi_list *item;
 	struct ncds_ds *ds = NULL;
@@ -2767,7 +2767,7 @@ static int ncds_update_augment_cleanup(struct ncds_ds *ds)
 	return (EXIT_SUCCESS);
 }
 
-int ncds_add_models_path(const char* path)
+API int ncds_add_models_path(const char* path)
 {
 	static int list_size = 0;
 	static int list_records = 0;
@@ -2811,7 +2811,7 @@ int ncds_add_models_path(const char* path)
 	return (EXIT_SUCCESS);
 }
 
-int ncds_add_augment_transapi(const char* model_path, const char* callbacks_path)
+API int ncds_add_augment_transapi(const char* model_path, const char* callbacks_path)
 {
 	struct data_model *model;
 	struct transapi_internal* transapi;
@@ -2857,7 +2857,7 @@ int ncds_add_augment_transapi(const char* model_path, const char* callbacks_path
 	return (EXIT_SUCCESS);
 }
 
-int ncds_add_augment_transapi_static(const char* model_path, const struct transapi* transapi)
+API int ncds_add_augment_transapi_static(const char* model_path, const struct transapi* transapi)
 {
 	struct data_model *model;
 	struct transapi_list *tapi_item;
@@ -2940,7 +2940,7 @@ int ncds_add_augment_transapi_static(const char* model_path, const struct transa
 	return (EXIT_SUCCESS);
 }
 
-int ncds_add_model(const char* model_path)
+API int ncds_add_model(const char* model_path)
 {
 	if (model_path == NULL) {
 		ERROR("%s: invalid parameter.", __func__);
@@ -3009,7 +3009,7 @@ static int ncds_features_parse(struct data_model* model)
 	return (EXIT_SUCCESS);
 }
 
-int ncds_feature_isenabled(const char* module, const char* feature)
+API int ncds_feature_isenabled(const char* module, const char* feature)
 {
 	struct data_model* model;
 	int i;
@@ -3059,12 +3059,12 @@ static inline int _feature_switch(const char* module, const char* feature, int v
 	return (EXIT_FAILURE);
 }
 
-int ncds_feature_enable(const char* module, const char* feature)
+API int ncds_feature_enable(const char* module, const char* feature)
 {
 	return (_feature_switch(module, feature, 1));
 }
 
-int ncds_feature_disable(const char* module, const char* feature)
+API int ncds_feature_disable(const char* module, const char* feature)
 {
 	return (_feature_switch(module, feature, 0));
 }
@@ -3092,12 +3092,12 @@ static inline int _features_switchall(const char* module, int value)
 	return (EXIT_SUCCESS);
 }
 
-int ncds_features_enableall(const char* module)
+API int ncds_features_enableall(const char* module)
 {
 	return (_features_switchall(module, 1));
 }
 
-int ncds_features_disableall(const char* module)
+API int ncds_features_disableall(const char* module)
 {
 	return (_features_switchall(module, 1));
 }
@@ -3304,7 +3304,7 @@ static void transapis_cleanup(struct transapi_list **list, int force)
 	}
 }
 
-int ncds_consolidate(void)
+API int ncds_consolidate(void)
 {
 	struct ncds_ds_list *ds_iter;
 	struct model_list* listitem;
@@ -3813,7 +3813,7 @@ static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* sessi
 
 #endif /* not DISABLE_VALIDATION */
 
-int ncds_set_validation(struct ncds_ds* ds, int enable, const char* relaxng, const char* schematron)
+API int ncds_set_validation(struct ncds_ds* ds, int enable, const char* relaxng, const char* schematron)
 {
 #ifdef DISABLE_VALIDATION
 	return (EXIT_SUCCESS);
@@ -3899,7 +3899,7 @@ cleanup:
 }
 
 
-int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng,
+API int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng,
     const char* schematron,
     int (*valid_func)(const xmlDocPtr config, struct nc_err **err))
 {
@@ -4029,7 +4029,7 @@ cleanup:
 	return (ds);
 }
 
-struct ncds_ds* ncds_new2(NCDS_TYPE type, const char * model_path, xmlDocPtr (*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e))
+API struct ncds_ds* ncds_new2(NCDS_TYPE type, const char * model_path, xmlDocPtr (*get_state)(const xmlDocPtr model, const xmlDocPtr running, struct nc_err **e))
 {
 	struct ncds_ds * ds;
 
@@ -4041,7 +4041,7 @@ struct ncds_ds* ncds_new2(NCDS_TYPE type, const char * model_path, xmlDocPtr (*g
 	return(ds);
 }
 
-struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
+API struct ncds_ds* ncds_new(NCDS_TYPE type, const char* model_path, char* (*get_state)(const char* model, const char* running, struct nc_err** e))
 {
 	struct ncds_ds * ds;
 
@@ -4124,7 +4124,7 @@ static void ncds_ds_model_free(struct data_model* model)
 	free(model);
 }
 
-ncds_id ncds_init(struct ncds_ds* datastore)
+API ncds_id ncds_init(struct ncds_ds* datastore)
 {
 	struct ncds_ds_list * item;
 
@@ -4209,7 +4209,7 @@ void ncds_cleanall()
 #endif
 }
 
-void ncds_free(struct ncds_ds* datastore)
+API void ncds_free(struct ncds_ds* datastore)
 {
 	struct ncds_ds *ds = NULL;
 	struct transapi_list* tapi_iter;
@@ -4272,7 +4272,7 @@ void ncds_free(struct ncds_ds* datastore)
 	}
 }
 
-void ncds_free2(ncds_id datastore_id)
+API void ncds_free2(ncds_id datastore_id)
 {
 	struct ncds_ds *del;
 
@@ -4655,7 +4655,7 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 	return ret;
 }
 
-int ncds_rollback(ncds_id id)
+API int ncds_rollback(ncds_id id)
 {
 	struct ncds_ds *datastore = datastores_get_ds(id);
 
@@ -4865,7 +4865,7 @@ static int rpc_get_prefilter(struct nc_filter **filter, const struct ncds_ds* ds
 	return (retval);
 }
 
-nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
+API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
 	struct ncds_ds* ds = NULL;
@@ -5880,7 +5880,7 @@ apply_editcopyconfig:
 	return (reply);
 }
 
-nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[])
+API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[])
 {
 	struct ncds_ds_list* ds, *ds_rollback;
 	nc_reply *old_reply = NULL, *new_reply = NULL, *reply = NULL;
@@ -6018,7 +6018,7 @@ nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds
 	return (reply);
 }
 
-void ncds_break_locks(const struct nc_session* session)
+API void ncds_break_locks(const struct nc_session* session)
 {
 	struct ncds_ds_list * ds;
 	struct nc_err * e = NULL;

@@ -829,7 +829,7 @@ int ncntf_init(void)
 	return (EXIT_SUCCESS);
 }
 
-char* ncntf_status(void)
+API char* ncntf_status(void)
 {
 	xmlChar* data;
 
@@ -850,7 +850,7 @@ void ncntf_close(void)
 	}
 }
 
-int ncntf_stream_new(const char* name, const char* desc, int replay)
+API int ncntf_stream_new(const char* name, const char* desc, int replay)
 {
 	struct stream *s;
 	xmlDocPtr oldconfig;
@@ -906,7 +906,7 @@ int ncntf_stream_new(const char* name, const char* desc, int replay)
 	}
 }
 
-int ncntf_stream_allow_events(const char* stream, const char* event)
+API int ncntf_stream_allow_events(const char* stream, const char* event)
 {
 	char* end;
 	struct stream* s;
@@ -938,7 +938,7 @@ int ncntf_stream_allow_events(const char* stream, const char* event)
 	return (EXIT_SUCCESS);
 }
 
-char** ncntf_stream_list(void)
+API char** ncntf_stream_list(void)
 {
 	char** list;
 	struct stream *s;
@@ -968,7 +968,7 @@ char** ncntf_stream_list(void)
 	return(list);
 }
 
-int ncntf_stream_isavailable(const char* name)
+API int ncntf_stream_isavailable(const char* name)
 {
 	struct stream *s;
 
@@ -992,7 +992,7 @@ int ncntf_stream_isavailable(const char* name)
 	return (0); /* the stream does not exist */
 }
 
-int ncntf_stream_info(const char* stream, char** desc, char** start)
+API int ncntf_stream_info(const char* stream, char** desc, char** start)
 {
 	struct stream *s;
 
@@ -1028,7 +1028,7 @@ static struct stream_offset* get_stream_offset_struct(const char* stream, struct
 	return (item);
 }
 
-void ncntf_stream_iter_start(const char* stream)
+API void ncntf_stream_iter_start(const char* stream)
 {
 	struct stream *s;
 	struct stream_offset *str_off, *off_list; /* to mark where the replay ends */
@@ -1062,7 +1062,7 @@ void ncntf_stream_iter_start(const char* stream)
 	pthread_mutex_unlock(streams_mut);
 }
 
-void ncntf_stream_iter_finish(const char* stream)
+API void ncntf_stream_iter_finish(const char* stream)
 {
 	struct stream_offset *str_off;
 
@@ -1078,7 +1078,7 @@ void ncntf_stream_iter_finish(const char* stream)
  *
  * \todo: thread safety (?thread-specific variables)
  */
-char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time)
+API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time)
 {
 	struct stream *s;
 	int32_t len;
@@ -1760,7 +1760,7 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 	return (ret);
 }
 
-int ncxmlntf_event_new(time_t etime, NCNTF_EVENT event, ...)
+API int ncxmlntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 {
 	int retval;
 	xmlNodePtr data, aux_data;
@@ -1800,7 +1800,7 @@ int ncxmlntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 	return (retval);
 }
 
-int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
+API int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 {
 	int retval;
 	va_list argp;
@@ -1812,7 +1812,7 @@ int ncntf_event_new(time_t etime, NCNTF_EVENT event, ...)
 	return (retval);
 }
 
-nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
+API nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 {
 	char* notif_data = NULL, *etime = NULL;
 	xmlDocPtr notif_doc;
@@ -1874,7 +1874,7 @@ nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 	return (retval);
 }
 
-nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
+API nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 {
 	char* etime = NULL;
 	xmlDocPtr notif_doc;
@@ -1938,12 +1938,12 @@ nc_ntf* ncxmlntf_notif_create(time_t event_time, const xmlNodePtr content)
 
 }
 
-void ncntf_notif_free(nc_ntf *ntf)
+API void ncntf_notif_free(nc_ntf *ntf)
 {
 	nc_msg_free((struct nc_msg*) ntf);
 }
 
-NCNTF_EVENT ncntf_notif_get_type(const nc_ntf* notif)
+API NCNTF_EVENT ncntf_notif_get_type(const nc_ntf* notif)
 {
 	xmlNodePtr root, node;
 
@@ -2007,7 +2007,7 @@ NCNTF_EVENT ncntf_notif_get_type(const nc_ntf* notif)
 	}
 }
 
-char* ncntf_notif_get_content(const nc_ntf* notif)
+API char* ncntf_notif_get_content(const nc_ntf* notif)
 {
 	char * retval;
 	xmlNodePtr root, aux_root, node;
@@ -2055,7 +2055,7 @@ char* ncntf_notif_get_content(const nc_ntf* notif)
 	return (retval);
 }
 
-xmlNodePtr ncxmlntf_notif_get_content(nc_ntf* notif)
+API xmlNodePtr ncxmlntf_notif_get_content(nc_ntf* notif)
 {
 	xmlNodePtr root, retval = NULL, aux;
 
@@ -2092,7 +2092,7 @@ xmlNodePtr ncxmlntf_notif_get_content(nc_ntf* notif)
 	return (retval);
 }
 
-time_t ncntf_notif_get_time(const nc_ntf* notif)
+API time_t ncntf_notif_get_time(const nc_ntf* notif)
 {
 	xmlXPathContextPtr notif_ctxt = NULL;
 	xmlXPathObjectPtr result = NULL;
@@ -2222,7 +2222,7 @@ static int ncntf_subscription_get_params(const nc_rpc* subscribe_rpc, char **str
 	return (0);
 }
 
-nc_reply *ncntf_subscription_check(const nc_rpc* subscribe_rpc)
+API nc_reply* ncntf_subscription_check(const nc_rpc* subscribe_rpc)
 {
 	struct nc_err* e = NULL;
 	char *stream = NULL, *auxs = NULL;
@@ -2345,7 +2345,7 @@ void ncntf_dispatch_stop(struct nc_session *session)
  *
  * @return number of sent notifications (including 0), -1 on error.
  */
-long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subscribe_rpc)
+API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subscribe_rpc)
 {
 	long long int count = 0;
 	char* stream = NULL, *event = NULL, *time_s = NULL;
@@ -2609,7 +2609,7 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
  *
  * @return number of received notifications, -1 on error.
  */
-long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_ntf)(time_t eventtime, const char* content))
+API long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_ntf)(time_t eventtime, const char* content))
 {
 	long long int count = 0;
 	nc_ntf* ntf = NULL;

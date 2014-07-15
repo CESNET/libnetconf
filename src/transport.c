@@ -108,7 +108,7 @@ static void transproto_init(void)
 	pthread_setspecific(transproto_key, &proto_ssh);
 }
 
-int nc_session_transport(NC_TRANSPORT proto)
+API int nc_session_transport(NC_TRANSPORT proto)
 {
 #ifndef ENABLE_TLS
 	if (proto == NC_TRANSPORT_TLS) {
@@ -556,7 +556,7 @@ static int nc_server_handshake(struct nc_session *session, char** cpblts)
 	return (retval);
 }
 
-struct nc_session* nc_session_connect(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts)
+API struct nc_session* nc_session_connect(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts)
 {
 	struct nc_session *retval = NULL;
 	struct nc_cpblts *client_cpblts = NULL;
@@ -632,7 +632,7 @@ shutdown:
 
 #ifdef DISABLE_LIBSSH
 
-struct nc_session *nc_session_connect_channel(struct nc_session* UNUSED(session), const struct nc_cpblts* UNUSED(cpblts))
+API struct nc_session *nc_session_connect_channel(struct nc_session* UNUSED(session), const struct nc_cpblts* UNUSED(cpblts))
 {
 	ERROR("%s: SSH channels are provided only with libssh2.", __func__);
 	return (NULL);
@@ -640,7 +640,7 @@ struct nc_session *nc_session_connect_channel(struct nc_session* UNUSED(session)
 
 #else
 
-struct nc_session *nc_session_connect_channel(struct nc_session* session, const struct nc_cpblts* cpblts)
+API struct nc_session *nc_session_connect_channel(struct nc_session* session, const struct nc_cpblts* cpblts)
 {
 	struct nc_session *retval, *session_aux;
 	struct nc_cpblts *client_cpblts = NULL;
@@ -706,7 +706,7 @@ shutdown:
 
 #endif /* not DISABLE_LIBSSH */
 
-struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabilities, const char* username)
+API struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabilities, const char* username)
 {
 	int r, i;
 	struct nc_session *retval = NULL;
@@ -946,7 +946,7 @@ struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabiliti
 	return (retval);
 }
 
-struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
+API struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 {
 	/*
 	 * just a wrapper (backward compatibility) for the
@@ -1034,7 +1034,7 @@ static int set_socket_listening(int sock)
 	return (0);
 }
 
-int nc_callhome_listen(unsigned int port)
+API int nc_callhome_listen(unsigned int port)
 {
 	char port_s[SHORT_INT_LENGTH];
 
@@ -1072,7 +1072,7 @@ int nc_callhome_listen(unsigned int port)
 	return (EXIT_SUCCESS);
 }
 
-int nc_callhome_listen_stop(void)
+API int nc_callhome_listen_stop(void)
 {
 	if (reverse_listen_socket[0].fd == -1 && reverse_listen_socket[1].fd == -1) {
 		ERROR("%s: libnetconf is not listening for incoming call home.", __func__);
@@ -1088,7 +1088,7 @@ int nc_callhome_listen_stop(void)
 }
 
 
-int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* server_path, char *const argv[], int *com_socket)
+API int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect_secs, uint8_t reconnect_count, const char* server_path, char *const argv[], int *com_socket)
 {
 	struct nc_mngmt_server *srv_iter;
 	struct addrinfo *addr;
@@ -1235,7 +1235,7 @@ connected:
 	return (pid);
 }
 
-struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpblts* cpblts, int *timeout)
+API struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpblts* cpblts, int *timeout)
 {
 	struct nc_session* retval = NULL;
 	struct nc_cpblts *client_cpblts;
@@ -1378,7 +1378,7 @@ shutdown:
 	return (NULL);
 }
 
-struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port)
+API struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port)
 {
 	struct nc_mngmt_server *item, *start, *end;
 	struct addrinfo hints;
@@ -1423,7 +1423,7 @@ struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* lis
 	return (start);
 }
 
-int nc_callhome_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_server* remove)
+API int nc_callhome_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_server* remove)
 {
 	struct nc_mngmt_server *iter;
 
@@ -1446,7 +1446,7 @@ int nc_callhome_mngmt_server_rm(struct nc_mngmt_server* list, struct nc_mngmt_se
 	return (EXIT_SUCCESS);
 }
 
-int nc_callhome_mngmt_server_free(struct nc_mngmt_server* list)
+API int nc_callhome_mngmt_server_free(struct nc_mngmt_server* list)
 {
 	struct nc_mngmt_server *iter, *aux;
 
@@ -1472,7 +1472,7 @@ int nc_callhome_mngmt_server_free(struct nc_mngmt_server* list)
 	return (EXIT_SUCCESS);
 }
 
-struct nc_mngmt_server *nc_callhome_mngmt_server_getactive(struct nc_mngmt_server* list)
+API struct nc_mngmt_server *nc_callhome_mngmt_server_getactive(struct nc_mngmt_server* list)
 {
 	struct nc_mngmt_server* srv_iter;
 

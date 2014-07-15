@@ -69,17 +69,17 @@ struct nc_url_mem
 // default allowed protocols
 int nc_url_protocols = NC_URL_FILE | NC_URL_SCP;
 
-void nc_url_set_protocols(int protocols)
+API void nc_url_set_protocols(int protocols)
 {
 	nc_url_protocols = protocols;
 }
 
-void nc_url_enable(NC_URL_PROTOCOLS protocol)
+API void nc_url_enable(NC_URL_PROTOCOLS protocol)
 {
 	nc_url_protocols = nc_url_protocols | protocol;
 }
 
-void nc_url_disable(NC_URL_PROTOCOLS protocol)
+API void nc_url_disable(NC_URL_PROTOCOLS protocol)
 {
 	nc_url_protocols = (~protocol) & nc_url_protocols;
 }

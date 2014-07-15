@@ -271,7 +271,7 @@ void nc_session_monitoring_close(void)
 	}
 }
 
-int nc_session_monitor(struct nc_session* session)
+API int nc_session_monitor(struct nc_session* session)
 {
 	struct session_list_item *litem = NULL, *litem_aux;
 	pthread_rwlockattr_t rwlockattr;
@@ -605,7 +605,7 @@ char* nc_session_stats(void)
 	return (sessions);
 }
 
-const char* nc_session_get_id (const struct nc_session *session)
+API const char* nc_session_get_id (const struct nc_session *session)
 {
 	if (session == NULL) {
 		return (NULL);
@@ -613,7 +613,7 @@ const char* nc_session_get_id (const struct nc_session *session)
 	return (session->session_id);
 }
 
-const char* nc_session_get_host(const struct nc_session* session)
+API const char* nc_session_get_host(const struct nc_session* session)
 {
 	if (session == NULL) {
 		return (NULL);
@@ -621,7 +621,7 @@ const char* nc_session_get_host(const struct nc_session* session)
 	return (session->hostname);
 }
 
-const char* nc_session_get_port(const struct nc_session* session)
+API const char* nc_session_get_port(const struct nc_session* session)
 {
 	if (session == NULL) {
 		return (NULL);
@@ -629,7 +629,7 @@ const char* nc_session_get_port(const struct nc_session* session)
 	return (session->port);
 }
 
-const char* nc_session_get_user(const struct nc_session* session)
+API const char* nc_session_get_user(const struct nc_session* session)
 {
 	if (session == NULL) {
 		return (NULL);
@@ -637,7 +637,7 @@ const char* nc_session_get_user(const struct nc_session* session)
 	return (session->username);
 }
 
-NC_TRANSPORT nc_session_get_transport(const struct nc_session* session)
+API NC_TRANSPORT nc_session_get_transport(const struct nc_session* session)
 {
 	if (session == NULL) {
 		return (NC_TRANSPORT_UNKNOWN);
@@ -652,7 +652,7 @@ NC_TRANSPORT nc_session_get_transport(const struct nc_session* session)
 	return (NC_TRANSPORT_SSH);
 }
 
-int nc_session_get_version(const struct nc_session *session)
+API int nc_session_get_version(const struct nc_session *session)
 {
 	if (session == NULL) {
 		return (-1);
@@ -660,7 +660,7 @@ int nc_session_get_version(const struct nc_session *session)
 	return (session->version);
 }
 
-int nc_session_get_eventfd(const struct nc_session *session)
+API int nc_session_get_eventfd(const struct nc_session *session)
 {
 	if (session == NULL) {
 		return -1;
@@ -675,7 +675,7 @@ int nc_session_get_eventfd(const struct nc_session *session)
 	}
 }
 
-int nc_session_notif_allowed(struct nc_session *session)
+API int nc_session_notif_allowed(struct nc_session *session)
 {
 #ifndef DISABLE_NOTIFICATIONS
 	int ret;
@@ -703,7 +703,7 @@ int nc_session_notif_allowed(struct nc_session *session)
 	}
 }
 
-void nc_cpblts_free(struct nc_cpblts *c)
+API void nc_cpblts_free(struct nc_cpblts *c)
 {
 	int i;
 
@@ -726,7 +726,7 @@ void nc_cpblts_free(struct nc_cpblts *c)
 	free(c);
 }
 
-struct nc_cpblts* nc_cpblts_new(const char* const list[])
+API struct nc_cpblts* nc_cpblts_new(const char* const list[])
 {
 	struct nc_cpblts *retval;
 	int i;
@@ -767,7 +767,7 @@ struct nc_cpblts* nc_cpblts_new(const char* const list[])
 	return (retval);
 }
 
-int nc_cpblts_add(struct nc_cpblts* capabilities, const char* capability_string)
+API int nc_cpblts_add(struct nc_cpblts* capabilities, const char* capability_string)
 {
 	int i;
 	char *s, *p = NULL;
@@ -824,7 +824,7 @@ int nc_cpblts_add(struct nc_cpblts* capabilities, const char* capability_string)
 	return (EXIT_SUCCESS);
 }
 
-int nc_cpblts_remove(struct nc_cpblts* capabilities, const char* capability_string)
+API int nc_cpblts_remove(struct nc_cpblts* capabilities, const char* capability_string)
 {
 	int i;
 	char* s, *p;
@@ -863,7 +863,7 @@ int nc_cpblts_remove(struct nc_cpblts* capabilities, const char* capability_stri
 	return (EXIT_SUCCESS);
 }
 
-const char* nc_cpblts_get(const struct nc_cpblts* c, const char* capability_string)
+API const char* nc_cpblts_get(const struct nc_cpblts* c, const char* capability_string)
 {
 	int i;
 	char* s, *p;
@@ -889,7 +889,7 @@ const char* nc_cpblts_get(const struct nc_cpblts* c, const char* capability_stri
 
 }
 
-int nc_cpblts_enabled(const struct nc_session* session, const char* capability_string)
+API int nc_cpblts_enabled(const struct nc_session* session, const char* capability_string)
 {
 	int i;
 	char* s, *p;
@@ -914,7 +914,7 @@ int nc_cpblts_enabled(const struct nc_session* session, const char* capability_s
 	return (0);
 }
 
-void nc_cpblts_iter_start(struct nc_cpblts* c)
+API void nc_cpblts_iter_start(struct nc_cpblts* c)
 {
 	if (c == NULL) {
 		return;
@@ -922,7 +922,7 @@ void nc_cpblts_iter_start(struct nc_cpblts* c)
 	c->iter = 0;
 }
 
-const char* nc_cpblts_iter_next(struct nc_cpblts* c)
+API const char* nc_cpblts_iter_next(struct nc_cpblts* c)
 {
 	if (c == NULL || c->list == NULL) {
 		return (NULL);
@@ -935,7 +935,7 @@ const char* nc_cpblts_iter_next(struct nc_cpblts* c)
 	return (c->list[c->iter++]);
 }
 
-int nc_cpblts_count(const struct nc_cpblts* c)
+API int nc_cpblts_count(const struct nc_cpblts* c)
 {
 	if (c == NULL || c->list == NULL) {
 		return 0;
@@ -943,7 +943,7 @@ int nc_cpblts_count(const struct nc_cpblts* c)
 	return c->items;
 }
 
-struct nc_cpblts* nc_session_get_cpblts_default(void)
+API struct nc_cpblts* nc_session_get_cpblts_default(void)
 {
 	struct nc_cpblts *retval;
 	char** nslist;
@@ -994,7 +994,7 @@ struct nc_cpblts* nc_session_get_cpblts_default(void)
 	return (retval);
 }
 
-struct nc_cpblts* nc_session_get_cpblts(const struct nc_session* session)
+API struct nc_cpblts* nc_session_get_cpblts(const struct nc_session* session)
 {
 	if (session == NULL) {
 		return (NULL);
@@ -1043,7 +1043,7 @@ void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supporte
 	}
 }
 
-struct nc_session* nc_session_dummy(const char* sid, const char* username, const char* hostname, struct nc_cpblts *capabilities)
+API struct nc_session* nc_session_dummy(const char* sid, const char* username, const char* hostname, struct nc_cpblts *capabilities)
 {
 	struct nc_session * session;
 	struct passwd* p;
@@ -1292,7 +1292,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 }
 
 
-void nc_session_free(struct nc_session* session)
+API void nc_session_free(struct nc_session* session)
 {
 	struct session_list_item* litem;
 	int i;
@@ -1368,7 +1368,7 @@ void nc_session_free(struct nc_session* session)
 	free (session);
 }
 
-NC_SESSION_STATUS nc_session_get_status (const struct nc_session* session)
+API NC_SESSION_STATUS nc_session_get_status (const struct nc_session* session)
 {
 	if (session == NULL) {
 		return (NC_SESSION_STATUS_ERROR);
@@ -2177,7 +2177,7 @@ static NC_MSG_TYPE nc_session_recv_msg(struct nc_session* session, int timeout, 
 }
 
 #define LOCAL_RECEIVE_TIMEOUT 100
-NC_MSG_TYPE nc_session_recv_reply(struct nc_session* session, int timeout, nc_reply** reply)
+API NC_MSG_TYPE nc_session_recv_reply(struct nc_session* session, int timeout, nc_reply** reply)
 {
 	struct nc_msg *msg_aux, *msg = NULL;
 	NC_MSG_TYPE ret;
@@ -2273,7 +2273,7 @@ try_again:
 	return (ret);
 }
 
-int nc_session_send_notif(struct nc_session* session, const nc_ntf* ntf)
+API int nc_session_send_notif(struct nc_session* session, const nc_ntf* ntf)
 {
 	int ret;
 	struct nc_msg *msg;
@@ -2311,7 +2311,7 @@ int nc_session_send_notif(struct nc_session* session, const nc_ntf* ntf)
 	return (ret);
 }
 
-NC_MSG_TYPE nc_session_recv_notif(struct nc_session* session, int timeout, nc_ntf** ntf)
+API NC_MSG_TYPE nc_session_recv_notif(struct nc_session* session, int timeout, nc_ntf** ntf)
 {
 	struct nc_msg *msg_aux, *msg=NULL;
 	NC_MSG_TYPE ret;
@@ -2378,7 +2378,7 @@ try_again:
 	return (ret);
 }
 
-NC_MSG_TYPE nc_session_recv_rpc(struct nc_session* session, int timeout, nc_rpc** rpc)
+API NC_MSG_TYPE nc_session_recv_rpc(struct nc_session* session, int timeout, nc_rpc** rpc)
 {
 	NC_MSG_TYPE ret;
 	struct nc_err* e = NULL;
@@ -2524,7 +2524,7 @@ try_again:
 	return (ret);
 }
 
-const nc_msgid nc_session_send_rpc(struct nc_session* session, nc_rpc *rpc)
+API const nc_msgid nc_session_send_rpc(struct nc_session* session, nc_rpc *rpc)
 {
 	int ret;
 	char msg_id_str[16];
@@ -2646,7 +2646,7 @@ const nc_msgid nc_session_send_rpc(struct nc_session* session, nc_rpc *rpc)
 	}
 }
 
-const nc_msgid nc_session_send_reply(struct nc_session* session, const nc_rpc* rpc, const nc_reply *reply)
+API const nc_msgid nc_session_send_reply(struct nc_session* session, const nc_rpc* rpc, const nc_reply *reply)
 {
 	int ret;
 	struct nc_msg *msg;
@@ -2743,7 +2743,7 @@ const nc_msgid nc_session_send_reply(struct nc_session* session, const nc_rpc* r
 	}
 }
 
-int nc_msgid_compare(const nc_msgid id1, const nc_msgid id2)
+API int nc_msgid_compare(const nc_msgid id1, const nc_msgid id2)
 {
 	if (id1 == NULL || id2 == NULL) {
 		return (-1);
@@ -2752,7 +2752,7 @@ int nc_msgid_compare(const nc_msgid id1, const nc_msgid id2)
 	}
 }
 
-NC_MSG_TYPE nc_session_send_recv(struct nc_session* session, nc_rpc *rpc, nc_reply** reply)
+API NC_MSG_TYPE nc_session_send_recv(struct nc_session* session, nc_rpc *rpc, nc_reply** reply)
 {
 	const nc_msgid msgid;
 	NC_MSG_TYPE replytype;

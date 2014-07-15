@@ -61,12 +61,12 @@ extern int nc_init_flags;
 static NCWD_MODE ncdflt_basic_mode = NCWD_MODE_NOTSET;
 static NCWD_MODE ncdflt_supported = NCWD_MODE_NOTSET;
 
-NCWD_MODE ncdflt_get_basic_mode(void)
+API NCWD_MODE ncdflt_get_basic_mode(void)
 {
 	return (ncdflt_basic_mode);
 }
 
-void ncdflt_set_basic_mode(NCWD_MODE mode)
+API void ncdflt_set_basic_mode(NCWD_MODE mode)
 {
 	if (nc_init_flags & NC_INIT_WD) {
 		/* if one of valid values, change the value */
@@ -84,7 +84,7 @@ void ncdflt_set_basic_mode(NCWD_MODE mode)
 	}
 }
 
-void ncdflt_set_supported(NCWD_MODE modes)
+API void ncdflt_set_supported(NCWD_MODE modes)
 {
 	if (nc_init_flags & NC_INIT_WD) {
 		ncdflt_supported = ncdflt_basic_mode;
@@ -95,12 +95,12 @@ void ncdflt_set_supported(NCWD_MODE modes)
 	}
 }
 
-NCWD_MODE ncdflt_get_supported(void)
+API NCWD_MODE ncdflt_get_supported(void)
 {
 	return (ncdflt_supported);
 }
 
-NCWD_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc)
+API NCWD_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc)
 {
 	return (rpc->with_defaults);
 }

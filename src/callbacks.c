@@ -86,12 +86,12 @@ struct callbacks callbacks = {
 #endif
 };
 
-void nc_callback_print(void (*func)(NC_VERB_LEVEL level, const char* msg))
+API void nc_callback_print(void (*func)(NC_VERB_LEVEL level, const char* msg))
 {
 	callbacks.print = func;
 }
 
-void nc_callback_error_reply(void (*func)(const char* tag,
+API void nc_callback_error_reply(void (*func)(const char* tag,
 		const char* type,
 		const char* severity,
 		const char* apptag,
@@ -106,7 +106,7 @@ void nc_callback_error_reply(void (*func)(const char* tag,
 }
 
 #ifndef DISABLE_LIBSSH
-void nc_callback_sshauth_interactive(void (*func)(const char* name,
+API void nc_callback_sshauth_interactive(void (*func)(const char* name,
 		int name_len,
 		const char* instruction,
 		int instruction_len,
@@ -122,7 +122,7 @@ void nc_callback_sshauth_interactive(void (*func)(const char* name,
 	}
 }
 
-void nc_callback_sshauth_password(char* (*func)(const char* username,
+API void nc_callback_sshauth_password(char* (*func)(const char* username,
 		const char* hostname))
 {
 	if (func != NULL) {
@@ -132,7 +132,7 @@ void nc_callback_sshauth_password(char* (*func)(const char* username,
 	}
 }
 
-void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
+API void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
 		const char* hostname, const char* priv_key_file))
 {
 	if (func != NULL) {
@@ -142,7 +142,7 @@ void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
 	}
 }
 
-void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
+API void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
 		LIBSSH2_SESSION *session))
 {
 	if (func != NULL) {
@@ -608,7 +608,7 @@ static void nc_set_privatekey_path (const char* path)
 	}
 }
 
-void nc_set_keypair_path (const char * private, const char * public)
+API void nc_set_keypair_path (const char * private, const char * public)
 {
 	nc_set_privatekey_path(private);
 	nc_set_publickey_path(public);
