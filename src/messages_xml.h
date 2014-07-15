@@ -64,7 +64,7 @@ extern "C" {
  * (RFC 6241 sec 6.4.2) is created.
  * @return Created NETCONF filter structure.
  */
-struct nc_filter *ncxml_filter_new(NC_FILTER_TYPE type, ...);
+struct nc_filter* ncxml_filter_new(NC_FILTER_TYPE type, ...);
 
 /**
  * @ingroup reply_xml
@@ -150,7 +150,7 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply);
  * element.
  * @return Created \<rpc-reply\> message.
  */
-nc_reply *ncxml_reply_data(const xmlNodePtr data);
+nc_reply* ncxml_reply_data(const xmlNodePtr data);
 
 /**
  * @ingroup rpc_xml
@@ -180,7 +180,7 @@ nc_reply *ncxml_reply_data(const xmlNodePtr data);
  * @param[in] ... Specific parameters according to the source and target parameters.
  * @return Created rpc message.
  */
-nc_rpc *ncxml_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...);
+nc_rpc* ncxml_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...);
 
 /**
  * @ingroup rpc_xml
@@ -209,7 +209,7 @@ nc_rpc *ncxml_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...);
  *
  * @return Created rpc message.
  */
-nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...);
+nc_rpc* ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...);
 
 /**
  * @ingroup rpc_xml
@@ -221,7 +221,7 @@ nc_rpc *ncxml_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_D
  * @param[in] data XML content of the \<rpc\> request to be sent.
  * @return Created rpc message.
  */
-nc_rpc *ncxml_rpc_generic(const xmlNodePtr data);
+nc_rpc* ncxml_rpc_generic(const xmlNodePtr data);
 
 #ifdef __cplusplus
 }

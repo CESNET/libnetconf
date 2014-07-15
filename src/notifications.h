@@ -267,7 +267,7 @@ time_t ncntf_notif_get_time(const nc_ntf* notif);
  * @return Reply message to the subscription - ok if tests passed and reply-error
  * with problem description if any of the tests fails.
  */
-nc_reply *ncntf_subscription_check(const nc_rpc* subscribe_rpc);
+nc_reply* ncntf_subscription_check(const nc_rpc* subscribe_rpc);
 
 /**
  * @ingroup notifications

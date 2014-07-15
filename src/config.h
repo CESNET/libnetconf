@@ -1,7 +1,7 @@
 /**
- * \file libnetconf_xml.h
+ * \file config.h
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief libnetconf's main header for libxml2 variants of some functions.
+ * \brief Various configuration settings.
  *
  * Copyright (c) 2012-2014 CESNET, z.s.p.o.
  *
@@ -37,60 +37,58 @@
  *
  */
 
-#ifndef LIBNETCONF_XML_H_
-#define LIBNETCONF_XML_H_
+#ifndef CONFIG_H_
+#define CONFIG_H_
 
-/**
- * \defgroup rpc_xml NETCONF rpc (libxml2)
- * \brief libnetconf's functions for handling the NETCONF \<rpc\> messages. These
- * functions accepts parameters as libxml2 structures.
+/*
+ * If the compiler supports attribute to mark objects as hidden, mark all
+ * objects as hidden and export only objects explicitly marked to be part of
+ * the public API.
  */
+#define API __attribute__((visibility("default")))
 
-/**
- * \defgroup reply_xml NETCONF rpc-reply (libxml2)
- * \brief libnetconf's functions for handling the NETCONF \<rpc-reply\> messages.
- * These functions accepts parameters as libxml2 structures.
+#ifndef DISABLE_LIBSSH
+/*
+ * libssh2_session_startup() is deprecated in libssh2 >= 1.2.8 and replaced by
+ * libssh2_session_handshake(). This macro is automatically set by configure
+ * script and appropriate function according to the current (in a compilation
+ * time) libssh2 version is used.
  */
+#define LIBSSH2_SESSION_HANDSHAKE(session,socket) libssh2_session_handshake(session,socket)
 
-/**
- * \defgroup session NETCONF Session
- * \brief libnetconf's functions for handling NETCONF sessions.
+/*
+ * libssh2_session_set_timeout() is available since libssh2 1.2.9
  */
+#define LIBSSH2_SET_TIMEOUT(session,timeout) libssh2_session_set_timeout(session,timeout)
 
-/**
- * \defgroup store Datastore operations
- * \brief libnetconf's functions for handling NETCONF datastores.
+#else /* DISABLE_LIBSSH */
+
+/* set path to the used ssh(1) application */
+#define SSH_PROG ""
+
+#endif /* not DISABLE_LIBSSH */
+
+/*
+ * Path for storing libnetconf's Event stream files
  */
+//#define NCNTF_STREAMS_PATH "/var/lib/libnetconf//streams/"
+#define NCNTF_STREAMS_PATH_ENV "LIBNETCONF_STREAMS"
 
-/**
- * \defgroup genAPI General functions
- * \brief libnetconf's miscellaneous functions.
+/*
+ * NACM
  */
+#define NACM_RECOVERY_UID 0
 
-/**
- * \defgroup withdefaults With-defaults capability
- * \brief libnetconf's implementation of NETCONF with-defaults capability as
- * defined in RFC 6243.
+/*
+ * Compatibility section
  */
+#define HAVE_EACCESS
+#ifndef HAVE_EACCESS
+int eaccess(const char *pathname, int mode);
+#endif
 
-/**
- * \defgroup notifications_xml NETCONF Event Notifications (libxml2)
- * \brief libnetconf's implementation of NETCONF asynchronous message delivery
- * as defined in RFC 5277. These functions accepts selected parameters as
- * libxml2 structures.
- */
+#define HAVE_UTMPX_H
 
-/**
- * \internal
- * \defgroup internalAPI Internal API
- * \brief libnetconf's functions, structures and macros for internal usage.
- */
+#define HAVE_XMLDOMWRAPRECONCILENAMESPACE
 
-#include "notifications_xml.h"
-#include "messages_xml.h"
-#include "datastore_xml.h"
-#include "transapi.h"
-
-#include "libnetconf.h"
-
-#endif /* LIBNETCONF_XML_H_ */
+#endif /* CONFIG_H_ */

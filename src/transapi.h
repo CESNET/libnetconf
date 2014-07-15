@@ -14,7 +14,7 @@ extern "C" {
 
 /* maximal number of input arguments every defined RPC can have */
 #ifndef MAX_RPC_INPUT_ARGS
-#define MAX_RPC_INPUT_ARGS 64
+#	define MAX_RPC_INPUT_ARGS 64
 #endif
 
 /**
@@ -53,8 +53,8 @@ typedef enum
 
 
 struct ns_pair {
-	const char *prefix;
-	const char *href;
+	const char* prefix;
+	const char* href;
 };
 
 /**
@@ -74,7 +74,7 @@ struct transapi {
 	/**
 	 * @brief Function returning status information
 	 */
-	xmlDocPtr (*get_state)(const xmlDocPtr, const xmlDocPtr, struct nc_err **);
+	xmlDocPtr (*get_state)(const xmlDocPtr, const xmlDocPtr, struct nc_err**);
 	/**
 	 * @brief Callbacks order settings.
 	 */
@@ -82,19 +82,19 @@ struct transapi {
 	/**
 	 * @brief Transapi callback mapping structure.
 	 */
-	struct transapi_data_callbacks * data_clbks;
+	struct transapi_data_callbacks* data_clbks;
 	/**
 	 * @brief Transapi rpc callbacks mapping structure.
 	 */
-	struct transapi_rpc_callbacks * rpc_clbks;
+	struct transapi_rpc_callbacks* rpc_clbks;
 	/**
 	 * @brief Mapping prefixes with URIs
 	 */
-	struct ns_pair *ns_mapping;
+	struct ns_pair* ns_mapping;
 	/**
 	 * @brief Flag if configuration data passed to callbacks were modified
 	 */
-	int *config_modified;
+	int* config_modified;
 	/**
 	 * @brief edit-config's error-option for the current transaction
 	 */
@@ -106,7 +106,7 @@ struct transapi {
  * @brief Structure describing callback - path + function
  */
 struct clbk {
-	char *path;
+	char* path;
 	int (*func)(void**, XMLDIFF_OP, xmlNodePtr, struct nc_err**);
 };
 
@@ -116,7 +116,7 @@ struct clbk {
  */
 struct transapi_data_callbacks {
 	int callbacks_count;
-	void * data;
+	void* data;
 	struct clbk callbacks[];
 };
 
@@ -127,10 +127,10 @@ struct transapi_data_callbacks {
 struct transapi_rpc_callbacks {
 	int callbacks_count;
 	struct {
-		char * name;
+		char* name;
 		int arg_count;
-		nc_reply * (*func)(xmlNodePtr []);
-		char * arg_order[MAX_RPC_INPUT_ARGS];
+		nc_reply* (*func)(xmlNodePtr []);
+		char* arg_order[MAX_RPC_INPUT_ARGS];
 	} callbacks[];
 };
 

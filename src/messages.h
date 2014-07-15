@@ -57,7 +57,7 @@ extern "C" {
  * **const char* filter** is accepted.
  * @return Created NETCONF filter structure.
  */
-struct nc_filter *nc_filter_new(NC_FILTER_TYPE type, ...);
+struct nc_filter* nc_filter_new(NC_FILTER_TYPE type, ...);
 
 /**
  * @ingroup rpc
@@ -74,7 +74,7 @@ void nc_filter_free(struct nc_filter *filter);
  * and all of its content. Caller is responsible for freeing the returned string
  * with free().
  */
-char* nc_reply_dump (const nc_reply *reply);
+char* nc_reply_dump(const nc_reply *reply);
 
 /**
  * @ingroup rpc
@@ -82,7 +82,7 @@ char* nc_reply_dump (const nc_reply *reply);
  * @param[in] rpc \<rpc\> message to replicate.
  * @return Copy of the given \<rpc\> message.
  */
-nc_rpc *nc_rpc_dup(const nc_rpc* rpc);
+nc_rpc* nc_rpc_dup(const nc_rpc* rpc);
 
 /**
  * @ingroup reply
@@ -90,7 +90,7 @@ nc_rpc *nc_rpc_dup(const nc_rpc* rpc);
  * @param[in] reply \<reply\> message to replicate.
  * @return Copy of the given \<reply\> message.
  */
-nc_reply *nc_reply_dup(const nc_reply* reply);
+nc_reply* nc_reply_dup(const nc_reply* reply);
 
 /**
  * @ingroup reply
@@ -100,7 +100,7 @@ nc_reply *nc_reply_dup(const nc_reply* reply);
  * @param[in] reply_dump String containing the NETCONF \<rpc-reply\> message.
  * @return Complete reply structure used by libnetconf's functions.
  */
-nc_reply* nc_reply_build (const char* reply_dump);
+nc_reply* nc_reply_build(const char* reply_dump);
 
 /**
  * @ingroup reply
@@ -118,7 +118,7 @@ const nc_msgid nc_reply_get_msgid(const nc_reply *reply);
  * and all of its content. Caller is responsible for freeing the returned string with
  * free().
  */
-char* nc_rpc_dump (const nc_rpc *rpc);
+char* nc_rpc_dump(const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
@@ -130,7 +130,7 @@ char* nc_rpc_dump (const nc_rpc *rpc);
  * is not prepared and no ACM rules will be applied to the created RPC message.
  * @return Complete rpc structure used by libnetconf's functions.
  */
-nc_rpc* nc_rpc_build (const char* rpc_dump, const struct nc_session* session);
+nc_rpc* nc_rpc_build(const char* rpc_dump, const struct nc_session* session);
 
 /**
  * @ingroup rpc
@@ -146,7 +146,7 @@ const nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc);
  * @param rpc rpc message.
  * @return Namespace URI.
  */
-char *nc_rpc_get_ns(const nc_rpc *rpc);
+char* nc_rpc_get_ns(const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
@@ -163,7 +163,7 @@ NC_OP nc_rpc_get_op(const nc_rpc *rpc);
  * @return Name of operation in the given rpc message. Caller
  * is responsible for freeing the returned string with free().
  */
-char * nc_rpc_get_op_name (const nc_rpc* rpc);
+char* nc_rpc_get_op_name(const nc_rpc* rpc);
 
 /**
  * @ingroup rpc
@@ -172,7 +172,7 @@ char * nc_rpc_get_op_name (const nc_rpc* rpc);
  * @return Namespace of operation in the given rpc message. Caller
  * is responsible for freeing the returned string with free().
  */
-char * nc_rpc_get_op_namespace (const nc_rpc* rpc);
+char* nc_rpc_get_op_namespace(const nc_rpc* rpc);
 
 /**
  * @ingroup rpc
@@ -232,7 +232,7 @@ NC_DATASTORE nc_rpc_get_source(const nc_rpc *rpc);
  * @return Serialized XML or NULL if not available. Caller is responsible for
  * freeing the returned string with free().
  */
-char * nc_rpc_get_config (const nc_rpc *rpc);
+char* nc_rpc_get_config(const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
@@ -242,7 +242,7 @@ char * nc_rpc_get_config (const nc_rpc *rpc);
  *
  * @return One of the #NC_EDIT_DEFOP_TYPE, #NC_EDIT_DEFOP_ERROR in case of error.
  */
-NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc);
+NC_EDIT_DEFOP_TYPE nc_rpc_get_defop(const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
@@ -251,7 +251,7 @@ NC_EDIT_DEFOP_TYPE nc_rpc_get_defop (const nc_rpc *rpc);
  *
  * @return One of the #NC_EDIT_ERROPT_TYPE, #NC_EDIT_ERROPT_ERROR in case of an error
  */
-NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc);
+NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt(const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
@@ -262,7 +262,7 @@ NC_EDIT_ERROPT_TYPE nc_rpc_get_erropt (const nc_rpc *rpc);
  * @return One of the #NC_EDIT_TESTOPT_TYPE, #NC_EDIT_TESTOPT_ERROR in case of
  * an error
  */
-NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc);
+NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt(const nc_rpc *rpc);
 
 /**
  * @ingroup rpc
@@ -272,7 +272,7 @@ NC_EDIT_TESTOPT_TYPE nc_rpc_get_testopt (const nc_rpc *rpc);
  *
  * @return pointer to the struct nc_filter or NULL if no filter specified
  */
-struct nc_filter * nc_rpc_get_filter (const nc_rpc * rpc);
+struct nc_filter* nc_rpc_get_filter(const nc_rpc * rpc);
 
 /**
  * @ingroup reply
@@ -292,7 +292,7 @@ NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply);
  * @return String with the content of the \<data\> element. Caller is
  * responsible for freeing the returned string with free().
  */
-char *nc_reply_get_data(const nc_reply *reply);
+char* nc_reply_get_data(const nc_reply *reply);
 
 /**
  * @ingroup reply
@@ -300,7 +300,7 @@ char *nc_reply_get_data(const nc_reply *reply);
  * @param reply rpc-reply message.
  * @return Namespace of the \<data\> element. Do not free.
  */
-const char *nc_reply_get_data_ns(const nc_reply *reply);
+const char* nc_reply_get_data_ns(const nc_reply *reply);
 
 /**
  * @ingroup reply
@@ -310,7 +310,7 @@ const char *nc_reply_get_data_ns(const nc_reply *reply);
  * string is a part of the reply, so it can not be used after freeing the
  * given reply.
  */
-const char *nc_reply_get_errormsg(const nc_reply *reply);
+const char* nc_reply_get_errormsg(const nc_reply *reply);
 
 /**
  * @brief Free rpc message.
@@ -331,7 +331,7 @@ void nc_reply_free(nc_reply *reply);
  * @brief Create \<ok\> rpc-reply response.
  * @return Created \<rpc-reply\> message.
  */
-nc_reply *nc_reply_ok(void);
+nc_reply* nc_reply_ok(void);
 
 /**
  * @ingroup reply
@@ -341,7 +341,7 @@ nc_reply *nc_reply_ok(void);
  * \<rpc-reply\> message being created.
  * @return Created \<rpc-reply\> message.
  */
-nc_reply *nc_reply_data(const char* data);
+nc_reply* nc_reply_data(const char* data);
 
 /**
  * @ingroup reply
@@ -351,7 +351,7 @@ nc_reply *nc_reply_data(const char* data);
  * @param[in] ns Default namespace for the data element.
  * @return Created \<rpc-reply\> message.
  */
-nc_reply *nc_reply_data_ns(const char* data, const char* ns);
+nc_reply* nc_reply_data_ns(const char* data, const char* ns);
 
 /**
  * @ingroup reply
@@ -360,7 +360,7 @@ nc_reply *nc_reply_data_ns(const char* data, const char* ns);
  * now, the error is connected with the reply and should not be used by the caller.
  * @return Created \<rpc-reply\> message.
  */
-nc_reply *nc_reply_error(struct nc_err* error);
+nc_reply* nc_reply_error(struct nc_err* error);
 
 /**
  * @ingroup reply
@@ -394,8 +394,7 @@ int nc_reply_error_add(nc_reply *reply, struct nc_err* error);
  * merge. If an error occurs (due to the invalid input parameters), NULL is
  * returned and the messages to merge are not freed.
  */
-nc_reply* nc_reply_merge (int count, ...);
-
+nc_reply* nc_reply_merge(int count, ...);
 
 /**
  * @ingroup rpc
@@ -424,7 +423,7 @@ nc_reply* nc_reply_merge (int count, ...);
  * @param[in] ... Specific parameters according to the source and target parameters.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...);
+nc_rpc* nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...);
 
 /**
  * @ingroup rpc
@@ -435,7 +434,7 @@ nc_rpc *nc_rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, ...);
  * specified as #NC_DATASTORE_URL.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...);
+nc_rpc* nc_rpc_deleteconfig(NC_DATASTORE target, ...);
 
 /**
  * @ingroup rpc
@@ -463,7 +462,7 @@ nc_rpc *nc_rpc_deleteconfig(NC_DATASTORE target, ...);
  *
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...);
+nc_rpc* nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFOP_TYPE default_operation, NC_EDIT_ERROPT_TYPE error_option, NC_EDIT_TESTOPT_TYPE test_option, ...);
 
 /**
  * @ingroup rpc
@@ -472,7 +471,7 @@ nc_rpc *nc_rpc_editconfig(NC_DATASTORE target, NC_DATASTORE source, NC_EDIT_DEFO
  * @param[in] filter NETCONF filter or NULL if no filter is required.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_get(const struct nc_filter *filter);
+nc_rpc* nc_rpc_get(const struct nc_filter *filter);
 
 /**
  * @ingroup rpc
@@ -482,7 +481,7 @@ nc_rpc *nc_rpc_get(const struct nc_filter *filter);
  * @param[in] filter NETCONF filter or NULL if no filter required.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter);
+nc_rpc* nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter);
 
 /**
  * @ingroup rpc
@@ -491,7 +490,7 @@ nc_rpc *nc_rpc_getconfig(NC_DATASTORE source, const struct nc_filter *filter);
  * @param[in] kill_sid ID of session to kill.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_killsession(const char *kill_sid);
+nc_rpc* nc_rpc_killsession(const char *kill_sid);
 
 /**
  * @ingroup rpc
@@ -500,7 +499,7 @@ nc_rpc *nc_rpc_killsession(const char *kill_sid);
  * @param[in] target Target configuration datastore type to be locked.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_lock(NC_DATASTORE target);
+nc_rpc* nc_rpc_lock(NC_DATASTORE target);
 
 /**
  * @ingroup rpc
@@ -509,7 +508,7 @@ nc_rpc *nc_rpc_lock(NC_DATASTORE target);
  * @param[in] target Target configuration datastore type to be unlocked.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_unlock(NC_DATASTORE target);
+nc_rpc* nc_rpc_unlock(NC_DATASTORE target);
 
 /**
  * @ingroup rpc
@@ -526,7 +525,7 @@ nc_rpc *nc_rpc_unlock(NC_DATASTORE target);
  * @param[in] source Name of the configuration datastore to validate.
  * @return Created rpc message.
  */
-nc_rpc * nc_rpc_validate(NC_DATASTORE source, ...);
+nc_rpc* nc_rpc_validate(NC_DATASTORE source, ...);
 
 /**
  * @ingroup notifications
@@ -547,7 +546,7 @@ nc_rpc * nc_rpc_validate(NC_DATASTORE source, ...);
  * according to RFC 3339.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, const time_t* start, const time_t* stop);
+nc_rpc* nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, const time_t* start, const time_t* stop);
 
 /**
  * @ingroup rpc
@@ -555,7 +554,7 @@ nc_rpc *nc_rpc_subscribe(const char* stream, const struct nc_filter *filter, con
  *
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_commit(void);
+nc_rpc* nc_rpc_commit(void);
 
 /**
  * @ingroup rpc
@@ -563,7 +562,7 @@ nc_rpc *nc_rpc_commit(void);
  *
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_discardchanges(void);
+nc_rpc* nc_rpc_discardchanges(void);
 
 /**
  * @ingroup rpc
@@ -575,7 +574,7 @@ nc_rpc *nc_rpc_discardchanges(void);
  * of the schema.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* format);
+nc_rpc* nc_rpc_getschema(const char* name, const char* version, const char* format);
 
 /**
  * @ingroup rpc
@@ -587,7 +586,7 @@ nc_rpc *nc_rpc_getschema(const char* name, const char* version, const char* form
  * @param[in] data XML content of the \<rpc\> request to be sent.
  * @return Created rpc message.
  */
-nc_rpc *nc_rpc_generic(const char* data);
+nc_rpc* nc_rpc_generic(const char* data);
 
 /**
  * @ingroup rpc

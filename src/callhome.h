@@ -75,7 +75,7 @@ struct nc_mngmt_server;
  * name (see services(5)), it is translated to the corresponding port number.
  * @return NULL on error, created/modified management servers list.
  */
-struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port);
+struct nc_mngmt_server* nc_callhome_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port);
 
 /**
  * @ingroup callhome
@@ -115,7 +115,7 @@ int nc_callhome_mngmt_server_free(struct nc_mngmt_server* list);
  * @param[in] list List of management servers.
  * @return Pointer to the last connected management server.
  */
-struct nc_mngmt_server *nc_callhome_mngmt_server_getactive(struct nc_mngmt_server* list);
+struct nc_mngmt_server* nc_callhome_mngmt_server_getactive(struct nc_mngmt_server* list);
 
 #ifndef DISABLE_LIBSSH
 
@@ -168,7 +168,7 @@ int nc_callhome_listen_stop(void);
  * NULL is also returned in case of timeout, but in that case also timeout
  * value is changed to 0.
  */
-struct nc_session *nc_callhome_accept(const char *username, const struct nc_cpblts* cpblts, int *timeout);
+struct nc_session* nc_callhome_accept(const char *username, const struct nc_cpblts* cpblts, int *timeout);
 
 #endif /* not DISABLE_LIBSSH */
 

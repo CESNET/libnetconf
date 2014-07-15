@@ -354,7 +354,7 @@ int ncds_set_validation(struct ncds_ds* ds, int enable, const char* relaxng, con
  * - -1 Invalid datastore
  * - -2 Invalid path ((does not exist && can not be created) || insufficient rights)
  */
-int ncds_file_set_path (struct ncds_ds* datastore, const char* path);
+int ncds_file_set_path(struct ncds_ds* datastore, const char* path);
 
 /**
  * @ingroup store
@@ -386,7 +386,7 @@ ncds_id ncds_init(struct ncds_ds* datastore);
  *
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int ncds_device_init (ncds_id * id, struct nc_cpblts* cpblts, int force);
+int ncds_device_init(ncds_id * id, struct nc_cpblts* cpblts, int force);
 
 /**
  * @ingroup store
@@ -463,7 +463,7 @@ int ncds_rollback(ncds_id id);
  *
  * @param[in] session Session holding locks to remove
  */
-void ncds_break_locks (const struct nc_session* session);
+void ncds_break_locks(const struct nc_session* session);
 
 /**
  * @ingroup store
@@ -478,7 +478,7 @@ void ncds_break_locks (const struct nc_session* session);
  *
  * @return String containing YIN model. Caller must free the memory after use.
  */
-char* ncds_get_model (ncds_id id, int base);
+char* ncds_get_model(ncds_id id, int base);
 
 /**
  * @ingroup store
@@ -489,7 +489,7 @@ char* ncds_get_model (ncds_id id, int base);
  * @return String containing the path to the file containing the datastore datamodel.
  * The caller must NOT free the memory.
  */
-const char * ncds_get_model_path (ncds_id id);
+const char* ncds_get_model_path(ncds_id id);
 
 
 /**

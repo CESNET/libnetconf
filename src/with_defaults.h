@@ -75,6 +75,7 @@ void ncdflt_set_basic_mode(NCWD_MODE mode);
  * basic mode.
  */
 #define NCDFLT_DISABLE ncdflt_set_basic_mode(NCWD_MODE_DISABLED)
+
 /**
  * @ingroup withdefaults
  * @brief Get the current set basic mode of the with-defaults capability.

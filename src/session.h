@@ -86,7 +86,7 @@ int nc_session_monitor(struct nc_session* session);
  *
  * @param[in] session Session to free.
  */
-void nc_session_free (struct nc_session* session);
+void nc_session_free(struct nc_session* session);
 
 /**
  * @ingroup session
@@ -94,7 +94,7 @@ void nc_session_free (struct nc_session* session);
  * @param[in] session NETCONF session.
  * @return NETCONF session status.
  */
-NC_SESSION_STATUS nc_session_get_status (const struct nc_session* session);
+NC_SESSION_STATUS nc_session_get_status(const struct nc_session* session);
 
 /**
  * @ingroup session
@@ -163,7 +163,7 @@ NC_TRANSPORT nc_session_get_transport(const struct nc_session* session);
  * @param[in] session NETCONF session structure
  * @return 0 if not, 1 if subscription is currently allowed.
  */
-int nc_session_notif_allowed (struct nc_session *session);
+int nc_session_notif_allowed(struct nc_session *session);
 
 /**
  * @ingroup session
@@ -206,7 +206,7 @@ void nc_cpblts_free(struct nc_cpblts *c);
  * @param capability_string Capability string to add.
  * @return 0 on success\n non-zero on error
  */
-int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string);
+int nc_cpblts_add(struct nc_cpblts *capabilities, const char* capability_string);
 
 /**
  * @ingroup session
@@ -218,7 +218,7 @@ int nc_cpblts_add (struct nc_cpblts *capabilities, const char* capability_string
  * @param capability_string Capability string to remove.
  * @return 0 on success\n non-zero on error
  */
-int nc_cpblts_remove (struct nc_cpblts *capabilities, const char* capability_string);
+int nc_cpblts_remove(struct nc_cpblts *capabilities, const char* capability_string);
 
 /**
  * @ingroup session
@@ -300,7 +300,7 @@ struct nc_cpblts *nc_session_get_cpblts_default(void);
  * @param[in] rpc \<rpc\> message to send.
  * @return 0 on error,\n message-id of sent message on success.
  */
-const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc);
+const nc_msgid nc_session_send_rpc(struct nc_session* session, nc_rpc *rpc);
 
 /**
  * @ingroup reply
@@ -314,7 +314,7 @@ const nc_msgid nc_session_send_rpc (struct nc_session* session, nc_rpc *rpc);
  * @param[in] reply \<repc-reply\> message to send.
  * @return 0 on error,\n message-id of sent message on success.
  */
-const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* rpc, const nc_reply *reply);
+const nc_msgid nc_session_send_reply(struct nc_session* session, const nc_rpc* rpc, const nc_reply *reply);
 
 /**
  * @ingroup notifications
@@ -324,7 +324,7 @@ const nc_msgid nc_session_send_reply (struct nc_session* session, const nc_rpc* 
  * @param[in] ntf \<notification\> message to send.
  * @return 0 on success,\n non-zero on error.
  */
-int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf);
+int nc_session_send_notif(struct nc_session* session, const nc_ntf* ntf);
 
 /**
  * @ingroup rpc
@@ -341,7 +341,7 @@ int nc_session_send_notif (struct nc_session* session, const nc_ntf* ntf);
  * - #NC_MSG_UNKNOWN - error occurred
  * - #NC_MSG_WOULDBLOCK - receiving timeouted without any received message.
  */
-NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, int timeout, nc_rpc** rpc);
+NC_MSG_TYPE nc_session_recv_rpc(struct nc_session* session, int timeout, nc_rpc** rpc);
 
 /**
  * @ingroup reply
@@ -365,7 +365,7 @@ NC_MSG_TYPE nc_session_recv_rpc (struct nc_session* session, int timeout, nc_rpc
  *   \<rpc-reply\> message.
  * - #NC_MSG_WOULDBLOCK - receiving timeouted without any received message.
  */
-NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_reply** reply);
+NC_MSG_TYPE nc_session_recv_reply(struct nc_session* session, int timeout, nc_reply** reply);
 
 /**
  * @ingroup notifications
@@ -385,7 +385,7 @@ NC_MSG_TYPE nc_session_recv_reply (struct nc_session* session, int timeout, nc_r
  *   message.
  * - #NC_MSG_WOULDBLOCK - receiving timeouted without any received message.
  */
-NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, int timeout, nc_ntf** ntf);
+NC_MSG_TYPE nc_session_recv_notif(struct nc_session* session, int timeout, nc_ntf** ntf);
 
 /**
  * @ingroup genAPI
@@ -395,7 +395,7 @@ NC_MSG_TYPE nc_session_recv_notif (struct nc_session* session, int timeout, nc_n
  * @param[in] id2 Second message ID to compare.
  * @return 0 if both IDs are the same.
  */
-int nc_msgid_compare (const nc_msgid id1, const nc_msgid id2);
+int nc_msgid_compare(const nc_msgid id1, const nc_msgid id2);
 
 /**
  * @ingroup rpc
@@ -410,7 +410,7 @@ int nc_msgid_compare (const nc_msgid id1, const nc_msgid id2);
  *   function. *reply was not changed.
  * - #NC_MSG_UNKNOWN - error occurred
  */
-NC_MSG_TYPE nc_session_send_recv (struct nc_session* session, nc_rpc *rpc, nc_reply** reply);
+NC_MSG_TYPE nc_session_send_recv(struct nc_session* session, nc_rpc *rpc, nc_reply** reply);
 
 #ifdef __cplusplus
 }
