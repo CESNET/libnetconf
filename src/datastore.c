@@ -5773,6 +5773,7 @@ apply_editcopyconfig:
 						}
 						op_input = op_input->next;
 					}
+					xmlFreeNodeList(op_node);
 
 					/* call RPC callback function */
 					VERB("Calling %s RPC function\n", rpc_name);
