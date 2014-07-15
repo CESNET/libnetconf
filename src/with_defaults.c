@@ -369,7 +369,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 				}
 			}
 			if (aux == NULL) {
-				aux = xmlNewDocNode(config, NULL, name, NULL);
+				aux = xmlNewNode(NULL, name);
 				if (config->children == NULL) {
 					xmlDocSetRootElement(config, aux);
 				} else {

@@ -3757,12 +3757,13 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		 * reconnect root element from datastore data under the <data>
 		 * element required by validators
 		 */
-		root = xmlDocGetRootElement(doc);
-		xmlUnlinkNode(root);
+		root = doc->children;
+		/* automatically removes all children from doc (replaces them by data) */
 		xmlDocSetRootElement(doc, xmlNewDocNode(doc, NULL, BAD_CAST "data", NULL ));
 		ns = xmlNewNs(doc->children, (xmlChar *) NC_NS_BASE10, NULL );
 		xmlSetNs(doc->children, ns);
-		xmlAddChild(doc->children, root);
+		/* reconnect back all root elements from doc with filled default values */
+		xmlAddChildList(doc->children, root);
 
 		ret = validate_ds(ds, doc, e);
 
