@@ -5374,11 +5374,13 @@ apply_editcopyconfig:
 		if (op == NC_OP_EDITCONFIG) {
 			ret = ds->func.editconfig(ds, session, rpc, target_ds, config, nc_rpc_get_defop(rpc), nc_rpc_get_erropt(rpc), &e);
 #ifndef DISABLE_VALIDATION
-			if (ret == EXIT_SUCCESS) {
+			if (ret == EXIT_SUCCESS && (nc_cpblts_enabled(session, NC_CAP_VALIDATE11_ID) || nc_cpblts_enabled(session, NC_CAP_VALIDATE10_ID))) {
 				/* process test option if set */
 				switch (testopt = nc_rpc_get_testopt(rpc)) {
 				case NC_EDIT_TESTOPT_TEST:
 				case NC_EDIT_TESTOPT_TESTSET:
+				/* default value if test option not set is test-then-set, RFC 6241 sec. 7.2 */
+				case NC_EDIT_TESTOPT_NOTSET:
 					/* validate the result */
 					ret = apply_rpc_validate_(ds, session, target_ds, NULL, &e);
 
