@@ -1012,7 +1012,7 @@ static int get_socket(const char* port, int family)
 	freeaddrinfo(res_list);
 
 	if (sock == -1) {
-		ERROR("Unable to start prepare socket on port %s (%s).", port, strerror(i));
+		ERROR("Unable to start prepare socket on %s port %s (%s).", (family == AF_INET ? "IPv4" : "IPv6"), port, strerror(i));
 	} else {
 		VERB("Socket %d on port %s.", sock, port);
 	}
