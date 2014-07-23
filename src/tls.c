@@ -38,6 +38,7 @@
  */
 
 #include "config.h"
+#include "tls.h"
 
 #include <unistd.h>
 #include <string.h>
@@ -211,7 +212,7 @@ struct nc_session *nc_session_connect_tls_socket(const char* username, const cha
 		VERB("Server certificate successfully verified.");
 		break;
 	default:
-		WARN("I'm not happy with the server certificate (error code %d).", verify);;
+		WARN("I'm not happy with the server certificate (%s).", verify_ret_msg[verify]);
 	}
 
 	/* fill session structure */

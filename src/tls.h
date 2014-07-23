@@ -46,6 +46,42 @@
 extern "C" {
 #endif
 
+static const char* verify_ret_msg[] __attribute__((__unused__)) = {
+	"ok",
+	"",
+	"unable to get issuer certificate",
+	"unable to get certificate CRL",
+	"unable to decrypt certificate's signature",
+	"unable to decrypt CRL's signature",
+	"unable to decode issuer public key",
+	"certificate signature failure",
+	"CRL signature failure",
+	"certificate is not yet valid",
+	"certificate has expired",
+	"CRL is not yet valid",
+	"CRL has expired",
+	"format error in certificate's notBefore field",
+	"format error in certificate's notAfter field",
+	"format error in CRL's lastUpdate field",
+	"format error in CRL's nextUpdate field",
+	"out of memory",
+	"self signed certificate",
+	"self signed certificate in certificate chain",
+	"unable to get local issuer certificate",
+	"unable to verify the first certificate",
+	"certificate chain too long",
+	"certificate revoked",
+	"invalid CA certificate",
+	"path length constraint exceeded",
+	"unsupported certificate purpose",
+	"certificate not trusted",
+	"certificate rejected",
+	"subject issuer mismatch",
+	"authority and subject key identifier mismatch",
+	"authority and issuer serial number mismatch",
+	"key usage does not include certificate signing"
+};
+
 struct nc_session *nc_session_connect_tls(const char* username, const char* host, const char* port);
 
 struct nc_session *nc_session_connect_tls_socket(const char* username, const char* host, int sock);
