@@ -110,7 +110,7 @@ API int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAf
 	}
 
 	/* force peer certificate verification */
-	SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | SSL_VERIFY_CLIENT_ONCE, NULL);
+	SSL_CTX_set_verify(tls_ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | SSL_VERIFY_CLIENT_ONCE, NULL);
 
 	/* get peer certificate */
 	if (SSL_CTX_use_certificate_file(tls_ctx, peer_cert, SSL_FILETYPE_PEM) != 1) {
