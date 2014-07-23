@@ -109,6 +109,9 @@ API int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAf
 		return (EXIT_FAILURE);
 	}
 
+	/* force peer certificate verification */
+	SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | SSL_VERIFY_CLIENT_ONCE, NULL);
+
 	/* get peer certificate */
 	if (SSL_CTX_use_certificate_file(tls_ctx, peer_cert, SSL_FILETYPE_PEM) != 1) {
 		ERROR("Loading a peer certificate from \'%s\' failed (%s).", peer_cert, ERR_reason_error_string(ERR_get_error()));
