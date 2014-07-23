@@ -83,11 +83,21 @@ typedef enum {
 int nc_nscmp(xmlNodePtr reference, xmlNodePtr node)
 {
 	int in_ns = 1;
+	char* s = NULL;
 
-	if (reference->ns != NULL) {
-		/* if filter has got specified no namespace now the NETCONF base namespace must be skipped */
-		if (!strcmp((char *)reference->ns->href, NC_NS_BASE10))
+	if (reference->ns != NULL && reference->ns->href != NULL) {
+
+		/* XML namespace wildcard mechanism:
+		 * 1) no namespace defined and namespace is inherited from message so it
+		 *    is NETCONF base namespace
+		 * 2) namespace is empty: xmlns=""
+		 */
+		if (!strcmp((char *)reference->ns->href, NC_NS_BASE10) ||
+				strlen(s = nc_clrwspace((char*)(reference->ns->href))) == 0) {
+			free(s);
 			return 0;
+		}
+		free(s);
 
 		in_ns = 0;
 		if (node->ns != NULL) {

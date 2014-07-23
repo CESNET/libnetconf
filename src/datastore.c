@@ -4838,6 +4838,7 @@ static int rpc_get_prefilter(struct nc_filter **filter, const struct ncds_ds* ds
 {
 	xmlNodePtr filter_node;
 	int retval = 1;
+	char* s;
 
 	/* get filter if specified for this request */
 	if (rpc2all_data.filter == NULL) {
@@ -4851,6 +4852,20 @@ static int rpc_get_prefilter(struct nc_filter **filter, const struct ncds_ds* ds
 			ds->data_model && ds->data_model->ns) {
 		retval = 0;
 		for (filter_node = (*filter)->subtree_filter->children; filter_node != NULL; filter_node = filter_node->next) {
+			/* XML namespace wildcard mechanism:
+			 * 1) no namespace defined and namespace is inherited from message so it
+			 *    is NETCONF base namespace
+			 * 2) namespace is empty: xmlns=""
+			 */
+			s = NULL;
+			if (filter_node->ns == NULL || filter_node->ns->href == NULL ||
+					strcmp((char *)filter_node->ns->href, NC_NS_BASE10) == 0 ||
+					strlen(s = nc_clrwspace((char*)(filter_node->ns->href))) == 0) {
+				free(s);
+				return (1);
+			}
+			free(s);
+
 			if (filter_node->ns && xmlStrcmp(BAD_CAST ds->data_model->ns, filter_node->ns->href) == 0) {
 				return (1);
 			}
