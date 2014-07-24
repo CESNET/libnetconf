@@ -120,12 +120,23 @@ static int transapi_revert_callbacks_recursive_own(const struct transapi_callbac
 			/* node was removed, add it back */
 			op = XMLDIFF_ADD;
 			xmlnode = tree->node;
-		} else if (((tree->op & XMLDIFF_MOD) || (tree->op & XMLDIFF_CHAIN)) && tree->node != NULL ) {
-			/* node was modified, replace it with previous version */
+		}
+		if ((tree->op & (XMLDIFF_MOD | XMLDIFF_CHAIN | XMLDIFF_SIBLING | XMLDIFF_REORDER)) && tree->node != NULL ) {
+			/* keep operations and apply it with previous version of the data */
 			xmlnode = find_element_equiv(info->old, tree->node, info->model, info->keys);
 			if (xmlnode != NULL ) {
-				op = tree->op;
-				/* xmlnode already set */
+				if (tree->op & XMLDIFF_MOD) {
+					op |= XMLDIFF_MOD;
+				}
+				if (tree->op & XMLDIFF_CHAIN) {
+					op |= XMLDIFF_CHAIN;
+				}
+				if (tree->op & XMLDIFF_SIBLING) {
+					op |= XMLDIFF_SIBLING;
+				}
+				if (tree->op & XMLDIFF_REORDER) {
+					op |= XMLDIFF_REORDER;
+				}
 			} else {
 				ERROR("Unable to revert executed changes: previous subtree version not found.");
 				/* Previous subtree not found: no need to process children nodes */
