@@ -4907,6 +4907,7 @@ API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const
 	const char * rpc_name;
 	const char *data_ns = NULL;
 	char *end = NULL, *aux = NULL;
+	NC_EDIT_ERROPT_TYPE erropt;
 #ifndef DISABLE_VALIDATION
 	NC_EDIT_TESTOPT_TYPE testopt;
 #endif
@@ -5865,7 +5866,14 @@ apply_editcopyconfig:
 		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK)) {
 
-		if ((new_reply = ncds_apply_transapi(ds, session, old, nc_rpc_get_erropt(rpc), NULL)) != NULL) {
+		if (op == NC_OP_EDITCONFIG) {
+			erropt = nc_rpc_get_erropt(rpc);
+		} else { /* commit or copy-config */
+			/* try rollback to keep transactions atomic */
+			erropt = NC_EDIT_ERROPT_ROLLBACK;
+		}
+
+		if ((new_reply = ncds_apply_transapi(ds, session, old, erropt, NULL)) != NULL) {
 			nc_reply_free(reply);
 			reply = new_reply;
 		}
