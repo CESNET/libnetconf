@@ -1416,15 +1416,10 @@ static struct transapi_internal* transapi_new_shared(const char* callbacks_path)
 	TRANSAPI_CLBCKS_ORDER_TYPE *clbks_order;
 	struct transapi_internal* transapi;
 
-	/* allocate transapi structure */
-	if ((transapi = malloc(sizeof(struct transapi_internal))) == NULL) {
-		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-		return (NULL);
-	}
-
 	/* load shared library */
 	if ((transapi_module = dlopen (callbacks_path, RTLD_NOW)) == NULL) {
-		ERROR("Unable to load shared library %s (%s).", callbacks_path, dlerror());
+		ERROR("Unable to load shared library (%s).", dlerror());
+		dlerror(); /* clear memory in dl */
 		return (NULL);
 	}
 
@@ -1486,6 +1481,12 @@ static struct transapi_internal* transapi_new_shared(const char* callbacks_path)
 
 	if ((close_func = dlsym (transapi_module, "transapi_close")) == NULL) {
 		VERB("No transapi_close() function in %s transAPI module.", callbacks_path);
+	}
+
+	/* allocate transapi structure */
+	if ((transapi = malloc(sizeof(struct transapi_internal))) == NULL) {
+		ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+		return (NULL);
 	}
 
 	/* fill transapi structure */
