@@ -80,9 +80,13 @@ extern "C" {
  * @param[in] CApath Location of the CA certificates used to verify the server
  * certificates. For More info, see documentation for
  * SSL_CTX_load_verify_locations() function from OpenSSL.
+ * @param[in] CRLfile Location of the CRL certificate used to check for
+ * revocated certificates.
+ * @param[in] CRLpath Locarion of the CRL certificates used to check for
+ * revocated certificates.
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath);
+int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath, const char *CRLfile, const char *CRLpath);
 
 /**
  * @ingroup tls

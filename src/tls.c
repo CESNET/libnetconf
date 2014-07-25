@@ -58,6 +58,8 @@
 
 /* global SSL context (SSL_CTX*) */
 static pthread_key_t tls_ctx_key;
+/* global SSL X509 store (X509_STORE*) */
+static pthread_key_t tls_store_key;
 static pthread_once_t tls_ctx_once = PTHREAD_ONCE_INIT;
 
 static void tls_ctx_init(void)
@@ -81,11 +83,102 @@ API void nc_tls_destroy(void)
 	pthread_setspecific(tls_ctx_key, NULL);
 }
 
-API int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath)
+/* based on the code of stunnel utility */
+int verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx) {
+	X509_STORE* store;
+	X509_STORE_CTX store_ctx;
+	X509_OBJECT obj;
+	X509_NAME* subject;
+	X509_NAME* issuer;
+	X509* cert;
+	X509_CRL* crl;
+	X509_REVOKED* revoked;
+	EVP_PKEY* pubkey;
+	int i, n, rc;
+	ASN1_TIME* next_update = NULL;
+
+	if (!preverify_ok) {
+		return 0;
+	}
+
+	if ((store = pthread_getspecific(tls_store_key)) == NULL) {
+		ERROR("Failed to get thread-specific X509 store");
+		return 1; /* fail */
+	}
+
+	cert = X509_STORE_CTX_get_current_cert(x509_ctx);
+	subject = X509_get_subject_name(cert);
+	issuer = X509_get_issuer_name(cert);
+
+	/* try to retrieve a CRL corresponding to the _subject_ of
+	 * the current certificate in order to verify it's integrity */
+	memset((char *)&obj, 0, sizeof obj);
+	X509_STORE_CTX_init(&store_ctx, store, NULL, NULL);
+	rc = X509_STORE_get_by_subject(&store_ctx, X509_LU_CRL, subject, &obj);
+	X509_STORE_CTX_cleanup(&store_ctx);
+	crl = obj.data.crl;
+	if (rc > 0 && crl) {
+		next_update = X509_CRL_get_nextUpdate(crl);
+
+		/* verify the signature on this CRL */
+		pubkey = X509_get_pubkey(cert);
+		if (X509_CRL_verify(crl, pubkey) <= 0) {
+			X509_STORE_CTX_set_error(x509_ctx, X509_V_ERR_CRL_SIGNATURE_FAILURE);
+			X509_OBJECT_free_contents(&obj);
+			if (pubkey) {
+				EVP_PKEY_free(pubkey);
+			}
+			return 0; /* fail */
+		}
+		if (pubkey) {
+			EVP_PKEY_free(pubkey);
+		}
+
+		/* check date of CRL to make sure it's not expired */
+		if (!next_update) {
+			X509_STORE_CTX_set_error(x509_ctx, X509_V_ERR_ERROR_IN_CRL_NEXT_UPDATE_FIELD);
+			X509_OBJECT_free_contents(&obj);
+			return 0; /* fail */
+		}
+		if (X509_cmp_current_time(next_update) < 0) {
+			X509_STORE_CTX_set_error(x509_ctx, X509_V_ERR_CRL_HAS_EXPIRED);
+			X509_OBJECT_free_contents(&obj);
+			return 0; /* fail */
+		}
+		X509_OBJECT_free_contents(&obj);
+	}
+
+	/* try to retrieve a CRL corresponding to the _issuer_ of
+	 * the current certificate in order to check for revocation */
+	memset((char *)&obj, 0, sizeof obj);
+	X509_STORE_CTX_init(&store_ctx, store, NULL, NULL);
+	rc = X509_STORE_get_by_subject(&store_ctx, X509_LU_CRL, issuer, &obj);
+	X509_STORE_CTX_cleanup(&store_ctx);
+	crl = obj.data.crl;
+	if (rc > 0 && crl) {
+		/* check if the current certificate is revoked by this CRL */
+		n = sk_X509_REVOKED_num(X509_CRL_get_REVOKED(crl));
+		for (i = 0; i < n; i++) {
+			revoked = sk_X509_REVOKED_value(X509_CRL_get_REVOKED(crl), i);
+			if (ASN1_INTEGER_cmp(revoked->serialNumber, X509_get_serialNumber(cert)) == 0) {
+				ERROR("Certificate revoked");
+				X509_STORE_CTX_set_error(x509_ctx, X509_V_ERR_CERT_REVOKED);
+				X509_OBJECT_free_contents(&obj);
+				return 0; /* fail */
+			}
+		}
+		X509_OBJECT_free_contents(&obj);
+	}
+	return 1; /* success */
+}
+
+API int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath, const char *CRLfile, const char *CRLpath)
 {
 	const char* key_ = peer_key;
 	SSL_CTX* tls_ctx;
-	int destroy = 0;
+	X509_LOOKUP* lookup;
+	X509_STORE* tls_store;
+	int destroy = 0, ret;
 
 	if (peer_cert == NULL) {
 		ERROR("%s: Invalid parameter.", __func__);
@@ -110,8 +203,49 @@ API int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAf
 		return (EXIT_FAILURE);
 	}
 
-	/* force peer certificate verification */
-	SSL_CTX_set_verify(tls_ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | SSL_VERIFY_CLIENT_ONCE, NULL);
+	/* force peer certificate verification (NO_PEER_CERT and CLIENT_ONCE are ignored when
+	 * acting as client, but included just in case) and optionaly set CRL checking callback */
+	if (CRLfile != NULL || CRLpath != NULL) {
+		/* set the revocation store with the correct paths for the callback */
+		tls_store = X509_STORE_new();
+		tls_store->cache = 0;
+
+		if (CRLfile != NULL) {
+			if ((lookup = X509_STORE_add_lookup(tls_store, X509_LOOKUP_file())) == NULL) {
+				ERROR("Failed to add lookup method in CRL checking");
+				return (EXIT_FAILURE);
+			}
+			if (X509_LOOKUP_add_dir(lookup, CRLfile, X509_FILETYPE_PEM) != 1) {
+				ERROR("Failed to add revocation lookup file");
+				return (EXIT_FAILURE);
+			}
+		}
+
+		if (CRLpath != NULL) {
+			if ((lookup = X509_STORE_add_lookup(tls_store, X509_LOOKUP_hash_dir())) == NULL) {
+				ERROR("Failed to add lookup method in CRL checking");
+				return (EXIT_FAILURE);
+			}
+			if (X509_LOOKUP_add_dir(lookup, CRLpath, X509_FILETYPE_PEM) != 1) {
+				ERROR("Failed to add revocation lookup directory");
+				return (EXIT_FAILURE);
+			}
+		}
+
+		if ((ret = pthread_key_create(&tls_store_key, (void (*)(void *))X509_STORE_free)) != 0) {
+			ERROR("Unable to create pthread key: %s", strerror(ret));
+			return (EXIT_FAILURE);
+		}
+		if ((ret = pthread_setspecific(tls_store_key, tls_store)) != 0) {
+			ERROR("Unable to set thread-specific data: %s", strerror(ret));
+			return (EXIT_FAILURE);
+		}
+
+		SSL_CTX_set_verify(tls_ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | SSL_VERIFY_CLIENT_ONCE, verify_callback);
+	} else {
+		/* CRL checking will be skipped */
+		SSL_CTX_set_verify(tls_ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | SSL_VERIFY_CLIENT_ONCE, NULL);
+	}
 
 	/* get peer certificate */
 	if (SSL_CTX_use_certificate_file(tls_ctx, peer_cert, SSL_FILETYPE_PEM) != 1) {
