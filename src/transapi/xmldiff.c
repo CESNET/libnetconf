@@ -543,7 +543,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 			if (tmp_op & XMLDIFF_SIBLING) {
 				ret_op |= XMLDIFF_REORDER;
 			}
-			if ((tmp_op & (XMLDIFF_ADD | XMLDIFF_REM | XMLDIFF_MOD | XMLDIFF_CHAIN)) && !(ret_op & (XMLDIFF_ADD | XMLDIFF_REM))) {
+			if ((tmp_op & (XMLDIFF_ADD | XMLDIFF_REM | XMLDIFF_MOD | XMLDIFF_REORDER | XMLDIFF_CHAIN)) && !(ret_op & (XMLDIFF_ADD | XMLDIFF_REM))) {
 				ret_op |= XMLDIFF_CHAIN;
 			}
 		}
@@ -776,7 +776,7 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 				if (item_ret_op & XMLDIFF_SIBLING) {
 					ret_op |= XMLDIFF_REORDER;
 				}
-				if (item_ret_op & (XMLDIFF_ADD | XMLDIFF_REM | XMLDIFF_MOD | XMLDIFF_CHAIN)) {
+				if (item_ret_op & (XMLDIFF_ADD | XMLDIFF_REM | XMLDIFF_MOD | XMLDIFF_REORDER | XMLDIFF_CHAIN)) {
 					ret_op |= XMLDIFF_CHAIN;
 				}
 				if (item_ret_op & XMLDIFF_REM) {
