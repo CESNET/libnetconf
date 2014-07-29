@@ -553,19 +553,25 @@ void nc_clip_occurences_with(char *str, char sought, char replacement);
 int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mode);
 
 /**
- * @breaf Remove the defaults nodes from copy-config and edit-config config.
+ * @breaf Remove the defaults nodes from the configuration data.
  *
- * This function should be used only if report-all-tagged mode is supported.
+ * Removes nodes with attribute wd:defaultt="true"
  *
- * @param[in] config XML configuration data document in which the default node will
- * be checked if it contains 'default' attribute and also the correct default value
- * according to the model and in such case the node will be returned to its
- * default value (i.e. removed from the config where it can be again added by
- * a following input operation).
- * @param[in] model Configuration data model for the data given in the config parameter.
+ * @param[in] config XML configuration data document from which the default nodes
+ * will removed
  * @return 0 on success, non-zero else.
  */
-int ncdflt_default_clear(xmlDocPtr config, const xmlDocPtr model);
+int ncdflt_default_clear(xmlDocPtr config);
+
+/**
+ * @brief Replace tagged default values in edit-config's configuration data with
+ * operation 'delete' - RFC 6243 sec 4.5.2.
+ *
+ * @param config Configuration data to be modified
+ * @param model Data model for the given configuration data
+ * @return EXIT_SUCCESS if the data pass, EXIT_FAILURE if a constrain is broken
+ */
+int ncdflt_edit_remove_default(xmlDocPtr config, const xmlDocPtr model);
 
 /**
  * @brief Parse the given reply message and create a NETCONF error structure
