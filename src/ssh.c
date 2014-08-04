@@ -139,18 +139,18 @@ static int find_ssh_keys(void)
 	int i, x, y, retval = EXIT_FAILURE;
 
 	if ((pw = getpwuid(getuid())) == NULL) {
-		ERROR("Determining user's home directory for getting SSH keys failed (%s)", strerror(errno));
+		VERB("Determining user's home directory for getting SSH keys failed (%s)", strerror(errno));
 		return EXIT_FAILURE;
 	}
 	user_home = pw->pw_dir;
 
 	/* search in the same location as ssh do (~/.ssh/) */
-	VERB ("Searching for the key pairs in the standard ssh directory.");
+	VERB("Searching for the key pairs in the standard ssh directory.");
 	for (i = 0; i < SSH2_KEYS; i++) {
 		x = asprintf (&key_priv_path, "%s/.ssh/%s", user_home, key_names[i]);
 		y = asprintf (&key_pub_path, "%s/.ssh/%s.pub", user_home, key_names[i]);
 		if (x == -1 || y == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			VERB("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			continue;
 		}
 		if (eaccess(key_priv_path, R_OK) == 0 && eaccess(key_pub_path, R_OK) == 0) {
@@ -328,7 +328,7 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 
 		if (sshauth_pref[i].value < 0) {
 			/* all following auth methods are disabled via negative preference value */
-			ERROR("Unable to authenticate to the remote server (supported authentication method(s) are disabled).");
+			ERROR("Unable to authenticate to the remote server (%s disabled or permission denied).", userauthlist);
 			goto shutdown;
 		}
 
@@ -340,7 +340,7 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 			if (libssh2_userauth_password(retval->ssh_session, username, s) != 0) {
 				memset(s, 0, strlen(s));
 				libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-				ERROR("Authentication failed (%s)", err_msg);
+				VERB("Authentication failed (%s)", err_msg);
 			}
 			memset(s, 0, strlen(s));
 			free(s);
@@ -351,16 +351,16 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 					username,
 					callbacks.sshauth_interactive) != 0) {
 				libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-				ERROR("Authentication failed (%s)", err_msg);
+				VERB("Authentication failed (%s)", err_msg);
 			}
 			break;
 		case NC_SSH_AUTH_PUBLIC_KEYS:
 			VERB ("Publickey athentication");
 			/* if publickeys path not provided, try to find them in standard path */
 			if (callbacks.publickey_filename[0] == NULL || callbacks.privatekey_filename[0] == NULL) {
-				WARN ("No key pair specified. Looking for some in the standard SSH path.");
+				VERB ("No key pair specified. Looking for some in the standard SSH path.");
 				if (find_ssh_keys ()) {
-					ERROR ("Searching for keys failed.");
+					VERB("Searching for keys failed.");
 					/* error */
 					break;
 				}

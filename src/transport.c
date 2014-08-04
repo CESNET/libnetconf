@@ -155,7 +155,7 @@ int transport_connect_socket(const char* host, const char* port)
 		if (sock == -1) {
 			/* socket was not created, try another resource */
 			i = errno;
-			continue;
+			goto errloop;
 		}
 
 		if (connect(sock, res->ai_addr, res->ai_addrlen) == -1) {
@@ -163,16 +163,20 @@ int transport_connect_socket(const char* host, const char* port)
 			i = errno;
 			close(sock);
 			sock = -1;
-			continue;
+			goto errloop;
 		}
 
 		/* we're done, network connection established */
 		break;
+errloop:
+		VERB("Unable to connect to %s:%s over %s (%s).", host, port,
+				(res->ai_family == AF_INET6) ? "IPv6" : "IPv4", strerror(i));
+		continue;
 	}
 	freeaddrinfo(res_list);
 
 	if (sock == -1) {
-		ERROR("Unable to connect to the server (%s).", strerror(i));
+		ERROR("Unable to connect to %s:%s.", host, port);
 	}
 
 	return (sock);
