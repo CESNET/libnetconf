@@ -162,6 +162,29 @@ struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities);
  */
 struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabilities, const char* username);
 
+/**
+ * @ingroup session
+ * @brief Accept NETCONF session from a client. It allows to assign the
+ * specified username to it and set file descriptors for reading/writing NETCONF
+ * data.
+ *
+ * The same as nc_session_accept_username() except that it allows caller to set
+ * file descriptors where the libnetconf will read/write NETCONF (unencrypted)
+ * data.
+ *
+ * @param[in] capabilities NETCONF capabilities structure with the capabilities supported
+ * by the server. The caller can use nc_session_get_cpblts_default() to get the
+ * structure with the list of all the capabilities supported by libnetconf (this is
+ * used in case of a NULL parameter).
+ * @param[in] username Name of the user which will be assigned to the NETCONF
+ * session. This information is used for example by NACM subsystem. If NULL,
+ * the function act the same way as the nc_session_accept() function.
+ * @param[in] input File descriptor from which the NETCONF data will be read.
+ * @param[in] output File descriptor to which the NETCONF data will be written.
+ * @return Structure describing the accepted NETCONF session or NULL in case of an error.
+ */
+struct nc_session *nc_session_accept_inout(const struct nc_cpblts* capabilities, const char* username, int input, int output);
+
 #ifdef __cplusplus
 }
 #endif
