@@ -304,7 +304,9 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 			}
 		}
 		if (strstr(userauthlist, "publickey")) {
-			auth |= NC_SSH_AUTH_PUBLIC_KEYS;
+			if (callbacks.sshauth_passphrase != NULL) {
+				auth |= NC_SSH_AUTH_PUBLIC_KEYS;
+			}
 		}
 		if (strstr(userauthlist, "keyboard-interactive")) {
 			if (callbacks.sshauth_interactive != NULL) {
