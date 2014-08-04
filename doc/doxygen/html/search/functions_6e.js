@@ -83,6 +83,7 @@ var searchData=
   ['nc_5frpc_5funlock',['nc_rpc_unlock',['../db/de9/group__rpc.html#gad843551f9d1ff8be6a118d026e8b995a',1,'messages.h']]],
   ['nc_5frpc_5fvalidate',['nc_rpc_validate',['../db/de9/group__rpc.html#ga14fa1c78362457a646d5d820206d5158',1,'messages.h']]],
   ['nc_5fsession_5faccept',['nc_session_accept',['../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707',1,'transport.h']]],
+  ['nc_5fsession_5faccept_5finout',['nc_session_accept_inout',['../db/d52/group__session.html#ga4d2da6dc354779dbd7a745147fa40457',1,'transport.h']]],
   ['nc_5fsession_5faccept_5fusername',['nc_session_accept_username',['../db/d52/group__session.html#ga7ee207cac84fd5cd82419af41e14c06f',1,'transport.h']]],
   ['nc_5fsession_5fconnect',['nc_session_connect',['../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23',1,'transport.h']]],
   ['nc_5fsession_5fconnect_5fchannel',['nc_session_connect_channel',['../db/d52/group__session.html#ga7d9e0f17bb4ca5b35c8343db59955060',1,'transport.h']]],
