@@ -4809,9 +4809,13 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 		if (ret || modified) {
 			DBG("Updating XML tree after TransAPI callbacks");
 			if (ret) {
+				/* remove default nodes */
+				ncdflt_default_clear(old);
 				/* revert changes */
 				xmlDocDumpMemory(old, &config, NULL);
 			} else { /* modified != 0 */
+				/* remove default nodes */
+				ncdflt_default_clear(new);
 				/* update config data according to changes made by transAPI module */
 				xmlDocDumpMemory(new, &config, NULL);
 			}
@@ -5365,19 +5369,19 @@ process_datastore:
 				break;
 			}
 
-			/* do some work in case of used with-defaults capability */
-			if (rpc->with_defaults & NCWD_MODE_ALL_TAGGED) {
+			if (NCWD_MODE_ALL_TAGGED & ncdflt_get_supported()) {
 				/* if report-all-tagged mode is supported, 'default'
 				 * attribute with 'true' or '1' value can appear and we
 				 * have to check that the element's value is equal to the
 				 * default value. If it is, the element is removed and
-				 * is supposed to be default, otherwise the
-				 * invalid-value error reply must be returned.
+				 * the item is supposed to be set to the default value. If the
+				 * value is not equal to the default value, the invalid-value
+				 * error reply must be returned.
 				 */
 				doc1 = xmlReadDoc(BAD_CAST config, NULL, NULL, NC_XMLREAD_OPTIONS);
 				free(config);
 
-				if (ncdflt_default_clear(doc1, ds->ext_model) != EXIT_SUCCESS) {
+				if (ncdflt_edit_remove_default(doc1, ds->ext_model) != EXIT_SUCCESS) {
 					e = nc_err_new(NC_ERR_INVALID_VALUE);
 					nc_err_set(e, NC_ERR_PARAM_MSG, "with-defaults capability failure");
 					break;

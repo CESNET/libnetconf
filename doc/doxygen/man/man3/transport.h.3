@@ -1,4 +1,4 @@
-.TH "src/transport.h" 3 "Wed Jul 9 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "src/transport.h" 3 "Mon Aug 4 2014" "Version 0.8.0-74_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -27,6 +27,10 @@ Functions implementing transport layer for NETCONF\&.
 .RI "struct nc_session * \fBnc_session_accept\fP (const struct nc_cpblts *capabilities)"
 .br
 .RI "\fIAccept NETCONF session from a client\&. \fP"
+.ti -1c
+.RI "struct nc_session * \fBnc_session_accept_inout\fP (const struct nc_cpblts *capabilities, const char *username, int input, int output)"
+.br
+.RI "\fIAccept NETCONF session from a client\&. It allows to assign the specified username to it and set file descriptors for reading/writing NETCONF data\&. \fP"
 .ti -1c
 .RI "struct nc_session * \fBnc_session_accept_username\fP (const struct nc_cpblts *capabilities, const char *username)"
 .br

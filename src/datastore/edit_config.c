@@ -576,7 +576,7 @@ static xmlNodePtr find_element_model_compare(xmlNodePtr node, xmlNodePtr model_n
  * @param[in] model Configuration data model (YIN format)
  * @return model's equivalent of the node, NULL if no such element is found.
  */
-static xmlNodePtr find_element_model(xmlNodePtr node, xmlDocPtr model)
+xmlNodePtr find_element_model(xmlNodePtr node, xmlDocPtr model)
 {
 	xmlNodePtr mparent, aux, retval;
 

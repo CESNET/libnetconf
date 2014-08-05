@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Wed Jul 9 2014" "Version 0.8.0" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Mon Aug 4 2014" "Version 0.8.0-74_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -93,6 +93,10 @@ libnetconf's functions for handling NETCONF sessions\&.
 .RI "struct nc_session * \fBnc_session_accept\fP (const struct nc_cpblts *capabilities)"
 .br
 .RI "\fIAccept NETCONF session from a client\&. \fP"
+.ti -1c
+.RI "struct nc_session * \fBnc_session_accept_inout\fP (const struct nc_cpblts *capabilities, const char *username, int input, int output)"
+.br
+.RI "\fIAccept NETCONF session from a client\&. It allows to assign the specified username to it and set file descriptors for reading/writing NETCONF data\&. \fP"
 .ti -1c
 .RI "struct nc_session * \fBnc_session_accept_username\fP (const struct nc_cpblts *capabilities, const char *username)"
 .br
@@ -493,6 +497,28 @@ Only one NETCONF session can be accepted in a single caller since it communicate
 \fBParameters:\fP
 .RS 4
 \fIcapabilities\fP NETCONF capabilities structure with the capabilities supported by the server\&. The caller can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter)\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Structure describing the accepted NETCONF session or NULL in case of an error\&. 
+.RE
+.PP
+
+.SS "struct nc_session* nc_session_accept_inout (const struct nc_cpblts *capabilities, const char *username, intinput, intoutput)"
+
+.PP
+Accept NETCONF session from a client\&. It allows to assign the specified username to it and set file descriptors for reading/writing NETCONF data\&. The same as \fBnc_session_accept_username()\fP except that it allows caller to set file descriptors where the libnetconf will read/write NETCONF (unencrypted) data\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcapabilities\fP NETCONF capabilities structure with the capabilities supported by the server\&. The caller can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter)\&. 
+.br
+\fIusername\fP Name of the user which will be assigned to the NETCONF session\&. This information is used for example by NACM subsystem\&. If NULL, the function act the same way as the \fBnc_session_accept()\fP function\&. 
+.br
+\fIinput\fP File descriptor from which the NETCONF data will be read\&. 
+.br
+\fIoutput\fP File descriptor to which the NETCONF data will be written\&. 
 .RE
 .PP
 \fBReturns:\fP

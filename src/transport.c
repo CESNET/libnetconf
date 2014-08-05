@@ -155,7 +155,7 @@ int transport_connect_socket(const char* host, const char* port)
 		if (sock == -1) {
 			/* socket was not created, try another resource */
 			i = errno;
-			continue;
+			goto errloop;
 		}
 
 		if (connect(sock, res->ai_addr, res->ai_addrlen) == -1) {
@@ -163,16 +163,20 @@ int transport_connect_socket(const char* host, const char* port)
 			i = errno;
 			close(sock);
 			sock = -1;
-			continue;
+			goto errloop;
 		}
 
 		/* we're done, network connection established */
 		break;
+errloop:
+		VERB("Unable to connect to %s:%s over %s (%s).", host, port,
+				(res->ai_family == AF_INET6) ? "IPv6" : "IPv4", strerror(i));
+		continue;
 	}
 	freeaddrinfo(res_list);
 
 	if (sock == -1) {
-		ERROR("Unable to connect to the server (%s).", strerror(i));
+		ERROR("Unable to connect to %s:%s.", host, port);
 	}
 
 	return (sock);
@@ -706,7 +710,7 @@ shutdown:
 
 #endif /* not DISABLE_LIBSSH */
 
-API struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabilities, const char* username)
+API struct nc_session *nc_session_accept_inout(const struct nc_cpblts* capabilities, const char* username, int input, int output)
 {
 	int r, i;
 	struct nc_session *retval = NULL;
@@ -749,8 +753,8 @@ API struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabi
 	}
 	retval->is_server = 1;
 	retval->transport_socket = -1;
-	retval->fd_input = STDIN_FILENO;
-	retval->fd_output = STDOUT_FILENO;
+	retval->fd_input = input;
+	retval->fd_output = output;
 	retval->msgid = 1;
 	retval->queue_event = NULL;
 	retval->queue_msg = NULL;
@@ -946,14 +950,24 @@ API struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabi
 	return (retval);
 }
 
+API struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabilities, const char* username)
+{
+	/*
+	 * just a wrapper (backward compatibility) for the
+	 * nc_session_accept_username_inout(), which allows explicitely set the
+	 * input/output file descriptors for reading/writing NETCONF data.
+	 */
+	return (nc_session_accept_inout(capabilities, username, STDIN_FILENO, STDOUT_FILENO));
+}
+
 API struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 {
 	/*
 	 * just a wrapper (backward compatibility) for the
-	 * nc_session_accept_username(), which gets the current user of the running
-	 * process in case the username argument is NULL.
+	 * nc_session_accept_username_inout(), which gets the current user of the
+	 * running process in case the username argument is NULL.
 	 */
-	return (nc_session_accept_username(capabilities, NULL));
+	return (nc_session_accept_inout(capabilities, NULL, STDIN_FILENO, STDOUT_FILENO));
 }
 
 /*

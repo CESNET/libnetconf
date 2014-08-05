@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.8.0</span>
+   &#160;<span id="projectnumber">0.8.0-74_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -200,6 +200,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gad0e758dfee764ae9c2a032e0151c6707"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707">nc_session_accept</a> (const struct nc_cpblts *capabilities)</td></tr>
 <tr class="memdesc:gad0e758dfee764ae9c2a032e0151c6707"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept NETCONF session from a client.  <a href="#gad0e758dfee764ae9c2a032e0151c6707">More...</a><br/></td></tr>
 <tr class="separator:gad0e758dfee764ae9c2a032e0151c6707"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4d2da6dc354779dbd7a745147fa40457"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga4d2da6dc354779dbd7a745147fa40457">nc_session_accept_inout</a> (const struct nc_cpblts *capabilities, const char *username, int input, int output)</td></tr>
+<tr class="memdesc:ga4d2da6dc354779dbd7a745147fa40457"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept NETCONF session from a client. It allows to assign the specified username to it and set file descriptors for reading/writing NETCONF data.  <a href="#ga4d2da6dc354779dbd7a745147fa40457">More...</a><br/></td></tr>
+<tr class="separator:ga4d2da6dc354779dbd7a745147fa40457"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga7ee207cac84fd5cd82419af41e14c06f"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga7ee207cac84fd5cd82419af41e14c06f">nc_session_accept_username</a> (const struct nc_cpblts *capabilities, const char *username)</td></tr>
 <tr class="memdesc:ga7ee207cac84fd5cd82419af41e14c06f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept NETCONF session from a client and assign it to the specified username.  <a href="#ga7ee207cac84fd5cd82419af41e14c06f">More...</a><br/></td></tr>
 <tr class="separator:ga7ee207cac84fd5cd82419af41e14c06f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -815,6 +818,57 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 </div>
 </div>
+<a class="anchor" id="ga4d2da6dc354779dbd7a745147fa40457"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct nc_session* nc_session_accept_inout </td>
+          <td>(</td>
+          <td class="paramtype">const struct nc_cpblts *&#160;</td>
+          <td class="paramname"><em>capabilities</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>username</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>input</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>output</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Accept NETCONF session from a client. It allows to assign the specified username to it and set file descriptors for reading/writing NETCONF data. </p>
+<p>The same as <a class="el" href="../../db/d52/group__session.html#ga7ee207cac84fd5cd82419af41e14c06f" title="Accept NETCONF session from a client and assign it to the specified username. ">nc_session_accept_username()</a> except that it allows caller to set file descriptors where the libnetconf will read/write NETCONF (unencrypted) data.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">capabilities</td><td>NETCONF capabilities structure with the capabilities supported by the server. The caller can use <a class="el" href="../../db/d52/group__session.html#ga8283673aa18f079a89a437efb436a55a" title="Get NULL terminated list of the default capabilities supported by libnetconf including the list of na...">nc_session_get_cpblts_default()</a> to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">username</td><td>Name of the user which will be assigned to the NETCONF session. This information is used for example by NACM subsystem. If NULL, the function act the same way as the <a class="el" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707" title="Accept NETCONF session from a client. ">nc_session_accept()</a> function. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">input</td><td>File descriptor from which the NETCONF data will be read. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">output</td><td>File descriptor to which the NETCONF data will be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Structure describing the accepted NETCONF session or NULL in case of an error. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ga7ee207cac84fd5cd82419af41e14c06f"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1417,7 +1471,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Jul 9 2014 14:53:43 for libnetconf by
+    <li class="footer">Generated on Mon Aug 4 2014 14:41:54 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>
