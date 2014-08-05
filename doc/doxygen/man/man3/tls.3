@@ -1,4 +1,4 @@
-.TH "NETCONF over TLS" 3 "Mon Aug 4 2014" "Version 0.8.0-74_trunk" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF over TLS" 3 "Tue Aug 5 2014" "Version 0.8.0-99_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -14,7 +14,7 @@ libnetconf's functions to use TLS\&. More information can be found at \fBTranspo
 .br
 .RI "\fIDestroy all resources allocated for preparation of TLS connections\&. \fP"
 .ti -1c
-.RI "int \fBnc_tls_init\fP (const char *peer_cert, const char *peer_key, const char *CAfile, const char *CApath)"
+.RI "int \fBnc_tls_init\fP (const char *peer_cert, const char *peer_key, const char *CAfile, const char *CApath, const char *CRLfile, const char *CRLpath)"
 .br
 .RI "\fISet paths to the client certificate and its private key\&. \fP"
 .in -1c
@@ -33,7 +33,7 @@ Remember, that to make these functions available, libnetconf must be compiled wi
 Destroy all resources allocated for preparation of TLS connections\&. See \fBnc_tls_init()\fP for more information about NETCONF session preparation\&.
 .PP
 To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP header file\&. 
-.SS "int nc_tls_init (const char *peer_cert, const char *peer_key, const char *CAfile, const char *CApath)"
+.SS "int nc_tls_init (const char *peer_cert, const char *peer_key, const char *CAfile, const char *CApath, const char *CRLfile, const char *CRLpath)"
 
 .PP
 Set paths to the client certificate and its private key\&. This function takes effect only on client side\&. It must be used before establishing NETCONF session (including call home) over TLS\&.
@@ -47,8 +47,6 @@ Establish NETCONF session using \fBnc_session_connect()\fP\&. If you don't need 
 To properly clean all resources, call \fBnc_tls_destroy()\fP\&. It will destroy TLS connection context in the current thread\&.
 .PP
 .PP
-To make this function available, you have to include \fBlibnetconf_tls\&.h\fP header file\&.
-.PP
 \fBParameters:\fP
 .RS 4
 \fIpeer_cert\fP Path to the file containing client certificate 
@@ -58,6 +56,10 @@ To make this function available, you have to include \fBlibnetconf_tls\&.h\fP he
 \fICAfile\fP Location of the CA certificate used to verify the server certificates\&. For More info, see documentation for SSL_CTX_load_verify_locations() function from OpenSSL\&. 
 .br
 \fICApath\fP Location of the CA certificates used to verify the server certificates\&. For More info, see documentation for SSL_CTX_load_verify_locations() function from OpenSSL\&. 
+.br
+\fICRLfile\fP Location of the CRL certificate used to check for revocated certificates\&. 
+.br
+\fICRLpath\fP Locarion of the CRL certificates used to check for revocated certificates\&. 
 .RE
 .PP
 \fBReturns:\fP

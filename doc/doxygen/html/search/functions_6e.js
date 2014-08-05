@@ -113,7 +113,7 @@ var searchData=
   ['nc_5fssh_5fpref',['nc_ssh_pref',['../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0',1,'libnetconf_ssh.h']]],
   ['nc_5ftime2datetime',['nc_time2datetime',['../d3/d35/group__gen_a_p_i.html#ga90a44b60b04512fd0a3507ab35a1ccc4',1,'netconf.h']]],
   ['nc_5ftls_5fdestroy',['nc_tls_destroy',['../db/db4/group__tls.html#gacf3aed5cccac55d0548f46761707ece9',1,'libnetconf_tls.h']]],
-  ['nc_5ftls_5finit',['nc_tls_init',['../db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17',1,'libnetconf_tls.h']]],
+  ['nc_5ftls_5finit',['nc_tls_init',['../db/db4/group__tls.html#gacbf946a826fa6c7c18a4e66d532b659f',1,'libnetconf_tls.h']]],
   ['nc_5furl_5fdisable',['nc_url_disable',['../d5/d7d/group__url.html#gadf6c3370da661ab29b0834086a0dfbfe',1,'url.h']]],
   ['nc_5furl_5fenable',['nc_url_enable',['../d5/d7d/group__url.html#gafd033a4d3cafcd3f6af307dacaa18e50',1,'url.h']]],
   ['nc_5furl_5fset_5fprotocols',['nc_url_set_protocols',['../d5/d7d/group__url.html#ga61d005676d5582665a473229fc2180f7',1,'url.h']]],

@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.8.0-74_trunk</span>
+   &#160;<span id="projectnumber">0.8.0-99_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -113,9 +113,9 @@ $(document).ready(function(){initNavTree('d4/d76/transport.html','../../');});
 <h1><a class="anchor" id="transport-client"></a>
 Transport Support on the Client Side</h1>
 <p>To switch from the default SSH transport to the TLS transport, application must call <a class="el" href="../../db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806" title="Set transport protocol for the sessions created by subsequent nc_session_connect() calls...">nc_session_transport()</a> with <a class="el" href="../../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa9dfde07fbf3ce02396167716ef70c612">NC_TRANSPORT_TLS</a> parameter. Remember, that this change applies only to the current thread.</p>
-<p>Next step is to initiate TLS context for the new NETCONF session. Using <a class="el" href="../../db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17" title="Set paths to the client certificate and its private key. ">nc_tls_init()</a> function, client is supposed to set its client certificate and CA for server certificate validation.</p>
-<p>Now the TLS context is ready and new NETCONF session over TLS can be established using <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a>. Application can run <a class="el" href="../../db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17" title="Set paths to the client certificate and its private key. ">nc_tls_init()</a> again, but the changed parameters will be applied only to the newly created NETCONF sessions.</p>
-<p>To properly clean all resources, call <a class="el" href="../../db/db4/group__tls.html#gacf3aed5cccac55d0548f46761707ece9" title="Destroy all resources allocated for preparation of TLS connections. ">nc_tls_destroy()</a>. It will destroy TLS connection context. This function can be called despite the running NETCONF session, but creating a new NETCONF session over TLS is not allowed after calling <a class="el" href="../../db/db4/group__tls.html#gacf3aed5cccac55d0548f46761707ece9" title="Destroy all resources allocated for preparation of TLS connections. ">nc_tls_destroy()</a> - the client has to call <a class="el" href="../../db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17" title="Set paths to the client certificate and its private key. ">nc_tls_init()</a> again.</p>
+<p>Next step is to initiate TLS context for the new NETCONF session. Using <a class="el" href="../../db/db4/group__tls.html#gacbf946a826fa6c7c18a4e66d532b659f" title="Set paths to the client certificate and its private key. ">nc_tls_init()</a> function, client is supposed to set its client certificate and CA for server certificate validation.</p>
+<p>Now the TLS context is ready and new NETCONF session over TLS can be established using <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a>. Application can run <a class="el" href="../../db/db4/group__tls.html#gacbf946a826fa6c7c18a4e66d532b659f" title="Set paths to the client certificate and its private key. ">nc_tls_init()</a> again, but the changed parameters will be applied only to the newly created NETCONF sessions.</p>
+<p>To properly clean all resources, call <a class="el" href="../../db/db4/group__tls.html#gacf3aed5cccac55d0548f46761707ece9" title="Destroy all resources allocated for preparation of TLS connections. ">nc_tls_destroy()</a>. It will destroy TLS connection context. This function can be called despite the running NETCONF session, but creating a new NETCONF session over TLS is not allowed after calling <a class="el" href="../../db/db4/group__tls.html#gacf3aed5cccac55d0548f46761707ece9" title="Destroy all resources allocated for preparation of TLS connections. ">nc_tls_destroy()</a> - the client has to call <a class="el" href="../../db/db4/group__tls.html#gacbf946a826fa6c7c18a4e66d532b659f" title="Set paths to the client certificate and its private key. ">nc_tls_init()</a> again.</p>
 <p>The whole process described here is supposed to be performed in a single thread. SSH transport works out of the box, so no specific step, as mentioned for TLS in this section, is required.</p>
 <h1><a class="anchor" id="transport-server"></a>
 Transport Support on the Server Side</h1>
@@ -127,7 +127,7 @@ Transport Support on the Server Side</h1>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
-    <li class="footer">Generated on Mon Aug 4 2014 14:41:54 for libnetconf by
+    <li class="footer">Generated on Tue Aug 5 2014 16:54:25 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

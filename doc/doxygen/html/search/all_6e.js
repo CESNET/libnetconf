@@ -251,7 +251,7 @@ var searchData=
   ['nc_5fssh_5fpref',['nc_ssh_pref',['../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0',1,'libnetconf_ssh.h']]],
   ['nc_5ftime2datetime',['nc_time2datetime',['../d3/d35/group__gen_a_p_i.html#ga90a44b60b04512fd0a3507ab35a1ccc4',1,'netconf.h']]],
   ['nc_5ftls_5fdestroy',['nc_tls_destroy',['../db/db4/group__tls.html#gacf3aed5cccac55d0548f46761707ece9',1,'libnetconf_tls.h']]],
-  ['nc_5ftls_5finit',['nc_tls_init',['../db/db4/group__tls.html#ga9e011091a1e6ce205e58f4d9677a7e17',1,'libnetconf_tls.h']]],
+  ['nc_5ftls_5finit',['nc_tls_init',['../db/db4/group__tls.html#gacbf946a826fa6c7c18a4e66d532b659f',1,'libnetconf_tls.h']]],
   ['nc_5ftransport',['NC_TRANSPORT',['../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a',1,'transport.h']]],
   ['nc_5ftransport_5fssh',['NC_TRANSPORT_SSH',['../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa7878cac9e93258d6bb1a2f166377606a',1,'transport.h']]],
   ['nc_5ftransport_5ftls',['NC_TRANSPORT_TLS',['../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa9dfde07fbf3ce02396167716ef70c612',1,'transport.h']]],
