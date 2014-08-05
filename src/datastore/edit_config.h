@@ -81,6 +81,14 @@ int matching_elements(xmlNodePtr node1, xmlNodePtr node2, keyList keys, int leaf
 xmlNodePtr find_element_equiv(xmlDocPtr orig_doc, xmlNodePtr edit, xmlDocPtr model, keyList keys);
 
 /**
+ * @brief Go recursively in the YIN model and find model's equivalent of the node
+ * @param[in] node XML element which we want to find in the model
+ * @param[in] model Configuration data model (YIN format)
+ * @return model's equivalent of the node, NULL if no such element is found.
+ */
+xmlNodePtr find_element_model(xmlNodePtr node, xmlDocPtr model);
+
+/**
  * \brief Perform edit-config changes according to the given parameters
  *
  * \param[in] repo XML document to change (target NETCONF repository).

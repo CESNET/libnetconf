@@ -532,18 +532,20 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 		for (i = 0; i < model->children_count; i++) {
 			if (asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				free(tmp_diff);
 				return (XMLDIFF_ERR);
 			}
 			tmp_op = xmldiff_recursive(tmp_diff, next_path, old_doc, (old_tmp ? old_tmp->children : NULL), new_doc, (new_tmp ? new_tmp->children : NULL), &model->children[i]);
 			free(next_path);
 	
 			if (tmp_op == XMLDIFF_ERR) {
+				free(tmp_diff);
 				return (XMLDIFF_ERR);
 			}
 			if (tmp_op & XMLDIFF_SIBLING) {
 				ret_op |= XMLDIFF_REORDER;
 			}
-			if ((tmp_op & (XMLDIFF_ADD | XMLDIFF_REM | XMLDIFF_MOD | XMLDIFF_CHAIN)) && !(ret_op & (XMLDIFF_ADD | XMLDIFF_REM))) {
+			if ((tmp_op & (XMLDIFF_ADD | XMLDIFF_REM | XMLDIFF_MOD | XMLDIFF_REORDER | XMLDIFF_CHAIN)) && !(ret_op & (XMLDIFF_ADD | XMLDIFF_REM))) {
 				ret_op |= XMLDIFF_CHAIN;
 			}
 		}
@@ -759,12 +761,14 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 			for (i = 0; i < model->children_count; i++) {
 				if (asprintf(&next_path, "%s/%s:%s", path, model->children[i].ns_prefix, model->children[i].name) == -1) {
 					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+					free(tmp_diff);
 					return (XMLDIFF_ERR);
 				}
 				tmp_op = xmldiff_recursive(tmp_diff, next_path, old_doc, list_old_tmp->children, new_doc, list_new_tmp->children, &model->children[i]);
 				free(next_path);
 
 				if (tmp_op == XMLDIFF_ERR) {
+					free(tmp_diff);
 					return (XMLDIFF_ERR);
 				} else {
 					item_ret_op |= tmp_op;
@@ -776,7 +780,7 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 				if (item_ret_op & XMLDIFF_SIBLING) {
 					ret_op |= XMLDIFF_REORDER;
 				}
-				if (item_ret_op & (XMLDIFF_ADD | XMLDIFF_REM | XMLDIFF_MOD | XMLDIFF_CHAIN)) {
+				if (item_ret_op & (XMLDIFF_ADD | XMLDIFF_REM | XMLDIFF_MOD | XMLDIFF_REORDER | XMLDIFF_CHAIN)) {
 					ret_op |= XMLDIFF_CHAIN;
 				}
 				if (item_ret_op & XMLDIFF_REM) {
@@ -786,9 +790,8 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 				}
 				*tmp_diff = (*tmp_diff)->parent;
 				xmldiff_addsibling_diff(diff, tmp_diff);
-			} else {
-				free(tmp_diff);
 			}
+			free(tmp_diff);
 		}
 		list_old_tmp = list_old_tmp->next;
 	}
