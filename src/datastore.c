@@ -438,6 +438,7 @@ int ncds_sysinit(int flags)
 		/* set validation */
 		if (relaxng_validators[i] != NULL || schematron_validators[i] != NULL) {
 			ncds_set_validation(ds, 1, relaxng_validators[i], schematron_validators[i]);
+			VERB("Datastore %s initiated with ID %d.", ds->data_model->name, ds->id);
 		}
 #endif
 
@@ -4162,6 +4163,8 @@ API ncds_id ncds_init(struct ncds_ds* datastore)
 
 	/* acquire unique id */
 	datastore->id = generate_id();
+
+	VERB("Datastore %s initiated with ID %d.", datastore->data_model->name, datastore->id);
 
 	/* add to list */
 	item->datastore = datastore;
