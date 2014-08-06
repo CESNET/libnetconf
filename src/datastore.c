@@ -3595,7 +3595,7 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 	int len;
 	char *data_cfg = NULL, *data2, *model, *config_internal;
 	xmlDocPtr doc_cfg, doc_status = NULL, doc = NULL;
-	xmlNodePtr root;
+	xmlNodePtr root, node;
 	xmlNsPtr ns;
 	xmlBufferPtr resultbuffer;
 
@@ -3756,16 +3756,17 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		ncdflt_default_values(doc, ds->ext_model, NCWD_MODE_ALL);
 
 		/*
-		 * reconnect root element from datastore data under the <data>
+		 * reconnect root elements from datastore data under the <data>
 		 * element required by validators
 		 */
-		root = doc->children;
-		/* automatically removes all children from doc (replaces them by data) */
-		xmlDocSetRootElement(doc, xmlNewDocNode(doc, NULL, BAD_CAST "data", NULL ));
-		ns = xmlNewNs(doc->children, (xmlChar *) NC_NS_BASE10, NULL );
-		xmlSetNs(doc->children, ns);
-		/* reconnect back all root elements from doc with filled default values */
-		xmlAddChildList(doc->children, root);
+		root = xmlNewNode(NULL, BAD_CAST "data");
+		ns = xmlNewNs(root, (xmlChar *) NC_NS_BASE10, NULL);
+		xmlSetNs(root, ns);
+		for (node = doc->children; node != NULL; node = doc->children) {
+			xmlUnlinkNode(node);
+			xmlAddChild(root, node);
+		}
+		xmlDocSetRootElement(doc, root);
 
 		ret = validate_ds(ds, doc, e);
 
