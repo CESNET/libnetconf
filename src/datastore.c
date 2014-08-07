@@ -660,7 +660,8 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 			 * this is done be low level function to bypass transapi */
 			ret = ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, new_running_config, &err);
 			if (ret != 0 && ret != EXIT_RPC_NOT_APPLICABLE) {
-				ERROR("Failed to replace running with current configuration.");
+				ERROR("Failed to replace running with current configuration (%s).", err ? err->message : "unknown error");
+				nc_err_free(err);
 				retval = EXIT_FAILURE;
 				goto cleanup;
 			}
