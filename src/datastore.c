@@ -6108,7 +6108,7 @@ API void ncds_break_locks(const struct nc_session* session)
 #endif /* DISABLE_NOTIFICATIONS */
 		/* every datastore */
 		while (ds) {
-			if (ds->datastore) {
+			if (ds->datastore && ds->datastore->type != NCDS_TYPE_EMPTY) {
 				/* and every datastore type */
 				for (j=0; j<3; j++) {
 					/* try to unlock datastore */
