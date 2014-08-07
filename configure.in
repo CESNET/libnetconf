@@ -82,6 +82,13 @@ if test "x$PKG_CONFIG" = "xno"; then
 	AC_MSG_ERROR(['pkgconfig' not found.])
 fi
 
+# Check for pyang used in lnctool
+AC_CHECK_PROG([HAVE_PYANG], [pyang], [yes], [])
+if test -z "$HAVE_PYANG"; then
+	AC_MSG_WARN([Missing pyang, lnctool will not work!])
+fi
+AC_SUBST(HAVE_PYANG)
+
 AC_ARG_WITH([libxml2],
 	[AC_HELP_STRING([--with-libxml2], [specific libxml2 location])],
 	[

@@ -78,6 +78,7 @@ LIBS = @LDFLAGS@ @LIBS@
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = -DNC_WORKINGDIR_PATH=\"$(NC_WORKINGDIR_PATH)\" -DSETBIT=$(SETBIT) @CPPFLAGS@
 LIBTOOL = $(libtool) --tag=CC --quiet
+HAVE_PYANG = @HAVE_PYANG@
 
 INCLUDES= -I$(abs_srcdir)/src
 
@@ -189,14 +190,17 @@ $(NAME).la: $(LOBJS)
 	@rm -f $@
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined -o $@ $^ -rpath $(libdir)
 
+.PHONY: $(LNCTOOL)
 $(LNCTOOL): $(LNCTOOL).in
-	@sed "s/@RNGLIB@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/rnglib/)/g" $< | \
-	 sed 's/@XSLTDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/xslt/)/g' | \
-	 sed 's/@TEMPLATEDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/templates/)/g' > $(LNCTOOL).install
-	@sed "s/@RNGLIB@/$(subst /,\/,$(abs_srcdir)/lnctool/rnglib/)/g" $< | \
-	 sed 's/@XSLTDIR@/$(subst /,\/,$(abs_srcdir)/lnctool/xslt/)/g' | \
-	 sed 's/@TEMPLATEDIR@/$(subst /,\/,$(abs_srcdir)/lnctool/generator/)/g' > $(LNCTOOL)
-	@chmod +x $(LNCTOOL) $(LNCTOOL).install
+	@if test -n "$(HAVE_PYANG)"; then \
+		sed "s/@RNGLIB@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/rnglib/)/g" $< | \
+		sed 's/@XSLTDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/xslt/)/g' | \
+		sed 's/@TEMPLATEDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/templates/)/g' > $(LNCTOOL).install; \
+		sed "s/@RNGLIB@/$(subst /,\/,$(abs_srcdir)/lnctool/rnglib/)/g" $< | \
+		sed 's/@XSLTDIR@/$(subst /,\/,$(abs_srcdir)/lnctool/xslt/)/g' | \
+		sed 's/@TEMPLATEDIR@/$(subst /,\/,$(abs_srcdir)/lnctool/generator/)/g' > $(LNCTOOL); \
+		chmod +x $(LNCTOOL) $(LNCTOOL).install; \
+	fi
 
 $(OBJDIR)/%.lo: %.c
 	@[ -d $$(dirname $@) ] || \
@@ -277,8 +281,6 @@ install: all install-devel install-doc
 install-devel:
 	@[ -d $(DESTDIR)/$(libdir) ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir)); \
-	[ -d $(DESTDIR)/$(bindir) ] || \
-	    (mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir)); \
 	[ -d $(DESTDIR)/$(libdir)/pkgconfig ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir)/pkgconfig; chmod 755 $(DESTDIR)/$(libdir)/pkgconfig); \
 	[ -d $(DESTDIR)/$(includedir) ] || \
@@ -299,8 +301,12 @@ install-devel:
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
 	done;
 	$(INSTALL_DATA) $(NAME).pc $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc;
-	$(INSTALL_PROGRAM) $(LNCTOOL).install $(DESTDIR)/$(bindir)/lnctool;
-	$(INSTALL_DATA) lnctool/rnglib/* $(DESTDIR)/$(datadir)/$(NAME)/rnglib/;
+	if test -f "$(LNCTOOL).install"; then \
+		[ -d $(DESTDIR)/$(bindir) ] || \
+	    	(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir)); \
+		$(INSTALL_PROGRAM) $(LNCTOOL).install $(DESTDIR)/$(bindir)/lnctool; \
+	fi
+	$(INSTALL_DATA) lnctool/rnglib/* $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
 	$(INSTALL_DATA) lnctool/xslt/* $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 	$(INSTALL_DATA) lnctool/generator/* $(DESTDIR)/$(datadir)/$(NAME)/templates/;
 
@@ -327,8 +333,8 @@ uninstall-devel:
 	for i in $(HDRS_PUBL_SUBDIR); do \
 		rm -f $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
 	done; \
-	rm $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
-	rm $(DESTDIR)/$(bindir)/lnctool; \
+	rm -f $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
+	rm -f $(DESTDIR)/$(bindir)/lnctool; \
 	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
 	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 
@@ -338,7 +344,7 @@ uninstall-doc:
 
 .PHONY: clean clean-all clean-doc clean-rpm
 clean:
-	rm -rf *.a *.so* .obj $(OBJS) $(BUILT_RNGS)
+	rm -rf *.a *.so* .obj $(OBJS) $(BUILT_RNGS) $(LNCTOOL) $(LNCTOOL).install
 	$(LIBTOOL) --mode clean rm -f $(LOBJS)
 	$(LIBTOOL) --mode clean rm -f $(NAME).la
 
