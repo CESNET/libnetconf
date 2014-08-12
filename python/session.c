@@ -41,6 +41,54 @@ static PyObject *ncSessionNew(PyTypeObject *type, PyObject *args, PyObject *keyw
 	return (PyObject *)self;
 }
 
+static PyObject *ncSessionConnect(PyObject *cls, PyObject *args, PyObject *keywords)
+{
+	PyObject *result = NULL;
+	char *host = NULL, *user = NULL, *transport_s = "ssh", *version = NULL;
+	unsigned short port = 830;
+	PyObject *PyCpblts = NULL;
+
+	char *kwlist[] = {"host", "port", "user", "transport", "version", NULL};
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "s|Hzzs", kwlist, &host, &port, &user, &transport_s, &version)) {
+		return (NULL);
+	}
+
+	if (!version) {
+		/* by default, support all versions */
+		PyCpblts = PyList_New(2);
+		PyList_SET_ITEM(PyCpblts, 0, PyUnicode_FromString(NETCONF_CAP_BASE10));
+		PyList_SET_ITEM(PyCpblts, 1, PyUnicode_FromString(NETCONF_CAP_BASE11));
+	} else {
+		PyCpblts = PyList_New(1);
+		PyList_SET_ITEM(PyCpblts, 0, PyUnicode_FromString(version));
+	}
+
+	result = PyObject_CallFunction(cls, "sHssO", host, port, user, transport_s, PyCpblts);
+
+	return(result);
+}
+
+static PyObject *ncSessionAccept(PyObject *cls, PyObject *args, PyObject *keywords)
+{
+	PyObject *result = NULL;
+	PyObject *PyCpblts = NULL;
+	const char *user = NULL;
+	int fd_in = STDIN_FILENO, fd_out = STDOUT_FILENO;
+
+	char *kwlist[] = {"user", "capabilities", "fd_in", "fd_out", NULL};
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "zOii", kwlist, &user, &PyCpblts, &fd_in, &fd_out)) {
+		return (NULL);
+	}
+
+	result = PyObject_CallFunction(cls, "sHssOii", NULL, 0, user, NULL, PyCpblts, fd_in, fd_out);
+
+	return(result);
+}
+
 static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywords)
 {
 	const char *host = NULL, *user = NULL, *transport_s = NULL;
