@@ -29,6 +29,18 @@ static void ncSessionFree(ncSessionObject *self)
 	Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
+static PyObject *ncSessionNew(PyTypeObject *type, PyObject *args, PyObject *keywords)
+{
+	ncSessionObject *self;
+
+	self = (ncSessionObject *)type->tp_alloc(type, 0);
+	if (self != NULL) {
+		self->session = NULL;
+	}
+
+	return (PyObject *)self;
+}
+
 static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywords)
 {
 	const char *host = NULL, *user = NULL, *transport_s = NULL;
@@ -265,6 +277,6 @@ PyTypeObject ncSessionType = {
 		0, /* tp_dictoffset */
 		(initproc) ncSessionInit, /* tp_init */
 		0, /* tp_alloc */
-		0, /* tp_new */
+		ncSessionNew, /* tp_new */
 };
 
