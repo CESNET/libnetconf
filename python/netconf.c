@@ -76,9 +76,28 @@ static PyObject *setVerbosity(PyObject *self, PyObject *args, PyObject *keywds)
 	Py_RETURN_NONE;
 }
 
+static PyObject *getCapabilities(PyObject *self)
+{
+	struct nc_cpblts *cpblts;
+	PyObject *result = NULL;
+	int c, i;
+
+	cpblts = nc_session_get_cpblts_default();
+
+	result = PyList_New(c = nc_cpblts_count(cpblts));
+	nc_cpblts_iter_start(cpblts);
+	for (i = 0; i < c; i++) {
+		PyList_SET_ITEM(result, i, PyUnicode_FromString(nc_cpblts_iter_next(cpblts)));
+	}
+	nc_cpblts_free(cpblts);
+
+	return (result);
+}
+
 static PyMethodDef netconfMethods[] = {
 		{"setVerbosity", (PyCFunction)setVerbosity, METH_VARARGS | METH_KEYWORDS, "Set verbose level (0-3)."},
 		{"setSyslog", (PyCFunction)setSyslog, METH_VARARGS | METH_KEYWORDS, "Set application settings for syslog."},
+		{"getCapabilities", (PyCFunction)getCapabilities, METH_NOARGS, "Get list of default capabilities from libnetconf."},
 		{NULL, NULL, 0, NULL}
 };
 
