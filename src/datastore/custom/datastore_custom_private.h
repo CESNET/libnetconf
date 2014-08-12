@@ -36,8 +36,8 @@
  *
  */
 
-#ifndef DATASTORE_CUSTOM_PRIVATE_H
-#define DATASTORE_CUSTOM_PRIVATE_H
+#ifndef NC_DATASTORE_CUSTOM_PRIVATE_H
+#define NC_DATASTORE_CUSTOM_PRIVATE_H
 
 #include "../../netconf_internal.h"
 #include "../datastore_internal.h"
@@ -170,4 +170,4 @@ int ncds_custom_deleteconfig(struct ncds_ds *ds, const struct nc_session *sessio
  */
 int ncds_custom_editconfig(struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char *config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 
-#endif /* DATASTORE_CUSTOM_PRIVATE_H */
+#endif /* NC_DATASTORE_CUSTOM_PRIVATE_H */

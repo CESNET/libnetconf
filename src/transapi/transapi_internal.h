@@ -39,8 +39,8 @@
  *
  */
 
-#ifndef TRANSAPI_INTERNAL_H_
-#define TRANSAPI_INTERNAL_H_
+#ifndef NC_TRANSAPI_INTERNAL_H_
+#define NC_TRANSAPI_INTERNAL_H_
 
 #include "../transapi.h"
 #include "yinparser.h"
@@ -72,4 +72,4 @@ typedef enum
  */
 int transapi_running_changed(struct ncds_ds* ds, xmlDocPtr old_doc, xmlDocPtr new_doc, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error);
 
-#endif /* TRANSAPI_INTERNAL_H_ */
+#endif /* NC_TRANSAPI_INTERNAL_H_ */

@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef TLS_H_
-#define TLS_H_
+#ifndef NC_TLS_H_
+#define NC_TLS_H_
 
 #include "netconf.h"
 
@@ -90,4 +90,4 @@ struct nc_session *nc_session_connect_tls_socket(const char* username, const cha
 }
 #endif
 
-#endif /* TLS_H_ */
+#endif /* NC_TLS_H_ */

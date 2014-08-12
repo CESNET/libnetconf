@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef DATASTORE_INTERNAL_H_
-#define DATASTORE_INTERNAL_H_
+#ifndef NC_DATASTORE_INTERNAL_H_
+#define NC_DATASTORE_INTERNAL_H_
 
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
@@ -358,4 +358,4 @@ struct ncds_ds {
 	int tapi_callbacks_count;
 };
 
-#endif /* DATASTORE_INTERNAL_H_ */
+#endif /* NC_DATASTORE_INTERNAL_H_ */

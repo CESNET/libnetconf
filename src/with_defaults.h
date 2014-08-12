@@ -38,8 +38,8 @@
  */
 
 
-#ifndef WITH_DEFAULTS_H_
-#define WITH_DEFAULTS_H_
+#ifndef NC_WITH_DEFAULTS_H_
+#define NC_WITH_DEFAULTS_H_
 
 #include "netconf.h"
 #include "messages.h"
@@ -115,4 +115,4 @@ NCWD_MODE ncdflt_rpc_get_withdefaults(const nc_rpc* rpc);
 }
 #endif
 
-#endif /* WITH_DEFAULTS_H_ */
+#endif /* NC_WITH_DEFAULTS_H_ */

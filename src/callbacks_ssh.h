@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef CALLBACKS_SSH_H_
-#define CALLBACKS_SSH_H_
+#ifndef NC_CALLBACKS_SSH_H_
+#define NC_CALLBACKS_SSH_H_
 
 #ifndef DISABLE_LIBSSH
 
@@ -134,4 +134,4 @@ void nc_set_keypair_path(const char* private, const char * public);
 
 #endif /* DISABLE_LIBSSH */
 
-#endif /* CALLBACKS_SSH_H_ */
+#endif /* NC_CALLBACKS_SSH_H_ */

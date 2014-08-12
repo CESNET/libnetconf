@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef NETCONF_H_
-#define NETCONF_H_
+#ifndef NC_NETCONF_H_
+#define NC_NETCONF_H_
 
 #include <stdint.h>
 #include <sys/types.h>
@@ -470,4 +470,4 @@ time_t nc_datetime2time(const char* datetime);
 }
 #endif
 
-#endif /* NETCONF_H_ */
+#endif /* NC_NETCONF_H_ */

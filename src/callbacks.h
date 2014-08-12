@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef CALLBACKS_H_
-#define CALLBACKS_H_
+#ifndef NC_CALLBACKS_H_
+#define NC_CALLBACKS_H_
 
 #include "netconf.h"
 
@@ -91,4 +91,4 @@ void nc_callback_error_reply(void (*func)(const char* tag,
 }
 #endif
 
-#endif /* CALLBACKS_H_ */
+#endif /* NC_CALLBACKS_H_ */

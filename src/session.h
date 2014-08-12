@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef SESSION_H_
-#define SESSION_H_
+#ifndef NC_SESSION_H_
+#define NC_SESSION_H_
 
 #include "transport.h"
 #include "netconf.h"
@@ -416,4 +416,4 @@ NC_MSG_TYPE nc_session_send_recv(struct nc_session* session, nc_rpc *rpc, nc_rep
 }
 #endif
 
-#endif /* SESSION_H_ */
+#endif /* NC_SESSION_H_ */

@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef SSH_H_
-#define SSH_H_
+#ifndef NC_SSH_H_
+#define NC_SSH_H_
 
 #include "netconf.h"
 
@@ -65,4 +65,4 @@ struct nc_msg* read_hello_openssh(struct nc_session *session);
 }
 #endif
 
-#endif /* SSH_H_ */
+#endif /* NC_SSH_H_ */

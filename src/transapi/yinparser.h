@@ -39,8 +39,8 @@
  *
  */
 
-#ifndef _YINPARSER_H
-#define _YINPARSER_H
+#ifndef NC_YINPARSER_H
+#define NC_YINPARSER_H
 
 #include <libxml/tree.h>
 
@@ -103,4 +103,4 @@ struct model_tree* yinmodel_parse(xmlDocPtr model_doc, struct ns_pair ns_mapping
  */
 void yinmodel_free(struct model_tree * yin);
 
-#endif
+#endif /* NC_YINPARSER_H */

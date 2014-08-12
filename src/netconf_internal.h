@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef NETCONF_INTERNAL_H_
-#define NETCONF_INTERNAL_H_
+#ifndef NC_NETCONF_INTERNAL_H_
+#define NC_NETCONF_INTERNAL_H_
 
 #include <time.h>
 #include <stdbool.h>
@@ -667,4 +667,4 @@ const struct data_model* ncds_get_model_notification(const char* notification, c
 
 char** nc_get_grouplist(const char* username);
 
-#endif /* NETCONF_INTERNAL_H_ */
+#endif /* NC_NETCONF_INTERNAL_H_ */

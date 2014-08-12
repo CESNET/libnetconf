@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef NOTIFICATIONS_H_
-#define NOTIFICATIONS_H_
+#ifndef NC_NOTIFICATIONS_H_
+#define NC_NOTIFICATIONS_H_
 
 #include <time.h>
 
@@ -304,4 +304,4 @@ long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_
 }
 #endif
 
-#endif /* NOTIFICATIONS_H_ */
+#endif /* NC_NOTIFICATIONS_H_ */

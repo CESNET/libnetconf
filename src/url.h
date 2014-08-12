@@ -38,8 +38,8 @@
  */
 
 #ifndef DISABLE_URL
-#ifndef URL_H_
-#define URL_H_
+#ifndef NC_URL_H_
+#define NC_URL_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -89,5 +89,5 @@ void nc_url_disable(NC_URL_PROTOCOLS protocol);
 }
 #endif
 
-#endif /* URL_H_ */
+#endif /* NC_URL_H_ */
 #endif /* DISABLE_URL */

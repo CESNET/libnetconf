@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef MESSAGES_INTERNAL_H_
-#define MESSAGES_INTERNAL_H_
+#ifndef NC_MESSAGES_INTERNAL_H_
+#define NC_MESSAGES_INTERNAL_H_
 
 #include "netconf_internal.h"
 #include "with_defaults.h"
@@ -97,4 +97,4 @@ void nc_msg_free(struct nc_msg *msg);
  */
 struct nc_msg *nc_msg_dup(struct nc_msg *msg);
 
-#endif /* MESSAGES_INTERNAL_H_ */
+#endif /* NC_MESSAGES_INTERNAL_H_ */

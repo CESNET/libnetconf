@@ -36,8 +36,8 @@
  *
  */
 
-#ifndef DATASTORE_CUSTOM_H
-#define DATASTORE_CUSTOM_H
+#ifndef NC_DATASTORE_CUSTOM_H
+#define NC_DATASTORE_CUSTOM_H
 
 struct ncds_ds;
 struct nc_err;
@@ -201,4 +201,4 @@ void ncds_custom_set_data(struct ncds_ds* datastore, void *custom_data, const st
 
 /** @}*/
 
-#endif /* DATASTORE_CUSTOM_H */
+#endif /* NC_DATASTORE_CUSTOM_H */

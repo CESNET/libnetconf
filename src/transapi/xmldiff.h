@@ -39,8 +39,8 @@
  *
  */
 
-#ifndef _XMLDIFF_H
-#define _XMLDIFF_H
+#ifndef NC_XMLDIFF_H
+#define NC_XMLDIFF_H
 
 #include <stdbool.h>
 #include <libxml/tree.h>
@@ -115,4 +115,4 @@ XMLDIFF_OP xmldiff_diff (struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr ne
  */
 int xmldiff_set_priorities(struct xmldiff_tree* tree, struct clbk *callbacks, int clbk_count);
 
-#endif
+#endif /* NC_XMLDIFF */

@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef MESSAGES_XML_H_
-#define MESSAGES_XML_H_
+#ifndef NC_MESSAGES_XML_H_
+#define NC_MESSAGES_XML_H_
 
 #include <time.h>
 
@@ -227,4 +227,4 @@ nc_rpc* ncxml_rpc_generic(const xmlNodePtr data);
 }
 #endif
 
-#endif /* MESSAGES_XML_H_ */
+#endif /* NC_MESSAGES_XML_H_ */

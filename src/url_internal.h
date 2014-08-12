@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef URL_INTERNAL_H_
-#define URL_INTERNAL_H_
+#ifndef NC_URL_INTERNAL_H_
+#define NC_URL_INTERNAL_H_
 
 #include "url.h"
 
@@ -88,4 +88,4 @@ int nc_url_is_enabled(NC_URL_PROTOCOLS protocol);
  */
 NC_URL_PROTOCOLS nc_url_get_protocol(const char* url);
 
-#endif /* URL_INTERNAL_H_ */
+#endif /* NC_URL_INTERNAL_H_ */

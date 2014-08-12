@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef NOTIFICATIONS_XML_H_
-#define NOTIFICATIONS_XML_H_
+#ifndef NC_NOTIFICATIONS_XML_H_
+#define NC_NOTIFICATIONS_XML_H_
 
 #include <libxml/tree.h>
 
@@ -123,4 +123,4 @@ xmlNodePtr ncxmlntf_notif_get_content(nc_ntf* notif);
 }
 #endif
 
-#endif /* NOTIFICATIONS_XML_H_ */
+#endif /* NC_NOTIFICATIONS_XML_H_ */

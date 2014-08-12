@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef TRANSPORT_H_
-#define TRANSPORT_H_
+#ifndef NC_TRANSPORT_H_
+#define NC_TRANSPORT_H_
 
 #include "netconf.h"
 
@@ -189,4 +189,4 @@ struct nc_session *nc_session_accept_inout(const struct nc_cpblts* capabilities,
 }
 #endif
 
-#endif /* TRANSPORT_H_ */
+#endif /* NC_TRANSPORT_H_ */

@@ -45,8 +45,8 @@
 #include "../netconf_internal.h"
 #include "../error.h"
 
-#ifndef EDIT_CONFIG_H_
-#define EDIT_CONFIG_H_
+#ifndef NC_EDIT_CONFIG_H_
+#define NC_EDIT_CONFIG_H_
 
 typedef xmlXPathObjectPtr keyList;
 #define keyListFree(x) xmlXPathFreeObject((xmlXPathObjectPtr)x)
@@ -119,4 +119,4 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyLis
  */
 int nc_nscmp(xmlNodePtr reference, xmlNodePtr node);
 
-#endif /* EDIT_CONFIG_H_ */
+#endif /* NC_EDIT_CONFIG_H_ */

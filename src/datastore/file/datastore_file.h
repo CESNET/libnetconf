@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef DATASTORE_FILE_H_
-#define DATASTORE_FILE_H_
+#ifndef NC_DATASTORE_FILE_H_
+#define NC_DATASTORE_FILE_H_
 
 #include "../../netconf_internal.h"
 #include "../datastore_internal.h"
@@ -205,4 +205,4 @@ int ncds_file_deleteconfig(struct ncds_ds * ds, const struct nc_session * sessio
  */
 int ncds_file_editconfig(struct ncds_ds *ds, const struct nc_session * session, const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error);
 
-#endif /* DATASTORE_FILE_H_ */
+#endif /* NC_DATASTORE_FILE_H_ */

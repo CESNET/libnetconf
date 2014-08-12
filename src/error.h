@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef ERROR_H_
-#define ERROR_H_
+#ifndef NC_ERROR_H_
+#define NC_ERROR_H_
 
 #include "netconf.h"
 
@@ -122,4 +122,4 @@ const char* nc_err_get(const struct nc_err* err, NC_ERR_PARAM param);
 }
 #endif
 
-#endif /* ERROR_H_ */
+#endif /* NC_ERROR_H_ */

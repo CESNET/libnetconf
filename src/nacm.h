@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef NACM_H_
-#define NACM_H_
+#ifndef NC_NACM_H_
+#define NC_NACM_H_
 
 #include "netconf.h"
 
@@ -129,4 +129,4 @@ int nacm_check_data_read(xmlDocPtr doc, const struct nacm_rpc* nacm);
 struct rule_list** nacm_rule_lists_dup(struct rule_list** list);
 void nacm_rule_list_free(struct rule_list* rl);
 
-#endif /* NACM_H_ */
+#endif /* NC_NACM_H_ */

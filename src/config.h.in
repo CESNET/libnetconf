@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef CONFIG_H_
-#define CONFIG_H_
+#ifndef NC_CONFIG_H_
+#define NC_CONFIG_H_
 
 /*
  * If the compiler supports attribute to mark objects as hidden, mark all
@@ -91,4 +91,4 @@ int eaccess(const char *pathname, int mode);
 
 @HAVE_LIBXML2_RECONNS@
 
-#endif /* CONFIG_H_ */
+#endif /* NC_CONFIG_H_ */

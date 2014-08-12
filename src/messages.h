@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef MESSAGES_H_
-#define MESSAGES_H_
+#ifndef NC_MESSAGES_H_
+#define NC_MESSAGES_H_
 
 #include <time.h>
 #include "netconf.h"
@@ -616,4 +616,4 @@ int nc_rpc_capability_attr(nc_rpc* rpc, NC_CAP_ATTR attr, ...);
 }
 #endif
 
-#endif /* MESSAGES_H_ */
+#endif /* NC_MESSAGES_H_ */

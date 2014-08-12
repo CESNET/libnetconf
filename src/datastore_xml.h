@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef DATASTORE_XML_H_
-#define DATASTORE_XML_H_
+#ifndef NC_DATASTORE_XML_H_
+#define NC_DATASTORE_XML_H_
 
 #include <libxml/tree.h>
 
@@ -154,4 +154,4 @@ int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng,
 }
 #endif
 
-#endif /* DATASTORE_XML_H_ */
+#endif /* NC_DATASTORE_XML_H_ */

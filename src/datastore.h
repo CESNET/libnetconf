@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef DATASTORE_H_
-#define DATASTORE_H_
+#ifndef NC_DATASTORE_H_
+#define NC_DATASTORE_H_
 
 #include "netconf.h"
 #include "error.h"
@@ -586,4 +586,4 @@ int ncds_consolidate(void);
 }
 #endif
 
-#endif /* DATASTORE_H_ */
+#endif /* NC_DATASTORE_H_ */

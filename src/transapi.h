@@ -39,8 +39,8 @@
  *
  */
 
-#ifndef _TRANSAPI_H
-#define _TRANSAPI_H
+#ifndef NC_TRANSAPI_H
+#define NC_TRANSAPI_H
 
 #include <libxml/tree.h>
 #include "netconf.h"
@@ -179,4 +179,4 @@ struct transapi_rpc_callbacks {
 }
 #endif
 
-#endif
+#endif /* NC_TRANSAPI_H */
