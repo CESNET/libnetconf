@@ -17,7 +17,10 @@
 The :mod:`netconf` is a libnetconf wrapper for Python. There is currently only
 the :class:`Session`.
 
-The :mod:`netconf` module exports the following constants:
+Module Constants
+----------------
+
+- NETCONF version constants:
 
 .. data:: NETCONFv1_0
 
@@ -29,6 +32,8 @@ The :mod:`netconf` module exports the following constants:
    The identifier for version 1.1 of the NETCONF protocol in the :meth:`connect`
    method.
 
+- NETCONF transport protocol constants:
+
 .. data:: TRANSPORT_SSH
 
    The identifier for NETCONF over SSH transport. :const:`TRANSPORT_SSH` is ``ssh``.
@@ -37,13 +42,37 @@ The :mod:`netconf` module exports the following constants:
 
    The identifier for NETCONF over TLs transport. :const:`TRANSPORT_TLS` is ``tls``.
 
+- NETCON *:with-defaults* capability constants
 
+.. data:: WD_ALL
+
+   *:with-default*'s ``report-all`` retrieval mode. All data nodes are reported
+   including any data nodes considered to be default data.
+
+.. data:: WD_ALL_TAGGED
+
+   *:with-default*'s ``report-all-tagged`` retrieval mode. Same as the
+   ``report-all`` mode except the data nodes containing default data include an
+   XML attribute indicating this condition.
+
+.. data:: WD_TRIM
+
+   *:with-default*'s ``trim`` retrieval mode. Data nodes containing the schema
+   default value are not reported.
+
+.. data:: WD_EXPLICIT
+
+   *:with-default*'s ``explicit`` retrieval mode. Only data nodes explicitly
+   set by the client (including those set to its schema default value) are
+   reported.
+   
 The module provides the following functions:
 
 .. function:: setVerbosity(level)
 
    Set libnetconf verbose level. When initiated, it starts with value 0 (show
    only errors). Allowed values are as follows:
+
 - 0 (errors)
 - 1 (warnings)
 - 2 (verbose)
@@ -59,20 +88,9 @@ The module provides the following functions:
 
    Returns the list of default NETCONF capabilities supported by libnetconf.
 
-
-Available Types
----------------
-
-.. class:: Session
-   :noindex:
-
-   NETCONF session representation. There are class methods :meth:`connect` and
-   :meth:`accept` as shortcuts for the class constructors used in NETCONF
-   client, respectively NETCONF server side.
    
-   
-:class:`Session` Objects
-------------------------
+:class:`Session` Class
+----------------------
 
 A :class:`Session` object represents a connection between a NETCONF server and
 client. The constructor of the class can be used in two ways: a client side way
@@ -130,19 +148,19 @@ Instance attributes (read-only):
 
    Host where the NETCONF Session is connected.
    
-.. attribute Session.port
+.. attribute:: Session.port
 
    Port number where the NETCONF Session is connected.
 
-.. attribute Session.user
+.. attribute:: Session.user
 
    Username of the user connected with the NETCONF Session.
 
-.. attribute Session.transport
+.. attribute:: Session.transport
 
    Transport protocol used for the NETCONF Session.
 
-.. attribute Session.version
+.. attribute:: Session.version
 
    "NETCONF Protocol version used for the NETCONF Session.
    
@@ -153,4 +171,10 @@ Instance attributes (read-only):
 
 Instance methods:
 
-.. method:: Session.send()
+.. method:: Session.get([filter=None, wd=None])
+
+   Performs NETCONF <get> operation and returns the returned data as a string.
+   
+   *filter* is optional string representing NETCONF Subtree filter. *wd*
+   argument can be used to specify the NETCONF *:with-defaults* mode - possible
+   values are provided as ``WD_*`` constants of the :mod:`netconf` module.

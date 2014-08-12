@@ -10,6 +10,9 @@ typedef struct {
 	struct nc_session* session;
 } ncSessionObject;
 
+/* from netconf.c */
+extern PyObject *libnetconfError;
+
 static PyMemberDef ncSessionMembers[] = {
 	{NULL}  /* Sentinel */
 };
@@ -39,6 +42,101 @@ static PyObject *ncSessionNew(PyTypeObject *type, PyObject *args, PyObject *keyw
 	}
 
 	return (PyObject *)self;
+}
+
+/* rpc parameter is freed after the function call */
+static int op_send_recv(ncSessionObject *self, nc_rpc* rpc, char **data)
+{
+	nc_reply *reply = NULL;
+	int ret = EXIT_SUCCESS;
+
+	/* send the request and get the reply */
+	switch (nc_session_send_recv(self->session, rpc, &reply)) {
+	case NC_MSG_UNKNOWN:
+		if (nc_session_get_status(self->session) != NC_SESSION_STATUS_WORKING) {
+			PyErr_SetString(libnetconfError, "Session damaged, closing.");
+			ncSessionFree(self);
+		}
+		ret = EXIT_FAILURE;
+		break;
+	case NC_MSG_NONE:
+		/* error occurred, but processed by callback */
+		break;
+	case NC_MSG_REPLY:
+		switch (nc_reply_get_type(reply)) {
+		case NC_REPLY_OK:
+			break;
+		case NC_REPLY_DATA:
+			if (data) {
+				*data = nc_reply_get_data (reply);
+			}
+			break;
+		case NC_REPLY_ERROR:
+			ret = EXIT_FAILURE;
+			break;
+		default:
+			PyErr_SetString(libnetconfError, "Unexpected operation result.");
+			ret = EXIT_FAILURE;
+			break;
+		}
+		break;
+	default:
+		PyErr_SetString(libnetconfError, "Unknown error occurred.");
+		ret = EXIT_FAILURE;
+		break;
+	}
+	nc_rpc_free(rpc);
+	nc_reply_free(reply);
+
+	return (ret);
+}
+
+static PyObject *ncOpGet(ncSessionObject *self, PyObject *args, PyObject *keywords)
+{
+	const char *filter = NULL;
+	char *data = NULL;
+	int wdmode = NCWD_MODE_NOTSET;
+	struct nc_filter *st_filter = NULL;
+	nc_rpc *rpc = NULL;
+	PyObject *result = NULL;
+
+	char *kwlist[] = {"filter", "wd", NULL};
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "|zi", kwlist, &filter, &wdmode)) {
+		return (NULL);
+	}
+
+	/* create filter if specified */
+	if (filter) {
+		if ((st_filter = nc_filter_new(NC_FILTER_SUBTREE, filter)) == NULL) {
+			return (NULL);
+		}
+	}
+
+	/* create RPC */
+	rpc = nc_rpc_get(st_filter);
+	nc_filter_free(st_filter);
+	if (!rpc) {
+		return(NULL);
+	}
+
+	/* set with defaults settings */
+	if (wdmode) {
+		if (nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, wdmode) != EXIT_SUCCESS) {
+			nc_rpc_free(rpc);
+			return (NULL);
+		}
+	}
+
+	/* send request ... */
+	if (op_send_recv(self, rpc, &data) == EXIT_SUCCESS && data != NULL) {
+		/* ... and prepare the result */
+		result = PyUnicode_FromString(data);
+		free(data);
+	}
+
+	return (result);
 }
 
 static PyObject *ncSessionConnect(PyObject *cls, PyObject *args, PyObject *keywords)
@@ -270,6 +368,9 @@ static PyMethodDef ncSessionMethods[] = {
 	{"accept", (PyCFunction)ncSessionAccept,
 		METH_VARARGS | METH_KEYWORDS | METH_CLASS,
 		PyDoc_STR("Create NETCONF session accepting connection from a NETCONF client.")},
+	{"get", (PyCFunction)ncOpGet,
+		METH_VARARGS | METH_KEYWORDS,
+		PyDoc_STR("Execute NETCONF <get> RPC.")},
 	{NULL, NULL, 0, NULL}
 };
 

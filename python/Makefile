@@ -4,9 +4,12 @@ MAKE = make
 BUILDDIR = build
 DOCDIR = doc
 
+SOURCES = netconf.c \
+	session.c
+
 all: $(BUILDDIR)
 
-$(BUILDDIR): setup.py
+$(BUILDDIR): setup.py $(SOURCES)
 	$(PYTHON) ./setup.py build 
 
 .PHONY: doc

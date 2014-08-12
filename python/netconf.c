@@ -8,8 +8,8 @@
 
 extern PyTypeObject ncSessionType;
 
-static PyObject *libnetconfError;
-static PyObject *libnetconfWarning;
+PyObject *libnetconfError;
+PyObject *libnetconfWarning;
 
 static int syslogEnabled = 1;
 static void clb_print(NC_VERB_LEVEL level, const char* msg)
@@ -140,6 +140,11 @@ PyMODINIT_FUNC PyInit_netconf(void)
     PyModule_AddStringConstant(nc, "NETCONFv1_1", NETCONF_CAP_BASE11);
     PyModule_AddStringConstant(nc, "TRANSPORT_SSH", NETCONF_TRANSPORT_SSH);
     PyModule_AddStringConstant(nc, "TRANSPORT_TLS", NETCONF_TRANSPORT_TLS);
+
+    PyModule_AddIntConstant(nc, "WD_ALL", NCWD_MODE_ALL);
+    PyModule_AddIntConstant(nc, "WD_ALL_TAGGED", NCWD_MODE_ALL_TAGGED);
+    PyModule_AddIntConstant(nc, "WD_TRIM", NCWD_MODE_TRIM);
+    PyModule_AddIntConstant(nc, "WD_MODE_EXPLICIT", NCWD_MODE_EXPLICIT);
 
 	/* init libnetconf exceptions for use in clb_print() */
 	libnetconfError = PyErr_NewExceptionWithDoc("netconf.Error", "Error passed from the underlying libnetconf library.", NULL, NULL);
