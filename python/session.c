@@ -91,21 +91,12 @@ static int op_send_recv(ncSessionObject *self, nc_rpc* rpc, char **data)
 	return (ret);
 }
 
-static PyObject *ncOpGet(ncSessionObject *self, PyObject *args, PyObject *keywords)
+static PyObject *get_common(ncSessionObject *self, const char *filter, int wdmode, int datastore)
 {
-	const char *filter = NULL;
 	char *data = NULL;
-	int wdmode = NCWD_MODE_NOTSET;
 	struct nc_filter *st_filter = NULL;
 	nc_rpc *rpc = NULL;
 	PyObject *result = NULL;
-
-	char *kwlist[] = {"filter", "wd", NULL};
-
-	/* Get input parameters */
-	if (! PyArg_ParseTupleAndKeywords(args, keywords, "|zi", kwlist, &filter, &wdmode)) {
-		return (NULL);
-	}
 
 	/* create filter if specified */
 	if (filter) {
@@ -114,8 +105,28 @@ static PyObject *ncOpGet(ncSessionObject *self, PyObject *args, PyObject *keywor
 		}
 	}
 
+	/* check datastore */
+	switch(datastore) {
+	case NC_DATASTORE_STARTUP:
+		if (!nc_cpblts_enabled(self->session, NETCONF_CAP_STARTUP)) {
+			PyErr_SetString(libnetconfError, ":startup capability not supported.");
+			return (NULL);
+		}
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		if (!nc_cpblts_enabled(self->session, NETCONF_CAP_CANDIDATE)) {
+			PyErr_SetString(libnetconfError, ":candidate capability not supported.");
+			return (NULL);
+		}
+		break;
+	}
+
 	/* create RPC */
-	rpc = nc_rpc_get(st_filter);
+	if (datastore == NC_DATASTORE_ERROR) {
+		rpc = nc_rpc_get(st_filter);
+	} else {
+		rpc = nc_rpc_getconfig(datastore, st_filter);
+	}
 	nc_filter_free(st_filter);
 	if (!rpc) {
 		return(NULL);
@@ -138,6 +149,93 @@ static PyObject *ncOpGet(ncSessionObject *self, PyObject *args, PyObject *keywor
 
 	return (result);
 }
+
+static PyObject *ncOpGet(ncSessionObject *self, PyObject *args, PyObject *keywords)
+{
+	const char *filter = NULL;
+	int wdmode = NCWD_MODE_NOTSET;
+
+	char *kwlist[] = {"filter", "wd", NULL};
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "|zi", kwlist, &filter, &wdmode)) {
+		return (NULL);
+	}
+
+	return (get_common(self, filter, wdmode, NC_DATASTORE_ERROR));
+}
+
+static PyObject *ncOpGetConfig(ncSessionObject *self, PyObject *args, PyObject *keywords)
+{
+	const char *filter = NULL;
+	int wdmode = NCWD_MODE_NOTSET;
+	int datastore = NC_DATASTORE_ERROR;
+	char *kwlist[] = {"datastore", "filter", "wd", NULL};
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "i|zi", kwlist, &datastore, &filter, &wdmode)) {
+		return (NULL);
+	}
+
+	if (datastore != NC_DATASTORE_RUNNING &&
+			datastore != NC_DATASTORE_STARTUP &&
+			datastore != NC_DATASTORE_CANDIDATE) {
+		PyErr_SetString(PyExc_ValueError, "Invalid \'datastore\' value.");
+		return (NULL);
+	}
+
+	return (get_common(self, filter, wdmode, datastore));
+}
+
+static PyObject *lock_common(ncSessionObject *self, PyObject *args, PyObject *keywords, nc_rpc* (func)(NC_DATASTORE))
+{
+	int datastore = NC_DATASTORE_ERROR;
+	nc_rpc *rpc = NULL;
+	char *kwlist[] = {"datastore", NULL};
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "i|zi", kwlist, &datastore)) {
+		return (NULL);
+	}
+
+	/* check datastore */
+	switch(datastore) {
+	case NC_DATASTORE_STARTUP:
+		if (!nc_cpblts_enabled(self->session, NETCONF_CAP_STARTUP)) {
+			PyErr_SetString(libnetconfError, ":startup capability not supported.");
+			return (NULL);
+		}
+		break;
+	case NC_DATASTORE_CANDIDATE:
+		if (!nc_cpblts_enabled(self->session, NETCONF_CAP_CANDIDATE)) {
+			PyErr_SetString(libnetconfError, ":candidate capability not supported.");
+			return (NULL);
+		}
+		break;
+	}
+
+	/* create RPC */
+	rpc = func(datastore);
+
+	/* send request ... */
+	if (op_send_recv(self, rpc, NULL) == EXIT_SUCCESS) {
+		/* ... and return the result */
+		Py_RETURN_TRUE;
+	} else {
+		Py_RETURN_FALSE;
+	}
+}
+
+static PyObject *ncOpLock(ncSessionObject *self, PyObject *args, PyObject *keywords)
+{
+	return (lock_common(self, args, keywords, nc_rpc_lock));
+}
+
+static PyObject *ncOpUnlock(ncSessionObject *self, PyObject *args, PyObject *keywords)
+{
+	return (lock_common(self, args, keywords, nc_rpc_unlock));
+}
+
 
 static PyObject *ncSessionConnect(PyObject *cls, PyObject *args, PyObject *keywords)
 {
@@ -371,6 +469,15 @@ static PyMethodDef ncSessionMethods[] = {
 	{"get", (PyCFunction)ncOpGet,
 		METH_VARARGS | METH_KEYWORDS,
 		PyDoc_STR("Execute NETCONF <get> RPC.")},
+	{"getConfig", (PyCFunction)ncOpGetConfig,
+		METH_VARARGS | METH_KEYWORDS,
+		PyDoc_STR("Execute NETCONF <get-config> RPC.")},
+	{"lock", (PyCFunction)ncOpLock,
+		METH_VARARGS | METH_KEYWORDS,
+		PyDoc_STR("Execute NETCONF <lock> RPC.")},
+	{"unlock", (PyCFunction)ncOpUnlock,
+		METH_VARARGS | METH_KEYWORDS,
+		PyDoc_STR("Execute NETCONF <unlock> RPC.")},
 	{NULL, NULL, 0, NULL}
 };
 

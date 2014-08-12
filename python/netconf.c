@@ -146,6 +146,10 @@ PyMODINIT_FUNC PyInit_netconf(void)
     PyModule_AddIntConstant(nc, "WD_TRIM", NCWD_MODE_TRIM);
     PyModule_AddIntConstant(nc, "WD_MODE_EXPLICIT", NCWD_MODE_EXPLICIT);
 
+    PyModule_AddIntConstant(nc, "RUNNING", NC_DATASTORE_RUNNING);
+    PyModule_AddIntConstant(nc, "STARTUP", NC_DATASTORE_STARTUP);
+    PyModule_AddIntConstant(nc, "CANDIDATE", NC_DATASTORE_CANDIDATE);
+
 	/* init libnetconf exceptions for use in clb_print() */
 	libnetconfError = PyErr_NewExceptionWithDoc("netconf.Error", "Error passed from the underlying libnetconf library.", NULL, NULL);
 	Py_INCREF(libnetconfError);

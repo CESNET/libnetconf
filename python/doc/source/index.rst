@@ -42,7 +42,7 @@ Module Constants
 
    The identifier for NETCONF over TLs transport. :const:`TRANSPORT_TLS` is ``tls``.
 
-- NETCON *:with-defaults* capability constants
+- NETCONF *:with-defaults* capability constants:
 
 .. data:: WD_ALL
 
@@ -66,6 +66,22 @@ Module Constants
    set by the client (including those set to its schema default value) are
    reported.
    
+- NETCONF datastores constants:
+
+.. data:: RUNNING
+
+   NETCONF *running* datastore.
+
+.. data:: STARTUP
+
+   NETCONF *startup* datastore. Available only if the NETCONF *:startup*
+   capability is supported by the server.
+
+.. data:: CANDIDATE
+
+   NETCONF *candidate* datastore. Available only if the NETCONF *:candidate*
+   capability is supported by the server.
+
 The module provides the following functions:
 
 .. function:: setVerbosity(level)
@@ -178,3 +194,25 @@ Instance methods:
    *filter* is optional string representing NETCONF Subtree filter. *wd*
    argument can be used to specify the NETCONF *:with-defaults* mode - possible
    values are provided as ``WD_*`` constants of the :mod:`netconf` module.
+
+.. method:: Session.getConfig(datastore[, filter=None, wd=None])
+
+   Performs NETCONF <get-config> operation and returns the returned data as a
+   string. Requires specification of the datastore where to query. Possible
+   values are provided as the :mod:`netconf` module constants ``RUNNING``,
+   ``STARTUP`` and ``CANDIDATE``. To allow the last two values, the appropriate
+   NETCONF capability must be supported by the server.
+   
+   Optional parameters *filter* and *wd* are the same as for the :meth:`get`
+   method.
+
+.. method:: Session.lock(datastore)
+
+   Lock the specified NETCONF datastore. Possible values for the *datastore*
+   parameter are provided as the :mod:`netconf` module constants ``RUNNING``,
+   ``STARTUP`` and ``CANDIDATE``. To allow the last two values, the appropriate
+   NETCONF capability must be supported by the server.
+
+.. method:: Session.unlock(datastore)
+
+   The reverse operation to the :meth:`lock` method.
