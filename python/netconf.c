@@ -54,11 +54,13 @@ static PyObject *setSyslog(PyObject *self, PyObject *args, PyObject *keywds)
 	Py_RETURN_NONE;
 }
 
-static PyObject *setVerbosity(PyObject *self, PyObject *args)
+static PyObject *setVerbosity(PyObject *self, PyObject *args, PyObject *keywds)
 {
 	int level = NC_VERB_ERROR; /* 0 */
 
-	if (! PyArg_ParseTuple(args, "i", &level)) {
+	static char *kwlist[] = {"level", NULL};
+
+	if (! PyArg_ParseTupleAndKeywords(args, keywds, "i", kwlist, &level)) {
 		return NULL;
 	}
 
@@ -75,7 +77,7 @@ static PyObject *setVerbosity(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef netconfMethods[] = {
-		{"setVerbosity", (PyCFunction)setVerbosity, METH_VARARGS, "Set verbose level (0-3)."},
+		{"setVerbosity", (PyCFunction)setVerbosity, METH_VARARGS | METH_KEYWORDS, "Set verbose level (0-3)."},
 		{"setSyslog", (PyCFunction)setSyslog, METH_VARARGS | METH_KEYWORDS, "Set application settings for syslog."},
 		{NULL, NULL, 0, NULL}
 };
