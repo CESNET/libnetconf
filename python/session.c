@@ -3,6 +3,8 @@
 
 #include <libnetconf.h>
 
+#include "netconf.h"
+
 typedef struct {
 	PyObject_HEAD
 	struct nc_session* session;
@@ -29,7 +31,7 @@ static void ncSessionFree(ncSessionObject *self)
 
 static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywords)
 {
-	char *host = NULL, *user = NULL, *transport_s = "ssh";
+	const char *host = NULL, *user = NULL, *transport_s = NULL;
 	unsigned short port = 830;
 	PyObject *PyCpblts = NULL;
 	struct nc_session *session;
@@ -48,7 +50,7 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 
 	if (host != NULL) {
 		/* Client side */
-		if (transport_s && strcasecmp(transport_s, "tls") == 0) {
+		if (transport_s && strcasecmp(transport_s, NETCONF_TRANSPORT_TLS) == 0) {
 			ret = nc_session_transport(NC_TRANSPORT_TLS);
 		} else {
 			ret = nc_session_transport(NC_TRANSPORT_SSH);

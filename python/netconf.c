@@ -4,6 +4,8 @@
 
 #include <libnetconf.h>
 
+#include "netconf.h"
+
 extern PyTypeObject ncSessionType;
 
 static PyObject *libnetconfError;
@@ -133,6 +135,11 @@ PyMODINIT_FUNC PyInit_netconf(void)
 
     Py_INCREF(&ncSessionType);
     PyModule_AddObject(nc, "Session", (PyObject *)&ncSessionType);
+
+    PyModule_AddStringConstant(nc, "NETCONFv1_0", NETCONF_CAP_BASE10);
+    PyModule_AddStringConstant(nc, "NETCONFv1_1", NETCONF_CAP_BASE11);
+    PyModule_AddStringConstant(nc, "TRANSPORT_SSH", NETCONF_TRANSPORT_SSH);
+    PyModule_AddStringConstant(nc, "TRANSPORT_TLS", NETCONF_TRANSPORT_TLS);
 
 	/* init libnetconf exceptions for use in clb_print() */
 	libnetconfError = PyErr_NewExceptionWithDoc("netconf.Error", "Error passed from the underlying libnetconf library.", NULL, NULL);

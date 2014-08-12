@@ -2,6 +2,7 @@ from distutils.core import setup, Extension
 
 netconfModule = Extension("netconf",
                            sources=["netconf.c", "session.c"],
+                           depends=["netconf.h"],
                            libraries=["netconf"],
                            extra_compile_args=["-Wall"],
                         )
