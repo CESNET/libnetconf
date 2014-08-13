@@ -719,7 +719,7 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 	pid_t sshpid; /* child's PID */
 	struct termios termios;
 	struct winsize win;
-	int pout[2], ssh_in;
+	int pout[2] = {-1, -1}, ssh_in;
 	int ssh_fd, count = 0;
 	char buffer[BUFFER_SIZE];
 	char tmpchar[2];
@@ -749,12 +749,11 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 	}
 
 	/* allocate netconf session structure */
-	retval = malloc(sizeof(struct nc_session));
+	retval = calloc(1, sizeof(struct nc_session));
 	if (retval == NULL) {
 		ERROR("Memory allocation failed (%s)", strerror(errno));
 		return (NULL);
 	}
-	memset(retval, 0, sizeof(struct nc_session));
 	if ((retval->stats = malloc(sizeof(struct nc_session_stats))) == NULL) {
 		ERROR("Memory allocation failed (%s)", strerror(errno));
 		free(retval);
@@ -762,6 +761,7 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 	}
 	retval->is_server = 0;
 	retval->transport_socket = -1;
+	retval->fd_input = -1;
 	retval->ssh_session = NULL;
 	retval->hostname = strdup(host);
 	retval->username = strdup(username);
@@ -776,10 +776,10 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
-		return (NULL);
+		goto error_cleanup;
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	retval->mut_channel = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
+	retval->mut_channel = (pthread_mutex_t *) calloc(1, sizeof(pthread_mutex_t));
 	if ((r = pthread_mutex_init(retval->mut_channel, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
@@ -787,14 +787,14 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
 		pthread_mutexattr_destroy(&mattr);
-		return (NULL);
+		goto error_cleanup;
 	}
 	pthread_mutexattr_destroy(&mattr);
 
 	/* create communication pipes */
 	if (pipe(pout) == -1) {
 		ERROR("%s: Unable to create communication pipes", __func__);
-		return (NULL);
+		goto error_cleanup;
 	}
 	retval->fd_output = pout[1];
 	ssh_in = pout[0];
@@ -803,13 +803,13 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 	ioctl(0, TIOCGWINSZ, &win);
 	if (tcgetattr(STDIN_FILENO, &termios) < 0) {
 		ERROR("%s", strerror(errno));
-		return (NULL);
+		goto error_cleanup;
 	}
 
 	/* create child process */
 	if ((sshpid = forkpty(&ssh_fd, NULL, &termios, &win)) == -1) {
 		ERROR("%s", strerror(errno));
-		return (NULL);
+		goto error_cleanup;
 	} else if (sshpid == 0) { /* child process*/
 		/* close unused ends of communication pipes */
 		close(retval->fd_output);
@@ -862,7 +862,7 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 		exit(-1);
 	} else { /* parent process*/
 		DBG("child proces with PID %d forked", (int ) sshpid);
-		close(ssh_in);
+		close(ssh_in); pout[0] = -1;
 		/* open stream to ssh pseudo terminal */
 		/* write there only password/commands for ssh, commands for
 		 netopeer-agent are written only through communication pipes
@@ -893,20 +893,20 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 				s = NULL;
 				if (system("stty -echo") == -1) {
 					ERROR("system() call failed (%s:%d).", __FILE__, __LINE__);
-					return (NULL);
+					goto error_cleanup;
 				}
 				if (getline(&s, &n, stdin) == -1) {
 					ERROR("getline() failed (%s:%d).", __FILE__, __LINE__);
-					return (NULL);
+					goto error_cleanup;
 				}
 				if (system("stty echo") == -1) {
 					ERROR("system() call failed (%s:%d).", __FILE__, __LINE__);
-					return (NULL);
+					goto error_cleanup;
 				}
 
 				if (s == NULL) {
 					ERROR("Unable to get the password from a user (%s)", strerror(errno));
-					return (NULL);
+					goto error_cleanup;
 				}
 				fprintf(retval->f_input, "%s", s);
 				//fprintf(retval->f_input, "\n");
@@ -943,7 +943,7 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 					;
 					break;
 				default:
-					return (NULL);
+					goto error_cleanup;
 				}
 				fprintf(retval->f_input, "\n");
 				fflush(retval->f_input);
@@ -966,19 +966,19 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 			}
 			if ((int *) strcasestr(buffer, "No route to host") != NULL) {
 				ERROR("%s", buffer);
-				return (NULL);
+				goto error_cleanup;
 			}
 			if ((int *) strcasestr(buffer, "Permission denied") != NULL) {
 				ERROR("%s", buffer);
-				return (NULL);
+				goto error_cleanup;
 			}
 			if ((int *) strcasestr(buffer, "Connection refused") != NULL) {
 				ERROR("%s", buffer);
-				return (NULL);
+				goto error_cleanup;
 			}
 			if ((int *) strcasestr(buffer, "Connection closed") != NULL) {
 				ERROR("%s", buffer);
-				return (NULL);
+				goto error_cleanup;
 			}
 			if ((int *) strcasestr(buffer, "<") != NULL) {
 				DBG("XML message begin found, waiting for the password finished");
@@ -1003,6 +1003,31 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 	}
 
 	return (retval);
+
+error_cleanup:
+
+	close(pout[0]);
+	close(pout[1]);
+	if (retval) {
+		free(retval->hostname);
+		free(retval->username);
+		free(retval->port);
+
+		if (retval->mut_channel) {
+			pthread_mutex_destroy(retval->mut_channel);
+			free(retval->mut_channel);
+		}
+		pthread_mutex_destroy(&(retval->mut_mqueue));
+		pthread_mutex_destroy(&(retval->mut_equeue));
+		pthread_mutex_destroy(&(retval->mut_ntf));
+		pthread_mutex_destroy(&(retval->mut_session));
+
+		close(retval->fd_input);
+		fclose(retval->f_input);
+
+		free(retval);
+	}
+	return (NULL);
 }
 
 #endif /* DISABLE_LIBSSH */
