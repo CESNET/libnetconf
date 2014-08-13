@@ -187,6 +187,48 @@ static PyObject *ncOpGetConfig(ncSessionObject *self, PyObject *args, PyObject *
 	return (get_common(self, filter, wdmode, datastore));
 }
 
+static PyObject *ncOpDeleteConfig(ncSessionObject *self, PyObject *args, PyObject *keywords)
+{
+	int target = NC_DATASTORE_ERROR;
+	PyObject *PyTarget;
+	nc_rpc *rpc = NULL;
+	char *url = NULL;
+	char *kwlist[] = {"target", NULL};
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "O", kwlist, &PyTarget)) {
+		return (NULL);
+	}
+
+	/* get target type */
+	if (strcmp(Py_TYPE(PyTarget)->tp_name, "int") == 0) {
+		if (!PyArg_Parse(PyTarget, "i", &target)) {
+			return (NULL);
+		}
+	} else if (strcmp(Py_TYPE(PyTarget)->tp_name, "str") == 0) {
+		if (!PyArg_Parse(PyTarget, "s", &url)) {
+			return (NULL);
+		}
+		if (strcasestr(url, "://") != NULL) {
+			target = NC_DATASTORE_URL;
+		} else {
+			PyErr_SetString(PyExc_ValueError, "Invalid \'target\' value.");
+			return (NULL);
+		}
+	}
+
+	/* create RPC */
+	rpc = nc_rpc_deleteconfig(target, url);
+
+	/* send request ... */
+	if (op_send_recv(self, rpc, NULL) == EXIT_SUCCESS) {
+		/* ... and return the result */
+		Py_RETURN_TRUE;
+	} else {
+		Py_RETURN_FALSE;
+	}
+}
+
 static PyObject *ncOpCopyConfig(ncSessionObject *self, PyObject *args, PyObject *keywords)
 {
 	int wdmode = NCWD_MODE_NOTSET;
@@ -563,6 +605,9 @@ static PyMethodDef ncSessionMethods[] = {
 	{"copyConfig", (PyCFunction)ncOpCopyConfig,
 		METH_VARARGS | METH_KEYWORDS,
 		PyDoc_STR("Execute NETCONF <copy-config> RPC.")},
+	{"deleteConfig", (PyCFunction)ncOpDeleteConfig,
+		METH_VARARGS | METH_KEYWORDS,
+		PyDoc_STR("Execute NETCONF <delete-config> RPC.")},
 	{NULL, NULL, 0, NULL}
 };
 

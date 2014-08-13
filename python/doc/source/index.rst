@@ -219,6 +219,13 @@ Instance methods:
    mode - possible values are provided as ``WD_*`` constants of the
    :mod:`netconf` module.
 
+.. method:: Session.deleteConfig(target)
+
+   Performs NETCONF <delete-config> operation removing the specified datastore.
+   The *target* argument can be one of the :mod:`netconf` module datastore
+   constants or the URL string if the session supports the NETCONF *:url*
+   capability.
+
 .. method:: Session.lock(datastore)
 
    Lock the specified NETCONF datastore. Possible values for the *datastore*
