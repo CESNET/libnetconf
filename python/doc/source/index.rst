@@ -226,6 +226,11 @@ Instance methods:
    constants or the URL string if the session supports the NETCONF *:url*
    capability.
 
+.. method:: Session.killSEssion(id)
+
+   Performs NETCONF <kill-session> operation. Mandatory parameter *id* contains
+   string with the ID of a NETCONF session to kill.
+
 .. method:: Session.lock(target)
 
    Lock the specified NETCONF datastore. Possible values for the *target*

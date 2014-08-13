@@ -229,6 +229,30 @@ static PyObject *ncOpDeleteConfig(ncSessionObject *self, PyObject *args, PyObjec
 	}
 }
 
+static PyObject *ncOpKillSession(ncSessionObject *self, PyObject *args, PyObject *keywords)
+{
+	const char *id = NULL;
+	nc_rpc *rpc = NULL;
+
+	char *kwlist[] = {"id", NULL};
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "s", kwlist, &id)) {
+		return (NULL);
+	}
+
+	/* create RPC */
+	rpc = nc_rpc_killsession(id);
+
+	/* send request ... */
+	if (op_send_recv(self, rpc, NULL) == EXIT_SUCCESS) {
+		/* ... and return the result */
+		Py_RETURN_TRUE;
+	} else {
+		Py_RETURN_FALSE;
+	}
+}
+
 static PyObject *ncOpCopyConfig(ncSessionObject *self, PyObject *args, PyObject *keywords)
 {
 	int wdmode = NCWD_MODE_NOTSET;
@@ -608,6 +632,9 @@ static PyMethodDef ncSessionMethods[] = {
 	{"deleteConfig", (PyCFunction)ncOpDeleteConfig,
 		METH_VARARGS | METH_KEYWORDS,
 		PyDoc_STR("Execute NETCONF <delete-config> RPC.")},
+	{"killSession", (PyCFunction)ncOpKillSession,
+		METH_VARARGS | METH_KEYWORDS,
+		PyDoc_STR("Execute NETCONF <kill-session> RPC.")},
 	{NULL, NULL, 0, NULL}
 };
 
