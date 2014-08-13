@@ -779,7 +779,9 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 		return (NULL);
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	if ((r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
+	retval->mut_channel = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
+	if ((r = pthread_mutex_init(retval->mut_channel, &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_ntf), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
