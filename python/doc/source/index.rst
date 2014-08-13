@@ -206,6 +206,19 @@ Instance methods:
    Optional parameters *filter* and *wd* are the same as for the :meth:`get`
    method.
 
+.. method:: Session.copyConfig(source, target[, wd=None])
+
+   Performs NETCONF <copy-config> operation. The *source* can be one of the
+   :mod:`netconf` module datastore constants, the URL string if the session
+   supports the NETCONF *:url* capability or the complete configuration
+   datastore provided as a string. The *target* argument is one of the
+   :mod:`netconf` module datastore constants or the URL string if the session
+   supports the NETCONF *:url* capability.
+
+   Optional *wd* argument can be used to specify the NETCONF *:with-defaults*
+   mode - possible values are provided as ``WD_*`` constants of the
+   :mod:`netconf` module.
+
 .. method:: Session.lock(datastore)
 
    Lock the specified NETCONF datastore. Possible values for the *datastore*

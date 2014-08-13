@@ -187,6 +187,88 @@ static PyObject *ncOpGetConfig(ncSessionObject *self, PyObject *args, PyObject *
 	return (get_common(self, filter, wdmode, datastore));
 }
 
+static PyObject *ncOpCopyConfig(ncSessionObject *self, PyObject *args, PyObject *keywords)
+{
+	int wdmode = NCWD_MODE_NOTSET;
+	int source = NC_DATASTORE_ERROR, target = NC_DATASTORE_ERROR;
+	char *data1 = NULL, *data2 = NULL;
+	int i;
+	PyObject *PySource, *PyTarget;
+	nc_rpc *rpc = NULL;
+	char *kwlist[] = {"source", "target", "wd", NULL};
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "OO|i", kwlist, &PySource, &PyTarget, &wdmode)) {
+		return (NULL);
+	}
+
+	/* get source type */
+	if (strcmp(Py_TYPE(PySource)->tp_name, "int") == 0) {
+		if (!PyArg_Parse(PySource, "i", &source)) {
+			return (NULL);
+		}
+	} else if (strcmp(Py_TYPE(PySource)->tp_name, "str") == 0) {
+		if (!PyArg_Parse(PySource, "s", &data1)) {
+			return (NULL);
+		}
+		for (i = 0; data1[i] != '\0' && isspace(data1[i]); i++);
+		if (data1[i] == '<') {
+			source = NC_DATASTORE_CONFIG;
+		} else {
+			if (strcasestr(data1, "://") != NULL) {
+				source = NC_DATASTORE_URL;
+			} else {
+				PyErr_SetString(PyExc_ValueError, "Invalid \'source\' value.");
+				return (NULL);
+			}
+		}
+	}
+
+	/* get target type */
+	if (strcmp(Py_TYPE(PyTarget)->tp_name, "int") == 0) {
+		if (!PyArg_Parse(PyTarget, "i", &target)) {
+			return (NULL);
+		}
+	} else if (strcmp(Py_TYPE(PyTarget)->tp_name, "str") == 0) {
+		if (!PyArg_Parse(PyTarget, "s", &data2)) {
+			return (NULL);
+		}
+		if (strcasestr(data2, "://") != NULL) {
+			target = NC_DATASTORE_URL;
+		} else {
+			PyErr_SetString(PyExc_ValueError, "Invalid \'target\' value.");
+			return (NULL);
+		}
+		if (data1 == NULL) {
+			/* 3rd and 4th argument to nc_rpc_copyconfig() are variadic - if the
+			 * source is not config or URL, the target URL must be placed as
+			 * 3rd argument, not 4th
+			 */
+			data1 = data2;
+			data2 = NULL;
+		}
+	}
+
+	/* create RPC */
+	rpc = nc_rpc_copyconfig(source, target, data1, data2);
+
+	/* set with defaults settings */
+	if (wdmode) {
+		if (nc_rpc_capability_attr(rpc, NC_CAP_ATTR_WITHDEFAULTS_MODE, wdmode) != EXIT_SUCCESS) {
+			nc_rpc_free(rpc);
+			return (NULL);
+		}
+	}
+
+	/* send request ... */
+	if (op_send_recv(self, rpc, NULL) == EXIT_SUCCESS) {
+		/* ... and return the result */
+		Py_RETURN_TRUE;
+	} else {
+		Py_RETURN_FALSE;
+	}
+}
+
 static PyObject *lock_common(ncSessionObject *self, PyObject *args, PyObject *keywords, nc_rpc* (func)(NC_DATASTORE))
 {
 	int datastore = NC_DATASTORE_ERROR;
@@ -478,6 +560,9 @@ static PyMethodDef ncSessionMethods[] = {
 	{"unlock", (PyCFunction)ncOpUnlock,
 		METH_VARARGS | METH_KEYWORDS,
 		PyDoc_STR("Execute NETCONF <unlock> RPC.")},
+	{"copyConfig", (PyCFunction)ncOpCopyConfig,
+		METH_VARARGS | METH_KEYWORDS,
+		PyDoc_STR("Execute NETCONF <copy-config> RPC.")},
 	{NULL, NULL, 0, NULL}
 };
 
