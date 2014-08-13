@@ -195,10 +195,10 @@ Instance methods:
    argument can be used to specify the NETCONF *:with-defaults* mode - possible
    values are provided as ``WD_*`` constants of the :mod:`netconf` module.
 
-.. method:: Session.getConfig(datastore[, filter=None, wd=None])
+.. method:: Session.getConfig(source[, filter=None, wd=None])
 
    Performs NETCONF <get-config> operation and returns the returned data as a
-   string. Requires specification of the datastore where to query. Possible
+   string. Requires specification of the source datastore where to query. Possible
    values are provided as the :mod:`netconf` module constants ``RUNNING``,
    ``STARTUP`` and ``CANDIDATE``. To allow the last two values, the appropriate
    NETCONF capability must be supported by the server.
@@ -226,13 +226,13 @@ Instance methods:
    constants or the URL string if the session supports the NETCONF *:url*
    capability.
 
-.. method:: Session.lock(datastore)
+.. method:: Session.lock(target)
 
-   Lock the specified NETCONF datastore. Possible values for the *datastore*
+   Lock the specified NETCONF datastore. Possible values for the *target*
    parameter are provided as the :mod:`netconf` module constants ``RUNNING``,
    ``STARTUP`` and ``CANDIDATE``. To allow the last two values, the appropriate
    NETCONF capability must be supported by the server.
 
-.. method:: Session.unlock(datastore)
+.. method:: Session.unlock(target)
 
    The reverse operation to the :meth:`lock` method.

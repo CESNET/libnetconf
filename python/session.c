@@ -169,22 +169,22 @@ static PyObject *ncOpGetConfig(ncSessionObject *self, PyObject *args, PyObject *
 {
 	const char *filter = NULL;
 	int wdmode = NCWD_MODE_NOTSET;
-	int datastore = NC_DATASTORE_ERROR;
-	char *kwlist[] = {"datastore", "filter", "wd", NULL};
+	int source = NC_DATASTORE_ERROR;
+	char *kwlist[] = {"source", "filter", "wd", NULL};
 
 	/* Get input parameters */
-	if (! PyArg_ParseTupleAndKeywords(args, keywords, "i|zi", kwlist, &datastore, &filter, &wdmode)) {
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "i|zi", kwlist, &source, &filter, &wdmode)) {
 		return (NULL);
 	}
 
-	if (datastore != NC_DATASTORE_RUNNING &&
-			datastore != NC_DATASTORE_STARTUP &&
-			datastore != NC_DATASTORE_CANDIDATE) {
-		PyErr_SetString(PyExc_ValueError, "Invalid \'datastore\' value.");
+	if (source != NC_DATASTORE_RUNNING &&
+			source != NC_DATASTORE_STARTUP &&
+			source != NC_DATASTORE_CANDIDATE) {
+		PyErr_SetString(PyExc_ValueError, "Invalid \'source\' value.");
 		return (NULL);
 	}
 
-	return (get_common(self, filter, wdmode, datastore));
+	return (get_common(self, filter, wdmode, source));
 }
 
 static PyObject *ncOpDeleteConfig(ncSessionObject *self, PyObject *args, PyObject *keywords)
@@ -313,17 +313,17 @@ static PyObject *ncOpCopyConfig(ncSessionObject *self, PyObject *args, PyObject 
 
 static PyObject *lock_common(ncSessionObject *self, PyObject *args, PyObject *keywords, nc_rpc* (func)(NC_DATASTORE))
 {
-	int datastore = NC_DATASTORE_ERROR;
+	int target = NC_DATASTORE_ERROR;
 	nc_rpc *rpc = NULL;
-	char *kwlist[] = {"datastore", NULL};
+	char *kwlist[] = {"target", NULL};
 
 	/* Get input parameters */
-	if (! PyArg_ParseTupleAndKeywords(args, keywords, "i|zi", kwlist, &datastore)) {
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "i|zi", kwlist, &target)) {
 		return (NULL);
 	}
 
 	/* check datastore */
-	switch(datastore) {
+	switch(target) {
 	case NC_DATASTORE_STARTUP:
 		if (!nc_cpblts_enabled(self->session, NETCONF_CAP_STARTUP)) {
 			PyErr_SetString(libnetconfError, ":startup capability not supported.");
@@ -339,7 +339,7 @@ static PyObject *lock_common(ncSessionObject *self, PyObject *args, PyObject *ke
 	}
 
 	/* create RPC */
-	rpc = func(datastore);
+	rpc = func(target);
 
 	/* send request ... */
 	if (op_send_recv(self, rpc, NULL) == EXIT_SUCCESS) {
