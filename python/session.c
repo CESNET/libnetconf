@@ -13,6 +13,8 @@ typedef struct {
 /* from netconf.c */
 extern PyObject *libnetconfError;
 
+extern struct nc_cpblts *global_cpblts;
+
 static PyMemberDef ncSessionMembers[] = {
 	{NULL}  /* Sentinel */
 };
@@ -400,16 +402,14 @@ static PyObject *ncSessionConnect(PyObject *cls, PyObject *args, PyObject *keywo
 	}
 
 	if (!version) {
-		/* by default, support all versions */
-		PyCpblts = PyList_New(2);
-		PyList_SET_ITEM(PyCpblts, 0, PyUnicode_FromString(NETCONF_CAP_BASE10));
-		PyList_SET_ITEM(PyCpblts, 1, PyUnicode_FromString(NETCONF_CAP_BASE11));
+		/* let the default value to ncSessionInit() */
+		result = PyObject_CallFunction(cls, "sHss", host, port, user, transport_s);
 	} else {
 		PyCpblts = PyList_New(1);
 		PyList_SET_ITEM(PyCpblts, 0, PyUnicode_FromString(version));
+		result = PyObject_CallFunction(cls, "sHssO", host, port, user, transport_s, PyCpblts);
 	}
 
-	result = PyObject_CallFunction(cls, "sHssO", host, port, user, transport_s, PyCpblts);
 
 	return(result);
 }
@@ -440,6 +440,7 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 	PyObject *PyCpblts = NULL;
 	struct nc_session *session;
 	struct nc_cpblts *cpblts = NULL;
+	char cpblts_free_flag = 0;
 	char* item = NULL;
 	Py_ssize_t l, i;
 	int ret;
@@ -466,6 +467,7 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 
 	if (PyCpblts != NULL) {
 		cpblts = nc_cpblts_new(NULL);
+		cpblts_free_flag = 1;
 		if (PyList_Check(PyCpblts) && ((l = PyList_Size(PyCpblts)) > 0)) {
 			for (i = 0; i < l; i++) {
 				PyObject *PyUni = PyList_GetItem(PyCpblts, i);
@@ -496,6 +498,11 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 				}
 			}
 		}
+	} else {
+		/* use global capabilities, that are, by default, same as libnetconf's
+		 * default capabilities
+		 */
+		cpblts = global_cpblts;
 	}
 
 	if (host != NULL) {
@@ -506,7 +513,9 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 		session = nc_session_accept_inout(cpblts, user, fd_in, fd_out);
 	}
 
-	nc_cpblts_free(cpblts);
+	if (cpblts_free_flag) {
+		nc_cpblts_free(cpblts);
+	}
 
 	if (session == NULL) {
 		return -1;

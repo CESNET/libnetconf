@@ -100,9 +100,17 @@ The module provides the following functions:
    ``True``, other parameters can be optionally set with the meanings
    corresponding to the *openlog(3)* function.
 
+.. function:: setCapabilities(list)
+
+   Set the list of default NETCONF capabilities used for all actions where
+   required. The *list* argument is a list of strings with the supported NETCONF
+   capabilities. By default, this list is provided by libnetconf containing all
+   capbilities supported by libnetconf.
+
 .. function:: getCapabilities()
 
-   Returns the list of default NETCONF capabilities supported by libnetconf.
+   Returns the list of default NETCONF capabilities used for all actions where
+   required.
 
    
 :class:`Session` Class
@@ -134,8 +142,8 @@ client. The constructor of the class can be used in two ways: a client side way
    Constructor for a server side application.
    
    All arguments are optional. By default, *user* is extracted from the process
-   UID and *capabilities* list is taken from libnetconf containing all NETCONF
-   capabilities and data models implemented by the libnetconf.
+   UID and *capabilities* list is the same as the list provided by the
+   :func:`getCapabilities` function.
    
    The *fd_in* and *fd_out* are file descriptors where the libnetconf will read
    the unencrypted data from and write unencrypted data to when communicating
@@ -145,9 +153,11 @@ client. The constructor of the class can be used in two ways: a client side way
 
    Same as the :class:`Session` class constructor for the client side except the
    last parameter. Here the shortcuts ``netconf.NETCONFv1_0`` and
-   ``netconf.NETCONFv1_1`` can be used. By default, the both protocol versions
-   are supported, so the highest common protocol version for both the server and
-   client is selected for further communication.
+   ``netconf.NETCONFv1_1`` can be used. By default, the supported protocol
+   versions are decided from the capabilities list provided by the 
+   :func:`getCapabilities` function. During the NETCONF protocol handshake the
+   highest common protocol version for both the server and client is selected
+   for further communication.
    
 .. classmethod:: Session.accept([user=None, capabilities=None, fd_in=STDIN_FILENO, fd_out=STDOUT_FILENO])
 

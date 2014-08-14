@@ -11,6 +11,8 @@ extern PyTypeObject ncSessionType;
 PyObject *libnetconfError;
 PyObject *libnetconfWarning;
 
+struct nc_cpblts *global_cpblts = NULL;
+
 static int syslogEnabled = 1;
 static void clb_print(NC_VERB_LEVEL level, const char* msg)
 {
@@ -80,26 +82,78 @@ static PyObject *setVerbosity(PyObject *self, PyObject *args, PyObject *keywds)
 
 static PyObject *getCapabilities(PyObject *self)
 {
-	struct nc_cpblts *cpblts;
 	PyObject *result = NULL;
 	int c, i;
 
-	cpblts = nc_session_get_cpblts_default();
-
-	result = PyList_New(c = nc_cpblts_count(cpblts));
-	nc_cpblts_iter_start(cpblts);
+	result = PyList_New(c = nc_cpblts_count(global_cpblts));
+	nc_cpblts_iter_start(global_cpblts);
 	for (i = 0; i < c; i++) {
-		PyList_SET_ITEM(result, i, PyUnicode_FromString(nc_cpblts_iter_next(cpblts)));
+		PyList_SET_ITEM(result, i, PyUnicode_FromString(nc_cpblts_iter_next(global_cpblts)));
 	}
-	nc_cpblts_free(cpblts);
 
 	return (result);
+}
+
+static PyObject *setCapabilities(PyObject *self, PyObject *args, PyObject *keywds)
+{
+	PyObject *PyCpblts;
+	Py_ssize_t l, i;
+	int ret;
+	char *item;
+	static char *kwlist[] = {"list", NULL};
+
+	if (! PyArg_ParseTupleAndKeywords(args, keywds, "O!", kwlist, &PyList_Type, &PyCpblts)) {
+		return (NULL);
+	}
+
+	if ((l = PyList_Size(PyCpblts)) < 1) {
+		PyErr_SetString(PyExc_ValueError, "The capabilities list must not be empty.");
+		return (NULL);
+	}
+
+	nc_cpblts_free(global_cpblts);
+	global_cpblts = nc_cpblts_new(NULL);
+	for (i = 0; i < l; i++) {
+		PyObject *PyUni = PyList_GetItem(PyCpblts, i);
+		Py_INCREF(PyUni);
+		if (!PyUnicode_Check(PyUni)) {
+			PyErr_SetString(PyExc_TypeError, "Capabilities list must contain strings.");
+			nc_cpblts_free(global_cpblts);
+			global_cpblts = NULL;
+			Py_DECREF(PyUni);
+			return (NULL);
+		}
+		PyObject *PyStr = PyUnicode_AsEncodedString(PyUni, "UTF-8", NULL);
+		Py_DECREF(PyUni);
+		if (PyStr == NULL) {
+			nc_cpblts_free(global_cpblts);
+			global_cpblts = NULL;
+			return (NULL);
+		}
+		item = PyBytes_AsString(PyStr);
+		if (item == NULL) {
+			nc_cpblts_free(global_cpblts);
+			global_cpblts = NULL;
+			Py_DECREF(PyStr);
+			return (NULL);
+		}
+		ret = nc_cpblts_add(global_cpblts, item);
+		Py_DECREF(PyStr);
+		if (ret != EXIT_SUCCESS) {
+			nc_cpblts_free(global_cpblts);
+			global_cpblts = NULL;
+			return (NULL);
+		}
+	}
+
+	Py_RETURN_NONE;
 }
 
 static PyMethodDef netconfMethods[] = {
 		{"setVerbosity", (PyCFunction)setVerbosity, METH_VARARGS | METH_KEYWORDS, "Set verbose level (0-3)."},
 		{"setSyslog", (PyCFunction)setSyslog, METH_VARARGS | METH_KEYWORDS, "Set application settings for syslog."},
-		{"getCapabilities", (PyCFunction)getCapabilities, METH_NOARGS, "Get list of default capabilities from libnetconf."},
+		{"setCapabilities", (PyCFunction)setCapabilities, METH_VARARGS | METH_KEYWORDS, "Set list of default capabilities for the following actions."},
+		{"getCapabilities", (PyCFunction)getCapabilities, METH_NOARGS, "Get list of default capabilities."},
 		{NULL, NULL, 0, NULL}
 };
 
@@ -121,6 +175,9 @@ PyMODINIT_FUNC PyInit_netconf(void)
 
 	/* set print callback */
 	nc_callback_print (clb_print);
+
+	/* get default caapbilities */
+	global_cpblts = nc_session_get_cpblts_default();
 
 	ncSessionType.tp_new = PyType_GenericNew;
 	if (PyType_Ready(&ncSessionType) < 0) {
