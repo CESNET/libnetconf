@@ -3927,6 +3927,7 @@ API int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng
 static struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path)
 {
 	struct ncds_ds* ds = NULL;
+	struct ncds_ds_list *ds_iter;
 	char *basename, *path_yin;
 
 #ifndef DISABLE_VALIDATION
@@ -3982,6 +3983,17 @@ static struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path
 	}
 	ds->ext_model = ds->data_model->xml;
 	ds->ext_model_tree = NULL;
+
+	/* check if there is already datastore with this model */
+	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
+		if (ds_iter->datastore->data_model == ds->data_model) {
+			/* this datastore already exists */
+			free(ds);
+			ds = NULL;
+			ERROR("Creating datastore failed (Datastore already exists).");
+			goto cleanup;
+		}
+	}
 
 #ifndef DISABLE_VALIDATION
 	if (nc_init_flags & NC_INIT_VALIDATE) {
