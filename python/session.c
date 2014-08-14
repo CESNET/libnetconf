@@ -34,18 +34,6 @@ static void ncSessionFree(ncSessionObject *self)
 	Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-static PyObject *ncSessionNew(PyTypeObject *type, PyObject *args, PyObject *keywords)
-{
-	ncSessionObject *self;
-
-	self = (ncSessionObject *)type->tp_alloc(type, 0);
-	if (self != NULL) {
-		self->session = NULL;
-	}
-
-	return (PyObject *)self;
-}
-
 /* rpc parameter is freed after the function call */
 static int op_send_recv(ncSessionObject *self, nc_rpc* rpc, char **data)
 {
@@ -699,6 +687,6 @@ PyTypeObject ncSessionType = {
 		0, /* tp_dictoffset */
 		(initproc) ncSessionInit, /* tp_init */
 		0, /* tp_alloc */
-		ncSessionNew, /* tp_new */
+		0, /* tp_new, set by netconf module */
 };
 
