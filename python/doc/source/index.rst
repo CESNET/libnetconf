@@ -112,7 +112,44 @@ The module provides the following functions:
    Returns the list of default NETCONF capabilities used for all actions where
    required.
 
+.. function:: addModel(model[,features=None])
+
+   Set a reference to a data model (in the ``YIN`` format) that is required (e.g.
+   imported) by some other data model. All required models must be provided
+   before creating the datastore using :func:`addDatastore` function.
    
+   The *model* argument provides the path to the data model file. The data model
+   must be in the ``YIN`` format. Optional argument *features* is the list of
+   enabled features in this data model. By default, all features are enabled.
+   Empty list disables all features of the model.
+
+.. function:: addDatastore(model[, datastore=None, transapi=None, features=None])
+
+   Add support of the configuration data defined in the provided data model to
+   the datastore. The path to the data model in the ``YIN`` format is provided
+   ast mandatory argument *model*. All other arguments are optional.
+   
+   The *datastore* argument specifies path to the file where the configuration
+   data related to this data model will be stored. The file does not need
+   exist, in that case it will be created automatically. If the argument is not
+   specified, configuration data of the data model are not handled (e.g. some
+   data models can define only state data).
+   
+   The *transapi* arguments provides path of the libnetconf transAPI module
+   (.so) implementing the data model of the datastore.
+   
+   The last optional argument *features* provides the list of enabled features
+   of this data model. By default, all features are enabled. Empty list disables
+   all features of the model.
+
+.. function:: addAugment(model[, transapi=None, features=None])
+
+   Add augmenting data model. The arguments have the same meanings as for the
+   :func:`addDatastore` function except the missing *datastore* argument. It is
+   no more needed since the configuration data are placed into the datastore
+   files of the augmented datastores.
+
+
 :class:`Session` Class
 ----------------------
 
@@ -251,3 +288,4 @@ Instance methods:
 .. method:: Session.unlock(target)
 
    The reverse operation to the :meth:`lock` method.
+   

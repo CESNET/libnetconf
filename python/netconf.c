@@ -12,6 +12,7 @@ PyObject *libnetconfError;
 PyObject *libnetconfWarning;
 
 struct nc_cpblts *global_cpblts = NULL;
+PyObject *datastores = NULL; /* dictionary */
 
 static int syslogEnabled = 1;
 static void clb_print(NC_VERB_LEVEL level, const char* msg)
@@ -149,11 +150,182 @@ static PyObject *setCapabilities(PyObject *self, PyObject *args, PyObject *keywd
 	Py_RETURN_NONE;
 }
 
+static void set_features(const char* name, PyObject *PyFeatures)
+{
+	Py_ssize_t l, i;
+
+	if (!PyFeatures) {
+		/* not specified -> enable all */
+		ncds_features_enableall(name);
+	} else if ((l = PyList_Size(PyFeatures)) == 0) {
+		/* empty list -> disable all */
+		ncds_features_disableall(name);
+	} else {
+		/* enable specified */
+		for (i = 0; i < l; i++) {
+			PyObject *PyUni = PyList_GetItem(PyFeatures, i);
+			Py_INCREF(PyUni);
+			if (!PyUnicode_Check(PyUni)) {
+				Py_DECREF(PyUni);
+				continue;
+			}
+			PyObject *PyStr = PyUnicode_AsEncodedString(PyUni, "UTF-8", NULL);
+			Py_DECREF(PyUni);
+			if (PyStr == NULL) {
+				continue;
+			}
+			ncds_feature_enable(name, PyBytes_AsString(PyStr));
+			Py_DECREF(PyStr);
+		}
+	}
+}
+
+static PyObject *ncDatastoreAddImport(PyObject *self, PyObject *args, PyObject *keywords)
+{
+	const char *path;
+	char *name = NULL;
+	PyObject *PyFeatures = NULL;
+	char *kwlist[] = {"model", "features", NULL};
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "s|O!", kwlist, &path, &PyList_Type, &PyFeatures)) {
+		return (NULL);
+	}
+
+	if (ncds_model_info(path, &name, NULL, NULL, NULL, NULL, NULL) != EXIT_SUCCESS ||
+			ncds_add_model(path) != EXIT_SUCCESS) {
+		free(name);
+		return (NULL);
+	}
+
+	set_features(name, PyFeatures);
+
+	free(name);
+	Py_RETURN_NONE;
+}
+
+static PyObject *ncDatastoreAdd(PyObject *self, PyObject *args, PyObject *keywords)
+{
+	const char *path, *datastore = NULL, *transapi = NULL;
+	char *name = NULL;
+	NCDS_TYPE type = NCDS_TYPE_EMPTY;
+	struct ncds_ds *ds;
+	ncds_id dsid;
+	PyObject *PyFeatures = NULL;
+	char *kwlist[] = {"model", "datastore", "transapi", "features", NULL};
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "s|zzO!", kwlist, &path, &datastore, &transapi, &PyList_Type, &PyFeatures)) {
+		return (NULL);
+	}
+
+	/* set correct type according to provided parameters */
+	if (datastore) {
+		type = NCDS_TYPE_FILE;
+	}
+
+	/* get name of the datastore for further referencing */
+	if (ncds_model_info(path, &name, NULL, NULL, NULL, NULL, NULL) != EXIT_SUCCESS) {
+		return (NULL);
+	}
+
+	/* create datastore */
+	if (transapi) {
+		if ((ds = ncds_new_transapi(type, path, transapi)) == NULL) {
+			free(name);
+			return (NULL);
+		}
+	} else {
+		/* todo get_state() */
+		if ((ds = ncds_new(type, path, NULL)) == NULL) {
+			free(name);
+			return (NULL);
+		}
+	}
+
+	if (datastore) {
+		if (ncds_file_set_path(ds, datastore) != EXIT_SUCCESS) {
+			ncds_free(ds);
+			free(name);
+			return (NULL);
+		}
+	}
+
+	if ((dsid = ncds_init(ds)) <= 0) {
+		ncds_free(ds);
+		free(name);
+		return (NULL);
+	}
+
+	set_features(name, PyFeatures);
+
+	if (ncds_consolidate() != EXIT_SUCCESS) {
+		ncds_free(ds);
+		free(name);
+		return (NULL);
+	}
+
+	if (ncds_device_init(&dsid, global_cpblts, 0)) {
+		ncds_free(ds);
+		free(name);
+		return (NULL);
+	}
+
+	PyDict_SetItem(datastores, PyUnicode_FromFormat("%d", dsid), PyUnicode_FromString(name));
+
+	free(name);
+	Py_RETURN_NONE;
+}
+
+static PyObject *ncDatastoreAddAugment(PyObject *self, PyObject *args, PyObject *keywords)
+{
+
+	const char *path, *transapi = NULL;
+	char *name = NULL;
+	PyObject *PyFeatures = NULL;
+	char *kwlist[] = {"model", "transapi", "features", NULL};
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "s|zO!", kwlist, &path, &transapi, &PyList_Type, &PyFeatures)) {
+		return (NULL);
+	}
+
+	/* get name of the datastore for further referencing */
+	if (ncds_model_info(path, &name, NULL, NULL, NULL, NULL, NULL) != EXIT_SUCCESS) {
+		return (NULL);
+	}
+
+	/* create datastore */
+	if (transapi) {
+		if (ncds_add_augment_transapi(path, transapi) == EXIT_FAILURE) {
+			free(name);
+			return (NULL);
+		}
+	} else {
+		if (ncds_add_model(path) == EXIT_FAILURE) {
+			free(name);
+			return (NULL);
+		}
+	}
+
+	set_features(name, PyFeatures);
+	free(name);
+
+	if (ncds_consolidate() != EXIT_SUCCESS) {
+		return (NULL);
+	}
+
+	Py_RETURN_NONE;
+}
+
 static PyMethodDef netconfMethods[] = {
 		{"setVerbosity", (PyCFunction)setVerbosity, METH_VARARGS | METH_KEYWORDS, "Set verbose level (0-3)."},
 		{"setSyslog", (PyCFunction)setSyslog, METH_VARARGS | METH_KEYWORDS, "Set application settings for syslog."},
 		{"setCapabilities", (PyCFunction)setCapabilities, METH_VARARGS | METH_KEYWORDS, "Set list of default capabilities for the following actions."},
 		{"getCapabilities", (PyCFunction)getCapabilities, METH_NOARGS, "Get list of default capabilities."},
+		{"addModel", (PyCFunction)ncDatastoreAddImport, METH_VARARGS | METH_KEYWORDS, "Add standalone model without datastore needed as import from other data model."},
+		{"addDatastore", (PyCFunction)ncDatastoreAdd, METH_VARARGS | METH_KEYWORDS, "Add basic data model connected with the datastore."},
+		{"addAugment", (PyCFunction)ncDatastoreAddAugment, METH_VARARGS | METH_KEYWORDS, "Add augmenting model."},
 		{NULL, NULL, 0, NULL}
 };
 
@@ -192,6 +364,9 @@ PyMODINIT_FUNC PyInit_netconf(void)
 
     Py_INCREF(&ncSessionType);
     PyModule_AddObject(nc, "Session", (PyObject *)&ncSessionType);
+
+    datastores = PyDict_New();
+    PyModule_AddObject(nc, "Datastores", datastores);
 
     PyModule_AddStringConstant(nc, "NETCONFv1_0", NETCONF_CAP_BASE10);
     PyModule_AddStringConstant(nc, "NETCONFv1_1", NETCONF_CAP_BASE11);
