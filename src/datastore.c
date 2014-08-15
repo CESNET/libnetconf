@@ -1705,8 +1705,8 @@ static int data_model_enlink(struct data_model* model)
 		    strcmp(listitem->model->name, model->name) == 0 &&
 		    strcmp(listitem->model->version, model->version) == 0) {
 			/* module already found */
-			ERROR("Module to enlink already exists.");
-			return (EXIT_FAILURE);
+			VERB("Module to enlink \"%s\" already exists.", model->name);
+			return (EXIT_SUCCESS);
 		}
 	}
 
