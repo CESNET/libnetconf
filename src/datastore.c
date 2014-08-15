@@ -4689,7 +4689,7 @@ API int ncds_rollback(ncds_id id)
  * @brief Check if source and target are same. If url is enabled, checks if source and target urls are same
  * @param rpc
  * @param session
- * @return 
+ * @return
  */
 static int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * session)
 {
@@ -5259,7 +5259,7 @@ process_datastore:
 					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
 					break;
-				}	
+				}
 			} else {
 				node = xmlCopyNode(aux_node, 1);
 			}
@@ -5978,7 +5978,7 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 		/* do nothing */
 		break;
 	}
-	
+
 	for (ds = ncds.datastores; ds != NULL; ds = ds->next) {
 		/* skip internal datastores */
 		if (ds->datastore->id > 0 && ds->datastore->id < internal_ds_count) {
@@ -6063,7 +6063,7 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 	/* clean up the common data for calling nc_apply_rpc() */
 	nc_filter_free(rpc2all_data.filter);
 	rpc2all_data.filter = NULL;
-	
+
 	return (reply);
 }
 
