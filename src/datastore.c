@@ -1690,11 +1690,11 @@ static struct data_model* data_model_new(const char* model_path)
 	return (model);
 }
 
-static int data_model_enlink(struct data_model* model)
+static int data_model_enlink(struct data_model** model)
 {
 	struct model_list *listitem;
 
-	if (model == NULL) {
+	if (model == NULL || *model == NULL) {
 		ERROR("%s: invalid parameter.", __func__);
 		return (EXIT_FAILURE);
 	}
@@ -1702,10 +1702,12 @@ static int data_model_enlink(struct data_model* model)
 	/* check duplicity */
 	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
 		if (listitem->model &&
-		    strcmp(listitem->model->name, model->name) == 0 &&
-		    strcmp(listitem->model->version, model->version) == 0) {
+			strcmp(listitem->model->name, (*model)->name) == 0 &&
+			strcmp(listitem->model->version, (*model)->version) == 0) {
 			/* module already found */
-			VERB("Module to enlink \"%s\" already exists.", model->name);
+			VERB("Module to enlink \"%s\" already exists.", (*model)->name);
+			ncds_ds_model_free(*model);
+			*model = listitem->model;
 			return (EXIT_SUCCESS);
 		}
 	}
@@ -1716,7 +1718,7 @@ static int data_model_enlink(struct data_model* model)
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 		return (EXIT_FAILURE);
 	}
-	listitem->model = model;
+	listitem->model = *model;
 	listitem->next = models_list;
 	models_list = listitem;
 
@@ -1846,7 +1848,7 @@ static struct data_model *read_model(const char* model_path)
 	}
 
 	/* add a new model into the internal lists */
-	if (data_model_enlink(model) != EXIT_SUCCESS) {
+	if (data_model_enlink(&model) != EXIT_SUCCESS) {
 		ERROR("Adding new data model failed.");
 		ncds_ds_model_free(model);
 		return (NULL);
@@ -2459,6 +2461,7 @@ static xmlNodePtr model_node_path(xmlNodePtr current, const char* current_prefix
 			}
 			if (*ds == NULL) {
 				/* no such a datastore containing model with this path */
+				free(module);
 				return (NULL);
 			}
 
