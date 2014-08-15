@@ -2127,7 +2127,7 @@ static int ncds_update_uses(const char* module_name, xmlXPathContextPtr *model_c
 		return (EXIT_FAILURE);
 	}
 
-	if ((groupings = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":grouping", *model_ctxt)) == NULL ) {
+	if ((groupings = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module//"NC_NS_YIN_ID":grouping", *model_ctxt)) == NULL ) {
 		ERROR("%s: Evaluating XPath expression failed.", __func__);
 		return (EXIT_FAILURE);
 	}
