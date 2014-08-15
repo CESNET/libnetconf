@@ -2202,6 +2202,17 @@ static int ncds_update_uses(const char* module_name, xmlXPathContextPtr *model_c
 
 	/* cleanup */
 	xmlXPathFreeObject(groupings);
+
+	if (!xmlXPathNodeSetIsEmpty(uses->nodesetval)) {
+		for (i = 0; i < uses->nodesetval->nodeNr; i++) {
+			grouping_ref = (char*) xmlGetProp(uses->nodesetval->nodeTab[i], BAD_CAST "name");
+			ERROR("Failed to resolve uses \"%s\" in model \"%s\", could not find such grouping in imports.", grouping_ref, module_name);
+			free(grouping_ref);
+		}
+		xmlXPathFreeObject(uses);
+		return (EXIT_FAILURE);
+	}
+
 	xmlXPathFreeObject(uses);
 
 	return (EXIT_SUCCESS);
