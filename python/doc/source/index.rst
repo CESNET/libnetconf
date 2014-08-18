@@ -234,6 +234,14 @@ Instance attributes (read-only):
 
 Instance methods:
 
+.. method:: Session.isActive()
+
+   Returns ``True`` if the *Session* is still connected. If the *Session* was
+   closed (due to error or close request from the client), the ``False`` is
+   returned.
+
+The client-side methods:
+
 .. method:: Session.get([filter=None, wd=None])
 
    Performs NETCONF <get> operation and returns the returned data as a string.
@@ -288,4 +296,12 @@ Instance methods:
 .. method:: Session.unlock(target)
 
    The reverse operation to the :meth:`lock` method.
-   
+
+The server-side methods:
+
+.. method:: Session.processRequest()
+
+   Automatically process the next request from the NETCONF client connected via
+   the *Session*. After the processing RPC, the caller should check if the
+   Session wasn't closed using the :meth:`isActive` method.
+
