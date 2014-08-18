@@ -5,7 +5,7 @@
 
 .. toctree::
    :maxdepth: 2
-   
+
 :mod:`netconf` --- NETCONF Protocol Implementation
 ==================================================
 
@@ -65,7 +65,7 @@ Module Constants
    *:with-default*'s ``explicit`` retrieval mode. Only data nodes explicitly
    set by the client (including those set to its schema default value) are
    reported.
-   
+
 - NETCONF datastores constants:
 
 .. data:: RUNNING
@@ -117,7 +117,7 @@ The module provides the following functions:
    Set a reference to a data model (in the ``YIN`` format) that is required (e.g.
    imported) by some other data model. All required models must be provided
    before creating the datastore using :func:`addDatastore` function.
-   
+
    The *model* argument provides the path to the data model file. The data model
    must be in the ``YIN`` format. Optional argument *features* is the list of
    enabled features in this data model. By default, all features are enabled.
@@ -128,16 +128,16 @@ The module provides the following functions:
    Add support of the configuration data defined in the provided data model to
    the datastore. The path to the data model in the ``YIN`` format is provided
    ast mandatory argument *model*. All other arguments are optional.
-   
+
    The *datastore* argument specifies path to the file where the configuration
    data related to this data model will be stored. The file does not need
    exist, in that case it will be created automatically. If the argument is not
    specified, configuration data of the data model are not handled (e.g. some
    data models can define only state data).
-   
+
    The *transapi* arguments provides path of the libnetconf transAPI module
    (.so) implementing the data model of the datastore.
-   
+
    The last optional argument *features* provides the list of enabled features
    of this data model. By default, all features are enabled. Empty list disables
    all features of the model.
@@ -162,26 +162,26 @@ client. The constructor of the class can be used in two ways: a client side way
 .. class:: Session(host[, port=830, user=None, transport=netconf.TRANSPORT_SSH, capabilities=None])
 
    Constructor for a client side application. 
-   
+
    The *host* argument must be specified as a domain name or an IP address of
-   the NETCONF server host. If not specified, default NETCONF *port* value 830 
+   the NETCONF server host. If not specified, default NETCONF *port* value 830
    is used and the *user* is extracted from the process UID. Besides the default
    NETCONF over SSH transport, the NETCONF over TLS transport can be requested
    using ``netconf.TRANSPORT_TLS`` constant.
-   
+
    As the last argument applicable at the client side, caller can specify the
    list of NETCONF capabilities announced to the server. By default, the
    internal list provided by libnetconf is used. This way the both NETCONF
-   versions, 1.0 and 1.1 are supported (with preference to version 1.1). 
+   versions, 1.0 and 1.1 are supported (with preference to version 1.1).
 
 .. class:: Session([user=None, capabilities=None, fd_in=STDIN_FILENO, fd_out=STDOUT_FILENO])
 
    Constructor for a server side application.
-   
+
    All arguments are optional. By default, *user* is extracted from the process
    UID and *capabilities* list is the same as the list provided by the
    :func:`getCapabilities` function.
-   
+
    The *fd_in* and *fd_out* are file descriptors where the libnetconf will read
    the unencrypted data from and write unencrypted data to when communicating
    with the transport protocol server (SSH or TLS server).
@@ -191,11 +191,11 @@ client. The constructor of the class can be used in two ways: a client side way
    Same as the :class:`Session` class constructor for the client side except the
    last parameter. Here the shortcuts ``netconf.NETCONFv1_0`` and
    ``netconf.NETCONFv1_1`` can be used. By default, the supported protocol
-   versions are decided from the capabilities list provided by the 
+   versions are decided from the capabilities list provided by the
    :func:`getCapabilities` function. During the NETCONF protocol handshake the
    highest common protocol version for both the server and client is selected
    for further communication.
-   
+
 .. classmethod:: Session.accept([user=None, capabilities=None, fd_in=STDIN_FILENO, fd_out=STDOUT_FILENO])
 
    Same as the :class:`Session` class constructor for the server side.
@@ -210,7 +210,7 @@ Instance attributes (read-only):
 .. attribute:: Session.host
 
    Host where the NETCONF Session is connected.
-   
+
 .. attribute:: Session.port
 
    Port number where the NETCONF Session is connected.
@@ -226,7 +226,7 @@ Instance attributes (read-only):
 .. attribute:: Session.version
 
    "NETCONF Protocol version used for the NETCONF Session.
-   
+
 .. attribute:: Session.capabilities
 
    List of NETCONF capabilities assigned to the NETCONF Session.
@@ -245,7 +245,7 @@ The client-side methods:
 .. method:: Session.get([filter=None, wd=None])
 
    Performs NETCONF <get> operation and returns the returned data as a string.
-   
+
    *filter* is optional string representing NETCONF Subtree filter. *wd*
    argument can be used to specify the NETCONF *:with-defaults* mode - possible
    values are provided as ``WD_*`` constants of the :mod:`netconf` module.
@@ -257,7 +257,7 @@ The client-side methods:
    values are provided as the :mod:`netconf` module constants ``RUNNING``,
    ``STARTUP`` and ``CANDIDATE``. To allow the last two values, the appropriate
    NETCONF capability must be supported by the server.
-   
+
    Optional parameters *filter* and *wd* are the same as for the :meth:`get`
    method.
 
