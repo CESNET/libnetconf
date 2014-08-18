@@ -49,8 +49,10 @@
 #	include <libssh2.h>
 #endif
 
-#include <openssl/bio.h>
-#include <openssl/ssl.h>
+#ifdef ENABLE_TLS
+#	include <openssl/bio.h>
+#	include <openssl/ssl.h>
+#endif
 
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
