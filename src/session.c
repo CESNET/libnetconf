@@ -1187,7 +1187,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 
 		/* close NETCONF session */
 #ifdef DISABLE_LIBSSH
-		if (session->f_input != NULL) {
+		if (session->fd_output != -1) {
 			if (session->status == NC_SESSION_STATUS_WORKING && !session->is_server) {
 				announce_nc_session_closing(session);
 			}
@@ -1407,7 +1407,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 	}
 
 	/* check that we are able to write data */
-	do {
+	while (1) {
 		fds.fd = (session->transport_socket != -1) ? session->transport_socket : session->fd_output;
 		if (fds.fd == -1) {
 			ERROR("Invalid transport channel.");
@@ -1434,7 +1434,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 			return (EXIT_FAILURE);
 		}
 		break;
-	} while (session->fd_input != -1);
+	}
 
 	/* lock the session for sending the data */
 
