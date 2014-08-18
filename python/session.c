@@ -435,11 +435,20 @@ static PyObject *ncSessionAccept(PyObject *cls, PyObject *args, PyObject *keywor
 	char *kwlist[] = {"user", "capabilities", "fd_in", "fd_out", NULL};
 
 	/* Get input parameters */
-	if (! PyArg_ParseTupleAndKeywords(args, keywords, "zOii", kwlist, &user, &PyCpblts, &fd_in, &fd_out)) {
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "|zOii", kwlist, &user, &PyCpblts, &fd_in, &fd_out)) {
 		return (NULL);
 	}
 
+	if (PyCpblts == NULL) {
+		Py_INCREF(Py_None);
+		PyCpblts = Py_None;
+	}
+
 	result = PyObject_CallFunction(cls, "sHssOii", NULL, 0, user, NULL, PyCpblts, fd_in, fd_out);
+
+	if (PyCpblts == Py_None) {
+		Py_DECREF(Py_None);
+	}
 
 	return(result);
 }
@@ -460,7 +469,7 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 	char *kwlist[] = {"host", "port", "user", "transport", "capabilities", "fd_in", "fd_out", NULL};
 
 	/* Get input parameters */
-	if (! PyArg_ParseTupleAndKeywords(args, keywords, "|zHzzO!ii", kwlist, &host, &port, &user, &transport_s, &PyList_Type, &PyCpblts, &fd_in, &fd_out)) {
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "|zHzzOii", kwlist, &host, &port, &user, &transport_s, &PyCpblts, &fd_in, &fd_out)) {
 		return -1;
 	}
 
@@ -476,40 +485,47 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 		}
 	}
 
-	if (PyCpblts != NULL) {
+	if (PyCpblts != NULL && PyCpblts != Py_None) {
 		cpblts = nc_cpblts_new(NULL);
 		cpblts_free_flag = 1;
-		if (PyList_Check(PyCpblts) && ((l = PyList_Size(PyCpblts)) > 0)) {
-			for (i = 0; i < l; i++) {
-				PyObject *PyUni = PyList_GetItem(PyCpblts, i);
-				Py_INCREF(PyUni);
-				if (! PyUnicode_Check(PyUni)) {
-					PyErr_SetString(PyExc_TypeError, "Capabilities list must contain strings.");
-					nc_cpblts_free(cpblts);
+		if (PyList_Check(PyCpblts)) {
+			if ((l = PyList_Size(PyCpblts)) > 0) {
+				for (i = 0; i < l; i++) {
+					PyObject *PyUni = PyList_GetItem(PyCpblts, i);
+					Py_INCREF(PyUni);
+					if (!PyUnicode_Check(PyUni)) {
+						PyErr_SetString(PyExc_TypeError, "Capabilities list must contain strings.");
+						nc_cpblts_free(cpblts);
+						Py_DECREF(PyUni);
+						return -1;
+					}
+					PyObject *PyStr = PyUnicode_AsEncodedString(PyUni, "UTF-8", NULL);
 					Py_DECREF(PyUni);
-					return -1;
-				}
-				PyObject *PyStr = PyUnicode_AsEncodedString(PyUni, "UTF-8", NULL);
-				Py_DECREF(PyUni);
-				if (PyStr == NULL) {
-					nc_cpblts_free(cpblts);
-					return -1;
-				}
-				item = PyBytes_AsString(PyStr);
-				if (item == NULL) {
-					nc_cpblts_free(cpblts);
+					if (PyStr == NULL) {
+						nc_cpblts_free(cpblts);
+						return -1;
+					}
+					item = PyBytes_AsString(PyStr);
+					if (item == NULL) {
+						nc_cpblts_free(cpblts);
+						Py_DECREF(PyStr);
+						return -1;
+					}
+					ret = nc_cpblts_add(cpblts, item);
 					Py_DECREF(PyStr);
-					return -1;
-				}
-				ret = nc_cpblts_add(cpblts, item);
-				Py_DECREF(PyStr);
-				if (ret != EXIT_SUCCESS) {
-					nc_cpblts_free(cpblts);
-					return -1;
+					if (ret != EXIT_SUCCESS) {
+						nc_cpblts_free(cpblts);
+						return -1;
+					}
 				}
 			}
+		} else {
+			PyErr_SetString(PyExc_TypeError, "Capabilities argument is expected to be a list of strings.");
+			return -1;
 		}
-	} else {
+	}
+
+	if (cpblts == NULL) {
 		/* use global capabilities, that are, by default, same as libnetconf's
 		 * default capabilities
 		 */
