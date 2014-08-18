@@ -346,7 +346,7 @@ PyMODINIT_FUNC PyInit_netconf(void)
 	nc_init(NC_INIT_ALL);
 
 	/* set print callback */
-	nc_callback_print (clb_print);
+	nc_callback_print(clb_print);
 
 	/* get default caapbilities */
 	global_cpblts = nc_session_get_cpblts_default();

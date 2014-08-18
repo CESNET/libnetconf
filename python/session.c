@@ -398,7 +398,6 @@ static PyObject *ncSessionConnect(PyObject *cls, PyObject *args, PyObject *keywo
 		result = PyObject_CallFunction(cls, "sHssO", host, port, user, transport_s, PyCpblts);
 	}
 
-
 	return(result);
 }
 
