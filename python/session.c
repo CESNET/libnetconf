@@ -19,6 +19,8 @@ static PyMemberDef ncSessionMembers[] = {
 	{NULL}  /* Sentinel */
 };
 
+#define SESSION_CHECK(self) if(!(self->session)){PyErr_SetString(libnetconfError,"Session closed.");return NULL;}
+
 static void ncSessionFree(ncSessionObject *self)
 {
 	PyObject *err_type, *err_value, *err_traceback;
@@ -45,7 +47,9 @@ static int op_send_recv(ncSessionObject *self, nc_rpc* rpc, char **data)
 	case NC_MSG_UNKNOWN:
 		if (nc_session_get_status(self->session) != NC_SESSION_STATUS_WORKING) {
 			PyErr_SetString(libnetconfError, "Session damaged, closing.");
-			ncSessionFree(self);
+			/* free the Session */
+			nc_session_free(self->session);
+			self->session = NULL;
 		}
 		ret = EXIT_FAILURE;
 		break;
@@ -145,6 +149,8 @@ static PyObject *ncOpGet(ncSessionObject *self, PyObject *args, PyObject *keywor
 	const char *filter = NULL;
 	int wdmode = NCWD_MODE_NOTSET;
 
+	SESSION_CHECK(self);
+
 	char *kwlist[] = {"filter", "wd", NULL};
 
 	/* Get input parameters */
@@ -161,6 +167,8 @@ static PyObject *ncOpGetConfig(ncSessionObject *self, PyObject *args, PyObject *
 	int wdmode = NCWD_MODE_NOTSET;
 	int source = NC_DATASTORE_ERROR;
 	char *kwlist[] = {"source", "filter", "wd", NULL};
+
+	SESSION_CHECK(self);
 
 	/* Get input parameters */
 	if (! PyArg_ParseTupleAndKeywords(args, keywords, "i|zi", kwlist, &source, &filter, &wdmode)) {
@@ -184,6 +192,8 @@ static PyObject *ncOpDeleteConfig(ncSessionObject *self, PyObject *args, PyObjec
 	nc_rpc *rpc = NULL;
 	char *url = NULL;
 	char *kwlist[] = {"target", NULL};
+
+	SESSION_CHECK(self);
 
 	/* Get input parameters */
 	if (! PyArg_ParseTupleAndKeywords(args, keywords, "O", kwlist, &PyTarget)) {
@@ -226,6 +236,8 @@ static PyObject *ncOpKillSession(ncSessionObject *self, PyObject *args, PyObject
 
 	char *kwlist[] = {"id", NULL};
 
+	SESSION_CHECK(self);
+
 	/* Get input parameters */
 	if (! PyArg_ParseTupleAndKeywords(args, keywords, "s", kwlist, &id)) {
 		return (NULL);
@@ -252,6 +264,8 @@ static PyObject *ncOpCopyConfig(ncSessionObject *self, PyObject *args, PyObject 
 	PyObject *PySource, *PyTarget;
 	nc_rpc *rpc = NULL;
 	char *kwlist[] = {"source", "target", "wd", NULL};
+
+	SESSION_CHECK(self);
 
 	/* Get input parameters */
 	if (! PyArg_ParseTupleAndKeywords(args, keywords, "OO|i", kwlist, &PySource, &PyTarget, &wdmode)) {
@@ -331,6 +345,8 @@ static PyObject *lock_common(ncSessionObject *self, PyObject *args, PyObject *ke
 	nc_rpc *rpc = NULL;
 	char *kwlist[] = {"target", NULL};
 
+	SESSION_CHECK(self);
+
 	/* Get input parameters */
 	if (! PyArg_ParseTupleAndKeywords(args, keywords, "i|zi", kwlist, &target)) {
 		return (NULL);
@@ -374,6 +390,14 @@ static PyObject *ncOpUnlock(ncSessionObject *self, PyObject *args, PyObject *key
 	return (lock_common(self, args, keywords, nc_rpc_unlock));
 }
 
+static PyObject *ncIsActive(ncSessionObject *self)
+{
+	if (self->session) {
+		Py_RETURN_TRUE;
+	} else {
+		Py_RETURN_FALSE;
+	}
+}
 
 static PyObject *ncSessionConnect(PyObject *cls, PyObject *args, PyObject *keywords)
 {
@@ -631,6 +655,9 @@ static PyMethodDef ncSessionMethods[] = {
 	{"killSession", (PyCFunction)ncOpKillSession,
 		METH_VARARGS | METH_KEYWORDS,
 		PyDoc_STR("Execute NETCONF <kill-session> RPC.")},
+	{"isActive", (PyCFunction)ncIsActive,
+		METH_NOARGS,
+		PyDoc_STR("Ask if the session is still active.")},
 	{NULL, NULL, 0, NULL}
 };
 
