@@ -538,6 +538,9 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 	} else {
 		/* Server side */
 		session = nc_session_accept_inout(cpblts, user, fd_in, fd_out);
+
+		/* add to the list of monitored sessions */
+		nc_session_monitor(session);
 	}
 
 	if (cpblts_free_flag) {
