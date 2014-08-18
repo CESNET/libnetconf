@@ -192,12 +192,11 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 	}
 
 	/* allocate netconf session structure */
-	retval = malloc(sizeof(struct nc_session));
+	retval = calloc(1, sizeof(struct nc_session));
 	if (retval == NULL) {
 		ERROR("Memory allocation failed (%s)", strerror(errno));
 		return (NULL);
 	}
-	memset(retval, 0, sizeof(struct nc_session));
 	if ((retval->stats = malloc (sizeof (struct nc_session_stats))) == NULL) {
 		ERROR("Memory allocation failed (%s)", strerror(errno));
 		free(retval);
@@ -207,17 +206,7 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 	retval->fd_input = -1;
 	retval->fd_output = -1;
 	retval->username = strdup(username);
-	retval->groups = NULL; /* client side does not need this information */
 	retval->msgid = 1;
-	retval->queue_event = NULL;
-	retval->queue_msg = NULL;
-	retval->logintime = NULL;
-	retval->monitored = 0;
-	retval->nacm_recovery = 0; /* not needed/decidable on the client side */
-	retval->stats->in_rpcs = 0;
-	retval->stats->in_bad_rpcs = 0;
-	retval->stats->out_rpc_errors = 0;
-	retval->stats->out_notifications = 0;
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
@@ -475,37 +464,24 @@ struct nc_session *nc_session_connect_libssh2_channel(struct nc_session *session
 	int r;
 
 	/* allocate netconf session structure */
-	retval = malloc(sizeof(struct nc_session));
+	retval = calloc(1, sizeof(struct nc_session));
 	if (retval == NULL) {
 		ERROR("Memory allocation failed (%s)", strerror(errno));
 		return (NULL);
 	}
-	memset(retval, 0, sizeof(struct nc_session));
 	if ((retval->stats = malloc (sizeof (struct nc_session_stats))) == NULL) {
 		ERROR("Memory allocation failed (%s)", strerror(errno));
 		free(retval);
 		return NULL;
 	}
 
-	retval->is_server = 0;
 	retval->transport_socket = session->transport_socket;
 	retval->fd_input = -1;
 	retval->fd_output = -1;
 	retval->hostname = session->hostname;
 	retval->username = session->username;
-	retval->groups = NULL; /* client side does not need this information */
 	retval->port = session->port;
 	retval->msgid = 1;
-	retval->queue_event = NULL;
-	retval->queue_msg = NULL;
-	retval->logintime = NULL;
-	session->ntf_active = 0;
-	retval->monitored = 0;
-	retval->nacm_recovery = 0; /* not needed/decidable on the client side */
-	retval->stats->in_rpcs = 0;
-	retval->stats->in_bad_rpcs = 0;
-	retval->stats->out_rpc_errors = 0;
-	retval->stats->out_notifications = 0;
 
 	/* shared resources with the original session */
 	retval->ssh_session = session->ssh_session;
@@ -759,20 +735,12 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 		free(retval);
 		return NULL;
 	}
-	retval->is_server = 0;
 	retval->transport_socket = -1;
 	retval->fd_input = -1;
-	retval->ssh_session = NULL;
 	retval->hostname = strdup(host);
 	retval->username = strdup(username);
-	retval->groups = NULL; /* client side does not need this information */
 	retval->port = strdup(port);
 	retval->msgid = 1;
-	retval->nacm_recovery = 0; /* not needed/decidable on the client side */
-	retval->stats->in_rpcs = 0;
-	retval->stats->in_bad_rpcs = 0;
-	retval->stats->out_rpc_errors = 0;
-	retval->stats->out_notifications = 0;
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
