@@ -585,10 +585,21 @@ static PyObject *ncSessionGetTransport(ncSessionObject *self, void *closure)
 
 static PyObject *ncSessionStr(ncSessionObject *self)
 {
-	return PyUnicode_FromFormat("NETCONF Session %s to %s:%s",
-			nc_session_get_id(self->session),
-			nc_session_get_host(self->session),
-			nc_session_get_port(self->session));
+	const char* port = nc_session_get_port(self->session);
+
+	if (port) {
+		/* client side */
+		return PyUnicode_FromFormat("NETCONF Session %s to %s:%s (%lu)",
+				nc_session_get_id(self->session),
+				nc_session_get_host(self->session),
+				port,
+				((PyObject*)(self))->ob_refcnt);
+	} else {
+		/* server side */
+		return PyUnicode_FromFormat("NETCONF Session %s (%lu)",
+				nc_session_get_id(self->session),
+				((PyObject*)(self))->ob_refcnt);
+	}
 }
 
 static PyObject *ncSessionGetCapabilities(ncSessionObject *self, void *closure)
