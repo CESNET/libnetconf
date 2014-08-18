@@ -390,6 +390,99 @@ static PyObject *ncOpUnlock(ncSessionObject *self, PyObject *args, PyObject *key
 	return (lock_common(self, args, keywords, nc_rpc_unlock));
 }
 
+static PyObject *ncProcessRPC(ncSessionObject *self)
+{
+	NC_MSG_TYPE ret;
+	NC_RPC_TYPE req_type;
+	NC_OP req_op;
+	nc_rpc *rpc = NULL;
+	nc_reply *reply = NULL;
+	struct nc_err* e = NULL;
+
+	SESSION_CHECK(self);
+
+	/* receive incoming message */
+	ret = nc_session_recv_rpc(self->session, -1, &rpc);
+	if (ret != NC_MSG_RPC) {
+		if (nc_session_get_status(self->session) != NC_SESSION_STATUS_WORKING) {
+			/* something really bad happend, and communication is not possible anymore */
+			nc_session_free(self->session);
+			self->session = NULL;
+		}
+		Py_RETURN_NONE;
+	}
+
+	/* process it */
+	req_type = nc_rpc_get_type(rpc);
+	req_op = nc_rpc_get_op(rpc);
+	if (req_type == NC_RPC_SESSION) {
+		/* process operations affectinf session */
+		switch(req_op) {
+		case NC_OP_CLOSESESSION:
+			/* exit the event loop immediately without processing any following request */
+			reply = nc_reply_ok();
+			break;
+		case NC_OP_KILLSESSION:
+			/* todo: kill the requested session */
+			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
+			break;
+		default:
+			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
+			break;
+		}
+	} else if (req_type == NC_RPC_DATASTORE_READ) {
+		/* process operations reading datastore */
+		switch (req_op) {
+		case NC_OP_GET:
+		case NC_OP_GETCONFIG:
+			reply = ncds_apply_rpc2all(self->session, rpc,  NULL);
+			break;
+		default:
+			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
+			break;
+		}
+	} else if (req_type == NC_RPC_DATASTORE_WRITE) {
+		/* process operations affecting datastore */
+		switch (req_op) {
+		case NC_OP_LOCK:
+		case NC_OP_UNLOCK:
+		case NC_OP_COPYCONFIG:
+		case NC_OP_DELETECONFIG:
+		case NC_OP_EDITCONFIG:
+			reply = ncds_apply_rpc2all(self->session, rpc, NULL);
+			break;
+		default:
+			reply = nc_reply_error(nc_err_new(NC_ERR_OP_NOT_SUPPORTED));
+			break;
+		}
+	} else {
+		/* process other operations */
+		reply = ncds_apply_rpc2all(self->session, rpc, NULL);
+	}
+
+	/* create reply */
+	if (reply == NULL) {
+		reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
+	} else if (reply == NCDS_RPC_NOT_APPLICABLE) {
+		e = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(e, NC_ERR_PARAM_MSG, "Requested operation cannot be performed on the managed datastore.");
+		reply = nc_reply_error(e);
+	}
+
+	/* and send the reply to the client */
+	nc_session_send_reply(self->session, rpc, reply);
+	nc_rpc_free(rpc);
+	nc_reply_free(reply);
+
+	if (req_op == NC_OP_CLOSESESSION) {
+		/* free the Session */
+		nc_session_free(self->session);
+		self->session = NULL;
+	}
+
+	Py_RETURN_NONE;
+}
+
 static PyObject *ncIsActive(ncSessionObject *self)
 {
 	if (self->session) {
@@ -685,6 +778,9 @@ static PyMethodDef ncSessionMethods[] = {
 	{"killSession", (PyCFunction)ncOpKillSession,
 		METH_VARARGS | METH_KEYWORDS,
 		PyDoc_STR("Execute NETCONF <kill-session> RPC.")},
+	{"processRequest", (PyCFunction)ncProcessRPC,
+		METH_NOARGS,
+		PyDoc_STR("Process a client request.")},
 	{"isActive", (PyCFunction)ncIsActive,
 		METH_NOARGS,
 		PyDoc_STR("Ask if the session is still active.")},
