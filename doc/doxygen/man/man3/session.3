@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Tue Aug 5 2014" "Version 0.8.0-99_trunk" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Tue Aug 19 2014" "Version 0.8.0-148_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -109,6 +109,10 @@ libnetconf's functions for handling NETCONF sessions\&.
 .RI "struct nc_session * \fBnc_session_connect_channel\fP (struct nc_session *session, const struct nc_cpblts *cpblts)"
 .br
 .RI "\fICreate another NETCONF session using already established SSH session\&. No authentication is needed in this case\&. \fP"
+.ti -1c
+.RI "struct nc_session * \fBnc_session_connect_inout\fP (int fd_in, int fd_out, const struct nc_cpblts *cpblts, const char *host, const char *port, const char *username, \fBNC_TRANSPORT\fP transport)"
+.br
+.RI "\fICreate NETCONF session communicating via given file descriptors\&. This is an alternative function to \fBnc_session_connect()\fP\&. \fP"
 .ti -1c
 .RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)"
 .br
@@ -572,9 +576,11 @@ Structure describing the NETCONF session or NULL in case of an error\&.
 .PP
 Create another NETCONF session using already established SSH session\&. No authentication is needed in this case\&. This function works only if libnetconf is compiled with using libssh2\&.
 .PP
+It is not applicable to the sessions created by \fBnc_session_connect_inout()\fP\&.
+.PP
 \fBParameters:\fP
 .RS 4
-\fIsession\fP Already established NETCONF session\&. 
+\fIsession\fP Already established NETCONF session using \fBnc_session_connect()\fP\&. 
 .br
 \fIcpblts\fP NETCONF capabilities structure with capabilities supported by the client\&. Client can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter)\&. 
 .RE
@@ -582,6 +588,35 @@ Create another NETCONF session using already established SSH session\&. No authe
 \fBReturns:\fP
 .RS 4
 Structure describing the NETCONF session or NULL in case of an error\&. 
+.RE
+.PP
+
+.SS "struct nc_session* nc_session_connect_inout (intfd_in, intfd_out, const struct nc_cpblts *cpblts, const char *host, const char *port, const char *username, \fBNC_TRANSPORT\fPtransport)"
+
+.PP
+Create NETCONF session communicating via given file descriptors\&. This is an alternative function to \fBnc_session_connect()\fP\&. In this case the initiation of the transport session (SSH, TLS, \&.\&.\&.) is done externally\&. libnetconf just uses provided file descriptors to read data from and write data to that external entity (process, functions,\&.\&.\&.)\&.
+.PP
+Before calling this function, all necessary authentication process must be done so libnetconf can directly start with <hello> messages performing the NETCONF handshake\&.
+.PP
+Since connecting to a host and authentication is done before, the provided host, port, username anf transport arguments are only informative and libnetconf use them only for returning value by nc_session_get_*() functions\&. The cpblts argument is used during the NETCONF handshake in the same way as in the \fBnc_session_connect()\fP function\&.
+.PP
+It is not allowed to use \fBnc_session_connect_channel()\fP on the session created by this function\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfd_in\fP Opened file desriptor where the (unencrypted) data from the NETCONF server are read\&. 
+.br
+\fIfd_out\fP Opened file desriptor where the (unencrypted) data to the NETCONF server are written\&. 
+.br
+\fIcpblts\fP NETCONF capabilities structure with capabilities supported by the client\&. Client can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter)\&. 
+.br
+\fIhost\fP Name of the host where we are connected to via the provided file descriptors\&. 
+.br
+\fIport\fP The port number of the remote host where we are connected\&. 
+.br
+\fIusername\fP Name of the user we are connected to the remote host as\&. 
+.br
+\fItransport\fP The transport protocol used to connect to the remote host\&. 
 .RE
 .PP
 

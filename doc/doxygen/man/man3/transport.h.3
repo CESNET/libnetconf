@@ -1,4 +1,4 @@
-.TH "src/transport.h" 3 "Tue Aug 5 2014" "Version 0.8.0-99_trunk" "libnetconf" \" -*- nroff -*-
+.TH "src/transport.h" 3 "Tue Aug 19 2014" "Version 0.8.0-148_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -12,14 +12,6 @@ Functions implementing transport layer for NETCONF\&.
 \fC#include 'netconf\&.h'\fP
 .br
 
-.SS "Enumerations"
-
-.in +1c
-.ti -1c
-.RI "enum \fBNC_TRANSPORT\fP { \fBNC_TRANSPORT_UNKNOWN\fP = -1, \fBNC_TRANSPORT_SSH\fP, \fBNC_TRANSPORT_TLS\fP }"
-.br
-.RI "\fISupported NETCONF transport protocols enumeration\&. To change currently used transport protocol, call \fBnc_session_transport()\fP\&. \fP"
-.in -1c
 .SS "Functions"
 
 .in +1c
@@ -43,6 +35,10 @@ Functions implementing transport layer for NETCONF\&.
 .RI "struct nc_session * \fBnc_session_connect_channel\fP (struct nc_session *session, const struct nc_cpblts *cpblts)"
 .br
 .RI "\fICreate another NETCONF session using already established SSH session\&. No authentication is needed in this case\&. \fP"
+.ti -1c
+.RI "struct nc_session * \fBnc_session_connect_inout\fP (int fd_in, int fd_out, const struct nc_cpblts *cpblts, const char *host, const char *port, const char *username, \fBNC_TRANSPORT\fP transport)"
+.br
+.RI "\fICreate NETCONF session communicating via given file descriptors\&. This is an alternative function to \fBnc_session_connect()\fP\&. \fP"
 .ti -1c
 .RI "int \fBnc_session_transport\fP (\fBNC_TRANSPORT\fP proto)"
 .br

@@ -2,7 +2,7 @@
 <area shape="rect" id="node3" href="$d8/dba/notifications__xml_8h.html" title="NETCONF Notifications functions with libxml2 support. " alt="" coords="71,155,200,181"/>
 <area shape="rect" id="node18" href="$d9/de5/messages__xml_8h.html" title="messages_xml.h" alt="" coords="174,229,297,256"/>
 <area shape="rect" id="node26" href="$d7/dc8/datastore__xml_8h.html" title="NETCONF datastore handling function prototypes and structures &#45; XML variants. " alt="" coords="276,155,392,181"/>
-<area shape="rect" id="node33" href="$d0/db0/transapi_8h.html" title="transapi.h" alt="" coords="322,229,400,256"/>
+<area shape="rect" id="node33" href="$d0/db0/transapi_8h.html" title="Functions implementing libnetconf TransAPI mechanism. " alt="" coords="322,229,400,256"/>
 <area shape="rect" id="node39" href="$d1/d87/libnetconf_8h.html" title="libnetconf&#39;s main header. " alt="" coords="765,80,853,107"/>
 <area shape="rect" id="node7" href="$d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="679,379,752,405"/>
 <area shape="rect" id="node13" href="$d7/d62/notifications_8h.html" title="Functions to handle NETCONF Notifications. " alt="" coords="425,229,527,256"/>

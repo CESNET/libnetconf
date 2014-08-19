@@ -9,7 +9,7 @@
 <area shape="rect" id="node27" href="$da/d41/error_8h.html" title="NETCONF error handling functions. " alt="" coords="390,80,472,107"/>
 <area shape="rect" id="node31" href="$d9/db6/datastore_8h.html" title="NETCONF datastore handling function prototypes and structures. " alt="" coords="279,155,389,181"/>
 <area shape="rect" id="node37" href="$d9/de5/messages__xml_8h.html" title="src/messages_xml.h" alt="" coords="590,155,737,181"/>
-<area shape="rect" id="node40" href="$d0/db0/transapi_8h.html" title="src/transapi.h" alt="" coords="465,155,566,181"/>
+<area shape="rect" id="node40" href="$d0/db0/transapi_8h.html" title="Functions implementing libnetconf TransAPI mechanism. " alt="" coords="465,155,566,181"/>
 <area shape="rect" id="node46" href="$d7/d62/notifications_8h.html" title="Functions to handle NETCONF Notifications. " alt="" coords="712,80,836,107"/>
 <area shape="rect" id="node49" href="$d8/dba/notifications__xml_8h.html" title="NETCONF Notifications functions with libxml2 support. " alt="" coords="812,155,964,181"/>
 <area shape="rect" id="node55" href="$dc/d3a/callbacks__ssh_8h.html" title="Functions to set libssh2&#39;s callbacks. " alt="" coords="1112,80,1250,107"/>

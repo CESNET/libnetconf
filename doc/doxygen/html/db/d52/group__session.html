@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.8.0-99_trunk</span>
+   &#160;<span id="projectnumber">0.8.0-148_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -212,6 +212,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga7d9e0f17bb4ca5b35c8343db59955060"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga7d9e0f17bb4ca5b35c8343db59955060">nc_session_connect_channel</a> (struct nc_session *session, const struct nc_cpblts *cpblts)</td></tr>
 <tr class="memdesc:ga7d9e0f17bb4ca5b35c8343db59955060"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create another NETCONF session using already established SSH session. No authentication is needed in this case.  <a href="#ga7d9e0f17bb4ca5b35c8343db59955060">More...</a><br/></td></tr>
 <tr class="separator:ga7d9e0f17bb4ca5b35c8343db59955060"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacaf7b465963605a29f25c3a36df378a6"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacaf7b465963605a29f25c3a36df378a6">nc_session_connect_inout</a> (int fd_in, int fd_out, const struct nc_cpblts *cpblts, const char *host, const char *port, const char *username, <a class="el" href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a> transport)</td></tr>
+<tr class="memdesc:gacaf7b465963605a29f25c3a36df378a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create NETCONF session communicating via given file descriptors. This is an alternative function to <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a>.  <a href="#gacaf7b465963605a29f25c3a36df378a6">More...</a><br/></td></tr>
+<tr class="separator:gacaf7b465963605a29f25c3a36df378a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga3868d5331db61a5d3a4df3ff5fa33851"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851">nc_session_dummy</a> (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)</td></tr>
 <tr class="memdesc:ga3868d5331db61a5d3a4df3ff5fa33851"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a disconnected session structure.  <a href="#ga3868d5331db61a5d3a4df3ff5fa33851">More...</a><br/></td></tr>
 <tr class="separator:ga3868d5331db61a5d3a4df3ff5fa33851"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -983,14 +986,89 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 <p>Create another NETCONF session using already established SSH session. No authentication is needed in this case. </p>
 <p>This function works only if libnetconf is compiled with using libssh2.</p>
+<p>It is not applicable to the sessions created by <a class="el" href="../../db/d52/group__session.html#gacaf7b465963605a29f25c3a36df378a6" title="Create NETCONF session communicating via given file descriptors. This is an alternative function to n...">nc_session_connect_inout()</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>Already established NETCONF session. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>Already established NETCONF session using <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a>. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">cpblts</td><td>NETCONF capabilities structure with capabilities supported by the client. Client can use <a class="el" href="../../db/d52/group__session.html#ga8283673aa18f079a89a437efb436a55a" title="Get NULL terminated list of the default capabilities supported by libnetconf including the list of na...">nc_session_get_cpblts_default()</a> to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter). </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Structure describing the NETCONF session or NULL in case of an error. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gacaf7b465963605a29f25c3a36df378a6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct nc_session* nc_session_connect_inout </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>fd_in</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>fd_out</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const struct nc_cpblts *&#160;</td>
+          <td class="paramname"><em>cpblts</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>host</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>port</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>username</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a>&#160;</td>
+          <td class="paramname"><em>transport</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create NETCONF session communicating via given file descriptors. This is an alternative function to <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a>. </p>
+<p>In this case the initiation of the transport session (SSH, TLS, ...) is done externally. libnetconf just uses provided file descriptors to read data from and write data to that external entity (process, functions,...).</p>
+<p>Before calling this function, all necessary authentication process must be done so libnetconf can directly start with &lt;hello&gt; messages performing the NETCONF handshake.</p>
+<p>Since connecting to a host and authentication is done before, the provided host, port, username anf transport arguments are only informative and libnetconf use them only for returning value by nc_session_get_*() functions. The cpblts argument is used during the NETCONF handshake in the same way as in the <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a> function.</p>
+<p>It is not allowed to use <a class="el" href="../../db/d52/group__session.html#ga7d9e0f17bb4ca5b35c8343db59955060" title="Create another NETCONF session using already established SSH session. No authentication is needed in ...">nc_session_connect_channel()</a> on the session created by this function.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">fd_in</td><td>Opened file desriptor where the (unencrypted) data from the NETCONF server are read. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">fd_out</td><td>Opened file desriptor where the (unencrypted) data to the NETCONF server are written. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cpblts</td><td>NETCONF capabilities structure with capabilities supported by the client. Client can use <a class="el" href="../../db/d52/group__session.html#ga8283673aa18f079a89a437efb436a55a" title="Get NULL terminated list of the default capabilities supported by libnetconf including the list of na...">nc_session_get_cpblts_default()</a> to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">host</td><td>Name of the host where we are connected to via the provided file descriptors. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">port</td><td>The port number of the remote host where we are connected. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">username</td><td>Name of the user we are connected to the remote host as. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">transport</td><td>The transport protocol used to connect to the remote host. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1471,7 +1549,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 5 2014 16:54:25 for libnetconf by
+    <li class="footer">Generated on Tue Aug 19 2014 08:51:22 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

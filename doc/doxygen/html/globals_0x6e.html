@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.8.0-99_trunk</span>
+   &#160;<span id="projectnumber">0.8.0-148_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -753,6 +753,9 @@ $(document).ready(function(){initNavTree('globals_0x6e.html','');});
 <li>nc_session_connect_channel()
 : <a class="el" href="db/d52/group__session.html#ga7d9e0f17bb4ca5b35c8343db59955060">transport.h</a>
 </li>
+<li>nc_session_connect_inout()
+: <a class="el" href="db/d52/group__session.html#gacaf7b465963605a29f25c3a36df378a6">transport.h</a>
+</li>
 <li>nc_session_dummy()
 : <a class="el" href="db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851">session.h</a>
 </li>
@@ -889,16 +892,16 @@ $(document).ready(function(){initNavTree('globals_0x6e.html','');});
 : <a class="el" href="db/db4/group__tls.html#gacbf946a826fa6c7c18a4e66d532b659f">libnetconf_tls.h</a>
 </li>
 <li>NC_TRANSPORT
-: <a class="el" href="db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">transport.h</a>
+: <a class="el" href="db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">netconf.h</a>
 </li>
 <li>NC_TRANSPORT_SSH
-: <a class="el" href="db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa7878cac9e93258d6bb1a2f166377606a">transport.h</a>
+: <a class="el" href="db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa7878cac9e93258d6bb1a2f166377606a">netconf.h</a>
 </li>
 <li>NC_TRANSPORT_TLS
-: <a class="el" href="db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa9dfde07fbf3ce02396167716ef70c612">transport.h</a>
+: <a class="el" href="db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa9dfde07fbf3ce02396167716ef70c612">netconf.h</a>
 </li>
 <li>NC_TRANSPORT_UNKNOWN
-: <a class="el" href="db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa914942ddb1fbb24a094f8e6ec5188e6e">transport.h</a>
+: <a class="el" href="db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa914942ddb1fbb24a094f8e6ec5188e6e">netconf.h</a>
 </li>
 <li>NC_URL_ALL
 : <a class="el" href="d5/d7d/group__url.html#ggaeecc86d0808c9098b6a8694e88925ccda120f1a8076bbafe4bddd026d27ac54dd">url.h</a>
@@ -951,17 +954,17 @@ $(document).ready(function(){initNavTree('globals_0x6e.html','');});
 <li>NC_VERB_LEVEL
 : <a class="el" href="d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060">netconf.h</a>
 </li>
-<li>nc_verb_verbose()
-: <a class="el" href="d3/d35/group__gen_a_p_i.html#gae4f0d22fb274269c0259497abb702f5d">netconf.h</a>
-</li>
 <li>NC_VERB_VERBOSE
 : <a class="el" href="d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060ae023b386220c2337dc9a556f5c669172">netconf.h</a>
 </li>
-<li>nc_verb_warning()
-: <a class="el" href="d3/d35/group__gen_a_p_i.html#ga943a7c859f20bb1278964a7424762d8e">netconf.h</a>
+<li>nc_verb_verbose()
+: <a class="el" href="d3/d35/group__gen_a_p_i.html#gae4f0d22fb274269c0259497abb702f5d">netconf.h</a>
 </li>
 <li>NC_VERB_WARNING
 : <a class="el" href="d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a4a0cbb6bc660d3a50c3dff6028185abf">netconf.h</a>
+</li>
+<li>nc_verb_warning()
+: <a class="el" href="d3/d35/group__gen_a_p_i.html#ga943a7c859f20bb1278964a7424762d8e">netconf.h</a>
 </li>
 <li>nc_verbosity()
 : <a class="el" href="d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7">netconf.h</a>
@@ -1263,7 +1266,7 @@ $(document).ready(function(){initNavTree('globals_0x6e.html','');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 5 2014 16:54:25 for libnetconf by
+    <li class="footer">Generated on Tue Aug 19 2014 08:51:22 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

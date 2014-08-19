@@ -129,6 +129,11 @@ var netconf_8h =
       [ "NC_SESSION_TERM_BADHELLO", "d3/d7a/netconf_8h.html#ggab8fb6ff96d652b9aeb1223729e5694c2a441729b11f47c4c93dcfb59c9959d70a", null ],
       [ "NC_SESSION_TERM_OTHER", "d3/d7a/netconf_8h.html#ggab8fb6ff96d652b9aeb1223729e5694c2af01550127e61eba3ec255fb909ea932f", null ]
     ] ],
+    [ "NC_TRANSPORT", "d3/d7a/netconf_8h.html#ga8be6ccea205129b05c38331a7a42174a", [
+      [ "NC_TRANSPORT_UNKNOWN", "d3/d7a/netconf_8h.html#gga8be6ccea205129b05c38331a7a42174aa914942ddb1fbb24a094f8e6ec5188e6e", null ],
+      [ "NC_TRANSPORT_SSH", "d3/d7a/netconf_8h.html#gga8be6ccea205129b05c38331a7a42174aa7878cac9e93258d6bb1a2f166377606a", null ],
+      [ "NC_TRANSPORT_TLS", "d3/d7a/netconf_8h.html#gga8be6ccea205129b05c38331a7a42174aa9dfde07fbf3ce02396167716ef70c612", null ]
+    ] ],
     [ "NC_VERB_LEVEL", "d3/d7a/netconf_8h.html#ga921d994eb69a9efd93ef85cf4a6cd060", [
       [ "NC_VERB_ERROR", "d3/d7a/netconf_8h.html#gga921d994eb69a9efd93ef85cf4a6cd060a908c5d51b81e0ab37d2c57e569446d9b", null ],
       [ "NC_VERB_WARNING", "d3/d7a/netconf_8h.html#gga921d994eb69a9efd93ef85cf4a6cd060a4a0cbb6bc660d3a50c3dff6028185abf", null ],

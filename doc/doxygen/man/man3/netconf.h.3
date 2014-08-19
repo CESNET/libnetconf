@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Tue Aug 5 2014" "Version 0.8.0-99_trunk" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Tue Aug 19 2014" "Version 0.8.0-148_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -126,6 +126,10 @@ libnetconf's general public functions and structures definitions\&.
 .RI "enum \fBNC_SESSION_TERM_REASON\fP { \fBNC_SESSION_TERM_CLOSED\fP, \fBNC_SESSION_TERM_KILLED\fP, \fBNC_SESSION_TERM_DROPPED\fP, \fBNC_SESSION_TERM_TIMEOUT\fP, \fBNC_SESSION_TERM_BADHELLO\fP, \fBNC_SESSION_TERM_OTHER\fP }"
 .br
 .RI "\fIEnumeration of reasons of the NETCONF session termination as defined in RFC 6470\&. \fP"
+.ti -1c
+.RI "enum \fBNC_TRANSPORT\fP { \fBNC_TRANSPORT_UNKNOWN\fP = -1, \fBNC_TRANSPORT_SSH\fP, \fBNC_TRANSPORT_TLS\fP }"
+.br
+.RI "\fISupported NETCONF transport protocols enumeration\&. To change currently used transport protocol, call \fBnc_session_transport()\fP\&. \fP"
 .ti -1c
 .RI "enum \fBNC_VERB_LEVEL\fP { \fBNC_VERB_ERROR\fP, \fBNC_VERB_WARNING\fP, \fBNC_VERB_VERBOSE\fP, \fBNC_VERB_DEBUG\fP }"
 .br

@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.8.0-99_trunk</span>
+   &#160;<span id="projectnumber">0.8.0-148_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -110,8 +110,8 @@ $(document).ready(function(){initNavTree('da/d46/session_8h_source.html','../../
 </div><!--header-->
 <div class="contents">
 <a href="../../da/d46/session_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#ifndef SESSION_H_</span></div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define SESSION_H_</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#ifndef NC_SESSION_H_</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define NC_SESSION_H_</span></div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor"></span></div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d2/d02/transport_8h.html">transport.h</a>&quot;</span></div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d3/d7a/netconf_8h.html">netconf.h</a>&quot;</span></div>
@@ -186,9 +186,9 @@ $(document).ready(function(){initNavTree('da/d46/session_8h_source.html','../../
 <div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;<span class="preprocessor"></span>}</div>
 <div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* SESSION_H_ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* NC_SESSION_H_ */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="group__session_html_gaea2ced8d4e5f2cc9971680e49f876c58"><div class="ttname"><a href="../../db/d52/group__session.html#gaea2ced8d4e5f2cc9971680e49f876c58">nc_cpblts_iter_next</a></div><div class="ttdeci">const char * nc_cpblts_iter_next(struct nc_cpblts *c)</div><div class="ttdoc">Get the next capability string from the given NETCONF capabilities structure. </div></div>
-<div class="ttc" id="group__session_html_ga8be6ccea205129b05c38331a7a42174a"><div class="ttname"><a href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a></div><div class="ttdeci">NC_TRANSPORT</div><div class="ttdoc">Supported NETCONF transport protocols enumeration. To change currently used transport protocol...</div><div class="ttdef"><b>Definition:</b> transport.h:60</div></div>
+<div class="ttc" id="group__session_html_ga8be6ccea205129b05c38331a7a42174a"><div class="ttname"><a href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a></div><div class="ttdeci">NC_TRANSPORT</div><div class="ttdoc">Supported NETCONF transport protocols enumeration. To change currently used transport protocol...</div><div class="ttdef"><b>Definition:</b> netconf.h:408</div></div>
 <div class="ttc" id="group__session_html_ga6465c58b3ca057b46655d5ffa90caff3"><div class="ttname"><a href="../../db/d52/group__session.html#ga6465c58b3ca057b46655d5ffa90caff3">nc_cpblts_free</a></div><div class="ttdeci">void nc_cpblts_free(struct nc_cpblts *c)</div><div class="ttdoc">Free NETCONF capabilities structure. </div></div>
 <div class="ttc" id="group__session_html_ga023c9c813c59588ab938108f3f063d41"><div class="ttname"><a href="../../db/d52/group__session.html#ga023c9c813c59588ab938108f3f063d41">nc_session_monitor</a></div><div class="ttdeci">int nc_session_monitor(struct nc_session *session)</div><div class="ttdoc">Add the session into the internal list of monitored sessions that are returned as part of netconf-sta...</div></div>
 <div class="ttc" id="group__session_html_gae92c774e940114b4733f85e186d84620"><div class="ttname"><a href="../../db/d52/group__session.html#gae92c774e940114b4733f85e186d84620">nc_cpblts_iter_start</a></div><div class="ttdeci">void nc_cpblts_iter_start(struct nc_cpblts *c)</div><div class="ttdoc">Move NETCONF capabilities structure iterator to the beginning of the capability strings list...</div></div>
@@ -233,7 +233,7 @@ $(document).ready(function(){initNavTree('da/d46/session_8h_source.html','../../
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../da/d46/session_8h.html">session.h</a></li>
-    <li class="footer">Generated on Tue Aug 5 2014 16:54:25 for libnetconf by
+    <li class="footer">Generated on Tue Aug 19 2014 08:51:22 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>
