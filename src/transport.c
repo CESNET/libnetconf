@@ -561,14 +561,107 @@ static int nc_server_handshake(struct nc_session *session, char** cpblts)
 	return (retval);
 }
 
+API struct nc_session* nc_session_connect_inout(int fd_in, int fd_out, const struct nc_cpblts* cpblts, const char *host, const char *port, const char *username, NC_TRANSPORT transport)
+{
+	struct nc_session *retval = NULL;
+	pthread_mutexattr_t mattr;
+	int r;
+	struct nc_cpblts *client_cpblts = NULL;
+
+	/*
+	 * host, port and username are only informative, connecting to the server
+	 * is expected to be done by the process providing in/out file descriptors.
+	 * Similarly, the set transport protocol is ignored and informatively the
+	 * provided value is stored
+	 */
+
+	/* allocate netconf session structure */
+	retval = calloc(1, sizeof(struct nc_session));
+	if (retval == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
+		return (NULL);
+	}
+	if ((retval->stats = malloc(sizeof(struct nc_session_stats))) == NULL) {
+		ERROR("Memory allocation failed (%s)", strerror(errno));
+		free(retval);
+		return NULL;
+	}
+	retval->fd_input = fd_in;
+	retval->fd_output = fd_out;
+
+	retval->transport_socket = -1;
+	retval->transport = transport;
+	retval->hostname = host ? strdup(host) : NULL;
+	retval->port = port ? strdup(port) : NULL;
+	retval->username = username ? strdup(username) : NULL;
+	retval->msgid = 1;
+
+	if (pthread_mutexattr_init(&mattr) != 0) {
+		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		goto error_cleanup;
+	}
+	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
+	retval->mut_channel = (pthread_mutex_t *) calloc(1, sizeof(pthread_mutex_t));
+	if ((r = pthread_mutex_init(retval->mut_channel, &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_ntf), &mattr)) != 0 ||
+			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
+		ERROR("Mutex initialization failed (%s).", strerror(r));
+		pthread_mutexattr_destroy(&mattr);
+		goto error_cleanup;
+	}
+	pthread_mutexattr_destroy(&mattr);
+
+	retval->status = NC_SESSION_STATUS_WORKING;
+
+	if (cpblts == NULL) {
+		if ((client_cpblts = nc_session_get_cpblts_default()) == NULL) {
+			VERB("Unable to set the client's NETCONF capabilities.");
+			goto error_cleanup;
+		}
+	} else {
+		client_cpblts = nc_cpblts_new((const char* const*)(cpblts->list));
+	}
+
+	if (nc_client_handshake(retval, client_cpblts->list) != 0) {
+		goto error_cleanup;
+	}
+
+	/* set with-defaults capability flags */
+	parse_wdcap(retval->capabilities, &(retval->wd_basic), &(retval->wd_modes));
+
+	/* cleanup */
+	nc_cpblts_free(client_cpblts);
+
+	return (retval);
+
+error_cleanup:
+	if (retval) {
+		free(retval->hostname);
+		free(retval->username);
+		free(retval->port);
+
+		if (retval->mut_channel) {
+			pthread_mutex_destroy(retval->mut_channel);
+			free(retval->mut_channel);
+		}
+		pthread_mutex_destroy(&(retval->mut_mqueue));
+		pthread_mutex_destroy(&(retval->mut_equeue));
+		pthread_mutex_destroy(&(retval->mut_ntf));
+		pthread_mutex_destroy(&(retval->mut_session));
+
+		free(retval);
+	}
+	return (NULL);
+}
+
 API struct nc_session* nc_session_connect(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts)
 {
 	struct nc_session *retval = NULL;
 	struct nc_cpblts *client_cpblts = NULL;
 	char port_s[SHORT_INT_LENGTH];
-#ifdef ENABLE_TLS
-	NC_TRANSPORT *transport_proto;
-#endif
+	NC_TRANSPORT *transport_proto = NULL;
 
 	/* set default values */
 	if (host == NULL || strisempty(host)) {
@@ -601,6 +694,7 @@ API struct nc_session* nc_session_connect(const char *host, unsigned short port,
 		return (NULL);
 	}
 
+	retval->transport = (transport_proto == NULL) ? NC_TRANSPORT_SSH : *transport_proto;
 	retval->status = NC_SESSION_STATUS_WORKING;
 
 	if (cpblts == NULL) {

@@ -48,23 +48,6 @@ extern "C" {
 
 /**
  * @ingroup session
- * @brief Supported NETCONF transport protocols enumeration. To change currently
- * used transport protocol, call nc_session_transport().
- *
- * Note that NC_TRANSPORT_TLS is supported only when libnetconf is compiled
- * with --enable-tls configure's option. If the option is not used,
- * nc_session_transport() returns EXIT_FAILURE with NC_TRANSPORT_TLS value.
- *
- * This setting is valuable only for client side NETCONF applications.
- */
-typedef enum NC_TRANSPORT {
-	NC_TRANSPORT_UNKNOWN = -1, /**< Unknown transport protocol, this is not acceptable as input value */
-	NC_TRANSPORT_SSH, /**< NETCONF over SSH, this value is used by default */
-	NC_TRANSPORT_TLS /**< NETCONF over TLS */
-} NC_TRANSPORT;
-
-/**
- * @ingroup session
  * @brief Set transport protocol for the sessions created by subsequent
  * nc_session_connect() calls. By default, transport protocol is set to
  * #NC_TRANSPORT_SSH
@@ -107,7 +90,9 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
  *
  * This function works only if libnetconf is compiled with using libssh2.
  *
- * @param[in] session Already established NETCONF session.
+ * It is not applicable to the sessions created by nc_session_connect_inout().
+ *
+ * @param[in] session Already established NETCONF session using nc_session_connect().
  * @param[in] cpblts NETCONF capabilities structure with capabilities supported
  * by the client. Client can use nc_session_get_cpblts_default() to get the
  * structure with the list of all the capabilities supported by libnetconf (this is
@@ -116,6 +101,44 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
  *
  */
 struct nc_session *nc_session_connect_channel(struct nc_session *session, const struct nc_cpblts* cpblts);
+
+/**
+ * @ingroup session
+ * @brief Create NETCONF session communicating via given file descriptors. This
+ * is an alternative function to nc_session_connect().
+ *
+ * In this case the initiation of the transport session (SSH, TLS, ...) is done
+ * externally. libnetconf just uses provided file descriptors to read data from
+ * and write data to that external entity (process, functions,...).
+ *
+ * Before calling this function, all necessary authentication process must be
+ * done so libnetconf can directly start with \<hello\> messages performing the
+ * NETCONF handshake.
+ *
+ * Since connecting to a host and authentication is done before, the provided
+ * host, port, username anf transport arguments are only informative and
+ * libnetconf use them only for returning value by nc_session_get_*() functions.
+ * The cpblts argument is used during the NETCONF handshake in the same way as
+ * in the nc_session_connect() function.
+ *
+ * It is not allowed to use nc_session_connect_channel() on the session created
+ * by this function.
+ *
+ * @param[in] fd_in Opened file desriptor where the (unencrypted) data from the
+ * NETCONF server are read.
+ * @param[in] fd_out Opened file desriptor where the (unencrypted) data to the
+ * NETCONF server are written.
+ * @param[in] cpblts NETCONF capabilities structure with capabilities supported
+ * by the client. Client can use nc_session_get_cpblts_default() to get the
+ * structure with the list of all the capabilities supported by libnetconf (this is
+ * used in case of a NULL parameter).
+ * @param[in] host Name of the host where we are connected to via the provided
+ * file descriptors.
+ * @param[in] port The port number of the remote host where we are connected.
+ * @param[in] username Name of the user we are connected to the remote host as.
+ * @param[in] transport The transport protocol used to connect to the remote host.
+ */
+struct nc_session* nc_session_connect_inout(int fd_in, int fd_out, const struct nc_cpblts* cpblts, const char *host, const char *port, const char *username, NC_TRANSPORT transport);
 
 /**
  * @ingroup session

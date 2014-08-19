@@ -395,6 +395,23 @@ void nc_verb_warning(const char * format, ...);
 void nc_verb_verbose(const char * format, ...);
 
 /**
+ * @ingroup session
+ * @brief Supported NETCONF transport protocols enumeration. To change currently
+ * used transport protocol, call nc_session_transport().
+ *
+ * Note that NC_TRANSPORT_TLS is supported only when libnetconf is compiled
+ * with --enable-tls configure's option. If the option is not used,
+ * nc_session_transport() returns EXIT_FAILURE with NC_TRANSPORT_TLS value.
+ *
+ * This setting is valuable only for client side NETCONF applications.
+ */
+typedef enum NC_TRANSPORT {
+	NC_TRANSPORT_UNKNOWN = -1, /**< Unknown transport protocol, this is not acceptable as input value */
+	NC_TRANSPORT_SSH, /**< NETCONF over SSH, this value is used by default */
+	NC_TRANSPORT_TLS /**< NETCONF over TLS */
+} NC_TRANSPORT;
+
+/**
  * @ingroup genAPI
  * @brief Initialize libnetconf for system-wide usage. This initialization is
  * shared across all the processes

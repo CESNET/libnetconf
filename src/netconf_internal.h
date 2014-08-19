@@ -344,6 +344,8 @@ struct nc_session {
 #endif
 	/**< @brief Output file descriptor for communication with (writing to) the other side of the NETCONF session */
 	int fd_output;
+	/**< @brief Transport protocol identifier */
+	NC_TRANSPORT transport;
 #ifndef DISABLE_LIBSSH
 	/**< @brief */
 	LIBSSH2_SESSION * ssh_session;

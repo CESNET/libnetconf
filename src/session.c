@@ -643,13 +643,7 @@ API NC_TRANSPORT nc_session_get_transport(const struct nc_session* session)
 		return (NC_TRANSPORT_UNKNOWN);
 	}
 
-#ifdef ENABLE_TLS
-	if (session->tls != NULL) {
-		return (NC_TRANSPORT_TLS);
-	}
-#endif
-
-	return (NC_TRANSPORT_SSH);
+	return (session->transport);
 }
 
 API int nc_session_get_version(const struct nc_session *session)
