@@ -498,22 +498,27 @@ static PyObject *ncSessionConnect(PyObject *cls, PyObject *args, PyObject *keywo
 	char *host = NULL, *user = NULL, *transport_s = "ssh", *version = NULL;
 	unsigned short port = 830;
 	PyObject *PyCpblts = NULL;
+	int fd_in = -1, fd_out = -1;
 
-	char *kwlist[] = {"host", "port", "user", "transport", "version", NULL};
+	char *kwlist[] = {"host", "port", "user", "transport", "version", "fd_in", "fd_out", NULL};
 
 	/* Get input parameters */
-	if (! PyArg_ParseTupleAndKeywords(args, keywords, "s|Hzzs", kwlist, &host, &port, &user, &transport_s, &version)) {
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "s|Hzzsii", kwlist, &host, &port, &user, &transport_s, &version, &fd_in, &fd_out)) {
 		return (NULL);
 	}
 
 	if (!version) {
 		/* let the default value to ncSessionInit() */
-		result = PyObject_CallFunction(cls, "sHss", host, port, user, transport_s);
+		Py_INCREF(Py_None);
+		PyCpblts = Py_None;
 	} else {
 		PyCpblts = PyList_New(1);
 		PyList_SET_ITEM(PyCpblts, 0, PyUnicode_FromString(version));
-		result = PyObject_CallFunction(cls, "sHssO", host, port, user, transport_s, PyCpblts);
 	}
+
+	result = PyObject_CallFunction(cls, "sHssOii", host, port, user, transport_s, PyCpblts, fd_in, fd_out);
+
+	Py_DECREF(PyCpblts);
 
 	return(result);
 }
@@ -557,7 +562,8 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 	char* item = NULL;
 	Py_ssize_t l, i;
 	int ret;
-	int fd_in = STDIN_FILENO, fd_out = STDOUT_FILENO;
+	int fd_in = -1, fd_out = -1;
+	NC_TRANSPORT transport = NC_TRANSPORT_UNKNOWN;
 
 	char *kwlist[] = {"host", "port", "user", "transport", "capabilities", "fd_in", "fd_out", NULL};
 
@@ -566,12 +572,19 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 		return -1;
 	}
 
+	if ((fd_in >= 0 && fd_out < 0) || (fd_in < 0 && fd_out >= 0)) {
+		PyErr_SetString(PyExc_ValueError, "Both or none of fd_in and fd_out arguments must be set.");
+		return -1;
+	}
+
 	if (host != NULL) {
 		/* Client side */
 		if (transport_s && strcasecmp(transport_s, NETCONF_TRANSPORT_TLS) == 0) {
 			ret = nc_session_transport(NC_TRANSPORT_TLS);
+			transport = NC_TRANSPORT_TLS;
 		} else {
 			ret = nc_session_transport(NC_TRANSPORT_SSH);
+			transport = NC_TRANSPORT_SSH;
 		}
 		if (ret != EXIT_SUCCESS) {
 			return -1;
@@ -627,10 +640,17 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 
 	if (host != NULL) {
 		/* Client side */
-		session = nc_session_connect(host, port, user, cpblts);
+		if (fd_in != -1 && fd_out != -1) {
+			session = nc_session_connect_inout(fd_in, fd_out, cpblts,
+					host, NULL, user, transport);
+		} else {
+			session = nc_session_connect(host, port, user, cpblts);
+		}
 	} else {
 		/* Server side */
-		session = nc_session_accept_inout(cpblts, user, fd_in, fd_out);
+		session = nc_session_accept_inout(cpblts, user,
+				fd_in != -1 ? fd_in : STDIN_FILENO,
+				fd_out != -1 ? fd_out : STDOUT_FILENO);
 
 		/* add to the list of monitored sessions */
 		nc_session_monitor(session);

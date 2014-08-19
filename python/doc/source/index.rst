@@ -159,7 +159,7 @@ client. The constructor of the class can be used in two ways: a client side way
 ``None``). There are also class methods :meth:`connect` and
 :meth:`accept` making usage of both approaches easier.
 
-.. class:: Session(host[, port=830, user=None, transport=netconf.TRANSPORT_SSH, capabilities=None])
+.. class:: Session(host[, port=830, user=None, transport=netconf.TRANSPORT_SSH, capabilities=None, fd_in=-1, fd_out=-1])
 
    Constructor for a client side application. 
 
@@ -169,10 +169,24 @@ client. The constructor of the class can be used in two ways: a client side way
    NETCONF over SSH transport, the NETCONF over TLS transport can be requested
    using ``netconf.TRANSPORT_TLS`` constant.
 
-   As the last argument applicable at the client side, caller can specify the
+   As the next argument applicable at the client side, caller can specify the
    list of NETCONF capabilities announced to the server. By default, the
    internal list provided by libnetconf is used. This way the both NETCONF
    versions, 1.0 and 1.1 are supported (with preference to version 1.1).
+
+   The last two arguments *fd_in* and *fd_out* can change almost everything.
+   They must be specified together (both or none of them) and they provides
+   file descriptors for reading NETCONF data from (*fd_in*) and writing NETCONF
+   data to (*fd_out*). In this case, the :mod:`netconf` module doesn't establish
+   the transport connection, it just use the prepared one provided via *fd_in*
+   and *fd_out*. The transport connection must be prepared before calling the
+   constructor including user authentication. The object will start using it
+   writing the NETCONF <hello> message to the *fd_out* and expecting the
+   server's <hello> message (in plain text) in *fd_in*.
+   
+   When *fd_in* and *fd_out* arguments are specified, arguments *host*, *port*,
+   *user* and *transport* are only informative. They are not used to establish
+   a connection.
 
 .. class:: Session([user=None, capabilities=None, fd_in=STDIN_FILENO, fd_out=STDOUT_FILENO])
 
@@ -186,10 +200,10 @@ client. The constructor of the class can be used in two ways: a client side way
    the unencrypted data from and write unencrypted data to when communicating
    with the transport protocol server (SSH or TLS server).
 
-.. classmethod:: Session.connect(host[, port=830, user=None, transport=netconf.TRANSPORT_SSH, version=None)
+.. classmethod:: Session.connect(host[, port=830, user=None, transport=netconf.TRANSPORT_SSH, version=None, fd_in=-1, fd_out=-1])
 
    Same as the :class:`Session` class constructor for the client side except the
-   last parameter. Here the shortcuts ``netconf.NETCONFv1_0`` and
+   *version* argument. Here the shortcuts ``netconf.NETCONFv1_0`` and
    ``netconf.NETCONFv1_1`` can be used. By default, the supported protocol
    versions are decided from the capabilities list provided by the
    :func:`getCapabilities` function. During the NETCONF protocol handshake the
