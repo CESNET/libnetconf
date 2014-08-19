@@ -364,6 +364,7 @@
  *   - \ref misc-datetime
  *   - \ref misc-errors
  *   - \ref misc-logging
+ * - \subpage troubles
  *
  * \section usage-glossary GLOSSARY
  *
@@ -1033,6 +1034,23 @@
  * - nc_verb_warning()
  * - nc_verb_verbose()
  *
+ */
+
+/**
+ * \page troubles Troubleshooting
+ *
+ * Since libnetconf shares some resources (statistics, datastores,...) among
+ * all its instances, various locks usage is necessary. During the development,
+ * crashes of an application is very usual. And ometimes, such a crash can happen
+ * during a critical section in libnetconf. Then, some of the locks used by
+ * libnetconf can stay unlocked so a consequent call to a libnetconf function
+ * can cause application freeze. To recover from this state, a developer has to
+ * manually unlock the locks removing the following files.
+ *  - /dev/shm/sem.NCDS_FLOCK_*
+ *  - /var/lib/libnetconf/libnetconf_sessions.bin
+ *
+ * Note that before removing the locks manually, all applications using
+ * libnetconf should be stopped.
  */
 
 /**

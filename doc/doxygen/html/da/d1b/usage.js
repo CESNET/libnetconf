@@ -26,5 +26,6 @@ var usage =
       [ "Date and Time", "d8/d0b/misc.html#misc-datetime", null ],
       [ "NETCONF Errors Handling", "d8/d0b/misc.html#misc-errors", null ],
       [ "Logging Messages", "d8/d0b/misc.html#misc-logging", null ]
-    ] ]
+    ] ],
+    [ "Troubleshooting", "d7/dc8/troubles.html", null ]
 ];
