@@ -367,7 +367,7 @@ int ncds_sysinit(int flags)
 		}
 
 		ds->data_model = calloc(1, sizeof(struct data_model));
-		if (model == NULL) {
+		if (ds->data_model == NULL) {
 			ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 			ncds_free(ds);
 			internal_ds_count--;
