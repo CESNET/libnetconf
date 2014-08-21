@@ -439,11 +439,13 @@ int ncds_file_init(struct ncds_ds* ds)
 			if ((fd = mkstemp(new_path)) == -1) {
 				ERROR("Unable to create backup datastore (%s).", strerror(errno));
 				free(new_path);
+				close(fd);
 				return (EXIT_FAILURE);
 			}
 			if ((file_ds->file = fdopen(fd, "r+")) == NULL) {
 				ERROR("Unable to open backup datastore (%s)", strerror(errno));
 				free(new_path);
+				close(fd);
 				return (EXIT_FAILURE);
 			}
 			free(file_ds->path);
