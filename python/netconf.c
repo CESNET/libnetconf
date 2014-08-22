@@ -51,10 +51,12 @@ static PyObject *setSyslog(PyObject *self, PyObject *args, PyObject *keywds)
 	if (name) {
 		free(logname);
 		logname = strdup(name);
-
-		closelog();
-		openlog(logname, option, facility);
+	} else {
+		free(logname);
+		logname = NULL;
 	}
+	closelog();
+	openlog(logname, option, facility);
 
 	Py_RETURN_NONE;
 }
