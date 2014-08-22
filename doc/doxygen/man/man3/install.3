@@ -1,4 +1,4 @@
-.TH "install" 3 "Tue Aug 19 2014" "Version 0.8.0-148_trunk" "libnetconf" \" -*- nroff -*-
+.TH "install" 3 "Fri Aug 22 2014" "Version 0.8.0-158_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -120,6 +120,12 @@ Add debugging information for a debugger\&.
 \fC--enable-tls\fP
 .IP "  \(bu" 4
 Enable experimental support for TLS transport\&. More information about the TLS transport can be found in \fBTransport Protocol\fP section\&.
+.PP
+
+.IP "\(bu" 2
+\fC--with-pyapi[=path_to_python3]\fP
+.IP "  \(bu" 4
+Build also the libnetconf Python API\&. This requires python3, so if it is installed in some non-standard location, specify the complete path to the binary\&. For more information about Python API, see a separated doxygen documentation accessible from the project main page\&.
 .PP
 
 .IP "\(bu" 2
