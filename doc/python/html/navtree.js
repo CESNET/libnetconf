@@ -2,11 +2,14 @@ var NAVTREE =
 [
   [ "pynetconf", "index.html", [
     [ "About", "index.html", [
-      [ "Compilation and Installation", "index.html#install", [
-        [ "Requirements", "index.html#install-reqs", null ]
+      [ "Compilation and Installation", "index.html#about-install", [
+        [ "Requirements", "index.html#about-install-reqs", null ]
       ] ],
-      [ "Example Applications", "index.html#about-apps", null ],
       [ "BSD License", "index.html#about-license", null ]
+    ] ],
+    [ "Example Applications", "apps.html", [
+      [ "get.py", "apps.html#apps-get", null ],
+      [ "server.py", "apps.html#apps-server", null ]
     ] ],
     [ "Packages", null, [
       [ "Packages", "namespaces.html", "namespaces" ],

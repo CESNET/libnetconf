@@ -46,6 +46,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li class="current"><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Packages</span></a></li>
       <li><a href="annotated.html"><span>Classes</span></a></li>
       <li>
@@ -102,18 +103,15 @@ $(document).ready(function(){initNavTree('index.html','');});
 <div class="contents">
 <div class="textblock"><p>libnetconf is a NETCONF library in C intended for building NETCONF clients and servers. It provides basic functions to connect NETCONF client and server to each other via SSH or TLS, to send and receive NETCONF messages and to store and work with the configuration data in a datastore.</p>
 <p>This is the libnetconf's API for Python.</p>
-<h1><a class="anchor" id="install"></a>
+<h1><a class="anchor" id="about-install"></a>
 Compilation and Installation</h1>
 <p>The libnetconf Python bindings is part of the libnetconf library. To enable this part of the libnetconf project, just run the main <code>configure</code> script with the <code>--with-pyapi</code> option. Optionally, you can specify path to the required python3 binary:</p>
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;$ ./configure --with-pyapi=/home/user/bin/python3</div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;$ make</div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"># make install</span></div>
-</div><!-- fragment --><h2><a class="anchor" id="install-reqs"></a>
+</div><!-- fragment --><h2><a class="anchor" id="about-install-reqs"></a>
 Requirements</h2>
 <p>The libnetconf Python API provides the Python module compatible with Python 3. To install it, the installation process requires the <code>distutils</code> Python module.</p>
-<h1><a class="anchor" id="about-apps"></a>
-Example Applications</h1>
-<p>Example applications using the libnetconf Python API are located in the source tree inside the libnetconf/python/examples/ directory.</p>
 <h1><a class="anchor" id="about-license"></a>
 BSD License</h1>
 <p>Copyright (c) 2014 CESNET, z.s.p.o.</p>
@@ -134,7 +132,7 @@ CESNET, z.s.p.o.</div></div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Aug 22 2014 11:14:12 for pynetconf by
+    <li class="footer">Generated on Fri Aug 22 2014 13:18:53 for pynetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

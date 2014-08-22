@@ -5,6 +5,9 @@
 ##
 # @mainpage About
 #
+# [RFC6241]: http://tools.ietf.org/html/rfc6241 "RFC 6241"
+# [RFC6242]: http://tools.ietf.org/html/rfc6242 "RFC 6242"
+#
 # libnetconf is a NETCONF library in C intended for building NETCONF clients
 # and servers. It provides basic functions to connect NETCONF client and server
 # to each other via SSH or TLS, to send and receive NETCONF messages and to
@@ -12,7 +15,7 @@
 #
 # This is the libnetconf's API for Python.
 #
-# @section install Compilation and Installation
+# @section about-install Compilation and Installation
 #
 # The libnetconf Python bindings is part of the libnetconf library. To enable
 # this part of the libnetconf project, just run the main `configure` script with
@@ -25,15 +28,10 @@
 # # make install
 # ~~~~~~~~~~~~~~ 
 #
-# \subsection install-reqs Requirements
+# @subsection about-install-reqs Requirements
 #
 # The libnetconf Python API provides the Python module compatible with Python 3.
 # To install it, the installation process requires the `distutils` Python module.
-#
-# @section about-apps Example Applications
-#
-# Example applications using the libnetconf Python API are located in the source
-# tree inside the libnetconf/python/examples/ directory.
 #
 # @section about-license BSD License
 #
@@ -71,6 +69,87 @@
 #
 #
 # ![CESNET, z.s.p.o.](cesnet-logo-125.png)
+#
+
+##
+# @page apps Example Applications
+#
+# Example applications using the libnetconf Python API are located in the source
+# tree inside the `libnetconf/python/examples/` directory.
+#
+# @section apps-get get.py
+#
+# Simple client-side application printing the result of the NETCONF \<get\>
+# operation.
+# ~~~~~~~~~~~~~~
+# $ ./get.py localhost -f "<nacm><rule-list/></nacm>"
+# <nacm xmlns="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
+#   <rule-list>
+#     <name>permit-all</name>
+#     <group>users</group>
+#     <rule>
+#       <name>permit-all-rule</name>
+#       <module-name>*</module-name>
+#       <access-operations>*</access-operations>
+#       <action>permit</action>
+#     </rule>
+#   </rule-list>
+# </nacm>
+# ~~~~~~~~~~~~~~ 
+#
+# @section apps-server server.py
+#
+# Very simple (4 LOC) NETCONF server `server.py` is alternative to the
+# Netopeer's <a href="https://code.google.com/p/netopeer/wiki/SingleLevelServer">single-layer
+# server</a>.
+#
+# To see, how the server interacts with a client, you can run it from the
+# command line and communicate with the server interactively (if you don't
+# understand the following lines, and you want to, read <a href="http://tools.ietf.org/html/rfc6241">RFC 6241</a>
+# and <a href="http://tools.ietf.org/html/rfc6242">RFC 6242</a>):
+# ~~~~~~~~~~~~~~
+# $ ./server.py 
+# <?xml version="1.0" encoding="UTF-8"?>
+# <hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+#   <capabilities>
+#     <capability>urn:ietf:params:netconf:base:1.0</capability>
+#     <capability>urn:ietf:params:netconf:base:1.1</capability>
+#     <capability>urn:ietf:params:netconf:capability:writable-running:1.0</capability>
+#     ...
+#   </capabilities>
+#   <session-id>31059</session-id>
+# </hello>
+# ]]>]]><?xml version="1.0" encoding="UTF-8"?>
+# <hello xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+#   <capabilities>
+#     <capability>urn:ietf:params:netconf:base:1.0</capability>
+#   </capabilities>
+# </hello>]]>]]>
+# <?xml version="1.0" encoding="UTF-8"?>
+# <rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="1">
+#   <close-session/>
+# </rpc>]]>]]>
+# <?xml version="1.0" encoding="UTF-8"?>
+# <rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="1">
+#   <ok/>
+# </rpc-reply>
+# ]]>]]>
+# ~~~~~~~~~~~~~~
+#
+# However, the more usual way how to use it, is to set your SSH server to run
+# it as its `netconf` SSH Subsystem. In this case, the server is started 
+# automatically when client connects to the host. To configure your SSH server
+# this way, add the following line to the `/etc/ssh/sshd_config` file.
+# ~~~~~~~~~~~~~~
+# Subsystem netconf /path/to/server.pl
+# ~~~~~~~~~~~~~~
+#
+# Also remember to correctly set the port where the SSH server listens. By
+# default, it listens on port 22, but NETCONF has assigned port 830 and the most
+# of clients use it by default.
+#
+# And finally, don't forget to make the SSH server reload the changed
+# configuration.
 #
 
 ## NETCONF version constant.

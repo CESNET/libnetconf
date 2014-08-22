@@ -3,14 +3,9 @@
 
 import netconf
 
-log = open("/tmp/pynetconf.log", "w")
-
 # accept NETCONF connection
 session = netconf.Session.accept()
 
+# process incoming requests until the connection is closed
 while session.isActive() == True:
 	session.processRequest()
-
-log.write("Done\n")
-log.close()
-

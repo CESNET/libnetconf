@@ -24,7 +24,3 @@ session = netconf.Session.connect(args[0], options.port, options.username)
 
 # perform <get> and print result
 print(session.get(options.filter))
-
-# close session (not necessary)
-del session
-
