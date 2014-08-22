@@ -66,8 +66,8 @@
  *
  * libnetconf is a NETCONF library in C intended for building NETCONF clients
  * and servers. It provides basic functions to connect NETCONF client and server
- * to each other via SSH, to send and receive NETCONF messages and to store and
- * work with the configuration data in a datastore.
+ * to each other via SSH or TLS, to send and receive NETCONF messages and to
+ * store and work with the configuration data in a datastore.
  *
  * libnetconf implements the NETCONF protocol introduced by IETF. More
  * information about the NETCONF protocol can be found at [NETCONF WG][netconfwg].
