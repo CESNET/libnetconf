@@ -233,6 +233,12 @@
  *  - Enable experimental support for TLS transport. More information about the
  *    TLS transport can be found in \ref transport section.
  *
+ * - `--with-pyapi[=path_to_python3]`
+ *  - Build also the libnetconf Python API. This requires python3, so if it is
+ *    installed in some non-standard location, specify the complete path to the
+ *    binary. For more information about Python API, see a separated doxygen
+ *    documentation accessible from the project main page.
+ *
  * - `--with-nacm-recovery-uid=<uid>` \anchor configure-nacm-recovery
  *  - Specify user ID to be used for the identification of the \ref
  *  nacm-recovery "NACM Recovery Session".

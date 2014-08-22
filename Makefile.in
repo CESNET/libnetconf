@@ -80,6 +80,14 @@ CPPFLAGS = -DNC_WORKINGDIR_PATH=\"$(NC_WORKINGDIR_PATH)\" -DSETBIT=$(SETBIT) @CP
 LIBTOOL = $(libtool) --tag=CC --quiet
 HAVE_PYANG = @HAVE_PYANG@
 
+PYTHON = @PYTHON@
+ifdef PYTHON
+PYAPI = pyapi
+INSTALLPYAPI = install-pyapi
+UNINSTALLPYAPI = uninstall-pyapi
+DOXYGEN_CONFIG_PYTHON = Doxyfile.python
+endif
+
 INCLUDES= -I$(abs_srcdir)/src
 
 ifeq "$(shell pwd)" "$(shell $(readlink) -f $(srcdir))"
@@ -175,6 +183,10 @@ GENERATOR_FILES = lnctool/generator/Makefile.in \
 	lnctool/generator/ltmain.sh \
 	lnctool/generator/README
 
+PYHDRS = doc/python/netconf.py
+PYSRCS = python/netconf.c \
+	python/session.c
+
 XML_SRCS = models/ietf-netconf-acm-data.rng.in
 
 BUILT_RNGS = $(XML_SRCS:models/%.rng.in=models/%.rng)
@@ -184,7 +196,7 @@ models/%.rng: models/%.rng.in
 
 LOBJS = $(SRCS:%.c=$(OBJDIR)/%.lo)
 
-all: $(LNCTOOL) $(NAME).la $(BUILT_RNGS)
+all: $(LNCTOOL) $(NAME).la $(BUILT_RNGS) $(PYAPI)
 
 $(NAME).la: $(LOBJS)
 	@rm -f $@
@@ -202,16 +214,23 @@ $(LNCTOOL): $(LNCTOOL).in
 		chmod +x $(LNCTOOL) $(LNCTOOL).install; \
 	fi
 
+.PHONY: pyapi
+pyapi: $(PYSRCS)
+	@cd python; $(PYTHON) ./setup.py build; cd -;
+
 $(OBJDIR)/%.lo: %.c
 	@[ -d $$(dirname $@) ] || \
 		(mkdir -p $$(dirname $@))
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDES) $(DBG) -fPIC -c $< -o $@
 
 .PHONY: doc
-doc: $(DOXYGEN_CONFIG) $(HDRS_PRIV)
+doc: $(DOXYGEN_CONFIG) $(HDRS_PRIV) $(DOXYGEN_CONFIG_PYTHON) $(PYHDRS)
 	@if [ "$(DOXYGEN)" != "no" ]; then \
 		[ -d $(DOXYGEN_DIR) ] || mkdir -p $(DOXYGEN_DIR); \
 		$(DOXYGEN); \
+		if [ -n "$(DOXYGEN_CONFIG_PYTHON)" ]; then \
+			$(DOXYGEN) $(DOXYGEN_CONFIG_PYTHON); \
+		fi; \
 	else \
 		echo "Missing doxygen!"; \
 	fi;
@@ -249,7 +268,7 @@ rpm: tarball
 	fi
 
 .PHONY: install
-install: all install-devel install-doc
+install: all install-devel install-doc $(INSTALLPYAPI)
 	$(INSTALL) -m 775 -d $(DESTDIR)/$(libdir)
 	$(LIBTOOL) --mode=install cp $(NAME).la $(DESTDIR)/$(libdir)
 	$(LIBTOOL) --mode=finish $(DESTDIR)/$(libdir)
@@ -317,8 +336,12 @@ install-doc:
 		chmod -R 755 $(DESTDIR)/$(datadir)/$(NAME))
 	cp -r $(DOXYGEN_DIR)/* $(DESTDIR)/$(datadir)/$(NAME)/doxygen/;
 
+.PHONY: install-pyapi
+install-pyapi:
+	@cd python; $(PYTHON) ./setup.py install; cd -;
+
 .PHONY: uninstall
-uninstall: uninstall-devel uninstall-doc
+uninstall: uninstall-devel uninstall-doc $(UNINSTALLPYAPI)
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libnetconf.la
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
 	rm $(NC_WORKINGDIR_PATH)/ietf-netconf-acm*.rng $(NC_WORKINGDIR_PATH)/ietf-netconf-acm-schematron.xsl;
@@ -342,9 +365,13 @@ uninstall-devel:
 uninstall-doc:
 	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/doxygen;
 
+.PHONY: uninstall-pyapi
+uninstall-pyapi:
+	@cd python; $(PYTHON) ./setup.py uninstall; cd -;
+
 .PHONY: clean clean-all clean-doc clean-rpm
 clean:
-	rm -rf *.a *.so* .obj $(OBJS) $(BUILT_RNGS) $(LNCTOOL) $(LNCTOOL).install
+	rm -rf *.a *.so* .obj $(OBJS) $(BUILT_RNGS) $(LNCTOOL) $(LNCTOOL).install python/build
 	$(LIBTOOL) --mode clean rm -f $(LOBJS)
 	$(LIBTOOL) --mode clean rm -f $(NAME).la
 

@@ -40,6 +40,7 @@
 AC_INIT([libnetconf], m4_esyscmd([cut -f1 ./VERSION | tr -d '\n']))
 
 m4_include([m4/ax_pthread.m4])
+m4_include([m4/ax_python_module.m4])
 
 AC_CANONICAL_HOST
 
@@ -148,7 +149,7 @@ AC_ARG_ENABLE([tls],
 		CPPFLAGS="$CPPFLAGS -DENABLE_TLS"
 		LIBS="$LIBS -lssl"
 	fi
-)	
+)
 
 AC_ARG_ENABLE([yang-schemas],
 	AC_HELP_STRING([--disable-yang-schemas], [Disable support for YANG format in <get-schema> operation.]),
@@ -287,6 +288,30 @@ AC_ARG_WITH([nacm-recovery-uid],
 	],
 	NACM_RECOVERY_UID="0"
 )
+
+AC_ARG_WITH([pyapi],
+	AC_HELP_STRING([--with-pyapi@<:@=path_to_python3@:>@], [Build also libnetconf Python API. Optionally provide path to python3.]),
+	[
+	if test "$withval" = "yes"; then
+		AC_PATH_PROG([PYTHON], [python3], ["missing"])
+		if test "$PYTHON" = "missing"; then
+			AC_MSG_ERROR([Missing python3.])
+		fi
+	elif test "$withval" != "no"; then
+		AC_MSG_CHECKING([python3])
+		if test -x "$withval"; then
+			PYTHON="$withval"
+			AC_MSG_RESULT([$withval])
+		else
+			AC_MSG_RESULT([invalid])
+			AC_MSG_ERROR([Given python3 ($withval) is not executable.])
+		fi
+	fi
+	# Check python for manager and configurator
+	AX_PYTHON_MODULE(distutils, fatal)
+	],[]
+)
+AC_SUBST(PYTHON)
 
 ############################ Check for programs ################################
 
