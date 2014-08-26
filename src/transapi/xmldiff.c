@@ -486,6 +486,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 
 	/* Some of the required documents are missing */
 	if (old_doc == NULL || new_doc == NULL || model == NULL) {
+		ERROR("%s: invalid parameter \"%s\".", __func__, !old_doc ? "old_doc" : !new_doc ? "new_doc" : "model");
 		return XMLDIFF_ERR;
 	}
 
@@ -749,6 +750,7 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 			ret_op = XMLDIFF_REM;
 			/* Remember that the node was removed */
 			if ((realloc_tmp = realloc(list_removed, ++list_removed_cnt * sizeof(xmlNodePtr))) == NULL) {
+				ERROR("Memory reallocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 				free(list_removed);
 				return (XMLDIFF_ERR);
 			} else {
@@ -870,6 +872,7 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 			ret_op = XMLDIFF_ADD;
 			/* Remember that the node was added */
 			if ((realloc_tmp = realloc(list_added, ++list_added_cnt * sizeof(xmlNodePtr))) == NULL) {
+				ERROR("Memory reallocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 				free(list_added);
 				return (XMLDIFF_ERR);
 			} else {
@@ -977,6 +980,7 @@ static XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, char * path, xmlN
 			ret_op = XMLDIFF_REM;
 			/* Remember that the node was removed */
 			if ((realloc_tmp = realloc(list_removed, ++list_removed_cnt * sizeof(xmlNodePtr))) == NULL) {
+				ERROR("Memory reallocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 				free(list_removed);
 				return (XMLDIFF_ERR);
 			} else {
@@ -1016,6 +1020,7 @@ static XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, char * path, xmlN
 			ret_op = XMLDIFF_ADD;
 			/* remeber that the node was added*/
 			if ((realloc_tmp = realloc(list_added, ++list_added_cnt * sizeof(xmlNodePtr))) == NULL) {
+				ERROR("Memory reallocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 				free(list_added);
 				return (XMLDIFF_ERR);
 			} else {
@@ -1097,6 +1102,7 @@ XMLDIFF_OP xmldiff_diff(struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new
 	XMLDIFF_OP ret_op;
 
 	if (old == NULL || new == NULL || diff == NULL || model == NULL) {
+		ERROR("%s: invalid parameter \"%s\".", __func__, !old ? "old" : !new ? "new" : !diff ? "diff" : "model");
 		return XMLDIFF_ERR;
 	}
 
