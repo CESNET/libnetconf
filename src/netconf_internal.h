@@ -510,6 +510,10 @@ struct nc_msg {
 	struct nc_err* error;
 	struct nc_msg* next;
 	struct nc_session * session;
+	/* rpc-specific fields */
+	NC_OP op;
+	NC_DATASTORE source;
+	NC_DATASTORE target;
 };
 
 struct nc_filter {

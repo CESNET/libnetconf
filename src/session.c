@@ -2492,6 +2492,13 @@ try_again:
 			return (NC_MSG_NONE); /* message processed internally */
 		}
 
+		/* assign operation value */
+		nc_rpc_assign_op(*rpc);
+
+		/* assign source/target datastore types */
+		nc_rpc_assign_ds(*rpc, "source");
+		nc_rpc_assign_ds(*rpc, "target");
+
 		break;
 	case NC_MSG_HELLO:
 		/* do nothing, just return the type */

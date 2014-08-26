@@ -61,6 +61,24 @@ const nc_msgid nc_msg_parse_msgid(const struct nc_msg *msg);
 NC_RPC_TYPE nc_rpc_parse_type(nc_rpc* rpc);
 
 /**
+ * @brief Get an RPC operation type and store it into the message structure
+ *
+ * @param[in] rpc RPC message to parse.
+ * @return The type of the RPC operation.
+ */
+NC_OP nc_rpc_assign_op(nc_rpc* rpc);
+
+/**
+ * @brief Get the source or the target datastore type and store it into the
+ * message structure
+ *
+ * @param rpc RPC message
+ * @param ds_type 'target' or 'source'
+ * @return The type of the requested datastore.
+ */
+NC_DATASTORE nc_rpc_assign_ds(nc_rpc* rpc, const char* ds_type);
+
+/**
  * @brief Parse RPC-reply message to get the type of RPC-reply. The result
  * value is also stored in an internal rpc-reply structure.
  *

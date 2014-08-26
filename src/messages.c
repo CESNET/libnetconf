@@ -39,6 +39,7 @@
 
 #define _GNU_SOURCE
 #define _BSD_SOURCE
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -510,6 +511,13 @@ API nc_rpc* nc_rpc_build(const char* rpc_dump, const struct nc_session* session)
 		nacm_start(rpc, session);
 	}
 
+	/* assign operation value */
+	nc_rpc_assign_op(rpc);
+
+	/* assign source/target datastore types */
+	nc_rpc_assign_ds(rpc, "source");
+	nc_rpc_assign_ds(rpc, "target");
+
 	return rpc;
 }
 
@@ -659,12 +667,20 @@ API char* nc_rpc_get_ns(const nc_rpc* rpc)
 
 API NC_OP nc_rpc_get_op(const nc_rpc* rpc)
 {
-	xmlNodePtr root, auxnode;
-
 	if (rpc == NULL || rpc->doc == NULL) {
 		ERROR("%s: Invalid parameter (missing message or message document).", __func__);
 		return (NC_OP_UNKNOWN);
 	}
+
+	return rpc->op;
+}
+
+NC_OP nc_rpc_assign_op(nc_rpc* rpc)
+{
+	xmlNodePtr root, auxnode;
+
+	assert(rpc);
+	assert(rpc->doc);
 
 	if ((root = xmlDocGetRootElement (rpc->doc)) == NULL || root->children == NULL) {
 		ERROR("%s: Invalid parameter (invalid message structure).", __func__);
@@ -691,49 +707,52 @@ API NC_OP nc_rpc_get_op(const nc_rpc* rpc)
 		/* check known rpc operations */
 		if ((xmlStrcmp(auxnode->name, BAD_CAST "copy-config") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
-			return (NC_OP_COPYCONFIG);
+			rpc->op = NC_OP_COPYCONFIG;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "delete-config") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
-			return (NC_OP_DELETECONFIG);
+			rpc->op = NC_OP_DELETECONFIG;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "edit-config") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
-			return (NC_OP_EDITCONFIG);
+			rpc->op = NC_OP_EDITCONFIG;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "get") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
-			return (NC_OP_GET);
+			rpc->op = NC_OP_GET;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "validate") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
-			return (NC_OP_VALIDATE);
+			rpc->op = NC_OP_VALIDATE;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "get-config") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
-			return (NC_OP_GETCONFIG);
+			rpc->op = NC_OP_GETCONFIG;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "get-schema") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_MONITORING) == 0)) {
-			return (NC_OP_GETSCHEMA);
+			rpc->op = NC_OP_GETSCHEMA;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "lock") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
-			return (NC_OP_LOCK);
+			rpc->op = NC_OP_LOCK;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "unlock") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
-			return (NC_OP_UNLOCK);
+			rpc->op = NC_OP_UNLOCK;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "commit") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
-			return (NC_OP_COMMIT);
+			rpc->op = NC_OP_COMMIT;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "discard-changes") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
-			return (NC_OP_DISCARDCHANGES);
+			rpc->op = NC_OP_DISCARDCHANGES;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "kill-session") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
-			return (NC_OP_KILLSESSION);
+			rpc->op = NC_OP_KILLSESSION;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "close-session") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_BASE10) == 0)) {
-			return (NC_OP_CLOSESESSION);
+			rpc->op = NC_OP_CLOSESESSION;
 		} else if ((xmlStrcmp(auxnode->name, BAD_CAST "create-subscription") == 0) &&
 				(xmlStrcmp(auxnode->ns->href, BAD_CAST NC_NS_NOTIFICATIONS) == 0)) {
-			return (NC_OP_CREATESUBSCRIPTION);
+			rpc->op = NC_OP_CREATESUBSCRIPTION;
+		} else {
+			continue;
 		}
+		break;
 	}
-	return (NC_OP_UNKNOWN);
+	return (rpc->op);
 }
 
 API char* nc_rpc_get_op_name(const nc_rpc* rpc)
@@ -867,15 +886,10 @@ API NC_RPC_TYPE nc_rpc_get_type(const nc_rpc* rpc)
 	}
 }
 
-/**
- * @brief Get the source or the target datastore type
- * @param rpc RPC message
- * @param ds_type 'target' or 'source'
- */
-static NC_DATASTORE nc_rpc_get_ds(const nc_rpc* rpc, const char* ds_type)
+NC_DATASTORE nc_rpc_assign_ds(nc_rpc* rpc, const char* ds_type)
 {
 	xmlXPathObjectPtr query_result = NULL;
-	NC_DATASTORE retval = NC_DATASTORE_ERROR;
+	NC_DATASTORE retval = NC_DATASTORE_ERROR, *rpcstore = NULL;
 	int i;
 	char** queries = NULL;
 	static char* srcs[] = {
@@ -907,9 +921,19 @@ static NC_DATASTORE nc_rpc_get_ds(const nc_rpc* rpc, const char* ds_type)
 	}
 
 	if (strcmp(ds_type, "source") == 0) {
+		if (rpc->op == NC_OP_COMMIT) {
+			rpc->source = NC_DATASTORE_CANDIDATE;
+			return (rpc->source);
+		}
 		queries = srcs;
+		rpcstore = &(rpc->source);
 	} else if (strcmp(ds_type, "target") == 0) {
+		if (rpc->op == NC_OP_COMMIT) {
+			rpc->target = NC_DATASTORE_RUNNING;
+			return (rpc->target);
+		}
 		queries = trgs;
+		rpcstore = &(rpc->target);
 	} else {
 		ERROR("%s: invalid ds_type parameter (%s)", __func__, ds_type);
 		return NC_DATASTORE_ERROR;
@@ -926,17 +950,30 @@ static NC_DATASTORE nc_rpc_get_ds(const nc_rpc* rpc, const char* ds_type)
 		}
 	}
 
+	/* store for a future use */
+	*rpcstore = retval;
+
 	return(retval);
 }
 
 API NC_DATASTORE nc_rpc_get_source(const nc_rpc* rpc)
 {
-	return (nc_rpc_get_ds(rpc, "source"));
+	if (!rpc) {
+		ERROR("%s: Invalid parameter \"rpc\".", __func__);
+		return NC_DATASTORE_ERROR;
+	}
+
+	return (rpc->source);
 }
 
 API NC_DATASTORE nc_rpc_get_target(const nc_rpc* rpc)
 {
-	return (nc_rpc_get_ds(rpc, "target"));
+	if (!rpc) {
+		ERROR("%s: Invalid parameter \"rpc\".", __func__);
+		return NC_DATASTORE_ERROR;
+	}
+
+	return (rpc->target);
 }
 
 /**
@@ -1645,6 +1682,9 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 	dupmsg->doc = xmlCopyDoc(msg->doc, 1);
 	dupmsg->type = msg->type;
 	dupmsg->with_defaults = msg->with_defaults;
+	dupmsg->op = msg->op;
+	dupmsg->source = msg->source;
+	dupmsg->target = msg->target;
 	if (msg->nacm != NULL) {
 		dupmsg->nacm = malloc(sizeof(struct nacm_rpc));
 		dupmsg->nacm->default_exec = msg->nacm->default_exec;
@@ -1816,6 +1856,13 @@ static nc_rpc* nc_rpc_create(const xmlNodePtr content)
 
 	/* set with-defaults if any */
 	nc_rpc_parse_withdefaults(rpc, NULL);
+
+	/* assign operation value */
+	nc_rpc_assign_op(rpc);
+
+	/* assign source/target datastore types */
+	nc_rpc_assign_ds(rpc, "source");
+	nc_rpc_assign_ds(rpc, "target");
 
 	return (rpc);
 }
