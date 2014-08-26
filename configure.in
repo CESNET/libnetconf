@@ -241,9 +241,9 @@ fi
 
 AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],[Compile with debug options]),
-	CFLAGS="$CFLAGS -g -O0 -DDEBUG",
-	CFLAGS="$CFLAGS -O3"
-	CONFIGURE_ARGS="--enable-debug $CONFIGURE_ARGS"
+	CFLAGS="$CFLAGS -g -O0 -DDEBUG"
+	CONFIGURE_ARGS="--enable-debug $CONFIGURE_ARGS",
+	CFLAGS="$CFLAGS -O3 -DNDEBUG"
 )
 AC_ARG_ENABLE([debug-threads],
 	AC_HELP_STRING([--enable-debug-threads],[Extend debug mode for threads]),

@@ -3093,9 +3093,9 @@ fi
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug; CFLAGS="$CFLAGS -g -O0 -DDEBUG"
-else
-  CFLAGS="$CFLAGS -O3"
 	CONFIGURE_ARGS="--enable-debug $CONFIGURE_ARGS"
+else
+  CFLAGS="$CFLAGS -O3 -DNDEBUG"
 
 fi
 
