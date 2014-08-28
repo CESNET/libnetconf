@@ -128,6 +128,10 @@ void remove_all_hints(void) {
 struct ncds_ds_list* find_datastore(const char* name) {
 	struct ncds_ds_list* item;
 
+	if (name == NULL) {
+		return NULL;
+	}
+
 	item = ncds.datastores;
 
 	while (item != NULL) {
@@ -142,6 +146,10 @@ struct ncds_ds_list* find_datastore(const char* name) {
 
 struct model_list* find_model(const char* name) {
 	struct model_list* item;
+
+	if (name == NULL) {
+		return NULL;
+	}
 
 	item = models_list;
 
