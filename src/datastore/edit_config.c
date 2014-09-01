@@ -1548,8 +1548,35 @@ static int edit_create_lists(xmlNodePtr parent, xmlNodePtr edit_node, xmlDocPtr 
 				goto error;
 			}
 		} else {
-			if ((created = xmlAddPrevSibling(parent->children, xmlCopyNode(edit_node, 1))) == NULL) {
-				goto error;
+			/* check if the parent is list */
+			if (is_user_ordered_list(find_element_model(parent, model)) != 0) {
+				/* we are in the list, so the first nodes must be the keys and
+				 * we have to place this new node only as the first instance of
+				 * it, not as the first child node of its parent
+				 */
+				for (node = parent->children; node != NULL; node = node->next) {
+					if (node->type != XML_ELEMENT_NODE || xmlStrcmp(node->name, edit_node->name) != 0) {
+						continue;
+					}
+					/* we have currently first instance of the edit_node's list */
+					break;
+				}
+				if (node != NULL) {
+					/* put the new node before the currently first instance of the list */
+					if ((created = xmlAddPrevSibling(node, xmlCopyNode(edit_node, 1))) == NULL) {
+						goto error;
+					}
+				} else {
+					/* put it as last node since there is currently no instance of the list */
+					if ((created = xmlAddChild(parent, xmlCopyNode(edit_node, 1))) == NULL) {
+						goto error;
+					}
+				}
+			} else {
+				/* it is not a list, so simply place it as the first child */
+				if ((created = xmlAddPrevSibling(parent->children, xmlCopyNode(edit_node, 1))) == NULL) {
+					goto error;
+				}
 			}
 		}
 	} else {
@@ -1983,7 +2010,29 @@ static int edit_merge_lists(xmlNodePtr merged_node, xmlNodePtr edit_node, xmlDoc
 				/* move it to the beginning of the children list */
 				if (merged_node->prev != NULL) {
 					xmlUnlinkNode(merged_node);
-					xmlAddPrevSibling(parent->children, merged_node);
+					if (is_user_ordered_list(find_element_model(parent, model)) != 0) {
+						/* we are in the list, so the first nodes must be the keys and
+						 * we have to place this new node only as the first instance of
+						 * it, not as the first child node of its parent
+						 */
+						for (refnode = parent->children; refnode != NULL; refnode = refnode->next) {
+							if (refnode->type != XML_ELEMENT_NODE || xmlStrcmp(refnode->name, merged_node->name) != 0) {
+								continue;
+							}
+							/* we have currently first instance of the edit_node's list */
+							break;
+						}
+						if (refnode != NULL) {
+							/* relink th node before the currently first instance of the list */
+							xmlAddPrevSibling(refnode, xmlCopyNode(merged_node, 1));
+						} else {
+							/* re-link the node as last node since there is currently no instance of the list */
+							xmlAddChild(parent, xmlCopyNode(merged_node, 1));
+						}
+					} else {
+						/* it is not a list, so simply place it as the first child */
+						xmlAddPrevSibling(parent->children, merged_node);
+					}
 				}
 			} else {
 				/* check and remembre the operation to avoid code duplication */
