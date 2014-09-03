@@ -564,6 +564,14 @@ static int file_reload(struct ncds_ds_file* file_ds)
 		}
 	}
 
+	/* file was modified, it may be necessary to reopen it */
+	fclose(file_ds->file);
+	file_ds->file = fopen(file_ds->path, "r+");
+	if (file_ds->file == NULL) {
+		ERROR("%s: reopenening the file %s failed (%s)", __func__, file_ds->path, strerror(errno));
+		return EXIT_FAILURE;
+	}
+
 	memcpy (&new, file_ds, sizeof (struct ncds_ds_file));
 
 	new.xml = xmlReadFile (new.path, NULL, NC_XMLREAD_OPTIONS);
