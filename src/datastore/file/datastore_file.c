@@ -961,7 +961,7 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 	xmlDocPtr config_doc = NULL, aux_doc;
 	xmlNodePtr target_ds, source_ds, del;
 	keyList keys;
-	int r;
+	int r, ret = 0;
 
 	LOCK(file_ds);
 
@@ -1035,9 +1035,12 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 		break;
 	}
 
+	/* we could still do something with candidate datastore,
+	 * so we have to change the "modified" attribute
+	 */
 	if (source_ds == NULL && target_ds->children == NULL) {
-		UNLOCK(file_ds);
-		return (EXIT_RPC_NOT_APPLICABLE);
+		ret = EXIT_RPC_NOT_APPLICABLE;
+		goto finish;
 	}
 
 	aux_doc = xmlNewDoc (BAD_CAST "1.0");
@@ -1103,6 +1106,7 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 	target_ds->children = xmlDocCopyNode (aux_doc->children, file_ds->xml, 1);
 	xmlFreeDoc(aux_doc);
 
+finish:
 	/*
 	 * if we are changing candidate, mark it as modified, since we need
 	 * this information for locking - according to RFC, candidate cannot
@@ -1125,7 +1129,7 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 	UNLOCK(file_ds);
 
 	xmlFreeDoc (config_doc);
-	return EXIT_SUCCESS;
+	return ret;
 }
 
 /**
