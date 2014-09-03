@@ -4,7 +4,7 @@ CPPFLAGS = -DRCSID=\"\" -DNC_WORKINGDIR_PATH=\"\" -DDISABLE_VALIDATION
 INCLUDE = -isystem ../../src
 LIB = -pthread -lreadline -lxslt -lxml2 -ldl -lssh2 -lcurl
 
-LIBNETCONF_OBJS = session.o ../../.obj/src/internal.o ../../.obj/src/with_defaults.o ../../.obj/src/nacm.o ../../.obj/src/url.o ../../.obj/src/messages.o ../../.obj/src/notifications.o ../../.obj/src/callbacks.o ../../.obj/src/error.o ../../.obj/src/transapi/transapi.o ../../.obj/src/transapi/xmldiff.o ../../.obj/src/datastore/edit_config.o ../../.obj/src/transapi/yinparser.o ../../.obj/src/datastore/custom/datastore_custom.o ../../.obj/src/datastore/file/datastore_file.o ../../.obj/src/datastore/empty/datastore_empty.o
+LIBNETCONF_OBJS = ../../src/session.c ../../src/internal.c ../../src/with_defaults.c ../../src/nacm.c ../../src/url.c ../../src/messages.c ../../src/notifications.c ../../src/callbacks.c ../../src/error.c ../../src/transapi/transapi.c ../../src/transapi/xmldiff.c ../../src/datastore/edit_config.c ../../src/transapi/yinparser.c ../../src/datastore/custom/datastore_custom.c ../../src/datastore/file/datastore_file.c ../../src/datastore/empty/datastore_empty.c
 
 lncdatastore: main.o commands.o mreadline.o $(LIBNETCONF_OBJS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDE) $^ $(LIB) -o $@
@@ -18,9 +18,6 @@ commands.o: commands.c
 mreadline.o: mreadline.c
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(INCLUDE) -o $@ $^
 
-# objects that could be compiled with TLS, we don't need that
-session.o: ../../src/session.c
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(INCLUDE) -o $@ $^
 
 clean:
 	@-rm -rf *.o lncdatastore
