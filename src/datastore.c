@@ -5723,8 +5723,6 @@ apply_editcopyconfig:
 
 		break;
 	case NC_OP_COMMIT:
-		/* \todo check somehow, that candidate is not locked by another session */
-
 		if (ds->type == NCDS_TYPE_EMPTY) {
 			/* there is nothing to edit in empty datastore type */
 			ret = EXIT_RPC_NOT_APPLICABLE;
