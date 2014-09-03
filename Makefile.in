@@ -78,6 +78,8 @@ LIBS = @LDFLAGS@ @LIBS@
 CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = -DNC_WORKINGDIR_PATH=\"$(NC_WORKINGDIR_PATH)\" -DSETBIT=$(SETBIT) @CPPFLAGS@
 LIBTOOL = $(libtool) --tag=CC --quiet
+HAVE_PYANG = @HAVE_PYANG@
+HAVE_XSLTPROC = @HAVE_XSLTPROC@
 
 INCLUDES= -I$(abs_srcdir)/src
 
@@ -190,13 +192,15 @@ $(NAME).la: $(LOBJS)
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -version-number $(version_info) -no-undefined -o $@ $^ -rpath $(libdir)
 
 $(LNCTOOL): $(LNCTOOL).in
-	@sed "s/@RNGLIB@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/rnglib/)/g" $< | \
-	 sed 's/@XSLTDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/xslt/)/g' | \
-	 sed 's/@TEMPLATEDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/templates/)/g' > $(LNCTOOL).install
-	@sed "s/@RNGLIB@/$(subst /,\/,$(abs_srcdir)/lnctool/rnglib/)/g" $< | \
-	 sed 's/@XSLTDIR@/$(subst /,\/,$(abs_srcdir)/lnctool/xslt/)/g' | \
-	 sed 's/@TEMPLATEDIR@/$(subst /,\/,$(abs_srcdir)/lnctool/generator/)/g' > $(LNCTOOL)
-	@chmod +x $(LNCTOOL) $(LNCTOOL).install
+	@if test -n "$(HAVE_PYANG)" -a -n "$(HAVE_XSLTPROC)"; then \
+		sed "s/@RNGLIB@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/rnglib/)/g" $< | \
+		sed 's/@XSLTDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/xslt/)/g' | \
+		sed 's/@TEMPLATEDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/templates/)/g' > $(LNCTOOL).install \
+		sed "s/@RNGLIB@/$(subst /,\/,$(abs_srcdir)/lnctool/rnglib/)/g" $< | \
+		sed 's/@XSLTDIR@/$(subst /,\/,$(abs_srcdir)/lnctool/xslt/)/g' | \
+		sed 's/@TEMPLATEDIR@/$(subst /,\/,$(abs_srcdir)/lnctool/generator/)/g' > $(LNCTOOL) \
+		chmod +x $(LNCTOOL) $(LNCTOOL).install \
+	fi
 
 $(OBJDIR)/%.lo: %.c
 	@[ -d $$(dirname $@) ] || \
