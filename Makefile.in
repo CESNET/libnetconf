@@ -80,6 +80,7 @@ CFLAGS = -Wall @CFLAGS@
 CPPFLAGS = -DNC_WORKINGDIR_PATH=\"$(NC_WORKINGDIR_PATH)\" -DSETBIT=$(SETBIT) @CPPFLAGS@
 LIBTOOL = $(libtool) --tag=CC --quiet
 HAVE_PYANG = @HAVE_PYANG@
+HAVE_XSLTPROC = @HAVE_XSLTPROC@
 
 PYTHON = @PYTHON@
 ifdef PYTHON
@@ -205,7 +206,7 @@ $(NAME).la: $(LOBJS)
 
 .PHONY: $(LNCTOOL)
 $(LNCTOOL): $(LNCTOOL).in
-	@if test -n "$(HAVE_PYANG)"; then \
+	@if test -n "$(HAVE_PYANG)" -a -n "$(HAVE_XSLTPROC)"; then \
 		sed "s/@RNGLIB@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/rnglib/)/g" $< | \
 		sed 's/@XSLTDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/xslt/)/g' | \
 		sed 's/@TEMPLATEDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/templates/)/g' > $(LNCTOOL).install; \

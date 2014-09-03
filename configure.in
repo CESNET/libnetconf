@@ -85,10 +85,11 @@ fi
 
 # Check for pyang used in lnctool
 AC_CHECK_PROG([HAVE_PYANG], [pyang], [yes], [])
-if test -z "$HAVE_PYANG"; then
-	AC_MSG_WARN([Missing pyang, lnctool will not work!])
-fi
 AC_SUBST(HAVE_PYANG)
+
+# Check for xsltproc used in lnctool
+AC_CHECK_PROG([HAVE_XSLTPROC], [xsltproc], [yes], [])
+AC_SUBST(HAVE_XSLTPROC)
 
 AC_ARG_WITH([libxml2],
 	[AC_HELP_STRING([--with-libxml2], [specific libxml2 location])],
@@ -553,6 +554,14 @@ fi
 AC_SUBST(RPMBUILD)
 if test -z "$RPMBUILD"; then
 	AC_MSG_WARN([Due to missing rpmbuild you will not able to generate RPM package.])
+fi
+
+if test -z "$HAVE_XSLTPROC"; then
+	AC_MSG_WARN([Due to missing xsltproc, lnctool will not work.])
+fi
+
+if test -z "$HAVE_PYANG"; then
+	AC_MSG_WARN([Due to missing pyang, lnctool will not work.])
 fi
 
 AC_CONFIG_FILES(Makefile src/config.h libnetconf.spec libnetconf.pc Doxyfile)
