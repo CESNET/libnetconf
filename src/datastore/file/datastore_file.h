@@ -44,6 +44,14 @@
 #include "../datastore_internal.h"
 #include <semaphore.h>
 
+/* Unique name prefix of every semaphore created */
+#define NCDS_LOCK "/NCDS_FLOCK"
+
+/* Number of seconds waiting for a semaphore increment before
+ * giving up and cancelling the locking
+ */
+#define NCDS_LOCK_TIMEOUT 5
+
 /**
  * @brief File datastore implementation-specific ncds_ds structure.
  */

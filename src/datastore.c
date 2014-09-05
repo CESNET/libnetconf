@@ -572,7 +572,7 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 	struct ncds_ds_list * ds_iter, *start = NULL;
 	struct ncds_ds * ds;
 	struct nc_session * dummy_session = NULL;
-	struct nc_err * err;
+	struct nc_err * err = NULL;
 	int nocpblts = 0, ret, retval = EXIT_SUCCESS;
 	xmlDocPtr running_doc = NULL, aux_doc1 = NULL, aux_doc2;
 	char* new_running_config = NULL;

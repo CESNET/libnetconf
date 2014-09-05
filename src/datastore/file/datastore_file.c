@@ -49,6 +49,7 @@
 #include <signal.h>
 #include <dirent.h>
 #include <libgen.h>
+#include <time.h>
 
 #include <libxml/tree.h>
 
@@ -63,9 +64,6 @@
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
-/* ncds lock path */
-#define NCDS_LOCK "/NCDS_FLOCK"
-
 #define FILEDSFRAME "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
 <datastores xmlns=\"urn:cesnet:tmc:datastores:file\">\
   <running lock=\"\"/>\
@@ -73,12 +71,21 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
   <candidate modified=\"false\" lock=\"\"/>\
 </datastores>"
 
+static struct timespec tv_timeout;
 static sigset_t fullsigset;
-#define LOCK(file_ds) {\
+
+#define LOCK(file_ds, ret) {\
 	sigfillset(&fullsigset);\
 	sigprocmask(SIG_SETMASK, &fullsigset, &(file_ds->ds_lock.sigset));\
-	sem_wait(file_ds->ds_lock.lock);\
-	file_ds->ds_lock.holding_lock = 1;\
+	clock_gettime(CLOCK_REALTIME, &tv_timeout);\
+	tv_timeout.tv_sec += NCDS_LOCK_TIMEOUT;\
+	if (sem_timedwait(file_ds->ds_lock.lock, &tv_timeout) == -1 && errno == ETIMEDOUT) {\
+		ret = 1;\
+		sigprocmask(SIG_SETMASK, &(file_ds->ds_lock.sigset), NULL);\
+	} else {\
+		ret = 0;\
+		file_ds->ds_lock.holding_lock = 1;\
+	}\
 }
 #define UNLOCK(file_ds) {\
 	sem_post(file_ds->ds_lock.lock);\
@@ -675,7 +682,10 @@ int ncds_file_rollback(struct ncds_ds* ds)
 		return (EXIT_FAILURE);
 	}
 
-	LOCK(file_ds);
+	LOCK(file_ds, ret);
+	if (ret) {
+		return (EXIT_FAILURE);
+	}
 	ret = file_rollback_restore(file_ds);
 	UNLOCK(file_ds);
 
@@ -687,11 +697,15 @@ static struct ncds_lockinfo lockinfo_startup = {NC_DATASTORE_STARTUP, NULL, NULL
 static struct ncds_lockinfo lockinfo_candidate = {NC_DATASTORE_CANDIDATE, NULL, NULL};
 const struct ncds_lockinfo *ncds_file_lockinfo(struct ncds_ds* ds, NC_DATASTORE target)
 {
+	int ret;
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 	xmlNodePtr target_ds;
 	struct ncds_lockinfo *info;
 
-	LOCK(file_ds);
+	LOCK(file_ds, ret);
+	if (ret) {
+		return (NULL);
+	}
 
 	if (file_reload (file_ds)) {
 		UNLOCK(file_ds);
@@ -739,10 +753,15 @@ int ncds_file_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DATA
 	xmlChar* lock, *modified = NULL;
 	xmlNodePtr target_ds;
 	struct nc_session* no_session;
-	int retval = EXIT_SUCCESS;
+	int retval = EXIT_SUCCESS, ret;
 	char* t;
 
-	LOCK(file_ds);
+	LOCK(file_ds, ret);
+	if (ret) {
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*error, NC_ERR_PARAM_MSG, "Locking datastore file timeouted.");
+		return EXIT_FAILURE;
+	}
 
 	if (file_reload (file_ds)) {
 		UNLOCK(file_ds);
@@ -810,9 +829,14 @@ int ncds_file_unlock(struct ncds_ds* ds, const struct nc_session* session, NC_DA
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 	xmlNodePtr target_ds, del;
 	struct nc_session* no_session;
-	int retval = EXIT_SUCCESS;
+	int retval = EXIT_SUCCESS, ret;
 
-	LOCK(file_ds);
+	LOCK(file_ds, ret);
+	if (ret) {
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*error, NC_ERR_PARAM_MSG, "Locking datastore file timeouted.");
+		return EXIT_FAILURE;
+	}
 
 	if (file_reload (file_ds)) {
 		UNLOCK(file_ds);
@@ -893,8 +917,14 @@ char* ncds_file_getconfig(struct ncds_ds* ds, const struct nc_session* UNUSED(se
 	xmlNodePtr target_ds, aux_node;
 	xmlBufferPtr resultbuffer;
 	char* data = NULL;
+	int ret;
 
-	LOCK(file_ds);
+	LOCK(file_ds, ret);
+	if (ret) {
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*error, NC_ERR_PARAM_MSG, "Locking datastore file timeouted.");
+		return NULL;
+	}
 
 	if (file_reload (file_ds)) {
 		UNLOCK(file_ds);
@@ -963,7 +993,12 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 	keyList keys;
 	int r, ret = 0;
 
-	LOCK(file_ds);
+	LOCK(file_ds, ret);
+	if (ret) {
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*error, NC_ERR_PARAM_MSG, "Locking datastore file timeouted.");
+		return EXIT_FAILURE;
+	}
 
 	if (file_reload (file_ds)) {
 		UNLOCK(file_ds);
@@ -1146,8 +1181,14 @@ int ncds_file_deleteconfig(struct ncds_ds * ds, const struct nc_session * sessio
 {
 	struct ncds_ds_file * file_ds = (struct ncds_ds_file*)ds;
 	xmlNodePtr target_ds, del;
+	int ret;
 
-	LOCK(file_ds);
+	LOCK(file_ds, ret);
+	if (ret) {
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*error, NC_ERR_PARAM_MSG, "Locking datastore file timeouted.");
+		return EXIT_FAILURE;
+	}
 
 	if (file_reload(file_ds)) {
 		UNLOCK(file_ds);
@@ -1225,10 +1266,15 @@ int ncds_file_editconfig(struct ncds_ds *ds, const struct nc_session * session, 
 	struct ncds_ds_file * file_ds = (struct ncds_ds_file *)ds;
 	xmlDocPtr config_doc, datastore_doc;
 	xmlNodePtr target_ds, tmp_target_ds;
-	int retval = EXIT_SUCCESS;
+	int retval = EXIT_SUCCESS, ret;
 
 	/* lock the datastore */
-	LOCK(file_ds);
+	LOCK(file_ds, ret);
+	if (ret) {
+		*error = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*error, NC_ERR_PARAM_MSG, "Locking datastore file timeouted.");
+		return EXIT_FAILURE;
+	}
 
 	/* reload the datastore content */
 	if (file_reload (file_ds)) {
