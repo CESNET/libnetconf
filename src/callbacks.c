@@ -50,6 +50,12 @@
 #include <pwd.h>
 #include <unistd.h>
 
+#ifdef ENABLE_DNSSEC
+#	include <validator/validator.h>
+#	include <validator/resolver.h>
+#	include <validator/validator-compat.h>
+#endif
+
 #include "netconf_internal.h"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
@@ -382,6 +388,99 @@ static char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 	return (buf);
 }
 
+#ifdef ENABLE_DNSSEC
+
+/* return 0 (DNSSEC + key valid), 1 (unsecure DNS + key valid), 2 (key not found or an error) */
+/* type - 1 (RSA), 2 (DSA), 3 (ECDSA); alg - 1 (SHA1), 2 (SHA-256) */
+static int callback_ssh_hostkey_hash_dnssec_check(const char* hostname, const char* sha1hash, int type, int alg) {
+	ns_msg handle;
+	ns_rr rr;
+	val_status_t val_status;
+	const unsigned char* rdata;
+	unsigned char buf[4096];
+	int buf_len = 4096;
+	int ret = 0, i, j, len;
+
+	/* class 1 - internet, type 44 - SSHFP */
+	len = val_res_query(NULL, hostname, 1, 44, buf, buf_len, &val_status);
+
+	if (len < 0 || !val_istrusted(val_status)) {
+		ret = 2;
+		goto finish;
+	}
+
+	if (ns_initparse(buf, len, &handle) < 0) {
+		ERROR("Failed to initialize DNSSEC response parser.");
+		ret = 2;
+		goto finish;
+	}
+
+	if ((i = libsres_msg_getflag(handle, ns_f_rcode)) != 0) {
+		ERROR("DNSSEC query returned %d.", i);
+		ret = 2;
+		goto finish;
+	}
+
+	if (!libsres_msg_getflag(handle, ns_f_ad)) {
+		/* response not secured by DNSSEC */
+		ret = 1;
+	}
+
+	/* query section */
+	if (ns_parserr(&handle, ns_s_qd, 0, &rr)) {
+		ERROR("DNSSEC query section parser fail.");
+		ret = 2;
+		goto finish;
+	}
+
+	if (strcmp(hostname, ns_rr_name(rr)) != 0 || ns_rr_type(rr) != 44 || ns_rr_class(rr) != 1) {
+		ERROR("DNSSEC query in the answer does not match the original query.");
+		ret = 2;
+		goto finish;
+	}
+
+	/* answer section */
+	i = 0;
+	while (ns_parserr(&handle, ns_s_an, i, &rr) == 0) {
+		if (ns_rr_type(rr) != 44) {
+			++i;
+			continue;
+		}
+
+		rdata = ns_rr_rdata(rr);
+		if (rdata[0] != type) {
+			++i;
+			continue;
+		}
+		if (rdata[1] != alg) {
+			++i;
+			continue;
+		}
+
+		/* we found the correct SSHFP entry */
+		rdata += 2;
+		for (j = 0; j < 20; ++j) {
+			if (rdata[j] != (unsigned char)sha1hash[j]) {
+				ret = 2;
+				goto finish;
+			}
+		}
+
+		/* server fingerprint is supported by a DNS entry,
+		 * we have already determined if DNSSEC was used or not
+		 */
+		goto finish;
+	}
+
+	/* no match */
+	ret = 2;
+finish:
+	val_free_validator_state();
+	return ret;
+}
+
+#endif
+
 static int callback_ssh_hostkey_check_default (const char* hostname, LIBSSH2_SESSION *session)
 {
 	struct passwd *pw;
@@ -396,6 +495,9 @@ static int callback_ssh_hostkey_check_default (const char* hostname, LIBSSH2_SES
 	struct libssh2_knownhost *ssh_host = NULL;
 	char answer[5];
 	const char *remotekey, *fingerprint_raw;
+#ifdef ENABLE_DNSSEC
+	const char* fingerprint_sha1raw;
+#endif
 	/*
 	 * to print MD5 raw hash, we need 3*16 + 1 bytes (4 characters are printed
 	 * all the time, but except the last one, NULL terminating bytes are
@@ -484,9 +586,30 @@ keynotfound:
 			}
 			fingerprint_md5[47] = 0;
 
+#ifdef ENABLE_DNSSEC
+			fingerprint_sha1raw = libssh2_hostkey_hash(session, LIBSSH2_HOSTKEY_HASH_SHA1);
+			ret = callback_ssh_hostkey_hash_dnssec_check(hostname, fingerprint_sha1raw,
+														(hostkey_type == LIBSSH2_HOSTKEY_TYPE_RSA ? 1 : 2), 1);
+
+			/* DNSSEC SSHFP check successful, that's enough */
+			if (ret == 0) {
+				DBG("DNSSEC SSHFP check successful");
+				libssh2_knownhost_free(knownhosts);
+				free(knownhosts_file);
+				return (EXIT_SUCCESS);
+			}
+#endif
+
 			/* try to get result from user */
 			fprintf(stdout, "The authenticity of the host \'%s\' cannot be established.\n", hostname);
 			fprintf(stdout, "%s key fingerprint is %s.\n", (hostkey_type == LIBSSH2_HOSTKEY_TYPE_RSA) ? "RSA" : "DSS", fingerprint_md5);
+#ifdef ENABLE_DNSSEC
+			if (ret == 2) {
+				fprintf(stdout, "No matching host key fingerprint found in DNS.\n");
+			} else if (ret == 1) {
+				fprintf(stdout, "Matching host key fingerprint found in DNS.\n");
+			}
+#endif
 			fprintf(stdout, "Are you sure you want to continue connecting (yes/no)? ");
 
 askuseragain:

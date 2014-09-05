@@ -782,6 +782,7 @@ with_libxslt
 with_libssh2
 enable_libssh2
 enable_tls
+enable_dnssec
 enable_yang_schemas
 enable_notifications
 enable_url
@@ -1434,6 +1435,8 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-libssh2       Use ssh client program instead of libssh2.
   --enable-tls            Enable support for NETCONF over TLS using OpenSSL.
+  --enable-dnssec         Enable support for SSHFP retrieval using DNSSEC for
+                          SSH.
   --disable-yang-schemas  Disable support for YANG format in <get-schema>
                           operation.
   --disable-notifications Disable support of NETCONF Notifications (RFC 5277)
@@ -2836,6 +2839,10 @@ $as_echo "no" >&6; }
 fi
 
 
+if test -z "$HAVE_PYANG"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Missing pyang, lnctool will not work!" >&5
+$as_echo "$as_me: WARNING: Missing pyang, lnctool will not work!" >&2;}
+fi
 
 
 # Check for xsltproc used in lnctool
@@ -3022,6 +3029,17 @@ if test "${enable_tls+set}" = set; then :
 		tls="yes"
 		CPPFLAGS="$CPPFLAGS -DENABLE_TLS"
 		LIBS="$LIBS -lssl"
+	fi
+
+fi
+
+
+dnssec="no"
+# Check whether --enable-dnssec was given.
+if test "${enable_dnssec+set}" = set; then :
+  enableval=$enable_dnssec; if test "$enableval" = "yes"; then
+		dnssec="yes"
+		CPPFLAGS="$CPPFLAGS -DENABLE_DNSSEC"
 	fi
 
 fi
@@ -12370,6 +12388,71 @@ done
 	HDRS_PUBL_TLS="headers/libnetconf_tls.h"
 	BUILDREQS="$BUILDREQS openssl-devel >= 1.0.0"
 	DEVELREQS="$DEVELREQS openssl-devel >= 1.0.0"
+elif test "$dnssec" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for SSL_library_init in -lssl" >&5
+$as_echo_n "checking for SSL_library_init in -lssl... " >&6; }
+if ${ac_cv_lib_ssl_SSL_library_init+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lssl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char SSL_library_init ();
+int
+main ()
+{
+return SSL_library_init ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_ssl_SSL_library_init=yes
+else
+  ac_cv_lib_ssl_SSL_library_init=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ssl_SSL_library_init" >&5
+$as_echo "$ac_cv_lib_ssl_SSL_library_init" >&6; }
+if test "x$ac_cv_lib_ssl_SSL_library_init" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBSSL 1
+_ACEOF
+
+  LIBS="-lssl $LIBS"
+
+else
+  as_fn_error $? "Missing OpenSSL library." "$LINENO" 5
+fi
+
+	for ac_header in openssl/bio.h openssl/ssl.h openssl/err.h openssl/pem.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Missing OpenSSL headers." "$LINENO" 5
+fi
+
+done
+
+	BUILDREQS="$BUILDREQS openssl-devel >= 1.0.0"
+	DEVELREQS="$DEVELREQS openssl-devel >= 1.0.0"
 fi
 
 ### pthread ###
@@ -12845,6 +12928,124 @@ else
   as_fn_error $? "Could not find sem_init() in expected locations. Install or/and add the comprising library into the list of tested libraries." "$LINENO" 5
 fi
 
+
+if test "$dnssec" = "yes"; then
+	# This must be after pthread as well...
+	LIBS="$LIBS -lval-threads -lsres"
+	if test "$tls" = "no"; then
+		LIBS="$LIBS -lssl"
+	fi
+	### libval (libval-threads & libsres) ###
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for val_res_query in -lval-threads" >&5
+$as_echo_n "checking for val_res_query in -lval-threads... " >&6; }
+if ${ac_cv_lib_val_threads_val_res_query+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lval-threads  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char val_res_query ();
+int
+main ()
+{
+return val_res_query ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_val_threads_val_res_query=yes
+else
+  ac_cv_lib_val_threads_val_res_query=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_val_threads_val_res_query" >&5
+$as_echo "$ac_cv_lib_val_threads_val_res_query" >&6; }
+if test "x$ac_cv_lib_val_threads_val_res_query" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBVAL_THREADS 1
+_ACEOF
+
+  LIBS="-lval-threads $LIBS"
+
+else
+  as_fn_error $? "Missing libval-threads (libval part) library." "$LINENO" 5
+fi
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ns_initparse in -lsres" >&5
+$as_echo_n "checking for ns_initparse in -lsres... " >&6; }
+if ${ac_cv_lib_sres_ns_initparse+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lsres  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char ns_initparse ();
+int
+main ()
+{
+return ns_initparse ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_sres_ns_initparse=yes
+else
+  ac_cv_lib_sres_ns_initparse=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_sres_ns_initparse" >&5
+$as_echo "$ac_cv_lib_sres_ns_initparse" >&6; }
+if test "x$ac_cv_lib_sres_ns_initparse" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBSRES 1
+_ACEOF
+
+  LIBS="-lsres $LIBS"
+
+else
+  as_fn_error $? "Missing libsres (libval part) library." "$LINENO" 5
+fi
+
+	for ac_header in validator/validator.h validator/resolver.h validator/validator-compat.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Missing libval headers." "$LINENO" 5
+fi
+
+done
+
+fi
 
 if test "$url" = "yes"; then
 	### libcurl ###

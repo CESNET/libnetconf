@@ -29,6 +29,33 @@ also needed to compile libnetconf.
 
   $ ./configure --disable-notifications
 
+These items are conditional.
+
+- OpenSSL
+  Always the newest version is recommended, to ensure maximum
+  security.
+  https://www.openssl.org
+
+  OpenSSL is required only if compiling with either
+
+  $ ./configure --enable-tls
+
+  or
+
+  $ ./configure --enable-dnssec
+
+  or both.
+
+- dnsval (libval)
+  Version 2.0 or greater
+  http://dnssec-tools.org
+
+  Required when compiling with
+
+  $ ./configure --enable-dnssec
+
+  to enable DNSSEC data retrieval and validation (for more
+  information please refer to README).
 
 The remaining items are optional.
 
