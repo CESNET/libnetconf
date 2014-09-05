@@ -704,6 +704,11 @@ int ncdflt_default_clear(xmlDocPtr config)
 		return (EXIT_FAILURE);
 	}
 
+	if (xmlDocGetRootElement(config) == NULL) {
+		/* nothing to do */
+		return (EXIT_SUCCESS);
+	}
+
 	/* create xpath evaluation context */
 	if ((ctxt = xmlXPathNewContext(config)) == NULL) {
 		WARN("%s: Creating the XPath context failed.", __func__);
