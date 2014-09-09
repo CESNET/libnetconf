@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.8.0-158_trunk</span>
+   &#160;<span id="projectnumber">0.8.0-173_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -138,8 +138,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga806dfa9c27d2b8076bae21bcd549cce7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga806dfa9c27d2b8076bae21bcd549cce7">nc_callback_print</a> (void(*func)(<a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga921d994eb69a9efd93ef85cf4a6cd060">NC_VERB_LEVEL</a> level, const char *msg))</td></tr>
 <tr class="memdesc:ga806dfa9c27d2b8076bae21bcd549cce7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for printing libnetconf's messages.If the func parameter is NULL, the callback is set back to the default (no) function.  <a href="#ga806dfa9c27d2b8076bae21bcd549cce7">More...</a><br/></td></tr>
 <tr class="separator:ga806dfa9c27d2b8076bae21bcd549cce7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga85cd52f975436e64f9f128e980b77ed3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">nc_close</a> (int system)</td></tr>
-<tr class="separator:ga85cd52f975436e64f9f128e980b77ed3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaaf2f5bf5a58103d9e4ea1cbe4291094b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#gaaf2f5bf5a58103d9e4ea1cbe4291094b">nc_close</a> (void)</td></tr>
+<tr class="memdesc:gaaf2f5bf5a58103d9e4ea1cbe4291094b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Release libnetconf resources. Init flag is used to determine if close should be applied as system-wide (NC_INIT_MULTILAYER) or not (NC_INIT_SINGLELAYER). System-wide <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gaaf2f5bf5a58103d9e4ea1cbe4291094b" title="Release libnetconf resources. Init flag is used to determine if close should be applied as system-wid...">nc_close()</a> closes all the shared structures if no other libnetconf participant is currently running. Local release of the calling instance from the shared structures is done in both cases.  <a href="#gaaf2f5bf5a58103d9e4ea1cbe4291094b">More...</a><br/></td></tr>
+<tr class="separator:gaaf2f5bf5a58103d9e4ea1cbe4291094b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4dfd796fda30d3ad8588b4c30c4c1583"><td class="memItemLeft" align="right" valign="top">time_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga4dfd796fda30d3ad8588b4c30c4c1583">nc_datetime2time</a> (const char *datetime)</td></tr>
 <tr class="memdesc:ga4dfd796fda30d3ad8588b4c30c4c1583"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform given string in RFC 3339 compliant format to the time_t (seconds since the epoch) accepted by most Linux functions.  <a href="#ga4dfd796fda30d3ad8588b4c30c4c1583">More...</a><br/></td></tr>
 <tr class="separator:ga4dfd796fda30d3ad8588b4c30c4c1583"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -273,25 +274,21 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga85cd52f975436e64f9f128e980b77ed3"></a>
+<a class="anchor" id="gaaf2f5bf5a58103d9e4ea1cbe4291094b"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">int nc_close </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>system</em></td><td>)</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">system</td><td>Flag if close should be applied as system-wide. System-wide <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">nc_close()</a> closes all the shared structures if no other libnetconf participant is currently running. Local release of the calling instance from the shared structures is done in both cases. </td></tr>
-  </table>
-  </dd>
-</dl>
+
+<p>Release libnetconf resources. Init flag is used to determine if close should be applied as system-wide (NC_INIT_MULTILAYER) or not (NC_INIT_SINGLELAYER). System-wide <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gaaf2f5bf5a58103d9e4ea1cbe4291094b" title="Release libnetconf resources. Init flag is used to determine if close should be applied as system-wid...">nc_close()</a> closes all the shared structures if no other libnetconf participant is currently running. Local release of the calling instance from the shared structures is done in both cases. </p>
 <dl class="section return"><dt>Returns</dt><dd>-1 on error<br/>
  0 on success<br/>
  1 in case of system-wide when there is another participant using shared structures and system-wide close cannot be done. </dd></dl>
@@ -495,20 +492,22 @@ Functions</h2></td></tr>
 <p>Initialize libnetconf for system-wide usage. This initialization is shared across all the processes. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">flags</td><td>ORed flags for libnetconf initialization. Accepted values include:<ul>
+    <tr><td class="paramdir">[in]</td><td class="paramname">flags</td><td>ORed flags for libnetconf initialization. Must include either <em>NC_INIT_MULTILAYER</em> or <em>NC_INIT_SINGLELAYER</em> with other accepted values including:<ul>
 <li><em>NC_INIT_ALL</em> Enable all available subsystems</li>
 <li><em>NC_INIT_MONITORING</em> Enable ietf-netconf-monitoring module</li>
 <li><em>NC_INIT_WD</em> Enable With-default capability</li>
 <li><em>NC_INIT_NOTIF</em> Enable Notification subsystem</li>
-<li><em>NC_INIT_NACM</em> Enable NETCONF Access Control subsystem </li>
+<li><em>NC_INIT_NACM</em> Enable NETCONF Access Control subsystem</li>
 </ul>
 </td></tr>
   </table>
   </dd>
 </dl>
+<p>The difference between the multi-layer and single-layer flag is strictly in the behaviour when cleaning shared library resources, either during <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gaaf2f5bf5a58103d9e4ea1cbe4291094b" title="Release libnetconf resources. Init flag is used to determine if close should be applied as system-wid...">nc_close()</a> or if the calling process crashed before (equals did not call <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gaaf2f5bf5a58103d9e4ea1cbe4291094b" title="Release libnetconf resources. Init flag is used to determine if close should be applied as system-wid...">nc_close()</a>). On multi-layer crash/close, if it was/is the only running libnetconf application, full cleanup is performed, unlike single-layer crash, when this situation is reflected just in the return flag or single-layer close, when only the local resources are released.</p>
 <dl class="section return"><dt>Returns</dt><dd>-1 on fatal error<br/>
- 0 if this is the first init after previous system-wide <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">nc_close()</a> or system reboot<br/>
- 1 when someone else already called <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a> since last system-wide <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">nc_close()</a> or system reboot. </dd></dl>
+ 0 on success with some possible flags:<br/>
+ NC_INITRET_NOTFIRST when someone else already called <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a> since last system-wide <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gaaf2f5bf5a58103d9e4ea1cbe4291094b" title="Release libnetconf resources. Init flag is used to determine if close should be applied as system-wid...">nc_close()</a> or system reboot.<br/>
+ NC_INITRET_RECOVERY when after last init and before this init this application crashed (based on same commands - executable binary names). </dd></dl>
 
 </div>
 </div>
@@ -719,7 +718,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Aug 22 2014 11:14:11 for libnetconf by
+    <li class="footer">Generated on Tue Sep 9 2014 09:52:17 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

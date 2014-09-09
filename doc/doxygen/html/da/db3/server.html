@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.8.0-158_trunk</span>
+   &#160;<span id="projectnumber">0.8.0-173_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -157,7 +157,7 @@ This is done by a single call of <a class="el" href="../../db/d52/group__session
 <li><b>Close the NETCONF session</b>.<br/>
 Use functions <a class="el" href="../../db/d52/group__session.html#gaa5994f45a7031dc931bdf4a3acebedee" title="Cleanup the session structure and free all the allocated resources. ">nc_session_free()</a> to close and free all the used sources and structures connected with the session. Server should close the session when a nc_session_* function fails and libnetconf set the status of the session as non-working (nc_session_get_status != NC_SESSION_STATUS_WORKING).</li>
 <li><b>Close the libnetconf instance</b><br/>
-Close internal libnetconf structures and subsystems by the <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">nc_close()</a> call. </li>
+Close internal libnetconf structures and subsystems by the <a class="el" href="../../d3/d35/group__gen_a_p_i.html#gaaf2f5bf5a58103d9e4ea1cbe4291094b" title="Release libnetconf resources. Init flag is used to determine if close should be applied as system-wid...">nc_close()</a> call. </li>
 </ol>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
@@ -165,7 +165,7 @@ Close internal libnetconf structures and subsystems by the <a class="el" href=".
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
-    <li class="footer">Generated on Fri Aug 22 2014 11:14:11 for libnetconf by
+    <li class="footer">Generated on Tue Sep 9 2014 09:52:17 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.8.0-158_trunk</span>
+   &#160;<span id="projectnumber">0.8.0-173_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -296,27 +296,31 @@ $(document).ready(function(){initNavTree('d3/d7a/netconf_8h_source.html','../../
 <div class="line"><a name="l00411"></a><span class="lineno"><a class="line" href="../../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa9dfde07fbf3ce02396167716ef70c612">  411</a></span>&#160;        <a class="code" href="../../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa9dfde07fbf3ce02396167716ef70c612">NC_TRANSPORT_TLS</a> </div>
 <div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;} <a class="code" href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a>;</div>
 <div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;</div>
-<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc">nc_init</a>(<span class="keywordtype">int</span> flags);</div>
-<div class="line"><a name="l00430"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#abad7c8a3763fd854f67b3cbb1f703b72">  430</a></span>&#160;<span class="preprocessor">#define NC_INIT_ALL        0xffffffff </span></div>
-<div class="line"><a name="l00431"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#ae2518fb60d22a54179a25195bb7a5a6e">  431</a></span>&#160;<span class="preprocessor">#define NC_INIT_NOTIF      0x00000002 </span></div>
-<div class="line"><a name="l00432"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6">  432</a></span>&#160;<span class="preprocessor">#define NC_INIT_NACM       0x00000104 </span></div>
-<div class="line"><a name="l00433"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#a3523107c9618d5c1b061ce12b73a7d8e">  433</a></span>&#160;<span class="preprocessor">#define NC_INIT_MONITORING 0x00000008 </span></div>
-<div class="line"><a name="l00434"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#ac6d72ea493b41661245c28e5b5817aa7">  434</a></span>&#160;<span class="preprocessor">#define NC_INIT_WD         0x00000010 </span></div>
-<div class="line"><a name="l00435"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#a8ef24bab459694bb9e9ea113983f4b0c">  435</a></span>&#160;<span class="preprocessor">#define NC_INIT_VALIDATE   0x00000020 </span></div>
-<div class="line"><a name="l00436"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#a73269d2e7d5b4f1d19a55cbcd95464a6">  436</a></span>&#160;<span class="preprocessor">#define NC_INIT_URL        0x00000040 </span></div>
-<div class="line"><a name="l00437"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#a296598fe488d5cb69257e2ba1def790c">  437</a></span>&#160;<span class="preprocessor">#define NC_INIT_KEEPALIVECHECK  0x00000088 </span></div>
-<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;<span class="preprocessor">#define NC_INIT_DATASTORES 0x00000100 </span></div>
-<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;<span class="preprocessor">int nc_close(int system);</span></div>
-<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;<span class="keywordtype">char</span>* <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga90a44b60b04512fd0a3507ab35a1ccc4">nc_time2datetime</a>(time_t time, <span class="keyword">const</span> <span class="keywordtype">char</span>* tz);</div>
-<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160;</div>
-<div class="line"><a name="l00484"></a><span class="lineno">  484</span>&#160;time_t <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga4dfd796fda30d3ad8588b4c30c4c1583">nc_datetime2time</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* datetime);</div>
-<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;</div>
-<div class="line"><a name="l00486"></a><span class="lineno">  486</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a name="l00487"></a><span class="lineno">  487</span>&#160;<span class="preprocessor"></span>}</div>
-<div class="line"><a name="l00488"></a><span class="lineno">  488</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00489"></a><span class="lineno">  489</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00490"></a><span class="lineno">  490</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* NC_NETCONF_H_ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc">nc_init</a>(<span class="keywordtype">int</span> flags);</div>
+<div class="line"><a name="l00440"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#acd9701b437ef7c747eb957c9190ec67c">  440</a></span>&#160;<span class="preprocessor">#define NC_INIT_MULTILAYER 0x00001000  </span></div>
+<div class="line"><a name="l00441"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#a8f20ed255da520e147f476008c9b7c26">  441</a></span>&#160;<span class="preprocessor">#define NC_INIT_SINGLELAYER 0x00002000 </span></div>
+<div class="line"><a name="l00443"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#abad7c8a3763fd854f67b3cbb1f703b72">  443</a></span>&#160;<span class="preprocessor">#define NC_INIT_ALL        0xffffcfff </span></div>
+<div class="line"><a name="l00444"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#ae2518fb60d22a54179a25195bb7a5a6e">  444</a></span>&#160;<span class="preprocessor">#define NC_INIT_NOTIF      0x00000002 </span></div>
+<div class="line"><a name="l00445"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6">  445</a></span>&#160;<span class="preprocessor">#define NC_INIT_NACM       0x00000104 </span></div>
+<div class="line"><a name="l00446"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#a3523107c9618d5c1b061ce12b73a7d8e">  446</a></span>&#160;<span class="preprocessor">#define NC_INIT_MONITORING 0x00000008 </span></div>
+<div class="line"><a name="l00447"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#ac6d72ea493b41661245c28e5b5817aa7">  447</a></span>&#160;<span class="preprocessor">#define NC_INIT_WD         0x00000010 </span></div>
+<div class="line"><a name="l00448"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#a8ef24bab459694bb9e9ea113983f4b0c">  448</a></span>&#160;<span class="preprocessor">#define NC_INIT_VALIDATE   0x00000020 </span></div>
+<div class="line"><a name="l00449"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#a73269d2e7d5b4f1d19a55cbcd95464a6">  449</a></span>&#160;<span class="preprocessor">#define NC_INIT_URL        0x00000040 </span></div>
+<div class="line"><a name="l00450"></a><span class="lineno"><a class="line" href="../../d3/d7a/netconf_8h.html#a296598fe488d5cb69257e2ba1def790c">  450</a></span>&#160;<span class="preprocessor">#define NC_INIT_KEEPALIVECHECK  0x00000088 </span></div>
+<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;<span class="preprocessor">#define NC_INIT_DATASTORES 0x00000100 </span></div>
+<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;<span class="preprocessor">#define NC_INITRET_NOTFIRST 0x00000001 </span></div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;<span class="preprocessor">#define NC_INITRET_RECOVERY 0x00000002 </span></div>
+<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;<span class="preprocessor">int nc_close(void);</span></div>
+<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00490"></a><span class="lineno">  490</span>&#160;<span class="keywordtype">char</span>* <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga90a44b60b04512fd0a3507ab35a1ccc4">nc_time2datetime</a>(time_t time, <span class="keyword">const</span> <span class="keywordtype">char</span>* tz);</div>
+<div class="line"><a name="l00491"></a><span class="lineno">  491</span>&#160;</div>
+<div class="line"><a name="l00502"></a><span class="lineno">  502</span>&#160;time_t <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga4dfd796fda30d3ad8588b4c30c4c1583">nc_datetime2time</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* datetime);</div>
+<div class="line"><a name="l00503"></a><span class="lineno">  503</span>&#160;</div>
+<div class="line"><a name="l00504"></a><span class="lineno">  504</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a name="l00505"></a><span class="lineno">  505</span>&#160;<span class="preprocessor"></span>}</div>
+<div class="line"><a name="l00506"></a><span class="lineno">  506</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00508"></a><span class="lineno">  508</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* NC_NETCONF_H_ */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="group__rpc_html_gga3e6fc59e2d06c1c0edb36ee64ee9cc07abf39ac97e04fd8d77d6a409a004eb234"><div class="ttname"><a href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07abf39ac97e04fd8d77d6a409a004eb234">NC_OP_DELETECONFIG</a></div><div class="ttdef"><b>Definition:</b> netconf.h:187</div></div>
 <div class="ttc" id="group__gen_a_p_i_html_gga298c7a4ad5cc76169a211f86df90f057ab4e4b148e14bdf9f320331b0cbe1dc6d"><div class="ttname"><a href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057ab4e4b148e14bdf9f320331b0cbe1dc6d">NC_MSG_NOTIFICATION</a></div><div class="ttdef"><b>Definition:</b> netconf.h:143</div></div>
 <div class="ttc" id="group__reply_html_ggad31ee5df47d5671ebdf1b06f785e6c29aa47af543410586d8da28f02f099abce0"><div class="ttname"><a href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa47af543410586d8da28f02f099abce0">NC_REPLY_ERROR</a></div><div class="ttdef"><b>Definition:</b> netconf.h:154</div></div>
@@ -449,7 +453,7 @@ $(document).ready(function(){initNavTree('d3/d7a/netconf_8h_source.html','../../
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d3/d7a/netconf_8h.html">netconf.h</a></li>
-    <li class="footer">Generated on Fri Aug 22 2014 11:14:11 for libnetconf by
+    <li class="footer">Generated on Tue Sep 9 2014 09:52:17 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

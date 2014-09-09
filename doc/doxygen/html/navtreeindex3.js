@@ -1,5 +1,9 @@
 var NAVTREEINDEX3 =
 {
+"db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629":[6,5,6,2],
+"db/dae/group__notifications__xml.html":[6,12],
+"db/dae/group__notifications__xml.html#ga21824f1e804eed5f8907eefdd9d03a85":[6,12,0],
+"db/dae/group__notifications__xml.html#ga26fc8f89287a14cc1da067d9aeb92fdf":[6,12,2],
 "db/dae/group__notifications__xml.html#gae1d3152a18bb5d030f9d42d62658986c":[6,12,1],
 "db/db4/group__tls.html":[6,13],
 "db/db4/group__tls.html#gacbf946a826fa6c7c18a4e66d532b659f":[6,13,1],
@@ -141,8 +145,8 @@ var NAVTREEINDEX3 =
 "files.html":[8,0],
 "functions.html":[7,2,0],
 "functions_vars.html":[7,2,1],
-"globals.html":[8,1,0],
 "globals.html":[8,1,0,0],
+"globals.html":[8,1,0],
 "globals_0x65.html":[8,1,0,1],
 "globals_0x6d.html":[8,1,0,2],
 "globals_0x6e.html":[8,1,0,3],

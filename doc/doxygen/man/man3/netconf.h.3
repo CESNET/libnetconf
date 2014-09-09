@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Fri Aug 22 2014" "Version 0.8.0-158_trunk" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Tue Sep 9 2014" "Version 0.8.0-173_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,7 +18,7 @@ libnetconf's general public functions and structures definitions\&.
 
 .in +1c
 .ti -1c
-.RI "#define \fBNC_INIT_ALL\fP   0xffffffff"
+.RI "#define \fBNC_INIT_ALL\fP   0xffffcfff"
 .br
 .ti -1c
 .RI "#define \fBNC_INIT_DATASTORES\fP   0x00000100"
@@ -30,10 +30,16 @@ libnetconf's general public functions and structures definitions\&.
 .RI "#define \fBNC_INIT_MONITORING\fP   0x00000008"
 .br
 .ti -1c
+.RI "#define \fBNC_INIT_MULTILAYER\fP   0x00001000"
+.br
+.ti -1c
 .RI "#define \fBNC_INIT_NACM\fP   0x00000104"
 .br
 .ti -1c
 .RI "#define \fBNC_INIT_NOTIF\fP   0x00000002"
+.br
+.ti -1c
+.RI "#define \fBNC_INIT_SINGLELAYER\fP   0x00002000"
 .br
 .ti -1c
 .RI "#define \fBNC_INIT_URL\fP   0x00000040"
@@ -43,6 +49,12 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .ti -1c
 .RI "#define \fBNC_INIT_WD\fP   0x00000010"
+.br
+.ti -1c
+.RI "#define \fBNC_INITRET_NOTFIRST\fP   0x00000001"
+.br
+.ti -1c
+.RI "#define \fBNC_INITRET_RECOVERY\fP   0x00000002"
 .br
 .ti -1c
 .RI "#define \fBnc_msgid\fP   char*"
@@ -143,8 +155,9 @@ libnetconf's general public functions and structures definitions\&.
 
 .in +1c
 .ti -1c
-.RI "int \fBnc_close\fP (int system)"
+.RI "int \fBnc_close\fP (void)"
 .br
+.RI "\fIRelease libnetconf resources\&. Init flag is used to determine if close should be applied as system-wide (NC_INIT_MULTILAYER) or not (NC_INIT_SINGLELAYER)\&. System-wide \fBnc_close()\fP closes all the shared structures if no other libnetconf participant is currently running\&. Local release of the calling instance from the shared structures is done in both cases\&. \fP"
 .ti -1c
 .RI "time_t \fBnc_datetime2time\fP (const char *datetime)"
 .br
@@ -199,7 +212,7 @@ ALTERNATIVELY, provided that this notice is retained in full, this product may b
 This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
 .SH "Macro Definition Documentation"
 .PP 
-.SS "#define NC_INIT_ALL   0xffffffff"
+.SS "#define NC_INIT_ALL   0xffffcfff"
 \fBnc_init()\fP's flag to enable all optional features/subsystems 
 .SS "#define NC_INIT_DATASTORES   0x00000100"
 \fBnc_init()\fP's flag to use internal datastores 
@@ -207,16 +220,24 @@ This software is provided ``as is, and any express or implied warranties, includ
 \fBnc_init()\fP's flag to enable check of monitored sessions\&. Sometimes the process holding a monitored session crashes and status information of the session is not properly removed from the monitored sessions list\&. If this option is used, libnetconf checks if the process holding the session is still alive\&. To do this properly, the session is connected with the PID of the \fBnc_session_monitor()\fP caller\&. If the PID changes (e\&.g\&. after fork() or daemon()), the process is supposed to call \fBnc_session_monitor()\fP againg\&. 
 .SS "#define NC_INIT_MONITORING   0x00000008"
 \fBnc_init()\fP's flag to enable ietf-netconf-monitoring module 
+.SS "#define NC_INIT_MULTILAYER   0x00001000"
+\fBnc_init()\fP's flag for multi-layer server architecture 
 .SS "#define NC_INIT_NACM   0x00000104"
 \fBnc_init()\fP's flag to enable Acccess Control subsystem 
 .SS "#define NC_INIT_NOTIF   0x00000002"
 \fBnc_init()\fP's flag to enable Notification subsystem\&. 
+.SS "#define NC_INIT_SINGLELAYER   0x00002000"
+\fBnc_init()\fP's flag for single-layer server architecture 
 .SS "#define NC_INIT_URL   0x00000040"
 \fBnc_init()\fP's flag to enable server's URL capability 
 .SS "#define NC_INIT_VALIDATE   0x00000020"
 \fBnc_init()\fP's flag to enable server's validation capability 
 .SS "#define NC_INIT_WD   0x00000010"
 \fBnc_init()\fP's flag to enable with-default capability 
+.SS "#define NC_INITRET_NOTFIRST   0x00000001"
+\fBnc_init()\fP's return flag for this process not calling \fBnc_init()\fP first 
+.SS "#define NC_INITRET_RECOVERY   0x00000002"
+\fBnc_init()\fP's return flag for this process crashing before (not calling \fBnc_close()\fP) 
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBNC_ERR_PARAM\fP"

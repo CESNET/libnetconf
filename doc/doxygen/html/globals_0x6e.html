@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.8.0-158_trunk</span>
+   &#160;<span id="projectnumber">0.8.0-173_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -178,7 +178,7 @@ $(document).ready(function(){initNavTree('globals_0x6e.html','');});
 : <a class="el" href="db/de9/group__rpc.html#gga06a2c29efc74abd4d0c88e7abb5e914dadef4f6d77cebdc7c004db1f5f5f612ba">netconf.h</a>
 </li>
 <li>nc_close()
-: <a class="el" href="d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3">netconf.h</a>
+: <a class="el" href="d3/d35/group__gen_a_p_i.html#gaaf2f5bf5a58103d9e4ea1cbe4291094b">netconf.h</a>
 </li>
 <li>nc_cpblts_add()
 : <a class="el" href="db/d52/group__session.html#ga2ea9b318015206d886c7e54386fc85e3">session.h</a>
@@ -447,11 +447,17 @@ $(document).ready(function(){initNavTree('globals_0x6e.html','');});
 <li>NC_INIT_MONITORING
 : <a class="el" href="d3/d7a/netconf_8h.html#a3523107c9618d5c1b061ce12b73a7d8e">netconf.h</a>
 </li>
+<li>NC_INIT_MULTILAYER
+: <a class="el" href="d3/d7a/netconf_8h.html#acd9701b437ef7c747eb957c9190ec67c">netconf.h</a>
+</li>
 <li>NC_INIT_NACM
 : <a class="el" href="d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6">netconf.h</a>
 </li>
 <li>NC_INIT_NOTIF
 : <a class="el" href="d3/d7a/netconf_8h.html#ae2518fb60d22a54179a25195bb7a5a6e">netconf.h</a>
+</li>
+<li>NC_INIT_SINGLELAYER
+: <a class="el" href="d3/d7a/netconf_8h.html#a8f20ed255da520e147f476008c9b7c26">netconf.h</a>
 </li>
 <li>NC_INIT_URL
 : <a class="el" href="d3/d7a/netconf_8h.html#a73269d2e7d5b4f1d19a55cbcd95464a6">netconf.h</a>
@@ -461,6 +467,12 @@ $(document).ready(function(){initNavTree('globals_0x6e.html','');});
 </li>
 <li>NC_INIT_WD
 : <a class="el" href="d3/d7a/netconf_8h.html#ac6d72ea493b41661245c28e5b5817aa7">netconf.h</a>
+</li>
+<li>NC_INITRET_NOTFIRST
+: <a class="el" href="d3/d7a/netconf_8h.html#ad72f930428d6f93ce8b8f0907a47bc22">netconf.h</a>
+</li>
+<li>NC_INITRET_RECOVERY
+: <a class="el" href="d3/d7a/netconf_8h.html#a423b20a0c17acab539bc3a5ae74c6032">netconf.h</a>
 </li>
 <li>NC_MSG_HELLO
 : <a class="el" href="d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057a7cd0f4a4edef33489e675b080645288d">netconf.h</a>
@@ -960,11 +972,11 @@ $(document).ready(function(){initNavTree('globals_0x6e.html','');});
 <li>nc_verb_verbose()
 : <a class="el" href="d3/d35/group__gen_a_p_i.html#gae4f0d22fb274269c0259497abb702f5d">netconf.h</a>
 </li>
-<li>NC_VERB_WARNING
-: <a class="el" href="d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a4a0cbb6bc660d3a50c3dff6028185abf">netconf.h</a>
-</li>
 <li>nc_verb_warning()
 : <a class="el" href="d3/d35/group__gen_a_p_i.html#ga943a7c859f20bb1278964a7424762d8e">netconf.h</a>
+</li>
+<li>NC_VERB_WARNING
+: <a class="el" href="d3/d35/group__gen_a_p_i.html#gga921d994eb69a9efd93ef85cf4a6cd060a4a0cbb6bc660d3a50c3dff6028185abf">netconf.h</a>
 </li>
 <li>nc_verbosity()
 : <a class="el" href="d3/d35/group__gen_a_p_i.html#gadd8fd7b3bb2e7cba580c9a4229fe02d7">netconf.h</a>
@@ -1266,7 +1278,7 @@ $(document).ready(function(){initNavTree('globals_0x6e.html','');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Aug 22 2014 11:14:11 for libnetconf by
+    <li class="footer">Generated on Tue Sep 9 2014 09:52:17 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

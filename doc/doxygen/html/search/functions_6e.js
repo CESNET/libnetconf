@@ -14,7 +14,7 @@ var searchData=
   ['nc_5fcallhome_5fmngmt_5fserver_5ffree',['nc_callhome_mngmt_server_free',['../db/de7/group__callhome.html#ga3db211a665c56160c167619b633b6cb0',1,'callhome.h']]],
   ['nc_5fcallhome_5fmngmt_5fserver_5fgetactive',['nc_callhome_mngmt_server_getactive',['../db/de7/group__callhome.html#ga8b22e5afbc118e69b42b0f66388f56ab',1,'callhome.h']]],
   ['nc_5fcallhome_5fmngmt_5fserver_5frm',['nc_callhome_mngmt_server_rm',['../db/de7/group__callhome.html#ga1c2942e68d263d674adf1381bc5e7083',1,'callhome.h']]],
-  ['nc_5fclose',['nc_close',['../d3/d35/group__gen_a_p_i.html#ga85cd52f975436e64f9f128e980b77ed3',1,'netconf.h']]],
+  ['nc_5fclose',['nc_close',['../d3/d35/group__gen_a_p_i.html#gaaf2f5bf5a58103d9e4ea1cbe4291094b',1,'netconf.h']]],
   ['nc_5fcpblts_5fadd',['nc_cpblts_add',['../db/d52/group__session.html#ga2ea9b318015206d886c7e54386fc85e3',1,'session.h']]],
   ['nc_5fcpblts_5fcount',['nc_cpblts_count',['../db/d52/group__session.html#ga79a7aea77cbfe29535eb83a6e5c60419',1,'session.h']]],
   ['nc_5fcpblts_5fenabled',['nc_cpblts_enabled',['../db/d52/group__session.html#gaa8325078c33d25a7cf48e1ed9d417ff4',1,'session.h']]],
