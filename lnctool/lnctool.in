@@ -384,7 +384,7 @@ parser = argparse.ArgumentParser(description="Actions have the following meaning
 								formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('--version', action='version', version='libnetconf developer tool for transAPI v'+str(transapi_version))
 parser.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model.')
-parser.add_argument('--augment-models', nargs='*', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+parser.add_argument('--augment-models', nargs='+', type=argparse.FileType('r'), action='append', help='Specify augment models.')
 parser.add_argument('--search-path', default='.', help='pyang search path.')
 parser.add_argument('--output-dir', default='./', help='Output directory for generated files (current directory by default).')
 
@@ -394,18 +394,18 @@ subparsers = parser.add_subparsers(dest='subcommand')
 # convert to implement YANG -> YIN conversion
 parser_convert = subparsers.add_parser('convert', add_help=False)
 #parser_convert.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model.')
-#parser_convert.add_argument('--augment-models', nargs='*', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+#parser_convert.add_argument('--augment-models', nargs='+', type=argparse.FileType('r'), action='append', help='Specify augment models.')
 
 # validation to implement validation schema generation
 parser_validation = subparsers.add_parser('validation', add_help=False)
 #parser_validation.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model.')
-#parser_validation.add_argument('--augment-models', nargs='*', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+#parser_validation.add_argument('--augment-models', nargs='+', type=argparse.FileType('r'), action='append', help='Specify augment models.')
 
 # transapi to implement transapi module files generation
 parser_transapi = subparsers.add_parser('transapi')
 parser_transapi.add_argument('--name', help='Name of module with callbacks. If not supplied name of module in data model will be used.')
 #parser_transapi.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model. YIN and YANG formats are acceptable.')
-#parser_transapi.add_argument('--augment-models', nargs='*', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+#parser_transapi.add_argument('--augment-models', nargs='+', type=argparse.FileType('r'), action='append', help='Specify augment models.')
 parser_transapi.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
 parser_transapi.add_argument('--template-dir', default=TEMPLATEDIR, help='Path to the directory with template files')
 
