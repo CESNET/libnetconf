@@ -309,6 +309,16 @@ struct nacm_stats {
 	unsigned int denied_notifs;
 };
 
+/* concurrently running (crashed) libnetconf apps */
+#define NC_APPS_MAX 10
+/* command length (without ending '\0') */
+#define NC_APPS_COMM_MAX 40
+struct nc_apps {
+	unsigned char valid[NC_APPS_MAX];
+	pid_t pids[NC_APPS_MAX];
+	char comms[NC_APPS_MAX][NC_APPS_COMM_MAX+1];
+};
+
 /**
  * @ingroup internalAPI
  * @brief Information structure shared between all libnetconf's processes.
@@ -317,6 +327,7 @@ struct nc_shared_info {
 	pthread_rwlock_t lock;
 	struct nc_statistics stats;
 	struct nacm_stats stats_nacm;
+	struct nc_apps apps;
 };
 
 /**

@@ -50,9 +50,12 @@
 #include <ctype.h>
 #include <errno.h>
 #include <assert.h>
+#include <fcntl.h>
+#include <dirent.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <grp.h>
 #include <pwd.h>
 
@@ -61,6 +64,7 @@
 
 #include "netconf_internal.h"
 #include "nacm.h"
+#include "datastore/file/datastore_file.h"
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
@@ -137,12 +141,148 @@ static int shmid = -1;
 
 int nc_init_flags = 0;
 
+static void nc_apps_add(const char* comm, struct nc_apps* apps) {
+	int i;
+
+	if (comm[0] == '\0') {
+		return;
+	}
+
+	for (i = 0; i < NC_APPS_MAX; ++i) {
+		if (apps->valid[i] == 0) {
+			break;
+		}
+	}
+
+	if (i == NC_APPS_MAX) {
+		VERB("Too many running/crashed libnetconf apps.");
+		return;
+	}
+
+	apps->valid[i] = 1;
+	apps->pids[i] = getpid();
+	strcpy(apps->comms[i], comm);
+}
+
+/* return flags - 1 (your entry was found and deleted (meaning you crashed, unless used in nc_close),
+ * 2 (there are actually some libnetconf apps running, not just stored crash info) */
+static int nc_apps_check(const char* comm, struct nc_apps* apps) {
+	int i, ret = 0, fd = -1, readcount;
+	char procpath[64], runcomm[NC_APPS_COMM_MAX+1];
+
+	for (i = 0; i < NC_APPS_MAX; ++i) {
+		if (apps->valid[i] == 0) {
+			continue;
+		}
+
+		if (sprintf(procpath, "/proc/%d/comm", apps->pids[i]) == -1 || ((fd = open(procpath, O_RDONLY)) == -1 && errno != ENOENT)) {
+			/* not much to do on error */
+			continue;
+		}
+
+		/* the process is not running - it crashed */
+		if (fd == -1) {
+			/* it was this process */
+			if (strcmp(apps->comms[i], comm) == 0) {
+				ret |= 1;
+			}
+			continue;
+		}
+
+		readcount = read(fd, runcomm, NC_APPS_COMM_MAX);
+		close(fd);
+		if (readcount < 0) {
+			continue;
+		}
+		if (runcomm[readcount-1] == '\n') {
+			runcomm[readcount-1] = '\0';
+		} else {
+			runcomm[readcount] = '\0';
+		}
+
+		/* PID got recycled - the process crashed */
+		if (strcmp(runcomm, apps->comms[i]) != 0) {
+			/* it was this process */
+			if (strcmp(apps->comms[i], comm) == 0) {
+				ret |= 1;
+			}
+			continue;
+		}
+
+		/* a process with the same PID and command did not use nc_close(),
+		 * it must have been this process, because it did not add its
+		 * information into this structure yet
+		 */
+		if (strcmp(comm, apps->comms[i]) == 0 && getpid() == apps->pids[i]) {
+			ret |= 1;
+			continue;
+		}
+
+		/* we know that the process is running, so just remember that
+		 * there is a valid running libnetconf application
+		 */
+		ret |= 2;
+	}
+
+	if (ret & 1) {
+		apps->valid[i] = 0;
+	}
+
+	return ret;
+}
+
+static int nc_shared_cleanup(int del_shm) {
+	char path[256], lock_prefix[32];
+	struct shmid_ds ds;
+	struct dirent* dr;
+	DIR* dir;
+
+	/* remove the global session information file */
+	if (unlink(SESSIONSFILE_PATH) == -1 && errno != ENOENT) {
+		ERROR("Unable to remove the session information file (%s)", strerror(errno));
+		return (-1);
+	}
+
+	/* remove semaphores */
+	strcpy(lock_prefix, NCDS_LOCK);
+	memmove(lock_prefix+4, lock_prefix+1, strlen(lock_prefix));
+	memcpy(lock_prefix, "sem.", 4);
+
+	if ((dir = opendir("/dev/shm")) == NULL) {
+		/* let's just ignore this fail */
+		DBG("Failed to open semaphore directory \"/dev/shm\" (%s).", strerror(errno));
+	} else {
+		while ((dr = readdir(dir))) {
+			if (strncmp(dr->d_name, lock_prefix, strlen(lock_prefix)) == 0) {
+				sprintf(path, "/dev/shm/%s", dr->d_name);
+				if (unlink(path) == -1) {
+					DBG("Failed to remove semaphore \"%s\" (%s).", path, strerror(errno));
+				}
+			}
+		}
+	}
+
+	/* remove shared memory */
+	if (del_shm && shmid != -1) {
+		if (shmctl(shmid, IPC_STAT, &ds) == -1) {
+			ERROR("Unable to get the status of shared memory (%s).", strerror(errno));
+			return (-1);
+		}
+		if (ds.shm_nattch == 1 && nc_init_flags & NC_INIT_MULTILAYER) {
+			shmctl(shmid, IPC_RMID, NULL);
+		} else {
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
 API int nc_init(int flags)
 {
-	int retval = 0, r;
+	int retval = 0, r, init_shm = 1, fd;
 	key_t key = -4;
-	first_after_close = 1;
-	char* t;
+	char* t, my_comm[NC_APPS_COMM_MAX+1];
 	pthread_rwlockattr_t rwlockattr;
 
 	if (nc_init_flags & NC_INIT_DONE) {
@@ -150,18 +290,25 @@ API int nc_init(int flags)
 		return (-1);
 	}
 
+	if ((flags & (NC_INIT_MULTILAYER | NC_INIT_SINGLELAYER)) != NC_INIT_MULTILAYER &&
+			(flags & (NC_INIT_MULTILAYER | NC_INIT_SINGLELAYER)) != NC_INIT_SINGLELAYER) {
+		ERROR("Either single-layer or multi-layer flag must be used in initialization.");
+		return (-1);
+	}
+
 	if (flags & (NC_INIT_DATASTORES | NC_INIT_MONITORING | NC_INIT_NACM)) {
 
 		DBG("Shared memory key: %d", key);
 		shmid = shmget(key, sizeof(struct nc_shared_info), IPC_CREAT | IPC_EXCL | FILE_PERM);
-		if (shmid == -1 && errno == EEXIST) {
-			shmid = shmget(key, sizeof(struct nc_shared_info), FILE_PERM);
-			retval = 1;
-			first_after_close = 0;
-		}
 		if (shmid == -1) {
-			ERROR("Accessing shared memory failed (%s).", strerror(errno));
-			return (-1);
+			if (errno == EEXIST) {
+				shmid = shmget(key, sizeof(struct nc_shared_info), FILE_PERM);
+				init_shm = 0;
+			}
+			if (shmid == -1) {
+				ERROR("Accessing shared memory failed (%s).", strerror(errno));
+				return (-1);
+			}
 		}
 		DBG("Shared memory ID: %d", shmid);
 
@@ -173,16 +320,29 @@ API int nc_init(int flags)
 			return (-1);
 		}
 
-		/* todo use locks */
-		if (first_after_close) {
-			/* remove the global session information file if left over a previous libnetconf instance */
-			if ((unlink(SESSIONSFILE_PATH) == -1) && (errno != ENOENT)) {
-				ERROR("Unable to remove the session information file (%s)", strerror(errno));
-				shmdt(nc_info);
-				return (-1);
+		/* get my comm */
+		my_comm[0] = '\0';
+		fd = open("/proc/self/comm", O_RDONLY);
+		if (fd != -1) {
+			r = read(fd, my_comm, NC_APPS_COMM_MAX);
+			close(fd);
+			if (r > 0) {
+				if (my_comm[r-1] == '\n') {
+					my_comm[r-1] = '\0';
+				} else {
+					my_comm[r] = '\0';
+				}
 			}
+		}
 
-			/* lock */
+		if (init_shm) {
+			/* we created the shared memory, consider first even for single-layer */
+			first_after_close = 1;
+
+			/* clear the apps structure */
+			memset(nc_info->apps.valid, 0, NC_APPS_MAX * sizeof(unsigned char));
+
+			/* init lock */
 			pthread_rwlockattr_init(&rwlockattr);
 			pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
 			if ((r = pthread_rwlock_init(&(nc_info->lock), &rwlockattr)) != 0) {
@@ -191,22 +351,61 @@ API int nc_init(int flags)
 				return (-1);
 			}
 			pthread_rwlockattr_destroy(&rwlockattr);
-			memset(nc_info, 0, sizeof(struct nc_shared_info));
+
+			/* LOCK */
+			r = pthread_rwlock_wrlock(&(nc_info->lock));
+			memset(nc_info->apps.valid, 0, NC_APPS_MAX * sizeof(unsigned char));
+		} else {
+			/* LOCK */
+			r = pthread_rwlock_wrlock(&(nc_info->lock));
+
+			/* check if I didn't crash before */
+			r = nc_apps_check(my_comm, &(nc_info->apps));
+
+			if (r & 1) {
+				/* I crashed */
+				retval |= NC_INITRET_RECOVERY;
+				nc_info->stats.participants--;
+			}
+
+			if (r & 2) {
+				/* shared memory existed and there are actually some running libnetconf apps */
+				first_after_close = 0;
+				retval |= NC_INITRET_NOTFIRST;
+			} else if (flags & NC_INIT_MULTILAYER) {
+				/* shared memory contained only crash info, multi-layer is considered first, */
+				first_after_close = 1;
+			} else {
+				/* ... single-layer not */
+				first_after_close = 0;
+			}
+		}
+
+		if (first_after_close) {
+			/* we are certain we can do this */
+			nc_shared_cleanup(0);
 
 			/* init the information structure */
-			pthread_rwlock_wrlock(&(nc_info->lock));
 			strncpy(nc_info->stats.start_time, t = nc_time2datetime(time(NULL), NULL), TIME_LENGTH);
 			free(t);
-		} else {
-			pthread_rwlock_wrlock(&(nc_info->lock));
 		}
+
+		/* update shared memory with this process's information */
 		nc_info->stats.participants++;
-		pthread_rwlock_unlock(&(nc_info->lock));
+		nc_apps_add(my_comm, &(nc_info->apps));
+
+		/* UNLOCK */
+		r = pthread_rwlock_unlock(&(nc_info->lock));
 	}
 
 	/*
 	 * check used flags according to a compile time settings
 	 */
+	if (flags & NC_INIT_MULTILAYER) {
+		nc_init_flags |= NC_INIT_MULTILAYER;
+	} else {
+		nc_init_flags |= NC_INIT_SINGLELAYER;
+	}
 #ifndef DISABLE_NOTIFICATIONS
 	if (flags & NC_INIT_NOTIF) {
 		nc_init_flags |= NC_INIT_NOTIF;
@@ -276,7 +475,7 @@ API int nc_init(int flags)
 			/* remove flags of uninitiated subsystems */
 			nc_init_flags &= !(NC_INIT_NOTIF & NC_INIT_NACM);
 
-			nc_close(first_after_close);
+			nc_close();
 			return (-1);
 		}
 	}
@@ -288,7 +487,7 @@ API int nc_init(int flags)
 			/* remove flags of uninitiated subsystems */
 			nc_init_flags &= !NC_INIT_NACM;
 
-			nc_close(first_after_close);
+			nc_close();
 			return (-1);
 		}
 	}
@@ -297,32 +496,47 @@ API int nc_init(int flags)
 	return (retval);
 }
 
-API int nc_close(int system)
+API int nc_close(void)
 {
-	struct shmid_ds ds;
-	int retval = 0;
+	int retval = 0, i, fd;
+	char my_comm[NC_APPS_COMM_MAX+1];
 
-	nc_init_flags |= NC_INIT_CLOSING;
-
-	if (system && shmid != -1) {
-		if (shmctl(shmid, IPC_STAT, &ds) == -1) {
-			ERROR("Unable to get the status of shared memory (%s).", strerror(errno));
-			nc_init_flags &= ~NC_INIT_CLOSING;
-			return (-1);
-		}
-		if (ds.shm_nattch == 1) {
-			shmctl(shmid, IPC_RMID, NULL);
-		} else {
-			retval = 1;
+	/* get my comm */
+	my_comm[0] = '\0';
+	fd = open("/proc/self/comm", O_RDONLY);
+	if (fd != -1) {
+		i = read(fd, my_comm, NC_APPS_COMM_MAX);
+		close(fd);
+		if (i > 0) {
+			if (my_comm[i-1] == '\n') {
+				my_comm[i-1] = '\0';
+			} else {
+				my_comm[i] = '\0';
+			}
 		}
 	}
 
-	if (nc_info) {
+	nc_init_flags |= NC_INIT_CLOSING;
+
+	/* nc_apps_check() also deletes this process's info from the shared memory */
+	if (nc_info != NULL) {
+		/* LOCK */
 		pthread_rwlock_wrlock(&(nc_info->lock));
-		nc_info->stats.participants--;
-		pthread_rwlock_unlock(&(nc_info->lock));
+		if (nc_apps_check(my_comm, &(nc_info->apps)) == 1 && nc_init_flags & NC_INIT_MULTILAYER) {
+			/* shared memory including lock was deleted */
+			retval = nc_shared_cleanup(1);
+		} else {
+			nc_info->stats.participants--;
+			/* UNLOCK */
+			pthread_rwlock_unlock(&(nc_info->lock));
+		}
 		shmdt(nc_info);
 		nc_info = NULL;
+	}
+
+	if (retval == -1) {
+		nc_init_flags &= ~NC_INIT_CLOSING;
+		return (retval);
 	}
 
 	/* close NETCONF session statistics */

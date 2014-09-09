@@ -415,19 +415,32 @@ typedef enum NC_TRANSPORT {
  * @ingroup genAPI
  * @brief Initialize libnetconf for system-wide usage. This initialization is
  * shared across all the processes
- * @param[in] flags ORed flags for libnetconf initialization. Accepted values
- * include:
+ * @param[in] flags ORed flags for libnetconf initialization. Must include
+ * either *NC_INIT_MULTILAYER* or *NC_INIT_SINGLELAYER* with other
+ * accepted values including:
  *    - *NC_INIT_ALL* Enable all available subsystems
  *    - *NC_INIT_MONITORING* Enable ietf-netconf-monitoring module
  *    - *NC_INIT_WD* Enable With-default capability
  *    - *NC_INIT_NOTIF* Enable Notification subsystem
  *    - *NC_INIT_NACM* Enable NETCONF Access Control subsystem
- * @return -1 on fatal error\n 0 if this is the first init after previous
- * system-wide nc_close() or system reboot\n 1 when someone else already called
- * nc_init() since last system-wide nc_close() or system reboot.
+ *
+ * The difference between the multi-layer and single-layer flag is strictly in
+ * the behaviour when cleaning shared library resources, either during
+ * nc_close() or if the calling process crashed before (equals did not call
+ * nc_close()). On multi-layer crash/close, if it was/is the only running
+ * libnetconf application, full cleanup is performed, unlike single-layer
+ * crash, when this situation is reflected just in the return flag or
+ * single-layer close, when only the local resources are released.
+ *
+ * @return -1 on fatal error\n 0 on success with some possible flags:\n NC_INITRET_NOTFIRST when someone else already called
+ * nc_init() since last system-wide nc_close() or system reboot.\n NC_INITRET_RECOVERY when after last init and before this
+ * init this application crashed (based on same commands - executable binary names).
  */
 int nc_init(int flags);
-#define NC_INIT_ALL        0xffffffff /**< nc_init()'s flag to enable all optional features/subsystems */
+#define NC_INIT_MULTILAYER 0x00001000  /**< nc_init()'s flag for multi-layer server architecture */
+#define NC_INIT_SINGLELAYER 0x00002000 /**< nc_init()'s flag for single-layer server architecture */
+
+#define NC_INIT_ALL        0xffffcfff /**< nc_init()'s flag to enable all optional features/subsystems */
 #define NC_INIT_NOTIF      0x00000002 /**< nc_init()'s flag to enable Notification subsystem. */
 #define NC_INIT_NACM       0x00000104 /**< nc_init()'s flag to enable Acccess Control subsystem */
 #define NC_INIT_MONITORING 0x00000008 /**< nc_init()'s flag to enable ietf-netconf-monitoring module */
@@ -444,17 +457,22 @@ int nc_init(int flags);
  */
 #define NC_INIT_DATASTORES 0x00000100 /**< nc_init()'s flag to use internal datastores */
 
+#define NC_INITRET_NOTFIRST 0x00000001 /**< nc_init()'s return flag for this process not calling nc_init() first */
+#define NC_INITRET_RECOVERY 0x00000002 /**< nc_init()'s return flag for this process crashing before (not calling nc_close()) */
+
 /**
  * @ingroup genAPI
- * @param[in] system Flag if close should be applied as system-wide.
- * System-wide nc_close() closes all the shared structures if no other libnetconf
- * participant is currently running. Local release of the calling instance
- * from the shared structures is done in both cases.
+ * @brief Release libnetconf resources. Init flag is used to determine if close
+ * should be applied as system-wide (NC_INIT_MULTILAYER) or not
+ * (NC_INIT_SINGLELAYER). System-wide nc_close() closes all the shared
+ * structures if no other libnetconf participant is currently running. Local
+ * release of the calling instance from the shared structures is done in both
+ * cases.
  * @return -1 on error\n 0 on success\n 1 in case of system-wide when there is
  * another participant using shared structures and system-wide close cannot be
  * done.
  */
-int nc_close(int system);
+int nc_close(void);
 
 /**
  * @ingroup genAPI
