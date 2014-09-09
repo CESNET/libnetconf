@@ -260,6 +260,7 @@ static int nc_shared_cleanup(int del_shm) {
 				}
 			}
 		}
+		closedir(dir);
 	}
 
 	/* remove shared memory */
