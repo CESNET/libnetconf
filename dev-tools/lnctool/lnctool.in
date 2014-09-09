@@ -132,9 +132,9 @@ def separate_paths_and_namespaces(defs):
 				continue
 
 			# path definition
-			if re.match(r'(/([\w]+:)?[\w]+)+', d):
+			if re.match(r'(/([\w\.\-]+:)?[\w\.\-]+)+', d):
 				paths.append(d)
-			elif re.match(r'[\w]+=.+', d):
+			elif re.match(r'[\w\.\-]+=.+', d):
 				namespaces.append(d.split('='))
 			else:
 				raise ValueError('Line '+d+' is not valid namespace definition nor XPath.')
