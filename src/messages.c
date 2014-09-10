@@ -492,23 +492,19 @@ NC_RPC_TYPE nc_rpc_parse_type(nc_rpc* rpc)
 	return (rpc->type.rpc);
 }
 
-API nc_rpc* nc_rpc_build(const char* rpc_dump, const struct nc_session* session)
+static nc_rpc* _rpc_build(int libxml2, const struct nc_session* session, const char* str_dump, xmlDocPtr xml_dump)
 {
 	nc_rpc* rpc;
 
-	if ((rpc = nc_msg_build (rpc_dump)) == NULL) {
-		return NULL;
+	if (libxml2) {
+		assert(xml_dump);
+		rpc = ncxml_msg_build(xml_dump);
+	} else {
+		assert(str_dump);
+		rpc = nc_msg_build(str_dump);
 	}
-
-	/* set rpc type flag */
-	nc_rpc_parse_type(rpc);
-
-	/* set with-defaults if any */
-	nc_rpc_parse_withdefaults(rpc, NULL);
-
-	if (session != NULL) {
-		/* NACM init */
-		nacm_start(rpc, session);
+	if (rpc == NULL) {
+		return NULL;
 	}
 
 	/* assign operation value */
@@ -518,17 +514,6 @@ API nc_rpc* nc_rpc_build(const char* rpc_dump, const struct nc_session* session)
 	nc_rpc_assign_ds(rpc, "source");
 	nc_rpc_assign_ds(rpc, "target");
 
-	return rpc;
-}
-
-API nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump, const struct nc_session* session)
-{
-	nc_rpc* rpc;
-
-	if ((rpc = ncxml_msg_build (rpc_dump)) == NULL) {
-		return NULL;
-	}
-
 	/* set rpc type flag */
 	nc_rpc_parse_type(rpc);
 
@@ -541,6 +526,16 @@ API nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump, const struct nc_session* session
 	}
 
 	return rpc;
+}
+
+API nc_rpc* nc_rpc_build(const char* rpc_dump, const struct nc_session* session)
+{
+	return _rpc_build(0, session, rpc_dump, NULL);
+}
+
+API nc_rpc* ncxml_rpc_build(xmlDocPtr rpc_dump, const struct nc_session* session)
+{
+	return _rpc_build(1, session, NULL, rpc_dump);
 }
 
 NC_REPLY_TYPE nc_reply_parse_type(nc_reply* reply)
