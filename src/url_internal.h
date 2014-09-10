@@ -54,6 +54,10 @@
 int nc_url_open(const char* url);
 
 /**
+ * @brief Check if the URL exists (can be opened)
+ */
+int nc_url_check(const char* url);
+/**
  * @brief Replaces target file with empty <config> element.
  * @param url target url
  * @return EXIT_SUCCESS or EXIT_FAILURE

@@ -239,6 +239,24 @@ int nc_url_delete_config(const char *url)
 	return nc_url_upload("<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\"></config>", url);
 }
 
+int nc_url_check(const char* url)
+{
+	CURL *curl;
+	int retval;
+
+	/* set up libcurl */
+	curl_global_init(INIT_FLAGS);
+	curl = curl_easy_init();
+	curl_easy_setopt(curl, CURLOPT_URL, url);
+	retval = curl_easy_perform(curl);
+
+	/* cleanup */
+	curl_easy_cleanup(curl);
+	curl_global_cleanup();
+
+	return (retval);
+}
+
 int nc_url_open(const char *url)
 {
 	CURL * curl;
