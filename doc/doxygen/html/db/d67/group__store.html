@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.8.0-173_trunk</span>
+   &#160;<span id="projectnumber">0.8.0-184_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -429,6 +429,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Perform the requested RPC operation on the datastore. </p>
+<dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Function will be removed in version 1.0.0, use <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a> instead.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Datastore ID. Use <a class="el" href="../../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a" title="Datastore ID to access libnetconf&#39;s internal datastores such as notifications, monitoring, etc. ">NCDS_INTERNAL_ID</a> (0) to apply request (typically &lt;get&gt;) onto the libnetconf's internal datastore. </td></tr>
@@ -481,7 +482,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else &lt;rpc-reply&gt; with &lt;ok&gt;, &lt;data&gt; or &lt;rpc-error&gt; according to the type and the result of the requested operation. When the requested operation is not applicable to any datastore (e.g. the namespace does not match no of the controlled datstores), NCDS_RPC_NOT_APPLICABLE is returned. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else &lt;rpc-reply&gt; with &lt;ok&gt;, &lt;data&gt; or &lt;rpc-error&gt; according to the type and the result of the requested operation. When the requested operation is not applicable to any datastore (e.g. the namespace does not match none of the controlled datstores), NCDS_RPC_NOT_APPLICABLE is returned. </dd></dl>
 
 </div>
 </div>
@@ -1130,7 +1131,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Sep 9 2014 09:52:17 for libnetconf by
+    <li class="footer">Generated on Wed Sep 10 2014 15:54:41 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Tue Sep 9 2014" "Version 0.8.0-173_trunk" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Wed Sep 10 2014" "Version 0.8.0-184_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -248,6 +248,12 @@ Specify a directory path to the location where the required (imported or include
 .PP
 Perform the requested RPC operation on the datastore\&. 
 .PP
+\fBDeprecated\fP
+.RS 4
+Function will be removed in version 1\&.0\&.0, use \fBncds_apply_rpc2all()\fP instead\&.
+.RE
+.PP
+.PP
 \fBParameters:\fP
 .RS 4
 \fIid\fP Datastore ID\&. Use \fBNCDS_INTERNAL_ID\fP (0) to apply request (typically <get>) onto the libnetconf's internal datastore\&. 
@@ -279,7 +285,7 @@ Perform the requested RPC operation on the all datastores controlled by the libn
 .PP
 \fBReturns:\fP
 .RS 4
-NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to any datastore (e\&.g\&. the namespace does not match no of the controlled datstores), NCDS_RPC_NOT_APPLICABLE is returned\&. 
+NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to any datastore (e\&.g\&. the namespace does not match none of the controlled datstores), NCDS_RPC_NOT_APPLICABLE is returned\&. 
 .RE
 .PP
 

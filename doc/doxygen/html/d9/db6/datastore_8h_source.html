@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.8.0-173_trunk</span>
+   &#160;<span id="projectnumber">0.8.0-184_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -156,40 +156,40 @@ $(document).ready(function(){initNavTree('d9/db6/datastore_8h_source.html','../.
 <div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;</div>
 <div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;<span class="keywordtype">void</span> <a class="code" href="../../db/d67/group__store.html#ga05e7f1ed8185b92a6dbf904172dba9d2">ncds_free2</a>(ncds_id datastore_id);</div>
 <div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;</div>
-<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;<a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* <a class="code" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801">ncds_apply_rpc</a>(ncds_id <span class="keywordtype">id</span>, <span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session, <span class="keyword">const</span> <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a>* rpc);</div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;</div>
-<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;<a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* <a class="code" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759">ncds_apply_rpc2all</a>(<span class="keyword">struct</span> nc_session* session, <span class="keyword">const</span> <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a>* rpc, ncds_id* ids[]);</div>
-<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;</div>
-<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e">ncds_rollback</a>(ncds_id <span class="keywordtype">id</span>);</div>
-<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;</div>
-<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;<span class="keywordtype">void</span> <a class="code" href="../../db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a">ncds_break_locks</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);</div>
-<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;</div>
-<div class="line"><a name="l00481"></a><span class="lineno">  481</span>&#160;<span class="keywordtype">char</span>* <a class="code" href="../../db/d67/group__store.html#ga414b75711e49e0e1eea10ae15c14287e">ncds_get_model</a>(ncds_id <span class="keywordtype">id</span>, <span class="keywordtype">int</span> base);</div>
-<div class="line"><a name="l00482"></a><span class="lineno">  482</span>&#160;</div>
-<div class="line"><a name="l00492"></a><span class="lineno">  492</span>&#160;<span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="../../db/d67/group__store.html#ga5ec9fea534bfd146019b7efb882648be">ncds_get_model_path</a>(ncds_id <span class="keywordtype">id</span>);</div>
-<div class="line"><a name="l00493"></a><span class="lineno">  493</span>&#160;</div>
-<div class="line"><a name="l00494"></a><span class="lineno">  494</span>&#160;</div>
-<div class="line"><a name="l00504"></a><span class="lineno">  504</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b">ncds_add_models_path</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* path);</div>
-<div class="line"><a name="l00505"></a><span class="lineno">  505</span>&#160;</div>
-<div class="line"><a name="l00514"></a><span class="lineno">  514</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47">ncds_add_model</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* path);</div>
-<div class="line"><a name="l00515"></a><span class="lineno">  515</span>&#160;</div>
-<div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2">ncds_feature_enable</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* module, <span class="keyword">const</span> <span class="keywordtype">char</span>* feature);</div>
-<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;</div>
-<div class="line"><a name="l00538"></a><span class="lineno">  538</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0">ncds_feature_disable</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* module, <span class="keyword">const</span> <span class="keywordtype">char</span>* feature);</div>
-<div class="line"><a name="l00539"></a><span class="lineno">  539</span>&#160;</div>
-<div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga3c65e57d684b25885d3ccbeb84e9f4d9">ncds_features_enableall</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* module);</div>
-<div class="line"><a name="l00551"></a><span class="lineno">  551</span>&#160;</div>
-<div class="line"><a name="l00562"></a><span class="lineno">  562</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga017491407c8d2c6f596d17e64eb10d84">ncds_features_disableall</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* module);</div>
-<div class="line"><a name="l00563"></a><span class="lineno">  563</span>&#160;</div>
-<div class="line"><a name="l00573"></a><span class="lineno">  573</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#gac3644177deaaf308bb2ca218be99ea85">ncds_feature_isenabled</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* module, <span class="keyword">const</span> <span class="keywordtype">char</span>* feature);</div>
-<div class="line"><a name="l00574"></a><span class="lineno">  574</span>&#160;</div>
-<div class="line"><a name="l00583"></a><span class="lineno">  583</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#gab2a27448a52972db6807571590a5c6da">ncds_consolidate</a>(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00584"></a><span class="lineno">  584</span>&#160;</div>
-<div class="line"><a name="l00585"></a><span class="lineno">  585</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a name="l00586"></a><span class="lineno">  586</span>&#160;<span class="preprocessor"></span>}</div>
-<div class="line"><a name="l00587"></a><span class="lineno">  587</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00588"></a><span class="lineno">  588</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00589"></a><span class="lineno">  589</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* NC_DATASTORE_H_ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;<a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* <a class="code" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801">ncds_apply_rpc</a>(ncds_id <span class="keywordtype">id</span>, <span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session, <span class="keyword">const</span> <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a>* rpc);</div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;</div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;<a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a>* <a class="code" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759">ncds_apply_rpc2all</a>(<span class="keyword">struct</span> nc_session* session, <span class="keyword">const</span> <a class="code" href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a>* rpc, ncds_id* ids[]);</div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;</div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e">ncds_rollback</a>(ncds_id <span class="keywordtype">id</span>);</div>
+<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;</div>
+<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;<span class="keywordtype">void</span> <a class="code" href="../../db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a">ncds_break_locks</a>(<span class="keyword">const</span> <span class="keyword">struct</span> nc_session* session);</div>
+<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160;</div>
+<div class="line"><a name="l00484"></a><span class="lineno">  484</span>&#160;<span class="keywordtype">char</span>* <a class="code" href="../../db/d67/group__store.html#ga414b75711e49e0e1eea10ae15c14287e">ncds_get_model</a>(ncds_id <span class="keywordtype">id</span>, <span class="keywordtype">int</span> base);</div>
+<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;</div>
+<div class="line"><a name="l00495"></a><span class="lineno">  495</span>&#160;<span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="../../db/d67/group__store.html#ga5ec9fea534bfd146019b7efb882648be">ncds_get_model_path</a>(ncds_id <span class="keywordtype">id</span>);</div>
+<div class="line"><a name="l00496"></a><span class="lineno">  496</span>&#160;</div>
+<div class="line"><a name="l00497"></a><span class="lineno">  497</span>&#160;</div>
+<div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b">ncds_add_models_path</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* path);</div>
+<div class="line"><a name="l00508"></a><span class="lineno">  508</span>&#160;</div>
+<div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47">ncds_add_model</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* path);</div>
+<div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160;</div>
+<div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga1171ba251d855a3c9abbc57e526739b2">ncds_feature_enable</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* module, <span class="keyword">const</span> <span class="keywordtype">char</span>* feature);</div>
+<div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;</div>
+<div class="line"><a name="l00541"></a><span class="lineno">  541</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga11b6f6240911ddcc5e6b8cbb6d36fcc0">ncds_feature_disable</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* module, <span class="keyword">const</span> <span class="keywordtype">char</span>* feature);</div>
+<div class="line"><a name="l00542"></a><span class="lineno">  542</span>&#160;</div>
+<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga3c65e57d684b25885d3ccbeb84e9f4d9">ncds_features_enableall</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* module);</div>
+<div class="line"><a name="l00554"></a><span class="lineno">  554</span>&#160;</div>
+<div class="line"><a name="l00565"></a><span class="lineno">  565</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#ga017491407c8d2c6f596d17e64eb10d84">ncds_features_disableall</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* module);</div>
+<div class="line"><a name="l00566"></a><span class="lineno">  566</span>&#160;</div>
+<div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#gac3644177deaaf308bb2ca218be99ea85">ncds_feature_isenabled</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* module, <span class="keyword">const</span> <span class="keywordtype">char</span>* feature);</div>
+<div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160;</div>
+<div class="line"><a name="l00586"></a><span class="lineno">  586</span>&#160;<span class="keywordtype">int</span> <a class="code" href="../../db/d67/group__store.html#gab2a27448a52972db6807571590a5c6da">ncds_consolidate</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00587"></a><span class="lineno">  587</span>&#160;</div>
+<div class="line"><a name="l00588"></a><span class="lineno">  588</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a name="l00589"></a><span class="lineno">  589</span>&#160;<span class="preprocessor"></span>}</div>
+<div class="line"><a name="l00590"></a><span class="lineno">  590</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00591"></a><span class="lineno">  591</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00592"></a><span class="lineno">  592</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* NC_DATASTORE_H_ */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="group__store_html_gac3644177deaaf308bb2ca218be99ea85"><div class="ttname"><a href="../../db/d67/group__store.html#gac3644177deaaf308bb2ca218be99ea85">ncds_feature_isenabled</a></div><div class="ttdeci">int ncds_feature_isenabled(const char *module, const char *feature)</div><div class="ttdoc">Check if the feature of the specified module is currently enabled or disabled. </div></div>
 <div class="ttc" id="datastore_8h_html_a9d81ebfeff55fd595fb20a0804107b9b"><div class="ttname"><a href="../../d9/db6/datastore_8h.html#a9d81ebfeff55fd595fb20a0804107b9b">error_area</a></div><div class="ttdeci">char error_area</div></div>
 <div class="ttc" id="group__store_html_gabb9806e70f3399aed7da879095d9c64e"><div class="ttname"><a href="../../db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e">ncds_rollback</a></div><div class="ttdeci">int ncds_rollback(ncds_id id)</div><div class="ttdoc">Undo the last change performed on the specified datastore. </div></div>
@@ -231,7 +231,7 @@ $(document).ready(function(){initNavTree('d9/db6/datastore_8h_source.html','../.
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d9/db6/datastore_8h.html">datastore.h</a></li>
-    <li class="footer">Generated on Tue Sep 9 2014 09:52:17 for libnetconf by
+    <li class="footer">Generated on Wed Sep 10 2014 15:54:41 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>
