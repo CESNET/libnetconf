@@ -880,12 +880,13 @@ int ncds_file_unlock(struct ncds_ds* ds, const struct nc_session* session, NC_DA
 
 		if (target == NC_DATASTORE_CANDIDATE) {
 			/* drop current candidate configuration */
-			del = file_ds->candidate->children;
-			xmlUnlinkNode (file_ds->candidate->children);
-			xmlFreeNode (del);
+			while ((del = file_ds->candidate->children) != NULL) {
+				xmlUnlinkNode (file_ds->candidate->children);
+				xmlFreeNode (del);
+			}
 
 			/* copy running into candidate configuration */
-			file_ds->candidate->children = xmlDocCopyNode (file_ds->running->children, file_ds->xml, 1);
+			xmlAddChildList(file_ds->candidate, xmlCopyNodeList(file_ds->running->children));
 
 			/* mark candidate as not modified */
 			xmlSetProp (target_ds, BAD_CAST "modified", BAD_CAST "false");
@@ -989,8 +990,9 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 {
 	struct ncds_ds_file* file_ds = (struct ncds_ds_file*)ds;
 	xmlDocPtr config_doc = NULL, aux_doc;
-	xmlNodePtr target_ds, source_ds, del;
+	xmlNodePtr target_ds, source_ds, aux_node, root;
 	keyList keys;
+	char *aux = NULL;
 	int r, ret = 0;
 
 	LOCK(file_ds, ret);
@@ -1058,8 +1060,20 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 			nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "config");
 			return EXIT_FAILURE;
 		}
-		config_doc = xmlReadMemory (config, strlen(config), NULL, NULL, NC_XMLREAD_OPTIONS);
-		source_ds = xmlDocGetRootElement (config_doc);
+		if (asprintf(&aux, "<config>%s</config>", config) == -1) {
+			UNLOCK(file_ds);
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			return EXIT_FAILURE;
+		}
+		if ((config_doc = xmlReadMemory (aux, strlen(aux), NULL, NULL, NC_XMLREAD_OPTIONS)) == NULL) {
+			UNLOCK(file_ds);
+			ERROR("%s: reading source config failed.", __func__);
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+			return EXIT_FAILURE;
+		}
+		free(aux);
+		source_ds = config_doc->children->children;
 		break;
 	default:
 		UNLOCK(file_ds);
@@ -1079,7 +1093,13 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 	}
 
 	aux_doc = xmlNewDoc (BAD_CAST "1.0");
-	xmlDocSetRootElement(aux_doc, xmlDocCopyNode(source_ds, aux_doc, 1));
+	if (source_ds) {
+		xmlDocSetRootElement(aux_doc, xmlCopyNode(source_ds, 1));
+		for (root = source_ds->next; root != NULL; root = aux_node) {
+			aux_node = root->next;
+			xmlAddNextSibling(aux_doc->last, xmlCopyNode(root, 1));
+		}
+	}
 
 	if (rpc != NULL && rpc->nacm != NULL ) {
 		/* NACM */
@@ -1123,9 +1143,10 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 						*error = nc_err_new(NC_ERR_OP_FAILED);
 					}
 				}
+				UNLOCK(file_ds);
 				xmlFreeDoc(aux_doc);
 				keyListFree(keys);
-				UNLOCK(file_ds);
+				xmlFreeDoc (config_doc);
 				return (EXIT_FAILURE);
 			}
 			keyListFree(keys);
@@ -1133,12 +1154,13 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 	}
 
 	/* drop current target configuration */
-	del = target_ds->children;
-	xmlUnlinkNode (target_ds->children);
-	xmlFreeNode (del);
+	while ((aux_node = target_ds->children) != NULL) {
+		xmlUnlinkNode (target_ds->children);
+		xmlFreeNode (aux_node);
+	}
 
 	/* copy new target configuration */
-	target_ds->children = xmlDocCopyNode (aux_doc->children, file_ds->xml, 1);
+	xmlAddChildList(target_ds, xmlCopyNodeList(aux_doc->children));
 	xmlFreeDoc(aux_doc);
 
 finish:
@@ -1224,9 +1246,10 @@ int ncds_file_deleteconfig(struct ncds_ds * ds, const struct nc_session * sessio
 		return EXIT_FAILURE;
 	}
 
-	del = target_ds->children;
-	xmlUnlinkNode (target_ds->children);
-	xmlFreeNode (del);
+	while ((del = target_ds->children) != NULL) {
+		xmlUnlinkNode (target_ds->children);
+		xmlFreeNode (del);
+	}
 
 	/*
 	 * if we are changing the candidate, mark it as modified, since we need
@@ -1265,8 +1288,9 @@ int ncds_file_editconfig(struct ncds_ds *ds, const struct nc_session * session, 
 {
 	struct ncds_ds_file * file_ds = (struct ncds_ds_file *)ds;
 	xmlDocPtr config_doc, datastore_doc;
-	xmlNodePtr target_ds, tmp_target_ds;
+	xmlNodePtr target_ds, aux_node, root;
 	int retval = EXIT_SUCCESS, ret;
+	char* aux = NULL;
 
 	/* lock the datastore */
 	LOCK(file_ds, ret);
@@ -1308,25 +1332,51 @@ int ncds_file_editconfig(struct ncds_ds *ds, const struct nc_session * session, 
 		return EXIT_FAILURE;
 	}
 
-	/* read config to XML doc */
-	if ((config_doc = xmlReadMemory (config, strlen(config), NULL, NULL, NC_XMLREAD_OPTIONS)) == NULL) {
+	if (asprintf(&aux, "<config>%s</config>", config) == -1) {
 		UNLOCK(file_ds);
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		*error = nc_err_new(NC_ERR_OP_FAILED);
 		return EXIT_FAILURE;
 	}
 
+	/* read config to XML doc */
+	if ((config_doc = xmlReadMemory (aux, strlen(aux), NULL, NULL, NC_XMLREAD_OPTIONS)) == NULL) {
+		UNLOCK(file_ds);
+		free(aux);
+		ERROR("%s: Reading xml data failed!", __func__);
+		return EXIT_FAILURE;
+	}
+	free(aux);
+	/* magic - get off the root config element and move all children to the 1st level */
+	root = xmlDocGetRootElement(config_doc);
+	for (aux_node = root->children; aux_node != NULL; aux_node = root->children) {
+		xmlUnlinkNode(aux_node);
+		xmlAddNextSibling(config_doc->last, aux_node);
+	}
+	aux_node = root->next;
+	xmlUnlinkNode(root);
+	xmlFreeNode(root);
+
 	/* create an XML doc with a copy of the datastore configuration */
 	datastore_doc = xmlNewDoc (BAD_CAST "1.0");
-	tmp_target_ds = xmlDocCopyNode (target_ds->children, datastore_doc, 1);
-	xmlDocSetRootElement (datastore_doc, tmp_target_ds);
-	datastore_doc->children = tmp_target_ds;
+	xmlDocSetRootElement(datastore_doc, xmlCopyNode(target_ds->children, 1));
+	if (target_ds->children) {
+		for (root = target_ds->children->next; root != NULL; root = aux_node) {
+			aux_node = root->next;
+			xmlAddNextSibling(datastore_doc->last, xmlCopyNode(root, 1));
+		}
+	}
 
 	/* preform edit config */
-	if (edit_config (datastore_doc, config_doc, (struct ncds_ds*)file_ds, defop, errop, (rpc != NULL) ? rpc->nacm : NULL, error)) {
+	if (edit_config(datastore_doc, config_doc, (struct ncds_ds*)file_ds, defop, errop, (rpc != NULL) ? rpc->nacm : NULL, error)) {
 		retval = EXIT_FAILURE;
 	} else {
 		/* replace datastore by edited configuration */
-		xmlFreeNode (target_ds->children);
-		target_ds->children = xmlDocCopyNode (datastore_doc->children, file_ds->xml, 1);
+		while ((aux_node = target_ds->children) != NULL) {
+			xmlUnlinkNode(aux_node);
+			xmlFreeNode(aux_node);
+		}
+		xmlAddChildList(target_ds, xmlCopyNodeList(datastore_doc->children));
 
 		/*
 		 * if we are changing candidate, mark it as modified, since we need
@@ -1334,11 +1384,11 @@ int ncds_file_editconfig(struct ncds_ds *ds, const struct nc_session * session, 
 		 * be locked since it has been modified and not committed.
 		 */
 		if (target == NC_DATASTORE_CANDIDATE) {
-			xmlSetProp (target_ds, BAD_CAST "modified", BAD_CAST "true");
+			xmlSetProp(target_ds, BAD_CAST "modified", BAD_CAST "true");
 		}
 
 		/* sync xml tree with file on the hdd */
-		if (file_sync (file_ds)) {
+		if (file_sync(file_ds)) {
 			*error = nc_err_new(NC_ERR_OP_FAILED);
 			nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore file synchronisation failed.");
 			retval = EXIT_FAILURE;
@@ -1346,8 +1396,8 @@ int ncds_file_editconfig(struct ncds_ds *ds, const struct nc_session * session, 
 	}
 	UNLOCK(file_ds);
 
-	xmlFreeDoc (datastore_doc);
-	xmlFreeDoc (config_doc);
+	xmlFreeDoc(datastore_doc);
+	xmlFreeDoc(config_doc);
 
 	return retval;
 }

@@ -2414,7 +2414,9 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 	/* default replace */
 	if (defop == NC_EDIT_DEFOP_REPLACE) {
 		/* replace whole document */
-		edit_replace(orig_doc, edit_doc->children, model, keys, nacm, error);
+		for (edit_node = edit_doc->children; edit_node != NULL; edit_node = edit_doc->children) {
+			edit_replace(orig_doc, edit_node, model, keys, nacm, error);
+		}
 	}
 
 	/* delete operations */
@@ -2525,8 +2527,10 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 	if (defop == NC_EDIT_DEFOP_MERGE || defop == NC_EDIT_DEFOP_NOTSET) {
 		/* replace whole document */
 		if (edit_doc->children != NULL) {
-			if (edit_merge(orig_doc, edit_doc->children, model, keys, nacm, error) != EXIT_SUCCESS) {
-				goto error;
+			for (edit_node = edit_doc->children; edit_node != NULL; edit_node = edit_doc->children) {
+				if (edit_merge(orig_doc, edit_doc->children, model, keys, nacm, error) != EXIT_SUCCESS) {
+					goto error;
+				}
 			}
 		}
 	}
@@ -2555,6 +2559,8 @@ static int compact_edit_operations_recursively(xmlNodePtr node, NC_EDIT_OP_TYPE 
 	NC_EDIT_OP_TYPE op;
 	xmlNodePtr children;
 	int ret;
+
+	assert(node);
 
 	op = get_operation(node, NC_EDIT_DEFOP_NOTSET, NULL);
 	switch ((int)op) {
@@ -2590,12 +2596,23 @@ static int compact_edit_operations_recursively(xmlNodePtr node, NC_EDIT_OP_TYPE 
 
 static int compact_edit_operations(xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
 {
+	xmlNodePtr root;
+
 	if (edit_doc == NULL) {
 		return EXIT_FAILURE;
 	}
 
 	/* to start recursive check, use defop as root's supreme operation */
-	return compact_edit_operations_recursively(xmlDocGetRootElement(edit_doc), (NC_EDIT_OP_TYPE)defop);
+	for (root = edit_doc->children; root != NULL; root = root->next) {
+		if (root->type != XML_ELEMENT_NODE) {
+			continue;
+		}
+
+		if (compact_edit_operations_recursively(root, (NC_EDIT_OP_TYPE)defop) != EXIT_SUCCESS) {
+			return (EXIT_FAILURE);
+		}
+	}
+	return EXIT_SUCCESS;
 }
 
 /**
