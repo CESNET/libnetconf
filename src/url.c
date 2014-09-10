@@ -204,6 +204,8 @@ int nc_url_upload(char *data, const char *url)
 	}
 	xmlFreeDoc(doc);
 
+	DBG("Uploading file to URL: %s (via curl)", url);
+
 	/* fill the structure for libcurl's READFUNCTION */
 	mem_data.memory = data;
 	mem_data.size = strlen(data);
@@ -272,7 +274,7 @@ int nc_url_open(const char *url)
 	/* and hide it from the file system */
 	unlink(url_tmp_name);
 
-	VERB("Getting file from URL: %s (via curl)", url);
+	DBG("Getting file from URL: %s (via curl)", url);
 
 	/* set up libcurl */
 	curl_global_init(INIT_FLAGS);
@@ -282,17 +284,17 @@ int nc_url_open(const char *url)
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_buffer);
 	res = curl_easy_perform(curl);
 	if (res != CURLE_OK) {
-		close(url_tmpfile);
 		ERROR("%s: curl error: %s", __func__, curl_buffer);
-		return (-1);
+		close(url_tmpfile);
+		url_tmpfile = -1;
+	} else {
+		/* move back to the beginning of the output file */
+		lseek(url_tmpfile, 0, SEEK_SET);
 	}
 
 	/* cleanup */
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
-
-	/* move back to the beginning of the output file */
-	lseek(url_tmpfile, 0, SEEK_SET);
 
 	return url_tmpfile;
 }

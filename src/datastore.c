@@ -4897,7 +4897,7 @@ API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const
 	int ret = EXIT_FAILURE;
 	nc_reply* reply = NULL, *old_reply = NULL, *new_reply;
 	xmlBufferPtr resultbuffer;
-	xmlNodePtr aux_node, node;
+	xmlNodePtr aux_node, node, root;
 	NC_OP op;
 	xmlDocPtr old = NULL;
 	char * old_data = NULL;
@@ -4919,20 +4919,10 @@ API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const
 
 #ifndef DISABLE_URL
 	xmlXPathObjectPtr url_path = NULL;
-	xmlChar *ncontent;
-	xmlNodePtr url_remote_node;
-	xmlNodePtr url_local_node;
-	xmlNodePtr url_tmp_node;
-	xmlNodePtr url_tmp_node_next;
-	xmlXPathObjectPtr url_model_xpath = NULL;
-	xmlChar * url_model_namespace;
-	xmlChar * url_model_name;
-	xmlDocPtr url_tmp_doc;
-	xmlDocPtr url_local_doc;
-	xmlChar * url_doc_text;
+	xmlChar *url;
 	char url_test_empty;
 	int url_tmpfile;
-	xmlNsPtr url_new_ns;
+	xmlNsPtr ns;
 	NC_URL_PROTOCOLS protocol;
 #endif /* DISABLE_URL */
 
@@ -5467,22 +5457,22 @@ apply_editcopyconfig:
 					xmlXPathFreeObject(url_path);
 					break; /* main switch */
 				}
-				ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
+				url = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
 				xmlXPathFreeObject(url_path);
 
-				protocol = nc_url_get_protocol((char*)ncontent);
+				protocol = nc_url_get_protocol((char*)url);
 				if (protocol == 0 || !nc_url_is_enabled(protocol)) {
-					ERROR("%s: protocol (%s - %d) not supported", __func__, ncontent, protocol);
+					ERROR("%s: protocol (%s - %d) not supported", __func__, url, protocol);
 					e = nc_err_new(NC_ERR_OP_FAILED);
 					nc_err_set(e, NC_ERR_PARAM_MSG, "Specified URL protocol not supported.");
-					xmlFree(ncontent);
+					xmlFree(url);
 					break; /* main switch */
 				}
 
 				switch (source_ds) {
 				case NC_DATASTORE_CONFIG:
 					/* source datastore is config (or url), so just upload file */
-					ret = nc_url_upload(config, (char*)ncontent);
+					ret = nc_url_upload(config, (char*)url);
 					break;
 				case NC_DATASTORE_RUNNING:
 				case NC_DATASTORE_STARTUP:
@@ -5495,70 +5485,56 @@ apply_editcopyconfig:
 					 * Then data would merge and we will have merged wanted data with non-wanted data from remote file before editing.
 					 * Thats FEATURE, not bug!!!. I reccomend to call ncds_apply_rpc2all and before that use delete-config on remote file.
 					 */
-					/* get data from remote file */
-					if ((url_tmpfile = nc_url_open((char*) ncontent)) < 0) {
+					url_tmpfile = -1;
+					if (nc_url_check((char*)url) == 0) {
+						url_tmpfile = nc_url_open((char*) url);
+						/* check that the file has some content */
+						if (read(url_tmpfile, &url_test_empty, 1) <= 0) {
+							close(url_tmpfile);
+							url_tmpfile = -1;
+						} else {
+							/* go back to the beginning of the file */
+							lseek(url_tmpfile, 0, SEEK_SET);
+						}
+					}
+					if (url_tmpfile == -1) {
 						/*
 						 * remote file is empty or does not exists,
 						 * so create empty document with <config> root element
 						 */
-						url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
-						url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
-						url_new_ns = xmlNewNs(url_remote_node, BAD_CAST NC_NS_BASE10, NULL);
-						xmlSetNs(url_remote_node, url_new_ns);
-						xmlDocSetRootElement(url_tmp_doc, url_remote_node);
+						doc1 = xmlNewDoc(BAD_CAST "1.0");
+						root = xmlNewNode(NULL, BAD_CAST "config");
+						ns = xmlNewNs(root, BAD_CAST NC_NS_BASE10, NULL);
+						xmlSetNs(root, ns);
+						xmlDocSetRootElement(doc1, root);
 					} else {
-						if (read(url_tmpfile, &url_test_empty, 1) > 0) {
-							/* file is not empty */
-							lseek(url_tmpfile, 0, SEEK_SET);
-							if ((url_tmp_doc = xmlReadFd(url_tmpfile, NULL, NULL, NC_XMLREAD_OPTIONS)) == NULL) {
-								close(url_tmpfile);
-								ERROR("%s: error reading XML data from tmp file", __func__);
-								e = nc_err_new(NC_ERR_OP_FAILED);
-								nc_err_set(e, NC_ERR_PARAM_MSG, "libnetconf internal server error, see error log.");
-								break;
-							}
+						/* read content of the remote file */
+						if ((doc1 = xmlReadFd(url_tmpfile, NULL, NULL, NC_XMLREAD_OPTIONS)) == NULL) {
 							close(url_tmpfile);
-							url_remote_node = xmlDocGetRootElement(url_tmp_doc);
-							if (xmlStrcmp(BAD_CAST "config", url_remote_node->name) != 0) {
-								ERROR("%s: no config data in remote file (%s)", __func__, ncontent);
-								e = nc_err_new(NC_ERR_OP_FAILED);
-								nc_err_set(e, NC_ERR_PARAM_MSG, "Invalid remote configuration file, missing <config> element.");
-								break;
+							ERROR("%s: error reading XML data from the URL file", __func__);
+							e = nc_err_new(NC_ERR_OP_FAILED);
+							nc_err_set(e, NC_ERR_PARAM_MSG, "libnetconf internal server error, see error log.");
+							break;
+						}
+						close(url_tmpfile);
+						root = xmlDocGetRootElement(doc1);
+						if (xmlStrcmp(BAD_CAST "config", root->name) != 0) {
+							ERROR("%s: no config data in remote file (%s)", __func__, url);
+							e = nc_err_new(NC_ERR_OP_FAILED);
+							nc_err_set(e, NC_ERR_PARAM_MSG, "Invalid remote configuration file, missing top level <config> element.");
+							break;
+						}
+
+						for (node = root->children; node != NULL; node = aux_node) {
+							aux_node = node->next;
+							if (node->type != XML_ELEMENT_NODE) {
+								continue;
 							}
 
-							/**
-							 * first we remove all entries from "remote" document which match enabled data models
-							 * this will prevent us from having multiple datastore configurations
-							 */
-							/* get data models */
-							url_model_xpath = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":namespace", ds->data_model->ctxt);
-							url_model_namespace = xmlGetProp(url_model_xpath->nodesetval->nodeTab[0], BAD_CAST "uri");
-							xmlXPathFreeObject(url_model_xpath);
-
-							url_model_xpath = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":container", ds->data_model->ctxt);
-							url_model_name = xmlGetProp(url_model_xpath->nodesetval->nodeTab[0], BAD_CAST "name");
-							xmlXPathFreeObject(url_model_xpath);
-
-							/* remove all remote entries which match data models from datastore */
-							url_tmp_node = url_remote_node->children;
-							while (url_tmp_node != NULL) {
-								url_tmp_node_next = url_tmp_node->next;
-								if (xmlStrcmp(url_tmp_node->name, url_model_name) == 0 &&
-										(xmlStrcmp(url_tmp_node->ns->href, url_model_namespace) == 0)) {
-									xmlUnlinkNode(url_tmp_node);
-									xmlFreeNode(url_tmp_node);
-								}
-
-								url_tmp_node = url_tmp_node_next;
+							if (is_model_root(node, ds->data_model)){
+								xmlUnlinkNode(node);
+								xmlFreeNode(node);
 							}
-							xmlFree(url_model_name);
-							xmlFree(url_model_namespace);
-
-						} else {
-							/* file is empty, create new document with root <config> element */
-							url_tmp_doc = xmlNewDoc(BAD_CAST "1.0");
-							url_remote_node = xmlNewNode(NULL, BAD_CAST "config");
-							xmlDocSetRootElement(url_tmp_doc, url_remote_node);
 						}
 					}
 
@@ -5568,17 +5544,17 @@ apply_editcopyconfig:
 							ERROR("%s: Failed to get data from the datastore (%s:%d).", __func__, __FILE__, __LINE__);
 							e = nc_err_new(NC_ERR_OP_FAILED);
 						}
-						xmlFreeDoc(url_tmp_doc);
+						xmlFreeDoc(doc1);
 						break;
 					}
 					/* config == NULL */
-					if (asprintf(&config, "<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\">%s</config>", data) == -1) {
+					if (asprintf(&config, "<config>%s</config>", data) == -1) {
 						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 						e = nc_err_new(NC_ERR_OP_FAILED);
 						nc_err_set(e, NC_ERR_PARAM_MSG, "libnetconf server internal error, see error log.");
 
 						/* cleanup */
-						xmlFreeDoc(url_tmp_doc);
+						xmlFreeDoc(doc1);
 						free(data);
 						data = NULL;
 						break;
@@ -5587,20 +5563,15 @@ apply_editcopyconfig:
 					data = NULL;
 
 					/* copy local data to "remote" document */
-					url_local_doc = xmlParseMemory(config, strlen(config));
-					url_local_node = xmlDocGetRootElement(url_local_doc);
-					url_tmp_node = url_local_node->children;
-					while (url_tmp_node != NULL) {
-						url_tmp_node_next = url_tmp_node->next;
-						xmlAddChild(url_remote_node, url_tmp_node);
-						url_tmp_node = url_tmp_node_next;
-					}
+					doc2 = xmlParseMemory(config, strlen(config));
+					xmlAddChildList(root, xmlCopyNodeList(doc2->children->children));
 
-					xmlDocDumpMemory(url_tmp_doc, &url_doc_text, NULL);
-					nc_url_upload((char*) url_doc_text, (char*) ncontent);
-					xmlFree(url_doc_text);
-					xmlFreeDoc(url_tmp_doc);
-
+					xmlDocDumpFormatMemory(doc1, (xmlChar**) (&data), NULL, 1);
+					nc_url_upload(data, (char*) url);
+					free(data);
+					data = NULL;
+					xmlFreeDoc(doc1);
+					xmlFreeDoc(doc2);
 					break;
 				default:
 					ERROR("%s: invalid source datastore for URL target", __func__);
@@ -5609,7 +5580,7 @@ apply_editcopyconfig:
 					nc_err_set(e, NC_ERR_PARAM_MSG, "Invalid source element value for use with URL target.");
 					break;
 				}
-				xmlFree(ncontent);
+				xmlFree(url);
 
 				if (e == NULL) {
 					ret = EXIT_SUCCESS;
@@ -5663,20 +5634,20 @@ apply_editcopyconfig:
 				ret = EXIT_FAILURE;
 				break;
 			}
-			ncontent = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
+			url = xmlNodeGetContent(url_path->nodesetval->nodeTab[0]);
 			xmlXPathFreeObject(url_path);
 
-			protocol = nc_url_get_protocol((char*) ncontent);
+			protocol = nc_url_get_protocol((char*) url);
 			if (protocol == 0 || !nc_url_is_enabled(protocol)) {
-				ERROR("%s: protocol (%s - %d) not supported", __func__, ncontent, protocol);
+				ERROR("%s: protocol (%s - %d) not supported", __func__, url, protocol);
 				e = nc_err_new(NC_ERR_OP_FAILED);
 				nc_err_set(e, NC_ERR_PARAM_MSG, "Specified URL protocol not supported.");
-				xmlFree(ncontent);
+				xmlFree(url);
 				break; /* main switch */
 			}
 
-			ret = nc_url_delete_config((char*) ncontent);
-			xmlFree(ncontent);
+			ret = nc_url_delete_config((char*) url);
+			xmlFree(url);
 		} else {
 #else
 		{
