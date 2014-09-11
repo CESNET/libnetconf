@@ -41,6 +41,7 @@
 #define NC_URL_INTERNAL_H_
 
 #include "url.h"
+#include "error.h"
 
 /**
  * @brief Get config file from remote source and store it to temporary file
@@ -62,7 +63,7 @@ int nc_url_check(const char* url);
  * @param url target url
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int nc_url_delete_config(const char* url);
+int nc_url_delete_config(const char* url, struct nc_err **e);
 
 /**
  * @brief Uploads data to remote target
@@ -70,7 +71,7 @@ int nc_url_delete_config(const char* url);
  * @param url target url
  * @return EXIT_SUCCESS or EXIT_FAILURE
  */
-int nc_url_upload(char* data, const char* url);
+int nc_url_upload(char* data, const char* url, struct nc_err **e);
 
 /**
  * @brief Generate URL capability string from enabled protocols

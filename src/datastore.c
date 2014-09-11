@@ -5472,7 +5472,7 @@ apply_editcopyconfig:
 				switch (source_ds) {
 				case NC_DATASTORE_CONFIG:
 					/* source datastore is config (or url), so just upload file */
-					ret = nc_url_upload(config, (char*)url);
+					ret = nc_url_upload(config, (char*)url, &e);
 					break;
 				case NC_DATASTORE_RUNNING:
 				case NC_DATASTORE_STARTUP:
@@ -5567,7 +5567,7 @@ apply_editcopyconfig:
 					xmlAddChildList(root, xmlCopyNodeList(doc2->children->children));
 
 					xmlDocDumpFormatMemory(doc1, (xmlChar**) (&data), NULL, 1);
-					nc_url_upload(data, (char*) url);
+					nc_url_upload(data, (char*) url, &e);
 					free(data);
 					data = NULL;
 					xmlFreeDoc(doc1);
@@ -5646,7 +5646,7 @@ apply_editcopyconfig:
 				break; /* main switch */
 			}
 
-			ret = nc_url_delete_config((char*) url);
+			ret = nc_url_delete_config((char*) url, &e);
 			xmlFree(url);
 		} else {
 #else

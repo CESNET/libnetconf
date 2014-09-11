@@ -37,6 +37,7 @@
  *
  */
 #define _GNU_SOURCE
+#include <assert.h>
 #include <curl/curl.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -181,7 +182,7 @@ static size_t nc_url_readdata(void *ptr, size_t size, size_t nmemb, void *userda
 	return (copied);
 }
 
-int nc_url_upload(char *data, const char *url)
+int nc_url_upload(char *data, const char *url, struct nc_err **e)
 {
 	CURL * curl;
 	CURLcode res;
@@ -189,9 +190,14 @@ int nc_url_upload(char *data, const char *url)
 	char curl_buffer[CURL_ERROR_SIZE];
 	xmlDocPtr doc;
 	xmlNodePtr root_element;
+	int retval = EXIT_SUCCESS;
+
+	assert(e);
 
 	if (strcmp(data, "") == 0) {
 		ERROR("%s: source file is empty", __func__);
+		*e = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*e, NC_ERR_PARAM_MSG, "Data to be stored at URL are empty.");
 		return EXIT_FAILURE;
 	}
 
@@ -200,6 +206,8 @@ int nc_url_upload(char *data, const char *url)
 	root_element = xmlDocGetRootElement(doc);
 	if (strcmp((char *) root_element->name, "config") != 0) {
 		ERROR("%s: source file does not contain config element", __func__);
+		*e = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*e, NC_ERR_PARAM_MSG, "Data to be stored at URL are invalid.");
 		return EXIT_FAILURE;
 	}
 	xmlFreeDoc(doc);
@@ -221,14 +229,16 @@ int nc_url_upload(char *data, const char *url)
 	res = curl_easy_perform(curl);
 	if (res != CURLE_OK) {
 		ERROR("%s: curl error: %s", __func__, curl_buffer);
-		return -1;
+		*e = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(*e, NC_ERR_PARAM_MSG, curl_buffer);
+		retval = EXIT_FAILURE;
 	}
 
 	/* cleanup */
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
 
-	return EXIT_SUCCESS;
+	return retval;
 }
 
 static size_t nc_url_writedata(char *ptr, size_t size, size_t nmemb, void* UNUSED(userdata))
@@ -236,9 +246,9 @@ static size_t nc_url_writedata(char *ptr, size_t size, size_t nmemb, void* UNUSE
 	return write(url_tmpfile, ptr, size * nmemb);
 }
 
-int nc_url_delete_config(const char *url)
+int nc_url_delete_config(const char *url, struct nc_err **e)
 {
-	return nc_url_upload("<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\"></config>", url);
+	return nc_url_upload("<?xml version=\"1.0\"?><config xmlns=\""NC_NS_BASE10"\"></config>", url, e);
 }
 
 int nc_url_check(const char* url)
