@@ -167,7 +167,7 @@ static void nc_apps_add(const char* comm, struct nc_apps* apps) {
 /* return flags - 1 (your entry was found and deleted (meaning you crashed, unless used in nc_close),
  * 2 (there are actually some libnetconf apps running, not just stored crash info) */
 static int nc_apps_check(const char* comm, struct nc_apps* apps) {
-	int i, ret = 0, fd = -1, readcount;
+	int i, j, ret = 0, fd = -1, readcount;
 	char procpath[64], runcomm[NC_APPS_COMM_MAX+1];
 
 	for (i = 0; i < NC_APPS_MAX; ++i) {
@@ -185,6 +185,7 @@ static int nc_apps_check(const char* comm, struct nc_apps* apps) {
 			/* it was this process */
 			if (strcmp(apps->comms[i], comm) == 0) {
 				ret |= 1;
+				j = i;
 			}
 			continue;
 		}
@@ -205,6 +206,7 @@ static int nc_apps_check(const char* comm, struct nc_apps* apps) {
 			/* it was this process */
 			if (strcmp(apps->comms[i], comm) == 0) {
 				ret |= 1;
+				j = i;
 			}
 			continue;
 		}
@@ -215,6 +217,7 @@ static int nc_apps_check(const char* comm, struct nc_apps* apps) {
 		 */
 		if (strcmp(comm, apps->comms[i]) == 0 && getpid() == apps->pids[i]) {
 			ret |= 1;
+			j = i;
 			continue;
 		}
 
@@ -225,7 +228,7 @@ static int nc_apps_check(const char* comm, struct nc_apps* apps) {
 	}
 
 	if (ret & 1) {
-		apps->valid[i] = 0;
+		apps->valid[j] = 0;
 	}
 
 	return ret;
