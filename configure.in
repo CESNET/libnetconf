@@ -98,10 +98,14 @@ AC_ARG_WITH([libxml2],
 		if test "$XML2_CONFIG" = "no"; then
 			AC_MSG_ERROR([Missing development package of libxml2.])
 		fi
-		CFLAGS="`$withval/xml2-config --cflags` $CFLAGS"
-		LIBS="`$withval/xml2-config --libs` $LIBS"
+		LIBXML2_CFLAGS="`$withval/xml2-config --cflags`"
+		CFLAGS="$LIBXML2_CFLAGS $CFLAGS"
+		LIBXML2_LIBS="`$withval/xml2-config --libs`"
+		LIBS="$LIBXML2_LIBS $LIBS"
 		WITH_LIBXML2="$withval"
 		CONFIGURE_ARGS="--with-libxml2=$withval $CONFIGURE_ARGS"
+		AC_SUBST(LIBXML2_CFLAGS)
+		AC_SUBST(LIBXML2_LIBS)
 	]
 )
 
@@ -423,8 +427,12 @@ if test -z "$WITH_LIBXML2" ; then
 	if test "$XML2_CONFIG" = "no"; then
 		AC_MSG_ERROR([Missing development package of libxml2.])
 	fi
-	CFLAGS="`xml2-config --cflags` $CFLAGS"
-	LIBS="`xml2-config --libs` $LIBS"
+	LIBXML2_CFLAGS="`xml2-config --cflags`"
+	CFLAGS="$LIBXML2_CFLAGS $CFLAGS"
+	LIBXML2_LIBS="`xml2-config --libs`"
+	LIBS="$LIBXML2_LIBS $LIBS"
+	AC_SUBST(LIBXML2_CFLAGS)
+	AC_SUBST(LIBXML2_LIBS)
 fi
 AC_CHECK_LIB([xml2], [xmlDOMWrapReconcileNamespaces], [HAVE_LIBXML2_RECONNS="#define HAVE_XMLDOMWRAPRECONCILENAMESPACE"], [HAVE_LIBXML2_RECONNS="#undef HAVE_XMLDOMWRAPRECONCILENAMESPACE"]
 )
@@ -592,5 +600,6 @@ fi
 
 AC_CONFIG_FILES(Makefile src/config.h libnetconf.spec libnetconf.pc Doxyfile)
 AC_CONFIG_FILES(headers/libnetconf.h headers/libnetconf_xml.h headers/libnetconf_ssh.h)
+AC_CONFIG_FILES(dev-tools/lncdatastore/Makefile)
 
 AC_OUTPUT
