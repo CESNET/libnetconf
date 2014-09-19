@@ -185,6 +185,13 @@ GENERATOR_FILES = dev-tools/lnctool/generator/Makefile.in \
 	dev-tools/lnctool/generator/ltmain.sh \
 	dev-tools/lnctool/generator/README
 
+LNCDS_FILES = dev-tools/lncdatastore/main.c \
+	dev-tools/lncdatastore/commands.c \
+	dev-tools/lncdatastore/commands.h \
+	dev-tools/lncdatastore/mreadline.c \
+	dev-tools/lncdatastore/mreadline.h \
+	dev-tools/lncdatastore/Makefile.in
+
 PYHDRS = doc/python/netconf.py
 PYSRCS = python/netconf.c \
 	python/session.c
@@ -198,7 +205,7 @@ models/%.rng: models/%.rng.in
 
 LOBJS = $(SRCS:%.c=$(OBJDIR)/%.lo)
 
-all: $(LNCTOOL) $(NAME).la $(LNCDATASTORE) $(BUILT_RNGS) $(PYAPI)
+all: $(NAME).la $(LNCTOOL) $(LNCDATASTORE) $(BUILT_RNGS) $(PYAPI)
 
 $(NAME).la: $(LOBJS)
 	@rm -f $@
@@ -254,10 +261,8 @@ tarball: $(SRCS) $(HEADERS)
 	@mkdir $(NAME)-$(VERSION);
 	for i in $(SRCS) $(HDRS_PUBL) $(HDRS_PRIV) configure.in configure \
 	    headers/libnetconf.h.in headers/libnetconf_xml.h.in headers/libnetconf_ssh.h.in \
-	    ltmain.sh Makefile.in VERSION $(NAME).spec.in $(NAME).pc.in \
+	    ltmain.sh Makefile.in VERSION $(NAME).spec.in $(NAME).pc.in $(LNCDS_FILES)\
 	    dev-tools/lnctool/lnctool.in dev-tools/lnctool/rnglib/* dev-tools/lnctool/xslt/* dev-tools/lnctool/generator/*\
-	    dev-tools/lncdatastore/commands.c dev-tools/lncdatastore/commands.h dev-tools/lncdatastore/main.c dev-tools/lncdatastore/mreadline.c\
-	    dev-tools/lncdatastore/mreadline.h dev-tools/lncdatastore/Makefile\
 	    install-sh config.sub config.guess Doxyfile.in doc/img/*.png models/*; do \
 	    [ -d $(NAME)-$(VERSION)/$$(dirname $$i) ] || (mkdir -p $(NAME)-$(VERSION)/$$(dirname $$i)); \
 		cp $$i $(NAME)-$(VERSION)/$$i; \
