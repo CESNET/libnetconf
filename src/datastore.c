@@ -3801,11 +3801,14 @@ static int apply_rpc_validate(struct ncds_ds* ds, const struct nc_session* sessi
 
 #endif /* not DISABLE_VALIDATION */
 
+#ifdef DISABLE_VALIDATION
+API int ncds_set_validation(struct ncds_ds* UNUSED(ds), int UNUSED(enable), const char* UNUSED(relaxng), const char* UNUSED(schematron))
+{
+	return (EXIT_SUCCESS);
+}
+#else
 API int ncds_set_validation(struct ncds_ds* ds, int enable, const char* relaxng, const char* schematron)
 {
-#ifdef DISABLE_VALIDATION
-	return (EXIT_SUCCESS);
-#else
 	int ret = EXIT_SUCCESS;
 	xmlRelaxNGParserCtxtPtr rng_ctxt = NULL;
 	xmlRelaxNGPtr rng_schema = NULL;
@@ -3883,17 +3886,22 @@ cleanup:
 	xsltFreeStylesheet(schxsl);
 
 	return (ret);
-#endif
 }
+#endif
 
 
+#ifdef DISABLE_VALIDATION
+API int ncds_set_validation2(struct ncds_ds* UNUSED(ds), int UNUSED(enable),
+	const char* UNUSED(relaxng), const char* UNUSED(schematron),
+    int (*valid_func)(const xmlDocPtr config, struct nc_err **err) __attribute__((__unused__)))
+{
+	return (EXIT_SUCCESS);
+}
+#else
 API int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng,
     const char* schematron,
     int (*valid_func)(const xmlDocPtr config, struct nc_err **err))
 {
-#ifdef DISABLE_VALIDATION
-	return (EXIT_SUCCESS);
-#else
 	int ret;
 
 	ret = ncds_set_validation(ds, enable, relaxng, schematron);
@@ -3904,8 +3912,8 @@ API int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng
 	ds->validators.callback = valid_func;
 
 	return (ret);
-#endif
 }
+#endif
 
 static struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path)
 {
@@ -4682,7 +4690,9 @@ static int ncds_is_conflict(const nc_rpc * rpc, const struct nc_session * sessio
 	xmlXPathObjectPtr query_target = NULL;
 	xmlChar *nc1 = NULL, *nc2 = NULL;
 	int ret;
-#endif /* DISABLE_URL */
+#else /* notDISABLE_URL */
+	(void)session; /* supress unused parameter warning */
+#endif
 
 	source = nc_rpc_get_source(rpc);
 	target = nc_rpc_get_target(rpc);
@@ -4897,7 +4907,7 @@ API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const
 	int ret = EXIT_FAILURE;
 	nc_reply* reply = NULL, *old_reply = NULL, *new_reply;
 	xmlBufferPtr resultbuffer;
-	xmlNodePtr aux_node, node, root;
+	xmlNodePtr aux_node, node;
 	NC_OP op;
 	xmlDocPtr old = NULL;
 	char * old_data = NULL;
@@ -4919,6 +4929,7 @@ API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const
 
 #ifndef DISABLE_URL
 	xmlXPathObjectPtr url_path = NULL;
+	xmlNodePtr root;
 	xmlChar *url;
 	char url_test_empty;
 	int url_tmpfile;
