@@ -224,12 +224,8 @@ $(LNCTOOL): $(LNCTOOL).in
 	fi
 
 .PHONY: $(LNCDATASTORE)
-$(LNCDATASTORE): force_look
-	@cd dev-tools/lncdatastore; $(MAKE)
-
-.PHONY: force_look
-force_look:
-	@true
+$(LNCDATASTORE):
+	$(MAKE) -C $$(dirname $(LNCDATASTORE))
 
 .PHONY: pyapi
 pyapi: $(PYSRCS)
@@ -395,7 +391,7 @@ clean:
 	rm -rf *.a *.so* .obj $(OBJS) $(BUILT_RNGS) $(LNCTOOL) $(LNCTOOL).install python/build
 	$(LIBTOOL) --mode clean rm -f $(LOBJS)
 	$(LIBTOOL) --mode clean rm -f $(NAME).la
-	cd dev-tools/lncdatastore; $(MAKE) clean
+	$(MAKE) -C $$(dirname $(LNCDATASTORE)) clean
 
 clean-all: clean clean-doc clean-rpm
 
