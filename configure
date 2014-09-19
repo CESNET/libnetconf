@@ -720,6 +720,7 @@ SSH_PROG
 UNAME
 PYTHON
 XSLT_CONFIG
+LIBXML2_LIBS
 XML2_CONFIG
 HAVE_XSLTPROC
 HAVE_PYANG
@@ -2839,10 +2840,6 @@ $as_echo "no" >&6; }
 fi
 
 
-if test -z "$HAVE_PYANG"; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Missing pyang, lnctool will not work!" >&5
-$as_echo "$as_me: WARNING: Missing pyang, lnctool will not work!" >&2;}
-fi
 
 
 # Check for xsltproc used in lnctool
@@ -2931,9 +2928,11 @@ fi
 			as_fn_error $? "Missing development package of libxml2." "$LINENO" 5
 		fi
 		CFLAGS="`$withval/xml2-config --cflags` $CFLAGS"
-		LIBS="`$withval/xml2-config --libs` $LIBS"
+		LIBXML2_LIBS="`$withval/xml2-config --libs`"
+		LIBS="$LIBXML2_LIBS $LIBS"
 		WITH_LIBXML2="$withval"
 		CONFIGURE_ARGS="--with-libxml2=$withval $CONFIGURE_ARGS"
+
 
 
 fi
@@ -11892,7 +11891,9 @@ fi
 		as_fn_error $? "Missing development package of libxml2." "$LINENO" 5
 	fi
 	CFLAGS="`xml2-config --cflags` $CFLAGS"
-	LIBS="`xml2-config --libs` $LIBS"
+	LIBXML2_LIBS="`xml2-config --libs`"
+	LIBS="$LIBXML2_LIBS $LIBS"
+
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for xmlDOMWrapReconcileNamespaces in -lxml2" >&5
 $as_echo_n "checking for xmlDOMWrapReconcileNamespaces in -lxml2... " >&6; }
@@ -14136,6 +14137,8 @@ if test -z "$HAVE_PYANG"; then
 $as_echo "$as_me: WARNING: Due to missing pyang, lnctool will not work." >&2;}
 fi
 
+ac_config_files="$ac_config_files dev-tools/lncdatastore/Makefile"
+
 ac_config_files="$ac_config_files Makefile src/config.h libnetconf.spec libnetconf.pc Doxyfile"
 
 ac_config_files="$ac_config_files headers/libnetconf.h headers/libnetconf_xml.h headers/libnetconf_ssh.h"
@@ -15134,6 +15137,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
+    "dev-tools/lncdatastore/Makefile") CONFIG_FILES="$CONFIG_FILES dev-tools/lncdatastore/Makefile" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/config.h") CONFIG_FILES="$CONFIG_FILES src/config.h" ;;
     "libnetconf.spec") CONFIG_FILES="$CONFIG_FILES libnetconf.spec" ;;

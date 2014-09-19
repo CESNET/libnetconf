@@ -1,23 +1,49 @@
+
+IDGIT = "built from git $(shell git show --pretty=oneline | head -1 | cut -c -20)"
+
 CC = @CC@
-CFLAGS = -Wall -Wextra -g @LIBXML2_CFLAGS@
-CPPFLAGS = -DRCSID=\"\" -DNC_WORKINGDIR_PATH=\"\" -DDISABLE_VALIDATION @CPPFLAGS@
-INCLUDE = -isystem ../../src
-LIB = -pthread -lreadline -lxslt @LIBXML2_LIBS@ -ldl -lssh2 -lcurl
+CFLAGS = -Wall -Wextra -I../../src/ @CFLAGS@
+CPPFLAGS = -DRCSID=\"$(IDGIT)\" -DNC_WORKINGDIR_PATH=\"\" -DDISABLE_VALIDATION -DDISABLE_URL -DDISABLE_LIBSSH
+LIBS = @LIBXML2_LIBS@ -pthread -lreadline -lxslt -ldl
 
-LIBNETCONF_OBJS = ../../src/session.c ../../src/internal.c ../../src/with_defaults.c ../../src/nacm.c ../../src/url.c ../../src/messages.c ../../src/notifications.c ../../src/callbacks.c ../../src/error.c ../../src/transapi/transapi.c ../../src/transapi/xmldiff.c ../../src/datastore/edit_config.c ../../src/transapi/yinparser.c ../../src/datastore/custom/datastore_custom.c ../../src/datastore/file/datastore_file.c ../../src/datastore/empty/datastore_empty.c
+OBJDIR = .obj
 
-lncdatastore: main.o commands.o mreadline.o $(LIBNETCONF_OBJS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDE) $^ $(LIB) -o $@
+LNC_PREFIX = ../../src/
+LNC_SRCS = session.c \
+	internal.c \
+	with_defaults.c \
+	nacm.c \
+	messages.c \
+	notifications.c \
+	callbacks.c \
+	error.c \
+	transapi/transapi.c \
+	transapi/xmldiff.c \
+	datastore/edit_config.c \
+	transapi/yinparser.c \
+	datastore/custom/datastore_custom.c \
+	datastore/file/datastore_file.c \
+	datastore/empty/datastore_empty.c
 
-main.o: main.c
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(INCLUDE) -o $@ $^
+SRCS = main.c \
+	commands.c \
+	mreadline.c
 
-commands.o: commands.c
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(INCLUDE) -o $@ $^
+OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
+LNC_OBJS = $(LNC_SRCS:%.c=$(OBJDIR)/lnc/%.o)
 
-mreadline.o: mreadline.c
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(INCLUDE) -o $@ $^
+lncdatastore: $(OBJS) $(LNC_OBJS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDE) $^ $(LIBS) -o $@
 
+$(OBJDIR)/lnc/%.o: $(LNC_PREFIX)/%.c
+	@[ -d $$(dirname $@) ] || \
+		(mkdir -p $$(dirname $@))
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
+$(OBJDIR)/%.o: %.c
+	@[ -d $$(dirname $@) ] || \
+		(mkdir -p $$(dirname $@))
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 clean:
 	@-rm -rf *.o lncdatastore
