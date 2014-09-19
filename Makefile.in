@@ -310,7 +310,7 @@ install: all install-devel install-doc $(INSTALLPYAPI)
 	rm -rf $(NC_WORKINGDIR_PATH)/libnetconf_sessions.bin
 
 .PHONY: install-devel
-install-devel:
+install-devel: $(LNCDATASTORE) $(LNCTOOL) $(NAME).la $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR) $(NAME).pc
 	@[ -d $(DESTDIR)/$(libdir) ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir)); \
 	[ -d $(DESTDIR)/$(libdir)/pkgconfig ] || \
@@ -333,27 +333,23 @@ install-devel:
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
 	done;
 	$(INSTALL_DATA) $(NAME).pc $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc;
-	if test -f "$(LNCTOOL).install"; then \
-		[ -d $(DESTDIR)/$(bindir) ] || \
-	    	(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir)); \
-		$(INSTALL_PROGRAM) $(LNCTOOL).install $(DESTDIR)/$(bindir)/lnctool; \
-	fi
-	if test -x "$(LNCDATASTORE)"; then \
-		$(INSTALL_PROGRAM) $(LNCDATASTORE) $(DESTDIR)/$(bindir)/lncdatastore; \
-	fi
+	[ -d $(DESTDIR)/$(bindir) ] || \
+	   	(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir)); \
+	$(INSTALL_PROGRAM) $(LNCTOOL).install $(DESTDIR)/$(bindir)/lnctool; \
+	$(INSTALL_PROGRAM) $(LNCDATASTORE) $(DESTDIR)/$(bindir)/lncdatastore; \
 	$(INSTALL_DATA) dev-tools/lnctool/rnglib/* $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
 	$(INSTALL_DATA) dev-tools/lnctool/xslt/* $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 	$(INSTALL_DATA) dev-tools/lnctool/generator/* $(DESTDIR)/$(datadir)/$(NAME)/templates/;
 
 .PHONY: install-doc
-install-doc:
+install-doc: doc
 	[ -d $(DESTDIR)/$(datadir)/$(NAME)/doxygen ] || \
 		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/doxygen; \
 		chmod -R 755 $(DESTDIR)/$(datadir)/$(NAME))
 	cp -r $(DOXYGEN_DIR)/* $(DESTDIR)/$(datadir)/$(NAME)/doxygen/;
 
 .PHONY: install-pyapi
-install-pyapi:
+install-pyapi: pyapi
 	@cd python; $(PYTHON) ./setup.py install; cd -;
 
 .PHONY: uninstall
