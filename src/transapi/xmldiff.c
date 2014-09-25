@@ -375,7 +375,7 @@ static void xmldiff_add_diff_recursive(struct xmldiff_tree **diff, const char *p
 static int node_cmp(xmlNodePtr node1, xmlNodePtr node2)
 {
 	int ret = EXIT_FAILURE;
-	
+
 	if (node1 != NULL && node2 != NULL) { /* valid nodes */
 		if (xmlStrEqual(node1->name, node2->name)) { /*	with same name */
 			if (node1->ns == node2->ns) {/* namespace is identical (single object referenced by both nodes) on both NULL */
@@ -476,7 +476,7 @@ static XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, char * path, xmlN
 static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_node, xmlDocPtr new_doc, xmlNodePtr new_node, struct model_tree * model)
 {
 	char * next_path;
-	xmlNodePtr old_tmp, new_tmp;
+	xmlNodePtr old_tmp, new_tmp, old_parent_tmp, new_parent_tmp;
 	XMLDIFF_OP tmp_op, ret_op = XMLDIFF_NONE;
 	xmlChar * old_content, * new_content;
 	xmlChar * old_str, *new_str;
@@ -538,7 +538,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 			}
 			tmp_op = xmldiff_recursive(tmp_diff, next_path, old_doc, (old_tmp ? old_tmp->children : NULL), new_doc, (new_tmp ? new_tmp->children : NULL), &model->children[i]);
 			free(next_path);
-	
+
 			if (tmp_op == XMLDIFF_ERR) {
 				free(tmp_diff);
 				return (XMLDIFF_ERR);
@@ -565,7 +565,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 		break;
 
 	/* -- CHOICE -- */
-	case YIN_TYPE_CHOICE: 
+	case YIN_TYPE_CHOICE:
 	case YIN_TYPE_AUGMENT:
 		ret_op = XMLDIFF_NONE;
 		/* Trim the choice path, replace it with the children directly */
@@ -590,7 +590,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 		break;
 
 	/* -- LEAF -- */
-	case YIN_TYPE_LEAF: 
+	case YIN_TYPE_LEAF:
 		if (old_tmp == NULL) {
 			ret_op = XMLDIFF_ADD;
 			xmldiff_add_diff(diff, path, new_tmp, XMLDIFF_ADD, XML_SIBLING);
