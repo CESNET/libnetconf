@@ -491,25 +491,41 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 	}
 
 	/* Find the node from the model in the old configuration */
-	old_tmp = old_node;
-	while (old_tmp) {
+	for (old_tmp = old_node; old_tmp != NULL; old_tmp = old_tmp->next) {
 		if (xmlStrEqual(old_tmp->name, BAD_CAST model->name)) {
-			if (old_tmp->ns->href == BAD_CAST model->ns_uri || ((old_tmp->ns->href != NULL && model->ns_uri != NULL) && xmlStrEqual(old_tmp->ns->href, BAD_CAST model->ns_uri))) {
+			for (old_parent_tmp = old_tmp; old_parent_tmp != NULL; old_parent_tmp = old_parent_tmp->parent) {
+				if (old_parent_tmp->ns != NULL) {
+					break;
+				}
+			}
+			if (old_parent_tmp == NULL) {
+				WARN("Node \"%s\" from the current config does not have any namespace!", (char*)old_tmp->name);
+				continue;
+			}
+
+			if (old_parent_tmp->ns->href != NULL && model->ns_uri != NULL && xmlStrEqual(old_parent_tmp->ns->href, BAD_CAST model->ns_uri)) {
 				break;
 			}
 		}
-		old_tmp = old_tmp->next;
 	}
 
 	/* Find the node from the model in the new configuration */
-	new_tmp = new_node;
-	while (new_tmp) {
+	for (new_tmp = new_node; new_tmp != NULL; new_tmp = new_tmp->next) {
 		if (xmlStrEqual(new_tmp->name, BAD_CAST model->name)) {
-			if (new_tmp->ns->href == BAD_CAST model->ns_uri || ((new_tmp->ns->href != NULL && model->ns_uri != NULL) && xmlStrEqual(new_tmp->ns->href, BAD_CAST model->ns_uri))) {
+			for (new_parent_tmp = new_tmp; new_parent_tmp != NULL; new_parent_tmp = new_parent_tmp->parent) {
+				if (new_parent_tmp->ns != NULL) {
+					break;
+				}
+			}
+			if (new_parent_tmp == NULL) {
+				WARN("Node \"%s\" from the new config does not have any namespace!", (char*)new_tmp->name);
+				continue;
+			}
+
+			if (new_parent_tmp->ns->href != NULL && model->ns_uri != NULL && xmlStrEqual(new_parent_tmp->ns->href, BAD_CAST model->ns_uri)) {
 				break;
 			}
 		}
-		new_tmp = new_tmp->next;
 	}
 
 	if (new_tmp == NULL && old_tmp == NULL && model->type != YIN_TYPE_CHOICE && model->type != YIN_TYPE_AUGMENT) {
