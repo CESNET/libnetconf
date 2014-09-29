@@ -4,7 +4,7 @@ IDGIT = "built from git $(shell git show --pretty=oneline | head -1 | cut -c -20
 CC = @CC@
 CFLAGS = -Wall -Wextra -I../../src/ @CFLAGS@
 CPPFLAGS = -DRCSID=\"$(IDGIT)\" -DNC_WORKINGDIR_PATH=\"\" -DDISABLE_VALIDATION -DDISABLE_URL -DDISABLE_LIBSSH
-LIBS = @LIBXML2_LIBS@ -pthread -lreadline -lxslt -ldl
+LIBS = @LIBXML2_LIBS@ -pthread -lreadline -lxslt -ldl -lrt
 
 OBJDIR = .obj
 
