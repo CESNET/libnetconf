@@ -476,7 +476,7 @@ static XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, char * path, xmlN
 static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_node, xmlDocPtr new_doc, xmlNodePtr new_node, struct model_tree * model)
 {
 	char * next_path;
-	xmlNodePtr old_tmp, new_tmp, old_parent_tmp, new_parent_tmp;
+	xmlNodePtr old_tmp, new_tmp;
 	XMLDIFF_OP tmp_op, ret_op = XMLDIFF_NONE;
 	xmlChar * old_content, * new_content;
 	xmlChar * old_str, *new_str;
@@ -493,17 +493,12 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 	/* Find the node from the model in the old configuration */
 	for (old_tmp = old_node; old_tmp != NULL; old_tmp = old_tmp->next) {
 		if (xmlStrEqual(old_tmp->name, BAD_CAST model->name)) {
-			for (old_parent_tmp = old_tmp; old_parent_tmp != NULL; old_parent_tmp = old_parent_tmp->parent) {
-				if (old_parent_tmp->ns != NULL) {
-					break;
-				}
-			}
-			if (old_parent_tmp == NULL) {
+			if (old_tmp->ns == NULL) {
 				WARN("Node \"%s\" from the current config does not have any namespace!", (char*)old_tmp->name);
-				continue;
+				break;
 			}
 
-			if (old_parent_tmp->ns->href != NULL && model->ns_uri != NULL && xmlStrEqual(old_parent_tmp->ns->href, BAD_CAST model->ns_uri)) {
+			if (old_tmp->ns->href != NULL && model->ns_uri != NULL && xmlStrEqual(old_tmp->ns->href, BAD_CAST model->ns_uri)) {
 				break;
 			}
 		}
@@ -512,17 +507,12 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 	/* Find the node from the model in the new configuration */
 	for (new_tmp = new_node; new_tmp != NULL; new_tmp = new_tmp->next) {
 		if (xmlStrEqual(new_tmp->name, BAD_CAST model->name)) {
-			for (new_parent_tmp = new_tmp; new_parent_tmp != NULL; new_parent_tmp = new_parent_tmp->parent) {
-				if (new_parent_tmp->ns != NULL) {
-					break;
-				}
-			}
-			if (new_parent_tmp == NULL) {
+			if (new_tmp == NULL) {
 				WARN("Node \"%s\" from the new config does not have any namespace!", (char*)new_tmp->name);
-				continue;
+				break;
 			}
 
-			if (new_parent_tmp->ns->href != NULL && model->ns_uri != NULL && xmlStrEqual(new_parent_tmp->ns->href, BAD_CAST model->ns_uri)) {
+			if (new_tmp->ns->href != NULL && model->ns_uri != NULL && xmlStrEqual(new_tmp->ns->href, BAD_CAST model->ns_uri)) {
 				break;
 			}
 		}
