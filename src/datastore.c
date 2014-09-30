@@ -3479,6 +3479,7 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 	xmlXPathObjectPtr result = NULL;
 	char* schematron_error = NULL, *error_string = NULL;
 	struct nc_err *err_aux;
+	int i;
 
 	assert(error != NULL);
 
@@ -3542,24 +3543,26 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 			*error = nc_err_new(NC_ERR_OP_FAILED);
 			return (EXIT_FAILURE);
 		}
-		if ((result = xmlXPathEvalExpression(BAD_CAST "/svrl:schematron-output/svrl:successful-report/svrl:text", ctxt)) != NULL) {
+		if ((result = xmlXPathEvalExpression(BAD_CAST "/svrl:schematron-output/svrl:failed-assert/svrl:text | /svrl:schematron-output/svrl:successful-report/svrl:text", ctxt)) != NULL) {
 			if (!xmlXPathNodeSetIsEmpty(result->nodesetval)) {
-				schematron_error = (char*)xmlNodeGetContent(result->nodesetval->nodeTab[0]);
-				*error = nc_err_new(NC_ERR_OP_FAILED);
-				if (asprintf(&error_string, "Datastore fails to validate: %s", schematron_error) == -1) {
-					/* create two error records */
-					ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-					nc_err_set(*error, NC_ERR_PARAM_MSG, "Datastore fails to validate");
+				for (i = 0; i < result->nodesetval->nodeNr; i++) {
+					schematron_error = (char*)xmlNodeGetContent(result->nodesetval->nodeTab[i]);
+					ERROR("Datastore fails to validate: %s", schematron_error);
 					err_aux = nc_err_new(NC_ERR_OP_FAILED);
-					nc_err_set(err_aux, NC_ERR_PARAM_MSG, schematron_error);
-					err_aux->next = (*error)->next;
-					(*error)->next = err_aux;
-				} else {
-					ERROR(error_string);
-					nc_err_set(*error, NC_ERR_PARAM_MSG, error_string);
-					free(error_string);
+					if (asprintf(&error_string, "Datastore fails to validate: %s", schematron_error) == -1) {
+						nc_err_set(err_aux, NC_ERR_PARAM_MSG, "Datastore fails to validate");
+					} else {
+						nc_err_set(err_aux, NC_ERR_PARAM_MSG, error_string);
+						free(error_string);
+					}
+
+					if (*error != NULL) {
+						err_aux->next = *error;
+					}
+					*error = err_aux;
+
+					free(schematron_error);
 				}
-				free(schematron_error);
 
 				xmlXPathFreeObject(result);
 				xmlXPathFreeContext(ctxt);
