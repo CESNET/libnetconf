@@ -182,13 +182,14 @@ static xmlChar* check_default_case(xmlNodePtr config_choice, xmlNodePtr model_ch
 	return(xmlGetProp(def, BAD_CAST "value"));
 }
 
-static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* namespace, NCWD_MODE mode, xmlNodePtr** created)
+static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* namespace, NCWD_MODE mode)
 {
-	xmlNodePtr *parents = NULL, *retvals = NULL, *created_local = NULL, *aux_nodeptr;
+	xmlNodePtr *parents = NULL, *retvals = NULL, *aux_nodeptr;
 	xmlNodePtr aux = NULL;
 	xmlNsPtr ns;
 	xmlChar* value = NULL, *name, *value2;
-	int i, j, k, size = 0;
+	int i, j, k, size = 0, first_call = 0;
+	static xmlNodePtr *created_local = NULL;
 	static int created_count = 0;
 	static int created_size = 0;
 
@@ -201,19 +202,18 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 		return (NULL);
 	}
 
-	if (created == NULL) {
+	if (created_local == NULL) {
 		/* initial (not recursive) call */
+		first_call = 1;
 		created_count = 0;
 		created_size = 32;
 		created_local = malloc(created_size * sizeof(xmlNodePtr));
 		created_local[created_count] = NULL; /* list terminating byte */
-	} else {
-		created_local = *created;
 	}
 
 	/* do recursion */
 	if (node->parent == NULL) {
-		if (created == NULL) {
+		if (first_call) {
 			if (retvals == NULL) {
 				for(i = created_count-1; i >= 0; i--) {
 					if (created_local[i]->children == NULL) {
@@ -229,11 +229,12 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 			/* free in last recursion call */
 			created_count = 0;
 			free(created_local);
+			created_local = NULL;
 		}
 		return (NULL);
 	} else if (xmlStrcmp(node->parent->name, BAD_CAST "module") != 0) {
 		/* we will get parent of the config's equivalent of the node */
-		parents = fill_default(config, node->parent, namespace, mode, &created_local);
+		parents = fill_default(config, node->parent, namespace, mode);
 
 		if (parents && xmlStrcmp(node->parent->name, BAD_CAST "choice") == 0) {
 			/* process choices */
@@ -352,12 +353,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 			retvals = (xmlNodePtr*) malloc(2 * sizeof(xmlNodePtr));
 			if (retvals == NULL) {
 				ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
-				created_count = 0;
-				free(created_local);
-				if (created) {
-					*created = NULL;
-				}
-				return (NULL);
+				goto cleanup;
 			}
 			retvals[1] = NULL;
 			/* create root element */
@@ -386,18 +382,10 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 					aux_nodeptr = realloc(created_local, created_size * sizeof(xmlNodePtr));
 					if (aux_nodeptr == NULL) {
 						ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
-						/* we're in real troubles here */
-						created_count = 0;
-						free(created_local);
-						if (created) {
-							*created = NULL;
-						}
-						return (NULL);
+						free(retvals);
+						goto cleanup;
 					}
 					created_local = aux_nodeptr;
-					if (created) {
-						*created = aux_nodeptr;
-					}
 				}
 				created_local[created_count++] = aux;
 				created_local[created_count] = NULL; /* list terminating byte */
@@ -426,12 +414,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 				if (retvals == NULL) {
 					ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 					xmlFree(name);
-					created_count = 0;
-					free(created_local);
-					if (created) {
-						*created = NULL;
-					}
-					return (NULL);
+					goto cleanup;
 				}
 				retvals[0] = aux;
 				retvals[1] = NULL;
@@ -445,7 +428,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 		}
 	}
 	if (parents == NULL) {
-		if (created == NULL) {
+		if (first_call) {
 			if (retvals == NULL) {
 				for(i = created_count-1; i >= 0; i--) {
 					if (created_local[i]->children == NULL) {
@@ -460,6 +443,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 			}
 			/* free in last recursion call */
 			free(created_local);
+			created_local = NULL;
 			created_count = 0;
 		}
 		return (NULL);
@@ -579,13 +563,8 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 						aux_nodeptr = realloc(created_local, created_size * sizeof(xmlNodePtr));
 						if (aux_nodeptr == NULL) {
 							ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
-							/* we're in real troubles here */
-							created_count = 0;
-							free(created_local);
-							if (created) {
-								*created = NULL;
-							}
-							return (NULL);
+							free(retvals);
+							goto cleanup;
 						}
 						created_local = aux_nodeptr;
 					}
@@ -606,7 +585,9 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 	if (parents != NULL) {
 		free(parents);
 	}
-	if (created == NULL) {
+
+cleanup:
+	if (first_call) {
 		if (retvals == NULL) {
 			for(i = created_count-1; i >= 0; i--) {
 				if (created_local[i]->children == NULL) {
@@ -621,7 +602,9 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 		}
 		/* free in last recursion call */
 		free(created_local);
+		created_local = NULL;
 		created_count = 0;
+		created_size = 0;
 	}
 
 	return (retvals);
@@ -682,7 +665,7 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 					/* skip defaults for choices */
 					continue;
 				}
-				fill_default(config, defaults->nodesetval->nodeTab[i], (char*)namespace, mode, NULL);
+				fill_default(config, defaults->nodesetval->nodeTab[i], (char*)namespace, mode);
 			}
 		}
 		xmlXPathFreeObject(defaults);
