@@ -11,3 +11,10 @@ therefore is does NOT modify any actual
 datastores or anything else. The loaded
 models and the whole state are lost after
 exit.
+
+
+Additional Requirements
+-----------------------
+
+libreadline-devel
+

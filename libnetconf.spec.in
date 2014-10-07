@@ -60,4 +60,3 @@ ldconfig
 %{_datadir}/libnetconf/templates/*
 %{_datadir}/libnetconf/rnglib/*
 %{_datadir}/libnetconf/xslt/*
-%{_bindir}/lncdatastore

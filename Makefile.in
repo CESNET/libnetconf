@@ -36,7 +36,6 @@
 
 NAME = @PACKAGE_NAME@
 LNCTOOL = dev-tools/lnctool/lnctool
-LNCDATASTORE = dev-tools/lncdatastore/lncdatastore
 
 # Various configurable paths (remember to edit Makefile.in, not Makefile)
 srcdir = @srcdir@
@@ -205,7 +204,7 @@ models/%.rng: models/%.rng.in
 
 LOBJS = $(SRCS:%.c=$(OBJDIR)/%.lo)
 
-all: $(NAME).la $(LNCTOOL) $(LNCDATASTORE) $(BUILT_RNGS) $(PYAPI)
+all: $(NAME).la $(LNCTOOL) $(BUILT_RNGS) $(PYAPI)
 
 $(NAME).la: $(LOBJS)
 	@rm -f $@
@@ -222,10 +221,6 @@ $(LNCTOOL): $(LNCTOOL).in
 		sed 's/@TEMPLATEDIR@/$(subst /,\/,$(abs_srcdir)/dev-tools/lnctool/generator/)/g' > $(LNCTOOL); \
 		chmod +x $(LNCTOOL) $(LNCTOOL).install; \
 	fi
-
-.PHONY: $(LNCDATASTORE)
-$(LNCDATASTORE):
-	$(MAKE) -C $$(dirname $(LNCDATASTORE))
 
 .PHONY: pyapi
 pyapi: $(PYSRCS)
@@ -310,7 +305,7 @@ install: all install-devel install-doc $(INSTALLPYAPI)
 	rm -rf $(NC_WORKINGDIR_PATH)/libnetconf_sessions.bin
 
 .PHONY: install-devel
-install-devel: $(LNCDATASTORE) $(LNCTOOL) $(NAME).la $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR) $(NAME).pc
+install-devel: $(LNCTOOL) $(NAME).la $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR) $(NAME).pc
 	@[ -d $(DESTDIR)/$(libdir) ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir)); \
 	[ -d $(DESTDIR)/$(libdir)/pkgconfig ] || \
@@ -336,7 +331,7 @@ install-devel: $(LNCDATASTORE) $(LNCTOOL) $(NAME).la $(HDRS_PUBL_ROOT) $(HDRS_PU
 	[ -d $(DESTDIR)/$(bindir) ] || \
 	   	(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir)); \
 	$(INSTALL_PROGRAM) $(LNCTOOL).install $(DESTDIR)/$(bindir)/lnctool; \
-	$(INSTALL_PROGRAM) $(LNCDATASTORE) $(DESTDIR)/$(bindir)/lncdatastore; \
+	$(INSTALL_PROGRAM) $(DESTDIR)/$(bindir)/lncdatastore; \
 	$(INSTALL_DATA) dev-tools/lnctool/rnglib/* $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
 	$(INSTALL_DATA) dev-tools/lnctool/xslt/* $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 	$(INSTALL_DATA) dev-tools/lnctool/generator/* $(DESTDIR)/$(datadir)/$(NAME)/templates/;
@@ -387,7 +382,6 @@ clean:
 	rm -rf *.a *.so* .obj $(OBJS) $(BUILT_RNGS) $(LNCTOOL) $(LNCTOOL).install python/build
 	$(LIBTOOL) --mode clean rm -f $(LOBJS)
 	$(LIBTOOL) --mode clean rm -f $(NAME).la
-	$(MAKE) -C $$(dirname $(LNCDATASTORE)) clean
 
 clean-all: clean clean-doc clean-rpm
 
