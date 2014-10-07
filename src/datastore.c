@@ -3415,10 +3415,10 @@ static int is_model_root(xmlNodePtr root, struct data_model *data_model)
 		return 0;
 	}
 
-	if (root->ns == NULL || xmlStrcmp(root->ns->href, BAD_CAST (data_model->ns)) == 0) {
-		return 1;
-	} else {
+	if (root->ns == NULL || xmlStrcmp(root->ns->href, BAD_CAST (data_model->ns)) != 0) {
 		return 0;
+	} else {
+		return 1;
 	}
 }
 
