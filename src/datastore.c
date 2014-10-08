@@ -2021,7 +2021,7 @@ static int import_groupings(const char* module_name, xmlXPathContextPtr model_ct
 			free(module);
 
 			/* import grouping definitions */
-			if ((groupings = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":grouping", model->ctxt)) != NULL ) {
+			if ((groupings = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module//"NC_NS_YIN_ID":grouping", model->ctxt)) != NULL ) {
 				/* add prefix into the grouping names and add imported grouping into the overall data model */
 				r = 0;
 				for (j = 0; (r != -1) && (j < groupings->nodesetval->nodeNr); j++) {
@@ -2057,7 +2057,7 @@ static int import_groupings(const char* module_name, xmlXPathContextPtr model_ct
 	xmlXPathFreeObject(imports);
 
 	/* get all grouping statements in the document and remove unneeded nodes */
-	if ((groupings = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":grouping", model_ctxt)) == NULL ) {
+	if ((groupings = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module//"NC_NS_YIN_ID":grouping", model_ctxt)) == NULL ) {
 		ERROR("%s: Evaluating XPath expression failed.", __func__);
 		return (EXIT_FAILURE);
 	}
@@ -2072,7 +2072,6 @@ static int import_groupings(const char* module_name, xmlXPathContextPtr model_ct
 					xmlUnlinkNode(node);
 					xmlFreeNode(node);
 				} else if (xmlStrcmp(node->name, BAD_CAST "description") == 0||
-				    xmlStrcmp(node->name, BAD_CAST "grouping") == 0 || /* nested groupings are not supported */
 				    xmlStrcmp(node->name, BAD_CAST "reference") == 0 ||
 				    xmlStrcmp(node->name, BAD_CAST "status") == 0 ||
 				    xmlStrcmp(node->name, BAD_CAST "typedef") == 0) {
@@ -2229,7 +2228,7 @@ static int ncds_update_uses_groupings(struct data_model* model)
 		return (EXIT_FAILURE);
 	}
 
-	query = "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":grouping//"NC_NS_YIN_ID":uses";
+	query = "/"NC_NS_YIN_ID":module//"NC_NS_YIN_ID":grouping//"NC_NS_YIN_ID":uses";
 	return(ncds_update_uses(model->name, &(model->ctxt), query));
 }
 
