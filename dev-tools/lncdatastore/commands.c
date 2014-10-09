@@ -245,6 +245,7 @@ int cmd_add_model(const char* arg) {
 		asprintf(&ptr2, "%s.yin", ptr);
 		model = ptr2;
 	} else {
+		ptr2 = NULL;
 		model = ptr;
 	}
 
