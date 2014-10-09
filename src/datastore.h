@@ -184,7 +184,9 @@ extern char error_area;
  *
  * Complete list of *lnctool(1)*'s options can be displayed using -h option:
  *
- *     $ lnctool -h
+ * ~~~~~~~{.sh}
+ * $ lnctool -h
+ * ~~~~~~~
  *
  * *lnctool(1)* is used to perform the following 3 actions:
  *
@@ -212,8 +214,10 @@ extern char error_area;
  *
  * The following commands generate validation files for the NACM data model:
  *
- *     $ cd libnetconf/models/
- *     $ lnctool --model ./ietf-netconf-acm.yang --output-dir ./nacm/ validation
+ * ~~~~~~~{.sh}
+ * $ cd libnetconf/models/
+ * $ lnctool --model ./ietf-netconf-acm.yang --output-dir ./nacm/ validation
+ * ~~~~~~~
  *
  * The output directory `nacm/` now contains generated NACM data model in YIN
  * format, Relax NG schemas and Schematron XSL stylesheet for validation.
@@ -229,11 +233,13 @@ extern char error_area;
  *
  * <p></p>
  *
- *     ds = ncds_new(NCDS_TYPE_FILE, "./models/nacm/ietf-netconf-acm.yin", NULL);
- *     ncds_file_set_path(ds, ds_path);
- *     ncds_init(ds);
- *     ncds_add_models_path("./models/");
- *     ncds_consolidate();
+ * ~~~~~~~{.c}
+ * ds = ncds_new(NCDS_TYPE_FILE, "./models/nacm/ietf-netconf-acm.yin", NULL);
+ * ncds_file_set_path(ds, ds_path);
+ * ncds_init(ds);
+ * ncds_add_models_path("./models/");
+ * ncds_consolidate();
+ * ~~~~~~~
  *
  * If the validators files are stored in the same directory as
  * a basic data model (*ietf-netconf-acm.yin* in this case), libnetconf
@@ -241,7 +247,9 @@ extern char error_area;
  * you store the validators files somewhere else, ncds_set_validation() function
  * can be used to specify their location:
  *
- *     ncds_set_validation(ds, 1, "./models/nacm/ietf-netconf-acm-data.rng", "./models/nacm/ietf-netconf-acm-schematron.xsl");
+ * ~~~~~~~{.c}
+ * ncds_set_validation(ds, 1, "./models/nacm/ietf-netconf-acm-data.rng", "./models/nacm/ietf-netconf-acm-schematron.xsl");
+ * ~~~~~~~
  *
  * If validators files are not found or validation is switched off (via
  * ncds_set_validation() with enable parameter set to 0), validation is not
