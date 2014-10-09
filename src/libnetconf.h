@@ -847,6 +847,22 @@
  * - *.rng - RelagNG schema for syntax validation
  * - *-schematron.xsl - Schematron XSL stylesheet for semantics validation
  *
+ * The data model can define various `feature`s and use them via the `if-feature`
+ * clauses. By default, all features are enabled for the validators. If you plan
+ * to to implement only a specific set (or none) of features, specify it to using
+ * the `--feature`` option (that can be used multiple times). The value has the
+ * following syntax:
+ *
+ * ~~~~~~~{.sh}
+ * --feature module_name:feature_to_enable
+ * ~~~~~~~
+ *
+ * If you want to disable all features of the module, use the following syntax:
+ *
+ * ~~~~~~~{.sh}
+ * --feature module_name:
+ * ~~~~~~~
+ *
  * \subsection transapiTutorial-coding Filling up functionality
  *
  * Here we show the simplest example of a toaster simulating module.

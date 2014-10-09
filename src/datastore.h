@@ -202,9 +202,9 @@ extern char error_area;
  *
  * As the main input, you have to specify the main YANG data model of the
  * datastore (`--model` option). If there are also some augmenting models, you
- * should specify them as parameters to the `--augment-models` option. If you
- * need some imported data models, specify the path where to search for them as
- * the `--search-path` option.
+ * should specify them as a parameter to the (multiple) `--augment-model`
+ * option(s). If you need some imported data models, specify the path where to
+ * search for them as the `--search-path` option.
  *
  * Based on a YANG data model, *lnctool(1)* generates all necessary files needed
  * by libnetconf. Basically, it generates YIN format of the data model required
@@ -254,6 +254,27 @@ extern char error_area;
  * If validators files are not found or validation is switched off (via
  * ncds_set_validation() with enable parameter set to 0), validation is not
  * performed on such datastore part.
+ *
+ * ### Data Model Features ###
+ *
+ * When the data model includes some `feature` definition and corresponding
+ * `if-feature` statement(s), all such features are enabled for validation
+ * by default. If you want to enable only specific features (or disable all of
+ * them), you have to use the *lnctool(1)*'s `--feature` option. The option
+ * can be use multiple times and the given value has the following form:
+ *
+ * ~~~~~~~{.sh}
+ * --feature module_name:feature_to_enable
+ * ~~~~~~~
+ *
+ * If you want to disable all features of the module, use the following syntax:
+ *
+ * ~~~~~~~{.sh}
+ * --feature module_name:
+ * ~~~~~~~
+ *
+ * Remember that if you have some augmenting modules, you should also set
+ * features of those augmenting modules.
  *
  */
 

@@ -72,15 +72,23 @@ def convert_to_yin(input_file_name, search_path):
 
 	return(model)
 	
-def generate_validators(yin_model_path, augment_models_paths, search_path):
+def generate_validators(yin_model_path, augment_models_paths, search_path, features):
 	(yin_file_name, ext) = os.path.splitext(os.path.basename(yin_model_path))
 	yin_file_name = args.output_dir+'/'+os.path.basename(yin_file_name)
+
+	#prepare features options list
+	features_args = []
+	if features is not None:
+		for feature in features:
+			features_args.append('--feature')
+			features_args.append(feature)
+
 	#create temporary file fof DSDL schema
 	(dsdl_schema_fd,dsdl_schema_name) = tempfile.mkstemp(prefix='dsdl', suffix='.dsdl')
 	(xslt_tmp_fd,xslt_tmp_name) = tempfile.mkstemp(prefix='schxsl')
 	(xslt_tmp_inout_fd,xslt_tmp_inout_name) = tempfile.mkstemp()
 	#generate DSDL schema from YIN schema files
-	subprocess.check_call(['pyang', '-p', search_path, '-f', 'dsdl', '--dsdl-no-documentation', '--dsdl-no-dublin-core', '-o', os.path.abspath(dsdl_schema_name), yin_model_path ] + augment_models_paths)
+	subprocess.check_call(['pyang', '-p', search_path, '-f', 'dsdl', '--dsdl-no-documentation', '--dsdl-no-dublin-core', '-o', os.path.abspath(dsdl_schema_name), yin_model_path ] + features_args + augment_models_paths)
 	#generate RNG files from DSDL
 	subprocess.check_call(['xsltproc', '--output', yin_file_name+'-data.rng', '--stringparam', 'basename', './'+os.path.basename(yin_file_name), '--stringparam', 'target', 'data', '--stringparam', 'schema-dir', RNGLIB, os.path.join(XSLTDIR, 'gen-relaxng.xsl'), os.path.abspath(dsdl_schema_name)])
 	subprocess.check_call(['xsltproc', '--output', yin_file_name+'-gdefs.rng', '--stringparam', 'gdefs-only', '1', os.path.join(XSLTDIR, 'gen-relaxng.xsl'), os.path.abspath(dsdl_schema_name)])
@@ -384,7 +392,8 @@ parser = argparse.ArgumentParser(description="Actions have the following meaning
 								formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('--version', action='version', version='libnetconf developer tool for transAPI v'+str(transapi_version))
 parser.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model.')
-parser.add_argument('--augment-models', nargs='+', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+parser.add_argument('--augment-model', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+parser.add_argument('--feature', action='append', help='Specify features to enable (in form \'modulename:feature\'). By default all features are enabled. To disable all, use \'modulename:\'')
 parser.add_argument('--search-path', default='.', help='pyang search path.')
 parser.add_argument('--output-dir', default='./', help='Output directory for generated files (current directory by default).')
 
@@ -392,20 +401,14 @@ parser.add_argument('--output-dir', default='./', help='Output directory for gen
 subparsers = parser.add_subparsers(dest='subcommand')
 
 # convert to implement YANG -> YIN conversion
-parser_convert = subparsers.add_parser('convert', add_help=False)
-#parser_convert.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model.')
-#parser_convert.add_argument('--augment-models', nargs='+', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+parser_convert = subparsers.add_parser('convert')
 
 # validation to implement validation schema generation
-parser_validation = subparsers.add_parser('validation', add_help=False)
-#parser_validation.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model.')
-#parser_validation.add_argument('--augment-models', nargs='+', type=argparse.FileType('r'), action='append', help='Specify augment models.')
+parser_validation = subparsers.add_parser('validation')
 
 # transapi to implement transapi module files generation
 parser_transapi = subparsers.add_parser('transapi')
 parser_transapi.add_argument('--name', help='Name of module with callbacks. If not supplied name of module in data model will be used.')
-#parser_transapi.add_argument('--model', required=True, type=argparse.FileType('r'), help='File holding data model. YIN and YANG formats are acceptable.')
-#parser_transapi.add_argument('--augment-models', nargs='+', type=argparse.FileType('r'), action='append', help='Specify augment models.')
 parser_transapi.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
 parser_transapi.add_argument('--template-dir', default=TEMPLATEDIR, help='Path to the directory with template files')
 
@@ -423,8 +426,8 @@ try:
 	model = convert_to_yin(args.model.name, args.search_path)
 	(model_name, ext) = os.path.splitext(os.path.abspath(args.model.name))
 
-	if not args.augment_models is None:
-		for l in args.augment_models:
+	if not args.augment_model is None:
+		for l in args.augment_model:
 			for augment_model in l:
 				augment_models.append(convert_to_yin(augment_model.name, args.search_path))
 				(augment_model_name, ext) = os.path.splitext(os.path.abspath(augment_model.name))
@@ -432,7 +435,7 @@ try:
 
 	# when subcommand is 'validation' or 'transapi'
 	if args.subcommand != 'convert':
-		generate_validators(model_name+'.yin', augment_models_paths, args.search_path)
+		generate_validators(model_name+'.yin', augment_models_paths, args.search_path, args.feature)
 
 	if args.subcommand == 'transapi':
 		# process model and find module name
