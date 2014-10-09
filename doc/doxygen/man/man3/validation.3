@@ -13,11 +13,11 @@ libnetconf automatically searches for the validators during \fBncds_new()\fP and
 .PP
 .SS "lnctool(1) Usage"
 .PP
-Complete list of \fIlnctool(1)\fP's options can be displayed using -h option: 
+Complete list of \fIlnctool(1)\fP's options can be displayed using -h option:
+.PP
 .PP
 .nf
 $ lnctool -h
-
 .fi
 .PP
 .PP
@@ -33,16 +33,16 @@ $ lnctool -h
 .PP
 Each next action includes all the previous actions, so executing the \fItransapi\fP action generates also the YIN format of the data model and all the validation files\&. More information about using \fIlnctool(1)\fP for creating a transAPI modules can be found in the \fBTransaction API (transAPI)\fP section\&. Here we focus on the \fIvalidation\fP action\&.
 .PP
-As the main input, you have to specify the main YANG data model of the datastore (\fC--model\fP option)\&. If there are also some augmenting models, you should specify them as parameters to the \fC--augment-models\fP option\&. If you need some imported data models, specify the path where to search for them as the \fC--search-path\fP option\&.
+As the main input, you have to specify the main YANG data model of the datastore (\fC--model\fP option)\&. If there are also some augmenting models, you should specify them as a parameter to the (multiple) \fC--augment-model\fP option(s)\&. If you need some imported data models, specify the path where to search for them as the \fC--search-path\fP option\&.
 .PP
 Based on a YANG data model, \fIlnctool(1)\fP generates all necessary files needed by libnetconf\&. Basically, it generates YIN format of the data model required by \fBncds_new()\fP and \fBncds_new_transapi()\fP functions\&. If you use some extension models via \fBncds_add_model()\fP or \fBncds_add_models_path()\fP, you have to specify also these models as \fIlnctool(1)\fP's <augment models> parameter\&.
 .PP
-The following commands generate validation files for the NACM data model: 
+The following commands generate validation files for the NACM data model:
+.PP
 .PP
 .nf
 $ cd libnetconf/models/
-$ lnctool --model ./ietf-netconf-acm.yang --output-dir ./nacm/ validation
-
+$ lnctool --model \&./ietf-netconf-acm\&.yang --output-dir \&./nacm/ validation
 .fi
 .PP
 .PP
@@ -58,20 +58,40 @@ Return value checks are skipped in this example for simplicity\&. Do not copy-pa
 .PP
 .PP
 .nf
-ds = ncds_new(NCDS_TYPE_FILE, "./models/nacm/ietf-netconf-acm.yin", NULL);
+ds = ncds_new(NCDS_TYPE_FILE, "\&./models/nacm/ietf-netconf-acm\&.yin", NULL);
 ncds_file_set_path(ds, ds_path);
 ncds_init(ds);
-ncds_add_models_path("./models/");
+ncds_add_models_path("\&./models/");
 ncds_consolidate();
 .fi
 .PP
 .PP
-If the validators files are stored in the same directory as a basic data model (\fIietf-netconf-acm\&.yin\fP in this case), libnetconf automatically loads them during \fBncds_new()\fP or \fBncds_new_transapi()\fP calls\&. If you store the validators files somewhere else, \fBncds_set_validation()\fP function can be used to specify their location: 
+If the validators files are stored in the same directory as a basic data model (\fIietf-netconf-acm\&.yin\fP in this case), libnetconf automatically loads them during \fBncds_new()\fP or \fBncds_new_transapi()\fP calls\&. If you store the validators files somewhere else, \fBncds_set_validation()\fP function can be used to specify their location:
+.PP
 .PP
 .nf
-ncds_set_validation(ds, 1, "./models/nacm/ietf-netconf-acm-data.rng", "./models/nacm/ietf-netconf-acm-schematron.xsl");
-
+ncds_set_validation(ds, 1, "\&./models/nacm/ietf-netconf-acm-data\&.rng", "\&./models/nacm/ietf-netconf-acm-schematron\&.xsl");
 .fi
 .PP
 .PP
-If validators files are not found or validation is switched off (via \fBncds_set_validation()\fP with enable parameter set to 0), validation is not performed on such datastore part\&. 
+If validators files are not found or validation is switched off (via \fBncds_set_validation()\fP with enable parameter set to 0), validation is not performed on such datastore part\&.
+.PP
+.SS "Data Model Features"
+.PP
+When the data model includes some \fCfeature\fP definition and corresponding \fCif-feature\fP statement(s), all such features are enabled for validation by default\&. If you want to enable only specific features (or disable all of them), you have to use the \fIlnctool(1)\fP's \fC--feature\fP option\&. The option can be use multiple times and the given value has the following form:
+.PP
+.PP
+.nf
+--feature module_name:feature_to_enable
+.fi
+.PP
+.PP
+If you want to disable all features of the module, use the following syntax:
+.PP
+.PP
+.nf
+--feature module_name:
+.fi
+.PP
+.PP
+Remember that if you have some augmenting modules, you should also set features of those augmenting modules\&. 

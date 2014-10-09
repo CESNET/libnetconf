@@ -199,7 +199,11 @@ Generating code</h2>
 <li>*.rng - RelagNG schema for syntax validation</li>
 <li>*-schematron.xsl - Schematron XSL stylesheet for semantics validation</li>
 </ul>
-<h2><a class="anchor" id="transapiTutorial-coding"></a>
+<p>The data model can define various <code>feature</code>s and use them via the <code>if-feature</code> clauses. By default, all features are enabled for the validators. If you plan to to implement only a specific set (or none) of features, specify it to using the <code>--feature</code>` option (that can be used multiple times). The value has the following syntax:</p>
+<div class="fragment"><div class="line">--feature module_name:feature_to_enable</div>
+</div><!-- fragment --><p>If you want to disable all features of the module, use the following syntax:</p>
+<div class="fragment"><div class="line">--feature module_name:</div>
+</div><!-- fragment --><h2><a class="anchor" id="transapiTutorial-coding"></a>
 Filling up functionality</h2>
 <p>Here we show the simplest example of a toaster simulating module. It is working but does not deal with multiple access and threads correctly. Better example may can be found in the netopeer-server-sl source codes located in the <a href="https://code.google.com/p/netopeer">Netopeer project</a> repository (server-sl/toaster/toaster.c).</p>
 <ol type="1">
@@ -297,7 +301,7 @@ Integrating to a server</h2>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Oct 9 2014 10:51:26 for libnetconf by
+    <li class="footer">Generated on Thu Oct 9 2014 14:18:34 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>
