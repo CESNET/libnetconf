@@ -727,7 +727,7 @@
  * and it is supposed to reflect configuration changes in the actual device behavior.
  *
  * Additionaly, transAPI provides an opportunity to implement behavior of NETCONF
- * RPC operation defined in the data model. In case lnctool finds an RPC
+ * RPC operation defined in the data model. In case *lnctool(1)* finds an RPC
  * definition inside the provided data model, it generates callbacks for it too.
  * Whenever a server calls ncds_apply_rpc() or ncds_apply_rpc2all() with RPC
  * message containing such defined RPC operation, libnetconf uses callback
@@ -840,7 +840,7 @@
  * ~~~~~~~
  *
  * Besides the generated source code of our transAPI module and GNU Build
- * System files (Makefile.in, configure.in,...), lnctool also generates YIN
+ * System files (Makefile.in, configure.in,...), *lnctool(1)* also generates YIN
  * format of the data model and validators accepted by the libnetconf's
  * ncds_new_transapi() and ncds_set_validation() functions:
  * - *.yin - YIN format of the data model

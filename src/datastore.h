@@ -163,7 +163,9 @@ extern char error_area;
  * operation.
  *
  * On the client side, libnetconf allows to create \<validate\> RPC as well as
- * to specify \<test-option\> of \<edit-config\> RPC.
+ * to specify \<test-option\> of \<edit-config\> RPC. When the :validate
+ * capability is supported by the server, the default \<test-option\> value is
+ * test-then-set, so each \<edit-config\> change is validated.
  *
  * On the server side, libnetconf performs data validation on \ref datastores
  * "datastore parts" that provides validators. libnetconf use Relax NG schema
@@ -184,33 +186,41 @@ extern char error_area;
  *
  *     $ lnctool -h
  *
+ * *lnctool(1)* is used to perform the following 3 actions:
+ *
+ *   -# *convert* - converts YANG model to the YIN format
+ *   -# *validation* - generates validation files for a given YANG data model
+ *   -# *transapi* - prepares a transAPI module template
+ *
+ * Each next action includes all the previous actions, so executing the *transapi*
+ * action generates also the YIN format of the data model and all the validation
+ * files. More information about using *lnctool(1)* for creating a transAPI
+ * modules can be found in the \ref transapi section. Here we focus on the
+ * *validation* action.
+ *
+ * As the main input, you have to specify the main YANG data model of the
+ * datastore (`--model` option). If there are also some augmenting models, you
+ * should specify them as parameters to the `--augment-models` option. If you
+ * need some imported data models, specify the path where to search for them as
+ * the `--search-path` option.
+ *
  * Based on a YANG data model, *lnctool(1)* generates all necessary files needed
  * by libnetconf. Basically, it generates YIN format of the data model required
  * by ncds_new() and ncds_new_transapi() functions. If you use some extension
  * models via ncds_add_model() or ncds_add_models_path(), you have to specify
  * also these models as *lnctool(1)*'s \<augment models\> parameter.
  *
- * When used with -v option, *lnctool(1)* additionally generates Relax NG
- * schemas and Schematron XSL stylesheet for validation. Here is an example
- * for NACM data model (directory ./models/ contains *ietf-netconf-acm.yang*
- * and *ietf-yang-types.yang* models):
+ * The following commands generate validation files for the NACM data model:
  *
- *     $ lnctool -v -o ./nacm -p ../models/ ./models/ietf-netconf-acm.yang
- *     ### Converting YANG to YIN
- *              creating ./nacm/ietf-netconf-acm.yin
- *              creating ./nacm/ietf-yang-types.yin
- *     ### Done
- *     ### Generating Relax NG schemas for validation
- *              creating ./nacm/ietf-netconf-acm-data.rng
- *              creating ./nacm/ietf-netconf-acm-gdefs.rng
- *     ### Done
- *     ### Generating Schematron Stylesheet
- *              creating ./nacm/ietf-netconf-acm-schematron.xsl
- *     ### Done
+ *     $ cd libnetconf/models/
+ *     $ lnctool --model ./ietf-netconf-acm.yang --output-dir ./nacm/ validation
  *
- * Path to the output directory should be specified in the server source code
- * to allow libnetconf to find imported data model (*ietf-yang-types.yin* in
- * this case).
+ * The output directory `nacm/` now contains generated NACM data model in YIN
+ * format, Relax NG schemas and Schematron XSL stylesheet for validation.
+ *
+ * Path to the search directory should be also specified in the server source
+ * code to allow libnetconf to find imported data model (*ietf-yang-types.yin*
+ * in this case).
  *
  * \note Return value checks are skipped in this example for simplicity. Do not
  * copy-paste this example. Also note, that NACM is one of internal libnetconf
@@ -219,7 +229,7 @@ extern char error_area;
  *
  * <p></p>
  *
- *     ds = ncds_new(NCDS_TYPE_FILE, "./nacm/ietf-netconf-acm.yin", NULL);
+ *     ds = ncds_new(NCDS_TYPE_FILE, "./models/nacm/ietf-netconf-acm.yin", NULL);
  *     ncds_file_set_path(ds, ds_path);
  *     ncds_init(ds);
  *     ncds_add_models_path("./models/");
@@ -231,7 +241,7 @@ extern char error_area;
  * you store the validators files somewhere else, ncds_set_validation() function
  * can be used to specify their location:
  *
- *     ncds_set_validation(ds, 1, "./nacm/ietf-netconf-acm-data.rng", "./nacm/ietf-netconf-acm-schematron.xsl");
+ *     ncds_set_validation(ds, 1, "./models/nacm/ietf-netconf-acm-data.rng", "./models/nacm/ietf-netconf-acm-schematron.xsl");
  *
  * If validators files are not found or validation is switched off (via
  * ncds_set_validation() with enable parameter set to 0), validation is not

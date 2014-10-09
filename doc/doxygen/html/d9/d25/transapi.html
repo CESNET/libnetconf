@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.8.0-184_trunk</span>
+   &#160;<span id="projectnumber">0.8.0-189_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -105,7 +105,7 @@ $(document).ready(function(){initNavTree('d9/d25/transapi.html','../../');});
 <div class="contents">
 <div class="textblock"><p>Libnetconf transAPI is a framework designed to save developers time and let them focus on configuring and managing their device instead of fighting with the NETCONF protocol.</p>
 <p>It allows a developer to choose parts of a configuration that can be easily configured as a single block. Based on a list of so called 'sensitive paths' the generator creates C code containing a single callback function for every 'sensitive path'. Whenever something changes in the configuration file, the appropriate callback function is called and it is supposed to reflect configuration changes in the actual device behavior.</p>
-<p>Additionaly, transAPI provides an opportunity to implement behavior of NETCONF RPC operation defined in the data model. In case lnctool finds an RPC definition inside the provided data model, it generates callbacks for it too. Whenever a server calls <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore. ">ncds_apply_rpc()</a> or <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a> with RPC message containing such defined RPC operation, libnetconf uses callback function implemented in the module.</p>
+<p>Additionaly, transAPI provides an opportunity to implement behavior of NETCONF RPC operation defined in the data model. In case <em>lnctool(1)</em> finds an RPC definition inside the provided data model, it generates callbacks for it too. Whenever a server calls <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore. ">ncds_apply_rpc()</a> or <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a> with RPC message containing such defined RPC operation, libnetconf uses callback function implemented in the module.</p>
 <h1><a class="anchor" id="understanding-parameters"></a>
 Understanding callback parameters</h1>
 <p>Every transapi callback function has fixed set of parameters. Function header looks like this:</p>
@@ -193,7 +193,7 @@ Generating code</h2>
 <li>Run `lnctool' for transapi: <div class="fragment"><div class="line">$ lnctool --model ./toaster@2009-11-20.yang <a class="code" href="../../d9/dc0/structtransapi.html">transapi</a> --paths ./paths_file</div>
 </div><!-- fragment --></li>
 </ol>
-<p>Besides the generated source code of our transAPI module and GNU Build System files (Makefile.in, configure.in,...), lnctool also generates YIN format of the data model and validators accepted by the libnetconf's <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support. ">ncds_new_transapi()</a> and <a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31" title="Set validators (or disable validation) on the specified datastore. ">ncds_set_validation()</a> functions:</p>
+<p>Besides the generated source code of our transAPI module and GNU Build System files (Makefile.in, configure.in,...), <em>lnctool(1)</em> also generates YIN format of the data model and validators accepted by the libnetconf's <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support. ">ncds_new_transapi()</a> and <a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31" title="Set validators (or disable validation) on the specified datastore. ">ncds_set_validation()</a> functions:</p>
 <ul>
 <li>*.yin - YIN format of the data model</li>
 <li>*.rng - RelagNG schema for syntax validation</li>
@@ -297,7 +297,7 @@ Integrating to a server</h2>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Sep 10 2014 15:54:41 for libnetconf by
+    <li class="footer">Generated on Thu Oct 9 2014 10:51:26 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>
