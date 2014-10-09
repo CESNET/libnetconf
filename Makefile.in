@@ -232,7 +232,9 @@ $(OBJDIR)/%.lo: %.c
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(CPPFLAGS) $(INCLUDES) $(DBG) -fPIC -c $< -o $@
 
 .PHONY: doc
-doc: $(DOXYGEN_CONFIG) $(HDRS_PRIV) $(DOXYGEN_CONFIG_PYTHON) $(PYHDRS)
+doc: doc/doxygen/html/index.html
+
+doc/doxygen/html/index.html: $(DOXYGEN_CONFIG) $(HDRS_PRIV) $(DOXYGEN_CONFIG_PYTHON) $(PYHDRS)
 	@if [ "$(DOXYGEN)" != "no" ]; then \
 		[ -d $(DOXYGEN_DIR) ] || mkdir -p $(DOXYGEN_DIR); \
 		$(DOXYGEN); \
