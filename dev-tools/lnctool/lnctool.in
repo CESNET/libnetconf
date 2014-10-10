@@ -80,7 +80,7 @@ def generate_validators(yin_model_path, augment_models_paths, search_path, featu
 	features_args = []
 	if features is not None:
 		for feature in features:
-			features_args.append('--feature')
+			features_args.append('--features')
 			features_args.append(feature)
 
 	#create temporary file fof DSDL schema
@@ -427,11 +427,10 @@ try:
 	(model_name, ext) = os.path.splitext(os.path.abspath(args.model.name))
 
 	if not args.augment_model is None:
-		for l in args.augment_model:
-			for augment_model in l:
-				augment_models.append(convert_to_yin(augment_model.name, args.search_path))
-				(augment_model_name, ext) = os.path.splitext(os.path.abspath(augment_model.name))
-				augment_models_paths.append(augment_model_name+'.yin')
+		for augment_model in args.augment_model:
+			augment_models.append(convert_to_yin(augment_model.name, args.search_path))
+			(augment_model_name, ext) = os.path.splitext(os.path.abspath(augment_model.name))
+			augment_models_paths.append(augment_model_name+'.yin')
 
 	# when subcommand is 'validation' or 'transapi'
 	if args.subcommand != 'convert':
