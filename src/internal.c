@@ -453,6 +453,9 @@ API int nc_init(int flags)
 		}
 
 		if (first_after_close) {
+			/* break any locks forgotten from the previous run */
+			ncds_break_locks(NULL);
+
 			/* apply startup to running in internal datastores */
 			ncds_startup_internal();
 		}
