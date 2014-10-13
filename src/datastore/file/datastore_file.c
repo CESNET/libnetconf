@@ -38,6 +38,7 @@
  */
 
 #define _GNU_SOURCE
+#include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -756,6 +757,8 @@ int ncds_file_lock(struct ncds_ds* ds, const struct nc_session* session, NC_DATA
 	int retval = EXIT_SUCCESS, ret;
 	char* t;
 
+	assert(error);
+
 	LOCK(file_ds, ret);
 	if (ret) {
 		*error = nc_err_new(NC_ERR_OP_FAILED);
@@ -830,6 +833,8 @@ int ncds_file_unlock(struct ncds_ds* ds, const struct nc_session* session, NC_DA
 	xmlNodePtr target_ds, del;
 	struct nc_session* no_session;
 	int retval = EXIT_SUCCESS, ret;
+
+	assert(error);
 
 	LOCK(file_ds, ret);
 	if (ret) {
@@ -920,6 +925,8 @@ char* ncds_file_getconfig(struct ncds_ds* ds, const struct nc_session* UNUSED(se
 	char* data = NULL;
 	int ret;
 
+	assert(error);
+
 	LOCK(file_ds, ret);
 	if (ret) {
 		*error = nc_err_new(NC_ERR_OP_FAILED);
@@ -994,6 +1001,8 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 	keyList keys;
 	char *aux = NULL;
 	int r, ret = 0;
+
+	assert(error);
 
 	LOCK(file_ds, ret);
 	if (ret) {
@@ -1205,6 +1214,8 @@ int ncds_file_deleteconfig(struct ncds_ds * ds, const struct nc_session * sessio
 	xmlNodePtr target_ds, del;
 	int ret;
 
+	assert(error);
+
 	LOCK(file_ds, ret);
 	if (ret) {
 		*error = nc_err_new(NC_ERR_OP_FAILED);
@@ -1291,6 +1302,8 @@ int ncds_file_editconfig(struct ncds_ds *ds, const struct nc_session * session, 
 	xmlNodePtr target_ds, aux_node, root;
 	int retval = EXIT_SUCCESS, ret;
 	char* aux = NULL;
+
+	assert(error);
 
 	/* lock the datastore */
 	LOCK(file_ds, ret);

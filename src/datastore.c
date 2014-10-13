@@ -493,10 +493,13 @@ int ncds_sysinit(int flags)
 void ncds_startup_internal(void)
 {
 	struct ncds_ds_list *ds_iter;
+	struct nc_err *e = NULL;
 
 	for (ds_iter = ncds.datastores; ds_iter != NULL ; ds_iter = ds_iter->next) {
 		/* apply startup to running */
-		ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_STARTUP, NULL, NULL);
+		ds_iter->datastore->func.copyconfig(ds_iter->datastore, NULL, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_STARTUP, NULL, &e);
+		nc_err_free(e);
+		e = NULL;
 	}
 }
 
@@ -5905,6 +5908,7 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 	NC_DATASTORE target;
 	NC_EDIT_ERROPT_TYPE erropt = NC_EDIT_ERROPT_NOTSET;
 	NC_RPC_TYPE req_type;
+	struct nc_err *e = NULL;
 
 	if (rpc == NULL || session == NULL) {
 		ERROR("%s: invalid parameter %s", __func__, (rpc==NULL)?"rpc":"session");
@@ -5995,7 +5999,9 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 
 						if (transapi) {
 							/* remeber data for transAPI diff */
-							data = ds_rollback->datastore->func.getconfig(ds_rollback->datastore, session, NC_DATASTORE_RUNNING, NULL);
+							data = ds_rollback->datastore->func.getconfig(ds_rollback->datastore, session, NC_DATASTORE_RUNNING, &e);
+							nc_err_free(e);
+							e = NULL;
 							if (data == NULL || strcmp(data, "") == 0) {
 								old = xmlNewDoc(BAD_CAST "1.0");
 							} else {

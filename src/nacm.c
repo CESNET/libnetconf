@@ -622,6 +622,7 @@ static int nacm_config_refresh(void)
 	struct nacm_group* gr;
 	struct rule_list* rlist;
 	struct nacm_rule** new_rules;
+	struct nc_err *e = NULL;
 
 	if (nacm_initiated == 0) {
 		ERROR("%s: NACM Subsystem not initialized.", __func__);
@@ -639,7 +640,9 @@ static int nacm_config_refresh(void)
 		return (EXIT_SUCCESS);
 	}
 
-	if ((data = nacm_ds->func.getconfig(nacm_ds, NULL, NC_DATASTORE_RUNNING, NULL)) == NULL) {
+	data = nacm_ds->func.getconfig(nacm_ds, NULL, NC_DATASTORE_RUNNING, &e);
+	nc_err_free(e);
+	if (data == NULL) {
 		ERROR("%s: getting NACM configuration data from the datastore failed.", __func__);
 		return (EXIT_FAILURE);
 	}
