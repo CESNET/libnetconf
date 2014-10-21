@@ -1779,6 +1779,12 @@ static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_no
 		}
 		VERB("Creating the parent %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
 		retval = xmlAddChild(parent, xmlCopyNode(edit_node, 0));
+		if (edit_node->ns && parent->ns && xmlStrcmp(edit_node->ns->href, parent->ns->href) == 0) {
+			xmlSetNs(retval, parent->ns);
+		} else if (edit_node->ns) {
+			ns_aux = xmlNewNs(retval, edit_node->ns->href, NULL);
+			xmlSetNs(retval, ns_aux);
+		}
 	}
 	return retval;
 }
