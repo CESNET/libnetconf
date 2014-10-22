@@ -459,6 +459,18 @@ API int nc_init(int flags)
 			/* apply startup to running in internal datastores */
 			ncds_startup_internal();
 		}
+
+		/* set features for ietf-netconf */
+		ncds_feature_enable("ietf-netconf", "writable-running");
+		ncds_feature_enable("ietf-netconf", "startup");
+		ncds_feature_enable("ietf-netconf", "candidate");
+		ncds_feature_enable("ietf-netconf", "rollback-on-error");
+		if (nc_init_flags & NC_INIT_VALIDATE) {
+			ncds_feature_enable("ietf-netconf", "validate");
+		}
+		if (nc_init_flags & NC_INIT_URL) {
+			ncds_feature_enable("ietf-netconf", "url");
+		}
 	}
 
 	/* init NETCONF sessions statistics */
