@@ -89,7 +89,7 @@
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 /* definition in datastore.c */
-char** get_schemas_capabilities(void);
+char** get_schemas_capabilities(struct nc_cpblts *cpblts);
 
 extern struct nc_shared_info *nc_info;
 
@@ -977,7 +977,7 @@ API struct nc_cpblts* nc_session_get_cpblts_default(void)
 #endif
 
 	/* add namespaces of used datastores as announced capabilities */
-	if ((nslist = get_schemas_capabilities()) != NULL) {
+	if ((nslist = get_schemas_capabilities(retval)) != NULL) {
 		for(i = 0; nslist[i] != NULL; i++) {
 			nc_cpblts_add(retval, nslist[i]);
 			free(nslist[i]);

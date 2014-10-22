@@ -953,11 +953,11 @@ errorcleanup:
 }
 
 /* used in ssh.c and session.c */
-char** get_schemas_capabilities(void)
+char** get_schemas_capabilities(struct nc_cpblts *cpblts)
 {
 	struct model_list* listitem;
-	int i;
-	char **retval = NULL;
+	int i, j, k;
+	char **retval = NULL, *auxstr, *comma;
 
 	/* get size of the output */
 	for (i = 0, listitem = models_list; listitem != NULL; listitem = listitem->next, i++);
@@ -969,12 +969,52 @@ char** get_schemas_capabilities(void)
 	}
 
 	for (i = 0, listitem = models_list; listitem != NULL; listitem = listitem->next, i++) {
-		if (asprintf(&(retval[i]), "%s?module=%s%s%s", listitem->model->ns, listitem->model->name,
+		if (asprintf(&(retval[i]), "%s?module=%s%s%s%s", listitem->model->ns, listitem->model->name,
 				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? "&amp;revision=" : "",
-				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? listitem->model->version : "") == -1) {
+				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? listitem->model->version : "",
+				(listitem->model->features != NULL) ? "&amp;features=" : "") == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			/* move iterator back, then iterator will go back to the current value and will rewrite it*/
 			i--;
+			continue;
+		}
+		if (listitem->model->features != NULL) {
+			comma = "";
+			for (j = 0; listitem->model->features[j] != NULL; j++) {
+				if (listitem->model->features[j]->enabled) {
+					if (strcmp(listitem->model->name, "ietf-netconf") == 0) {
+						/* for netconf base data model, find the features in the
+						 * capabilities list
+						 */
+						if (cpblts == NULL) {
+							/* we don't know capabilities, all features are disabled */
+							break;
+						}
+
+						for (k = 0; cpblts->list[k] != NULL; k++) {
+							if (strstr(cpblts->list[k], listitem->model->features[j]->name) != NULL) {
+								/* we got the capability, stop searching and note that we have found it */
+								k = -1;
+								break;
+							}
+						}
+						if (k >= 0) {
+							/* capability not found, continue with the next feature */
+							continue;
+						}
+					}
+
+					asprintf(&auxstr, "%s%s%s", retval[i], comma, listitem->model->features[j]->name);
+					free(retval[i]);
+					retval[i] = auxstr;
+					auxstr = NULL;
+					comma = ",";
+				}
+			}
+			if (comma[0] == '\0') {
+				/* no feature printed, hide features variable */
+				retval[i][strlen(retval[i])-14] = '\0';
+			}
 		}
 	}
 
