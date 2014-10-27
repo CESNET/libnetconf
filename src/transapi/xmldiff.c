@@ -151,16 +151,19 @@ static struct xmldiff_prio* xmldiff_set_priority_recursive(struct xmldiff_tree* 
 int xmldiff_set_priorities(struct xmldiff_tree* tree, struct clbk *callbacks, int clbk_count)
 {
 	struct xmldiff_prio* ret;
+	struct xmldiff_tree* iter;
 
-	ret = xmldiff_set_priority_recursive(tree, callbacks, clbk_count);
+	for (iter = tree; iter != NULL; iter = iter->next) {
+		ret = xmldiff_set_priority_recursive(iter, callbacks, clbk_count);
 
-	/* There is no callback to call for the configuration change, that probably should not happen */
-	if (ret == NULL) {
-		return EXIT_FAILURE;
+		/* There is no callback to call for the configuration change, that probably should not happen */
+		if (ret == NULL) {
+			return EXIT_FAILURE;
+		}
+
+		free(ret->values);
+		free(ret);
 	}
-
-	free(ret->values);
-	free(ret);
 	return EXIT_SUCCESS;
 }
 
@@ -171,21 +174,17 @@ int xmldiff_set_priorities(struct xmldiff_tree* tree, struct clbk *callbacks, in
  */
 void xmldiff_free(struct xmldiff_tree* diff)
 {
-	struct xmldiff_tree* cur, *prev;
-
 	if (diff == NULL) {
 		return;
 	}
 
-	cur = diff->children;
-	while (cur != NULL) {
-		xmldiff_free(cur);
-		prev = cur;
-		cur = cur->next;
-		free(prev);
-	}
-
+	/* siblings */
+	xmldiff_free(diff->next);
+	/* children */
+	xmldiff_free(diff->children);
+	/* itself */
 	free(diff->path);
+	free(diff);
 }
 
 /**
@@ -1106,18 +1105,21 @@ XMLDIFF_OP xmldiff_diff(struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new
 {
 	char* path;
 	XMLDIFF_OP ret_op;
+	int i;
 
 	if (old == NULL || new == NULL || diff == NULL || model == NULL) {
 		ERROR("%s: invalid parameter \"%s\".", __func__, !old ? "old" : !new ? "new" : !diff ? "diff" : "model");
 		return XMLDIFF_ERR;
 	}
 
-	if (asprintf(&path, "/%s:%s", model->children->ns_prefix, model->children->name) == -1) {
-		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		return (XMLDIFF_ERR);
+	for (i = 0; i < model->children_count; i++) {
+		if (asprintf(&path, "/%s:%s", model->children[i].ns_prefix, model->children[i].name) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (XMLDIFF_ERR);
+		}
+		ret_op = xmldiff_recursive(diff, path, old, old->children, new, new->children, &model->children[i]);
+		free(path);
 	}
-	ret_op = xmldiff_recursive(diff, path, old, old->children, new, new->children, &model->children[0]);
-	free(path);
 
 	return (ret_op);
 }

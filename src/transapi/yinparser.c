@@ -231,10 +231,12 @@ void yinmodel_free(struct model_tree* yin)
 
 struct model_tree* yinmodel_parse(xmlDocPtr model_doc, struct ns_pair ns_mapping[])
 {
-	xmlNodePtr model_root, model_top = NULL, model_tmp, model_tmp2;
+	xmlNodePtr model_root, stmt, cfg_stmt;
 	struct model_tree * yin, * yin_act;
-	int config_top, i, config_tmp;
-	char * config_text;
+	int i;
+	char *config_text, *key, **auxlist;
+	YIN_TYPE type;
+	int recursive;
 
 	if ((model_root = xmlDocGetRootElement (model_doc)) == NULL) {
 		/* cant get model root */
@@ -252,10 +254,9 @@ struct model_tree* yinmodel_parse(xmlDocPtr model_doc, struct ns_pair ns_mapping
 
 
 	/* find namespace, prefix and root of configuration data for this module */
-	model_tmp = model_root->children;
-	while (model_tmp) {
-		if (xmlStrEqual(model_tmp->name, BAD_CAST "namespace")) {
-			yin->ns_uri = (char*)xmlGetProp(model_tmp, BAD_CAST "uri");
+	for (stmt = model_root->children; stmt != NULL; stmt = stmt->next) {
+		if (xmlStrEqual(stmt->name, BAD_CAST "namespace")) {
+			yin->ns_uri = (char*)xmlGetProp(stmt, BAD_CAST "uri");
 			for (i = 0; ns_mapping[i].href != NULL; i++) {
 				if (strcmp(ns_mapping[i].href, yin->ns_uri) == 0) {
 					yin->ns_prefix = strdup(ns_mapping[i].prefix);
@@ -266,42 +267,62 @@ struct model_tree* yinmodel_parse(xmlDocPtr model_doc, struct ns_pair ns_mapping
 				yinmodel_free(yin);
 				return(NULL);
 			}
-		} else if (xmlStrEqual(model_tmp->name, BAD_CAST "container")) {
-			/* check config value */
-			config_tmp = 1;
-			model_tmp2 = model_tmp->children;
-			while (model_tmp2) {
-				if (xmlStrEqual (model_tmp2->name, BAD_CAST "config")) {
-					config_text = (char*)xmlGetProp(model_tmp2, BAD_CAST "value");
-					if (strcasecmp (config_text, "false") == 0) {
-						config_tmp = 0;
-					}
-					free (config_text);
-					break;
-				}
-				model_tmp2 = model_tmp2->next;
+
+			/*
+			 * stop the loop, start searching for the data-def-stmt
+			 * (RFC 6020. p.144)
+			 */
+			break;
+		}
+	}
+
+	for (/* from previous loop*/; stmt != NULL; stmt = stmt->next) {
+		if (stmt->type != XML_ELEMENT_NODE) {
+			/* skip comments */
+			continue;
+		}
+
+		/* get type of the data-def-stmt */
+		type = 0;
+		if (xmlStrEqual(stmt->name, BAD_CAST "container")) {
+			type = YIN_TYPE_CONTAINER;
+		} else if (xmlStrEqual(stmt->name, BAD_CAST "leaf")) {
+			type = YIN_TYPE_LEAF;
+		} else if (xmlStrEqual(stmt->name, BAD_CAST "leaf-list")) {
+			type = YIN_TYPE_LEAFLIST;
+		} else if (xmlStrEqual(stmt->name, BAD_CAST "list")) {
+			type = YIN_TYPE_LIST;
+		} else if (xmlStrEqual(stmt->name, BAD_CAST "choice")) {
+			type = YIN_TYPE_CHOICE;
+		} else if (xmlStrEqual(stmt->name, BAD_CAST "anyxml")) {
+			type = YIN_TYPE_ANYXML;
+		}
+
+		if (type == 0) {
+			/* non-interesting content */
+			continue;
+		}
+
+		/* check config value */
+		for (cfg_stmt = stmt->children; cfg_stmt != NULL; cfg_stmt = cfg_stmt->next) {
+			if (cfg_stmt->type != XML_ELEMENT_NODE) {
+				/* skip comments */
+				continue;
 			}
 
-			/* not only state data */
-			if (config_tmp == 1) {
-				if (model_top != NULL) {
-					WARN("Model \"%s\" has more configurable roots, using the first one parsed.", yin->name);
-				} else {
-					config_top = config_tmp;
-					model_top = model_tmp;
+			if (xmlStrEqual(cfg_stmt->name, BAD_CAST "config")) {
+				config_text = (char*) xmlGetProp(cfg_stmt, BAD_CAST "value");
+				if (config_text && strcasecmp(config_text, "false") == 0) {
+					free(config_text);
+
+					/* state data, skip them */
+					continue;
 				}
+				free(config_text);
 			}
 		}
 
-		model_tmp = model_tmp->next;
-	}
-
-	/* model contains no data (probably only typedefs, rpcs, notifications, ...)*/
-	if (model_top == NULL) {
-		return yin;
-	}
-
-	if (config_top) {
+		/* create difftree element */
 		yin->children_count++;
 		yin_act = realloc (yin->children, yin->children_count * sizeof (struct model_tree));
 		if (yin_act == NULL) {
@@ -310,18 +331,98 @@ struct model_tree* yinmodel_parse(xmlDocPtr model_doc, struct ns_pair ns_mapping
 			return(NULL);
 		}
 		yin->children = yin_act;
-		yin->children[yin->children_count-1].type = YIN_TYPE_CONTAINER;
-		yin->children[yin->children_count-1].name = (char*)xmlGetProp (model_top, BAD_CAST "name");
+		yin->children[yin->children_count-1].name = (char*)xmlGetProp (stmt, BAD_CAST "name");
+		yin->children[yin->children_count-1].type = type;
 		yin->children[yin->children_count-1].keys_count = 0;
 		yin->children[yin->children_count-1].keys = NULL;
+
+		recursive = 0;
+		switch (type) {
+		case YIN_TYPE_CONTAINER:
+		case YIN_TYPE_CHOICE:
+			recursive = 1;
+			break;
+		case YIN_TYPE_LEAF:
+		case YIN_TYPE_ANYXML:
+			/* recursive = 0; */
+			break;
+		case YIN_TYPE_LEAFLIST:
+			/* recursive = 0; */
+			yin->children[yin->children_count-1].ordering = YIN_ORDER_SYSTEM;
+			for (cfg_stmt = stmt->children; cfg_stmt != NULL; cfg_stmt = cfg_stmt->next) {
+				if (cfg_stmt->type != XML_ELEMENT_NODE) {
+					/* skip comments */
+					continue;
+				}
+
+				if (xmlStrEqual(cfg_stmt->name, BAD_CAST "ordered-by")) {
+					config_text = (char*) xmlGetProp(cfg_stmt, BAD_CAST "value");
+					if (config_text && strcasecmp(config_text, "user") == 0) {
+						yin->children[yin->children_count-1].ordering = YIN_ORDER_USER;
+					}
+					free(config_text);
+					break;
+				}
+			}
+			break;
+		case YIN_TYPE_LIST:
+			recursive = 1;
+
+			yin->children[yin->children_count-1].ordering = YIN_ORDER_SYSTEM;
+			for (cfg_stmt = stmt->children; cfg_stmt != NULL; cfg_stmt = cfg_stmt->next) {
+				if (cfg_stmt->type != XML_ELEMENT_NODE) {
+					/* skip comments */
+					continue;
+				}
+
+				if (xmlStrEqual(cfg_stmt->name, BAD_CAST "ordered-by")) {
+					config_text = (char*) xmlGetProp(cfg_stmt, BAD_CAST "value");
+					if (config_text && strcasecmp(config_text, "user") == 0) {
+						yin->children[yin->children_count-1].ordering = YIN_ORDER_USER;
+					}
+					free(config_text);
+					break;
+				} else if (xmlStrEqual(cfg_stmt->name, BAD_CAST "key")) {
+					config_text = (char*) xmlGetProp(cfg_stmt, BAD_CAST "value");
+					yin->children[yin->children_count-1].keys_count = 0;
+					yin->children[yin->children_count-1].keys = NULL;
+					for (key = strtok(config_text, " "); key != NULL; key = strtok(NULL, " ")) {
+						yin->children[yin->children_count-1].keys_count++;
+						auxlist = realloc(yin->children[yin->children_count-1].keys, sizeof(char*) * yin->children[yin->children_count-1].keys_count);
+						if (auxlist == NULL) {
+							ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+							/* try to continue */
+						} else {
+							yin->children[yin->children_count-1].keys  = auxlist;
+							yin->children[yin->children_count-1].keys[yin->children[yin->children_count-1].keys_count-1] = strdup(key);
+						}
+					}
+					free(config_text);
+					break;
+				}
+			}
+
+			break;
+		default:
+			WARN("%s: unsupported node type (%d) \"%s\"", type, yin->children[yin->children_count-1].name);
+			free(yin->children[yin->children_count-1].name);
+			free(yin->children[yin->children_count-1].ns_prefix);
+			free(yin->children[yin->children_count-1].ns_uri);
+			yin->children_count--;
+			continue;
+		}
+
 		yin->children[yin->children_count-1].children_count = 0;
 		yin->children[yin->children_count-1].children = NULL;
-		if (get_node_namespace(ns_mapping, model_top, &yin->children[yin->children_count-1].ns_prefix, &yin->children[yin->children_count-1].ns_uri)) {
+		if (get_node_namespace(ns_mapping, stmt, &yin->children[yin->children_count-1].ns_prefix, &yin->children[yin->children_count-1].ns_uri)) {
 			yin->children[yin->children_count-1].ns_prefix = strdup(yin->ns_prefix);
 			yin->children[yin->children_count-1].ns_uri = strdup(yin->ns_uri);
 		}
-		yin_act = &yin->children[yin->children_count-1];
-		yin_act->children = yinmodel_parse_recursive (model_top, ns_mapping, yin_act, &yin_act->children_count);
+
+		if (recursive) {
+			yin_act = &yin->children[yin->children_count-1];
+			yin_act->children = yinmodel_parse_recursive(stmt, ns_mapping, yin_act, &yin_act->children_count);
+		}
 	}
 
 	return yin;

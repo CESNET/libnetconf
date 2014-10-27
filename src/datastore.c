@@ -578,6 +578,7 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 	struct nc_err * err = NULL;
 	int nocpblts = 0, ret, retval = EXIT_SUCCESS;
 	xmlDocPtr running_doc = NULL, aux_doc1 = NULL, aux_doc2;
+	xmlNodePtr data_node;
 	char* new_running_config = NULL;
 	xmlBufferPtr running_buf = NULL;
 	struct transapi_list *tapi_iter;
@@ -643,7 +644,9 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 			if (running_doc == NULL) {
 				new_running_config = strdup("");
 			} else {
-				xmlNodeDump(running_buf, running_doc, xmlDocGetRootElement(running_doc), 0, 0);
+				for (data_node = running_doc->children; data_node != NULL; data_node = data_node->next) {
+					xmlNodeDump(running_buf, running_doc, data_node, 0, 0);
+				}
 				new_running_config = strdup((char*)xmlBufferContent(running_buf));
 				xmlBufferEmpty(running_buf);
 			}
@@ -5007,7 +5010,26 @@ process_datastore:
 		if (old_data == NULL || strcmp(old_data, "") == 0) {
 			old = xmlNewDoc (BAD_CAST "1.0");
 		} else {
-			old = xmlReadDoc(BAD_CAST old_data, NULL, NULL, NC_XMLREAD_OPTIONS);
+			if (asprintf(&data2, "<data>%s</data>", old_data) == -1) {
+				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+				free(old_data);
+				return nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
+			}
+			aux_doc = xmlReadDoc(BAD_CAST data2, NULL, NULL, NC_XMLREAD_OPTIONS);
+			if (aux_doc && aux_doc->children) {
+				old = xmlNewDoc(BAD_CAST "1.0");
+				for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
+					if (old->children == NULL) {
+						xmlDocSetRootElement(old, xmlCopyNode(aux_node, 1));
+					} else {
+						xmlAddSibling(old->children, xmlCopyNode(aux_node, 1));
+					}
+				}
+				xmlFreeDoc(aux_doc);
+			} else {
+				return nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
+			}
+			free(data2);
 		}
 		free(old_data);
 		if (old == NULL) {/* cannot get or parse data */
