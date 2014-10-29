@@ -1,5 +1,6 @@
 var NAVTREEINDEX3 =
 {
+"db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa962fdf56453d65bd49886f1f00820e85":[7,5,6,3],
 "db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b":[7,5,6,1],
 "db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fad552454d25247a7a0f8d1ab875a1d629":[7,5,6,2],
 "db/dae/group__notifications__xml.html":[7,12],
@@ -146,8 +147,8 @@ var NAVTREEINDEX3 =
 "files.html":[9,0],
 "functions.html":[8,2,0],
 "functions_vars.html":[8,2,1],
-"globals.html":[9,1,0],
 "globals.html":[9,1,0,0],
+"globals.html":[9,1,0],
 "globals_0x65.html":[9,1,0,1],
 "globals_0x6d.html":[9,1,0,2],
 "globals_0x6e.html":[9,1,0,3],

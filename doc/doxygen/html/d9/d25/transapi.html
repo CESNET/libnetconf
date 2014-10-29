@@ -173,7 +173,34 @@ xmlNodePtr node</h2>
 <h2><a class="anchor" id="error"></a>
 strict nc_err **error</h2>
 <p>libnetconf's error structure. May (and should) be used to specify error when it occurs and callback returns EXIT_FAILURE. Error description is forwarded to client.</p>
-<h1><a class="anchor" id="transapi-intro"></a>
+<h1><a class="anchor" id="transAPI-history"></a>
+History of the transAPI versions</h1>
+<p>Each transAPI module source code is generated with the <code>transapi_version</code> variable set to the transAPI version supported by the code generator (<em>lnctool(1)</em>). libnetconf requires exactly the same transAPI version in the modules as it supports itself. However, some of the transAPI versions are kind of backward compatible, so it is possible to simply change the value of the <code>transapi_version</code> variable in the module source code. In that case no additional changes to the transAPI module source code are required.</p>
+<p>Here is the list of transAPI versions with notes to the changed things and to the backward compatibility.</p>
+<ul>
+<li><em>version 1</em><ul>
+<li>Initial reversion.</li>
+</ul>
+</li>
+<li><em>version 2</em><ul>
+<li>Allow callbacks to modify configuration data. This action is announced by the callback via the <code>config_modified</code> variable.</li>
+<li>Changes prototype of the transAPI callbacks. It allows to return NETCONF error description structure from the callbacks.</li>
+<li>Backward incompatible.</li>
+</ul>
+</li>
+<li><em>version 3</em><ul>
+<li>Changes prototype of the <code>transapi_init()</code> function. It allows the module can announce to libnetconf the initial configuration of the device when the module is loaded.</li>
+<li>Changes prototype of the transAPI callbacks. The configuration data are passed to the callbacks only as the libxml2 structures. Callbacks variant passing configuration data as strings are no longer available.</li>
+<li>Backward incompatible.</li>
+</ul>
+</li>
+<li><em>version 4</em><ul>
+<li>Callback order - the module can change the order of executing callbacks from the default 'from leafs to root<code>to 'from root to leafs</code>. This is done via the <code>callbacks_order</code> variable. If the variable is not defined (such as in a transAPI v3 module), the default callback order is used.</li>
+<li>Backward compatible.</li>
+</ul>
+</li>
+</ul>
+<h1><a class="anchor" id="transapiTutorial"></a>
 transAPI Tutorial</h1>
 <p>On this page we will show how to write a simple module for controlling <a href="http://netconfcentral.org/modulereport/toaster">example toaster</a>. </p>
 <dl class="section note"><dt>Note</dt><dd>To install libnetconf follow the instructions on the <a class="el" href="../../d9/d87/install.html">Compilation and Installation</a> page.</dd></dl>
@@ -190,7 +217,7 @@ Generating code</h2>
 <li>Create a new directory for the toaster module and move the data model and the path file into it: <div class="fragment"><div class="line">$ mkdir toaster &amp;&amp; cd toaster/</div>
 <div class="line">$ mv ../toaster@2009-11-20.yang ../paths_file .</div>
 </div><!-- fragment --></li>
-<li>Run `lnctool' for transapi: <div class="fragment"><div class="line">$ lnctool --model ./toaster@2009-11-20.yang <a class="code" href="../../d9/dc0/structtransapi.html">transapi</a> --paths ./paths_file</div>
+<li>Run <em>lnctool(1)</em> for transapi: <div class="fragment"><div class="line">$ lnctool --model ./toaster@2009-11-20.yang <a class="code" href="../../d9/dc0/structtransapi.html">transapi</a> --paths ./paths_file</div>
 </div><!-- fragment --></li>
 </ol>
 <p>Besides the generated source code of our transAPI module and GNU Build System files (Makefile.in, configure.in,...), <em>lnctool(1)</em> also generates YIN format of the data model and validators accepted by the libnetconf's <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support. ">ncds_new_transapi()</a> and <a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31" title="Set validators (or disable validation) on the specified datastore. ">ncds_set_validation()</a> functions:</p>
@@ -295,13 +322,15 @@ Compiling module</h2>
 <div class="line">$ make</div>
 </div><!-- fragment --><h2><a class="anchor" id="transapiTutorial-using"></a>
 Integrating to a server</h2>
-<p>In a server we use libnetconf's function <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support. ">ncds_new_transapi()</a> instead of <a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6" title="Create a new datastore structure of the specified implementation type. ">ncds_new()</a> to create a transAPI-capable data store. Then, you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock), data-reading (get, get-config) or module data-model-defined RPC operations. All these operations are processed inside the <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a> function. </p>
+<p>In a server we use libnetconf's function <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support. ">ncds_new_transapi()</a> instead of <a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6" title="Create a new datastore structure of the specified implementation type. ">ncds_new()</a> to create a transAPI-capable data store. Then, you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock), data-reading (get, get-config) or module data-model-defined RPC operations. All these operations are processed inside the <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a> function.</p>
+<h1><a class="anchor" id="transapi"></a>
+Transaction API (transAPI)</h1>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Oct 9 2014 14:18:34 for libnetconf by
+    <li class="footer">Generated on Wed Oct 29 2014 15:10:58 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

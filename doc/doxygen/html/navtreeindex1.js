@@ -214,12 +214,13 @@ var NAVTREEINDEX1 =
 "d9/d25/transapi.html#error":[4,0,3],
 "d9/d25/transapi.html#node":[4,0,2],
 "d9/d25/transapi.html#op":[4,0,1],
-"d9/d25/transapi.html#transapi-intro":[4,1],
-"d9/d25/transapi.html#transapiTutorial-coding":[4,1,2],
-"d9/d25/transapi.html#transapiTutorial-compiling":[4,1,3],
-"d9/d25/transapi.html#transapiTutorial-generating":[4,1,1],
-"d9/d25/transapi.html#transapiTutorial-prepare":[4,1,0],
-"d9/d25/transapi.html#transapiTutorial-using":[4,1,4],
+"d9/d25/transapi.html#transAPI-history":[4,1],
+"d9/d25/transapi.html#transapiTutorial":[4,2],
+"d9/d25/transapi.html#transapiTutorial-coding":[4,2,2],
+"d9/d25/transapi.html#transapiTutorial-compiling":[4,2,3],
+"d9/d25/transapi.html#transapiTutorial-generating":[4,2,1],
+"d9/d25/transapi.html#transapiTutorial-prepare":[4,2,0],
+"d9/d25/transapi.html#transapiTutorial-using":[4,2,4],
 "d9/d25/transapi.html#understanding-parameters":[4,0],
 "d9/d87/install.html":[1],
 "d9/d87/install.html#install-compilation":[1,2],
@@ -248,6 +249,5 @@ var NAVTREEINDEX1 =
 "d9/db6/datastore_8h.html#ga93c65facb061f1048674343ac94a993b":[9,0,0,4,6],
 "d9/db6/datastore_8h.html#ga9c0f401a6873e8778a80e6cc80c5219a":[9,0,0,4,23],
 "d9/db6/datastore_8h.html#gaabb1ae2c497726ad826fc6478f97e8ff":[9,0,0,4,22],
-"d9/db6/datastore_8h.html#gaabfd0bf6abeaf40659043bf082e14801":[9,0,0,4,7],
-"d9/db6/datastore_8h.html#gab0f0cbd5268577ec36fc76cf89c72a8f":[9,0,0,4,3]
+"d9/db6/datastore_8h.html#gaabfd0bf6abeaf40659043bf082e14801":[9,0,0,4,7]
 };

@@ -802,7 +802,43 @@
  *
  *   libnetconf's error structure. May (and should) be used to specify error when it occurs and callback returns EXIT_FAILURE. Error description is forwarded to client.
  *
- * \section transapi-intro transAPI Tutorial
+ * \section transAPI-history History of the transAPI versions
+ *
+ * Each transAPI module source code is generated with the ``transapi_version``
+ * variable set to the transAPI version supported by the code generator
+ * (*lnctool(1)*). libnetconf requires exactly the same transAPI version in the
+ * modules as it supports itself. However, some of the transAPI versions are
+ * kind of backward compatible, so it is possible to simply change the value
+ * of the ``transapi_version`` variable in the module source code. In that case
+ * no additional changes to the transAPI module source code are required.
+ *
+ * Here is the list of transAPI versions with notes to the changed things and
+ * to the backward compatibility.
+ *
+ * - *version 1*
+ *   - Initial reversion.
+ * - *version 2*
+ *   - Allow callbacks to modify configuration data. This action is announced
+ *   by the callback via the ``config_modified`` variable.
+ *   - Changes prototype of the transAPI callbacks. It allows to return NETCONF
+ *   error description structure from the callbacks.
+ *   - Backward incompatible.
+ * - *version 3*
+ *   - Changes prototype of the ``transapi_init()`` function. It allows the
+ *   module can announce to libnetconf the initial configuration of the device
+ *   when the module is loaded.
+ *   - Changes prototype of the transAPI callbacks. The configuration data are
+ *   passed to the callbacks only as the libxml2 structures. Callbacks variant
+ *   passing configuration data as strings are no longer available.
+ *   - Backward incompatible.
+ * - *version 4*
+ *   - Callback order - the module can change the order of executing callbacks
+ *   from the default 'from leafs to root` to 'from root to leafs`. This is done
+ *   via the ``callbacks_order`` variable. If the variable is not defined
+ *   (such as in a transAPI v3 module), the default callback order is used.
+ *   - Backward compatible.
+ *
+ * \section transapiTutorial transAPI Tutorial
  *
  * [netopeer]: https://code.google.com/p/netopeer
  *
@@ -834,7 +870,7 @@
  * $ mkdir toaster && cd toaster/
  * $ mv ../toaster@2009-11-20.yang ../paths_file .
  * ~~~~~~~
- * -# Run `lnctool' for transapi:
+ * -# Run *lnctool(1)* for transapi:
  * ~~~~~~~{.sh}
  * $ lnctool --model ./toaster@2009-11-20.yang transapi --paths ./paths_file
  * ~~~~~~~
@@ -983,6 +1019,8 @@
  * In a server we use libnetconf's function ncds_new_transapi() instead of ncds_new() to create a transAPI-capable data store.
  * Then, you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock), data-reading (get, get-config)
  * or module data-model-defined RPC operations. All these operations are processed inside the ncds_apply_rpc2all() function.
+ *
+ * \section transapi
  */
 
 /**
