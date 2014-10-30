@@ -218,10 +218,36 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 
 static int transapi_apply_callbacks_recursive_own(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error) {
 	int ret;
+	char* msg;
 	struct nc_err *new_error = NULL;
 
 	if (tree->callback) {
-		DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
+		msg = malloc(strlen(tree->path)+128);
+		sprintf(msg, "Transapi calling callback %s with op ", tree->path);
+		if (tree->op & XMLDIFF_REORDER) {
+			strcat(msg, "REORDER | ");
+		}
+		if (tree->op & XMLDIFF_SIBLING) {
+			strcat(msg, "SIBLING | ");
+		}
+		if (tree->op & XMLDIFF_CHAIN) {
+			strcat(msg, "CHAIN | ");
+		}
+		if (tree->op & XMLDIFF_MOD) {
+			strcat(msg, "MOD | ");
+		}
+		if (tree->op & XMLDIFF_REM) {
+			strcat(msg, "REM | ");
+		}
+		if (tree->op & XMLDIFF_ADD) {
+			strcat(msg, "ADD | ");
+		}
+		if (tree->op == XMLDIFF_NONE) {
+			strcat(msg, "NONE | ");
+		}
+		strcpy(msg+strlen(msg)-3, ".");
+		DBG(msg);
+		free(msg);
 		ret = tree->callback(&(info->transapis->tapi->data_clbks->data), tree->op, tree->node, &new_error);
 		if (ret != EXIT_SUCCESS) {
 			ERROR("Callback for path %s failed (%d).", tree->path, ret);
@@ -341,7 +367,7 @@ int transapi_running_changed(struct ncds_ds* ds, xmlDocPtr old_doc, xmlDocPtr ne
 	struct xmldiff_tree* diff = NULL, *iter;
 	struct transapi_callbacks_info info;
 	int ret = 0;
-	
+
 	if (xmldiff_diff(&diff, old_doc, new_doc, ds->ext_model_tree) == XMLDIFF_ERR) { /* failed to create diff list */
 		ERROR("Model \"%s\" transAPI: failed to create the tree of differences.", ds->data_model->name);
 		xmldiff_free(diff);
