@@ -42,6 +42,7 @@
 #ifndef NC_TRANSAPI_H
 #define NC_TRANSAPI_H
 
+#include <sys/inotify.h>
 #include <libxml/tree.h>
 #include "netconf.h"
 #include "error.h"
@@ -51,7 +52,7 @@ extern "C" {
 #endif
 
 /* Current transAPI version */
-#define TRANSAPI_VERSION 4
+#define TRANSAPI_VERSION 5
 
 /* maximal number of input arguments every defined RPC can have */
 #ifndef MAX_RPC_INPUT_ARGS
@@ -129,6 +130,10 @@ struct transapi {
 	 */
 	struct transapi_rpc_callbacks* rpc_clbks;
 	/**
+	 * @brief Transapi file monitoring structure.
+	 */
+	struct transapi_file_callbacks* file_clbks;
+	/**
 	 * @brief Mapping prefixes with URIs
 	 */
 	struct ns_pair* ns_mapping;
@@ -172,6 +177,24 @@ struct transapi_rpc_callbacks {
 		int arg_count;
 		nc_reply* (*func)(xmlNodePtr []);
 		char* arg_order[MAX_RPC_INPUT_ARGS];
+	} callbacks[];
+};
+
+/**
+ * @ingroup transapi
+ * @brief Functions to call if the specified file is modified.
+ *
+ * Description of the callback parameters:
+ * const char *filename[in] - name of the changed file
+ * xmlDocPtr *edit_config[out] - return parameter with edit-config data to
+ * to change running datastore. The data are supposed to be enclosed in
+ * \<config/\> root element.
+ */
+struct transapi_file_callbacks {
+	int callbacks_count;
+	struct {
+		const char* path;
+		int (*func)(const char*, xmlDocPtr*, int*);
 	} callbacks[];
 };
 

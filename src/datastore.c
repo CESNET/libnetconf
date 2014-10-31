@@ -568,6 +568,316 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
+/*
+ * type 0 - backup
+ * type 1 - restore
+ */
+static int fmon_cp_file(const char* source, const char* target, uint8_t type)
+{
+	char buf[4096];
+	int source_fd, target_fd;
+	mode_t mode;
+	uid_t uid;
+	gid_t gid;
+	struct stat finfo;
+	ssize_t r;
+
+	assert(source);
+	assert(target);
+
+	if ((source_fd = open(source, O_RDONLY|O_CLOEXEC)) == -1) {
+		if (type == 1) {
+			ERROR("Unable to open backup file \"%s\" (%s)", source, strerror(errno));
+		} else {
+			ERROR("Unable to open file \"%s\" to backup (%s)", source, strerror(errno));
+		}
+		return 1;
+	}
+
+
+	/* get source access rights */
+	if (fstat(source_fd, &finfo) == -1) {
+		if (type == 1) {
+			WARN("Unable to get information about backup file \"%s\" (%s).", source, strerror(errno));
+			VERB("Using default protection 0600 for restored file.");
+		} else {
+			WARN("Unable to get information about \"%s\" file to backup (%s).", source, strerror(errno));
+			VERB("Using default protection 0600 for backup file.");
+		}
+		mode = 00600;
+		uid = geteuid();
+		gid = getegid();
+	} else {
+		mode = finfo.st_mode;
+		uid = finfo.st_uid;
+		gid = finfo.st_gid;
+	}
+
+	if ((target_fd = open(target, O_WRONLY|O_CLOEXEC|O_CREAT|O_TRUNC, mode)) == -1) {
+		if (type == 1) {
+			ERROR("Unable to restore file \"%s\" (%s)", target, strerror(errno));
+		} else {
+			ERROR("Unable to create backup file \"%s\" (%s)", target, strerror(errno));
+		}
+		close(source_fd);
+		return 1;
+	}
+	fchown(target_fd, uid, gid);
+	fchmod(target_fd, mode); /* if not created, but rewriting some existing file */
+
+	for (;;) {
+		r = read(source_fd, buf, sizeof(buf));
+		if (r == 0) {
+			/* EOF */
+			break;
+		} else if (r < 0) {
+			/* ERROR */
+			if (type == 1) {
+				ERROR("Restoring file \"%s\" failed (%s).", target, strerror(errno));
+			} else {
+				ERROR("Creating backup file \"%s\" failed (%s).", target, strerror(errno));
+			}
+			break;
+		}
+		write(target_fd, buf, r);
+	}
+	close(source_fd);
+	close(target_fd);
+
+	return 0;
+}
+
+static int fmon_restore_file(const char* target)
+{
+	char *source = NULL;
+	int ret;
+
+	assert(target);
+
+	asprintf(&source, "%s.netconf", target);
+	ret = fmon_cp_file(source, target, 1);
+	free(source);
+
+	return ret;
+}
+
+static int fmon_backup_file(const char* source)
+{
+	char *target = NULL;
+	int ret;
+
+	assert(source);
+
+	asprintf(&target, "%s.netconf", source);
+	ret = fmon_cp_file(source, target, 0);
+	free(target);
+
+	return ret;
+}
+
+#define INOT_BUFLEN (10 * (sizeof(struct inotify_event) + NAME_MAX + 1))
+struct fmon {
+	int wd;
+	char flags;
+};
+#define FMON_FLAG_MODIFIED 0x01
+#define FMON_FLAG_IGNORED  0x02
+#define FMON_FLAG_UPDATE   0x04
+struct fmon_arg {
+	volatile int flag;
+	struct transapi_file_callbacks *fclbks;
+	struct ncds_ds *ds;
+};
+static void* transapi_fmon(void *arg)
+{
+	struct fmon_arg *fmon_arg = (struct fmon_arg*)arg;
+	struct transapi_file_callbacks *fclbks = fmon_arg->fclbks;
+	struct ncds_ds *ds = fmon_arg->ds;
+	int inotify, i, r, ret;
+	struct fmon *wds;
+	char buf[INOT_BUFLEN], *p;
+	struct inotify_event *e;
+	char* config;
+	xmlDocPtr config_doc;
+	xmlNodePtr node;
+	xmlBufferPtr running_buf = NULL;
+	struct nc_err *err;
+	int execflag;
+	struct nc_session* dummy_session;
+	nc_rpc* rpc;
+	nc_reply *reply;
+	struct nc_cpblts* cpblts;
+	const struct ncds_lockinfo *lockinfo;
+
+	/* note thread creator that we stored passed arguments and the original
+	 * fmon_arg structure can be rewritten.
+	 */
+	fmon_arg->flag = 0;
+
+	if ((inotify = inotify_init1(IN_CLOEXEC)) == -1) {
+		ERROR("File monitoring failed on initiating inotify (%s).", strerror(errno));
+		return NULL;
+	}
+
+	wds = malloc(sizeof(struct fmon) * fclbks->callbacks_count);
+	pthread_cleanup_push(free, wds);
+
+	running_buf = xmlBufferCreate();
+	pthread_cleanup_push((void (*)(void*))&xmlBufferFree, running_buf);
+
+	dummy_session = nc_session_dummy("fmon", "server", NULL, cpblts = nc_session_get_cpblts_default());
+	nc_cpblts_free(cpblts);
+	pthread_cleanup_push((void (*)(void*))&nc_session_free, dummy_session);
+
+	for (i = 0; i < fclbks->callbacks_count; i++) {
+		if ((wds[i].wd = inotify_add_watch(inotify, fclbks->callbacks[i].path, IN_MODIFY|IN_IGNORED|IN_CLOSE_WRITE)) == -1) {
+			ERROR("Unable to monitor \"%s\" (%s)", fclbks->callbacks[i].path, strerror(errno));
+		} else {
+			/* create backup file with current content */
+			fmon_backup_file(fclbks->callbacks[i].path);
+		}
+		wds[i].flags = 0;
+	}
+
+	for (;;) {
+		r = read(inotify, buf, INOT_BUFLEN);
+		if (r == 0) {
+			ERROR("Inotify failed (EOF).");
+			break;
+		} else if (r == -1) {
+			ERROR("Inotify failed (%s).", strerror(errno));
+			break;
+		}
+
+		for (p = buf; p < buf + r;) {
+			e = (struct inotify_event*)p;
+
+			/* get index of the modified file */
+			for (i = 0; i < fclbks->callbacks_count; i++) {
+				if (wds[i].wd == e->wd) {
+					break;
+				}
+			}
+
+			if (e->mask & IN_IGNORED) {
+				/* the file was removed or replaced */
+				if ((wds[i].wd = inotify_add_watch(inotify, fclbks->callbacks[i].path, IN_MODIFY|IN_IGNORED|IN_CLOSE_WRITE)) == -1) {
+					if (errno == ENOENT) {
+						/* the file was removed */
+						VERB("File \"%s\" was removed is no more monitored.", fclbks->callbacks[i].path);
+					} else {
+						/* the file was replaced, but we cannot access the new file */
+						ERROR("Unable to continue in monitoring \"%s\" file (%s)", fclbks->callbacks[i].path, strerror(errno));
+					}
+				} else {
+					/* file was replaced and we now monitor the newly created file */
+					/* set its modified flag to 2 to execute callback */
+					wds[i].flags |= FMON_FLAG_UPDATE;
+				}
+			} else {
+				if (e->mask & IN_MODIFY) {
+					wds[i].flags |= FMON_FLAG_MODIFIED;
+				}
+				if ((e->mask & IN_CLOSE_WRITE) && (wds[i].flags & FMON_FLAG_MODIFIED)) {
+					wds[i].flags |= FMON_FLAG_UPDATE;
+				}
+			}
+
+			if (wds[i].flags & FMON_FLAG_UPDATE) {
+
+				if (wds[i].flags & FMON_FLAG_IGNORED) {
+					/* ignore our own backup restore */
+					wds[i].flags = 0;
+					goto next_event;
+				}
+
+				/* null the variables */
+				wds[i].flags = 0;
+				config_doc = NULL;
+				execflag = 0;
+
+				/* check that datastore is not locked */
+				lockinfo = ds->func.get_lockinfo(ds, NC_DATASTORE_RUNNING);
+				if (lockinfo && lockinfo->sid) {
+					VERB("FMON: Running datastore is locked by \"%s\"", lockinfo->sid);
+					WARN("FMON: Replacing changed \"%s\" with the backup file.", fclbks->callbacks[i].path);
+
+					/* note that next update notification of this file should be ignored */
+					wds[i].flags = FMON_FLAG_IGNORED;
+
+					/* restore original content */
+					fmon_restore_file(fclbks->callbacks[i].path);
+
+					goto next_event;
+				}
+
+				fclbks->callbacks[i].func(fclbks->callbacks[i].path, &config_doc, &execflag);
+				if (config_doc != NULL) {
+					/*
+					 * store running to the datastore
+					 */
+
+					/* check returned data format */
+					if (config_doc->children == NULL) {
+						ERROR("Invalid configuration data returned from transAPI file monitoring callback.");
+						goto next_event;
+					}
+
+					/* perform changes in datastore (and on device if set so) */
+					if (execflag) {
+						/* update running datastore including execution of the transAPI callbacks */
+						rpc = ncxml_rpc_editconfig(NC_DATASTORE_RUNNING,
+								NC_DATASTORE_CONFIG, NC_EDIT_DEFOP_NOTSET,
+								NC_EDIT_ERROPT_ROLLBACK, NC_EDIT_TESTOPT_NOTSET,
+								config_doc->children->children);
+						xmlFreeDoc(config_doc);
+						if (rpc == NULL) {
+							ERROR("FMON: Preparing edit-config RPC failed.");
+							goto next_event;
+						}
+
+						reply = ncds_apply_rpc2all(dummy_session, rpc, NULL);
+						nc_rpc_free(rpc);
+						if (reply == NULL || nc_reply_get_type(reply) != NC_REPLY_OK) {
+							ERROR("FMON: Performing edit-config RPC failed.");
+						}
+						nc_reply_free(reply);
+
+					} else {
+						/* do not execute transAPI callbacks, only update running datastore */
+						for (node = config_doc->children; node != NULL; node = node->next) {
+							xmlNodeDump(running_buf, config_doc, node, 0, 0);
+						}
+						xmlFreeDoc(config_doc);
+						config = strdup((char*)xmlBufferContent(running_buf));
+						xmlBufferEmpty(running_buf);
+
+						ret = ds->func.editconfig(ds, NULL, NULL,
+								NC_DATASTORE_RUNNING, config,
+								NC_EDIT_DEFOP_NOTSET, NC_EDIT_ERROPT_ROLLBACK, &err);
+						free(config);
+
+						if (ret != 0 && ret != EXIT_RPC_NOT_APPLICABLE) {
+							ERROR("Failed to update running configuration (%s).", err ? err->message : "unknown error");
+							nc_err_free(err);
+						}
+					}
+
+					/* update backup file */
+					fmon_backup_file(fclbks->callbacks[i].path);
+				}
+			}
+next_event:
+			p += sizeof(struct inotify_event) + e->len;
+		}
+	}
+
+	pthread_cleanup_pop(1);
+	pthread_cleanup_pop(1);
+	pthread_cleanup_pop(1);
+	return NULL;
+}
+
 API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 {
 	nc_rpc * rpc_msg = NULL;
@@ -582,6 +892,7 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 	char* new_running_config = NULL;
 	xmlBufferPtr running_buf = NULL;
 	struct transapi_list *tapi_iter;
+	static struct fmon_arg arg = {0, NULL, NULL};
 
 	if (id != NULL) {
 		/* initialize only the device connected with the given datastore ID */
@@ -676,7 +987,7 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 			/* Here is used high level function ncds_apply_rpc to apply startup configuration and use transAPI */
 			reply_msg = ncds_apply_rpc(ds_iter->datastore->id, dummy_session, rpc_msg);
 			if (reply_msg == NULL || (reply_msg != NCDS_RPC_NOT_APPLICABLE && nc_reply_get_type (reply_msg) != NC_REPLY_OK)) {
-				ERROR ("Failed perform initial copy of startup to running.");
+				ERROR("Failed perform initial copy of startup to running.");
 				nc_reply_free(reply_msg);
 				retval = EXIT_FAILURE;
 				goto cleanup;
@@ -686,6 +997,25 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 			/* prepare variable for the next loop */
 			free(new_running_config);
 			new_running_config = NULL;
+		}
+
+		/* start monitoring external files */
+		for (tapi_iter = ds_iter->datastore->transapis; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
+			if (tapi_iter->tapi->file_clbks != NULL) {
+				while(arg.flag) {
+					/* let the previous thread store pointers from passed argument */
+					usleep(50);
+				}
+				VERB("Starting file monitoring for %s data model.", ds_iter->datastore->data_model->name);
+				arg.flag = 1;
+				arg.fclbks = tapi_iter->tapi->file_clbks;
+				arg.ds = ds_iter->datastore;
+				ret = pthread_create(&(tapi_iter->tapi->fmon_thread), NULL, &transapi_fmon, &arg);
+				if (ret != 0) {
+					ERROR("Unable to create file monitoring thread for %s data model (%s)", ds_iter->datastore->data_model->name, strerror(ret));
+				}
+				pthread_detach(tapi_iter->tapi->fmon_thread);
+			}
 		}
 
 		/* prepare variable for the next loop */
@@ -1457,6 +1787,7 @@ static struct transapi_internal* transapi_new_shared(const char* callbacks_path)
 	int (*init_func)(xmlDocPtr *) = NULL;
 	struct transapi_data_callbacks *data_clbks = NULL;
 	struct transapi_rpc_callbacks *rpc_clbks = NULL;
+	struct transapi_file_callbacks *file_clbks = NULL;
 	int *ver, ver_default = 1;
 	int *modified;
 	NC_EDIT_ERROPT_TYPE *erropt;
@@ -1516,6 +1847,10 @@ static struct transapi_internal* transapi_new_shared(const char* callbacks_path)
 		WARN("%s: Unable to find \"callbacks_order\" variable. Guessing Leaf To Root.", __func__);
 	}
 
+	if ((file_clbks = dlsym (transapi_module, "file_clbks")) == NULL) {
+		VERB("No file monitoring callbacks in %s transAPI module.", callbacks_path);
+	}
+
 	/* callbacks work with configuration data */
 	/* get clbks structure */
 	if ((data_clbks = dlsym (transapi_module, "clbks")) == NULL) {
@@ -1544,6 +1879,7 @@ static struct transapi_internal* transapi_new_shared(const char* callbacks_path)
 	transapi->ns_mapping = (struct ns_pair*)ns_mapping;
 	transapi->data_clbks = data_clbks;
 	transapi->rpc_clbks = rpc_clbks;
+	transapi->file_clbks = file_clbks;
 	/* Convert clbks_order to enum */
 	transapi->clbks_order = TRANSAPI_CLBCKS_ORDER_DEFAULT;
 	if (clbks_order != NULL)
@@ -3329,9 +3665,14 @@ static int ncds_update_callbacks(struct ncds_ds* ds)
 
 static void transapi_unload(struct transapi_internal* tapi)
 {
-	/* and close function is defined */
+	/* stop the thread monitoring the files */
+	/* if close function is defined */
 	if (tapi->close != NULL) {
 		tapi->close();
+	}
+	if (tapi->file_clbks != NULL && tapi->file_clbks->callbacks_count > 0) {
+		VERB("Stopping FMON thread.");
+		pthread_cancel(tapi->fmon_thread);
 	}
 	if (tapi->module != &error_area && dlclose(tapi->module)) {
 		ERROR("%s: Unloading transAPI module failed: %s:", __func__, dlerror());

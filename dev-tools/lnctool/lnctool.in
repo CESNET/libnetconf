@@ -50,7 +50,7 @@ except ImportError as e:
 	exit(1)
 
 # transAPI version built by this tool
-transapi_version = 4
+transapi_version = 5
 
 # paths to transformation stylesheets and schemas
 RNGLIB='@RNGLIB@'
@@ -162,6 +162,7 @@ def generate_callbacks_file(name, defs, model):
 	content += ' */\n\n'
 	# Include header files
 	content += '#include <stdlib.h>\n'
+	content += '#include <sys/inotify.h>\n'
 	content += '#include <libxml/tree.h>\n'
 	content += '#include <libnetconf_xml.h>\n'
 	content += '\n'
@@ -202,6 +203,7 @@ def generate_callbacks_file(name, defs, model):
 	content += generate_config_callbacks(name, paths, namespaces)
 	if not (model is None):
 		content += generate_rpc_callbacks(model)
+	content += generate_file_callbacks()
 
 	# Write to file
 	outf.write(content)
@@ -222,7 +224,7 @@ def generate_init_callback():
 	content += ' * @param[out] running\tCurrent configuration of managed device.\n\n'
 	content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
 	content += ' */\n'
-	content += 'int transapi_init(xmlDocPtr * running)\n'
+	content += 'int transapi_init(xmlDocPtr *running)\n'
 	content += '{\n\treturn EXIT_SUCCESS;\n}\n\n'
 
 	return (content)
@@ -248,7 +250,7 @@ def generate_state_callback():
 	content += ' * @param[out] err  Double pointer to error structure. Fill error when some occurs.\n'
 	content += ' * @return State data as libxml2 xmlDocPtr or NULL in case of error.\n'
 	content += ' */\n'
-	content += 'xmlDocPtr get_state_data (xmlDocPtr model, xmlDocPtr running, struct nc_err **err)\n'
+	content += 'xmlDocPtr get_state_data(xmlDocPtr model, xmlDocPtr running, struct nc_err **err)\n'
 	content += '{\n\treturn(NULL);\n}\n'
 
 	return(content)
@@ -275,10 +277,10 @@ def generate_config_callbacks(name, paths, namespaces):
 
 	# Add description and instructions
 	content += '/*\n'
-	content += '* CONFIGURATION callbacks\n'
-	content += '* Here follows set of callback functions run every time some change in associated part of running datastore occurs.\n'
-	content += '* You can safely modify the bodies of all function as well as add new functions for better lucidity of code.\n'
-	content += '*/\n\n'
+	content += ' * CONFIGURATION callbacks\n'
+	content += ' * Here follows set of callback functions run every time some change in associated part of running datastore occurs.\n'
+	content += ' * You can safely modify the bodies of all function as well as add new functions for better lucidity of code.\n'
+	content += ' */\n\n'
 	# generate callback function for every given sensitive path
 	for path in paths:
 		func_name = 'callback'+re.sub(r'[^\w]', '_', path)
@@ -301,15 +303,15 @@ def generate_config_callbacks(name, paths, namespaces):
 		content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
 		content += ' */\n'
 		content += '/* !DO NOT ALTER FUNCTION SIGNATURE! */\n'
-		content += 'int '+func_name+' (void ** data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err** error)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
+		content += 'int '+func_name+'(void **data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err **error)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
 		funcs_count += 1
 
 	# in the end of file write strucure connecting paths in XML data with callback function
 	content += '/*\n'
-	content += '* Structure transapi_config_callbacks provide mapping between callback and path in configuration datastore.\n'
-	content += '* It is used by libnetconf library to decide which callbacks will be run.\n'
-	content += '* DO NOT alter this structure\n'
-	content += '*/\n'
+	content += ' * Structure transapi_config_callbacks provide mapping between callback and path in configuration datastore.\n'
+	content += ' * It is used by libnetconf library to decide which callbacks will be run.\n'
+	content += ' * DO NOT alter this structure\n'
+	content += ' */\n'
 	content += 'struct transapi_data_callbacks clbks =  {\n'
 	content += '\t.callbacks_count = '+str(funcs_count)+',\n'
 	content += '\t.data = NULL,\n'
@@ -324,12 +326,12 @@ def generate_rpc_callbacks(doc):
 
 	# Add description and instructions
 	content += '/*\n'
-	content += '* RPC callbacks\n'
-	content += '* Here follows set of callback functions run every time RPC specific for this device arrives.\n'
-	content += '* You can safely modify the bodies of all function as well as add new functions for better lucidity of code.\n'
-	content += '* Every function takes array of inputs as an argument. On few first lines they are assigned to named variables. Avoid accessing the array directly.\n'
-	content += '* If input was not set in RPC message argument in set to NULL.\n'
-	content += '*/\n\n'
+	content += ' * RPC callbacks\n'
+	content += ' * Here follows set of callback functions run every time RPC specific for this device arrives.\n'
+	content += ' * You can safely modify the bodies of all function as well as add new functions for better lucidity of code.\n'
+	content += ' * Every function takes array of inputs as an argument. On few first lines they are assigned to named variables. Avoid accessing the array directly.\n'
+	content += ' * If input was not set in RPC message argument in set to NULL.\n'
+	content += ' */\n\n'
 
 	# create xpath context
 	ctxt = doc.xpathNewContext()
@@ -342,7 +344,7 @@ def generate_rpc_callbacks(doc):
 	for rpc in rpcs:
 		rpc_name = rpc.prop('name')
 		# create callback function
-		rpc_function = 'nc_reply * rpc_'+re.sub(r'[^\w]', '_', rpc_name)+' (xmlNodePtr input[])\n{\n'
+		rpc_function = 'nc_reply *rpc_'+re.sub(r'[^\w]', '_', rpc_name)+'(xmlNodePtr input[])\n{\n'
 		# find all defined inputs
 		rpc_input = ctxt.xpathEval('//yang:rpc[@name="'+rpc.prop('name')+'"]/yang:input/*')
 		arg_order = '{'
@@ -363,15 +365,42 @@ def generate_rpc_callbacks(doc):
 		callbacks += '\n\t\t{.name="'+rpc_name+'", .func=rpc_'+re.sub(r'[^\w]', '_', rpc_name)+', .arg_count='+str(len(rpc_input))+', .arg_order='+arg_order+'}'
 
 	content += '/*\n'
-	content += '* Structure transapi_rpc_callbacks provide mapping between callbacks and RPC messages.\n'
-	content += '* It is used by libnetconf library to decide which callbacks will be run when RPC arrives.\n'
-	content += '* DO NOT alter this structure\n'
-	content += '*/\n'
+	content += ' * Structure transapi_rpc_callbacks provides mapping between callbacks and RPC messages.\n'
+	content += ' * It is used by libnetconf library to decide which callbacks will be run when RPC arrives.\n'
+	content += ' * DO NOT alter this structure\n'
+	content += ' */\n'
 	content += 'struct transapi_rpc_callbacks rpc_clbks = {\n'
 	content += '\t.callbacks_count = '+str(len(rpcs))+',\n'
 	content += '\t.callbacks = {'+callbacks+'\n\t}'
 	content += '\n};\n\n'
 
+	return(content)
+
+def generate_file_callbacks():
+	content = ''
+	
+	content += '/*\n'
+	content += ' * Structure transapi_file_callbacks provides mapping between specific files\n'
+	content += ' * (e.g. configuration file in /etc/) and the callback function executed when\n'
+	content += ' * the file is modified.\n'
+	content += ' * The structure is empty by default. Add items, as in example, as you need.\n'
+	content += ' *\n * Example:\n'
+	content += ' * int example_callback(const char *filepath, xmlDocPtr *edit_config, int *exec) {\n'
+	content += ' *     // do the job with changed file content\n'
+	content += ' *     // if needed, set edit_config parameter to the edit-config data to be applied\n'
+	content += ' *     // if needed, set exec to 1 to perform consequent transapi callbacks\n'
+	content += ' *     return 0;\n * }\n *\n'
+	content += ' * struct transapi_file_callbacks file_clbks = {\n'
+	content += ' *     .callbacks_count = 1,\n'
+	content += ' *     .callbacks = {\n'
+	content += ' *         {.path = "/etc/my_cfg_file", .func = example_callback}\n'
+	content += ' *     }\n * }\n'
+	content += ' */\n'
+	content += 'struct transapi_file_callbacks file_clbks = {\n'
+	content += '\t.callbacks_count = 0,\n'
+	content += '\t.callbacks = {NULL}\n'
+	content += '};\n\n'	
+	
 	return(content)
 
 # "main" starts here

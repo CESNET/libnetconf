@@ -837,6 +837,9 @@
  *   via the ``callbacks_order`` variable. If the variable is not defined
  *   (such as in a transAPI v3 module), the default callback order is used.
  *   - Backward compatible.
+ * - *version 5*
+ *   - Adds support for monitoring external files.
+ *   - Backward compatible.
  *
  * \section transapiTutorial transAPI Tutorial
  *

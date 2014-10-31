@@ -161,6 +161,7 @@ struct ncds_funcs {
 	 * @param target Datastore type
 	 * @param config Edit configuration.
 	 * @param defop Default edit operation.
+	 * @param errop Edit-config's error-option
 	 * @param error Netconf error structure
 	 *
 	 * @return EXIT_SUCCESS or EXIT_FAILURE
@@ -271,6 +272,10 @@ struct transapi_internal {
 	 */
 	struct transapi_rpc_callbacks * rpc_clbks;
 	/**
+	 * @brief Transapi file monitoring structure.
+	 */
+	struct transapi_file_callbacks* file_clbks;
+	/**
 	 * @brief Mapping prefixes with URIs
 	 */
 	struct ns_pair *ns_mapping;
@@ -292,6 +297,10 @@ struct transapi_internal {
 	 * @brief Link with the appropriate data_model structure
 	 */
 	struct data_model* model;
+	/**
+	 * @brief File monitoring thread, connected with the file_clbks.
+	 */
+	pthread_t fmon_thread;
 };
 
 struct model_list {
