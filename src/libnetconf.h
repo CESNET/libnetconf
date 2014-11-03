@@ -909,104 +909,161 @@
  * Better example may can be found in the netopeer-server-sl source codes located
  * in the [Netopeer project][netopeer] repository (server-sl/toaster/toaster.c).
  *
- * -# Open 'toaster.c' file with your favorite editor:
+ * -# Open 'toaster.c' file with your favorite editor:\n\n
  * ~~~~~~~{.sh}
  * $ vim toaster.c
  * ~~~~~~~
- *
- * -# Add global variables and auxiliary functions
+ * \n
+ * -# Add global variables and auxiliary functions. This is completely up to you,
+ * libnetconf does not work with this anyway.\n\n
  * ~~~~~~~{.c}
  * enum {ON, OFF, BUSY} status;
  * pthread_t thread;
  *
  * void * auxiliary_make_toast(void * time)
  * {
- * 	sleep(*(int*)time);
+ *     sleep(*(int*)time);
  *
- * 	if (status == BUSY) {
- * 		status = ON;
- * 		ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>done</toastStatus></toastDone>");
- * 	}
- * 	return(NULL);
+ *     if (status == BUSY) {
+ *         status = ON;
+ *         ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>done</toastStatus></toastDone>");
+ *     }
+ *     return(NULL);
  * }
  * ~~~~~~~
- * -# Complete the 'transapi_init()' function with actions that will be run right after the module loads and before any other function in the module is called. We ignore the XML document pointer, since we wish the toaster to be always off when loading this module.
+ * \n
+ * -# Complete the 'transapi_init()' function with actions that will be run
+ * right after the module loads and before any other function in the module is
+ * called.\n\n
+ * The 'running' parameter can optionally return the current configuration
+ * state of the device as the 'transapi_init()' detects it. The configuration
+ * must correspond with the device data model and it is supposed to contain
+ * only the configuration data (defined with 'config true`). The returned
+ * data are then compared with the startup configuration and only the diverging
+ * values are set according to the startup content using the appropriate
+ * transAPI callback functions.\n\n
+ * We ignore it in our example - the toaster is on each start without the root
+ * element, which means that it is supposed to be switched off. Then it is up to
+ * the startup content if the toaster will be turned on.\n\n
  * ~~~~~~~{.c}
  * int transapi_init(xmlDocPtr * running)
  * {
- * 	status = OFF;
- * 	printf("Toaster initialized!\n");
- * 	return(EXIT_SUCCESS);
+ *     status = OFF;
+ *     printf("Toaster initialized!\n");
+ *     return(EXIT_SUCCESS);
  * }
  * ~~~~~~~
- * -# Locate the 'transapi_close()' function and fill it with actions that will be run just before the module unloads. No other function will be called after 'transapi_close()'.
+ * \n
+ * -# Locate the 'transapi_close()' function and fill it with actions that will
+ * be run just before the module unloads. No other function of the transAPI
+ * module is called after the 'transapi_close()'.\n\n
  * ~~~~~~~{.c}
  * void transapi_close()
  * {
- * 	printf("Toaster ready for unplugging!\n");
+ *     printf("Toaster ready for unplugging!\n");
  * }
  * ~~~~~~~
- * -# Fill 'get_state_data()' function with code that will generate state information as defined in the data model.
+ * \n
+ * -# Fill 'get_state_data()' function. This function returns (only!) the state
+ * data (defined with 'config false').\n\n
  * ~~~~~~~{.c}
  * char * get_state_data(char * model, char * running, struct nc_err **err)
  * {
- * 	return strdup("<?xml version="1.0"?><toaster xmlns="http://netconfcentral.org/ns/toaster"> ... </toaster>");
+ *     return strdup("<?xml version="1.0"?><toaster xmlns="http://netconfcentral.org/ns/toaster"> ... </toaster>");
  * }
  * ~~~~~~~
- * -# Complete the configuration callbacks. The 'op' parameter may be
- * 		used to determine operation which was done with the node. Parameter 'node' holds a
- * 		copy of node after change (or before change if op == XMLDIFF_REM).
+ * \n
+ * -# Complete the configuration callbacks (they have the `callback_` prefix).
+ * The 'op' parameter can be used to determine operation which was done with the
+ * node. Parameter 'node' holds a copy of node after change (or before change
+ * if op == XMLDIFF_REM).\n\n
+ * More detailed information about the callback parameters can be found above in
+ * the \ref understanding-parameters section.\n\n
  * ~~~~~~~{.c}
  * int callback_toaster_toaster (void ** data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err** error)
  * {
- * 	if (op & XMLDIFF_ADD) {
- * 		status = ON;
- * 	} else if (op & XMLDIFF_REM) {
- * 		status = OFF;
- * 	} else {
- * 		*error = nc_err_new(NC_ERR_OP_FAILED);
- * 		nc_err_set(*error, NC_ERR_PARAM_MSG, "Unsupported operation.");
- * 		return(EXIT_FAILURE);
- * 	}
- * 	return(EXIT_SUCCESS);
+ *     if (op & XMLDIFF_ADD) {
+ *         status = ON;
+ *     } else if (op & XMLDIFF_REM) {
+ *         status = OFF;
+ *     } else {
+ *         *error = nc_err_new(NC_ERR_OP_FAILED);
+ *         nc_err_set(*error, NC_ERR_PARAM_MSG, "Unsupported operation.");
+ *         return(EXIT_FAILURE);
+ *     }
+ *     return(EXIT_SUCCESS);
  * }
  * ~~~~~~~
- * -# Fill the RPC message callback functions with code that will be run when a message arrives.
+ * \n
+ * -# Fill the RPC message callback functions with the code that will be run
+ * when an RPC message with the defined operation arrives.\n\n
  * ~~~~~~~
  * nc_reply * rpc_make_toast (xmlNodePtr input[])
  * {
- * 	xmlNodePtr toasterDoneness = input[0];
- * 	xmlNodePtr toasterToastType = input[1];
+ *     xmlNodePtr toasterDoneness = input[0];
+ *     xmlNodePtr toasterToastType = input[1];
  *
- * 	nc_reply * reply;
- * 	int doneness = atoi(xmlNodeGetContent(toasterDoneness));
+ *     nc_reply * reply;
+ *     int doneness = atoi(xmlNodeGetContent(toasterDoneness));
  *
- * 	if (status == ON) {
- * 		status = BUSY;
- * 		pthread_create(&thread, NULL, auxiliary_make_toast, (void*)&doneness);
- * 		pthread_detach(thread);
- * 		reply = nc_reply_ok();
- * 	} else {
- * 		reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
- * 	}
- * 	return(reply);
+ *     if (status == ON) {
+ *         status = BUSY;
+ *         pthread_create(&thread, NULL, auxiliary_make_toast, (void*)&doneness);
+ *         pthread_detach(thread);
+ *         reply = nc_reply_ok();
+ *     } else {
+ *         reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
+ *     }
+ *     return(reply);
  * }
  * ~~~~~~~
  * ~~~~~~~
  * nc_reply * rpc_cancel_toast (xmlNodePtr input[])
  * {
- * 	nc_reply * reply;
+ *     nc_reply * reply;
  *
- * 	if (status == BUSY) {
- * 		status = ON;
- * 		ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>canceled</toastStatus></toastDone>");
- * 		reply = nc_reply_ok();
- * 	} else {
- * 		reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
- * 	}
- * 	return(reply);
+ *     if (status == BUSY) {
+ *         status = ON;
+ *         ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>canceled</toastStatus></toastDone>");
+ *         reply = nc_reply_ok();
+ *     } else {
+ *         reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
+ *     }
+ *     return(reply);
  * }
  * ~~~~~~~
+ * \n
+ * -# Optionally, you can set monitoring for some external configuration file.\n\n
+ * Let's say, that our toaster has a textual configuration located in the
+ * `/etc/toaster.conf` file. libnetconf can monitor this file for modification
+ * and whenever an external application changes content of the file, the
+ * specified callback is executed. It's up to the callback function to open the
+ * file for reading and update get the current configuration data.\n\n
+ * ~~~~~~~
+ * int example_callback(const char *filepath, xmlDocPtr *running, int* execflag)
+ * {
+ *     // do nothing
+ *     *running = NULL;
+ *     *execflag = 0;
+ *
+ *     return(EXIT_SUCCESS);
+ * }
+ *
+ * struct transapi_file_callbacks file_clbks = {
+ *     .callbacks_count = 1,
+ *     .callbacks = {{.path = "/etc/toaster.conf", .func = example_callback}}
+ * };
+ * ~~~~~~~
+ * \n
+ * Here is the description of the callback function parameters:\n
+ *   - **const char *filepath** - input parameter providing the path to the changed file
+ *   - **xmlDocPtr *edit_config** - output parameter to return content for the
+ *   `edit-config` operation to change the content of the NETCONF running datastore.
+ *   - **int *exec** - output parameter to set if the performed changes should
+ *   cause execution of the regular transAPI callbacks. If set to `0`, the
+ *   changes are only reflected in the running configuration datastore, but no
+ *   transAPI callback is executed.\n\n
+ * -# Done
  *
  * \subsection transapiTutorial-compiling Compiling module
  *
@@ -1023,7 +1080,6 @@
  * Then, you do not need to process any data-writing (edit-config, copy-config, delete-config, lock, unlock), data-reading (get, get-config)
  * or module data-model-defined RPC operations. All these operations are processed inside the ncds_apply_rpc2all() function.
  *
- * \section transapi
  */
 
 /**

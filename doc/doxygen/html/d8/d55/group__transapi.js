@@ -10,6 +10,7 @@ var group__transapi =
       [ "config_modified", "d9/dc0/structtransapi.html#aa234e35582e991cd6e5c43047e315528", null ],
       [ "data_clbks", "d9/dc0/structtransapi.html#a44e5e883d6586faf97047d23c7bcebf7", null ],
       [ "erropt", "d9/dc0/structtransapi.html#acb50180a0bc032bef4b6af94d8596528", null ],
+      [ "file_clbks", "d9/dc0/structtransapi.html#a829682c0ae04089a665f2de8f1378446", null ],
       [ "get_state", "d9/dc0/structtransapi.html#a6c403c3ae7c1ca5654fdaf60b60ba16b", null ],
       [ "init", "d9/dc0/structtransapi.html#a8cb29ceda55d20ecbec3784d536851db", null ],
       [ "ns_mapping", "d9/dc0/structtransapi.html#a517eb18d6321490a3439ae595edbf9a4", null ],
@@ -19,6 +20,12 @@ var group__transapi =
       [ "callbacks", "d6/dcb/structtransapi__data__callbacks.html#a37c3f849c79cfe4991c6d0a6526b12d7", null ],
       [ "callbacks_count", "d6/dcb/structtransapi__data__callbacks.html#a853d73f0f495147dba4842e9f860d1f0", null ],
       [ "data", "d6/dcb/structtransapi__data__callbacks.html#a735984d41155bc1032e09bece8f8d66d", null ]
+    ] ],
+    [ "transapi_file_callbacks", "de/df8/structtransapi__file__callbacks.html", [
+      [ "callbacks", "de/df8/structtransapi__file__callbacks.html#af315aee2dd9c7f04ef44d3dc4f1565d9", null ],
+      [ "callbacks_count", "de/df8/structtransapi__file__callbacks.html#a853d73f0f495147dba4842e9f860d1f0", null ],
+      [ "func", "de/df8/structtransapi__file__callbacks.html#a9c1038ab827316debf4109f49818519f", null ],
+      [ "path", "de/df8/structtransapi__file__callbacks.html#a3b02c6de5c049804444a246f7fdf46b4", null ]
     ] ],
     [ "transapi_rpc_callbacks", "d0/df8/structtransapi__rpc__callbacks.html", [
       [ "arg_count", "d0/df8/structtransapi__rpc__callbacks.html#ad4e017d16d393756e4e27927d06084ec", null ],
