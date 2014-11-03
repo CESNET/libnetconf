@@ -3986,11 +3986,51 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 	return (retval);
 }
 
+static xmlDocPtr read_datastore_data(const char *data)
+{
+	char *config = NULL;
+	xmlDocPtr doc, ret = NULL;
+	xmlNodePtr node;
+
+	if (data == NULL || strcmp(data, "") == 0) {
+		/* config is empty */
+		return xmlNewDoc (BAD_CAST "1.0");
+	} else {
+		if (asprintf(&config, "<config>%s</config>", data) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
+		doc = xmlReadDoc(BAD_CAST config, NULL, NULL, NC_XMLREAD_OPTIONS);
+		free(config);
+
+		if (doc == NULL || doc->children == NULL) {
+			xmlFreeDoc(doc);
+			ERROR("Invalid datastore configuration data.");
+			return (NULL);
+		}
+
+		for (node = doc->children->children; node != NULL; node = node->next) {
+			if (node->type != XML_ELEMENT_NODE) {
+				continue;
+			}
+
+			if (ret) {
+				xmlAddNextSibling(ret->last, xmlCopyNode(node, 1));
+			} else {
+				ret = xmlNewDoc(BAD_CAST "1.0");
+				xmlDocSetRootElement(ret, xmlCopyNode(node, 1));
+			}
+		}
+		xmlFreeDoc(doc);
+		return ret;
+	}
+}
+
 static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, const char* config, struct nc_err** e)
 {
 	int ret = EXIT_FAILURE;
 	int len;
-	char *data, *data_cfg = NULL, *data_stat, *model;
+	char *data_cfg = NULL, *data_stat, *model;
 	xmlDocPtr doc_cfg, doc_status = NULL, doc = NULL;
 	xmlNodePtr root, node;
 	xmlNsPtr ns;
@@ -4029,45 +4069,11 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		return (EXIT_FAILURE);
 	}
 
-	if (data_cfg == NULL || strcmp(data_cfg, "") == 0) {
-		doc = NULL;
+	doc = read_datastore_data(data_cfg);
+	if (doc == NULL || doc->children == NULL) {
 		/* config is empty */
-	} else {
-
-		if (asprintf(&data, "<config>%s</config>", data_cfg) == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-			*e = nc_err_new(NC_ERR_OP_FAILED);
-			if (source != NC_DATASTORE_CONFIG) {free(data_cfg);}
-			return (EXIT_FAILURE);
-		}
-		doc_cfg = xmlReadDoc(BAD_CAST data, NULL, NULL, NC_XMLREAD_OPTIONS);
-		free(data);
-
-		if (doc_cfg == NULL || doc_cfg->children == NULL || doc_cfg->children->children == NULL) {
-			xmlFreeDoc(doc_cfg);
-			*e = nc_err_new(NC_ERR_INVALID_VALUE);
-			nc_err_set(*e, NC_ERR_PARAM_MSG, "Invalid configuration data to validate.");
-			if (source != NC_DATASTORE_CONFIG) {free(data_cfg);}
-			return (EXIT_FAILURE);
-		}
-
-		/*
-		 * select correct config nodes for the selected datastore,
-		 * it must match the model's namespace (and root element name)
-		 */
-		for (root = doc_cfg->children->children; root != NULL; root = node) {
-			node = root->next;
-			if (is_model_root(root, ds->data_model)) {
-				//xmlUnlinkNode(root);
-				if (doc) {
-					xmlAddNextSibling(doc->last, xmlCopyNode(root, 1));
-				} else {
-					doc = xmlNewDoc(BAD_CAST "1.0");
-					xmlDocSetRootElement(doc, xmlCopyNode(root, 1));
-				}
-			}
-		}
-		xmlFreeDoc(doc_cfg);
+		xmlFreeDoc(doc);
+		doc = NULL;
 	}
 
 	if (source != NC_DATASTORE_CONFIG) {
@@ -4705,6 +4711,7 @@ static xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, cons
 	int ret;
 	keyList keys;
 	xmlDocPtr result;
+	xmlNodePtr node;
 
 	/* return NULL if both docs are NULL, or the other doc in case on of them is NULL */
 	if (first == NULL) {
@@ -4722,7 +4729,11 @@ static xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, cons
 	keys = get_keynode_list(data_model);
 
 	/* merge the documents */
-	ret = edit_merge(result, second->children, data_model, keys, NULL, NULL);
+	for (node = second->children; node != NULL; node = second->children) {
+		if ((ret = edit_merge(result, second->children, data_model, keys, NULL, NULL)) != EXIT_SUCCESS) {
+			break;
+		}
+	}
 
 	if (keys != NULL) {
 		keyListFree(keys);
@@ -5145,15 +5156,12 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 
 	/* find differences and call functions */
 	new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
-	if (new_data == NULL || strcmp(new_data, "") == 0) {
-		new = xmlNewDoc(BAD_CAST "1.0");
-	} else {
-		new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, NC_XMLREAD_OPTIONS);
-
-		/* add default values */
-		ncdflt_default_values(new, ds->ext_model, NCWD_MODE_ALL_TAGGED);
-	}
+	new = read_datastore_data(new_data);
 	free(new_data);
+
+	/* add default values */
+	ncdflt_default_values(new, ds->ext_model, NCWD_MODE_ALL_TAGGED);
+
 	if (new == NULL ) { /* cannot get or parse data */
 		e = nc_err_new(NC_ERR_OP_FAILED);
 		if (new_reply != NULL) {
@@ -5219,7 +5227,8 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 				xmlDocDumpMemory(new, &config, NULL);
 			}
 			if (ds->func.copyconfig(ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, (char*)config, &e) == EXIT_FAILURE) {
-				ERROR("transAPI apply failed");
+				ERROR("Updating XML tree after transAPI callbacks failed (%s)", e->message);
+				nc_err_free(e);
 			}
 			xmlFree(config);
 		}
@@ -5291,7 +5300,7 @@ API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const
 	struct ncds_ds* ds = NULL;
 	struct nc_filter *filter = NULL;
 	char* data = NULL, *config, *model = NULL, *data2, *op_name;
-	xmlDocPtr doc1, doc2, doc_merged = NULL, aux_doc;
+	xmlDocPtr doc1, doc2, doc_merged = NULL;
 	int len, dsid, i, j;
 	int ret = EXIT_FAILURE;
 	nc_reply* reply = NULL, *old_reply = NULL, *new_reply;
@@ -5348,31 +5357,7 @@ process_datastore:
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING)) {
 
 		old_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
-		if (old_data == NULL || strcmp(old_data, "") == 0) {
-			old = xmlNewDoc (BAD_CAST "1.0");
-		} else {
-			if (asprintf(&data2, "<data>%s</data>", old_data) == -1) {
-				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				free(old_data);
-				return nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
-			}
-			aux_doc = xmlReadDoc(BAD_CAST data2, NULL, NULL, NC_XMLREAD_OPTIONS);
-			if (aux_doc && aux_doc->children) {
-				old = xmlNewDoc(BAD_CAST "1.0");
-				for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
-					if (old->children == NULL) {
-						xmlDocSetRootElement(old, xmlCopyNode(aux_node, 1));
-					} else {
-						xmlAddSibling(old->children, xmlCopyNode(aux_node, 1));
-					}
-				}
-				xmlFreeDoc(aux_doc);
-			} else {
-				return nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
-			}
-			free(data2);
-		}
-		free(old_data);
+		old = read_datastore_data(old_data);
 		if (old == NULL) {/* cannot get or parse data */
 			if (e == NULL) { /* error not set */
 				e = nc_err_new(NC_ERR_OP_FAILED);
@@ -5380,6 +5365,7 @@ process_datastore:
 			}
 			return nc_reply_error(e);
 		}
+		free(old_data);
 	}
 
 	filter = NULL;
@@ -5446,7 +5432,12 @@ process_datastore:
 			/* caller provided callback function to retrieve status data */
 
 			/* convert configuration data into XML structure */
-			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, NC_XMLREAD_OPTIONS);
+			doc1 = read_datastore_data(data);
+			if (doc1 == NULL || doc1->children == NULL) {
+				/* empty */
+				xmlFreeDoc(doc1);
+				doc1 = NULL;
+			}
 
 			if (ds->get_state_xml != NULL) {
 				/* status data are directly in XML format */
@@ -5455,7 +5446,12 @@ process_datastore:
 				/* status data are provided as string, convert it into XML structure */
 				xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
 				data2 = ds->get_state(model, data, &e);
-				doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, NC_XMLREAD_OPTIONS);
+				doc2 = read_datastore_data(data2);
+				if (doc2 == NULL || doc2->children == NULL) {
+					/* empty */
+					xmlFreeDoc(doc2);
+					doc2 = NULL;
+				}
 				free(model);
 				free(data2);
 			} else {
@@ -5507,24 +5503,7 @@ process_datastore:
 					}
 				} /* else content is corrupted that will be detected by xmlReadDoc() */
 			}
-			if (asprintf(&data, "<data>%s</data>", data2) == -1) {
-				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				e = nc_err_new(NC_ERR_OP_FAILED);
-				free(data2);
-				break;
-			}
-			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, NC_XMLREAD_OPTIONS);
-			if (aux_doc && aux_doc->children) {
-				doc_merged = xmlNewDoc(BAD_CAST "1.0");
-				for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
-					if (doc_merged->children == NULL) {
-						xmlDocSetRootElement(doc_merged, xmlCopyNode(aux_node, 1));
-					} else {
-						xmlAddSibling(doc_merged->children, xmlCopyNode(aux_node, 1));
-					}
-				}
-				xmlFreeDoc(aux_doc);
-			}
+			doc_merged = read_datastore_data(data2);
 			free(data2);
 		}
 		free(data);
@@ -5594,29 +5573,7 @@ process_datastore:
 			}
 			break;
 		}
-		if (strcmp(data, "") == 0) {
-			doc_merged = xmlNewDoc(BAD_CAST "1.0");
-		} else {
-			data2 = data;
-			if (asprintf(&data, "<data>%s</data>", data2) == -1) {
-				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				e = nc_err_new(NC_ERR_OP_FAILED);
-				break;
-			}
-			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, NC_XMLREAD_OPTIONS);
-			if (aux_doc && aux_doc->children) {
-				doc_merged = xmlNewDoc(BAD_CAST "1.0");
-				for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
-					if (doc_merged->children == NULL) {
-						xmlDocSetRootElement(doc_merged, xmlCopyNode(aux_node, 1));
-					} else {
-						xmlAddSibling(doc_merged->children, xmlCopyNode(aux_node, 1));
-					}
-				}
-				xmlFreeDoc(aux_doc);
-			}
-			free(data2);
-		}
+		doc_merged = read_datastore_data(data);
 		free(data);
 
 		if (doc_merged == NULL) {
@@ -5966,24 +5923,20 @@ apply_editcopyconfig:
 						xmlFreeDoc(doc1);
 						break;
 					}
-					/* config == NULL */
-					if (asprintf(&config, "<config>%s</config>", data) == -1) {
-						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-						e = nc_err_new(NC_ERR_OP_FAILED);
-						nc_err_set(e, NC_ERR_PARAM_MSG, "libnetconf server internal error, see error log.");
-
-						/* cleanup */
-						xmlFreeDoc(doc1);
-						free(data);
-						data = NULL;
-						break;
-					}
+					doc2 = read_datastore_data(data);
 					free(data);
 					data = NULL;
+					if (doc2 == NULL) {
+						if (e == NULL ) {
+							ERROR("%s: Unable to process datastore data (%s:%d).", __func__, __FILE__, __LINE__);
+							e = nc_err_new(NC_ERR_OP_FAILED);
+						}
+						xmlFreeDoc(doc1);
+						break;
+					}
 
 					/* copy local data to "remote" document */
-					doc2 = xmlParseMemory(config, strlen(config));
-					xmlAddChildList(root, xmlCopyNodeList(doc2->children->children));
+					xmlAddChildList(root, xmlCopyNodeList(doc2->children));
 
 					xmlDocDumpFormatMemory(doc1, (xmlChar**) (&data), NULL, 1);
 					nc_url_upload(data, (char*) url, &e);
@@ -6405,11 +6358,8 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 							data = ds_rollback->datastore->func.getconfig(ds_rollback->datastore, session, NC_DATASTORE_RUNNING, &e);
 							nc_err_free(e);
 							e = NULL;
-							if (data == NULL || strcmp(data, "") == 0) {
-								old = xmlNewDoc(BAD_CAST "1.0");
-							} else {
-								old = xmlReadDoc(BAD_CAST data, NULL, NULL, NC_XMLREAD_OPTIONS);
-							}
+
+							old = read_datastore_data(data);
 							free(data);
 						}
 

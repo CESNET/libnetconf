@@ -1076,6 +1076,7 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 			return EXIT_FAILURE;
 		}
 		if ((config_doc = xmlReadMemory (aux, strlen(aux), NULL, NULL, NC_XMLREAD_OPTIONS)) == NULL) {
+			free(aux);
 			UNLOCK(file_ds);
 			ERROR("%s: reading source config failed.", __func__);
 			*error = nc_err_new(NC_ERR_OP_FAILED);
