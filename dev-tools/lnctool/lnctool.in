@@ -57,10 +57,22 @@ RNGLIB='@RNGLIB@'
 XSLTDIR='@XSLTDIR@'
 TEMPLATEDIR='@TEMPLATEDIR@'
 
+def pyang_output(arguments):
+	try:
+		data = subprocess.check_output(arguments)
+		return data
+	except AttributeError as e:
+		child = ""
+		child = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		(data, errdata) = child.communicate()
+		child.wait()
+		return data
+
 # Find pyang and use it to convert model to YIN
 def convert_to_yin(input_file_name, search_path):
 	# convert model to YIN using pyang
-	yin_data = subprocess.check_output(['pyang', '-p', search_path, '-f', 'yin', input_file_name])
+	arguments = ['pyang', '-p', search_path, '-f', 'yin', input_file_name]
+	yin_data = pyang_output(arguments)
 	model = libxml2.parseMemory(yin_data, len(yin_data))
 	# infer name of file from input file name
 	(yin_file_name, ext) = os.path.splitext(os.path.basename(input_file_name))
