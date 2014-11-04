@@ -5488,23 +5488,21 @@ process_datastore:
 				xmlFreeDoc(doc2);
 			}
 		} else {
-			data2 = data;
-			if (strncmp(data2, "<?xml", 5) == 0) {
+			if (strncmp(data, "<?xml", 5) == 0) {
 				/* We got a "real" XML document. We strip off the
 				 * declaration, so the thing below works.
 				 *
 				 * We just replace that with whitespaces, which is
 				 * harmless, but we'll free the correct pointer.
 				 */
-				end = index(data2, '>');
+				end = index(data, '>');
 				if (end != NULL) {
-					for (aux = data2; aux <= end; aux++) {
+					for (aux = data; aux <= end; aux++) {
 						*aux = ' ';
 					}
 				} /* else content is corrupted that will be detected by xmlReadDoc() */
 			}
-			doc_merged = read_datastore_data(data2);
-			free(data2);
+			doc_merged = read_datastore_data(data);
 		}
 		free(data);
 
