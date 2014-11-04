@@ -218,10 +218,36 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 
 static int transapi_apply_callbacks_recursive_own(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error) {
 	int ret;
+	char* msg;
 	struct nc_err *new_error = NULL;
 
 	if (tree->callback) {
-		DBG("Transapi calling callback %s with op %d.", tree->path, tree->op);
+		msg = malloc(strlen(tree->path)+128);
+		sprintf(msg, "Transapi calling callback %s with op ", tree->path);
+		if (tree->op & XMLDIFF_REORDER) {
+			strcat(msg, "REORDER | ");
+		}
+		if (tree->op & XMLDIFF_SIBLING) {
+			strcat(msg, "SIBLING | ");
+		}
+		if (tree->op & XMLDIFF_CHAIN) {
+			strcat(msg, "CHAIN | ");
+		}
+		if (tree->op & XMLDIFF_MOD) {
+			strcat(msg, "MOD | ");
+		}
+		if (tree->op & XMLDIFF_REM) {
+			strcat(msg, "REM | ");
+		}
+		if (tree->op & XMLDIFF_ADD) {
+			strcat(msg, "ADD | ");
+		}
+		if (tree->op == XMLDIFF_NONE) {
+			strcat(msg, "NONE | ");
+		}
+		strcpy(msg+strlen(msg)-3, ".");
+		DBG(msg);
+		free(msg);
 		ret = tree->callback(&(info->transapis->tapi->data_clbks->data), tree->op, tree->node, &new_error);
 		if (ret != EXIT_SUCCESS) {
 			ERROR("Callback for path %s failed (%d).", tree->path, ret);
@@ -338,10 +364,10 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 /* will be called by library after change in running datastore */
 int transapi_running_changed(struct ncds_ds* ds, xmlDocPtr old_doc, xmlDocPtr new_doc, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error)
 {
-	struct xmldiff_tree* diff = NULL;
+	struct xmldiff_tree* diff = NULL, *iter;
 	struct transapi_callbacks_info info;
-	int ret;
-	
+	int ret = 0;
+
 	if (xmldiff_diff(&diff, old_doc, new_doc, ds->ext_model_tree) == XMLDIFF_ERR) { /* failed to create diff list */
 		ERROR("Model \"%s\" transAPI: failed to create the tree of differences.", ds->data_model->name);
 		xmldiff_free(diff);
@@ -357,27 +383,31 @@ int transapi_running_changed(struct ncds_ds* ds, xmlDocPtr old_doc, xmlDocPtr ne
 			info.order = ds->transapis->tapi->clbks_order;
 			info.transapis = ds->transapis;
 
-			ret = transapi_apply_callbacks_recursive(&info, diff, erropt, error);
-			/* callbacks actually can also change datastore's data model by adding augment */
-			if (info.model != ds->ext_model) {
-				/* the model is changed, we are not going to use it anymore, but
-				 * keys created from the released model are invalid and freeing
-				 * it can cause segmentation fault, so fix it
-				 */
-				if (info.keys || info.keys->nodesetval) {
-					info.keys->nodesetval->nodeNr = 0;
+			for (iter = diff; iter != NULL; iter = iter->next) {
+				ret += transapi_apply_callbacks_recursive(&info, iter, erropt, error);
+				/* callbacks actually can also change datastore's data model by adding augment */
+				if (info.model != ds->ext_model) {
+					/* the model is changed, we are not going to use it anymore, but
+					 * keys created from the released model are invalid and freeing
+					 * it can cause segmentation fault, so fix it
+					 */
+					if (info.keys || info.keys->nodesetval) {
+						info.keys->nodesetval->nodeNr = 0;
+					}
+					info.model = ds->ext_model;
 				}
 			}
 
 			if (ret != EXIT_SUCCESS) {
 				if (erropt != NC_EDIT_ERROPT_CONT) {
 					/* revert not applied changes from XML tree */
-					transapi_revert_callbacks_recursive(&info, diff, erropt, error);
+					for (iter = diff; iter != NULL; iter = iter->next) {
+						transapi_revert_callbacks_recursive(&info, iter, erropt, error);
+					}
 				}
 
 				keyListFree(info.keys);
 				xmldiff_free(diff);
-				free(diff);
 				return EXIT_FAILURE;
 			}
 			keyListFree(info.keys);
@@ -387,6 +417,5 @@ int transapi_running_changed(struct ncds_ds* ds, xmlDocPtr old_doc, xmlDocPtr ne
 	}
 
 	xmldiff_free(diff);
-	free(diff);
 	return EXIT_SUCCESS;
 }

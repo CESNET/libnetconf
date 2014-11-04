@@ -1,4 +1,4 @@
-.TH "transapi" 3 "Thu Oct 9 2014" "Version 0.8.0-189_trunk" "libnetconf" \" -*- nroff -*-
+.TH "transapi" 3 "Mon Nov 3 2014" "Version 0.8.0-189_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -34,6 +34,10 @@ Structure to describe transAPI module and connect it statically with libnetconf 
 .RI "\fBNC_EDIT_ERROPT_TYPE\fP * \fBerropt\fP"
 .br
 .RI "\fIedit-config's error-option for the current transaction \fP"
+.ti -1c
+.RI "struct \fBtransapi_file_callbacks\fP * \fBfile_clbks\fP"
+.br
+.RI "\fITransapi file monitoring structure\&. \fP"
 .ti -1c
 .RI "xmlDocPtr(* \fBget_state\fP )(const xmlDocPtr, const xmlDocPtr, struct nc_err **)"
 .br
@@ -76,6 +80,10 @@ Transapi callback mapping structure\&.
 
 .PP
 edit-config's error-option for the current transaction 
+.SS "struct \fBtransapi_file_callbacks\fP* file_clbks"
+
+.PP
+Transapi file monitoring structure\&. 
 .SS "xmlDocPtr(* get_state)(const xmlDocPtr, const xmlDocPtr, struct nc_err **)"
 
 .PP

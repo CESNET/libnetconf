@@ -116,7 +116,8 @@ $(document).ready(function(){initNavTree('d0/db0/transapi_8h.html','../../');});
 
 <p>Functions implementing libnetconf TransAPI mechanism.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;libxml/tree.h&gt;</code><br/>
+<div class="textblock"><code>#include &lt;sys/inotify.h&gt;</code><br/>
+<code>#include &lt;libxml/tree.h&gt;</code><br/>
 <code>#include &quot;<a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="../../da/d41/error_8h_source.html">error.h</a>&quot;</code><br/>
 </div><div class="textblock"><div class="dynheader">
@@ -124,7 +125,7 @@ Include dependency graph for transapi.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d1/d31/transapi_8h__incl.png" border="0" usemap="#src_2transapi_8h" alt=""/></div>
 <map name="src_2transapi_8h" id="src_2transapi_8h">
-<area shape="rect" id="node5" href="../../d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="132,155,205,181"/><area shape="rect" id="node11" href="../../da/d41/error_8h.html" title="NETCONF error handling functions. " alt="" coords="174,80,233,107"/></map>
+<area shape="rect" id="node7" href="../../d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="247,155,320,181"/><area shape="rect" id="node13" href="../../da/d41/error_8h.html" title="NETCONF error handling functions. " alt="" coords="289,80,348,107"/></map>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
@@ -149,6 +150,9 @@ Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html">transapi_data_callbacks</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <a class="el" href="../../d6/dcb/structtransapi__data__callbacks.html" title="Same as transapi_data_callbacks. Using libxml2 structures for callbacks parameters. ">transapi_data_callbacks</a>. Using libxml2 structures for callbacks parameters.  <a href="../../d6/dcb/structtransapi__data__callbacks.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/df8/structtransapi__file__callbacks.html">transapi_file_callbacks</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions to call if the specified file is modified.  <a href="../../de/df8/structtransapi__file__callbacks.html#details">More...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/df8/structtransapi__rpc__callbacks.html">transapi_rpc_callbacks</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <a class="el" href="../../d0/df8/structtransapi__rpc__callbacks.html" title="Same as transapi_rpc_callbacks. Using libxml2 structures for callbacks parameters. ">transapi_rpc_callbacks</a>. Using libxml2 structures for callbacks parameters.  <a href="../../d0/df8/structtransapi__rpc__callbacks.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -157,7 +161,7 @@ Data Structures</h2></td></tr>
 Macros</h2></td></tr>
 <tr class="memitem:a57fb3eec15812810e88037588ec58377"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/db0/transapi_8h.html#a57fb3eec15812810e88037588ec58377">MAX_RPC_INPUT_ARGS</a>&#160;&#160;&#160;64</td></tr>
 <tr class="separator:a57fb3eec15812810e88037588ec58377"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab6b46fdad05fdb764492fcdea3cdeaba"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/db0/transapi_8h.html#ab6b46fdad05fdb764492fcdea3cdeaba">TRANSAPI_VERSION</a>&#160;&#160;&#160;4</td></tr>
+<tr class="memitem:ab6b46fdad05fdb764492fcdea3cdeaba"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/db0/transapi_8h.html#ab6b46fdad05fdb764492fcdea3cdeaba">TRANSAPI_VERSION</a>&#160;&#160;&#160;5</td></tr>
 <tr class="separator:ab6b46fdad05fdb764492fcdea3cdeaba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
@@ -228,7 +232,7 @@ Michal Vasko <a href="#" onclick="location.href='mai'+'lto:'+'mva'+'sk'+'o@c'+'e
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define TRANSAPI_VERSION&#160;&#160;&#160;4</td>
+          <td class="memname">#define TRANSAPI_VERSION&#160;&#160;&#160;5</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -292,7 +296,7 @@ Michal Vasko <a href="#" onclick="location.href='mai'+'lto:'+'mva'+'sk'+'o@c'+'e
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d0/db0/transapi_8h.html">transapi.h</a></li>
-    <li class="footer">Generated on Thu Oct 9 2014 14:18:34 for libnetconf by
+    <li class="footer">Generated on Mon Nov 3 2014 10:52:38 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

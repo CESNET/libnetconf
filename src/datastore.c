@@ -568,6 +568,316 @@ static struct ncds_ds *datastores_detach_ds(ncds_id id)
 	return retval;
 }
 
+/*
+ * type 0 - backup
+ * type 1 - restore
+ */
+static int fmon_cp_file(const char* source, const char* target, uint8_t type)
+{
+	char buf[4096];
+	int source_fd, target_fd;
+	mode_t mode;
+	uid_t uid;
+	gid_t gid;
+	struct stat finfo;
+	ssize_t r;
+
+	assert(source);
+	assert(target);
+
+	if ((source_fd = open(source, O_RDONLY|O_CLOEXEC)) == -1) {
+		if (type == 1) {
+			ERROR("Unable to open backup file \"%s\" (%s)", source, strerror(errno));
+		} else {
+			ERROR("Unable to open file \"%s\" to backup (%s)", source, strerror(errno));
+		}
+		return 1;
+	}
+
+
+	/* get source access rights */
+	if (fstat(source_fd, &finfo) == -1) {
+		if (type == 1) {
+			WARN("Unable to get information about backup file \"%s\" (%s).", source, strerror(errno));
+			VERB("Using default protection 0600 for restored file.");
+		} else {
+			WARN("Unable to get information about \"%s\" file to backup (%s).", source, strerror(errno));
+			VERB("Using default protection 0600 for backup file.");
+		}
+		mode = 00600;
+		uid = geteuid();
+		gid = getegid();
+	} else {
+		mode = finfo.st_mode;
+		uid = finfo.st_uid;
+		gid = finfo.st_gid;
+	}
+
+	if ((target_fd = open(target, O_WRONLY|O_CLOEXEC|O_CREAT|O_TRUNC, mode)) == -1) {
+		if (type == 1) {
+			ERROR("Unable to restore file \"%s\" (%s)", target, strerror(errno));
+		} else {
+			ERROR("Unable to create backup file \"%s\" (%s)", target, strerror(errno));
+		}
+		close(source_fd);
+		return 1;
+	}
+	fchown(target_fd, uid, gid);
+	fchmod(target_fd, mode); /* if not created, but rewriting some existing file */
+
+	for (;;) {
+		r = read(source_fd, buf, sizeof(buf));
+		if (r == 0) {
+			/* EOF */
+			break;
+		} else if (r < 0) {
+			/* ERROR */
+			if (type == 1) {
+				ERROR("Restoring file \"%s\" failed (%s).", target, strerror(errno));
+			} else {
+				ERROR("Creating backup file \"%s\" failed (%s).", target, strerror(errno));
+			}
+			break;
+		}
+		write(target_fd, buf, r);
+	}
+	close(source_fd);
+	close(target_fd);
+
+	return 0;
+}
+
+static int fmon_restore_file(const char* target)
+{
+	char *source = NULL;
+	int ret;
+
+	assert(target);
+
+	asprintf(&source, "%s.netconf", target);
+	ret = fmon_cp_file(source, target, 1);
+	free(source);
+
+	return ret;
+}
+
+static int fmon_backup_file(const char* source)
+{
+	char *target = NULL;
+	int ret;
+
+	assert(source);
+
+	asprintf(&target, "%s.netconf", source);
+	ret = fmon_cp_file(source, target, 0);
+	free(target);
+
+	return ret;
+}
+
+#define INOT_BUFLEN (10 * (sizeof(struct inotify_event) + NAME_MAX + 1))
+struct fmon {
+	int wd;
+	char flags;
+};
+#define FMON_FLAG_MODIFIED 0x01
+#define FMON_FLAG_IGNORED  0x02
+#define FMON_FLAG_UPDATE   0x04
+struct fmon_arg {
+	volatile int flag;
+	struct transapi_file_callbacks *fclbks;
+	struct ncds_ds *ds;
+};
+static void* transapi_fmon(void *arg)
+{
+	struct fmon_arg *fmon_arg = (struct fmon_arg*)arg;
+	struct transapi_file_callbacks *fclbks = fmon_arg->fclbks;
+	struct ncds_ds *ds = fmon_arg->ds;
+	int inotify, i, r, ret;
+	struct fmon *wds;
+	char buf[INOT_BUFLEN], *p;
+	struct inotify_event *e;
+	char* config;
+	xmlDocPtr config_doc;
+	xmlNodePtr node;
+	xmlBufferPtr running_buf = NULL;
+	struct nc_err *err;
+	int execflag;
+	struct nc_session* dummy_session;
+	nc_rpc* rpc;
+	nc_reply *reply;
+	struct nc_cpblts* cpblts;
+	const struct ncds_lockinfo *lockinfo;
+
+	/* note thread creator that we stored passed arguments and the original
+	 * fmon_arg structure can be rewritten.
+	 */
+	fmon_arg->flag = 0;
+
+	if ((inotify = inotify_init1(IN_CLOEXEC)) == -1) {
+		ERROR("File monitoring failed on initiating inotify (%s).", strerror(errno));
+		return NULL;
+	}
+
+	wds = malloc(sizeof(struct fmon) * fclbks->callbacks_count);
+	pthread_cleanup_push(free, wds);
+
+	running_buf = xmlBufferCreate();
+	pthread_cleanup_push((void (*)(void*))&xmlBufferFree, running_buf);
+
+	dummy_session = nc_session_dummy("fmon", "server", NULL, cpblts = nc_session_get_cpblts_default());
+	nc_cpblts_free(cpblts);
+	pthread_cleanup_push((void (*)(void*))&nc_session_free, dummy_session);
+
+	for (i = 0; i < fclbks->callbacks_count; i++) {
+		if ((wds[i].wd = inotify_add_watch(inotify, fclbks->callbacks[i].path, IN_MODIFY|IN_IGNORED|IN_CLOSE_WRITE)) == -1) {
+			ERROR("Unable to monitor \"%s\" (%s)", fclbks->callbacks[i].path, strerror(errno));
+		} else {
+			/* create backup file with current content */
+			fmon_backup_file(fclbks->callbacks[i].path);
+		}
+		wds[i].flags = 0;
+	}
+
+	for (;;) {
+		r = read(inotify, buf, INOT_BUFLEN);
+		if (r == 0) {
+			ERROR("Inotify failed (EOF).");
+			break;
+		} else if (r == -1) {
+			ERROR("Inotify failed (%s).", strerror(errno));
+			break;
+		}
+
+		for (p = buf; p < buf + r;) {
+			e = (struct inotify_event*)p;
+
+			/* get index of the modified file */
+			for (i = 0; i < fclbks->callbacks_count; i++) {
+				if (wds[i].wd == e->wd) {
+					break;
+				}
+			}
+
+			if (e->mask & IN_IGNORED) {
+				/* the file was removed or replaced */
+				if ((wds[i].wd = inotify_add_watch(inotify, fclbks->callbacks[i].path, IN_MODIFY|IN_IGNORED|IN_CLOSE_WRITE)) == -1) {
+					if (errno == ENOENT) {
+						/* the file was removed */
+						VERB("File \"%s\" was removed is no more monitored.", fclbks->callbacks[i].path);
+					} else {
+						/* the file was replaced, but we cannot access the new file */
+						ERROR("Unable to continue in monitoring \"%s\" file (%s)", fclbks->callbacks[i].path, strerror(errno));
+					}
+				} else {
+					/* file was replaced and we now monitor the newly created file */
+					/* set its modified flag to 2 to execute callback */
+					wds[i].flags |= FMON_FLAG_UPDATE;
+				}
+			} else {
+				if (e->mask & IN_MODIFY) {
+					wds[i].flags |= FMON_FLAG_MODIFIED;
+				}
+				if ((e->mask & IN_CLOSE_WRITE) && (wds[i].flags & FMON_FLAG_MODIFIED)) {
+					wds[i].flags |= FMON_FLAG_UPDATE;
+				}
+			}
+
+			if (wds[i].flags & FMON_FLAG_UPDATE) {
+
+				if (wds[i].flags & FMON_FLAG_IGNORED) {
+					/* ignore our own backup restore */
+					wds[i].flags = 0;
+					goto next_event;
+				}
+
+				/* null the variables */
+				wds[i].flags = 0;
+				config_doc = NULL;
+				execflag = 0;
+
+				/* check that datastore is not locked */
+				lockinfo = ds->func.get_lockinfo(ds, NC_DATASTORE_RUNNING);
+				if (lockinfo && lockinfo->sid) {
+					VERB("FMON: Running datastore is locked by \"%s\"", lockinfo->sid);
+					WARN("FMON: Replacing changed \"%s\" with the backup file.", fclbks->callbacks[i].path);
+
+					/* note that next update notification of this file should be ignored */
+					wds[i].flags = FMON_FLAG_IGNORED;
+
+					/* restore original content */
+					fmon_restore_file(fclbks->callbacks[i].path);
+
+					goto next_event;
+				}
+
+				fclbks->callbacks[i].func(fclbks->callbacks[i].path, &config_doc, &execflag);
+				if (config_doc != NULL) {
+					/*
+					 * store running to the datastore
+					 */
+
+					/* check returned data format */
+					if (config_doc->children == NULL) {
+						ERROR("Invalid configuration data returned from transAPI file monitoring callback.");
+						goto next_event;
+					}
+
+					/* perform changes in datastore (and on device if set so) */
+					if (execflag) {
+						/* update running datastore including execution of the transAPI callbacks */
+						rpc = ncxml_rpc_editconfig(NC_DATASTORE_RUNNING,
+								NC_DATASTORE_CONFIG, NC_EDIT_DEFOP_NOTSET,
+								NC_EDIT_ERROPT_ROLLBACK, NC_EDIT_TESTOPT_NOTSET,
+								config_doc->children->children);
+						xmlFreeDoc(config_doc);
+						if (rpc == NULL) {
+							ERROR("FMON: Preparing edit-config RPC failed.");
+							goto next_event;
+						}
+
+						reply = ncds_apply_rpc2all(dummy_session, rpc, NULL);
+						nc_rpc_free(rpc);
+						if (reply == NULL || nc_reply_get_type(reply) != NC_REPLY_OK) {
+							ERROR("FMON: Performing edit-config RPC failed.");
+						}
+						nc_reply_free(reply);
+
+					} else {
+						/* do not execute transAPI callbacks, only update running datastore */
+						for (node = config_doc->children; node != NULL; node = node->next) {
+							xmlNodeDump(running_buf, config_doc, node, 0, 0);
+						}
+						xmlFreeDoc(config_doc);
+						config = strdup((char*)xmlBufferContent(running_buf));
+						xmlBufferEmpty(running_buf);
+
+						ret = ds->func.editconfig(ds, NULL, NULL,
+								NC_DATASTORE_RUNNING, config,
+								NC_EDIT_DEFOP_NOTSET, NC_EDIT_ERROPT_ROLLBACK, &err);
+						free(config);
+
+						if (ret != 0 && ret != EXIT_RPC_NOT_APPLICABLE) {
+							ERROR("Failed to update running configuration (%s).", err ? err->message : "unknown error");
+							nc_err_free(err);
+						}
+					}
+
+					/* update backup file */
+					fmon_backup_file(fclbks->callbacks[i].path);
+				}
+			}
+next_event:
+			p += sizeof(struct inotify_event) + e->len;
+		}
+	}
+
+	pthread_cleanup_pop(1);
+	pthread_cleanup_pop(1);
+	pthread_cleanup_pop(1);
+	return NULL;
+}
+
 API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 {
 	nc_rpc * rpc_msg = NULL;
@@ -578,9 +888,11 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 	struct nc_err * err = NULL;
 	int nocpblts = 0, ret, retval = EXIT_SUCCESS;
 	xmlDocPtr running_doc = NULL, aux_doc1 = NULL, aux_doc2;
+	xmlNodePtr data_node;
 	char* new_running_config = NULL;
 	xmlBufferPtr running_buf = NULL;
 	struct transapi_list *tapi_iter;
+	static struct fmon_arg arg = {0, NULL, NULL};
 
 	if (id != NULL) {
 		/* initialize only the device connected with the given datastore ID */
@@ -643,7 +955,9 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 			if (running_doc == NULL) {
 				new_running_config = strdup("");
 			} else {
-				xmlNodeDump(running_buf, running_doc, xmlDocGetRootElement(running_doc), 0, 0);
+				for (data_node = running_doc->children; data_node != NULL; data_node = data_node->next) {
+					xmlNodeDump(running_buf, running_doc, data_node, 0, 0);
+				}
 				new_running_config = strdup((char*)xmlBufferContent(running_buf));
 				xmlBufferEmpty(running_buf);
 			}
@@ -673,7 +987,7 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 			/* Here is used high level function ncds_apply_rpc to apply startup configuration and use transAPI */
 			reply_msg = ncds_apply_rpc(ds_iter->datastore->id, dummy_session, rpc_msg);
 			if (reply_msg == NULL || (reply_msg != NCDS_RPC_NOT_APPLICABLE && nc_reply_get_type (reply_msg) != NC_REPLY_OK)) {
-				ERROR ("Failed perform initial copy of startup to running.");
+				ERROR("Failed perform initial copy of startup to running.");
 				nc_reply_free(reply_msg);
 				retval = EXIT_FAILURE;
 				goto cleanup;
@@ -683,6 +997,25 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 			/* prepare variable for the next loop */
 			free(new_running_config);
 			new_running_config = NULL;
+		}
+
+		/* start monitoring external files */
+		for (tapi_iter = ds_iter->datastore->transapis; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
+			if (tapi_iter->tapi->file_clbks != NULL) {
+				while(arg.flag) {
+					/* let the previous thread store pointers from passed argument */
+					usleep(50);
+				}
+				VERB("Starting file monitoring for %s data model.", ds_iter->datastore->data_model->name);
+				arg.flag = 1;
+				arg.fclbks = tapi_iter->tapi->file_clbks;
+				arg.ds = ds_iter->datastore;
+				ret = pthread_create(&(tapi_iter->tapi->fmon_thread), NULL, &transapi_fmon, &arg);
+				if (ret != 0) {
+					ERROR("Unable to create file monitoring thread for %s data model (%s)", ds_iter->datastore->data_model->name, strerror(ret));
+				}
+				pthread_detach(tapi_iter->tapi->fmon_thread);
+			}
 		}
 
 		/* prepare variable for the next loop */
@@ -953,11 +1286,11 @@ errorcleanup:
 }
 
 /* used in ssh.c and session.c */
-char** get_schemas_capabilities(void)
+char** get_schemas_capabilities(struct nc_cpblts *cpblts)
 {
 	struct model_list* listitem;
-	int i;
-	char **retval = NULL;
+	int i, j, k;
+	char **retval = NULL, *auxstr, *comma;
 
 	/* get size of the output */
 	for (i = 0, listitem = models_list; listitem != NULL; listitem = listitem->next, i++);
@@ -969,12 +1302,52 @@ char** get_schemas_capabilities(void)
 	}
 
 	for (i = 0, listitem = models_list; listitem != NULL; listitem = listitem->next, i++) {
-		if (asprintf(&(retval[i]), "%s?module=%s%s%s", listitem->model->ns, listitem->model->name,
+		if (asprintf(&(retval[i]), "%s?module=%s%s%s%s", listitem->model->ns, listitem->model->name,
 				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? "&amp;revision=" : "",
-				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? listitem->model->version : "") == -1) {
+				(listitem->model->version != NULL && strnonempty(listitem->model->version)) ? listitem->model->version : "",
+				(listitem->model->features != NULL) ? "&amp;features=" : "") == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			/* move iterator back, then iterator will go back to the current value and will rewrite it*/
 			i--;
+			continue;
+		}
+		if (listitem->model->features != NULL) {
+			comma = "";
+			for (j = 0; listitem->model->features[j] != NULL; j++) {
+				if (listitem->model->features[j]->enabled) {
+					if (strcmp(listitem->model->name, "ietf-netconf") == 0) {
+						/* for netconf base data model, find the features in the
+						 * capabilities list
+						 */
+						if (cpblts == NULL) {
+							/* we don't know capabilities, all features are disabled */
+							break;
+						}
+
+						for (k = 0; cpblts->list[k] != NULL; k++) {
+							if (strstr(cpblts->list[k], listitem->model->features[j]->name) != NULL) {
+								/* we got the capability, stop searching and note that we have found it */
+								k = -1;
+								break;
+							}
+						}
+						if (k >= 0) {
+							/* capability not found, continue with the next feature */
+							continue;
+						}
+					}
+
+					asprintf(&auxstr, "%s%s%s", retval[i], comma, listitem->model->features[j]->name);
+					free(retval[i]);
+					retval[i] = auxstr;
+					auxstr = NULL;
+					comma = ",";
+				}
+			}
+			if (comma[0] == '\0') {
+				/* no feature printed, hide features variable */
+				retval[i][strlen(retval[i])-14] = '\0';
+			}
 		}
 	}
 
@@ -1414,6 +1787,7 @@ static struct transapi_internal* transapi_new_shared(const char* callbacks_path)
 	int (*init_func)(xmlDocPtr *) = NULL;
 	struct transapi_data_callbacks *data_clbks = NULL;
 	struct transapi_rpc_callbacks *rpc_clbks = NULL;
+	struct transapi_file_callbacks *file_clbks = NULL;
 	int *ver, ver_default = 1;
 	int *modified;
 	NC_EDIT_ERROPT_TYPE *erropt;
@@ -1473,6 +1847,10 @@ static struct transapi_internal* transapi_new_shared(const char* callbacks_path)
 		WARN("%s: Unable to find \"callbacks_order\" variable. Guessing Leaf To Root.", __func__);
 	}
 
+	if ((file_clbks = dlsym (transapi_module, "file_clbks")) == NULL) {
+		VERB("No file monitoring callbacks in %s transAPI module.", callbacks_path);
+	}
+
 	/* callbacks work with configuration data */
 	/* get clbks structure */
 	if ((data_clbks = dlsym (transapi_module, "clbks")) == NULL) {
@@ -1501,6 +1879,7 @@ static struct transapi_internal* transapi_new_shared(const char* callbacks_path)
 	transapi->ns_mapping = (struct ns_pair*)ns_mapping;
 	transapi->data_clbks = data_clbks;
 	transapi->rpc_clbks = rpc_clbks;
+	transapi->file_clbks = file_clbks;
 	/* Convert clbks_order to enum */
 	transapi->clbks_order = TRANSAPI_CLBCKS_ORDER_DEFAULT;
 	if (clbks_order != NULL)
@@ -3286,9 +3665,14 @@ static int ncds_update_callbacks(struct ncds_ds* ds)
 
 static void transapi_unload(struct transapi_internal* tapi)
 {
-	/* and close function is defined */
+	/* stop the thread monitoring the files */
+	/* if close function is defined */
 	if (tapi->close != NULL) {
 		tapi->close();
+	}
+	if (tapi->file_clbks != NULL && tapi->file_clbks->callbacks_count > 0) {
+		VERB("Stopping FMON thread.");
+		pthread_cancel(tapi->fmon_thread);
 	}
 	if (tapi->module != &error_area && dlclose(tapi->module)) {
 		ERROR("%s: Unloading transAPI module failed: %s:", __func__, dlerror());
@@ -3602,11 +3986,51 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 	return (retval);
 }
 
+static xmlDocPtr read_datastore_data(const char *data)
+{
+	char *config = NULL;
+	xmlDocPtr doc, ret = NULL;
+	xmlNodePtr node;
+
+	if (data == NULL || strcmp(data, "") == 0) {
+		/* config is empty */
+		return xmlNewDoc (BAD_CAST "1.0");
+	} else {
+		if (asprintf(&config, "<config>%s</config>", data) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
+		doc = xmlReadDoc(BAD_CAST config, NULL, NULL, NC_XMLREAD_OPTIONS);
+		free(config);
+
+		if (doc == NULL || doc->children == NULL) {
+			xmlFreeDoc(doc);
+			ERROR("Invalid datastore configuration data.");
+			return (NULL);
+		}
+
+		for (node = doc->children->children; node != NULL; node = node->next) {
+			if (node->type != XML_ELEMENT_NODE) {
+				continue;
+			}
+
+			if (ret) {
+				xmlAddNextSibling(ret->last, xmlCopyNode(node, 1));
+			} else {
+				ret = xmlNewDoc(BAD_CAST "1.0");
+				xmlDocSetRootElement(ret, xmlCopyNode(node, 1));
+			}
+		}
+		xmlFreeDoc(doc);
+		return ret;
+	}
+}
+
 static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, const char* config, struct nc_err** e)
 {
 	int ret = EXIT_FAILURE;
 	int len;
-	char *data, *data_cfg = NULL, *data_stat, *model;
+	char *data_cfg = NULL, *data_stat, *model;
 	xmlDocPtr doc_cfg, doc_status = NULL, doc = NULL;
 	xmlNodePtr root, node;
 	xmlNsPtr ns;
@@ -3645,45 +4069,11 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		return (EXIT_FAILURE);
 	}
 
-	if (data_cfg == NULL || strcmp(data_cfg, "") == 0) {
-		doc = NULL;
+	doc = read_datastore_data(data_cfg);
+	if (doc == NULL || doc->children == NULL) {
 		/* config is empty */
-	} else {
-
-		if (asprintf(&data, "<config>%s</config>", data_cfg) == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-			*e = nc_err_new(NC_ERR_OP_FAILED);
-			if (source != NC_DATASTORE_CONFIG) {free(data_cfg);}
-			return (EXIT_FAILURE);
-		}
-		doc_cfg = xmlReadDoc(BAD_CAST data, NULL, NULL, NC_XMLREAD_OPTIONS);
-		free(data);
-
-		if (doc_cfg == NULL || doc_cfg->children == NULL || doc_cfg->children->children == NULL) {
-			xmlFreeDoc(doc_cfg);
-			*e = nc_err_new(NC_ERR_INVALID_VALUE);
-			nc_err_set(*e, NC_ERR_PARAM_MSG, "Invalid configuration data to validate.");
-			if (source != NC_DATASTORE_CONFIG) {free(data_cfg);}
-			return (EXIT_FAILURE);
-		}
-
-		/*
-		 * select correct config nodes for the selected datastore,
-		 * it must match the model's namespace (and root element name)
-		 */
-		for (root = doc_cfg->children->children; root != NULL; root = node) {
-			node = root->next;
-			if (is_model_root(root, ds->data_model)) {
-				//xmlUnlinkNode(root);
-				if (doc) {
-					xmlAddNextSibling(doc->last, xmlCopyNode(root, 1));
-				} else {
-					doc = xmlNewDoc(BAD_CAST "1.0");
-					xmlDocSetRootElement(doc, xmlCopyNode(root, 1));
-				}
-			}
-		}
-		xmlFreeDoc(doc_cfg);
+		xmlFreeDoc(doc);
+		doc = NULL;
 	}
 
 	if (source != NC_DATASTORE_CONFIG) {
@@ -4321,6 +4711,7 @@ static xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, cons
 	int ret;
 	keyList keys;
 	xmlDocPtr result;
+	xmlNodePtr node;
 
 	/* return NULL if both docs are NULL, or the other doc in case on of them is NULL */
 	if (first == NULL) {
@@ -4338,7 +4729,11 @@ static xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, cons
 	keys = get_keynode_list(data_model);
 
 	/* merge the documents */
-	ret = edit_merge(result, second->children, data_model, keys, NULL, NULL);
+	for (node = second->children; node != NULL; node = second->children) {
+		if ((ret = edit_merge(result, second->children, data_model, keys, NULL, NULL)) != EXIT_SUCCESS) {
+			break;
+		}
+	}
 
 	if (keys != NULL) {
 		keyListFree(keys);
@@ -4761,15 +5156,12 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 
 	/* find differences and call functions */
 	new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
-	if (new_data == NULL || strcmp(new_data, "") == 0) {
-		new = xmlNewDoc(BAD_CAST "1.0");
-	} else {
-		new = xmlReadDoc(BAD_CAST new_data, NULL, NULL, NC_XMLREAD_OPTIONS);
-
-		/* add default values */
-		ncdflt_default_values(new, ds->ext_model, NCWD_MODE_ALL_TAGGED);
-	}
+	new = read_datastore_data(new_data);
 	free(new_data);
+
+	/* add default values */
+	ncdflt_default_values(new, ds->ext_model, NCWD_MODE_ALL_TAGGED);
+
 	if (new == NULL ) { /* cannot get or parse data */
 		e = nc_err_new(NC_ERR_OP_FAILED);
 		if (new_reply != NULL) {
@@ -4835,7 +5227,8 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 				xmlDocDumpMemory(new, &config, NULL);
 			}
 			if (ds->func.copyconfig(ds, session, NULL, NC_DATASTORE_RUNNING, NC_DATASTORE_CONFIG, (char*)config, &e) == EXIT_FAILURE) {
-				ERROR("transAPI apply failed");
+				ERROR("Updating XML tree after transAPI callbacks failed (%s)", e->message);
+				nc_err_free(e);
 			}
 			xmlFree(config);
 		}
@@ -4907,7 +5300,7 @@ API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const
 	struct ncds_ds* ds = NULL;
 	struct nc_filter *filter = NULL;
 	char* data = NULL, *config, *model = NULL, *data2, *op_name;
-	xmlDocPtr doc1, doc2, doc_merged = NULL, aux_doc;
+	xmlDocPtr doc1, doc2, doc_merged = NULL;
 	int len, dsid, i, j;
 	int ret = EXIT_FAILURE;
 	nc_reply* reply = NULL, *old_reply = NULL, *new_reply;
@@ -4964,12 +5357,7 @@ process_datastore:
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING)) {
 
 		old_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
-		if (old_data == NULL || strcmp(old_data, "") == 0) {
-			old = xmlNewDoc (BAD_CAST "1.0");
-		} else {
-			old = xmlReadDoc(BAD_CAST old_data, NULL, NULL, NC_XMLREAD_OPTIONS);
-		}
-		free(old_data);
+		old = read_datastore_data(old_data);
 		if (old == NULL) {/* cannot get or parse data */
 			if (e == NULL) { /* error not set */
 				e = nc_err_new(NC_ERR_OP_FAILED);
@@ -4977,6 +5365,7 @@ process_datastore:
 			}
 			return nc_reply_error(e);
 		}
+		free(old_data);
 	}
 
 	filter = NULL;
@@ -5043,7 +5432,12 @@ process_datastore:
 			/* caller provided callback function to retrieve status data */
 
 			/* convert configuration data into XML structure */
-			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, NC_XMLREAD_OPTIONS);
+			doc1 = read_datastore_data(data);
+			if (doc1 == NULL || doc1->children == NULL) {
+				/* empty */
+				xmlFreeDoc(doc1);
+				doc1 = NULL;
+			}
 
 			if (ds->get_state_xml != NULL) {
 				/* status data are directly in XML format */
@@ -5052,7 +5446,12 @@ process_datastore:
 				/* status data are provided as string, convert it into XML structure */
 				xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
 				data2 = ds->get_state(model, data, &e);
-				doc2 = xmlReadDoc(BAD_CAST data2, NULL, NULL, NC_XMLREAD_OPTIONS);
+				doc2 = read_datastore_data(data2);
+				if (doc2 == NULL || doc2->children == NULL) {
+					/* empty */
+					xmlFreeDoc(doc2);
+					doc2 = NULL;
+				}
 				free(model);
 				free(data2);
 			} else {
@@ -5089,40 +5488,21 @@ process_datastore:
 				xmlFreeDoc(doc2);
 			}
 		} else {
-			data2 = data;
-			if (strncmp(data2, "<?xml", 5) == 0) {
+			if (strncmp(data, "<?xml", 5) == 0) {
 				/* We got a "real" XML document. We strip off the
 				 * declaration, so the thing below works.
 				 *
 				 * We just replace that with whitespaces, which is
 				 * harmless, but we'll free the correct pointer.
 				 */
-				end = index(data2, '>');
+				end = index(data, '>');
 				if (end != NULL) {
-					for (aux = data2; aux <= end; aux++) {
+					for (aux = data; aux <= end; aux++) {
 						*aux = ' ';
 					}
 				} /* else content is corrupted that will be detected by xmlReadDoc() */
 			}
-			if (asprintf(&data, "<data>%s</data>", data2) == -1) {
-				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				e = nc_err_new(NC_ERR_OP_FAILED);
-				free(data2);
-				break;
-			}
-			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, NC_XMLREAD_OPTIONS);
-			if (aux_doc && aux_doc->children) {
-				doc_merged = xmlNewDoc(BAD_CAST "1.0");
-				for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
-					if (doc_merged->children == NULL) {
-						xmlDocSetRootElement(doc_merged, xmlCopyNode(aux_node, 1));
-					} else {
-						xmlAddSibling(doc_merged->children, xmlCopyNode(aux_node, 1));
-					}
-				}
-				xmlFreeDoc(aux_doc);
-			}
-			free(data2);
+			doc_merged = read_datastore_data(data);
 		}
 		free(data);
 
@@ -5191,29 +5571,7 @@ process_datastore:
 			}
 			break;
 		}
-		if (strcmp(data, "") == 0) {
-			doc_merged = xmlNewDoc(BAD_CAST "1.0");
-		} else {
-			data2 = data;
-			if (asprintf(&data, "<data>%s</data>", data2) == -1) {
-				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				e = nc_err_new(NC_ERR_OP_FAILED);
-				break;
-			}
-			aux_doc = xmlReadDoc(BAD_CAST data, NULL, NULL, NC_XMLREAD_OPTIONS);
-			if (aux_doc && aux_doc->children) {
-				doc_merged = xmlNewDoc(BAD_CAST "1.0");
-				for (aux_node = aux_doc->children->children; aux_node != NULL; aux_node = aux_node->next) {
-					if (doc_merged->children == NULL) {
-						xmlDocSetRootElement(doc_merged, xmlCopyNode(aux_node, 1));
-					} else {
-						xmlAddSibling(doc_merged->children, xmlCopyNode(aux_node, 1));
-					}
-				}
-				xmlFreeDoc(aux_doc);
-			}
-			free(data2);
-		}
+		doc_merged = read_datastore_data(data);
 		free(data);
 
 		if (doc_merged == NULL) {
@@ -5563,24 +5921,20 @@ apply_editcopyconfig:
 						xmlFreeDoc(doc1);
 						break;
 					}
-					/* config == NULL */
-					if (asprintf(&config, "<config>%s</config>", data) == -1) {
-						ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-						e = nc_err_new(NC_ERR_OP_FAILED);
-						nc_err_set(e, NC_ERR_PARAM_MSG, "libnetconf server internal error, see error log.");
-
-						/* cleanup */
-						xmlFreeDoc(doc1);
-						free(data);
-						data = NULL;
-						break;
-					}
+					doc2 = read_datastore_data(data);
 					free(data);
 					data = NULL;
+					if (doc2 == NULL) {
+						if (e == NULL ) {
+							ERROR("%s: Unable to process datastore data (%s:%d).", __func__, __FILE__, __LINE__);
+							e = nc_err_new(NC_ERR_OP_FAILED);
+						}
+						xmlFreeDoc(doc1);
+						break;
+					}
 
 					/* copy local data to "remote" document */
-					doc2 = xmlParseMemory(config, strlen(config));
-					xmlAddChildList(root, xmlCopyNodeList(doc2->children->children));
+					xmlAddChildList(root, xmlCopyNodeList(doc2->children));
 
 					xmlDocDumpFormatMemory(doc1, (xmlChar**) (&data), NULL, 1);
 					nc_url_upload(data, (char*) url, &e);
@@ -6002,11 +6356,8 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 							data = ds_rollback->datastore->func.getconfig(ds_rollback->datastore, session, NC_DATASTORE_RUNNING, &e);
 							nc_err_free(e);
 							e = NULL;
-							if (data == NULL || strcmp(data, "") == 0) {
-								old = xmlNewDoc(BAD_CAST "1.0");
-							} else {
-								old = xmlReadDoc(BAD_CAST data, NULL, NULL, NC_XMLREAD_OPTIONS);
-							}
+
+							old = read_datastore_data(data);
 							free(data);
 						}
 

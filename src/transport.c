@@ -94,7 +94,7 @@ struct nc_mngmt_server {
 void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supported);
 
 /* definition in datastore.c */
-char** get_schemas_capabilities(void);
+char** get_schemas_capabilities(struct nc_cpblts *cpblts);
 
 extern struct nc_shared_info *nc_info;
 extern char* server_capabilities; /* from datastore, only for server side */
@@ -963,7 +963,7 @@ API struct nc_session *nc_session_accept_inout(const struct nc_cpblts* capabilit
 	retval->status = NC_SESSION_STATUS_WORKING;
 
 	/* add namespaces of used datastores as announced capabilities */
-	if ((nslist = get_schemas_capabilities()) != NULL) {
+	if ((nslist = get_schemas_capabilities(server_cpblts)) != NULL) {
 		for(i = 0; nslist[i] != NULL; i++) {
 			nc_cpblts_add(server_cpblts, nslist[i]);
 			free(nslist[i]);

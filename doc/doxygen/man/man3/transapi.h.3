@@ -1,4 +1,4 @@
-.TH "src/transapi.h" 3 "Thu Oct 9 2014" "Version 0.8.0-189_trunk" "libnetconf" \" -*- nroff -*-
+.TH "src/transapi.h" 3 "Mon Nov 3 2014" "Version 0.8.0-189_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -9,6 +9,8 @@ Functions implementing libnetconf TransAPI mechanism\&.
 .SH SYNOPSIS
 .br
 .PP
+\fC#include <sys/inotify\&.h>\fP
+.br
 \fC#include <libxml/tree\&.h>\fP
 .br
 \fC#include 'netconf\&.h'\fP
@@ -35,6 +37,10 @@ Functions implementing libnetconf TransAPI mechanism\&.
 .br
 .RI "\fISame as \fBtransapi_data_callbacks\fP\&. Using libxml2 structures for callbacks parameters\&. \fP"
 .ti -1c
+.RI "struct \fBtransapi_file_callbacks\fP"
+.br
+.RI "\fIFunctions to call if the specified file is modified\&. \fP"
+.ti -1c
 .RI "struct \fBtransapi_rpc_callbacks\fP"
 .br
 .RI "\fISame as \fBtransapi_rpc_callbacks\fP\&. Using libxml2 structures for callbacks parameters\&. \fP"
@@ -46,7 +52,7 @@ Functions implementing libnetconf TransAPI mechanism\&.
 .RI "#define \fBMAX_RPC_INPUT_ARGS\fP   64"
 .br
 .ti -1c
-.RI "#define \fBTRANSAPI_VERSION\fP   4"
+.RI "#define \fBTRANSAPI_VERSION\fP   5"
 .br
 .in -1c
 .SS "Enumerations"
@@ -94,7 +100,7 @@ This software is provided ``as is, and any express or implied warranties, includ
 .PP 
 .SS "#define MAX_RPC_INPUT_ARGS   64"
 
-.SS "#define TRANSAPI_VERSION   4"
+.SS "#define TRANSAPI_VERSION   5"
 
 .SH "Enumeration Type Documentation"
 .PP 
