@@ -715,7 +715,7 @@ static void* transapi_fmon(void *arg)
 	fmon_arg->flag = 0;
 
 	if ((inotify = inotify_init1(IN_CLOEXEC)) == -1) {
-		ERROR("File monitoring failed on initiating inotify (%s).", strerror(errno));
+		ERROR("FMON thread failed on initiating inotify (%s).", strerror(errno));
 		return NULL;
 	}
 
@@ -819,7 +819,7 @@ static void* transapi_fmon(void *arg)
 
 					/* check returned data format */
 					if (config_doc->children == NULL) {
-						ERROR("Invalid configuration data returned from transAPI file monitoring callback.");
+						ERROR("Invalid configuration data returned from transAPI FMON callback.");
 						goto next_event;
 					}
 
@@ -1006,13 +1006,13 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 					/* let the previous thread store pointers from passed argument */
 					usleep(50);
 				}
-				VERB("Starting file monitoring for %s data model.", ds_iter->datastore->data_model->name);
+				VERB("Starting FMON thread for %s data model.", ds_iter->datastore->data_model->name);
 				arg.flag = 1;
 				arg.fclbks = tapi_iter->tapi->file_clbks;
 				arg.ds = ds_iter->datastore;
 				ret = pthread_create(&(tapi_iter->tapi->fmon_thread), NULL, &transapi_fmon, &arg);
 				if (ret != 0) {
-					ERROR("Unable to create file monitoring thread for %s data model (%s)", ds_iter->datastore->data_model->name, strerror(ret));
+					ERROR("Unable to create FMON thread for %s data model (%s)", ds_iter->datastore->data_model->name, strerror(ret));
 				}
 				pthread_detach(tapi_iter->tapi->fmon_thread);
 			}
@@ -1848,7 +1848,7 @@ static struct transapi_internal* transapi_new_shared(const char* callbacks_path)
 	}
 
 	if ((file_clbks = dlsym (transapi_module, "file_clbks")) == NULL) {
-		VERB("No file monitoring callbacks in %s transAPI module.", callbacks_path);
+		VERB("No FMON callback in %s transAPI module.", callbacks_path);
 	}
 
 	/* callbacks work with configuration data */
