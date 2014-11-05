@@ -304,8 +304,6 @@ install: all install-devel install-doc $(INSTALLPYAPI)
 	if test "$(SETBIT)" = "0"; then \
 		chmod a+rwx $(NC_WORKINGDIR_PATH); \
 	fi;
-	# remove sessions monitoring file, we changed its format and it must be replaced
-	rm -rf $(NC_WORKINGDIR_PATH)/libnetconf_sessions.bin
 
 .PHONY: install-devel
 install-devel: $(LNCTOOL) $(NAME).la $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR) $(NAME).pc
