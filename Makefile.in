@@ -288,7 +288,7 @@ install: all install-devel install-doc $(INSTALLPYAPI)
 	chmod 700 $(NC_WORKINGDIR_PATH)
 	$(INSTALL_DATA) models/ietf-netconf-acm*.rng models/ietf-netconf-acm-schematron.xsl $(NC_WORKINGDIR_PATH)/
 	$(INSTALL_DATA) models/yin2yang.xsl $(NC_WORKINGDIR_PATH)/
-	if test "$$(($(SETBIT) & 1))" = "1"; then \
+	@if test "$$(($(SETBIT) & 1))" = "1"; then \
 		if test -n "$(SETUSER)"; then \
 			chown $(SETUSER) $(NC_WORKINGDIR_PATH) || \
 				echo "WARNING: invalid group $(SETUSER)"; \
