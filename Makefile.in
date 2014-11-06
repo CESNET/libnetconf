@@ -87,6 +87,9 @@ PYAPI = pyapi
 INSTALLPYAPI = install-pyapi
 UNINSTALLPYAPI = uninstall-pyapi
 DOXYGEN_CONFIG_PYTHON = Doxyfile.python
+PYHDRS = doc/python/netconf.py
+PYSRCS = python/netconf.c \
+	python/session.c
 endif
 
 INCLUDES= -I$(abs_srcdir)/src
@@ -190,10 +193,6 @@ LNCDS_FILES = dev-tools/lncdatastore/main.c \
 	dev-tools/lncdatastore/mreadline.c \
 	dev-tools/lncdatastore/mreadline.h \
 	dev-tools/lncdatastore/Makefile.in
-
-PYHDRS = doc/python/netconf.py
-PYSRCS = python/netconf.c \
-	python/session.c
 
 XML_SRCS = models/ietf-netconf-acm-data.rng.in
 
