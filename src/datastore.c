@@ -1001,7 +1001,7 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 
 		/* start monitoring external files */
 		for (tapi_iter = ds_iter->datastore->transapis; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
-			if (tapi_iter->tapi->file_clbks != NULL) {
+			if (tapi_iter->tapi->file_clbks != NULL && tapi_iter->tapi->file_clbks->callbacks_count != 0) {
 				while(arg.flag) {
 					/* let the previous thread store pointers from passed argument */
 					usleep(50);
