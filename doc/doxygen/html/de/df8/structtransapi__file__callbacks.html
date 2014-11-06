@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.5"/>
-<title>libnetconf: NETCONF Access Control Module (NACM)</title>
+<title>libnetconf: transapi_file_callbacks Struct Reference</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -47,9 +47,9 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="../../index.html"><span>Main&#160;Page</span></a></li>
-      <li class="current"><a href="../../pages.html"><span>Related&#160;Pages</span></a></li>
+      <li><a href="../../pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="../../modules.html"><span>Modules</span></a></li>
-      <li><a href="../../annotated.html"><span>Data&#160;Structures</span></a></li>
+      <li class="current"><a href="../../annotated.html"><span>Data&#160;Structures</span></a></li>
       <li><a href="../../files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -69,6 +69,13 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
       </li>
     </ul>
   </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="../../annotated.html"><span>Data&#160;Structures</span></a></li>
+      <li><a href="../../classes.html"><span>Data&#160;Structure&#160;Index</span></a></li>
+      <li><a href="../../functions.html"><span>Data&#160;Fields</span></a></li>
+    </ul>
+  </div>
 </div><!-- top -->
 <div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
@@ -81,7 +88,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
   </div>
 </div>
 <script type="text/javascript">
-$(document).ready(function(){initNavTree('dd/d59/nacm.html','../../');});
+$(document).ready(function(){initNavTree('de/df8/structtransapi__file__callbacks.html','../../');});
 </script>
 <div id="doc-content">
 <!-- window showing the filter options -->
@@ -99,47 +106,91 @@ $(document).ready(function(){initNavTree('dd/d59/nacm.html','../../');});
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#pub-attribs">Data Fields</a>  </div>
   <div class="headertitle">
-<div class="title">NETCONF Access Control Module (NACM) </div>  </div>
+<div class="title">transapi_file_callbacks Struct Reference<div class="ingroups"><a class="el" href="../../d8/d55/group__transapi.html">Transaction API</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>NACM is a transparent subsystem of libnetconf. It is activated using <a class="el" href="../../d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6">NC_INIT_NACM</a> flag in the <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a> function. No other action is required to use NACM in libnetconf. All NACM rules and settings are controlled via standard NETCONF operations since NACM subsystem provides implicit datastore accessible with the <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore. ">ncds_apply_rpc()</a> function with the ID parameter set to the value <a class="el" href="../../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a" title="Datastore ID to access libnetconf&#39;s internal datastores such as notifications, monitoring, etc. ">NCDS_INTERNAL_ID</a> (0).</p>
-<p>libnetconf supports usage of the system groups (/etc/group) in the access control rule-lists. To disable this feature, &lt;enable-external-groups&gt; value must be set to false:</p>
-<div class="fragment"><div class="line">&lt;nacm xmlns=<span class="stringliteral">&quot;urn:ietf:params:xml:ns:yang:ietf-netconf-acm&quot;</span>&gt;</div>
-<div class="line">  &lt;enable-external-groups&gt;<span class="keyword">false</span>&lt;/enable-external-groups&gt;</div>
-<div class="line">&lt;/nacm&gt;</div>
-</div><!-- fragment --><h1><a class="anchor" id="nacm-recovery"></a>
-Recovery Session</h1>
-<p>Recovery session serves for setting up initial access rules or to repair a broken access control configuration. If a session is recognized as recovery, NACM subsystem is completely bypassed.</p>
-<p>By default, libnetconf considers all sessions of the user with the system UID equal zero as recovery. To change this default value to a UID of any user, use configure's <a class="el" href="../../d9/d87/install.html#configure-nacm-recovery">--with-nacm-recovery-uid</a> option.</p>
-<h2><a class="anchor" id="nacm-recovery-init"></a>
-Initial operation</h2>
-<p>According to <a href="http://tools.ietf.org/html/rfc6536" title="RFC 6536">RFC 6536</a>, libnetconf's NACM subsystem is initially set to allow reading (permitted read-default), refuse writing (denied write-default) and allow operation execution (permitted exec-default).</p>
-<dl class="section note"><dt>Note</dt><dd>Some operations or data have their specific access control settings defined in their data models. These settings override the described default settings.</dd></dl>
-<p>To change this initial settings, user has to access NACM datastore via a recovery session (since any write operation is denied) and set required access control rules.</p>
-<p>For example, to change default write rule from deny to permit, use edit-config operation to create (merge) the following configuration data:</p>
-<div class="fragment"><div class="line">&lt;nacm xmlns=<span class="stringliteral">&quot;urn:ietf:params:xml:ns:yang:ietf-netconf-acm&quot;</span>&gt;</div>
-<div class="line">  &lt;write-<span class="keywordflow">default</span>&gt;permit&lt;/write-<span class="keywordflow">default</span>&gt;</div>
-<div class="line">&lt;/nacm&gt;</div>
-</div><!-- fragment --><p>To guarantee all access rights to a specific users group, use edit-config operation to create (merge) the following rule:</p>
-<div class="fragment"><div class="line">&lt;nacm xmlns=<span class="stringliteral">&quot;urn:ietf:params:xml:ns:yang:ietf-netconf-acm&quot;</span>&gt;</div>
-<div class="line">  &lt;rule-list&gt;</div>
-<div class="line">    &lt;name&gt;admin-acl&lt;/name&gt;</div>
-<div class="line">    &lt;group&gt;admin&lt;/group&gt;</div>
-<div class="line">    &lt;rule&gt;</div>
-<div class="line">      &lt;name&gt;permit-all&lt;/name&gt;</div>
-<div class="line">      &lt;module-name&gt;*&lt;/module-name&gt;</div>
-<div class="line">      &lt;access-operations&gt;*&lt;/access-operations&gt;</div>
-<div class="line">      &lt;action&gt;permit&lt;/action&gt;</div>
-<div class="line">    &lt;/rule&gt;</div>
-<div class="line">  &lt;/rule-list&gt;</div>
-<div class="line">&lt;/nacm&gt;</div>
-</div><!-- fragment --><p>More examples can be found in the <a href="http://tools.ietf.org/html/rfc6536#appendix-A">Appendix A. of RFC 6536</a>. </p>
-</div></div><!-- contents -->
+
+<p>Functions to call if the specified file is modified.  
+ <a href="../../de/df8/structtransapi__file__callbacks.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="../../d0/db0/transapi_8h_source.html">transapi.h</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Data Fields</h2></td></tr>
+<tr class="memitem:af315aee2dd9c7f04ef44d3dc4f1565d9"><td class="memItemLeft" >struct {</td></tr>
+<tr class="memitem:a9c1038ab827316debf4109f49818519f"><td class="memItemLeft" >&#160;&#160;&#160;int(*&#160;&#160;&#160;<a class="el" href="../../de/df8/structtransapi__file__callbacks.html#a9c1038ab827316debf4109f49818519f">func</a> )(const char *, xmlDocPtr *, int *)</td></tr>
+<tr class="separator:a9c1038ab827316debf4109f49818519f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b02c6de5c049804444a246f7fdf46b4"><td class="memItemLeft" >&#160;&#160;&#160;const char *&#160;&#160;&#160;<a class="el" href="../../de/df8/structtransapi__file__callbacks.html#a3b02c6de5c049804444a246f7fdf46b4">path</a></td></tr>
+<tr class="separator:a3b02c6de5c049804444a246f7fdf46b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af315aee2dd9c7f04ef44d3dc4f1565d9"><td class="memItemLeft" valign="top">}&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/df8/structtransapi__file__callbacks.html#af315aee2dd9c7f04ef44d3dc4f1565d9">callbacks</a> []</td></tr>
+<tr class="separator:af315aee2dd9c7f04ef44d3dc4f1565d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a853d73f0f495147dba4842e9f860d1f0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/df8/structtransapi__file__callbacks.html#a853d73f0f495147dba4842e9f860d1f0">callbacks_count</a></td></tr>
+<tr class="separator:a853d73f0f495147dba4842e9f860d1f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Functions to call if the specified file is modified. </p>
+<p>Description of the callback parameters: const char *filename[in] - name of the changed file xmlDocPtr *edit_config[out] - return parameter with edit-config data to to change running datastore. The data are supposed to be enclosed in &lt;config/&gt; root element. </p>
+</div><h2 class="groupheader">Field Documentation</h2>
+<a class="anchor" id="af315aee2dd9c7f04ef44d3dc4f1565d9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct { ... }   callbacks[]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a853d73f0f495147dba4842e9f860d1f0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int callbacks_count</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9c1038ab827316debf4109f49818519f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int(* func)(const char *, xmlDocPtr *, int *)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3b02c6de5c049804444a246f7fdf46b4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* path</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/<a class="el" href="../../d0/db0/transapi_8h_source.html">transapi.h</a></li>
+</ul>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
+    <li class="navelem"><a class="el" href="../../de/df8/structtransapi__file__callbacks.html">transapi_file_callbacks</a></li>
     <li class="footer">Generated on Thu Nov 6 2014 10:42:35 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
