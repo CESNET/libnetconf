@@ -86,7 +86,7 @@ static pthread_mutex_t lockinfo_candidate_mut = PTHREAD_MUTEX_INITIALIZER;
 static sem_t *cds_lock = NULL;
 static unsigned int cds_count = 0;
 
-void ncds_custom_set_data(struct ncds_ds* ds, void *custom_data, const struct ncds_custom_funcs *callbacks) {
+API void ncds_custom_set_data(struct ncds_ds* ds, void *custom_data, const struct ncds_custom_funcs *callbacks) {
 	struct ncds_ds_custom *c_ds = (struct ncds_ds_custom *) ds;
 
 	assert(callbacks != NULL);
