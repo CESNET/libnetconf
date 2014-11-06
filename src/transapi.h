@@ -130,10 +130,6 @@ struct transapi {
 	 */
 	struct transapi_rpc_callbacks* rpc_clbks;
 	/**
-	 * @brief Transapi file monitoring structure.
-	 */
-	struct transapi_file_callbacks* file_clbks;
-	/**
 	 * @brief Mapping prefixes with URIs
 	 */
 	struct ns_pair* ns_mapping;
@@ -145,6 +141,10 @@ struct transapi {
 	 * @brief edit-config's error-option for the current transaction
 	 */
 	NC_EDIT_ERROPT_TYPE *erropt;
+	/**
+	 * @brief Transapi file monitoring structure.
+	 */
+	struct transapi_file_callbacks* file_clbks;
 };
 
 /**
