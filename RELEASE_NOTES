@@ -1,17 +1,32 @@
-libnetconf 0.8.0
+libnetconf 0.9.0
 
 This release includes the following changes:
 
- * NETCONF Call Home implementation
- * TLS transport support (experimental)
- * TransAPI moved to version 4 (allow TransAPI module to change order
-   of the callback execution)
- * Many bugfixes in :with-defaults capability
- * Support for standalone transAPI modules for augmenting data models
- * New functions nc_datetime2time() and nc_time2datetime() to handle
-   NETCONF date and time format (RFC 3339)
- * Improved support for multithreading applications
- * Improved support for embedded systems
+ * Python bindings (of a basic libnetconf functionality)
+ * Possibility to completely replace transport layer using
+   nc_session_accept_inout() and nc_session_connect_inout() functions
+ * TransAPI moved to version 5 (external file monitoring)
+ * Redesigned library initiation (nc_init()) and closing (nc_close())
+ * Support for multiple top-level elements defined in a single data-model
+ * Support for a nested 'groupings' definitions in the data models
+ * Improved handling of the 'features' defined in the data models
+ * Handling TLS certificates revocation list (nc_tls_init())
+ * NETCONF <lock>/<unlock> operations generate a NETCONF event notification
+ * lncdatastore(1) tool allowing developers to analyse how libnetconf see the
+   loaded data models
+ * Support for the DNSSEC SSHFP retrieval when client checks the fingerprint
+   of a new SSH server
+ * A specific check of the remote SSH host authenticity can be now specified
+   as a callback
+ * Support for better recovery after an application crash
+ * Better symbol visibility control
+ * Several bugs of subtree filtering
+ * ... and many other small bugfixes
+
+Deprecated functions:
+
+ * ncds_apply_rpc(), will be removed 1.0.0, use ncds_apply_rpc2all() instead
+
 
 For API/ABI compatibility to previous versions, see reports in
 'doc/compat_reports/' directory.
