@@ -2655,21 +2655,9 @@ API const nc_msgid nc_session_send_reply(struct nc_session* session, const nc_rp
 	xmlNsPtr ns;
 	xmlNodePtr msg_root, rpc_root;
 
-	if (rpc == NULL) {
-		ERROR("%s: Invalid <rpc> message to answer.", __func__);
-		return (0); /* failure */
-	}
-
 	if (reply == NULL) {
 		ERROR("%s: Invalid <reply> message to send.", __func__);
 		return (0); /* failure */
-	}
-
-	if (rpc->msgid == 0) {
-		/* parse and store message-id */
-		retval = nc_msg_parse_msgid(rpc);
-	} else {
-		retval = rpc->msgid;
 	}
 
 	DBG_LOCK("mut_session");
@@ -2686,6 +2674,14 @@ API const nc_msgid nc_session_send_reply(struct nc_session* session, const nc_rp
 	msg = nc_msg_dup ((struct nc_msg*) reply);
 
 	if (rpc != NULL) {
+		/* get message id */
+		if (rpc->msgid == 0) {
+			/* parse and store message-id */
+			retval = nc_msg_parse_msgid(rpc);
+		} else {
+			retval = rpc->msgid;
+		}
+
 		/* set message id */
 		if (retval != NULL) {
 			msg->msgid = strdup(retval);
@@ -2713,6 +2709,7 @@ API const nc_msgid nc_session_send_reply(struct nc_session* session, const nc_rp
 
 		}
 	} else {
+		retval = ""; /* dummy message id for return */
 		msg_root = xmlDocGetRootElement(msg->doc);
 		/* unknown message ID, send reply without it */
 		if (xmlStrcmp(msg_root->name, BAD_CAST "rpc-reply") == 0) {
