@@ -410,7 +410,7 @@ def generate_file_callbacks():
 	content += ' */\n'
 	content += 'struct transapi_file_callbacks file_clbks = {\n'
 	content += '\t.callbacks_count = 0,\n'
-	content += '\t.callbacks = {NULL}\n'
+	content += '\t.callbacks = {{NULL}}\n'
 	content += '};\n\n'	
 	
 	return(content)
