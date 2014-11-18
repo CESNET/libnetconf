@@ -4708,7 +4708,7 @@ API void ncds_free2(ncds_id datastore_id)
 
 static xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model)
 {
-	int ret;
+	int ret = EXIT_FAILURE;
 	keyList keys;
 	xmlDocPtr result;
 	xmlNodePtr node;

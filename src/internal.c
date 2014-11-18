@@ -167,7 +167,7 @@ static void nc_apps_add(const char* comm, struct nc_apps* apps) {
 /* return flags - 1 (your entry was found and deleted (meaning you crashed, unless used in nc_close),
  * 2 (there are actually some libnetconf apps running, not just stored crash info) */
 static int nc_apps_check(const char* comm, struct nc_apps* apps) {
-	int i, j, ret = 0, fd = -1, readcount;
+	int i, j = 0, ret = 0, fd = -1, readcount;
 	char procpath[64], runcomm[NC_APPS_COMM_MAX+1];
 
 	for (i = 0; i < NC_APPS_MAX; ++i) {

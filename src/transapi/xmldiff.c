@@ -1104,7 +1104,7 @@ static XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, char * path, xmlN
 XMLDIFF_OP xmldiff_diff(struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new, struct model_tree * model)
 {
 	char* path;
-	XMLDIFF_OP ret_op;
+	XMLDIFF_OP ret_op = XMLDIFF_NONE;
 	int i;
 
 	if (old == NULL || new == NULL || diff == NULL || model == NULL) {
