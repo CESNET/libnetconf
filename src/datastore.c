@@ -49,6 +49,8 @@
 #include <dlfcn.h>
 #include <dirent.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <libxml/tree.h>
 #include <libxml/parser.h>
