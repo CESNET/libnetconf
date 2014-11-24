@@ -3810,6 +3810,46 @@ static int is_model_root(xmlNodePtr root, struct data_model *data_model)
 	}
 }
 
+static xmlDocPtr read_datastore_data(const char *data)
+{
+	char *config = NULL;
+	xmlDocPtr doc, ret = NULL;
+	xmlNodePtr node;
+
+	if (data == NULL || strcmp(data, "") == 0) {
+		/* config is empty */
+		return xmlNewDoc (BAD_CAST "1.0");
+	} else {
+		if (asprintf(&config, "<config>%s</config>", data) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (NULL);
+		}
+		doc = xmlReadDoc(BAD_CAST config, NULL, NULL, NC_XMLREAD_OPTIONS);
+		free(config);
+
+		if (doc == NULL || doc->children == NULL) {
+			xmlFreeDoc(doc);
+			ERROR("Invalid datastore configuration data.");
+			return (NULL);
+		}
+
+		for (node = doc->children->children; node != NULL; node = node->next) {
+			if (node->type != XML_ELEMENT_NODE) {
+				continue;
+			}
+
+			if (ret) {
+				xmlAddNextSibling(ret->last, xmlCopyNode(node, 1));
+			} else {
+				ret = xmlNewDoc(BAD_CAST "1.0");
+				xmlDocSetRootElement(ret, xmlCopyNode(node, 1));
+			}
+		}
+		xmlFreeDoc(doc);
+		return ret;
+	}
+}
+
 #ifndef DISABLE_VALIDATION
 static void relaxng_error_callback(void *error, const char * msg, ...)
 {
@@ -3986,46 +4026,6 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 	}
 
 	return (retval);
-}
-
-static xmlDocPtr read_datastore_data(const char *data)
-{
-	char *config = NULL;
-	xmlDocPtr doc, ret = NULL;
-	xmlNodePtr node;
-
-	if (data == NULL || strcmp(data, "") == 0) {
-		/* config is empty */
-		return xmlNewDoc (BAD_CAST "1.0");
-	} else {
-		if (asprintf(&config, "<config>%s</config>", data) == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-			return (NULL);
-		}
-		doc = xmlReadDoc(BAD_CAST config, NULL, NULL, NC_XMLREAD_OPTIONS);
-		free(config);
-
-		if (doc == NULL || doc->children == NULL) {
-			xmlFreeDoc(doc);
-			ERROR("Invalid datastore configuration data.");
-			return (NULL);
-		}
-
-		for (node = doc->children->children; node != NULL; node = node->next) {
-			if (node->type != XML_ELEMENT_NODE) {
-				continue;
-			}
-
-			if (ret) {
-				xmlAddNextSibling(ret->last, xmlCopyNode(node, 1));
-			} else {
-				ret = xmlNewDoc(BAD_CAST "1.0");
-				xmlDocSetRootElement(ret, xmlCopyNode(node, 1));
-			}
-		}
-		xmlFreeDoc(doc);
-		return ret;
-	}
 }
 
 static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, const char* config, struct nc_err** e)
