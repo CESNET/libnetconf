@@ -3614,7 +3614,11 @@ static int ncds_update_callbacks(struct ncds_ds* ds)
 	}
 	/* create list of callbacks */
 	ds->tapi_callbacks_count = clbk_count;
-	ds->tapi_callbacks = malloc(clbk_count * sizeof(struct clbk));
+	if (clbk_count > 0) {
+		ds->tapi_callbacks = malloc(clbk_count * sizeof(struct clbk));
+	} else {
+		ds->tapi_callbacks = NULL;
+	}
 	for (i = 0, tapi_iter = ds->transapis; tapi_iter != NULL; tapi_iter = tapi_iter->next) {
 		for (j = 0; j < tapi_iter->tapi->data_clbks->callbacks_count; j++) {
 			ds->tapi_callbacks[i].func = tapi_iter->tapi->data_clbks->callbacks[j].func;
@@ -3657,8 +3661,8 @@ static int ncds_update_callbacks(struct ncds_ds* ds)
 	/* rewrite previously created model */
 	yinmodel_free(ds->ext_model_tree);
 
-	/* parse model */
-	if ((ds->ext_model_tree = yinmodel_parse(ds->ext_model, ext_ns_mapping)) == NULL) {
+	/* parse model, if there are no callbacks, we don't need the model parsed and it would fail anyway */
+	if (ds->tapi_callbacks_count > 0 && (ds->ext_model_tree = yinmodel_parse(ds->ext_model, ext_ns_mapping)) == NULL) {
 		WARN("Failed to parse model %s. Callbacks of transAPI modules using this model will not be executed.", ds->data_model->name);
 	}
 
