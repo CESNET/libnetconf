@@ -3662,8 +3662,10 @@ static int ncds_update_callbacks(struct ncds_ds* ds)
 	yinmodel_free(ds->ext_model_tree);
 
 	/* parse model, if there are no callbacks, we don't need the model parsed and it would fail anyway */
-	if (ds->tapi_callbacks_count > 0 && (ds->ext_model_tree = yinmodel_parse(ds->ext_model, ext_ns_mapping)) == NULL) {
-		WARN("Failed to parse model %s. Callbacks of transAPI modules using this model will not be executed.", ds->data_model->name);
+	if (ds->tapi_callbacks_count == 0) {
+		VERB("transAPI module for the model \"%s\" does not have any callbacks.", ds->data_model->name);
+	} else if ((ds->ext_model_tree = yinmodel_parse(ds->ext_model, ext_ns_mapping)) == NULL) {
+		WARN("Failed to parse the model \"%s\". Callbacks of transAPI modules using this model will not be executed.", ds->data_model->name);
 	}
 
 	return (EXIT_SUCCESS);
