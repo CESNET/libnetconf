@@ -148,10 +148,9 @@ static PyObject *ncOpGet(ncSessionObject *self, PyObject *args, PyObject *keywor
 {
 	const char *filter = NULL;
 	int wdmode = NCWD_MODE_NOTSET;
+	char *kwlist[] = {"filter", "wd", NULL};
 
 	SESSION_CHECK(self);
-
-	char *kwlist[] = {"filter", "wd", NULL};
 
 	/* Get input parameters */
 	if (! PyArg_ParseTupleAndKeywords(args, keywords, "|zi", kwlist, &filter, &wdmode)) {
@@ -556,6 +555,7 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 	const char *host = NULL, *user = NULL, *transport_s = NULL;
 	unsigned short port = 830;
 	PyObject *PyCpblts = NULL;
+	PyObject *PyStr;
 	struct nc_session *session;
 	struct nc_cpblts *cpblts = NULL;
 	char cpblts_free_flag = 0;
@@ -605,7 +605,7 @@ static int ncSessionInit(ncSessionObject *self, PyObject *args, PyObject *keywor
 						Py_DECREF(PyUni);
 						return -1;
 					}
-					PyObject *PyStr = PyUnicode_AsEncodedString(PyUni, "UTF-8", NULL);
+					PyStr = PyUnicode_AsEncodedString(PyUni, "UTF-8", NULL);
 					Py_DECREF(PyUni);
 					if (PyStr == NULL) {
 						nc_cpblts_free(cpblts);

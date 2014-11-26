@@ -104,6 +104,7 @@ static PyObject *setCapabilities(PyObject *self, PyObject *args, PyObject *keywd
 	int ret;
 	char *item;
 	static char *kwlist[] = {"list", NULL};
+	PyObject *PyStr;
 
 	if (! PyArg_ParseTupleAndKeywords(args, keywds, "O!", kwlist, &PyList_Type, &PyCpblts)) {
 		return (NULL);
@@ -126,7 +127,7 @@ static PyObject *setCapabilities(PyObject *self, PyObject *args, PyObject *keywd
 			Py_DECREF(PyUni);
 			return (NULL);
 		}
-		PyObject *PyStr = PyUnicode_AsEncodedString(PyUni, "UTF-8", NULL);
+		PyStr = PyUnicode_AsEncodedString(PyUni, "UTF-8", NULL);
 		Py_DECREF(PyUni);
 		if (PyStr == NULL) {
 			nc_cpblts_free(global_cpblts);
@@ -155,6 +156,7 @@ static PyObject *setCapabilities(PyObject *self, PyObject *args, PyObject *keywd
 static void set_features(const char* name, PyObject *PyFeatures)
 {
 	Py_ssize_t l, i;
+	PyObject *PyStr;
 
 	if (!PyFeatures) {
 		/* not specified -> enable all */
@@ -171,7 +173,7 @@ static void set_features(const char* name, PyObject *PyFeatures)
 				Py_DECREF(PyUni);
 				continue;
 			}
-			PyObject *PyStr = PyUnicode_AsEncodedString(PyUni, "UTF-8", NULL);
+			PyStr = PyUnicode_AsEncodedString(PyUni, "UTF-8", NULL);
 			Py_DECREF(PyUni);
 			if (PyStr == NULL) {
 				continue;
