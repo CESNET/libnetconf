@@ -147,7 +147,6 @@ NC_URL_PROTOCOLS nc_url_get_protocol(const char *url)
 		ERROR("%s: invalid URL string, missing protocol specification", __func__);
 		return (NC_URL_UNKNOWN);
 	}
-	c = '\0';
 
 	for (i = 0; (unsigned int) i < (sizeof(url_protocols) / sizeof(url_protocols[0])); i++, protocol <<= 1) {
 		if (xmlStrncmp(BAD_CAST url_aux, url_protocols[i], xmlStrlen(url_protocols[i])) == 0) {
