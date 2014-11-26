@@ -644,7 +644,7 @@ API char* nc_rpc_get_ns(const nc_rpc* rpc)
 	}
 	if (xmlStrcmp(root->name, BAD_CAST "rpc") != 0) {
 		ERROR("%s: Invalid rpc message - not an <rpc> message.", __func__);
-		return (NC_OP_UNKNOWN);
+		return NULL;
 	}
 
 	/* return namespace of the first element node inside <rpc> */

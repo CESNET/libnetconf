@@ -144,7 +144,7 @@ const nc_msgid nc_rpc_get_msgid(const nc_rpc *rpc);
  * @ingroup rpc
  * @brief Get user's rpc operation namespace
  * @param rpc rpc message.
- * @return Namespace URI.
+ * @return Namespace URI, NULL in case of error.
  */
 char* nc_rpc_get_ns(const nc_rpc *rpc);
 
