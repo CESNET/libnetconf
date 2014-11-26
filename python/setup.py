@@ -4,7 +4,8 @@ netconfModule = Extension("netconf",
                            sources=["netconf.c", "session.c"],
                            depends=["netconf.h"],
                            libraries=["netconf"],
-                           extra_compile_args=["-Wall"],
+                           extra_compile_args=["-Wall", "-I../src/", ],
+                           extra_link_args=["-L../.libs/"],
                         )
 
 setup(name='netconf',
