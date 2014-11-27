@@ -609,6 +609,10 @@ if test -z "$HAVE_PYANG"; then
 	AC_MSG_WARN([Due to missing pyang, lnctool will not work.])
 fi
 
+if test -n "$PYTHON"; then
+	AC_CONFIG_FILES(python/python3-netconf.spec)
+fi
+
 AC_CONFIG_FILES(dev-tools/lncdatastore/Makefile)
 AC_CONFIG_FILES(Makefile src/config.h libnetconf.spec libnetconf.pc Doxyfile)
 AC_CONFIG_FILES(headers/libnetconf.h headers/libnetconf_xml.h headers/libnetconf_ssh.h)

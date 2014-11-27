@@ -14152,6 +14152,11 @@ if test -z "$HAVE_PYANG"; then
 $as_echo "$as_me: WARNING: Due to missing pyang, lnctool will not work." >&2;}
 fi
 
+if test -n "$PYTHON"; then
+	ac_config_files="$ac_config_files python/python3-netconf.spec"
+
+fi
+
 ac_config_files="$ac_config_files dev-tools/lncdatastore/Makefile"
 
 ac_config_files="$ac_config_files Makefile src/config.h libnetconf.spec libnetconf.pc Doxyfile"
@@ -15152,6 +15157,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
+    "python/python3-netconf.spec") CONFIG_FILES="$CONFIG_FILES python/python3-netconf.spec" ;;
     "dev-tools/lncdatastore/Makefile") CONFIG_FILES="$CONFIG_FILES dev-tools/lncdatastore/Makefile" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/config.h") CONFIG_FILES="$CONFIG_FILES src/config.h" ;;

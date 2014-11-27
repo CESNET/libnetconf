@@ -84,6 +84,8 @@ HAVE_XSLTPROC = @HAVE_XSLTPROC@
 PYTHON = @PYTHON@
 ifdef PYTHON
 PYAPI = pyapi
+TARBALLPYAPI = tarball-pyapi
+TARBALLPYAPIDIR = python3-netconf-$(VERSION)
 INSTALLPYAPI = install-pyapi
 UNINSTALLPYAPI = uninstall-pyapi
 DOXYGEN_CONFIG_PYTHON = Doxyfile.python
@@ -261,17 +263,32 @@ tarball: $(SRCS) $(HEADERS)
 		cp $$i $(NAME)-$(VERSION)/$$i; \
 	done;
 	@rm -rf $(RPMDIR)/SOURCES/; \
-	mkdir -p $(RPMDIR)/SOURCES/; \
+	mkdir -p $(RPMDIR)/SOURCES/;
 	tar -c -z -f $(RPMDIR)/SOURCES/$(NAME)-$(VERSION)-$(RELEASE).tar.gz \
 	    $(NAME)-$(VERSION); \
 	rm -rf $(NAME)-$(VERSION);
 
+.PHONY: tarball-pyapi
+tarball-pyapi: tarball
+	@rm -rf $(TARBALLPYAPIDIR);
+	@mkdir $(TARBALLPYAPIDIR);
+	for i in python/netconf.h python/netconf.c python/session.c python/setup.py; do \
+		cp $$i $(TARBALLPYAPIDIR)/$$(basename $$i); \
+	done;
+	@[ -d "$(RPMDIR)/SOURCES/" ] || (mkdir -p $(RPMDIR)/SOURCES/);
+	tar -c -z -f $(RPMDIR)/SOURCES/$(TARBALLPYAPIDIR)-$(RELEASE).tar.gz $(TARBALLPYAPIDIR); \
+	rm -rf $(TARBALLPYAPIDIR);
+
 .PHONY: rpm
-rpm: tarball
+rpm: tarball $(TARBALLPYAPI)
 	if [ "$(RPMBUILD)" != "no" ]; then \
 		mkdir -p $(RPMDIR)/BUILD $(RPMDIR)/RPMS $(RPMDIR)/SRPMS; \
 		$(RPMBUILD) -ba $(NAME).spec \
 			--define "_topdir `pwd`/$(RPMDIR)"; \
+		if [ -n "$(PYAPI)" ]; then \
+			$(RPMBUILD) -ba python/python3-netconf.spec \
+				--define "_topdir `pwd`/$(RPMDIR)"; \
+		fi \
 	else \
 		echo "Missing rpmbuild"; \
 		exit 1; \
