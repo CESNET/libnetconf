@@ -662,6 +662,7 @@ V_SONAME_OPT
 V_SHLIB_OPT
 V_SHLIB_CMD
 LIBOBJS
+PYPREFIX
 CURL_LIBS
 CURL_CFLAGS
 PTHREAD_CFLAGS
@@ -13214,6 +13215,11 @@ done
 
 	BUILDREQS="$BUILDREQS libcurl-devel"
 fi
+
+if test -n "$PYTHON"; then
+	PYPREFIX="`$PKG_CONFIG --variable=prefix python3`"
+fi
+
 
 ###################### Check for configure parameters ##########################
 

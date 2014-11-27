@@ -517,6 +517,11 @@ if test "$url" = "yes"; then
 	BUILDREQS="$BUILDREQS libcurl-devel"
 fi
 
+if test -n "$PYTHON"; then
+	PYPREFIX="`$PKG_CONFIG --variable=prefix python3`"
+fi
+AC_SUBST(PYPREFIX)
+
 ###################### Check for configure parameters ##########################
 
 ######################### Checks for header files ##############################

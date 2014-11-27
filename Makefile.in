@@ -87,6 +87,7 @@ PYAPI = pyapi
 INSTALLPYAPI = install-pyapi
 UNINSTALLPYAPI = uninstall-pyapi
 DOXYGEN_CONFIG_PYTHON = Doxyfile.python
+PYPREFIX = @PYPREFIX@
 PYHDRS = doc/python/netconf.py
 PYSRCS = python/netconf.c \
 	python/session.c
@@ -345,7 +346,7 @@ install-doc: doc
 
 .PHONY: install-pyapi
 install-pyapi: pyapi
-	@cd python; $(PYTHON) ./setup.py install; cd -;
+	@cd python; $(PYTHON) ./setup.py install --prefix=$(DESTDIR)/$(PYPREFIX); cd -;
 
 .PHONY: uninstall
 uninstall: uninstall-devel uninstall-doc $(UNINSTALLPYAPI)
