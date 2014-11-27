@@ -1,5 +1,6 @@
 var NAVTREEINDEX3 =
 {
+"db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73ab0fb14c1d3e587701536c288520d945b":[7,5,5,4],
 "db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa05f1d06d9fae17a9a967096ecdc01edf":[7,5,6,0],
 "db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa962fdf56453d65bd49886f1f00820e85":[7,5,6,3],
 "db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fab3eda2b850d63524153c90ded556211b":[7,5,6,1],
@@ -153,8 +154,8 @@ var NAVTREEINDEX3 =
 "files.html":[9,0],
 "functions.html":[8,2,0],
 "functions_vars.html":[8,2,1],
-"globals.html":[9,1,0],
 "globals.html":[9,1,0,0],
+"globals.html":[9,1,0],
 "globals_0x65.html":[9,1,0,1],
 "globals_0x6d.html":[9,1,0,2],
 "globals_0x6e.html":[9,1,0,3],
@@ -166,8 +167,8 @@ var NAVTREEINDEX3 =
 "globals_func.html":[9,1,1],
 "globals_type.html":[9,1,3],
 "globals_vars.html":[9,1,2],
-"index.html":[],
 "index.html":[0],
+"index.html":[],
 "index.html#about-apps":[0,1],
 "index.html#about-features":[0,0],
 "index.html#about-license":[0,2],

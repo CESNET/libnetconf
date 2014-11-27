@@ -902,6 +902,58 @@
  * --feature module_name:
  * ~~~~~~~
  *
+ * \subsection transapiTutorial-augmenting Augmenting module
+ *
+ * When you are adding a model augmenting the original model, you have generally 2 ways of doing so:
+ * \n
+ * -# Create a new transAPI module implementing the original model with any augments, basically treating it as a single model. This way you receive a standalone transAPI module that will make the original module obsolete. *lnctool(1)* command:
+ * ~~~~~~~{.sh}
+ * $ lnctool --model <original_model> --augment-model <augment_model> transapi --path <paths_for_original_and_augment_model>
+ * ~~~~~~~
+ * \n
+ * -# Create a new transAPI module implementing only the augmented parts. This way you receive an additional module that will be used together with the original module, which does not need to be modified in any way. *lnctool(1)* command:
+ * ~~~~~~~{.sh}
+ * $ lnctool --model <augment_model> transapi --path <paths_for_augment_model>
+ * ~~~~~~~
+ * .
+ * \n
+ * However, the case when a model is augmenting na RPC in the original model must be treated specially. Firstly, ONLY the first way of augmenting a module can and MUST be used. Secondly, after issuing the *lnctool(1)* command, the generated code will be INCORRECT and must be changed manually for it to work properly. Illustrated on an example:
+ * \n\n
+ * The original model has an RPC 'my-rpc' with a single argument 'arg1'. Augment model is adding another argument 'arg2'. The original module 'my-rpc' code and the newly generated code will be the same:
+ * ~~~~~~~{.c}
+ * nc_reply *rpc_my_rpc(xmlNodePtr input[])
+ * {
+ * 	xmlNodePtr arg1 = input[0];
+ *
+ * 	return NULL;
+ * }
+ *
+ * struct transapi_rpc_callbacks rpc_clbks = {
+ * 	.callbacks_count = 1,
+ * 	.callbacks = {
+ * 		{.name="my-rpc", .func=rpc_my_rpc, .arg_count=1, .arg_order={"arg1"}}
+ * 	}
+ * };
+ * ~~~~~~~
+ * To be able to work with the second argument 'arg2', the code must be changed to:
+ * ~~~~~~~{.c}
+ * nc_reply *rpc_my_rpc(xmlNodePtr input[])
+ * {
+ * 	xmlNodePtr arg1 = input[0];
+ * 	xmlNodePtr arg2 = input[1];
+ *
+ * 	return NULL;
+ * }
+ *
+ * struct transapi_rpc_callbacks rpc_clbks = {
+ * 	.callbacks_count = 1,
+ * 	.callbacks = {
+ * 		{.name="my-rpc", .func=rpc_my_rpc, .arg_count=2, .arg_order={"arg1", "arg2"}}
+ * 	}
+ * };
+ * ~~~~~~~
+ * This pattern can be used with several augment models, all changing a single RPC.
+ *
  * \subsection transapiTutorial-coding Filling up functionality
  *
  * Here we show the simplest example of a toaster simulating module.

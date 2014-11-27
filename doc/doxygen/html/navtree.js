@@ -32,6 +32,7 @@ var NAVTREE =
       [ "transAPI Tutorial", "d9/d25/transapi.html#transapiTutorial", [
         [ "Preparations", "d9/d25/transapi.html#transapiTutorial-prepare", null ],
         [ "Generating code", "d9/d25/transapi.html#transapiTutorial-generating", null ],
+        [ "Augmenting module", "d9/d25/transapi.html#transapiTutorial-augmenting", null ],
         [ "Filling up functionality", "d9/d25/transapi.html#transapiTutorial-coding", null ],
         [ "Compiling module", "d9/d25/transapi.html#transapiTutorial-compiling", null ],
         [ "Integrating to a server", "d9/d25/transapi.html#transapiTutorial-using", null ]
@@ -67,8 +68,8 @@ var NAVTREEINDEX =
 [
 "annotated.html",
 "d3/d7a/netconf_8h.html#gga5852fd110198481afb37cc8dcf0bf454ae959e6f9ed31a8e4441ad84eae8b43d2",
-"d9/db6/datastore_8h.html#gab0f0cbd5268577ec36fc76cf89c72a8f",
-"db/d67/group__store.html#ggab0f0cbd5268577ec36fc76cf89c72a8fa05f1d06d9fae17a9a967096ecdc01edf"
+"d9/db6/datastore_8h.html#gaabfd0bf6abeaf40659043bf082e14801",
+"db/d67/group__store.html#gga5e4b9ee138b963e8ea2354fef2ebbe73ab0fb14c1d3e587701536c288520d945b"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
