@@ -631,7 +631,6 @@ ac_includes_default="\
 ac_header_list=
 ac_subst_vars='LTLIBOBJS
 GRAPHS
-CONFIGURE_ARGS
 LIBSSH2_DIRECTIVE
 HAVE_LIBXML2_RECONNS
 HAVE_UTMPX
@@ -2752,7 +2751,7 @@ NC_WORKINGDIR_PATH="/var/lib/$PACKAGE_NAME/"
 SETBIT=0
 SETUSER=""
 SETGROUP=""
-CONFIGURE_ARGS=""
+CONFIGURE_PARAMS=""
 
 LIBS="$LIBS -ldl"
 
@@ -2931,7 +2930,7 @@ fi
 		LIBXML2_LIBS="`$withval/xml2-config --libs`"
 		LIBS="$LIBXML2_LIBS $LIBS"
 		WITH_LIBXML2="$withval"
-		CONFIGURE_ARGS="--with-libxml2=$withval $CONFIGURE_ARGS"
+		CONFIGURE_PARAMS="--with-libxml2=$withval $CONFIGURE_PARAMS"
 
 
 
@@ -2986,7 +2985,7 @@ fi
 		CFLAGS="`$withval/xslt-config --cflags` $CFLAGS"
 		LIBS="`$withval/xslt-config --libs` $LIBS"
 		WITH_LIBXSLT="$withval"
-		CONFIGURE_ARGS="--with-libxslt=$withval $CONFIGURE_ARGS"
+		CONFIGURE_PARAMS="--with-libxslt=$withval $CONFIGURE_PARAMS"
 
 
 fi
@@ -2998,6 +2997,7 @@ if test "${with_libssh2+set}" = set; then :
   withval=$with_libssh2;
 		CFLAGS="-I$withval/include $CFLAGS"
 		LDFLAGS="-L$withval/lib -Wl,-rpath,$withval/lib $LDFLAGS"
+		CONFIGURE_PARAMS="--with-libssh2=$withval $CONFIGURE_PARAMS"
 
 
 fi
@@ -3010,6 +3010,7 @@ if test "${enable_libssh2+set}" = set; then :
 		CPPFLAGS="$CPPFLAGS -DDISABLE_LIBSSH"
 		LIBS="$LIBS -lutil" # forkpty()
 		LIBSSH2_DIRECTIVE="#define DISABLE_LIBSSH"
+		CONFIGURE_PARAMS="--disable-libssh2 $CONFIGURE_PARAMS"
 	else
 		libssh2="yes"
 	fi
@@ -3028,6 +3029,7 @@ if test "${enable_tls+set}" = set; then :
 		tls="yes"
 		CPPFLAGS="$CPPFLAGS -DENABLE_TLS"
 		LIBS="$LIBS -lssl"
+		CONFIGURE_PARAMS="--enable-tls $CONFIGURE_PARAMS"
 	fi
 
 fi
@@ -3039,6 +3041,7 @@ if test "${enable_dnssec+set}" = set; then :
   enableval=$enable_dnssec; if test "$enableval" = "yes"; then
 		dnssec="yes"
 		CPPFLAGS="$CPPFLAGS -DENABLE_DNSSEC"
+		CONFIGURE_PARAMS="--enable-dnssec $CONFIGURE_PARAMS"
 	fi
 
 fi
@@ -3060,6 +3063,7 @@ else
 fi
 
 if test "$yang" = "no"; then
+	CONFIGURE_PARAMS="--disable-yang-schemas $CONFIGURE_PARAMS"
 	CPPFLAGS="$CPPFLAGS -DDISABLE_YANGFORMAT"
 fi
 
@@ -3141,13 +3145,14 @@ else
 fi
 
 if test "$validation" = "no"; then
+	CONFIGURE_PARAMS="--disable-validation $CONFIGURE_PARAMS"
 	CPPFLAGS="$CPPFLAGS -DDISABLE_VALIDATION"
 fi
 
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug; CFLAGS="$CFLAGS -g -O0 -DDEBUG"
-	CONFIGURE_ARGS="--enable-debug $CONFIGURE_ARGS"
+	CONFIGURE_PARAMS="--enable-debug $CONFIGURE_PARAMS"
 else
   CFLAGS="$CFLAGS -O3 -DNDEBUG"
 
@@ -3156,6 +3161,7 @@ fi
 # Check whether --enable-debug-threads was given.
 if test "${enable_debug_threads+set}" = set; then :
   enableval=$enable_debug_threads; CPPFLAGS="$CPPFLAGS -DDEBUG_THREADS"
+	CONFIGURE_PARAMS="--enable-debug-threads $CONFIGURE_PARAMS"
 
 fi
 
@@ -3163,6 +3169,7 @@ fi
 # Check whether --with-workingdir was given.
 if test "${with_workingdir+set}" = set; then :
   withval=$with_workingdir; NC_WORKINGDIR_PATH="$withval"
+	CONFIGURE_PARAMS="--with-workingdir=$withval $CONFIGURE_PARAMS"
 
 fi
 
@@ -3176,6 +3183,7 @@ if test "${with_suid+set}" = set; then :
 		else
 			SETUSER="`id -un`"
 		fi
+		CONFIGURE_PARAMS="--with-suid=$withval $CONFIGURE_PARAMS"
 	fi
 
 fi
@@ -3190,6 +3198,7 @@ if test "${with_sgid+set}" = set; then :
 		else
 			SETGROUP="`id -gn`"
 		fi
+		CONFIGURE_PARAMS="--with-sgid=$withval $CONFIGURE_PARAMS"
 	fi
 
 fi
@@ -3202,6 +3211,7 @@ if test "${with_nacm_recovery_uid+set}" = set; then :
 		NACM_RECOVERY_UID="0"
 	elif expr "$withval" : "-\?[0-9]\+$" > /dev/null ; then
 		NACM_RECOVERY_UID="$withval"
+		CONFIGURE_PARAMS="--with-nacm-recovery-uid=$withval $CONFIGURE_PARAMS"
 	else
 		as_fn_error $? "Invalid NACM recovey UID. The value must be a valid number." "$LINENO" 5
 	fi
@@ -14040,7 +14050,6 @@ fi
 
 
 ############################### Set output #####################################
-
 
 
 

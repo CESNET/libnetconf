@@ -73,7 +73,7 @@ NC_WORKINGDIR_PATH="/var/lib/$PACKAGE_NAME/"
 SETBIT=0
 SETUSER=""
 SETGROUP=""
-CONFIGURE_ARGS=""
+CONFIGURE_PARAMS=""
 
 LIBS="$LIBS -ldl"
 
@@ -102,7 +102,7 @@ AC_ARG_WITH([libxml2],
 		LIBXML2_LIBS="`$withval/xml2-config --libs`"
 		LIBS="$LIBXML2_LIBS $LIBS"
 		WITH_LIBXML2="$withval"
-		CONFIGURE_ARGS="--with-libxml2=$withval $CONFIGURE_ARGS"
+		CONFIGURE_PARAMS="--with-libxml2=$withval $CONFIGURE_PARAMS"
 		AC_SUBST(LIBXML2_LIBS)
 	]
 )
@@ -117,7 +117,7 @@ AC_ARG_WITH([libxslt],
 		CFLAGS="`$withval/xslt-config --cflags` $CFLAGS"
 		LIBS="`$withval/xslt-config --libs` $LIBS"
 		WITH_LIBXSLT="$withval"
-		CONFIGURE_ARGS="--with-libxslt=$withval $CONFIGURE_ARGS"
+		CONFIGURE_PARAMS="--with-libxslt=$withval $CONFIGURE_PARAMS"
 	]
 )
 
@@ -126,6 +126,7 @@ AC_ARG_WITH([libssh2],
 	[
 		CFLAGS="-I$withval/include $CFLAGS"
 		LDFLAGS="-L$withval/lib -Wl,-rpath,$withval/lib $LDFLAGS"
+		CONFIGURE_PARAMS="--with-libssh2=$withval $CONFIGURE_PARAMS"
 	]
 )
 
@@ -136,6 +137,7 @@ AC_ARG_ENABLE([libssh2],
 		CPPFLAGS="$CPPFLAGS -DDISABLE_LIBSSH"
 		LIBS="$LIBS -lutil" # forkpty()
 		LIBSSH2_DIRECTIVE="#define DISABLE_LIBSSH"
+		CONFIGURE_PARAMS="--disable-libssh2 $CONFIGURE_PARAMS"
 	else
 		libssh2="yes"
 	fi
@@ -151,6 +153,7 @@ AC_ARG_ENABLE([tls],
 		tls="yes"
 		CPPFLAGS="$CPPFLAGS -DENABLE_TLS"
 		LIBS="$LIBS -lssl"
+		CONFIGURE_PARAMS="--enable-tls $CONFIGURE_PARAMS"
 	fi
 )
 
@@ -160,6 +163,7 @@ AC_ARG_ENABLE([dnssec],
 	if test "$enableval" = "yes"; then
 		dnssec="yes"
 		CPPFLAGS="$CPPFLAGS -DENABLE_DNSSEC"
+		CONFIGURE_PARAMS="--enable-dnssec $CONFIGURE_PARAMS"
 	fi
 )
 
@@ -176,6 +180,7 @@ AC_ARG_ENABLE([yang-schemas],
 	yang="yes"
 )
 if test "$yang" = "no"; then
+	CONFIGURE_PARAMS="--disable-yang-schemas $CONFIGURE_PARAMS"
 	CPPFLAGS="$CPPFLAGS -DDISABLE_YANGFORMAT"
 fi	
 
@@ -248,22 +253,25 @@ AC_ARG_ENABLE([validation],
 	validation="yes"
 )
 if test "$validation" = "no"; then
+	CONFIGURE_PARAMS="--disable-validation $CONFIGURE_PARAMS"
 	CPPFLAGS="$CPPFLAGS -DDISABLE_VALIDATION"
 fi
 
 AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],[Compile with debug options]),
 	CFLAGS="$CFLAGS -g -O0 -DDEBUG"
-	CONFIGURE_ARGS="--enable-debug $CONFIGURE_ARGS",
+	CONFIGURE_PARAMS="--enable-debug $CONFIGURE_PARAMS",
 	CFLAGS="$CFLAGS -O3 -DNDEBUG"
 )
 AC_ARG_ENABLE([debug-threads],
 	AC_HELP_STRING([--enable-debug-threads],[Extend debug mode for threads]),
 	CPPFLAGS="$CPPFLAGS -DDEBUG_THREADS"
+	CONFIGURE_PARAMS="--enable-debug-threads $CONFIGURE_PARAMS"
 )
 AC_ARG_WITH([workingdir],
 	AC_HELP_STRING([--with-workingdir=path],[Path to a working directory of libnetconf, the default value is /var/lib/libnetconf/]),
 	NC_WORKINGDIR_PATH="$withval"
+	CONFIGURE_PARAMS="--with-workingdir=$withval $CONFIGURE_PARAMS"
 )
 AC_ARG_WITH([suid],
 	AC_HELP_STRING([--with-suid=user],[When creating files or directories using libnetconf, rely on the SUID bit set and change their ownership to the specified user]),
@@ -273,7 +281,8 @@ AC_ARG_WITH([suid],
 			SETUSER="$withval"
 		else
 			SETUSER="`id -un`"
-		fi		
+		fi
+		CONFIGURE_PARAMS="--with-suid=$withval $CONFIGURE_PARAMS"
 	fi
 )
 AC_ARG_WITH([sgid],
@@ -284,7 +293,8 @@ AC_ARG_WITH([sgid],
 			SETGROUP="$withval"
 		else
 			SETGROUP="`id -gn`"
-		fi		
+		fi
+		CONFIGURE_PARAMS="--with-sgid=$withval $CONFIGURE_PARAMS"
 	fi	
 )
 AC_ARG_WITH([nacm-recovery-uid],
@@ -294,6 +304,7 @@ AC_ARG_WITH([nacm-recovery-uid],
 		NACM_RECOVERY_UID="0"
 	elif expr "$withval" : "-\?[[0-9]]\+$" > /dev/null ; then
 		NACM_RECOVERY_UID="$withval"
+		CONFIGURE_PARAMS="--with-nacm-recovery-uid=$withval $CONFIGURE_PARAMS"
 	else
 		AC_MSG_ERROR([Invalid NACM recovey UID. The value must be a valid number.])
 	fi
@@ -569,7 +580,6 @@ AC_SUBST(HAVE_UTMPX)
 AC_SUBST(HAVE_LIBXML2_RECONNS)
 AC_SUBST(LIBSSH2_DIRECTIVE)
 AC_SUBST(SSH_PROG)
-AC_SUBST(CONFIGURE_ARGS)
 AC_SUBST(PTHREAD_LIBS)
 
 AC_SUBST(DOXYGEN)
