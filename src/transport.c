@@ -1068,6 +1068,9 @@ API struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 /*
  * CALL HOME PART
  */
+
+#ifndef DISABLE_LIBSSH
+
 /* 0 is IPv4, 1 is IPv6 */
 static struct pollfd reverse_listen_socket[2] = {{-1, POLLIN, 0}, {-1, POLLIN, 0}};
 
@@ -1359,13 +1362,6 @@ API struct nc_session *nc_callhome_accept(const char *username, const struct nc_
 	pthread_once(&transproto_key_once, transproto_init);
 	transport_proto = pthread_getspecific(transproto_key);
 
-#ifdef DISABLE_LIBSSH
-	if (*transport_proto == NC_TRANSPORT_SSH) {
-		ERROR("%s: call home via SSH is provided only without --disable-libssh2 option.", __func__);
-		return (NULL);
-	}
-#endif
-
 #ifndef ENABLE_TLS
 	if (*transport_proto == NC_TRANSPORT_TLS) {
 		ERROR("%s: call home via TLS is provided only with --enable-tls option.", __func__);
@@ -1439,9 +1435,7 @@ netconf_connect:
 #else
 	{
 #endif
-#ifndef DISABLE_LIBSSH
 		retval = nc_session_connect_libssh2_socket(username, host, sock);
-#endif /* not DISABLE_LIBSSH */
 	}
 
 	if (retval != NULL) {
@@ -1486,6 +1480,8 @@ shutdown:
 
 	return (NULL);
 }
+
+#endif
 
 API struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port)
 {
