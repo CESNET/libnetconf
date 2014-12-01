@@ -182,7 +182,7 @@ AC_ARG_ENABLE([yang-schemas],
 if test "$yang" = "no"; then
 	CONFIGURE_PARAMS="--disable-yang-schemas $CONFIGURE_PARAMS"
 	CPPFLAGS="$CPPFLAGS -DDISABLE_YANGFORMAT"
-fi	
+fi
 
 AC_ARG_ENABLE([notifications],
 	AC_HELP_STRING([--disable-notifications], [Disable support of NETCONF Notifications (RFC 5277)]),
@@ -208,7 +208,7 @@ else
 	CPPFLAGS="$CPPFLAGS -DDISABLE_NOTIFICATIONS"
 	HDRS_PUBL_SUBDIR_NOTIFICATIONS=""
 	HDRS_PRIV_NOTIFICATIONS=""
-	SRCS_NOTIFICATIONS=""	
+	SRCS_NOTIFICATIONS=""
 	[INCLUDE_NOTIFICATIONS="#define DISABLE_NOTIFICATIONS"]
 	[INCLUDE_NOTIFICATIONS_XML="#define DISABLE_NOTIFICATIONS"]
 fi
@@ -295,7 +295,7 @@ AC_ARG_WITH([sgid],
 			SETGROUP="`id -gn`"
 		fi
 		CONFIGURE_PARAMS="--with-sgid=$withval $CONFIGURE_PARAMS"
-	fi	
+	fi
 )
 AC_ARG_WITH([nacm-recovery-uid],
 	AC_HELP_STRING([--with-nacm-recovery-uid=uid], [Set UID to be used to identify NACM recovery session, default value is 0.]),
@@ -389,6 +389,10 @@ else
 	AC_SUBST(READLINK, [readlink])
 fi
 
+AC_CHECK_PROG([LIBT], [libtool], [yes], [no])
+if test "$LIBT" = "no"; then
+	AC_MSG_ERROR([Missing libtool])
+fi
 
 # Check for standard programs
 AC_PROG_CC(clang llvm-gcc gcc)
