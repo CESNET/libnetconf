@@ -25,7 +25,7 @@ var NAVTREE =
         [ "XMLDIFF_OP op", "d9/d25/transapi.html#op", [
           [ "Valid combinations of events", "d9/d25/transapi.html#combinations", null ]
         ] ],
-        [ "xmlNodePtr node", "d9/d25/transapi.html#node", null ],
+        [ "xmlNodePtr old_node & new_node", "d9/d25/transapi.html#node", null ],
         [ "strict nc_err **error", "d9/d25/transapi.html#error", null ]
       ] ],
       [ "History of the transAPI versions", "d9/d25/transapi.html#transAPI-history", null ],

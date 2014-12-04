@@ -1,4 +1,4 @@
-.TH "clbk" 3 "Thu Nov 27 2014" "Version 0.9.0-9" "libnetconf" \" -*- nroff -*-
+.TH "clbk" 3 "Thu Dec 4 2014" "Version 0.9.0-21_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -15,7 +15,7 @@ Structure describing callback - path + function\&.
 
 .in +1c
 .ti -1c
-.RI "int(* \fBfunc\fP )(void **, \fBXMLDIFF_OP\fP, xmlNodePtr, struct nc_err **)"
+.RI "int(* \fBfunc\fP )(void **, \fBXMLDIFF_OP\fP, xmlNodePtr, xmlNodePtr, struct nc_err **)"
 .br
 .ti -1c
 .RI "char * \fBpath\fP"
@@ -26,7 +26,7 @@ Structure describing callback - path + function\&.
 Structure describing callback - path + function\&. 
 .SH "Field Documentation"
 .PP 
-.SS "int(* func)(void **, \fBXMLDIFF_OP\fP, xmlNodePtr, struct nc_err **)"
+.SS "int(* func)(void **, \fBXMLDIFF_OP\fP, xmlNodePtr, xmlNodePtr, struct nc_err **)"
 
 .SS "char* path"
 

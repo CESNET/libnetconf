@@ -737,7 +737,7 @@
  *  Every transapi callback function has fixed set of parameters. Function header looks like this:
  *
  *  ~~~~~~~{.c}
- *  int callback_path_into_configuration_xml(void **data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err **error)
+ *  int callback_path_into_configuration_xml(void **data, XMLDIFF_OP op, xmlNodePtr old_node, xmlNodePtr new_node, struct nc_err **error)
  *  ~~~~~~~
  *
  *  \subsection data void **data
@@ -755,7 +755,7 @@
  *    - XMLDIFF_ADD = Node was added.
  *    - XMLDIFF_REM = Node was removed.
  *   - Nodes of type leaf can be changed.
- *    - XMLDIFF_MOD = node content was changed
+ *    - XMLDIFF_MOD = Node content was changed.
  *   - Container nodes are informed about events occured on descendants. It can be distinguished whether the event was processed or not.
  *    - XMLDIFF_MOD = Some of node children was changed and there is not callback specified for it.
  *    - XMLDIFF_CHAIN = Some of node children was changed and associated callback was called.
@@ -776,8 +776,7 @@
  *
  * Ex.: Leaf processing
  * ~~~~~~~{.c}
- * int callback_some_leaf(void **data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err **error)
- * {
+ * int callback_some_leaf(void **data, XMLDIFF_OP op, xmlNodePtr old_node, xmlNodePtr new_node, struct nc_err **error) {
  *   if (op & XMLDIFF_MOD) {
  *     // change configured value
  *   } else if (op & XMLDIFF_REM) {
@@ -793,10 +792,13 @@
  * }
  * ~~~~~~~
  *
- *  \subsection node xmlNodePtr node
+ *  \subsection node xmlNodePtr old_node & new_node
  *
- *   Pointer to a particular node instance in configuration document where the event was detected.
- *   When the node was removed pointer is set to its instance in old configuration snapshot.
+ *   Pointer to a particular node instance in either the old or new
+ *   configuration document, in which the event was detected. When the node was
+ *   removed, new node is not set and when the node was deleted, old node is
+ *   not set. It is safe to traverse the whole document using these pointers,
+ *   but should be used only when necessary.
  *
  *  \subsection error strict nc_err **error
  *
@@ -840,6 +842,12 @@
  * - *version 5*
  *   - Adds support for monitoring external files.
  *   - Backward compatible.
+ * - *version 6*
+ *   - Every callback now receives the corresponding node from both the old
+ *   configuration and the new configuration. This holds for every operation
+ *   except XMLDIFF_ADD (the old node is NULL) and XMLDIFF_REM (the new node
+ *   is NULL).
+ *   - Backward incompatible.
  *
  * \section transapiTutorial transAPI Tutorial
  *
@@ -921,8 +929,7 @@
  * \n\n
  * The original model has an RPC 'my-rpc' with a single argument 'arg1'. Augment model is adding another argument 'arg2'. The original module 'my-rpc' code and the newly generated code will be the same:
  * ~~~~~~~{.c}
- * nc_reply *rpc_my_rpc(xmlNodePtr input[])
- * {
+ * nc_reply *rpc_my_rpc(xmlNodePtr input[]) {
  * 	xmlNodePtr arg1 = input[0];
  *
  * 	return NULL;
@@ -937,8 +944,7 @@
  * ~~~~~~~
  * To be able to work with the second argument 'arg2', the code must be changed to:
  * ~~~~~~~{.c}
- * nc_reply *rpc_my_rpc(xmlNodePtr input[])
- * {
+ * nc_reply *rpc_my_rpc(xmlNodePtr input[]) {
  * 	xmlNodePtr arg1 = input[0];
  * 	xmlNodePtr arg2 = input[1];
  *
@@ -972,8 +978,7 @@
  * enum {ON, OFF, BUSY} status;
  * pthread_t thread;
  *
- * void * auxiliary_make_toast(void * time)
- * {
+ * void * auxiliary_make_toast(void * time) {
  *     sleep(*(int*)time);
  *
  *     if (status == BUSY) {
@@ -998,8 +1003,7 @@
  * element, which means that it is supposed to be switched off. Then it is up to
  * the startup content if the toaster will be turned on.\n\n
  * ~~~~~~~{.c}
- * int transapi_init(xmlDocPtr * running)
- * {
+ * int transapi_init(xmlDocPtr * running) {
  *     status = OFF;
  *     printf("Toaster initialized!\n");
  *     return(EXIT_SUCCESS);
@@ -1010,8 +1014,7 @@
  * be run just before the module unloads. No other function of the transAPI
  * module is called after the 'transapi_close()'.\n\n
  * ~~~~~~~{.c}
- * void transapi_close()
- * {
+ * void transapi_close() {
  *     printf("Toaster ready for unplugging!\n");
  * }
  * ~~~~~~~
@@ -1019,8 +1022,7 @@
  * -# Fill 'get_state_data()' function. This function returns (only!) the state
  * data (defined with 'config false').\n\n
  * ~~~~~~~{.c}
- * char * get_state_data(char * model, char * running, struct nc_err **err)
- * {
+ * char * get_state_data(char * model, char * running, struct nc_err **err) {
  *     return strdup("<?xml version="1.0"?><toaster xmlns="http://netconfcentral.org/ns/toaster"> ... </toaster>");
  * }
  * ~~~~~~~
@@ -1032,8 +1034,7 @@
  * More detailed information about the callback parameters can be found above in
  * the \ref understanding-parameters section.\n\n
  * ~~~~~~~{.c}
- * int callback_toaster_toaster (void ** data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err** error)
- * {
+ * int callback_toaster_toaster(void ** data, XMLDIFF_OP op, xmlNodePtr old_node, xmlNodePtr new_node, struct nc_err** error) {
  *     if (op & XMLDIFF_ADD) {
  *         status = ON;
  *     } else if (op & XMLDIFF_REM) {
@@ -1050,8 +1051,7 @@
  * -# Fill the RPC message callback functions with the code that will be run
  * when an RPC message with the defined operation arrives.\n\n
  * ~~~~~~~
- * nc_reply * rpc_make_toast (xmlNodePtr input[])
- * {
+ * nc_reply * rpc_make_toast (xmlNodePtr input[]) {
  *     xmlNodePtr toasterDoneness = input[0];
  *     xmlNodePtr toasterToastType = input[1];
  *
@@ -1070,8 +1070,7 @@
  * }
  * ~~~~~~~
  * ~~~~~~~
- * nc_reply * rpc_cancel_toast (xmlNodePtr input[])
- * {
+ * nc_reply * rpc_cancel_toast (xmlNodePtr input[]) {
  *     nc_reply * reply;
  *
  *     if (status == BUSY) {
@@ -1092,8 +1091,7 @@
  * specified callback is executed. It's up to the callback function to open the
  * file for reading and update get the current configuration data.\n\n
  * ~~~~~~~
- * int example_callback(const char *filepath, xmlDocPtr *running, int* execflag)
- * {
+ * int example_callback(const char *filepath, xmlDocPtr *running, int* execflag) {
  *     // do nothing
  *     *running = NULL;
  *     *execflag = 0;

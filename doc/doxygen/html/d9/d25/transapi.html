@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.9.0-9</span>
+   &#160;<span id="projectnumber">0.9.0-21_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -109,7 +109,7 @@ $(document).ready(function(){initNavTree('d9/d25/transapi.html','../../');});
 <h1><a class="anchor" id="understanding-parameters"></a>
 Understanding callback parameters</h1>
 <p>Every transapi callback function has fixed set of parameters. Function header looks like this:</p>
-<div class="fragment"><div class="line"><span class="keywordtype">int</span> callback_path_into_configuration_xml(<span class="keywordtype">void</span> **data, <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> op, xmlNodePtr node, <span class="keyword">struct</span> nc_err **error)</div>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> callback_path_into_configuration_xml(<span class="keywordtype">void</span> **data, <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> op, xmlNodePtr old_node, xmlNodePtr new_node, <span class="keyword">struct</span> nc_err **error)</div>
 </div><!-- fragment --><h2><a class="anchor" id="data"></a>
 void **data</h2>
 <p>This parameter was added to provide a way to share any data between callbacks. libnetconf never change (or even access) content of this parameter. Initialy content of 'data' is NULL. transapi module may use 'data' as it like but is also fully responsible for correct memory handling and freeing of no longer needed memory referenced by 'data'.</p>
@@ -123,7 +123,7 @@ XMLDIFF_OP op</h2>
 </ul>
 </li>
 <li>Nodes of type leaf can be changed.<ul>
-<li>XMLDIFF_MOD = node content was changed</li>
+<li>XMLDIFF_MOD = Node content was changed.</li>
 </ul>
 </li>
 <li>Container nodes are informed about events occured on descendants. It can be distinguished whether the event was processed or not.<ul>
@@ -152,8 +152,7 @@ Valid combinations of events</h3>
 </li>
 </ul>
 <p>Ex.: Leaf processing </p>
-<div class="fragment"><div class="line"><span class="keywordtype">int</span> callback_some_leaf(<span class="keywordtype">void</span> **data, <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> op, xmlNodePtr node, <span class="keyword">struct</span> nc_err **error)</div>
-<div class="line">{</div>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> callback_some_leaf(<span class="keywordtype">void</span> **data, <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> op, xmlNodePtr old_node, xmlNodePtr new_node, <span class="keyword">struct</span> nc_err **error) {</div>
 <div class="line">  <span class="keywordflow">if</span> (op &amp; <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a27c20d1fff6c4a35673bea8c6bbe23c4">XMLDIFF_MOD</a>) {</div>
 <div class="line">    <span class="comment">// change configured value</span></div>
 <div class="line">  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (op &amp; <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488a149cdeec9d87bdbb700861f773759129">XMLDIFF_REM</a>) {</div>
@@ -168,8 +167,8 @@ Valid combinations of events</h3>
 <div class="line">  <span class="keywordflow">return</span>(EXIT_SUCCESS);</div>
 <div class="line">}</div>
 </div><!-- fragment --><h2><a class="anchor" id="node"></a>
-xmlNodePtr node</h2>
-<p>Pointer to a particular node instance in configuration document where the event was detected. When the node was removed pointer is set to its instance in old configuration snapshot.</p>
+xmlNodePtr old_node &amp; new_node</h2>
+<p>Pointer to a particular node instance in either the old or new configuration document, in which the event was detected. When the node was removed, new node is not set and when the node was deleted, old node is not set. It is safe to traverse the whole document using these pointers, but should be used only when necessary.</p>
 <h2><a class="anchor" id="error"></a>
 strict nc_err **error</h2>
 <p>libnetconf's error structure. May (and should) be used to specify error when it occurs and callback returns EXIT_FAILURE. Error description is forwarded to client.</p>
@@ -202,6 +201,11 @@ History of the transAPI versions</h1>
 <li><em>version 5</em><ul>
 <li>Adds support for monitoring external files.</li>
 <li>Backward compatible.</li>
+</ul>
+</li>
+<li><em>version 6</em><ul>
+<li>Every callback now receives the corresponding node from both the old configuration and the new configuration. This holds for every operation except XMLDIFF_ADD (the old node is NULL) and XMLDIFF_REM (the new node is NULL).</li>
+<li>Backward incompatible.</li>
 </ul>
 </li>
 </ul>
@@ -339,7 +343,7 @@ We ignore it in our example - the toaster is on each start without the root elem
 <br/>
 More detailed information about the callback parameters can be found above in the <a class="el" href="../../d9/d25/transapi.html#understanding-parameters">Understanding callback parameters</a> section.<br/>
 <br/>
-<div class="fragment"><div class="line"><span class="keywordtype">int</span> callback_toaster_toaster (<span class="keywordtype">void</span> ** data, <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> op, xmlNodePtr node, <span class="keyword">struct</span> nc_err** error)</div>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> callback_toaster_toaster (<span class="keywordtype">void</span> ** data, <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> op, xmlNodePtr old_node, xmlNodePtr new_node, <span class="keyword">struct</span> nc_err** error)</div>
 <div class="line">{</div>
 <div class="line">    <span class="keywordflow">if</span> (op &amp; XMLDIFF_ADD) {</div>
 <div class="line">        status = ON;</div>
@@ -432,7 +436,7 @@ Integrating to a server</h2>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Nov 27 2014 11:09:49 for libnetconf by
+    <li class="footer">Generated on Thu Dec 4 2014 13:54:43 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

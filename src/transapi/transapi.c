@@ -33,23 +33,24 @@ static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info,
 
 	DBG("Transapi revert XML tree (%s, proposed operation %d).", tree->path, tree->op);
 	/* discard proposed changes */
-	if ((tree->op & XMLDIFF_ADD) && tree->node != NULL ) {
+	if ((tree->op & XMLDIFF_ADD) && tree->new_node != NULL ) {
 		/* remove element to add from the new XML tree */
-		xmlUnlinkNode(tree->node);
-		xmlFreeNode(tree->node);
-		tree->node = NULL;
-	} else if ((tree->op & XMLDIFF_REM) && tree->node != NULL ) {
+		xmlUnlinkNode(tree->new_node);
+		xmlFreeNode(tree->new_node);
+		tree->new_node = NULL;
+	} else if ((tree->op & XMLDIFF_REM) && tree->old_node != NULL ) {
 		/* reconnect old node supposed to be removed back to the new XML tree */
-		if (tree->node->parent->type != XML_DOCUMENT_NODE) {
-			parent = find_element_equiv(info->new, tree->node->parent, info->model, info->keys);
-			xmlAddChild(parent, xmlCopyNode(tree->node, 1));
+		if (tree->old_node->parent->type != XML_DOCUMENT_NODE) {
+			parent = find_element_equiv(info->new, tree->old_node->parent, info->model, info->keys);
+			xmlAddChild(parent, xmlCopyNode(tree->old_node, 1));
 		} else {
 			/* we are reconnecting the whole tree */
-			xmlnode = xmlDocCopyNode(tree->node, info->new, 1);
+			xmlnode = xmlDocCopyNode(tree->old_node, info->new, 1);
 			xmlDocSetRootElement(info->new, xmlnode);
 		}
-	} else if ((tree->op & XMLDIFF_MOD) && tree->node != NULL ) {
+	} else if ((tree->op & XMLDIFF_MOD) && tree->new_node != NULL) {
 		/* replace new node with the previous one */
+		/* TODO since transAPI v6 this can probably be simpler */
 		for (child = tree->children; child != NULL; child = child->next) {
 			if (child->priority != PRIORITY_NONE) {
 				/* this node is already solved by previous recursion */
@@ -60,17 +61,17 @@ static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info,
 			 * we have node with priority 0, it means it was not solved
 			 * yet and we want to replace it by the previous config data
 			 */
-			parent = find_element_equiv(info->old, tree->node->parent, info->model, info->keys);
+			parent = find_element_equiv(info->old, tree->new_node->parent, info->model, info->keys);
 			for (xmlnode = parent->children; xmlnode != NULL; xmlnode = xmlnode->next) {
-				if (matching_elements(tree->node, xmlnode, info->keys, 0)) {
+				if (matching_elements(tree->new_node, xmlnode, info->keys, 0)) {
 					break;
 				}
 			}
 			if (xmlnode != NULL ) {
 				/* replace subtree */
-				xmlReplaceNode(child->node, xmlCopyNode(xmlnode, 1));
-				xmlFreeNode(child->node);
-				child->node = NULL;
+				xmlReplaceNode(child->new_node, xmlCopyNode(xmlnode, 1));
+				xmlFreeNode(child->new_node);
+				child->new_node = NULL;
 			} else {
 				WARN("Unable to discard not executed changes from XML tree: previous subtree version not found (path %s).", child->path);
 			}
@@ -80,7 +81,7 @@ static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info,
 
 static int transapi_revert_callbacks_recursive_own(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err** error)
 {
-	xmlNodePtr xmlnode = NULL;
+	xmlNodePtr xmloldnode = NULL, xmlnewnode = NULL;
 	int ret;
 	XMLDIFF_OP op = XMLDIFF_NONE;
 	struct nc_err *new_error = NULL;
@@ -112,19 +113,20 @@ static int transapi_revert_callbacks_recursive_own(const struct transapi_callbac
 		 * to revert applied changes. XML tree is reverted in
 		 * nc_rpc_apply()
 		 */
-		if ((tree->op & XMLDIFF_ADD) && tree->node != NULL ) {
+		if ((tree->op & XMLDIFF_ADD) && tree->new_node != NULL) {
 			/* node was added, now remove it */
 			op = XMLDIFF_REM;
-			xmlnode = tree->node;
-		} else if ((tree->op & XMLDIFF_REM) && tree->node != NULL ) {
+			xmloldnode = tree->new_node;
+		} else if ((tree->op & XMLDIFF_REM) && tree->old_node != NULL) {
 			/* node was removed, add it back */
 			op = XMLDIFF_ADD;
-			xmlnode = tree->node;
+			xmlnewnode = tree->old_node;
 		}
-		if ((tree->op & (XMLDIFF_MOD | XMLDIFF_CHAIN | XMLDIFF_SIBLING | XMLDIFF_REORDER)) && tree->node != NULL ) {
+		if ((tree->op & (XMLDIFF_MOD | XMLDIFF_CHAIN | XMLDIFF_SIBLING | XMLDIFF_REORDER)) && tree->new_node != NULL) {
 			/* keep operations and apply it with previous version of the data */
-			xmlnode = find_element_equiv(info->old, tree->node, info->model, info->keys);
-			if (xmlnode != NULL ) {
+			xmloldnode = tree->new_node;
+			xmlnewnode = find_element_equiv(info->old, tree->new_node, info->model, info->keys);
+			if (xmlnewnode != NULL) {
 				if (tree->op & XMLDIFF_MOD) {
 					op |= XMLDIFF_MOD;
 				}
@@ -147,7 +149,7 @@ static int transapi_revert_callbacks_recursive_own(const struct transapi_callbac
 		DBG("Transapi revert callback %s with op %d.", tree->path, op);
 
 		/* revert changes */
-		ret = tree->callback(&(info->transapis->tapi->data_clbks->data), op, xmlnode, &new_error);
+		ret = tree->callback(&(info->transapis->tapi->data_clbks->data), op, xmloldnode, xmlnewnode, &new_error);
 
 		if (ret != EXIT_SUCCESS) {
 			WARN("Reverting configuration changes via transAPI failed, configuration may be inconsistent.");
@@ -248,7 +250,7 @@ static int transapi_apply_callbacks_recursive_own(const struct transapi_callback
 		strcpy(msg+strlen(msg)-3, ".");
 		DBG(msg);
 		free(msg);
-		ret = tree->callback(&(info->transapis->tapi->data_clbks->data), tree->op, tree->node, &new_error);
+		ret = tree->callback(&(info->transapis->tapi->data_clbks->data), tree->op, tree->old_node, tree->new_node, &new_error);
 		if (ret != EXIT_SUCCESS) {
 			ERROR("Callback for path %s failed (%d).", tree->path, ret);
 			if (*error != NULL) {

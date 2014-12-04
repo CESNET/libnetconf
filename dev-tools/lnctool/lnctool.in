@@ -50,7 +50,7 @@ except ImportError as e:
 	exit(1)
 
 # transAPI version built by this tool
-transapi_version = 5
+transapi_version = 6
 
 # paths to transformation stylesheets and schemas
 RNGLIB='@RNGLIB@'
@@ -83,7 +83,7 @@ def convert_to_yin(input_file_name, search_path):
 	yin_file.close()
 
 	return(model)
-	
+
 def generate_validators(yin_model_path, augment_models_paths, search_path, features):
 	(yin_file_name, ext) = os.path.splitext(os.path.basename(yin_model_path))
 	yin_file_name = args.output_dir+'/'+os.path.basename(yin_file_name)
@@ -236,8 +236,8 @@ def generate_init_callback():
 	content += ' * @param[out] running\tCurrent configuration of managed device.\n\n'
 	content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
 	content += ' */\n'
-	content += 'int transapi_init(xmlDocPtr *running)\n'
-	content += '{\n\treturn EXIT_SUCCESS;\n}\n\n'
+	content += 'int transapi_init(xmlDocPtr *running) {\n'
+	content += '\treturn EXIT_SUCCESS;\n}\n\n'
 
 	return (content)
 
@@ -246,8 +246,8 @@ def generate_close_callback():
 	content += '/**\n'
 	content += ' * @brief Free all resources allocated on plugin runtime and prepare plugin for removal.\n'
 	content += ' */\n'
-	content += 'void transapi_close(void)\n'
-	content += '{\n\treturn;\n}\n\n'
+	content += 'void transapi_close(void) {\n'
+	content += '\treturn;\n}\n\n'
 
 	return (content)
 
@@ -262,8 +262,8 @@ def generate_state_callback():
 	content += ' * @param[out] err  Double pointer to error structure. Fill error when some occurs.\n'
 	content += ' * @return State data as libxml2 xmlDocPtr or NULL in case of error.\n'
 	content += ' */\n'
-	content += 'xmlDocPtr get_state_data(xmlDocPtr model, xmlDocPtr running, struct nc_err **err)\n'
-	content += '{\n\treturn(NULL);\n}\n'
+	content += 'xmlDocPtr get_state_data(xmlDocPtr model, xmlDocPtr running, struct nc_err **err) {'
+	content += '\treturn(NULL);\n}\n'
 
 	return(content)
 
@@ -309,13 +309,14 @@ def generate_config_callbacks(name, paths, namespaces):
 		content += ' *\n'
 		content += ' * @param[in] data\tDouble pointer to void. Its passed to every callback. You can share data using it.\n'
 		content += ' * @param[in] op\tObserved change in path. XMLDIFF_OP type.\n'
-		content += ' * @param[in] node\tModified node. if op == XMLDIFF_REM its copy of node removed.\n'
+		content += ' * @param[in] old_node\tOld configuration node. If op == XMLDIFF_ADD, it is NULL.\n'
+		content += ' * @param[in] new_node\tNew configuration node. if op == XMLDIFF_REM, it is NULL.\n'
 		content += ' * @param[out] error\tIf callback fails, it can return libnetconf error structure with a failure description.\n'
 		content += ' *\n'
 		content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
 		content += ' */\n'
 		content += '/* !DO NOT ALTER FUNCTION SIGNATURE! */\n'
-		content += 'int '+func_name+'(void **data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err **error)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
+		content += 'int '+func_name+'(void **data, XMLDIFF_OP op, xmlNodePtr old_node, xmlNodePtr new_node, struct nc_err **error) {\n\treturn EXIT_SUCCESS;\n}\n\n'
 		funcs_count += 1
 
 	# in the end of file write strucure connecting paths in XML data with callback function
@@ -356,7 +357,7 @@ def generate_rpc_callbacks(doc):
 	for rpc in rpcs:
 		rpc_name = rpc.prop('name')
 		# create callback function
-		rpc_function = 'nc_reply *rpc_'+re.sub(r'[^\w]', '_', rpc_name)+'(xmlNodePtr input[])\n{\n'
+		rpc_function = 'nc_reply *rpc_'+re.sub(r'[^\w]', '_', rpc_name)+'(xmlNodePtr input[]) {\n'
 		# find all defined inputs
 		rpc_input = ctxt.xpathEval('//yang:rpc[@name="'+rpc.prop('name')+'"]/yang:input/*')
 		arg_order = '{'
@@ -390,7 +391,7 @@ def generate_rpc_callbacks(doc):
 
 def generate_file_callbacks():
 	content = ''
-	
+
 	content += '/*\n'
 	content += ' * Structure transapi_file_callbacks provides mapping between specific files\n'
 	content += ' * (e.g. configuration file in /etc/) and the callback function executed when\n'
@@ -411,8 +412,8 @@ def generate_file_callbacks():
 	content += 'struct transapi_file_callbacks file_clbks = {\n'
 	content += '\t.callbacks_count = 0,\n'
 	content += '\t.callbacks = {{NULL}}\n'
-	content += '};\n\n'	
-	
+	content += '};\n\n'
+
 	return(content)
 
 # "main" starts here
