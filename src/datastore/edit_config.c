@@ -2409,8 +2409,6 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 	xmlNodePtr orig_node, edit_node;
 	keyList keys;
 
-	assert(error != NULL);
-
 	keys = get_keynode_list(model);
 
 	if (error != NULL) {
