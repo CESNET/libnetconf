@@ -1736,7 +1736,9 @@ static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_no
 
 	if (edit_node == NULL || orig_doc == NULL) {
 		ERROR("%s: invalid input parameter.", __func__);
-		*error = nc_err_new(NC_ERR_OP_FAILED);
+		if (error != NULL) {
+			*error = nc_err_new(NC_ERR_OP_FAILED);
+		}
 		return (NULL);
 	}
 
@@ -2094,10 +2096,12 @@ static int is_leaf_list(xmlNodePtr node, xmlDocPtr model, struct nc_err** error)
 
 	model_node = find_element_model(node, model);
 	if (model_node == NULL) {
-		ERROR("unknown element %s!", (char* )(node->name));
-		*error = nc_err_new(NC_ERR_UNKNOWN_ELEM);
-		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, (char*) (node->name));
-		return (-1);
+		WARN("unknown element %s!", (char* )(node->name));
+		if (error != NULL) {
+			*error = nc_err_new(NC_ERR_UNKNOWN_ELEM);
+			nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, (char*) (node->name));
+		}
+		return (0);
 	} else if (xmlStrcmp(model_node->name, BAD_CAST "leaf-list") == 0) {
 		return (1);
 	} else {
@@ -2124,13 +2128,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 			 * the value will be updated, in case of leaf-list, the item will
 			 * be created
 			 */
-			aux = find_element_model(edit_node->parent, model);
-			if (aux == NULL) {
-				ERROR("unknown element %s!", (char*)(edit_node->parent->name));
-				*error = nc_err_new(NC_ERR_UNKNOWN_ELEM);
-				nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, (char*)(edit_node->parent->name));
-				return (EXIT_FAILURE);
-			} else if (xmlStrcmp(aux->name, BAD_CAST "leaf-list") == 0) {
+			if (is_leaf_list(edit_node->parent, model, error)) {
 				/*
 				 * according to RFC 6020, sec. 7.7.7, leaf-list entries can be
 				 * created or deleted, but they can not be modified
