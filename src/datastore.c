@@ -5053,7 +5053,7 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 			}
 		}
 		if (filter->subtree_filter->children != NULL) {
-			if(data_filtered[1]->children != NULL) {
+			if(data_filtered[1] != NULL && data_filtered[1]->children != NULL) {
 				*new = xmlCopyNode(data_filtered[1]->children, 1);
 			} else {
 				*new = NULL;
