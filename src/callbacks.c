@@ -163,7 +163,7 @@ static char* callback_sshauth_password_default (const char* username,
 {
 	char* buf, *newbuf;
 	int buflen = 1024, len = 0;
-	int c = 0;
+	char c = 0;
 	struct termios newterm, oldterm;
 
 	buf = malloc (buflen * sizeof(char));
@@ -209,7 +209,7 @@ static char* callback_sshauth_password_default (const char* username,
 				buf = newbuf;
 			}
 		}
-		buf[len++] = (char)c;
+		buf[len++] = c;
 	}
 	buf[len++] = 0; /* terminating null byte */
 
