@@ -798,7 +798,14 @@
  *   configuration document, in which the event was detected. When the node was
  *   removed, new node is not set and when the node was deleted, old node is
  *   not set. It is safe to traverse the whole document using these pointers,
- *   but should be used only when necessary.
+ *   but should be used only when necessary, since transAPI itself does this
+ *   for you.
+ *
+ *   \note It is safe to traverse these nodes, but any modification will
+ *   normally be lost. If you need to change some nodes, you can do so, but
+ *   only in the new_node subtree (not available on XMLDIFF_REM). Then, for
+ *   these changes to be written to the datastore, change 'config_modified'
+ *   to 1. This variable is generated into every module.
  *
  *  \subsection error strict nc_err **error
  *
@@ -857,36 +864,37 @@
  * [netopeer]: https://code.google.com/p/netopeer
  *
  * On this page we will show how to write a simple module
- * for controlling [example toaster](http://netconfcentral.org/modulereport/toaster).
+ * for controlling an example Turing machine.
+ * The full implementation can be found in the [Netopeer project](https://code.google.com/p/netopeer).
  * \note To install libnetconf follow the instructions on the \ref install page.
  *
  * \subsection transapiTutorial-prepare Preparations
  *
- * In this example we will work with the data model of the toaster provided
- * by Andy Bierman at NETCONF CENTRAL (<http://dld.netconfcentral.org/src/toaster@2009-11-20.yang>).
+ * In this example we will work with the data model of a Turing machine provided
+ * by the Pyang project (<https://code.google.com/p/pyang/source/browse/trunk/doc/tutorial/examples/turing-machine.yang>).
  *
  * First, we need to identify important parts of the configuration data.
- * Since the toaster data model describes only one configurable element,
+ * Since the turing-machine data model describes only one configurable subtree,
  * we have an easy choice.
  * So, we can create the 'paths_file' file containing the specification of our
  * chosen element and mapping prefixes with URIs for any used namespace.
  *
  * Our file may look like this (irrespective of order):
  * ~~~~~~~{.xml}
- * toaster=http://netconfcentral.org/ns/toaster
- * /toaster:toaster
+ * tm=http://example.net/turing-machine
+ * /tm:turing-machine/tm:transition-function/tm:delta
  * ~~~~~~~
  *
  * \subsection transapiTutorial-generating Generating code
  *
- * -# Create a new directory for the toaster module and move the data model and the path file into it:
+ * -# Create a new directory for the turing-machine module and move the data model and the path file into it:
  * ~~~~~~~{.sh}
- * $ mkdir toaster && cd toaster/
- * $ mv ../toaster@2009-11-20.yang ../paths_file .
+ * $ mkdir turing-machine && cd turing-machine/
+ * $ mv ../turing-machine.yang ../paths_file .
  * ~~~~~~~
  * -# Run *lnctool(1)* for transapi:
  * ~~~~~~~{.sh}
- * $ lnctool --model ./toaster@2009-11-20.yang transapi --paths ./paths_file
+ * $ lnctool --model ./turing-machine.yang transapi --paths ./paths_file
  * ~~~~~~~
  *
  * Besides the generated source code of our transAPI module and GNU Build
@@ -928,34 +936,58 @@
  * ~~~~~~~
  * .
  * \n
- * However, the case when a model is augmenting na RPC in the original model is special and ONLY the first way of augmenting a module can and MUST be used.
+ * However, the case when a model is augmenting an RPC in the original model is special and ONLY the first way of augmenting a module can and MUST be used.
  *
  * \subsection transapiTutorial-coding Filling up functionality
  *
- * Here we show the simplest example of a toaster simulating module.
- * It is working but does not deal with multiple access and threads correctly.
- * Better example may can be found in the netopeer-server-sl source codes located
- * in the [Netopeer project][netopeer] repository (server-sl/toaster/toaster.c).
+ * Here we show a turing-machine simulating module. The full implementation can
+ * be found in the [Netopeer project][netopeer] repository (transAPI/turing/turing-machine.c).
+ * The example functions and all the code is simplified and NOT thread-safe.
  *
- * -# Open 'toaster.c' file with your favorite editor:\n\n
+ * -# Open 'turing-machine.c' file with your favorite editor:\n\n
  * ~~~~~~~{.sh}
- * $ vim toaster.c
+ * $ vim turing-machine.c
  * ~~~~~~~
  * \n
  * -# Add global variables and auxiliary functions. This is completely up to you,
- * libnetconf does not work with this anyway.\n\n
+ * libnetconf does not work with this anyway. For full explanation of this
+ * code look into the referenced working example. It should be called to run
+ * the Turing machine, once set up, but some parts were omitted.\n\n
  * ~~~~~~~{.c}
- * enum {ON, OFF, BUSY} status;
- * pthread_t thread;
+ * static tape_symbol *tm_head = NULL;
+ * static tape_symbol *tm_tape = NULL;
+ * static cell_index tm_tape_len = 0;
+ * static state_index tm_state = 0;
+ * static struct delta_rule *tm_delta = NULL;
  *
- * void * auxiliary_make_toast(void * time) {
- *     sleep(*(int*)time);
+ * static void* tm_run(void *arg) {
+ * 	int changed = 1;
+ * 	struct delta_rule *rule = NULL;
  *
- *     if (status == BUSY) {
- *         status = ON;
- *         ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>done</toastStatus></toastDone>");
- *     }
- *     return(NULL);
+ * 	while(changed) {
+ * 		changed = 0;
+ *
+ * 		if (tm_head < tm_tape || (tm_head - tm_tape) >= tm_tape_len) {
+ * 			break;
+ * 		}
+ *
+ * 		for (rule = tm_delta; rule != NULL; rule = rule->next) {
+ * 			if (rule->in_state == tm_state && rule->in_symbol == tm_head[0]) {
+ * 				if (rule->out_state != 0xffff) {
+ * 					tm_state = rule->out_state;
+ * 				}
+ * 				tm_head[0] = rule->out_symbol;
+ * 				tm_head = tm_head + rule->head_move;
+ *
+ * 				changed = 1;
+ *
+ * 				usleep(100);
+ * 				break;
+ * 			}
+ * 		}
+ * 	}
+ *
+ * 	return (NULL);
  * }
  * ~~~~~~~
  * \n
@@ -969,23 +1001,28 @@
  * data are then compared with the startup configuration and only the diverging
  * values are set according to the startup content using the appropriate
  * transAPI callback functions.\n\n
- * We ignore it in our example - the toaster is on each start without the root
- * element, which means that it is supposed to be switched off. Then it is up to
- * the startup content if the toaster will be turned on.\n\n
+ * We ignore it in our example - the Turing machine does not have any
+ * configuration that could be read from (depend on the state of) the system.\n\n
  * ~~~~~~~{.c}
- * int transapi_init(xmlDocPtr * running) {
- *     status = OFF;
- *     printf("Toaster initialized!\n");
- *     return(EXIT_SUCCESS);
+ * int transapi_init(xmlDocPtr *running) {
+ *     return EXIT_SUCCESS;
  * }
  * ~~~~~~~
  * \n
  * -# Locate the 'transapi_close()' function and fill it with actions that will
  * be run just before the module unloads. No other function of the transAPI
- * module is called after the 'transapi_close()'.\n\n
+ * module is called after the 'transapi_close()'. We free up all the temporary
+ * variables used to store the current state of the machine.\n\n
  * ~~~~~~~{.c}
- * void transapi_close() {
- *     printf("Toaster ready for unplugging!\n");
+ * void transapi_close(void) {
+ * 	struct delta_rule *rule;
+ *
+ * 	free(tm_tape);
+ *
+ * 	for (rule = tm_delta; rule != NULL; rule = tm_delta) {
+ * 		tm_delta = rule->next;
+ * 		free_delta_rule(rule);
+ * 	}
  * }
  * ~~~~~~~
  * \n
@@ -993,85 +1030,106 @@
  * data (defined with 'config false').\n\n
  * ~~~~~~~{.c}
  * char * get_state_data(char * model, char * running, struct nc_err **err) {
- *     return strdup("<?xml version="1.0"?><toaster xmlns="http://netconfcentral.org/ns/toaster"> ... </toaster>");
+ *     return strdup("<?xml version="1.0"?><turing-machine xmlns="http://example.net/turing-machine"> ... </turing-machine>");
  * }
  * ~~~~~~~
  * \n
  * -# Complete the configuration callbacks (they have the `callback_` prefix).
  * The 'op' parameter can be used to determine operation which was done with the
- * node. Parameter 'node' holds a copy of node after change (or before change
- * if op == XMLDIFF_REM).\n\n
- * More detailed information about the callback parameters can be found above in
+ * node. Parameter 'old_node' holds a copy of node before the change and 'new_node'
+ * after the change. More detailed information about the callback parameters can be found above in
  * the \ref understanding-parameters section.\n\n
+ * In this code, we treat modification as a removal and an immediate addition to
+ * limit branching and simplifiy the code.
  * ~~~~~~~{.c}
- * int callback_toaster_toaster(void ** data, XMLDIFF_OP op, xmlNodePtr old_node, xmlNodePtr new_node, struct nc_err** error) {
- *     if (op & XMLDIFF_ADD) {
- *         status = ON;
- *     } else if (op & XMLDIFF_REM) {
- *         status = OFF;
- *     } else {
- *         *error = nc_err_new(NC_ERR_OP_FAILED);
- *         nc_err_set(*error, NC_ERR_PARAM_MSG, "Unsupported operation.");
- *         return(EXIT_FAILURE);
- *     }
- *     return(EXIT_SUCCESS);
+ * int callback_tm_turing_machine_tm_transition_function_tm_delta(void **data, XMLDIFF_OP op, xmlNodePtr old_node, xmlNodePtr new_node, struct nc_err **error) {
+ * 	char *content = NULL;
+ * 	xmlNodePtr n1, n2;
+ * 	struct delta_rule *rule = NULL;
+ *
+ * 	if (op == XMLDIFF_MOD) {
+ * 		op = op | (XMLDIFF_REM & XMLDIFF_ADD);
+ * 	}
+ *
+ * 	if (op == XMLDIFF_REM) {
+ * 		//remove the rule from the internal list
+ * 	}
+ *
+ * 	if (op == XMLDIFF_ADD) {
+ * 		//parse the children of new_node and add the new rule to the list
+ * 	}
+ *
+ * 	return EXIT_SUCCESS;
  * }
  * ~~~~~~~
  * \n
  * -# Fill the RPC message callback functions with the code that will be run
  * when an RPC message with the defined operation arrives.\n\n
- * ~~~~~~~
- * nc_reply * rpc_make_toast (xmlNodePtr input) {
- *     xmlNodePtr toasterDoneness = get_rpc_node("toasterDoneness", input);
- *     xmlNodePtr toasterToastType = get_rpc_node("toasterToastType", input);
+ * The RPC defines an optional parameter 'tape-content', so we use it
+ * if specified, otherwise use the default value.\n\n
+ * ~~~~~~~{.c}
+ * nc_reply *rpc_initialize(xmlNodePtr input) {
+ * 	xmlNodePtr tape_content = get_rpc_node("tape-content", input);
+ * 	struct nc_err* e = NULL;
  *
- *     nc_reply * reply;
- *     int doneness = atoi(xmlNodeGetContent(toasterDoneness));
+ * 	free(tm_tape);
  *
- *     if (status == ON) {
- *         status = BUSY;
- *         pthread_create(&thread, NULL, auxiliary_make_toast, (void*)&doneness);
- *         pthread_detach(thread);
- *         reply = nc_reply_ok();
- *     } else {
- *         reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
- *     }
- *     return(reply);
+ * 	tm_state = 0;
+ * 	tm_tape = tm_head = (char*)xmlNodeGetContent(tape_content);
+ *
+ * 	if (tm_tape == NULL) {
+ * 		tm_tape = tm_head = strdup("");
+ * 	}
+ *
+ * 	tm_tape_len = strlen(tm_tape) + 1;
+ * 	pthread_mutex_unlock(&tm_run_lock);
+ *
+ * 	return nc_reply_ok();
  * }
  * ~~~~~~~
- * ~~~~~~~
- * nc_reply * rpc_cancel_toast (xmlNodePtr input) {
- *     nc_reply * reply;
+ * \n
+ * To run the machine, we create another thread and let it
+ * run in the background. There are no parameters, so we ignore
+ * the input.\n\n
+ * ~~~~~~~{.c}
+ * nc_reply *rpc_run(xmlNodePtr input) {
+ * 	pthread_t tm_run_thread;
+ * 	struct nc_err *e;
+ * 	char *emsg = NULL;
+ * 	int r;
  *
- *     if (status == BUSY) {
- *         status = ON;
- *         ncntf_event_new(-1, NCNTF_GENERIC, "<toastDone><toastStatus>canceled</toastStatus></toastDone>");
- *         reply = nc_reply_ok();
- *     } else {
- *         reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
- *     }
- *     return(reply);
+ * 	if ((r = pthread_create(&tm_run_thread, NULL, tm_run, NULL)) != 0) {
+ * 		e = nc_err_new(NC_ERR_OP_FAILED);
+ * 		asprintf(&emsg, "Unable to start turing machine thread (%s)", strerror(r));
+ * 		nc_err_set(e, NC_ERR_PARAM_MSG, emsg);
+ * 		free(emsg);
+ * 		return nc_reply_error(e);
+ * 	}
+ *
+ * 	pthread_detach(tm_run_thread);
+ *
+ * 	return nc_reply_ok();
  * }
  * ~~~~~~~
  * \n
  * -# Optionally, you can set monitoring for some external configuration file.\n\n
- * Let's say, that our toaster has a textual configuration located in the
- * `/etc/toaster.conf` file. libnetconf can monitor this file for modification
+ * Let's say, that our Turing machine has a textual configuration located in the
+ * `/etc/turing.conf` file. libnetconf can monitor this file for modification
  * and whenever an external application changes content of the file, the
  * specified callback is executed. It's up to the callback function to open the
- * file for reading and update get the current configuration data.\n\n
- * ~~~~~~~
+ * file for reading and get the current configuration data.\n\n
+ * ~~~~~~~{.c}
  * int example_callback(const char *filepath, xmlDocPtr *running, int* execflag) {
  *     // do nothing
  *     *running = NULL;
  *     *execflag = 0;
  *
- *     return(EXIT_SUCCESS);
+ *     return EXIT_SUCCESS;
  * }
  *
  * struct transapi_file_callbacks file_clbks = {
  *     .callbacks_count = 1,
- *     .callbacks = {{.path = "/etc/toaster.conf", .func = example_callback}}
+ *     .callbacks = {{.path = "/etc/turing.conf", .func = example_callback}}
  * };
  * ~~~~~~~
  * \n
@@ -1087,7 +1145,7 @@
  *
  * \subsection transapiTutorial-compiling Compiling module
  *
- * Following sequence of commands will produce the shared library 'toaster.so' which may be loaded into libnetconf:
+ * Following sequence of commands will produce the shared library 'turing-machine.so' which may be loaded into libnetconf:
  * ~~~~~~~{.sh}
  * $ autoreconf
  * $ ./configure

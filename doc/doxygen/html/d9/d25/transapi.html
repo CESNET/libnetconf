@@ -168,7 +168,8 @@ Valid combinations of events</h3>
 <div class="line">}</div>
 </div><!-- fragment --><h2><a class="anchor" id="node"></a>
 xmlNodePtr old_node &amp; new_node</h2>
-<p>Pointer to a particular node instance in either the old or new configuration document, in which the event was detected. When the node was removed, new node is not set and when the node was deleted, old node is not set. It is safe to traverse the whole document using these pointers, but should be used only when necessary.</p>
+<p>Pointer to a particular node instance in either the old or new configuration document, in which the event was detected. When the node was removed, new node is not set and when the node was deleted, old node is not set. It is safe to traverse the whole document using these pointers, but should be used only when necessary, since transAPI itself does this for you.</p>
+<dl class="section note"><dt>Note</dt><dd>It is safe to traverse these nodes, but any modification will normally be lost. If you need to change some nodes, you can do so, but only in the new_node subtree (not available on XMLDIFF_REM). Then, for these changes to be written to the datastore, change 'config_modified' to 1. This variable is generated into every module.</dd></dl>
 <h2><a class="anchor" id="error"></a>
 strict nc_err **error</h2>
 <p>libnetconf's error structure. May (and should) be used to specify error when it occurs and callback returns EXIT_FAILURE. Error description is forwarded to client.</p>
@@ -212,22 +213,22 @@ History of the transAPI versions</h1>
 </ul>
 <h1><a class="anchor" id="transapiTutorial"></a>
 transAPI Tutorial</h1>
-<p>On this page we will show how to write a simple module for controlling <a href="http://netconfcentral.org/modulereport/toaster">example toaster</a>. </p>
+<p>On this page we will show how to write a simple module for controlling an example Turing machine. The full implementation can be found in the <a href="https://code.google.com/p/netopeer">Netopeer project</a>. </p>
 <dl class="section note"><dt>Note</dt><dd>To install libnetconf follow the instructions on the <a class="el" href="../../d9/d87/install.html">Compilation and Installation</a> page.</dd></dl>
 <h2><a class="anchor" id="transapiTutorial-prepare"></a>
 Preparations</h2>
-<p>In this example we will work with the data model of the toaster provided by Andy Bierman at NETCONF CENTRAL (<a href="http://dld.netconfcentral.org/src/toaster@2009-11-20.yang">http://dld.netconfcentral.org/src/toaster@2009-11-20.yang</a>).</p>
-<p>First, we need to identify important parts of the configuration data. Since the toaster data model describes only one configurable element, we have an easy choice. So, we can create the 'paths_file' file containing the specification of our chosen element and mapping prefixes with URIs for any used namespace.</p>
+<p>In this example we will work with the data model of a Turing machine provided by the Pyang project (<a href="https://code.google.com/p/pyang/source/browse/trunk/doc/tutorial/examples/turing-machine.yang">https://code.google.com/p/pyang/source/browse/trunk/doc/tutorial/examples/turing-machine.yang</a>).</p>
+<p>First, we need to identify important parts of the configuration data. Since the turing-machine data model describes only one configurable subtree, we have an easy choice. So, we can create the 'paths_file' file containing the specification of our chosen element and mapping prefixes with URIs for any used namespace.</p>
 <p>Our file may look like this (irrespective of order): </p>
-<div class="fragment"><div class="line">toaster=http:<span class="comment">//netconfcentral.org/ns/toaster</span></div>
-<div class="line">/toaster:toaster</div>
+<div class="fragment"><div class="line">tm=http:<span class="comment">//example.net/turing-machine</span></div>
+<div class="line">/tm:turing-machine/tm:transition-<span class="keyword">function</span>/tm:delta</div>
 </div><!-- fragment --><h2><a class="anchor" id="transapiTutorial-generating"></a>
 Generating code</h2>
 <ol type="1">
-<li>Create a new directory for the toaster module and move the data model and the path file into it: <div class="fragment"><div class="line">$ mkdir toaster &amp;&amp; cd toaster/</div>
-<div class="line">$ mv ../toaster@2009-11-20.yang ../paths_file .</div>
+<li>Create a new directory for the turing-machine module and move the data model and the path file into it: <div class="fragment"><div class="line">$ mkdir turing-machine &amp;&amp; cd turing-machine/</div>
+<div class="line">$ mv ../turing-machine.yang ../paths_file .</div>
 </div><!-- fragment --></li>
-<li>Run <em>lnctool(1)</em> for transapi: <div class="fragment"><div class="line">$ lnctool --model ./toaster@2009-11-20.yang <a class="code" href="../../d9/dc0/structtransapi.html">transapi</a> --paths ./paths_file</div>
+<li>Run <em>lnctool(1)</em> for transapi: <div class="fragment"><div class="line">$ lnctool --model ./turing-machine.yang <a class="code" href="../../d9/dc0/structtransapi.html">transapi</a> --paths ./paths_file</div>
 </div><!-- fragment --></li>
 </ol>
 <p>Besides the generated source code of our transAPI module and GNU Build System files (Makefile.in, configure.in,...), <em>lnctool(1)</em> also generates YIN format of the data model and validators accepted by the libnetconf's <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support. ">ncds_new_transapi()</a> and <a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31" title="Set validators (or disable validation) on the specified datastore. ">ncds_set_validation()</a> functions:</p>
@@ -252,29 +253,52 @@ Augmenting module</h2>
 </div><!-- fragment --></li>
 </ol>
 <p><br/>
-However, the case when a model is augmenting na RPC in the original model is special and ONLY the first way of augmenting a module can and MUST be used.</p>
+However, the case when a model is augmenting an RPC in the original model is special and ONLY the first way of augmenting a module can and MUST be used.</p>
 <h2><a class="anchor" id="transapiTutorial-coding"></a>
 Filling up functionality</h2>
-<p>Here we show the simplest example of a toaster simulating module. It is working but does not deal with multiple access and threads correctly. Better example may can be found in the netopeer-server-sl source codes located in the <a href="https://code.google.com/p/netopeer">Netopeer project</a> repository (server-sl/toaster/toaster.c).</p>
+<p>Here we show a turing-machine simulating module. The full implementation can be found in the <a href="https://code.google.com/p/netopeer">Netopeer project</a> repository (transAPI/turing/turing-machine.c). The example functions and all the code is simplified and NOT thread-safe.</p>
 <ol type="1">
-<li>Open 'toaster.c' file with your favorite editor:<br/>
+<li>Open 'turing-machine.c' file with your favorite editor:<br/>
 <br/>
-<div class="fragment"><div class="line">$ vim toaster.c</div>
+<div class="fragment"><div class="line">$ vim turing-machine.c</div>
 </div><!-- fragment --> <br/>
 </li>
-<li>Add global variables and auxiliary functions. This is completely up to you, libnetconf does not work with this anyway.<br/>
+<li>Add global variables and auxiliary functions. This is completely up to you, libnetconf does not work with this anyway. For full explanation of this code look into the referenced working example. It should be called to run the Turing machine, once set up, but some parts were omitted.<br/>
 <br/>
-<div class="fragment"><div class="line"><span class="keyword">enum</span> {ON, OFF, BUSY} status;</div>
-<div class="line">pthread_t thread;</div>
+<div class="fragment"><div class="line"><span class="keyword">static</span> tape_symbol *tm_head = NULL;</div>
+<div class="line"><span class="keyword">static</span> tape_symbol *tm_tape = NULL;</div>
+<div class="line"><span class="keyword">static</span> cell_index tm_tape_len = 0;</div>
+<div class="line"><span class="keyword">static</span> state_index tm_state = 0;</div>
+<div class="line"><span class="keyword">static</span> <span class="keyword">struct </span>delta_rule *tm_delta = NULL;</div>
 <div class="line"></div>
-<div class="line"><span class="keywordtype">void</span> * auxiliary_make_toast(<span class="keywordtype">void</span> * time) {</div>
-<div class="line">    sleep(*(<span class="keywordtype">int</span>*)time);</div>
+<div class="line"><span class="keyword">static</span> <span class="keywordtype">void</span>* tm_run(<span class="keywordtype">void</span> *arg) {</div>
+<div class="line">        <span class="keywordtype">int</span> changed = 1;</div>
+<div class="line">        <span class="keyword">struct </span>delta_rule *rule = NULL;</div>
 <div class="line"></div>
-<div class="line">    <span class="keywordflow">if</span> (status == BUSY) {</div>
-<div class="line">        status = ON;</div>
-<div class="line">        <a class="code" href="../../da/d54/group__notifications.html#ga9641deaca934bcd7ff66ac3ae60fc722">ncntf_event_new</a>(-1, <a class="code" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1f1e3c2032baf2542b06052243bd42c9">NCNTF_GENERIC</a>, <span class="stringliteral">&quot;&lt;toastDone&gt;&lt;toastStatus&gt;done&lt;/toastStatus&gt;&lt;/toastDone&gt;&quot;</span>);</div>
-<div class="line">    }</div>
-<div class="line">    <span class="keywordflow">return</span>(NULL);</div>
+<div class="line">        <span class="keywordflow">while</span>(changed) {</div>
+<div class="line">                changed = 0;</div>
+<div class="line"></div>
+<div class="line">                <span class="keywordflow">if</span> (tm_head &lt; tm_tape || (tm_head - tm_tape) &gt;= tm_tape_len) {</div>
+<div class="line">                        <span class="keywordflow">break</span>;</div>
+<div class="line">                }</div>
+<div class="line"></div>
+<div class="line">                <span class="keywordflow">for</span> (rule = tm_delta; rule != NULL; rule = rule-&gt;next) {</div>
+<div class="line">                        <span class="keywordflow">if</span> (rule-&gt;in_state == tm_state &amp;&amp; rule-&gt;in_symbol == tm_head[0]) {</div>
+<div class="line">                                <span class="keywordflow">if</span> (rule-&gt;out_state != 0xffff) {</div>
+<div class="line">                                        tm_state = rule-&gt;out_state;</div>
+<div class="line">                                }</div>
+<div class="line">                                tm_head[0] = rule-&gt;out_symbol;</div>
+<div class="line">                                tm_head = tm_head + rule-&gt;head_move;</div>
+<div class="line"></div>
+<div class="line">                                changed = 1;</div>
+<div class="line"></div>
+<div class="line">                                usleep(100);</div>
+<div class="line">                                <span class="keywordflow">break</span>;</div>
+<div class="line">                        }</div>
+<div class="line">                }</div>
+<div class="line">        }</div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">return</span> (NULL);</div>
 <div class="line">}</div>
 </div><!-- fragment --> <br/>
 </li>
@@ -282,95 +306,117 @@ Filling up functionality</h2>
 <br/>
 The 'running' parameter can optionally return the current configuration state of the device as the 'transapi_init()' detects it. The configuration must correspond with the device data model and it is supposed to contain only the configuration data (defined with 'config true`). The returned data are then compared with the startup configuration and only the diverging values are set according to the startup content using the appropriate transAPI callback functions.<br/>
 <br/>
-We ignore it in our example - the toaster is on each start without the root element, which means that it is supposed to be switched off. Then it is up to the startup content if the toaster will be turned on.<br/>
+We ignore it in our example - the Turing machine does not have any configuration that could be read from (depend on the state of) the system.<br/>
 <br/>
-<div class="fragment"><div class="line"><span class="keywordtype">int</span> transapi_init(xmlDocPtr * running) {</div>
-<div class="line">    status = OFF;</div>
-<div class="line">    printf(<span class="stringliteral">&quot;Toaster initialized!\n&quot;</span>);</div>
-<div class="line">    <span class="keywordflow">return</span>(EXIT_SUCCESS);</div>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> transapi_init(xmlDocPtr *running) {</div>
+<div class="line">    <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
 <div class="line">}</div>
 </div><!-- fragment --> <br/>
 </li>
-<li>Locate the 'transapi_close()' function and fill it with actions that will be run just before the module unloads. No other function of the transAPI module is called after the 'transapi_close()'.<br/>
+<li>Locate the 'transapi_close()' function and fill it with actions that will be run just before the module unloads. No other function of the transAPI module is called after the 'transapi_close()'. We free up all the temporary variables used to store the current state of the machine.<br/>
 <br/>
-<div class="fragment"><div class="line"><span class="keywordtype">void</span> transapi_close() {</div>
-<div class="line">    printf(<span class="stringliteral">&quot;Toaster ready for unplugging!\n&quot;</span>);</div>
+<div class="fragment"><div class="line"><span class="keywordtype">void</span> transapi_close(<span class="keywordtype">void</span>) {</div>
+<div class="line">        <span class="keyword">struct </span>delta_rule *rule;</div>
+<div class="line"></div>
+<div class="line">        free(tm_tape);</div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">for</span> (rule = tm_delta; rule != NULL; rule = tm_delta) {</div>
+<div class="line">                tm_delta = rule-&gt;next;</div>
+<div class="line">                free_delta_rule(rule);</div>
+<div class="line">        }</div>
 <div class="line">}</div>
 </div><!-- fragment --> <br/>
 </li>
 <li>Fill 'get_state_data()' function. This function returns (only!) the state data (defined with 'config false').<br/>
 <br/>
 <div class="fragment"><div class="line"><span class="keywordtype">char</span> * get_state_data(<span class="keywordtype">char</span> * model, <span class="keywordtype">char</span> * running, <span class="keyword">struct</span> nc_err **err) {</div>
-<div class="line">    <span class="keywordflow">return</span> strdup(<span class="stringliteral">&quot;&lt;?xml version=&quot;</span>1.0<span class="stringliteral">&quot;?&gt;&lt;toaster xmlns=&quot;</span>http:<span class="comment">//netconfcentral.org/ns/toaster&quot;&gt; ... &lt;/toaster&gt;&quot;);</span></div>
+<div class="line">    <span class="keywordflow">return</span> strdup(<span class="stringliteral">&quot;&lt;?xml version=&quot;</span>1.0<span class="stringliteral">&quot;?&gt;&lt;turing-machine xmlns=&quot;</span>http:<span class="comment">//example.net/turing-machine&quot;&gt; ... &lt;/turing-machine&gt;&quot;);</span></div>
 <div class="line">}</div>
 </div><!-- fragment --> <br/>
 </li>
-<li>Complete the configuration callbacks (they have the <code>callback_</code> prefix). The 'op' parameter can be used to determine operation which was done with the node. Parameter 'node' holds a copy of node after change (or before change if op == XMLDIFF_REM).<br/>
+<li>Complete the configuration callbacks (they have the <code>callback_</code> prefix). The 'op' parameter can be used to determine operation which was done with the node. Parameter 'old_node' holds a copy of node before the change and 'new_node' after the change. More detailed information about the callback parameters can be found above in the <a class="el" href="../../d9/d25/transapi.html#understanding-parameters">Understanding callback parameters</a> section.<br/>
 <br/>
-More detailed information about the callback parameters can be found above in the <a class="el" href="../../d9/d25/transapi.html#understanding-parameters">Understanding callback parameters</a> section.<br/>
-<br/>
-<div class="fragment"><div class="line"><span class="keywordtype">int</span> callback_toaster_toaster(<span class="keywordtype">void</span> ** data, <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> op, xmlNodePtr old_node, xmlNodePtr new_node, <span class="keyword">struct</span> nc_err** error) {</div>
-<div class="line">    <span class="keywordflow">if</span> (op &amp; XMLDIFF_ADD) {</div>
-<div class="line">        status = ON;</div>
-<div class="line">    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (op &amp; XMLDIFF_REM) {</div>
-<div class="line">        status = OFF;</div>
-<div class="line">    } <span class="keywordflow">else</span> {</div>
-<div class="line">        *error = <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga057524ba5256c428b6bf88710f000e0c">nc_err_new</a>(<a class="code" href="../../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2ae9d2e7a938b0fb4583b961a7079aabe3">NC_ERR_OP_FAILED</a>);</div>
-<div class="line">        <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gab28d881eeebd79d485391ae1ffc97299">nc_err_set</a>(*error, <a class="code" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73da1695230cad67458870f4cf93a2d530a5">NC_ERR_PARAM_MSG</a>, <span class="stringliteral">&quot;Unsupported operation.&quot;</span>);</div>
-<div class="line">        <span class="keywordflow">return</span>(EXIT_FAILURE);</div>
-<div class="line">    }</div>
-<div class="line">    <span class="keywordflow">return</span>(EXIT_SUCCESS);</div>
+In this code, we treat modification as a removal and an immediate addition to limit branching and simplifiy the code. <div class="fragment"><div class="line"><span class="keywordtype">int</span> callback_tm_turing_machine_tm_transition_function_tm_delta(<span class="keywordtype">void</span> **data, <a class="code" href="../../d8/d55/group__transapi.html#ga10d59d84527f735d2781dbbb629a4488">XMLDIFF_OP</a> op, xmlNodePtr old_node, xmlNodePtr new_node, <span class="keyword">struct</span> nc_err **error) {</div>
+<div class="line">        <span class="keywordtype">char</span> *content = NULL;</div>
+<div class="line">        xmlNodePtr n1, n2;</div>
+<div class="line">        <span class="keyword">struct </span>delta_rule *rule = NULL;</div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">if</span> (op == XMLDIFF_MOD) {</div>
+<div class="line">                op = op | (XMLDIFF_REM &amp; <a class="code" href="../../d8/d55/group__transapi.html#gga10d59d84527f735d2781dbbb629a4488adc0f4fc8354a1e293db5efd4f8e6f0b1">XMLDIFF_ADD</a>);</div>
+<div class="line">        }</div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">if</span> (op == XMLDIFF_REM) {</div>
+<div class="line">                <span class="comment">//remove the rule from the internal list</span></div>
+<div class="line">        }</div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">if</span> (op == XMLDIFF_ADD) {</div>
+<div class="line">                <span class="comment">//parse the children of new_node and add the new rule to the list</span></div>
+<div class="line">        }</div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
 <div class="line">}</div>
 </div><!-- fragment --> <br/>
 </li>
 <li>Fill the RPC message callback functions with the code that will be run when an RPC message with the defined operation arrives.<br/>
 <br/>
-<div class="fragment"><div class="line"><a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> * rpc_make_toast (xmlNodePtr input) {</div>
-<div class="line">    xmlNodePtr toasterDoneness = get_rpc_node(<span class="stringliteral">&quot;toasterDoneness&quot;</span>, input);</div>
-<div class="line">    xmlNodePtr toasterToastType = get_rpc_node(<span class="stringliteral">&quot;toasterToastType&quot;</span>, input);</div>
+The RPC defines an optional parameter 'tape-content', so we use it if specified, otherwise use the default value.<br/>
+<br/>
+<div class="fragment"><div class="line"><a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *rpc_initialize(xmlNodePtr input) {</div>
+<div class="line">        xmlNodePtr tape_content = get_rpc_node(<span class="stringliteral">&quot;tape-content&quot;</span>, input);</div>
+<div class="line">        <span class="keyword">struct </span>nc_err* e = NULL;</div>
 <div class="line"></div>
-<div class="line">    <a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> * reply;</div>
-<div class="line">    <span class="keywordtype">int</span> doneness = atoi(xmlNodeGetContent(toasterDoneness));</div>
+<div class="line">        free(tm_tape);</div>
 <div class="line"></div>
-<div class="line">    <span class="keywordflow">if</span> (status == ON) {</div>
-<div class="line">        status = BUSY;</div>
-<div class="line">        pthread_create(&amp;thread, NULL, auxiliary_make_toast, (<span class="keywordtype">void</span>*)&amp;doneness);</div>
-<div class="line">        pthread_detach(thread);</div>
-<div class="line">        reply = <a class="code" href="../../d0/de2/group__reply.html#ga047f565bb3671ec4016fef5461e8f67e">nc_reply_ok</a>();</div>
-<div class="line">    } <span class="keywordflow">else</span> {</div>
-<div class="line">        reply = <a class="code" href="../../d0/de2/group__reply.html#ga12fd89263289491b84398279e0e449fd">nc_reply_error</a>(<a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga057524ba5256c428b6bf88710f000e0c">nc_err_new</a>(<a class="code" href="../../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2ae9d2e7a938b0fb4583b961a7079aabe3">NC_ERR_OP_FAILED</a>));</div>
-<div class="line">    }</div>
-<div class="line">    <span class="keywordflow">return</span>(reply);</div>
+<div class="line">        tm_state = 0;</div>
+<div class="line">        tm_tape = tm_head = (<span class="keywordtype">char</span>*)xmlNodeGetContent(tape_content);</div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">if</span> (tm_tape == NULL) {</div>
+<div class="line">                tm_tape = tm_head = strdup(<span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line">        }</div>
+<div class="line"></div>
+<div class="line">        tm_tape_len = strlen(tm_tape) + 1;</div>
+<div class="line">        pthread_mutex_unlock(&amp;tm_run_lock);</div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">return</span> <a class="code" href="../../d0/de2/group__reply.html#ga047f565bb3671ec4016fef5461e8f67e">nc_reply_ok</a>();</div>
 <div class="line">}</div>
-</div><!-- fragment --> <div class="fragment"><div class="line"><a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> * rpc_cancel_toast (xmlNodePtr input) {</div>
-<div class="line">    <a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> * reply;</div>
+</div><!-- fragment --> <br/>
+To run the machine, we create another thread and let it run in the background. There are no parameters, so we ignore the input.<br/>
+<br/>
+<div class="fragment"><div class="line"><a class="code" href="../../d0/de2/group__reply.html#ga40338a1274759a932a7c2c7b8ed0121d">nc_reply</a> *rpc_run(xmlNodePtr input) {</div>
+<div class="line">        pthread_t tm_run_thread;</div>
+<div class="line">        <span class="keyword">struct </span>nc_err *e;</div>
+<div class="line">        <span class="keywordtype">char</span> *emsg = NULL;</div>
+<div class="line">        <span class="keywordtype">int</span> r;</div>
 <div class="line"></div>
-<div class="line">    <span class="keywordflow">if</span> (status == BUSY) {</div>
-<div class="line">        status = ON;</div>
-<div class="line">        <a class="code" href="../../da/d54/group__notifications.html#ga9641deaca934bcd7ff66ac3ae60fc722">ncntf_event_new</a>(-1, <a class="code" href="../../da/d54/group__notifications.html#ggadcf8c532762d57f7d9a5491e6abb9977a1f1e3c2032baf2542b06052243bd42c9">NCNTF_GENERIC</a>, <span class="stringliteral">&quot;&lt;toastDone&gt;&lt;toastStatus&gt;canceled&lt;/toastStatus&gt;&lt;/toastDone&gt;&quot;</span>);</div>
-<div class="line">        reply = <a class="code" href="../../d0/de2/group__reply.html#ga047f565bb3671ec4016fef5461e8f67e">nc_reply_ok</a>();</div>
-<div class="line">    } <span class="keywordflow">else</span> {</div>
-<div class="line">        reply = <a class="code" href="../../d0/de2/group__reply.html#ga12fd89263289491b84398279e0e449fd">nc_reply_error</a>(<a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga057524ba5256c428b6bf88710f000e0c">nc_err_new</a>(<a class="code" href="../../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2ae9d2e7a938b0fb4583b961a7079aabe3">NC_ERR_OP_FAILED</a>));</div>
-<div class="line">    }</div>
-<div class="line">    <span class="keywordflow">return</span>(reply);</div>
+<div class="line">        <span class="keywordflow">if</span> ((r = pthread_create(&amp;tm_run_thread, NULL, tm_run, NULL)) != 0) {</div>
+<div class="line">                e = <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga057524ba5256c428b6bf88710f000e0c">nc_err_new</a>(<a class="code" href="../../da/d41/error_8h.html#a170ed93037b65394a05e074400848eb2ae9d2e7a938b0fb4583b961a7079aabe3">NC_ERR_OP_FAILED</a>);</div>
+<div class="line">                asprintf(&amp;emsg, <span class="stringliteral">&quot;Unable to start turing machine thread (%s)&quot;</span>, strerror(r));</div>
+<div class="line">                <a class="code" href="../../d3/d35/group__gen_a_p_i.html#gab28d881eeebd79d485391ae1ffc97299">nc_err_set</a>(e, <a class="code" href="../../d3/d7a/netconf_8h.html#a39c5f77f5cf9108a27e7a65f3b2ba73da1695230cad67458870f4cf93a2d530a5">NC_ERR_PARAM_MSG</a>, emsg);</div>
+<div class="line">                free(emsg);</div>
+<div class="line">                <span class="keywordflow">return</span> <a class="code" href="../../d0/de2/group__reply.html#ga12fd89263289491b84398279e0e449fd">nc_reply_error</a>(e);</div>
+<div class="line">        }</div>
+<div class="line"></div>
+<div class="line">        pthread_detach(tm_run_thread);</div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">return</span> <a class="code" href="../../d0/de2/group__reply.html#ga047f565bb3671ec4016fef5461e8f67e">nc_reply_ok</a>();</div>
 <div class="line">}</div>
 </div><!-- fragment --> <br/>
 </li>
 <li>Optionally, you can set monitoring for some external configuration file.<br/>
 <br/>
-Let's say, that our toaster has a textual configuration located in the <code>/etc/toaster.conf</code> file. libnetconf can monitor this file for modification and whenever an external application changes content of the file, the specified callback is executed. It's up to the callback function to open the file for reading and update get the current configuration data.<br/>
+Let's say, that our Turing machine has a textual configuration located in the <code>/etc/turing.conf</code> file. libnetconf can monitor this file for modification and whenever an external application changes content of the file, the specified callback is executed. It's up to the callback function to open the file for reading and get the current configuration data.<br/>
 <br/>
 <div class="fragment"><div class="line"><span class="keywordtype">int</span> example_callback(<span class="keyword">const</span> <span class="keywordtype">char</span> *filepath, xmlDocPtr *running, <span class="keywordtype">int</span>* execflag) {</div>
 <div class="line">    <span class="comment">// do nothing</span></div>
 <div class="line">    *running = NULL;</div>
 <div class="line">    *execflag = 0;</div>
 <div class="line"></div>
-<div class="line">    <span class="keywordflow">return</span>(EXIT_SUCCESS);</div>
+<div class="line">    <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
 <div class="line">}</div>
 <div class="line"></div>
 <div class="line"><span class="keyword">struct </span><a class="code" href="../../de/df8/structtransapi__file__callbacks.html">transapi_file_callbacks</a> file_clbks = {</div>
 <div class="line">    .<a class="code" href="../../de/df8/structtransapi__file__callbacks.html#a853d73f0f495147dba4842e9f860d1f0">callbacks_count</a> = 1,</div>
-<div class="line">    .callbacks = {{.path = <span class="stringliteral">&quot;/etc/toaster.conf&quot;</span>, .func = example_callback}}</div>
+<div class="line">    .callbacks = {{.path = <span class="stringliteral">&quot;/etc/turing.conf&quot;</span>, .func = example_callback}}</div>
 <div class="line">};</div>
 </div><!-- fragment --> <br/>
 Here is the description of the callback function parameters:<br/>
@@ -386,7 +432,7 @@ Here is the description of the callback function parameters:<br/>
 </ol>
 <h2><a class="anchor" id="transapiTutorial-compiling"></a>
 Compiling module</h2>
-<p>Following sequence of commands will produce the shared library 'toaster.so' which may be loaded into libnetconf: </p>
+<p>Following sequence of commands will produce the shared library 'turing-machine.so' which may be loaded into libnetconf: </p>
 <div class="fragment"><div class="line">$ autoreconf</div>
 <div class="line">$ ./configure</div>
 <div class="line">$ make</div>
@@ -398,7 +444,7 @@ Integrating to a server</h2>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Dec 9 2014 13:58:06 for libnetconf by
+    <li class="footer">Generated on Tue Dec 9 2014 15:28:42 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>
