@@ -1023,7 +1023,7 @@
  * ~~~~~~~
  * nc_reply * rpc_make_toast (xmlNodePtr input) {
  *     xmlNodePtr toasterDoneness = get_rpc_node("toasterDoneness", input);
- *     xmlNodePtr toasterToastType = get_rpc_node("toasterToasterType", input);
+ *     xmlNodePtr toasterToastType = get_rpc_node("toasterToastType", input);
  *
  *     nc_reply * reply;
  *     int doneness = atoi(xmlNodeGetContent(toasterDoneness));
