@@ -78,12 +78,10 @@ var NAVTREEINDEX0 =
 "d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29ac65f86e9af3940dc910231afd07a70cf":[7,4,1,2],
 "d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29acf47a744ed6a6b613d63f4a77aa7135e":[7,4,1,4],
 "d0/df8/structtransapi__rpc__callbacks.html":[7,9,4],
-"d0/df8/structtransapi__rpc__callbacks.html#a0ad28c1d0d3518ca0b3d631a20eaf48d":[7,9,4,2],
-"d0/df8/structtransapi__rpc__callbacks.html#a15569b8737513da9b760834a5e5be80c":[7,9,4,4],
-"d0/df8/structtransapi__rpc__callbacks.html#a5ac083a645d964373f022d03df4849c8":[7,9,4,5],
-"d0/df8/structtransapi__rpc__callbacks.html#a853d73f0f495147dba4842e9f860d1f0":[7,9,4,3],
-"d0/df8/structtransapi__rpc__callbacks.html#ad4e017d16d393756e4e27927d06084ec":[7,9,4,0],
-"d0/df8/structtransapi__rpc__callbacks.html#ae5d4a40ee77a8f12e0cb49f592719338":[7,9,4,1],
+"d0/df8/structtransapi__rpc__callbacks.html#a0ad28c1d0d3518ca0b3d631a20eaf48d":[7,9,4,0],
+"d0/df8/structtransapi__rpc__callbacks.html#a4e198e0f385cc9d713aa918597858fbb":[7,9,4,2],
+"d0/df8/structtransapi__rpc__callbacks.html#a5ac083a645d964373f022d03df4849c8":[7,9,4,3],
+"d0/df8/structtransapi__rpc__callbacks.html#a853d73f0f495147dba4842e9f860d1f0":[7,9,4,1],
 "d1/d25/client.html":[3,1],
 "d1/d25/client.html#client-workflow":[3,1,0],
 "d1/d87/libnetconf_8h.html":[9,0,0,7],
@@ -249,5 +247,7 @@ var NAVTREEINDEX0 =
 "d3/d7a/netconf_8h.html#gga5852fd110198481afb37cc8dcf0bf454a37dd969ad73f6ac990785d9802672946":[9,0,0,13,19,4],
 "d3/d7a/netconf_8h.html#gga5852fd110198481afb37cc8dcf0bf454a5242dcc6a090887ef8b3f6c96b1b4931":[9,0,0,13,19,2],
 "d3/d7a/netconf_8h.html#gga5852fd110198481afb37cc8dcf0bf454a80cda5b10ba3ff7f819c08508be9237c":[9,0,0,13,19,3],
-"d3/d7a/netconf_8h.html#gga5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187":[9,0,0,13,19,0]
+"d3/d7a/netconf_8h.html#gga5852fd110198481afb37cc8dcf0bf454ab2b415d864a2f84bf6e0e31abe56d187":[9,0,0,13,19,0],
+"d3/d7a/netconf_8h.html#gga5852fd110198481afb37cc8dcf0bf454ae959e6f9ed31a8e4441ad84eae8b43d2":[9,0,0,13,19,1],
+"d3/d7a/netconf_8h.html#gga5e4b9ee138b963e8ea2354fef2ebbe73a2454d11ffb81d1a66e3aa5707298f830":[9,0,0,13,18,5]
 };

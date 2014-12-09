@@ -337,13 +337,34 @@ def generate_rpc_callbacks(doc):
 	content = ''
 	callbacks = ''
 
+	# Add a convenient function
+	content += '/**\n'
+	content += ' * @brief Get a node from the RPC input. The first found node is returned, so if traversing lists,\n'
+	content += ' * call repeatedly with result->next as the node argument.\n'
+	content += ' *\n'
+	content += ' * @param name	Name of the node to be retrieved.\n'
+	content += ' * @param node	List of nodes that will be searched.\n'
+	content += ' * @return Pointer to the matching node or NULL\n'
+	content += ' */\n'
+	content += 'xmlNodePtr get_rpc_node(const char *name, const xmlNodePtr node) {\n'
+	content += '\txmlNodePtr ret = NULL;\n'
+	content += '\n'
+	content += '\tfor (ret = node; ret != NULL; ret = ret->next) {\n'
+	content += '\t\tif (xmlStrEqual(BAD_CAST name, ret->name)) {\n'
+	content += '\t\t\tbreak;\n'
+	content += '\t\t}\n'
+	content += '\t}\n'
+	content += '\n'
+	content += '\treturn ret;\n'
+	content += '}\n\n'
+
 	# Add description and instructions
 	content += '/*\n'
 	content += ' * RPC callbacks\n'
 	content += ' * Here follows set of callback functions run every time RPC specific for this device arrives.\n'
 	content += ' * You can safely modify the bodies of all function as well as add new functions for better lucidity of code.\n'
-	content += ' * Every function takes array of inputs as an argument. On few first lines they are assigned to named variables. Avoid accessing the array directly.\n'
-	content += ' * If input was not set in RPC message argument in set to NULL.\n'
+	content += ' * Every function takes an libxml2 list of inputs as an argument.\n'
+	content += ' * If input was not set in RPC message argument is set to NULL. To retrieve each argument, preferably use get_rpc_node().\n'
 	content += ' */\n\n'
 
 	# create xpath context
@@ -357,25 +378,14 @@ def generate_rpc_callbacks(doc):
 	for rpc in rpcs:
 		rpc_name = rpc.prop('name')
 		# create callback function
-		rpc_function = 'nc_reply *rpc_'+re.sub(r'[^\w]', '_', rpc_name)+'(xmlNodePtr input[]) {\n'
-		# find all defined inputs
-		rpc_input = ctxt.xpathEval('//yang:rpc[@name="'+rpc.prop('name')+'"]/yang:input/*')
-		arg_order = '{'
-		for inp in rpc_input:
-			# assign inputs to named variables
-			rpc_function += '\txmlNodePtr '+re.sub(r'[^\w]', '_', inp.prop('name'))+' = input['+str(rpc_input.index(inp))+'];\n'
-			if not inp is rpc_input[0]:
-				arg_order += ', '
-			arg_order += '"'+inp.prop('name')+'"'
-
-		arg_order += '}'
-		rpc_function += '\n\treturn NULL; \n}\n'
+		rpc_function = 'nc_reply *rpc_'+re.sub(r'[^\w]', '_', rpc_name)+'(xmlNodePtr input) {\n'
+		rpc_function += '\treturn NULL;\n}\n'
 		content += rpc_function
 
 		if not rpc is rpcs[0]:
 			callbacks += ','
 		# add connection between callback and RPC message and order of arguments passed to the callback
-		callbacks += '\n\t\t{.name="'+rpc_name+'", .func=rpc_'+re.sub(r'[^\w]', '_', rpc_name)+', .arg_count='+str(len(rpc_input))+', .arg_order='+arg_order+'}'
+		callbacks += '\n\t\t{.name="'+rpc_name+'", .func=rpc_'+re.sub(r'[^\w]', '_', rpc_name)+'}'
 
 	content += '/*\n'
 	content += ' * Structure transapi_rpc_callbacks provides mapping between callbacks and RPC messages.\n'

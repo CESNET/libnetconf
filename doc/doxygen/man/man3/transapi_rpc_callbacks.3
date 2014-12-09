@@ -1,4 +1,4 @@
-.TH "transapi_rpc_callbacks" 3 "Thu Dec 4 2014" "Version 0.9.0-21_trunk" "libnetconf" \" -*- nroff -*-
+.TH "transapi_rpc_callbacks" 3 "Tue Dec 9 2014" "Version 0.9.0-22" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,13 +18,7 @@ Same as \fBtransapi_rpc_callbacks\fP\&. Using libxml2 structures for callbacks p
 .RI "struct {"
 .br
 .ti -1c
-.RI "   int \fBarg_count\fP"
-.br
-.ti -1c
-.RI "   char * \fBarg_order\fP [\fBMAX_RPC_INPUT_ARGS\fP]"
-.br
-.ti -1c
-.RI "   \fBnc_reply\fP *(* \fBfunc\fP )(xmlNodePtr[])"
+.RI "   \fBnc_reply\fP *(* \fBfunc\fP )(xmlNodePtr)"
 .br
 .ti -1c
 .RI "   char * \fBname\fP"
@@ -41,15 +35,11 @@ Same as \fBtransapi_rpc_callbacks\fP\&. Using libxml2 structures for callbacks p
 Same as \fBtransapi_rpc_callbacks\fP\&. Using libxml2 structures for callbacks parameters\&. 
 .SH "Field Documentation"
 .PP 
-.SS "int arg_count"
-
-.SS "char* arg_order[\fBMAX_RPC_INPUT_ARGS\fP]"
-
 .SS "struct { \&.\&.\&. }   callbacks[]"
 
 .SS "int callbacks_count"
 
-.SS "\fBnc_reply\fP*(* func)(xmlNodePtr[])"
+.SS "\fBnc_reply\fP*(* func)(xmlNodePtr)"
 
 .SS "char* name"
 

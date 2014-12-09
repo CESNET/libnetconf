@@ -843,10 +843,13 @@
  *   - Adds support for monitoring external files.
  *   - Backward compatible.
  * - *version 6*
- *   - Every callback now receives the corresponding node from both the old
+ *   - Every data callback now receives the corresponding node from both the old
  *   configuration and the new configuration. This holds for every operation
  *   except XMLDIFF_ADD (the old node is NULL) and XMLDIFF_REM (the new node
  *   is NULL).
+ *   - Every RPC callback now receives a list of all the arguments and it is up
+ *   to developers to parse them themselves. To help with this, a simple
+ *   function get_rpc_node() is included in a transAPI module code.
  *   - Backward incompatible.
  *
  * \section transapiTutorial transAPI Tutorial
@@ -925,40 +928,7 @@
  * ~~~~~~~
  * .
  * \n
- * However, the case when a model is augmenting na RPC in the original model must be treated specially. Firstly, ONLY the first way of augmenting a module can and MUST be used. Secondly, after issuing the *lnctool(1)* command, the generated code will be INCORRECT and must be changed manually for it to work properly. Illustrated on an example:
- * \n\n
- * The original model has an RPC 'my-rpc' with a single argument 'arg1'. Augment model is adding another argument 'arg2'. The original module 'my-rpc' code and the newly generated code will be the same:
- * ~~~~~~~{.c}
- * nc_reply *rpc_my_rpc(xmlNodePtr input[]) {
- * 	xmlNodePtr arg1 = input[0];
- *
- * 	return NULL;
- * }
- *
- * struct transapi_rpc_callbacks rpc_clbks = {
- * 	.callbacks_count = 1,
- * 	.callbacks = {
- * 		{.name="my-rpc", .func=rpc_my_rpc, .arg_count=1, .arg_order={"arg1"}}
- * 	}
- * };
- * ~~~~~~~
- * To be able to work with the second argument 'arg2', the code must be changed to:
- * ~~~~~~~{.c}
- * nc_reply *rpc_my_rpc(xmlNodePtr input[]) {
- * 	xmlNodePtr arg1 = input[0];
- * 	xmlNodePtr arg2 = input[1];
- *
- * 	return NULL;
- * }
- *
- * struct transapi_rpc_callbacks rpc_clbks = {
- * 	.callbacks_count = 1,
- * 	.callbacks = {
- * 		{.name="my-rpc", .func=rpc_my_rpc, .arg_count=2, .arg_order={"arg1", "arg2"}}
- * 	}
- * };
- * ~~~~~~~
- * This pattern can be used with several augment models, all changing a single RPC.
+ * However, the case when a model is augmenting na RPC in the original model is special and ONLY the first way of augmenting a module can and MUST be used.
  *
  * \subsection transapiTutorial-coding Filling up functionality
  *
@@ -1051,9 +1021,9 @@
  * -# Fill the RPC message callback functions with the code that will be run
  * when an RPC message with the defined operation arrives.\n\n
  * ~~~~~~~
- * nc_reply * rpc_make_toast (xmlNodePtr input[]) {
- *     xmlNodePtr toasterDoneness = input[0];
- *     xmlNodePtr toasterToastType = input[1];
+ * nc_reply * rpc_make_toast (xmlNodePtr input) {
+ *     xmlNodePtr toasterDoneness = get_rpc_node("toasterDoneness", input);
+ *     xmlNodePtr toasterToastType = get_rpc_node("toasterToasterType", input);
  *
  *     nc_reply * reply;
  *     int doneness = atoi(xmlNodeGetContent(toasterDoneness));
@@ -1070,7 +1040,7 @@
  * }
  * ~~~~~~~
  * ~~~~~~~
- * nc_reply * rpc_cancel_toast (xmlNodePtr input[]) {
+ * nc_reply * rpc_cancel_toast (xmlNodePtr input) {
  *     nc_reply * reply;
  *
  *     if (status == BUSY) {

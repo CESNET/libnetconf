@@ -5309,7 +5309,7 @@ API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const
 	struct nc_filter *filter = NULL;
 	char* data = NULL, *config, *model = NULL, *data2, *op_name;
 	xmlDocPtr doc1, doc2, doc_merged = NULL;
-	int len, dsid, i, j;
+	int len, dsid, i;
 	int ret = EXIT_FAILURE;
 	nc_reply* reply = NULL, *old_reply = NULL, *new_reply;
 	xmlBufferPtr resultbuffer;
@@ -5320,10 +5320,8 @@ API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const
 	NC_DATASTORE source_ds = 0, target_ds = 0;
 	struct nacm_rpc *nacm_aux;
 	nc_rpc *rpc_aux;
-	void * op_input_array;
 	xmlNodePtr op_node;
 	xmlNodePtr op_input;
-	int pos;
 	struct transapi_list* tapi_iter;
 	const char * rpc_name;
 	const char *data_ns = NULL;
@@ -6120,40 +6118,15 @@ apply_editcopyconfig:
 				/* find matching rpc and call rpc callback function */
 				rpc_name = tapi_iter->tapi->rpc_clbks->callbacks[i].name;
 				if (strcmp(op_name, rpc_name) == 0) {
-					/* create array of input parameters */
-					op_input_array = calloc(tapi_iter->tapi->rpc_clbks->callbacks[i].arg_count, sizeof (xmlNodePtr));
 					/* get operation node */
 					op_node = ncxml_rpc_get_op_content(rpc);
-					op_input = op_node->children;
-					while (op_input) {
-						if (op_input->type == XML_ELEMENT_NODE) {
-							/* find position of this parameter */
-							pos = 0;
-							while (pos < tapi_iter->tapi->rpc_clbks->callbacks[i].arg_count) {
-								if (xmlStrEqual(BAD_CAST tapi_iter->tapi->rpc_clbks->callbacks[i].arg_order[pos], op_input->name)) {
-									/* store copy of node to position */
-									((xmlNodePtr*)op_input_array)[pos] = xmlCopyNode(op_input, 1);
-									break;
-								}
-								pos++;
-							}
-							/* input node with this name not found in model defined inputs of RPC */
-							if (pos == tapi_iter->tapi->rpc_clbks->callbacks[i].arg_count) {
-								WARN("%s: input parameter %s not defined for RPC %s",__func__, op_input->name, tapi_iter->tapi->rpc_clbks->callbacks[i].name);
-							}
-						}
-						op_input = op_input->next;
-					}
-					xmlFreeNodeList(op_node);
+					op_input = xmlCopyNodeList(op_node->children);
+					xmlFreeNode(op_node);
 
 					/* call RPC callback function */
 					VERB("Calling %s RPC function\n", rpc_name);
-					reply = tapi_iter->tapi->rpc_clbks->callbacks[i].func(op_input_array);
-					/* clean array */
-					for (j = 0; j < tapi_iter->tapi->rpc_clbks->callbacks[i].arg_count; j++) {
-						xmlFreeNode(((xmlNodePtr*)op_input_array)[j]);
-					}
-					free (op_input_array);
+					reply = tapi_iter->tapi->rpc_clbks->callbacks[i].func(op_input);
+					xmlFreeNodeList(op_input);
 
 					/* end RPC search, there can be only one RPC with name == op_name */
 					break;
