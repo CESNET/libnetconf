@@ -44,6 +44,7 @@
 #include <errno.h>
 #include <string.h>
 #include <limits.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <assert.h>
 #include <dlfcn.h>
@@ -3681,6 +3682,11 @@ static void transapi_unload(struct transapi_internal* tapi)
 	if (tapi->file_clbks != NULL && tapi->file_clbks->callbacks_count > 0) {
 		VERB("Stopping FMON thread.");
 		pthread_cancel(tapi->fmon_thread);
+		usleep(5000);
+		if (pthread_kill(tapi->fmon_thread, 0) != 0) {
+			/* sleep some more */
+			usleep(50000);
+		}
 	}
 	if (tapi->module != &error_area && dlclose(tapi->module)) {
 		ERROR("%s: Unloading transAPI module failed: %s:", __func__, dlerror());
