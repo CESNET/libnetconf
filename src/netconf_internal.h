@@ -325,6 +325,7 @@ struct nc_apps {
  */
 struct nc_shared_info {
 	pthread_rwlock_t lock;
+	unsigned long last_session_id;
 	struct nc_statistics stats;
 	struct nacm_stats stats_nacm;
 	struct nc_apps apps;
