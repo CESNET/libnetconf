@@ -346,6 +346,9 @@ API int nc_init(int flags)
 			/* clear the apps structure */
 			memset(nc_info->apps.valid, 0, NC_APPS_MAX * sizeof(unsigned char));
 
+			/* set last session id */
+			nc_info->last_session_id = 0;
+
 			/* init lock */
 			pthread_rwlockattr_init(&rwlockattr);
 			pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
@@ -377,7 +380,7 @@ API int nc_init(int flags)
 				first_after_close = 0;
 				retval |= NC_INITRET_NOTFIRST;
 			} else if (flags & NC_INIT_MULTILAYER) {
-				/* shared memory contained only crash info, multi-layer is considered first, */
+				/* shared memory contained only crash info, multi-layer is considered first, ... */
 				first_after_close = 1;
 			} else {
 				/* ... single-layer not */
