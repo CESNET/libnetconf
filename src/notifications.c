@@ -2714,3 +2714,7 @@ API long long int ncntf_dispatch_receive(struct nc_session *session, void (*proc
 	return (count);
 }
 
+API int ncntf_session_get_active_subscription(struct nc_session *session)
+{
+	return session->ntf_active;
+}

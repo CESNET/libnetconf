@@ -300,6 +300,16 @@ long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* subs
  */
 long long int ncntf_dispatch_receive(struct nc_session *session, void (*process_ntf)(time_t eventtime, const char* content));
 
+/**
+ * @ingroup notifications
+ * @brief Check if a session has an active notification subscription.
+ *
+ * @param[in] session NETCONF session to check.
+ *
+ * @return 0 if there is no active subscription, non-0 otherwise.
+ */
+int ncntf_session_get_active_subscription(struct nc_session *session);
+
 #ifdef __cplusplus
 }
 #endif
