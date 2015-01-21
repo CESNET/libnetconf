@@ -44,6 +44,7 @@
 #include <errno.h>
 #include <string.h>
 #include <limits.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <assert.h>
 #include <dlfcn.h>
@@ -3681,6 +3682,11 @@ static void transapi_unload(struct transapi_internal* tapi)
 	if (tapi->file_clbks != NULL && tapi->file_clbks->callbacks_count > 0) {
 		VERB("Stopping FMON thread.");
 		pthread_cancel(tapi->fmon_thread);
+		usleep(5000);
+		if (pthread_kill(tapi->fmon_thread, 0) != 0) {
+			/* sleep some more */
+			usleep(50000);
+		}
 	}
 	if (tapi->module != &error_area && dlclose(tapi->module)) {
 		ERROR("%s: Unloading transAPI module failed: %s:", __func__, dlerror());
@@ -5025,19 +5031,33 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 			ERROR("%s: invalid filter (%s:%d).", __func__, __FILE__, __LINE__);
 			return EXIT_FAILURE;
 		}
+
 		data_filtered[0] = xmlNewDoc(BAD_CAST "1.0");
 		data_filtered[1] = xmlNewDoc(BAD_CAST "1.0");
 		for (filter_item = filter->subtree_filter->children; filter_item != NULL; filter_item = filter_item->next) {
-			xmlDocSetRootElement(data_filtered[0], xmlCopyNode(old, 1));
+			xmlAddChildList((xmlNodePtr)(data_filtered[0]), xmlCopyNodeList(old));
+
+			/* modify filter doc to deny ncxml_subtree_filter processing
+			 * siblings that are (on this top level) meaningless and they
+			 * will be processed separatelly in the next run of the loop.
+			 */
+			node = filter_item->next;
+			filter_item->next = NULL;
 			ncxml_subtree_filter(data_filtered[0]->children, filter_item);
+			/* revert change made to the filter doc */
+			filter_item->next = node;
+
 			if (data_filtered[1]->children == NULL) {
+				/* there are no data so far */
 				if (data_filtered[0]->children != NULL) {
-					/* we have some result */
+					/* we have some result, move it to [1] */
 					node = data_filtered[0]->children;
 					xmlUnlinkNode(node);
 					xmlDocSetRootElement(data_filtered[1], node);
 				}
-			} else {
+			} else if (data_filtered[0]-> children != NULL) {
+				/* there are some data already filtered */
+				/* and we have some new data, so merge them */
 				if (data_model != NULL) {
 					result = ncxml_merge(data_filtered[0], data_filtered[1], data_model);
 				} else {
@@ -5045,6 +5065,7 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 					data_filtered[1] = NULL;
 					xmlDocCopyNodeList(result, data_filtered[0]->children);
 				}
+
 				node = data_filtered[0]->children;
 				xmlUnlinkNode(node);
 				xmlFreeNode(node);
@@ -5052,9 +5073,10 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 				data_filtered[1] = result;
 			}
 		}
+
 		if (filter->subtree_filter->children != NULL) {
-			if(data_filtered[1]->children != NULL) {
-				*new = xmlCopyNode(data_filtered[1]->children, 1);
+			if(data_filtered[1] != NULL && data_filtered[1]->children != NULL) {
+				*new = xmlCopyNodeList(data_filtered[1]->children);
 			} else {
 				*new = NULL;
 			}
@@ -5536,24 +5558,28 @@ process_datastore:
 		}
 
 		/* if filter specified, now is good time to apply it */
-		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
+		node = NULL;
+		if (doc_merged->children != NULL) {
 			if (filter != NULL) {
-				if (ncxml_filter(aux_node, filter, &node, ds->ext_model) != 0) {
+				if (ncxml_filter(doc_merged->children, filter, &node, ds->ext_model) != 0) {
 					ERROR("Filter failed.");
 					e = nc_err_new(NC_ERR_BAD_ELEM);
 					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
+					xmlBufferFree(resultbuffer);
+					xmlFreeDoc(doc_merged);
 					break;
 				}
 			} else {
-				node = xmlCopyNode(aux_node, 1);
-			}
-			if (node != NULL) {
-				xmlNodeDump(resultbuffer, NULL, node, 2, 1);
-				xmlFreeNode(node);
-				node = NULL;
+				node = xmlCopyNodeList(doc_merged->children);
 			}
 		}
+		for (aux_node = node; aux_node != NULL; aux_node = aux_node->next) {
+			if (aux_node != NULL) {
+				xmlNodeDump(resultbuffer, NULL, aux_node, 2, 1);
+			}
+		}
+		xmlFreeNodeList(node);
 		data = strdup((char *) xmlBufferContent(resultbuffer));
 		xmlBufferFree(resultbuffer);
 		xmlFreeDoc(doc_merged);
@@ -5604,24 +5630,28 @@ process_datastore:
 		}
 
 		/* if filter specified, now is good time to apply it */
-		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
+		node = NULL;
+		if (doc_merged->children != NULL) {
 			if (filter != NULL) {
-				if (ncxml_filter(aux_node, filter, &node, ds->ext_model) != 0) {
+				if (ncxml_filter(doc_merged->children, filter, &node, ds->ext_model) != 0) {
 					ERROR("Filter failed.");
 					e = nc_err_new(NC_ERR_BAD_ELEM);
 					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
+					xmlBufferFree(resultbuffer);
+					xmlFreeDoc(doc_merged);
 					break;
 				}
 			} else {
-				node = xmlCopyNode(aux_node, 1);
-			}
-			if (node != NULL) {
-				xmlNodeDump(resultbuffer, NULL, node, 2, 1);
-				xmlFreeNode(node);
-				node = NULL;
+				node = xmlCopyNodeList(doc_merged->children);
 			}
 		}
+		for (aux_node = node; aux_node != NULL; aux_node = aux_node->next) {
+			if (aux_node != NULL) {
+				xmlNodeDump(resultbuffer, NULL, aux_node, 2, 1);
+			}
+		}
+		xmlFreeNodeList(node);
 		data = strdup((char *) xmlBufferContent(resultbuffer));
 		xmlBufferFree(resultbuffer);
 		xmlFreeDoc(doc_merged);

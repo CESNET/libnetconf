@@ -271,13 +271,41 @@ void nc_session_monitoring_close(void)
 	}
 }
 
+int nc_session_is_monitored(const char* session_id)
+{
+	struct session_list_item *litem;
+
+	if (session_list->count == 0) {
+		return 0;
+	}
+
+	for(litem = (struct session_list_item*)((char*)(session_list->record) + session_list->first_offset);
+				litem != NULL;
+				litem = (struct session_list_item*)((char*)litem + litem->offset_next)) {
+		if (strcmp(litem->session_id, session_id) == 0) {
+			return 1;
+		}
+
+		if (litem->offset_next == 0) {
+			/* we are at the end of the list */
+			break;
+		}
+	}
+
+	return 0;
+}
+
 API int nc_session_monitor(struct nc_session* session)
 {
 	struct session_list_item *litem = NULL, *litem_aux;
 	pthread_rwlockattr_t rwlockattr;
 	int prev, next, size, totalsize = 0;
 
-	if (session == NULL || session->monitored || session_list == NULL) {
+	if (session->monitored) {
+		return (EXIT_SUCCESS);
+	}
+
+	if (session == NULL || session_list == NULL) {
 		return (EXIT_FAILURE);
 	}
 
@@ -942,7 +970,7 @@ API struct nc_cpblts* nc_session_get_cpblts_default(void)
 	struct nc_cpblts *retval;
 	char** nslist;
 	int i;
-	
+
 	retval = nc_cpblts_new(NULL);
 	if (retval == NULL) {
 		return (NULL);
@@ -2146,7 +2174,7 @@ malformed_msg:
 
 	ERROR("Malformed message received, closing the session %s.", session->session_id);
 	nc_session_close(session, NC_SESSION_TERM_OTHER);
-	
+
 	return (NC_MSG_UNKNOWN);
 }
 

@@ -528,18 +528,23 @@ static int nc_client_handshake(struct nc_session *session, char** cpblts)
 	return (retval);
 }
 
+extern int nc_session_is_monitored(const char* session_id);
+
 static int nc_server_handshake(struct nc_session *session, char** cpblts)
 {
 	nc_rpc *hello;
-	int pid;
 	int retval;
 
-	/* set session ID == PID */
-	pid = (int)getpid();
-	if (snprintf(session->session_id, SID_SIZE, "%d", pid) <= 0) {
+	/* set session ID */
+	if (nc_info == NULL) {
 		ERROR("Unable to generate the NETCONF session ID.");
 		return (EXIT_FAILURE);
 	}
+
+	pthread_rwlock_wrlock(&(nc_info->lock));
+	do {
+		snprintf(session->session_id, SID_SIZE, "%lu", ++nc_info->last_session_id);
+	} while (nc_session_is_monitored(session->session_id));
 
 	/* create server's <hello> message */
 	hello = nc_msg_server_hello(cpblts, session->session_id);
@@ -975,6 +980,11 @@ API struct nc_session *nc_session_accept_inout(const struct nc_cpblts* capabilit
 		nc_session_close(retval, NC_SESSION_TERM_BADHELLO);
 		nc_session_free(retval);
 		nc_cpblts_free(server_cpblts);
+		return (NULL);
+	}
+
+	/* monitor the session */
+	if (nc_session_monitor(retval) != EXIT_SUCCESS) {
 		return (NULL);
 	}
 
