@@ -545,7 +545,9 @@ API int nc_close(void)
 		/* LOCK */
 		pthread_rwlock_wrlock(&(nc_info->lock));
 		if (nc_apps_check(my_comm, &(nc_info->apps)) == 1 && nc_init_flags & NC_INIT_MULTILAYER) {
-			/* shared memory including lock was deleted */
+			/* UNLOCK */
+			pthread_rwlock_unlock(&(nc_info->lock));
+			/* delete the shared memory */
 			retval = nc_shared_cleanup(1);
 		} else {
 			nc_info->stats.participants--;
