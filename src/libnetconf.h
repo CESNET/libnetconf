@@ -1002,7 +1002,16 @@
  * values are set according to the startup content using the appropriate
  * transAPI callback functions.\n\n
  * We ignore it in our example - the Turing machine does not have any
- * configuration that could be read from (depend on the state of) the system.\n\n
+ * configuration that could be read from (depend on the state of) the system.
+ *
+ *   \note After returning from 'transapi_init()' it is assumed that the current
+ * running configuration reflects the actual state of the controlled device.
+ * For instance, if the model includes some default values and the running
+ * configuration is empty, libnetconf assumes that the device is in this default
+ * state as defined in the model. If not, then you should apply the default
+ * configuration on the device in 'transapi_init()'.
+ *
+ * \n
  * ~~~~~~~{.c}
  * int transapi_init(xmlDocPtr *running) {
  *     return EXIT_SUCCESS;
