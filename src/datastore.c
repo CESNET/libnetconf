@@ -145,7 +145,7 @@ static char** models_dirs = NULL;
 
 static char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 static char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
-static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs);
+static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **ns, char **prefix, char ***rpcs, char ***notifs);
 static struct data_model* get_model(const char* module, const char* version);
 static int ncds_features_parse(struct data_model* model);
 static int ncds_update_uses_groupings(struct data_model* model);
@@ -1078,7 +1078,7 @@ API const char* ncds_get_model_path(ncds_id id)
 	return (datastore->data_model->path);
 }
 
-API int ncds_model_info(const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)
+API int ncds_model_info(const char *path, char **name, char **version, char **ns, char **prefix, char ***rpcs, char ***notifs)
 {
 	int retval;
 	xmlXPathContextPtr model_ctxt;
@@ -1102,7 +1102,7 @@ API int ncds_model_info(const char *path, char **name, char **version, char **na
 		return (EXIT_FAILURE);
 	}
 
-	retval = get_model_info(model_ctxt, name, version, namespace, prefix, rpcs, notifs);
+	retval = get_model_info(model_ctxt, name, version, ns, prefix, rpcs, notifs);
 
 	xmlFreeDoc(model_xml);
 	xmlXPathFreeContext(model_ctxt);
@@ -1110,7 +1110,7 @@ API int ncds_model_info(const char *path, char **name, char **version, char **na
 	return (retval);
 }
 
-static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)
+static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **ns, char **prefix, char ***rpcs, char ***notifs)
 {
 	xmlXPathObjectPtr result = NULL;
 	xmlChar *xml_aux;
@@ -1118,7 +1118,7 @@ static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **ver
 
 	if (notifs) {*notifs = NULL;}
 	if (rpcs) {*rpcs = NULL;}
-	if (namespace) { *namespace = NULL;}
+	if (ns) { *ns = NULL;}
 	if (prefix) { *prefix = NULL;}
 	if (name) {*name = NULL;}
 	if (version) {*version = NULL;}
@@ -1181,24 +1181,24 @@ static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **ver
 	}
 
 	/* get namespace of the schema */
-	if (namespace != NULL ) {
+	if (ns != NULL ) {
 		result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:namespace", model_ctxt);
 		if (result != NULL ) {
 			if (result->nodesetval->nodeNr < 1) {
 				xmlXPathFreeObject (result);
 				goto errorcleanup;
 			} else {
-				*namespace = (char*) xmlGetProp (result->nodesetval->nodeTab[0], BAD_CAST "uri");
+				*ns = (char*) xmlGetProp (result->nodesetval->nodeTab[0], BAD_CAST "uri");
 			}
 			xmlXPathFreeObject (result);
-			if (*namespace == NULL ) {
+			if (*ns == NULL ) {
 				goto errorcleanup;
 			}
 		}
 	}
 
 	/* get prefix of the schema */
-	if (namespace != NULL ) {
+	if (ns != NULL ) {
 		result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:prefix", model_ctxt);
 		if (result != NULL ) {
 			if (result->nodesetval->nodeNr < 1) {
@@ -1266,8 +1266,8 @@ errorcleanup:
 	*name = NULL;
 	xmlFree(*version);
 	*version = NULL;
-	xmlFree(*namespace);
-	*namespace = NULL;
+	xmlFree(*ns);
+	*ns = NULL;
 	xmlFree(*prefix);
 	*prefix = NULL;
 	if (*rpcs != NULL) {

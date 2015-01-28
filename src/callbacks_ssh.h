@@ -123,10 +123,10 @@ void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
  * To make this function available, you have to include libnetconf_ssh.h.
  *
  * @ingroup session
- * @param[in] private
- * @param[in] public
+ * @param[in] privkey Path to the private key file.
+ * @param[in] pubkey Path to the public key file
  */
-void nc_set_keypair_path(const char* private, const char * public);
+void nc_set_keypair_path(const char* privkey, const char* pubkey);
 
 #ifdef __cplusplus
 }

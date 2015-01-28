@@ -731,10 +731,10 @@ static void nc_set_privatekey_path (const char* path)
 	}
 }
 
-API void nc_set_keypair_path (const char * private, const char * public)
+API void nc_set_keypair_path(const char* privkey, const char* pubkey)
 {
-	nc_set_privatekey_path(private);
-	nc_set_publickey_path(public);
+	nc_set_privatekey_path(privkey);
+	nc_set_publickey_path(pubkey);
 }
 
 #endif /* not DISABLE_LIBSSH */
