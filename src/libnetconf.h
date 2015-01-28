@@ -1328,6 +1328,7 @@
 #include "messages.h"
 #include "error.h"
 #include "datastore.h"
+#include "datastore/custom/datastore_custom.h"
 #include "with_defaults.h"
 #include "transport.h"
 
