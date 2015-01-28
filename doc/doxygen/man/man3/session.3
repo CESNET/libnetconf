@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Thu Nov 27 2014" "Version 0.9.0-9" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Wed Jan 28 2015" "Version 0.9.0-33_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -174,7 +174,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .br
 .RI "\fISet transport protocol for the sessions created by subsequent \fBnc_session_connect()\fP calls\&. By default, transport protocol is set to \fBNC_TRANSPORT_SSH\fP\&. \fP"
 .ti -1c
-.RI "void \fBnc_set_keypair_path\fP (const char *private, const char *public)"
+.RI "void \fBnc_set_keypair_path\fP (const char *privkey, const char *pubkey)"
 .br
 .RI "\fISet path to a private and a public key file used in case of SSH authentication via a publickey mechanism\&. \fP"
 .ti -1c
@@ -846,16 +846,16 @@ Tell me if the notification subscription is allowed on the given session\&.
 
 .PP
 Set transport protocol for the sessions created by subsequent \fBnc_session_connect()\fP calls\&. By default, transport protocol is set to \fBNC_TRANSPORT_SSH\fP\&. This function is thread-safe\&. Change made by calling this function applies only to the current thread\&. 
-.SS "void nc_set_keypair_path (const char *private, const char *public)"
+.SS "void nc_set_keypair_path (const char *privkey, const char *pubkey)"
 
 .PP
 Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIprivate\fP 
+\fIprivkey\fP Path to the private key file\&. 
 .br
-\fIpublic\fP 
+\fIpubkey\fP Path to the public key file 
 .RE
 .PP
 

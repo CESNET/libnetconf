@@ -1,12 +1,13 @@
 <map id="src/libnetconf.h" name="src/libnetconf.h">
-<area shape="rect" id="node5" href="$d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="393,304,467,331"/>
-<area shape="rect" id="node11" href="$dd/d49/callbacks_8h.html" title="Functions to set application&#39;s callbacks. " alt="" coords="778,229,867,256"/>
-<area shape="rect" id="node14" href="$da/d46/session_8h.html" title="Functions to handle NETCONF sessions. " alt="" coords="97,80,175,107"/>
-<area shape="rect" id="node16" href="$d2/d02/transport_8h.html" title="Functions implementing transport layer for NETCONF. " alt="" coords="157,155,239,181"/>
-<area shape="rect" id="node20" href="$d5/d48/messages_8h.html" title="Functions to create NETCONF messages. " alt="" coords="315,155,411,181"/>
-<area shape="rect" id="node25" href="$da/d41/error_8h.html" title="NETCONF error handling functions. " alt="" coords="401,229,460,256"/>
-<area shape="rect" id="node29" href="$d9/db6/datastore_8h.html" title="NETCONF datastore handling function prototypes and structures. " alt="" coords="486,155,575,181"/>
-<area shape="rect" id="node33" href="$da/dbe/with__defaults_8h.html" title="Implementation of NETCONF&#39;s with&#45;defaults capability defined in RFC 6243. " alt="" coords="251,80,360,107"/>
-<area shape="rect" id="node38" href="$d7/d62/notifications_8h.html" title="Functions to handle NETCONF Notifications. " alt="" coords="599,155,701,181"/>
-<area shape="rect" id="node42" href="$df/db8/url_8h.html" title="libnetconf&#39;s public API to use the URL capability. " alt="" coords="829,80,875,107"/>
+<area shape="rect" id="node3" href="$d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="377,319,451,345"/>
+<area shape="rect" id="node6" href="$dd/d49/callbacks_8h.html" title="Functions to set application&#39;s callbacks. " alt="" coords="861,244,951,271"/>
+<area shape="rect" id="node7" href="$da/d46/session_8h.html" title="Functions to handle NETCONF sessions. " alt="" coords="97,87,176,114"/>
+<area shape="rect" id="node8" href="$d2/d02/transport_8h.html" title="Functions implementing transport layer for NETCONF. " alt="" coords="94,169,177,196"/>
+<area shape="rect" id="node9" href="$d5/d48/messages_8h.html" title="Functions to create NETCONF messages. " alt="" coords="366,169,462,196"/>
+<area shape="rect" id="node11" href="$da/d41/error_8h.html" title="NETCONF error handling functions. " alt="" coords="308,244,368,271"/>
+<area shape="rect" id="node12" href="$d9/db6/datastore_8h.html" title="NETCONF datastore handling function prototypes and structures. " alt="" coords="201,169,291,196"/>
+<area shape="rect" id="node13" href="$d0/d63/datastore__custom_8h.html" title="NETCONF datastore handling function prototypes and structures for custom datastore implementation..." alt="" coords="599,80,786,121"/>
+<area shape="rect" id="node14" href="$da/dbe/with__defaults_8h.html" title="Implementation of NETCONF&#39;s with&#45;defaults capability defined in RFC 6243. " alt="" coords="415,87,525,114"/>
+<area shape="rect" id="node15" href="$d7/d62/notifications_8h.html" title="Functions to handle NETCONF Notifications. " alt="" coords="537,169,640,196"/>
+<area shape="rect" id="node16" href="$df/db8/url_8h.html" title="libnetconf&#39;s public API to use the URL capability. " alt="" coords="912,87,959,114"/>
 </map>
