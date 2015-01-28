@@ -291,7 +291,7 @@ extern char error_area;
  *
  * @param[out] name Name of the data model
  * @param[out] version Version of the data model
- * @param[out] namespace Namespace for the data model
+ * @param[out] ns Namespace for the data model
  * @param[out] prefix Prefix for the data model
  * @param[out] rpcs Null terminated list of names of RPCs defined in the data
  * model
@@ -300,7 +300,7 @@ extern char error_area;
  * @return EXIT_SUCCESS or EXIT_FAILURE on error.
  *
  */
-int ncds_model_info(const char* path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs);
+int ncds_model_info(const char* path, char **name, char **version, char **ns, char **prefix, char ***rpcs, char ***notifs);
 
 /**
  * @ingroup store
