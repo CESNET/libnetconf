@@ -126,9 +126,6 @@ void ncds_custom_free(struct ncds_ds* ds) {
 	//call user's free callback
 	c_ds->callbacks->free(c_ds->data);
 
-	//cleanup my things
-	free(c_ds);
-
 	pthread_mutex_lock(&lockinfo_running_mut);
 	free(lockinfo_running.sid);
 	free(lockinfo_running.time);
