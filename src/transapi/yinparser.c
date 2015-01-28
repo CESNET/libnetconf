@@ -75,6 +75,8 @@ static struct model_tree* yinmodel_parse_recursive(xmlNodePtr model_node, struct
 		/* check if node is in other namespace */
 		if (get_node_namespace(ns_mapping, model_tmp, &children[count-1].ns_prefix, &children[count-1].ns_uri)) {
 			/* or inherit from parent */
+			free(children[count-1].ns_prefix);
+			free(children[count-1].ns_uri);
 			children[count-1].ns_prefix = strdup(parent->ns_prefix);
 			children[count-1].ns_uri = strdup(parent->ns_uri);
 		}
