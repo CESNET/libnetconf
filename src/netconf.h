@@ -437,6 +437,15 @@ typedef enum NC_TRANSPORT {
  * init this application crashed (based on same commands - executable binary names).
  */
 int nc_init(int flags);
+
+/*
+ * The difference between single and multi-layer server affects only
+ * nc_init() and nc_close() calls. Generally, single-layer application
+ * can be executed and finish several times, even during a single
+ * NETCONF session. A multi-layer application is expected to call
+ * nc_close() only after it actually finished all its work and no
+ * client is connected.
+ */
 #define NC_INIT_MULTILAYER 0x00001000  /**< nc_init()'s flag for multi-layer server architecture */
 #define NC_INIT_SINGLELAYER 0x00002000 /**< nc_init()'s flag for single-layer server architecture */
 
