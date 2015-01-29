@@ -3822,7 +3822,7 @@ static int is_model_root(xmlNodePtr root, struct data_model *data_model)
 	}
 }
 
-static xmlDocPtr read_datastore_data(const char *data)
+static xmlDocPtr read_datastore_data(ncds_id id, const char *data)
 {
 	char *config = NULL;
 	xmlDocPtr doc, ret = NULL;
@@ -3841,7 +3841,7 @@ static xmlDocPtr read_datastore_data(const char *data)
 
 		if (doc == NULL || doc->children == NULL) {
 			xmlFreeDoc(doc);
-			ERROR("Invalid datastore configuration data.");
+			ERROR("Invalid datastore configuration data (datastore %d).", id);
 			return (NULL);
 		}
 
@@ -4083,7 +4083,7 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		return (EXIT_FAILURE);
 	}
 
-	doc = read_datastore_data(data_cfg);
+	doc = read_datastore_data(ds->id, data_cfg);
 	if (doc == NULL || doc->children == NULL) {
 		/* config is empty */
 		xmlFreeDoc(doc);
@@ -5186,7 +5186,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 
 	/* find differences and call functions */
 	new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
-	new = read_datastore_data(new_data);
+	new = read_datastore_data(ds->id, new_data);
 	free(new_data);
 
 	/* add default values */
@@ -5385,7 +5385,7 @@ process_datastore:
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING)) {
 
 		old_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
-		old = read_datastore_data(old_data);
+		old = read_datastore_data(ds->id, old_data);
 		if (old == NULL) {/* cannot get or parse data */
 			if (e == NULL) { /* error not set */
 				e = nc_err_new(NC_ERR_OP_FAILED);
@@ -5460,7 +5460,7 @@ process_datastore:
 			/* caller provided callback function to retrieve status data */
 
 			/* convert configuration data into XML structure */
-			doc1 = read_datastore_data(data);
+			doc1 = read_datastore_data(ds->id, data);
 			if (doc1 == NULL || doc1->children == NULL) {
 				/* empty */
 				xmlFreeDoc(doc1);
@@ -5474,7 +5474,7 @@ process_datastore:
 				/* status data are provided as string, convert it into XML structure */
 				xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
 				data2 = ds->get_state(model, data, &e);
-				doc2 = read_datastore_data(data2);
+				doc2 = read_datastore_data(ds->id, data2);
 				if (doc2 == NULL || doc2->children == NULL) {
 					/* empty */
 					xmlFreeDoc(doc2);
@@ -5530,7 +5530,7 @@ process_datastore:
 					}
 				} /* else content is corrupted that will be detected by xmlReadDoc() */
 			}
-			doc_merged = read_datastore_data(data);
+			doc_merged = read_datastore_data(ds->id, data);
 		}
 		free(data);
 
@@ -5603,7 +5603,7 @@ process_datastore:
 			}
 			break;
 		}
-		doc_merged = read_datastore_data(data);
+		doc_merged = read_datastore_data(ds->id, data);
 		free(data);
 
 		if (doc_merged == NULL) {
@@ -5957,7 +5957,7 @@ apply_editcopyconfig:
 						xmlFreeDoc(doc1);
 						break;
 					}
-					doc2 = read_datastore_data(data);
+					doc2 = read_datastore_data(ds->id, data);
 					free(data);
 					data = NULL;
 					if (doc2 == NULL) {
@@ -6368,7 +6368,7 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 							nc_err_free(e);
 							e = NULL;
 
-							old = read_datastore_data(data);
+							old = read_datastore_data(ds_rollback->datastore->id, data);
 							free(data);
 						}
 
