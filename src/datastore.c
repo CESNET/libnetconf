@@ -3825,6 +3825,7 @@ static int is_model_root(xmlNodePtr root, struct data_model *data_model)
 static xmlDocPtr read_datastore_data(ncds_id id, const char *data)
 {
 	char *config = NULL;
+	const char *datap = data;
 	xmlDocPtr doc, ret = NULL;
 	xmlNodePtr node;
 
@@ -3832,7 +3833,21 @@ static xmlDocPtr read_datastore_data(ncds_id id, const char *data)
 		/* config is empty */
 		return xmlNewDoc (BAD_CAST "1.0");
 	} else {
-		if (asprintf(&config, "<config>%s</config>", data) == -1) {
+		if (strncmp(data, "<?xml", 5) == 0) {
+			/* We got a "real" XML document. We strip off the
+			 * declaration, so the thing below works.
+			 *
+			 * We just skip it and use the rest of the xml. Data are untouched.
+			 */
+			datap = index(data, '>');
+			if (datap == NULL) {
+				/* content is corrupted */
+				ERROR("Invalid datastore configuration data (datastore %d).", id);
+				return (NULL);
+			}
+		}
+
+		if (asprintf(&config, "<config>%s</config>", datap) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			return (NULL);
 		}
@@ -5349,7 +5364,7 @@ API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const
 	struct transapi_list* tapi_iter;
 	const char * rpc_name;
 	const char *data_ns = NULL;
-	char *end = NULL, *aux = NULL;
+	char *aux = NULL;
 	NC_EDIT_ERROPT_TYPE erropt;
 #ifndef DISABLE_VALIDATION
 	NC_EDIT_TESTOPT_TYPE testopt;
@@ -5518,20 +5533,6 @@ process_datastore:
 				xmlFreeDoc(doc2);
 			}
 		} else {
-			if (strncmp(data, "<?xml", 5) == 0) {
-				/* We got a "real" XML document. We strip off the
-				 * declaration, so the thing below works.
-				 *
-				 * We just replace that with whitespaces, which is
-				 * harmless, but we'll free the correct pointer.
-				 */
-				end = index(data, '>');
-				if (end != NULL) {
-					for (aux = data; aux <= end; aux++) {
-						*aux = ' ';
-					}
-				} /* else content is corrupted that will be detected by xmlReadDoc() */
-			}
 			doc_merged = read_datastore_data(ds->id, data);
 		}
 		free(data);
