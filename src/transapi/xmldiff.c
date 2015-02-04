@@ -821,7 +821,7 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 			while (list_new_inter) {
 				if (xmlStrEqual(list_new_inter->name, BAD_CAST model->keys[i])) { /* Find matching leaf in the old document */
 					new_str = xmlNodeGetContent(list_new_inter);
-					aux_str  = realloc (new_keys, sizeof(char) * (strlen((const char*)new_keys)+strlen((const char*)new_str)+1));
+					aux_str = realloc(new_keys, sizeof(xmlChar*) * (xmlStrlen(new_keys)+xmlStrlen(new_str)+1));
 					if (aux_str == NULL) {
 						ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 						xmlFree(new_keys);
@@ -850,7 +850,7 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 				while (list_old_inter) {
 					if (xmlStrEqual(list_old_inter->name, BAD_CAST model->keys[i])) {
 						old_str = xmlNodeGetContent(list_old_inter);
-						aux_str = realloc(old_keys, sizeof(char) * (strlen((const char*)old_keys)+strlen((const char*)old_str)+1));
+						aux_str = realloc(old_keys, sizeof(xmlChar) * (xmlStrlen(old_keys)+xmlStrlen(old_str)+1));
 						if (aux_str == NULL) {
 							ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 							xmlFree(old_keys);
