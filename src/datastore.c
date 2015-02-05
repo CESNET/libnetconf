@@ -3845,6 +3845,7 @@ static xmlDocPtr read_datastore_data(ncds_id id, const char *data)
 				ERROR("Invalid datastore configuration data (datastore %d).", id);
 				return (NULL);
 			}
+			++datap;
 		}
 
 		if (asprintf(&config, "<config>%s</config>", datap) == -1) {
