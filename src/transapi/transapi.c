@@ -203,14 +203,15 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 	if (info->order == TRANSAPI_CLBCKS_LEAF_TO_ROOT) {
 		transapi_revert_callbacks_recursive_children(info, tree, erropt, error);
 		ret = transapi_revert_callbacks_recursive_own(info, tree, erropt, error);
-		if (ret == REVERT_CALLBACK_ERROR)
+		if (ret == REVERT_CALLBACK_ERROR) {
 			return (EXIT_FAILURE);
+		}
 	} else {
 		ret = transapi_revert_callbacks_recursive_own(info, tree, erropt, error);
-		if (ret == REVERT_CALLBACK_SUCCESS)
-			transapi_revert_callbacks_recursive_children(info, tree, erropt, error);
-		else if (ret == REVERT_CALLBACK_ERROR)
+		if (ret == REVERT_CALLBACK_ERROR) {
 			return (EXIT_FAILURE);
+		}
+		transapi_revert_callbacks_recursive_children(info, tree, erropt, error);
 	}
 
 	return ret;
