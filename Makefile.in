@@ -215,9 +215,9 @@ $(NAME).la: $(LOBJS)
 .PHONY: $(LNCTOOL)
 $(LNCTOOL): $(LNCTOOL).in
 	@if test -n "$(HAVE_PYANG)" -a -n "$(HAVE_XSLTPROC)"; then \
-		sed "s/@RNGLIB@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/rnglib/)/g" $< | \
-		sed 's/@XSLTDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/xslt/)/g' | \
-		sed 's/@TEMPLATEDIR@/$(subst /,\/,$(DESTDIR)/$(datadir)/$(NAME)/templates/)/g' > $(LNCTOOL).install; \
+		sed "s/@RNGLIB@/$(subst /,\/,@LNCTOOLDESTDIR@$(datadir)/$(NAME)/rnglib/)/g" $< | \
+		sed 's/@XSLTDIR@/$(subst /,\/,@LNCTOOLDESTDIR@$(datadir)/$(NAME)/xslt/)/g' | \
+		sed 's/@TEMPLATEDIR@/$(subst /,\/,@LNCTOOLDESTDIR@$(datadir)/$(NAME)/templates/)/g' > $(LNCTOOL).install; \
 		sed "s/@RNGLIB@/$(subst /,\/,$(abs_srcdir)/dev-tools/lnctool/rnglib/)/g" $< | \
 		sed 's/@XSLTDIR@/$(subst /,\/,$(abs_srcdir)/dev-tools/lnctool/xslt/)/g' | \
 		sed 's/@TEMPLATEDIR@/$(subst /,\/,$(abs_srcdir)/dev-tools/lnctool/generator/)/g' > $(LNCTOOL); \
