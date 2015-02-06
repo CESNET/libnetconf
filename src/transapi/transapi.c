@@ -83,6 +83,7 @@ static int transapi_revert_callbacks_recursive_own(const struct transapi_callbac
 {
 	xmlNodePtr xmloldnode = NULL, xmlnewnode = NULL;
 	int ret;
+	char* msg;
 	XMLDIFF_OP op = XMLDIFF_NONE;
 	struct nc_err *new_error = NULL;
 
@@ -146,7 +147,32 @@ static int transapi_revert_callbacks_recursive_own(const struct transapi_callbac
 			}
 		}
 
-		DBG("Transapi revert callback %s with op %d.", tree->path, op);
+		msg = malloc(strlen(tree->path)+128);
+		sprintf(msg, "Transapi calling callback %s with op ", tree->path);
+		if (op & XMLDIFF_REORDER) {
+			strcat(msg, "REORDER | ");
+		}
+		if (op & XMLDIFF_SIBLING) {
+			strcat(msg, "SIBLING | ");
+		}
+		if (op & XMLDIFF_CHAIN) {
+			strcat(msg, "CHAIN | ");
+		}
+		if (op & XMLDIFF_MOD) {
+			strcat(msg, "MOD | ");
+		}
+		if (op & XMLDIFF_REM) {
+			strcat(msg, "REM | ");
+		}
+		if (op & XMLDIFF_ADD) {
+			strcat(msg, "ADD | ");
+		}
+		if (op == XMLDIFF_NONE) {
+			strcat(msg, "NONE | ");
+		}
+		strcpy(msg+strlen(msg)-3, ".");
+		DBG(msg);
+		free(msg);
 
 		/* revert changes */
 		ret = tree->callback(&(info->transapis->tapi->data_clbks->data), op, xmloldnode, xmlnewnode, &new_error);
