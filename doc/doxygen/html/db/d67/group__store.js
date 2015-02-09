@@ -35,7 +35,7 @@ var group__store =
     [ "ncds_get_model", "db/d67/group__store.html#ga414b75711e49e0e1eea10ae15c14287e", null ],
     [ "ncds_get_model_path", "db/d67/group__store.html#ga5ec9fea534bfd146019b7efb882648be", null ],
     [ "ncds_init", "db/d67/group__store.html#gaabb1ae2c497726ad826fc6478f97e8ff", null ],
-    [ "ncds_model_info", "db/d67/group__store.html#ga9c0f401a6873e8778a80e6cc80c5219a", null ],
+    [ "ncds_model_info", "db/d67/group__store.html#gac1073caa8c9a04a766ce320ea0817a5c", null ],
     [ "ncds_new", "db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6", null ],
     [ "ncds_new2", "db/d67/group__store.html#ga18655a18464191a4aab1ef0b7d8ba5df", null ],
     [ "ncds_rollback", "db/d67/group__store.html#gabb9806e70f3399aed7da879095d9c64e", null ],

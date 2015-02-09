@@ -493,14 +493,19 @@ try:
 		generate_callbacks_file(module_name, args.paths, model)
 except ValueError as e:
 	print (e)
+	os.sys.exit(1)
 except IOError as e:
 	print(e[1]+'('+str(e[0])+'): '+e.filename)
+	os.sys.exit(1)
 except libxml2.libxmlError as e:
 	print('Can not parse data model: '+e.msg)
+	os.sys.exit(1)
 except subprocess.CalledProcessError as e:
 	print("Command '%s' failed (%d)" % (' '.join(e.cmd), e.returncode))
+	os.sys.exit(1)
 except KeyboardInterrupt:
 	print('Killed by user!')
+	os.sys.exit(1)
 #except Exception as e:
 #	print('Some unspecified error occured! '+str(e))
 

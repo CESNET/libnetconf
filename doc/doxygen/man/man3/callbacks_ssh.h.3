@@ -1,4 +1,4 @@
-.TH "src/callbacks_ssh.h" 3 "Thu Nov 27 2014" "Version 0.9.0-9" "libnetconf" \" -*- nroff -*-
+.TH "src/callbacks_ssh.h" 3 "Wed Jan 28 2015" "Version 0.9.0-33_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -34,7 +34,7 @@ Functions to set libssh2's callbacks\&.
 .br
 .RI "\fISet a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'\&. \fP"
 .ti -1c
-.RI "void \fBnc_set_keypair_path\fP (const char *private, const char *public)"
+.RI "void \fBnc_set_keypair_path\fP (const char *privkey, const char *pubkey)"
 .br
 .RI "\fISet path to a private and a public key file used in case of SSH authentication via a publickey mechanism\&. \fP"
 .in -1c

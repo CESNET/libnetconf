@@ -61,6 +61,6 @@ var group__session =
     [ "nc_session_monitor", "db/d52/group__session.html#ga023c9c813c59588ab938108f3f063d41", null ],
     [ "nc_session_notif_allowed", "db/d52/group__session.html#gafd3b69869e102a4625a5ffb490b4d70f", null ],
     [ "nc_session_transport", "db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806", null ],
-    [ "nc_set_keypair_path", "db/d52/group__session.html#gab5beccc3acd15a5ad6499992e24fbe59", null ],
+    [ "nc_set_keypair_path", "db/d52/group__session.html#gaf3ce5316ea11c2f0359db16c2828ad6f", null ],
     [ "nc_ssh_pref", "db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0", null ]
 ];

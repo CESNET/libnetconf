@@ -145,7 +145,7 @@ static char** models_dirs = NULL;
 
 static char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 static char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
-static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs);
+static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **ns, char **prefix, char ***rpcs, char ***notifs);
 static struct data_model* get_model(const char* module, const char* version);
 static int ncds_features_parse(struct data_model* model);
 static int ncds_update_uses_groupings(struct data_model* model);
@@ -1078,7 +1078,7 @@ API const char* ncds_get_model_path(ncds_id id)
 	return (datastore->data_model->path);
 }
 
-API int ncds_model_info(const char *path, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)
+API int ncds_model_info(const char *path, char **name, char **version, char **ns, char **prefix, char ***rpcs, char ***notifs)
 {
 	int retval;
 	xmlXPathContextPtr model_ctxt;
@@ -1102,7 +1102,7 @@ API int ncds_model_info(const char *path, char **name, char **version, char **na
 		return (EXIT_FAILURE);
 	}
 
-	retval = get_model_info(model_ctxt, name, version, namespace, prefix, rpcs, notifs);
+	retval = get_model_info(model_ctxt, name, version, ns, prefix, rpcs, notifs);
 
 	xmlFreeDoc(model_xml);
 	xmlXPathFreeContext(model_ctxt);
@@ -1110,7 +1110,7 @@ API int ncds_model_info(const char *path, char **name, char **version, char **na
 	return (retval);
 }
 
-static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **namespace, char **prefix, char ***rpcs, char ***notifs)
+static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **ns, char **prefix, char ***rpcs, char ***notifs)
 {
 	xmlXPathObjectPtr result = NULL;
 	xmlChar *xml_aux;
@@ -1118,7 +1118,7 @@ static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **ver
 
 	if (notifs) {*notifs = NULL;}
 	if (rpcs) {*rpcs = NULL;}
-	if (namespace) { *namespace = NULL;}
+	if (ns) { *ns = NULL;}
 	if (prefix) { *prefix = NULL;}
 	if (name) {*name = NULL;}
 	if (version) {*version = NULL;}
@@ -1181,24 +1181,24 @@ static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **ver
 	}
 
 	/* get namespace of the schema */
-	if (namespace != NULL ) {
+	if (ns != NULL ) {
 		result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:namespace", model_ctxt);
 		if (result != NULL ) {
 			if (result->nodesetval->nodeNr < 1) {
 				xmlXPathFreeObject (result);
 				goto errorcleanup;
 			} else {
-				*namespace = (char*) xmlGetProp (result->nodesetval->nodeTab[0], BAD_CAST "uri");
+				*ns = (char*) xmlGetProp (result->nodesetval->nodeTab[0], BAD_CAST "uri");
 			}
 			xmlXPathFreeObject (result);
-			if (*namespace == NULL ) {
+			if (*ns == NULL ) {
 				goto errorcleanup;
 			}
 		}
 	}
 
 	/* get prefix of the schema */
-	if (namespace != NULL ) {
+	if (ns != NULL ) {
 		result = xmlXPathEvalExpression (BAD_CAST "/yin:module/yin:prefix", model_ctxt);
 		if (result != NULL ) {
 			if (result->nodesetval->nodeNr < 1) {
@@ -1266,8 +1266,8 @@ errorcleanup:
 	*name = NULL;
 	xmlFree(*version);
 	*version = NULL;
-	xmlFree(*namespace);
-	*namespace = NULL;
+	xmlFree(*ns);
+	*ns = NULL;
 	xmlFree(*prefix);
 	*prefix = NULL;
 	if (*rpcs != NULL) {
@@ -3822,9 +3822,10 @@ static int is_model_root(xmlNodePtr root, struct data_model *data_model)
 	}
 }
 
-static xmlDocPtr read_datastore_data(const char *data)
+static xmlDocPtr read_datastore_data(ncds_id id, const char *data)
 {
 	char *config = NULL;
+	const char *datap = data;
 	xmlDocPtr doc, ret = NULL;
 	xmlNodePtr node;
 
@@ -3832,7 +3833,22 @@ static xmlDocPtr read_datastore_data(const char *data)
 		/* config is empty */
 		return xmlNewDoc (BAD_CAST "1.0");
 	} else {
-		if (asprintf(&config, "<config>%s</config>", data) == -1) {
+		if (strncmp(data, "<?xml", 5) == 0) {
+			/* We got a "real" XML document. We strip off the
+			 * declaration, so the thing below works.
+			 *
+			 * We just skip it and use the rest of the xml. Data are untouched.
+			 */
+			datap = index(data, '>');
+			if (datap == NULL) {
+				/* content is corrupted */
+				ERROR("Invalid datastore configuration data (datastore %d).", id);
+				return (NULL);
+			}
+			++datap;
+		}
+
+		if (asprintf(&config, "<config>%s</config>", datap) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			return (NULL);
 		}
@@ -3841,7 +3857,7 @@ static xmlDocPtr read_datastore_data(const char *data)
 
 		if (doc == NULL || doc->children == NULL) {
 			xmlFreeDoc(doc);
-			ERROR("Invalid datastore configuration data.");
+			ERROR("Invalid datastore configuration data (datastore %d).", id);
 			return (NULL);
 		}
 
@@ -4083,7 +4099,7 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		return (EXIT_FAILURE);
 	}
 
-	doc = read_datastore_data(data_cfg);
+	doc = read_datastore_data(ds->id, data_cfg);
 	if (doc == NULL || doc->children == NULL) {
 		/* config is empty */
 		xmlFreeDoc(doc);
@@ -5031,19 +5047,33 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 			ERROR("%s: invalid filter (%s:%d).", __func__, __FILE__, __LINE__);
 			return EXIT_FAILURE;
 		}
+
 		data_filtered[0] = xmlNewDoc(BAD_CAST "1.0");
 		data_filtered[1] = xmlNewDoc(BAD_CAST "1.0");
 		for (filter_item = filter->subtree_filter->children; filter_item != NULL; filter_item = filter_item->next) {
-			xmlDocSetRootElement(data_filtered[0], xmlCopyNode(old, 1));
+			xmlAddChildList((xmlNodePtr)(data_filtered[0]), xmlCopyNodeList(old));
+
+			/* modify filter doc to deny ncxml_subtree_filter processing
+			 * siblings that are (on this top level) meaningless and they
+			 * will be processed separatelly in the next run of the loop.
+			 */
+			node = filter_item->next;
+			filter_item->next = NULL;
 			ncxml_subtree_filter(data_filtered[0]->children, filter_item);
+			/* revert change made to the filter doc */
+			filter_item->next = node;
+
 			if (data_filtered[1]->children == NULL) {
+				/* there are no data so far */
 				if (data_filtered[0]->children != NULL) {
-					/* we have some result */
+					/* we have some result, move it to [1] */
 					node = data_filtered[0]->children;
 					xmlUnlinkNode(node);
 					xmlDocSetRootElement(data_filtered[1], node);
 				}
-			} else {
+			} else if (data_filtered[0]-> children != NULL) {
+				/* there are some data already filtered */
+				/* and we have some new data, so merge them */
 				if (data_model != NULL) {
 					result = ncxml_merge(data_filtered[0], data_filtered[1], data_model);
 				} else {
@@ -5051,6 +5081,7 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 					data_filtered[1] = NULL;
 					xmlDocCopyNodeList(result, data_filtered[0]->children);
 				}
+
 				node = data_filtered[0]->children;
 				xmlUnlinkNode(node);
 				xmlFreeNode(node);
@@ -5058,9 +5089,10 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 				data_filtered[1] = result;
 			}
 		}
+
 		if (filter->subtree_filter->children != NULL) {
 			if(data_filtered[1] != NULL && data_filtered[1]->children != NULL) {
-				*new = xmlCopyNode(data_filtered[1]->children, 1);
+				*new = xmlCopyNodeList(data_filtered[1]->children);
 			} else {
 				*new = NULL;
 			}
@@ -5170,7 +5202,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 
 	/* find differences and call functions */
 	new_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
-	new = read_datastore_data(new_data);
+	new = read_datastore_data(ds->id, new_data);
 	free(new_data);
 
 	/* add default values */
@@ -5333,7 +5365,7 @@ API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const
 	struct transapi_list* tapi_iter;
 	const char * rpc_name;
 	const char *data_ns = NULL;
-	char *end = NULL, *aux = NULL;
+	char *aux = NULL;
 	NC_EDIT_ERROPT_TYPE erropt;
 #ifndef DISABLE_VALIDATION
 	NC_EDIT_TESTOPT_TYPE testopt;
@@ -5371,7 +5403,7 @@ process_datastore:
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING)) {
 
 		old_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
-		old = read_datastore_data(old_data);
+		old = read_datastore_data(ds->id, old_data);
 		if (old == NULL) {/* cannot get or parse data */
 			if (e == NULL) { /* error not set */
 				e = nc_err_new(NC_ERR_OP_FAILED);
@@ -5446,7 +5478,7 @@ process_datastore:
 			/* caller provided callback function to retrieve status data */
 
 			/* convert configuration data into XML structure */
-			doc1 = read_datastore_data(data);
+			doc1 = read_datastore_data(ds->id, data);
 			if (doc1 == NULL || doc1->children == NULL) {
 				/* empty */
 				xmlFreeDoc(doc1);
@@ -5460,7 +5492,7 @@ process_datastore:
 				/* status data are provided as string, convert it into XML structure */
 				xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
 				data2 = ds->get_state(model, data, &e);
-				doc2 = read_datastore_data(data2);
+				doc2 = read_datastore_data(ds->id, data2);
 				if (doc2 == NULL || doc2->children == NULL) {
 					/* empty */
 					xmlFreeDoc(doc2);
@@ -5502,21 +5534,7 @@ process_datastore:
 				xmlFreeDoc(doc2);
 			}
 		} else {
-			if (strncmp(data, "<?xml", 5) == 0) {
-				/* We got a "real" XML document. We strip off the
-				 * declaration, so the thing below works.
-				 *
-				 * We just replace that with whitespaces, which is
-				 * harmless, but we'll free the correct pointer.
-				 */
-				end = index(data, '>');
-				if (end != NULL) {
-					for (aux = data; aux <= end; aux++) {
-						*aux = ' ';
-					}
-				} /* else content is corrupted that will be detected by xmlReadDoc() */
-			}
-			doc_merged = read_datastore_data(data);
+			doc_merged = read_datastore_data(ds->id, data);
 		}
 		free(data);
 
@@ -5544,24 +5562,28 @@ process_datastore:
 		}
 
 		/* if filter specified, now is good time to apply it */
-		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
+		node = NULL;
+		if (doc_merged->children != NULL) {
 			if (filter != NULL) {
-				if (ncxml_filter(aux_node, filter, &node, ds->ext_model) != 0) {
+				if (ncxml_filter(doc_merged->children, filter, &node, ds->ext_model) != 0) {
 					ERROR("Filter failed.");
 					e = nc_err_new(NC_ERR_BAD_ELEM);
 					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
+					xmlBufferFree(resultbuffer);
+					xmlFreeDoc(doc_merged);
 					break;
 				}
 			} else {
-				node = xmlCopyNode(aux_node, 1);
-			}
-			if (node != NULL) {
-				xmlNodeDump(resultbuffer, NULL, node, 2, 1);
-				xmlFreeNode(node);
-				node = NULL;
+				node = xmlCopyNodeList(doc_merged->children);
 			}
 		}
+		for (aux_node = node; aux_node != NULL; aux_node = aux_node->next) {
+			if (aux_node != NULL) {
+				xmlNodeDump(resultbuffer, NULL, aux_node, 2, 1);
+			}
+		}
+		xmlFreeNodeList(node);
 		data = strdup((char *) xmlBufferContent(resultbuffer));
 		xmlBufferFree(resultbuffer);
 		xmlFreeDoc(doc_merged);
@@ -5585,7 +5607,7 @@ process_datastore:
 			}
 			break;
 		}
-		doc_merged = read_datastore_data(data);
+		doc_merged = read_datastore_data(ds->id, data);
 		free(data);
 
 		if (doc_merged == NULL) {
@@ -5612,24 +5634,28 @@ process_datastore:
 		}
 
 		/* if filter specified, now is good time to apply it */
-		for (aux_node = doc_merged->children; aux_node != NULL; aux_node = aux_node->next) {
+		node = NULL;
+		if (doc_merged->children != NULL) {
 			if (filter != NULL) {
-				if (ncxml_filter(aux_node, filter, &node, ds->ext_model) != 0) {
+				if (ncxml_filter(doc_merged->children, filter, &node, ds->ext_model) != 0) {
 					ERROR("Filter failed.");
 					e = nc_err_new(NC_ERR_BAD_ELEM);
 					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
+					xmlBufferFree(resultbuffer);
+					xmlFreeDoc(doc_merged);
 					break;
 				}
 			} else {
-				node = xmlCopyNode(aux_node, 1);
-			}
-			if (node != NULL) {
-				xmlNodeDump(resultbuffer, NULL, node, 2, 1);
-				xmlFreeNode(node);
-				node = NULL;
+				node = xmlCopyNodeList(doc_merged->children);
 			}
 		}
+		for (aux_node = node; aux_node != NULL; aux_node = aux_node->next) {
+			if (aux_node != NULL) {
+				xmlNodeDump(resultbuffer, NULL, aux_node, 2, 1);
+			}
+		}
+		xmlFreeNodeList(node);
 		data = strdup((char *) xmlBufferContent(resultbuffer));
 		xmlBufferFree(resultbuffer);
 		xmlFreeDoc(doc_merged);
@@ -5935,7 +5961,7 @@ apply_editcopyconfig:
 						xmlFreeDoc(doc1);
 						break;
 					}
-					doc2 = read_datastore_data(data);
+					doc2 = read_datastore_data(ds->id, data);
 					free(data);
 					data = NULL;
 					if (doc2 == NULL) {
@@ -6371,7 +6397,7 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 							nc_err_free(e);
 							e = NULL;
 
-							old = read_datastore_data(data);
+							old = read_datastore_data(ds_rollback->datastore->id, data);
 							free(data);
 						}
 

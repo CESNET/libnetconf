@@ -999,7 +999,7 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 	xmlDocPtr config_doc = NULL, aux_doc;
 	xmlNodePtr target_ds, source_ds, aux_node, root;
 	keyList keys;
-	char *aux = NULL;
+	char *aux = NULL, *configp;
 	int r, ret = 0;
 
 	assert(error);
@@ -1069,7 +1069,22 @@ int ncds_file_copyconfig(struct ncds_ds *ds, const struct nc_session *session, c
 			nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "config");
 			return EXIT_FAILURE;
 		}
-		if (asprintf(&aux, "<config>%s</config>", config) == -1) {
+		if (strncmp(config, "<?xml", 5) == 0) {
+			if ((configp = strchr(config, '>')) == NULL) {
+				UNLOCK(file_ds);
+				ERROR("%s: invalid source config.", __func__);
+				*error = nc_err_new(NC_ERR_BAD_ELEM);
+				nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "config");
+				return EXIT_FAILURE;
+			}
+			++configp;
+			while (*configp == ' ' || *configp == '\n' || *configp == '\t') {
+				++configp;
+			}
+		} else {
+			configp = config;
+		}
+		if (asprintf(&aux, "<config>%s</config>", configp) == -1) {
 			UNLOCK(file_ds);
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			*error = nc_err_new(NC_ERR_OP_FAILED);
@@ -1303,6 +1318,7 @@ int ncds_file_editconfig(struct ncds_ds *ds, const struct nc_session * session, 
 	xmlNodePtr target_ds, aux_node, root;
 	int retval = EXIT_SUCCESS, ret;
 	char* aux = NULL;
+	const char* configp;
 
 	assert(error);
 
@@ -1346,7 +1362,22 @@ int ncds_file_editconfig(struct ncds_ds *ds, const struct nc_session * session, 
 		return EXIT_FAILURE;
 	}
 
-	if (asprintf(&aux, "<config>%s</config>", config) == -1) {
+	if (strncmp(config, "<?xml", 5) == 0) {
+		if ((configp = strchr(config, '>')) == NULL) {
+			UNLOCK(file_ds);
+			ERROR("%s: invalid config.", __func__);
+			*error = nc_err_new(NC_ERR_BAD_ELEM);
+			nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, "config");
+			return EXIT_FAILURE;
+		}
+		++configp;
+		while (*configp == ' ' || *configp == '\n' || *configp == '\t') {
+			++configp;
+		}
+	} else {
+		configp = config;
+	}
+	if (asprintf(&aux, "<config>%s</config>", configp) == -1) {
 		UNLOCK(file_ds);
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		*error = nc_err_new(NC_ERR_OP_FAILED);

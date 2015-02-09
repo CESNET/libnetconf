@@ -87,6 +87,13 @@ fi
 AC_CHECK_PROG([HAVE_PYANG], [pyang], [yes], [])
 AC_SUBST(HAVE_PYANG)
 
+# hack for expanding paths in lnctool in case of building RPM package
+AC_ARG_WITH([rpm], [],
+	[LNCTOOLDESTDIR=""],
+	[LNCTOOLDESTDIR="\$(DESTDIR)"]
+)
+AC_SUBST(LNCTOOLDESTDIR)
+
 # Check for xsltproc used in lnctool
 AC_CHECK_PROG([HAVE_XSLTPROC], [xsltproc], [yes], [])
 AC_SUBST(HAVE_XSLTPROC)

@@ -32,7 +32,7 @@ if you want to develop your own NETCONF application.
 %setup
 
 %build
-./configure --prefix=%{_prefix} --libdir=%{_libdir} @CONFIGURE_PARAMS@;
+./configure --prefix=%{_prefix} --libdir=%{_libdir} --with-rpm @CONFIGURE_PARAMS@;
 make
 make doc
 
