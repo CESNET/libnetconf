@@ -1,3 +1,21 @@
+libnetconf 0.9.1
+
+This release includes the following bugfixes and optimizations:
+
+ * NETCONF session IDs are now unique numbers with no relation to PIDs
+ * Subtree filtering optimized to when merging data from different modules
+ * <rpc>/<rpc-reply> creation optimized
+ * Fix reverting transAPI changes on root-to-leaf direction.
+ * Fix handling datastore content when data contains XML header (<?xml)
+ * Provide daatstore custom implementation via libnetconf.h
+ * missing read_datastore_data() when validation is disabled
+ * fix memory leaks and uninitialized memory usage issues
+ * fix several building issues
+
+API/ABI is compatible with 0.9.0, see reports in 'doc/compat_reports/'
+directory.
+
+
 libnetconf 0.9.0
 
 This release includes the following changes:
@@ -25,7 +43,7 @@ This release includes the following changes:
 
 Deprecated functions:
 
- * ncds_apply_rpc(), will be removed 1.0.0, use ncds_apply_rpc2all() instead
+ * ncds_apply_rpc(), will be removed in 1.0.0, use ncds_apply_rpc2all() instead
 
 
 For API/ABI compatibility to previous versions, see reports in
