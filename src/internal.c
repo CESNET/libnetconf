@@ -300,6 +300,14 @@ API int nc_init(int flags)
 		return (-1);
 	}
 
+	/* some flags need other flags, so check that all dependencies are fullfilled */
+	if (flags & NC_INIT_NACM) {
+		flags |= NC_INIT_DATASTORES;
+	}
+	if (flags & NC_INIT_KEEPALIVECHECK) {
+		flags |= NC_INIT_MONITORING;
+	}
+
 	if (flags & (NC_INIT_DATASTORES | NC_INIT_MONITORING | NC_INIT_NACM)) {
 
 		DBG("Shared memory key: %d", key);

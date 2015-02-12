@@ -2397,6 +2397,12 @@ static int import_groupings(const char* module_name, xmlXPathContextPtr model_ct
 			model = get_model(module, revision);
 			free(revision);
 			if (model == NULL) {
+				if (strcmp(module, "ietf-netconf-acm") == 0) {
+					WARN("NACM turned off, module \'ietf-netconf-acm\' is not available for import from \'%s\'.", module_name);
+					free(module);
+					free(prefix);
+					continue;
+				}
 				ERROR("Missing YIN module \'%s\' imported from \'%s\'.", module, module_name);
 				free(module);
 				free(prefix);
