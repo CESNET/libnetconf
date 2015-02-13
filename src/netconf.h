@@ -282,6 +282,7 @@ typedef enum NC_FILTER_TYPE {
 typedef enum NC_EDIT_OP_TYPE {
 	NC_EDIT_OP_ERROR = -1,  /**< for internal purposes, not defined by NETCONF */
 	NC_EDIT_OP_MERGE = 1,   /**< merge */
+	NC_EDIT_OP_NOTSET = 0,  /**< compatibility value for NC_EDIT_DEFOP_TYPE */
 	NC_EDIT_OP_REPLACE = 2, /**< replace */
 	NC_EDIT_OP_CREATE,      /**< create */
 	NC_EDIT_OP_DELETE,      /**< delete */
