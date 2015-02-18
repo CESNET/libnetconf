@@ -83,7 +83,7 @@ def convert_to_yin(input_file_name, search_path):
 	yin_file.close()
 
 	return(model)
-	
+
 def generate_validators(yin_model_path, augment_models_paths, search_path, features):
 	(yin_file_name, ext) = os.path.splitext(os.path.basename(yin_model_path))
 	yin_file_name = args.output_dir+'/'+os.path.basename(yin_file_name)
@@ -390,7 +390,7 @@ def generate_rpc_callbacks(doc):
 
 def generate_file_callbacks():
 	content = ''
-	
+
 	content += '/*\n'
 	content += ' * Structure transapi_file_callbacks provides mapping between specific files\n'
 	content += ' * (e.g. configuration file in /etc/) and the callback function executed when\n'
@@ -411,8 +411,8 @@ def generate_file_callbacks():
 	content += 'struct transapi_file_callbacks file_clbks = {\n'
 	content += '\t.callbacks_count = 0,\n'
 	content += '\t.callbacks = {{NULL}}\n'
-	content += '};\n\n'	
-	
+	content += '};\n\n'
+
 	return(content)
 
 # "main" starts here
@@ -452,6 +452,7 @@ parser_transapi = subparsers.add_parser('transapi')
 parser_transapi.add_argument('--name', help='Name of module with callbacks. If not supplied name of module in data model will be used.')
 parser_transapi.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
 parser_transapi.add_argument('--template-dir', default=TEMPLATEDIR, help='Path to the directory with template files')
+parser_transapi.add_argument('--no-autotools-files', help='Do not generate autotools template files', action='store_true')
 
 # add common model option
 try:
@@ -484,11 +485,13 @@ try:
 		else:
 			module_name = args.name
 
-		# store paterns and text for replacing in configure.in
-		replace = {'$$PROJECTNAME$$' : module_name}
+		if not args.no_autotools_files:
+			# store paterns and text for replacing in configure.in
+			replace = {'$$PROJECTNAME$$' : module_name}
 
-		# copy files for autotools (Makefile.in, ...)
-		generate_template_files(replace)
+			# copy files for autotools (Makefile.in, ...)
+			generate_template_files(replace)
+
 		#generate callbacks code
 		generate_callbacks_file(module_name, args.paths, model)
 except ValueError as e:
