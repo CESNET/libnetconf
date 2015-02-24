@@ -1466,6 +1466,7 @@ API struct nc_filter* nc_rpc_get_filter(const nc_rpc* rpc)
 		} else {
 			/* some uknown filter type */
 			retval->type = NC_FILTER_UNKNOWN;
+			retval->subtree_filter = NULL;
 		}
 		xmlFree(type_string);
 	}
