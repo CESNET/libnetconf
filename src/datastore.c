@@ -4838,7 +4838,8 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 	/* check if this filter level is last */
 	filter_node = filter;
 	while (filter_node) {
-		if ((filter_node->children) && (filter_node->children->type == XML_TEXT_NODE)) {
+		if ((filter_node->children) && (filter_node->children->type == XML_TEXT_NODE) &&
+				!xmlIsBlankNode(filter_node->children)) {
 			end_node = 1;
 			break;
 		}
@@ -4899,7 +4900,8 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 						filter_node = filter;
 						/* pass all filter sibling nodes */
 						while (sibling_selection == 0 && filter_node) {
-							if (!filter_node->children || (filter_node->children->type != XML_TEXT_NODE)) {
+							if (!filter_node->children || (filter_node->children->type != XML_TEXT_NODE) ||
+									xmlIsBlankNode(filter_node->children)) {
 								sibling_selection = 1; /* filter result will be selected */
 								break;
 							}
@@ -4919,8 +4921,8 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 								if (!strcmp((char *) filter_node->name, (char *) config_node->name) &&
 										!nc_nscmp(filter_node, config_node) && !attrcmp(filter_node, config_node)) {
 									/* content match node check */
-									if (filter_node->children && (filter_node->children->type == XML_TEXT_NODE) &&
-											config_node->children && (config_node->children->type == XML_TEXT_NODE)) {
+									if (filter_node->children && (filter_node->children->type == XML_TEXT_NODE) && !xmlIsBlankNode(filter_node->children) &&
+											config_node->children && (config_node->children->type == XML_TEXT_NODE) && !xmlIsBlankNode(config_node->children)) {
 										/* get filter's text node content ignoring whitespaces */
 										if ((content2 = nc_clrwspace((char *) filter_node->children->content)) == NULL ||
 												(content1 = nc_clrwspace((char *) config_node->children->content)) == NULL) {
@@ -4995,7 +4997,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 		}
 
 		if (filter_in == 1) {
-			while (config->children && filter_node && filter_node->children &&
+			while (config->children && filter_node && filter_node->children && !xmlIsBlankNode(filter_node->children) &&
 					((filter_in = ncxml_subtree_filter(config->children, filter_node->children)) == 0)) {
 				filter_node = filter_node->next;
 				while (filter_node) {
