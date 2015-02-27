@@ -2120,9 +2120,6 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 	} else if (xmlStrcmp (root->name, BAD_CAST "rpc") == 0) {
 		msgtype = NC_MSG_RPC;
 
-		/* set rpc type flag */
-		nc_rpc_parse_type(retval);
-
 		/* set with-defaults if any */
 		nc_rpc_parse_withdefaults(retval, NULL);
 	} else if (xmlStrcmp (root->name, BAD_CAST "notification") == 0) {
@@ -2522,6 +2519,9 @@ try_again:
 
 		/* assign operation value */
 		nc_rpc_assign_op(*rpc);
+
+		/* set rpc type flag */
+		nc_rpc_parse_type(*rpc);
 
 		/* assign source/target datastore types */
 		nc_rpc_assign_ds(*rpc, "source");
