@@ -165,6 +165,7 @@ static char* callback_sshauth_password_default (const char* username,
 	int buflen = 1024, len = 0;
 	char c = 0;
 	struct termios newterm, oldterm;
+	FILE* tty;
 
 	buf = malloc (buflen * sizeof(char));
 	if (buf == NULL) {
@@ -172,24 +173,30 @@ static char* callback_sshauth_password_default (const char* username,
 		return (NULL);
 	}
 
-	if (tcgetattr(STDIN_FILENO, &oldterm) != 0) {
+	if ((tty = fopen("/dev/tty", "r+")) == NULL) {
+		ERROR("Unable to open the current terminal (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+		return (NULL);
+	}
+
+	if (tcgetattr(fileno(tty), &oldterm) != 0) {
 		ERROR("Unable to get terminal settings (%d: %s).", __LINE__, strerror(errno));
 		return (NULL);
 	}
 
-	fprintf(stdout, "%s@%s password: ", username, hostname);
-	fflush(stdout);
+	fprintf(tty, "%s@%s password: ", username, hostname);
+	fflush(tty);
 
 	/* system("stty -echo"); */
 	newterm = oldterm;
 	newterm.c_lflag &= ~ECHO;
-	tcflush(STDIN_FILENO, TCIFLUSH);
-	if (tcsetattr(STDIN_FILENO, TCSANOW, &newterm) != 0) {
+	newterm.c_lflag &= ~ICANON;
+	tcflush(fileno(tty), TCIFLUSH);
+	if (tcsetattr(fileno(tty), TCSANOW, &newterm) != 0) {
 		ERROR("Unable to change terminal settings for hiding password (%d: %s).", __LINE__, strerror(errno));
 		return (NULL);
 	}
 
-	while (read(STDIN_FILENO, &c, 1) == 1 && c != '\n') {
+	while (fread(&c, 1, 1, tty) == 1 && c != '\n') {
 		if (len >= (buflen-1)) {
 			buflen *= 2;
 			newbuf = realloc(buf, buflen*sizeof (char));
@@ -200,8 +207,8 @@ static char* callback_sshauth_password_default (const char* username,
 				memset(buf, 0, len);
 				free(buf);
 
-				/*restore terminal settings */
-				if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+				/* restore terminal settings */
+				if (tcsetattr(fileno(tty), TCSANOW, &oldterm) != 0) {
 					ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
 				}
 				return (NULL);
@@ -214,7 +221,7 @@ static char* callback_sshauth_password_default (const char* username,
 	buf[len++] = 0; /* terminating null byte */
 
 	/* system ("stty echo"); */
-	if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+	if (tcsetattr(fileno(tty), TCSANOW, &oldterm) != 0) {
 		ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
 		/*
 		 * terminal probably still hides input characters, but we have password
@@ -222,9 +229,9 @@ static char* callback_sshauth_password_default (const char* username,
 		 * just continue
 		 */
 	}
+	fprintf(tty, "\n");
 
-	fprintf(stdout, "\n");
-
+	fclose(tty);
 	return (buf);
 }
 
@@ -247,24 +254,30 @@ static void callback_sshauth_interactive_default (const char*  UNUSED(name),
 	char c = 0;
 	struct termios newterm, oldterm;
 	char* newtext;
+	FILE* tty;
 
-	if (tcgetattr(STDIN_FILENO, &oldterm) != 0) {
+	if ((tty = fopen("/dev/tty", "r+")) == NULL) {
+		ERROR("Unable to open the current terminal (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+		return;
+	}
+
+	if (tcgetattr(fileno(tty), &oldterm) != 0) {
 		ERROR("Unable to get terminal settings (%d: %s).", __LINE__, strerror(errno));
 		return;
 	}
 
 	for (i=0; i<num_prompts; i++) {
-		if (fwrite (prompts[i].text, sizeof(char), prompts[i].length, stdout) == 0) {
+		if (fwrite (prompts[i].text, sizeof(char), prompts[i].length, tty) == 0) {
 			ERROR("Writing the authentication prompt into stdout failed.");
 			return;
 		}
-		fflush(stdout);
+		fflush(tty);
 		if (prompts[i].echo == 0) {
 			/* system("stty -echo"); */
 			newterm = oldterm;
 			newterm.c_lflag &= ~ECHO;
-			tcflush(STDIN_FILENO, TCIFLUSH);
-			if (tcsetattr(STDIN_FILENO, TCSANOW, &newterm) != 0) {
+			tcflush(fileno(tty), TCIFLUSH);
+			if (tcsetattr(fileno(tty), TCSANOW, &newterm) != 0) {
 				ERROR("Unable to change terminal settings for hiding password (%d: %s).", __LINE__, strerror(errno));
 				return;
 			}
@@ -274,13 +287,13 @@ static void callback_sshauth_interactive_default (const char*  UNUSED(name),
 		if (responses[i].text == 0) {
 			ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
 			/* restore terminal settings */
-			if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+			if (tcsetattr(fileno(tty), TCSANOW, &oldterm) != 0) {
 				ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
 			}
 			return;
 		}
 
-		while (read(STDIN_FILENO, &c, 1) == 1 && c != '\n') {
+		while (fread(&c, 1, 1, tty) == 1 && c != '\n') {
 			if (responses[i].length >= (buflen-1)) {
 				buflen *= 2;
 				newtext = realloc(responses[i].text, buflen*sizeof (char));
@@ -293,7 +306,7 @@ static void callback_sshauth_interactive_default (const char*  UNUSED(name),
 						responses[i].length = 0;
 					}
 					/* restore terminal settings */
-					if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+					if (tcsetattr(fileno(tty), TCSANOW, &oldterm) != 0) {
 						ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
 					}
 					return;
@@ -307,7 +320,7 @@ static void callback_sshauth_interactive_default (const char*  UNUSED(name),
 		responses[i].text[responses[i].length++] = '\0';
 
 		/* system ("stty echo"); */
-		if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+		if (tcsetattr(fileno(tty), TCSANOW, &oldterm) != 0) {
 			ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
 			/*
 			 * terminal probably still hides input characters, but we have password
@@ -316,8 +329,11 @@ static void callback_sshauth_interactive_default (const char*  UNUSED(name),
 			 */
 		}
 
-		fprintf(stdout, "\n");
+		fprintf(tty, "\n");
+		fflush(tty);
 	}
+
+	fclose(tty);
 	return;
 }
 
@@ -325,10 +341,10 @@ static char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 		const char*  UNUSED(hostname),
 		const char* privatekey_filepath)
 {
-	int c;
-	char* buf, *newbuf;
+	char c, *buf, *newbuf;
 	int buflen = 1024, len = 0;
 	struct termios newterm, oldterm;
+	FILE* tty;
 
 	buf = malloc (buflen * sizeof(char));
 	if (buf == NULL) {
@@ -336,22 +352,30 @@ static char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 		return (NULL);
 	}
 
-	if (tcgetattr(STDIN_FILENO, &oldterm) != 0) {
+	if ((tty = fopen("/dev/tty", "r+")) == NULL) {
+		ERROR("Unable to open the current terminal (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+		return (NULL);
+	}
+
+	if (tcgetattr(fileno(tty), &oldterm) != 0) {
 		ERROR("Unable to get terminal settings (%d: %s).", __LINE__, strerror(errno));
 		return (NULL);
 	}
 
-	fprintf(stdout, "Enter passphrase for the key '%s':", privatekey_filepath);
+	fprintf(tty, "Enter passphrase for the key '%s':", privatekey_filepath);
+	fflush(tty);
+
 	/* system("stty -echo"); */
 	newterm = oldterm;
 	newterm.c_lflag &= ~ECHO;
-	tcflush(STDIN_FILENO, TCIFLUSH);
-	if (tcsetattr(STDIN_FILENO, TCSANOW, &newterm) != 0) {
+	newterm.c_lflag &= ~ICANON;
+	tcflush(fileno(tty), TCIFLUSH);
+	if (tcsetattr(fileno(tty), TCSANOW, &newterm) != 0) {
 		ERROR("Unable to change terminal settings for hiding password (%d: %s).", __LINE__, strerror(errno));
 		return (NULL);
 	}
 
-	while ((c = getchar ()) != '\n') {
+	while (fread(&c, 1, 1, tty) == 1 && c != '\n') {
 		if (len >= (buflen-1)) {
 			buflen *= 2;
 			newbuf = realloc (buf, buflen*sizeof (char));
@@ -362,7 +386,7 @@ static char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 				free(buf);
 
 				/* restore terminal settings */
-				if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+				if (tcsetattr(fileno(tty), TCSANOW, &oldterm) != 0) {
 					ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
 				}
 
@@ -375,7 +399,7 @@ static char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 	buf[len++] = 0; /* terminating null byte */
 
 	/* system ("stty echo"); */
-	if (tcsetattr(STDIN_FILENO, TCSANOW, &oldterm) != 0) {
+	if (tcsetattr(fileno(tty), TCSANOW, &oldterm) != 0) {
 		ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
 		/*
 		 * terminal probably still hides input characters, but we have password
@@ -383,8 +407,9 @@ static char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 		 * just continue
 		 */
 	}
-	fprintf(stdout, "\n");
+	fprintf(tty, "\n");
 
+	fclose(tty);
 	return (buf);
 }
 
