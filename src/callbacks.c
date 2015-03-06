@@ -244,7 +244,7 @@ static void callback_sshauth_interactive_default (const char*  UNUSED(name),
 {
 	int i;
 	unsigned int buflen = 8;
-	int c = 0;
+	char c = 0;
 	struct termios newterm, oldterm;
 	char* newtext;
 
