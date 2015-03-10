@@ -128,6 +128,17 @@ void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
  */
 void nc_set_keypair_path(const char* privkey, const char* pubkey);
 
+/**
+ * @brief Remove a private and a public key file.
+ *
+ * To make this function available, you have to include libnetconf_ssh.h.
+ *
+ * @ingroup session
+ * @param[in] privkey Path to the private key file.
+ * @param[in] pubkey Path to the public key file
+ */
+void nc_del_keypair_path(const char* privkey, const char* pubkey);
+
 #ifdef __cplusplus
 }
 #endif
