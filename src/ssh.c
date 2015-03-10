@@ -345,8 +345,15 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 			break;
 		case NC_SSH_AUTH_PUBLIC_KEYS:
 			VERB ("Publickey athentication");
+
+			for (j = 0; j < SSH2_KEYS; ++j) {
+				if (callbacks.publickey_filename[j] != NULL && callbacks.privatekey_filename[j] != NULL) {
+					break;
+				}
+			}
+
 			/* if publickeys path not provided, try to find them in standard path */
-			if (callbacks.publickey_filename[0] == NULL || callbacks.privatekey_filename[0] == NULL) {
+			if (j == SSH2_KEYS) {
 				VERB ("No key pair specified. Looking for some in the standard SSH path.");
 				if (find_ssh_keys ()) {
 					VERB("Searching for keys failed.");
