@@ -722,21 +722,71 @@ askuseragain:
 	return (EXIT_FAILURE);
 }
 
-static void nc_set_publickey_path (const char* path)
+/* op = 1 (add), 2 (remove) */
+static void nc_publickey_path (const char* path, int op)
 {
-	static int i = 0;
-	if (path != NULL) {
-		callbacks.publickey_filename[i++] = strdup (path);
+	int i;
+
+	if (path == NULL) {
+		return;
+	}
+
+	for (i = 0; i < SSH2_KEYS; ++i) {
+		if (op == 1 && callbacks.publickey_filename[i] == NULL) {
+			callbacks.publickey_filename[i] = strdup(path);
+			break;
+		}
+		if (op == 2 && callbacks.publickey_filename[i] != NULL && strcmp(callbacks.publickey_filename[i], path) == 0) {
+			free(callbacks.publickey_filename[i]);
+			callbacks.publickey_filename[i] = NULL;
+			break;
+		}
+	}
+
+	if (i == SSH2_KEYS) {
+		if (op == 1) {
+			ERROR("Too many SSH public keys.");
+		}
+		if (op == 2) {
+			ERROR("The SSH public key to delete was not found.");
+		}
 	}
 }
 
-static void nc_set_privatekey_path (const char* path)
+/* op = 1 (add), 2 (remove) */
+static void nc_privatekey_path (const char* path, int op)
 {
-	FILE * key;
+	FILE* key;
 	char line[128];
-	static int i = 0;
+	int i;
 
-	if (path != NULL) {
+	if (path == NULL) {
+		return;
+	}
+
+	for (i = 0; i < SSH2_KEYS; ++i) {
+		if (op == 1 && callbacks.privatekey_filename[i] == NULL) {
+			callbacks.privatekey_filename[i] = strdup(path);
+			break;
+		}
+		if (op == 2 && callbacks.privatekey_filename[i] != NULL && strcmp(callbacks.privatekey_filename[i], path) == 0) {
+			free(callbacks.privatekey_filename[i]);
+			callbacks.privatekey_filename[i] = NULL;
+			callbacks.key_protected[i] = 0;
+			break;
+		}
+	}
+
+	if (i == SSH2_KEYS) {
+		if (op == 1) {
+			ERROR("Too many SSH private keys.");
+		}
+		if (op == 2) {
+			ERROR("The SSH private key to delete was not found.");
+		}
+	}
+
+	if (op == 1) {
 		if ((key = fopen (path, "r")) != NULL) {
 			/* Key type line */
 			if (fgets(line, sizeof(line), key) == NULL) {
@@ -752,14 +802,19 @@ static void nc_set_privatekey_path (const char* path)
 				callbacks.key_protected[i] = 1;
 			}
 		}
-		callbacks.privatekey_filename[i++] = strdup (path);
 	}
 }
 
 API void nc_set_keypair_path(const char* privkey, const char* pubkey)
 {
-	nc_set_privatekey_path(privkey);
-	nc_set_publickey_path(pubkey);
+	nc_privatekey_path(privkey, 1);
+	nc_publickey_path(pubkey, 1);
+}
+
+API void nc_del_keypair_path(const char* privkey, const char* pubkey)
+{
+	nc_privatekey_path(privkey, 2);
+	nc_publickey_path(pubkey, 2);
 }
 
 #endif /* not DISABLE_LIBSSH */
