@@ -1464,6 +1464,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 	DBG("Writing message (session %s): %s", session->session_id, text);
 
 	DBG_LOCK("mut_channel");
+	session->mut_channel_flag = 1;
 	pthread_mutex_lock(session->mut_channel);
 	/* if v1.1 send chunk information before message */
 	if (session->version == NETCONFV11) {
@@ -1473,12 +1474,14 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 			NC_WRITE(session, &(buf[c]), c, ret);
 			if (ret < 0) {
 				DBG_UNLOCK("mut_channel");
+				session->mut_channel_flag = 0;
 				pthread_mutex_unlock(session->mut_channel);
 				return (EXIT_FAILURE);
 			}
 #ifndef DISABLE_LIBSSH
 			if (c == LIBSSH2_ERROR_TIMEOUT) {
 				DBG_UNLOCK("mut_channel");
+				session->mut_channel_flag = 0;
 				pthread_mutex_unlock(session->mut_channel);
 				VERB("Writing data into the communication channel timeouted.");
 				return (EXIT_FAILURE);
@@ -1493,12 +1496,14 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 		NC_WRITE(session, &(text[c]), c, ret);
 		if (ret < 0) {
 			DBG_UNLOCK("mut_channel");
+			session->mut_channel_flag = 0;
 			pthread_mutex_unlock(session->mut_channel);
 			return (EXIT_FAILURE);
 		}
 #ifndef DISABLE_LIBSSH
 		if (c == LIBSSH2_ERROR_TIMEOUT) {
 			DBG_UNLOCK("mut_channel");
+			session->mut_channel_flag = 0;
 			pthread_mutex_unlock(session->mut_channel);
 			VERB("Writing data into the communication channel timeouted.");
 			return (EXIT_FAILURE);
@@ -1518,12 +1523,14 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 		NC_WRITE(session, &(text[c]), c, ret);
 		if (ret < 0) {
 			DBG_UNLOCK("mut_channel");
+			session->mut_channel_flag = 0;
 			pthread_mutex_unlock(session->mut_channel);
 			return (EXIT_FAILURE);
 		}
 #ifndef DISABLE_LIBSSH
 		if (c == LIBSSH2_ERROR_TIMEOUT) {
 			DBG_UNLOCK("mut_channel");
+			session->mut_channel_flag = 0;
 			pthread_mutex_unlock(session->mut_channel);
 			VERB("Writing data into the communication channel timeouted.");
 			return (EXIT_FAILURE);
@@ -1533,6 +1540,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 
 	/* unlock the session's output */
 	DBG_UNLOCK("mut_channel");
+	session->mut_channel_flag = 0;
 	pthread_mutex_unlock(session->mut_channel);
 
 	return (EXIT_SUCCESS);
@@ -1879,6 +1887,15 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to receive data.");
 		return (NC_MSG_UNKNOWN);
+	}
+
+	/* if there is waiting sending thread, sleep for timeout and return
+	 * with NC_MSG_WOULDBLOCK because we probably relock the mut_channel quite
+	 * fast, so we are trying to avoid starvation this way
+	 */
+	if (session->mut_channel_flag) {
+		usleep(timeout ? timeout : 1);
+		return (NC_MSG_WOULDBLOCK);
 	}
 
 	/* lock the session for receiving */
