@@ -304,7 +304,7 @@ struct nc_session *nc_session_connect_tls_socket(const char* username, const cha
 	}
 
 	/* allocate netconf session structure */
-	retval = malloc(sizeof(struct nc_session));
+	retval = calloc(1, sizeof(struct nc_session));
 	if (retval == NULL) {
 		ERROR("Memory allocation failed (%s)", strerror(errno));
 		return (NULL);

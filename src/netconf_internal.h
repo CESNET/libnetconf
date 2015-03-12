@@ -393,6 +393,8 @@ struct nc_session {
 	pthread_mutex_t mut_session;
 	/**< @brief thread lock for communication channel */
 	pthread_mutex_t *mut_channel;
+	/**< @brief flag for mut_channel, partially it works as conditional variable */
+	volatile uint8_t mut_channel_flag;
 	/**< @brief thread lock for accessing queue_event */
 	pthread_mutex_t mut_equeue;
 	/**< @brief thread lock for accessing queue_msg */
