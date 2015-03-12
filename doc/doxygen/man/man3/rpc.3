@@ -1,4 +1,4 @@
-.TH "NETCONF rpc" 3 "Wed Jan 28 2015" "Version 0.9.0-33_trunk" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF rpc" 3 "Thu Mar 12 2015" "Version 0.9.0-56_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -30,7 +30,7 @@ libnetconf's functions for handling NETCONF <rpc> messages\&.
 .br
 .RI "\fIEnumeration of edit-config's <error-option> element values\&. \fP"
 .ti -1c
-.RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP = -1, \fBNC_EDIT_OP_MERGE\fP = 1, \fBNC_EDIT_OP_REPLACE\fP = 2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
+.RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP = -1, \fBNC_EDIT_OP_MERGE\fP = 1, \fBNC_EDIT_OP_NOTSET\fP = 0, \fBNC_EDIT_OP_REPLACE\fP = 2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
 .br
 .RI "\fIEnumeration of edit-config's operation attribute values\&. \fP"
 .ti -1c
@@ -282,6 +282,9 @@ for internal purposes, not defined by NETCONF
 .TP
 \fB\fINC_EDIT_OP_MERGE \fP\fP
 merge 
+.TP
+\fB\fINC_EDIT_OP_NOTSET \fP\fP
+compatibility value for NC_EDIT_DEFOP_TYPE 
 .TP
 \fB\fINC_EDIT_OP_REPLACE \fP\fP
 replace 

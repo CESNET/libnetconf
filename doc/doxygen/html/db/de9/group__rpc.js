@@ -21,6 +21,7 @@ var group__rpc =
     [ "NC_EDIT_OP_TYPE", "db/de9/group__rpc.html#gaff232fd4280e385c8e45fcca033e58fd", [
       [ "NC_EDIT_OP_ERROR", "db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fda0edecb3360a233e6d2d8435a96a3e54f", null ],
       [ "NC_EDIT_OP_MERGE", "db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fda269b9d38aa530c9cfe21b5477e328e0c", null ],
+      [ "NC_EDIT_OP_NOTSET", "db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fda973d70fee8360757be1f9379334a5ecb", null ],
       [ "NC_EDIT_OP_REPLACE", "db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fda5d2ca68f21babd6220538a1e3eac2356", null ],
       [ "NC_EDIT_OP_CREATE", "db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fdaa7f202a2d5f43e094946b1361da93f40", null ],
       [ "NC_EDIT_OP_DELETE", "db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fdaf85c0828113a86cb30dd67991e19b6ba", null ],

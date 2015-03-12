@@ -1,4 +1,4 @@
-.TH "src/netconf.h" 3 "Wed Jan 28 2015" "Version 0.9.0-33_trunk" "libnetconf" \" -*- nroff -*-
+.TH "src/netconf.h" 3 "Thu Mar 12 2015" "Version 0.9.0-56_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -24,7 +24,7 @@ libnetconf's general public functions and structures definitions\&.
 .RI "#define \fBNC_INIT_DATASTORES\fP   0x00000100"
 .br
 .ti -1c
-.RI "#define \fBNC_INIT_KEEPALIVECHECK\fP   0x00000088"
+.RI "#define \fBNC_INIT_KEEPALIVECHECK\fP   0x00000080"
 .br
 .ti -1c
 .RI "#define \fBNC_INIT_MONITORING\fP   0x00000008"
@@ -33,7 +33,7 @@ libnetconf's general public functions and structures definitions\&.
 .RI "#define \fBNC_INIT_MULTILAYER\fP   0x00001000"
 .br
 .ti -1c
-.RI "#define \fBNC_INIT_NACM\fP   0x00000104"
+.RI "#define \fBNC_INIT_NACM\fP   0x00000004"
 .br
 .ti -1c
 .RI "#define \fBNC_INIT_NOTIF\fP   0x00000002"
@@ -97,7 +97,7 @@ libnetconf's general public functions and structures definitions\&.
 .br
 .RI "\fIEnumeration of edit-config's <error-option> element values\&. \fP"
 .ti -1c
-.RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP = -1, \fBNC_EDIT_OP_MERGE\fP = 1, \fBNC_EDIT_OP_REPLACE\fP = 2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
+.RI "enum \fBNC_EDIT_OP_TYPE\fP { \fBNC_EDIT_OP_ERROR\fP = -1, \fBNC_EDIT_OP_MERGE\fP = 1, \fBNC_EDIT_OP_NOTSET\fP = 0, \fBNC_EDIT_OP_REPLACE\fP = 2, \fBNC_EDIT_OP_CREATE\fP, \fBNC_EDIT_OP_DELETE\fP, \fBNC_EDIT_OP_REMOVE\fP }"
 .br
 .RI "\fIEnumeration of edit-config's operation attribute values\&. \fP"
 .ti -1c
@@ -216,13 +216,13 @@ This software is provided ``as is, and any express or implied warranties, includ
 \fBnc_init()\fP's flag to enable all optional features/subsystems 
 .SS "#define NC_INIT_DATASTORES   0x00000100"
 \fBnc_init()\fP's flag to use internal datastores 
-.SS "#define NC_INIT_KEEPALIVECHECK   0x00000088"
+.SS "#define NC_INIT_KEEPALIVECHECK   0x00000080"
 \fBnc_init()\fP's flag to enable check of monitored sessions\&. Sometimes the process holding a monitored session crashes and status information of the session is not properly removed from the monitored sessions list\&. If this option is used, libnetconf checks if the process holding the session is still alive\&. To do this properly, the session is connected with the PID of the \fBnc_session_monitor()\fP caller\&. If the PID changes (e\&.g\&. after fork() or daemon()), the process is supposed to call \fBnc_session_monitor()\fP againg\&. 
 .SS "#define NC_INIT_MONITORING   0x00000008"
 \fBnc_init()\fP's flag to enable ietf-netconf-monitoring module 
 .SS "#define NC_INIT_MULTILAYER   0x00001000"
 \fBnc_init()\fP's flag for multi-layer server architecture 
-.SS "#define NC_INIT_NACM   0x00000104"
+.SS "#define NC_INIT_NACM   0x00000004"
 \fBnc_init()\fP's flag to enable Acccess Control subsystem 
 .SS "#define NC_INIT_NOTIF   0x00000002"
 \fBnc_init()\fP's flag to enable Notification subsystem\&. 
