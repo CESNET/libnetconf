@@ -1505,7 +1505,7 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 					"<source-host>%s</source-host>",
 					session->username,
 					session->session_id,
-					session->hostname) == -1) {
+					session->hostname ? session->hostname : "") == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 				aux2 = NULL;
 			}
@@ -1665,7 +1665,7 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 					"<source-host>%s</source-host>",
 					session->username,
 					session->session_id,
-					session->hostname) == -1) {
+					session->hostname ? session->hostname : "") == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 				aux1 = NULL;
 			}
@@ -1696,7 +1696,7 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 				"<source-host>%s</source-host></netconf-session-start>",
 				session->username,
 				session->session_id,
-				session->hostname) == -1) {
+				session->hostname ? session->hostname : "") == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			return (EXIT_FAILURE);
 		}
@@ -1737,7 +1737,7 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 				"%s%s</netconf-session-end>",
 				session->username,
 				session->session_id,
-				session->hostname,
+				session->hostname ? session->hostname : "",
 				(aux2 == NULL) ? "" : aux2,
 				(aux1 == NULL) ? "" : aux1) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
