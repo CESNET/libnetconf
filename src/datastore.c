@@ -6017,13 +6017,6 @@ apply_editcopyconfig:
 		}
 		free(config);
 
-#ifndef DISABLE_NOTIFICATIONS
-		/* log the event */
-		if (dsid == NCDS_INTERNAL_ID && ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
-			ncntf_event_new(-1, NCNTF_BASE_CFG_CHANGE, target_ds, NCNTF_EVENT_BY_USER, session);
-		}
-#endif /* DISABLE_NOTIFICATIONS */
-
 		break;
 	case NC_OP_DELETECONFIG:
 		if (ds->type == NCDS_TYPE_EMPTY) {
@@ -6072,12 +6065,6 @@ apply_editcopyconfig:
 #endif /* DISABLE_URL */
 			ret = ds->func.deleteconfig(ds, session, target_ds, &e);
 		}
-#ifndef DISABLE_NOTIFICATIONS
-		/* log the event */
-		if (dsid == NCDS_INTERNAL_ID && ret == EXIT_SUCCESS && (target_ds == NC_DATASTORE_RUNNING || target_ds == NC_DATASTORE_STARTUP)) {
-			ncntf_event_new(-1, NCNTF_BASE_CFG_CHANGE, target_ds, NCNTF_EVENT_BY_USER, session);
-		}
-#endif /* DISABLE_NOTIFICATIONS */
 
 		break;
 	case NC_OP_COMMIT:
@@ -6090,14 +6077,6 @@ apply_editcopyconfig:
 
 		if (nc_cpblts_enabled (session, NC_CAP_CANDIDATE_ID)) {
 			ret = ds->func.copyconfig (ds, session, rpc, NC_DATASTORE_RUNNING, NC_DATASTORE_CANDIDATE, NULL, &e);
-
-#ifndef DISABLE_NOTIFICATIONS
-			/* log the event */
-			if (dsid == NCDS_INTERNAL_ID && ret == EXIT_SUCCESS) {
-				ncntf_event_new (-1, NCNTF_BASE_CFG_CHANGE, NC_DATASTORE_RUNNING, NCNTF_EVENT_BY_USER, session);
-			}
-#endif /* DISABLE_NOTIFICATIONS */
-
 		} else {
 			e = nc_err_new (NC_ERR_OP_NOT_SUPPORTED);
 			ret = EXIT_FAILURE;
@@ -6429,6 +6408,16 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 			}
 		}
 	}
+
+#ifndef DISABLE_NOTIFICATIONS
+	if (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG || op == NC_OP_DELETECONFIG || op == NC_OP_COMMIT) {
+		/* log the event */
+		target = nc_rpc_get_target(rpc);
+		if (nc_reply_get_type(reply) == NC_REPLY_OK && (target == NC_DATASTORE_RUNNING || target == NC_DATASTORE_STARTUP)) {
+			ncntf_event_new(-1, NCNTF_BASE_CFG_CHANGE, target, NCNTF_EVENT_BY_USER, session);
+		}
+	}
+#endif /* DISABLE_NOTIFICATIONS */
 
 	/* clean up the common data for calling nc_apply_rpc() */
 	nc_filter_free(rpc2all_data.filter);
