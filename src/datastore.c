@@ -4173,7 +4173,14 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		xmlSetNs(root, ns);
 		for (node = doc->children; node != NULL; node = doc->children) {
 			xmlUnlinkNode(node);
-			xmlAddChild(root, node);
+
+			/* keep only data relevant to this datastore module */
+			if (node->ns && node->ns->href &&
+					!strcmp(ds->data_model->ns, (char*) node->ns->href)) {
+				xmlAddChild(root, node);
+			} else {
+				xmlFreeNode(node);
+			}
 		}
 		xmlDocSetRootElement(doc, root);
 
