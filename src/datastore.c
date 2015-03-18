@@ -2905,7 +2905,7 @@ static xmlNodePtr model_node_path(xmlNodePtr current, const char* current_prefix
 					}
 					/* some augment found, now check it */
 					free(module_inpath);
-					module_inpath = (char*) xmlGetNsProp(path_node, BAD_CAST "module", BAD_CAST "libnetconf");
+					module_inpath = (char*) xmlGetNsProp(node, BAD_CAST "module", BAD_CAST "libnetconf");
 
 					path_node = node->children;
 					match = match_module_node(module_inpath, module, name, &path_node);
