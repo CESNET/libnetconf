@@ -314,7 +314,7 @@ int ncds_sysinit(int flags)
 			NULL, /* notifications */
 #endif
 			NULL, /* ietf-netconf-with-defaults */
-			NC_WORKINGDIR_PATH"/ietf-netconf-acm-data.rng" /* NACM RelaxNG schema */
+			NC_WORKINGDIR_PATH"/ietf-netconf-acm-config.rng" /* NACM RelaxNG schema */
 	};
 	char* schematron_validators[INTERNAL_DS_COUNT] = {
 			NULL, /* ietf-inet-types */
@@ -4065,9 +4065,8 @@ static int validate_ds(struct ncds_ds *ds, xmlDocPtr doc, struct nc_err **error)
 static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* session, NC_DATASTORE source, const char* config, struct nc_err** e)
 {
 	int ret = EXIT_FAILURE;
-	int len;
-	char *data_cfg = NULL, *data_stat, *model;
-	xmlDocPtr doc_cfg, doc_status = NULL, doc = NULL;
+	char *data_cfg = NULL;
+	xmlDocPtr doc = NULL;
 	xmlNodePtr root, node;
 	xmlNsPtr ns;
 
@@ -4111,54 +4110,9 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		xmlFreeDoc(doc);
 		doc = NULL;
 	}
-
 	if (source != NC_DATASTORE_CONFIG) {
-		/* standard datastores, so add status data */
-		if (ds->get_state != NULL) {
-			xmlDocDumpMemory(ds->ext_model, (xmlChar**) (&model), &len);
-			data_stat = ds->get_state(model, data_cfg, e);
-			free(model);
-
-			if (*e != NULL) {
-				/* state data retrieval error */
-				free(data_stat);
-				free(data_cfg);
-				xmlFreeDoc(doc);
-				return (EXIT_FAILURE);
-			}
-
-			doc_status = xmlReadDoc(BAD_CAST data_stat, NULL, NULL, NC_XMLREAD_OPTIONS);
-			free(data_stat);
-		} else if (ds->get_state_xml != NULL) {
-			doc_status = ds->get_state_xml(ds->ext_model, doc, e);
-
-			if (*e != NULL) {
-				/* state data retrieval error */
-				free(data_cfg);
-				xmlFreeDoc(doc);
-				return (EXIT_FAILURE);
-			}
-		}
 		free(data_cfg);
-
-		if (doc == NULL) {
-			/* there are no configuration data, use only status, no merge is needed */
-			doc = doc_status;
-		} else {
-			/* merge config and status data */
-			doc_cfg = doc;
-			if ((doc = ncxml_merge(doc_cfg, doc_status, ds->ext_model)) == NULL) {
-				xmlFreeDoc(doc_cfg);
-				xmlFreeDoc(doc_status);
-				*e = nc_err_new(NC_ERR_OP_FAILED);
-				return (EXIT_FAILURE);
-			}
-			/* cleanup */
-			xmlFreeDoc(doc_cfg);
-			xmlFreeDoc(doc_status);
-		}
 	}
-
 
 	if (!doc) {
 		/*
@@ -4167,14 +4121,11 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		 */
 		ret = EXIT_SUCCESS;
 	} else {
-		/* process default values */
-		ncdflt_default_values(doc, ds->ext_model, NCWD_MODE_ALL);
-
 		/*
 		 * reconnect root elements from datastore data under the <data>
 		 * element required by validators
 		 */
-		root = xmlNewNode(NULL, BAD_CAST "data");
+		root = xmlNewNode(NULL, BAD_CAST "config");
 		ns = xmlNewNs(root, (xmlChar *) NC_NS_BASE10, NULL);
 		xmlSetNs(root, ns);
 		for (node = doc->children; node != NULL; node = doc->children) {
@@ -4385,7 +4336,7 @@ static struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path
 		}
 	}
 #ifndef DISABLE_VALIDATION
-	if (asprintf(&path_rng, "%s-data.rng", basename) == -1) {
+	if (asprintf(&path_rng, "%s-config.rng", basename) == -1) {
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		path_rng = NULL;
 	}

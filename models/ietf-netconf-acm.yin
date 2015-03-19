@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module name="ietf-netconf-acm"
-        xmlns="urn:ietf:params:xml:ns:yang:yin:1"
-        xmlns:nacm="urn:ietf:params:xml:ns:yang:ietf-netconf-acm"
-        xmlns:yang="urn:ietf:params:xml:ns:yang:ietf-yang-types">
+<module xmlns="urn:ietf:params:xml:ns:yang:yin:1" xmlns:nacm="urn:ietf:params:xml:ns:yang:ietf-netconf-acm" xmlns:yang="urn:ietf:params:xml:ns:yang:ietf-yang-types" name="ietf-netconf-acm">
   <namespace uri="urn:ietf:params:xml:ns:yang:ietf-netconf-acm"/>
   <prefix value="nacm"/>
   <import module="ietf-yang-types">

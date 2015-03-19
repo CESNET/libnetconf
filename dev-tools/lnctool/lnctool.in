@@ -102,10 +102,10 @@ def generate_validators(yin_model_path, augment_models_paths, search_path, featu
 	#generate DSDL schema from YIN schema files
 	subprocess.check_call(['pyang', '-p', search_path, '-f', 'dsdl', '--dsdl-no-documentation', '--dsdl-no-dublin-core', '-o', os.path.abspath(dsdl_schema_name), yin_model_path ] + features_args + augment_models_paths)
 	#generate RNG files from DSDL
-	subprocess.check_call(['xsltproc', '--output', yin_file_name+'-data.rng', '--stringparam', 'basename', './'+os.path.basename(yin_file_name), '--stringparam', 'target', 'data', '--stringparam', 'schema-dir', RNGLIB, os.path.join(XSLTDIR, 'gen-relaxng.xsl'), os.path.abspath(dsdl_schema_name)])
-	subprocess.check_call(['xsltproc', '--output', yin_file_name+'-gdefs.rng', '--stringparam', 'gdefs-only', '1', os.path.join(XSLTDIR, 'gen-relaxng.xsl'), os.path.abspath(dsdl_schema_name)])
+	subprocess.check_call(['xsltproc', '--output', yin_file_name+'-config.rng', '--stringparam', 'basename', './'+os.path.basename(yin_file_name), '--stringparam', 'target', 'config', '--stringparam', 'schema-dir', RNGLIB, os.path.join(XSLTDIR, 'gen-relaxng.xsl'), os.path.abspath(dsdl_schema_name)])
+	subprocess.check_call(['xsltproc', '--output', yin_file_name+'-gdefs-config.rng', '--stringparam', 'gdefs-only', '1', '--stringparam', 'target', 'config', os.path.join(XSLTDIR, 'gen-relaxng.xsl'), os.path.abspath(dsdl_schema_name)])
 	#generate schematrom files form DSDL
-	subprocess.check_call(['xsltproc', '--output', os.path.abspath(xslt_tmp_name), '--stringparam', 'target', 'data', os.path.join(XSLTDIR, 'gen-schematron.xsl'), os.path.abspath(dsdl_schema_name)])
+	subprocess.check_call(['xsltproc', '--output', os.path.abspath(xslt_tmp_name), '--stringparam', 'target', 'config', os.path.join(XSLTDIR, 'gen-schematron.xsl'), os.path.abspath(dsdl_schema_name)])
 	subprocess.check_call(['xsltproc', os.path.join(XSLTDIR, 'iso_abstract_expand.xsl'), os.path.abspath(xslt_tmp_name)], stdout=xslt_tmp_inout_fd)
 	os.lseek(xslt_tmp_inout_fd, 0, 0) # SEEK_SET
 	subprocess.check_call(['xsltproc', '-o', yin_file_name+'-schematron.xsl', os.path.join(XSLTDIR, 'iso_svrl_for_xslt1.xsl'), '-'], stdin=xslt_tmp_inout_fd)

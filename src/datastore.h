@@ -248,7 +248,7 @@ extern char error_area;
  * can be used to specify their location:
  *
  * ~~~~~~~{.c}
- * ncds_set_validation(ds, 1, "./models/nacm/ietf-netconf-acm-data.rng", "./models/nacm/ietf-netconf-acm-schematron.xsl");
+ * ncds_set_validation(ds, 1, "./models/nacm/ietf-netconf-acm-config.rng", "./models/nacm/ietf-netconf-acm-schematron.xsl");
  * ~~~~~~~
  *
  * If validators files are not found or validation is switched off (via

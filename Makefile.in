@@ -197,7 +197,7 @@ LNCDS_FILES = dev-tools/lncdatastore/main.c \
 	dev-tools/lncdatastore/mreadline.h \
 	dev-tools/lncdatastore/Makefile.in
 
-XML_SRCS = models/ietf-netconf-acm-data.rng.in
+XML_SRCS = models/ietf-netconf-acm-config.rng.in
 
 BUILT_RNGS = $(XML_SRCS:models/%.rng.in=models/%.rng)
 
