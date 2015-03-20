@@ -3800,7 +3800,7 @@ API int ncds_consolidate(void)
 
 	/* augment statement processing - relative paths to modify always the data model (datastore's extended model) itself */
 	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
-		if (ds_iter->datastore->ext_model != NULL && ncds_update_augment_relative(ds_iter->datastore) != EXIT_SUCCESS) {
+		if (ds_iter->datastore->ext_model != NULL && ncds_update_augment_relative(ds_iter->datastore) == -1) {
 			ERROR("Augmenting configuration data models failed.");
 			return (EXIT_FAILURE);
 		}
