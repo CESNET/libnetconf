@@ -2938,14 +2938,19 @@ static xmlNodePtr model_node_path(xmlNodePtr current, const char* current_prefix
  *  'absolute' 0
  *  'relative' 1
  *  'both'
+ *
+ * return:
+ *  error       -1
+ *  no changes  0
+ *  some change 1
  */
 static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* model_prefix, const char* model_name, const char* model_ns, struct transapi_internal* aug_transapi, int path_type)
 {
 	xmlXPathObjectPtr imports = NULL, nodes = NULL;
 	xmlNodePtr node, node_aux, path_node;
 	xmlNsPtr ns;
-	int i;
-	char *path;
+	int i, ret = 0;
+	char *path, *resolved_path, *to_resolve_path;
 	struct ncds_ds* ds = NULL;
 
 	/* get all definitions of nodes to modify */
@@ -2957,14 +2962,14 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 		nodes = xmlXPathEvalExpression(BAD_CAST "//"NC_NS_YIN_ID":refine", model_ctxt);
 		break;
 	default: /* wtf */
-		return (EXIT_FAILURE);
+		return (-1);
 	}
 
 	if (nodes != NULL ) {
 		if (xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* there is no element modifying the model so we have nothing to do */
 			xmlXPathFreeObject(nodes);
-			return (EXIT_SUCCESS);
+			return (0);
 		}
 	} else {
 		ERROR("%s: Evaluating XPath expression failed.", __func__);
@@ -2974,7 +2979,7 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 	/* get all <import> nodes for their prefix specification to be used with augment statement */
 	if ((imports = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":import", model_ctxt)) == NULL ) {
 		ERROR("%s: Evaluating XPath expression failed.", __func__);
-		return (EXIT_FAILURE);
+		return (-1);
 	}
 
 	/* process all modifying nodes from this model */
@@ -2993,11 +2998,31 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 			continue;
 		}
 
+		to_resolve_path = strdup(path);
 		path_node = model_node_path(nodes->nodesetval->nodeTab[i], model_prefix, model_name, path, imports, &ds);
+		free(path);
 		if (path_node != NULL) {
 			/* path is correct, process the requested modification */
 			switch (type) {
 			case 1: /* augment */
+
+				/* check whether this augment was not already resolved */
+				for (node_aux = path_node->children; node_aux != NULL; node_aux = node_aux->next) {
+					if (xmlStrcmp(node_aux->name, BAD_CAST "augment") == 0) {
+						resolved_path = (char*) xmlGetProp (node_aux, BAD_CAST "target-node");
+						if (strcmp(to_resolve_path, resolved_path) == 0) {
+							free(resolved_path);
+							break;
+						}
+						free(resolved_path);
+					}
+				}
+
+				if (node_aux != NULL) {
+					/* already resolved */
+					break;
+				}
+
 				xmlAddChild(path_node, node = xmlCopyNode(nodes->nodesetval->nodeTab[i], 1));
 				ns = xmlNewNs(node, BAD_CAST "libnetconf", BAD_CAST "libnetconf");
 				xmlSetNsProp(node, ns, BAD_CAST "module", BAD_CAST model_name);
@@ -3010,6 +3035,9 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 				if (path_type == 0 && aug_transapi != NULL) {
 					ncds_transapi_enlink(ds, aug_transapi);
 				}
+
+				/* remember the change */
+				ret = 1;
 				break;
 			case 2: /* refine */
 				for (node = nodes->nodesetval->nodeTab[i]->children; node != NULL; node = node->next) {
@@ -3036,24 +3064,26 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 				xmlFreeNode(nodes->nodesetval->nodeTab[i]);
 				nodes->nodesetval->nodeTab[i] = NULL;
 
+				/* remember the change */
+				ret = 1;
 				break;
 			default: /* wtf */
-				return (EXIT_FAILURE);
+				return (-1);
 			}
 		}
-		free(path);
+		free(to_resolve_path);
 	}
 	xmlXPathFreeObject(nodes);
 	xmlXPathFreeObject(imports);
 
-	return (EXIT_SUCCESS);
+	return (ret);
 
 error_cleanup:
 
 	xmlXPathFreeObject(imports);
 	xmlXPathFreeObject(nodes);
 
-	return (EXIT_FAILURE);
+	return (-1);
 }
 
 static int ncds_update_refine(struct ncds_ds *ds)
@@ -3723,6 +3753,7 @@ static void transapis_cleanup(struct transapi_list **list, int force)
 
 API int ncds_consolidate(void)
 {
+	int ret, changes;
 	struct ncds_ds_list *ds_iter;
 	struct model_list* listitem;
 	struct transapi_list *tapi_iter;
@@ -3753,12 +3784,20 @@ API int ncds_consolidate(void)
 	}
 
 	/* augment statement processing - absolute paths to modify other (datastore's extended models) data models */
-	for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
-		if (listitem->model != NULL && ncds_update_augment_absolute(listitem->model) != EXIT_SUCCESS) {
-			ERROR("Augmenting configuration data models failed.");
-			return (EXIT_FAILURE);
+	do {
+		changes = 0;
+		for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
+			if (listitem->model != NULL && (ret = ncds_update_augment_absolute(listitem->model)) == -1) {
+				ERROR("Augmenting configuration data models failed.");
+				return (EXIT_FAILURE);
+			}
+
+			if (ret == 1) {
+				changes = 1;
+			}
 		}
-	}
+	} while (changes);
+
 	/* augment statement processing - relative paths to modify always the data model (datastore's extended model) itself */
 	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
 		if (ds_iter->datastore->ext_model != NULL && ncds_update_augment_relative(ds_iter->datastore) != EXIT_SUCCESS) {
