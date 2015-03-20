@@ -40,6 +40,10 @@
 #define _GNU_SOURCE
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <libxml/parser.h>
 
 #include "commands.h"
@@ -176,7 +180,7 @@ void cmd_remove_help(void) {
 }
 
 void cmd_print_help(void) {
-	printf("print [ (datastore-name | model-name) ]\n");
+	printf("print [ (datastore-name | model-name) [<output-file>] ]\n");
 }
 
 void cmd_feature_help(void) {
@@ -305,6 +309,7 @@ int cmd_remove(const char* arg) {
 }
 
 int cmd_print(const char* arg) {
+	int fd;
 	char* ptr, *argv;
 	xmlDocPtr doc;
 	struct ncds_ds_list* ds;
@@ -351,7 +356,24 @@ int cmd_print(const char* arg) {
 		}
 
 		xmlDocDumpFormatMemory(doc, (xmlChar**)&buf, &buf_len, 1);
-		fwrite(buf, 1, buf_len, stdout);
+		ptr = strtok(NULL, " ");
+		if (ptr == NULL) {
+			fwrite(buf, 1, buf_len, stdout);
+		} else {
+			fd = creat(ptr, 00660);
+			if (fd == -1) {
+				nc_verb_error("Failed to open file \"%s\" (%s)", ptr, strerror(errno));
+				free(buf);
+				return 1;
+			}
+			if (write(fd, buf, buf_len) < buf_len) {
+				nc_verb_error("Failed to write into file (%s)", strerror(errno));
+				free(buf);
+				close(fd);
+				return 1;
+			}
+			close(fd);
+		}
 		free(buf);
 	}
 
