@@ -3607,7 +3607,7 @@ static int ncds_update_callbacks(struct ncds_ds* ds)
 	char buffer[PREFIX_BUFFER_SIZE];
 
 #define MAPPING_SIZE 26+1 /* # of letters used as prefixes + terminating item */
-	char ext_ns_mapping_buffer[3] = {' ',':','\0'};
+	char ext_ns_mapping_buffer[4] = {'/', ' ',':','\0'};
 	struct ns_pair ext_ns_mapping[MAPPING_SIZE] = {
 			{"A",NULL},{"B",NULL},{"C",NULL},{"D",NULL},{"E",NULL},{"F",NULL},
 			{"G",NULL},{"H",NULL},{"I",NULL},{"J",NULL},{"K",NULL},{"L",NULL},{"M",NULL},
@@ -3676,17 +3676,18 @@ static int ncds_update_callbacks(struct ncds_ds* ds)
 
 				path_aux = path;
 				len = strlen(tapi_iter->tapi->ns_mapping[k].prefix);
-				if (len >= PREFIX_BUFFER_SIZE) {
+				if (len+1 >= PREFIX_BUFFER_SIZE) {
 					ERROR("Namespace prefix \'%s\' is too long. libnetconf is able to process prefixes up to %d characters.",
 							tapi_iter->tapi->ns_mapping[k].prefix, PREFIX_BUFFER_SIZE - 1);
 					free(path);
 					return (EXIT_FAILURE);
 				}
 				/* magic */
-				strcpy(buffer, tapi_iter->tapi->ns_mapping[k].prefix);
-				buffer[len] = ':';
-				buffer[len+1] = '\0';
-				ext_ns_mapping_buffer[0] = ext_ns_mapping[l].prefix[0];
+				buffer[0] = '/';
+				strcpy(buffer+1, tapi_iter->tapi->ns_mapping[k].prefix);
+				buffer[len+1] = ':';
+				buffer[len+2] = '\0';
+				ext_ns_mapping_buffer[1] = ext_ns_mapping[l].prefix[0];
 				path = nc_str_replace(path_aux, buffer, ext_ns_mapping_buffer);
 				free(path_aux);
 			}
