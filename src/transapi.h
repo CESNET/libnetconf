@@ -106,6 +106,10 @@ struct ns_pair {
  */
 struct transapi {
 	/**
+	 * @brief transapi version of the module
+	 */
+	int version;
+	/**
 	 * @brief Module initialization.
 	 */
 	int (*init)(xmlDocPtr *);

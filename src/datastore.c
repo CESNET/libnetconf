@@ -1944,6 +1944,12 @@ API struct ncds_ds* ncds_new_transapi_static(NCDS_TYPE type, const char* model_p
 		ERROR("%s: Missing transAPI module description.", __func__);
 		return (NULL);
 	}
+
+	if (transapi->version != TRANSAPI_VERSION) {
+		ERROR("%s: Wrong transAPI static module version (version %d is required).", __func__, TRANSAPI_VERSION);
+		return (NULL);
+	}
+
 	if (transapi->config_modified == NULL) {
 		ERROR("%s: Missing config_modified variable in transAPI module description.", __func__);
 		return (NULL);

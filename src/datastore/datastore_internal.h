@@ -248,6 +248,10 @@ struct data_model {
  */
 struct transapi_internal {
 	/**
+	 * @brief transapi version of the module
+	 */
+	int version;
+	/**
 	 * @brief Module initialization.
 	 */
 	int (*init)(xmlDocPtr *);
