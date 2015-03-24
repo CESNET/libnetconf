@@ -50,7 +50,7 @@ except ImportError as e:
 	exit(1)
 
 # transAPI version built by this tool
-transapi_version = 5
+transapi_version = 6
 
 # paths to transformation stylesheets and schemas
 RNGLIB='@RNGLIB@'
@@ -236,8 +236,8 @@ def generate_init_callback():
 	content += ' * @param[out] running\tCurrent configuration of managed device.\n\n'
 	content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
 	content += ' */\n'
-	content += 'int transapi_init(xmlDocPtr *running)\n'
-	content += '{\n\treturn EXIT_SUCCESS;\n}\n\n'
+	content += 'int transapi_init(xmlDocPtr *running) {\n'
+	content += '\treturn EXIT_SUCCESS;\n}\n\n'
 
 	return (content)
 
@@ -246,8 +246,8 @@ def generate_close_callback():
 	content += '/**\n'
 	content += ' * @brief Free all resources allocated on plugin runtime and prepare plugin for removal.\n'
 	content += ' */\n'
-	content += 'void transapi_close(void)\n'
-	content += '{\n\treturn;\n}\n\n'
+	content += 'void transapi_close(void) {\n'
+	content += '\treturn;\n}\n\n'
 
 	return (content)
 
@@ -262,8 +262,8 @@ def generate_state_callback():
 	content += ' * @param[out] err  Double pointer to error structure. Fill error when some occurs.\n'
 	content += ' * @return State data as libxml2 xmlDocPtr or NULL in case of error.\n'
 	content += ' */\n'
-	content += 'xmlDocPtr get_state_data(xmlDocPtr model, xmlDocPtr running, struct nc_err **err)\n'
-	content += '{\n\treturn(NULL);\n}\n'
+	content += 'xmlDocPtr get_state_data(xmlDocPtr model, xmlDocPtr running, struct nc_err **err) {'
+	content += '\treturn(NULL);\n}\n'
 
 	return(content)
 
@@ -309,13 +309,14 @@ def generate_config_callbacks(name, paths, namespaces):
 		content += ' *\n'
 		content += ' * @param[in] data\tDouble pointer to void. Its passed to every callback. You can share data using it.\n'
 		content += ' * @param[in] op\tObserved change in path. XMLDIFF_OP type.\n'
-		content += ' * @param[in] node\tModified node. if op == XMLDIFF_REM its copy of node removed.\n'
+		content += ' * @param[in] old_node\tOld configuration node. If op == XMLDIFF_ADD, it is NULL.\n'
+		content += ' * @param[in] new_node\tNew configuration node. if op == XMLDIFF_REM, it is NULL.\n'
 		content += ' * @param[out] error\tIf callback fails, it can return libnetconf error structure with a failure description.\n'
 		content += ' *\n'
 		content += ' * @return EXIT_SUCCESS or EXIT_FAILURE\n'
 		content += ' */\n'
 		content += '/* !DO NOT ALTER FUNCTION SIGNATURE! */\n'
-		content += 'int '+func_name+'(void **data, XMLDIFF_OP op, xmlNodePtr node, struct nc_err **error)\n{\n\treturn EXIT_SUCCESS;\n}\n\n'
+		content += 'int '+func_name+'(void **data, XMLDIFF_OP op, xmlNodePtr old_node, xmlNodePtr new_node, struct nc_err **error) {\n\treturn EXIT_SUCCESS;\n}\n\n'
 		funcs_count += 1
 
 	# in the end of file write strucure connecting paths in XML data with callback function
@@ -336,13 +337,34 @@ def generate_rpc_callbacks(doc):
 	content = ''
 	callbacks = ''
 
+	# Add a convenient function
+	content += '/**\n'
+	content += ' * @brief Get a node from the RPC input. The first found node is returned, so if traversing lists,\n'
+	content += ' * call repeatedly with result->next as the node argument.\n'
+	content += ' *\n'
+	content += ' * @param name	Name of the node to be retrieved.\n'
+	content += ' * @param node	List of nodes that will be searched.\n'
+	content += ' * @return Pointer to the matching node or NULL\n'
+	content += ' */\n'
+	content += 'xmlNodePtr get_rpc_node(const char *name, const xmlNodePtr node) {\n'
+	content += '\txmlNodePtr ret = NULL;\n'
+	content += '\n'
+	content += '\tfor (ret = node; ret != NULL; ret = ret->next) {\n'
+	content += '\t\tif (xmlStrEqual(BAD_CAST name, ret->name)) {\n'
+	content += '\t\t\tbreak;\n'
+	content += '\t\t}\n'
+	content += '\t}\n'
+	content += '\n'
+	content += '\treturn ret;\n'
+	content += '}\n\n'
+
 	# Add description and instructions
 	content += '/*\n'
 	content += ' * RPC callbacks\n'
 	content += ' * Here follows set of callback functions run every time RPC specific for this device arrives.\n'
 	content += ' * You can safely modify the bodies of all function as well as add new functions for better lucidity of code.\n'
-	content += ' * Every function takes array of inputs as an argument. On few first lines they are assigned to named variables. Avoid accessing the array directly.\n'
-	content += ' * If input was not set in RPC message argument in set to NULL.\n'
+	content += ' * Every function takes an libxml2 list of inputs as an argument.\n'
+	content += ' * If input was not set in RPC message argument is set to NULL. To retrieve each argument, preferably use get_rpc_node().\n'
 	content += ' */\n\n'
 
 	# create xpath context
@@ -356,25 +378,14 @@ def generate_rpc_callbacks(doc):
 	for rpc in rpcs:
 		rpc_name = rpc.prop('name')
 		# create callback function
-		rpc_function = 'nc_reply *rpc_'+re.sub(r'[^\w]', '_', rpc_name)+'(xmlNodePtr input[])\n{\n'
-		# find all defined inputs
-		rpc_input = ctxt.xpathEval('//yang:rpc[@name="'+rpc.prop('name')+'"]/yang:input/*')
-		arg_order = '{'
-		for inp in rpc_input:
-			# assign inputs to named variables
-			rpc_function += '\txmlNodePtr '+re.sub(r'[^\w]', '_', inp.prop('name'))+' = input['+str(rpc_input.index(inp))+'];\n'
-			if not inp is rpc_input[0]:
-				arg_order += ', '
-			arg_order += '"'+inp.prop('name')+'"'
-
-		arg_order += '}'
-		rpc_function += '\n\treturn NULL; \n}\n'
+		rpc_function = 'nc_reply *rpc_'+re.sub(r'[^\w]', '_', rpc_name)+'(xmlNodePtr input) {\n'
+		rpc_function += '\treturn NULL;\n}\n'
 		content += rpc_function
 
 		if not rpc is rpcs[0]:
 			callbacks += ','
 		# add connection between callback and RPC message and order of arguments passed to the callback
-		callbacks += '\n\t\t{.name="'+rpc_name+'", .func=rpc_'+re.sub(r'[^\w]', '_', rpc_name)+', .arg_count='+str(len(rpc_input))+', .arg_order='+arg_order+'}'
+		callbacks += '\n\t\t{.name="'+rpc_name+'", .func=rpc_'+re.sub(r'[^\w]', '_', rpc_name)+'}'
 
 	content += '/*\n'
 	content += ' * Structure transapi_rpc_callbacks provides mapping between callbacks and RPC messages.\n'

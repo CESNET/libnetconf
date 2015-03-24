@@ -52,7 +52,7 @@ extern "C" {
 #endif
 
 /* Current transAPI version */
-#define TRANSAPI_VERSION 5
+#define TRANSAPI_VERSION 6
 
 /* maximal number of input arguments every defined RPC can have */
 #ifndef MAX_RPC_INPUT_ARGS
@@ -153,7 +153,7 @@ struct transapi {
  */
 struct clbk {
 	char* path;
-	int (*func)(void**, XMLDIFF_OP, xmlNodePtr, struct nc_err**);
+	int (*func)(void**, XMLDIFF_OP, xmlNodePtr, xmlNodePtr, struct nc_err**);
 };
 
 /**
@@ -174,9 +174,7 @@ struct transapi_rpc_callbacks {
 	int callbacks_count;
 	struct {
 		char* name;
-		int arg_count;
-		nc_reply* (*func)(xmlNodePtr []);
-		char* arg_order[MAX_RPC_INPUT_ARGS];
+		nc_reply* (*func)(xmlNodePtr);
 	} callbacks[];
 };
 

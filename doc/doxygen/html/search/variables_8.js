@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['lock',['lock',['../d0/d28/structncds__custom__funcs.html#ad4ec2f4e544216398bf5b56a383a4dfa',1,'ncds_custom_funcs']]]
+  ['name',['name',['../d0/df8/structtransapi__rpc__callbacks.html#a5ac083a645d964373f022d03df4849c8',1,'transapi_rpc_callbacks']]],
+  ['ns_5fmapping',['ns_mapping',['../d9/dc0/structtransapi.html#a517eb18d6321490a3439ae595edbf9a4',1,'transapi']]]
 ];

@@ -131,7 +131,7 @@ $(document).ready(function(){initNavTree('db/df0/validation.html','../../');});
 <div class="line"><a class="code" href="../../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b">ncds_add_models_path</a>(<span class="stringliteral">&quot;./models/&quot;</span>);</div>
 <div class="line"><a class="code" href="../../db/d67/group__store.html#gab2a27448a52972db6807571590a5c6da">ncds_consolidate</a>();</div>
 </div><!-- fragment --><p>If the validators files are stored in the same directory as a basic data model (<em>ietf-netconf-acm.yin</em> in this case), libnetconf automatically loads them during <a class="el" href="../../db/d67/group__store.html#ga69009c5985f9eec3a6920f98a6a1a5e6" title="Create a new datastore structure of the specified implementation type. ">ncds_new()</a> or <a class="el" href="../../d8/d55/group__transapi.html#ga80e69b4cada8c35e5e358287e8af3d85" title="Create new datastore structure with transaction API support. ">ncds_new_transapi()</a> calls. If you store the validators files somewhere else, <a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31" title="Set validators (or disable validation) on the specified datastore. ">ncds_set_validation()</a> function can be used to specify their location:</p>
-<div class="fragment"><div class="line"><a class="code" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31">ncds_set_validation</a>(ds, 1, <span class="stringliteral">&quot;./models/nacm/ietf-netconf-acm-data.rng&quot;</span>, <span class="stringliteral">&quot;./models/nacm/ietf-netconf-acm-schematron.xsl&quot;</span>);</div>
+<div class="fragment"><div class="line"><a class="code" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31">ncds_set_validation</a>(ds, 1, <span class="stringliteral">&quot;./models/nacm/ietf-netconf-acm-config.rng&quot;</span>, <span class="stringliteral">&quot;./models/nacm/ietf-netconf-acm-schematron.xsl&quot;</span>);</div>
 </div><!-- fragment --><p>If validators files are not found or validation is switched off (via <a class="el" href="../../db/d67/group__store.html#ga4777c16043f5856c5a65bcd20b5ecc31" title="Set validators (or disable validation) on the specified datastore. ">ncds_set_validation()</a> with enable parameter set to 0), validation is not performed on such datastore part.</p>
 <h3>Data Model Features</h3>
 <p>When the data model includes some <code>feature</code> definition and corresponding <code>if-feature</code> statement(s), all such features are enabled for validation by default. If you want to enable only specific features (or disable all of them), you have to use the <em>lnctool(1)</em>'s <code>--feature</code> option. The option can be use multiple times and the given value has the following form:</p>
@@ -145,7 +145,7 @@ $(document).ready(function(){initNavTree('db/df0/validation.html','../../');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
-    <li class="footer">Generated on Thu Mar 12 2015 15:36:05 for libnetconf by
+    <li class="footer">Generated on Tue Mar 24 2015 11:27:19 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

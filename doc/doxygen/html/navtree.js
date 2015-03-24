@@ -25,7 +25,7 @@ var NAVTREE =
         [ "XMLDIFF_OP op", "d9/d25/transapi.html#op", [
           [ "Valid combinations of events", "d9/d25/transapi.html#combinations", null ]
         ] ],
-        [ "xmlNodePtr node", "d9/d25/transapi.html#node", null ],
+        [ "xmlNodePtr old_node & new_node", "d9/d25/transapi.html#node", null ],
         [ "strict nc_err **error", "d9/d25/transapi.html#error", null ]
       ] ],
       [ "History of the transAPI versions", "d9/d25/transapi.html#transAPI-history", null ],
@@ -67,7 +67,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d5/d7d/group__url.html#ggaeecc86d0808c9098b6a8694e88925ccda68d344995eae71ef85e07bb4a97c13e1",
+"d5/d7d/group__url.html#ggaeecc86d0808c9098b6a8694e88925ccdaaa0ce2cbe471bbf25e1f3070b46d588f",
 "db/d52/group__session.html#ga6465c58b3ca057b46655d5ffa90caff3",
 "db/de9/group__rpc.html#ga6a03d40e00fbe019a34541a55f3f4a31"
 ];

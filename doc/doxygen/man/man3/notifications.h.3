@@ -1,4 +1,4 @@
-.TH "src/notifications.h" 3 "Thu Mar 12 2015" "Version 0.9.0-56_trunk" "libnetconf" \" -*- nroff -*-
+.TH "src/notifications.h" 3 "Tue Mar 24 2015" "Version 0.9.0-56_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -71,6 +71,10 @@ Functions to handle NETCONF Notifications\&.
 .RI "\fBNCNTF_EVENT\fP \fBncntf_notif_get_type\fP (const \fBnc_ntf\fP *notif)"
 .br
 .RI "\fIGet a specific notification type\&. \fP"
+.ti -1c
+.RI "int \fBncntf_session_get_active_subscription\fP (struct nc_session *session)"
+.br
+.RI "\fICheck if a session has an active notification subscription\&. \fP"
 .ti -1c
 .RI "char * \fBncntf_status\fP (void)"
 .br

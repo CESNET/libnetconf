@@ -1,4 +1,4 @@
-.TH "NETCONF Event Notifications" 3 "Thu Mar 12 2015" "Version 0.9.0-56_trunk" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Event Notifications" 3 "Tue Mar 24 2015" "Version 0.9.0-56_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -73,6 +73,10 @@ libnetconf's implementation of NETCONF asynchronous message delivery as defined 
 .RI "\fBNCNTF_EVENT\fP \fBncntf_notif_get_type\fP (const \fBnc_ntf\fP *notif)"
 .br
 .RI "\fIGet a specific notification type\&. \fP"
+.ti -1c
+.RI "int \fBncntf_session_get_active_subscription\fP (struct nc_session *session)"
+.br
+.RI "\fICheck if a session has an active notification subscription\&. \fP"
 .ti -1c
 .RI "char * \fBncntf_status\fP (void)"
 .br
@@ -449,6 +453,22 @@ Get a specific notification type\&.
 \fBReturns:\fP
 .RS 4
 The same types as for \fBncntf_event_new()\fP can be returned\&. If the notification is unknown, the \fBNCNTF_GENERIC\fP is returned\&. 
+.RE
+.PP
+
+.SS "int ncntf_session_get_active_subscription (struct nc_session *session)"
+
+.PP
+Check if a session has an active notification subscription\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsession\fP NETCONF session to check\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 if there is no active subscription, non-0 otherwise\&. 
 .RE
 .PP
 

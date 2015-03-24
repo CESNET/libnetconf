@@ -64,7 +64,8 @@ struct xmldiff_prio {
  */
 struct xmldiff_tree {
 	char* path;
-	xmlNodePtr node;
+	xmlNodePtr old_node;
+	xmlNodePtr new_node;
 	XMLDIFF_OP op;
 
 	/*
@@ -73,7 +74,7 @@ struct xmldiff_tree {
 	 */
 	int priority;
 	/* pointer to the callback connected with this node */
-	int (*callback)(void**, XMLDIFF_OP, xmlNodePtr, struct nc_err**);
+	int (*callback)(void**, XMLDIFF_OP, xmlNodePtr, xmlNodePtr, struct nc_err**);
 	CLBCKS_APPLIED applied;
 
 	struct xmldiff_tree* next;

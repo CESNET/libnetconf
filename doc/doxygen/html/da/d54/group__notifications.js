@@ -27,6 +27,7 @@ var group__notifications =
     [ "ncntf_notif_get_content", "da/d54/group__notifications.html#gadc78f4dd6440f4f1ac3ea12092946bd3", null ],
     [ "ncntf_notif_get_time", "da/d54/group__notifications.html#gae00135a2cb85cb2d74d7f0b8b355ab47", null ],
     [ "ncntf_notif_get_type", "da/d54/group__notifications.html#ga3f32038a98705a6dbb9d7038f67cbceb", null ],
+    [ "ncntf_session_get_active_subscription", "da/d54/group__notifications.html#ga3c44d0f8b0ffe29050de73f2ac209a32", null ],
     [ "ncntf_status", "da/d54/group__notifications.html#ga8c116b8aae2fe13811ebbfd3ca6f1a44", null ],
     [ "ncntf_stream_allow_events", "da/d54/group__notifications.html#ga05a14f949bbb781fd58a233b1d2fab33", null ],
     [ "ncntf_stream_info", "da/d54/group__notifications.html#gaff62ddbbd893faf50d3db3fa3b08c21f", null ],
