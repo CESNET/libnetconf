@@ -372,17 +372,23 @@ char* ncds_custom_getconfig(struct ncds_ds* ds, const struct nc_session* UNUSED(
 int ncds_custom_copyconfig(struct ncds_ds *ds, const struct nc_session* UNUSED(session), const nc_rpc* UNUSED(rpc), NC_DATASTORE target, NC_DATASTORE source, char * config, struct nc_err **error) {
 	struct ncds_ds_custom *c_ds = (struct ncds_ds_custom *) ds;
 
+	/* TODO - check locks */
+
 	return c_ds->callbacks->copyconfig(c_ds->data, target, source, config, error);
 }
 
 int ncds_custom_deleteconfig(struct ncds_ds * ds, const struct nc_session* UNUSED(session), NC_DATASTORE target, struct nc_err **error) {
 	struct ncds_ds_custom *c_ds = (struct ncds_ds_custom *) ds;
 
+	/* TODO - check locks */
+
 	return c_ds->callbacks->deleteconfig(c_ds->data, target, error);
 }
 
 int ncds_custom_editconfig(struct ncds_ds *ds, const struct nc_session* UNUSED(session), const nc_rpc* rpc, NC_DATASTORE target, const char * config, NC_EDIT_DEFOP_TYPE defop, NC_EDIT_ERROPT_TYPE errop, struct nc_err **error) {
 	struct ncds_ds_custom *c_ds = (struct ncds_ds_custom *) ds;
+
+	/* TODO - check locks */
 
 	return c_ds->callbacks->editconfig(c_ds->data, rpc, target, config, defop, errop, error);
 }

@@ -1,4 +1,4 @@
-.TH "transapi" 3 "Tue Mar 24 2015" "Version 0.9.0-56_trunk" "libnetconf" \" -*- nroff -*-
+.TH "transapi" 3 "Tue Mar 24 2015" "Version 0.9.0-97_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -54,6 +54,10 @@ Structure to describe transAPI module and connect it statically with libnetconf 
 .RI "struct \fBtransapi_rpc_callbacks\fP * \fBrpc_clbks\fP"
 .br
 .RI "\fITransapi rpc callbacks mapping structure\&. \fP"
+.ti -1c
+.RI "int \fBversion\fP"
+.br
+.RI "\fItransapi version of the module \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
@@ -100,6 +104,10 @@ Mapping prefixes with URIs\&.
 
 .PP
 Transapi rpc callbacks mapping structure\&. 
+.SS "int version"
+
+.PP
+transapi version of the module 
 
 .SH "Author"
 .PP 

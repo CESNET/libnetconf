@@ -9,5 +9,6 @@ var structtransapi =
     [ "get_state", "d9/dc0/structtransapi.html#a6c403c3ae7c1ca5654fdaf60b60ba16b", null ],
     [ "init", "d9/dc0/structtransapi.html#a8cb29ceda55d20ecbec3784d536851db", null ],
     [ "ns_mapping", "d9/dc0/structtransapi.html#a517eb18d6321490a3439ae595edbf9a4", null ],
-    [ "rpc_clbks", "d9/dc0/structtransapi.html#ae40968626e78bf37871565d98292b1b7", null ]
+    [ "rpc_clbks", "d9/dc0/structtransapi.html#ae40968626e78bf37871565d98292b1b7", null ],
+    [ "version", "d9/dc0/structtransapi.html#aad880fc4455c253781e8968f2239d56f", null ]
 ];
