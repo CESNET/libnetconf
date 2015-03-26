@@ -320,7 +320,7 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 
 			/* if publickeys path not provided, we cannot continue */
 			if (j == SSH2_KEYS) {
-				VERB ("Priority is on publickey authentication, but no key pair specified.");
+				VERB("No key pair specified.");
 				break;
 			}
 
