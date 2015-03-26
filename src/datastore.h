@@ -83,8 +83,8 @@ struct ncds_ds;
 /**
  * @ingroup store
  * @def NCDS_RPC_NOT_APPLICABLE
- * @brief Return value of ncds_apply_rpc() when the requested operation is
- * not applicable to the specified datastore.
+ * @brief Return value of ncds_apply_rpc2all() when the requested operation is
+ * not applicable to the datastore.
  */
 extern char error_area;
 #define NCDS_RPC_NOT_APPLICABLE ((void*)(&error_area))
@@ -400,8 +400,7 @@ int ncds_file_set_path(struct ncds_ds* datastore, const char* path);
  * @brief Activate datastore structure for use.
  *
  * The datastore configuration is checked and if everything is correct,
- * datastore gets its unique ID to be used for datastore operations
- * (ncds_apply_rpc()).
+ * datastore gets its unique ID.
  *
  * @param[in] datastore Datastore to be initiated.
  * @return Positive integer with the datastore ID on success, negative value on
@@ -446,26 +445,6 @@ void ncds_free(struct ncds_ds* datastore);
  * @param[in] datastore_id ID of the datastore to be closed.
  */
 void ncds_free2(ncds_id datastore_id);
-
-/**
- * @ingroup store
- * @brief Perform the requested RPC operation on the datastore.
- *
- * @deprecated Function will be removed in version 1.0.0, use ncds_apply_rpc2all() instead.
- *
- * @param[in] id Datastore ID. Use #NCDS_INTERNAL_ID (0) to apply request
- * (typically \<get\>) onto the libnetconf's internal datastore.
- * @param[in] session NETCONF session (a dummy session is acceptable) where the
- * \<rpc\> came from. Capabilities checks are done according to this session.
- * @param[in] rpc NETCONF \<rpc\> message specifying requested operation.
- * @return NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid
- * parameter session or rpc, else \<rpc-reply\> with \<ok\>, \<data\> or
- * \<rpc-error\> according to the type and the result of the requested
- * operation. When the requested operation is not applicable to the specified
- * datastore (e.g. the namespace does not match), NCDS_RPC_NOT_APPLICABLE
- * is returned.
- */
-nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc);
 
 /**
  * @ingroup store

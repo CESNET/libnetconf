@@ -143,6 +143,7 @@ static struct model_list *models_list = NULL;
 static struct transapi_list* augment_tapi_list = NULL;
 static char** models_dirs = NULL;
 
+static nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc);
 static char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 static char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **ns, char **prefix, char ***rpcs, char ***notifs);
@@ -5352,7 +5353,23 @@ static int rpc_get_prefilter(struct nc_filter **filter, const struct ncds_ds* ds
 	return (retval);
 }
 
-API nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
+/**
+ * @ingroup store
+ * @brief Perform the requested RPC operation on the datastore.
+ *
+ * @param[in] id Datastore ID. Use #NCDS_INTERNAL_ID (0) to apply request
+ * (typically \<get\>) onto the libnetconf's internal datastore.
+ * @param[in] session NETCONF session (a dummy session is acceptable) where the
+ * \<rpc\> came from. Capabilities checks are done according to this session.
+ * @param[in] rpc NETCONF \<rpc\> message specifying requested operation.
+ * @return NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid
+ * parameter session or rpc, else \<rpc-reply\> with \<ok\>, \<data\> or
+ * \<rpc-error\> according to the type and the result of the requested
+ * operation. When the requested operation is not applicable to the specified
+ * datastore (e.g. the namespace does not match), NCDS_RPC_NOT_APPLICABLE
+ * is returned.
+ */
+static nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
 {
 	struct nc_err* e = NULL;
 	struct ncds_ds* ds = NULL;
@@ -5907,7 +5924,7 @@ apply_editcopyconfig:
 					 * remote file, make document from it and add current datastore configuration data to documtent and
 					 * then upload it. Problem is if remote file is not empty (it contains data from datastores we does not have).
 					 * Then data would merge and we will have merged wanted data with non-wanted data from remote file before editing.
-					 * Thats FEATURE, not bug!!!. I reccomend to call ncds_apply_rpc2all and before that use delete-config on remote file.
+					 * Thats FEATURE, not bug!!!. I recommend to call ncds_apply_rpc2all and before that use delete-config on remote file.
 					 */
 					url_tmpfile = -1;
 					if (nc_url_check((char*)url) == 0) {
