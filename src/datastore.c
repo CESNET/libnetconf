@@ -6274,7 +6274,7 @@ apply_editcopyconfig:
 	 * skip transapi if <edit-config> was performed with test-option set
 	 * to test-only value
 	 */
-	if (ds->transapis != NULL
+	if (ds->transapis != NULL && ds->tapi_callbacks_count
 		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING && nc_reply_get_type(reply) == NC_REPLY_OK)) {
 
@@ -6411,7 +6411,7 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 					/* do not skip internal datastores */
 					target = nc_rpc_get_target(rpc);
 					for (ds_rollback = ncds.datastores; ds_rollback != ds; ds_rollback = ds_rollback->next) {
-						if (ds_rollback->datastore->transapis != NULL
+						if (ds_rollback->datastore->transapis != NULL && ds_rollback->datastore->tapi_callbacks_count
 								&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST)))
 								&& ( target == NC_DATASTORE_RUNNING)) {
 							transapi = 1;
