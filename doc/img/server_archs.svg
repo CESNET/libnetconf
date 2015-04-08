@@ -10,12 +10,12 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="520.66016"
-   height="271.46149"
+   width="765.5"
+   height="271.70816"
    id="svg2"
    inkscape:label="Pozadí"
    version="1.1"
-   inkscape:version="0.48.3.1 r9886"
+   inkscape:version="0.48.4 r9939"
    sodipodi:docname="server_archs.svg">
   <defs
      id="defs3">
@@ -604,6 +604,27 @@
          offset="1"
          id="stop5709-1" />
     </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5705-8"
+       id="linearGradient12509-1"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-5.58361,1.0284704)"
+       x1="438.07486"
+       y1="92.346092"
+       x2="428.06345"
+       y2="0.13734059" />
+    <linearGradient
+       id="linearGradient5705-8">
+      <stop
+         style="stop-color:#d3d3d3;stop-opacity:1;"
+         offset="0"
+         id="stop5707-8" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="1"
+         id="stop5709-4" />
+    </linearGradient>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -612,9 +633,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="206.54026"
-     inkscape:cy="99.036362"
+     inkscape:zoom="1.74"
+     inkscape:cx="429.62226"
+     inkscape:cy="170.73898"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -622,18 +643,20 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="1920"
-     inkscape:window-height="1142"
-     inkscape:window-x="-3"
-     inkscape:window-y="-3"
-     inkscape:window-maximized="1">
+     inkscape:window-width="1347"
+     inkscape:window-height="869"
+     inkscape:window-x="299"
+     inkscape:window-y="102"
+     inkscape:window-maximized="0">
     <inkscape:grid
        type="xygrid"
        id="grid3008"
        empspacing="5"
        visible="true"
        enabled="true"
-       snapvisiblegridlinesonly="true" />
+       snapvisiblegridlinesonly="true"
+       originx="0px"
+       originy="0.088935406px" />
   </sodipodi:namedview>
   <metadata
      id="metadata6">
@@ -643,7 +666,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -651,7 +674,7 @@
      inkscape:label="Vrstva 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-154.5,-56.413506)">
+     transform="translate(-154.5,-56.255764)">
     <path
        style="fill:#c8c8c8;fill-opacity:1;stroke:#000000;stroke-opacity:1"
        d="m 160,162.36218 70,0 c 2.77,0 5,2.23 5,5 l 0,33.02637 c 0,0 -59.39766,-0.18785 -80,0 l 0,-33.02637 c 0,-2.77 2.23,-5 5,-5 z"
@@ -663,7 +686,7 @@
        inkscape:export-ydpi="100.1247" />
     <path
        style="fill:#c8c8c8;fill-opacity:1;stroke:#000000;stroke-opacity:1"
-       d="m 255,162.36218 70,0 c 2.77,0 5,2.23 5,5 l 0,33.02637 c 0,0 -59.39766,-0.18785 -80,0 l 0,-33.02637 c 0,-2.77 2.23,-5 5,-5 z"
+       d="m 255,163.07646 70,0 c 2.77,0 5,2.23 5,5 l 0,33.02637 c 0,0 -59.39766,-0.18785 -80,0 l 0,-33.02637 c 0,-2.77 2.23,-5 5,-5 z"
        id="rect3790-8-9-1"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="sssccss"
@@ -1221,5 +1244,217 @@
          x="579.31738"
          y="279.33582"
          id="tspan3006-8-0">libnetconf</tspan></text>
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.71764451;stroke-opacity:1"
+       d="m 793.29665,184.4656 72.4071,-0.17858 c 2.77358,-0.007 3.93743,2.03989 3.93743,3.46463 l 0,16.0941 c 0,0 -59.47472,-0.0966 -80.10379,0 l 0.17818,-15.73695 c 0.0162,-1.42465 0.80749,-3.63636 3.58108,-3.6432 z"
+       id="rect3790-8-95-8"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssccss"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120" />
+    <path
+       style="fill:#c8c8c8;fill-opacity:1;stroke:#000000;stroke-width:0.79456919;stroke-opacity:1"
+       d="m 869.60272,203.72409 0,23.83318 c 0,0 -59.55019,-0.11829 -80.20544,0 l 0.17857,-23.83318 c 25.2349,-0.0177 54.31054,0.009 80.02687,0 z"
+       id="rect3790-8-9-1-0"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.83721882;stroke-opacity:1"
+       id="rect3811-8-0"
+       width="80.162781"
+       height="32.877068"
+       x="789.41858"
+       y="227.52541"
+       ry="0"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120" />
+    <rect
+       style="fill:#e6e6e6;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3993-0"
+       width="185"
+       height="50"
+       x="734.5"
+       y="277.46393"
+       ry="5"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120" />
+    <path
+       style="fill:#c8c8c8;fill-opacity:1;stroke:#000000;stroke-width:0.80608648;stroke-opacity:1"
+       d="m 794.41516,284.87295 70.16968,0 c 2.77671,0 5.01212,-1.4455 5.01212,-3.24102 l 0,-21.40784 c 0,0 -59.54164,0.12177 -80.19392,0 l 0,21.40784 c 0,1.79552 2.23541,3.24102 5.01212,3.24102 z"
+       id="rect3790-8-9-9"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssccss"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="829.64606"
+       y="197.72493"
+       id="text2994-8"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120"><tspan
+         sodipodi:role="line"
+         x="829.64606"
+         y="197.72493"
+         id="tspan3615">SSH</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="829.26562"
+       y="239.77449"
+       id="text2988-3-1"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120"><tspan
+         sodipodi:role="line"
+         x="829.26562"
+         y="239.77449"
+         id="tspan2992-2-4">device</tspan><tspan
+         sodipodi:role="line"
+         x="829.26562"
+         y="254.77449"
+         id="tspan3815-6-8">manager</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="828.81738"
+       y="219.52219"
+       id="text2998-2-9"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120"><tspan
+         sodipodi:role="line"
+         id="tspan3000-8-7"
+         x="828.81738"
+         y="219.52219">libnetconf</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="828.81738"
+       y="275.95074"
+       id="text3002-8-9"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120"><tspan
+         sodipodi:role="line"
+         x="828.81738"
+         y="275.95074"
+         id="tspan3006-8-9">libnetconf</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 822.58606,110.3702 c -16.9226,25.10339 -15.09808,49.90516 -0.72739,74.00796"
+       id="path4411"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 673.21429,55.211487 0,72.321433"
+       id="path3619"
+       inkscape:connector-curvature="0"
+       transform="translate(154.5,56.413506)"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:6, 6;stroke-dashoffset:0"
+       d="m 834.79074,184.3837 c 14.89343,-21.69073 16.28662,-52.04343 -0.0566,-72.04558"
+       id="path4411-0"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120" />
+    <g
+       transform="matrix(1.026903,0,0,0.72265169,609.85752,-429.20381)"
+       id="layer1-1-6"
+       inkscape:label="Layer 1"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120">
+      <g
+         transform="translate(-252.7747,692.41563)"
+         id="g12504-2">
+        <path
+           style="fill:#666666;fill-opacity:1;stroke:none"
+           d="m 506,38.094482 c 12.5,22.5 -17.61332,20.739537 -26.91639,18.97153 -10,7.5 -22.5,5 -27.5,-2.5 -7.97228,6.819985 -32.35,7.800007 -27.5,-12.5 -10,-5 -15,-22.5 2.5,-30.000001 -5.87116,-14.6899837 14.32379,-22.811861 25,-14.9999997 5,-17.5000043 26.76721,-13.2817733 31.91639,1.02847 12.5,-7.4999986 38.15413,3.915245 22.5,15.0000017 15,7.5 15,19.999999 0,24.999999 z"
+           id="path5713-4"
+           sodipodi:nodetypes="ccccccccc"
+           inkscape:connector-curvature="0" />
+        <path
+           style="fill:url(#linearGradient12509-1);fill-opacity:1;stroke:none"
+           d="m 504.41639,35.122952 c 12.5,22.5 -17.61332,20.739537 -26.91639,18.97153 -10,7.5 -22.5,5 -27.5,-2.5 -7.97228,6.819985 -32.35,7.800007 -27.5,-12.5 -10,-5 -15,-22.5 2.5,-29.9999997 -5.87116,-14.6899842 14.32379,-22.8118623 25,-15.0000002 5,-17.5000051 26.76721,-13.2817741 31.91639,1.0284707 12.5,-7.4999998 38.15413,3.91524482 22.5,15.0000002 15,7.5 15,19.999999 0,24.999999 z"
+           id="path3762-1"
+           sodipodi:nodetypes="ccccccccc"
+           inkscape:connector-curvature="0" />
+        <path
+           style="fill:none;stroke:#b2b2b2;stroke-width:2.19005942;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:6.57017831, 2.19005943;stroke-dashoffset:0"
+           d="m 508.75,39.094482 c 11.25,22.5 -18.3858,21.91473 -28.75151,20.012061 -11.14224,8.071247 -23.17737,6.809187 -28.74849,-1.262061 -8.8829,7.339439 -33.75,3.75 -31.25,-16.25 -11.14224,-5.380831 -16.99892,-26.928753 2.5,-34.9999996 -6.54179,-15.8088648 14.35432,-23.4068634 26.25,-15 5,-15.0000004 28.01266,-14.1502024 33.75,1.25 13.92779,-8.0712474 40,6.25000002 27.5,18.7499996 7.5,3.75 15.46336,22.119169 -1.25,27.5 z"
+           id="path9593-7"
+           sodipodi:nodetypes="ccccccccc"
+           inkscape:connector-curvature="0" />
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="804.5918"
+       y="90.595894"
+       id="text3938-5"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120"><tspan
+         sodipodi:role="line"
+         id="tspan3940-57"
+         x="804.5918"
+         y="90.595894">network</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="858.90991"
+       y="149.94893"
+       id="text3962-9"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/vasko/in_arch.png"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120"><tspan
+         sodipodi:role="line"
+         id="tspan3964-2"
+         x="858.90991"
+         y="149.94893">...</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="827.18457"
+       y="304.43344"
+       id="text3012-3"
+       sodipodi:linespacing="125%"
+       inkscape:export-xdpi="120"
+       inkscape:export-ydpi="120"
+       inkscape:export-filename="/home/vasko/in_arch.png"><tspan
+         sodipodi:role="line"
+         id="tspan3014-7"
+         x="827.18457"
+         y="304.43344">configuration</tspan><tspan
+         sodipodi:role="line"
+         x="827.18457"
+         y="319.43344"
+         id="tspan3016-45">datastore</tspan></text>
   </g>
 </svg>

@@ -480,6 +480,17 @@
  * to be passed between an agent and a device manager that applies requests to
  * the operated device and a configuration datastore.
  *
+ * \subsection server-arch-integrated Integrated Architecture
+ *
+ * ![Integrated architecture](../../img/in_arch.png "Integrated architecture")
+ *
+ * In this last case, there is only a single application running having the SSH
+ * transport integrated. This way there is no need for any communication to
+ * other processes, which can be substituted by threads. At the cost of
+ * significantly increasing the complexity of the server and likely requiring
+ * additional libraries, it gains full control over client connections including
+ * the transport layer and dependencies on any external applications are removed.
+ *
  * \section server-workflow Server Workflow
  *
  * Here is a description of using libnetconf functions in a NETCONF server.
