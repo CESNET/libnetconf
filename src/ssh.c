@@ -285,7 +285,9 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 	}
 
 	/* check what authentication methods are available */
-	userauthlist = libssh2_userauth_list(retval->ssh_session, username, strlen(username));
+	do {
+		userauthlist = libssh2_userauth_list(retval->ssh_session, username, strlen(username));
+	} while (userauthlist == NULL && libssh2_session_last_errno(retval->ssh_session) == LIBSSH2_ERROR_TIMEOUT);
 	if (userauthlist != NULL) {
 		if (strstr(userauthlist, "password")) {
 			if (callbacks.sshauth_password != NULL) {
