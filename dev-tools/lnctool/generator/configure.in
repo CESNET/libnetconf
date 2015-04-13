@@ -39,7 +39,7 @@ fi
 AC_SUBST(libtool)
 
 # Checks for libraries.
-AC_SEARCH_LIBS([ncds_apply_rpc], [netconf], ,AC_MSG_ERROR([libnetconf not found!]))
+AC_SEARCH_LIBS([ncds_apply_rpc2all], [netconf], ,AC_MSG_ERROR([libnetconf not found!]))
 
 # Check for libxml2.
 if test -z "$WITH_LIBXML2" ; then
