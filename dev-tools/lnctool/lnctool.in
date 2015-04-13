@@ -262,7 +262,7 @@ def generate_state_callback():
 	content += ' * @param[out] err  Double pointer to error structure. Fill error when some occurs.\n'
 	content += ' * @return State data as libxml2 xmlDocPtr or NULL in case of error.\n'
 	content += ' */\n'
-	content += 'xmlDocPtr get_state_data(xmlDocPtr model, xmlDocPtr running, struct nc_err **err) {'
+	content += 'xmlDocPtr get_state_data(xmlDocPtr model, xmlDocPtr running, struct nc_err **err) {\n'
 	content += '\treturn(NULL);\n}\n'
 
 	return(content)
