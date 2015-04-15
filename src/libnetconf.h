@@ -1061,15 +1061,15 @@
  * 	xmlNodePtr n1, n2;
  * 	struct delta_rule *rule = NULL;
  *
- * 	if (op == XMLDIFF_MOD) {
+ * 	if (op & XMLDIFF_MOD) {
  * 		op = op | (XMLDIFF_REM & XMLDIFF_ADD);
  * 	}
  *
- * 	if (op == XMLDIFF_REM) {
+ * 	if (op & XMLDIFF_REM) {
  * 		//remove the rule from the internal list
  * 	}
  *
- * 	if (op == XMLDIFF_ADD) {
+ * 	if (op & XMLDIFF_ADD) {
  * 		//parse the children of new_node and add the new rule to the list
  * 	}
  *
