@@ -1472,6 +1472,10 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 		c = 0;
 		do {
 			NC_WRITE(session, &(buf[c]), c, ret);
+			if (ret < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+				usleep(10);
+				continue;
+			}
 			if (ret < 0) {
 				DBG_UNLOCK("mut_channel");
 				session->mut_channel_flag = 0;
@@ -1494,6 +1498,10 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 	c = 0;
 	do {
 		NC_WRITE(session, &(text[c]), c, ret);
+		if (ret < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+			usleep(10);
+			continue;
+		}
 		if (ret < 0) {
 			DBG_UNLOCK("mut_channel");
 			session->mut_channel_flag = 0;
@@ -1521,6 +1529,10 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 	c = 0;
 	do {
 		NC_WRITE(session, &(text[c]), c, ret);
+		if (ret < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+			usleep(10);
+			continue;
+		}
 		if (ret < 0) {
 			DBG_UNLOCK("mut_channel");
 			session->mut_channel_flag = 0;
