@@ -452,8 +452,10 @@
  * access to its files, so keep this in mind when creating any directories or files
  * that are used.
  *
- * Generally, there are two basic approaches of how to implement
- * a NETCONF server using libnetconf.
+ * Generally, there are three approaches of how to implement
+ * a NETCONF server using libnetconf. The order in which they are mentioned is ascending
+ * in their implementation complexity. The use of the first single-level architecture
+ * for production environment is discouraged.
  *
  * \subsection server-arch-singlelevel Single-level Architecture
  *
@@ -490,6 +492,8 @@
  * significantly increasing the complexity of the server and likely requiring
  * additional libraries, it gains full control over client connections including
  * the transport layer and dependencies on any external applications are removed.
+ * This is especially convenient for TLS, which in effect makes this architecture
+ * the only viable option that fully supports it.
  *
  * \section server-workflow Server Workflow
  *
