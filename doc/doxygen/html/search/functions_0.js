@@ -132,7 +132,6 @@ var searchData=
   ['ncds_5fadd_5faugment_5ftransapi_5fstatic',['ncds_add_augment_transapi_static',['../d8/d55/group__transapi.html#ga7f6f5af711045d8598f283ec09b9167a',1,'datastore_xml.h']]],
   ['ncds_5fadd_5fmodel',['ncds_add_model',['../db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47',1,'datastore.h']]],
   ['ncds_5fadd_5fmodels_5fpath',['ncds_add_models_path',['../db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b',1,'datastore.h']]],
-  ['ncds_5fapply_5frpc',['ncds_apply_rpc',['../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801',1,'datastore.h']]],
   ['ncds_5fapply_5frpc2all',['ncds_apply_rpc2all',['../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759',1,'datastore.h']]],
   ['ncds_5fbreak_5flocks',['ncds_break_locks',['../db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a',1,'datastore.h']]],
   ['ncds_5fconsolidate',['ncds_consolidate',['../db/d67/group__store.html#gab2a27448a52972db6807571590a5c6da',1,'datastore.h']]],

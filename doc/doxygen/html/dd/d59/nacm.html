@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.9.0-97_trunk</span>
+   &#160;<span id="projectnumber">0.9.0-110_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -103,7 +103,7 @@ $(document).ready(function(){initNavTree('dd/d59/nacm.html','../../');});
 <div class="title">NETCONF Access Control Module (NACM) </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>NACM is a transparent subsystem of libnetconf. It is activated using <a class="el" href="../../d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6">NC_INIT_NACM</a> flag in the <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a> function. No other action is required to use NACM in libnetconf. All NACM rules and settings are controlled via standard NETCONF operations since NACM subsystem provides implicit datastore accessible with the <a class="el" href="../../db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801" title="Perform the requested RPC operation on the datastore. ">ncds_apply_rpc()</a> function with the ID parameter set to the value <a class="el" href="../../db/d67/group__store.html#gaf3338ac77041c714fc4f9877e608990a" title="Datastore ID to access libnetconf&#39;s internal datastores such as notifications, monitoring, etc. ">NCDS_INTERNAL_ID</a> (0).</p>
+<div class="textblock"><p>NACM is a transparent subsystem of libnetconf. It is activated using <a class="el" href="../../d3/d7a/netconf_8h.html#a4b36db75cd94b518671d692b66549aa6">NC_INIT_NACM</a> flag in the <a class="el" href="../../d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc" title="Initialize libnetconf for system-wide usage. This initialization is shared across all the processes...">nc_init()</a> function. No other action is required to use NACM in libnetconf. All NACM rules and settings are controlled via standard NETCONF operations since NACM subsystem provides implicit datastore accessible with the <a class="el" href="../../db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759" title="Perform the requested RPC operation on the all datastores controlled by the libnetconf (created by nc...">ncds_apply_rpc2all()</a> function.</p>
 <p>libnetconf supports usage of the system groups (/etc/group) in the access control rule-lists. To disable this feature, &lt;enable-external-groups&gt; value must be set to false:</p>
 <div class="fragment"><div class="line">&lt;nacm xmlns=<span class="stringliteral">&quot;urn:ietf:params:xml:ns:yang:ietf-netconf-acm&quot;</span>&gt;</div>
 <div class="line">  &lt;enable-external-groups&gt;<span class="keyword">false</span>&lt;/enable-external-groups&gt;</div>
@@ -140,7 +140,7 @@ Initial operation</h2>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Mar 24 2015 13:55:44 for libnetconf by
+    <li class="footer">Generated on Wed Apr 15 2015 14:51:21 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

@@ -1,9 +1,9 @@
-.TH "nacm" 3 "Tue Mar 24 2015" "Version 0.9.0-97_trunk" "libnetconf" \" -*- nroff -*-
+.TH "nacm" 3 "Wed Apr 15 2015" "Version 0.9.0-110_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
 nacm \- NETCONF Access Control Module (NACM) 
-NACM is a transparent subsystem of libnetconf\&. It is activated using \fBNC_INIT_NACM\fP flag in the \fBnc_init()\fP function\&. No other action is required to use NACM in libnetconf\&. All NACM rules and settings are controlled via standard NETCONF operations since NACM subsystem provides implicit datastore accessible with the \fBncds_apply_rpc()\fP function with the ID parameter set to the value \fBNCDS_INTERNAL_ID\fP (0)\&.
+NACM is a transparent subsystem of libnetconf\&. It is activated using \fBNC_INIT_NACM\fP flag in the \fBnc_init()\fP function\&. No other action is required to use NACM in libnetconf\&. All NACM rules and settings are controlled via standard NETCONF operations since NACM subsystem provides implicit datastore accessible with the \fBncds_apply_rpc2all()\fP function\&.
 .PP
 libnetconf supports usage of the system groups (/etc/group) in the access control rule-lists\&. To disable this feature, <enable-external-groups> value must be set to false:
 .PP

@@ -7,7 +7,8 @@ var usage =
     [ "Server", "da/db3/server.html", [
       [ "Server Architecture", "da/db3/server.html#server-arch", [
         [ "Single-level Architecture", "da/db3/server.html#server-arch-singlelevel", null ],
-        [ "Multi-level Architecture", "da/db3/server.html#server-arch-multilevel", null ]
+        [ "Multi-level Architecture", "da/db3/server.html#server-arch-multilevel", null ],
+        [ "Integrated Architecture", "da/db3/server.html#server-arch-integrated", null ]
       ] ],
       [ "Server Workflow", "da/db3/server.html#server-workflow", null ]
     ] ],

@@ -12,7 +12,6 @@ var datastore_8h =
     [ "ncds_add_augment_transapi", "d8/d55/group__transapi.html#gacd42f4efcc256fa4ecdaa021f82d6d1f", null ],
     [ "ncds_add_model", "db/d67/group__store.html#ga145c9446fad8c350934c21ca86cbaf47", null ],
     [ "ncds_add_models_path", "db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b", null ],
-    [ "ncds_apply_rpc", "db/d67/group__store.html#gaabfd0bf6abeaf40659043bf082e14801", null ],
     [ "ncds_apply_rpc2all", "db/d67/group__store.html#ga6e6e979bd82e50913c82b4dc37cb8759", null ],
     [ "ncds_break_locks", "db/d67/group__store.html#ga4158273f1ae0332638cc9343097c9f0a", null ],
     [ "ncds_consolidate", "db/d67/group__store.html#gab2a27448a52972db6807571590a5c6da", null ],

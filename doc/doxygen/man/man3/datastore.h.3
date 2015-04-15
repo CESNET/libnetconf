@@ -1,4 +1,4 @@
-.TH "src/datastore.h" 3 "Tue Mar 24 2015" "Version 0.9.0-97_trunk" "libnetconf" \" -*- nroff -*-
+.TH "src/datastore.h" 3 "Wed Apr 15 2015" "Version 0.9.0-110_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -24,7 +24,7 @@ NETCONF datastore handling function prototypes and structures\&.
 .ti -1c
 .RI "#define \fBNCDS_RPC_NOT_APPLICABLE\fP   ((void*)(&\fBerror_area\fP))"
 .br
-.RI "\fIReturn value of \fBncds_apply_rpc()\fP when the requested operation is not applicable to the specified datastore\&. \fP"
+.RI "\fIReturn value of \fBncds_apply_rpc2all()\fP when the requested operation is not applicable to the datastore\&. \fP"
 .in -1c
 .SS "Typedefs"
 
@@ -57,10 +57,6 @@ NETCONF datastore handling function prototypes and structures\&.
 .RI "int \fBncds_add_models_path\fP (const char *path)"
 .br
 .RI "\fISpecify a directory path to the location where the required (imported or included) data models can be found\&. This function can be called repeatedly to specify multiple locations\&. \fP"
-.ti -1c
-.RI "\fBnc_reply\fP * \fBncds_apply_rpc\fP (\fBncds_id\fP id, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
-.br
-.RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
 .br

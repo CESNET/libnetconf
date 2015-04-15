@@ -1,4 +1,4 @@
-.TH "Datastore operations" 3 "Tue Mar 24 2015" "Version 0.9.0-97_trunk" "libnetconf" \" -*- nroff -*-
+.TH "Datastore operations" 3 "Wed Apr 15 2015" "Version 0.9.0-110_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -28,7 +28,7 @@ libnetconf's functions for handling NETCONF datastores\&. More information can b
 .ti -1c
 .RI "#define \fBNCDS_RPC_NOT_APPLICABLE\fP   ((void*)(&\fBerror_area\fP))"
 .br
-.RI "\fIReturn value of \fBncds_apply_rpc()\fP when the requested operation is not applicable to the specified datastore\&. \fP"
+.RI "\fIReturn value of \fBncds_apply_rpc2all()\fP when the requested operation is not applicable to the datastore\&. \fP"
 .in -1c
 .SS "Typedefs"
 
@@ -61,10 +61,6 @@ libnetconf's functions for handling NETCONF datastores\&. More information can b
 .RI "int \fBncds_add_models_path\fP (const char *path)"
 .br
 .RI "\fISpecify a directory path to the location where the required (imported or included) data models can be found\&. This function can be called repeatedly to specify multiple locations\&. \fP"
-.ti -1c
-.RI "\fBnc_reply\fP * \fBncds_apply_rpc\fP (\fBncds_id\fP id, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
-.br
-.RI "\fIPerform the requested RPC operation on the datastore\&. \fP"
 .ti -1c
 .RI "\fBnc_reply\fP * \fBncds_apply_rpc2all\fP (struct nc_session *session, const \fBnc_rpc\fP *rpc, \fBncds_id\fP *ids[])"
 .br
@@ -156,7 +152,7 @@ Datastore ID to access libnetconf's internal datastores such as notifications, m
 .SS "#define NCDS_RPC_NOT_APPLICABLE   ((void*)(&\fBerror_area\fP))"
 
 .PP
-Return value of \fBncds_apply_rpc()\fP when the requested operation is not applicable to the specified datastore\&. 
+Return value of \fBncds_apply_rpc2all()\fP when the requested operation is not applicable to the datastore\&. 
 .SH "Typedef Documentation"
 .PP 
 .SS "typedef int \fBncds_id\fP"
@@ -240,32 +236,6 @@ Specify a directory path to the location where the required (imported or include
 \fBReturns:\fP
 .RS 4
 0 on success, non-zero on error\&. 
-.RE
-.PP
-
-.SS "\fBnc_reply\fP* ncds_apply_rpc (\fBncds_id\fPid, const struct nc_session *session, const \fBnc_rpc\fP *rpc)"
-
-.PP
-Perform the requested RPC operation on the datastore\&. 
-.PP
-\fBDeprecated\fP
-.RS 4
-Function will be removed in version 1\&.0\&.0, use \fBncds_apply_rpc2all()\fP instead\&.
-.RE
-.PP
-.PP
-\fBParameters:\fP
-.RS 4
-\fIid\fP Datastore ID\&. Use \fBNCDS_INTERNAL_ID\fP (0) to apply request (typically <get>) onto the libnetconf's internal datastore\&. 
-.br
-\fIsession\fP NETCONF session (a dummy session is acceptable) where the <rpc> came from\&. Capabilities checks are done according to this session\&. 
-.br
-\fIrpc\fP NETCONF <rpc> message specifying requested operation\&. 
-.RE
-.PP
-\fBReturns:\fP
-.RS 4
-NULL in case of a non-NC_RPC_DATASTORE_* operation type or invalid parameter session or rpc, else <rpc-reply> with <ok>, <data> or <rpc-error> according to the type and the result of the requested operation\&. When the requested operation is not applicable to the specified datastore (e\&.g\&. the namespace does not match), NCDS_RPC_NOT_APPLICABLE is returned\&. 
 .RE
 .PP
 
@@ -456,7 +426,7 @@ String containing the path to the file containing the datastore datamodel\&. The
 .SS "\fBncds_id\fP ncds_init (struct ncds_ds *datastore)"
 
 .PP
-Activate datastore structure for use\&. The datastore configuration is checked and if everything is correct, datastore gets its unique ID to be used for datastore operations (\fBncds_apply_rpc()\fP)\&.
+Activate datastore structure for use\&. The datastore configuration is checked and if everything is correct, datastore gets its unique ID\&.
 .PP
 \fBParameters:\fP
 .RS 4
