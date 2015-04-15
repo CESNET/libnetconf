@@ -2194,7 +2194,11 @@ malformed_msg:
 			return (NC_MSG_UNKNOWN);
 		}
 
-		nc_session_send_reply(session, NULL, reply);
+		if (nc_session_send_reply(session, NULL, reply) == 0) {
+			ERROR("Unable to send the \'Malformed message\' reply");
+			nc_session_close(session, NC_SESSION_TERM_OTHER);
+			return (NC_MSG_UNKNOWN);
+		}
 		nc_reply_free(reply);
 	}
 
@@ -2500,7 +2504,9 @@ try_again:
 
 			if (e != NULL) {
 				reply = nc_reply_error(e);
-				nc_session_send_reply(session, *rpc, reply);
+				if (nc_session_send_reply(session, *rpc, reply) == 0) {
+					ERROR("Failed to send the reply.");
+				}
 				nc_rpc_free(*rpc);
 				*rpc = NULL;
 				nc_reply_free(reply);
@@ -2532,7 +2538,9 @@ try_again:
 			e = nc_err_new(NC_ERR_ACCESS_DENIED);
 			nc_err_set(e, NC_ERR_PARAM_MSG, "Operation not permitted.");
 			reply = nc_reply_error(e);
-			nc_session_send_reply(session, *rpc, reply);
+			if (nc_session_send_reply(session, *rpc, reply) == 0) {
+				ERROR("Failed to send reply.");
+			}
 			nc_rpc_free(*rpc);
 			*rpc = NULL;
 			nc_reply_free(reply);

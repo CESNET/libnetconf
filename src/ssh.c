@@ -645,7 +645,11 @@ malformed_msg:
 			return (NULL);
 		}
 
-		nc_session_send_reply(session, NULL, reply);
+		if (nc_session_send_reply(session, NULL, reply) == 0) {
+			ERROR("Unable to send a \'Malformed message\' reply");
+			nc_session_close(session, NC_SESSION_TERM_OTHER);
+			return (NULL);
+		}
 		nc_reply_free(reply);
 	}
 

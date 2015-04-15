@@ -2528,7 +2528,9 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 				if (!session->ntf_stop) {
 					DBG_UNLOCK("mut_ntf");
 					pthread_mutex_unlock(&(session->mut_ntf));
-					nc_session_send_notif(session, ntf);
+					if (nc_session_send_notif(session, ntf) != EXIT_SUCCESS) {
+						ERROR("Sending a notification failed.");
+					}
 				} else {
 					DBG_UNLOCK("mut_ntf");
 					pthread_mutex_unlock(&(session->mut_ntf));
@@ -2583,7 +2585,10 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 		ntf->nacm = NULL;
 
 		/* do not use ACM - notificationComplete is always permitted */
-		nc_session_send_notif(session, ntf);
+		if (nc_session_send_notif(session, ntf) != EXIT_SUCCESS) {
+			ERROR("Sending a notification failed.");
+			return (-1);
+		}
 		ncntf_notif_free(ntf);
 		free(event);
 	}
