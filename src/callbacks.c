@@ -723,12 +723,12 @@ askuseragain:
 }
 
 /* op = 1 (add), 2 (remove) */
-static void nc_publickey_path (const char* path, int op)
+static int nc_publickey_path (const char* path, int op)
 {
 	int i;
 
 	if (path == NULL) {
-		return;
+		return EXIT_FAILURE;
 	}
 
 	for (i = 0; i < SSH2_KEYS; ++i) {
@@ -746,22 +746,26 @@ static void nc_publickey_path (const char* path, int op)
 	if (i == SSH2_KEYS) {
 		if (op == 1) {
 			ERROR("Too many SSH public keys.");
+			return EXIT_FAILURE;
 		}
 		if (op == 2) {
 			ERROR("The SSH public key to delete was not found.");
+			return EXIT_FAILURE;
 		}
 	}
+
+	return EXIT_SUCCESS;
 }
 
 /* op = 1 (add), 2 (remove) */
-static void nc_privatekey_path (const char* path, int op)
+static int nc_privatekey_path (const char* path, int op)
 {
 	FILE* key;
 	char line[128];
 	int i;
 
 	if (path == NULL) {
-		return;
+		return EXIT_FAILURE;
 	}
 
 	for (i = 0; i < SSH2_KEYS; ++i) {
@@ -780,9 +784,11 @@ static void nc_privatekey_path (const char* path, int op)
 	if (i == SSH2_KEYS) {
 		if (op == 1) {
 			ERROR("Too many SSH private keys.");
+			return EXIT_FAILURE;
 		}
 		if (op == 2) {
 			ERROR("The SSH private key to delete was not found.");
+			return EXIT_FAILURE;
 		}
 	}
 
@@ -791,30 +797,46 @@ static void nc_privatekey_path (const char* path, int op)
 			/* Key type line */
 			if (fgets(line, sizeof(line), key) == NULL) {
 				ERROR("fgets() on %s failed.", path);
-				return; /* error */
+				return EXIT_FAILURE;
 			}
 			/* encryption information or key */
 			if (fgets(line, sizeof(line), key) == NULL) {
 				ERROR("fgets() on %s failed.", path);
-				return; /* error */
+				return EXIT_FAILURE;
 			}
 			if (strcasestr (line, "encrypted") != NULL) {
 				callbacks.key_protected[i] = 1;
 			}
 		}
 	}
+
+	return EXIT_SUCCESS;
 }
 
-API void nc_set_keypair_path(const char* privkey, const char* pubkey)
+API int nc_set_keypair_path(const char* privkey, const char* pubkey)
 {
-	nc_privatekey_path(privkey, 1);
-	nc_publickey_path(pubkey, 1);
+	if (nc_privatekey_path(privkey, 1) != EXIT_SUCCESS) {
+		return EXIT_FAILURE;
+	}
+	if (nc_publickey_path(pubkey, 1) != EXIT_SUCCESS) {
+		nc_privatekey_path(privkey, 2);
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
 }
 
-API void nc_del_keypair_path(const char* privkey, const char* pubkey)
+API int nc_del_keypair_path(const char* privkey, const char* pubkey)
 {
-	nc_privatekey_path(privkey, 2);
-	nc_publickey_path(pubkey, 2);
+	if (nc_privatekey_path(privkey, 2) != EXIT_SUCCESS) {
+		return EXIT_FAILURE;
+	}
+	if (nc_publickey_path(pubkey, 2) != EXIT_SUCCESS) {
+		nc_privatekey_path(privkey, 1);
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
 }
 
 #endif /* not DISABLE_LIBSSH */

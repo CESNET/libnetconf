@@ -125,8 +125,10 @@ void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
  * @ingroup session
  * @param[in] privkey Path to the private key file.
  * @param[in] pubkey Path to the public key file
+ *
+ * @return EXIT_SUCCES or EXIT_FAILURE
  */
-void nc_set_keypair_path(const char* privkey, const char* pubkey);
+int nc_set_keypair_path(const char* privkey, const char* pubkey);
 
 /**
  * @brief Remove a private and a public key file.
@@ -136,8 +138,10 @@ void nc_set_keypair_path(const char* privkey, const char* pubkey);
  * @ingroup session
  * @param[in] privkey Path to the private key file.
  * @param[in] pubkey Path to the public key file
+ *
+ * @return EXIT_SUCCES or EXIT_FAILURE
  */
-void nc_del_keypair_path(const char* privkey, const char* pubkey);
+int nc_del_keypair_path(const char* privkey, const char* pubkey);
 
 #ifdef __cplusplus
 }
