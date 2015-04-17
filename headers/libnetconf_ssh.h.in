@@ -40,7 +40,7 @@
 #ifndef LIBNETCONF_SSH_H_
 #define LIBNETCONF_SSH_H_
 
-@LIBSSH2_DIRECTIVE@
+@LIBSSH_DIRECTIVE@
 
 #include "libnetconf/callbacks_ssh.h"
 #include "libnetconf/transport.h"

@@ -134,7 +134,7 @@ AC_ARG_ENABLE([libssh],
 		libssh="no"
 		CPPFLAGS="$CPPFLAGS -DDISABLE_LIBSSH"
 		LIBS="$LIBS -lutil" # forkpty()
-		LIBSSH2_DIRECTIVE="#define DISABLE_LIBSSH"
+		LIBSSH_DIRECTIVE="#define DISABLE_LIBSSH"
 		CONFIGURE_PARAMS="--disable-libssh $CONFIGURE_PARAMS"
 	else
 		libssh="yes"
@@ -143,6 +143,7 @@ AC_ARG_ENABLE([libssh],
 	# use libssh by default
 	libssh="yes"
 )
+AC_SUBST(LIBSSH_DIRECTIVE)
 
 tls="no"
 AC_ARG_ENABLE([tls],

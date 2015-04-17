@@ -713,6 +713,7 @@ DOXYGEN
 SSH_PROG
 UNAME
 PYTHON
+LIBSSH_DIRECTIVE
 XSLT_CONFIG
 LIBXML2_LIBS
 XML2_CONFIG
@@ -2993,7 +2994,7 @@ if test "${enable_libssh+set}" = set; then :
 		libssh="no"
 		CPPFLAGS="$CPPFLAGS -DDISABLE_LIBSSH"
 		LIBS="$LIBS -lutil" # forkpty()
-		LIBSSH2_DIRECTIVE="#define DISABLE_LIBSSH"
+		LIBSSH_DIRECTIVE="#define DISABLE_LIBSSH"
 		CONFIGURE_PARAMS="--disable-libssh $CONFIGURE_PARAMS"
 	else
 		libssh="yes"
@@ -3004,6 +3005,7 @@ else
 	libssh="yes"
 
 fi
+
 
 
 tls="no"
