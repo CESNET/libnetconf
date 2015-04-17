@@ -2841,12 +2841,16 @@ static xmlNodePtr model_node_path(xmlNodePtr current, const char* current_prefix
 		if (*ds == NULL) {
 			/* locate corresponding datastore - we are at the beginning of the path */
 			module = NULL;
-			if (prefix == NULL) {
+			if (prefix == NULL || !strcmp(prefix, current_prefix)) {
 				/* model is augmenting itself - get the module's name to be able to find it */
 				module = (char*) xmlGetProp(xmlDocGetRootElement(current->doc), BAD_CAST "name");
 			} else { /* (prefix != NULL) */
 				/* find the prefix in imports */
 				module = get_module_with_prefix(prefix, imports);
+			}
+			if (module == NULL ) {
+				/* unknown name of the module to augment */
+				return (NULL);
 			}
 
 			/* locate the correct datastore to augment */
