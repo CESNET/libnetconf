@@ -51,9 +51,9 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 
 #ifndef DISABLE_LIBSSH
 
-struct nc_session *nc_session_connect_libssh2_socket(const char* username, const char* host, int sock);
+struct nc_session *nc_session_connect_libssh_socket(const char* username, const char* host, int sock);
 
-struct nc_session *nc_session_connect_libssh2_channel(struct nc_session *session);
+struct nc_session *nc_session_connect_libssh_channel(struct nc_session *session);
 
 #else /* DISABLE_LIBSSH */
 

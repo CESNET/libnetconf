@@ -55,7 +55,7 @@
 #include <ctype.h>
 
 #ifndef DISABLE_LIBSSH
-#	include <libssh2.h>
+#	include <libssh/libssh.h>
 #endif
 
 #include <libxml/tree.h>
@@ -164,8 +164,8 @@ static struct session_list_map *session_list = NULL;
 #else /* not DISABLE_LIBSSH */
 #ifdef ENABLE_TLS
 #define NC_WRITE(session,buf,c,ret) \
-	if(session->ssh_channel){ \
-		ret = libssh2_channel_write (session->ssh_channel, (buf), strlen(buf)); \
+	if(session->ssh_chan){ \
+		ret = ssh_channel_write (session->ssh_chan, (buf), strlen(buf)); \
 		if (ret > 0) {c += ret;} \
 	} else if (session->tls){ \
 		ret = SSL_write(session->tls, (buf), strlen(buf)); \
@@ -178,8 +178,8 @@ static struct session_list_map *session_list = NULL;
 	}
 #else /* not ENABLE_TLS */
 #define NC_WRITE(session,buf,c,ret) \
-	if(session->ssh_channel){ \
-		ret = libssh2_channel_write (session->ssh_channel, (buf), strlen(buf)); \
+	if(session->ssh_chan){ \
+		ret = ssh_channel_write (session->ssh_chan, (buf), strlen(buf)); \
 		if (ret > 0) {c += ret;} \
 	} else if (session->fd_output != -1) { \
 		ret = write (session->fd_output, (buf), strlen(buf)); \
@@ -1215,10 +1215,10 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			}
 		} else
 #else
-		if (session->ssh_channel != NULL) {
+		if (session->ssh_chan != NULL) {
 			DBG_LOCK("mut_channel");
 			pthread_mutex_lock(session->mut_channel);
-			i = libssh2_channel_eof(session->ssh_channel);
+			i = ssh_channel_send_eof(session->ssh_chan);
 			DBG_UNLOCK("mut_channel");
 			pthread_mutex_unlock(session->mut_channel);
 			if (session->status == NC_SESSION_STATUS_WORKING &&  i == 0 && !session->is_server) {
@@ -1228,10 +1228,10 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 
 			DBG_LOCK("mut_channel");
 			pthread_mutex_lock(session->mut_channel);
-			libssh2_channel_free(session->ssh_channel);
+			ssh_channel_free(session->ssh_chan);
 			DBG_UNLOCK("mut_channel");
 			pthread_mutex_unlock(session->mut_channel);
-			session->ssh_channel = NULL;
+			session->ssh_chan = NULL;
 		} else
 #endif
 #ifdef ENABLE_TLS
@@ -1247,11 +1247,11 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 		{} /* close else which is not needed */
 #endif
 #ifndef DISABLE_LIBSSH
-		if (session->ssh_session != NULL && session->next == NULL && session->prev == NULL) {
+		if (session->ssh_sess != NULL && session->next == NULL && session->prev == NULL) {
 			/* close and free only if there is no other session using it */
-			libssh2_session_disconnect(session->ssh_session, nc_session_term_string(reason));
-			libssh2_session_free(session->ssh_session);
-			session->ssh_session = NULL;
+			ssh_disconnect(session->ssh_sess);
+			ssh_free(session->ssh_sess);
+			session->ssh_sess = NULL;
 
 			close(session->transport_socket);
 		}
@@ -1410,7 +1410,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 
 	if ((session->fd_output == -1)
 #ifndef DISABLE_LIBSSH
-			&& (session->ssh_channel == NULL)
+			&& (session->ssh_chan == NULL)
 #endif
 #ifdef ENABLE_TLS
 			&& (session->tls == NULL)
@@ -1476,21 +1476,21 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 				usleep(10);
 				continue;
 			}
+#ifndef DISABLE_LIBSSH
+			if (ret == SSH_ERROR) {
+				DBG_UNLOCK("mut_channel");
+				session->mut_channel_flag = 0;
+				pthread_mutex_unlock(session->mut_channel);
+				VERB("Writing data into the communication channel failed.");
+				return (EXIT_FAILURE);
+			}
+#endif
 			if (ret < 0) {
 				DBG_UNLOCK("mut_channel");
 				session->mut_channel_flag = 0;
 				pthread_mutex_unlock(session->mut_channel);
 				return (EXIT_FAILURE);
 			}
-#ifndef DISABLE_LIBSSH
-			if (c == LIBSSH2_ERROR_TIMEOUT) {
-				DBG_UNLOCK("mut_channel");
-				session->mut_channel_flag = 0;
-				pthread_mutex_unlock(session->mut_channel);
-				VERB("Writing data into the communication channel timeouted.");
-				return (EXIT_FAILURE);
-			}
-#endif
 		} while (c < (ssize_t) strlen (buf));
 	}
 
@@ -1502,21 +1502,21 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 			usleep(10);
 			continue;
 		}
+#ifndef DISABLE_LIBSSH
+		if (ret == SSH_ERROR) {
+			DBG_UNLOCK("mut_channel");
+			session->mut_channel_flag = 0;
+			pthread_mutex_unlock(session->mut_channel);
+			VERB("Writing data into the communication channel failed.");
+			return (EXIT_FAILURE);
+		}
+#endif
 		if (ret < 0) {
 			DBG_UNLOCK("mut_channel");
 			session->mut_channel_flag = 0;
 			pthread_mutex_unlock(session->mut_channel);
 			return (EXIT_FAILURE);
 		}
-#ifndef DISABLE_LIBSSH
-		if (c == LIBSSH2_ERROR_TIMEOUT) {
-			DBG_UNLOCK("mut_channel");
-			session->mut_channel_flag = 0;
-			pthread_mutex_unlock(session->mut_channel);
-			VERB("Writing data into the communication channel timeouted.");
-			return (EXIT_FAILURE);
-		}
-#endif
 	} while (c < (ssize_t) strlen (text));
 	free (text);
 
@@ -1533,21 +1533,21 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 			usleep(10);
 			continue;
 		}
+#ifndef DISABLE_LIBSSH
+		if (ret == SSH_ERROR) {
+			DBG_UNLOCK("mut_channel");
+			session->mut_channel_flag = 0;
+			pthread_mutex_unlock(session->mut_channel);
+			VERB("Writing data into the communication channel failed.");
+			return (EXIT_FAILURE);
+		}
+#endif
 		if (ret < 0) {
 			DBG_UNLOCK("mut_channel");
 			session->mut_channel_flag = 0;
 			pthread_mutex_unlock(session->mut_channel);
 			return (EXIT_FAILURE);
 		}
-#ifndef DISABLE_LIBSSH
-		if (c == LIBSSH2_ERROR_TIMEOUT) {
-			DBG_UNLOCK("mut_channel");
-			session->mut_channel_flag = 0;
-			pthread_mutex_unlock(session->mut_channel);
-			VERB("Writing data into the communication channel timeouted.");
-			return (EXIT_FAILURE);
-		}
-#endif
 	} while (c < (ssize_t) strlen (text));
 
 	/* unlock the session's output */
@@ -1560,9 +1560,6 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 
 static int nc_session_read_len(struct nc_session* session, size_t chunk_length, char **text, size_t *len)
 {
-#ifndef DISABLE_LIBSSH
-	char *err_msg;
-#endif
 	char *buf;
 	ssize_t c;
 	size_t rd = 0;
@@ -1586,21 +1583,20 @@ static int nc_session_read_len(struct nc_session* session, size_t chunk_length, 
 
 	while (rd < chunk_length) {
 #ifndef DISABLE_LIBSSH
-		if (session->ssh_channel) {
-			/* read via libssh2 */
-			c = libssh2_channel_read(session->ssh_channel, &(buf[rd]), chunk_length - rd);
-			if (c == LIBSSH2_ERROR_EAGAIN || c == LIBSSH2_ERROR_TIMEOUT) {
+		if (session->ssh_chan) {
+			/* read via libssh */
+			c = ssh_channel_read(session->ssh_chan, &(buf[rd]), chunk_length - rd, 0);
+			if (c == SSH_AGAIN) {
 				usleep (NC_READ_SLEEP);
 				continue;
-			} else if (c < 0) {
-				libssh2_session_last_error (session->ssh_session, &err_msg, NULL, 0);
-				ERROR("Reading from the SSH channel failed (%zd: %s)", c, err_msg);
+			} else if (c == SSH_ERROR) {
+				ERROR("Reading from the SSH channel failed (%zd: %s)", ssh_get_error_code(session->ssh_sess), ssh_get_error(session->ssh_sess));
 				free (buf);
 				*len = 0;
 				*text = NULL;
 				return (EXIT_FAILURE);
 			} else if (c == 0) {
-				if (libssh2_channel_eof (session->ssh_channel)) {
+				if (ssh_channel_is_eof(session->ssh_chan)) {
 					ERROR("Server has closed the communication socket");
 					free (buf);
 					*len = 0;
@@ -1666,9 +1662,6 @@ static int nc_session_read_len(struct nc_session* session, size_t chunk_length, 
 
 static int nc_session_read_until(struct nc_session* session, const char* endtag, unsigned int limit, char **text, size_t *len)
 {
-#ifndef DISABLE_LIBSSH
-	char *err_msg;
-#endif
 	size_t rd = 0;
 	ssize_t c;
 	char *buf = NULL;
@@ -1702,15 +1695,14 @@ static int nc_session_read_until(struct nc_session* session, const char* endtag,
 			return (EXIT_FAILURE);
 		}
 #ifndef DISABLE_LIBSSH
-		if (session->ssh_channel) {
-			/* read via libssh2 */
-			c = libssh2_channel_read(session->ssh_channel, &(buf[rd]), 1);
-			if (c == LIBSSH2_ERROR_EAGAIN || c == LIBSSH2_ERROR_TIMEOUT) {
+		if (session->ssh_chan) {
+			/* read via libssh */
+			c = ssh_channel_read(session->ssh_chan, &(buf[rd]), 1, 0);
+			if (c == SSH_AGAIN) {
 				usleep (NC_READ_SLEEP);
 				continue;
-			} else if (c < 0) {
-				libssh2_session_last_error (session->ssh_session, &err_msg, NULL, 0);
-				ERROR("Reading from the SSH channel failed (%zd: %s)", c, err_msg);
+			} else if (c == SSH_ERROR) {
+				ERROR("Reading from the SSH channel failed (%zd: %s)", ssh_get_error_code(session->ssh_sess), ssh_get_error(session->ssh_sess));
 				free (buf);
 				if (len != NULL) {
 					*len = 0;
@@ -1720,7 +1712,7 @@ static int nc_session_read_until(struct nc_session* session, const char* endtag,
 				}
 				return (EXIT_FAILURE);
 			} else if (c == 0) {
-				if (libssh2_channel_eof (session->ssh_channel)) {
+				if (ssh_channel_is_eof (session->ssh_chan)) {
 					ERROR("Server has closed the communication socket");
 					free (buf);
 					if (len != NULL) {
@@ -1892,10 +1884,6 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 	NC_MSG_TYPE msgtype;
 	xmlNodePtr root;
 
-#ifndef DISABLE_LIBSSH
-	LIBSSH2_POLLFD fds_ssh;
-#endif
-
 	if (session == NULL || (session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_CLOSING)) {
 		ERROR("Invalid session to receive data.");
 		return (NC_MSG_UNKNOWN);
@@ -1917,28 +1905,12 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 	/* use while for possibility of repeating test */
 	while(1) {
 #ifndef DISABLE_LIBSSH
-		if (session->ssh_channel != NULL) {
+		if (session->ssh_chan != NULL) {
 			/* we are getting data from libssh's channel */
-			fds_ssh.type = LIBSSH2_POLLFD_CHANNEL;
-			fds_ssh.fd.channel = session->ssh_channel;
-			fds_ssh.events = LIBSSH2_POLLFD_POLLIN;
-			fds_ssh.revents = LIBSSH2_POLLFD_POLLIN;
-			/*
-			 * According to libssh2 documentation, standard poll should work, but it does not.
-			 * Using standard poll, we are not able to detect data on a specific channel, it
-			 * is possible only using libssh2_poll(). Unfortunatelly, using libssh2_poll()
-			 * we are not able to detect closed socket and close it either, so it can remain
-			 * in CLOSE_WAIT status.
-			 */
-			/*
-			fds.fd = nc_session_get_eventfd(session);
-			fds.events = POLLIN;
-			fds.revents = 0;
-			status = poll(&fds, 1, timeout);
-			*/
-			status = libssh2_poll(&fds_ssh, 1, timeout);
-
-			revents = fds_ssh.revents;
+			status = ssh_channel_poll_timeout(session->ssh_chan, timeout, 0);
+			if (status > 0) {
+				revents = POLLIN;
+			}
 		} else
 #endif
 #ifdef ENABLE_TLS
@@ -2185,7 +2157,7 @@ malformed_msg_channels_unlock:
 	pthread_mutex_unlock(session->mut_channel);
 
 malformed_msg:
-	if (session->version == NETCONFV11 && session->ssh_session == NULL) {
+	if (session->version == NETCONFV11 && session->ssh_sess == NULL) {
 		/* NETCONF version 1.1 define sending error reply from the server */
 		reply = nc_reply_error(nc_err_new(NC_ERR_MALFORMED_MSG));
 		if (reply == NULL) {

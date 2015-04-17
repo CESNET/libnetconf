@@ -42,7 +42,7 @@
 
 #ifndef DISABLE_LIBSSH
 
-#include <libssh2.h>
+#include <libssh/libssh.h>
 
 #include "netconf.h"
 
@@ -63,14 +63,10 @@ extern "C" {
  * callback parameters, see libssh2_userauth_keyboard_interactive() description
  * in libssh2 documentation.
  */
-void nc_callback_sshauth_interactive(void (*func)(const char* name,
-		int name_len,
+char* nc_callback_sshauth_interactive(void (*func)(const char* name,
 		const char* instruction,
-		int instruction_len,
-		int num_prompts,
-		const LIBSSH2_USERAUTH_KBDINT_PROMPT* prompts,
-		LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
-		void** abstract));
+		const char* prompt,
+		int echo));
 
 /**
  * @brief Set a callback function for passing the user password into the libssh2's
@@ -114,7 +110,7 @@ void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
  * - EXIT_FAILURE - keys do not match or an error occurred.
  */
 void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
-		LIBSSH2_SESSION *session));
+		ssh_session session));
 
 /**
  * @brief Set path to a private and a public key file used in case of SSH authentication via

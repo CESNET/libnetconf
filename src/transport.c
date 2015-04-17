@@ -761,7 +761,7 @@ API struct nc_session *nc_session_connect_channel(struct nc_session* session, co
 		return (NULL);
 	}
 
-	retval = nc_session_connect_libssh2_channel(session);
+	retval = nc_session_connect_libssh_channel(session);
 	if (retval == NULL) {
 		return (NULL);
 	}
@@ -1446,7 +1446,7 @@ netconf_connect:
 #else
 	{
 #endif
-		retval = nc_session_connect_libssh2_socket(username, host, sock);
+		retval = nc_session_connect_libssh_socket(username, host, sock);
 	}
 
 	if (retval != NULL) {
