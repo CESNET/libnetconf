@@ -46,4 +46,4 @@ $(OBJDIR)/%.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 clean:
-	@-rm -rf *.o lncdatastore
+	@-rm -rf $(OBJDIR) lncdatastore
