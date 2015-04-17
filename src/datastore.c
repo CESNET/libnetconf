@@ -2476,13 +2476,15 @@ static int import_groupings(const char* module_name, xmlXPathContextPtr model_ct
 	return (EXIT_SUCCESS);
 }
 
-static int ncds_update_uses(const char* module_name, xmlXPathContextPtr *model_ctxt, const char* query)
+static int ncds_update_uses(const char *module_name, const char *prefix,
+		                    xmlXPathContextPtr *model_ctxt, const char* query)
 {
 	xmlXPathObjectPtr uses, groupings = NULL;
 	xmlDocPtr doc;
 	xmlNodePtr node, nodenext;
-	char *grouping_ref, *grouping_name;
+	char *grouping_ref, *grouping_name, *aux;
 	int i, j, flag = 0;
+	size_t prefix_len = strlen(prefix);
 
 	if (model_ctxt == NULL || *model_ctxt == NULL || query == NULL) {
 		ERROR("%s: invalid parameter.", __func__);
@@ -2526,8 +2528,17 @@ static int ncds_update_uses(const char* module_name, xmlXPathContextPtr *model_c
 			/*
 			 * we can process even references with prefix, because we
 			 * already added imported groupings with changing their name
-			 * to include prefix
+			 * to include prefix. The only thing we have to fix is references
+			 * to local groupings with prefix - such groupings are not imported
+			 * so the prefix was not added to their name and they can be (and
+			 * usually they are) referenced without prefix.
 			 */
+			if (!strncmp(grouping_ref, prefix, prefix_len) && grouping_ref[prefix_len] == ':') {
+				aux = grouping_ref;
+				grouping_ref = strdup(&aux[prefix_len + 1]);
+				free(aux);
+			}
+
 			for (j = 0; j < groupings->nodesetval->nodeNr; j++) {
 				grouping_name = (char*) xmlGetProp(groupings->nodesetval->nodeTab[j], BAD_CAST "name");
 				if (strcmp(grouping_name, grouping_ref) == 0) {
@@ -2614,7 +2625,7 @@ static int ncds_update_uses_groupings(struct data_model* model)
 	}
 
 	query = "/"NC_NS_YIN_ID":module//"NC_NS_YIN_ID":grouping//"NC_NS_YIN_ID":uses";
-	return(ncds_update_uses(model->name, &(model->ctxt), query));
+	return(ncds_update_uses(model->name, model->prefix, &(model->ctxt), query));
 }
 
 static int ncds_update_uses_augments(struct data_model* model)
@@ -2627,7 +2638,7 @@ static int ncds_update_uses_augments(struct data_model* model)
 	}
 
 	query = "//"NC_NS_YIN_ID":augment//"NC_NS_YIN_ID":uses";
-	return(ncds_update_uses(model->name, &(model->ctxt), query));
+	return(ncds_update_uses(model->name, model->prefix, &(model->ctxt), query));
 }
 
 static int ncds_update_uses_ds(struct ncds_ds* datastore)
@@ -2660,7 +2671,8 @@ static int ncds_update_uses_ds(struct ncds_ds* datastore)
 	}
 
 	query = "/"NC_NS_YIN_ID":module//"NC_NS_YIN_ID":uses";
-	ret = ncds_update_uses(datastore->data_model->name, &model_ctxt, query);
+	ret = ncds_update_uses(datastore->data_model->name,
+			               datastore->data_model->prefix, &model_ctxt, query);
 	xmlXPathFreeContext(model_ctxt);
 
 	return (ret);
