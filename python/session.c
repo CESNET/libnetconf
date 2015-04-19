@@ -260,7 +260,7 @@ static PyObject *ncOpEditConfig(ncSessionObject *self, PyObject *args, PyObject 
 	int defop = 0, erroropt = NC_EDIT_ERROPT_NOTSET, testopt = NC_EDIT_TESTOPT_TESTSET;
 	char *data1 = NULL;
 	int i;
-	PyObject *PySource, *PyDefOp, *PyErrorOpt, *PyTestOpt;
+	PyObject *PySource;
 	nc_rpc *rpc = NULL;
 	char *kwlist[] = {"target", "source", "defop", "erropt", "testopt", NULL};
 
@@ -268,7 +268,7 @@ static PyObject *ncOpEditConfig(ncSessionObject *self, PyObject *args, PyObject 
 
 	/* Get input parameters */
 	if (! PyArg_ParseTupleAndKeywords(args, keywords, "iO|iii", kwlist, &target, &PySource,
-			&PyDefOp, &PyErrorOpt, &PyTestOpt)) {
+			&defop, &erroropt, &testopt)) {
 		return (NULL);
 	}
 
