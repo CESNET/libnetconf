@@ -386,6 +386,21 @@ PyMODINIT_FUNC PyInit_netconf(void)
     PyModule_AddIntConstant(nc, "STARTUP", NC_DATASTORE_STARTUP);
     PyModule_AddIntConstant(nc, "CANDIDATE", NC_DATASTORE_CANDIDATE);
 
+    PyModule_AddIntConstant(nc, "NC_EDIT_DEFOP_NOTSET", NC_EDIT_DEFOP_NOTSET);
+    PyModule_AddIntConstant(nc, "NC_EDIT_DEFOP_MERGE", NC_EDIT_DEFOP_MERGE);
+    PyModule_AddIntConstant(nc, "NC_EDIT_DEFOP_REPLACE", NC_EDIT_DEFOP_REPLACE);
+    PyModule_AddIntConstant(nc, "NC_EDIT_DEFOP_NONE", NC_EDIT_DEFOP_NONE);
+
+    PyModule_AddIntConstant(nc, "NC_EDIT_ERROPT_NOTSET", NC_EDIT_ERROPT_NOTSET);
+    PyModule_AddIntConstant(nc, "NC_EDIT_ERROPT_STOP", NC_EDIT_ERROPT_STOP);
+    PyModule_AddIntConstant(nc, "NC_EDIT_ERROPT_CONT", NC_EDIT_ERROPT_CONT);
+    PyModule_AddIntConstant(nc, "NC_EDIT_ERROPT_ROLLBACK", NC_EDIT_ERROPT_ROLLBACK);
+
+    PyModule_AddIntConstant(nc, "NC_EDIT_TESTOPT_NOTSET", NC_EDIT_TESTOPT_NOTSET);
+    PyModule_AddIntConstant(nc, "NC_EDIT_TESTOPT_TESTSET", NC_EDIT_TESTOPT_TESTSET);
+    PyModule_AddIntConstant(nc, "NC_EDIT_TESTOPT_SET", NC_EDIT_TESTOPT_SET);
+    PyModule_AddIntConstant(nc, "NC_EDIT_TESTOPT_TEST", NC_EDIT_TESTOPT_TEST);
+
 	/* init libnetconf exceptions for use in clb_print() */
 	libnetconfError = PyErr_NewExceptionWithDoc("netconf.Error", "Error passed from the underlying libnetconf library.", NULL, NULL);
 	Py_INCREF(libnetconfError);

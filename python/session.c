@@ -254,6 +254,62 @@ static PyObject *ncOpKillSession(ncSessionObject *self, PyObject *args, PyObject
 	}
 }
 
+static PyObject *ncOpEditConfig(ncSessionObject *self, PyObject *args, PyObject *keywords)
+{
+	int source = NC_DATASTORE_ERROR, target = NC_DATASTORE_ERROR;
+	int defop = 0, erroropt = NC_EDIT_ERROPT_NOTSET, testopt = NC_EDIT_TESTOPT_TESTSET;
+	char *data1 = NULL;
+	int i;
+	PyObject *PySource, *PyDefOp, *PyErrorOpt, *PyTestOpt;
+	nc_rpc *rpc = NULL;
+	char *kwlist[] = {"target", "source", "defop", "erropt", "testopt", NULL};
+
+	SESSION_CHECK(self);
+
+	/* Get input parameters */
+	if (! PyArg_ParseTupleAndKeywords(args, keywords, "iO|iii", kwlist, &target, &PySource,
+			&PyDefOp, &PyErrorOpt, &PyTestOpt)) {
+		return (NULL);
+	}
+
+	/* get source type */
+	if (strcmp(Py_TYPE(PySource)->tp_name, "int") == 0) {
+		if (!PyArg_Parse(PySource, "i", &source)) {
+			return (NULL);
+		}
+	} else if (strcmp(Py_TYPE(PySource)->tp_name, "str") == 0) {
+		if (!PyArg_Parse(PySource, "s", &data1)) {
+			return (NULL);
+		}
+		for (i = 0; data1[i] != '\0' && isspace(data1[i]); i++);
+		if (data1[i] == '<') {
+			source = NC_DATASTORE_CONFIG;
+		} else {
+			if (strcasestr(data1, "://") != NULL) {
+				source = NC_DATASTORE_URL;
+			} else {
+				PyErr_SetString(PyExc_ValueError, "Invalid \'source\' value.");
+				return (NULL);
+			}
+		}
+	}
+
+	/* create RPC */
+	rpc = nc_rpc_editconfig(target, source, defop, erroropt, testopt, data1);
+
+	if (rpc == NULL) {
+		Py_RETURN_FALSE;
+	}
+
+	/* send request ... */
+	if (op_send_recv(self, rpc, NULL) == EXIT_SUCCESS) {
+		/* ... and return the result */
+		Py_RETURN_TRUE;
+	} else {
+		Py_RETURN_FALSE;
+	}
+}
+
 static PyObject *ncOpCopyConfig(ncSessionObject *self, PyObject *args, PyObject *keywords)
 {
 	int wdmode = NCWD_MODE_NOTSET;
@@ -789,6 +845,9 @@ static PyMethodDef ncSessionMethods[] = {
 	{"unlock", (PyCFunction)ncOpUnlock,
 		METH_VARARGS | METH_KEYWORDS,
 		PyDoc_STR("Execute NETCONF <unlock> RPC.")},
+	{"editConfig", (PyCFunction)ncOpEditConfig,
+		METH_VARARGS | METH_KEYWORDS,
+		PyDoc_STR("Execute NETCONF <edit-config> RPC.")},
 	{"copyConfig", (PyCFunction)ncOpCopyConfig,
 		METH_VARARGS | METH_KEYWORDS,
 		PyDoc_STR("Execute NETCONF <copy-config> RPC.")},
