@@ -47,6 +47,7 @@
 
 #ifndef DISABLE_LIBSSH
 #	include <libssh/libssh.h>
+#	include <libssh/callbacks.h>
 #endif
 
 #ifdef ENABLE_TLS
