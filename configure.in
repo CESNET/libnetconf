@@ -461,6 +461,7 @@ if test "$libssh" = "yes"; then
 	### libssh ###
 	AC_CHECK_LIB([ssh], [ssh_init], [], AC_MSG_ERROR([Missing libssh.]))
 	AC_CHECK_HEADERS([libssh/libssh.h], [], AC_MSG_ERROR([Missing libssh headers.]))
+	AC_CHECK_LIB([ssh_threads], [ssh_threads_get_pthread], [], AC_MSG_ERROR([Missing the libssh_threads library.]))
 	BUILDREQS="$BUILDREQS libssh-devel >= 0.6.0"
 	DEVELREQS="$DEVELREQS libssh-devel >= 0.6.0"
 fi
