@@ -229,8 +229,6 @@ static char* callback_sshauth_password_default (const char* username,
 
 /**
  * @brief Default callback for the \"keyboard-interactive\" authentication method
- *
- * called by libssh2, see http://www.libssh2.org/libssh2_userauth_keyboard_interactive.html for details
  */
 static char* callback_sshauth_interactive_default (const char* UNUSED(name),
 		const char* UNUSED(instruction),

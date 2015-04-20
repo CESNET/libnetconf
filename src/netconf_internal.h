@@ -246,14 +246,14 @@ struct callbacks {
 			const char* ns,
 			const char* sid);
 #ifndef DISABLE_LIBSSH
-	/**< @brief Callback for libssh2's 'keyboard-interactive' authentication method */
+	/**< @brief Callback for libssh's 'keyboard-interactive' authentication method */
 	char* (*sshauth_interactive)(const char* name,
 			const char* instruction,
 			const char* prompt,
 			int echo);
-	/**< @brief Callback for passing the password for libssh2's 'password' authentication method */
+	/**< @brief Callback for passing the password for libssh's 'password' authentication method */
 	char* (*sshauth_password)(const char* username, const char* hostname);
-	/**< @brief Callback for passing the passphrase for libssh2's 'publickey' authentication method */
+	/**< @brief Callback for passing the passphrase for libssh's 'publickey' authentication method */
 	char* (*sshauth_passphrase)(const char* username, const char* hostname, const char* privatekey_filepath);
 	/**< @brief Callback to check the host authenticity: 0 ok, 1 failed */
 	int (*hostkey_check)(const char* hostname, ssh_session session);
@@ -339,7 +339,7 @@ struct nc_session {
 	char session_id[SID_SIZE];
 	/**< @brief Last message ID */
 	long long unsigned int msgid;
-	/**< @brief only for clients using libssh2 for communication */
+	/**< @brief only for clients using libssh for communication */
 	int transport_socket;
 #ifdef ENABLE_TLS
 	/**< @brief TLS handler */
@@ -348,7 +348,7 @@ struct nc_session {
 	/**< @brief Input file descriptor for communication with (reading from) the other side of the NETCONF session */
 	int fd_input;
 #ifdef DISABLE_LIBSSH
-	/**< @brief FILE structure for the fd_input file descriptor. This is used only if libssh2 is not used */
+	/**< @brief FILE structure for the fd_input file descriptor. This is used only if libssh is not used */
 	FILE *f_input;
 #endif
 	/**< @brief Output file descriptor for communication with (writing to) the other side of the NETCONF session */

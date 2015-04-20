@@ -739,7 +739,7 @@ shutdown:
 
 API struct nc_session *nc_session_connect_channel(struct nc_session* UNUSED(session), const struct nc_cpblts* UNUSED(cpblts))
 {
-	ERROR("%s: SSH channels are provided only with libssh2.", __func__);
+	ERROR("%s: SSH channels are provided only with libssh.", __func__);
 	return (NULL);
 }
 

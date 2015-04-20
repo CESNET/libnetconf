@@ -147,7 +147,7 @@ int nc_callhome_listen_stop(void);
  * @brief Accept incoming Call Home connection and create NETCONF session on it.
  *
  * This function uses transport protocol set by nc_session_transport(). If
- * NC_TRANSPORT_SSH (default value) is set, configure's --disable-libssh2 option
+ * NC_TRANSPORT_SSH (default value) is set, configure's --disable-libssh option
  * cannot be used. If NC_TRANSPORT_TLS is set, configure's --enable-tls must be
  * used
  *

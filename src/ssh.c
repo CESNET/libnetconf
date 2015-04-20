@@ -409,7 +409,7 @@ shutdown:
 int transport_connect_socket(const char* host, const char* port);
 
 /*
- * libssh2 variant - use internal SSH client implementation using libssh2
+ * libssh variant - use internal SSH client implementation using libssh
  */
 struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port)
 {
@@ -461,7 +461,7 @@ struct nc_session *nc_session_connect_libssh_channel(struct nc_session *session)
 	/* shared resources with the original session */
 	retval->ssh_sess = session->ssh_sess;
 	/*
-	 * libssh2 is quite stupid - it provides multiple channels inside a single
+	 * libssh is quite stupid - it provides multiple channels inside a single
 	 * session, but it does not allow multiple threads to work with these
 	 * channels, so we have to share mutex of the master
 	 * session to control access to each SSH channel

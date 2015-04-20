@@ -1,7 +1,7 @@
 /**
  * \file libnetconf_ssh.h
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief libnetconf's header for control libssh2.
+ * \brief libnetconf's header for control libssh.
  *
  * Copyright (c) 2012-2014 CESNET, z.s.p.o.
  *
@@ -69,7 +69,7 @@ typedef enum
  * 2. password (2)
  * 3. public keys (1)
  *
- * This function has no effect with configure's --disable-libssh2 option.
+ * This function has no effect with configure's --disable-libssh option.
  *
  * To make this function available, you have to include libnetconf_ssh.h header
  * file.

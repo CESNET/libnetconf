@@ -169,10 +169,10 @@
  * - _libpthreads_
  * - _libxml2_ (including headers from the devel package)
  * - _libxslt_ (including headers from the devel package)
- * - _libssh2_ (including headers from the devel package)
- *  - can be omitted by `--disable-libssh2` option, but in that case a
+ * - _libssh_ (including headers from the devel package)
+ *  - can be omitted by `--disable-libssh` option, but in that case a
  *    standalone SSH client (usually from the openSSH) is required. For more
- *    details, see \ref configure-disable-libssh2 "--disable-libssh2" description.
+ *    details, see \ref configure-disable-libssh "--disable-libssh" description.
  * - _libcurl_ (including headers from the devel package)
  *  - can be omitted by `--disable-url` option, but in that case the NETCONF
  *    :url capability is disabled.
@@ -204,10 +204,10 @@
  * `configure` script supports the following options. The full list of the
  * accepted options can be shown by `--help` option.
  *
- * - `--disable--libssh2` \anchor configure-disable-libssh2
- *  - Remove dependency on the `libssh2` library. By default,
- *    the `libssh2` library is used by the client side functions to create SSH
- *    connection to a remote host. If the usage of the `libssh2` is disabled,
+ * - `--disable--libssh` \anchor configure-disable-libssh
+ *  - Remove dependency on the `libssh` library. By default,
+ *    the `libssh` library is used by the client side functions to create SSH
+ *    connection to a remote host. If the usage of the `libssh` is disabled,
  *    libnetconf will use a standalone `ssh(1)` client located in a system path.
  *    `ssh(1)` client is, for example, part of the OpenSSH. This option has no
  *    effect for server-side functionality.
