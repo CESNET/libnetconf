@@ -626,7 +626,9 @@ static int fmon_cp_file(const char* source, const char* target, uint8_t type)
 		close(source_fd);
 		return 1;
 	}
-	fchown(target_fd, uid, gid);
+	if (fchown(target_fd, uid, gid) != 0) {
+		WARN("Failed to change owner of \"%s\" (%s).", target, strerror(errno));
+	}
 	fchmod(target_fd, mode); /* if not created, but rewriting some existing file */
 
 	for (;;) {
@@ -643,7 +645,10 @@ static int fmon_cp_file(const char* source, const char* target, uint8_t type)
 			}
 			break;
 		}
-		write(target_fd, buf, r);
+		if (write(target_fd, buf, r) < r) {
+			ERROR("Writing into file \"%s\" failed (%s).", target, strerror(errno));
+			break;
+		}
 	}
 	close(source_fd);
 	close(target_fd);
@@ -658,7 +663,9 @@ static int fmon_restore_file(const char* target)
 
 	assert(target);
 
-	asprintf(&source, "%s.netconf", target);
+	if (asprintf(&source, "%s.netconf", target) != 0) {
+		return 1;
+	}
 	ret = fmon_cp_file(source, target, 1);
 	free(source);
 
@@ -672,7 +679,9 @@ static int fmon_backup_file(const char* source)
 
 	assert(source);
 
-	asprintf(&target, "%s.netconf", source);
+	if (asprintf(&target, "%s.netconf", source) != 0) {
+		return 1;
+	}
 	ret = fmon_cp_file(source, target, 0);
 	free(target);
 
@@ -1341,7 +1350,9 @@ char** get_schemas_capabilities(struct nc_cpblts *cpblts)
 						}
 					}
 
-					asprintf(&auxstr, "%s%s%s", retval[i], comma, listitem->model->features[j]->name);
+					if (asprintf(&auxstr, "%s%s%s", retval[i], comma, listitem->model->features[j]->name) != 0) {
+						ERROR("asprintf() failed (%s:%d)", __FILE__, __LINE__);
+					}
 					free(retval[i]);
 					retval[i] = auxstr;
 					auxstr = NULL;
