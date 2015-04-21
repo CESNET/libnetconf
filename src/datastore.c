@@ -1350,7 +1350,7 @@ char** get_schemas_capabilities(struct nc_cpblts *cpblts)
 						}
 					}
 
-					if (asprintf(&auxstr, "%s%s%s", retval[i], comma, listitem->model->features[j]->name) != 0) {
+					if (asprintf(&auxstr, "%s%s%s", retval[i], comma, listitem->model->features[j]->name) == -1) {
 						ERROR("asprintf() failed (%s:%d)", __FILE__, __LINE__);
 					}
 					free(retval[i]);
