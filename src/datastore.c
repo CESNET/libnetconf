@@ -3799,6 +3799,7 @@ API int ncds_consolidate(void)
 
 	/* augment statement processing - absolute paths to modify other (datastore's extended models) data models */
 	do {
+		ret = 0;
 		changes = 0;
 		for (listitem = models_list; listitem != NULL; listitem = listitem->next) {
 			if (listitem->model != NULL && (ret = ncds_update_augment_absolute(listitem->model)) == -1) {
