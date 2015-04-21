@@ -327,7 +327,7 @@ API int nc_init(int flags)
 		/* attach memory */
 		nc_info = shmat(shmid, NULL, 0);
 		if (nc_info == (void*) -1) {
-			ERROR("Attaching shared memory failed (%s).", strerror(errno));
+			ERROR("Attaching shared memory failed (%s). You can try removing the memory by \"ipcrm -m %d\".", strerror(errno), shmid);
 			nc_info = NULL;
 			return (-1);
 		}
