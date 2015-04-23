@@ -1897,11 +1897,11 @@ API nc_reply *nc_reply_data_ns(const char* data, const char* ns)
 	return (reply);
 }
 
-API nc_reply *ncxml_reply_data(const xmlNodePtr data)
+API nc_reply *ncxml_reply_data_ns(const xmlNodePtr data, const char* ns)
 {
 	nc_reply *reply;
 	xmlNodePtr content;
-	xmlNsPtr ns;
+	xmlNsPtr xmlns;
 
 	content = xmlNewNode(NULL, BAD_CAST "data");
 	if (content == NULL) {
@@ -1916,14 +1916,20 @@ API nc_reply *ncxml_reply_data(const xmlNodePtr data)
 	}
 
 	/* set namespace */
-	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
-	xmlSetNs(content, ns);
+	xmlns = xmlNewNs(content, (xmlChar *) ns, NULL);
+	xmlSetNs(content, xmlns);
 
 	reply = (nc_reply*)nc_msg_create(content,"rpc-reply");
 	reply->type.reply = NC_REPLY_DATA;
 	xmlFreeNode(content);
 
 	return (reply);
+
+}
+
+API nc_reply *ncxml_reply_data(const xmlNodePtr data)
+{
+	return ncxml_reply_data_ns(data, NC_NS_BASE10);
 }
 
 static xmlNodePtr new_reply_error_content(struct nc_err* error)

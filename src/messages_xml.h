@@ -153,6 +153,16 @@ xmlNodePtr ncxml_reply_get_data(const nc_reply *reply);
 nc_reply* ncxml_reply_data(const xmlNodePtr data);
 
 /**
+ * @ingroup reply_xml
+ * @brief Create rpc-reply response with \<data\> content in the specified namespace.
+ * @param data Content (possibly a node list) for the \<rpc-reply\>'s \<data\>
+ * element.
+ * @param[in] ns Default namespace for the data element.
+ * @return Created \<rpc-reply\> message.
+ */
+nc_reply* ncxml_reply_data_ns(const xmlNodePtr data, const char* ns);
+
+/**
  * @ingroup rpc_xml
  * @brief Create \<copy-config\> NETCONF rpc message.
  *

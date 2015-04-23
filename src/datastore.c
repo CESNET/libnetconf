@@ -5517,7 +5517,7 @@ process_datastore:
 			 * filter completely removes content of this repository, so do not
 			 * continue with the following operations
 			 */
-			data = strdup("");
+			doc_merged = xmlNewDoc(BAD_CAST "1.0");
 			break;
 		}
 
@@ -5608,14 +5608,6 @@ process_datastore:
 		/* NACM */
 		nacm_check_data_read(doc_merged, rpc->nacm);
 
-		/* dump the result */
-		resultbuffer = xmlBufferCreate();
-		if (resultbuffer == NULL) {
-			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
-			e = nc_err_new(NC_ERR_OP_FAILED);
-			break;
-		}
-
 		/* if filter specified, now is good time to apply it */
 		node = NULL;
 		if (doc_merged->children != NULL) {
@@ -5629,19 +5621,11 @@ process_datastore:
 					xmlFreeDoc(doc_merged);
 					break;
 				}
-			} else {
-				node = xmlCopyNodeList(doc_merged->children);
+				xmlFreeDoc(doc_merged);
+				doc_merged = xmlNewDoc(BAD_CAST "1.0");
+				xmlAddChildList((xmlNodePtr)doc_merged, node);
 			}
 		}
-		for (aux_node = node; aux_node != NULL; aux_node = aux_node->next) {
-			if (aux_node != NULL) {
-				xmlNodeDump(resultbuffer, NULL, aux_node, 2, 1);
-			}
-		}
-		xmlFreeNodeList(node);
-		data = strdup((char *) xmlBufferContent(resultbuffer));
-		xmlBufferFree(resultbuffer);
-		xmlFreeDoc(doc_merged);
 
 		break;
 	case NC_OP_GETCONFIG:
@@ -5651,7 +5635,7 @@ process_datastore:
 			 * filter completely removes content of this repository, so do not
 			 * continue with the following operations
 			 */
-			data = strdup("");
+			doc_merged = xmlNewDoc(BAD_CAST "1.0");
 			break;
 		}
 
@@ -5680,14 +5664,6 @@ process_datastore:
 		/* NACM */
 		nacm_check_data_read(doc_merged, rpc->nacm);
 
-		/* dump the result */
-		resultbuffer = xmlBufferCreate();
-		if (resultbuffer == NULL) {
-			ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
-			e = nc_err_new(NC_ERR_OP_FAILED);
-			break;
-		}
-
 		/* if filter specified, now is good time to apply it */
 		node = NULL;
 		if (doc_merged->children != NULL) {
@@ -5701,27 +5677,17 @@ process_datastore:
 					xmlFreeDoc(doc_merged);
 					break;
 				}
-			} else {
-				node = xmlCopyNodeList(doc_merged->children);
+				xmlFreeDoc(doc_merged);
+				doc_merged = xmlNewDoc(BAD_CAST "1.0");
+				xmlAddChildList((xmlNodePtr)doc_merged, node);
 			}
 		}
-		for (aux_node = node; aux_node != NULL; aux_node = aux_node->next) {
-			if (aux_node != NULL) {
-				xmlNodeDump(resultbuffer, NULL, aux_node, 2, 1);
-			}
-		}
-		xmlFreeNodeList(node);
-		data = strdup((char *) xmlBufferContent(resultbuffer));
-		xmlBufferFree(resultbuffer);
-		xmlFreeDoc(doc_merged);
-
 		break;
 	case NC_OP_EDITCONFIG:
 	case NC_OP_COPYCONFIG:
 		if (ds->type == NCDS_TYPE_EMPTY) {
 			/* there is nothing to edit in empty datastore type */
 			ret = EXIT_RPC_NOT_APPLICABLE;
-			data = NULL;
 			break;
 		}
 
@@ -5781,7 +5747,6 @@ process_datastore:
 			config = NULL;
 			doc1 = xmlReadDoc(BAD_CAST data, NULL, NULL, NC_XMLREAD_OPTIONS);
 			free(data);
-			data = NULL;
 
 			if (doc1 == NULL || doc1->children == NULL || doc1->children->children == NULL) {
 				if (doc1 != NULL) {
@@ -5815,7 +5780,6 @@ process_datastore:
 				 * with some data.
 				 */
 				ret = EXIT_RPC_NOT_APPLICABLE;
-				data = NULL;
 				break;
 			}
 
@@ -5908,11 +5872,9 @@ apply_editcopyconfig:
 						e = nc_err_new(NC_ERR_OP_FAILED);
 						nc_err_set(e, NC_ERR_PARAM_MSG, "libnetconf server internal error, see error log.");
 						free(data);
-						data = NULL;
 						break; /* main switch */
 					}
 					free(data);
-					data = NULL;
 				}
 			}
 			if (target_ds == NC_DATASTORE_URL && nc_cpblts_enabled(session, NC_CAP_URL_ID)) {
@@ -6018,7 +5980,6 @@ apply_editcopyconfig:
 					}
 					doc2 = read_datastore_data(ds->id, data);
 					free(data);
-					data = NULL;
 					if (doc2 == NULL) {
 						if (e == NULL ) {
 							ERROR("%s: Unable to process datastore data (%s:%d).", __func__, __FILE__, __LINE__);
@@ -6034,7 +5995,6 @@ apply_editcopyconfig:
 					xmlDocDumpFormatMemory(doc1, (xmlChar**) (&data), NULL, 1);
 					nc_url_upload(data, (char*) url, &e);
 					free(data);
-					data = NULL;
 					xmlFreeDoc(doc1);
 					xmlFreeDoc(doc2);
 					break;
@@ -6069,7 +6029,6 @@ apply_editcopyconfig:
 		if (ds->type == NCDS_TYPE_EMPTY) {
 			/* there is nothing to edit in empty datastore type */
 			ret = EXIT_RPC_NOT_APPLICABLE;
-			data = NULL;
 			break;
 		}
 
@@ -6118,7 +6077,6 @@ apply_editcopyconfig:
 		if (ds->type == NCDS_TYPE_EMPTY) {
 			/* there is nothing to edit in empty datastore type */
 			ret = EXIT_RPC_NOT_APPLICABLE;
-			data = NULL;
 			break;
 		}
 
@@ -6133,7 +6091,6 @@ apply_editcopyconfig:
 		if (ds->type == NCDS_TYPE_EMPTY) {
 			/* there is nothing to edit in empty datastore type */
 			ret = EXIT_RPC_NOT_APPLICABLE;
-			data = NULL;
 			break;
 		}
 
@@ -6159,10 +6116,11 @@ apply_editcopyconfig:
 				if ((data = get_schema (rpc, &e)) == NULL) {
 					ret = EXIT_FAILURE;
 				} else {
-					ret = EXIT_SUCCESS;
+					reply = nc_reply_data_ns(data, data_ns);
+					free(data);
 				}
 			} else {
-				data = strdup ("");
+				doc_merged = xmlNewDoc(BAD_CAST "1.0");
 				ret = EXIT_SUCCESS;
 			}
 		} else {
@@ -6228,7 +6186,7 @@ apply_editcopyconfig:
 		if (e != NULL) {
 			/* operation failed and error is filled */
 			reply = nc_reply_error(e);
-		} else if (data == NULL && ret != EXIT_SUCCESS) {
+		} else if (doc_merged == NULL && ret != EXIT_SUCCESS) {
 			if (ret == EXIT_RPC_NOT_APPLICABLE) {
 				/* operation can not be performed on this datastore */
 				reply = NCDS_RPC_NOT_APPLICABLE;
@@ -6237,13 +6195,13 @@ apply_editcopyconfig:
 				reply = nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
 			}
 		} else {
-			if (data != NULL) {
+			if (doc_merged != NULL) {
 				if (data_ns != NULL) {
-					reply = nc_reply_data_ns(data, data_ns);
+					reply = ncxml_reply_data_ns(doc_merged->children, data_ns);
 				} else {
-					reply = nc_reply_data(data);
+					reply = ncxml_reply_data(doc_merged->children);
 				}
-				free(data);
+				xmlFreeDoc(doc_merged);
 			} else {
 				reply = nc_reply_ok();
 			}
