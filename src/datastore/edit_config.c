@@ -93,7 +93,8 @@ int nc_nscmp(xmlNodePtr reference, xmlNodePtr node)
 		 * 2) namespace is empty: xmlns=""
 		 */
 		if (!strcmp((char *)reference->ns->href, NC_NS_BASE10) ||
-				strlen(s = nc_clrwspace((char*)(reference->ns->href))) == 0) {
+				!(s = nc_clrwspace((char*)(reference->ns->href))) ||
+				strlen(s) == 0) {
 			free(s);
 			return 0;
 		}

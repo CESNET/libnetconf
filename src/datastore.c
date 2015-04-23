@@ -4784,7 +4784,7 @@ static xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, cons
 
 	/* return NULL if both docs are NULL, or the other doc in case on of them is NULL */
 	if (first == NULL) {
-		return (xmlCopyDoc(second, 1));
+		return (second ? xmlCopyDoc(second, 1) : NULL);
 	} else if (second == NULL) {
 		return (xmlCopyDoc(first, 1));
 	}
@@ -6202,6 +6202,9 @@ apply_editcopyconfig:
 					reply = ncxml_reply_data(doc_merged->children);
 				}
 				xmlFreeDoc(doc_merged);
+				if (!reply) {
+					return nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
+				}
 			} else {
 				reply = nc_reply_ok();
 			}
