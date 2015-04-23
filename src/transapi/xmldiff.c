@@ -459,7 +459,7 @@ cleanup:
 	return(ret);
 }
 
-static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_tmp, xmlDocPtr new_doc, xmlNodePtr new_tmp, struct model_tree * model);
+static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlNodePtr old_tmp, xmlNodePtr new_tmp, struct model_tree * model);
 static XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, char * path, xmlNodePtr old_tmp, xmlNodePtr new_tmp, struct model_tree * model);
 
 /**
@@ -468,13 +468,11 @@ static XMLDIFF_OP xmldiff_leaflist(struct xmldiff_tree** diff, char * path, xmlN
  *
  * @param diff	returned difference tree, should be NULL when first passed
  * @param path	path of the model node passed
- * @param old_doc	document with the old configuration
  * @param old_node	current node (or sibling) in the old configuration
- * @param new_doc	document with the new configuration
  * @param new_node	current node (or sibling) in the new configuration
  * @param model	current node in the model
  */
-static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_node, xmlDocPtr new_doc, xmlNodePtr new_node, struct model_tree * model)
+static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xmlNodePtr old_node, xmlNodePtr new_node, struct model_tree * model)
 {
 	char * next_path;
 	xmlNodePtr old_tmp, new_tmp;
@@ -486,8 +484,8 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 	int i;
 
 	/* Some of the required documents are missing */
-	if (old_doc == NULL || new_doc == NULL || model == NULL) {
-		ERROR("%s: invalid parameter \"%s\".", __func__, !old_doc ? "old_doc" : !new_doc ? "new_doc" : "model");
+	if (model == NULL) {
+		ERROR("%s: invalid parameter \"model\".", __func__);
 		return XMLDIFF_ERR;
 	}
 
@@ -543,7 +541,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 				free(tmp_diff);
 				return (XMLDIFF_ERR);
 			}
-			tmp_op = xmldiff_recursive(tmp_diff, next_path, old_doc, (old_tmp ? old_tmp->children : NULL), new_doc, (new_tmp ? new_tmp->children : NULL), &model->children[i]);
+			tmp_op = xmldiff_recursive(tmp_diff, next_path, (old_tmp ? old_tmp->children : NULL), (new_tmp ? new_tmp->children : NULL), &model->children[i]);
 			free(next_path);
 
 			if (tmp_op == XMLDIFF_ERR) {
@@ -584,7 +582,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 				return (XMLDIFF_ERR);
 			}
 			/* We are moving down the model only (not in the configuration) */
-			tmp_op = xmldiff_recursive(diff, next_path, old_doc, old_node, new_doc, new_node, &model->children[i]);
+			tmp_op = xmldiff_recursive(diff, next_path, old_node, new_node, &model->children[i]);
 			free(next_path);
 
 			if (tmp_op == XMLDIFF_ERR) {
@@ -621,7 +619,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 
 	/* -- LIST -- */
 	case YIN_TYPE_LIST:
-		ret_op = xmldiff_list(diff, path, old_doc, old_tmp, new_doc, new_tmp, model);
+		ret_op = xmldiff_list(diff, path, old_tmp, new_tmp, model);
 		break;
 
 	/* -- LEAFLIST -- */
@@ -642,10 +640,10 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 		}
 
 		buf = xmlBufferCreate();
-		xmlNodeDump(buf, old_doc, old_tmp, 0, 0);
+		xmlNodeDump(buf, old_tmp->doc, old_tmp, 0, 0);
 		old_str = xmlStrdup(xmlBufferContent(buf));
 		xmlBufferEmpty(buf);
-		xmlNodeDump(buf, new_doc, new_tmp, 0, 0);
+		xmlNodeDump(buf, new_tmp->doc, new_tmp, 0, 0);
 		new_str = xmlStrdup(xmlBufferContent(buf));
 		xmlBufferFree(buf);
 
@@ -667,7 +665,7 @@ static XMLDIFF_OP xmldiff_recursive(struct xmldiff_tree** diff, char * path, xml
 	return ret_op;
 }
 
-static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPtr old_doc, xmlNodePtr old_tmp, xmlDocPtr new_doc, xmlNodePtr new_tmp, struct model_tree * model)
+static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlNodePtr old_tmp, xmlNodePtr new_tmp, struct model_tree * model)
 {
 	XMLDIFF_OP item_ret_op, tmp_op, ret_op = XMLDIFF_NONE;
 	xmlNodePtr* list_added = NULL, *list_removed = NULL, *realloc_tmp;
@@ -773,7 +771,7 @@ static XMLDIFF_OP xmldiff_list(struct xmldiff_tree** diff, char * path, xmlDocPt
 					free(tmp_diff);
 					return (XMLDIFF_ERR);
 				}
-				tmp_op = xmldiff_recursive(tmp_diff, next_path, old_doc, list_old_tmp->children, new_doc, list_new_tmp->children, &model->children[i]);
+				tmp_op = xmldiff_recursive(tmp_diff, next_path, list_old_tmp->children, list_new_tmp->children, &model->children[i]);
 				free(next_path);
 
 				if (tmp_op == XMLDIFF_ERR) {
@@ -1119,7 +1117,7 @@ XMLDIFF_OP xmldiff_diff(struct xmldiff_tree** diff, xmlDocPtr old, xmlDocPtr new
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			return (XMLDIFF_ERR);
 		}
-		ret_op = xmldiff_recursive(diff, path, old, old->children, new, new->children, &model->children[i]);
+		ret_op = xmldiff_recursive(diff, path, old->children, new->children, &model->children[i]);
 		free(path);
 	}
 
