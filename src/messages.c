@@ -1909,7 +1909,7 @@ API nc_reply *ncxml_reply_data_ns(const xmlNodePtr data, const char* ns)
 		return (NULL);
 	}
 
-	if (xmlAddChildList(content, xmlCopyNodeList(data)) == NULL) {
+	if (data && xmlAddChildList(content, xmlCopyNodeList(data)) == NULL) {
 		ERROR("xmlAddChildList failed (%s:%d).", __FILE__, __LINE__);
 		xmlFreeNode(content);
 		return (NULL);
