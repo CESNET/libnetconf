@@ -283,7 +283,7 @@ tarball-pyapi: tarball
 rpm: tarball $(TARBALLPYAPI)
 	if [ "$(RPMBUILD)" != "no" ]; then \
 		mkdir -p $(RPMDIR)/BUILD $(RPMDIR)/RPMS $(RPMDIR)/SRPMS; \
-		$(RPMBUILD) -ba $(NAME).spec \
+		QA_RPATHS="[ 0x0001|0x0010 ]" $(RPMBUILD) -ba $(NAME).spec \
 			--define "_topdir `pwd`/$(RPMDIR)"; \
 		if [ -n "$(PYAPI)" ]; then \
 			$(RPMBUILD) -ba python/python3-netconf.spec \
@@ -349,7 +349,6 @@ install-devel: $(LNCTOOL) $(NAME).la $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR) $(NAM
 	[ -d $(DESTDIR)/$(bindir) ] || \
 	   	(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir)); \
 	$(INSTALL_PROGRAM) $(LNCTOOL).install $(DESTDIR)/$(bindir)/lnctool; \
-	$(INSTALL_PROGRAM) $(DESTDIR)/$(bindir)/lncdatastore; \
 	$(INSTALL_DATA) dev-tools/lnctool/rnglib/* $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
 	$(INSTALL_DATA) dev-tools/lnctool/xslt/* $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 	$(INSTALL_DATA) dev-tools/lnctool/generator/* $(DESTDIR)/$(datadir)/$(NAME)/templates/;
