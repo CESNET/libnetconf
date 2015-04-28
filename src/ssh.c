@@ -294,12 +294,16 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 		case NC_SSH_AUTH_PASSWORD:
 			VERB("Password authentication (host %s, user %s)", host, username);
 			s = callbacks.sshauth_password(username, host);
-			if (libssh2_userauth_password(retval->ssh_session, username, s) != 0) {
+			if (!s || libssh2_userauth_password(retval->ssh_session, username, s) != 0) {
+				err_msg = NULL;
+				if (s) {
+					memset(s, 0, strlen(s));
+					libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+				}
+				VERB("Authentication failed (%s)", err_msg ? err_msg : "");
+			} else {
 				memset(s, 0, strlen(s));
-				libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-				VERB("Authentication failed (%s)", err_msg);
 			}
-			memset(s, 0, strlen(s));
 			free(s);
 			break;
 		case NC_SSH_AUTH_INTERACTIVE:
