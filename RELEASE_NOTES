@@ -1,3 +1,18 @@
+libnetconf 0.9.2
+
+Tis release includes the following bugfixes and updates:
+
+ * nc_del_keypair_path() - new function for removing client SSH keys
+ * lnctool - validation files generation updated
+ * Support for non-standard terminal environment in SSH callbacks input
+ * Augment statement processing fixed - local augments and chained augments
+ * Notification thread starvation fixed
+ * ... and other small bugfixes
+
+API/ABI is compatible with 0.9.1, see reports in 'doc/compat_reports/'
+directory.
+
+
 libnetconf 0.9.1
 
 This release includes the following bugfixes and optimizations:
