@@ -136,11 +136,11 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 {
 	struct nc_session *retval = NULL;
 	pthread_mutexattr_t mattr;
-	int i, j, r, ret_auth, userauthlist, echo;
+	int i, j, r, ret_auth, userauthlist;
 	int auth = 0;
 	const int timeout = SSH_TIMEOUT;
 	const char* prompt;
-	char *s, *answer;
+	char *s, *answer, echo;
 	ssh_key pubkey, privkey;
 	struct passwd *pw;
 
@@ -276,7 +276,7 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 			VERB("Keyboard-interactive authentication");
 			while ((ret_auth = ssh_userauth_kbdint(retval->ssh_sess, NULL, NULL)) == SSH_AUTH_INFO) {
 				for (j = 0; j < ssh_userauth_kbdint_getnprompts(retval->ssh_sess); ++j) {
-					prompt = ssh_userauth_kbdint_getprompt(retval->ssh_sess, j, (char*)&echo);
+					prompt = ssh_userauth_kbdint_getprompt(retval->ssh_sess, j, &echo);
 					if (prompt == NULL) {
 						break;
 					}
