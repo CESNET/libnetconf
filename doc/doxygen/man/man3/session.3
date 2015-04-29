@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Mon Feb 9 2015" "Version 0.9.1-1" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Wed Apr 29 2015" "Version 0.9.2-25" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -89,6 +89,10 @@ libnetconf's functions for handling NETCONF sessions\&.
 .RI "int \fBnc_cpblts_remove\fP (struct nc_cpblts *capabilities, const char *capability_string)"
 .br
 .RI "\fIRemove the specified capability string from the NETCONF capabilities structure\&. \fP"
+.ti -1c
+.RI "void \fBnc_del_keypair_path\fP (const char *privkey, const char *pubkey)"
+.br
+.RI "\fIRemove a private and a public key file\&. \fP"
 .ti -1c
 .RI "struct nc_session * \fBnc_session_accept\fP (const struct nc_cpblts *capabilities)"
 .br
@@ -488,6 +492,19 @@ Remove the specified capability string from the NETCONF capabilities structure\&
 0 on success
 .br
  non-zero on error 
+.RE
+.PP
+
+.SS "void nc_del_keypair_path (const char *privkey, const char *pubkey)"
+
+.PP
+Remove a private and a public key file\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIprivkey\fP Path to the private key file\&. 
+.br
+\fIpubkey\fP Path to the public key file 
 .RE
 .PP
 
