@@ -1745,8 +1745,12 @@ static int nc_session_read_until(struct nc_session* session, const char* endtag,
 						ERROR("Reading from the TLS session failed (SSL code %d)", r);
 					}
 					free (buf);
-					*len = 0;
-					*text = NULL;
+					if (len != NULL) {
+						*len = 0;
+					}
+					if (text != NULL) {
+						*text = NULL;
+					}
 					return (EXIT_FAILURE);
 				}
 			}
