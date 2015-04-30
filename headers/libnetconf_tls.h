@@ -40,6 +40,7 @@
 #ifndef LIBNETCONF_TLS_H_
 #define LIBNETCONF_TLS_H_
 
+#include <openssl/ssl.h>
 #include <openssl/x509.h>
 
 #include "libnetconf/netconf.h"
@@ -49,6 +50,18 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * \defgroup tls NETCONF over TLS
+ * \brief libnetconf's functions to use TLS. More information can be found at
+ * \ref transport page.
+ *
+ * These functions are experimental. It is possible, that TLS transport (and
+ * mainly certificates management) is not fully implemented in this version.
+ *
+ * Remember, that to make these functions available, libnetconf must be
+ * compiled with --enable-tls configure's option.
+ */
 
 /**
  * @ingroup tls
@@ -88,11 +101,16 @@ extern "C" {
  */
 int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAfile, const char *CApath, const char *CRLfile, const char *CRLpath);
 
+struct nc_session *nc_session_accept_tls(const struct nc_cpblts* capabilities, const char* username, SSL* tls_sess);
+
 /**
  * @ingroup tls
  * @brief Destroy all resources allocated for preparation of TLS connections.
  *
  * See nc_tls_init() for more information about NETCONF session preparation.
+ *
+ * To make this function available, you have to include libnetconf_tls.h header
+ * file.
  */
 void nc_tls_destroy(void);
 

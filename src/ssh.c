@@ -132,6 +132,13 @@ API void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 /* seconds */
 #define SSH_TIMEOUT 10
 
+struct nc_session* _nc_session_accept(const struct nc_cpblts*, const char*, int, int, void*, void*);
+
+API struct nc_session *nc_session_accept_libssh_channel(const struct nc_cpblts* capabilities, const char* username, ssh_channel ssh_chan)
+{
+	return (_nc_session_accept(capabilities, username, -1, -1, ssh_chan, NULL));
+}
+
 struct nc_session *nc_session_connect_libssh_socket(const char* username, const char* host, int sock)
 {
 	struct nc_session *retval = NULL;

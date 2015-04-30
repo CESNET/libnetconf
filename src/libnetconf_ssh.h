@@ -81,6 +81,12 @@ typedef enum
  */
 void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference);
 
+#ifndef DISABLE_LIBSSH
+
+struct nc_session *nc_session_accept_libssh_channel(const struct nc_cpblts* capabilities, const char* username, ssh_channel ssh_chan);
+
+#endif
+
 #ifdef __cplusplus
 }
 #endif

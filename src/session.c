@@ -74,7 +74,8 @@
 #include "transport.h"
 
 #ifdef ENABLE_TLS
-# 	include "openssl/ssl.h"
+#	include <openssl/ssl.h>
+#	include <openssl/err.h>
 #endif
 
 #ifndef DISABLE_NOTIFICATIONS
@@ -1408,12 +1409,12 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 	struct pollfd fds;
 	int ret;
 
-	if ((session->fd_output == -1)
+	if (session->fd_output == -1 && session->transport_socket == -1
 #ifndef DISABLE_LIBSSH
-			&& (session->ssh_chan == NULL)
+			&& session->ssh_chan == NULL
 #endif
 #ifdef ENABLE_TLS
-			&& (session->tls == NULL)
+			&& session->tls == NULL
 #endif
 			&& 1) {
 		return (EXIT_FAILURE);
@@ -1430,7 +1431,24 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 
 	/* check that we are able to write data */
 	while (1) {
-		fds.fd = (session->transport_socket != -1) ? session->transport_socket : session->fd_output;
+		fds.fd = -1;
+
+		if (session->transport_socket != -1) {
+			fds.fd = session->transport_socket;
+		} else if (session->fd_output != -1) {
+			fds.fd = session->fd_output;
+		}
+#ifndef DISABLE_LIBSSH
+		else if (session->ssh_chan != NULL) {
+			fds.fd = ssh_get_fd(ssh_channel_get_session(session->ssh_chan));
+		}
+#endif
+#ifdef ENABLE_TLS
+		else if (session->tls != NULL) {
+			fds.fd = SSL_get_fd(session->tls);
+		}
+#endif
+
 		if (fds.fd == -1) {
 			ERROR("Invalid transport channel.");
 			nc_session_close(session, NC_SESSION_TERM_DROPPED);
