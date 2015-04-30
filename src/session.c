@@ -2069,6 +2069,11 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 	DBG_UNLOCK("mut_channel");
 	pthread_mutex_unlock(session->mut_channel);
 
+	if (text == NULL) {
+		ERROR("Empty message received (session %s)", session->session_id);
+		goto malformed_msg;
+	}
+
 	retval = calloc (1, sizeof(struct nc_msg));
 	if (retval == NULL) {
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
