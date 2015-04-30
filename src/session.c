@@ -1737,7 +1737,13 @@ static int nc_session_read_until(struct nc_session* session, const char* endtag,
 					usleep(NC_READ_SLEEP);
 					continue;
 				} else {
-					ERROR("Reading from the TLS session failed (%d)", r);
+					if (r == SSL_ERROR_SYSCALL) {
+						ERROR("Reading from the TLS session failed (%s)", strerror(errno));
+					} else if (r == SSL_ERROR_SSL) {
+						ERROR("Reading from the TLS session failed (%s)", ERR_error_string(r, NULL));
+					} else {
+						ERROR("Reading from the TLS session failed (SSL code %d)", r);
+					}
 					free (buf);
 					*len = 0;
 					*text = NULL;
