@@ -1926,7 +1926,7 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 #ifdef ENABLE_TLS
 		if (session->tls != NULL) {
 			/* we are getting data from TLS session using OpenSSL */
-			fds.fd = nc_session_get_eventfd(session);
+			fds.fd = SSL_get_fd(session->tls);
 			fds.events = POLLIN;
 			fds.revents = 0;
 			status = poll(&fds, 1, timeout);
