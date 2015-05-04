@@ -5617,7 +5617,6 @@ process_datastore:
 					e = nc_err_new(NC_ERR_BAD_ELEM);
 					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
-					xmlBufferFree(resultbuffer);
 					xmlFreeDoc(doc_merged);
 					break;
 				}
@@ -5673,7 +5672,6 @@ process_datastore:
 					e = nc_err_new(NC_ERR_BAD_ELEM);
 					nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 					nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "filter");
-					xmlBufferFree(resultbuffer);
 					xmlFreeDoc(doc_merged);
 					break;
 				}
