@@ -1932,6 +1932,7 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 
 	/* use while for possibility of repeating test */
 	while(1) {
+		revents = 0;
 #ifndef DISABLE_LIBSSH
 		if (session->ssh_chan != NULL) {
 			/* we are getting data from libssh's channel */
