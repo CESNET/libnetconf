@@ -1219,7 +1219,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 		if (session->ssh_chan != NULL) {
 			DBG_LOCK("mut_channel");
 			pthread_mutex_lock(session->mut_channel);
-			i = ssh_channel_send_eof(session->ssh_chan);
+			i = ssh_channel_is_eof(session->ssh_chan);
 			DBG_UNLOCK("mut_channel");
 			pthread_mutex_unlock(session->mut_channel);
 			if (session->status == NC_SESSION_STATUS_WORKING &&  i == 0 && !session->is_server) {
