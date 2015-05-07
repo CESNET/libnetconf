@@ -1216,6 +1216,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			}
 		} else
 #else
+		/* server SSH channel, do not close or free */
 		if (session->ssh_chan != NULL) {
 			DBG_LOCK("mut_channel");
 			pthread_mutex_lock(session->mut_channel);
@@ -1229,10 +1230,9 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 
 			DBG_LOCK("mut_channel");
 			pthread_mutex_lock(session->mut_channel);
-			ssh_channel_free(session->ssh_chan);
+			session->ssh_chan = NULL;
 			DBG_UNLOCK("mut_channel");
 			pthread_mutex_unlock(session->mut_channel);
-			session->ssh_chan = NULL;
 		} else
 #endif
 #ifdef ENABLE_TLS
@@ -1240,8 +1240,11 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			if (session->status == NC_SESSION_STATUS_WORKING && !session->is_server) {
 				announce_nc_session_closing(session);
 			}
-			SSL_shutdown(session->tls);
-			SSL_free(session->tls);
+			/* server TLS session, do not close or free */
+			if (!session->is_server) {
+				SSL_shutdown(session->tls);
+				SSL_free(session->tls);
+			}
 			session->tls = NULL;
 		}
 #else

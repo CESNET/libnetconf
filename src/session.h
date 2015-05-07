@@ -82,7 +82,9 @@ int nc_session_monitor(struct nc_session* session);
  * @ingroup session
  * @brief Cleanup the session structure and free all the allocated resources.
  *
- * Do not use the given session structure after this call.
+ * Do not use the given session structure after this call. If this session
+ * was created with nc_session_accept_tls() or nc_session_accept_libssh_channel(),
+ * the library transport structures are not freed or modified in any way.
  *
  * @param[in] session Session to free.
  */
