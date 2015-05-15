@@ -3746,10 +3746,6 @@ static int ncds_update_callbacks(struct ncds_ds* ds)
 static void transapi_unload(struct transapi_internal* tapi)
 {
 	/* stop the thread monitoring the files */
-	/* if close function is defined */
-	if (tapi->close != NULL) {
-		tapi->close();
-	}
 	if (tapi->file_clbks != NULL && tapi->file_clbks->callbacks_count > 0) {
 		VERB("Stopping FMON thread.");
 		pthread_cancel(tapi->fmon_thread);
@@ -3758,6 +3754,10 @@ static void transapi_unload(struct transapi_internal* tapi)
 			/* sleep some more */
 			usleep(50000);
 		}
+	}
+	/* if close function is defined */
+	if (tapi->close != NULL) {
+		tapi->close();
 	}
 	if (tapi->module != &error_area && dlclose(tapi->module)) {
 		ERROR("%s: Unloading transAPI module failed: %s:", __func__, dlerror());
