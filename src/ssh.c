@@ -393,6 +393,7 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 	retval->ssh_chan = ssh_channel_new(retval->ssh_sess);
 	if (ssh_channel_open_session(retval->ssh_chan) != SSH_OK) {
 		ssh_channel_free(retval->ssh_chan);
+		retval->ssh_chan = NULL;
 		ERROR("Opening the SSH channel failed (%s)", ssh_get_error(retval->ssh_sess));
 		goto shutdown;
 	}
