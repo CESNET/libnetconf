@@ -3984,6 +3984,9 @@ static void relaxng_error_callback(void *error, const char * msg, ...)
 		}
 		*e = err_aux;
 
+		if (s[strlen(s)-1] == '\n') {
+			s[strlen(s)-1] = '\0';
+		}
 		if (asprintf(&m, "Datastore fails to validate (%s)", s) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			m = NULL;
