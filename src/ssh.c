@@ -292,8 +292,10 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 						ssh_userauth_kbdint_getinstruction(retval->ssh_sess),
 						prompt, echo);
 					if (ssh_userauth_kbdint_setanswer(retval->ssh_sess, j, answer) < 0) {
+						free(answer);
 						break;
 					}
+					free(answer);
 				}
 			}
 
