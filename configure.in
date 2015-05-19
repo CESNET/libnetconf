@@ -438,9 +438,6 @@ AC_SUBST(API)
 ############################ Check for libraries ###############################
 export PKG_CONFIG_PATH=/usr/local/${libdir##*/}/pkgconfig:$PKG_CONFIG_PATH
 
-#AC_SEARCH_LIBS([login], [util], ,
-#	[AC_MSG_ERROR([Could not find login() in expected locations. Install or/and add the comprising library into the list of tested libraries.])])
-
 ### libxml2 ###
 if test -z "$WITH_LIBXML2" ; then
 	AC_CHECK_PROG([XML2_CONFIG], [xml2-config], [yes], [no], [$WITH_LIBXML2 $PATH])
