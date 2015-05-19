@@ -53,11 +53,17 @@
 #include <fcntl.h>
 #include <dirent.h>
 #include <sys/ipc.h>
-#include <sys/shm.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <grp.h>
 #include <pwd.h>
+
+#ifdef POSIX_SHM
+#	include <sys/mman.h>
+#	define NC_POSIX_SHM_OBJECT "libnetconfshm"
+#else
+#	include <sys/shm.h>
+#endif
 
 #include <libxslt/xslt.h>
 #include <libxml/parser.h>
@@ -137,7 +143,9 @@ API void nc_verb_error(const char *format, ...)
 }
 
 struct nc_shared_info *nc_info = NULL;
+#ifndef POSIX_SHM
 static int shmid = -1;
+#endif
 
 int nc_init_flags = 0;
 
@@ -236,9 +244,12 @@ static int nc_apps_check(const char* comm, struct nc_apps* apps) {
 
 static int nc_shared_cleanup(int del_shm) {
 	char path[256], lock_prefix[32];
-	struct shmid_ds ds;
 	struct dirent* dr;
 	DIR* dir;
+
+#ifndef POSIX_SHM
+	struct shmid_ds ds;
+#endif
 
 	/* remove the global session information file */
 	if (unlink(SESSIONSFILE_PATH) == -1 && errno != ENOENT) {
@@ -267,16 +278,22 @@ static int nc_shared_cleanup(int del_shm) {
 	}
 
 	/* remove shared memory */
-	if (del_shm && shmid != -1) {
+	if (del_shm && nc_info) {
+#ifndef POSIX_SHM
 		if (shmctl(shmid, IPC_STAT, &ds) == -1) {
 			ERROR("Unable to get the status of shared memory (%s).", strerror(errno));
 			return (-1);
 		}
-		if (ds.shm_nattch == 1 && nc_init_flags & NC_INIT_MULTILAYER) {
+		if (ds.shm_nattch == 1 && (nc_init_flags & NC_INIT_MULTILAYER)) {
 			shmctl(shmid, IPC_RMID, NULL);
 		} else {
 			return (1);
 		}
+#else
+		if (nc_init_flags & NC_INIT_MULTILAYER) {
+			shm_unlink(NC_POSIX_SHM_OBJECT);
+		}
+#endif /* #ifndef POSIX_SHM */
 	}
 
 	return (0);
@@ -285,9 +302,12 @@ static int nc_shared_cleanup(int del_shm) {
 API int nc_init(int flags)
 {
 	int retval = 0, r, init_shm = 1, fd;
-	key_t key = -4;
 	char* t, my_comm[NC_APPS_COMM_MAX+1];
 	pthread_rwlockattr_t rwlockattr;
+	mode_t mask;
+#ifndef POSIX_SHM
+	key_t key = -4;
+#endif
 
 	if (nc_init_flags & NC_INIT_DONE) {
 		ERROR("libnetconf already initiated!");
@@ -309,8 +329,9 @@ API int nc_init(int flags)
 	}
 
 	if (flags & (NC_INIT_DATASTORES | NC_INIT_MONITORING | NC_INIT_NACM)) {
-
+#ifndef POSIX_SHM
 		DBG("Shared memory key: %d", key);
+		mask = umask(MASK_PERM);
 		shmid = shmget(key, sizeof(struct nc_shared_info), IPC_CREAT | IPC_EXCL | FILE_PERM);
 		if (shmid == -1) {
 			if (errno == EEXIST) {
@@ -318,7 +339,7 @@ API int nc_init(int flags)
 				init_shm = 0;
 			}
 			if (shmid == -1) {
-				ERROR("Accessing shared memory failed (%s).", strerror(errno));
+				ERROR("Accessing System V shared memory failed (%s).", strerror(errno));
 				return (-1);
 			}
 		}
@@ -327,10 +348,44 @@ API int nc_init(int flags)
 		/* attach memory */
 		nc_info = shmat(shmid, NULL, 0);
 		if (nc_info == (void*) -1) {
-			ERROR("Attaching shared memory failed (%s). You can try removing the memory by \"ipcrm -m %d\".", strerror(errno), shmid);
+			ERROR("Attaching System V shared memory failed (%s). You can try removing the memory by \"ipcrm -m %d\".", strerror(errno), shmid);
 			nc_info = NULL;
 			return (-1);
 		}
+
+#else
+
+		DBG("Shared memory location: /dev/shm/"NC_POSIX_SHM_OBJECT);
+		mask = umask(MASK_PERM);
+		fd = shm_open(NC_POSIX_SHM_OBJECT, O_CREAT | O_EXCL | O_RDWR, FILE_PERM);
+		umask(mask);
+		if (fd == -1) {
+			if (errno == EEXIST) {
+				DBG("Shared memory file %s already exists - opening", NC_POSIX_SHM_OBJECT);
+				fd = shm_open(NC_POSIX_SHM_OBJECT, O_RDWR, 0);
+				init_shm = 0;
+			}
+			if (fd == -1) {
+				ERROR("Accessing POSIX shared memory failed (%s).", strerror(errno));
+				return (-1);
+			}
+		}
+		DBG("POSIX SHM File Descriptor: %d (%dB).", fd, sizeof(struct nc_shared_info));
+
+		if (ftruncate(fd,sizeof(struct nc_shared_info)) == -1 )  {
+			ERROR("Truncating POSIX shared memory failed (%s).", strerror(errno));
+			shm_unlink(NC_POSIX_SHM_OBJECT);
+			return (-1);
+		}
+
+		nc_info = mmap(NULL, sizeof(struct nc_shared_info), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+		if (nc_info == MAP_FAILED) {
+			ERROR("Mapping POSIX shared memory failed (%s).", strerror(errno));
+			shm_unlink(NC_POSIX_SHM_OBJECT);
+			return (-1);
+		}
+
+#endif /* #ifndef POSIX_SHM */
 
 		/* get my comm */
 		my_comm[0] = '\0';
@@ -362,7 +417,12 @@ API int nc_init(int flags)
 			pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
 			if ((r = pthread_rwlock_init(&(nc_info->lock), &rwlockattr)) != 0) {
 				ERROR("Shared information lock initialization failed (%s)", strerror(r));
+#ifdef POSIX_SHM
+				munmap(nc_info, sizeof(struct nc_shared_info));
+				shm_unlink(NC_POSIX_SHM_OBJECT);
+#else
 				shmdt(nc_info);
+#endif /* #ifdef POSIX_SHM */
 				return (-1);
 			}
 			pthread_rwlockattr_destroy(&rwlockattr);
@@ -411,6 +471,7 @@ API int nc_init(int flags)
 
 		/* UNLOCK */
 		r = pthread_rwlock_unlock(&(nc_info->lock));
+
 	}
 
 	/*
@@ -562,7 +623,12 @@ API int nc_close(void)
 			/* UNLOCK */
 			pthread_rwlock_unlock(&(nc_info->lock));
 		}
+
+#ifdef POSIX_SHM
+		munmap(nc_info, sizeof(struct nc_shared_info));
+#else
 		shmdt(nc_info);
+#endif /* #ifdef POSIX_SHM */
 		nc_info = NULL;
 	}
 

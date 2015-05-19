@@ -561,6 +561,15 @@ if test "$libssh2" = "no"; then
 fi
 AC_CHECK_FUNC([eaccess], [HAVE_EACCESS="#define HAVE_EACCESS"], [HAVE_EACCESS="#undef HAVE_EACCESS"] )
 
+### check for the shared memory implementation
+AC_CHECK_FUNC([shmc], [],
+	          [LIBS="$LIBS -lrt"
+	           AC_CHECK_FUNCS([shm_open],
+	                          [CPPFLAGS="$CPPFLAGS -DPOSIX_SHM"],
+	                          [AC_MSG_ERROR([Missing shared memory implementation.])])
+	          ]
+)
+
 ############################### Set output #####################################
 AC_SUBST(V_SHLIB_CMD)
 AC_SUBST(V_SHLIB_OPT)
