@@ -557,7 +557,7 @@ AC_FUNC_MMAP
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([ftruncate memset mkdir munmap socket strcasecmp strchr strdup strerror strrchr strstr strtol strtoul])
 if test "$libssh2" = "no"; then
-	AC_CHECK_FUNCS([dup2])
+	AC_CHECK_FUNC([dup2])
 fi
 AC_CHECK_FUNC([eaccess], [HAVE_EACCESS="#define HAVE_EACCESS"], [HAVE_EACCESS="#undef HAVE_EACCESS"] )
 
