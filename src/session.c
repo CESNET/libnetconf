@@ -1254,15 +1254,17 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 		{} /* close else which is not needed */
 #endif
 #ifndef DISABLE_LIBSSH
-		if (session->ssh_sess != NULL && session->next == NULL && session->prev == NULL) {
-			/* close and free only if there is no other session using it */
-			ssh_disconnect(session->ssh_sess);
-			ssh_free(session->ssh_sess);
-			session->ssh_sess = NULL;
+		if (!session->is_server) {
+			if (session->ssh_sess != NULL && session->next == NULL && session->prev == NULL) {
+				/* close and free only if there is no other session using it */
+				ssh_disconnect(session->ssh_sess);
+				ssh_free(session->ssh_sess);
+				session->ssh_sess = NULL;
 
-			close(session->transport_socket);
+				close(session->transport_socket);
+			}
+			session->transport_socket = -1;
 		}
-		session->transport_socket = -1;
 #endif
 
 		free(session->logintime);
