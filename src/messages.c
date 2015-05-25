@@ -495,6 +495,7 @@ NC_RPC_TYPE nc_rpc_parse_type(nc_rpc* rpc)
 static nc_rpc* _rpc_build(int libxml2, const struct nc_session* session, const char* str_dump, xmlDocPtr xml_dump)
 {
 	nc_rpc* rpc;
+	NC_OP op;
 
 	if (libxml2) {
 		assert(xml_dump);
@@ -508,11 +509,23 @@ static nc_rpc* _rpc_build(int libxml2, const struct nc_session* session, const c
 	}
 
 	/* assign operation value */
-	nc_rpc_assign_op(rpc);
+	op = nc_rpc_assign_op(rpc);
 
 	/* assign source/target datastore types */
-	nc_rpc_assign_ds(rpc, "source");
-	nc_rpc_assign_ds(rpc, "target");
+	if (op == NC_OP_GETCONFIG || op == NC_OP_COPYCONFIG || op == NC_OP_VALIDATE) {
+		nc_rpc_assign_ds(rpc, "source");
+		ERROR("*%s: Missing <source> parameter of the RPC operation.", __func__);
+		nc_rpc_free(rpc);
+		return NULL;
+
+	}
+	if (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG
+			|| op == NC_OP_DELETECONFIG || op == NC_OP_LOCK || op == NC_OP_UNLOCK) {
+		nc_rpc_assign_ds(rpc, "target");
+		ERROR("*%s: Missing <target> parameter of the RPC operation.", __func__);
+		nc_rpc_free(rpc);
+		return NULL;
+	}
 
 	/* set rpc type flag */
 	nc_rpc_parse_type(rpc);

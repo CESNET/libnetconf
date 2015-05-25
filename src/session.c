@@ -2433,8 +2433,10 @@ try_again:
 API NC_MSG_TYPE nc_session_recv_rpc(struct nc_session* session, int timeout, nc_rpc** rpc)
 {
 	NC_MSG_TYPE ret;
+	NC_OP op;
 	struct nc_err* e = NULL;
 	nc_reply* reply;
+	unsigned int *counter = NULL;
 
 	/* use local timeout to avoid continual long time blocking */
 	int local_timeout;
@@ -2503,23 +2505,8 @@ try_again:
 			}
 
 			if (e != NULL) {
-				reply = nc_reply_error(e);
-				if (nc_session_send_reply(session, *rpc, reply) == 0) {
-					ERROR("Failed to send the reply.");
-				}
-				nc_rpc_free(*rpc);
-				*rpc = NULL;
-				nc_reply_free(reply);
-
-				/* update stats */
-				session->stats->in_bad_rpcs++;
-				if (nc_info) {
-					pthread_rwlock_wrlock(&(nc_info->lock));
-					nc_info->stats.counters.in_bad_rpcs++;
-					pthread_rwlock_unlock(&(nc_info->lock));
-				}
-
-				return (NC_MSG_NONE); /* message processed internally */
+				counter = &nc_info->stats.counters.in_bad_rpcs;
+				goto replyerror;
 			}
 		}
 		/* update statistics */
@@ -2537,32 +2524,42 @@ try_again:
 		if (nacm_check_operation(*rpc) != NACM_PERMIT) {
 			e = nc_err_new(NC_ERR_ACCESS_DENIED);
 			nc_err_set(e, NC_ERR_PARAM_MSG, "Operation not permitted.");
-			reply = nc_reply_error(e);
-			if (nc_session_send_reply(session, *rpc, reply) == 0) {
-				ERROR("Failed to send reply.");
-			}
-			nc_rpc_free(*rpc);
-			*rpc = NULL;
-			nc_reply_free(reply);
-			/* update stats */
-			if (nc_info) {
-				pthread_rwlock_wrlock(&(nc_info->lock));
-				nc_info->stats_nacm.denied_ops++;
-				pthread_rwlock_unlock(&(nc_info->lock));
-			}
-
-			return (NC_MSG_NONE); /* message processed internally */
+			counter = &nc_info->stats_nacm.denied_ops;
+			goto replyerror;
 		}
 
 		/* assign operation value */
-		nc_rpc_assign_op(*rpc);
+		op = nc_rpc_assign_op(*rpc);
 
 		/* set rpc type flag */
 		nc_rpc_parse_type(*rpc);
 
 		/* assign source/target datastore types */
-		nc_rpc_assign_ds(*rpc, "source");
-		nc_rpc_assign_ds(*rpc, "target");
+		if (op == NC_OP_GETCONFIG || op == NC_OP_COPYCONFIG || op == NC_OP_VALIDATE) {
+			nc_rpc_assign_ds(*rpc, "source");
+			if (!(*rpc)->source) {
+				e = nc_err_new(NC_ERR_MISSING_ELEM);
+				nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
+				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "source");
+
+				session->stats->in_bad_rpcs++;
+				counter = &nc_info->stats.counters.in_bad_rpcs;
+				goto replyerror;
+			}
+		}
+		if (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG
+				|| op == NC_OP_DELETECONFIG || op == NC_OP_LOCK || op == NC_OP_UNLOCK) {
+			nc_rpc_assign_ds(*rpc, "target");
+			if (!(*rpc)->target) {
+				e = nc_err_new(NC_ERR_MISSING_ELEM);
+				nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
+				nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "target");
+
+				session->stats->in_bad_rpcs++;
+				counter = &nc_info->stats.counters.in_bad_rpcs;
+				goto replyerror;
+			}
+		}
 
 		break;
 	case NC_MSG_HELLO:
@@ -2588,6 +2585,24 @@ try_again:
 	}
 
 	return (ret);
+
+replyerror:
+
+	reply = nc_reply_error(e);
+	if (nc_session_send_reply(session, *rpc, reply) == 0) {
+		ERROR("Failed to send reply.");
+	}
+	nc_rpc_free(*rpc);
+	*rpc = NULL;
+	nc_reply_free(reply);
+	/* update stats */
+	if (nc_info) {
+		pthread_rwlock_wrlock(&(nc_info->lock));
+		(*counter)++;
+		pthread_rwlock_unlock(&(nc_info->lock));
+	}
+
+	return (NC_MSG_NONE); /* message processed internally */
 }
 
 API const nc_msgid nc_session_send_rpc(struct nc_session* session, nc_rpc *rpc)
