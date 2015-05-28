@@ -4357,6 +4357,7 @@ API int ncds_set_validation2(struct ncds_ds* ds, int enable, const char* relaxng
 
 static struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path)
 {
+	int ret;
 	struct ncds_ds* ds = NULL;
 	struct ncds_ds_list *ds_iter;
 	char *basename, *path_yin;
@@ -4459,6 +4460,14 @@ static struct ncds_ds* ncds_new_internal(NCDS_TYPE type, const char * model_path
 #endif /* not DISABLE_VALIDATION */
 
 	/* TransAPI structure is set to NULLs */
+
+	ret = pthread_mutex_init(&ds->lock, NULL);
+	if (ret != 0) {
+		free(ds);
+		ds = NULL;
+		ERROR("Initialization of a mutex failed (%s).", strerror(errno));
+		goto cleanup;
+	}
 
 	ds->last_access = 0;
 
@@ -5429,6 +5438,12 @@ process_datastore:
 	op = nc_rpc_get_op(rpc);
 	/* if transapi used AND operation will affect running repository => store current running content */
 
+	i = pthread_mutex_lock(&ds->lock);
+	if (i != 0) {
+		ERROR("Failed to lock datastore (%s).", strerror(errno));
+		return (NULL);
+	}
+
 	if (ds->transapis != NULL
 		&& (op == NC_OP_COMMIT || op == NC_OP_COPYCONFIG || (op == NC_OP_EDITCONFIG && (nc_rpc_get_testopt(rpc) != NC_EDIT_TESTOPT_TEST))) &&
 		(nc_rpc_get_target(rpc) == NC_DATASTORE_RUNNING)) {
@@ -5436,6 +5451,7 @@ process_datastore:
 		old_data = ds->func.getconfig(ds, session, NC_DATASTORE_RUNNING, &e);
 		old = read_datastore_data(ds->id, old_data);
 		if (old == NULL) {/* cannot get or parse data */
+			pthread_mutex_unlock(&ds->lock);
 			if (e == NULL) { /* error not set */
 				e = nc_err_new(NC_ERR_OP_FAILED);
 				nc_err_set(e, NC_ERR_PARAM_MSG, "TransAPI: Failed to get data from RUNNING datastore.");
@@ -6186,6 +6202,7 @@ apply_editcopyconfig:
 		break;
 	default:
 		ERROR("%s: unsupported NETCONF operation requested.", __func__);
+		pthread_mutex_unlock(&ds->lock);
 		return (nc_reply_error (nc_err_new (NC_ERR_OP_NOT_SUPPORTED)));
 		break;
 	}
@@ -6249,6 +6266,8 @@ apply_editcopyconfig:
 	}
 	xmlFreeDoc (old);
 	old = NULL;
+
+	pthread_mutex_unlock(&ds->lock);
 
 	if (id == NCDS_INTERNAL_ID) {
 		if (old_reply == NULL) {
