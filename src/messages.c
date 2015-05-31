@@ -513,18 +513,20 @@ static nc_rpc* _rpc_build(int libxml2, const struct nc_session* session, const c
 
 	/* assign source/target datastore types */
 	if (op == NC_OP_GETCONFIG || op == NC_OP_COPYCONFIG || op == NC_OP_VALIDATE) {
-		nc_rpc_assign_ds(rpc, "source");
-		ERROR("*%s: Missing <source> parameter of the RPC operation.", __func__);
-		nc_rpc_free(rpc);
-		return NULL;
+		if (!nc_rpc_assign_ds(rpc, "source")) {
+			ERROR("*%s: Missing <source> parameter of the RPC operation.", __func__);
+			nc_rpc_free(rpc);
+			return NULL;
+		}
 
 	}
 	if (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG
 			|| op == NC_OP_DELETECONFIG || op == NC_OP_LOCK || op == NC_OP_UNLOCK) {
-		nc_rpc_assign_ds(rpc, "target");
-		ERROR("*%s: Missing <target> parameter of the RPC operation.", __func__);
-		nc_rpc_free(rpc);
-		return NULL;
+		if (!nc_rpc_assign_ds(rpc, "target")) {
+			ERROR("*%s: Missing <target> parameter of the RPC operation.", __func__);
+			nc_rpc_free(rpc);
+			return NULL;
+		}
 	}
 
 	/* set rpc type flag */
