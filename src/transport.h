@@ -88,7 +88,7 @@ struct nc_session *nc_session_connect(const char *host, unsigned short port, con
  * @brief Create another NETCONF session using already established SSH session.
  * No authentication is needed in this case.
  *
- * This function works only if libnetconf is compiled with using libssh2.
+ * This function works only if libnetconf is compiled with using libssh.
  *
  * It is not applicable to the sessions created by nc_session_connect_inout().
  *

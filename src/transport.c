@@ -739,7 +739,7 @@ shutdown:
 
 API struct nc_session *nc_session_connect_channel(struct nc_session* UNUSED(session), const struct nc_cpblts* UNUSED(cpblts))
 {
-	ERROR("%s: SSH channels are provided only with libssh2.", __func__);
+	ERROR("%s: SSH channels are provided only with libssh.", __func__);
 	return (NULL);
 }
 
@@ -761,7 +761,7 @@ API struct nc_session *nc_session_connect_channel(struct nc_session* session, co
 		return (NULL);
 	}
 
-	retval = nc_session_connect_libssh2_channel(session);
+	retval = nc_session_connect_libssh_channel(session);
 	if (retval == NULL) {
 		return (NULL);
 	}
@@ -811,7 +811,7 @@ shutdown:
 
 #endif /* not DISABLE_LIBSSH */
 
-API struct nc_session *nc_session_accept_inout(const struct nc_cpblts* capabilities, const char* username, int input, int output)
+struct nc_session* _nc_session_accept(const struct nc_cpblts* capabilities, const char* username, int input, int output, void* ssh_chan, void* tls_sess)
 {
 	int r, i;
 	struct nc_session *retval = NULL;
@@ -856,6 +856,12 @@ API struct nc_session *nc_session_accept_inout(const struct nc_cpblts* capabilit
 	retval->transport_socket = -1;
 	retval->fd_input = input;
 	retval->fd_output = output;
+#ifdef ENABLE_TLS
+	retval->tls = tls_sess;
+#endif
+#ifndef DISABLE_LIBSSH
+	retval->ssh_chan = ssh_chan;
+#endif
 	retval->msgid = 1;
 	retval->queue_event = NULL;
 	retval->queue_msg = NULL;
@@ -1056,6 +1062,11 @@ API struct nc_session *nc_session_accept_inout(const struct nc_cpblts* capabilit
 	return (retval);
 }
 
+API struct nc_session *nc_session_accept_inout(const struct nc_cpblts* capabilities, const char* username, int input, int output)
+{
+	return (_nc_session_accept(capabilities, username, input, output, NULL, NULL));
+}
+
 API struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabilities, const char* username)
 {
 	/*
@@ -1063,7 +1074,7 @@ API struct nc_session *nc_session_accept_username(const struct nc_cpblts* capabi
 	 * nc_session_accept_username_inout(), which allows explicitely set the
 	 * input/output file descriptors for reading/writing NETCONF data.
 	 */
-	return (nc_session_accept_inout(capabilities, username, STDIN_FILENO, STDOUT_FILENO));
+	return (_nc_session_accept(capabilities, username, STDIN_FILENO, STDOUT_FILENO, NULL, NULL));
 }
 
 API struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
@@ -1073,7 +1084,7 @@ API struct nc_session *nc_session_accept(const struct nc_cpblts* capabilities)
 	 * nc_session_accept_username_inout(), which gets the current user of the
 	 * running process in case the username argument is NULL.
 	 */
-	return (nc_session_accept_inout(capabilities, NULL, STDIN_FILENO, STDOUT_FILENO));
+	return (_nc_session_accept(capabilities, NULL, STDIN_FILENO, STDOUT_FILENO, NULL, NULL));
 }
 
 /*
@@ -1446,7 +1457,7 @@ netconf_connect:
 #else
 	{
 #endif
-		retval = nc_session_connect_libssh2_socket(username, host, sock);
+		retval = nc_session_connect_libssh_socket(username, host, sock);
 	}
 
 	if (retval != NULL) {

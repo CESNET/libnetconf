@@ -46,7 +46,8 @@
 #include <pthread.h>
 
 #ifndef DISABLE_LIBSSH
-#	include <libssh2.h>
+#	include <libssh/libssh.h>
+#	include <libssh/callbacks.h>
 #endif
 
 #ifdef ENABLE_TLS
@@ -143,7 +144,7 @@
 #define NC_RPC_OK           "ok"
 #define NC_RPC_DATA         "data"
 
-#define SSH2_KEYS 3 /* the number of supported keys */
+#define SSH_KEYS 3 /* the number of supported keys */
 
 /*
  * Special session ID to be used by libnetconf's internal dummy sessions. This
@@ -245,27 +246,23 @@ struct callbacks {
 			const char* ns,
 			const char* sid);
 #ifndef DISABLE_LIBSSH
-	/**< @brief Callback for libssh2's 'keyboard-interactive' authentication method */
-	void (*sshauth_interactive)(const char* name,
-			int name_len,
+	/**< @brief Callback for libssh's 'keyboard-interactive' authentication method */
+	char* (*sshauth_interactive)(const char* name,
 			const char* instruction,
-			int instruction_len,
-			int num_prompts,
-			const LIBSSH2_USERAUTH_KBDINT_PROMPT* prompts,
-			LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
-			void** abstract);
-	/**< @brief Callback for passing the password for libssh2's 'password' authentication method */
+			const char* prompt,
+			int echo);
+	/**< @brief Callback for passing the password for libssh's 'password' authentication method */
 	char* (*sshauth_password)(const char* username, const char* hostname);
-	/**< @brief Callback for passing the passphrase for libssh2's 'publickey' authentication method */
+	/**< @brief Callback for passing the passphrase for libssh's 'publickey' authentication method */
 	char* (*sshauth_passphrase)(const char* username, const char* hostname, const char* privatekey_filepath);
 	/**< @brief Callback to check the host authenticity: 0 ok, 1 failed */
-	int (*hostkey_check)(const char* hostname, LIBSSH2_SESSION *session);
+	int (*hostkey_check)(const char* hostname, ssh_session session);
 	/**< @brief */
-	char *publickey_filename[SSH2_KEYS];
+	char *publickey_filename[SSH_KEYS];
 	/**< @brief */
-	char *privatekey_filename[SSH2_KEYS];
+	char *privatekey_filename[SSH_KEYS];
 	/**< @brief is private key protected by password */
-	int key_protected[SSH2_KEYS];
+	int key_protected[SSH_KEYS];
 #endif
 };
 
@@ -342,7 +339,7 @@ struct nc_session {
 	char session_id[SID_SIZE];
 	/**< @brief Last message ID */
 	long long unsigned int msgid;
-	/**< @brief only for clients using libssh2 for communication */
+	/**< @brief only for clients using libssh for communication */
 	int transport_socket;
 #ifdef ENABLE_TLS
 	/**< @brief TLS handler */
@@ -351,7 +348,7 @@ struct nc_session {
 	/**< @brief Input file descriptor for communication with (reading from) the other side of the NETCONF session */
 	int fd_input;
 #ifdef DISABLE_LIBSSH
-	/**< @brief FILE structure for the fd_input file descriptor. This is used only if libssh2 is not used */
+	/**< @brief FILE structure for the fd_input file descriptor. This is used only if libssh is not used */
 	FILE *f_input;
 #endif
 	/**< @brief Output file descriptor for communication with (writing to) the other side of the NETCONF session */
@@ -360,12 +357,12 @@ struct nc_session {
 	NC_TRANSPORT transport;
 #ifndef DISABLE_LIBSSH
 	/**< @brief */
-	LIBSSH2_SESSION * ssh_session;
+	ssh_session ssh_sess;
 	/**< @brief */
-	LIBSSH2_CHANNEL * ssh_channel;
+	ssh_channel ssh_chan;
 #else
-	void *ssh_session;
-	void *ssh_channel;
+	void *ssh_sess;
+	void *ssh_chan;
 #endif
 	/**< @brief Am I the server endpoint? */
 	int is_server;

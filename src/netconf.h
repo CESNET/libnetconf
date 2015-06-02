@@ -417,14 +417,16 @@ typedef enum NC_TRANSPORT {
  * @brief Initialize libnetconf for system-wide usage. This initialization is
  * shared across all the processes
  * @param[in] flags ORed flags for libnetconf initialization. Must include
- * either *NC_INIT_MULTILAYER* or *NC_INIT_SINGLELAYER* with other
- * accepted values including:
+ * *NC_INIT_CLIENT*, *NC_INIT_MULTILAYER*, or *NC_INIT_SINGLELAYER* with
+ * other accepted values including:
+ *    - *NC_INIT_LIBSSH_PTHREAD* The application uses libssh and pthread threads
  *    - *NC_INIT_ALL* Enable all available subsystems
  *    - *NC_INIT_MONITORING* Enable ietf-netconf-monitoring module
  *    - *NC_INIT_WD* Enable With-default capability
  *    - *NC_INIT_NOTIF* Enable Notification subsystem
  *    - *NC_INIT_NACM* Enable NETCONF Access Control subsystem
  *
+ * Clients call init just for libssh initialization, if it is used.
  * The difference between the multi-layer and single-layer flag is strictly in
  * the behaviour when cleaning shared library resources, either during
  * nc_close() or if the calling process crashed before (equals did not call
@@ -449,8 +451,9 @@ int nc_init(int flags);
  */
 #define NC_INIT_MULTILAYER 0x00001000  /**< nc_init()'s flag for multi-layer server architecture */
 #define NC_INIT_SINGLELAYER 0x00002000 /**< nc_init()'s flag for single-layer server architecture */
+#define NC_INIT_CLIENT 0x00004000      /**< nc_init()'s flag for NETCONF clients */
 
-#define NC_INIT_ALL        0xffffcfff /**< nc_init()'s flag to enable all optional features/subsystems */
+#define NC_INIT_ALL        0xffff8fff /**< nc_init()'s flag to enable all optional features/subsystems */
 #define NC_INIT_NOTIF      0x00000002 /**< nc_init()'s flag to enable Notification subsystem. */
 #define NC_INIT_NACM       0x00000004 /**< nc_init()'s flag to enable Acccess Control subsystem */
 #define NC_INIT_MONITORING 0x00000008 /**< nc_init()'s flag to enable ietf-netconf-monitoring module */
@@ -466,6 +469,7 @@ int nc_init(int flags);
  * daemon()), the process is supposed to call nc_session_monitor() againg.
  */
 #define NC_INIT_DATASTORES 0x00000100 /**< nc_init()'s flag to use internal datastores */
+#define NC_INIT_LIBSSH_PTHREAD 0x00000200 /**< nc_init()'s flag to initialize libssh pthread callbacks */
 
 #define NC_INITRET_NOTFIRST 0x00000001 /**< nc_init()'s return flag for this process not calling nc_init() first */
 #define NC_INITRET_RECOVERY 0x00000002 /**< nc_init()'s return flag for this process crashing before (not calling nc_close()) */

@@ -61,21 +61,17 @@
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
 #ifndef DISABLE_LIBSSH
-static void callback_sshauth_interactive_default (const char* name,
-		int name_len,
+static char* callback_sshauth_interactive_default (const char* name,
 		const char* instruction,
-		int instruction_len,
-		int num_prompts,
-		const LIBSSH2_USERAUTH_KBDINT_PROMPT* prompts,
-		LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
-		void** abstract);
+		const char* prompt,
+		int echo);
 
 static char* callback_sshauth_publickey_default (const char* username,
 		const char* hostname,
 		const char* privatekey_filepath);
 
 static char* callback_sshauth_password_default (const char* username, const char* hostname);
-static int callback_ssh_hostkey_check_default (const char* hostname, LIBSSH2_SESSION *session);
+static int callback_ssh_hostkey_check_default (const char* hostname, ssh_session session);
 #endif
 
 struct callbacks callbacks = {
@@ -112,14 +108,10 @@ API void nc_callback_error_reply(void (*func)(const char* tag,
 }
 
 #ifndef DISABLE_LIBSSH
-API void nc_callback_sshauth_interactive(void (*func)(const char* name,
-		int name_len,
+API void nc_callback_sshauth_interactive(char* (*func)(const char* name,
 		const char* instruction,
-		int instruction_len,
-		int num_prompts,
-		const LIBSSH2_USERAUTH_KBDINT_PROMPT* prompts,
-		LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
-		void** abstract))
+		const char* prompt,
+		int echo))
 {
 	if (func != NULL) {
 		callbacks.sshauth_interactive = func;
@@ -149,7 +141,7 @@ API void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
 }
 
 API void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
-		LIBSSH2_SESSION *session))
+		ssh_session session))
 {
 	if (func != NULL) {
 		callbacks.hostkey_check = func;
@@ -237,104 +229,90 @@ static char* callback_sshauth_password_default (const char* username,
 
 /**
  * @brief Default callback for the \"keyboard-interactive\" authentication method
- *
- * called by libssh2, see http://www.libssh2.org/libssh2_userauth_keyboard_interactive.html for details
  */
-static void callback_sshauth_interactive_default (const char*  UNUSED(name),
-		int  UNUSED(name_len),
-		const char*  UNUSED(instruction),
-		int  UNUSED(instruction_len),
-		int num_prompts,
-		const LIBSSH2_USERAUTH_KBDINT_PROMPT* prompts,
-		LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
-		void**  UNUSED(abstract))
+static char* callback_sshauth_interactive_default (const char* UNUSED(name),
+		const char* UNUSED(instruction),
+		const char* prompt,
+		int echo)
 {
-	int i;
-	unsigned int buflen = 8;
+	unsigned int buflen = 8, response_len;
 	char c = 0;
 	struct termios newterm, oldterm;
-	char* newtext;
+	char* newtext, *response;
 	FILE* tty;
 
 	if ((tty = fopen("/dev/tty", "r+")) == NULL) {
 		ERROR("Unable to open the current terminal (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
-		return;
+		return NULL;
 	}
 
 	if (tcgetattr(fileno(tty), &oldterm) != 0) {
 		ERROR("Unable to get terminal settings (%d: %s).", __LINE__, strerror(errno));
-		return;
+		return NULL;
 	}
 
-	for (i=0; i<num_prompts; i++) {
-		if (fwrite (prompts[i].text, sizeof(char), prompts[i].length, tty) == 0) {
-			ERROR("Writing the authentication prompt into stdout failed.");
-			return;
+	if (fwrite (prompt, sizeof(char), strlen(prompt), tty) == 0) {
+		ERROR("Writing the authentication prompt into stdout failed.");
+		return NULL;
+	}
+	fflush(tty);
+	if (!echo) {
+		/* system("stty -echo"); */
+		newterm = oldterm;
+		newterm.c_lflag &= ~ECHO;
+		tcflush(fileno(tty), TCIFLUSH);
+		if (tcsetattr(fileno(tty), TCSANOW, &newterm) != 0) {
+			ERROR("Unable to change terminal settings for hiding password (%d: %s).", __LINE__, strerror(errno));
+			return NULL;
 		}
-		fflush(tty);
-		if (prompts[i].echo == 0) {
-			/* system("stty -echo"); */
-			newterm = oldterm;
-			newterm.c_lflag &= ~ECHO;
-			tcflush(fileno(tty), TCIFLUSH);
-			if (tcsetattr(fileno(tty), TCSANOW, &newterm) != 0) {
-				ERROR("Unable to change terminal settings for hiding password (%d: %s).", __LINE__, strerror(errno));
-				return;
-			}
-		}
-		responses[i].length = 0;
-		responses[i].text = malloc (buflen*sizeof(char));
-		if (responses[i].text == 0) {
-			ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
-			/* restore terminal settings */
-			if (tcsetattr(fileno(tty), TCSANOW, &oldterm) != 0) {
-				ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
-			}
-			return;
-		}
+	}
 
-		while (fread(&c, 1, 1, tty) == 1 && c != '\n') {
-			if (responses[i].length >= (buflen-1)) {
-				buflen *= 2;
-				newtext = realloc(responses[i].text, buflen*sizeof (char));
-				if (newtext == NULL) {
-					ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
-					/* remove all answers, something really bad is happening */
-					for(; i >= 0; i--) {
-						memset(responses[i].text, 0, responses[i].length);
-						free(responses[i].text);
-						responses[i].length = 0;
-					}
-					/* restore terminal settings */
-					if (tcsetattr(fileno(tty), TCSANOW, &oldterm) != 0) {
-						ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
-					}
-					return;
-				} else {
-					responses[i].text = newtext;
-				}
-			}
-			responses[i].text[responses[i].length++] = c;
-		}
-		/* terminating null byte */
-		responses[i].text[responses[i].length++] = '\0';
-
-		/* system ("stty echo"); */
+	response = malloc (buflen*sizeof(char));
+	response_len = 0;
+	if (response == NULL) {
+		ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+		/* restore terminal settings */
 		if (tcsetattr(fileno(tty), TCSANOW, &oldterm) != 0) {
 			ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
-			/*
-			 * terminal probably still hides input characters, but we have password
-			 * and anyway we are unable to set terminal to the previous state, so
-			 * just continue
-			 */
 		}
-
-		fprintf(tty, "\n");
-		fflush(tty);
+		return NULL;
 	}
 
+	while (fread(&c, 1, 1, tty) == 1 && c != '\n') {
+		if (response_len >= (buflen-1)) {
+			buflen *= 2;
+			newtext = realloc(response, buflen*sizeof (char));
+			if (newtext == NULL) {
+				ERROR("Memory allocation failed (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+				free(response);
+
+				/* restore terminal settings */
+				if (tcsetattr(fileno(tty), TCSANOW, &oldterm) != 0) {
+					ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
+				}
+				return NULL;
+			} else {
+				response = newtext;
+			}
+		}
+		response[response_len++] = c;
+	}
+	/* terminating null byte */
+	response[response_len++] = '\0';
+
+	/* system ("stty echo"); */
+	if (tcsetattr(fileno(tty), TCSANOW, &oldterm) != 0) {
+		ERROR("Unable to restore terminal settings (%d: %s).", __LINE__, strerror(errno));
+		/*
+		 * terminal probably still hides input characters, but we have password
+		 * and anyway we are unable to set terminal to the previous state, so
+		 * just continue
+		 */
+	}
+
+	fprintf(tty, "\n");
 	fclose(tty);
-	return;
+	return response;
 }
 
 static char* callback_sshauth_publickey_default (const char*  UNUSED(username),
@@ -506,220 +484,123 @@ finish:
 
 #endif
 
-static int callback_ssh_hostkey_check_default (const char* hostname, LIBSSH2_SESSION *session)
+static int callback_ssh_hostkey_check_default (const char* hostname, ssh_session session)
 {
-	struct passwd *pw;
-	char *knownhosts_dir = NULL;
-	char *knownhosts_file = NULL;
-	LIBSSH2_KNOWNHOSTS *knownhosts;
-	int c, i;
-	int ret, knownhost_check = -1;
-	int fd;
-	int hostkey_type, hostkey_typebit;
-	size_t len;
-	struct libssh2_knownhost *ssh_host = NULL;
+	char* hexa;
+	int c, state, ret;
+	ssh_key srv_pubkey;
+	unsigned char *hash_sha1 = NULL;
+	size_t hlen;
+	enum ssh_keytypes_e srv_pubkey_type;
 	char answer[5];
-	const char *remotekey, *fingerprint_raw;
-#ifdef ENABLE_DNSSEC
-	const char* fingerprint_sha1raw;
-#endif
-	/*
-	 * to print MD5 raw hash, we need 3*16 + 1 bytes (4 characters are printed
-	 * all the time, but except the last one, NULL terminating bytes are
-	 * rewritten by the following value). In the end, the last ':' is removed
-	 * for nicer output, so there are two terminating NULL bytes in the end.
-	 */
-	char fingerprint_md5[49];
 
-	/* get current user to locate SSH known_hosts file */
-	pw = getpwuid(getuid());
-	if (pw == NULL) {
-		/* unable to get correct username (errno from getpwuid) */
-		ERROR("Unable to set a username for the SSH connection (%s).", strerror(errno));
-		return (EXIT_FAILURE);
-	} else if (asprintf(&knownhosts_dir, "%s/.ssh", pw->pw_dir) == -1) {
-		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		return (EXIT_FAILURE);
-	}
+	state = ssh_is_server_known(session);
 
-	knownhosts = libssh2_knownhost_init(session);
-	if (knownhosts == NULL) {
-		ERROR("Unable to create knownhosts structure (%s:%d).", __FILE__, __LINE__);
-		free(knownhosts_dir);
-		return (EXIT_FAILURE);
-	}
-
-	/* set general knownhosts file used also by OpenSSH's applications */
-	if (asprintf(&knownhosts_file, "%s/known_hosts", knownhosts_dir) == -1) {
-		ERROR("%s: asprintf() failed.", __func__);
-		free(knownhosts_dir);
-		libssh2_knownhost_free(knownhosts);
-		return(EXIT_FAILURE);
-	}
-
-	/* get all the hosts */
-	ret = libssh2_knownhost_readfile(knownhosts, knownhosts_file, LIBSSH2_KNOWNHOST_FILE_OPENSSH);
+	ret = ssh_get_publickey(session, &srv_pubkey);
 	if (ret < 0) {
-		/*
-		 * default known_hosts may contain keys that are not supported
-		 * by libssh2, so try to use libnetconf's specific known_hosts
-		 * file located in the same directory and named
-		 * 'netconf_known_hosts'
-		 */
-		free(knownhosts_file);
-		knownhosts_file = NULL;
-		libssh2_knownhost_free(knownhosts);
-		if (asprintf(&knownhosts_file, "%s/netconf_known_hosts", knownhosts_dir) == -1) {
-			ERROR("%s: asprintf() failed.", __func__);
-			return(EXIT_FAILURE);
-		}
-		/* create own knownhosts file if it does not exist */
-		if (eaccess(knownhosts_file, F_OK) != 0) {
-			if ((fd = creat(knownhosts_file, S_IWUSR | S_IRUSR |S_IRGRP | S_IROTH)) != -1) {
-				close(fd);
-			}
-		}
-		knownhosts = libssh2_knownhost_init(session);
-		if (knownhosts == NULL) {
-			ERROR("Unable to create knownhosts structure (%s:%d).", __FILE__, __LINE__);
-			return (EXIT_FAILURE);
-		}
-		ret = libssh2_knownhost_readfile(knownhosts, knownhosts_file, LIBSSH2_KNOWNHOST_FILE_OPENSSH);
+		ERROR("Unable to get server public key.");
+		return EXIT_FAILURE;
 	}
-	free(knownhosts_dir);
 
-	/* get host's key */
-	remotekey = libssh2_session_hostkey(session, &len, &hostkey_type);
-	if (remotekey == NULL && hostkey_type == LIBSSH2_HOSTKEY_TYPE_UNKNOWN) {
-		ERROR("Unable to get host key.");
-		libssh2_knownhost_free(knownhosts);
-		return (EXIT_FAILURE);
-	}
-	hostkey_typebit = (hostkey_type == LIBSSH2_HOSTKEY_TYPE_RSA) ? LIBSSH2_KNOWNHOST_KEY_SSHRSA : LIBSSH2_KNOWNHOST_KEY_SSHDSS;
-
+	srv_pubkey_type = ssh_key_type(srv_pubkey);
+	ret = ssh_get_publickey_hash(srv_pubkey, SSH_PUBLICKEY_HASH_SHA1, &hash_sha1, &hlen);
+	ssh_key_free(srv_pubkey);
 	if (ret < 0) {
-		WARN("Unable to check against the knownhost file (%s).", knownhosts_file);
-		libssh2_knownhost_free(knownhosts);
-		knownhosts = libssh2_knownhost_init(session);
-keynotfound:
+		ERROR("Failed to calculate SHA1 hash of the server public key.");
+		return EXIT_FAILURE;
+	}
 
-		if (stdin != NULL && stdout != NULL) {
-			/* MD5 hash size is 16B, SHA1 hash size is 20B */
-			fingerprint_raw = libssh2_hostkey_hash(session, LIBSSH2_HOSTKEY_HASH_MD5);
-			for (i = 0; i < 16; i++) {
-				sprintf(&fingerprint_md5[i * 3], "%02x:", (uint8_t) fingerprint_raw[i]);
-			}
-			fingerprint_md5[47] = 0;
+	hexa = ssh_get_hexa(hash_sha1, hlen);
 
+	switch (state) {
+	case SSH_SERVER_KNOWN_OK:
+		break; /* ok */
+
+	case SSH_SERVER_KNOWN_CHANGED:
+		ERROR("Remote host key changed, the connection will be terminated!");
+		goto fail;
+
+	case SSH_SERVER_FOUND_OTHER:
+		ERROR("The remote host key was not found but another type of key was, the connection will be terminated.");
+		goto fail;
+
+	case SSH_SERVER_FILE_NOT_FOUND:
+		WARN("Could not find the known hosts file.");
+		/* fallback to SSH_SERVER_NOT_KNOWN behavior */
+
+	case SSH_SERVER_NOT_KNOWN:
 #ifdef ENABLE_DNSSEC
-			fingerprint_sha1raw = libssh2_hostkey_hash(session, LIBSSH2_HOSTKEY_HASH_SHA1);
-			ret = callback_ssh_hostkey_hash_dnssec_check(hostname, fingerprint_sha1raw,
-														(hostkey_type == LIBSSH2_HOSTKEY_TYPE_RSA ? 1 : 2), 1);
+		if (srv_pubkey_type != SSH_KEYTYPE_UNKNOWN || srv_pubkey_type != SSH_KEYTYPE_RSA1) {
+			if (srv_pubkey_type == SSH_KEYTYPE_DSS) {
+				ret = callback_ssh_hostkey_hash_dnssec_check(hostname, hash_sha1, 2, 1);
+			} else if (srv_pubkey_type == SSH_KEYTYPE_RSA) {
+				ret = callback_ssh_hostkey_hash_dnssec_check(hostname, hash_sha1, 1, 1);
+			} else if (srv_pubkey_type == SSH_KEYTYPE_ECDSA) {
+				ret = callback_ssh_hostkey_hash_dnssec_check(hostname, hash_sha1, 3, 1);
+			}
 
 			/* DNSSEC SSHFP check successful, that's enough */
 			if (ret == 0) {
 				DBG("DNSSEC SSHFP check successful");
-				libssh2_knownhost_free(knownhosts);
-				free(knownhosts_file);
-				return (EXIT_SUCCESS);
+				ssh_write_knownhost(session);
+				ssh_clean_pubkey_hash(&hash_sha1);
+				ssh_string_free_char(hexa);
+				return EXIT_SUCCESS;
 			}
+		}
 #endif
 
-			/* try to get result from user */
-			fprintf(stdout, "The authenticity of the host \'%s\' cannot be established.\n", hostname);
-			fprintf(stdout, "%s key fingerprint is %s.\n", (hostkey_type == LIBSSH2_HOSTKEY_TYPE_RSA) ? "RSA" : "DSS", fingerprint_md5);
+		/* try to get result from user */
+		fprintf(stdout, "The authenticity of the host \'%s\' cannot be established.\n", hostname);
+		fprintf(stdout, "%s key fingerprint is %s.\n", ssh_key_type_to_char(srv_pubkey_type), hexa);
+
 #ifdef ENABLE_DNSSEC
-			if (ret == 2) {
-				fprintf(stdout, "No matching host key fingerprint found in DNS.\n");
-			} else if (ret == 1) {
-				fprintf(stdout, "Matching host key fingerprint found in DNS.\n");
-			}
+		if (ret == 2) {
+			fprintf(stdout, "No matching host key fingerprint found in DNS.\n");
+		} else if (ret == 1) {
+			fprintf(stdout, "Matching host key fingerprint found in DNS.\n");
+		}
 #endif
-			fprintf(stdout, "Are you sure you want to continue connecting (yes/no)? ");
 
-askuseragain:
+		fprintf(stdout, "Are you sure you want to continue connecting (yes/no)? ");
+
+		do {
 			if (fscanf(stdin, "%4s", answer) == EOF) {
 				ERROR("fscanf() failed (%s).", strerror(errno));
-				free(knownhosts_file);
-				return (EXIT_FAILURE);
+				goto fail;
 			}
 			while ((c = getchar()) != EOF && c != '\n');
 
 			fflush(stdin);
 			if (strcmp("yes", answer) == 0) {
 				/* store the key into the host file */
-				ret = libssh2_knownhost_add(knownhosts,
-						hostname,
-						NULL,
-						remotekey,
-						len,
-						LIBSSH2_KNOWNHOST_TYPE_PLAIN | LIBSSH2_KNOWNHOST_KEYENC_RAW | hostkey_typebit,
-						NULL);
-				if (ret != 0) {
-					WARN("Adding the known host %s failed!", hostname);
-				} else if (knownhosts_file != NULL) {
-					ret = libssh2_knownhost_writefile(knownhosts,
-							knownhosts_file,
-							LIBSSH2_KNOWNHOST_FILE_OPENSSH);
-					if (ret) {
-						WARN("Writing %s failed!", knownhosts_file);
-					}
-				} else {
-					WARN("Unknown known_hosts file location, skipping the writing of your decision.");
+				ret = ssh_write_knownhost(session);
+				if (ret < 0) {
+					WARN("Adding the known host %s failed (%s).", hostname, strerror(errno));
 				}
-				libssh2_knownhost_free(knownhosts);
-				free(knownhosts_file);
-				return (EXIT_SUCCESS);
 			} else if (strcmp("no", answer) == 0) {
-				libssh2_knownhost_free(knownhosts);
-				free(knownhosts_file);
-				return (EXIT_FAILURE);
+				goto fail;
 			} else {
 				fprintf(stdout, "Please type 'yes' or 'no': ");
-				goto askuseragain;
 			}
-		} else {
-			ERROR("Unable to check host interactively.");
-			libssh2_knownhost_free(knownhosts);
-			free(knownhosts_file);
-			return (EXIT_FAILURE);
-		}
-	} else {
-		knownhost_check = libssh2_knownhost_check(knownhosts,
-				hostname,
-				remotekey,
-				len,
-				LIBSSH2_KNOWNHOST_TYPE_PLAIN | LIBSSH2_KNOWNHOST_KEYENC_RAW | hostkey_typebit,
-				&ssh_host);
+		} while (strcmp(answer, "yes") != 0 && strcmp(answer, "no") != 0);
 
-		DBG("Host check result: %d, \nmatching key: %s\n", knownhost_check, (ssh_host && ssh_host->key) ? ssh_host->key : "<none>");
+		break;
 
-		switch (knownhost_check) {
-		case LIBSSH2_KNOWNHOST_CHECK_MISMATCH:
-			ERROR("Remote host %s identification changed!", hostname);
-			ret = EXIT_FAILURE;
-			break;
-		case LIBSSH2_KNOWNHOST_CHECK_FAILURE:
-			ERROR("Knownhost checking failed.");
-			ret = EXIT_FAILURE;
-			break;
-		case LIBSSH2_KNOWNHOST_CHECK_MATCH:
-			ret = EXIT_SUCCESS;
-			break;
-		case LIBSSH2_KNOWNHOST_CHECK_NOTFOUND:
-			goto keynotfound;
-		default:
-			ERROR("Unknown result (%d) of the libssh2_knownhost_check().", knownhost_check);
-			ret = EXIT_FAILURE;
-		}
-
-		libssh2_knownhost_free(knownhosts);
-		free(knownhosts_file);
-		return (ret);
+	case SSH_SERVER_ERROR:
+		ssh_clean_pubkey_hash(&hash_sha1);
+		fprintf(stderr,"%s",ssh_get_error(session));
+		return -1;
 	}
 
-	/* it never should be here */
-	return (EXIT_FAILURE);
+	ssh_clean_pubkey_hash(&hash_sha1);
+	ssh_string_free_char(hexa);
+	return EXIT_SUCCESS;
+
+fail:
+	ssh_clean_pubkey_hash(&hash_sha1);
+	ssh_string_free_char(hexa);
+	return EXIT_FAILURE;
 }
 
 /* op = 1 (add), 2 (remove) */
@@ -731,7 +612,7 @@ static int nc_publickey_path (const char* path, int op)
 		return EXIT_FAILURE;
 	}
 
-	for (i = 0; i < SSH2_KEYS; ++i) {
+	for (i = 0; i < SSH_KEYS; ++i) {
 		if (op == 1 && callbacks.publickey_filename[i] == NULL) {
 			callbacks.publickey_filename[i] = strdup(path);
 			break;
@@ -743,7 +624,7 @@ static int nc_publickey_path (const char* path, int op)
 		}
 	}
 
-	if (i == SSH2_KEYS) {
+	if (i == SSH_KEYS) {
 		if (op == 1) {
 			ERROR("Too many SSH public keys.");
 			return EXIT_FAILURE;
@@ -768,7 +649,7 @@ static int nc_privatekey_path (const char* path, int op)
 		return EXIT_FAILURE;
 	}
 
-	for (i = 0; i < SSH2_KEYS; ++i) {
+	for (i = 0; i < SSH_KEYS; ++i) {
 		if (op == 1 && callbacks.privatekey_filename[i] == NULL) {
 			callbacks.privatekey_filename[i] = strdup(path);
 			break;
@@ -781,7 +662,7 @@ static int nc_privatekey_path (const char* path, int op)
 		}
 	}
 
-	if (i == SSH2_KEYS) {
+	if (i == SSH_KEYS) {
 		if (op == 1) {
 			ERROR("Too many SSH private keys.");
 			return EXIT_FAILURE;

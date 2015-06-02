@@ -8,13 +8,13 @@ also needed to compile libnetconf.
 - libxml2
   http://xmlsoft.org
 
-- libssh2
-  Version 1.2.9 or greater is recomended.
-  http://www.libssh2.org
+- libssh
+  Version 0.6.4 or greater is recomended.
+  http://www.libssh.org
 
-  To disable usage of the libssh2, use:
+  To disable usage of the libssh, use:
 
-  $ ./configure --disable-libssh2
+  $ ./configure --disable-libssh
 
   In such a case, libnetconf will use standalone ssh(1) client
   application to connect NETCONF client to the NETCONF server.

@@ -129,17 +129,26 @@ API void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference)
 
 #ifndef DISABLE_LIBSSH
 
-#define SSH2_TIMEOUT 10000 /* timeout for blocking functions in miliseconds */
+/* seconds */
+#define SSH_TIMEOUT 10
 
-struct nc_session *nc_session_connect_libssh2_socket(const char* username, const char* host, int sock)
+struct nc_session* _nc_session_accept(const struct nc_cpblts*, const char*, int, int, void*, void*);
+
+API struct nc_session *nc_session_accept_libssh_channel(const struct nc_cpblts* capabilities, const char* username, ssh_channel ssh_chan)
+{
+	return (_nc_session_accept(capabilities, username, -1, -1, ssh_chan, NULL));
+}
+
+struct nc_session *nc_session_connect_libssh_socket(const char* username, const char* host, int sock)
 {
 	struct nc_session *retval = NULL;
-	char *userauthlist;
 	pthread_mutexattr_t mattr;
-	int i, j, r;
+	int i, j, r, ret_auth, userauthlist;
 	int auth = 0;
-	char *s;
-	char *err_msg;
+	const int timeout = SSH_TIMEOUT;
+	const char* prompt;
+	char *s, *answer, echo;
+	ssh_key pubkey, privkey;
 	struct passwd *pw;
 
 	if (sock == -1) {
@@ -194,84 +203,53 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 	pthread_mutexattr_destroy(&mattr);
 
 	/* Create a session instance */
-	retval->ssh_session = libssh2_session_init();
-	if (retval->ssh_session == NULL) {
+	retval->ssh_sess = ssh_new();
+	if (retval->ssh_sess == NULL) {
 		ERROR("Unable to initialize the SSH session.");
 		goto shutdown;
 	}
 
-	/*
-	 * set timeout for libssh2 functions - they are still blocking, but
-	 * after the timeout they return with LIBSSH2_ERROR_TIMEOUT and we
-	 * can perform appropriate reaction
-	 */
-	LIBSSH2_SET_TIMEOUT(retval->ssh_session, SSH2_TIMEOUT);
+	ssh_options_set(retval->ssh_sess, SSH_OPTIONS_HOST, host);
+	ssh_options_set(retval->ssh_sess, SSH_OPTIONS_USER, retval->username);
+	ssh_options_set(retval->ssh_sess, SSH_OPTIONS_FD, &retval->transport_socket);
+	ssh_options_set(retval->ssh_sess, SSH_OPTIONS_TIMEOUT, &timeout);
 
-	/*
-	 * Set up the SSH session, deprecated variant is libssh2_session_startup()
-	 */
-	if ((r = LIBSSH2_SESSION_HANDSHAKE(retval->ssh_session, retval->transport_socket)) != 0) {
-		switch(r) {
-		case LIBSSH2_ERROR_SOCKET_NONE:
-			s = "Invalid socket";
-			break;
-		case LIBSSH2_ERROR_BANNER_SEND:
-			s = "Unable to send the banner to a remote host";
-			break;
-		case LIBSSH2_ERROR_KEX_FAILURE:
-			s = "Encryption key exchange with the remote host failed";
-			break;
-		case LIBSSH2_ERROR_SOCKET_SEND:
-			s = "Unable to send data on the socket";
-			break;
-		case LIBSSH2_ERROR_SOCKET_DISCONNECT:
-			s = "The socket was disconnected";
-			break;
-		case LIBSSH2_ERROR_PROTO:
-			s = "An invalid SSH protocol response was received on the socket";
-			break;
-		case LIBSSH2_ERROR_EAGAIN:
-			s = "Marked for non-blocking I/O but the call would block";
-			break;
-		case LIBSSH2_ERROR_TIMEOUT:
-			s = "Request timeouted";
-			break;
-		default:
-			s = "Unknown error";
-			DBG("Error code %d.", r);
-			break;
-		}
-		ERROR("Starting the SSH session failed (%s)", s);
+	if (ssh_connect(retval->ssh_sess) != SSH_OK) {
+		ERROR("Starting the SSH session failed (%s)", ssh_get_error(retval->ssh_sess));
+		DBG("Error code %d.", ssh_get_error_code(retval->ssh_sess));
 		goto shutdown;
 	}
 
-	if (callbacks.hostkey_check(host, retval->ssh_session) != 0) {
+	if (callbacks.hostkey_check(host, retval->ssh_sess) != 0) {
 		ERROR("Checking the host key failed.");
 		goto shutdown;
 	}
 
+	if ((ret_auth = ssh_userauth_none(retval->ssh_sess, NULL)) == SSH_AUTH_ERROR) {
+		ERROR("Authentication failed (%s).", ssh_get_error(retval->ssh_sess));
+		goto shutdown;
+	}
+
 	/* check what authentication methods are available */
-	do {
-		userauthlist = libssh2_userauth_list(retval->ssh_session, username, strlen(username));
-	} while (userauthlist == NULL && libssh2_session_last_errno(retval->ssh_session) == LIBSSH2_ERROR_TIMEOUT);
-	if (userauthlist != NULL) {
-		if (strstr(userauthlist, "password")) {
+	userauthlist = ssh_userauth_list(retval->ssh_sess, NULL);
+	if (userauthlist != 0) {
+		if (userauthlist & SSH_AUTH_METHOD_PASSWORD) {
 			if (callbacks.sshauth_password != NULL) {
 				auth |= NC_SSH_AUTH_PASSWORD;
 			}
 		}
-		if (strstr(userauthlist, "publickey")) {
+		if (userauthlist & SSH_AUTH_METHOD_PUBLICKEY) {
 			if (callbacks.sshauth_passphrase != NULL) {
 				auth |= NC_SSH_AUTH_PUBLIC_KEYS;
 			}
 		}
-		if (strstr(userauthlist, "keyboard-interactive")) {
+		if (userauthlist & SSH_AUTH_METHOD_INTERACTIVE) {
 			if (callbacks.sshauth_interactive != NULL) {
 				auth |= NC_SSH_AUTH_INTERACTIVE;
 			}
 		}
 	}
-	if ((auth == 0) && (libssh2_userauth_authenticated(retval->ssh_session) == 0)) {
+	if (auth == 0 && ret_auth != SSH_AUTH_SUCCESS) {
 		ERROR("Unable to authenticate to the remote server (Authentication methods not supported).");
 		goto shutdown;
 	}
@@ -285,7 +263,7 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 
 		if (sshauth_pref[i].value < 0) {
 			/* all following auth methods are disabled via negative preference value */
-			ERROR("Unable to authenticate to the remote server (%s disabled or permission denied).", userauthlist);
+			ERROR("Unable to authenticate to the remote server (method disabled or permission denied).");
 			goto shutdown;
 		}
 
@@ -294,44 +272,54 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 		case NC_SSH_AUTH_PASSWORD:
 			VERB("Password authentication (host %s, user %s)", host, username);
 			s = callbacks.sshauth_password(username, host);
-			if (!s || libssh2_userauth_password(retval->ssh_session, username, s) != 0) {
-				err_msg = NULL;
-				if (s) {
-					memset(s, 0, strlen(s));
-					libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-				}
-				VERB("Authentication failed (%s)", err_msg ? err_msg : "");
-			} else {
+			if ((ret_auth = ssh_userauth_password(retval->ssh_sess, username, s)) != SSH_AUTH_SUCCESS) {
 				memset(s, 0, strlen(s));
+				VERB("Authentication failed (%s)", ssh_get_error(retval->ssh_sess));
 			}
 			free(s);
 			break;
 		case NC_SSH_AUTH_INTERACTIVE:
 			VERB("Keyboard-interactive authentication");
-			if (libssh2_userauth_keyboard_interactive(retval->ssh_session,
-					username,
-					callbacks.sshauth_interactive) != 0) {
-				libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-				VERB("Authentication failed (%s)", err_msg);
+			while ((ret_auth = ssh_userauth_kbdint(retval->ssh_sess, NULL, NULL)) == SSH_AUTH_INFO) {
+				for (j = 0; j < ssh_userauth_kbdint_getnprompts(retval->ssh_sess); ++j) {
+					prompt = ssh_userauth_kbdint_getprompt(retval->ssh_sess, j, &echo);
+					if (prompt == NULL) {
+						break;
+					}
+					answer = callbacks.sshauth_interactive(
+						ssh_userauth_kbdint_getname(retval->ssh_sess),
+						ssh_userauth_kbdint_getinstruction(retval->ssh_sess),
+						prompt, echo);
+					if (ssh_userauth_kbdint_setanswer(retval->ssh_sess, j, answer) < 0) {
+						free(answer);
+						break;
+					}
+					free(answer);
+				}
 			}
+
+			if (ret_auth == SSH_AUTH_ERROR) {
+				VERB("Authentication failed (%s)", ssh_get_error(retval->ssh_sess));
+			}
+
 			break;
 		case NC_SSH_AUTH_PUBLIC_KEYS:
-			VERB ("Publickey athentication");
+			VERB("Publickey athentication");
 
-			for (j = 0; j < SSH2_KEYS; ++j) {
+			for (j = 0; j < SSH_KEYS; ++j) {
 				if (callbacks.publickey_filename[j] != NULL && callbacks.privatekey_filename[j] != NULL) {
 					break;
 				}
 			}
 
 			/* if publickeys path not provided, we cannot continue */
-			if (j == SSH2_KEYS) {
+			if (j == SSH_KEYS) {
 				VERB("No key pair specified.");
 				break;
 			}
 
-			for (j=0; j<SSH2_KEYS; j++) {
-				if (callbacks.privatekey_filename[j] == NULL) {
+			for (j = 0; j < SSH_KEYS; j++) {
+				if (callbacks.privatekey_filename[j] == NULL || callbacks.publickey_filename[j] == NULL) {
 					/* key not available */
 					continue;
 				}
@@ -339,57 +327,79 @@ struct nc_session *nc_session_connect_libssh2_socket(const char* username, const
 				VERB("Trying to authenticate using %spair %s %s",
 						callbacks.key_protected[j] ? "password-protected " : "", callbacks.privatekey_filename[j], callbacks.publickey_filename[j]);
 
+				if (ssh_pki_import_pubkey_file(callbacks.publickey_filename[j], &pubkey) != SSH_OK) {
+					WARN("Failed to import the key \"%s\".", callbacks.publickey_filename[j]);
+					continue;
+				}
+				ret_auth = ssh_userauth_try_publickey(retval->ssh_sess, NULL, pubkey);
+				if (ret_auth == SSH_AUTH_DENIED || ret_auth == SSH_AUTH_PARTIAL) {
+					ssh_key_free(pubkey);
+					continue;
+				}
+				if (ret_auth == SSH_AUTH_ERROR) {
+					ERROR("Authentication failed (%s)", ssh_get_error(retval->ssh_sess));
+					ssh_key_free(pubkey);
+					break;
+				}
+
 				if (callbacks.key_protected[j]) {
 					s = callbacks.sshauth_passphrase(username, host, callbacks.privatekey_filename[j]);
 				} else {
 					s = NULL;
 				}
 
-				if (libssh2_userauth_publickey_fromfile(retval->ssh_session,
-					username, callbacks.publickey_filename[j], callbacks.privatekey_filename[j], s) != 0) {
-					libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-
-					/* clear the password string */
+				if (ssh_pki_import_privkey_file(callbacks.privatekey_filename[j], s, NULL, NULL, &privkey) != SSH_OK) {
+					WARN("Failed to import the key \"%s\".", callbacks.privatekey_filename[j])
 					if (s != NULL) {
 						memset(s, 0, strlen(s));
 						free(s);
 					}
+					ssh_key_free(pubkey);
+					continue;
+				}
 
-					ERROR("Authentication failed (%s)", err_msg);
-				} else {
-					/* clear the password string */
-					if (s != NULL) {
-						memset(s, 0, strlen(s));
-						free(s);
-					}
+				if (s != NULL) {
+					memset(s, 0, strlen(s));
+					free(s);
+				}
+
+				ret_auth = ssh_userauth_publickey(retval->ssh_sess, NULL, privkey);
+				ssh_key_free(pubkey);
+				ssh_key_free(privkey);
+
+				if (ret_auth == SSH_AUTH_ERROR) {
+					ERROR("Authentication failed (%s)", ssh_get_error(retval->ssh_sess));
+				}
+				if (ret_auth == SSH_AUTH_SUCCESS) {
 					break;
 				}
 			}
 			break;
 		}
-		if (libssh2_userauth_authenticated(retval->ssh_session) != 0) {
+
+		if (ret_auth == SSH_AUTH_SUCCESS) {
 			break;
 		}
 	}
 
 	/* check a state of authentication */
-	if (libssh2_userauth_authenticated(retval->ssh_session) == 0) {
+	if (ret_auth != SSH_AUTH_SUCCESS) {
 		ERROR("Authentication failed.");
 		goto shutdown;
 	}
 
 	/* open a channel */
-	retval->ssh_channel = libssh2_channel_open_session(retval->ssh_session);
-	if (retval->ssh_channel == NULL) {
-		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-		ERROR("Opening the SSH channel failed (%s)", err_msg);
+	retval->ssh_chan = ssh_channel_new(retval->ssh_sess);
+	if (ssh_channel_open_session(retval->ssh_chan) != SSH_OK) {
+		ssh_channel_free(retval->ssh_chan);
+		retval->ssh_chan = NULL;
+		ERROR("Opening the SSH channel failed (%s)", ssh_get_error(retval->ssh_sess));
 		goto shutdown;
 	}
 
 	/* execute the NETCONF subsystem on the channel */
-	if (libssh2_channel_subsystem(retval->ssh_channel, "netconf")) {
-		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
-		ERROR("Starting the netconf SSH subsystem failed (%s)", err_msg);
+	if (ssh_channel_request_subsystem(retval->ssh_chan, "netconf") != SSH_OK) {
+		ERROR("Starting the netconf SSH subsystem failed (%s)", ssh_get_error(retval->ssh_sess));
 		goto shutdown;
 	}
 
@@ -408,7 +418,7 @@ shutdown:
 int transport_connect_socket(const char* host, const char* port);
 
 /*
- * libssh2 variant - use internal SSH client implementation using libssh2
+ * libssh variant - use internal SSH client implementation using libssh
  */
 struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port)
 {
@@ -420,7 +430,7 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 		return (NULL);
 	}
 
-	retval = nc_session_connect_libssh2_socket(username, host, sock);
+	retval = nc_session_connect_libssh_socket(username, host, sock);
 	if (retval != NULL) {
 		retval->hostname = strdup(host);
 		retval->port = strdup(port);
@@ -431,11 +441,10 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 	return (retval);
 }
 
-struct nc_session *nc_session_connect_libssh2_channel(struct nc_session *session)
+struct nc_session *nc_session_connect_libssh_channel(struct nc_session *session)
 {
 	struct nc_session *retval;
 	pthread_mutexattr_t mattr;
-	char* err_msg;
 	int r;
 
 	/* allocate netconf session structure */
@@ -459,9 +468,9 @@ struct nc_session *nc_session_connect_libssh2_channel(struct nc_session *session
 	retval->msgid = 1;
 
 	/* shared resources with the original session */
-	retval->ssh_session = session->ssh_session;
+	retval->ssh_sess = session->ssh_sess;
 	/*
-	 * libssh2 is quite stupid - it provides multiple channels inside a single
+	 * libssh is quite stupid - it provides multiple channels inside a single
 	 * session, but it does not allow multiple threads to work with these
 	 * channels, so we have to share mutex of the master
 	 * session to control access to each SSH channel
@@ -486,21 +495,19 @@ struct nc_session *nc_session_connect_libssh2_channel(struct nc_session *session
 	/* open a separated channel */
 	DBG_LOCK("mut_channel");
 	pthread_mutex_lock(session->mut_channel);
-	retval->ssh_channel = libssh2_channel_open_session(retval->ssh_session);
-	if (retval->ssh_channel == NULL) {
-		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+	retval->ssh_chan = ssh_channel_new(retval->ssh_sess);
+	if (ssh_channel_open_session(retval->ssh_chan) != SSH_OK) {
 		DBG_UNLOCK("mut_channel");
 		pthread_mutex_unlock(session->mut_channel);
-		ERROR("Opening the SSH channel failed (%s)", err_msg);
+		ERROR("Opening the SSH channel failed (%s)", ssh_get_error(retval->ssh_sess));
 		goto shutdown;
 	}
 
 	/* execute the NETCONF subsystem on the channel */
-	if (libssh2_channel_subsystem(retval->ssh_channel, "netconf")) {
-		libssh2_session_last_error(retval->ssh_session, &err_msg, NULL, 0);
+	if (ssh_channel_request_subsystem(retval->ssh_chan, "netconf") != SSH_OK) {
 		DBG_UNLOCK("mut_channel");
 		pthread_mutex_unlock(session->mut_channel);
-		ERROR("Starting the netconf SSH subsystem failed (%s)", err_msg);
+		ERROR("Starting the netconf SSH subsystem failed (%s)", ssh_get_error(retval->ssh_sess));
 		goto shutdown;
 	}
 	DBG_UNLOCK("mut_channel");
@@ -512,10 +519,10 @@ struct nc_session *nc_session_connect_libssh2_channel(struct nc_session *session
 shutdown:
 
 	/* cleanup */
-	if (retval->ssh_channel != NULL) {
+	if (retval->ssh_chan != NULL) {
 		DBG_LOCK("mut_channel");
 		pthread_mutex_lock(session->mut_channel);
-		libssh2_channel_free(retval->ssh_channel);
+		ssh_channel_free(retval->ssh_chan);
 		DBG_UNLOCK("mut_channel");
 		pthread_mutex_unlock(session->mut_channel);
 	}
@@ -808,7 +815,7 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 		ERROR("Executing ssh failed");
 		exit(-1);
 	} else { /* parent process*/
-		DBG("child proces with PID %d forked", (int ) sshpid);
+		DBG("child proces with PID %d forked", (int) sshpid);
 		close(ssh_in); pout[0] = -1;
 		/* open stream to ssh pseudo terminal */
 		/* write there only password/commands for ssh, commands for
@@ -870,8 +877,7 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 				switch (forced) {
 				case 1:
 					fprintf(retval->f_input, "yes");
-					DBG("connecting to an unauthenticated host")
-					;
+					DBG("connecting to an unauthenticated host");
 					break;
 				case 0:
 					fprintf(stdout, "%s ", buffer);
@@ -886,8 +892,7 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 				case -1:
 					fprintf(stdout, "%s ", buffer);
 					fprintf(retval->f_input, "no");
-					VERB("connecting to an unauthenticated host disabled")
-					;
+					VERB("connecting to an unauthenticated host disabled");
 					break;
 				default:
 					goto error_cleanup;

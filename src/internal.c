@@ -314,6 +314,19 @@ API int nc_init(int flags)
 		return (-1);
 	}
 
+#ifndef DISABLE_LIBSSH
+	if (flags & NC_INIT_LIBSSH_PTHREAD) {
+		ssh_threads_set_callbacks(ssh_threads_get_pthread());
+		ssh_init();
+		nc_init_flags |= NC_INIT_LIBSSH_PTHREAD;
+	}
+#endif
+
+	if (flags == NC_INIT_CLIENT) {
+		nc_init_flags |= NC_INIT_CLIENT;
+		return (retval);
+	}
+
 	if ((flags & (NC_INIT_MULTILAYER | NC_INIT_SINGLELAYER)) != NC_INIT_MULTILAYER &&
 			(flags & (NC_INIT_MULTILAYER | NC_INIT_SINGLELAYER)) != NC_INIT_SINGLELAYER) {
 		ERROR("Either single-layer or multi-layer flag must be used in initialization.");
@@ -591,6 +604,16 @@ API int nc_close(void)
 {
 	int retval = 0, i, fd;
 	char my_comm[NC_APPS_COMM_MAX+1];
+
+#ifndef DISABLE_LIBSSH
+	if (nc_init_flags & NC_INIT_LIBSSH_PTHREAD) {
+		ssh_finalize();
+	}
+#endif
+
+	if (nc_init_flags & NC_INIT_CLIENT) {
+		return (retval);
+	}
 
 	/* get my comm */
 	my_comm[0] = '\0';

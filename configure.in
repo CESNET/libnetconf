@@ -128,30 +128,22 @@ AC_ARG_WITH([libxslt],
 	]
 )
 
-AC_ARG_WITH([libssh2],
-	[AS_HELP_STRING([--with-libssh2=DIR], [Specifies libssh2 installation directory.])],
-	[
-		CFLAGS="-I$withval/include $CFLAGS"
-		LDFLAGS="-L$withval/lib -Wl,-rpath,$withval/lib $LDFLAGS"
-		CONFIGURE_PARAMS="--with-libssh2=$withval $CONFIGURE_PARAMS"
-	]
-)
-
-AC_ARG_ENABLE([libssh2],
-	AC_HELP_STRING([--disable-libssh2], [Use ssh client program instead of libssh2.]),
+AC_ARG_ENABLE([libssh],
+	AC_HELP_STRING([--disable-libssh], [Use ssh client program instead of libssh.]),
 	if test "$enableval" = "no"; then
-		libssh2="no"
+		libssh="no"
 		CPPFLAGS="$CPPFLAGS -DDISABLE_LIBSSH"
 		LIBS="$LIBS -lutil" # forkpty()
-		LIBSSH2_DIRECTIVE="#define DISABLE_LIBSSH"
-		CONFIGURE_PARAMS="--disable-libssh2 $CONFIGURE_PARAMS"
+		LIBSSH_DIRECTIVE="#define DISABLE_LIBSSH"
+		CONFIGURE_PARAMS="--disable-libssh $CONFIGURE_PARAMS"
 	else
-		libssh2="yes"
+		libssh="yes"
 	fi
 	,
-	# use libssh2 by default
-	libssh2="yes"
+	# use libssh by default
+	libssh="yes"
 )
+AC_SUBST(LIBSSH_DIRECTIVE)
 
 tls="no"
 AC_ARG_ENABLE([tls],
@@ -368,7 +360,7 @@ case $host_cpu in
         ;;
 esac
 
-if test "$libssh2" = "no"; then
+if test "$libssh" = "no"; then
 	# ssh for NETCONF connection
 	AC_PATH_PROG([SSH_PROG], [ssh], ["missing"])
 	if test "$SSH_PROG" = "missing"; then
@@ -462,16 +454,13 @@ if test "$validation" = "yes" -a -z "$WITH_LIBXSLT" ; then
 	LIBS="`xslt-config --libs` $LIBS"
 fi
 
-if test "$libssh2" = "yes"; then
-	### libssh2 ###
-	AC_CHECK_LIB([ssh2], [libssh2_version], [], AC_MSG_ERROR([Missing libssh2.]))
-	AC_CHECK_HEADERS([libssh2.h], [], AC_MSG_ERROR([Missing libssh2 headers.]))
-	PKG_CHECK_MODULES([LIBSSH2_HANDSHAKE], [libssh2 >= "1.2.8"], [LIBSSH2_SESSION_HANDSHAKE="libssh2_session_handshake"],[LIBSSH2_SESSION_HANDSHAKE="libssh2_session_startup"])
-	PKG_CHECK_MODULES([LIBSSH2_TIMEOUT], [libssh2 >= "1.2.9"], [LIBSSH2_SET_TIMEOUT="libssh2_session_set_timeout(session,timeout)"],[LIBSSH2_SET_TIMEOUT=""])
-	AC_SUBST(LIBSSH2_SESSION_HANDSHAKE)
-	AC_SUBST(LIBSSH2_SET_TIMEOUT)
-	BUILDREQS="$BUILDREQS libssh2-devel >= 1.2.0"
-	DEVELREQS="$DEVELREQS libssh2-devel >= 1.2.0"
+if test "$libssh" = "yes"; then
+	### libssh ###
+	AC_CHECK_LIB([ssh], [ssh_init], [], AC_MSG_ERROR([Missing libssh.]))
+	AC_CHECK_HEADERS([libssh/libssh.h], [], AC_MSG_ERROR([Missing libssh headers.]))
+	AC_CHECK_LIB([ssh_threads], [ssh_threads_get_pthread], [], AC_MSG_ERROR([Missing the libssh_threads library.]))
+	BUILDREQS="$BUILDREQS libssh-devel >= 0.6.0"
+	DEVELREQS="$DEVELREQS libssh-devel >= 0.6.0"
 fi
 
 SRCS_TRANSPORT="src/ssh.c"
@@ -556,8 +545,8 @@ AC_FUNC_MALLOC
 AC_FUNC_MMAP
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([ftruncate memset mkdir munmap socket strcasecmp strchr strdup strerror strrchr strstr strtol strtoul])
-if test "$libssh2" = "no"; then
-	AC_CHECK_FUNC([dup2])
+if test "$libssh" = "no"; then
+	AC_CHECK_FUNCS([dup2])
 fi
 AC_CHECK_FUNC([eaccess], [HAVE_EACCESS="#define HAVE_EACCESS"], [HAVE_EACCESS="#undef HAVE_EACCESS"] )
 
@@ -600,7 +589,6 @@ AC_SUBST(CONFIGURE_PARAMS)
 AC_SUBST(HAVE_EACCESS)
 AC_SUBST(HAVE_UTMPX)
 AC_SUBST(HAVE_LIBXML2_RECONNS)
-AC_SUBST(LIBSSH2_DIRECTIVE)
 AC_SUBST(SSH_PROG)
 AC_SUBST(PTHREAD_LIBS)
 

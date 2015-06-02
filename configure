@@ -631,7 +631,6 @@ ac_includes_default="\
 ac_header_list=
 ac_subst_vars='LTLIBOBJS
 GRAPHS
-LIBSSH2_DIRECTIVE
 HAVE_LIBXML2_RECONNS
 HAVE_UTMPX
 HAVE_EACCESS
@@ -665,18 +664,12 @@ LIBOBJS
 PYPREFIX
 CURL_LIBS
 CURL_CFLAGS
+PKG_CONFIG_LIBDIR
+PKG_CONFIG_PATH
 PTHREAD_CFLAGS
 PTHREAD_LIBS
 PTHREAD_CC
 ax_pthread_config
-LIBSSH2_SET_TIMEOUT
-LIBSSH2_SESSION_HANDSHAKE
-LIBSSH2_TIMEOUT_LIBS
-LIBSSH2_TIMEOUT_CFLAGS
-LIBSSH2_HANDSHAKE_LIBS
-LIBSSH2_HANDSHAKE_CFLAGS
-PKG_CONFIG_LIBDIR
-PKG_CONFIG_PATH
 API
 libtool
 OTOOL64
@@ -720,6 +713,7 @@ DOXYGEN
 SSH_PROG
 UNAME
 PYTHON
+LIBSSH_DIRECTIVE
 XSLT_CONFIG
 LIBXML2_LIBS
 XML2_CONFIG
@@ -783,8 +777,7 @@ enable_option_checking
 with_rpm
 with_libxml2
 with_libxslt
-with_libssh2
-enable_libssh2
+enable_libssh
 enable_tls
 enable_dnssec
 enable_yang_schemas
@@ -818,10 +811,6 @@ CPP
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
-LIBSSH2_HANDSHAKE_CFLAGS
-LIBSSH2_HANDSHAKE_LIBS
-LIBSSH2_TIMEOUT_CFLAGS
-LIBSSH2_TIMEOUT_LIBS
 CURL_CFLAGS
 CURL_LIBS'
 
@@ -1437,7 +1426,7 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --disable-libssh2       Use ssh client program instead of libssh2.
+  --disable-libssh        Use ssh client program instead of libssh.
   --enable-tls            Enable support for NETCONF over TLS using OpenSSL.
   --enable-dnssec         Enable support for SSHFP retrieval using DNSSEC for
                           SSH.
@@ -1460,7 +1449,6 @@ Optional Packages:
 
   --with-libxml2          specific libxml2 location
   --with-libxslt          specific libxslt location
-  --with-libssh2=DIR      Specifies libssh2 installation directory.
   --with-workingdir=path  Path to a working directory of libnetconf, the
                           default value is /var/lib/libnetconf/
   --with-suid=user        When creating files or directories using libnetconf,
@@ -1495,14 +1483,6 @@ Some influential environment variables:
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
-  LIBSSH2_HANDSHAKE_CFLAGS
-              C compiler flags for LIBSSH2_HANDSHAKE, overriding pkg-config
-  LIBSSH2_HANDSHAKE_LIBS
-              linker flags for LIBSSH2_HANDSHAKE, overriding pkg-config
-  LIBSSH2_TIMEOUT_CFLAGS
-              C compiler flags for LIBSSH2_TIMEOUT, overriding pkg-config
-  LIBSSH2_TIMEOUT_LIBS
-              linker flags for LIBSSH2_TIMEOUT, overriding pkg-config
   CURL_CFLAGS C compiler flags for CURL, overriding pkg-config
   CURL_LIBS   linker flags for CURL, overriding pkg-config
 
@@ -3008,35 +2988,24 @@ fi
 fi
 
 
-
-# Check whether --with-libssh2 was given.
-if test "${with_libssh2+set}" = set; then :
-  withval=$with_libssh2;
-		CFLAGS="-I$withval/include $CFLAGS"
-		LDFLAGS="-L$withval/lib -Wl,-rpath,$withval/lib $LDFLAGS"
-		CONFIGURE_PARAMS="--with-libssh2=$withval $CONFIGURE_PARAMS"
-
-
-fi
-
-
-# Check whether --enable-libssh2 was given.
-if test "${enable_libssh2+set}" = set; then :
-  enableval=$enable_libssh2; if test "$enableval" = "no"; then
-		libssh2="no"
+# Check whether --enable-libssh was given.
+if test "${enable_libssh+set}" = set; then :
+  enableval=$enable_libssh; if test "$enableval" = "no"; then
+		libssh="no"
 		CPPFLAGS="$CPPFLAGS -DDISABLE_LIBSSH"
 		LIBS="$LIBS -lutil" # forkpty()
-		LIBSSH2_DIRECTIVE="#define DISABLE_LIBSSH"
-		CONFIGURE_PARAMS="--disable-libssh2 $CONFIGURE_PARAMS"
+		LIBSSH_DIRECTIVE="#define DISABLE_LIBSSH"
+		CONFIGURE_PARAMS="--disable-libssh $CONFIGURE_PARAMS"
 	else
-		libssh2="yes"
+		libssh="yes"
 	fi
 
 else
-  # use libssh2 by default
-	libssh2="yes"
+  # use libssh by default
+	libssh="yes"
 
 fi
+
 
 
 tls="no"
@@ -3399,7 +3368,7 @@ $as_echo "$as_me: WARNING: unsupported architecture $host_cpu" >&2;}
         ;;
 esac
 
-if test "$libssh2" = "no"; then
+if test "$libssh" = "no"; then
 	# ssh for NETCONF connection
 	# Extract the first word of "ssh", so it can be a program name with args.
 set dummy ssh; ac_word=$2
@@ -6832,7 +6801,7 @@ ia64-*-hpux*)
   rm -rf conftest*
   ;;
 
-x86_64-*kfreebsd*-gnu|x86_64-*linux*|powerpc*-*linux*| \
+x86_64-*kfreebsd*-gnu|x86_64-*linux*|ppc*-*linux*|powerpc*-*linux*| \
 s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
   # Find out which ABI we are using.
   echo 'int i;' > conftest.$ac_ext
@@ -6850,10 +6819,7 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_i386"
 	    ;;
-	  powerpc64le-*linux*)
-	    LD="${LD-ld} -m elf32lppclinux"
-	    ;;
-	  powerpc64-*linux*)
+	  ppc64-*linux*|powerpc64-*linux*)
 	    LD="${LD-ld} -m elf32ppclinux"
 	    ;;
 	  s390x-*linux*)
@@ -6872,10 +6838,7 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_x86_64"
 	    ;;
-	  powerpcle-*linux*)
-	    LD="${LD-ld} -m elf64lppc"
-	    ;;
-	  powerpc-*linux*)
+	  ppc*-*linux*|powerpc*-*linux*)
 	    LD="${LD-ld} -m elf64ppc"
 	    ;;
 	  s390*-*linux*|s390*-*tpf*)
@@ -12057,15 +12020,15 @@ fi
 	LIBS="`xslt-config --libs` $LIBS"
 fi
 
-if test "$libssh2" = "yes"; then
-	### libssh2 ###
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libssh2_version in -lssh2" >&5
-$as_echo_n "checking for libssh2_version in -lssh2... " >&6; }
-if ${ac_cv_lib_ssh2_libssh2_version+:} false; then :
+if test "$libssh" = "yes"; then
+	### libssh ###
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ssh_init in -lssh" >&5
+$as_echo_n "checking for ssh_init in -lssh... " >&6; }
+if ${ac_cv_lib_ssh_ssh_init+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lssh2  $LIBS"
+LIBS="-lssh  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12075,317 +12038,100 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char libssh2_version ();
+char ssh_init ();
 int
 main ()
 {
-return libssh2_version ();
+return ssh_init ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_ssh2_libssh2_version=yes
+  ac_cv_lib_ssh_ssh_init=yes
 else
-  ac_cv_lib_ssh2_libssh2_version=no
+  ac_cv_lib_ssh_ssh_init=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ssh2_libssh2_version" >&5
-$as_echo "$ac_cv_lib_ssh2_libssh2_version" >&6; }
-if test "x$ac_cv_lib_ssh2_libssh2_version" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ssh_ssh_init" >&5
+$as_echo "$ac_cv_lib_ssh_ssh_init" >&6; }
+if test "x$ac_cv_lib_ssh_ssh_init" = xyes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBSSH2 1
+#define HAVE_LIBSSH 1
 _ACEOF
 
-  LIBS="-lssh2 $LIBS"
+  LIBS="-lssh $LIBS"
 
 else
-  as_fn_error $? "Missing libssh2." "$LINENO" 5
+  as_fn_error $? "Missing libssh." "$LINENO" 5
 fi
 
-	for ac_header in libssh2.h
+	for ac_header in libssh/libssh.h
 do :
-  ac_fn_c_check_header_mongrel "$LINENO" "libssh2.h" "ac_cv_header_libssh2_h" "$ac_includes_default"
-if test "x$ac_cv_header_libssh2_h" = xyes; then :
+  ac_fn_c_check_header_mongrel "$LINENO" "libssh/libssh.h" "ac_cv_header_libssh_libssh_h" "$ac_includes_default"
+if test "x$ac_cv_header_libssh_libssh_h" = xyes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBSSH2_H 1
+#define HAVE_LIBSSH_LIBSSH_H 1
 _ACEOF
 
 else
-  as_fn_error $? "Missing libssh2 headers." "$LINENO" 5
+  as_fn_error $? "Missing libssh headers." "$LINENO" 5
 fi
 
 done
 
-
-
-
-
-
-
-
-if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
-	if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
-set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_PKG_CONFIG+:} false; then :
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ssh_threads_get_pthread in -lssh_threads" >&5
+$as_echo_n "checking for ssh_threads_get_pthread in -lssh_threads... " >&6; }
+if ${ac_cv_lib_ssh_threads_ssh_threads_get_pthread+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  case $PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lssh_threads  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 
-  ;;
-esac
-fi
-PKG_CONFIG=$ac_cv_path_PKG_CONFIG
-if test -n "$PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
-$as_echo "$PKG_CONFIG" >&6; }
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char ssh_threads_get_pthread ();
+int
+main ()
+{
+return ssh_threads_get_pthread ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_ssh_threads_ssh_threads_get_pthread=yes
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+  ac_cv_lib_ssh_threads_ssh_threads_get_pthread=no
 fi
-
-
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
 fi
-if test -z "$ac_cv_path_PKG_CONFIG"; then
-  ac_pt_PKG_CONFIG=$PKG_CONFIG
-  # Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ssh_threads_ssh_threads_get_pthread" >&5
+$as_echo "$ac_cv_lib_ssh_threads_ssh_threads_get_pthread" >&6; }
+if test "x$ac_cv_lib_ssh_threads_ssh_threads_get_pthread" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBSSH_THREADS 1
+_ACEOF
+
+  LIBS="-lssh_threads $LIBS"
+
 else
-  case $ac_pt_PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
-if test -n "$ac_pt_PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
-$as_echo "$ac_pt_PKG_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+  as_fn_error $? "Missing the libssh_threads library." "$LINENO" 5
 fi
 
-  if test "x$ac_pt_PKG_CONFIG" = x; then
-    PKG_CONFIG=""
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    PKG_CONFIG=$ac_pt_PKG_CONFIG
-  fi
-else
-  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
-fi
-
-fi
-if test -n "$PKG_CONFIG"; then
-	_pkg_min_version=0.9.0
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
-$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
-	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	else
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-		PKG_CONFIG=""
-	fi
-fi
-
-pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBSSH2_HANDSHAKE" >&5
-$as_echo_n "checking for LIBSSH2_HANDSHAKE... " >&6; }
-
-if test -n "$LIBSSH2_HANDSHAKE_CFLAGS"; then
-    pkg_cv_LIBSSH2_HANDSHAKE_CFLAGS="$LIBSSH2_HANDSHAKE_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libssh2 >= \"1.2.8\"\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libssh2 >= "1.2.8"") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_LIBSSH2_HANDSHAKE_CFLAGS=`$PKG_CONFIG --cflags "libssh2 >= "1.2.8"" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$LIBSSH2_HANDSHAKE_LIBS"; then
-    pkg_cv_LIBSSH2_HANDSHAKE_LIBS="$LIBSSH2_HANDSHAKE_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libssh2 >= \"1.2.8\"\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libssh2 >= "1.2.8"") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_LIBSSH2_HANDSHAKE_LIBS=`$PKG_CONFIG --libs "libssh2 >= "1.2.8"" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        LIBSSH2_HANDSHAKE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libssh2 >= "1.2.8"" 2>&1`
-        else
-	        LIBSSH2_HANDSHAKE_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libssh2 >= "1.2.8"" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$LIBSSH2_HANDSHAKE_PKG_ERRORS" >&5
-
-	LIBSSH2_SESSION_HANDSHAKE="libssh2_session_startup"
-elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-	LIBSSH2_SESSION_HANDSHAKE="libssh2_session_startup"
-else
-	LIBSSH2_HANDSHAKE_CFLAGS=$pkg_cv_LIBSSH2_HANDSHAKE_CFLAGS
-	LIBSSH2_HANDSHAKE_LIBS=$pkg_cv_LIBSSH2_HANDSHAKE_LIBS
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	LIBSSH2_SESSION_HANDSHAKE="libssh2_session_handshake"
-fi
-
-pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBSSH2_TIMEOUT" >&5
-$as_echo_n "checking for LIBSSH2_TIMEOUT... " >&6; }
-
-if test -n "$LIBSSH2_TIMEOUT_CFLAGS"; then
-    pkg_cv_LIBSSH2_TIMEOUT_CFLAGS="$LIBSSH2_TIMEOUT_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libssh2 >= \"1.2.9\"\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libssh2 >= "1.2.9"") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_LIBSSH2_TIMEOUT_CFLAGS=`$PKG_CONFIG --cflags "libssh2 >= "1.2.9"" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$LIBSSH2_TIMEOUT_LIBS"; then
-    pkg_cv_LIBSSH2_TIMEOUT_LIBS="$LIBSSH2_TIMEOUT_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libssh2 >= \"1.2.9\"\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libssh2 >= "1.2.9"") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_LIBSSH2_TIMEOUT_LIBS=`$PKG_CONFIG --libs "libssh2 >= "1.2.9"" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        LIBSSH2_TIMEOUT_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libssh2 >= "1.2.9"" 2>&1`
-        else
-	        LIBSSH2_TIMEOUT_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libssh2 >= "1.2.9"" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$LIBSSH2_TIMEOUT_PKG_ERRORS" >&5
-
-	LIBSSH2_SET_TIMEOUT=""
-elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-	LIBSSH2_SET_TIMEOUT=""
-else
-	LIBSSH2_TIMEOUT_CFLAGS=$pkg_cv_LIBSSH2_TIMEOUT_CFLAGS
-	LIBSSH2_TIMEOUT_LIBS=$pkg_cv_LIBSSH2_TIMEOUT_LIBS
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	LIBSSH2_SET_TIMEOUT="libssh2_session_set_timeout(session,timeout)"
-fi
-
-
-	BUILDREQS="$BUILDREQS libssh2-devel >= 1.2.0"
-	DEVELREQS="$DEVELREQS libssh2-devel >= 1.2.0"
+	BUILDREQS="$BUILDREQS libssh-devel >= 0.6.0"
+	DEVELREQS="$DEVELREQS libssh-devel >= 0.6.0"
 fi
 
 SRCS_TRANSPORT="src/ssh.c"
@@ -13121,6 +12867,126 @@ fi
 
 if test "$url" = "yes"; then
 	### libcurl ###
+
+
+
+
+
+
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+$as_echo "$ac_pt_PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=0.9.0
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	else
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		PKG_CONFIG=""
+	fi
+fi
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CURL" >&5
@@ -14094,11 +13960,17 @@ _ACEOF
 fi
 done
 
-if test "$libssh2" = "no"; then
-	ac_fn_c_check_func "$LINENO" "dup2" "ac_cv_func_dup2"
+if test "$libssh" = "no"; then
+	for ac_func in dup2
+do :
+  ac_fn_c_check_func "$LINENO" "dup2" "ac_cv_func_dup2"
 if test "x$ac_cv_func_dup2" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_DUP2 1
+_ACEOF
 
 fi
+done
 
 fi
 ac_fn_c_check_func "$LINENO" "eaccess" "ac_cv_func_eaccess"
@@ -14134,7 +14006,6 @@ fi
 
 
 ############################### Set output #####################################
-
 
 
 

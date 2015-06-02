@@ -1,7 +1,7 @@
 /**
  * \file callbacks_ssh.h
  * \author Radek Krejci <rkrejci@cesnet.cz>
- * \brief Functions to set libssh2's callbacks.
+ * \brief Functions to set libssh's callbacks.
  *
  * Copyright (c) 2012-2014 CESNET, z.s.p.o.
  *
@@ -42,7 +42,7 @@
 
 #ifndef DISABLE_LIBSSH
 
-#include <libssh2.h>
+#include <libssh/libssh.h>
 
 #include "netconf.h"
 
@@ -51,7 +51,7 @@ extern "C" {
 #endif
 
 /**
- * @brief Set a callback function for passing user credentials into the libssh2's
+ * @brief Set a callback function for passing user credentials into the libssh's
  * keyboard-interactive authentication method
  *
  * To make this function available, you have to include libnetconf_ssh.h.
@@ -59,21 +59,15 @@ extern "C" {
  * If the func parameter is NULL, the callback is set back to the default function.
  *
  * @ingroup session
- * @param[in] func Callback function to use. For more information about the
- * callback parameters, see libssh2_userauth_keyboard_interactive() description
- * in libssh2 documentation.
+ * @param[in] func Callback function to use for interactive authentication.
  */
-void nc_callback_sshauth_interactive(void (*func)(const char* name,
-		int name_len,
+char* nc_callback_sshauth_interactive(void (*func)(const char* name,
 		const char* instruction,
-		int instruction_len,
-		int num_prompts,
-		const LIBSSH2_USERAUTH_KBDINT_PROMPT* prompts,
-		LIBSSH2_USERAUTH_KBDINT_RESPONSE* responses,
-		void** abstract));
+		const char* prompt,
+		int echo));
 
 /**
- * @brief Set a callback function for passing the user password into the libssh2's
+ * @brief Set a callback function for passing the user password into the libssh's
  * password authentication method when connecting to 'hostname' as 'username'.
  *
  * To make this function available, you have to include libnetconf_ssh.h.
@@ -88,7 +82,7 @@ void nc_callback_sshauth_password(char* (*func)(const char* username,
 		const char* hostname));
 
 /**
- * @brief Set a callback function for passing the user password into the libssh2's
+ * @brief Set a callback function for passing the user password into the libssh's
  * publickey authentication method when connecting to 'hostname' as 'username'.
  *
  * To make this function available, you have to include libnetconf_ssh.h.
@@ -114,7 +108,7 @@ void nc_callback_sshauth_passphrase(char* (*func)(const char* username,
  * - EXIT_FAILURE - keys do not match or an error occurred.
  */
 void nc_callback_ssh_host_authenticity_check(int (*func)(const char* hostname,
-		LIBSSH2_SESSION *session));
+		ssh_session session));
 
 /**
  * @brief Set path to a private and a public key file used in case of SSH authentication via

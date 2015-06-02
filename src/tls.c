@@ -278,6 +278,13 @@ API int nc_tls_init(const char* peer_cert, const char* peer_key, const char *CAf
 	return (EXIT_SUCCESS);
 }
 
+struct nc_session* _nc_session_accept(const struct nc_cpblts*, const char*, int, int, void*, void*);
+
+API struct nc_session *nc_session_accept_tls(const struct nc_cpblts* capabilities, const char* username, SSL* tls_sess)
+{
+	return (_nc_session_accept(capabilities, username, -1, -1, NULL, tls_sess));
+}
+
 struct nc_session *nc_session_connect_tls_socket(const char* username, const char* UNUSED(host), int sock)
 {
 	struct nc_session *retval;
@@ -391,9 +398,6 @@ struct nc_session *nc_session_connect_tls_socket(const char* username, const cha
 /* definition in transport.c */
 int transport_connect_socket(const char* host, const char* port);
 
-/*
- * libssh2 variant - use internal SSH client implementation using libssh2
- */
 struct nc_session *nc_session_connect_tls(const char* username, const char* host, const char* port)
 {
 	struct nc_session *retval = NULL;

@@ -326,6 +326,10 @@ struct ncds_ds {
 	 */
 	time_t last_access;
 	/**
+	 * @brief Lock for serialized access/modification of the datastore.
+	 */
+	pthread_mutex_t lock;
+	/**
 	 * @brief Pointer to a callback function implementing the retrieval of the
 	 * device status data.
 	 */
