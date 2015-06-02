@@ -12022,9 +12022,9 @@ fi
 
 if test "$libssh" = "yes"; then
 	### libssh ###
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ssh_init in -lssh" >&5
-$as_echo_n "checking for ssh_init in -lssh... " >&6; }
-if ${ac_cv_lib_ssh_ssh_init+:} false; then :
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ssh_pki_key_ecdsa_name in -lssh" >&5
+$as_echo_n "checking for ssh_pki_key_ecdsa_name in -lssh... " >&6; }
+if ${ac_cv_lib_ssh_ssh_pki_key_ecdsa_name+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -12038,27 +12038,27 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char ssh_init ();
+char ssh_pki_key_ecdsa_name ();
 int
 main ()
 {
-return ssh_init ();
+return ssh_pki_key_ecdsa_name ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_ssh_ssh_init=yes
+  ac_cv_lib_ssh_ssh_pki_key_ecdsa_name=yes
 else
-  ac_cv_lib_ssh_ssh_init=no
+  ac_cv_lib_ssh_ssh_pki_key_ecdsa_name=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ssh_ssh_init" >&5
-$as_echo "$ac_cv_lib_ssh_ssh_init" >&6; }
-if test "x$ac_cv_lib_ssh_ssh_init" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ssh_ssh_pki_key_ecdsa_name" >&5
+$as_echo "$ac_cv_lib_ssh_ssh_pki_key_ecdsa_name" >&6; }
+if test "x$ac_cv_lib_ssh_ssh_pki_key_ecdsa_name" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBSSH 1
 _ACEOF
@@ -12066,7 +12066,7 @@ _ACEOF
   LIBS="-lssh $LIBS"
 
 else
-  as_fn_error $? "Missing libssh." "$LINENO" 5
+  as_fn_error $? "Missing libssh (>=0.6.4)." "$LINENO" 5
 fi
 
 	for ac_header in libssh/libssh.h
@@ -12130,8 +12130,8 @@ else
   as_fn_error $? "Missing the libssh_threads library." "$LINENO" 5
 fi
 
-	BUILDREQS="$BUILDREQS libssh-devel >= 0.6.0"
-	DEVELREQS="$DEVELREQS libssh-devel >= 0.6.0"
+	BUILDREQS="$BUILDREQS libssh-devel >= 0.6.4"
+	DEVELREQS="$DEVELREQS libssh-devel >= 0.6.4"
 fi
 
 SRCS_TRANSPORT="src/ssh.c"
