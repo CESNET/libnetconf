@@ -736,7 +736,9 @@ const struct ncds_lockinfo *ncds_file_lockinfo(struct ncds_ds* ds, NC_DATASTORE 
 	free((*info).time);
 	(*info).sid = (char*) xmlGetProp (target_ds, BAD_CAST "lock");
 	(*info).time = (char*) xmlGetProp (target_ds, BAD_CAST "locktime");
-	if (strisempty((*info).sid)) {
+	if ((*info).sid == NULL) {
+		WARN("%s: missing the \"lock\" attribute in the %s datastore.", __func__, file_ds->ds.data_model->name);
+	} else if (strisempty((*info).sid)) {
 		free((*info).sid);
 		free((*info).time);
 		(*info).sid = NULL;
