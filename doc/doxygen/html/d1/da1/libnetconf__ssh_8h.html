@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.8"/>
-<title>libnetconf: src/libnetconf_ssh.h File Reference</title>
+<title>libnetconf: libnetconf_ssh.h File Reference</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.9.0-110_trunk</span>
+   &#160;<span id="projectnumber">0.9.0-134</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -113,7 +113,7 @@ $(document).ready(function(){initNavTree('d1/da1/libnetconf__ssh_8h.html','../..
 </div><!--header-->
 <div class="contents">
 
-<p>libnetconf's header for control libssh2.  
+<p>libnetconf's header for control libssh.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="../../dc/d3a/callbacks__ssh_8h_source.html">callbacks_ssh.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d2/d02/transport_8h_source.html">transport.h</a>&quot;</code><br />
@@ -121,9 +121,9 @@ $(document).ready(function(){initNavTree('d1/da1/libnetconf__ssh_8h.html','../..
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for libnetconf_ssh.h:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../dd/df9/libnetconf__ssh_8h__incl.png" border="0" usemap="#src_2libnetconf__ssh_8h" alt=""/></div>
-<map name="src_2libnetconf__ssh_8h" id="src_2libnetconf__ssh_8h">
-<area shape="rect" id="node2" href="../../dc/d3a/callbacks__ssh_8h.html" title="Functions to set libssh2&#39;s callbacks. " alt="" coords="5,80,123,107"/><area shape="rect" id="node7" href="../../d2/d02/transport_8h.html" title="Functions implementing transport layer for NETCONF. " alt="" coords="147,80,229,107"/><area shape="rect" id="node8" href="../../d2/d50/callhome_8h.html" title="Functions to connect NETCONF server to a NETCONF client (Call Home). " alt="" coords="254,80,341,107"/><area shape="rect" id="node4" href="../../d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="155,155,229,181"/></map>
+<div class="center"><img src="../../dd/df9/libnetconf__ssh_8h__incl.png" border="0" usemap="#libnetconf__ssh_8h" alt=""/></div>
+<map name="libnetconf__ssh_8h" id="libnetconf__ssh_8h">
+<area shape="rect" id="node2" href="../../dc/d3a/callbacks__ssh_8h.html" title="Functions to set libssh&#39;s callbacks. " alt="" coords="5,80,123,107"/><area shape="rect" id="node7" href="../../d2/d02/transport_8h.html" title="Functions implementing transport layer for NETCONF. " alt="" coords="147,80,229,107"/><area shape="rect" id="node8" href="../../d2/d50/callhome_8h.html" title="Functions to connect NETCONF server to a NETCONF client (Call Home). " alt="" coords="254,80,341,107"/><area shape="rect" id="node4" href="../../d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="155,155,229,181"/></map>
 </div>
 </div>
 <p><a href="../../d1/da1/libnetconf__ssh_8h_source.html">Go to the source code of this file.</a></p>
@@ -139,12 +139,14 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a159471d23a8253670ae176615f16965b"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/da1/libnetconf__ssh_8h.html#a159471d23a8253670ae176615f16965b">nc_session_accept_libssh_channel</a> (const struct nc_cpblts *capabilities, const char *username, ssh_channel ssh_chan)</td></tr>
+<tr class="separator:a159471d23a8253670ae176615f16965b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0">nc_ssh_pref</a> (<a class="el" href="../../db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10">NC_SSH_AUTH_TYPE</a> type, short int preference)</td></tr>
 <tr class="memdesc:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the preference of the SSH authentication methods.  <a href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0">More...</a><br /></td></tr>
 <tr class="separator:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>libnetconf's header for control libssh2. </p>
+<div class="textblock"><p>libnetconf's header for control libssh. </p>
 <dl class="section author"><dt>Author</dt><dd>Radek Krejci <a href="#" onclick="location.href='mai'+'lto:'+'rkr'+'ej'+'ci@'+'ce'+'sne'+'t.'+'cz'; return false;">rkrej<span style="display: none;">.nosp@m.</span>ci@c<span style="display: none;">.nosp@m.</span>esnet<span style="display: none;">.nosp@m.</span>.cz</a> Copyright (c) 2012-2014 CESNET, z.s.p.o.</dd></dl>
 <p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p><ol type="1">
 <li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
@@ -153,13 +155,46 @@ Functions</h2></td></tr>
 </ol>
 <p>ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above.</p>
 <p>This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage. </p>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="a159471d23a8253670ae176615f16965b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct nc_session* nc_session_accept_libssh_channel </td>
+          <td>(</td>
+          <td class="paramtype">const struct nc_cpblts *&#160;</td>
+          <td class="paramname"><em>capabilities</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>username</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ssh_channel&#160;</td>
+          <td class="paramname"><em>ssh_chan</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d1/da1/libnetconf__ssh_8h.html">libnetconf_ssh.h</a></li>
-    <li class="footer">Generated on Wed Apr 15 2015 14:51:21 for libnetconf by
+    <li class="footer">Generated on Mon Jun 8 2015 11:02:28 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

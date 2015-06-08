@@ -1,8 +1,8 @@
-.TH "src/netconf.h" 3 "Wed Apr 15 2015" "Version 0.9.0-110_trunk" "libnetconf" \" -*- nroff -*-
+.TH "netconf.h" 3 "Mon Jun 8 2015" "Version 0.9.0-134" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
-src/netconf.h \- 
+netconf.h \- 
 .PP
 libnetconf's general public functions and structures definitions\&.  
 
@@ -18,13 +18,19 @@ libnetconf's general public functions and structures definitions\&.
 
 .in +1c
 .ti -1c
-.RI "#define \fBNC_INIT_ALL\fP   0xffffcfff"
+.RI "#define \fBNC_INIT_ALL\fP   0xffff8fff"
+.br
+.ti -1c
+.RI "#define \fBNC_INIT_CLIENT\fP   0x00004000"
 .br
 .ti -1c
 .RI "#define \fBNC_INIT_DATASTORES\fP   0x00000100"
 .br
 .ti -1c
 .RI "#define \fBNC_INIT_KEEPALIVECHECK\fP   0x00000080"
+.br
+.ti -1c
+.RI "#define \fBNC_INIT_LIBSSH_PTHREAD\fP   0x00000200"
 .br
 .ti -1c
 .RI "#define \fBNC_INIT_MONITORING\fP   0x00000008"
@@ -212,12 +218,16 @@ ALTERNATIVELY, provided that this notice is retained in full, this product may b
 This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
 .SH "Macro Definition Documentation"
 .PP 
-.SS "#define NC_INIT_ALL   0xffffcfff"
+.SS "#define NC_INIT_ALL   0xffff8fff"
 \fBnc_init()\fP's flag to enable all optional features/subsystems 
+.SS "#define NC_INIT_CLIENT   0x00004000"
+\fBnc_init()\fP's flag for NETCONF clients 
 .SS "#define NC_INIT_DATASTORES   0x00000100"
 \fBnc_init()\fP's flag to use internal datastores 
 .SS "#define NC_INIT_KEEPALIVECHECK   0x00000080"
 \fBnc_init()\fP's flag to enable check of monitored sessions\&. Sometimes the process holding a monitored session crashes and status information of the session is not properly removed from the monitored sessions list\&. If this option is used, libnetconf checks if the process holding the session is still alive\&. To do this properly, the session is connected with the PID of the \fBnc_session_monitor()\fP caller\&. If the PID changes (e\&.g\&. after fork() or daemon()), the process is supposed to call \fBnc_session_monitor()\fP againg\&. 
+.SS "#define NC_INIT_LIBSSH_PTHREAD   0x00000200"
+\fBnc_init()\fP's flag to initialize libssh pthread callbacks 
 .SS "#define NC_INIT_MONITORING   0x00000008"
 \fBnc_init()\fP's flag to enable ietf-netconf-monitoring module 
 .SS "#define NC_INIT_MULTILAYER   0x00001000"

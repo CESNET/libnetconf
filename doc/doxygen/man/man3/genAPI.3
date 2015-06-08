@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Wed Apr 15 2015" "Version 0.9.0-110_trunk" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Mon Jun 8 2015" "Version 0.9.0-134" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -274,7 +274,9 @@ Initialize libnetconf for system-wide usage\&. This initialization is shared acr
 .PP
 \fBParameters:\fP
 .RS 4
-\fIflags\fP ORed flags for libnetconf initialization\&. Must include either \fINC_INIT_MULTILAYER\fP or \fINC_INIT_SINGLELAYER\fP with other accepted values including:
+\fIflags\fP ORed flags for libnetconf initialization\&. Must include \fINC_INIT_CLIENT\fP, \fINC_INIT_MULTILAYER\fP, or \fINC_INIT_SINGLELAYER\fP with other accepted values including:
+.IP "\(bu" 2
+\fINC_INIT_LIBSSH_PTHREAD\fP The application uses libssh and pthread threads
 .IP "\(bu" 2
 \fINC_INIT_ALL\fP Enable all available subsystems
 .IP "\(bu" 2
@@ -288,7 +290,7 @@ Initialize libnetconf for system-wide usage\&. This initialization is shared acr
 .PP
 .RE
 .PP
-The difference between the multi-layer and single-layer flag is strictly in the behaviour when cleaning shared library resources, either during \fBnc_close()\fP or if the calling process crashed before (equals did not call \fBnc_close()\fP)\&. On multi-layer crash/close, if it was/is the only running libnetconf application, full cleanup is performed, unlike single-layer crash, when this situation is reflected just in the return flag or single-layer close, when only the local resources are released\&.
+Clients call init just for libssh initialization, if it is used\&. The difference between the multi-layer and single-layer flag is strictly in the behaviour when cleaning shared library resources, either during \fBnc_close()\fP or if the calling process crashed before (equals did not call \fBnc_close()\fP)\&. On multi-layer crash/close, if it was/is the only running libnetconf application, full cleanup is performed, unlike single-layer crash, when this situation is reflected just in the return flag or single-layer close, when only the local resources are released\&.
 .PP
 \fBReturns:\fP
 .RS 4

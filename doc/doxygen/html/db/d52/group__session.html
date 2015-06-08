@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.9.0-110_trunk</span>
+   &#160;<span id="projectnumber">0.9.0-134</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -158,17 +158,17 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:gaacafd4dbd19385fc395f965deaff0c86"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaacafd4dbd19385fc395f965deaff0c86">nc_callback_ssh_host_authenticity_check</a> (int(*func)(const char *hostname, LIBSSH2_SESSION *session))</td></tr>
-<tr class="memdesc:gaacafd4dbd19385fc395f965deaff0c86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function to authorize authenticity of the remote host.  <a href="#gaacafd4dbd19385fc395f965deaff0c86">More...</a><br /></td></tr>
-<tr class="separator:gaacafd4dbd19385fc395f965deaff0c86"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb">nc_callback_sshauth_interactive</a> (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))</td></tr>
-<tr class="memdesc:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method.  <a href="#gacb6042fe2f3cfe5d79e01de599c546eb">More...</a><br /></td></tr>
-<tr class="separator:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga78a69a69dea0369455218c5aeedce9f8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga78a69a69dea0369455218c5aeedce9f8">nc_callback_ssh_host_authenticity_check</a> (int(*func)(const char *hostname, ssh_session session))</td></tr>
+<tr class="memdesc:ga78a69a69dea0369455218c5aeedce9f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function to authorize authenticity of the remote host.  <a href="#ga78a69a69dea0369455218c5aeedce9f8">More...</a><br /></td></tr>
+<tr class="separator:ga78a69a69dea0369455218c5aeedce9f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga41c10d3af57cccebc7c67b11e4024c21"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga41c10d3af57cccebc7c67b11e4024c21">nc_callback_sshauth_interactive</a> (void(*func)(const char *name, const char *instruction, const char *prompt, int echo))</td></tr>
+<tr class="memdesc:ga41c10d3af57cccebc7c67b11e4024c21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing user credentials into the libssh's keyboard-interactive authentication method.  <a href="#ga41c10d3af57cccebc7c67b11e4024c21">More...</a><br /></td></tr>
+<tr class="separator:ga41c10d3af57cccebc7c67b11e4024c21"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726">nc_callback_sshauth_passphrase</a> (char *(*func)(const char *username, const char *hostname, const char *priv_key_file))</td></tr>
-<tr class="memdesc:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'.  <a href="#ga81ef9b1c1949bbffd86cbfd9aa159726">More...</a><br /></td></tr>
+<tr class="memdesc:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing the user password into the libssh's publickey authentication method when connecting to 'hostname' as 'username'.  <a href="#ga81ef9b1c1949bbffd86cbfd9aa159726">More...</a><br /></td></tr>
 <tr class="separator:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga28299d575ef4e234ed96bad5c4f086fb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb">nc_callback_sshauth_password</a> (char *(*func)(const char *username, const char *hostname))</td></tr>
-<tr class="memdesc:ga28299d575ef4e234ed96bad5c4f086fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'.  <a href="#ga28299d575ef4e234ed96bad5c4f086fb">More...</a><br /></td></tr>
+<tr class="memdesc:ga28299d575ef4e234ed96bad5c4f086fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing the user password into the libssh's password authentication method when connecting to 'hostname' as 'username'.  <a href="#ga28299d575ef4e234ed96bad5c4f086fb">More...</a><br /></td></tr>
 <tr class="separator:ga28299d575ef4e234ed96bad5c4f086fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga2ea9b318015206d886c7e54386fc85e3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga2ea9b318015206d886c7e54386fc85e3">nc_cpblts_add</a> (struct nc_cpblts *capabilities, const char *capability_string)</td></tr>
 <tr class="memdesc:ga2ea9b318015206d886c7e54386fc85e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add another capability string into the NETCONF capabilities structure.  <a href="#ga2ea9b318015206d886c7e54386fc85e3">More...</a><br /></td></tr>
@@ -197,9 +197,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gacb59cf4fa78bf02c22afac395acf0693"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacb59cf4fa78bf02c22afac395acf0693">nc_cpblts_remove</a> (struct nc_cpblts *capabilities, const char *capability_string)</td></tr>
 <tr class="memdesc:gacb59cf4fa78bf02c22afac395acf0693"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove the specified capability string from the NETCONF capabilities structure.  <a href="#gacb59cf4fa78bf02c22afac395acf0693">More...</a><br /></td></tr>
 <tr class="separator:gacb59cf4fa78bf02c22afac395acf0693"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad4719e7c594b71d9d339e147acf06818"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad4719e7c594b71d9d339e147acf06818">nc_del_keypair_path</a> (const char *privkey, const char *pubkey)</td></tr>
-<tr class="memdesc:gad4719e7c594b71d9d339e147acf06818"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a private and a public key file.  <a href="#gad4719e7c594b71d9d339e147acf06818">More...</a><br /></td></tr>
-<tr class="separator:gad4719e7c594b71d9d339e147acf06818"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga93972e2d0602d0f3fd2728af279e61c1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga93972e2d0602d0f3fd2728af279e61c1">nc_del_keypair_path</a> (const char *privkey, const char *pubkey)</td></tr>
+<tr class="memdesc:ga93972e2d0602d0f3fd2728af279e61c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a private and a public key file.  <a href="#ga93972e2d0602d0f3fd2728af279e61c1">More...</a><br /></td></tr>
+<tr class="separator:ga93972e2d0602d0f3fd2728af279e61c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad0e758dfee764ae9c2a032e0151c6707"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707">nc_session_accept</a> (const struct nc_cpblts *capabilities)</td></tr>
 <tr class="memdesc:gad0e758dfee764ae9c2a032e0151c6707"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept NETCONF session from a client.  <a href="#gad0e758dfee764ae9c2a032e0151c6707">More...</a><br /></td></tr>
 <tr class="separator:gad0e758dfee764ae9c2a032e0151c6707"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -263,9 +263,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga6e125c035cdebae8c49ff962866c0806"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806">nc_session_transport</a> (<a class="el" href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a> proto)</td></tr>
 <tr class="memdesc:ga6e125c035cdebae8c49ff962866c0806"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set transport protocol for the sessions created by subsequent <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a> calls. By default, transport protocol is set to <a class="el" href="../../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa7878cac9e93258d6bb1a2f166377606a">NC_TRANSPORT_SSH</a>.  <a href="#ga6e125c035cdebae8c49ff962866c0806">More...</a><br /></td></tr>
 <tr class="separator:ga6e125c035cdebae8c49ff962866c0806"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf3ce5316ea11c2f0359db16c2828ad6f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaf3ce5316ea11c2f0359db16c2828ad6f">nc_set_keypair_path</a> (const char *privkey, const char *pubkey)</td></tr>
-<tr class="memdesc:gaf3ce5316ea11c2f0359db16c2828ad6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism.  <a href="#gaf3ce5316ea11c2f0359db16c2828ad6f">More...</a><br /></td></tr>
-<tr class="separator:gaf3ce5316ea11c2f0359db16c2828ad6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad067c538c9c44117a99cb0620e135108"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad067c538c9c44117a99cb0620e135108">nc_set_keypair_path</a> (const char *privkey, const char *pubkey)</td></tr>
+<tr class="memdesc:gad067c538c9c44117a99cb0620e135108"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism.  <a href="#gad067c538c9c44117a99cb0620e135108">More...</a><br /></td></tr>
+<tr class="separator:gad067c538c9c44117a99cb0620e135108"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0">nc_ssh_pref</a> (<a class="el" href="../../db/d52/group__session.html#gad9081cbe1edde22e8612e07ba4c3be10">NC_SSH_AUTH_TYPE</a> type, short int preference)</td></tr>
 <tr class="memdesc:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the preference of the SSH authentication methods.  <a href="#ga13119fdaa84544bf254bdb35ffdf83e0">More...</a><br /></td></tr>
 <tr class="separator:ga13119fdaa84544bf254bdb35ffdf83e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -413,14 +413,14 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="gaacafd4dbd19385fc395f965deaff0c86"></a>
+<a class="anchor" id="ga78a69a69dea0369455218c5aeedce9f8"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void nc_callback_ssh_host_authenticity_check </td>
           <td>(</td>
-          <td class="paramtype">int(*)(const char *hostname, LIBSSH2_SESSION *session)&#160;</td>
+          <td class="paramtype">int(*)(const char *hostname, ssh_session session)&#160;</td>
           <td class="paramname"><em>func</em></td><td>)</td>
           <td></td>
         </tr>
@@ -428,7 +428,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div><div class="memdoc">
 
 <p>Set a callback function to authorize authenticity of the remote host. </p>
-<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh. ">libnetconf_ssh.h</a>.</p>
 <p>If the func parameter is NULL, the callback is set back to the default function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -443,26 +443,26 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 </div>
 </div>
-<a class="anchor" id="gacb6042fe2f3cfe5d79e01de599c546eb"></a>
+<a class="anchor" id="ga41c10d3af57cccebc7c67b11e4024c21"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void nc_callback_sshauth_interactive </td>
+          <td class="memname">char* nc_callback_sshauth_interactive </td>
           <td>(</td>
-          <td class="paramtype">void(*)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract)&#160;</td>
+          <td class="paramtype">void(*)(const char *name, const char *instruction, const char *prompt, int echo)&#160;</td>
           <td class="paramname"><em>func</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method. </p>
-<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
+<p>Set a callback function for passing user credentials into the libssh's keyboard-interactive authentication method. </p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh. ">libnetconf_ssh.h</a>.</p>
 <p>If the func parameter is NULL, the callback is set back to the default function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use. For more information about the callback parameters, see libssh2_userauth_keyboard_interactive() description in libssh2 documentation. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Callback function to use for interactive authentication. </td></tr>
   </table>
   </dd>
 </dl>
@@ -483,8 +483,8 @@ string)", but I want to be clear from the API, that function returns pointer to 
       </table>
 </div><div class="memdoc">
 
-<p>Set a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'. </p>
-<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
+<p>Set a callback function for passing the user password into the libssh's publickey authentication method when connecting to 'hostname' as 'username'. </p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh. ">libnetconf_ssh.h</a>.</p>
 <p>If the func parameter is NULL, the callback is set back to the default function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -509,8 +509,8 @@ string)", but I want to be clear from the API, that function returns pointer to 
       </table>
 </div><div class="memdoc">
 
-<p>Set a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'. </p>
-<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
+<p>Set a callback function for passing the user password into the libssh's password authentication method when connecting to 'hostname' as 'username'. </p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh. ">libnetconf_ssh.h</a>.</p>
 <p>If the func parameter is NULL, the callback is set back to the default function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -797,12 +797,12 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 </div>
 </div>
-<a class="anchor" id="gad4719e7c594b71d9d339e147acf06818"></a>
+<a class="anchor" id="ga93972e2d0602d0f3fd2728af279e61c1"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void nc_del_keypair_path </td>
+          <td class="memname">int nc_del_keypair_path </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>privkey</em>, </td>
@@ -822,14 +822,15 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div><div class="memdoc">
 
 <p>Remove a private and a public key file. </p>
-<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh. ">libnetconf_ssh.h</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">privkey</td><td>Path to the private key file. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pubkey</td><td>Path to the public key file </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pubkey</td><td>Path to the public key file</td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCES or EXIT_FAILURE </dd></dl>
 
 </div>
 </div>
@@ -985,7 +986,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div><div class="memdoc">
 
 <p>Create NETCONF session to the specified server. </p>
-<p>This function can internally use various callbacks set by the client to perform SSH authentication. It selects authentication mechanism from the list provided by the SSH server and based on the preferences set by the client via <a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0" title="Set the preference of the SSH authentication methods. ">nc_ssh_pref()</a>. Then, appropriate callback function (set by <a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb" title="Set a callback function for passing the user password into the libssh2&#39;s password authentication meth...">nc_callback_sshauth_password()</a>, <a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726" title="Set a callback function for passing the user password into the libssh2&#39;s publickey authentication met...">nc_callback_sshauth_passphrase()</a>, nc_set_publickey_path() or nc_set_privatekey_path()) is used to perform the authentication.</p>
+<p>This function can internally use various callbacks set by the client to perform SSH authentication. It selects authentication mechanism from the list provided by the SSH server and based on the preferences set by the client via <a class="el" href="../../db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0" title="Set the preference of the SSH authentication methods. ">nc_ssh_pref()</a>. Then, appropriate callback function (set by <a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb" title="Set a callback function for passing the user password into the libssh&#39;s password authentication metho...">nc_callback_sshauth_password()</a>, <a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726" title="Set a callback function for passing the user password into the libssh&#39;s publickey authentication meth...">nc_callback_sshauth_passphrase()</a>, nc_set_publickey_path() or nc_set_privatekey_path()) is used to perform the authentication.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">host</td><td>Hostname or address (both Ipv4 and IPv6 are accepted). 'localhost' is used by default if NULL is specified. </td></tr>
@@ -1024,7 +1025,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div><div class="memdoc">
 
 <p>Create another NETCONF session using already established SSH session. No authentication is needed in this case. </p>
-<p>This function works only if libnetconf is compiled with using libssh2.</p>
+<p>This function works only if libnetconf is compiled with using libssh.</p>
 <p>It is not applicable to the sessions created by <a class="el" href="../../db/d52/group__session.html#gacaf7b465963605a29f25c3a36df378a6" title="Create NETCONF session communicating via given file descriptors. This is an alternative function to n...">nc_session_connect_inout()</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1178,7 +1179,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div><div class="memdoc">
 
 <p>Cleanup the session structure and free all the allocated resources. </p>
-<p>Do not use the given session structure after this call.</p>
+<p>Do not use the given session structure after this call. If this session was created with <a class="el" href="../../d5/d22/libnetconf__tls_8h.html#a9cc131efe272d1309653cb7cf445fa32">nc_session_accept_tls()</a> or <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html#a159471d23a8253670ae176615f16965b">nc_session_accept_libssh_channel()</a>, the library transport structures are not freed or modified in any way.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">session</td><td>Session to free. </td></tr>
@@ -1504,12 +1505,12 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 </div>
 </div>
-<a class="anchor" id="gaf3ce5316ea11c2f0359db16c2828ad6f"></a>
+<a class="anchor" id="gad067c538c9c44117a99cb0620e135108"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void nc_set_keypair_path </td>
+          <td class="memname">int nc_set_keypair_path </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>privkey</em>, </td>
@@ -1529,14 +1530,15 @@ string)", but I want to be clear from the API, that function returns pointer to 
 </div><div class="memdoc">
 
 <p>Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism. </p>
-<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a>.</p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh. ">libnetconf_ssh.h</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">privkey</td><td>Path to the private key file. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pubkey</td><td>Path to the public key file </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pubkey</td><td>Path to the public key file</td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCES or EXIT_FAILURE </dd></dl>
 
 </div>
 </div>
@@ -1570,8 +1572,8 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <li>password (2)</li>
 <li>public keys (1)</li>
 </ol>
-<p>This function has no effect with configure's &ndash;disable-libssh2 option.</p>
-<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. ">libnetconf_ssh.h</a> header file.</p>
+<p>This function has no effect with configure's &ndash;disable-libssh option.</p>
+<p>To make this function available, you have to include <a class="el" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh. ">libnetconf_ssh.h</a> header file.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Setting preference for the given authentication type. </td></tr>
@@ -1587,7 +1589,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Apr 15 2015 14:51:21 for libnetconf by
+    <li class="footer">Generated on Mon Jun 8 2015 11:02:28 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

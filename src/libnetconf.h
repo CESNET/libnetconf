@@ -1165,7 +1165,7 @@
  *
  * Following sequence of commands will produce the shared library 'turing-machine.so' which may be loaded into libnetconf:
  * ~~~~~~~{.sh}
- * $ autoreconf
+ * $ autoreconf --force --install
  * $ ./configure
  * $ make
  * ~~~~~~~

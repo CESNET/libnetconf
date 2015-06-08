@@ -1,4 +1,4 @@
-<map id="src/libnetconf.h" name="src/libnetconf.h">
+<map id="libnetconf.h" name="libnetconf.h">
 <area shape="rect" id="node3" href="$d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="377,319,451,345"/>
 <area shape="rect" id="node6" href="$dd/d49/callbacks_8h.html" title="Functions to set application&#39;s callbacks. " alt="" coords="861,244,951,271"/>
 <area shape="rect" id="node7" href="$da/d46/session_8h.html" title="Functions to handle NETCONF sessions. " alt="" coords="97,87,176,114"/>

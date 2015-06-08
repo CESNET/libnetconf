@@ -1,4 +1,4 @@
-<map id="src/libnetconf_xml.h" name="src/libnetconf_xml.h">
+<map id="libnetconf_xml.h" name="libnetconf_xml.h">
 <area shape="rect" id="node2" href="$d8/dba/notifications__xml_8h.html" title="NETCONF Notifications functions with libxml2 support. " alt="" coords="309,162,440,189"/>
 <area shape="rect" id="node9" href="$d9/de5/messages__xml_8h.html" title="messages_xml.h" alt="" coords="255,244,379,271"/>
 <area shape="rect" id="node11" href="$d7/dc8/datastore__xml_8h.html" title="NETCONF datastore handling function prototypes and structures &#45; XML variants. " alt="" coords="117,162,235,189"/>

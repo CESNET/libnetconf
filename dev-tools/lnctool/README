@@ -21,12 +21,17 @@ GETTING STARTED
 	you need, but do NOT modify anything else.
 4. Fill body of get_state_data() function so that it returns overall device
 	state data defined in the device data model.
-5. Run sequence 'autoreconf && ./configure && make'. If the build is succesful,
-	a shared library is generated. You can use it with libnetconf for
-	configuring your device.
+5. Run sequence the following sequence of commands:
+
+$ autoreconf --force --install
+$ ./configure && make.
+
+	If the build is succesful, a shared library is generated. You can use it
+	with libnetconf for configuring your device.
 
 AUTHORS
 ================================================================================
 CESNET, z.s.p.o.
 David Kupka <dkupka@cesnet.cz>
+Radek Krejci <rkrejci@cesnet.cz>
 
