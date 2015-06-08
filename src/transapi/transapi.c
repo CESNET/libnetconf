@@ -239,7 +239,10 @@ static int transapi_revert_callbacks_recursive(const struct transapi_callbacks_i
 		if (ret == REVERT_CALLBACK_ERROR) {
 			return (EXIT_FAILURE);
 		}
-		transapi_revert_callbacks_recursive_children(info, tree, erropt, error);
+		/* revert_own reversed ADD of the parent (deleted the whole subtree with all the children, nothing left to do) */
+		if (!(tree->op & XMLDIFF_ADD)) {
+			transapi_revert_callbacks_recursive_children(info, tree, erropt, error);
+		}
 	}
 
 	return ret;
