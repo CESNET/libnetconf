@@ -27,8 +27,8 @@ var group__session =
       [ "NC_TRANSPORT_SSH", "db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa7878cac9e93258d6bb1a2f166377606a", null ],
       [ "NC_TRANSPORT_TLS", "db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa9dfde07fbf3ce02396167716ef70c612", null ]
     ] ],
-    [ "nc_callback_ssh_host_authenticity_check", "db/d52/group__session.html#gaacafd4dbd19385fc395f965deaff0c86", null ],
-    [ "nc_callback_sshauth_interactive", "db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb", null ],
+    [ "nc_callback_ssh_host_authenticity_check", "db/d52/group__session.html#ga78a69a69dea0369455218c5aeedce9f8", null ],
+    [ "nc_callback_sshauth_interactive", "db/d52/group__session.html#ga41c10d3af57cccebc7c67b11e4024c21", null ],
     [ "nc_callback_sshauth_passphrase", "db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726", null ],
     [ "nc_callback_sshauth_password", "db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb", null ],
     [ "nc_cpblts_add", "db/d52/group__session.html#ga2ea9b318015206d886c7e54386fc85e3", null ],
@@ -40,7 +40,7 @@ var group__session =
     [ "nc_cpblts_iter_start", "db/d52/group__session.html#gae92c774e940114b4733f85e186d84620", null ],
     [ "nc_cpblts_new", "db/d52/group__session.html#gabdd04a64fd465ebbf910c6b08393ac43", null ],
     [ "nc_cpblts_remove", "db/d52/group__session.html#gacb59cf4fa78bf02c22afac395acf0693", null ],
-    [ "nc_del_keypair_path", "db/d52/group__session.html#gad4719e7c594b71d9d339e147acf06818", null ],
+    [ "nc_del_keypair_path", "db/d52/group__session.html#ga93972e2d0602d0f3fd2728af279e61c1", null ],
     [ "nc_session_accept", "db/d52/group__session.html#gad0e758dfee764ae9c2a032e0151c6707", null ],
     [ "nc_session_accept_inout", "db/d52/group__session.html#ga4d2da6dc354779dbd7a745147fa40457", null ],
     [ "nc_session_accept_username", "db/d52/group__session.html#ga7ee207cac84fd5cd82419af41e14c06f", null ],
@@ -62,6 +62,6 @@ var group__session =
     [ "nc_session_monitor", "db/d52/group__session.html#ga023c9c813c59588ab938108f3f063d41", null ],
     [ "nc_session_notif_allowed", "db/d52/group__session.html#gafd3b69869e102a4625a5ffb490b4d70f", null ],
     [ "nc_session_transport", "db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806", null ],
-    [ "nc_set_keypair_path", "db/d52/group__session.html#gaf3ce5316ea11c2f0359db16c2828ad6f", null ],
+    [ "nc_set_keypair_path", "db/d52/group__session.html#gad067c538c9c44117a99cb0620e135108", null ],
     [ "nc_ssh_pref", "db/d52/group__session.html#ga13119fdaa84544bf254bdb35ffdf83e0", null ]
 ];

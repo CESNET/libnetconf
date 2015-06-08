@@ -1,4 +1,4 @@
-.TH "Call Home" 3 "Wed Apr 15 2015" "Version 0.9.0-110_trunk" "libnetconf" \" -*- nroff -*-
+.TH "Call Home" 3 "Mon Jun 8 2015" "Version 0.9.0-134" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -52,7 +52,7 @@ libnetconf's functions implementing NETCONF Call Home (both SSH and TLS) mechani
 .SS "struct nc_session* nc_callhome_accept (const char *username, const struct nc_cpblts *cpblts, int *timeout)"
 
 .PP
-Accept incoming Call Home connection and create NETCONF session on it\&. This function uses transport protocol set by \fBnc_session_transport()\fP\&. If NC_TRANSPORT_SSH (default value) is set, configure's --disable-libssh2 option cannot be used\&. If NC_TRANSPORT_TLS is set, configure's --enable-tls must be used
+Accept incoming Call Home connection and create NETCONF session on it\&. This function uses transport protocol set by \fBnc_session_transport()\fP\&. If NC_TRANSPORT_SSH (default value) is set, configure's --disable-libssh option cannot be used\&. If NC_TRANSPORT_TLS is set, configure's --enable-tls must be used
 .PP
 To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP or \fBlibnetconf_tls\&.h\fP\&.
 .PP

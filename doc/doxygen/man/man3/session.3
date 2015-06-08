@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Wed Apr 15 2015" "Version 0.9.0-110_trunk" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Mon Jun 8 2015" "Version 0.9.0-134" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -38,21 +38,21 @@ libnetconf's functions for handling NETCONF sessions\&.
 
 .in +1c
 .ti -1c
-.RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, LIBSSH2_SESSION *session))"
+.RI "void \fBnc_callback_ssh_host_authenticity_check\fP (int(*func)(const char *hostname, ssh_session session))"
 .br
 .RI "\fISet a callback function to authorize authenticity of the remote host\&. \fP"
 .ti -1c
-.RI "void \fBnc_callback_sshauth_interactive\fP (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))"
+.RI "char * \fBnc_callback_sshauth_interactive\fP (void(*func)(const char *name, const char *instruction, const char *prompt, int echo))"
 .br
-.RI "\fISet a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method\&. \fP"
+.RI "\fISet a callback function for passing user credentials into the libssh's keyboard-interactive authentication method\&. \fP"
 .ti -1c
 .RI "void \fBnc_callback_sshauth_passphrase\fP (char *(*func)(const char *username, const char *hostname, const char *priv_key_file))"
 .br
-.RI "\fISet a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'\&. \fP"
+.RI "\fISet a callback function for passing the user password into the libssh's publickey authentication method when connecting to 'hostname' as 'username'\&. \fP"
 .ti -1c
 .RI "void \fBnc_callback_sshauth_password\fP (char *(*func)(const char *username, const char *hostname))"
 .br
-.RI "\fISet a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'\&. \fP"
+.RI "\fISet a callback function for passing the user password into the libssh's password authentication method when connecting to 'hostname' as 'username'\&. \fP"
 .ti -1c
 .RI "int \fBnc_cpblts_add\fP (struct nc_cpblts *capabilities, const char *capability_string)"
 .br
@@ -90,7 +90,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .br
 .RI "\fIRemove the specified capability string from the NETCONF capabilities structure\&. \fP"
 .ti -1c
-.RI "void \fBnc_del_keypair_path\fP (const char *privkey, const char *pubkey)"
+.RI "int \fBnc_del_keypair_path\fP (const char *privkey, const char *pubkey)"
 .br
 .RI "\fIRemove a private and a public key file\&. \fP"
 .ti -1c
@@ -178,7 +178,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .br
 .RI "\fISet transport protocol for the sessions created by subsequent \fBnc_session_connect()\fP calls\&. By default, transport protocol is set to \fBNC_TRANSPORT_SSH\fP\&. \fP"
 .ti -1c
-.RI "void \fBnc_set_keypair_path\fP (const char *privkey, const char *pubkey)"
+.RI "int \fBnc_set_keypair_path\fP (const char *privkey, const char *pubkey)"
 .br
 .RI "\fISet path to a private and a public key file used in case of SSH authentication via a publickey mechanism\&. \fP"
 .ti -1c
@@ -290,7 +290,7 @@ NETCONF over SSH, this value is used by default
 NETCONF over TLS 
 .SH "Function Documentation"
 .PP 
-.SS "void nc_callback_ssh_host_authenticity_check (int(*)(const char *hostname, LIBSSH2_SESSION *session)func)"
+.SS "void nc_callback_ssh_host_authenticity_check (int(*)(const char *hostname, ssh_session session)func)"
 
 .PP
 Set a callback function to authorize authenticity of the remote host\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
@@ -308,23 +308,23 @@ EXIT_FAILURE - keys do not match or an error occurred\&.
 .RE
 .PP
 
-.SS "void nc_callback_sshauth_interactive (void(*)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract)func)"
+.SS "char* nc_callback_sshauth_interactive (void(*)(const char *name, const char *instruction, const char *prompt, int echo)func)"
 
 .PP
-Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
+Set a callback function for passing user credentials into the libssh's keyboard-interactive authentication method\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
 .PP
 If the func parameter is NULL, the callback is set back to the default function\&.
 .PP
 \fBParameters:\fP
 .RS 4
-\fIfunc\fP Callback function to use\&. For more information about the callback parameters, see libssh2_userauth_keyboard_interactive() description in libssh2 documentation\&. 
+\fIfunc\fP Callback function to use for interactive authentication\&. 
 .RE
 .PP
 
 .SS "void nc_callback_sshauth_passphrase (char *(*)(const char *username, const char *hostname, const char *priv_key_file)func)"
 
 .PP
-Set a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
+Set a callback function for passing the user password into the libssh's publickey authentication method when connecting to 'hostname' as 'username'\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
 .PP
 If the func parameter is NULL, the callback is set back to the default function\&.
 .PP
@@ -337,7 +337,7 @@ If the func parameter is NULL, the callback is set back to the default function\
 .SS "void nc_callback_sshauth_password (char *(*)(const char *username, const char *hostname)func)"
 
 .PP
-Set a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
+Set a callback function for passing the user password into the libssh's password authentication method when connecting to 'hostname' as 'username'\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
 .PP
 If the func parameter is NULL, the callback is set back to the default function\&.
 .PP
@@ -495,7 +495,7 @@ Remove the specified capability string from the NETCONF capabilities structure\&
 .RE
 .PP
 
-.SS "void nc_del_keypair_path (const char *privkey, const char *pubkey)"
+.SS "int nc_del_keypair_path (const char *privkey, const char *pubkey)"
 
 .PP
 Remove a private and a public key file\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
@@ -504,7 +504,12 @@ Remove a private and a public key file\&. To make this function available, you h
 .RS 4
 \fIprivkey\fP Path to the private key file\&. 
 .br
-\fIpubkey\fP Path to the public key file 
+\fIpubkey\fP Path to the public key file
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCES or EXIT_FAILURE 
 .RE
 .PP
 
@@ -591,7 +596,7 @@ Structure describing the NETCONF session or NULL in case of an error\&.
 .SS "struct nc_session* nc_session_connect_channel (struct nc_session *session, const struct nc_cpblts *cpblts)"
 
 .PP
-Create another NETCONF session using already established SSH session\&. No authentication is needed in this case\&. This function works only if libnetconf is compiled with using libssh2\&.
+Create another NETCONF session using already established SSH session\&. No authentication is needed in this case\&. This function works only if libnetconf is compiled with using libssh\&.
 .PP
 It is not applicable to the sessions created by \fBnc_session_connect_inout()\fP\&.
 .PP
@@ -664,7 +669,7 @@ Structure describing a dummy NETCONF session or NULL in case of an error\&.
 .SS "void nc_session_free (struct nc_session *session)"
 
 .PP
-Cleanup the session structure and free all the allocated resources\&. Do not use the given session structure after this call\&.
+Cleanup the session structure and free all the allocated resources\&. Do not use the given session structure after this call\&. If this session was created with \fBnc_session_accept_tls()\fP or \fBnc_session_accept_libssh_channel()\fP, the library transport structures are not freed or modified in any way\&.
 .PP
 \fBParameters:\fP
 .RS 4
@@ -863,7 +868,7 @@ Tell me if the notification subscription is allowed on the given session\&.
 
 .PP
 Set transport protocol for the sessions created by subsequent \fBnc_session_connect()\fP calls\&. By default, transport protocol is set to \fBNC_TRANSPORT_SSH\fP\&. This function is thread-safe\&. Change made by calling this function applies only to the current thread\&. 
-.SS "void nc_set_keypair_path (const char *privkey, const char *pubkey)"
+.SS "int nc_set_keypair_path (const char *privkey, const char *pubkey)"
 
 .PP
 Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.
@@ -872,7 +877,12 @@ Set path to a private and a public key file used in case of SSH authentication v
 .RS 4
 \fIprivkey\fP Path to the private key file\&. 
 .br
-\fIpubkey\fP Path to the public key file 
+\fIpubkey\fP Path to the public key file
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+EXIT_SUCCES or EXIT_FAILURE 
 .RE
 .PP
 
@@ -888,7 +898,7 @@ password (2)
 public keys (1)
 .PP
 .PP
-This function has no effect with configure's --disable-libssh2 option\&.
+This function has no effect with configure's --disable-libssh option\&.
 .PP
 To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP header file\&.
 .PP

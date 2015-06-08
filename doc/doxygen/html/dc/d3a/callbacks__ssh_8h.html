@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.8"/>
-<title>libnetconf: src/callbacks_ssh.h File Reference</title>
+<title>libnetconf: callbacks_ssh.h File Reference</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.9.0-110_trunk</span>
+   &#160;<span id="projectnumber">0.9.0-134</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -112,50 +112,50 @@ $(document).ready(function(){initNavTree('dc/d3a/callbacks__ssh_8h.html','../../
 </div><!--header-->
 <div class="contents">
 
-<p>Functions to set libssh2's callbacks.  
+<p>Functions to set libssh's callbacks.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;libssh2.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;libssh/libssh.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for callbacks_ssh.h:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d8/dad/callbacks__ssh_8h__incl.png" border="0" usemap="#src_2callbacks__ssh_8h" alt=""/></div>
-<map name="src_2callbacks__ssh_8h" id="src_2callbacks__ssh_8h">
-<area shape="rect" id="node3" href="../../d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="103,80,178,107"/></map>
+<div class="center"><img src="../../d8/dad/callbacks__ssh_8h__incl.png" border="0" usemap="#callbacks__ssh_8h" alt=""/></div>
+<map name="callbacks__ssh_8h" id="callbacks__ssh_8h">
+<area shape="rect" id="node3" href="../../d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="133,80,208,107"/></map>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../da/de9/callbacks__ssh_8h__dep__incl.png" border="0" usemap="#src_2callbacks__ssh_8hdep" alt=""/></div>
-<map name="src_2callbacks__ssh_8hdep" id="src_2callbacks__ssh_8hdep">
-<area shape="rect" id="node2" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh2. " alt="" coords="5,80,144,107"/></map>
+<div class="center"><img src="../../da/de9/callbacks__ssh_8h__dep__incl.png" border="0" usemap="#callbacks__ssh_8hdep" alt=""/></div>
+<map name="callbacks__ssh_8hdep" id="callbacks__ssh_8hdep">
+<area shape="rect" id="node2" href="../../d1/da1/libnetconf__ssh_8h.html" title="libnetconf&#39;s header for control libssh. " alt="" coords="6,80,122,107"/></map>
 </div>
 </div>
 <p><a href="../../dc/d3a/callbacks__ssh_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:gaacafd4dbd19385fc395f965deaff0c86"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaacafd4dbd19385fc395f965deaff0c86">nc_callback_ssh_host_authenticity_check</a> (int(*func)(const char *hostname, LIBSSH2_SESSION *session))</td></tr>
-<tr class="memdesc:gaacafd4dbd19385fc395f965deaff0c86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function to authorize authenticity of the remote host.  <a href="../../db/d52/group__session.html#gaacafd4dbd19385fc395f965deaff0c86">More...</a><br /></td></tr>
-<tr class="separator:gaacafd4dbd19385fc395f965deaff0c86"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb">nc_callback_sshauth_interactive</a> (void(*func)(const char *name, int name_len, const char *instruction, int instruction_len, int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract))</td></tr>
-<tr class="memdesc:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing user credentials into the libssh2's keyboard-interactive authentication method.  <a href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb">More...</a><br /></td></tr>
-<tr class="separator:gacb6042fe2f3cfe5d79e01de599c546eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga78a69a69dea0369455218c5aeedce9f8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga78a69a69dea0369455218c5aeedce9f8">nc_callback_ssh_host_authenticity_check</a> (int(*func)(const char *hostname, ssh_session session))</td></tr>
+<tr class="memdesc:ga78a69a69dea0369455218c5aeedce9f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function to authorize authenticity of the remote host.  <a href="../../db/d52/group__session.html#ga78a69a69dea0369455218c5aeedce9f8">More...</a><br /></td></tr>
+<tr class="separator:ga78a69a69dea0369455218c5aeedce9f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga41c10d3af57cccebc7c67b11e4024c21"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga41c10d3af57cccebc7c67b11e4024c21">nc_callback_sshauth_interactive</a> (void(*func)(const char *name, const char *instruction, const char *prompt, int echo))</td></tr>
+<tr class="memdesc:ga41c10d3af57cccebc7c67b11e4024c21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing user credentials into the libssh's keyboard-interactive authentication method.  <a href="../../db/d52/group__session.html#ga41c10d3af57cccebc7c67b11e4024c21">More...</a><br /></td></tr>
+<tr class="separator:ga41c10d3af57cccebc7c67b11e4024c21"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726">nc_callback_sshauth_passphrase</a> (char *(*func)(const char *username, const char *hostname, const char *priv_key_file))</td></tr>
-<tr class="memdesc:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing the user password into the libssh2's publickey authentication method when connecting to 'hostname' as 'username'.  <a href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726">More...</a><br /></td></tr>
+<tr class="memdesc:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing the user password into the libssh's publickey authentication method when connecting to 'hostname' as 'username'.  <a href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726">More...</a><br /></td></tr>
 <tr class="separator:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga28299d575ef4e234ed96bad5c4f086fb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb">nc_callback_sshauth_password</a> (char *(*func)(const char *username, const char *hostname))</td></tr>
-<tr class="memdesc:ga28299d575ef4e234ed96bad5c4f086fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing the user password into the libssh2's password authentication method when connecting to 'hostname' as 'username'.  <a href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb">More...</a><br /></td></tr>
+<tr class="memdesc:ga28299d575ef4e234ed96bad5c4f086fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing the user password into the libssh's password authentication method when connecting to 'hostname' as 'username'.  <a href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb">More...</a><br /></td></tr>
 <tr class="separator:ga28299d575ef4e234ed96bad5c4f086fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad4719e7c594b71d9d339e147acf06818"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad4719e7c594b71d9d339e147acf06818">nc_del_keypair_path</a> (const char *privkey, const char *pubkey)</td></tr>
-<tr class="memdesc:gad4719e7c594b71d9d339e147acf06818"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a private and a public key file.  <a href="../../db/d52/group__session.html#gad4719e7c594b71d9d339e147acf06818">More...</a><br /></td></tr>
-<tr class="separator:gad4719e7c594b71d9d339e147acf06818"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf3ce5316ea11c2f0359db16c2828ad6f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gaf3ce5316ea11c2f0359db16c2828ad6f">nc_set_keypair_path</a> (const char *privkey, const char *pubkey)</td></tr>
-<tr class="memdesc:gaf3ce5316ea11c2f0359db16c2828ad6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism.  <a href="../../db/d52/group__session.html#gaf3ce5316ea11c2f0359db16c2828ad6f">More...</a><br /></td></tr>
-<tr class="separator:gaf3ce5316ea11c2f0359db16c2828ad6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga93972e2d0602d0f3fd2728af279e61c1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga93972e2d0602d0f3fd2728af279e61c1">nc_del_keypair_path</a> (const char *privkey, const char *pubkey)</td></tr>
+<tr class="memdesc:ga93972e2d0602d0f3fd2728af279e61c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a private and a public key file.  <a href="../../db/d52/group__session.html#ga93972e2d0602d0f3fd2728af279e61c1">More...</a><br /></td></tr>
+<tr class="separator:ga93972e2d0602d0f3fd2728af279e61c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad067c538c9c44117a99cb0620e135108"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gad067c538c9c44117a99cb0620e135108">nc_set_keypair_path</a> (const char *privkey, const char *pubkey)</td></tr>
+<tr class="memdesc:gad067c538c9c44117a99cb0620e135108"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set path to a private and a public key file used in case of SSH authentication via a publickey mechanism.  <a href="../../db/d52/group__session.html#gad067c538c9c44117a99cb0620e135108">More...</a><br /></td></tr>
+<tr class="separator:gad067c538c9c44117a99cb0620e135108"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Functions to set libssh2's callbacks. </p>
+<div class="textblock"><p>Functions to set libssh's callbacks. </p>
 <dl class="section author"><dt>Author</dt><dd>Radek Krejci <a href="#" onclick="location.href='mai'+'lto:'+'rkr'+'ej'+'ci@'+'ce'+'sne'+'t.'+'cz'; return false;">rkrej<span style="display: none;">.nosp@m.</span>ci@c<span style="display: none;">.nosp@m.</span>esnet<span style="display: none;">.nosp@m.</span>.cz</a> Copyright (c) 2012-2014 CESNET, z.s.p.o.</dd></dl>
 <p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p><ol type="1">
 <li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
@@ -170,7 +170,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../dc/d3a/callbacks__ssh_8h.html">callbacks_ssh.h</a></li>
-    <li class="footer">Generated on Wed Apr 15 2015 14:51:21 for libnetconf by
+    <li class="footer">Generated on Mon Jun 8 2015 11:02:28 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

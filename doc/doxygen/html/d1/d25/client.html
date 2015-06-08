@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.9.0-110_trunk</span>
+   &#160;<span id="projectnumber">0.9.0-134</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -119,9 +119,9 @@ Default priorities are following:<ul>
 </li>
 <li><b>Set your own callback(s) for the SSH authentication methods (optional)</b>.<br />
 User credentials are received via the callback functions specific for each authentication method. There are default callbacks, but application can set their own via:<ul>
-<li><em>Interactive</em> - <a class="el" href="../../db/d52/group__session.html#gacb6042fe2f3cfe5d79e01de599c546eb" title="Set a callback function for passing user credentials into the libssh2&#39;s keyboard-interactive authenti...">nc_callback_sshauth_interactive()</a></li>
-<li><em>Password</em> - <a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb" title="Set a callback function for passing the user password into the libssh2&#39;s password authentication meth...">nc_callback_sshauth_password()</a></li>
-<li><em>Publuc keys</em> - <a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726" title="Set a callback function for passing the user password into the libssh2&#39;s publickey authentication met...">nc_callback_sshauth_passphrase()</a>. Here can the paths to the key files be also specified by nc_set_publickey_path() and nc_set_privatekey_path(). If not set, libnetconf tries to find them in the default paths.</li>
+<li><em>Interactive</em> - <a class="el" href="../../db/d52/group__session.html#ga41c10d3af57cccebc7c67b11e4024c21" title="Set a callback function for passing user credentials into the libssh&#39;s keyboard-interactive authentic...">nc_callback_sshauth_interactive()</a></li>
+<li><em>Password</em> - <a class="el" href="../../db/d52/group__session.html#ga28299d575ef4e234ed96bad5c4f086fb" title="Set a callback function for passing the user password into the libssh&#39;s password authentication metho...">nc_callback_sshauth_password()</a></li>
+<li><em>Publuc keys</em> - <a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726" title="Set a callback function for passing the user password into the libssh&#39;s publickey authentication meth...">nc_callback_sshauth_passphrase()</a>. Here can the paths to the key files be also specified by nc_set_publickey_path() and nc_set_privatekey_path(). If not set, libnetconf tries to find them in the default paths.</li>
 </ul>
 </li>
 <li><b>Connect to the NETCONF server(s)</b>.<br />
@@ -142,7 +142,7 @@ Do not forget to free created rpc messages (<a class="el" href="../../db/de9/gro
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../da/d1b/usage.html">Using libnetconf</a></li>
-    <li class="footer">Generated on Wed Apr 15 2015 14:51:21 for libnetconf by
+    <li class="footer">Generated on Mon Jun 8 2015 11:02:28 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

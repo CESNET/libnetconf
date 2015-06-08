@@ -1,10 +1,10 @@
-.TH "src/libnetconf_ssh.h" 3 "Wed Apr 15 2015" "Version 0.9.0-110_trunk" "libnetconf" \" -*- nroff -*-
+.TH "libnetconf_ssh.h" 3 "Mon Jun 8 2015" "Version 0.9.0-134" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
-src/libnetconf_ssh.h \- 
+libnetconf_ssh.h \- 
 .PP
-libnetconf's header for control libssh2\&.  
+libnetconf's header for control libssh\&.  
 
 .SH SYNOPSIS
 .br
@@ -28,13 +28,16 @@ libnetconf's header for control libssh2\&.
 
 .in +1c
 .ti -1c
+.RI "struct nc_session * \fBnc_session_accept_libssh_channel\fP (const struct nc_cpblts *capabilities, const char *username, ssh_channel ssh_chan)"
+.br
+.ti -1c
 .RI "void \fBnc_ssh_pref\fP (\fBNC_SSH_AUTH_TYPE\fP type, short int preference)"
 .br
 .RI "\fISet the preference of the SSH authentication methods\&. \fP"
 .in -1c
 .SH "Detailed Description"
 .PP 
-libnetconf's header for control libssh2\&. 
+libnetconf's header for control libssh\&. 
 
 
 .PP
@@ -55,6 +58,10 @@ Neither the name of the Company nor the names of its contributors may be used to
 ALTERNATIVELY, provided that this notice is retained in full, this product may be distributed under the terms of the GNU General Public License (GPL) version 2 or later, in which case the provisions of the GPL apply INSTEAD OF those given above\&.
 .PP
 This software is provided ``as is, and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed\&. In no event shall the company or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage\&. 
+.SH "Function Documentation"
+.PP 
+.SS "struct nc_session* nc_session_accept_libssh_channel (const struct nc_cpblts *capabilities, const char *username, ssh_channelssh_chan)"
+
 .SH "Author"
 .PP 
 Generated automatically by Doxygen for libnetconf from the source code\&.

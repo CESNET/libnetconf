@@ -1,5 +1,5 @@
-<map id="src/datastore.h" name="src/datastore.h">
-<area shape="rect" id="node2" href="$d1/d87/libnetconf_8h.html" title="libnetconf&#39;s main header. " alt="" coords="5,80,116,107"/>
-<area shape="rect" id="node4" href="$d7/dc8/datastore__xml_8h.html" title="NETCONF datastore handling function prototypes and structures &#45; XML variants. " alt="" coords="141,80,279,107"/>
-<area shape="rect" id="node3" href="$d5/d3e/libnetconf__xml_8h.html" title="libnetconf&#39;s main header for libxml2 variants of some functions. " alt="" coords="66,155,205,181"/>
+<map id="datastore.h" name="datastore.h">
+<area shape="rect" id="node2" href="$d1/d87/libnetconf_8h.html" title="libnetconf&#39;s main header. " alt="" coords="5,80,93,107"/>
+<area shape="rect" id="node4" href="$d7/dc8/datastore__xml_8h.html" title="NETCONF datastore handling function prototypes and structures &#45; XML variants. " alt="" coords="117,80,235,107"/>
+<area shape="rect" id="node3" href="$d5/d3e/libnetconf__xml_8h.html" title="libnetconf&#39;s main header for libxml2 variants of some functions. " alt="" coords="54,155,170,181"/>
 </map>

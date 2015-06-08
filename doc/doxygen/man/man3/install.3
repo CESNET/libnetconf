@@ -1,4 +1,4 @@
-.TH "install" 3 "Wed Apr 15 2015" "Version 0.9.0-110_trunk" "libnetconf" \" -*- nroff -*-
+.TH "install" 3 "Mon Jun 8 2015" "Version 0.9.0-134" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -34,9 +34,9 @@ compiler (\fIgcc\fP, \fIclang\fP, \&.\&.\&.) and standard headers
 .IP "\(bu" 2
 \fIlibxslt\fP (including headers from the devel package)
 .IP "\(bu" 2
-\fIlibssh2\fP (including headers from the devel package)
+\fIlibssh\fP (including headers from the devel package)
 .IP "  \(bu" 4
-can be omitted by \fC--disable-libssh2\fP option, but in that case a standalone SSH client (usually from the openSSH) is required\&. For more details, see \fB--disable-libssh2\fP description\&.
+can be omitted by \fC--disable-libssh\fP option, but in that case a standalone SSH client (usually from the openSSH) is required\&. For more details, see \fB--disable-libssh\fP description\&.
 .PP
 
 .IP "\(bu" 2
@@ -81,9 +81,9 @@ This way the library will be installed in \fC/usr/local/lib/\fP (or lib64) and \
 \fCconfigure\fP script supports the following options\&. The full list of the accepted options can be shown by \fC--help\fP option\&.
 .PP
 .IP "\(bu" 2
-\fC--disable--libssh2\fP
+\fC--disable--libssh\fP
 .IP "  \(bu" 4
-Remove dependency on the \fClibssh2\fP library\&. By default, the \fClibssh2\fP library is used by the client side functions to create SSH connection to a remote host\&. If the usage of the \fClibssh2\fP is disabled, libnetconf will use a standalone \fCssh(1)\fP client located in a system path\&. \fCssh(1)\fP client is, for example, part of the OpenSSH\&. This option has no effect for server-side functionality\&.
+Remove dependency on the \fClibssh\fP library\&. By default, the \fClibssh\fP library is used by the client side functions to create SSH connection to a remote host\&. If the usage of the \fClibssh\fP is disabled, libnetconf will use a standalone \fCssh(1)\fP client located in a system path\&. \fCssh(1)\fP client is, for example, part of the OpenSSH\&. This option has no effect for server-side functionality\&.
 .PP
 
 .IP "\(bu" 2
