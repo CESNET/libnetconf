@@ -1,8 +1,8 @@
-.TH "messages_xml.h" 3 "Mon Jun 8 2015" "Version 0.9.0-134" "libnetconf" \" -*- nroff -*-
+.TH "src/messages_xml.h" 3 "Wed Jun 10 2015" "Version 0.10.0-163_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
-messages_xml.h \- 
+src/messages_xml.h \- 
 .SH SYNOPSIS
 .br
 .PP
@@ -30,6 +30,10 @@ messages_xml.h \-
 .RI "\fBnc_reply\fP * \fBncxml_reply_data\fP (const xmlNodePtr data)"
 .br
 .RI "\fICreate rpc-reply response with <data> content\&. \fP"
+.ti -1c
+.RI "\fBnc_reply\fP * \fBncxml_reply_data_ns\fP (const xmlNodePtr data, const char *ns)"
+.br
+.RI "\fICreate rpc-reply response with <data> content in the specified namespace\&. \fP"
 .ti -1c
 .RI "xmlDocPtr \fBncxml_reply_dump\fP (const \fBnc_reply\fP *reply)"
 .br
