@@ -37,7 +37,7 @@ Instructions to compile the **libnetconf** library can be found in [INSTALL](./I
 Informations about differencies to the previous version can be found in [RELEASE_NOTES]
 (./RELEASE_NOTES) document or [compatibility reports](./doc/compat_reports/).
 
-### Features
+## Features
 
 * NETCONF v1.0 and v1.1 compliant ([RFC 6241](http://tools.ietf.org/html/rfc6241))
 * NETCONF over SSH ([RFC 6242](http://tools.ietf.org/html/rfc6242)) including Chunked Framing Mechanism
