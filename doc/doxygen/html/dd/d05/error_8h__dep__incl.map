@@ -1,10 +1,10 @@
 <map id="src/error.h" name="src/error.h">
-<area shape="rect" id="node3" href="$d5/d48/messages_8h.html" title="Functions to create NETCONF messages. " alt="" coords="45,80,163,107"/>
-<area shape="rect" id="node5" href="$d1/d87/libnetconf_8h.html" title="libnetconf&#39;s main header. " alt="" coords="49,229,159,256"/>
-<area shape="rect" id="node13" href="$d9/db6/datastore_8h.html" title="NETCONF datastore handling function prototypes and structures. " alt="" coords="194,155,304,181"/>
-<area shape="rect" id="node19" href="$d9/de5/messages__xml_8h.html" title="src/messages_xml.h" alt="" coords="380,80,527,107"/>
-<area shape="rect" id="node22" href="$d0/db0/transapi_8h.html" title="Functions implementing libnetconf TransAPI mechanism. " alt="" coords="330,155,431,181"/>
-<area shape="rect" id="node9" href="$da/dbe/with__defaults_8h.html" title="Implementation of NETCONF&#39;s with&#45;defaults capability defined in RFC 6243. " alt="" coords="39,155,168,181"/>
-<area shape="rect" id="node7" href="$d5/d3e/libnetconf__xml_8h.html" title="libnetconf&#39;s main header for libxml2 variants of some functions. " alt="" coords="258,304,396,331"/>
-<area shape="rect" id="node16" href="$d7/dc8/datastore__xml_8h.html" title="NETCONF datastore handling function prototypes and structures &#45; XML variants. " alt="" coords="204,229,343,256"/>
+<area shape="rect" id="node2" href="$d5/d48/messages_8h.html" title="Functions to create NETCONF messages. " alt="" coords="45,80,164,107"/>
+<area shape="rect" id="node3" href="$d1/d87/libnetconf_8h.html" title="libnetconf&#39;s main header. " alt="" coords="49,229,160,256"/>
+<area shape="rect" id="node6" href="$d9/db6/datastore_8h.html" title="NETCONF datastore handling function prototypes and structures. " alt="" coords="194,155,305,181"/>
+<area shape="rect" id="node8" href="$d9/de5/messages__xml_8h.html" title="src/messages_xml.h" alt="" coords="380,80,527,107"/>
+<area shape="rect" id="node9" href="$d0/db0/transapi_8h.html" title="Functions implementing libnetconf TransAPI mechanism. " alt="" coords="330,155,431,181"/>
+<area shape="rect" id="node5" href="$da/dbe/with__defaults_8h.html" title="Implementation of NETCONF&#39;s with&#45;defaults capability defined in RFC 6243. " alt="" coords="39,155,170,181"/>
+<area shape="rect" id="node4" href="$d5/d3e/libnetconf__xml_8h.html" title="libnetconf&#39;s main header for libxml2 variants of some functions. " alt="" coords="258,304,396,331"/>
+<area shape="rect" id="node7" href="$d7/dc8/datastore__xml_8h.html" title="NETCONF datastore handling function prototypes and structures &#45; XML variants. " alt="" coords="204,229,343,256"/>
 </map>

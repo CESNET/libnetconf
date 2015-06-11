@@ -1,4 +1,4 @@
-.TH "validation" 3 "Wed Jun 10 2015" "Version 0.10.0-163_trunk" "libnetconf" \" -*- nroff -*-
+.TH "validation" 3 "Thu Jun 11 2015" "Version 0.10.0-3_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -17,7 +17,7 @@ Complete list of \fIlnctool(1)\fP's options can be displayed using -h option:
 .PP
 .PP
 .nf
-$ lnctool -h
+1 $ lnctool -h
 .fi
 .PP
 .PP
@@ -41,8 +41,8 @@ The following commands generate validation files for the NACM data model:
 .PP
 .PP
 .nf
-$ cd libnetconf/models/
-$ lnctool --model \&./ietf-netconf-acm\&.yang --output-dir \&./nacm/ validation
+1 $ cd libnetconf/models/
+2 $ lnctool --model \&./ietf-netconf-acm\&.yang --output-dir \&./nacm/ validation
 .fi
 .PP
 .PP
@@ -82,7 +82,7 @@ When the data model includes some \fCfeature\fP definition and corresponding \fC
 .PP
 .PP
 .nf
---feature module_name:feature_to_enable
+1 --feature module_name:feature_to_enable
 .fi
 .PP
 .PP
@@ -90,7 +90,7 @@ If you want to disable all features of the module, use the following syntax:
 .PP
 .PP
 .nf
---feature module_name:
+1 --feature module_name:
 .fi
 .PP
 .PP

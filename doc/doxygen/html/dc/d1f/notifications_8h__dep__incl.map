@@ -1,5 +1,5 @@
 <map id="src/notifications.h" name="src/notifications.h">
-<area shape="rect" id="node3" href="$d1/d87/libnetconf_8h.html" title="libnetconf&#39;s main header. " alt="" coords="5,80,115,107"/>
-<area shape="rect" id="node7" href="$d8/dba/notifications__xml_8h.html" title="NETCONF Notifications functions with libxml2 support. " alt="" coords="140,80,292,107"/>
-<area shape="rect" id="node5" href="$d5/d3e/libnetconf__xml_8h.html" title="libnetconf&#39;s main header for libxml2 variants of some functions. " alt="" coords="68,155,207,181"/>
+<area shape="rect" id="node2" href="$d1/d87/libnetconf_8h.html" title="libnetconf&#39;s main header. " alt="" coords="5,80,116,107"/>
+<area shape="rect" id="node4" href="$d8/dba/notifications__xml_8h.html" title="NETCONF Notifications functions with libxml2 support. " alt="" coords="141,80,293,107"/>
+<area shape="rect" id="node3" href="$d5/d3e/libnetconf__xml_8h.html" title="libnetconf&#39;s main header for libxml2 variants of some functions. " alt="" coords="69,155,207,181"/>
 </map>
