@@ -1728,7 +1728,11 @@ static int nc_session_read_until(struct nc_session* session, const char* endtag,
 				usleep (NC_READ_SLEEP);
 				continue;
 			} else if (c == SSH_ERROR) {
-				ERROR("Reading from the SSH channel failed (%zd: %s)", ssh_get_error_code(session->ssh_sess), ssh_get_error(session->ssh_sess));
+				if (session->ssh_sess != NULL) {
+					ERROR("Reading from the SSH channel failed (%zd: %s)", ssh_get_error_code(session->ssh_sess), ssh_get_error(session->ssh_sess));
+				} else {
+					ERROR("Reading from the SSH channel failed");
+				}
 				free (buf);
 				if (len != NULL) {
 					*len = 0;
