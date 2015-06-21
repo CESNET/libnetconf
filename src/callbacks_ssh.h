@@ -61,7 +61,7 @@ extern "C" {
  * @ingroup session
  * @param[in] func Callback function to use for interactive authentication.
  */
-char* nc_callback_sshauth_interactive(void (*func)(const char* name,
+void nc_callback_sshauth_interactive(char* (*func)(const char* name,
 		const char* instruction,
 		const char* prompt,
 		int echo));
