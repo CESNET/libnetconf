@@ -2592,6 +2592,7 @@ static int compact_edit_operations_recursively(xmlNodePtr node, NC_EDIT_OP_TYPE 
 static int compact_edit_operations(xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
 {
 	xmlNodePtr root;
+	NC_EDIT_OP_TYPE op;
 
 	if (edit_doc == NULL) {
 		return EXIT_FAILURE;
@@ -2603,7 +2604,22 @@ static int compact_edit_operations(xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
 			continue;
 		}
 
-		if (compact_edit_operations_recursively(root, (NC_EDIT_OP_TYPE)defop) != EXIT_SUCCESS) {
+		switch (defop) {
+		case NC_EDIT_DEFOP_NOTSET:
+		case NC_EDIT_DEFOP_MERGE:
+			op = NC_EDIT_OP_MERGE;
+			break;
+		case NC_EDIT_DEFOP_REPLACE:
+			op = NC_EDIT_OP_REPLACE;
+			break;
+		case NC_EDIT_DEFOP_NONE:
+			op = NC_EDIT_OP_NOTSET;
+			break;
+		default:
+			return EXIT_FAILURE;
+		}
+
+		if (compact_edit_operations_recursively(root, op) != EXIT_SUCCESS) {
 			return (EXIT_FAILURE);
 		}
 	}
