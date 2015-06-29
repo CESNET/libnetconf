@@ -2412,6 +2412,11 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 		for (edit_node = edit_doc->children; edit_node != NULL; edit_node = edit_doc->children) {
 			edit_replace(orig_doc, edit_node, model, keys, nacm, error);
 		}
+
+		/* according to RFC 6020 sec. 7.2, default-operation "replace"
+		 * completely replaces data in target datastore, so we are done here
+		 */
+		goto cleanup;
 	}
 
 	/* delete operations */
@@ -2529,6 +2534,8 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 			}
 		}
 	}
+
+cleanup:
 
 	if (keys != NULL) {
 		keyListFree(keys);
