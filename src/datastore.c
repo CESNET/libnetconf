@@ -4811,7 +4811,7 @@ static xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, cons
 
 	/* merge the documents */
 	for (node = second->children; node != NULL; node = second->children) {
-		if ((ret = edit_merge(result, second->children, data_model, keys, NULL, NULL)) != EXIT_SUCCESS) {
+		if ((ret = edit_merge(result, second->children, NC_EDIT_DEFOP_MERGE, data_model, keys, NULL, NULL)) != EXIT_SUCCESS) {
 			break;
 		}
 	}
