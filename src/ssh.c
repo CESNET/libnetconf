@@ -647,7 +647,7 @@ struct nc_msg* read_hello_openssh(struct nc_session *session)
 
 malformed_msg:
 
-	if (session->version == NETCONFV11 && session->ssh_session == NULL) {
+	if (session->version == NETCONFV11 && session->ssh_sess == NULL) {
 		/* NETCONF version 1.1 define sending error reply from the server */
 		reply = nc_reply_error(nc_err_new(NC_ERR_MALFORMED_MSG));
 		if (reply == NULL) {

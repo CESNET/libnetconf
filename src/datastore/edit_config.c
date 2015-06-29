@@ -147,7 +147,11 @@ static NC_EDIT_OP_TYPE get_operation(xmlNodePtr node, NC_EDIT_DEFOP_TYPE defop, 
 			op = NC_EDIT_OP_ERROR;
 		}
 	} else {
-		op = (NC_EDIT_OP_TYPE) defop;
+		if (defop != NC_EDIT_DEFOP_NONE) {
+			op = (NC_EDIT_OP_TYPE) defop;
+		} else {
+			op = NC_EDIT_OP_NOTSET;
+		}
 	}
 	free(operation);
 
@@ -1727,7 +1731,7 @@ static int edit_create_choice(xmlNodePtr parent, xmlNodePtr edit_node, xmlDocPtr
  *
  * \return Zero on success, non-zero otherwise.
  */
-static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_node, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	int r;
 	char *msg = NULL;
@@ -1745,6 +1749,15 @@ static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_no
 
 	retval = find_element_equiv(orig_doc, edit_node, model, keys);
 	if (retval == NULL) {
+		if (defop == NC_EDIT_DEFOP_NONE && !get_operation(edit_node, NC_EDIT_DEFOP_NOTSET, NULL)) {
+			/* parent of the node to create does not exist and it is not supposed to be created */
+			if (error != NULL) {
+				*error = nc_err_new(NC_ERR_DATA_MISSING);
+			}
+			return NULL;
+		}
+
+		/* NACM check */
 		if (nacm != NULL) {
 			if ((r = nacm_check_data(edit_node->parent, NACM_ACCESS_CREATE, nacm)) != NACM_PERMIT) {
 				if (r == NACM_DENY) {
@@ -1776,7 +1789,7 @@ static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_no
 			return (retval);
 		}
 
-		parent = edit_create_recursively(orig_doc, edit_node->parent, model, keys, nacm, error);
+		parent = edit_create_recursively(orig_doc, edit_node->parent, defop, model, keys, nacm, error);
 		if (parent == NULL) {
 			return (NULL);
 		}
@@ -1802,7 +1815,7 @@ static xmlNodePtr edit_create_recursively(xmlDocPtr orig_doc, xmlNodePtr edit_no
  *
  * \return Zero on success, non-zero otherwise.
  */
-static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr parent = NULL, model_node;
 	int r;
@@ -1832,7 +1845,7 @@ static int edit_create(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model
 	}
 
 	if (edit_node->parent->type != XML_DOCUMENT_NODE) {
-		parent = edit_create_recursively(orig_doc, edit_node->parent, model, keys, nacm, error);
+		parent = edit_create_recursively(orig_doc, edit_node->parent, defop, model, keys, nacm, error);
 		if (parent == NULL) {
 			return EXIT_FAILURE;
 		}
@@ -1918,7 +1931,7 @@ int edit_replace_nacmcheck(xmlNodePtr orig_node, xmlDocPtr edit_doc, xmlDocPtr m
  *
  * \return Zero on success, non-zero otherwise.
  */
-static int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+static int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr old;
 	int r;
@@ -1950,7 +1963,7 @@ static int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr mode
 	old = find_element_equiv(orig_doc, edit_node, model, keys);
 	if (old == NULL) {
 		/* node to be replaced doesn't exist, so create new configuration data */
-		return edit_create(orig_doc, edit_node, model, keys, nacm, error);
+		return edit_create(orig_doc, edit_node, defop, model, keys, nacm, error);
 	} else {
 		/* NACM */
 		if ((r = edit_replace_nacmcheck(old, edit_node->doc, model, keys, nacm, error)) != NACM_PERMIT) {
@@ -1982,7 +1995,7 @@ static int edit_replace(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr mode
 		 */
 		xmlUnlinkNode(old);
 		xmlFreeNode(old);
-		return edit_create(orig_doc, edit_node, model, keys, nacm, error);
+		return edit_create(orig_doc, edit_node, defop, model, keys, nacm, error);
 	}
 }
 
@@ -2106,7 +2119,7 @@ static int is_leaf_list(xmlNodePtr node, xmlDocPtr model)
 	}
 }
 
-static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr children, aux, next, nextchild, parent;
 	int r, access, duplicates;
@@ -2223,7 +2236,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 			 * original configuration data, so create it as new
 			 */
 			VERB("Adding a missing node %s while merging (%s:%d)", (char*)children->name, __FILE__, __LINE__);
-			if (edit_create(orig_node->doc, children, model, keys, nacm, error) != 0) {
+			if (edit_create(orig_node->doc, children, defop, model, keys, nacm, error) != 0) {
 				ERROR("Adding missing nodes when merging failed (%s:%d)", __FILE__, __LINE__);
 				return EXIT_FAILURE;
 			}
@@ -2233,7 +2246,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 				while (aux != NULL) {
 					next = aux->next;
 					if (aux->type == XML_TEXT_NODE) {
-						if (edit_merge_recursively(aux, children, model, keys, nacm, error) != EXIT_SUCCESS) {
+						if (edit_merge_recursively(aux, children, defop, model, keys, nacm, error) != EXIT_SUCCESS) {
 							return EXIT_FAILURE;
 						}
 					}
@@ -2256,7 +2269,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 				while (aux != NULL) {
 					next = aux->next;
 					if (matching_elements(children, aux, keys, leaf_list) != 0) {
-						if (edit_merge_recursively(aux, children, model, keys, nacm, error) != EXIT_SUCCESS) {
+						if (edit_merge_recursively(aux, children, defop, model, keys, nacm, error) != EXIT_SUCCESS) {
 							return EXIT_FAILURE;
 						}
 
@@ -2294,7 +2307,7 @@ static int edit_merge_recursively(xmlNodePtr orig_node, xmlNodePtr edit_node, xm
 	return EXIT_SUCCESS;
 }
 
-int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
+int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, NC_EDIT_DEFOP_TYPE defop, xmlDocPtr model, keyList keys, const struct nacm_rpc* nacm, struct nc_err** error)
 {
 	xmlNodePtr orig_node;
 	xmlNodePtr aux, children;
@@ -2312,7 +2325,7 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyLis
 	VERB("Merging the node %s (%s:%d)", (char*)edit_node->name, __FILE__, __LINE__);
 	orig_node = find_element_equiv(orig_doc, edit_node, model, keys);
 	if (orig_node == NULL) {
-		return edit_create(orig_doc, edit_node, model, keys, nacm, error);
+		return edit_create(orig_doc, edit_node, defop, model, keys, nacm, error);
 	}
 
 	children = edit_node->children;
@@ -2357,7 +2370,7 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model, keyLis
 		} else {
 			/* go recursive */
 			VERB("Merging the node %s (%s:%d)", (char*)children->name, __FILE__, __LINE__);
-			if (edit_merge_recursively(aux, children, model, keys, nacm, error) != EXIT_SUCCESS) {
+			if (edit_merge_recursively(aux, children, defop, model, keys, nacm, error) != EXIT_SUCCESS) {
 				return EXIT_FAILURE;
 			}
 
@@ -2410,8 +2423,13 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 	if (defop == NC_EDIT_DEFOP_REPLACE) {
 		/* replace whole document */
 		for (edit_node = edit_doc->children; edit_node != NULL; edit_node = edit_doc->children) {
-			edit_replace(orig_doc, edit_node, model, keys, nacm, error);
+			edit_replace(orig_doc, edit_node, defop, model, keys, nacm, error);
 		}
+
+		/* according to RFC 6020 sec. 7.2, default-operation "replace"
+		 * completely replaces data in target datastore, so we are done here
+		 */
+		goto cleanup;
 	}
 
 	/* delete operations */
@@ -2476,7 +2494,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 		if (!xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* something to replace */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
-				if (edit_replace(orig_doc, nodes->nodesetval->nodeTab[i], model, keys, nacm, error) != EXIT_SUCCESS) {
+				if (edit_replace(orig_doc, nodes->nodesetval->nodeTab[i], defop, model, keys, nacm, error) != EXIT_SUCCESS) {
 					xmlXPathFreeObject(nodes);
 					goto error;
 				}
@@ -2492,7 +2510,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 		if (!xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* something to create */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
-				if (edit_create(orig_doc, nodes->nodesetval->nodeTab[i], model, keys, nacm, error) != EXIT_SUCCESS) {
+				if (edit_create(orig_doc, nodes->nodesetval->nodeTab[i], defop, model, keys, nacm, error) != EXIT_SUCCESS) {
 					xmlXPathFreeObject(nodes);
 					goto error;
 				}
@@ -2508,7 +2526,7 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 		if (!xmlXPathNodeSetIsEmpty(nodes->nodesetval)) {
 			/* something to create */
 			for (i = 0; i < nodes->nodesetval->nodeNr; i++) {
-				if (edit_merge(orig_doc, nodes->nodesetval->nodeTab[i], model, keys, nacm, error) != EXIT_SUCCESS) {
+				if (edit_merge(orig_doc, nodes->nodesetval->nodeTab[i], defop, model, keys, nacm, error) != EXIT_SUCCESS) {
 					xmlXPathFreeObject(nodes);
 					goto error;
 				}
@@ -2523,12 +2541,14 @@ static int edit_operations(xmlDocPtr orig_doc, xmlDocPtr edit_doc, NC_EDIT_DEFOP
 		/* replace whole document */
 		if (edit_doc->children != NULL) {
 			for (edit_node = edit_doc->children; edit_node != NULL; edit_node = edit_doc->children) {
-				if (edit_merge(orig_doc, edit_doc->children, model, keys, nacm, error) != EXIT_SUCCESS) {
+				if (edit_merge(orig_doc, edit_doc->children, defop, model, keys, nacm, error) != EXIT_SUCCESS) {
 					goto error;
 				}
 			}
 		}
 	}
+
+cleanup:
 
 	if (keys != NULL) {
 		keyListFree(keys);
@@ -2592,6 +2612,7 @@ static int compact_edit_operations_recursively(xmlNodePtr node, NC_EDIT_OP_TYPE 
 static int compact_edit_operations(xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
 {
 	xmlNodePtr root;
+	NC_EDIT_OP_TYPE op;
 
 	if (edit_doc == NULL) {
 		return EXIT_FAILURE;
@@ -2603,7 +2624,22 @@ static int compact_edit_operations(xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
 			continue;
 		}
 
-		if (compact_edit_operations_recursively(root, (NC_EDIT_OP_TYPE)defop) != EXIT_SUCCESS) {
+		switch (defop) {
+		case NC_EDIT_DEFOP_NOTSET:
+		case NC_EDIT_DEFOP_MERGE:
+			op = NC_EDIT_OP_MERGE;
+			break;
+		case NC_EDIT_DEFOP_REPLACE:
+			op = NC_EDIT_OP_REPLACE;
+			break;
+		case NC_EDIT_DEFOP_NONE:
+			op = NC_EDIT_OP_NOTSET;
+			break;
+		default:
+			return EXIT_FAILURE;
+		}
+
+		if (compact_edit_operations_recursively(root, op) != EXIT_SUCCESS) {
 			return (EXIT_FAILURE);
 		}
 	}

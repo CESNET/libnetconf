@@ -702,11 +702,7 @@ int ncdflt_default_clear(xmlDocPtr config)
 		xmlXPathFreeContext(ctxt);
 		return (EXIT_FAILURE);
 	}
-	if (xmlXPathRegisterNs(ctxt, BAD_CAST "data", BAD_CAST (xmlDocGetRootElement(config))->ns->href) != 0) {
-		xmlXPathFreeContext(ctxt);
-		return (EXIT_FAILURE);
-	}
-	defaults = xmlXPathEvalExpression(BAD_CAST "//data:*[@wd:default=\"true\"]", ctxt);
+	defaults = xmlXPathEvalExpression(BAD_CAST "//*[@wd:default=\"true\"]", ctxt);
 	if (defaults != NULL) {
 		/* remove them */
 		for (i = 0; i < defaults->nodesetval->nodeNr; i++) {
