@@ -2990,7 +2990,7 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 	xmlNodePtr node, node_aux, path_node;
 	xmlNsPtr ns;
 	int i, ret = 0;
-	char *path, *resolved_path, *to_resolve_path;
+	char *path, *resolved_path, *resolved_ns, *to_resolve_path;
 	struct ncds_ds* ds = NULL;
 
 	/* get all definitions of nodes to modify */
@@ -3050,11 +3050,14 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 				for (node_aux = path_node->children; node_aux != NULL; node_aux = node_aux->next) {
 					if (xmlStrcmp(node_aux->name, BAD_CAST "augment") == 0) {
 						resolved_path = (char*) xmlGetProp (node_aux, BAD_CAST "target-node");
-						if (strcmp(to_resolve_path, resolved_path) == 0) {
+						resolved_ns = (char*) xmlGetNsProp (node_aux, BAD_CAST "ns", BAD_CAST "libnetconf");
+						if (strcmp(to_resolve_path, resolved_path) == 0 && strcmp(model_ns, resolved_ns) == 0) {
 							free(resolved_path);
+							free(resolved_ns);
 							break;
 						}
 						free(resolved_path);
+						free(resolved_ns);
 					}
 				}
 
