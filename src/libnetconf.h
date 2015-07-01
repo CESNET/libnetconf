@@ -204,7 +204,7 @@
  * `configure` script supports the following options. The full list of the
  * accepted options can be shown by `--help` option.
  *
- * - `--disable--libssh` \anchor configure-disable-libssh
+ * - `--disable-libssh` \anchor configure-disable-libssh
  *  - Remove dependency on the `libssh` library. By default,
  *    the `libssh` library is used by the client side functions to create SSH
  *    connection to a remote host. If the usage of the `libssh` is disabled,
