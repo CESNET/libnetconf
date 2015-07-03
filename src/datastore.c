@@ -2710,7 +2710,8 @@ static int ncds_update_uses_ds(struct ncds_ds* datastore)
 static int feature_check(xmlNodePtr node, struct model_feature **features)
 {
 	xmlNodePtr child, next;
-	char* fname;
+	char* name;
+	struct data_model *model;
 	int i;
 
 	if (node == NULL) {
@@ -2724,22 +2725,22 @@ static int feature_check(xmlNodePtr node, struct model_feature **features)
 
 	for (child = node->children; child != NULL; child = child->next) {
 		if (child->type == XML_ELEMENT_NODE && xmlStrcmp(child->name, BAD_CAST "if-feature") == 0) {
-			if ((fname = (char*) xmlGetProp (child, BAD_CAST "name")) == NULL) {
+			if ((name = (char*) xmlGetProp (child, BAD_CAST "name")) == NULL) {
 				WARN("Invalid if-feature statement");
 				continue;
 			}
 			/* check if the feature is enabled or not */
 			for (i = 0; features[i] != NULL; i++) {
-				if (strcmp(features[i]->name, fname) == 0) {
+				if (strcmp(features[i]->name, name) == 0) {
 					if (features[i]->enabled == 0) {
-						free(fname);
+						free(name);
 						/* remove the node */
 						return (1);
 					}
 					break;
 				}
 			}
-			free(fname);
+			free(name);
 			/* ignore any following if-feature statements */
 			break;
 		}
@@ -2748,6 +2749,15 @@ static int feature_check(xmlNodePtr node, struct model_feature **features)
 	/* recursion check */
 	for (child = node->children; child != NULL; child = next) {
 		next = child->next;
+		if (!xmlStrcmp(child->name, BAD_CAST "augment")) {
+			/* we are going into augment, get the appropriate features */
+			name = (char*) xmlGetNsProp(child, BAD_CAST "module", BAD_CAST "libnetconf");
+			model = get_model(name, NULL);
+			if (!model) {
+				return EXIT_FAILURE;
+			}
+			features = model->features;
+		} /* else keep the current list of features */
 		if (feature_check(child, features) == 1) {
 			/* remove the node */
 			xmlUnlinkNode(child);
@@ -2761,6 +2771,9 @@ static int feature_check(xmlNodePtr node, struct model_feature **features)
 static int ncds_update_features(struct ncds_ds* datastore)
 {
 	xmlNodePtr node, next;
+	struct model_feature **features;
+	char *name;
+	struct data_model *model;
 
 	if (datastore == NULL) {
 		ERROR("%s: invalid parameter.", __func__);
@@ -2777,7 +2790,18 @@ static int ncds_update_features(struct ncds_ds* datastore)
 
 	for (node = xmlDocGetRootElement(datastore->ext_model)->children; node != NULL; node = next) {
 		next = node->next;
-		if (feature_check(node, datastore->data_model->features) == 1) {
+		if (!xmlStrcmp(node->name, BAD_CAST "augment")) {
+			/* we are going into augment, get the appropriate features */
+			name = (char*) xmlGetNsProp(node, BAD_CAST "module", BAD_CAST "libnetconf");
+			model = get_model(name, NULL);
+			if (!model) {
+				return EXIT_FAILURE;
+			}
+			features = model->features;
+		} else {
+			features = datastore->data_model->features;
+		}
+		if (feature_check(node, features) == 1) {
 			/* remove the node */
 			xmlUnlinkNode(node);
 			xmlFreeNode(node);
