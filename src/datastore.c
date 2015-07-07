@@ -2719,8 +2719,8 @@ static int feature_check(xmlNodePtr node, struct model_feature **features)
 		return (-1);
 	}
 	if (features == NULL || features[0] == NULL) {
-		/* nothing to check */
-		return (0);
+		/* nothing to check here, go recursively (due to possible augments) */
+		goto recursion;
 	}
 
 	for (child = node->children; child != NULL; child = child->next) {
@@ -2746,6 +2746,7 @@ static int feature_check(xmlNodePtr node, struct model_feature **features)
 		}
 	}
 
+recursion:
 	/* recursion check */
 	for (child = node->children; child != NULL; child = next) {
 		next = child->next;
