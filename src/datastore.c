@@ -4989,6 +4989,8 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 
 							/* go to the first filter sibing node */
 							filter_node = filter;
+
+filter:
 							/* pass all filter sibling nodes */
 							while (filter_node) {
 								if (!strcmp((char *) filter_node->name, (char *) config_node->name) &&
@@ -5022,6 +5024,12 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 
 							/* if this config node is not in filter, remove it */
 							if (sibling_selection && !sibling_in) {
+								if (filter_node && filter_node->next) {
+									/* try another filter node */
+									filter_node = filter_node->next;
+									goto filter;
+								}
+
 								delete = config_node;
 								config_node = config_node->next;
 								xmlUnlinkNode(delete);
@@ -5032,6 +5040,12 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 									sibling_in = ncxml_subtree_filter(config_node->children, filter_node->children);
 								}
 								if (sibling_selection && sibling_in == 0) {
+									if (filter_node && filter_node->next) {
+										/* try another filter node */
+										filter_node = filter_node->next;
+										goto filter;
+									}
+
 									/* subtree is not a content of the filter output */
 									delete = config_node;
 
