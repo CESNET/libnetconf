@@ -212,7 +212,8 @@ static int get_keys(keyList keys, xmlNodePtr node, int all, xmlNodePtr **result)
 	xmlChar *str = NULL;
 	char* s, *token;
 	unsigned int i, c;
-	int j;
+	int j, match;
+	xmlNodePtr key_parent, node_parent;
 
 	assert(keys != NULL);
 	assert(node != NULL);
@@ -223,14 +224,40 @@ static int get_keys(keyList keys, xmlNodePtr node, int all, xmlNodePtr **result)
 	for (j = 0; j < keys->nodesetval->nodeNr; j++) {
 		/* get corresponding key definition from the data model */
 		// name = xmlGetNsProp (keys->nodesetval->nodeTab[i]->parent, BAD_CAST "name", BAD_CAST NC_NS_YIN);
-		if ((str = xmlGetProp(keys->nodesetval->nodeTab[j]->parent, BAD_CAST "name")) == NULL) {
-			continue;
-		}
-		if (xmlStrcmp(str, node->name)) {
+		match = 1;
+		key_parent = keys->nodesetval->nodeTab[j]->parent;
+		node_parent = node;
+
+		while (1) {
+			if ((str = xmlGetProp(key_parent, BAD_CAST "name")) == NULL) {
+				match = 0;
+				break;
+			}
+			if (xmlStrcmp(str, node_parent->name)) {
+				xmlFree(str);
+				match = 0;
+				break;
+			}
 			xmlFree(str);
+
+			do {
+				key_parent = key_parent->parent;
+			} while (key_parent && (xmlStrcmp(key_parent->name, BAD_CAST "augment") == 0));
+			node_parent = node_parent->parent;
+
+			if ((!key_parent && node_parent) || (key_parent && !node_parent)) {
+				match = 0;
+				break;
+			}
+
+			if (!xmlStrcmp(key_parent->name, BAD_CAST "module") && (node_parent->type == XML_DOCUMENT_NODE)) {
+				break;
+			}
+		}
+
+		if (!match) {
 			continue;
 		}
-		xmlFree(str);
 
 		/* now get the key nodes from the xml document */
 		/* get the name of the key node(s) from the 'value' attribute in key element in data model */
