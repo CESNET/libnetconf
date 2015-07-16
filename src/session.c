@@ -2565,7 +2565,7 @@ try_again:
 				goto replyerror;
 			}
 		}
-		if (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG
+		if (op == NC_OP_EDITCONFIG || op == NC_OP_COPYCONFIG || op == NC_OP_COMMIT
 				|| op == NC_OP_DELETECONFIG || op == NC_OP_LOCK || op == NC_OP_UNLOCK) {
 			nc_rpc_assign_ds(*rpc, "target");
 			if (!(*rpc)->target) {
