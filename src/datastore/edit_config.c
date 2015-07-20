@@ -242,7 +242,9 @@ static int get_keys(keyList keys, xmlNodePtr node, int all, xmlNodePtr **result)
 
 			do {
 				key_parent = key_parent->parent;
-			} while (key_parent && (xmlStrcmp(key_parent->name, BAD_CAST "augment") == 0));
+			} while (key_parent && ((xmlStrcmp(key_parent->name, BAD_CAST "augment") == 0)
+                    || (xmlStrcmp(key_parent->name, BAD_CAST "choice") == 0)
+                    || (xmlStrcmp(key_parent->name, BAD_CAST "case") == 0)));
 			node_parent = node_parent->parent;
 
 			if ((!key_parent && node_parent) || (key_parent && !node_parent)) {
