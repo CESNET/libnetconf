@@ -2754,6 +2754,7 @@ recursion:
 			/* we are going into augment, get the appropriate features */
 			name = (char*) xmlGetNsProp(child, BAD_CAST "module", BAD_CAST "libnetconf");
 			model = get_model(name, NULL);
+			free(name);
 			if (!model) {
 				return EXIT_FAILURE;
 			}
