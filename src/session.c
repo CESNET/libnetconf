@@ -1914,6 +1914,7 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 	struct nc_msg *retval;
 	nc_reply* reply;
 	const char* id;
+	const char *emsg;
 	char *text = NULL, *tmp_text, *chunk = NULL;
 	size_t len;
 	unsigned long long int text_size = 0, total_len = 0;
@@ -1984,14 +1985,31 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 			DBG_UNLOCK("mut_channel");
 			pthread_mutex_unlock(session->mut_channel);
 			return (NC_MSG_WOULDBLOCK);
-		} else if ((status == -1) && (errno == EINTR)) {
+		} else if (((status == -1) && (errno == EINTR))
+#ifndef DISABLE_LIBSSH
+				|| (status == SSH_AGAIN)
+#endif
+				) {
 			/* poll was interrupted */
 			continue;
 		} else if (status < 0) {
 			/* poll failed - something wrong happend, close this socket and wait for another request */
 			DBG_UNLOCK("mut_channel");
 			pthread_mutex_unlock(session->mut_channel);
-			ERROR("Input channel error");
+#ifndef DISABLE_LIBSSH
+			if (status == SSH_EOF) {
+				emsg = "end of file";
+			} else if (!session->ssh_chan) {
+				emsg = strerror(errno);
+			} else if (session->ssh_sess) {
+				emsg = ssh_get_error(session->ssh_sess);
+			} else {
+				emsg = "description not available";
+			}
+#else
+			emsg = strerror(errno);
+#endif
+			ERROR("Input channel error (%s)", emsg);
 			nc_session_close(session, NC_SESSION_TERM_DROPPED);
 			if (nc_info) {
 				pthread_rwlock_wrlock(&(nc_info->lock));
