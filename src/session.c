@@ -1413,6 +1413,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 	ssize_t c = 0;
 	int len, status;
 	char *text;
+	const char *emsg;
 	char buf[1024];
 	struct pollfd fds;
 	int ret;
@@ -1507,7 +1508,14 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 				DBG_UNLOCK("mut_channel");
 				session->mut_channel_flag = 0;
 				pthread_mutex_unlock(session->mut_channel);
-				VERB("Writing data into the communication channel failed.");
+				if (!session->ssh_chan) {
+					emsg = strerror(errno);
+				} else if (session->ssh_chan && session->ssh_sess) {
+					emsg = ssh_get_error(session->ssh_sess);
+				} else {
+					emsg = "description not available";
+				}
+				VERB("Writing data into the communication channel failed (%s).", emsg);
 				return (EXIT_FAILURE);
 			}
 #endif
@@ -1533,7 +1541,14 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 			DBG_UNLOCK("mut_channel");
 			session->mut_channel_flag = 0;
 			pthread_mutex_unlock(session->mut_channel);
-			VERB("Writing data into the communication channel failed.");
+			if (!session->ssh_chan) {
+				emsg = strerror(errno);
+			} else if (session->ssh_chan && session->ssh_sess) {
+				emsg = ssh_get_error(session->ssh_sess);
+			} else {
+				emsg = "description not available";
+			}
+			VERB("Writing data into the communication channel failed (%s).", emsg);
 			return (EXIT_FAILURE);
 		}
 #endif
@@ -1564,7 +1579,14 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 			DBG_UNLOCK("mut_channel");
 			session->mut_channel_flag = 0;
 			pthread_mutex_unlock(session->mut_channel);
-			VERB("Writing data into the communication channel failed.");
+			if (!session->ssh_chan) {
+				emsg = strerror(errno);
+			} else if (session->ssh_chan && session->ssh_sess) {
+				emsg = ssh_get_error(session->ssh_sess);
+			} else {
+				emsg = "description not available";
+			}
+			VERB("Writing data into the communication channel failed (%s).", emsg);
 			return (EXIT_FAILURE);
 		}
 #endif
