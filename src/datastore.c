@@ -4905,7 +4905,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
 	xmlNodePtr filter_node = filter;
 	xmlNodePtr delete = NULL, delete2 = NULL;
 	char *content1 = NULL, *content2 = NULL;
-
+	int nomatch = 0;
 	int filter_in = 0, sibling_in = 0, end_node = 0, sibling_selection = 0;
 
 	/* check if this filter level is last */
@@ -5010,6 +5010,7 @@ filter:
 											free(content1);
 											free(content2);
 											filter_node = filter_node->next;
+											nomatch = 1;
 											continue;
 										}
 										free(content1);
@@ -5028,6 +5029,9 @@ filter:
 									/* try another filter node */
 									filter_node = filter_node->next;
 									goto filter;
+								} else if (nomatch) {
+									/* instance does not follow restrictions */
+									return 0;
 								}
 
 								delete = config_node;
