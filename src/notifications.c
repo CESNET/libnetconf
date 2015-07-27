@@ -85,6 +85,7 @@ extern struct nc_shared_info *nc_info;
 struct stream_offset {
 	const char* stream;
 	off_t eof_offset;
+	off_t cur_offset;
 	struct stream_offset* next;
 };
 
@@ -1056,8 +1057,8 @@ API void ncntf_stream_iter_start(const char* stream)
 	}
 	/* remember the current end of file position */
 	str_off->eof_offset = lseek(s->fd_events, 0, SEEK_END);
-	/* move to the start of records section */
-	lseek(s->fd_events, s->data, SEEK_SET);
+	/* and the thread's specific position in the file (start of stream file records section) */
+	str_off->cur_offset = s->data;
 	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
 }
@@ -1070,20 +1071,20 @@ API void ncntf_stream_iter_finish(const char* stream)
 	str_off = get_stream_offset_struct(stream, (struct stream_offset*)pthread_getspecific(ncntf_replay_ends));
 	if (str_off) {
 		str_off->eof_offset = 0;
+		str_off->cur_offset = 0;
 	}
 }
 
 /*
  * Pop the next event record from the stream file.
  *
- * \todo: thread safety (?thread-specific variables)
  */
 API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time)
 {
 	struct stream *s;
 	int32_t len;
 	uint64_t t;
-	off_t offset, aux;
+	off_t aux;
 	char* text = NULL;
 	off_t* replay_end;
 	char* time_s;
@@ -1129,7 +1130,7 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		 * according to RFC 5277, sec 2.1.1, this is not a replay subscription
 		 * so skip to the end of the file and mark replay as done
 		 */
-		lseek(s->fd_events, *replay_end, SEEK_SET);
+		str_off->cur_offset = str_off->eof_offset;
 		*replay_end = 0;
 	}
 
@@ -1139,10 +1140,9 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		 * 2) stream has a replay option allowed
 		 * 3) there are still some data to be read from the stream file
 		 */
-		offset = lseek(s->fd_events, 0, SEEK_CUR);
 		if ((start != -1) && (s->replay == 1) && (*replay_end != 0)) {
 			/* replay part */
-			if (offset >= *replay_end) {
+			if (str_off->cur_offset >= *replay_end) {
 				/* we are getting out of replay */
 
 				DBG_UNLOCK("streams_mut");
@@ -1167,28 +1167,33 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		}
 
 		/* check that we have something to read */
-		if (offset == (aux = lseek(s->fd_events, 0, SEEK_END))) {
+		if (str_off->cur_offset == (aux = lseek(s->fd_events, 0, SEEK_END))) {
 			/* nothing to read */
 			DBG_UNLOCK("streams_mut");
 			pthread_mutex_unlock(streams_mut);
 			return(NULL);
 		}
-		/* move file offset position back */
-		lseek(s->fd_events, offset, SEEK_SET);
+		/* move file offset to the read position */
+		lseek(s->fd_events, str_off->cur_offset, SEEK_SET);
 
 		if (ncntf_stream_lock(s) == 0) {
 			if ((r = read(s->fd_events, &len, sizeof(int32_t))) <= 0) {
 				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
 				DBG_UNLOCK("streams_mut");
+				ncntf_stream_iter_finish(stream);
 				pthread_mutex_unlock(streams_mut);
 				return (NULL);
 			}
+			str_off->cur_offset += r;
 			if ((r = read(s->fd_events, &t, sizeof(uint64_t))) <= 0) {
 				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
 				DBG_UNLOCK("streams_mut");
+				ncntf_stream_iter_finish(stream);
 				pthread_mutex_unlock(streams_mut);
 				return (NULL);
 			}
+			str_off->cur_offset += r;
+			str_off->cur_offset += len;
 
 			/* check boundaries */
 			if ((start != -1) && (start > (time_t)t)) {
@@ -1196,7 +1201,6 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 				 * we're not interested in this event, it
 				 * happened before specified start time
 				 */
-				lseek(s->fd_events, len, SEEK_CUR);
 				/* read another event */
 				ncntf_stream_unlock(s);
 				continue;
@@ -1206,7 +1210,6 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 				 * we're not interested in this event, it
 				 * happened after specified stop time
 				 */
-				lseek(s->fd_events, len, SEEK_CUR);
 				/* read another event */
 				ncntf_stream_unlock(s);
 				continue;
@@ -1217,6 +1220,7 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 			if ((r = read(s->fd_events, text, len)) <= 0) {
 				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
 				DBG_UNLOCK("streams_mut");
+				ncntf_stream_iter_finish(stream);
 				pthread_mutex_unlock(streams_mut);
 				return (NULL);
 			}
@@ -1225,6 +1229,7 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		} else {
 			ERROR("Unable to read an event from the stream file %s (locking failed).", s->name);
 			DBG_UNLOCK("streams_mut");
+			ncntf_stream_iter_finish(stream);
 			pthread_mutex_unlock(streams_mut);
 			return (NULL);
 		}

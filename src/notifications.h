@@ -135,7 +135,6 @@ int ncntf_stream_info(const char* stream, char** desc, char** start);
 int ncntf_stream_isavailable(const char* name);
 
 /**
- * \todo: thread safety (?thread-specific variables)
  * @ingroup notifications
  * @brief Start iteration on the events in the specified stream file. Iteration
  * starts on the first event in the first part of the stream file.
@@ -144,7 +143,6 @@ int ncntf_stream_isavailable(const char* name);
 void ncntf_stream_iter_start(const char* stream);
 
 /**
- * \todo: thread safety (?thread-specific variables)
  * @ingroup notifications
  * @brief Pop the next event record from the stream file. The iteration must be
  * started by nc_ntf_stream_iter_start() function.
@@ -157,7 +155,6 @@ void ncntf_stream_iter_start(const char* stream);
 char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, time_t *event_time);
 
 /**
- * \todo: thread safety (?thread-specific variables)
  * @ingroup notifications
  * @brief Clean all the structures used for iteration in the specified stream. This
  * function must be called as a closing function to nc_ntf_stream_iter_start()
