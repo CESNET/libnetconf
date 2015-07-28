@@ -4959,12 +4959,30 @@ static int attrcmp(xmlNodePtr reference, xmlNodePtr node)
 
 static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter, keyList keys)
 {
-	xmlNodePtr config_node = config;
-	xmlNodePtr filter_node = filter;
+	xmlNodePtr config_node;
+	xmlNodePtr filter_node;
 	xmlNodePtr delete = NULL, delete2 = NULL;
 	char *content1 = NULL, *content2 = NULL;
 	int nomatch = 0;
 	int filter_in = 0, sibling_in = 0, end_node = 0, sibling_selection = 0;
+
+	/* normalize filter */
+	if (!config->prev) {
+		for (filter_node = filter; filter_node; ) {
+			delete = filter_node;
+			filter_node = filter_node->next;
+
+			/* remove comments from filter */
+			if (delete->type != XML_ELEMENT_NODE) {
+				if (delete == filter) {
+					filter = filter_node;
+				}
+				xmlUnlinkNode(delete);
+				xmlFreeNode(delete);
+				continue;
+			}
+		}
+	}
 
 	/* check if this filter level is last */
 	filter_node = filter;
