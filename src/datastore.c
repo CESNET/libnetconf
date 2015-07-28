@@ -5099,24 +5099,23 @@ filter:
 							}
 							content1 = NULL;
 
-							if (!filter_node && nomatch) {
-								/* instance does not follow restrictions */
-								return 0;
-							}
-
-							/* if this config node is not in filter, remove it */
-							if (sibling_selection && !sibling_in) {
-								if (filter_node && filter_node->next) {
-									/* try another filter node */
-									filter_node = filter_node->next;
-									goto filter;
-								} else if (nomatch) {
+							if (!filter_node) {
+								if (nomatch) {
 									/* instance does not follow restrictions */
 									return 0;
 								} else if (is_key(config_node->parent, config_node, keys)) {
 									/* go to the next sibling */
 									config_node = config_node->next;
 									continue;
+								}
+							}
+
+							/* if this config node is not in filter, remove it */
+							if (sibling_selection && !sibling_in) {
+								if (filter_node) {
+									/* try another filter node */
+									filter_node = filter_node->next;
+									goto filter;
 								}
 
 								delete = config_node;
@@ -5129,17 +5128,10 @@ filter:
 									sibling_in = ncxml_subtree_filter(config_node->children, filter_node->children, keys);
 								}
 								if (sibling_selection && sibling_in == 0) {
-									if (filter_node && filter_node->next) {
+									if (filter_node) {
 										/* try another filter node */
 										filter_node = filter_node->next;
 										goto filter;
-									} else if (nomatch) {
-										/* instance does not follow restrictions */
-										return 0;
-									} else if (is_key(config_node->parent, config_node, keys)) {
-										/* go to the next sibling */
-										config_node = config_node->next;
-										continue;
 									}
 
 									/* subtree is not a content of the filter output */
