@@ -5024,6 +5024,11 @@ filter:
 							}
 							content1 = NULL;
 
+							if (!filter_node && nomatch) {
+								/* instance does not follow restrictions */
+								return 0;
+							}
+
 							/* if this config node is not in filter, remove it */
 							if (sibling_selection && !sibling_in) {
 								if (filter_node && filter_node->next) {
@@ -5049,6 +5054,9 @@ filter:
 										/* try another filter node */
 										filter_node = filter_node->next;
 										goto filter;
+									} else if (nomatch) {
+										/* instance does not follow restrictions */
+										return 0;
 									}
 
 									/* subtree is not a content of the filter output */
