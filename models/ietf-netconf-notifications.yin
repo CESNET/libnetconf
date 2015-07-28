@@ -25,33 +25,36 @@ WG Chair: Bert Wijnen
 WG Chair: Mehmet Ersue
           &lt;mailto:mehmet.ersue@nsn.com&gt;
 
-Editor: Andy Bierman
-        &lt;mailto:andy.bierman@brocade.com&gt;</text>
+Editor:   Andy Bierman
+          &lt;mailto:andy@netconfcentral.org&gt;</text>
   </contact>
   <description>
-    <text>This module defines an YANG data model for use with the 
-NETCONF protocol that allows the NETCONF client to 
+    <text>This module defines a YANG data model for use with the
+NETCONF protocol that allows the NETCONF client to
 receive common NETCONF base event notifications.
 
-Copyright (c) 2011 IETF Trust and the persons identified as
+Copyright (c) 2012 IETF Trust and the persons identified as
 the document authors.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or
 without modification, is permitted pursuant to, and subject
 to the license terms contained in, the Simplified BSD License
+
+
+
 set forth in Section 4.c of the IETF Trust's Legal Provisions
 Relating to IETF Documents
 (http://trustee.ietf.org/license-info).
 
-This version of this YANG module is part of RFC XXXX; see
+This version of this YANG module is part of RFC 6470; see
 the RFC itself for full legal notices.</text>
   </description>
-  <revision date="2011-08-07">
+  <revision date="2012-02-06">
     <description>
       <text>Initial version.</text>
     </description>
     <reference>
-      <text>RFC XXXX: NETCONF Base Notifications</text>
+      <text>RFC 6470: NETCONF Base Notifications</text>
     </reference>
   </revision>
   <grouping name="common-session-parms">
@@ -60,26 +63,26 @@ the RFC itself for full legal notices.</text>
 management session.</text>
     </description>
     <leaf name="username">
+      <type name="string"/>
+      <mandatory value="true"/>
       <description>
         <text>Name of the user for the session.</text>
       </description>
-      <type name="string"/>
-      <mandatory value="true"/>
     </leaf>
     <leaf name="session-id">
-      <description>
-        <text>Identifier of the session.
-A NETCONF session MUST be identified by a non-zero value.        
-A non-NETCONF session MAY be identified by the value zero.</text>
-      </description>
       <type name="nc:session-id-or-zero-type"/>
       <mandatory value="true"/>
+      <description>
+        <text>Identifier of the session.
+A NETCONF session MUST be identified by a non-zero value.
+A non-NETCONF session MAY be identified by the value zero.</text>
+      </description>
     </leaf>
     <leaf name="source-host">
+      <type name="inet:ip-address"/>
       <description>
         <text>Address of the remote host for the session.</text>
       </description>
-      <type name="inet:ip-address"/>
     </leaf>
   </grouping>
   <grouping name="changed-by-parms">
@@ -102,7 +105,7 @@ of the session that made the change will be reported.</text>
         <leaf name="server">
           <type name="empty"/>
           <description>
-            <text>If present, the change was caused 
+            <text>If present, the change was caused
 by the server.</text>
           </description>
         </leaf>
@@ -114,13 +117,13 @@ by the server.</text>
   </grouping>
   <notification name="netconf-config-change">
     <description>
-      <text>Generated when the NETCONF server detects that the 
+      <text>Generated when the NETCONF server detects that the
 &lt;running&gt; or &lt;startup&gt; configuration datastore
-has changed by a management session.  
+has been changed by a management session.
 The notification summarizes the edits that
 have been detected.
 
-The server MAY choose to also generate this 
+The server MAY choose to also generate this
 notification while loading a datastore during the
 boot process for the device.</text>
     </description>
@@ -138,10 +141,10 @@ boot process for the device.</text>
           </description>
         </enum>
       </type>
+      <default value="running"/>
       <description>
         <text>Indicates which configuration datastore has changed.</text>
       </description>
-      <default value="running"/>
     </leaf>
     <list name="edit">
       <description>
@@ -156,10 +159,10 @@ changes not made by a NETCONF session (e.g., CLI).</text>
         <type name="instance-identifier"/>
         <description>
           <text>Topmost node associated with the configuration change.
-A server SHOULD set this object to the node within 
+A server SHOULD set this object to the node within
 the datastore that is being altered.  A server MAY
 set this object to one of the ancestors of the actual
-node that was changed, or omit this object, if the 
+node that was changed, or omit this object, if the
 exact node is not known.</text>
         </description>
       </leaf>
@@ -167,7 +170,7 @@ exact node is not known.</text>
         <type name="nc:edit-operation-type"/>
         <description>
           <text>Type of edit operation performed.
-A server MUST set this object to the NETCONF edit 
+A server MUST set this object to the NETCONF edit
 operation performed on the target datastore.</text>
         </description>
       </leaf>
@@ -175,9 +178,9 @@ operation performed on the target datastore.</text>
   </notification>
   <notification name="netconf-capability-change">
     <description>
-      <text>Generated when the NETCONF server detects that 
+      <text>Generated when the NETCONF server detects that
 the server capabilities have changed.
-Indicates which capabilities have been added, deleted, 
+Indicates which capabilities have been added, deleted,
 and/or modified.  The manner in which a server
 capability is changed is outside the scope of this
 document.</text>
@@ -202,33 +205,33 @@ document.</text>
 A capability is considered to be modified if the
 base URI for the capability has not changed, but
 one or more of the parameters encoded at the end of
-the capability URI has changed.  
+the capability URI have changed.
 The new modified value of the complete URI is returned.</text>
       </description>
     </leaf-list>
   </notification>
   <notification name="netconf-session-start">
     <description>
-      <text>Generated when a NETCONF server detects that a 
+      <text>Generated when a NETCONF server detects that a
 NETCONF session has started.  A server MAY generate
 this event for non-NETCONF management sessions.
-Indicates the identity of the user that started 
+Indicates the identity of the user that started
 the session.</text>
     </description>
     <uses name="common-session-parms"/>
   </notification>
   <notification name="netconf-session-end">
     <description>
-      <text>Generated when a NETCONF server detects that a 
+      <text>Generated when a NETCONF server detects that a
 NETCONF session has terminated.
 A server MAY optionally generate this event for
-non-NETCONF management sessions. Indicates the 
+non-NETCONF management sessions.  Indicates the
 identity of the user that owned the session,
 and why the session was terminated.</text>
     </description>
     <uses name="common-session-parms"/>
     <leaf name="killed-by">
-      <when condition="../termination-reason = 'killed' and ."/>
+      <when condition="../termination-reason = 'killed'"/>
       <type name="nc:session-id-type"/>
       <description>
         <text>The ID of the session that directly caused this session
@@ -242,14 +245,14 @@ then this leaf will not be present.</text>
         <enum name="closed">
           <description>
             <text>The session was terminated by the client in normal
-fashion, e.g., by the NETCONF &lt;close-session&gt; 
+fashion, e.g., by the NETCONF &lt;close-session&gt;
 protocol operation.</text>
           </description>
         </enum>
         <enum name="killed">
           <description>
             <text>The session was terminated in abnormal
-fashion, e.g., by the NETCONF &lt;kill-session&gt; 
+fashion, e.g., by the NETCONF &lt;kill-session&gt;
 protocol operation.</text>
           </description>
         </enum>
@@ -261,7 +264,7 @@ connection was unexpectedly closed.</text>
         </enum>
         <enum name="timeout">
           <description>
-            <text>The session was terminated because of inactivity, 
+            <text>The session was terminated because of inactivity,
 e.g., waiting for the &lt;hello&gt; message or &lt;rpc&gt;
 messages.</text>
           </description>
@@ -285,29 +288,25 @@ messages.</text>
   </notification>
   <notification name="netconf-confirmed-commit">
     <description>
-      <text>Generated when a NETCONF server detects that a confirmed-commit 
-event has occurred.  Indicates the event and the current state
-of the confirmed-commit procedure in progress.</text>
+      <text>Generated when a NETCONF server detects that a
+confirmed-commit event has occurred.  Indicates the event
+and the current state of the confirmed-commit procedure
+in progress.</text>
     </description>
     <reference>
-      <text>RFC 6241, section 8.4</text>
+      <text>RFC 6241, Section 8.4</text>
     </reference>
     <uses name="common-session-parms">
       <when condition="../confirm-event != 'timeout'"/>
     </uses>
     <leaf name="confirm-event">
-      <description>
-        <text>Indicates the event that caused the notification.</text>
-      </description>
       <type name="enumeration">
         <enum name="start">
-          <value value="0"/>
           <description>
             <text>The confirmed-commit procedure has started.</text>
           </description>
         </enum>
         <enum name="cancel">
-          <value value="1"/>
           <description>
             <text>The confirmed-commit procedure has been canceled,
 e.g., due to the session being terminated, or an
@@ -315,40 +314,40 @@ explicit &lt;cancel-commit&gt; operation.</text>
           </description>
         </enum>
         <enum name="timeout">
-          <value value="2"/>
           <description>
-            <text>The confirmed-commit procedure has been canceled,
+            <text>The confirmed-commit procedure has been canceled
 due to the confirm-timeout interval expiring.
 The common session parameters will not be present
 in this sub-mode.</text>
           </description>
         </enum>
         <enum name="extend">
-          <value value="3"/>
           <description>
             <text>The confirmed-commit timeout has been extended,
 e.g., by a new &lt;confirmed-commit&gt; operation.</text>
           </description>
         </enum>
         <enum name="complete">
-          <value value="4"/>
           <description>
             <text>The confirmed-commit procedure has been completed.</text>
           </description>
         </enum>
       </type>
       <mandatory value="true"/>
+      <description>
+        <text>Indicates the event that caused the notification.</text>
+      </description>
     </leaf>
     <leaf name="timeout">
       <when condition="../confirm-event = 'start' or ../confirm-event = 'extend'"/>
+      <type name="uint32"/>
+      <units name="seconds"/>
       <description>
         <text>The configured timeout value if the event type
-is 'start' or 'extend'.  This value represents the
+is 'start' or 'extend'.  This value represents
 the approximate number of seconds from the event
 time when the 'timeout' event might occur.</text>
       </description>
-      <units name="seconds"/>
-      <type name="uint32"/>
     </leaf>
   </notification>
 </module>
