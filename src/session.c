@@ -1516,6 +1516,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 					emsg = "description not available";
 				}
 				VERB("Writing data into the communication channel failed (%s).", emsg);
+				free (text);
 				return (EXIT_FAILURE);
 			}
 #endif
@@ -1523,6 +1524,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 				DBG_UNLOCK("mut_channel");
 				session->mut_channel_flag = 0;
 				pthread_mutex_unlock(session->mut_channel);
+				free (text);
 				return (EXIT_FAILURE);
 			}
 		} while (c < (ssize_t) strlen (buf));
@@ -1549,6 +1551,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 				emsg = "description not available";
 			}
 			VERB("Writing data into the communication channel failed (%s).", emsg);
+			free (text);
 			return (EXIT_FAILURE);
 		}
 #endif
@@ -1556,6 +1559,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 			DBG_UNLOCK("mut_channel");
 			session->mut_channel_flag = 0;
 			pthread_mutex_unlock(session->mut_channel);
+			free (text);
 			return (EXIT_FAILURE);
 		}
 	} while (c < (ssize_t) strlen (text));
