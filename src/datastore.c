@@ -4816,6 +4816,63 @@ API void ncds_free2(ncds_id datastore_id)
 	}
 }
 
+/**
+ * \brief Decide if the given child is a key element of the parent.
+ *
+ * \param[in] parent Parent element which key node is checked.
+ * \param[in] child Element to decide if it is a key element of the parent
+ * \param[in] keys List of key elements from the configuration data model.
+ * \return Zero if the given child is NOT the key element of the parent.
+ */
+int is_key(xmlNodePtr parent, xmlNodePtr child, keyList keys)
+{
+	xmlChar *str = NULL;
+	char *s, *token;
+	int i;
+
+	assert(parent != NULL);
+	assert(child != NULL);
+
+	if (keys == NULL) {
+		/* there are no keys */
+		return 0;
+	}
+
+	for (i = 0; i < keys->nodesetval->nodeNr; i++) {
+		/* get the corresponding key definition from the data model */
+		// name = xmlGetNsProp (keys->nodesetval->nodeTab[i]->parent, BAD_CAST "name", BAD_CAST NC_NS_YIN);
+		if ((str = xmlGetProp(keys->nodesetval->nodeTab[i]->parent, BAD_CAST "name")) == NULL) {
+			continue;
+		}
+		if (xmlStrcmp(str, parent->name)) {
+			xmlFree(str);
+			continue;
+		}
+		xmlFree(str);
+
+		/* get the name of the key node(s) from the 'value' attribute in key element in data model */
+		if ((str = xmlGetProp(keys->nodesetval->nodeTab[i], BAD_CAST "value")) == NULL) {
+			continue;
+		}
+
+		/* attribute have the form of space-separated list of key nodes */
+		/* compare all the key node names with the specified child */
+		for (token = s = (char*)str; token != NULL ; s = NULL) {
+			token = strtok(s, " ");
+			if (token == NULL) {
+				break;
+			}
+
+			if (xmlStrcmp(BAD_CAST token, child->name) == 0) {
+				xmlFree(str);
+				return 1;
+			}
+		}
+		xmlFree(str);
+	}
+	return 0;
+}
+
 static xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model)
 {
 	int ret = EXIT_FAILURE;
@@ -4900,7 +4957,7 @@ static int attrcmp(xmlNodePtr reference, xmlNodePtr node)
  * \return              1 if config satisfies the output filter, 0 otherwise
  */
 
-static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter)
+static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter, keyList keys)
 {
 	xmlNodePtr config_node = config;
 	xmlNodePtr filter_node = filter;
@@ -5038,6 +5095,10 @@ filter:
 								} else if (nomatch) {
 									/* instance does not follow restrictions */
 									return 0;
+								} else if (is_key(config_node->parent, config_node, keys)) {
+									/* go to the next sibling */
+									config_node = config_node->next;
+									continue;
 								}
 
 								delete = config_node;
@@ -5047,7 +5108,7 @@ filter:
 							} else {
 								/* recursively process subtree filter */
 								if (filter_node && filter_node->children && (filter_node->children->type == XML_ELEMENT_NODE) && config_node->children && (config_node->children->type == XML_ELEMENT_NODE)) {
-									sibling_in = ncxml_subtree_filter(config_node->children, filter_node->children);
+									sibling_in = ncxml_subtree_filter(config_node->children, filter_node->children, keys);
 								}
 								if (sibling_selection && sibling_in == 0) {
 									if (filter_node && filter_node->next) {
@@ -5057,6 +5118,10 @@ filter:
 									} else if (nomatch) {
 										/* instance does not follow restrictions */
 										return 0;
+									} else if (is_key(config_node->parent, config_node, keys)) {
+										/* go to the next sibling */
+										config_node = config_node->next;
+										continue;
 									}
 
 									/* subtree is not a content of the filter output */
@@ -5098,7 +5163,7 @@ filter:
 
 		if (filter_in == 1) {
 			while (config->children && filter_node && filter_node->children && !xmlIsBlankNode(filter_node->children) &&
-					((filter_in = ncxml_subtree_filter(config->children, filter_node->children)) == 0)) {
+					((filter_in = ncxml_subtree_filter(config->children, filter_node->children, keys)) == 0)) {
 				filter_node = filter_node->next;
 				while (filter_node) {
 					if (!strcmp((char *)filter_node->name, (char *)config->name) &&
@@ -5122,7 +5187,7 @@ filter:
 		}
 		/* filter next sibling node */
 		if (config->next != NULL) {
-			if (ncxml_subtree_filter(config->next, filter) == 0) {
+			if (ncxml_subtree_filter(config->next, filter, keys) == 0) {
 				delete = config->next;
 				xmlUnlinkNode(delete);
 				xmlFreeNode(delete);
@@ -5143,6 +5208,7 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 {
 	xmlDocPtr result, data_filtered[2] = {NULL, NULL};
 	xmlNodePtr filter_item, node;
+	keyList keys;
 	int ret = EXIT_FAILURE;
 
 	if (new == NULL || old == NULL || filter == NULL) {
@@ -5156,6 +5222,9 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 			return EXIT_FAILURE;
 		}
 
+		/* get all keys from data model */
+		keys = get_keynode_list(data_model);
+
 		data_filtered[0] = xmlNewDoc(BAD_CAST "1.0");
 		data_filtered[1] = xmlNewDoc(BAD_CAST "1.0");
 		for (filter_item = filter->subtree_filter->children; filter_item != NULL; filter_item = filter_item->next) {
@@ -5167,7 +5236,7 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 			 */
 			node = filter_item->next;
 			filter_item->next = NULL;
-			ncxml_subtree_filter(data_filtered[0]->children, filter_item);
+			ncxml_subtree_filter(data_filtered[0]->children, filter_item, keys);
 			/* revert change made to the filter doc */
 			filter_item->next = node;
 
@@ -5196,6 +5265,10 @@ int ncxml_filter(xmlNodePtr old, const struct nc_filter* filter, xmlNodePtr *new
 				xmlFreeDoc(data_filtered[1]);
 				data_filtered[1] = result;
 			}
+		}
+
+		if (keys != NULL) {
+			keyListFree(keys);
 		}
 
 		if (filter->subtree_filter->children != NULL) {

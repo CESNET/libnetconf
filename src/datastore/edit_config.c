@@ -80,6 +80,9 @@ typedef enum {
 	NC_CHECK_EDIT_CREATE = NC_EDIT_OP_CREATE
 } NC_CHECK_EDIT_OP;
 
+/* from datastore.c */
+int is_key(xmlNodePtr parent, xmlNodePtr child, keyList keys);
+
 int nc_nscmp(xmlNodePtr reference, xmlNodePtr node)
 {
 	int in_ns = 1;
@@ -319,62 +322,6 @@ static int get_keys(keyList keys, xmlNodePtr node, int all, xmlNodePtr **result)
 	return (EXIT_SUCCESS);
 }
 
-/**
- * \brief Decide if the given child is a key element of the parent.
- *
- * \param[in] parent Parent element which key node is checked.
- * \param[in] child Element to decide if it is a key element of the parent
- * \param[in] keys List of key elements from the configuration data model.
- * \return Zero if the given child is NOT the key element of the parent.
- */
-static int is_key(xmlNodePtr parent, xmlNodePtr child, keyList keys)
-{
-	xmlChar *str = NULL;
-	char *s, *token;
-	int i;
-
-	assert(parent != NULL);
-	assert(child != NULL);
-
-	if (keys == NULL) {
-		/* there are no keys */
-		return 0;
-	}
-
-	for (i = 0; i < keys->nodesetval->nodeNr; i++) {
-		/* get the corresponding key definition from the data model */
-		// name = xmlGetNsProp (keys->nodesetval->nodeTab[i]->parent, BAD_CAST "name", BAD_CAST NC_NS_YIN);
-		if ((str = xmlGetProp(keys->nodesetval->nodeTab[i]->parent, BAD_CAST "name")) == NULL) {
-			continue;
-		}
-		if (xmlStrcmp(str, parent->name)) {
-			xmlFree(str);
-			continue;
-		}
-		xmlFree(str);
-
-		/* get the name of the key node(s) from the 'value' attribute in key element in data model */
-		if ((str = xmlGetProp(keys->nodesetval->nodeTab[i], BAD_CAST "value")) == NULL) {
-			continue;
-		}
-
-		/* attribute have the form of space-separated list of key nodes */
-		/* compare all the key node names with the specified child */
-		for (token = s = (char*)str; token != NULL ; s = NULL) {
-			token = strtok(s, " ");
-			if (token == NULL) {
-				break;
-			}
-
-			if (xmlStrcmp(BAD_CAST token, child->name) == 0) {
-				xmlFree(str);
-				return 1;
-			}
-		}
-		xmlFree(str);
-	}
-	return 0;
-}
 
 /**
  * @return NULL if the node is not a part of the choice statement,
