@@ -1,4 +1,4 @@
-.TH "General functions" 3 "Thu Jun 11 2015" "Version 0.10.0-3_trunk" "libnetconf" \" -*- nroff -*-
+.TH "General functions" 3 "Wed Jul 29 2015" "Version 0.10.0-35_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -55,6 +55,10 @@ If the func parameter is NULL, the callback is set back to the default (no) func
 .RI "int \fBnc_err_set\fP (struct nc_err *err, \fBNC_ERR_PARAM\fP param, const char *value)"
 .br
 .RI "\fISet selected parameter of the NETCONF error structure to the specified value\&. \fP"
+.ti -1c
+.RI "void \fBnc_hello_timeout\fP (int timeout)"
+.br
+.RI "\fISet <hello> timeout - how long libnetconf will wait for the <hello> message from the other side\&. Default value is -1 (infinite timeout)\&. \fP"
 .ti -1c
 .RI "int \fBnc_init\fP (int flags)"
 .br
@@ -264,6 +268,17 @@ Set selected parameter of the NETCONF error structure to the specified value\&.
 0 on success
 .br
  non-zero on error 
+.RE
+.PP
+
+.SS "void nc_hello_timeout (inttimeout)"
+
+.PP
+Set <hello> timeout - how long libnetconf will wait for the <hello> message from the other side\&. Default value is -1 (infinite timeout)\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fItimeout\fP Timeout in milliseconds, -1 for infinite timeout, 0 for non-blocking\&. 
 .RE
 .PP
 

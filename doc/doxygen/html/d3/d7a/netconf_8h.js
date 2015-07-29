@@ -156,6 +156,7 @@ var netconf_8h =
     ] ],
     [ "nc_close", "d3/d35/group__gen_a_p_i.html#gaaf2f5bf5a58103d9e4ea1cbe4291094b", null ],
     [ "nc_datetime2time", "d3/d35/group__gen_a_p_i.html#ga4dfd796fda30d3ad8588b4c30c4c1583", null ],
+    [ "nc_hello_timeout", "d3/d35/group__gen_a_p_i.html#ga8549cab822104310917fca804476d272", null ],
     [ "nc_init", "d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc", null ],
     [ "nc_time2datetime", "d3/d35/group__gen_a_p_i.html#ga90a44b60b04512fd0a3507ab35a1ccc4", null ],
     [ "nc_verb_error", "d3/d35/group__gen_a_p_i.html#gabd4e3697f3a1fe6b5853e692ad20c2bb", null ],

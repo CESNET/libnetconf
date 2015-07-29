@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Thu Jun 11 2015" "Version 0.10.0-3_trunk" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Wed Jul 29 2015" "Version 0.10.0-35_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -42,7 +42,7 @@ libnetconf's functions for handling NETCONF sessions\&.
 .br
 .RI "\fISet a callback function to authorize authenticity of the remote host\&. \fP"
 .ti -1c
-.RI "char * \fBnc_callback_sshauth_interactive\fP (void(*func)(const char *name, const char *instruction, const char *prompt, int echo))"
+.RI "void \fBnc_callback_sshauth_interactive\fP (char *(*func)(const char *name, const char *instruction, const char *prompt, int echo))"
 .br
 .RI "\fISet a callback function for passing user credentials into the libssh's keyboard-interactive authentication method\&. \fP"
 .ti -1c
@@ -308,7 +308,7 @@ EXIT_FAILURE - keys do not match or an error occurred\&.
 .RE
 .PP
 
-.SS "char* nc_callback_sshauth_interactive (void(*)(const char *name, const char *instruction, const char *prompt, int echo)func)"
+.SS "void nc_callback_sshauth_interactive (char *(*)(const char *name, const char *instruction, const char *prompt, int echo)func)"
 
 .PP
 Set a callback function for passing user credentials into the libssh's keyboard-interactive authentication method\&. To make this function available, you have to include \fBlibnetconf_ssh\&.h\fP\&.

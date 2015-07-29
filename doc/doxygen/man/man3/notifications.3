@@ -1,4 +1,4 @@
-.TH "NETCONF Event Notifications" 3 "Thu Jun 11 2015" "Version 0.10.0-3_trunk" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Event Notifications" 3 "Wed Jul 29 2015" "Version 0.10.0-35_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -544,11 +544,6 @@ Test if the given stream is already created and available\&.
 .PP
 Clean all the structures used for iteration in the specified stream\&. This function must be called as a closing function to nc_ntf_stream_iter_start() 
 .PP
-\fBTodo\fP
-.RS 4
-: thread safety (?thread-specific variables)
-.RE
-.PP
 \fBParameters:\fP
 .RS 4
 \fIstream\fP Name of the iterated stream\&. 
@@ -559,11 +554,6 @@ Clean all the structures used for iteration in the specified stream\&. This func
 
 .PP
 Pop the next event record from the stream file\&. The iteration must be started by nc_ntf_stream_iter_start() function\&. 
-.PP
-\fBTodo\fP
-.RS 4
-: thread safety (?thread-specific variables)
-.RE
 .PP
 \fBParameters:\fP
 .RS 4
@@ -586,11 +576,6 @@ Content of the next event in the stream\&.
 
 .PP
 Start iteration on the events in the specified stream file\&. Iteration starts on the first event in the first part of the stream file\&. 
-.PP
-\fBTodo\fP
-.RS 4
-: thread safety (?thread-specific variables)
-.RE
 .PP
 \fBParameters:\fP
 .RS 4

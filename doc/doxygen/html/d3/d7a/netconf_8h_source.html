@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.10.0-3_trunk</span>
+   &#160;<span id="projectnumber">0.10.0-35_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -328,11 +328,13 @@ $(document).ready(function(){initNavTree('d3/d7a/netconf_8h_source.html','../../
 <div class="line"><a name="l00505"></a><span class="lineno">  505</span>&#160;</div>
 <div class="line"><a name="l00516"></a><span class="lineno">  516</span>&#160;time_t <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga4dfd796fda30d3ad8588b4c30c4c1583">nc_datetime2time</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* datetime);</div>
 <div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;</div>
-<div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;}</div>
-<div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;</div>
-<div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* NC_NETCONF_H_ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160;<span class="keywordtype">void</span> <a class="code" href="../../d3/d35/group__gen_a_p_i.html#ga8549cab822104310917fca804476d272">nc_hello_timeout</a>(<span class="keywordtype">int</span> timeout);</div>
+<div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160;</div>
+<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;}</div>
+<div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;</div>
+<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* NC_NETCONF_H_ */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="group__rpc_html_gga3e6fc59e2d06c1c0edb36ee64ee9cc07abf39ac97e04fd8d77d6a409a004eb234"><div class="ttname"><a href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07abf39ac97e04fd8d77d6a409a004eb234">NC_OP_DELETECONFIG</a></div><div class="ttdef"><b>Definition:</b> netconf.h:187</div></div>
 <div class="ttc" id="group__gen_a_p_i_html_gga298c7a4ad5cc76169a211f86df90f057ab4e4b148e14bdf9f320331b0cbe1dc6d"><div class="ttname"><a href="../../d3/d35/group__gen_a_p_i.html#gga298c7a4ad5cc76169a211f86df90f057ab4e4b148e14bdf9f320331b0cbe1dc6d">NC_MSG_NOTIFICATION</a></div><div class="ttdef"><b>Definition:</b> netconf.h:143</div></div>
 <div class="ttc" id="group__reply_html_ggad31ee5df47d5671ebdf1b06f785e6c29aa47af543410586d8da28f02f099abce0"><div class="ttname"><a href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29aa47af543410586d8da28f02f099abce0">NC_REPLY_ERROR</a></div><div class="ttdef"><b>Definition:</b> netconf.h:154</div></div>
@@ -386,6 +388,7 @@ $(document).ready(function(){initNavTree('d3/d7a/netconf_8h_source.html','../../
 <div class="ttc" id="group__reply_html_ggad31ee5df47d5671ebdf1b06f785e6c29ac65f86e9af3940dc910231afd07a70cf"><div class="ttname"><a href="../../d0/de2/group__reply.html#ggad31ee5df47d5671ebdf1b06f785e6c29ac65f86e9af3940dc910231afd07a70cf">NC_REPLY_OK</a></div><div class="ttdef"><b>Definition:</b> netconf.h:153</div></div>
 <div class="ttc" id="group__rpc_html_ggaff232fd4280e385c8e45fcca033e58fdaf85c0828113a86cb30dd67991e19b6ba"><div class="ttname"><a href="../../db/de9/group__rpc.html#ggaff232fd4280e385c8e45fcca033e58fdaf85c0828113a86cb30dd67991e19b6ba">NC_EDIT_OP_DELETE</a></div><div class="ttdef"><b>Definition:</b> netconf.h:288</div></div>
 <div class="ttc" id="group__session_html_ggab8fb6ff96d652b9aeb1223729e5694c2ad43b0471a6cc0e281bc7eb135a59da00"><div class="ttname"><a href="../../db/d52/group__session.html#ggab8fb6ff96d652b9aeb1223729e5694c2ad43b0471a6cc0e281bc7eb135a59da00">NC_SESSION_TERM_KILLED</a></div><div class="ttdef"><b>Definition:</b> netconf.h:125</div></div>
+<div class="ttc" id="group__gen_a_p_i_html_ga8549cab822104310917fca804476d272"><div class="ttname"><a href="../../d3/d35/group__gen_a_p_i.html#ga8549cab822104310917fca804476d272">nc_hello_timeout</a></div><div class="ttdeci">void nc_hello_timeout(int timeout)</div><div class="ttdoc">Set <hello> timeout - how long libnetconf will wait for the <hello> message from the other side...</div></div>
 <div class="ttc" id="group__rpc_html_gab21d1d39737065c552f2ccc5b4819262"><div class="ttname"><a href="../../db/de9/group__rpc.html#gab21d1d39737065c552f2ccc5b4819262">nc_rpc</a></div><div class="ttdeci">struct nc_msg nc_rpc</div><div class="ttdoc">rpc message. </div><div class="ttdef"><b>Definition:</b> netconf.h:56</div></div>
 <div class="ttc" id="group__rpc_html_ga3e6fc59e2d06c1c0edb36ee64ee9cc07"><div class="ttname"><a href="../../db/de9/group__rpc.html#ga3e6fc59e2d06c1c0edb36ee64ee9cc07">NC_OP</a></div><div class="ttdeci">NC_OP</div><div class="ttdoc">Enumeration of supported <rpc> operations. </div><div class="ttdef"><b>Definition:</b> netconf.h:179</div></div>
 <div class="ttc" id="group__rpc_html_gga3e6fc59e2d06c1c0edb36ee64ee9cc07abc36a612cfba2cf3462d99fae4ab4ac5"><div class="ttname"><a href="../../db/de9/group__rpc.html#gga3e6fc59e2d06c1c0edb36ee64ee9cc07abc36a612cfba2cf3462d99fae4ab4ac5">NC_OP_COPYCONFIG</a></div><div class="ttdef"><b>Definition:</b> netconf.h:186</div></div>
@@ -466,7 +469,7 @@ $(document).ready(function(){initNavTree('d3/d7a/netconf_8h_source.html','../../
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d3/d7a/netconf_8h.html">netconf.h</a></li>
-    <li class="footer">Generated on Thu Jun 11 2015 13:01:39 for libnetconf by
+    <li class="footer">Generated on Wed Jul 29 2015 16:35:22 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

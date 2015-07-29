@@ -38,7 +38,6 @@ var NAVTREE =
         [ "Integrating to a server", "d9/d25/transapi.html#transapiTutorial-using", null ]
       ] ]
     ] ],
-    [ "Todo List", "dd/da0/todo.html", null ],
     [ "Modules", "modules.html", "modules" ],
     [ "Data Structures", null, [
       [ "Data Structures", "annotated.html", "annotated" ],
@@ -66,9 +65,9 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d5/d7d/group__url.html#ggaeecc86d0808c9098b6a8694e88925ccda5977de49ac0680ca80381aeb77aa40e6",
-"db/d52/group__session.html#ga3868d5331db61a5d3a4df3ff5fa33851",
-"db/de9/group__rpc.html#ga599c715b0aee0f1f2ed231ce1d78e5bd"
+"d5/d7d/group__url.html#ggaeecc86d0808c9098b6a8694e88925ccda41ef284c88ec1d6e7e46b2ce5d867572",
+"db/d52/group__session.html#ga2ea9b318015206d886c7e54386fc85e3",
+"db/de9/group__rpc.html#ga5852fd110198481afb37cc8dcf0bf454"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

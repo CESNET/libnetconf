@@ -23,6 +23,7 @@ var group__gen_a_p_i =
     [ "nc_err_get", "d3/d35/group__gen_a_p_i.html#ga3d7714f1f56ac7203a80c61aea4344f8", null ],
     [ "nc_err_new", "d3/d35/group__gen_a_p_i.html#ga057524ba5256c428b6bf88710f000e0c", null ],
     [ "nc_err_set", "d3/d35/group__gen_a_p_i.html#gab28d881eeebd79d485391ae1ffc97299", null ],
+    [ "nc_hello_timeout", "d3/d35/group__gen_a_p_i.html#ga8549cab822104310917fca804476d272", null ],
     [ "nc_init", "d3/d35/group__gen_a_p_i.html#ga40e32bd7c1404a76105b426219021cdc", null ],
     [ "nc_msgid_compare", "d3/d35/group__gen_a_p_i.html#gae160a70158f957344eb3204987329632", null ],
     [ "nc_time2datetime", "d3/d35/group__gen_a_p_i.html#ga90a44b60b04512fd0a3507ab35a1ccc4", null ],

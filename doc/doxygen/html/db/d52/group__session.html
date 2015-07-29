@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.10.0-3_trunk</span>
+   &#160;<span id="projectnumber">0.10.0-35_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -161,9 +161,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga78a69a69dea0369455218c5aeedce9f8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga78a69a69dea0369455218c5aeedce9f8">nc_callback_ssh_host_authenticity_check</a> (int(*func)(const char *hostname, ssh_session session))</td></tr>
 <tr class="memdesc:ga78a69a69dea0369455218c5aeedce9f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function to authorize authenticity of the remote host.  <a href="#ga78a69a69dea0369455218c5aeedce9f8">More...</a><br /></td></tr>
 <tr class="separator:ga78a69a69dea0369455218c5aeedce9f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga41c10d3af57cccebc7c67b11e4024c21"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga41c10d3af57cccebc7c67b11e4024c21">nc_callback_sshauth_interactive</a> (void(*func)(const char *name, const char *instruction, const char *prompt, int echo))</td></tr>
-<tr class="memdesc:ga41c10d3af57cccebc7c67b11e4024c21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing user credentials into the libssh's keyboard-interactive authentication method.  <a href="#ga41c10d3af57cccebc7c67b11e4024c21">More...</a><br /></td></tr>
-<tr class="separator:ga41c10d3af57cccebc7c67b11e4024c21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga621c3e008285991ba00007f8d44730c0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga621c3e008285991ba00007f8d44730c0">nc_callback_sshauth_interactive</a> (char *(*func)(const char *name, const char *instruction, const char *prompt, int echo))</td></tr>
+<tr class="memdesc:ga621c3e008285991ba00007f8d44730c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing user credentials into the libssh's keyboard-interactive authentication method.  <a href="#ga621c3e008285991ba00007f8d44730c0">More...</a><br /></td></tr>
+<tr class="separator:ga621c3e008285991ba00007f8d44730c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga81ef9b1c1949bbffd86cbfd9aa159726">nc_callback_sshauth_passphrase</a> (char *(*func)(const char *username, const char *hostname, const char *priv_key_file))</td></tr>
 <tr class="memdesc:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a callback function for passing the user password into the libssh's publickey authentication method when connecting to 'hostname' as 'username'.  <a href="#ga81ef9b1c1949bbffd86cbfd9aa159726">More...</a><br /></td></tr>
 <tr class="separator:ga81ef9b1c1949bbffd86cbfd9aa159726"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -443,14 +443,14 @@ string)", but I want to be clear from the API, that function returns pointer to 
 
 </div>
 </div>
-<a class="anchor" id="ga41c10d3af57cccebc7c67b11e4024c21"></a>
+<a class="anchor" id="ga621c3e008285991ba00007f8d44730c0"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* nc_callback_sshauth_interactive </td>
+          <td class="memname">void nc_callback_sshauth_interactive </td>
           <td>(</td>
-          <td class="paramtype">void(*)(const char *name, const char *instruction, const char *prompt, int echo)&#160;</td>
+          <td class="paramtype">char *(*)(const char *name, const char *instruction, const char *prompt, int echo)&#160;</td>
           <td class="paramname"><em>func</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1589,7 +1589,7 @@ string)", but I want to be clear from the API, that function returns pointer to 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Jun 11 2015 13:01:39 for libnetconf by
+    <li class="footer">Generated on Wed Jul 29 2015 16:35:22 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

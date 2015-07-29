@@ -1,4 +1,4 @@
-.TH "install" 3 "Thu Jun 11 2015" "Version 0.10.0-3_trunk" "libnetconf" \" -*- nroff -*-
+.TH "install" 3 "Wed Jul 29 2015" "Version 0.10.0-35_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -81,7 +81,7 @@ This way the library will be installed in \fC/usr/local/lib/\fP (or lib64) and \
 \fCconfigure\fP script supports the following options\&. The full list of the accepted options can be shown by \fC--help\fP option\&.
 .PP
 .IP "\(bu" 2
-\fC--disable--libssh\fP
+\fC--disable-libssh\fP
 .IP "  \(bu" 4
 Remove dependency on the \fClibssh\fP library\&. By default, the \fClibssh\fP library is used by the client side functions to create SSH connection to a remote host\&. If the usage of the \fClibssh\fP is disabled, libnetconf will use a standalone \fCssh(1)\fP client located in a system path\&. \fCssh(1)\fP client is, for example, part of the OpenSSH\&. This option has no effect for server-side functionality\&.
 .PP
