@@ -515,6 +515,15 @@ char* nc_time2datetime(time_t time, const char* tz);
  */
 time_t nc_datetime2time(const char* datetime);
 
+/**
+ * @ingroup genAPI
+ * @brief Set \<hello\> timeout - how long libnetconf will wait for the \<hello\>
+ * message from the other side. Default value is -1 (infinite timeout).
+ *
+ * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for non-blocking.
+ */
+void nc_hello_timeout(int timeout);
+
 #ifdef __cplusplus
 }
 #endif

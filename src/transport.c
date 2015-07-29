@@ -444,6 +444,17 @@ static nc_rpc *nc_msg_server_hello(char **cpblts, char* session_id)
 	return (msg);
 }
 
+static int hello_timeout = -1;
+API void nc_hello_timeout(int timeout)
+{
+	if (timeout < 0) {
+		/* normalize negative value */
+		hello_timeout = -1;
+	} else {
+		hello_timeout = timeout;
+	}
+}
+
 #define HANDSHAKE_SIDE_SERVER 1
 #define HANDSHAKE_SIDE_CLIENT 2
 static int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello, int side)
@@ -452,6 +463,7 @@ static int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello
 	int i;
 	nc_reply *recv_hello = NULL;
 	char **recv_cpblts = NULL, **merged_cpblts = NULL;
+	NC_MSG_TYPE reply;
 
 	if (nc_session_send_rpc(session, hello) == 0) {
 		return (EXIT_FAILURE);
@@ -461,12 +473,15 @@ static int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello
 	if (side == HANDSHAKE_SIDE_CLIENT) {
 		recv_hello = read_hello_openssh(session);
 	} else {
-		nc_session_recv_reply(session, -1, &recv_hello);
+		reply = nc_session_recv_reply(session, hello_timeout, &recv_hello);
 	}
 #else
-	nc_session_recv_reply(session, -1, &recv_hello);
+	reply = nc_session_recv_reply(session, hello_timeout, &recv_hello);
 #endif
-	if (recv_hello == NULL) {
+	if (reply != NC_MSG_HELLO || recv_hello == NULL) {
+		if (reply == NC_MSG_WOULDBLOCK) {
+			ERROR("Hello timeout expired.");
+		}
 		return (EXIT_FAILURE);
 	}
 
