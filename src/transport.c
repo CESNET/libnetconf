@@ -984,8 +984,8 @@ struct nc_session* _nc_session_accept(const struct nc_cpblts* capabilities, cons
 
 	if (server_capabilities != NULL) {
 		free (server_capabilities);
-		server_capabilities = serialize_cpblts(server_cpblts);
 	}
+	server_capabilities = serialize_cpblts(server_cpblts);
 
 	retval->status = NC_SESSION_STATUS_WORKING;
 
