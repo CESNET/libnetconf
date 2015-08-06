@@ -1725,6 +1725,7 @@ static char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 			if (e != NULL ) {
 				*e = nc_err_new(NC_ERR_OP_FAILED);
 				nc_err_set(*e, NC_ERR_PARAM_APPTAG, "data-not-unique");
+				nc_err_set(*e, NC_ERR_PARAM_MSG, "More than one schema matches the requested parameters.");
 			}
 			free(retval);
 			retval = NULL;
