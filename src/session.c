@@ -2202,6 +2202,14 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 
 	/* parse and store message type */
 	root = xmlDocGetRootElement(retval->doc);
+	/* check namespace */
+	if (!root->ns || !root->ns->href || xmlStrcmp(root->ns->href, BAD_CAST NC_NS_BASE10)) {
+		/* bad namespace */
+		WARN("Unknown (unsupported) namespace of the received message root element.");
+		retval->type.rpc = NC_RPC_UNKNOWN;
+		msgtype = NC_MSG_UNKNOWN;
+	}
+
 	if (xmlStrcmp (root->name, BAD_CAST "rpc-reply") == 0) {
 		msgtype = NC_MSG_REPLY;
 
