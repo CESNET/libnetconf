@@ -1023,21 +1023,25 @@ static int edit_remove(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model
 {
 	xmlNodePtr old;
 	char *msg = NULL;
+	int ret;
 
 	old = find_element_equiv(orig_doc, edit_node, model, keys);
 
-	/* remove the node from the edit document */
-	edit_delete(edit_node);
-
 	if (old == NULL) {
-		return (EXIT_SUCCESS);
+		ret = EXIT_SUCCESS;
 	} else {
 		/* remove edit node's equivalent from the original document */
 		/* NACM */
 		if (nacm_check_data(old, NACM_ACCESS_DELETE, nacm) == NACM_PERMIT) {
 			/* remove the edit node's equivalent from the original document */
 			edit_delete(old);
-			return (EXIT_SUCCESS);
+
+			/* in case of list, it can be possible to apply the node repeatedly */
+			while ((old = find_element_equiv(orig_doc, edit_node, model, keys)) != NULL) {
+				edit_delete(old);
+			}
+
+			ret = EXIT_SUCCESS;
 		} else {
 			if (error != NULL) {
 				*error = nc_err_new(NC_ERR_ACCESS_DENIED);
@@ -1046,9 +1050,14 @@ static int edit_remove(xmlDocPtr orig_doc, xmlNodePtr edit_node, xmlDocPtr model
 					free(msg);
 				}
 			}
-			return (EXIT_FAILURE);
+			ret = EXIT_FAILURE;
 		}
 	}
+
+	/* remove the node from the edit document */
+	edit_delete(edit_node);
+
+	return ret;
 }
 
 /**
