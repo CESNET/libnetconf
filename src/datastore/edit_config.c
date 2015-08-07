@@ -200,6 +200,61 @@ keyList get_keynode_list(xmlDocPtr model)
 	return ((keyList)result);
 }
 
+/* get the key nodes from the xml document */
+static int find_key_elems(xmlNodePtr modelnode, xmlNodePtr node, int all, xmlNodePtr **result)
+{
+	xmlChar *str = NULL;
+	char* s, *token;
+	unsigned int i, c;
+
+	/* get the name of the key node(s) from the 'value' attribute in key element in data model */
+	if ((str = xmlGetProp(modelnode, BAD_CAST "value")) == NULL) {
+		return EXIT_FAILURE;
+	}
+
+	/* attribute have the form of space-separated list of key nodes */
+	/* get the number of keys */
+	for (i = 0, c = 1; i < strlen((char*)str); i++) {
+		if (str[i] == ' ') {
+			c++;
+		}
+	}
+	/* allocate sufficient array of pointers to key nodes */
+	*result = (xmlNodePtr*)calloc(c + 1, sizeof(xmlNodePtr));
+	if (*result == NULL) {
+		xmlFree(str);
+		return (EXIT_FAILURE);
+	}
+
+	/* and now process all key nodes defined in attribute value list */
+	for (i = 0, s = (char*)str; i < c; i++, s = NULL) {
+		token = strtok(s, " ");
+		if (token == NULL) {
+			break;
+		}
+
+		/* get key nodes in original xml tree - all keys are needed */
+		(*result)[i] = node->children;
+		while (((*result)[i] != NULL) && strcmp(token, (char*) ((*result)[i])->name)) {
+			(*result)[i] = ((*result)[i])->next;
+		}
+		if ((*result)[i] == NULL) {
+			if (all) {
+				xmlFree(str);
+				free(*result);
+				*result = NULL;
+				return (EXIT_FAILURE);
+			} else {
+				i--;
+			}
+		}
+	}
+
+	xmlFree(str);
+
+	return EXIT_SUCCESS;
+}
+
 /**
  * \brief Get all the key nodes for the specific element.
  *
@@ -213,8 +268,6 @@ keyList get_keynode_list(xmlDocPtr model)
 static int get_keys(keyList keys, xmlNodePtr node, int all, xmlNodePtr **result)
 {
 	xmlChar *str = NULL;
-	char* s, *token;
-	unsigned int i, c;
 	int j, match;
 	xmlNodePtr key_parent, node_parent;
 
@@ -264,59 +317,13 @@ static int get_keys(keyList keys, xmlNodePtr node, int all, xmlNodePtr **result)
 			continue;
 		}
 
-		/* now get the key nodes from the xml document */
-		/* get the name of the key node(s) from the 'value' attribute in key element in data model */
-		if ((str = xmlGetProp(keys->nodesetval->nodeTab[j], BAD_CAST "value")) == NULL) {
-			continue;
-		}
-
 		/*
 		 * now we have key values for the appropriate node which was
 		 * specified as function parameter, so there will be no other
 		 * run in this for loop - no continue command is allowed from
 		 * now to the end of the loop
 		 */
-
-		/* attribute have the form of space-separated list of key nodes */
-		/* get the number of keys */
-		for (i = 0, c = 1; i < strlen((char*)str); i++) {
-			if (str[i] == ' ') {
-				c++;
-			}
-		}
-		/* allocate sufficient array of pointers to key nodes */
-		*result = (xmlNodePtr*)calloc(c + 1, sizeof(xmlNodePtr));
-		if (*result == NULL) {
-			xmlFree(str);
-			return (EXIT_FAILURE);
-		}
-
-		/* and now process all key nodes defined in attribute value list */
-		for (i = 0, s = (char*)str; i < c; i++, s = NULL) {
-			token = strtok(s, " ");
-			if (token == NULL) {
-				break;
-			}
-
-			/* get key nodes in original xml tree - all keys are needed */
-			(*result)[i] = node->children;
-			while (((*result)[i] != NULL) && strcmp(token, (char*) ((*result)[i])->name)) {
-				(*result)[i] = ((*result)[i])->next;
-			}
-			if ((*result)[i] == NULL) {
-				if (all) {
-					xmlFree(str);
-					free(*result);
-					*result = NULL;
-					return (EXIT_FAILURE);
-				} else {
-					i--;
-				}
-			}
-		}
-
-		xmlFree(str);
-		break;
+		return find_key_elems(keys->nodesetval->nodeTab[j], node, all, result);
 	}
 
 	return (EXIT_SUCCESS);
@@ -2089,6 +2096,21 @@ static int edit_merge_lists(xmlNodePtr merged_node, xmlNodePtr edit_node, xmlDoc
 	return (0);
 }
 
+static xmlNodePtr is_list(xmlNodePtr node, xmlDocPtr model)
+{
+	xmlNodePtr model_node;
+
+	model_node = find_element_model(node, model);
+	if (model_node == NULL) {
+		WARN("unknown element %s!", (char* )(node->name));
+		return (0);
+	} else if (xmlStrcmp(model_node->name, BAD_CAST "list") == 0) {
+		return (model_node);
+	} else {
+		return (NULL);
+	}
+}
+
 static int is_leaf_list(xmlNodePtr node, xmlDocPtr model)
 {
 	xmlNodePtr model_node;
@@ -2631,6 +2653,90 @@ static int compact_edit_operations(xmlDocPtr edit_doc, NC_EDIT_DEFOP_TYPE defop)
 	return EXIT_SUCCESS;
 }
 
+static int check_list_keys(xmlDocPtr edit, xmlDocPtr model, struct nc_err **error)
+{
+	xmlNodePtr listdef;
+	xmlNodePtr *keys = NULL;
+	xmlNodePtr node, next;
+	keyList modelkeys;
+	int ret = EXIT_SUCCESS;
+	int i;
+
+	modelkeys = get_keynode_list(model);
+	if (!modelkeys) {
+		/* no keys in the model */
+		return ret;
+	}
+
+	node = xmlDocGetRootElement(edit);
+	while (node) {
+		if ((listdef = is_list(node, model)) != NULL) {
+			for (i = 0; i < modelkeys->nodesetval->nodeNr; i++) {
+				if (modelkeys->nodesetval->nodeTab[i]->parent == listdef) {
+					break;
+				}
+			}
+
+			if (i < modelkeys->nodesetval->nodeNr) {
+				/* find out if all the keys are present in edit data */
+				if (find_key_elems(modelkeys->nodesetval->nodeTab[i], node, 1, &keys)) {
+					ret = EXIT_FAILURE;
+					goto cleanup;
+				}
+				free(keys);
+				keys = NULL;
+
+			} /* else list has no keys */
+		}
+
+		/* go to the next element to process (depth-first processing) */
+		/* children first */
+		next = node->children;
+		if (next) {
+			/* skip comments and other garbage */
+			while(next && next->type != XML_ELEMENT_NODE) {
+				next = next->next;
+			}
+		}
+
+		if (!next) {
+			/* try siblings */
+			next = node->next;
+			while(next && next->type != XML_ELEMENT_NODE) {
+				next = next->next;
+			}
+
+			while(!next) {
+				/* go back through parents */
+				if (node->parent == (xmlNodePtr)node->doc) {
+					/* we are done */
+					goto cleanup;
+				}
+				node = node->parent;
+
+				/* the parent is already checked, so go to its next sibling */
+				next = node->next;
+				while(next && next->type != XML_ELEMENT_NODE) {
+					next = next->next;
+				}
+			}
+		}
+		node = next;
+	}
+
+cleanup:
+
+	keyListFree(modelkeys);
+
+	if (ret && error != NULL) {
+		*error = nc_err_new(NC_ERR_MISSING_ELEM);
+		nc_err_set(*error, NC_ERR_PARAM_INFO_BADELEM, (char*)node->name);
+		nc_err_set(*error, NC_ERR_PARAM_MSG, "A list key is missing.");
+	}
+
+	return ret;
+}
+
 /**
  * \brief Perform edit-config changes according to the given parameters
  *
@@ -2651,6 +2757,10 @@ int edit_config(xmlDocPtr repo, xmlDocPtr edit, struct ncds_ds* ds, NC_EDIT_DEFO
 		return (EXIT_FAILURE);
 	}
 
+	/* check validity - for list instances, all keys must be present */
+	if (check_list_keys(edit, ds->ext_model, error) != EXIT_SUCCESS) {
+		goto error_cleanup;
+	}
 	/* check operations */
 	if (check_edit_ops(NC_CHECK_EDIT_DELETE, defop, repo, edit, ds->ext_model, error) != EXIT_SUCCESS) {
 		goto error_cleanup;
