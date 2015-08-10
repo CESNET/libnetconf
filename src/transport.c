@@ -97,7 +97,6 @@ void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supporte
 char** get_schemas_capabilities(struct nc_cpblts *cpblts);
 
 extern struct nc_shared_info *nc_info;
-extern char* server_capabilities; /* from datastore, only for server side */
 
 static pthread_key_t transproto_key;
 static pthread_once_t transproto_key_once = PTHREAD_ONCE_INIT;
@@ -261,34 +260,6 @@ static char** nc_parse_hello(struct nc_msg *msg, struct nc_session *session)
 
 	/* everything OK, return the received list of supported capabilities */
 	return (capabilities);
-}
-
-static char* serialize_cpblts(const struct nc_cpblts *capabilities)
-{
-	char *aux = NULL, *retval = NULL;
-	int i;
-
-	if (capabilities == NULL) {
-		return (NULL);
-	}
-
-	for (i = 0; i < capabilities->items; i++) {
-		if (asprintf(&retval, "%s<capability>%s</capability>",
-				(aux == NULL) ? "" : aux,
-				capabilities->list[i]) == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-			continue;
-		}
-		free(aux);
-		aux = retval;
-		retval = NULL;
-	}
-	if (asprintf(&retval, "<capabilities>%s</capabilities>", aux) == -1) {
-		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-		retval = NULL;
-	}
-	free(aux);
-	return(retval);
 }
 
 static char** nc_accept_server_cpblts(char ** server_cpblts_list, char ** client_cpblts_list, int *version)
@@ -981,11 +952,6 @@ struct nc_session* _nc_session_accept(const struct nc_cpblts* capabilities, cons
 		free(straux);
 	}
 #endif
-
-	if (server_capabilities != NULL) {
-		free (server_capabilities);
-	}
-	server_capabilities = serialize_cpblts(server_cpblts);
 
 	retval->status = NC_SESSION_STATUS_WORKING;
 
