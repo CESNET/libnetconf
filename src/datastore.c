@@ -6336,6 +6336,34 @@ apply_editcopyconfig:
 	return (reply);
 }
 
+static char* serialize_cpblts(const struct nc_cpblts *capabilities)
+{
+	char *aux = NULL, *retval = NULL;
+	int i;
+
+	if (capabilities == NULL) {
+		return (NULL);
+	}
+
+	for (i = 0; i < capabilities->items; i++) {
+		if (asprintf(&retval, "%s<capability>%s</capability>",
+				(aux == NULL) ? "" : aux,
+				capabilities->list[i]) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			continue;
+		}
+		free(aux);
+		aux = retval;
+		retval = NULL;
+	}
+	if (asprintf(&retval, "<capabilities>%s</capabilities>", aux) == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		retval = NULL;
+	}
+	free(aux);
+	return(retval);
+}
+
 API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[])
 {
 	struct ncds_ds_list* ds, *ds_rollback;
@@ -6379,6 +6407,8 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 		erropt = nc_rpc_get_erropt(rpc);
 		break;
 	case NC_OP_GET:
+		server_capabilities = serialize_cpblts(session->capabilities);
+		/* no break */
 	case NC_OP_GETCONFIG:
 		rpc2all_data.filter = nc_rpc_get_filter(rpc);
 		break;
@@ -6408,6 +6438,9 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
 				nc_filter_free(rpc2all_data.filter);
 				rpc2all_data.filter = NULL;
+				free(server_capabilities);
+				server_capabilities = NULL;
+
 				if (nc_reply_get_type(old_reply) == NC_REPLY_ERROR) {
 					return (old_reply);
 				} else if (nc_reply_get_type(reply) == NC_REPLY_ERROR) {
@@ -6455,14 +6488,12 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 						}
 
 					}
-					return (reply);
+					goto cleanup;
 				} /* else if (erropt == NC_EDIT_ERROPT_CONT)
 				   * just continue
 				   */
 			} else if (req_type == NC_RPC_DATASTORE_READ) {
-				nc_filter_free(rpc2all_data.filter);
-				rpc2all_data.filter = NULL;
-				return (reply);
+				goto cleanup;
 			}
 		}
 	}
@@ -6477,9 +6508,13 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 	}
 #endif /* DISABLE_NOTIFICATIONS */
 
+cleanup:
 	/* clean up the common data for calling nc_apply_rpc() */
 	nc_filter_free(rpc2all_data.filter);
 	rpc2all_data.filter = NULL;
+
+	free(server_capabilities);
+	server_capabilities = NULL;
 
 	return (reply);
 }
