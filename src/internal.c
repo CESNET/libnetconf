@@ -346,9 +346,10 @@ API int nc_init(int flags)
 		DBG("Shared memory key: %d", key);
 		mask = umask(MASK_PERM);
 		shmid = shmget(key, sizeof(struct nc_shared_info), IPC_CREAT | IPC_EXCL | FILE_PERM);
+		umask(mask);
 		if (shmid == -1) {
 			if (errno == EEXIST) {
-				shmid = shmget(key, sizeof(struct nc_shared_info), FILE_PERM);
+				shmid = shmget(key, sizeof(struct nc_shared_info), 0);
 				init_shm = 0;
 			}
 			if (shmid == -1) {
