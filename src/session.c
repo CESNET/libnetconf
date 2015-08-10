@@ -2208,9 +2208,8 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 		WARN("Unknown (unsupported) namespace of the received message root element.");
 		retval->type.rpc = NC_RPC_UNKNOWN;
 		msgtype = NC_MSG_UNKNOWN;
-	}
 
-	if (xmlStrcmp (root->name, BAD_CAST "rpc-reply") == 0) {
+	} else 	if (xmlStrcmp (root->name, BAD_CAST "rpc-reply") == 0) {
 		msgtype = NC_MSG_REPLY;
 
 		/* set reply type flag */
