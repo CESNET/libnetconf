@@ -4829,7 +4829,8 @@ int is_key(xmlNodePtr parent, xmlNodePtr child, keyList keys)
 {
 	xmlChar *str = NULL;
 	char *s, *token;
-	int i;
+	int i, match;
+	xmlNodePtr key_parent, node_parent;
 
 	assert(parent != NULL);
 	assert(child != NULL);
@@ -4840,16 +4841,48 @@ int is_key(xmlNodePtr parent, xmlNodePtr child, keyList keys)
 	}
 
 	for (i = 0; i < keys->nodesetval->nodeNr; i++) {
-		/* get the corresponding key definition from the data model */
-		// name = xmlGetNsProp (keys->nodesetval->nodeTab[i]->parent, BAD_CAST "name", BAD_CAST NC_NS_YIN);
-		if ((str = xmlGetProp(keys->nodesetval->nodeTab[i]->parent, BAD_CAST "name")) == NULL) {
-			continue;
-		}
-		if (xmlStrcmp(str, parent->name)) {
+		match = 1;
+		key_parent = keys->nodesetval->nodeTab[i]->parent;
+		node_parent = parent;
+
+		while (1) {
+			if ((str = xmlGetProp(key_parent, BAD_CAST "name")) == NULL) {
+				match = 0;
+				break;
+			}
+			if (xmlStrcmp(str, node_parent->name)) {
+				xmlFree(str);
+				match = 0;
+				break;
+			}
 			xmlFree(str);
+
+			do {
+				key_parent = key_parent->parent;
+			} while (key_parent && ((xmlStrcmp(key_parent->name, BAD_CAST "augment") == 0)
+					|| (xmlStrcmp(key_parent->name, BAD_CAST "choice") == 0)
+					|| (xmlStrcmp(key_parent->name, BAD_CAST "case") == 0)));
+			node_parent = node_parent->parent;
+
+			if ((!key_parent && node_parent) || (key_parent && !node_parent)) {
+				match = 0;
+				break;
+			}
+
+			if (!xmlStrcmp(key_parent->name, BAD_CAST "module") && (node_parent->type == XML_DOCUMENT_NODE)) {
+				/* we have match */
+				break;
+			}
+		}
+
+		if (!match) {
 			continue;
 		}
-		xmlFree(str);
+
+		/* so the node is in a key's place (list), but is it a key?
+		 * btw, now we don't want to iterate through next key specs,
+		 * so do not use continue from here
+		 */
 
 		/* get the name of the key node(s) from the 'value' attribute in key element in data model */
 		if ((str = xmlGetProp(keys->nodesetval->nodeTab[i], BAD_CAST "value")) == NULL) {
@@ -4870,7 +4903,9 @@ int is_key(xmlNodePtr parent, xmlNodePtr child, keyList keys)
 			}
 		}
 		xmlFree(str);
+		break;
 	}
+
 	return 0;
 }
 
