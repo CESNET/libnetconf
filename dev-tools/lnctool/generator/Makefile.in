@@ -19,6 +19,7 @@ INSTALL_DATA = @INSTALL_DATA@
 LIBS = @LIBS@
 CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
 LIBTOOL = $(libtool) --tag=CC --quiet
 
 SRCS = @PROJECTNAME@.c
@@ -28,7 +29,7 @@ LOBJS = $(SRCS:%.c=$(OBJDIR)/%.lo)
 all: $(TARGET)
 
 $(TARGET): $(LOBJS)
-	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(CPPFLAGS) $(LIBS) -avoid-version -module -shared -export-dynamic --mode=link -o $@ $^ -rpath $(libdir)
+	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) -avoid-version -module -shared -export-dynamic --mode=link -o $@ $^ -rpath $(libdir)
 
 $(OBJDIR)/%.lo: %.c
 	@[ -d $$(dirname $@) ] || \
