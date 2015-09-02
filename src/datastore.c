@@ -1694,6 +1694,12 @@ static char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 				return (NULL);
 			}
 			format = (char*) xmlNodeGetContent(query_result->nodesetval->nodeTab[0]);
+			char* colon = strrchr(format, ':');
+			if (colon) {
+				char* old = format;
+				format = strdup(colon + 1);
+				free(old);
+			}
 		}
 		xmlXPathFreeObject(query_result);
 	}
