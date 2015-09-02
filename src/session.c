@@ -2205,7 +2205,7 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 	/* check namespace */
 	if (!root->ns || !root->ns->href || xmlStrcmp(root->ns->href, BAD_CAST NC_NS_BASE10)) {
 		/* event notification ? */
-		if (root->ns && root->ns->href && xmlStrcmp(root->ns->href, BAD_CAST NC_NS_NOTIFICATIONS) &&
+		if (root->ns && root->ns->href && !xmlStrcmp(root->ns->href, BAD_CAST NC_NS_NOTIFICATIONS) &&
 				!xmlStrcmp(root->name, BAD_CAST "notification")) {
 			/* we have notification */
 			msgtype = NC_MSG_NOTIFICATION;
