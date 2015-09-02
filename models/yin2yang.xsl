@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" 
+<xsl:stylesheet version="1.0"
   xmlns:yin="urn:ietf:params:xml:ns:yang:yin:1"
   xmlns:nacm="urn:ietf:params:xml:ns:yang:ietf-netconf-acm"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -28,25 +28,25 @@
   <xsl:call-template name="indent"><xsl:with-param name="count" select="$pLevel"/></xsl:call-template>
   <xsl:choose>
     <xsl:when test="@name">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@name"/><xsl:text>"</xsl:text>
+      <xsl:value-of select="local-name(.)" /><xsl:text> </xsl:text><xsl:value-of select="@name"/><xsl:text></xsl:text>
     </xsl:when>
     <xsl:when test="@value">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@value"/><xsl:text>"</xsl:text>
+      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@value"/>"<xsl:text></xsl:text>
     </xsl:when>
     <xsl:when test="@date">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@date"/><xsl:text>"</xsl:text>
+      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@date"/>"<xsl:text></xsl:text>
     </xsl:when>
     <xsl:when test="@condition">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@condition"/><xsl:text>"</xsl:text>
+      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@condition"/>"<xsl:text></xsl:text>
     </xsl:when>
     <xsl:when test="@module">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@module"/><xsl:text>"</xsl:text>
+      <xsl:value-of select="local-name(.)" /><xsl:text> </xsl:text><xsl:value-of select="@module"/><xsl:text></xsl:text>
     </xsl:when>
     <xsl:when test="@target-node">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@target-node"/><xsl:text>"</xsl:text>
+      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@target-node"/>"<xsl:text></xsl:text>
     </xsl:when>
     <xsl:when test="@tag">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@tag"/><xsl:text>"</xsl:text>
+      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@tag"/>"<xsl:text></xsl:text>
     </xsl:when>
   </xsl:choose>
 
