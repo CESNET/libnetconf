@@ -2204,10 +2204,17 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 	root = xmlDocGetRootElement(retval->doc);
 	/* check namespace */
 	if (!root->ns || !root->ns->href || xmlStrcmp(root->ns->href, BAD_CAST NC_NS_BASE10)) {
-		/* bad namespace */
-		WARN("Unknown (unsupported) namespace of the received message root element.");
-		retval->type.rpc = NC_RPC_UNKNOWN;
-		msgtype = NC_MSG_UNKNOWN;
+		/* event notification ? */
+		if (root->ns && root->ns->href && xmlStrcmp(root->ns->href, BAD_CAST NC_NS_NOTIFICATIONS) &&
+				!xmlStrcmp(root->name, BAD_CAST "notification")) {
+			/* we have notification */
+			msgtype = NC_MSG_NOTIFICATION;
+		} else {
+			/* bad namespace */
+			WARN("Unknown (unsupported) namespace of the received message root element.");
+			retval->type.rpc = NC_RPC_UNKNOWN;
+			msgtype = NC_MSG_UNKNOWN;
+		}
 
 	} else 	if (xmlStrcmp (root->name, BAD_CAST "rpc-reply") == 0) {
 		msgtype = NC_MSG_REPLY;
@@ -2220,9 +2227,6 @@ static NC_MSG_TYPE nc_session_receive(struct nc_session* session, int timeout, s
 
 		/* set with-defaults if any */
 		nc_rpc_parse_withdefaults(retval, NULL);
-	} else if (xmlStrcmp (root->name, BAD_CAST "notification") == 0) {
-		/* we have notification */
-		msgtype = NC_MSG_NOTIFICATION;
 	} else if (xmlStrcmp (root->name, BAD_CAST "hello") == 0) {
 		/* set message type, we have <hello> message */
 		retval->type.reply = NC_REPLY_HELLO;
