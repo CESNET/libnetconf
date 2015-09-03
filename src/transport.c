@@ -434,7 +434,7 @@ static int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello
 	int i;
 	nc_reply *recv_hello = NULL;
 	char **recv_cpblts = NULL, **merged_cpblts = NULL;
-	NC_MSG_TYPE reply;
+	NC_MSG_TYPE reply = NC_MSG_UNKNOWN;
 
 	if (nc_session_send_rpc(session, hello) == 0) {
 		return (EXIT_FAILURE);

@@ -1413,7 +1413,9 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 	ssize_t c = 0;
 	int len, status;
 	char *text;
+#ifndef DISABLE_LIBSSH
 	const char *emsg;
+#endif
 	char buf[1024];
 	struct pollfd fds;
 	int ret;
