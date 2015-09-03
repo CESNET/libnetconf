@@ -1,4 +1,4 @@
-.TH "NETCONF Session" 3 "Wed Jul 29 2015" "Version 0.10.0-35_trunk" "libnetconf" \" -*- nroff -*-
+.TH "NETCONF Session" 3 "Thu Sep 3 2015" "Version 0.10.0-47_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -117,6 +117,10 @@ libnetconf's functions for handling NETCONF sessions\&.
 .RI "struct nc_session * \fBnc_session_connect_inout\fP (int fd_in, int fd_out, const struct nc_cpblts *cpblts, const char *host, const char *port, const char *username, \fBNC_TRANSPORT\fP transport)"
 .br
 .RI "\fICreate NETCONF session communicating via given file descriptors\&. This is an alternative function to \fBnc_session_connect()\fP\&. \fP"
+.ti -1c
+.RI "struct nc_session * \fBnc_session_connect_libssh_sess\fP (const char *host, unsigned short port, const char *username, const struct nc_cpblts *cpblts, ssh_session ssh_sess)"
+.br
+.RI "\fICreate NETCONF session to the specified server using a custom SSH session\&. \fP"
 .ti -1c
 .RI "struct nc_session * \fBnc_session_dummy\fP (const char *sid, const char *username, const char *hostname, struct nc_cpblts *capabilities)"
 .br
@@ -639,6 +643,32 @@ It is not allowed to use \fBnc_session_connect_channel()\fP on the session creat
 \fIusername\fP Name of the user we are connected to the remote host as\&. 
 .br
 \fItransport\fP The transport protocol used to connect to the remote host\&. 
+.RE
+.PP
+
+.SS "struct nc_session* nc_session_connect_libssh_sess (const char *host, unsigned shortport, const char *username, const struct nc_cpblts *cpblts, ssh_sessionssh_sess)"
+
+.PP
+Create NETCONF session to the specified server using a custom SSH session\&. This function works only if libnetconf is compiled with using libssh\&.
+.PP
+It shares all the functionality of \fBnc_session_connect()\fP, but also enables to use a customized SSH session with some specific options set\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIhost\fP Hostname or address (both Ipv4 and IPv6 are accepted)\&. 'localhost' is used by default if NULL is specified\&. 
+.br
+\fIport\fP Port number of the server\&. Default value 830 is used if 0 is specified\&. 
+.br
+\fIusername\fP Name of the user to login to the server\&. The user running the application (detected from the effective UID) is used if NULL is specified\&. 
+.br
+\fIcpblts\fP NETCONF capabilities structure with capabilities supported by the client\&. Client can use \fBnc_session_get_cpblts_default()\fP to get the structure with the list of all the capabilities supported by libnetconf (this is used in case of a NULL parameter)\&. 
+.br
+\fIssh_sess\fP Customized libssh SSH session structure\&. Options SSH_OPTIONS_HOST, SSH_OPTIONS_USER, SSH_OPTIONS_FD, and SSH_OPTIONS_TIMEOUT should not be set as they will get set internally and previous values will be ignored\&. The structure will get freed and it should not be manipulated after passed as a parameter\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Structure describing the NETCONF session or NULL in case of an error\&. 
 .RE
 .PP
 

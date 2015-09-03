@@ -648,7 +648,7 @@ error_cleanup:
 	return (NULL);
 }
 
-API struct nc_session* nc_session_connect(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts)
+struct nc_session* _nc_session_connect(const char* host, unsigned short port, const char* username, const struct nc_cpblts* cpblts, void* ssh_sess)
 {
 	struct nc_session *retval = NULL;
 	struct nc_cpblts *client_cpblts = NULL;
@@ -676,10 +676,10 @@ API struct nc_session* nc_session_connect(const char *host, unsigned short port,
 	if (*transport_proto == NC_TRANSPORT_TLS) {
 		retval = nc_session_connect_tls(username, host, port_s);
 	} else {
-		retval = nc_session_connect_ssh(username, host, port_s);
+		retval = nc_session_connect_ssh(username, host, port_s, ssh_sess);
 	}
 #else  /* not ENABLE_TLS */
-	retval = nc_session_connect_ssh(username, host, port_s);
+	retval = nc_session_connect_ssh(username, host, port_s, ssh_sess);
 #endif /* not ENABLE_TLS */
 
 	if (retval == NULL) {
@@ -720,6 +720,10 @@ shutdown:
 	return (NULL);
 }
 
+API struct nc_session* nc_session_connect(const char* host, unsigned short port, const char* username, const struct nc_cpblts* cpblts)
+{
+    return _nc_session_connect(host, port, username, cpblts, NULL);
+}
 
 #ifdef DISABLE_LIBSSH
 
@@ -1438,7 +1442,7 @@ netconf_connect:
 #else
 	{
 #endif
-		retval = nc_session_connect_libssh_socket(username, host, sock);
+		retval = nc_session_connect_libssh_socket(username, host, sock, NULL);
 	}
 
 	if (retval != NULL) {
@@ -1485,6 +1489,11 @@ shutdown:
 }
 
 #endif
+
+API struct nc_session* nc_session_connect_libssh_sess(const char* host, unsigned short port, const char* username, const struct nc_cpblts* cpblts, ssh_session ssh_sess)
+{
+    return _nc_session_connect(host, port, username, cpblts, ssh_sess);
+}
 
 API struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port)
 {

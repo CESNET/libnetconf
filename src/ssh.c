@@ -139,7 +139,7 @@ API struct nc_session *nc_session_accept_libssh_channel(const struct nc_cpblts* 
 	return (_nc_session_accept(capabilities, username, -1, -1, ssh_chan, NULL));
 }
 
-struct nc_session *nc_session_connect_libssh_socket(const char* username, const char* host, int sock)
+struct nc_session *nc_session_connect_libssh_socket(const char* username, const char* host, int sock, ssh_session ssh_sess)
 {
 	struct nc_session *retval = NULL;
 	pthread_mutexattr_t mattr;
@@ -203,10 +203,14 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 	pthread_mutexattr_destroy(&mattr);
 
 	/* Create a session instance */
-	retval->ssh_sess = ssh_new();
-	if (retval->ssh_sess == NULL) {
-		ERROR("Unable to initialize the SSH session.");
-		goto shutdown;
+	if (ssh_sess) {
+		retval->ssh_sess = ssh_sess;
+	} else {
+		retval->ssh_sess = ssh_new();
+		if (retval->ssh_sess == NULL) {
+			ERROR("Unable to initialize the SSH session.");
+			goto shutdown;
+		}
 	}
 
 	ssh_options_set(retval->ssh_sess, SSH_OPTIONS_HOST, host);
@@ -420,7 +424,7 @@ int transport_connect_socket(const char* host, const char* port);
 /*
  * libssh variant - use internal SSH client implementation using libssh
  */
-struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port)
+struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port, ssh_session ssh_sess)
 {
 	struct nc_session *retval = NULL;
 	int sock = -1;
@@ -430,7 +434,7 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 		return (NULL);
 	}
 
-	retval = nc_session_connect_libssh_socket(username, host, sock);
+	retval = nc_session_connect_libssh_socket(username, host, sock, ssh_sess);
 	if (retval != NULL) {
 		retval->hostname = strdup(host);
 		retval->port = strdup(port);
@@ -673,7 +677,7 @@ malformed_msg:
 /*
  * OpenSSH variant - use a standalone ssh client from OpenSSH
  */
-struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port)
+struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port, void* ssh_sess)
 {
 	struct nc_session *retval = NULL;
 	struct passwd *pw;

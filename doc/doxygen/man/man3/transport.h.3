@@ -1,4 +1,4 @@
-.TH "src/transport.h" 3 "Wed Jul 29 2015" "Version 0.10.0-35_trunk" "libnetconf" \" -*- nroff -*-
+.TH "src/transport.h" 3 "Thu Sep 3 2015" "Version 0.10.0-47_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -10,6 +10,8 @@ Functions implementing transport layer for NETCONF\&.
 .br
 .PP
 \fC#include 'netconf\&.h'\fP
+.br
+\fC#include <libssh/libssh\&.h>\fP
 .br
 
 .SS "Functions"
@@ -39,6 +41,10 @@ Functions implementing transport layer for NETCONF\&.
 .RI "struct nc_session * \fBnc_session_connect_inout\fP (int fd_in, int fd_out, const struct nc_cpblts *cpblts, const char *host, const char *port, const char *username, \fBNC_TRANSPORT\fP transport)"
 .br
 .RI "\fICreate NETCONF session communicating via given file descriptors\&. This is an alternative function to \fBnc_session_connect()\fP\&. \fP"
+.ti -1c
+.RI "struct nc_session * \fBnc_session_connect_libssh_sess\fP (const char *host, unsigned short port, const char *username, const struct nc_cpblts *cpblts, ssh_session ssh_sess)"
+.br
+.RI "\fICreate NETCONF session to the specified server using a custom SSH session\&. \fP"
 .ti -1c
 .RI "int \fBnc_session_transport\fP (\fBNC_TRANSPORT\fP proto)"
 .br

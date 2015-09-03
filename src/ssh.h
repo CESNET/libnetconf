@@ -42,16 +42,20 @@
 
 #include "netconf.h"
 
+#ifndef DISABLE_LIBSSH
+#	include <libssh/libssh.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port);
+struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port, ssh_session ssh_sess);
 
 #ifndef DISABLE_LIBSSH
 
-struct nc_session *nc_session_connect_libssh_socket(const char* username, const char* host, int sock);
+struct nc_session *nc_session_connect_libssh_socket(const char* username, const char* host, int sock, ssh_session ssh_sess);
 
 struct nc_session *nc_session_connect_libssh_channel(struct nc_session *session);
 
