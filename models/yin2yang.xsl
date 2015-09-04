@@ -67,13 +67,22 @@
   </xsl:choose>
 </xsl:template>
 
-<xsl:template match="yin:*[yin:text]" >
+<xsl:template match="yin:*[yin:text]|yin:error-message[yin:value]" >
   <xsl:param name="pLevel"/>
   <xsl:call-template name="indent"><xsl:with-param name="count" select="$pLevel"/></xsl:call-template>
   <xsl:value-of select="local-name(.)" /><xsl:text>
 </xsl:text>
   <xsl:call-template name="indent"><xsl:with-param name="count" select="$pLevel"/></xsl:call-template>
-  <xsl:text>  "</xsl:text><xsl:value-of disable-output-escaping="no" select="yin:text" /><xsl:text>";
+  <xsl:text>  "</xsl:text>
+  <xsl:choose>
+    <xsl:when test="yin:text">
+      <xsl:value-of disable-output-escaping="no" select="yin:text" />
+    </xsl:when>
+    <xsl:when test="yin:value">
+      <xsl:value-of disable-output-escaping="no" select="yin:value" />
+    </xsl:when>
+  </xsl:choose>
+  <xsl:text>";
 </xsl:text>
 </xsl:template>
 
