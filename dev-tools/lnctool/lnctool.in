@@ -464,6 +464,7 @@ parser_transapi.add_argument('--name', help='Name of module with callbacks. If n
 parser_transapi.add_argument('--paths', type=argparse.FileType('r'), help='File holding list of sensitive paths in configuration XML.')
 parser_transapi.add_argument('--template-dir', default=TEMPLATEDIR, help='Path to the directory with template files')
 parser_transapi.add_argument('--no-autotools-files', help='Do not generate autotools template files', action='store_true')
+parser_transapi.add_argument('--no-validation', help='Do not generate validation files', action='store_true')
 
 # add common model option
 try:
@@ -486,7 +487,7 @@ try:
 			augment_models_paths.append(augment_model_name+'.yin')
 
 	# when subcommand is 'validation' or 'transapi'
-	if args.subcommand != 'convert':
+	if args.subcommand != 'convert' and not args.no_validation:
 		generate_validators(model_name+'.yin', augment_models_paths, args.search_path, args.feature)
 
 	if args.subcommand == 'transapi':
