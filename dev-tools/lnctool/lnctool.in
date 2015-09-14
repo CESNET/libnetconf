@@ -487,7 +487,7 @@ try:
 			augment_models_paths.append(augment_model_name+'.yin')
 
 	# when subcommand is 'validation' or 'transapi'
-	if args.subcommand != 'convert' and not args.no_validation:
+	if (args.subcommand == 'validation') or (args.subcommand == 'transapi' and not args.no_validation):
 		generate_validators(model_name+'.yin', augment_models_paths, args.search_path, args.feature)
 
 	if args.subcommand == 'transapi':
