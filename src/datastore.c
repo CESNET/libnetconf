@@ -3023,7 +3023,8 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 	xmlNodePtr node, node_aux, path_node;
 	xmlNsPtr ns;
 	int i, ret = 0;
-	char *path, *resolved_path, *resolved_ns, *to_resolve_path;
+	char *path, *resolved_path, *resolved_ns, *resolved_augment_id, *to_resolve_path;
+	char augment_id_buf[4];
 	struct ncds_ds* ds = NULL;
 
 	/* get all definitions of nodes to modify */
@@ -3084,13 +3085,17 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 					if (xmlStrcmp(node_aux->name, BAD_CAST "augment") == 0) {
 						resolved_path = (char*) xmlGetProp (node_aux, BAD_CAST "target-node");
 						resolved_ns = (char*) xmlGetNsProp (node_aux, BAD_CAST "ns", BAD_CAST "libnetconf");
-						if (strcmp(to_resolve_path, resolved_path) == 0 && strcmp(model_ns, resolved_ns) == 0) {
+						resolved_augment_id = (char*) xmlGetNsProp (node_aux, BAD_CAST "augment_id", BAD_CAST "libnetconf");
+						if (strcmp(to_resolve_path, resolved_path) == 0 && strcmp(model_ns, resolved_ns) == 0
+						    && atoi(resolved_augment_id) == i) {
 							free(resolved_path);
 							free(resolved_ns);
+							free(resolved_augment_id);
 							break;
 						}
 						free(resolved_path);
 						free(resolved_ns);
+						free(resolved_augment_id);
 					}
 				}
 
@@ -3103,6 +3108,13 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 				ns = xmlNewNs(node, BAD_CAST "libnetconf", BAD_CAST "libnetconf");
 				xmlSetNsProp(node, ns, BAD_CAST "module", BAD_CAST model_name);
 				xmlSetNsProp(node, ns, BAD_CAST "ns", BAD_CAST model_ns);
+
+				/*
+				 * add an index to the augment be able to distinguish between different
+				 * augments with the same path
+				 */
+				sprintf(augment_id_buf, "%d", i);
+				xmlSetNsProp(node, ns, BAD_CAST "augment_id", BAD_CAST augment_id_buf);
 
 				/*
 				 * if the model is connected with the transAPI module, add it to the
