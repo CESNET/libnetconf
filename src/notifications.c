@@ -1519,7 +1519,7 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 
 		if (asprintf(&content, "<netconf-config-change xmlns=\"urn:ietf:params:xml:ns:yang:ietf-netconf-notifications\">"
 				"<datastore>%s</datastore>"
-				"%s</netconf-config-change>",
+				"<changed-by>%s</changed-by></netconf-config-change>",
 				aux1, (aux2 == NULL) ? "" : aux2) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			free(aux2);
