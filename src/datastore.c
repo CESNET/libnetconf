@@ -6840,6 +6840,7 @@ static struct model_feature** get_features_from_prefix(struct data_model* model,
 		}
 
 		import_model = get_model(import_model_str, NULL);
+		free(import_model_str);
 		if(import_model == NULL){
 			return NULL;
 		}
