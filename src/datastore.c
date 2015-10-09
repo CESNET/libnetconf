@@ -155,6 +155,10 @@ static void ncds_ds_model_free(struct data_model* model);
 static xmlDocPtr ncxml_merge(const xmlDocPtr first, const xmlDocPtr second, const xmlDocPtr data_model);
 extern int first_after_close;
 
+static int ncds_update_features();
+static int feature_check(xmlNodePtr node, struct data_model* model);
+static struct model_feature** get_features_from_prefix(struct data_model* model, char* prefix);
+
 #ifndef DISABLE_NOTIFICATIONS
 static char* get_state_notifications(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 #endif
@@ -2709,117 +2713,6 @@ static int ncds_update_uses_ds(struct ncds_ds* datastore)
 	return (ret);
 }
 
-/*
- *  1 - remove the node
- *  0 - do not remove the node
- * -1 - error
- */
-static int feature_check(xmlNodePtr node, struct model_feature **features)
-{
-	xmlNodePtr child, next;
-	char* name;
-	struct data_model *model;
-	int i;
-
-	if (node == NULL) {
-		ERROR("%s: invalid parameter.", __func__);
-		return (-1);
-	}
-	if (features == NULL || features[0] == NULL) {
-		/* nothing to check here, go recursively (due to possible augments) */
-		goto recursion;
-	}
-
-	for (child = node->children; child != NULL; child = child->next) {
-		if (child->type == XML_ELEMENT_NODE && xmlStrcmp(child->name, BAD_CAST "if-feature") == 0) {
-			if ((name = (char*) xmlGetProp (child, BAD_CAST "name")) == NULL) {
-				WARN("Invalid if-feature statement");
-				continue;
-			}
-			/* check if the feature is enabled or not */
-			for (i = 0; features[i] != NULL; i++) {
-				if (strcmp(features[i]->name, name) == 0) {
-					if (features[i]->enabled == 0) {
-						free(name);
-						/* remove the node */
-						return (1);
-					}
-					break;
-				}
-			}
-			free(name);
-			/* ignore any following if-feature statements */
-			break;
-		}
-	}
-
-recursion:
-	/* recursion check */
-	for (child = node->children; child != NULL; child = next) {
-		next = child->next;
-		if (!xmlStrcmp(child->name, BAD_CAST "augment")) {
-			/* we are going into augment, get the appropriate features */
-			name = (char*) xmlGetNsProp(child, BAD_CAST "module", BAD_CAST "libnetconf");
-			model = get_model(name, NULL);
-			free(name);
-			if (!model) {
-				return EXIT_FAILURE;
-			}
-			features = model->features;
-		} /* else keep the current list of features */
-		if (feature_check(child, features) == 1) {
-			/* remove the node */
-			xmlUnlinkNode(child);
-			xmlFreeNode(child);
-		}
-	}
-
-	return (0);
-}
-
-static int ncds_update_features(struct ncds_ds* datastore)
-{
-	xmlNodePtr node, next;
-	struct model_feature **features;
-	char *name;
-	struct data_model *model;
-
-	if (datastore == NULL) {
-		ERROR("%s: invalid parameter.", __func__);
-		return (EXIT_FAILURE);
-	}
-
-	/*
-	 * check that the extended model is already separated from the datastore's
-	 * base model
-	 */
-	if (datastore->ext_model == datastore->data_model->xml) {
-		datastore->ext_model = xmlCopyDoc(datastore->data_model->xml, 1);
-	}
-
-	for (node = xmlDocGetRootElement(datastore->ext_model)->children; node != NULL; node = next) {
-		next = node->next;
-		if (!xmlStrcmp(node->name, BAD_CAST "augment")) {
-			/* we are going into augment, get the appropriate features */
-			name = (char*) xmlGetNsProp(node, BAD_CAST "module", BAD_CAST "libnetconf");
-			model = get_model(name, NULL);
-			if (!model) {
-				return EXIT_FAILURE;
-			}
-			features = model->features;
-		} else {
-			features = datastore->data_model->features;
-		}
-		if (feature_check(node, features) == 1) {
-			/* remove the node */
-			xmlUnlinkNode(node);
-			xmlFreeNode(node);
-		}
-	}
-
-	return (EXIT_SUCCESS);
-}
-
 static int ncds_transapi_enlink(struct ncds_ds* ds, struct transapi_internal* tapi)
 {
 	struct transapi_list *tapi_item, *tapi_iter;
@@ -3852,6 +3745,8 @@ API int ncds_consolidate(void)
 		tapi_iter->ref_count = 0;
 	}
 
+	ncds_update_features();
+
 	/* process uses statements in the configuration datastores */
 	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
 		if (ds_iter->datastore != NULL && ncds_update_uses_ds(ds_iter->datastore) != EXIT_SUCCESS) {
@@ -3887,11 +3782,6 @@ API int ncds_consolidate(void)
 
 		/* resolve refines */
 		ncds_update_refine(ds_iter->datastore);
-	}
-
-	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next) {
-		/* remove disabled feature subtrees */
-		ncds_update_features(ds_iter->datastore);
 	}
 
 	/* parse models to get aux structure for TransAPI's internal purposes */
@@ -6808,6 +6698,153 @@ const struct data_model* ncds_get_model_operation(const char* operation, const c
 
 	/* oepration definition not found */
 	return (NULL);
+}
+
+static int ncds_update_features()
+{
+	struct model_list* listitem;
+	xmlNodePtr node, next;
+	struct ncds_ds_list *ds_iter;
+
+	for (listitem = models_list; listitem != NULL; listitem = listitem->next){
+		for (node = xmlDocGetRootElement(listitem->model->xml)->children; node != NULL; node = next) {
+			next = node->next;
+			if (feature_check(node, listitem->model) == 1) {
+				/* remove the node */
+				xmlUnlinkNode(node);
+				xmlFreeNode(node);
+			}
+		}
+	}
+
+	for (ds_iter = ncds.datastores; ds_iter != NULL; ds_iter = ds_iter->next){
+		if (ds_iter->datastore->ext_model == ds_iter->datastore->data_model->xml){
+			ds_iter->datastore->ext_model = xmlCopyDoc(ds_iter->datastore->data_model->xml, 1);
+		}
+
+		for (node = xmlDocGetRootElement(ds_iter->datastore->ext_model)->children; node != NULL; node = next) {
+			next = node->next;
+			if (feature_check(node, ds_iter->datastore->data_model) == 1) {
+				/* remove the node */
+				xmlUnlinkNode(node);
+				xmlFreeNode(node);
+			}
+		}
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+/*
+ *  1 - remove the node
+ *  0 - do not remove the node
+ * -1 - error
+ */
+static int feature_check(xmlNodePtr node, struct data_model* model)
+{
+	xmlNodePtr child, next;
+	char* fname;
+	char* name;
+	char* prefix;
+	char* feature_str;
+	int i;
+
+	struct model_feature **features = NULL;
+
+	if (node == NULL || model == NULL) {
+		ERROR("%s: invalid parameter.", __func__);
+		return (-1);
+	}
+
+	for (child = node->children; child != NULL; child = child->next){
+		if (child->type == XML_ELEMENT_NODE && xmlStrcmp(child->name, BAD_CAST "if-feature") == 0){
+			if ((fname = (char*) xmlGetProp (child, BAD_CAST "name")) == NULL){
+				WARN("Invalid if-feature statement");
+				continue;
+			}
+
+			features = NULL;
+			name = NULL;
+			prefix = NULL;
+			feature_str = NULL;
+			if ((name = strchr(fname, ':')) == NULL){
+				feature_str = fname;
+				features = model->features;
+			}
+			else{
+				prefix = fname;
+				name[0] = 0;
+				feature_str = &(name[1]);
+				features = get_features_from_prefix(model,prefix);
+			}
+
+			if (!(features == NULL || features[0] == NULL)){
+				/* check if the feature is enabled or not */
+				for (i = 0; features[i] != NULL; i++){
+					if (strcmp(features[i]->name, feature_str) == 0){
+						if (features[i]->enabled == 0){
+							free(fname);
+							/* remove the node */
+							return (1);
+						}
+						break;
+					}
+				}
+			}
+			free(fname);
+			/* ignore any following if-feature statements */
+			break;
+		}
+	}
+
+	/* recursion check */
+	for (child = node->children; child != NULL; child = next){
+		next = child->next;
+		if (feature_check(child, model) == 1){
+			/* remove the node */
+			xmlUnlinkNode(child);
+			xmlFreeNode(child);
+		}
+	}
+
+	return (0);
+}
+
+static struct model_feature** get_features_from_prefix(struct data_model* model, char* prefix)
+{
+	char* import_model_str = NULL;
+	xmlXPathObjectPtr imports = NULL;
+	struct data_model* import_model = NULL;
+
+	if (prefix == NULL || model == NULL){
+		ERROR("%s: invalid parameter.", __func__);
+		return NULL;
+	}
+
+	if (strcmp(prefix, model->prefix) == 0){
+		return model->features;
+	}
+	else{
+		/* get all <import> nodes for their prefix specification to be used with augment statement */
+		if ((imports = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_YIN_ID":module/"NC_NS_YIN_ID":import", model->ctxt)) == NULL ){
+			ERROR("%s: Evaluating XPath expression failed.", __func__);
+			return NULL;
+		}
+
+		/* find the prefix in imports */
+		import_model_str = get_module_with_prefix(prefix, imports);
+		xmlXPathFreeObject(imports);
+		if (import_model_str == NULL ){
+			/* unknown name of the import model */
+			return (NULL);
+		}
+
+		import_model = get_model(import_model_str, NULL);
+		if(import_model == NULL){
+			return NULL;
+		}
+		return import_model->features;
+	}
 }
 
 const struct data_model* ncds_get_model_notification(const char* notification, const char* namespace)
