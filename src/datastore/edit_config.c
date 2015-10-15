@@ -2337,13 +2337,21 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, NC_EDIT_DEFOP_TYPE defo
 
 	children = edit_node->children;
 	while (children != NULL) {
-		if (is_key(edit_node, children, keys) != 0) {
-			/* skip key elements from merging */
-			children = children->next;
-			continue;
+		if (children->type == XML_ELEMENT_NODE) {
+			if (is_key(edit_node, children, keys) != 0) {
+				/* skip key elements from merging */
+				children = children->next;
+				continue;
+			}
+
+			aux = find_element_equiv(orig_doc, children, model, keys);
+		} else if (children->type == XML_TEXT_NODE) {
+			aux = find_element_equiv(orig_doc, children->parent, model, keys);
+			if (aux) {
+				aux = aux->children;
+			}
 		}
 
-		aux = find_element_equiv(orig_doc, children, model, keys);
 		if (aux == NULL) {
 			/*
 			 * there is no equivalent element of the children in the
