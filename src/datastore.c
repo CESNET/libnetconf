@@ -5949,7 +5949,7 @@ apply_editcopyconfig:
 #endif
 		} else if (op == NC_OP_COPYCONFIG) {
 #ifndef DISABLE_URL
-			if (source_ds == NC_DATASTORE_URL) {
+			if ((source_ds == NC_DATASTORE_URL) || (source_ds == NC_DATASTORE_CONFIG)) {
 				/* if source is url, change source type to config */
 				source_ds = NC_DATASTORE_CONFIG;
 				if (target_ds == NC_DATASTORE_URL) {
