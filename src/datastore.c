@@ -5898,7 +5898,7 @@ process_datastore:
 			for (aux_node = doc2->children; aux_node != NULL; aux_node = aux_node->next) {
 				xmlNodeDump(resultbuffer, NULL, aux_node, 2, 1);
 			}
-			asprintf(&config, "<config>%s</config>",(char *) xmlBufferContent(resultbuffer));
+			config = strdup((char *) xmlBufferContent(resultbuffer));
 			xmlBufferFree(resultbuffer);
 			xmlFreeDoc(doc2);
 		}
