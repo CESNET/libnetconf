@@ -449,11 +449,11 @@ API int nc_session_monitor(struct nc_session* session)
 		free(session->stats);
 	}
 	session->stats = &(litem->stats);
-	strncpy(litem->login_time, (session->logintime == NULL) ? "" : session->logintime, TIME_LENGTH);
+	strncpy(litem->login_time, (session->logintime == NULL) ? "0000-01-01T00:00:00Z" : session->logintime, TIME_LENGTH);
 	litem->login_time[TIME_LENGTH - 1] = 0; /* terminating null byte */
 
-	strcpy(litem->data, (session->username == NULL) ? "" : session->username);
-	strcpy(litem->data + 1 + strlen(litem->data), (session->hostname == NULL) ? "" : session->hostname);
+	strcpy(litem->data, (session->username == NULL) ? "UNKNOWN" : session->username);
+	strcpy(litem->data + 1 + strlen(litem->data), (session->hostname == NULL) ? "UNKNOWN" : session->hostname);
 
 	pthread_rwlockattr_init(&rwlockattr);
 	pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
