@@ -773,9 +773,7 @@ static int check_edit_ops_hierarchy(xmlNodePtr edit, NC_EDIT_DEFOP_TYPE defop, s
 	} else if (op == NC_EDIT_OP_DELETE || op == NC_EDIT_OP_REMOVE) {
 		if (defop == NC_EDIT_DEFOP_REPLACE) {
 			if (error != NULL) {
-				if (error != NULL) {
-					*error = nc_err_new(NC_ERR_OP_FAILED);
-				}
+				*error = nc_err_new(NC_ERR_OP_FAILED);
 			}
 			return EXIT_FAILURE;
 		}
