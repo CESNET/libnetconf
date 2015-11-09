@@ -329,8 +329,13 @@ static int transapi_apply_callbacks_recursive_children(const struct transapi_cal
 				}
 				/*
 				 * on continue-on-error, continue with processing next
-				 * change, but remember that we have failed
+				 * change, but remember that we have failed. Revert xml
+				 * data because the data is failed to be applied to device
 				 */
+				transapi_revert_xml_tree(info, cur_min);
+                if (info->transapis->tapi->config_modified != NULL) {
+                    *info->transapis->tapi->config_modified = 1;
+                }
 				retval = APPLY_CALLBACK_CONTINUE;
 			}
 		}
