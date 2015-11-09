@@ -1666,15 +1666,25 @@ static int nc_session_read_len(struct nc_session* session, size_t chunk_length, 
 		if (session->tls) {
 			/* read via OpenSSL */
 			c = SSL_read(session->tls, &(buf[rd]), chunk_length - rd);
-			if (c < 0 && (r = SSL_get_error(session->tls, c))) {
+			if (c <= 0 && (r = SSL_get_error(session->tls, c))) {
 				if (r == SSL_ERROR_WANT_READ) {
 					usleep(NC_READ_SLEEP);
 					continue;
 				} else {
-					ERROR("Reading from the TLS session failed (%d: %s)", r);
+					if (r == SSL_ERROR_SYSCALL) {
+						ERROR("Reading from the TLS session failed (%s)", strerror(errno));
+					} else if (r == SSL_ERROR_SSL) {
+						ERROR("Reading from the TLS session failed (%s)", ERR_error_string(r, NULL));
+					} else {
+						ERROR("Reading from the TLS session failed (SSL code %d)", r);
+					}
 					free (buf);
-					*len = 0;
-					*text = NULL;
+					if (len != NULL) {
+						*len = 0;
+					}
+					if (text != NULL) {
+						*text = NULL;
+					}
 					return (EXIT_FAILURE);
 				}
 			}
@@ -1790,7 +1800,7 @@ static int nc_session_read_until(struct nc_session* session, const char* endtag,
 		if (session->tls) {
 			/* read via OpenSSL */
 			c = SSL_read(session->tls, &(buf[rd]), 1);
-			if (c < 0 && (r = SSL_get_error(session->tls, c))) {
+			if (c <= 0 && (r = SSL_get_error(session->tls, c))) {
 				if (r == SSL_ERROR_WANT_READ) {
 					usleep(NC_READ_SLEEP);
 					continue;
