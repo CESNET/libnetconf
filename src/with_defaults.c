@@ -553,6 +553,14 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 					}
 					/* no new equivalent node found -> create one */
 					retvals[j] = xmlNewChild(parents[i], parents[i]->ns, name, NULL);
+                    /* augment need update the namespace */
+                    if (xmlStrcmp(node->parent->name, BAD_CAST "augment") == 0) {
+                        xmlChar *uri = xmlGetProp(node->parent, BAD_CAST "ns");
+                        if (uri) {
+                            xmlSetNs(retvals[j], xmlNewNs(retvals[j], BAD_CAST uri, NULL));
+                            free(uri);
+                        }
+                    }
 					j++;
 					retvals[j] = NULL; /* list terminating NULL */
 
