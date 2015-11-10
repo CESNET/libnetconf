@@ -2348,6 +2348,9 @@ int edit_merge(xmlDocPtr orig_doc, xmlNodePtr edit_node, NC_EDIT_DEFOP_TYPE defo
 			if (aux) {
 				aux = aux->children;
 			}
+		} else {
+			children = children->next;
+			continue;
 		}
 
 		if (aux == NULL) {

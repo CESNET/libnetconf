@@ -449,11 +449,11 @@ API int nc_session_monitor(struct nc_session* session)
 		free(session->stats);
 	}
 	session->stats = &(litem->stats);
-	strncpy(litem->login_time, (session->logintime == NULL) ? "" : session->logintime, TIME_LENGTH);
+	strncpy(litem->login_time, (session->logintime == NULL) ? "0000-01-01T00:00:00Z" : session->logintime, TIME_LENGTH);
 	litem->login_time[TIME_LENGTH - 1] = 0; /* terminating null byte */
 
-	strcpy(litem->data, (session->username == NULL) ? "" : session->username);
-	strcpy(litem->data + 1 + strlen(litem->data), (session->hostname == NULL) ? "" : session->hostname);
+	strcpy(litem->data, (session->username == NULL) ? "UNKNOWN" : session->username);
+	strcpy(litem->data + 1 + strlen(litem->data), (session->hostname == NULL) ? "UNKNOWN" : session->hostname);
 
 	pthread_rwlockattr_init(&rwlockattr);
 	pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
@@ -1666,15 +1666,25 @@ static int nc_session_read_len(struct nc_session* session, size_t chunk_length, 
 		if (session->tls) {
 			/* read via OpenSSL */
 			c = SSL_read(session->tls, &(buf[rd]), chunk_length - rd);
-			if (c < 0 && (r = SSL_get_error(session->tls, c))) {
+			if (c <= 0 && (r = SSL_get_error(session->tls, c))) {
 				if (r == SSL_ERROR_WANT_READ) {
 					usleep(NC_READ_SLEEP);
 					continue;
 				} else {
-					ERROR("Reading from the TLS session failed (%d: %s)", r);
+					if (r == SSL_ERROR_SYSCALL) {
+						ERROR("Reading from the TLS session failed (%s)", strerror(errno));
+					} else if (r == SSL_ERROR_SSL) {
+						ERROR("Reading from the TLS session failed (%s)", ERR_error_string(r, NULL));
+					} else {
+						ERROR("Reading from the TLS session failed (SSL code %d)", r);
+					}
 					free (buf);
-					*len = 0;
-					*text = NULL;
+					if (len != NULL) {
+						*len = 0;
+					}
+					if (text != NULL) {
+						*text = NULL;
+					}
 					return (EXIT_FAILURE);
 				}
 			}
@@ -1790,7 +1800,7 @@ static int nc_session_read_until(struct nc_session* session, const char* endtag,
 		if (session->tls) {
 			/* read via OpenSSL */
 			c = SSL_read(session->tls, &(buf[rd]), 1);
-			if (c < 0 && (r = SSL_get_error(session->tls, c))) {
+			if (c <= 0 && (r = SSL_get_error(session->tls, c))) {
 				if (r == SSL_ERROR_WANT_READ) {
 					usleep(NC_READ_SLEEP);
 					continue;
