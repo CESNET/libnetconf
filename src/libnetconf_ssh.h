@@ -83,6 +83,33 @@ void nc_ssh_pref(NC_SSH_AUTH_TYPE type, short int preference);
 
 #ifndef DISABLE_LIBSSH
 
+/**
+ * @ingroup session
+ * @brief Create NETCONF session to the specified server using a custom SSH session.
+ *
+ * This function works only if libnetconf is compiled with using libssh.
+ *
+ * It shares all the functionality of nc_session_connect(), but also enables to use
+ * a customized SSH session with some specific options set.
+ *
+ * @param[in] host Hostname or address (both Ipv4 and IPv6 are accepted). 'localhost'
+ * is used by default if NULL is specified.
+ * @param[in] port Port number of the server. Default value 830 is used if 0 is
+ * specified.
+ * @param[in] username Name of the user to login to the server. The user running the
+ * application (detected from the effective UID) is used if NULL is specified.
+ * @param[in] cpblts NETCONF capabilities structure with capabilities supported
+ * by the client. Client can use nc_session_get_cpblts_default() to get the
+ * structure with the list of all the capabilities supported by libnetconf (this is
+ * used in case of a NULL parameter).
+ * @param[in] ssh_sess Customized libssh SSH session structure. Options SSH_OPTIONS_HOST,
+ * SSH_OPTIONS_USER, SSH_OPTIONS_FD, and SSH_OPTIONS_TIMEOUT should not be set as they
+ * will get set internally and previous values will be ignored. The structure will get
+ * freed and it should not be manipulated after passed as a parameter.
+ * @return Structure describing the NETCONF session or NULL in case of an error.
+ */
+struct nc_session *nc_session_connect_libssh_sess(const char *host, unsigned short port, const char *username, const struct nc_cpblts* cpblts, ssh_session ssh_sess);
+
 struct nc_session *nc_session_accept_libssh_channel(const struct nc_cpblts* capabilities, const char* username, ssh_channel ssh_chan);
 
 #endif

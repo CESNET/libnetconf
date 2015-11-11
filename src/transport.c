@@ -1488,12 +1488,12 @@ shutdown:
 	return (NULL);
 }
 
-#endif
-
 API struct nc_session* nc_session_connect_libssh_sess(const char* host, unsigned short port, const char* username, const struct nc_cpblts* cpblts, ssh_session ssh_sess)
 {
     return _nc_session_connect(host, port, username, cpblts, ssh_sess);
 }
+
+#endif
 
 API struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port)
 {
