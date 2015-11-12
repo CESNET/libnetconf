@@ -6,5 +6,6 @@ var libnetconf__ssh_8h =
       [ "NC_SSH_AUTH_INTERACTIVE", "d1/da1/libnetconf__ssh_8h.html#ggad9081cbe1edde22e8612e07ba4c3be10a497854e455f81123847c1ba089c40158", null ]
     ] ],
     [ "nc_session_accept_libssh_channel", "d1/da1/libnetconf__ssh_8h.html#a159471d23a8253670ae176615f16965b", null ],
+    [ "nc_session_connect_libssh_sess", "d1/da1/libnetconf__ssh_8h.html#gae721f4b40b7e16a2fe22161378ad9031", null ],
     [ "nc_ssh_pref", "d1/da1/libnetconf__ssh_8h.html#ga13119fdaa84544bf254bdb35ffdf83e0", null ]
 ];

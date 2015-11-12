@@ -334,7 +334,7 @@ int nc_session_send_notif(struct nc_session* session, const nc_ntf* ntf);
  * This function is supposed to be performed only by NETCONF servers.
  *
  * @param[in] session NETCONF session to use.
- * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
+ * @param[in] timeout Timeout in microseconds, -1 for infinite timeout, 0 for
  * non-blocking
  * @param[out] rpc Received \<rpc\>
  * @return
@@ -351,7 +351,7 @@ NC_MSG_TYPE nc_session_recv_rpc(struct nc_session* session, int timeout, nc_rpc*
  * This function is supposed to be performed only by NETCONF clients.
  *
  * @param[in] session NETCONF session to use.
- * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
+ * @param[in] timeout Timeout in microseconds, -1 for infinite timeout, 0 for
  * non-blocking
  * @param[out] reply Received \<rpc-reply\>
  * @return
@@ -375,7 +375,7 @@ NC_MSG_TYPE nc_session_recv_reply(struct nc_session* session, int timeout, nc_re
  * This function is supposed to be performed only by NETCONF clients.
  *
  * @param[in] session NETCONF session to use.
- * @param[in] timeout Timeout in milliseconds, -1 for infinite timeout, 0 for
+ * @param[in] timeout Timeout in microseconds, -1 for infinite timeout, 0 for
  * non-blocking
  * @param[out] ntf Received \<notification\> message
  * @return
