@@ -20,9 +20,6 @@ get: get.c
 notif: notif.c
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $< $(LIBPATH) $(LIB)
 
-callhome: callhome.c
-	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $< $(LIBPATH) $(LIB)
-
 clean:
 	rm -f *.o
 	rm -f $(TARGETS)
