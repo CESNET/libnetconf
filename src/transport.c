@@ -105,7 +105,6 @@ static NC_TRANSPORT proto_tls = NC_TRANSPORT_TLS;
 static void transproto_init(void)
 {
 	pthread_key_create(&transproto_key, NULL);
-	pthread_setspecific(transproto_key, &proto_ssh);
 }
 
 API int nc_session_transport(NC_TRANSPORT proto)
@@ -671,7 +670,10 @@ struct nc_session* _nc_session_connect(const char* host, unsigned short port, co
 
 #ifdef ENABLE_TLS
 	pthread_once(&transproto_key_once, transproto_init);
-	transport_proto = pthread_getspecific(transproto_key);
+	if ((transport_proto = pthread_getspecific(transproto_key)) == NULL) {
+		pthread_setspecific(transproto_key, &proto_ssh);
+		transport_proto = &proto_ssh;
+	}
 
 	if (*transport_proto == NC_TRANSPORT_TLS) {
 		retval = nc_session_connect_tls(username, host, port_s);
@@ -1224,7 +1226,10 @@ API int nc_callhome_connect(struct nc_mngmt_server *host_list, uint8_t reconnect
 
 	if (server_path == NULL) {
 		pthread_once(&transproto_key_once, transproto_init);
-		transport_proto = pthread_getspecific(transproto_key);
+		if ((transport_proto = pthread_getspecific(transproto_key)) == NULL) {
+			pthread_setspecific(transproto_key, &proto_ssh);
+			transport_proto = &proto_ssh;
+		}
 
 		switch(*transport_proto) {
 		case NC_TRANSPORT_SSH:
@@ -1367,7 +1372,10 @@ API struct nc_session *nc_callhome_accept(const char *username, const struct nc_
 	NC_TRANSPORT *transport_proto;
 
 	pthread_once(&transproto_key_once, transproto_init);
-	transport_proto = pthread_getspecific(transproto_key);
+	if ((transport_proto = pthread_getspecific(transproto_key)) == NULL) {
+		pthread_setspecific(transproto_key, &proto_ssh);
+		transport_proto = &proto_ssh;
+	}
 
 #ifndef ENABLE_TLS
 	if (*transport_proto == NC_TRANSPORT_TLS) {
@@ -1488,12 +1496,12 @@ shutdown:
 	return (NULL);
 }
 
-#endif
-
 API struct nc_session* nc_session_connect_libssh_sess(const char* host, unsigned short port, const char* username, const struct nc_cpblts* cpblts, ssh_session ssh_sess)
 {
     return _nc_session_connect(host, port, username, cpblts, ssh_sess);
 }
+
+#endif
 
 API struct nc_mngmt_server *nc_callhome_mngmt_server_add(struct nc_mngmt_server* list, const char* host, const char* port)
 {

@@ -31,7 +31,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../libnetconf-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">libnetconf
-   &#160;<span id="projectnumber">0.10.0-47_trunk</span>
+   &#160;<span id="projectnumber">0.10.0-76_trunk</span>
    </div>
    <div id="projectbrief">NETCONF Library</div>
   </td>
@@ -115,7 +115,6 @@ $(document).ready(function(){initNavTree('d2/d02/transport_8h.html','../../');})
 <p>Functions implementing transport layer for NETCONF.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d3/d7a/netconf_8h_source.html">netconf.h</a>&quot;</code><br/>
-<code>#include &lt;libssh/libssh.h&gt;</code><br/>
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for transport.h:</div>
 <div class="dyncontent">
@@ -153,9 +152,6 @@ Functions</h2></td></tr>
 <tr class="memitem:gacaf7b465963605a29f25c3a36df378a6"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gacaf7b465963605a29f25c3a36df378a6">nc_session_connect_inout</a> (int fd_in, int fd_out, const struct nc_cpblts *cpblts, const char *host, const char *port, const char *username, <a class="el" href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a> transport)</td></tr>
 <tr class="memdesc:gacaf7b465963605a29f25c3a36df378a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create NETCONF session communicating via given file descriptors. This is an alternative function to <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a>.  <a href="../../db/d52/group__session.html#gacaf7b465963605a29f25c3a36df378a6">More...</a><br/></td></tr>
 <tr class="separator:gacaf7b465963605a29f25c3a36df378a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae721f4b40b7e16a2fe22161378ad9031"><td class="memItemLeft" align="right" valign="top">struct nc_session *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#gae721f4b40b7e16a2fe22161378ad9031">nc_session_connect_libssh_sess</a> (const char *host, unsigned short port, const char *username, const struct nc_cpblts *cpblts, ssh_session ssh_sess)</td></tr>
-<tr class="memdesc:gae721f4b40b7e16a2fe22161378ad9031"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create NETCONF session to the specified server using a custom SSH session.  <a href="../../db/d52/group__session.html#gae721f4b40b7e16a2fe22161378ad9031">More...</a><br/></td></tr>
-<tr class="separator:gae721f4b40b7e16a2fe22161378ad9031"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6e125c035cdebae8c49ff962866c0806"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806">nc_session_transport</a> (<a class="el" href="../../db/d52/group__session.html#ga8be6ccea205129b05c38331a7a42174a">NC_TRANSPORT</a> proto)</td></tr>
 <tr class="memdesc:ga6e125c035cdebae8c49ff962866c0806"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set transport protocol for the sessions created by subsequent <a class="el" href="../../db/d52/group__session.html#gae3858d998d19cb2fb700b15fdf602f23" title="Create NETCONF session to the specified server. ">nc_session_connect()</a> calls. By default, transport protocol is set to <a class="el" href="../../db/d52/group__session.html#gga8be6ccea205129b05c38331a7a42174aa7878cac9e93258d6bb1a2f166377606a">NC_TRANSPORT_SSH</a>.  <a href="../../db/d52/group__session.html#ga6e125c035cdebae8c49ff962866c0806">More...</a><br/></td></tr>
 <tr class="separator:ga6e125c035cdebae8c49ff962866c0806"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -177,7 +173,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="../../d2/d02/transport_8h.html">transport.h</a></li>
-    <li class="footer">Generated on Thu Sep 3 2015 09:41:46 for libnetconf by
+    <li class="footer">Generated on Thu Nov 12 2015 08:54:31 for libnetconf by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="../../doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

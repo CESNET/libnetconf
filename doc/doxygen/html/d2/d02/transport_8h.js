@@ -6,6 +6,5 @@ var transport_8h =
     [ "nc_session_connect", "d2/d02/transport_8h.html#gae3858d998d19cb2fb700b15fdf602f23", null ],
     [ "nc_session_connect_channel", "d2/d02/transport_8h.html#ga7d9e0f17bb4ca5b35c8343db59955060", null ],
     [ "nc_session_connect_inout", "d2/d02/transport_8h.html#gacaf7b465963605a29f25c3a36df378a6", null ],
-    [ "nc_session_connect_libssh_sess", "d2/d02/transport_8h.html#gae721f4b40b7e16a2fe22161378ad9031", null ],
     [ "nc_session_transport", "d2/d02/transport_8h.html#ga6e125c035cdebae8c49ff962866c0806", null ]
 ];

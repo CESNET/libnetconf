@@ -424,7 +424,7 @@ int transport_connect_socket(const char* host, const char* port);
 /*
  * libssh variant - use internal SSH client implementation using libssh
  */
-struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port, ssh_session ssh_sess)
+struct nc_session *nc_session_connect_ssh(const char* username, const char* host, const char* port, void* ssh_sess)
 {
 	struct nc_session *retval = NULL;
 	int sock = -1;

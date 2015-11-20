@@ -418,7 +418,7 @@ int ncds_sysinit(int flags)
 			return (EXIT_FAILURE);
 		}
 
-		ds->data_model->path = NULL;
+		asprintf(&ds->data_model->path, "internal_%d", i);
 		ncds_features_parse(ds->data_model);
 		ds->ext_model = ds->data_model->xml;
 		ds->ext_model_tree = NULL;
@@ -1616,19 +1616,94 @@ static char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(runnin
 static char* compare_schemas(struct data_model* model, char* name, char* version)
 {
 	char* retval = NULL;
-	xmlBufferPtr resultbuffer;
+	FILE* file;
+	struct stat st;
+	int size, c, start;
 
 	if (strcmp(name, model->name) == 0) {
 		if (version == NULL || strcmp(version, model->version) == 0) {
-			/* got the required model, dump it */
-			resultbuffer = xmlBufferCreate();
-			if (resultbuffer == NULL ) {
-				ERROR("%s: xmlBufferCreate failed (%s:%d).", __func__, __FILE__, __LINE__);
+			/* an internal model */
+			if (strncmp(model->path, "internal", 8) == 0) {
+				switch (model->path[9]) {
+				case '0':
+					return strndup((char*)ietf_inet_types_yin + 39, ietf_inet_types_yin_len - 39);
+				case '1':
+					return strndup((char*)ietf_yang_types_yin + 39, ietf_yang_types_yin_len - 39);
+				case '2':
+					return strndup((char*)ietf_netconf_yin + 39, ietf_netconf_yin_len - 39);
+				case '3':
+					return strndup((char*)ietf_netconf_monitoring_yin + 39, ietf_netconf_monitoring_yin_len - 39);
+#ifndef DISABLE_NOTIFICATIONS
+				case '4':
+					return strndup((char*)ietf_netconf_notifications_yin + 39, ietf_netconf_notifications_yin_len - 39);
+				case '5':
+					return strndup((char*)nc_notifications_yin + 39, nc_notifications_yin_len - 39);
+				case '6':
+					return strndup((char*)notifications_yin + 39, notifications_yin_len - 39);
+				case '7':
+					return strndup((char*)ietf_netconf_with_defaults_yin + 39, ietf_netconf_with_defaults_yin_len - 39);
+				case '8':
+					return strndup((char*)ietf_netconf_acm_yin + 39, ietf_netconf_acm_yin_len - 39);
+#else
+				case '4':
+					return strndup((char*)ietf_netconf_with_defaults_yin + 39, ietf_netconf_with_defaults_yin_len - 39);
+				case '5':
+					return strndup((char*)ietf_netconf_acm_yin + 39, ietf_netconf_acm_yin_len - 39);
+#endif
+				default:
+					ERROR("%s: internal (%s:%d)", __func__, __FILE__, __LINE__);
+					return (ERROR_POINTER);
+				}
+			}
+
+			/* got the required model, load it */
+			if (stat(model->path, &st)) {
+				ERROR("%s: failed to stat \"%s\" (%s).", __func__, model->path, strerror(errno));
 				return (ERROR_POINTER);
 			}
-			xmlNodeDump(resultbuffer, model->xml, model->xml->children, 2, 1);
-			retval = strdup((char *) xmlBufferContent(resultbuffer));
-			xmlBufferFree(resultbuffer);
+			size = st.st_size;
+			file = fopen(model->path, "r");
+			if (file == NULL) {
+				ERROR("%s: failed to open \"%s\" (%s).", __func__, model->path, strerror(errno));
+				return (ERROR_POINTER);
+			}
+			retval = malloc(size + 1);
+			/* perhaps starts with "<?xml"? */
+			if (fread(retval, 1, 5, file) < 5) {
+				ERROR("%s: failed to read \"%s\" (%s).", __func__, model->path, strerror(errno));
+				fclose(file);
+				return (ERROR_POINTER);
+			}
+			size -= 5;
+			/* skip the instruction */
+			if (strncmp(retval, "<?xml", 5) == 0) {
+				do {
+					c = fgetc(file);
+					--size;
+					if (c == '?') {
+						c = fgetc(file);
+						--size;
+						if (c == '>') {
+							break;
+						}
+					}
+				} while (c != EOF);
+				if (c == EOF) {
+					ERROR("%s: failed to read \"%s\" (%s).", __func__, model->path, strerror(errno));
+					fclose(file);
+					return (ERROR_POINTER);
+				}
+				start = 0;
+			} else {
+				start = 5;
+			}
+			/* read the rest */
+			if (fread(retval + start, 1, size, file) < size) {
+				ERROR("%s: failed to read \"%s\" (%s).", __func__, model->path, strerror(errno));
+				fclose(file);
+				return (ERROR_POINTER);
+			}
+			retval[start + size] = '\0';
 		}
 	}
 	return (retval);
@@ -1743,6 +1818,7 @@ static char* get_schema(const nc_rpc* rpc, struct nc_err** e)
 		} else if (r != NULL ) {
 			/* the first matching schema found */
 			retval = r;
+			break;
 		}
 	}
 
