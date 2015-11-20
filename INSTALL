@@ -102,17 +102,16 @@ Contact
 
 The homepage is at
 
-  http://libnetconf.googlecode.com
+  https://github.com/CESNET/libnetconf
 
 
 To get the very latest source code from the GIT repository, use:
 
-  $ git clone https://code.google.com/p/libnetconf/
+  $ git clone https://github.com/CESNET/libnetconf.git
 
 
 Problem reports, questions, suggestions as well as success stories
-are welcome. Feel free to contact us via our mailing-list:
+are welcome. Feel free to contact us via the project issue tracker:
 
-  libnetconf@googlegroups.com
-  https://groups.google.com/d/forum/libnetconf
+  https://github.com/CESNET/libnetconf/issues
 
