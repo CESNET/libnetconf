@@ -29,16 +29,15 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree)
 {
 	xmlNodePtr parent, xmlnode;
-	struct xmldiff_tree* child;
 
 	DBG("Transapi revert XML tree (%s, proposed operation %d).", tree->path, tree->op);
 	/* discard proposed changes */
-	if ((tree->op & XMLDIFF_ADD) && tree->new_node != NULL ) {
+	if (tree->op & XMLDIFF_ADD) {
 		/* remove element to add from the new XML tree */
 		xmlUnlinkNode(tree->new_node);
 		xmlFreeNode(tree->new_node);
 		tree->new_node = NULL;
-	} else if ((tree->op & XMLDIFF_REM) && tree->old_node != NULL ) {
+	} else if (tree->op & XMLDIFF_REM) {
 		/* reconnect old node supposed to be removed back to the new XML tree */
 		if (tree->old_node->parent->type != XML_DOCUMENT_NODE) {
 			parent = find_element_equiv(info->new, tree->old_node->parent, info->model, info->keys);
@@ -48,34 +47,9 @@ static void transapi_revert_xml_tree(const struct transapi_callbacks_info *info,
 			xmlnode = xmlDocCopyNode(tree->old_node, info->new, 1);
 			xmlDocSetRootElement(info->new, xmlnode);
 		}
-	} else if ((tree->op & XMLDIFF_MOD) && tree->new_node != NULL) {
+	} else if (tree->op & XMLDIFF_MOD) {
 		/* replace new node with the previous one */
-		/* TODO since transAPI v6 this can probably be simpler */
-		for (child = tree->children; child != NULL; child = child->next) {
-			if (child->priority != PRIORITY_NONE) {
-				/* this node is already solved by previous recursion */
-				continue;
-			}
-
-			/*
-			 * we have node with priority 0, it means it was not solved
-			 * yet and we want to replace it by the previous config data
-			 */
-			parent = find_element_equiv(info->old, tree->new_node->parent, info->model, info->keys);
-			for (xmlnode = parent->children; xmlnode != NULL; xmlnode = xmlnode->next) {
-				if (matching_elements(tree->new_node, xmlnode, info->keys, 0)) {
-					break;
-				}
-			}
-			if (xmlnode != NULL ) {
-				/* replace subtree */
-				xmlReplaceNode(child->new_node, xmlCopyNode(xmlnode, 1));
-				xmlFreeNode(child->new_node);
-				child->new_node = NULL;
-			} else {
-				WARN("Unable to discard not executed changes from XML tree: previous subtree version not found (path %s).", child->path);
-			}
-		}
+        xmlReplaceNode(tree->new_node, xmlCopyNode(tree->old_node, 1));
 	} /* else XMLDIFF_CHAIN is not interesting here (stop-on-error) */
 }
 
