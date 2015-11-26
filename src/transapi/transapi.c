@@ -268,6 +268,10 @@ static int transapi_apply_callbacks_recursive_own(const struct transapi_callback
 			if (erropt == NC_EDIT_ERROPT_CONT) {
 				/* on continue-on-error, return not applied changes immediately and then continue */
 				transapi_revert_xml_tree(info, tree);
+				if (!info->transapis->tapi->config_modified) {
+					ERROR("Even though callback failed, it will be applied in the configuration!");
+				}
+				*info->transapis->tapi->config_modified = 1;
 			}
 
 			return (APPLY_CALLBACK_ERROR);
@@ -316,27 +320,27 @@ static int transapi_apply_callbacks_recursive_children(const struct transapi_cal
 /* call the callbacks in the order set by the priority of each change */
 static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_info *info, struct xmldiff_tree* tree, NC_EDIT_ERROPT_TYPE erropt, struct nc_err **error)
 {
-	int retval;
+	int retval_children, retval_own;
 
 	if (info->order == TRANSAPI_CLBCKS_LEAF_TO_ROOT) {
 		tree->applied = CLBCKS_APPLYING_CHILDREN;
 
-		retval = transapi_apply_callbacks_recursive_children(info, tree, erropt, error);
-		if (retval == APPLY_CALLBACK_ERROR) {
+		retval_children = transapi_apply_callbacks_recursive_children(info, tree, erropt, error);
+		if (retval_children == APPLY_CALLBACK_ERROR) {
 			return EXIT_FAILURE;
 		}
 
 		/* Update applied status */
-		if (retval == APPLY_CALLBACK_SUCCESS)
+		if (retval_children == APPLY_CALLBACK_SUCCESS)
 			tree->applied = CLBCKS_APPLIED_CHILDREN_NO_ERROR;
 		else
 			/* continue on error */
 			tree->applied = CLBCKS_APPLIED_CHILDREN_ERROR;
 
 		/* Finally call our callback */
-		retval = transapi_apply_callbacks_recursive_own(info, tree, erropt, error);
+		retval_own = transapi_apply_callbacks_recursive_own(info, tree, erropt, error);
 
-		if (retval == APPLY_CALLBACK_SUCCESS) {
+		if (retval_own == APPLY_CALLBACK_SUCCESS) {
 			if (tree->applied == CLBCKS_APPLIED_CHILDREN_NO_ERROR)
 				tree->applied = CLBCKS_APPLIED_FULLY;
 			else
@@ -346,25 +350,27 @@ static int transapi_apply_callbacks_recursive(const struct transapi_callbacks_in
 			return (EXIT_FAILURE);
 		}
 	} else {
-		retval = transapi_apply_callbacks_recursive_own(info, tree, erropt, error);
-		if (retval == APPLY_CALLBACK_ERROR) {
+		retval_own = transapi_apply_callbacks_recursive_own(info, tree, erropt, error);
+		if (retval_own == APPLY_CALLBACK_ERROR) {
 			tree->applied = CLBCKS_APPLIED_ERROR;
 			return EXIT_FAILURE;
 		}
 
 		/* Callback applied successfully. Applying children callbacks */
 		tree->applied = CLBCKS_APPLYING_CHILDREN;
-		retval = transapi_apply_callbacks_recursive_children(info, tree, erropt, error);
-		if (retval == APPLY_CALLBACK_ERROR) {
+		retval_children = transapi_apply_callbacks_recursive_children(info, tree, erropt, error);
+		if (retval_children == APPLY_CALLBACK_ERROR) {
 			tree->applied = CLBCKS_APPLIED_NOT_FULLY;
 			return EXIT_FAILURE;
-		} else if (retval == APPLY_CALLBACK_SUCCESS)
+		} else if (retval_children == APPLY_CALLBACK_SUCCESS)
 			tree->applied = CLBCKS_APPLIED_FULLY;
 		else
 			/* continue on error */
 			tree->applied = CLBCKS_APPLIED_NOT_FULLY;
 	}
-	return (EXIT_SUCCESS);
+
+	/* retval children can only be SUCCESS or CONTINUE (on continue-on-error) */
+	return (retval_children ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
 /* will be called by library after change in running datastore */

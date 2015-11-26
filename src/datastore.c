@@ -5460,12 +5460,12 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 		}
 		if (ret || modified) {
 			DBG("Updating XML tree after TransAPI callbacks");
-			if (ret) {
+			if (!modified) { /* ret only */
 				/* remove default nodes */
 				ncdflt_default_clear(old);
 				/* revert changes */
 				xmlDocDumpMemory(old, &config, NULL);
-			} else { /* modified != 0 */
+			} else { /* ret and/or modified */
 				/* remove default nodes */
 				ncdflt_default_clear(new);
 				/* update config data according to changes made by transAPI module */
