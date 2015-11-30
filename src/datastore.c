@@ -5577,6 +5577,7 @@ static nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, co
 	xmlNodePtr op_input;
 	struct transapi_list* tapi_iter;
 	const char * rpc_name;
+	const char *data_ns = NULL;
 	char *aux = NULL;
 	NC_EDIT_ERROPT_TYPE erropt;
 #ifndef DISABLE_VALIDATION
@@ -6274,12 +6275,13 @@ apply_editcopyconfig:
 		}
 		break;
 	case NC_OP_GETSCHEMA:
+		data_ns = NC_NS_MONITORING;
 		if (nc_cpblts_enabled (session, NC_CAP_MONITORING_ID)) {
 			if (dsid == NCDS_INTERNAL_ID) {
 				if ((data = get_schema (rpc, &e)) == NULL) {
 					ret = EXIT_FAILURE;
 				} else {
-					reply = nc_reply_data(data);
+					reply = nc_reply_data_ns(data, data_ns);
 					free(data);
 				}
 			} else {
@@ -6360,7 +6362,11 @@ apply_editcopyconfig:
 			}
 		} else {
 			if (doc_merged != NULL) {
-				reply = ncxml_reply_data(doc_merged->children);
+				if (data_ns != NULL) {
+					reply = ncxml_reply_data_ns(doc_merged->children, data_ns);
+				} else {
+					reply = ncxml_reply_data(doc_merged->children);
+				}
 				xmlFreeDoc(doc_merged);
 				if (!reply) {
 					return nc_reply_error(nc_err_new(NC_ERR_OP_FAILED));
