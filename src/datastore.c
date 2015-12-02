@@ -1698,7 +1698,7 @@ static char* compare_schemas(struct data_model* model, char* name, char* version
 				start = 5;
 			}
 			/* read the rest */
-			if (fread(retval + start, 1, size, file) < size) {
+			if (fread(retval + start, 1, size, file) < (unsigned)size) {
 				ERROR("%s: failed to read \"%s\" (%s).", __func__, model->path, strerror(errno));
 				fclose(file);
 				return (ERROR_POINTER);
