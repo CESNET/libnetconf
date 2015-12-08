@@ -6457,6 +6457,27 @@ static char* serialize_cpblts(const struct nc_cpblts *capabilities)
 	return(retval);
 }
 
+int filter_callbacks(char *name, struct nc_filter *filter)
+{
+        int ret = 0;
+        xmlNodePtr node = filter->subtree_filter, child = node->children;
+
+        while(child)
+        {
+                if(child->type == XML_TEXT_NODE)
+                        break;
+
+                if(!strcmp((char *)child->name, name))
+                {
+                        ret = 1;
+                        break;
+                }
+                else
+                        child = child->next;
+        }
+        return(ret);
+}
+
 API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, ncds_id* ids[])
 {
 	struct ncds_ds_list* ds, *ds_rollback;
@@ -6515,6 +6536,12 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 		if (ds->datastore->id > 0 && ds->datastore->id < internal_ds_count) {
 			continue;
 		}
+
+		/* filter model */
+                if(rpc2all_data.filter) {
+                        if(!filter_callbacks(ds->datastore->data_model->name, rpc2all_data.filter))
+                                continue;
+                }
 
 		/* apply RPC on a single datastore */
 		reply = ncds_apply_rpc(ds->datastore->id, session, rpc);
