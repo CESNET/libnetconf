@@ -1594,6 +1594,11 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 					aux2 = newstr;
 				} else {
 					aux2 = calloc(strlen(aux1) + 1, sizeof(char));
+					if (aux2 == NULL) {
+						ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+						free(aux1);
+						return (EXIT_FAILURE);
+					}					
 				}
 				strncat(aux2, aux1, strlen(aux1));
 				free(aux1);
