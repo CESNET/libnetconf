@@ -593,6 +593,10 @@ API struct nc_session* nc_session_connect_inout(int fd_in, int fd_out, const str
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
 	retval->mut_channel = (pthread_mutex_t *) calloc(1, sizeof(pthread_mutex_t));
+	if (retval->mut_channel == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		goto error_cleanup;
+	}	
 	if ((r = pthread_mutex_init(retval->mut_channel, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
