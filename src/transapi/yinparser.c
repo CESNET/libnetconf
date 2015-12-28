@@ -251,6 +251,10 @@ struct model_tree* yinmodel_parse(xmlDocPtr model_doc, struct ns_pair ns_mapping
 	}
 
 	yin = calloc (1, sizeof (struct model_tree));
+	if (yin == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}	
 	yin->type = YIN_TYPE_MODULE;
 	yin->name = (char*)xmlGetProp (model_root, BAD_CAST "name");
 
