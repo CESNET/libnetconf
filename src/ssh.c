@@ -737,12 +737,8 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 		goto error_cleanup;
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	retval->mut_channel = (pthread_mutex_t *) calloc(1, sizeof(pthread_mutex_t));
-	if (retval->mut_channel == NULL) {
-		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
-		goto error_cleanup;
-	}
-	if ((r = pthread_mutex_init(retval->mut_channel, &mattr)) != 0 ||
+	if (((retval->mut_channel = calloc(1, sizeof(pthread_mutex_t))) == NULL) ||
+			(r = pthread_mutex_init(retval->mut_channel, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_ntf), &mattr)) != 0 ||
