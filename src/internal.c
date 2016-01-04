@@ -758,17 +758,23 @@ void nc_clip_occurences_with(char *str, char sought, char replacement)
 
 char** nc_get_grouplist(const char* username)
 {
-	struct passwd* p;
-	struct group* g;
+	struct passwd p, *pp;
+	struct group g, *gg;
 	int i, j, k;
 	gid_t *glist;
-	char** retval = NULL;
+	char** retval = NULL, buf[256];
+
+	if (!username) {
+		return NULL;
+	}
+
+	getpwnam_r(username, &p, buf, 256, &pp);
 
 	/* get system groups for the username */
-	if (username != NULL && (p = getpwnam(username)) != NULL) {
+	if (pp != NULL) {
 		i = 0;
 		/* this call end with -1, but sets i to contain count of groups */
-		getgrouplist(username, p->pw_gid, NULL, &i);
+		getgrouplist(username, pp->pw_gid, NULL, &i);
 		if (i != 0) {
 			glist = malloc(i * sizeof (gid_t));
 			retval = malloc((i+1) * sizeof(char*));
@@ -779,11 +785,11 @@ char** nc_get_grouplist(const char* username)
 				return NULL;
 			}
 
-			if (getgrouplist(username, p->pw_gid, glist, &i) != -1) {
+			if (getgrouplist(username, pp->pw_gid, glist, &i) != -1) {
 				for (j = 0, k = 0; j < i; j++) {
-					g = getgrgid(glist[j]);
-					if (g && g->gr_name) {
-						retval[k++] = strdup(g->gr_name);
+					getgrgid_r(glist[j], &g, buf, 256, &gg);
+					if (gg != NULL && gg->gr_name) {
+						retval[k++] = strdup(gg->gr_name);
 					}
 				}
 				retval[k] = NULL; /* list termination */

@@ -1069,8 +1069,9 @@ void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supporte
 API struct nc_session* nc_session_dummy(const char* sid, const char* username, const char* hostname, struct nc_cpblts *capabilities)
 {
 	struct nc_session * session;
-	struct passwd* p;
+	struct passwd p, *pp;
 	const char* cpblt;
+	char buf[256];
 
 	if (sid == NULL || username == NULL || capabilities == NULL) {
 		return NULL;
@@ -1122,8 +1123,9 @@ API struct nc_session* nc_session_dummy(const char* sid, const char* username, c
 	session->username = strdup (username);
 	/* detect if user ID is 0 -> then the session is recovery */
 	session->nacm_recovery = 0;
-	if ((p = getpwnam(username)) != NULL) {
-		if (p->pw_uid == NACM_RECOVERY_UID) {
+	getpwnam_r(username, &p, buf, 256, &pp);
+	if (pp != NULL) {
+		if (pp->pw_uid == NACM_RECOVERY_UID) {
 			session->nacm_recovery = 1;
 		}
 	}
@@ -1141,11 +1143,11 @@ API struct nc_session* nc_session_dummy(const char* sid, const char* username, c
 	/* set with defaults capability flags */
 	parse_wdcap(session->capabilities, &(session->wd_basic), &(session->wd_modes));
 
-	if (p) {
+	if (pp) {
 		VERB("Created dummy session %s for user \'%s\' (UID %d)%s",
 			session->session_id,
 			session->username,
-			p->pw_uid,
+			pp->pw_uid,
 			session->nacm_recovery ? " - recovery session" : "");
 	}
 
