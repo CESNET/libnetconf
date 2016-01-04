@@ -592,8 +592,8 @@ API struct nc_session* nc_session_connect_inout(int fd_in, int fd_out, const str
 		goto error_cleanup;
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
-	retval->mut_channel = (pthread_mutex_t *) calloc(1, sizeof(pthread_mutex_t));
-	if ((r = pthread_mutex_init(retval->mut_channel, &mattr)) != 0 ||
+	if (((retval->mut_channel = calloc(1, sizeof(pthread_mutex_t))) == NULL) ||
+			(r = pthread_mutex_init(retval->mut_channel, &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_mqueue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_equeue), &mattr)) != 0 ||
 			(r = pthread_mutex_init(&(retval->mut_ntf), &mattr)) != 0 ||

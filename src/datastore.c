@@ -918,6 +918,10 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 			return (EXIT_FAILURE);
 		}
 		start = calloc(1, sizeof(struct ncds_ds_list));
+		if (start == NULL) {
+			ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+			return (EXIT_FAILURE);
+		}		
 		start->datastore = ds;
 	} else {
 		/* OR if datastore not specified, initialize all transAPI capable modules */
