@@ -162,7 +162,7 @@
 /*
  * global settings for options passed to xmlRead* functions
  */
-#define NC_XMLREAD_OPTIONS XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN|XML_PARSE_NOERROR|XML_PARSE_NOWARNING
+#define NC_XMLREAD_OPTIONS XML_PARSE_NOBLANKS|XML_PARSE_NSCLEAN|XML_PARSE_NOERROR|XML_PARSE_NOWARNING|XML_PARSE_HUGE
 
 #ifdef __GNUC__
 #  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
