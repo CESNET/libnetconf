@@ -118,7 +118,7 @@ extern struct nc_shared_info *nc_info;
 API char error_area;
 #define ERROR_POINTER ((void*)(&error_area))
 
-char* server_capabilities = NULL;
+char* server_capabilities;
 
 struct ncds_ds_list {
 	struct ncds_ds *datastore;

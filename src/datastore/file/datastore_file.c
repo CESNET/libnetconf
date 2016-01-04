@@ -549,7 +549,7 @@ void ncds_file_free(struct ncds_ds* ds)
  */
 static int file_reload(struct ncds_ds_file* file_ds)
 {
-	struct ncds_ds_file new;
+	xmlDocPtr new_xml;
 	struct stat statbuf;
 	time_t t;
 
@@ -580,22 +580,21 @@ static int file_reload(struct ncds_ds_file* file_ds)
 		return EXIT_FAILURE;
 	}
 
-	memcpy (&new, file_ds, sizeof (struct ncds_ds_file));
-
-	new.xml = xmlReadFile (new.path, NULL, NC_XMLREAD_OPTIONS);
-	if (new.xml == NULL) {
+	new_xml = xmlReadFile (file_ds->path, NULL, NC_XMLREAD_OPTIONS);
+	if (new_xml == NULL) {
 		return EXIT_FAILURE;
 	}
-	if (file_fill_dsnodes (&new)) {
-		xmlFreeDoc (new.xml);
+
+	xmlFreeDoc (file_ds->xml);
+	file_ds->xml = new_xml;
+
+	if (file_fill_dsnodes (file_ds)) {
+		xmlFreeDoc (new_xml);
 		return EXIT_FAILURE;
 	}
 
 	/* update access time */
-	new.ds.last_access = t;
-
-	xmlFreeDoc (file_ds->xml);
-	memcpy (file_ds, &new, sizeof (struct ncds_ds_file));
+	file_ds->ds.last_access = t;
 
 	return EXIT_SUCCESS;
 
