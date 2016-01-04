@@ -1222,6 +1222,7 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 				DBG_UNLOCK("streams_mut");
 				ncntf_stream_iter_finish(stream);
 				pthread_mutex_unlock(streams_mut);
+				free(text);
 				return (NULL);
 			}
 			ncntf_stream_unlock(s);
@@ -1593,6 +1594,11 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 					aux2 = newstr;
 				} else {
 					aux2 = calloc(strlen(aux1) + 1, sizeof(char));
+					if (aux2 == NULL) {
+						ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+						free(aux1);
+						return (EXIT_FAILURE);
+					}					
 				}
 				strncat(aux2, aux1, strlen(aux1));
 				free(aux1);
@@ -1643,6 +1649,11 @@ static int _event_new(time_t etime, NCNTF_EVENT event, va_list params)
 						aux2 = newstr;
 					} else {
 						aux2 = calloc(strlen(aux1) + 1, sizeof(char));
+						if (aux2 == NULL) {
+							ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+							free(aux1);
+							return (EXIT_FAILURE);
+						}						
 					}
 					strncat(aux2, aux1, strlen(aux1));
 					free(aux1);

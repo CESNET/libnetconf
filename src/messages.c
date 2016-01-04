@@ -1690,6 +1690,10 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 	}
 
 	dupmsg = calloc(1, sizeof(struct nc_msg));
+	if (dupmsg == NULL) {
+		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
+		return (NULL);
+	}	
 	dupmsg->doc = xmlCopyDoc(msg->doc, 1);
 	dupmsg->type = msg->type;
 	dupmsg->with_defaults = msg->with_defaults;
