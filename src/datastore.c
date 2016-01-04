@@ -6549,7 +6549,7 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 		if (reply != NCDS_RPC_NOT_APPLICABLE && nc_reply_get_type(reply) == NC_REPLY_ERROR) {
 			if (req_type == NC_RPC_DATASTORE_WRITE) {
 				if (erropt == NC_EDIT_ERROPT_NOTSET || erropt == NC_EDIT_ERROPT_STOP) {
-					return (reply);
+					goto cleanup;
 				} else if (erropt == NC_EDIT_ERROPT_ROLLBACK) {
 					/* rollback previously changed datastores */
 					/* do not skip internal datastores */
