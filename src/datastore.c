@@ -143,7 +143,7 @@ static struct model_list *models_list = NULL;
 static struct transapi_list* augment_tapi_list = NULL;
 static char** models_dirs = NULL;
 
-static nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc);
+static nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc, struct nc_filter* shared_filter);
 static char* get_state_nacm(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 static char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(running), struct nc_err ** UNUSED(e));
 static int get_model_info(xmlXPathContextPtr model_ctxt, char **name, char **version, char **ns, char **prefix, char ***rpcs, char ***notifs);
@@ -921,7 +921,7 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 		if (start == NULL) {
 			ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 			return (EXIT_FAILURE);
-		}		
+		}
 		start->datastore = ds;
 	} else {
 		/* OR if datastore not specified, initialize all transAPI capable modules */
@@ -1006,7 +1006,7 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 
 			/* initial copy of startup to running will cause full (re)configuration of module */
 			/* Here is used high level function ncds_apply_rpc to apply startup configuration and use transAPI */
-			reply_msg = ncds_apply_rpc(ds_iter->datastore->id, dummy_session, rpc_msg);
+			reply_msg = ncds_apply_rpc(ds_iter->datastore->id, dummy_session, rpc_msg, NULL);
 			if (reply_msg == NULL || (reply_msg != NCDS_RPC_NOT_APPLICABLE && nc_reply_get_type (reply_msg) != NC_REPLY_OK)) {
 				ERROR("Failed perform initial copy of startup to running.");
 				nc_reply_free(reply_msg);
@@ -5487,26 +5487,22 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 	return (new_reply);
 }
 
-static struct rpc2all_data_s {
-	struct nc_filter *filter;
-} rpc2all_data = {NULL};
-
 /*
  * returns:
  *  0 - filter removes data from this datastore, do not continue
  *  1 - filter includes data from this datastore, continue with processing
  */
-static int rpc_get_prefilter(struct nc_filter **filter, const struct ncds_ds* ds, const nc_rpc* rpc)
+static int rpc_get_prefilter(struct nc_filter **filter, const struct ncds_ds* ds, const nc_rpc* rpc, struct nc_filter* shared_filter)
 {
 	xmlNodePtr filter_node;
 	int retval = 1;
 	char* s;
 
 	/* get filter if specified for this request */
-	if (rpc2all_data.filter == NULL) {
+	if (shared_filter == NULL) {
 		*filter = nc_rpc_get_filter(rpc);
 	} else {
-		*filter = rpc2all_data.filter;
+		*filter = shared_filter;
 	}
 
 	/* check root element according to the filter (if any) */
@@ -5534,7 +5530,7 @@ static int rpc_get_prefilter(struct nc_filter **filter, const struct ncds_ds* ds
 		}
 	}
 
-	if (retval == 0 && rpc2all_data.filter == NULL) {
+	if (retval == 0 && shared_filter == NULL) {
 		/* we will not continue, so filter structure can be removed if not shared */
 		nc_filter_free(*filter);
 		*filter = NULL;
@@ -5559,7 +5555,7 @@ static int rpc_get_prefilter(struct nc_filter **filter, const struct ncds_ds* ds
  * datastore (e.g. the namespace does not match), NCDS_RPC_NOT_APPLICABLE
  * is returned.
  */
-static nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc)
+static nc_reply* ncds_apply_rpc(ncds_id id, const struct nc_session* session, const nc_rpc* rpc, struct nc_filter* shared_filter)
 {
 	struct nc_err* e = NULL;
 	struct ncds_ds* ds = NULL;
@@ -5681,7 +5677,7 @@ process_datastore:
 		break;
 	case NC_OP_GET:
 		/* pre-filter the request for the current datastore part */
-		if (!rpc_get_prefilter(&filter, ds, rpc)) {
+		if (!rpc_get_prefilter(&filter, ds, rpc, shared_filter)) {
 			/*
 			 * filter completely removes content of this repository, so do not
 			 * continue with the following operations
@@ -5798,7 +5794,7 @@ process_datastore:
 		break;
 	case NC_OP_GETCONFIG:
 		/* pre-filter the request for the current datastore part */
-		if (!rpc_get_prefilter(&filter, ds, rpc)) {
+		if (!rpc_get_prefilter(&filter, ds, rpc, shared_filter)) {
 			/*
 			 * filter completely removes content of this repository, so do not
 			 * continue with the following operations
@@ -6346,7 +6342,7 @@ apply_editcopyconfig:
 	 * remove various unneeded variables from the switch
 	 */
 	/* filter from <get> and <get-config> */
-	if (rpc2all_data.filter == NULL) {
+	if (shared_filter == NULL) {
 		/* filter is not shared, free it */
 		nc_filter_free(filter);
 	}
@@ -6473,6 +6469,7 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 	NC_EDIT_ERROPT_TYPE erropt = NC_EDIT_ERROPT_NOTSET;
 	NC_RPC_TYPE req_type;
 	struct nc_err *e = NULL;
+	struct nc_filter *shared_filter = NULL;
 
 	if (rpc == NULL || session == NULL) {
 		ERROR("%s: invalid parameter %s", __func__, (rpc==NULL)?"rpc":"session");
@@ -6507,7 +6504,7 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 		server_capabilities = serialize_cpblts(session->capabilities);
 		/* no break */
 	case NC_OP_GETCONFIG:
-		rpc2all_data.filter = nc_rpc_get_filter(rpc);
+		shared_filter = nc_rpc_get_filter(rpc);
 		break;
 	default:
 		/* do nothing */
@@ -6521,7 +6518,7 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 		}
 
 		/* apply RPC on a single datastore */
-		reply = ncds_apply_rpc(ds->datastore->id, session, rpc);
+		reply = ncds_apply_rpc(ds->datastore->id, session, rpc, shared_filter);
 		if (ids != NULL && reply != NCDS_RPC_NOT_APPLICABLE) {
 			ncds.datastores_ids[id_i] = ds->datastore->id;
 			id_i++;
@@ -6533,8 +6530,8 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 			old_reply = reply;
 		} else if (old_reply != NCDS_RPC_NOT_APPLICABLE || reply != NCDS_RPC_NOT_APPLICABLE) {
 			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
-				nc_filter_free(rpc2all_data.filter);
-				rpc2all_data.filter = NULL;
+				nc_filter_free(shared_filter);
+				shared_filter = NULL;
 				free(server_capabilities);
 				server_capabilities = NULL;
 
@@ -6607,8 +6604,8 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 
 cleanup:
 	/* clean up the common data for calling nc_apply_rpc() */
-	nc_filter_free(rpc2all_data.filter);
-	rpc2all_data.filter = NULL;
+	nc_filter_free(shared_filter);
+	shared_filter = NULL;
 
 	free(server_capabilities);
 	server_capabilities = NULL;
