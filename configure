@@ -2976,8 +2976,8 @@ $as_echo "no" >&6; }
 fi
 
 
-		if test "$XSLT_CONFIG" = "no"; then
-			as_fn_error $? "Missing development package of libxslt." "$LINENO" 5
+		if test "$XSLT_CONFIG" != "no"; then
+			as_fn_error $? "Missing xslt-config to get XSLT flags for compilation." "$LINENO" 5
 		fi
 		CFLAGS="`$withval/xslt-config --cflags` $CFLAGS"
 		LIBS="`$withval/xslt-config --libs` $LIBS"
@@ -11980,8 +11980,9 @@ fi
 
 
 ### libxslt ###
-if test "$validation" = "yes" -a -z "$WITH_LIBXSLT" ; then
-	# Extract the first word of "xslt-config", so it can be a program name with args.
+if test "$validation" = "yes" -o "$yang" = "yes"; then
+	if test -z "$WITH_LIBXSLT" ; then
+		# Extract the first word of "xslt-config", so it can be a program name with args.
 set dummy xslt-config; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
@@ -12019,11 +12020,73 @@ $as_echo "no" >&6; }
 fi
 
 
-	if test "$XSLT_CONFIG" = "no"; then
-		as_fn_error $? "Missing development package of libxslt." "$LINENO" 5
+		if test "$XSLT_CONFIG" != "no"; then
+			CFLAGS="`xslt-config --cflags` $CFLAGS"
+			LIBS="`xslt-config --libs` $LIBS"
+		fi
 	fi
-	CFLAGS="`xslt-config --cflags` $CFLAGS"
-	LIBS="`xslt-config --libs` $LIBS"
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for xsltApplyStylesheet in -lxslt" >&5
+$as_echo_n "checking for xsltApplyStylesheet in -lxslt... " >&6; }
+if ${ac_cv_lib_xslt_xsltApplyStylesheet+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lxslt  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char xsltApplyStylesheet ();
+int
+main ()
+{
+return xsltApplyStylesheet ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_xslt_xsltApplyStylesheet=yes
+else
+  ac_cv_lib_xslt_xsltApplyStylesheet=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_xslt_xsltApplyStylesheet" >&5
+$as_echo "$ac_cv_lib_xslt_xsltApplyStylesheet" >&6; }
+if test "x$ac_cv_lib_xslt_xsltApplyStylesheet" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBXSLT 1
+_ACEOF
+
+  LIBS="-lxslt $LIBS"
+
+else
+  as_fn_error $? "Missing libxslt library" "$LINENO" 5
+fi
+
+	for ac_header in libxslt/transform.h libxslt/xsltInternals.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  as_fn_error $? "Missing libxslt headers" "$LINENO" 5
+fi
+
+done
+
 fi
 
 if test "$libssh" = "yes"; then

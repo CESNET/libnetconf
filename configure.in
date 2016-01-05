@@ -118,8 +118,8 @@ AC_ARG_WITH([libxslt],
 	[AC_HELP_STRING([--with-libxslt], [specific libxslt location])],
 	[
 		AC_CHECK_PROG([XSLT_CONFIG], [xslt-config], [yes], [no], [$withval])
-		if test "$XSLT_CONFIG" = "no"; then
-			AC_MSG_ERROR([Missing development package of libxslt.])
+		if test "$XSLT_CONFIG" != "no"; then
+			AC_MSG_ERROR([Missing xslt-config to get XSLT flags for compilation.])
 		fi
 		CFLAGS="`$withval/xslt-config --cflags` $CFLAGS"
 		LIBS="`$withval/xslt-config --libs` $LIBS"
@@ -441,17 +441,22 @@ if test -z "$WITH_LIBXML2" ; then
 	LIBS="$LIBXML2_LIBS $LIBS"
 	AC_SUBST(LIBXML2_LIBS)
 fi
-AC_CHECK_LIB([xml2], [xmlDOMWrapReconcileNamespaces], [HAVE_LIBXML2_RECONNS="#define HAVE_XMLDOMWRAPRECONCILENAMESPACE"], [HAVE_LIBXML2_RECONNS="#undef HAVE_XMLDOMWRAPRECONCILENAMESPACE"]
+AC_CHECK_LIB([xml2], [xmlDOMWrapReconcileNamespaces],
+	[HAVE_LIBXML2_RECONNS="#define HAVE_XMLDOMWRAPRECONCILENAMESPACE"],
+	[HAVE_LIBXML2_RECONNS="#undef HAVE_XMLDOMWRAPRECONCILENAMESPACE"]
 )
 
 ### libxslt ###
-if test "$validation" = "yes" -a -z "$WITH_LIBXSLT" ; then
-	AC_CHECK_PROG([XSLT_CONFIG], [xslt-config], [yes], [no], [$WITH_LIBXSLT $PATH])
-	if test "$XSLT_CONFIG" = "no"; then
-		AC_MSG_ERROR([Missing development package of libxslt.])
+if test "$validation" = "yes" -o "$yang" = "yes"; then
+	if test -z "$WITH_LIBXSLT" ; then
+		AC_CHECK_PROG([XSLT_CONFIG], [xslt-config], [yes], [no], [$WITH_LIBXSLT $PATH])
+		if test "$XSLT_CONFIG" != "no"; then
+			CFLAGS="`xslt-config --cflags` $CFLAGS"
+			LIBS="`xslt-config --libs` $LIBS"
+		fi
 	fi
-	CFLAGS="`xslt-config --cflags` $CFLAGS"
-	LIBS="`xslt-config --libs` $LIBS"
+	AC_CHECK_LIB([xslt], [xsltApplyStylesheet], [], AC_MSG_ERROR([Missing libxslt library]))
+	AC_CHECK_HEADERS([libxslt/transform.h libxslt/xsltInternals.h], [], AC_MSG_ERROR([Missing libxslt headers]))
 fi
 
 if test "$libssh" = "yes"; then
