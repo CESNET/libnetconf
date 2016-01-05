@@ -1524,7 +1524,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 				return (EXIT_FAILURE);
 			}
 #endif
-			if (ret < 0) {
+			if (ret <= 0) {
 				DBG_UNLOCK("mut_channel");
 				session->mut_channel_flag = 0;
 				pthread_mutex_unlock(session->mut_channel);
@@ -1559,7 +1559,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 			return (EXIT_FAILURE);
 		}
 #endif
-		if (ret < 0) {
+		if (ret <= 0) {
 			DBG_UNLOCK("mut_channel");
 			session->mut_channel_flag = 0;
 			pthread_mutex_unlock(session->mut_channel);
@@ -1598,7 +1598,7 @@ static int nc_session_send(struct nc_session* session, struct nc_msg *msg)
 			return (EXIT_FAILURE);
 		}
 #endif
-		if (ret < 0) {
+		if (ret <= 0) {
 			DBG_UNLOCK("mut_channel");
 			session->mut_channel_flag = 0;
 			pthread_mutex_unlock(session->mut_channel);
