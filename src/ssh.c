@@ -217,6 +217,12 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 	ssh_options_set(retval->ssh_sess, SSH_OPTIONS_USER, retval->username);
 	ssh_options_set(retval->ssh_sess, SSH_OPTIONS_FD, &retval->transport_socket);
 	ssh_options_set(retval->ssh_sess, SSH_OPTIONS_TIMEOUT, &timeout);
+    if (ssh_options_set(retval->ssh_sess, SSH_OPTIONS_HOSTKEYS,
+                        "ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,"
+                        "ecdsa-sha2-nistp256,ssh-rsa,ssh-dss,ssh-rsa1")) {
+        /* ecdsa is probably not supported... */
+        ssh_options_set(retval->ssh_sess, SSH_OPTIONS_HOSTKEYS, "ssh-ed25519,ssh-rsa,ssh-dss,ssh-rsa1");
+    }
 
 	if (ssh_connect(retval->ssh_sess) != SSH_OK) {
 		ERROR("Starting the SSH session failed (%s)", ssh_get_error(retval->ssh_sess));
