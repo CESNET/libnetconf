@@ -2938,6 +2938,26 @@ static nc_rpc* _rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 	/* set namespace */
 	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
 	xmlSetNs(content, ns);
+	
+	/* <target> */
+	node_target = xmlNewChild(content, ns, BAD_CAST "target", NULL);
+	if (node_target == NULL) {
+		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+		goto cleanup;
+	}
+	if (params[1] == NC_DATASTORE_URL) {
+		/* target is specified as URL */
+		if (xmlNewChild(node_target, ns, BAD_CAST "url", BAD_CAST target_url) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			goto cleanup;
+		}
+	} else {
+		/* standard datastore */
+		if (xmlNewChild(node_target, ns, BAD_CAST datastores[1], NULL) == NULL) {
+			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
+			goto cleanup;
+		}
+	}
 
 	/* <source> */
 	node_source = xmlNewChild(content, ns, BAD_CAST "source", NULL);
@@ -2973,26 +2993,6 @@ static nc_rpc* _rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 	} else {
 		/* source is one of the standard datastores */
 		if (xmlNewChild(node_source, ns, BAD_CAST datastores[0], NULL) == NULL) {
-			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-			goto cleanup;
-		}
-	}
-
-	/* <target> */
-	node_target = xmlNewChild(content, ns, BAD_CAST "target", NULL);
-	if (node_target == NULL) {
-		ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-		goto cleanup;
-	}
-	if (params[1] == NC_DATASTORE_URL) {
-		/* target is specified as URL */
-		if (xmlNewChild(node_target, ns, BAD_CAST "url", BAD_CAST target_url) == NULL) {
-			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
-			goto cleanup;
-		}
-	} else {
-		/* standard datastore */
-		if (xmlNewChild(node_target, ns, BAD_CAST datastores[1], NULL) == NULL) {
 			ERROR("xmlNewChild failed (%s:%d)", __FILE__, __LINE__);
 			goto cleanup;
 		}
