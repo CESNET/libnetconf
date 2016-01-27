@@ -556,7 +556,7 @@ API struct nc_session* nc_session_connect_inout(int fd_in, int fd_out, const str
 {
 	struct nc_session *retval = NULL;
 	pthread_mutexattr_t mattr;
-	int r;
+	int r = 0;
 	struct nc_cpblts *client_cpblts = NULL;
 
 	/*
