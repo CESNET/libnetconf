@@ -442,6 +442,9 @@ static int nc_handshake(struct nc_session *session, char** cpblts, nc_rpc *hello
 #ifdef DISABLE_LIBSSH
 	if (side == HANDSHAKE_SIDE_CLIENT) {
 		recv_hello = read_hello_openssh(session);
+		if (recv_hello) {
+			reply = NC_MSG_HELLO;
+		}
 	} else {
 		reply = nc_session_recv_reply(session, hello_timeout, &recv_hello);
 	}
