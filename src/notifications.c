@@ -407,7 +407,7 @@ static int write_fileheader(struct stream *s)
 	/* check if the corresponding file is already opened */
 	if (s->fd_events == -1) {
 		/* open and create/truncate the file */
-		if (asprintf(&filepath, "%s/%s.events.%ld", streams_path, s->name,time(NULL)) == -1) {
+		if (asprintf(&filepath, "%s/%s.events.%ld", streams_path, s->name, time(NULL)) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			return (EXIT_FAILURE);
 		}
@@ -419,8 +419,9 @@ static int write_fileheader(struct stream *s)
 			free(filepath);
 			return (EXIT_FAILURE);
 		}
-		if(s->file_name)
+		if(s->file_name) {
 		    free(s->file_name);
+        }
 	    s->file_name = strdup(filepath);
 		free(filepath);
 	} else {
@@ -503,7 +504,7 @@ static int check_file_ended(struct stream* s)
     int r;
     uint64_t t;
     uint32_t size,magic_ending;
-    unsigned int actual_offset = lseek(s->fd_events,0,SEEK_CUR);
+    unsigned int actual_offset = lseek(s->fd_events, 0, SEEK_CUR);
     /*check if it is history file only and new was created*/
     lseek(s->fd_events, -16, SEEK_END);
     if ((r = read(s->fd_events, &(size), sizeof(size))) <= 0) {
@@ -630,16 +631,18 @@ static void ncntf_stream_free(struct stream *s)
 	if (s->fd_events != -1) {
 		close(s->fd_events);
 	}
-	if(s->file_name)
+	if(s->file_name) {
 	    free(s->file_name);
-	if(s->filename2_unlink)
+    }
+	if(s->filename2_unlink) {
 	    free(s->filename2_unlink);
+    }
 	free(s);
 }
 
 static int get_next_stream_file_name_after(const char* current_file_path,char* next_name,size_t max_size)
 {
-    int n,i=0,found=0;
+    int n, i = 0, found = 0;
     struct dirent **filelist;
     const char* current_file_name = current_file_path + strlen(streams_path) + 1;
     n = scandir(streams_path, &filelist, NULL, alphasort);
@@ -649,30 +652,25 @@ static int get_next_stream_file_name_after(const char* current_file_path,char* n
     }
     filter_reg_files(streams_path, filelist, n);
     /* and open all libnetconf's stream files - file's magic number is checked */
-    for(i=0; i<n; i++) {
+    for(i = 0; i < n; i++) {
         if (filelist[i] == NULL) { /* was not a regular file */
             continue;
         }
-        if(found == 0)
-        {
-            if(strcmp(filelist[i]->d_name,current_file_name) == 0)
-            {
+        if (found == 0) {
+            if (strcmp(filelist[i]->d_name, current_file_name) == 0) {
                 found++;
             }
-        }
-        else if(found == 1)
-        {
-            const char* ev_pos = strstr(filelist[i]->d_name,"events");
-            if(ev_pos && strncmp(filelist[i]->d_name,current_file_name,ev_pos - filelist[i]->d_name) == 0)
-            {
-                snprintf(next_name,max_size,"%s/%s",streams_path,filelist[i]->d_name);
+        } else if (found == 1) {
+            const char* ev_pos = strstr(filelist[i]->d_name, "events");
+            if (ev_pos && strncmp(filelist[i]->d_name, current_file_name, ev_pos - filelist[i]->d_name) == 0) {
+                snprintf(next_name, max_size, "%s/%s", streams_path, filelist[i]->d_name);
                 found++;
             }
         }
         free(filelist[i]);
     }
     free(filelist);
-    return found==2;
+    return found == 2;
 }
 
 /*
@@ -682,7 +680,7 @@ static struct stream* ncntf_stream_get(const char* stream)
 {
 	struct stream *s;
 	char* filepath;
-    int n,i=0;
+    int n, i;
     struct dirent **filelist;
 
 	if (stream == NULL) {
@@ -715,8 +713,7 @@ static struct stream* ncntf_stream_get(const char* stream)
 	            continue;
 	        }
 
-	        if(s == NULL && strncmp(filelist[i]->d_name,stream,strlen(stream)) == 0)
-	        {
+	        if (s == NULL && strncmp(filelist[i]->d_name, stream, strlen(stream)) == 0) {
                 /* try to localize so far unrecognized stream file */
                 if (asprintf(&filepath, "%s/%s", streams_path, filelist[i]->d_name) == -1) {
                     ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
@@ -924,8 +921,9 @@ static void ncntf_streams_close(void)
  */
 API void set_max_event_file_size(unsigned int size)
 {
-    if(size > 0)
+    if(size > 0) {
         max_events_file_size = size;
+    }
 }
 
 int ncntf_init(void)
@@ -1223,22 +1221,20 @@ static int switch_to_next_event_file(struct stream *s)
 {
     char new_filename[256];
     struct stream* new_s = NULL;
+
     VERB("Time to switch to new events file");
-    if(get_next_stream_file_name_after(s->file_name,new_filename,sizeof(new_filename)-1))
-    {
+    if (get_next_stream_file_name_after(s->file_name, new_filename, sizeof(new_filename) - 1)) {
        VERB("Next file name %s",new_filename);
        close(s->fd_events);
        s->fd_events = -1;
        free(s->file_name);
        s->file_name = NULL;
 
-       if ((new_s = read_fileheader(new_filename)) == NULL)
-       {
+       if ((new_s = read_fileheader(new_filename)) == NULL) {
            ERROR("Couldn't read new stream file %s (%s)", new_filename, strerror(errno));
            return -1;
        }
-       if(strcmp(s->name,new_s->name) !=0)
-       {
+       if (strcmp(s->name,new_s->name) != 0 ) {
            ERROR("Failed to continue read stream file: New stream name (%s) differ from previous (%s)",new_s->name,s->name);
            ncntf_stream_free(new_s);
            return -1;
@@ -1248,9 +1244,7 @@ static int switch_to_next_event_file(struct stream *s)
        s->data = new_s->data;
        s->file_name = strdup(new_filename);
        ncntf_stream_free(new_s);
-    }
-    else
-    {
+    } else {
        ERROR("Couldn't determine new stream file name");
        return -1;
     }
@@ -1391,28 +1385,24 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 			str_off->cur_offset += r;
 			str_off->cur_offset += len;
 
-			if(len == ENDING_LENGTH)
-			{
+			if(len == ENDING_LENGTH) {
 			    if ((r = read(s->fd_events, &(magic_ending), sizeof(magic_ending))) <= 0) {
 			        ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
 			        DBG_UNLOCK("streams_mut");
 			        pthread_mutex_unlock(streams_mut);
 			        return (NULL);
 		        }
-		        if(magic_ending == MAGIC_ENDING)
-		        {
+		        if (magic_ending == MAGIC_ENDING) {
 		            int ret = switch_to_next_event_file(s);
-		            if(ret < 0)
-		            {
+		            if (ret < 0) {
 		                DBG_UNLOCK("streams_mut");
 		                pthread_mutex_unlock(streams_mut);
 		                return (NULL);
-		            }
-		            else if(ret == 0)
-		            {
+		            } else if (ret == 0) {
 		                /* if we are in replay update replay_end value to new file end*/
-		                if(*replay_end != 0)
+		                if (*replay_end != 0) {
 		                    str_off->eof_offset = lseek(s->fd_events, 0, SEEK_END);
+                        }
 		                lseek(s->fd_events, s->data, SEEK_SET);
 		                ncntf_stream_unlock(s);
 		                continue;
@@ -1606,11 +1596,17 @@ static int ncntf_event_store(time_t etime, const char* content)
                     write_fileheader(s);
                     uint32_t length = 4;
                     while (((r = write(old_fd, &length, sizeof(length))) == -1) && (errno == EAGAIN ||errno == EINTR));
-                    if (r == -1) { goto write_failed; }
+                    if (r == -1) {
+                        goto write_failed;
+                    }
                     while (((r = write(old_fd, &etime64, sizeof(uint64_t))) == -1) && (errno == EAGAIN ||errno == EINTR));
-                    if (r == -1) { goto write_failed; }
+                    if (r == -1) {
+                        goto write_failed;
+                    }
                     while (((r = write(old_fd, &MAGIC_ENDING, sizeof(MAGIC_ENDING))) == -1) && (errno == EAGAIN ||errno == EINTR));
-                    if (r == -1) { goto write_failed; }
+                    if (r == -1) {
+                        goto write_failed;
+                    }
                     close(old_fd);
                 }
 
