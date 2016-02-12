@@ -2124,6 +2124,7 @@ API nc_ntf* ncntf_notif_create(time_t event_time, const char* content)
 	retval->next = NULL;
 	retval->with_defaults = NCWD_MODE_NOTSET;
 	retval->type.ntf = NC_NTF_UNKNOWN;
+	retval->nacm = NULL;
 
 	/* create xpath evaluation context */
 	if ((retval->ctxt = xmlXPathNewContext(retval->doc)) == NULL) {
