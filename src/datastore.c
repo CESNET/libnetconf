@@ -683,7 +683,7 @@ static int fmon_backup_file(const char* source)
 
 	assert(source);
 
-	if (asprintf(&target, "%s.netconf", source) != 0) {
+	if (asprintf(&target, "%s.netconf", source) == -1) {
 		return 1;
 	}
 	ret = fmon_cp_file(source, target, 0);
