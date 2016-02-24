@@ -3755,11 +3755,9 @@ static int ncds_update_callbacks(struct ncds_ds* ds)
 static void transapi_unload(struct transapi_internal* tapi)
 {
 	/* stop the thread monitoring the files */
-	if (tapi->file_clbks != NULL && tapi->file_clbks->callbacks_count > 0) {
+	if (tapi->file_clbks != NULL && tapi->file_clbks->callbacks_count > 0 && tapi->fmon_thread != NULL) {
 		VERB("Stopping FMON thread.");
-		pthread_cancel(tapi->fmon_thread);
-		usleep(5000);
-		if (pthread_kill(tapi->fmon_thread, 0) != 0) {
+		if (pthread_kill(tapi->fmon_thread, 9) != 0) {
 			/* sleep some more */
 			usleep(50000);
 		}
