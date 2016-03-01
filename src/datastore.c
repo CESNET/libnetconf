@@ -5024,7 +5024,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter, keyList ke
 
 		/* try to find required node */
 		config_node = config;
-		while (config_node) {
+		while (config_node && config_node->children) {
 			if (!strcmp((char *) filter_node->name, (char *) config_node->name) &&
 					!nc_nscmp(filter_node, config_node) &&
 					!attrcmp(filter_node, config_node)) {
