@@ -276,7 +276,7 @@ int nc_session_is_monitored(const char* session_id)
 {
 	struct session_list_item *litem;
 
-	if (session_list->count == 0) {
+	if (session_list == NULL || session_list->count == 0) {
 		return 0;
 	}
 
