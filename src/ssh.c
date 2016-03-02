@@ -697,7 +697,7 @@ struct nc_session *nc_session_connect_ssh(const char* username, const char* host
 	char tmpchar[2];
 	char line[81];
 	char *s;
-	int r;
+	int r = 0;
 	int forced = 0; /* force connection to unknown destinations */
 	size_t n;
 	gid_t newgid, oldgid;
