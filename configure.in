@@ -272,6 +272,11 @@ AC_ARG_WITH([workingdir],
 	NC_WORKINGDIR_PATH="$withval"
 	CONFIGURE_PARAMS="--with-workingdir=$withval $CONFIGURE_PARAMS"
 )
+AC_ARG_WITH([sessionfiledir],
+	AC_HELP_STRING([--with-sessionfiledir=path],[Path to a session file directory of libnetconf, the default value is inside libnetconf working directory]),
+	NC_SESSIONFILE_PATH="$withval"
+	CONFIGURE_PARAMS="--with-sessionfiledir=$withval $CONFIGURE_PARAMS"
+)
 AC_ARG_WITH([suid],
 	AC_HELP_STRING([--with-suid=user],[When creating files or directories using libnetconf, rely on the SUID bit set and change their ownership to the specified user]),
 	if test "$withval" != "no"; then
@@ -574,6 +579,7 @@ AC_SUBST(DEVELREQS)
 AC_SUBST(PROVIDES)
 AC_SUBST(DISTRO)
 AC_SUBST(NC_WORKINGDIR_PATH)
+AC_SUBST(NC_SESSIONFILE_PATH)
 AC_SUBST(SETBIT)
 AC_SUBST(SETUSER)
 AC_SUBST(SETGROUP)

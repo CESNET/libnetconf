@@ -174,11 +174,16 @@
  * libnetconf paths
  */
 #ifdef NC_WORKINGDIR_PATH
-#  define SESSIONSFILE_PATH  NC_WORKINGDIR_PATH"/libnetconf_sessions.bin"
 #  define NCNTF_STREAMS_PATH NC_WORKINGDIR_PATH"/streams/"
 #else
-#  define SESSIONSFILE_PATH  "/tmp/libnetconf_sessions.bin"
 #  define NCNTF_STREAMS_PATH "/tmp/streams/"
+#  define NC_WORKINGDIR_PATH "/var/lib/libnetconf/"
+#endif
+
+#ifdef NC_SESSIONFILE_PATH
+#  define SESSIONSFILE_PATH  NC_SESSIONFILE_PATH"/libnetconf_sessions.bin"
+#else
+#  define SESSIONSFILE_PATH  NC_WORKINGDIR_PATH"/libnetconf_sessions.bin"
 #endif
 
 /*
