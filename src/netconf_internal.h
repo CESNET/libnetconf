@@ -159,6 +159,11 @@
  */
 #define NC_CONTENT_FORMATTED 1
 
+/**
+ * Sleep time in microseconds to wait between unsuccessful reading due to EAGAIN or EWOULDBLOCK
+ */
+#define NC_READ_SLEEP 100
+
 /*
  * global settings for options passed to xmlRead* functions
  */

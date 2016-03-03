@@ -139,10 +139,6 @@ struct session_list_map {
 static int session_list_fd = -1;
 static struct session_list_map *session_list = NULL;
 
-/**
- * Sleep time in microseconds to wait between unsuccessful reading due to EAGAIN or EWOULDBLOCK
- */
-#define NC_READ_SLEEP 100
 #ifdef DISABLE_LIBSSH
 #ifdef ENABLE_TLS
 #define NC_WRITE(session,buf,c,ret) \
