@@ -66,6 +66,11 @@
 #define NACM_RECOVERY_UID @NACM_RECOVERY_UID@
 
 /*
+ * Timeout for reading a full NETCONF message in seconds (relevant only after we read something).
+ */
+#define READ_TIMEOUT @READ_TIMEOUT@
+
+/*
  * Compatibility section
  */
 @HAVE_EACCESS@
