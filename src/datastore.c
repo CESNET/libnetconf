@@ -50,6 +50,7 @@
 #include <dlfcn.h>
 #include <dirent.h>
 #include <stdio.h>
+#include <pthread.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -119,6 +120,7 @@ API char error_area;
 #define ERROR_POINTER ((void*)(&error_area))
 
 char* server_capabilities;
+pthread_spinlock_t server_cpblt_lock;
 
 struct ncds_ds_list {
 	struct ncds_ds *datastore;
@@ -335,6 +337,8 @@ int ncds_sysinit(int flags)
 			NC_WORKINGDIR_PATH"/ietf-netconf-acm-schematron.xsl" /* NACM Schematron XSL stylesheet */
 	};
 #endif
+
+	pthread_spin_init(&server_cpblt_lock, PTHREAD_PROCESS_SHARED);
 
 	internal_ds_count = 0;
 	for (i = 0; i < INTERNAL_DS_COUNT; i++) {
@@ -1569,6 +1573,7 @@ static char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(
 	}
 
 	/* get it all together */
+	pthread_spin_lock(&server_cpblt_lock);
 	if (asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s%s</netconf-state>", NC_NS_MONITORING,
 			(server_capabilities != NULL) ? server_capabilities : "",
 			(ds_stats != NULL) ? ds_stats : "",
@@ -1578,6 +1583,7 @@ static char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		retval = NULL;
 	}
+	pthread_spin_unlock(&server_cpblt_lock);
 	if (retval == NULL) {
 		retval = strdup("");
 	}
@@ -4666,6 +4672,8 @@ void ncds_cleanall()
 	struct model_list *listitem, *listnext;
 	int i;
 
+	pthread_spin_destroy(&server_cpblt_lock);
+
 	ds_item = ncds.datastores;
 	while (ds_item != NULL) {
 		dsnext = ds_item->next;
@@ -6499,7 +6507,10 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 		erropt = nc_rpc_get_erropt(rpc);
 		break;
 	case NC_OP_GET:
-		server_capabilities = serialize_cpblts(session->capabilities);
+		data = serialize_cpblts(session->capabilities);
+		pthread_spin_lock(&server_cpblt_lock);
+		server_capabilities = data;
+		pthread_spin_unlock(&server_cpblt_lock);
 		/* no break */
 	case NC_OP_GETCONFIG:
 		shared_filter = nc_rpc_get_filter(rpc);
@@ -6530,8 +6541,10 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
 				nc_filter_free(shared_filter);
 				shared_filter = NULL;
+				pthread_spin_lock(&server_cpblt_lock);
 				free(server_capabilities);
 				server_capabilities = NULL;
+				pthread_spin_unlock(&server_cpblt_lock);
 
 				if (nc_reply_get_type(old_reply) == NC_REPLY_ERROR) {
 					return (old_reply);
@@ -6605,8 +6618,10 @@ cleanup:
 	nc_filter_free(shared_filter);
 	shared_filter = NULL;
 
+	pthread_spin_lock(&server_cpblt_lock);
 	free(server_capabilities);
 	server_capabilities = NULL;
+	pthread_spin_unlock(&server_cpblt_lock);
 
 	return (reply);
 }
