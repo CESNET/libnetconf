@@ -560,7 +560,11 @@ API int nc_init(int flags)
 
 	/* init NETCONF sessions statistics */
 	if (nc_init_flags & NC_INIT_MONITORING) {
-		nc_session_monitoring_init();
+		if (nc_session_monitoring_init() != EXIT_SUCCESS) {
+			nc_init_flags &= !(NC_INIT_MONITORING & NC_INIT_NOTIF & NC_INIT_NACM);
+			nc_close();
+			return -1;
+		}
 	}
 
 	/* init NETCONF with-defaults capability */
