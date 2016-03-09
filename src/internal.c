@@ -533,7 +533,6 @@ API int nc_init(int flags)
 		 * used by their subsystems initiated below
 		 */
 		if (ncds_sysinit(nc_init_flags) != EXIT_SUCCESS) {
-			nc_init_flags = 0;
 			nc_init_flags &= !(NC_INIT_NOTIF & NC_INIT_NACM & NC_INIT_MONITORING & NC_INIT_DATASTORES);
 			return (-1);
 		}
