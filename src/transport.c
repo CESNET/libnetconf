@@ -97,6 +97,7 @@ void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supporte
 char** get_schemas_capabilities(struct nc_cpblts *cpblts);
 
 extern struct nc_shared_info *nc_info;
+extern int nc_init_flags;
 
 static pthread_key_t transproto_key;
 static pthread_once_t transproto_key_once = PTHREAD_ONCE_INIT;
@@ -986,8 +987,8 @@ struct nc_session* _nc_session_accept(const struct nc_cpblts* capabilities, cons
 		return (NULL);
 	}
 
-	/* monitor the session */
-	if (nc_session_monitor(retval) != EXIT_SUCCESS) {
+	/* monitor the session if on */
+	if ((nc_init_flags & NC_INIT_MONITORING) && nc_session_monitor(retval) != EXIT_SUCCESS) {
 		return (NULL);
 	}
 
