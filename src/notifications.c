@@ -1318,6 +1318,7 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		     * check there what we've got
 		     */
 		    str_off->eof_offset = lseek(s->fd_events, 0, SEEK_END);
+		    str_off->cur_offset = s->data;
             DBG_UNLOCK("streams_mut");
             pthread_mutex_unlock(streams_mut);
             return (NULL);
@@ -1403,7 +1404,8 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		                if (*replay_end != 0) {
 		                    str_off->eof_offset = lseek(s->fd_events, 0, SEEK_END);
                         }
-		                lseek(s->fd_events, s->data, SEEK_SET);
+		                str_off->cur_offset = s->data;
+		                lseek(s->fd_events, str_off->cur_offset, SEEK_SET);
 		                ncntf_stream_unlock(s);
 		                continue;
 		            }
