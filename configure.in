@@ -281,6 +281,8 @@ AC_ARG_WITH([sessionfiledir],
 	AC_HELP_STRING([--with-sessionfiledir=path],[Path to a session file directory of libnetconf, the default value is inside libnetconf working directory]),
 	NC_SESSIONFILE_PATH="$withval"
 	CONFIGURE_PARAMS="--with-sessionfiledir=$withval $CONFIGURE_PARAMS"
+	,
+	NC_SESSIONFILE_PATH="$NC_WORKINGDIR_PATH"
 )
 AC_ARG_WITH([suid],
 	AC_HELP_STRING([--with-suid=user],[When creating files or directories using libnetconf, rely on the SUID bit set and change their ownership to the specified user]),

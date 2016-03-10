@@ -181,14 +181,13 @@
 #ifdef NC_WORKINGDIR_PATH
 #  define NCNTF_STREAMS_PATH NC_WORKINGDIR_PATH"/streams/"
 #else
-#  define NCNTF_STREAMS_PATH "/tmp/streams/"
-#  define NC_WORKINGDIR_PATH "/var/lib/libnetconf/"
+#  error "NC_WORKINGDIR_PATH not defined, something bad happened to Makefile"
 #endif
 
 #ifdef NC_SESSIONFILE_PATH
 #  define SESSIONSFILE_PATH  NC_SESSIONFILE_PATH"/libnetconf_sessions.bin"
 #else
-#  define SESSIONSFILE_PATH  NC_WORKINGDIR_PATH"/libnetconf_sessions.bin"
+#  error "SESSIONSFILE_PATH not defined, something bad happened to Makefile"
 #endif
 
 /*
