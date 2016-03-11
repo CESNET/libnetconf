@@ -348,6 +348,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 		aux = config->children;
 		switch (mode) {
 		case NCWD_MODE_ALL:
+		case NCWD_MODE_IMPL_TAGGED:
 		case NCWD_MODE_ALL_TAGGED:
 			/* return root element, create it if it does not exist */
 			retvals = (xmlNodePtr*) malloc(2 * sizeof(xmlNodePtr));
@@ -393,7 +394,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 			xmlFree(name);
 
 			/* if report-all-tagged, add namespace for default attribute into the whole doc */
-			if (mode == NCWD_MODE_ALL_TAGGED) {
+			if (mode == NCWD_MODE_ALL_TAGGED || mode == NCWD_MODE_IMPL_TAGGED) {
 				xmlNewNs(aux, BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
 			}
 
@@ -453,6 +454,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 		if (xmlStrcmp(node->name, BAD_CAST "default") == 0) {
 			switch (mode) {
 			case NCWD_MODE_ALL:
+			case NCWD_MODE_IMPL_TAGGED:
 			case NCWD_MODE_ALL_TAGGED:
 				/* we are at the end - set default content if needed */
 				value = xmlGetProp(node, BAD_CAST "value");
@@ -461,7 +463,8 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 					xmlNodeSetContent(parents[i], value);
 				} /* else do nothing, configuration data contain (non-)default value */
 
-				if (mode == NCWD_MODE_ALL_TAGGED) {
+				if (mode == NCWD_MODE_ALL_TAGGED ||
+						(mode == NCWD_MODE_IMPL_TAGGED && created_count)) { /* the default node is not explicit from datastore */
 					value2 = xmlNodeGetContent(parents[i]);
 					if (xmlStrcmp(value, value2) == 0) {
 						/* add default attribute if element has default value */

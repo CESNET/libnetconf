@@ -5415,7 +5415,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 	free(new_data);
 
 	/* add default values */
-	ncdflt_default_values(new, ds->ext_model, NCWD_MODE_ALL_TAGGED);
+	ncdflt_default_values(new, ds->ext_model, NCWD_MODE_IMPL_TAGGED);
 
 	if (new == NULL ) { /* cannot get or parse data */
 		e = nc_err_new(NC_ERR_OP_FAILED);
@@ -5434,7 +5434,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 		}
 
 		/* add default values */
-		ncdflt_default_values(old, ds->ext_model, NCWD_MODE_ALL_TAGGED);
+		ncdflt_default_values(old, ds->ext_model, NCWD_MODE_IMPL_TAGGED);
 
 		/* perform TransAPI transactions */
 		ret = transapi_running_changed(ds, old, new, erropt, &e);

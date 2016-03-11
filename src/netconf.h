@@ -338,7 +338,8 @@ typedef enum NCWD_MODE {
 	NCWD_MODE_ALL = 1,        /**< report-all mode (RFC 6243, sec. 3.1) */
 	NCWD_MODE_TRIM = 2,       /**< trim mode (RFC 6243, sec. 3.2) */
 	NCWD_MODE_EXPLICIT = 4,   /**< explicit mode (RFC 6243, sec. 3.3) */
-	NCWD_MODE_ALL_TAGGED = 8  /**< report-all-tagged mode (RFC 6243, sec. 3.4) */
+	NCWD_MODE_ALL_TAGGED = 8, /**< report-all-tagged mode (RFC 6243, sec. 3.4) */
+	NCWD_MODE_IMPL_TAGGED = 16/**< non-standard mode, tags are added only to implicit default nodes */
 } NCWD_MODE;
 
 /**
