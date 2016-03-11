@@ -246,34 +246,18 @@ static int check_streams_path(char* path)
 }
 
 /*
- * Set path to the directory with the stream files. It can be set by
- * environment variable defined as macro STREAMS_PATH_ENV (LIBNETCONF_STREAMS).
- * If this variable is not defined, default value from macro NCNTF_STREAMS_PATH
- * (default /usr/share/libnetconf/streams) is used.
+ * Set path to the directory with the stream files.
  *
  * returns 0 on success, non-zero value else
  */
 static int set_streams_path()
 {
-	char* env;
-
 	/* forgot previously set value (do not free, it is static) */
 	streams_path = NULL;
 
-	/* try to get path from the environment variable */
-	env = getenv(NCNTF_STREAMS_PATH_ENV);
-	if (env != NULL) {
-		VERB("Checking the Events stream path %s from %s environment variable.", env, NCNTF_STREAMS_PATH_ENV);
-		if (check_streams_path(env) == 0) {
-			streams_path = env;
-		}
-	}
-	if (streams_path == NULL) {
-		/* try to use default path */
-		VERB("Checking the default Events stream path %s.", NCNTF_STREAMS_PATH);
-		if (check_streams_path(NCNTF_STREAMS_PATH) == 0) {
-			streams_path = NCNTF_STREAMS_PATH;
-		}
+	VERB("Checking the default Events stream path %s.", NCNTF_STREAMS_PATH);
+	if (check_streams_path(NCNTF_STREAMS_PATH) == 0) {
+		streams_path = NCNTF_STREAMS_PATH;
 	}
 
 	if (streams_path == NULL) {

@@ -252,7 +252,7 @@ static int nc_shared_cleanup(int del_shm) {
 #endif
 
 	/* remove the global session information file */
-	if (unlink(SESSIONSFILE_PATH) == -1 && errno != ENOENT) {
+	if (unlink(NC_SESSIONSFILE) == -1 && errno != ENOENT) {
 		ERROR("Unable to remove the session information file (%s)", strerror(errno));
 		return (-1);
 	}

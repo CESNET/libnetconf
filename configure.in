@@ -284,6 +284,13 @@ AC_ARG_WITH([sessionfiledir],
 	,
 	NC_SESSIONFILE_PATH="$NC_WORKINGDIR_PATH"
 )
+AC_ARG_WITH([streamsdir],
+	AC_HELP_STRING([--with-streamsdir=path],[Path to the events streams, the default value is streams subdirectory of libnetconf working directory]),
+	NCNTF_STREAMS_PATH="$withval"
+	CONFIGURE_PARAMS="--with-streamsdir=$withval $CONFIGURE_PARAMS"
+	,
+	NCNTF_STREAMS_PATH="$NC_WORKINGDIR_PATH/streams/"
+)
 AC_ARG_WITH([suid],
 	AC_HELP_STRING([--with-suid=user],[When creating files or directories using libnetconf, rely on the SUID bit set and change their ownership to the specified user]),
 	if test "$withval" != "no"; then
@@ -587,6 +594,7 @@ AC_SUBST(PROVIDES)
 AC_SUBST(DISTRO)
 AC_SUBST(NC_WORKINGDIR_PATH)
 AC_SUBST(NC_SESSIONFILE_PATH)
+AC_SUBST(NCNTF_STREAMS_PATH)
 AC_SUBST(SETBIT)
 AC_SUBST(SETUSER)
 AC_SUBST(SETGROUP)

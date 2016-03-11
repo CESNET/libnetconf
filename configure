@@ -651,6 +651,7 @@ HDRS_PUBL_SUBDIR_NOTIFICATIONS
 SETGROUP
 SETUSER
 SETBIT
+NCNTF_STREAMS_PATH
 NC_SESSIONFILE_PATH
 NC_WORKINGDIR_PATH
 DISTRO
@@ -790,6 +791,7 @@ enable_debug
 enable_debug_threads
 with_workingdir
 with_sessionfiledir
+with_streamsdir
 with_suid
 with_sgid
 with_nacm_recovery_uid
@@ -1458,6 +1460,8 @@ Optional Packages:
   --with-sessionfiledir=path
                           Path to a session file directory of libnetconf, the
                           default value is inside libnetconf working directory
+  --with-streamsdir=path  Path to the events streams, the default value is
+                          streams subdirectory of libnetconf working directory
   --with-suid=user        When creating files or directories using libnetconf,
                           rely on the SUID bit set and change their ownership
                           to the specified user
@@ -3181,6 +3185,17 @@ if test "${with_sessionfiledir+set}" = set; then :
 
 else
   NC_SESSIONFILE_PATH="$NC_WORKINGDIR_PATH"
+
+fi
+
+
+# Check whether --with-streamsdir was given.
+if test "${with_streamsdir+set}" = set; then :
+  withval=$with_streamsdir; NCNTF_STREAMS_PATH="$withval"
+	CONFIGURE_PARAMS="--with-streamsdir=$withval $CONFIGURE_PARAMS"
+
+else
+  NCNTF_STREAMS_PATH="$NC_WORKINGDIR_PATH/streams/"
 
 fi
 
@@ -14100,6 +14115,7 @@ fi
 
 
 ############################### Set output #####################################
+
 
 
 

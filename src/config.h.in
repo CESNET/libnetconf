@@ -55,12 +55,6 @@
 #endif /* not DISABLE_LIBSSH */
 
 /*
- * Path for storing libnetconf's Event stream files
- */
-//#define NCNTF_STREAMS_PATH "@NC_WORKINGDIR_PATH@/streams/"
-#define NCNTF_STREAMS_PATH_ENV "LIBNETCONF_STREAMS"
-
-/*
  * NACM
  */
 #define NACM_RECOVERY_UID @NACM_RECOVERY_UID@

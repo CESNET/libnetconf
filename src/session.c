@@ -206,7 +206,7 @@ int nc_session_monitoring_init(void)
 	}
 
 	um = umask(0000);
-	session_list_fd = open(SESSIONSFILE_PATH, O_CREAT | O_RDWR, FILE_PERM);
+	session_list_fd = open(NC_SESSIONSFILE, O_CREAT | O_RDWR, FILE_PERM);
 	umask(um);
 	if (session_list_fd == -1) {
 		ERROR("Opening the sessions monitoring file failed (%s).", strerror(errno));
@@ -492,14 +492,14 @@ static void nc_session_monitor_alive_check(void)
 	struct session_list_item *litem;
 	char dirpath[ALIVECHECK_PATH_LENGTH];
 	char linkpath[ALIVECHECK_PATH_LENGTH];
-	char linkname[sizeof(SESSIONSFILE_PATH) + 1];
+	char linkname[sizeof(NC_SESSIONSFILE) + 1];
 	char* aux = NULL;
 	int len;
 	DIR *dir;
 	struct dirent* pfd;
 
 	if (session_list != NULL) {
-		aux = strdup(SESSIONSFILE_PATH);
+		aux = strdup(NC_SESSIONSFILE);
 		nc_clip_occurences_with(aux, '/', '/');
 
 		pthread_rwlock_wrlock(&(session_list->lock));
