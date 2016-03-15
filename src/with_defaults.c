@@ -529,6 +529,7 @@ static xmlNodePtr* fill_default(xmlDocPtr config, xmlNodePtr node, const char* n
 
 			switch (mode) {
 			case NCWD_MODE_ALL:
+			case NCWD_MODE_IMPL_TAGGED:
 			case NCWD_MODE_ALL_TAGGED:
 				if (k == j && xmlStrcmp(node->name, BAD_CAST "list") != 0) {
 					/* check, that new node is not a "presence" element */
@@ -667,7 +668,7 @@ int ncdflt_default_values(xmlDocPtr config, const xmlDocPtr model, NCWD_MODE mod
 		if (!xmlXPathNodeSetIsEmpty(defaults->nodesetval)) {
 			/* if report-all-tagged, add namespace for default attribute into the whole doc */
 			root = xmlDocGetRootElement(config);
-			if (mode == NCWD_MODE_ALL_TAGGED && root != NULL) {
+			if ((mode & (NCWD_MODE_ALL_TAGGED | NCWD_MODE_IMPL_TAGGED)) && root != NULL) {
 				xmlNewNs(root, BAD_CAST "urn:ietf:params:xml:ns:netconf:default:1.0", BAD_CAST "wd");
 			}
 			/* process all defaults elements */
