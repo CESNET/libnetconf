@@ -3064,22 +3064,9 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 						resolved_path = (char*) xmlGetProp (node_aux, BAD_CAST "target-node");
 						resolved_ns = (char*) xmlGetNsProp (node_aux, BAD_CAST "ns", BAD_CAST "libnetconf");
 						if (strcmp(to_resolve_path, resolved_path) == 0 && strcmp(model_ns, resolved_ns) == 0) {
-							xmlChar* content1 = NULL, *content2 = NULL;
-
-							//The same module can have multiple augment statements of the same node.
-							//The only way to check if it has already been processed is to check the contents.
-							content1 = xmlNodeGetContent(node_aux);
-							content2 = xmlNodeGetContent(nodes->nodesetval->nodeTab[i]);
-							if (xmlStrcmp(content1, content2) == 0) {
-								xmlFree(content1);
-								xmlFree(content2);
-								free(resolved_path);
-								free(resolved_ns);
-								break;
-							}
-							xmlFree(content1);
-							xmlFree(content2);
-
+							free(resolved_path);
+							free(resolved_ns);
+							break;
 						}
 						free(resolved_path);
 						free(resolved_ns);
