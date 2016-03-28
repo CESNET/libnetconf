@@ -223,8 +223,12 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
         /* ecdsa is probably not supported... */
         ssh_options_set(retval->ssh_sess, SSH_OPTIONS_HOSTKEYS, "ssh-ed25519,ssh-rsa,ssh-dss,ssh-rsa1");
     }
+    ssh_set_blocking(retval->ssh_sess, 0);
 
-	if (ssh_connect(retval->ssh_sess) != SSH_OK) {
+	while ((r = ssh_connect(retval->ssh_sess)) == SSH_AGAIN) {
+		usleep(NC_READ_SLEEP);
+	}
+	if (r != SSH_OK) {
 		ERROR("Starting the SSH session failed (%s)", ssh_get_error(retval->ssh_sess));
 		DBG("Error code %d.", ssh_get_error_code(retval->ssh_sess));
 		goto shutdown;
@@ -235,7 +239,10 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 		goto shutdown;
 	}
 
-	if ((ret_auth = ssh_userauth_none(retval->ssh_sess, NULL)) == SSH_AUTH_ERROR) {
+	while ((ret_auth = ssh_userauth_none(retval->ssh_sess, NULL)) == SSH_AUTH_AGAIN) {
+		usleep(NC_READ_SLEEP);
+	}
+	if (ret_auth == SSH_AUTH_ERROR) {
 		ERROR("Authentication failed (%s).", ssh_get_error(retval->ssh_sess));
 		goto shutdown;
 	}
@@ -282,7 +289,10 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 		case NC_SSH_AUTH_PASSWORD:
 			VERB("Password authentication (host %s, user %s)", host, username);
 			s = callbacks.sshauth_password(username, host);
-			if ((ret_auth = ssh_userauth_password(retval->ssh_sess, username, s)) != SSH_AUTH_SUCCESS) {
+			while ((ret_auth = ssh_userauth_password(retval->ssh_sess, username, s)) == SSH_AUTH_AGAIN) {
+				usleep(NC_READ_SLEEP);
+			}
+			if (ret_auth != SSH_AUTH_SUCCESS) {
 				memset(s, 0, strlen(s));
 				VERB("Authentication failed (%s)", ssh_get_error(retval->ssh_sess));
 			}
@@ -290,7 +300,11 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 			break;
 		case NC_SSH_AUTH_INTERACTIVE:
 			VERB("Keyboard-interactive authentication");
-			while ((ret_auth = ssh_userauth_kbdint(retval->ssh_sess, NULL, NULL)) == SSH_AUTH_INFO) {
+			while (((ret_auth = ssh_userauth_kbdint(retval->ssh_sess, NULL, NULL)) == SSH_AUTH_INFO) || (ret_auth == SSH_AUTH_AGAIN)) {
+				if (ret_auth == SSH_AUTH_AGAIN) {
+					usleep(NC_READ_SLEEP);
+					continue;
+				}
 				for (j = 0; j < ssh_userauth_kbdint_getnprompts(retval->ssh_sess); ++j) {
 					prompt = ssh_userauth_kbdint_getprompt(retval->ssh_sess, j, &echo);
 					if (prompt == NULL) {
@@ -341,7 +355,9 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 					WARN("Failed to import the key \"%s\".", callbacks.publickey_filename[j]);
 					continue;
 				}
-				ret_auth = ssh_userauth_try_publickey(retval->ssh_sess, NULL, pubkey);
+				while ((ret_auth = ssh_userauth_try_publickey(retval->ssh_sess, NULL, pubkey)) == SSH_AUTH_AGAIN) {
+					usleep(NC_READ_SLEEP);
+				}
 				if (ret_auth == SSH_AUTH_DENIED || ret_auth == SSH_AUTH_PARTIAL) {
 					ssh_key_free(pubkey);
 					continue;
@@ -373,7 +389,9 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 					free(s);
 				}
 
-				ret_auth = ssh_userauth_publickey(retval->ssh_sess, NULL, privkey);
+				while ((ret_auth = ssh_userauth_publickey(retval->ssh_sess, NULL, privkey)) == SSH_AUTH_AGAIN) {
+					usleep(NC_READ_SLEEP);
+				}
 				ssh_key_free(pubkey);
 				ssh_key_free(privkey);
 
@@ -400,7 +418,10 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 
 	/* open a channel */
 	retval->ssh_chan = ssh_channel_new(retval->ssh_sess);
-	if (ssh_channel_open_session(retval->ssh_chan) != SSH_OK) {
+	while ((r = ssh_channel_open_session(retval->ssh_chan)) == SSH_AGAIN) {
+		usleep(NC_READ_SLEEP);
+	}
+	if (r != SSH_OK) {
 		ssh_channel_free(retval->ssh_chan);
 		retval->ssh_chan = NULL;
 		ERROR("Opening the SSH channel failed (%s)", ssh_get_error(retval->ssh_sess));
@@ -408,7 +429,10 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 	}
 
 	/* execute the NETCONF subsystem on the channel */
-	if (ssh_channel_request_subsystem(retval->ssh_chan, "netconf") != SSH_OK) {
+	while ((r = ssh_channel_request_subsystem(retval->ssh_chan, "netconf")) == SSH_AGAIN) {
+		usleep(NC_READ_SLEEP);
+	}
+	if (r != SSH_OK) {
 		ERROR("Starting the netconf SSH subsystem failed (%s)", ssh_get_error(retval->ssh_sess));
 		goto shutdown;
 	}

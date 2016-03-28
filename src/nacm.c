@@ -1364,8 +1364,6 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 		return (NACM_PERMIT);
 	}
 
-	nacm_config_refresh();
-
 	if (nacm_initiated == 0 || nacm_config.enabled == false) {
 		/* NACM subsystem not initiated or switched off */
 		/*
@@ -1374,6 +1372,8 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 		 */
 		return (NACM_PERMIT);
 	}
+
+	nacm_config_refresh();
 
 	/* connect NACM structure with RPC */
 	nacm = nacm_rpc_struct(session);

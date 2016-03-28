@@ -139,10 +139,6 @@ struct session_list_map {
 static int session_list_fd = -1;
 static struct session_list_map *session_list = NULL;
 
-/**
- * Sleep time in microseconds to wait between unsuccessful reading due to EAGAIN or EWOULDBLOCK
- */
-#define NC_READ_SLEEP 100
 #ifdef DISABLE_LIBSSH
 #ifdef ENABLE_TLS
 #define NC_WRITE(session,buf,c,ret) \
@@ -210,7 +206,7 @@ int nc_session_monitoring_init(void)
 	}
 
 	um = umask(0000);
-	session_list_fd = open(SESSIONSFILE_PATH, O_CREAT | O_RDWR, FILE_PERM);
+	session_list_fd = open(NC_SESSIONSFILE, O_CREAT | O_RDWR, FILE_PERM);
 	umask(um);
 	if (session_list_fd == -1) {
 		ERROR("Opening the sessions monitoring file failed (%s).", strerror(errno));
@@ -276,7 +272,7 @@ int nc_session_is_monitored(const char* session_id)
 {
 	struct session_list_item *litem;
 
-	if (session_list->count == 0) {
+	if (session_list == NULL || session_list->count == 0) {
 		return 0;
 	}
 
@@ -496,14 +492,14 @@ static void nc_session_monitor_alive_check(void)
 	struct session_list_item *litem;
 	char dirpath[ALIVECHECK_PATH_LENGTH];
 	char linkpath[ALIVECHECK_PATH_LENGTH];
-	char linkname[sizeof(SESSIONSFILE_PATH) + 1];
+	char linkname[sizeof(NC_SESSIONSFILE) + 1];
 	char* aux = NULL;
 	int len;
 	DIR *dir;
 	struct dirent* pfd;
 
 	if (session_list != NULL) {
-		aux = strdup(SESSIONSFILE_PATH);
+		aux = strdup(NC_SESSIONSFILE);
 		nc_clip_occurences_with(aux, '/', '/');
 
 		pthread_rwlock_wrlock(&(session_list->lock));
@@ -1619,6 +1615,7 @@ static int nc_session_read_len(struct nc_session* session, size_t chunk_length, 
 	char *buf;
 	ssize_t c;
 	size_t rd = 0;
+	long sleep_count = 0;
 #ifdef ENABLE_TLS
 	int r;
 #endif
@@ -1638,12 +1635,20 @@ static int nc_session_read_len(struct nc_session* session, size_t chunk_length, 
 	}
 
 	while (rd < chunk_length) {
+		if ((READ_TIMEOUT * 1000000) / NC_READ_SLEEP == sleep_count) {
+			ERROR("Reading timeout elapsed.");
+			free(buf);
+			*len = 0;
+			*text = NULL;
+			return (EXIT_FAILURE);
+		}
 #ifndef DISABLE_LIBSSH
 		if (session->ssh_chan) {
 			/* read via libssh */
 			c = ssh_channel_read(session->ssh_chan, &(buf[rd]), chunk_length - rd, 0);
 			if (c == SSH_AGAIN) {
 				usleep (NC_READ_SLEEP);
+				++sleep_count;
 				continue;
 			} else if (c == SSH_ERROR) {
 				ERROR("Reading from the SSH channel failed (%zd: %s)", ssh_get_error_code(session->ssh_sess), ssh_get_error(session->ssh_sess));
@@ -1660,6 +1665,7 @@ static int nc_session_read_len(struct nc_session* session, size_t chunk_length, 
 					return (EXIT_FAILURE);
 				}
 				usleep (NC_READ_SLEEP);
+				++sleep_count;
 				continue;
 			}
 		} else
@@ -1671,6 +1677,7 @@ static int nc_session_read_len(struct nc_session* session, size_t chunk_length, 
 			if (c <= 0 && (r = SSL_get_error(session->tls, c))) {
 				if (r == SSL_ERROR_WANT_READ) {
 					usleep(NC_READ_SLEEP);
+					++sleep_count;
 					continue;
 				} else {
 					if (r == SSL_ERROR_SYSCALL) {
@@ -1698,6 +1705,7 @@ static int nc_session_read_len(struct nc_session* session, size_t chunk_length, 
 			if (c == -1) {
 				if (errno == EAGAIN) {
 					usleep (NC_READ_SLEEP);
+					++sleep_count;
 					continue;
 				} else {
 					ERROR("Reading from an input file descriptor failed (%s)", strerror(errno));
@@ -1732,6 +1740,7 @@ static int nc_session_read_until(struct nc_session* session, const char* endtag,
 	ssize_t c;
 	char *buf = NULL;
 	size_t buflen = 0;
+	long sleep_count = 0;
 #ifdef ENABLE_TLS
 	int r;
 #endif
@@ -1760,12 +1769,19 @@ static int nc_session_read_until(struct nc_session* session, const char* endtag,
 			WARN("%s: reading limit reached.", __func__);
 			return (EXIT_FAILURE);
 		}
+
+		if ((READ_TIMEOUT * 1000000) / NC_READ_SLEEP == sleep_count) {
+			free(buf);
+			ERROR("Reading timeout elapsed.");
+			return (EXIT_FAILURE);
+		}
 #ifndef DISABLE_LIBSSH
 		if (session->ssh_chan) {
 			/* read via libssh */
 			c = ssh_channel_read(session->ssh_chan, &(buf[rd]), 1, 0);
 			if (c == SSH_AGAIN) {
 				usleep (NC_READ_SLEEP);
+				++sleep_count;
 				continue;
 			} else if (c == SSH_ERROR) {
 				if (session->ssh_sess != NULL) {
@@ -1794,6 +1810,7 @@ static int nc_session_read_until(struct nc_session* session, const char* endtag,
 					return (EXIT_FAILURE);
 				}
 				usleep (NC_READ_SLEEP);
+				++sleep_count;
 				continue;
 			}
 		} else
@@ -1805,6 +1822,7 @@ static int nc_session_read_until(struct nc_session* session, const char* endtag,
 			if (c <= 0 && (r = SSL_get_error(session->tls, c))) {
 				if (r == SSL_ERROR_WANT_READ) {
 					usleep(NC_READ_SLEEP);
+					++sleep_count;
 					continue;
 				} else {
 					if (r == SSL_ERROR_SYSCALL) {
@@ -1832,6 +1850,7 @@ static int nc_session_read_until(struct nc_session* session, const char* endtag,
 			if (c == -1) {
 				if (errno == EAGAIN) {
 					usleep (NC_READ_SLEEP);
+					++sleep_count;
 					continue;
 				} else {
 					ERROR("Reading from an input file descriptor failed (%s)", strerror(errno));

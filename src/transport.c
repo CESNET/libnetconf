@@ -97,6 +97,7 @@ void parse_wdcap(struct nc_cpblts *capabilities, NCWD_MODE *basic, int *supporte
 char** get_schemas_capabilities(struct nc_cpblts *cpblts);
 
 extern struct nc_shared_info *nc_info;
+extern int nc_init_flags;
 
 static pthread_key_t transproto_key;
 static pthread_once_t transproto_key_once = PTHREAD_ONCE_INIT;
@@ -134,8 +135,7 @@ API int nc_session_transport(NC_TRANSPORT proto)
 
 int transport_connect_socket(const char* host, const char* port)
 {
-	int sock = -1;
-	int i;
+	int i, flags, sock = -1;
 	struct addrinfo hints, *res_list, *res;
 
 	/* Connect to a server */
@@ -163,6 +163,13 @@ int transport_connect_socket(const char* host, const char* port)
 			close(sock);
 			sock = -1;
 			goto errloop;
+		}
+
+		/* make the socket non-blocking */
+		if (((flags = fcntl(sock, F_GETFL)) == -1) || (fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1)) {
+			ERROR("Fcntl failed (%s).", strerror(errno));
+			close(sock);
+			return -1;
 		}
 
 		/* we're done, network connection established */
@@ -980,8 +987,8 @@ struct nc_session* _nc_session_accept(const struct nc_cpblts* capabilities, cons
 		return (NULL);
 	}
 
-	/* monitor the session */
-	if (nc_session_monitor(retval) != EXIT_SUCCESS) {
+	/* monitor the session if on */
+	if ((nc_init_flags & NC_INIT_MONITORING) && nc_session_monitor(retval) != EXIT_SUCCESS) {
 		return (NULL);
 	}
 
@@ -1371,7 +1378,7 @@ API struct nc_session *nc_callhome_accept(const char *username, const struct nc_
 	socklen_t addr_size = sizeof(remote);
 	char port[SHORT_INT_LENGTH];
 	char host[INET6_ADDRSTRLEN];
-	int status, i;
+	int status, i, flags;
 	NC_TRANSPORT *transport_proto;
 
 	pthread_once(&transproto_key_once, transproto_init);
@@ -1429,6 +1436,12 @@ netconf_connect:
 	if (sock == -1) {
 		ERROR("Accepting call home failed (%s)", strerror(errno));
 		return (NULL);
+	}
+	/* make the socket non-blocking */
+	if (((flags = fcntl(sock, F_GETFL)) == -1) || (fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1)) {
+		ERROR("Fcntl failed (%s).", strerror(errno));
+		close(sock);
+		return NULL;
 	}
 
 	port[0] = '\0';

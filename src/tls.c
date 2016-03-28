@@ -338,7 +338,10 @@ struct nc_session *nc_session_connect_tls_socket(const char* username, const cha
 	SSL_set_mode(retval->tls, SSL_MODE_AUTO_RETRY);
 
 	/* connect and perform the handshake */
-	if (SSL_connect(retval->tls) != 1) {
+	while (((r = SSL_connect(retval->tls)) == -1) && (SSL_get_error(retval->tls, r) == SSL_ERROR_WANT_READ)) {
+		usleep(NC_READ_SLEEP);
+	}
+	if (r != 1) {
 		ERROR("Connecting over TLS failed (%s).", ERR_reason_error_string(ERR_get_error()));
 		SSL_free(retval->tls);
 		free(retval->stats);

@@ -651,6 +651,8 @@ HDRS_PUBL_SUBDIR_NOTIFICATIONS
 SETGROUP
 SETUSER
 SETBIT
+NCNTF_STREAMS_PATH
+NC_SESSIONFILE_PATH
 NC_WORKINGDIR_PATH
 DISTRO
 PROVIDES
@@ -714,6 +716,7 @@ SSH_PROG
 UNAME
 PYTHON
 LIBSSH_DIRECTIVE
+READ_TIMEOUT
 XSLT_CONFIG
 LIBXML2_LIBS
 XML2_CONFIG
@@ -787,6 +790,8 @@ enable_validation
 enable_debug
 enable_debug_threads
 with_workingdir
+with_sessionfiledir
+with_streamsdir
 with_suid
 with_sgid
 with_nacm_recovery_uid
@@ -802,6 +807,7 @@ enable_libtool_lock
       ac_precious_vars='build_alias
 host_alias
 target_alias
+READ_TIMEOUT
 CC
 CFLAGS
 LDFLAGS
@@ -1451,6 +1457,11 @@ Optional Packages:
   --with-libxslt          specific libxslt location
   --with-workingdir=path  Path to a working directory of libnetconf, the
                           default value is /var/lib/libnetconf/
+  --with-sessionfiledir=path
+                          Path to a session file directory of libnetconf, the
+                          default value is inside libnetconf working directory
+  --with-streamsdir=path  Path to the events streams, the default value is
+                          streams subdirectory of libnetconf working directory
   --with-suid=user        When creating files or directories using libnetconf,
                           rely on the SUID bit set and change their ownership
                           to the specified user
@@ -1470,6 +1481,8 @@ Optional Packages:
                         (or the compiler's sysroot if not specified).
 
 Some influential environment variables:
+  READ_TIMEOUT
+              Timeout for reading a complete NETCONF message in seconds
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -2988,6 +3001,11 @@ fi
 fi
 
 
+
+if test -z "$READ_TIMEOUT"; then
+    READ_TIMEOUT=30
+fi
+
 # Check whether --enable-libssh was given.
 if test "${enable_libssh+set}" = set; then :
   enableval=$enable_libssh; if test "$enableval" = "no"; then
@@ -3156,6 +3174,28 @@ fi
 if test "${with_workingdir+set}" = set; then :
   withval=$with_workingdir; NC_WORKINGDIR_PATH="$withval"
 	CONFIGURE_PARAMS="--with-workingdir=$withval $CONFIGURE_PARAMS"
+
+fi
+
+
+# Check whether --with-sessionfiledir was given.
+if test "${with_sessionfiledir+set}" = set; then :
+  withval=$with_sessionfiledir; NC_SESSIONFILE_PATH="$withval"
+	CONFIGURE_PARAMS="--with-sessionfiledir=$withval $CONFIGURE_PARAMS"
+
+else
+  NC_SESSIONFILE_PATH="$NC_WORKINGDIR_PATH"
+
+fi
+
+
+# Check whether --with-streamsdir was given.
+if test "${with_streamsdir+set}" = set; then :
+  withval=$with_streamsdir; NCNTF_STREAMS_PATH="$withval"
+	CONFIGURE_PARAMS="--with-streamsdir=$withval $CONFIGURE_PARAMS"
+
+else
+  NCNTF_STREAMS_PATH="$NC_WORKINGDIR_PATH/streams/"
 
 fi
 
@@ -14075,6 +14115,9 @@ fi
 
 
 ############################### Set output #####################################
+
+
+
 
 
 

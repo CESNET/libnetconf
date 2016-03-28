@@ -159,6 +159,11 @@
  */
 #define NC_CONTENT_FORMATTED 1
 
+/**
+ * Sleep time in microseconds to wait between unsuccessful reading due to EAGAIN or EWOULDBLOCK
+ */
+#define NC_READ_SLEEP 100
+
 /*
  * global settings for options passed to xmlRead* functions
  */
@@ -173,12 +178,14 @@
 /*
  * libnetconf paths
  */
-#ifdef NC_WORKINGDIR_PATH
-#  define SESSIONSFILE_PATH  NC_WORKINGDIR_PATH"/libnetconf_sessions.bin"
-#  define NCNTF_STREAMS_PATH NC_WORKINGDIR_PATH"/streams/"
+#ifndef NCNTF_STREAMS_PATH
+#  error "NCNTF_STREAMS_PATH not defined, something bad happened to Makefile"
+#endif
+
+#ifdef NC_SESSIONFILE_PATH
+#  define NC_SESSIONSFILE  NC_SESSIONFILE_PATH"/libnetconf_sessions.bin"
 #else
-#  define SESSIONSFILE_PATH  "/tmp/libnetconf_sessions.bin"
-#  define NCNTF_STREAMS_PATH "/tmp/streams/"
+#  error "SESSIONSFILE_PATH not defined, something bad happened to Makefile"
 #endif
 
 /*

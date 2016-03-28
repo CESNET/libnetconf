@@ -2036,10 +2036,10 @@ static int edit_merge_lists(xmlNodePtr merged_node, xmlNodePtr edit_node, xmlDoc
 						}
 						if (refnode != NULL) {
 							/* relink th node before the currently first instance of the list */
-							xmlAddPrevSibling(refnode, xmlCopyNode(merged_node, 1));
+							xmlAddPrevSibling(refnode, merged_node);
 						} else {
 							/* re-link the node as last node since there is currently no instance of the list */
-							xmlAddChild(parent, xmlCopyNode(merged_node, 1));
+							xmlAddChild(parent, merged_node);
 						}
 					} else {
 						/* it is not a list, so simply place it as the first child */

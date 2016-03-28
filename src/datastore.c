@@ -50,6 +50,7 @@
 #include <dlfcn.h>
 #include <dirent.h>
 #include <stdio.h>
+#include <pthread.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -119,6 +120,7 @@ API char error_area;
 #define ERROR_POINTER ((void*)(&error_area))
 
 char* server_capabilities;
+pthread_spinlock_t server_cpblt_lock;
 
 struct ncds_ds_list {
 	struct ncds_ds *datastore;
@@ -335,6 +337,8 @@ int ncds_sysinit(int flags)
 			NC_WORKINGDIR_PATH"/ietf-netconf-acm-schematron.xsl" /* NACM Schematron XSL stylesheet */
 	};
 #endif
+
+	pthread_spin_init(&server_cpblt_lock, PTHREAD_PROCESS_SHARED);
 
 	internal_ds_count = 0;
 	for (i = 0; i < INTERNAL_DS_COUNT; i++) {
@@ -683,9 +687,8 @@ static int fmon_backup_file(const char* source)
 
 	assert(source);
 
-	if (asprintf(&target, "%s.netconf", source) != 0) {
-	   free(target);
-	   return 1;
+	if (asprintf(&target, "%s.netconf", source) == -1) {
+		return 1;
 	}
 	ret = fmon_cp_file(source, target, 0);
 	free(target);
@@ -1570,6 +1573,7 @@ static char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(
 	}
 
 	/* get it all together */
+	pthread_spin_lock(&server_cpblt_lock);
 	if (asprintf(&retval, "<netconf-state xmlns=\"%s\">%s%s%s%s%s</netconf-state>", NC_NS_MONITORING,
 			(server_capabilities != NULL) ? server_capabilities : "",
 			(ds_stats != NULL) ? ds_stats : "",
@@ -1579,6 +1583,7 @@ static char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(
 		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 		retval = NULL;
 	}
+	pthread_spin_unlock(&server_cpblt_lock);
 	if (retval == NULL) {
 		retval = strdup("");
 	}
@@ -3756,11 +3761,9 @@ static int ncds_update_callbacks(struct ncds_ds* ds)
 static void transapi_unload(struct transapi_internal* tapi)
 {
 	/* stop the thread monitoring the files */
-	if (tapi->file_clbks != NULL && tapi->file_clbks->callbacks_count > 0) {
+	if (tapi->file_clbks != NULL && tapi->file_clbks->callbacks_count > 0 && tapi->fmon_thread != 0) {
 		VERB("Stopping FMON thread.");
-		pthread_cancel(tapi->fmon_thread);
-		usleep(5000);
-		if (pthread_kill(tapi->fmon_thread, 0) != 0) {
+		if (pthread_kill(tapi->fmon_thread, 9) != 0) {
 			/* sleep some more */
 			usleep(50000);
 		}
@@ -4669,6 +4672,8 @@ void ncds_cleanall()
 	struct model_list *listitem, *listnext;
 	int i;
 
+	pthread_spin_destroy(&server_cpblt_lock);
+
 	ds_item = ncds.datastores;
 	while (ds_item != NULL) {
 		dsnext = ds_item->next;
@@ -5025,7 +5030,7 @@ static int ncxml_subtree_filter(xmlNodePtr config, xmlNodePtr filter, keyList ke
 
 		/* try to find required node */
 		config_node = config;
-		while (config_node) {
+		while (config_node && config_node->children) {
 			if (!strcmp((char *) filter_node->name, (char *) config_node->name) &&
 					!nc_nscmp(filter_node, config_node) &&
 					!attrcmp(filter_node, config_node)) {
@@ -5410,7 +5415,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 	free(new_data);
 
 	/* add default values */
-	ncdflt_default_values(new, ds->ext_model, NCWD_MODE_ALL_TAGGED);
+	ncdflt_default_values(new, ds->ext_model, NCWD_MODE_IMPL_TAGGED);
 
 	if (new == NULL ) { /* cannot get or parse data */
 		e = nc_err_new(NC_ERR_OP_FAILED);
@@ -5429,7 +5434,7 @@ static nc_reply* ncds_apply_transapi(struct ncds_ds* ds, const struct nc_session
 		}
 
 		/* add default values */
-		ncdflt_default_values(old, ds->ext_model, NCWD_MODE_ALL_TAGGED);
+		ncdflt_default_values(old, ds->ext_model, NCWD_MODE_IMPL_TAGGED);
 
 		/* perform TransAPI transactions */
 		ret = transapi_running_changed(ds, old, new, erropt, &e);
@@ -6502,7 +6507,10 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 		erropt = nc_rpc_get_erropt(rpc);
 		break;
 	case NC_OP_GET:
-		server_capabilities = serialize_cpblts(session->capabilities);
+		data = serialize_cpblts(session->capabilities);
+		pthread_spin_lock(&server_cpblt_lock);
+		server_capabilities = data;
+		pthread_spin_unlock(&server_cpblt_lock);
 		/* no break */
 	case NC_OP_GETCONFIG:
 		shared_filter = nc_rpc_get_filter(rpc);
@@ -6533,8 +6541,10 @@ API nc_reply* ncds_apply_rpc2all(struct nc_session* session, const nc_rpc* rpc, 
 			if ((new_reply = nc_reply_merge(2, old_reply, reply)) == NULL) {
 				nc_filter_free(shared_filter);
 				shared_filter = NULL;
+				pthread_spin_lock(&server_cpblt_lock);
 				free(server_capabilities);
 				server_capabilities = NULL;
+				pthread_spin_unlock(&server_cpblt_lock);
 
 				if (nc_reply_get_type(old_reply) == NC_REPLY_ERROR) {
 					return (old_reply);
@@ -6608,8 +6618,10 @@ cleanup:
 	nc_filter_free(shared_filter);
 	shared_filter = NULL;
 
+	pthread_spin_lock(&server_cpblt_lock);
 	free(server_capabilities);
 	server_capabilities = NULL;
+	pthread_spin_unlock(&server_cpblt_lock);
 
 	return (reply);
 }
