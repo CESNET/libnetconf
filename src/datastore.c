@@ -3058,15 +3058,37 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 			switch (type) {
 			case 1: /* augment */
 
+				//we must add the attributes to the candidate node before comparing
+				node = xmlCopyNode(nodes->nodesetval->nodeTab[i], 1);
+				ns = xmlNewNs(node, BAD_CAST "libnetconf", BAD_CAST "libnetconf");
+				xmlSetNsProp(node, ns, BAD_CAST "module", BAD_CAST model_name);
+				xmlSetNsProp(node, ns, BAD_CAST "ns", BAD_CAST model_ns);
+
 				/* check whether this augment was not already resolved */
 				for (node_aux = path_node->children; node_aux != NULL; node_aux = node_aux->next) {
 					if (xmlStrcmp(node_aux->name, BAD_CAST "augment") == 0) {
 						resolved_path = (char*) xmlGetProp (node_aux, BAD_CAST "target-node");
 						resolved_ns = (char*) xmlGetNsProp (node_aux, BAD_CAST "ns", BAD_CAST "libnetconf");
 						if (strcmp(to_resolve_path, resolved_path) == 0 && strcmp(model_ns, resolved_ns) == 0) {
-							free(resolved_path);
-							free(resolved_ns);
-							break;
+							xmlBufferPtr content1 = xmlBufferCreate(), content2 = xmlBufferCreate();
+
+							//The same module can have multiple augment statetements of the same node.
+							//The only way to check if it has already been processed is to check the contents.
+							if (content1 && content2)
+							{
+								xmlNodeDump(content1, node_aux->doc, node_aux, 0, 0);
+								xmlNodeDump(content2, node->doc,	 node, 0, 0);
+								if (xmlStrcmp(xmlBufferContent(content1), xmlBufferContent(content2)) == 0) {
+									xmlBufferFree(content1);
+									xmlBufferFree(content2);
+									free(resolved_path);
+									free(resolved_ns);
+									break;
+								}
+							}
+
+							xmlBufferFree(content1);
+							xmlBufferFree(content2);
 						}
 						free(resolved_path);
 						free(resolved_ns);
@@ -3074,14 +3096,13 @@ static int _update_model(int type, xmlXPathContextPtr model_ctxt, const char* mo
 				}
 
 				if (node_aux != NULL) {
-					/* already resolved */
+					/* already resolved, discard the copy node */
+					xmlUnlinkNode(node);
+					xmlFreeNode(node);
 					break;
 				}
 
-				xmlAddChild(path_node, node = xmlCopyNode(nodes->nodesetval->nodeTab[i], 1));
-				ns = xmlNewNs(node, BAD_CAST "libnetconf", BAD_CAST "libnetconf");
-				xmlSetNsProp(node, ns, BAD_CAST "module", BAD_CAST model_name);
-				xmlSetNsProp(node, ns, BAD_CAST "ns", BAD_CAST model_ns);
+				xmlAddChild(path_node, node);
 
 				/*
 				 * if the model is connected with the transAPI module, add it to the
