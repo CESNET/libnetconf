@@ -860,6 +860,7 @@ API char* nc_rpc_get_op_content(const nc_rpc* rpc)
 			for (i = 0; i < result->nodesetval->nodeNr; i++) {
 				if ((node = xmlDocCopyNode(result->nodesetval->nodeTab[i], aux_doc, 1)) != NULL) {
 					xmlNodeDump(buffer, aux_doc, node, 1, 1);
+					xmlFreeNode(node);
 				}
 			}
 			retval = strdup((char *) xmlBufferContent(buffer));
