@@ -145,7 +145,7 @@ struct nc_session *nc_session_connect_libssh_socket(const char* username, const 
 	pthread_mutexattr_t mattr;
 	int i, j, r, ret_auth, userauthlist;
 	int auth = 0;
-	const int timeout = SSH_TIMEOUT;
+	const long timeout = SSH_TIMEOUT;
 	const char* prompt;
 	char *s, *answer, echo;
 	ssh_key pubkey, privkey;
