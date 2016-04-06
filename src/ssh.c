@@ -136,7 +136,12 @@ struct nc_session* _nc_session_accept(const struct nc_cpblts*, const char*, int,
 
 API struct nc_session *nc_session_accept_libssh_channel(const struct nc_cpblts* capabilities, const char* username, ssh_channel ssh_chan)
 {
-	return (_nc_session_accept(capabilities, username, -1, -1, ssh_chan, NULL));
+	int fd;
+
+	/* we can set fd_input and fd_output too, they are checked after ssh_chan, so the transport will be detected correctly */
+	fd = ssh_get_fd(ssh_channel_get_session(ssh_chan));
+
+	return (_nc_session_accept(capabilities, username, fd, fd, ssh_chan, NULL));
 }
 
 struct nc_session *nc_session_connect_libssh_socket(const char* username, const char* host, int sock, ssh_session ssh_sess)
