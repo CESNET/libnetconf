@@ -297,7 +297,10 @@ rpm: tarball $(TARBALLPYAPI)
 	fi
 
 .PHONY: install
-install: all install-devel install-doc $(INSTALLPYAPI)
+install: all install-bin install-devel install-doc $(INSTALLPYAPI)
+
+.PHONY: install-bin
+install-bin:
 	$(INSTALL) -m 775 -d $(DESTDIR)/$(libdir)
 	$(LIBTOOL) --mode=install cp $(NAME).la $(DESTDIR)/$(libdir)
 	$(LIBTOOL) --mode=finish $(DESTDIR)/$(libdir)
