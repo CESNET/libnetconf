@@ -65,9 +65,9 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d3/d7a/netconf_8h.html#gga5852fd110198481afb37cc8dcf0bf454a37dd969ad73f6ac990785d9802672946",
-"d9/db6/datastore_8h.html#ga69009c5985f9eec3a6920f98a6a1a5e6",
-"db/d67/group__store.html#gab0f0cbd5268577ec36fc76cf89c72a8f"
+"d3/d7a/netconf_8h.html#gga4088fac1dd592062b27ff5b0e1708d00ab9542d7955d9821f23b5909f3dbec7bb",
+"d9/db6/datastore_8h.html#ga4777c16043f5856c5a65bcd20b5ecc31",
+"db/d67/group__store.html#ga93c65facb061f1048674343ac94a993b"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
@@ -180,7 +180,7 @@ function createIndent(o,domNode,node,level)
     span.style.display = 'inline-block';
     span.style.width   = 16*(level+1)+'px';
     span.style.height  = '22px';
-    span.innerHTML = '&nbsp;';
+    span.innerHTML = '&#160;';
     domNode.appendChild(span);
   } 
 }

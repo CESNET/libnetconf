@@ -1,5 +1,5 @@
 <map id="src/with_defaults.h" name="src/with_defaults.h">
-<area shape="rect" id="node3" href="$d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="48,229,121,256"/>
-<area shape="rect" id="node9" href="$d5/d48/messages_8h.html" title="Functions to create NETCONF messages. " alt="" coords="88,80,184,107"/>
-<area shape="rect" id="node14" href="$da/d41/error_8h.html" title="NETCONF error handling functions. " alt="" coords="205,155,264,181"/>
+<area shape="rect" id="node2" href="$d3/d7a/netconf_8h.html" title="libnetconf&#39;s general public functions and structures definitions. " alt="" coords="49,229,123,256"/>
+<area shape="rect" id="node5" href="$d5/d48/messages_8h.html" title="Functions to create NETCONF messages. " alt="" coords="89,80,185,107"/>
+<area shape="rect" id="node7" href="$da/d41/error_8h.html" title="NETCONF error handling functions. " alt="" coords="205,155,265,181"/>
 </map>

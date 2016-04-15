@@ -6,7 +6,8 @@ var group__withdefaults =
       [ "NCWD_MODE_ALL", "d1/df7/group__withdefaults.html#gga3d13afb72bb0c0098f47e8b612cdeb81a8b422cc5bcfa0ddd20d52ec6e71362db", null ],
       [ "NCWD_MODE_TRIM", "d1/df7/group__withdefaults.html#gga3d13afb72bb0c0098f47e8b612cdeb81af84df646ebc7d47ea9fd3ea0827f59b3", null ],
       [ "NCWD_MODE_EXPLICIT", "d1/df7/group__withdefaults.html#gga3d13afb72bb0c0098f47e8b612cdeb81acf0be9f54f89bf4321478fb9030e4f8c", null ],
-      [ "NCWD_MODE_ALL_TAGGED", "d1/df7/group__withdefaults.html#gga3d13afb72bb0c0098f47e8b612cdeb81a0bd005f27bf5b0dd51aa8d61656f8089", null ]
+      [ "NCWD_MODE_ALL_TAGGED", "d1/df7/group__withdefaults.html#gga3d13afb72bb0c0098f47e8b612cdeb81a0bd005f27bf5b0dd51aa8d61656f8089", null ],
+      [ "NCWD_MODE_IMPL_TAGGED", "d1/df7/group__withdefaults.html#gga3d13afb72bb0c0098f47e8b612cdeb81a71301866f9b42d401814739a1f312d04", null ]
     ] ],
     [ "ncdflt_get_basic_mode", "d1/df7/group__withdefaults.html#gab8fcb8a41ad1124d34d59e31166a3d24", null ],
     [ "ncdflt_get_supported", "d1/df7/group__withdefaults.html#ga607415761ceb4c832a334e898f1ad8a6", null ],

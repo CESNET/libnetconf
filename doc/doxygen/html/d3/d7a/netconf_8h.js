@@ -152,7 +152,8 @@ var netconf_8h =
       [ "NCWD_MODE_ALL", "d3/d7a/netconf_8h.html#gga3d13afb72bb0c0098f47e8b612cdeb81a8b422cc5bcfa0ddd20d52ec6e71362db", null ],
       [ "NCWD_MODE_TRIM", "d3/d7a/netconf_8h.html#gga3d13afb72bb0c0098f47e8b612cdeb81af84df646ebc7d47ea9fd3ea0827f59b3", null ],
       [ "NCWD_MODE_EXPLICIT", "d3/d7a/netconf_8h.html#gga3d13afb72bb0c0098f47e8b612cdeb81acf0be9f54f89bf4321478fb9030e4f8c", null ],
-      [ "NCWD_MODE_ALL_TAGGED", "d3/d7a/netconf_8h.html#gga3d13afb72bb0c0098f47e8b612cdeb81a0bd005f27bf5b0dd51aa8d61656f8089", null ]
+      [ "NCWD_MODE_ALL_TAGGED", "d3/d7a/netconf_8h.html#gga3d13afb72bb0c0098f47e8b612cdeb81a0bd005f27bf5b0dd51aa8d61656f8089", null ],
+      [ "NCWD_MODE_IMPL_TAGGED", "d3/d7a/netconf_8h.html#gga3d13afb72bb0c0098f47e8b612cdeb81a71301866f9b42d401814739a1f312d04", null ]
     ] ],
     [ "nc_close", "d3/d7a/netconf_8h.html#gaaf2f5bf5a58103d9e4ea1cbe4291094b", null ],
     [ "nc_datetime2time", "d3/d7a/netconf_8h.html#ga4dfd796fda30d3ad8588b4c30c4c1583", null ],

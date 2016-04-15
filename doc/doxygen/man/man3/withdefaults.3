@@ -1,4 +1,4 @@
-.TH "With-defaults capability" 3 "Thu Nov 12 2015" "Version 0.10.0-76_trunk" "libnetconf" \" -*- nroff -*-
+.TH "With-defaults capability" 3 "Fri Apr 15 2016" "Version 0.10.0-146_trunk" "libnetconf" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -18,7 +18,7 @@ libnetconf's settings for NETCONF :with-defaults capability as defined in RFC 62
 
 .in +1c
 .ti -1c
-.RI "enum \fBNCWD_MODE\fP { \fBNCWD_MODE_NOTSET\fP = 0, \fBNCWD_MODE_ALL\fP = 1, \fBNCWD_MODE_TRIM\fP = 2, \fBNCWD_MODE_EXPLICIT\fP = 4, \fBNCWD_MODE_ALL_TAGGED\fP = 8 }"
+.RI "enum \fBNCWD_MODE\fP { \fBNCWD_MODE_NOTSET\fP = 0, \fBNCWD_MODE_ALL\fP = 1, \fBNCWD_MODE_TRIM\fP = 2, \fBNCWD_MODE_EXPLICIT\fP = 4, \fBNCWD_MODE_ALL_TAGGED\fP = 8, \fBNCWD_MODE_IMPL_TAGGED\fP = 16 }"
 .br
 .RI "\fIEnumeration of <with-defaults> element values\&. \fP"
 .in -1c
@@ -81,6 +81,9 @@ explicit mode (RFC 6243, sec\&. 3\&.3)
 .TP
 \fB\fINCWD_MODE_ALL_TAGGED \fP\fP
 report-all-tagged mode (RFC 6243, sec\&. 3\&.4) 
+.TP
+\fB\fINCWD_MODE_IMPL_TAGGED \fP\fP
+non-standard mode, tags are added only to implicit default nodes 
 .SH "Function Documentation"
 .PP 
 .SS "\fBNCWD_MODE\fP ncdflt_get_basic_mode (void)"
