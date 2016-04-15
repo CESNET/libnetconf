@@ -1474,8 +1474,10 @@ static char* get_state_monitoring(const char* UNUSED(model), const char* UNUSED(
 	 */
 	/* find non-empty datastore implementation */
 	for (ds = ncds.datastores; ds != NULL ; ds = ds->next) {
-		if (ds->datastore && ds->datastore->type == NCDS_TYPE_FILE) {
-			break;
+		if (ds->datastore && ds->datastore->type != NCDS_TYPE_EMPTY) {
+			if (ds->datastore->func.get_lockinfo) {
+				break;
+			}
 		}
 	}
 
