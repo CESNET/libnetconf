@@ -800,12 +800,13 @@ API int nc_cpblts_add(struct nc_cpblts* capabilities, const char* capability_str
 	s = strdup(capability_string);
 	if ((p = strchr(s, '?')) != NULL) {
 		/* in following comparison, ignore capability's parameters */
-		*p = 0;
+		len = p - 1 - s; /* p points after the string to compare, therefore subtract 1 */
+	} else {
+		len = strlen(s);
 	}
 
 	/* find duplicities */
 	for (i = 0; i < capabilities->items; i++) {
-		len = strlen(s);
 		if (!strncmp(capabilities->list[i], s, len) &&
 				(capabilities->list[i][len] == '?' || capabilities->list[i][len] == '\0')) {
 			/* capability is already in the capabilities list, but
@@ -813,16 +814,9 @@ API int nc_cpblts_add(struct nc_cpblts* capabilities, const char* capability_str
 			 * with the new one
 			 */
 			free(capabilities->list[i]);
-			if (p != NULL) {
-				*p = '?';
-			}
 			capabilities->list[i] = s;
 			return (EXIT_SUCCESS);
 		}
-	}
-	/* unhide capability's parameters */
-	if (p != NULL) {
-		*p = '?';
 	}
 
 	/* check size of the capabilities list */
