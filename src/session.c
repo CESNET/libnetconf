@@ -789,6 +789,7 @@ API struct nc_cpblts* nc_cpblts_new(const char* const list[])
 API int nc_cpblts_add(struct nc_cpblts* capabilities, const char* capability_string)
 {
 	int i;
+	size_t len;
 	char *s, *p = NULL;
 
 	if (capabilities == NULL || capability_string == NULL) {
@@ -804,7 +805,9 @@ API int nc_cpblts_add(struct nc_cpblts* capabilities, const char* capability_str
 
 	/* find duplicities */
 	for (i = 0; i < capabilities->items; i++) {
-		if (strncmp(capabilities->list[i], s, strlen(s)) == 0) {
+		len = strlen(s);
+		if (!strncmp(capabilities->list[i], s, len) &&
+				(capabilities->list[i][len] == '?' || capabilities->list[i][len] == '\0')) {
 			/* capability is already in the capabilities list, but
 			 * parameters can differ, so substitute the current instance
 			 * with the new one
