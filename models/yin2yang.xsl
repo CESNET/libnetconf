@@ -115,4 +115,7 @@
 </xsl:text>
 </xsl:template>
 
+<!-- skip complete subtree of unknown nodes -->
+<xsl:template match="*"/>
+
 </xsl:stylesheet>
