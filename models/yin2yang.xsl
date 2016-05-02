@@ -26,27 +26,28 @@
 <xsl:template match="yin:*[@name]|yin:*[@value]|yin:*[@date]|yin:*[@condition]|yin:*[@module]|yin:*[@target-node]|yin:*[@tag]">
   <xsl:param name="pLevel" select="0"/>
   <xsl:call-template name="indent"><xsl:with-param name="count" select="$pLevel"/></xsl:call-template>
+  <xsl:value-of select="local-name(.)" />
   <xsl:choose>
     <xsl:when test="@name">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@name"/><xsl:text>"</xsl:text>
+      <xsl:text> "</xsl:text><xsl:value-of select="@name"/><xsl:text>"</xsl:text>
     </xsl:when>
     <xsl:when test="@value">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@value"/><xsl:text>"</xsl:text>
+      <xsl:text> "</xsl:text><xsl:value-of select="@value"/><xsl:text>"</xsl:text>
     </xsl:when>
     <xsl:when test="@date">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@date"/><xsl:text>"</xsl:text>
+      <xsl:text> "</xsl:text><xsl:value-of select="@date"/><xsl:text>"</xsl:text>
     </xsl:when>
     <xsl:when test="@condition">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@condition"/><xsl:text>"</xsl:text>
+      <xsl:text> "</xsl:text><xsl:value-of select="@condition"/><xsl:text>"</xsl:text>
     </xsl:when>
     <xsl:when test="@module">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@module"/><xsl:text>"</xsl:text>
+      <xsl:text> "</xsl:text><xsl:value-of select="@module"/><xsl:text>"</xsl:text>
     </xsl:when>
     <xsl:when test="@target-node">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@target-node"/><xsl:text>"</xsl:text>
+      <xsl:text> "</xsl:text><xsl:value-of select="@target-node"/><xsl:text>"</xsl:text>
     </xsl:when>
     <xsl:when test="@tag">
-      <xsl:value-of select="local-name(.)" /><xsl:text> "</xsl:text><xsl:value-of select="@tag"/><xsl:text>"</xsl:text>
+      <xsl:text> "</xsl:text><xsl:value-of select="@tag"/><xsl:text>"</xsl:text>
     </xsl:when>
   </xsl:choose>
 
