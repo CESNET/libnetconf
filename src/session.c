@@ -3002,6 +3002,8 @@ API NC_MSG_TYPE nc_session_send_recv(struct nc_session* session, nc_rpc *rpc, nc
 					for (msg = queue; msg->next != NULL; msg = msg->next);
 					msg->next = (struct nc_msg*) (*reply);
 				}
+				/*The message is now owned by the queue, do not return it to the caller*/
+				*reply = NULL;
 				DBG_UNLOCK("mut_mqueue");
 				pthread_mutex_unlock(&(session->mut_mqueue));
 			} else {
