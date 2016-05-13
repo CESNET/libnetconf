@@ -800,7 +800,7 @@ API int nc_cpblts_add(struct nc_cpblts* capabilities, const char* capability_str
 	s = strdup(capability_string);
 	if ((p = strchr(s, '?')) != NULL) {
 		/* in following comparison, ignore capability's parameters */
-		len = p - 1 - s; /* p points after the string to compare, therefore subtract 1 */
+		len = p - s;
 	} else {
 		len = strlen(s);
 	}
