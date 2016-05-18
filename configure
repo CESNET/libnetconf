@@ -715,6 +715,7 @@ DOXYGEN
 SSH_PROG
 UNAME
 PYTHON
+NCNTF_REPLAY_ENABLED
 LIBSSH_DIRECTIVE
 READ_TIMEOUT
 XSLT_CONFIG
@@ -781,6 +782,7 @@ with_rpm
 with_libxml2
 with_libxslt
 enable_libssh
+enable_ncntf_replay
 enable_tls
 enable_dnssec
 enable_yang_schemas
@@ -1433,6 +1435,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-libssh        Use ssh client program instead of libssh.
+  --disable-ncntf-replay  Disable NETCONF Notifications replay.
   --enable-tls            Enable support for NETCONF over TLS using OpenSSL.
   --enable-dnssec         Enable support for SSHFP retrieval using DNSSEC for
                           SSH.
@@ -3021,6 +3024,23 @@ if test "${enable_libssh+set}" = set; then :
 else
   # use libssh by default
 	libssh="yes"
+
+fi
+
+
+
+# Check whether --enable-ncntf-replay was given.
+if test "${enable_ncntf_replay+set}" = set; then :
+  enableval=$enable_ncntf_replay; if test "$enableval" = "no"; then
+		NCNTF_REPLAY_ENABLED="0x00"
+		CONFIGURE_PARAMS="--disable-nctnf-replay $CONFIGURE_PARAMS"
+	else
+		NCNTF_REPLAY_ENABLED="0xff"
+	fi
+
+else
+  # enable Notifications replay by default
+	NCNTF_REPLAY_ENABLED="0xff"
 
 fi
 

@@ -55,6 +55,11 @@
 #endif /* not DISABLE_LIBSSH */
 
 /*
+ * Notifications
+ */
+#define NCNTF_REPLAY_ENABLED @NCNTF_REPLAY_ENABLED@
+
+/*
  * NACM
  */
 #define NACM_RECOVERY_UID @NACM_RECOVERY_UID@

@@ -286,8 +286,9 @@ static xmlDocPtr streams_to_xml(void)
 		node_stream = xmlAddChild(node_streams, xmlNewNode(NULL, BAD_CAST "stream"));
 		xmlNewChild(node_stream, NULL, BAD_CAST "name", BAD_CAST s->name);
 		xmlNewChild(node_stream, NULL, BAD_CAST "description", BAD_CAST s->desc);
-		xmlNewChild(node_stream, NULL, BAD_CAST "replaySupport", (s->replay == 1) ? BAD_CAST "true" : BAD_CAST "false");
-		if (s->replay == 1) {
+		xmlNewChild(node_stream, NULL, BAD_CAST "replaySupport",
+				    (s->replay & NCNTF_REPLAY_ENABLED) ? BAD_CAST "true" : BAD_CAST "false");
+		if (s->replay & NCNTF_REPLAY_ENABLED) {
 			time = nc_time2datetime(s->created, NULL);
 			xmlNewChild(node_stream, NULL, BAD_CAST "replayLogCreationTime", BAD_CAST time);
 			free (time);
@@ -1124,7 +1125,7 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		 * 2) stream has a replay option allowed
 		 * 3) there are still some data to be read from the stream file
 		 */
-		if ((start != -1) && (s->replay == 1) && (*replay_end != 0)) {
+		if ((start != -1) && (s->replay & NCNTF_REPLAY_ENABLED) && (*replay_end != 0)) {
 			/* replay part */
 			if (str_off->cur_offset >= *replay_end) {
 				/* we are getting out of replay */
@@ -1340,7 +1341,7 @@ static int ncntf_event_store(time_t etime, const char* content)
 	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
 	for (s = streams; s != NULL; s = s->next) {
-		if (s->replay == 0) {
+		if (!(s->replay & NCNTF_REPLAY_ENABLED)) {
 			continue;
 		}
 
