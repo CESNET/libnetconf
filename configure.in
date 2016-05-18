@@ -150,20 +150,6 @@ AC_ARG_ENABLE([libssh],
 )
 AC_SUBST(LIBSSH_DIRECTIVE)
 
-AC_ARG_ENABLE([ncntf-replay],
-	AC_HELP_STRING([--disable-ncntf-replay], [Disable NETCONF Notifications replay.]),
-	if test "$enableval" = "no"; then
-		NCNTF_REPLAY_ENABLED="0x00"
-		CONFIGURE_PARAMS="--disable-nctnf-replay $CONFIGURE_PARAMS"
-	else
-		NCNTF_REPLAY_ENABLED="0xff"
-	fi
-	,
-	# enable Notifications replay by default
-	NCNTF_REPLAY_ENABLED="0xff"
-)
-AC_SUBST(NCNTF_REPLAY_ENABLED)
-
 tls="no"
 AC_ARG_ENABLE([tls],
 	AC_HELP_STRING([--enable-tls], [Enable support for NETCONF over TLS using OpenSSL.]),
