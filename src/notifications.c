@@ -2235,6 +2235,7 @@ API nc_reply* ncntf_subscription_check(const nc_rpc* subscribe_rpc)
 	char *stream = NULL, *auxs = NULL;
 	struct nc_filter *filter = NULL;
 	time_t start, stop;
+	struct stream *s;
 
 	if (subscribe_rpc == NULL || nc_rpc_get_op(subscribe_rpc) != NC_OP_CREATESUBSCRIPTION) {
 		return (nc_reply_error(nc_err_new(NC_ERR_INVALID_VALUE)));
@@ -2266,7 +2267,7 @@ API nc_reply* ncntf_subscription_check(const nc_rpc* subscribe_rpc)
 	/* check existence of the stream */
 	DBG_LOCK("stream_mut");
 	pthread_mutex_lock(streams_mut);
-	if (ncntf_stream_get(stream) == NULL) {
+	if ((s = ncntf_stream_get(stream)) == NULL) {
 		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		e = nc_err_new(NC_ERR_INVALID_VALUE);
@@ -2297,6 +2298,13 @@ API nc_reply* ncntf_subscription_check(const nc_rpc* subscribe_rpc)
 		e = nc_err_new(NC_ERR_BAD_ELEM);
 		nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
 		nc_err_set(e, NC_ERR_PARAM_INFO_BADELEM, "startTime");
+		goto cleanup;
+	}
+	if (start != -1 && !(s->replay & NCNTF_REPLAY_ENABLED)) {
+		e = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(e, NC_ERR_PARAM_TYPE, "protocol");
+		nc_err_set(e, NC_ERR_PARAM_MSG,
+				   "Replay feature requested on stream not supporting replay.");
 		goto cleanup;
 	}
 
