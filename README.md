@@ -16,15 +16,21 @@ information about NETCONF protocol can be found at [NETCONF WG]
 Monitoring and Configuration](https://www.liberouter.org/) department of
 [CESNET](http://www.ces.net/). Any testing of the library is welcome. Please
 inform us about your experiences with using **libnetconf** via the [issue tracker]
-(https://github.com/CESNET/libnetconf/issues). 
+(https://github.com/CESNET/libnetconf/issues).
 
 Based on our experiences with development **libnetconf**, we are currently
 working on next generation of this library based on [libyang]
-(https://github.com/CESNET/libyang) library.
+(https://github.com/CESNET/libyang) library. [libnetconf2](https://github.com/CESNET/libnetconf2)
+is already quite mature, but is still missing server-side notifications. Also,
+**libnetconf2** does not include NETCONF datastore implementation. So,
+if you either want to build a NECTONF client or a NETCONF server without notifications
+(for now) and with your own datastores, it is recommended to use **libnetconf2** instead
+**libnetconf**. Examples of applications build on **libnetconf2** are [netopeer2](https://github.com/CESNET/netopeer2)
+server and CLI.
 
 ## Documentation
 
-**libnetconf**'s API documentation including a description of its use is available 
+**libnetconf**'s API documentation including a description of its use is available
 [here](https://rawgit.com/CESNET/libnetconf/master/doc/doxygen/html/index.html) (Python API
 is available [here](https://rawgit.com/CESNET/libnetconf/master/doc/python/html/index.html)).
 
@@ -56,7 +62,7 @@ Informations about differencies to the previous version can be found in [RELEASE
 
 ## Interoperability
 
-In November 2012, prior to the IETF 85 meeting, **libnetconf** was one of the 
+In November 2012, prior to the IETF 85 meeting, **libnetconf** was one of the
 NETCONF protocol implementation participating in [NETCONF Interoperability Testing]
 (http://www.internetsociety.org/articles/successful-netconf-interoperability-testing-announced-ietf-85).
 
@@ -81,7 +87,7 @@ operator and in 2009 released as an open source project at GoogleCode.
 
 Further development led to splitting the original Netopeer applications and
 creating a separate library implementing NETCONF functionality. The **libnetconf**
-library was detached as a standalone project in 2012. For some time, the 
+library was detached as a standalone project in 2012. For some time, the
 [Netopeer server](https://www.liberouter.org/?page_id=827) was developed internally
 at CESNET to control specific CESNET devices.
 
