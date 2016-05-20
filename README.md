@@ -23,7 +23,7 @@ working on next generation of this library based on [libyang]
 (https://github.com/CESNET/libyang) library. [libnetconf2](https://github.com/CESNET/libnetconf2)
 is already quite mature, but is still missing server-side notifications. Also,
 **libnetconf2** does not include NETCONF datastore implementation. So,
-if you either want to build a NECTONF client or a NETCONF server without notifications
+if you either want to build a standard NETCONF client or a NETCONF server without notifications
 (for now) and with your own datastores, it is recommended to use **libnetconf2** instead
 **libnetconf**. Examples of applications build on **libnetconf2** are [netopeer2](https://github.com/CESNET/netopeer2)
 server and CLI.
