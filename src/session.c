@@ -1186,8 +1186,10 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 	if (session != NULL && session->status != NC_SESSION_STATUS_CLOSING && session->status != NC_SESSION_STATUS_CLOSED) {
 
 #ifndef DISABLE_NOTIFICATIONS
-		/* let notification receiving/sending function stop, if any */
-		ncntf_dispatch_stop(session);
+		if (!ncntf_dispatch) {
+			/* let notification receiving/sending function stop, if any */
+			ncntf_dispatch_stop(session);
+		}
 
 		/* log closing of the session */
 		if (sstatus != NC_SESSION_STATUS_DUMMY) {

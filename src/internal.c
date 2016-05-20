@@ -55,7 +55,9 @@
 #include <sys/ipc.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <grp.h>
+#include <pthread.h>
 #include <pwd.h>
 
 #ifdef POSIX_SHM
@@ -140,6 +142,60 @@ API void nc_verb_error(const char *format, ...)
 	va_start(argptr, format);
 	prv_vprintf(NC_VERB_ERROR, format, argptr);
 	va_end(argptr);
+}
+
+/*
+ * thread specific flag for notifications dispatch functions
+ */
+static pthread_key_t ncntf_dispatch_key;
+static pthread_once_t ncntf_dispatch_once = PTHREAD_ONCE_INIT;
+int ncntf_dispatch_main = 0;
+
+static void ncntf_dispatch_free(void *ptr)
+{
+#ifdef __linux__
+	/* in __linux__ we use static memory in the main thread,
+	 * so this check is for programs terminating the main()
+	 * function by pthread_exit() :)
+	 */
+	if (ptr != &ncntf_dispatch_main) {
+#else
+	{
+#endif
+		free(ptr);
+	}
+}
+
+static void ncntf_dispatch_createkey(void)
+{
+	int r;
+	/* initiate */
+	while ((r = pthread_key_create(&ncntf_dispatch_key, ncntf_dispatch_free)) == EAGAIN);
+	pthread_setspecific(ncntf_dispatch_key, NULL);
+}
+
+int *ncntf_dispatch_location(void)
+{
+	int *flag;
+
+	pthread_once(&ncntf_dispatch_once, ncntf_dispatch_createkey);
+	flag = pthread_getspecific(ncntf_dispatch_key);
+	if (!flag) {
+		/* prepare ly_err storage */
+#ifdef __linux__
+		if (getpid() == syscall(SYS_gettid)) {
+			/* main thread - use global variable instead of thread-specific variable. */
+			flag = &ncntf_dispatch_main;
+		} else {
+#else
+		{
+#endif /* __linux__ */
+			flag = calloc(1, sizeof *flag);
+		}
+		pthread_setspecific(ncntf_dispatch_key, flag);
+	}
+
+	return flag;
 }
 
 struct nc_shared_info *nc_info = NULL;

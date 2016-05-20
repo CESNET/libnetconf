@@ -2410,6 +2410,9 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 	DBG_UNLOCK("mut_ntf");
 	pthread_mutex_unlock(&(session->mut_ntf));
 
+	/* mark this thread as dispatching */
+	ncntf_dispatch = 1;
+
 	/* prepare xml doc for filtering */
 	filter_doc = xmlNewDoc(BAD_CAST "1.0");
 	filter_doc->encoding = xmlStrdup(BAD_CAST UTF8);
@@ -2494,6 +2497,7 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 				DBG_LOCK("mut_ntf");
 				pthread_mutex_lock(&(session->mut_ntf));
 				session->ntf_active = 0;
+				ncntf_dispatch = 0;
 				DBG_UNLOCK("mut_ntf");
 				pthread_mutex_unlock(&(session->mut_ntf));
 				nc_filter_free(filter);
@@ -2514,6 +2518,7 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 				DBG_LOCK("mut_ntf");
 				pthread_mutex_lock(&(session->mut_ntf));
 				session->ntf_active = 0;
+				ncntf_dispatch = 0;
 				DBG_UNLOCK("mut_ntf");
 				pthread_mutex_unlock(&(session->mut_ntf));
 				nc_filter_free(filter);
@@ -2527,6 +2532,7 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 				DBG_LOCK("mut_ntf");
 				pthread_mutex_lock(&(session->mut_ntf));
 				session->ntf_active = 0;
+				ncntf_dispatch = 0;
 				DBG_UNLOCK("mut_ntf");
 				pthread_mutex_unlock(&(session->mut_ntf));
 				nc_filter_free(filter);
@@ -2590,6 +2596,7 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			WARN("Sending notificationComplete failed due to previous error.");
 			ncntf_notif_free(ntf);
+			ncntf_dispatch = 0;
 			return (count);
 		}
 		free(time_s);
@@ -2602,12 +2609,14 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 		/* do not use ACM - notificationComplete is always permitted */
 		if (nc_session_send_notif(session, ntf) != EXIT_SUCCESS) {
 			ERROR("Sending a notification failed.");
+			ncntf_dispatch = 0;
 			return (-1);
 		}
 		ncntf_notif_free(ntf);
 		free(event);
 	}
 	DBG_UNLOCK("mut_ntf");
+	ncntf_dispatch = 0;
 	pthread_mutex_unlock(&(session->mut_ntf));
 
 	return (count);
@@ -2672,6 +2681,9 @@ API long long int ncntf_dispatch_receive(struct nc_session *session, void (*proc
 		process_ntf = ncntf_event_stdoutprint;
 	}
 
+	/* mark this thread as dispatching */
+	ncntf_dispatch = 1;
+
 	/* main loop for receiving notifications */
 	while(session != NULL && session->status == NC_SESSION_STATUS_WORKING) {
 		DBG_LOCK("mut_ntf");
@@ -2730,6 +2742,8 @@ API long long int ncntf_dispatch_receive(struct nc_session *session, void (*proc
 		DBG_UNLOCK("mut_ntf");
 		pthread_mutex_unlock(&(session->mut_ntf));
 	}
+
+	ncntf_dispatch = 0;
 
 	return (count);
 }

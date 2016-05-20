@@ -671,6 +671,9 @@ void ncntf_close(void);
  */
 void ncntf_dispatch_stop(struct nc_session *session);
 
+int *ncntf_dispatch_location(void);
+#define ncntf_dispatch (*ncntf_dispatch_location())
+
 #endif /* DISABLE_NOTIFICATIONS */
 
 /**
