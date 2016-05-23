@@ -350,6 +350,10 @@ AC_ARG_WITH([pyapi],
 	fi
 	# Check python for manager and configurator
 	AX_PYTHON_MODULE(distutils, fatal)
+
+	PYPREFIX="`$PYTHON -c 'import os.path; import sys; print(os.path.abspath(sys.prefix));'`"
+	AC_SUBST(PYPREFIX)
+
 	],[]
 )
 AC_SUBST(PYTHON)
@@ -537,11 +541,6 @@ if test "$url" = "yes"; then
 	AC_CHECK_HEADERS([curl/curl.h], [], AC_MSG_ERROR([Missing libcurl headers.]))
 	BUILDREQS="$BUILDREQS libcurl-devel"
 fi
-
-if test -n "$PYTHON"; then
-	PYPREFIX="`$PKG_CONFIG --variable=prefix python3`"
-fi
-AC_SUBST(PYPREFIX)
 
 ###################### Check for configure parameters ##########################
 
