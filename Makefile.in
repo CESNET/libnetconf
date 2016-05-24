@@ -227,7 +227,7 @@ $(LNCTOOL): $(LNCTOOL).in
 	fi
 
 .PHONY: pyapi
-pyapi: $(PYSRCS)
+pyapi: $(PYSRCS) $(NAME).la
 	@cd python; $(PYTHON) ./setup.py build; cd -;
 
 $(OBJDIR)/%.lo: %.c
