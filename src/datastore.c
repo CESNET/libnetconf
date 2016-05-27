@@ -1715,6 +1715,7 @@ static char* compare_schemas(struct data_model* model, char* name, char* version
 				fclose(file);
 				return (ERROR_POINTER);
 			}
+			fclose(file);
 			retval[start + size] = '\0';
 		}
 	}
