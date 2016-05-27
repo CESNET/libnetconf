@@ -3787,10 +3787,9 @@ static void transapi_unload(struct transapi_internal* tapi)
 	/* stop the thread monitoring the files */
 	if (tapi->file_clbks != NULL && tapi->file_clbks->callbacks_count > 0 && tapi->fmon_thread != 0) {
 		VERB("Stopping FMON thread.");
-		if (pthread_kill(tapi->fmon_thread, 9) != 0) {
-			/* sleep some more */
-			usleep(50000);
-		}
+        pthread_cancel(tapi->fmon_thread);
+        usleep(50000);
+		/* just hope the thread was canceled */
 	}
 	/* if close function is defined */
 	if (tapi->close != NULL) {
