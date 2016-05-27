@@ -385,7 +385,9 @@ API int nc_session_monitor(struct nc_session* session)
 		litem = &(session_list->record[0]);
 		litem->offset_prev = 0;
 		litem->offset_next = session_list->first_offset;
+		litem_aux = (struct session_list_item*)((char*)(session_list->record) + session_list->first_offset);
 		session_list->first_offset = 0;
+		litem_aux->offset_prev = litem_aux->size;
 	} else {
 		totalsize = session_list->first_offset;
 
