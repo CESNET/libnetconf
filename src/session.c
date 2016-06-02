@@ -1157,19 +1157,55 @@ static void announce_nc_session_closing(struct nc_session* session)
 	/* prevent infinite recursion when socket is corrupted -> stack overflow */
 	session->status = NC_SESSION_STATUS_CLOSING;
 
-	/* close NETCONF session */
-	rpc_close = nc_rpc_closesession();
-	if (rpc_close != NULL) {
-		if (nc_session_send_rpc(session, rpc_close) != 0) {
-			nc_session_recv_reply(session, 10000, &reply); /* wait max 10 seconds */
-			if (reply != NULL) {
-				nc_reply_free(reply);
+	if (!session->is_server) {
+		/* close NETCONF session */
+		rpc_close = nc_rpc_closesession();
+		if (rpc_close != NULL) {
+			if (nc_session_send_rpc(session, rpc_close) != 0) {
+				nc_session_recv_reply(session, 10000, &reply); /* wait max 10 seconds */
+				if (reply != NULL) {
+					nc_reply_free(reply);
+				}
+			}
+			if (rpc_close != NULL) {
+				nc_rpc_free(rpc_close);
 			}
 		}
-		if (rpc_close != NULL) {
-			nc_rpc_free(rpc_close);
+	}
+}
+
+/**
+ * @brief Stop the running ncntf_dispatch_*()
+ *
+ * When we are going to close an active session and receiving/sending
+ * notifications is active, we should properly stop it before freeing session
+ * structure. This should be called after nc_session_close() but before
+ * doing stuff in nc_session_free().
+ *
+ */
+static void ncntf_dispatch_stop(struct nc_session *session)
+{
+	DBG_LOCK("mut_ntf");
+	pthread_mutex_lock(&(session->mut_ntf));
+	if (session != NULL && session->ntf_active) {
+		session->ntf_stop = 1;
+		if (session->status == NC_SESSION_STATUS_WORKING) {
+			announce_nc_session_closing(session);
+		}
+		while (session->ntf_active) {
+			DBG_UNLOCK("mut_ntf");
+			pthread_mutex_unlock(&(session->mut_ntf));
+			DBG_UNLOCK("mut_session");
+			pthread_mutex_unlock(&(session->mut_session));
+			usleep(NCNTF_DISPATCH_SLEEP);
+			DBG_LOCK("mut_session");
+			pthread_mutex_lock(&(session->mut_session));
+			DBG_LOCK("mut_ntf");
+			pthread_mutex_lock(&(session->mut_ntf));
 		}
 	}
+	DBG_UNLOCK("mut_ntf");
+	pthread_mutex_unlock(&(session->mut_ntf));
 }
 
 void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
@@ -1221,7 +1257,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			i = ssh_channel_is_eof(session->ssh_chan);
 			DBG_UNLOCK("mut_channel");
 			pthread_mutex_unlock(session->mut_channel);
-			if (session->status == NC_SESSION_STATUS_WORKING &&  i == 0 && !session->is_server) {
+			if (session->status == NC_SESSION_STATUS_WORKING &&  i == 0) {
 				/* prevent infinite recursion when socket is corrupted */
 				announce_nc_session_closing(session);
 			}
@@ -1239,7 +1275,7 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 #endif
 #ifdef ENABLE_TLS
 		if (session->tls != NULL) {
-			if (session->status == NC_SESSION_STATUS_WORKING && !session->is_server) {
+			if (session->status == NC_SESSION_STATUS_WORKING) {
 				announce_nc_session_closing(session);
 			}
 			/* server TLS session, do not close or free */

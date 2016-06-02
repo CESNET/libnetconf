@@ -73,9 +73,6 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define NCNTF_RULES_SIZE (1024*1024)
 #define NCNTF_STREAMS_NS "urn:ietf:params:xml:ns:netmod:notification"
 
-/* sleep time in dispatch loops in microseconds */
-#define NCNTF_DISPATCH_SLEEP 10000
-
 /* path to the Event stream files, the default path is defined in config.h */
 static char* streams_path = NULL;
 
@@ -2319,32 +2316,6 @@ cleanup:
 	} else {
 		return (nc_reply_error(e));
 	}
-}
-
-/**
- * @brief Stop the running ncntf_dispatch_receive()
- *
- * When the client is going to close an active session and receiving
- * notifications is active, we should properly stop it before freeing session
- * structure
- *
- */
-void ncntf_dispatch_stop(struct nc_session *session)
-{
-	DBG_LOCK("mut_ntf");
-	pthread_mutex_lock(&(session->mut_ntf));
-	if (session != NULL && session->ntf_active) {
-		session->ntf_stop = 1;
-		while (session->ntf_active) {
-			DBG_UNLOCK("mut_ntf");
-			pthread_mutex_unlock(&(session->mut_ntf));
-			usleep(NCNTF_DISPATCH_SLEEP);
-			DBG_LOCK("mut_ntf");
-			pthread_mutex_lock(&(session->mut_ntf));
-		}
-	}
-	DBG_UNLOCK("mut_ntf");
-	pthread_mutex_unlock(&(session->mut_ntf));
 }
 
 /**
