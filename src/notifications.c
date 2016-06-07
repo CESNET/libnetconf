@@ -73,9 +73,6 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define NCNTF_RULES_SIZE (1024*1024)
 #define NCNTF_STREAMS_NS "urn:ietf:params:xml:ns:netmod:notification"
 
-/* sleep time in dispatch loops in microseconds */
-#define NCNTF_DISPATCH_SLEEP 10000
-
 /* path to the Event stream files, the default path is defined in config.h */
 static char* streams_path = NULL;
 
@@ -2322,32 +2319,6 @@ cleanup:
 }
 
 /**
- * @brief Stop the running ncntf_dispatch_receive()
- *
- * When the client is going to close an active session and receiving
- * notifications is active, we should properly stop it before freeing session
- * structure
- *
- */
-void ncntf_dispatch_stop(struct nc_session *session)
-{
-	DBG_LOCK("mut_ntf");
-	pthread_mutex_lock(&(session->mut_ntf));
-	if (session != NULL && session->ntf_active) {
-		session->ntf_stop = 1;
-		while (session->ntf_active) {
-			DBG_UNLOCK("mut_ntf");
-			pthread_mutex_unlock(&(session->mut_ntf));
-			usleep(NCNTF_DISPATCH_SLEEP);
-			DBG_LOCK("mut_ntf");
-			pthread_mutex_lock(&(session->mut_ntf));
-		}
-	}
-	DBG_UNLOCK("mut_ntf");
-	pthread_mutex_unlock(&(session->mut_ntf));
-}
-
-/**
  * @ingroup notifications
  * @brief Start sending notifications according to the given
  * \<create-subscription\> NETCONF RPC request. All events from the specified
@@ -2523,6 +2494,7 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 				pthread_mutex_unlock(&(session->mut_ntf));
 				nc_filter_free(filter);
 				free(stream);
+				ncntf_notif_free(ntf);
 				return (-1);
 			}
 
@@ -2537,6 +2509,7 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 				pthread_mutex_unlock(&(session->mut_ntf));
 				nc_filter_free(filter);
 				free(stream);
+				ncntf_notif_free(ntf);
 				return (-1);
 			}
 
@@ -2551,6 +2524,16 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 					pthread_mutex_unlock(&(session->mut_ntf));
 					if (nc_session_send_notif(session, ntf) != EXIT_SUCCESS) {
 						ERROR("Sending a notification failed.");
+						/* cleanup */
+						session->ntf_active = 0;
+						ncntf_dispatch = 0;
+						nc_filter_free(filter);
+						free(stream);
+						ncntf_notif_free(ntf);
+
+						DBG_UNLOCK("mut_session");
+						pthread_mutex_unlock(&(session->mut_session));
+						return (-1);
 					}
 				} else {
 					DBG_UNLOCK("mut_ntf");

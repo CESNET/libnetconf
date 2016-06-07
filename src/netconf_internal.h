@@ -648,6 +648,9 @@ void nc_session_close (struct nc_session* session, NC_SESSION_TERM_REASON reason
 
 #ifndef DISABLE_NOTIFICATIONS
 
+/* sleep time in dispatch loops in microseconds */
+#define NCNTF_DISPATCH_SLEEP 10000
+
 /**
  * @brief Initiate the NETCONF Notifications environment
  * @return 0 on success, non-zero value else
@@ -659,17 +662,6 @@ int ncntf_init(void);
  * environment.
  */
 void ncntf_close(void);
-
-/**
- * @brief Stop the running ncntf_dispatch_*()
- *
- * When we are going to close an active session and receiving/sending
- * notifications is active, we should properly stop it before freeing session
- * structure. This should be called after nc_session_close() but before
- * doing stuff in nc_session_free().
- *
- */
-void ncntf_dispatch_stop(struct nc_session *session);
 
 int *ncntf_dispatch_location(void);
 #define ncntf_dispatch (*ncntf_dispatch_location())
