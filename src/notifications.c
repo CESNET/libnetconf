@@ -2494,6 +2494,7 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 				pthread_mutex_unlock(&(session->mut_ntf));
 				nc_filter_free(filter);
 				free(stream);
+				ncntf_notif_free(ntf);
 				return (-1);
 			}
 
@@ -2508,6 +2509,7 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 				pthread_mutex_unlock(&(session->mut_ntf));
 				nc_filter_free(filter);
 				free(stream);
+				ncntf_notif_free(ntf);
 				return (-1);
 			}
 
