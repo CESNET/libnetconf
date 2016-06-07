@@ -2524,6 +2524,16 @@ API long long int ncntf_dispatch_send(struct nc_session* session, const nc_rpc* 
 					pthread_mutex_unlock(&(session->mut_ntf));
 					if (nc_session_send_notif(session, ntf) != EXIT_SUCCESS) {
 						ERROR("Sending a notification failed.");
+						/* cleanup */
+						session->ntf_active = 0;
+						ncntf_dispatch = 0;
+						nc_filter_free(filter);
+						free(stream);
+						ncntf_notif_free(ntf);
+
+						DBG_UNLOCK("mut_session");
+						pthread_mutex_unlock(&(session->mut_session));
+						return (-1);
 					}
 				} else {
 					DBG_UNLOCK("mut_ntf");
