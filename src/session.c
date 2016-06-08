@@ -298,6 +298,11 @@ API int nc_session_monitor(struct nc_session* session)
 	pthread_rwlockattr_t rwlockattr;
 	int prev, next, size, totalsize = 0;
 
+#define UNKN_USER "UNKNOWN"
+#define UNKN_USER_SIZE 8
+#define UNKN_HOST "UNKNOWN"
+#define UNKN_HOST_SIZE 8
+
 	if (session->monitored) {
 		return (EXIT_SUCCESS);
 	}
@@ -372,8 +377,8 @@ API int nc_session_monitor(struct nc_session* session)
 
 	/* find the place for a new record, try to place it into some gap */
 	size = (sizeof(struct session_list_item) - 1) + (
-	                (session->username != NULL) ? (strlen(session->username) + 1) : 1) + (
-	                (session->hostname != NULL) ? (strlen(session->hostname) + 1) : 1);
+	                (session->username != NULL) ? (strlen(session->username) + 1) : UNKN_USER_SIZE) + (
+	                (session->hostname != NULL) ? (strlen(session->hostname) + 1) : UNKN_HOST_SIZE);
 	if (session_list->count == 0) {
 		/* we add the first item into the list */
 		litem = &(session_list->record[0]);
@@ -450,8 +455,8 @@ API int nc_session_monitor(struct nc_session* session)
 	strncpy(litem->login_time, (session->logintime == NULL) ? "0000-01-01T00:00:00Z" : session->logintime, TIME_LENGTH);
 	litem->login_time[TIME_LENGTH - 1] = 0; /* terminating null byte */
 
-	strcpy(litem->data, (session->username == NULL) ? "UNKNOWN" : session->username);
-	strcpy(litem->data + 1 + strlen(litem->data), (session->hostname == NULL) ? "UNKNOWN" : session->hostname);
+	strcpy(litem->data, (session->username == NULL) ? UNKN_USER : session->username);
+	strcpy(litem->data + 1 + strlen(litem->data), (session->hostname == NULL) ? UNKN_HOST : session->hostname);
 
 	pthread_rwlockattr_init(&rwlockattr);
 	pthread_rwlockattr_setpshared(&rwlockattr, PTHREAD_PROCESS_SHARED);
