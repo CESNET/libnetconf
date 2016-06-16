@@ -51,7 +51,7 @@
 #endif
 
 #define CAPABILITY_PREFIX "urn:ietf:params:netconf:"
-#define ARGUMENTS "f:hl:p:v"
+#define ARGUMENTS "f:hl:p:vd"
 
 void clb_print(NC_VERB_LEVEL level, const char* msg)
 {
@@ -132,6 +132,10 @@ int main(int argc, char* argv[])
 
 		case 'v': /* Verbose operation */
 			verbose = NC_VERB_VERBOSE;
+			break;
+
+		case 'd':
+			verbose = NC_VERB_DEBUG;
 			break;
 
 		default:
