@@ -40,6 +40,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <unistd.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
@@ -499,15 +500,12 @@ static void nc_session_monitor_alive_check(void)
 	struct session_list_item *litem;
 	char dirpath[ALIVECHECK_PATH_LENGTH];
 	char linkpath[ALIVECHECK_PATH_LENGTH];
-	char linkname[sizeof(NC_SESSIONSFILE) + 1];
-	char* aux = NULL;
-	int len;
+	char *linktarget, *sessionfile;
 	DIR *dir;
 	struct dirent* pfd;
 
 	if (session_list != NULL) {
-		aux = strdup(NC_SESSIONSFILE);
-		nc_clip_occurences_with(aux, '/', '/');
+		sessionfile = realpath(NC_SESSIONSFILE, NULL);
 
 		pthread_rwlock_wrlock(&(session_list->lock));
 
@@ -538,13 +536,13 @@ static void nc_session_monitor_alive_check(void)
 				errno = 0;
 				while((pfd = readdir(dir)) != NULL) {
 					snprintf(linkpath, ALIVECHECK_PATH_LENGTH, "%s/%s", dirpath, pfd->d_name);
-					if ((len = readlink(linkpath, linkname, sizeof(linkname))) > 0) {
-						linkname[len] = 0;
-						if (strcmp(linkname, aux) == 0) {
-							/* we have match, the process uses libnetconf */
-							break;
-						}
+					linktarget = realpath(linkpath, NULL);
+					if (linktarget && !strcmp(linktarget, sessionfile)) {
+						/* we have match, the process uses libnetconf */
+						free(linktarget);
+						break;
 					} /* not a symlink or other problem - simply it doesn't match, continue */
+					free(linktarget);
 				}
 				if (pfd == NULL) {
 					/* the process does not use libnetconf, remove not alive session item */
@@ -563,7 +561,7 @@ alivecheck_next:
 		}
 
 		pthread_rwlock_unlock(&(session_list->lock));
-		free(aux);
+		free(sessionfile);
 	}
 
 }
