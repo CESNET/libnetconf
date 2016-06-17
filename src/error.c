@@ -422,7 +422,7 @@ struct nc_err* nc_err_parse(nc_reply* reply)
 							subnode = subnode->next;
 							continue;
 						}
-						if (xmlStrcmp(subnode->name, BAD_CAST "bad-atribute") == 0) {
+						if (xmlStrcmp(subnode->name, BAD_CAST "bad-attribute") == 0) {
 							eaux->attribute = (char*) xmlNodeGetContent(subnode);
 						} else if (xmlStrcmp(subnode->name, BAD_CAST "bad-element") == 0 ||
 								xmlStrcmp(subnode->name, BAD_CAST "ok-element") == 0 ||
