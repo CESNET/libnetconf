@@ -391,6 +391,24 @@ static int ncntf_check_file_ended(struct stream* s)
 	return 0;
 }
 
+static int ncntf_is_old_stream(struct stream* s)
+{
+	uint32_t rotation_size = sizeof(uint32_t) + sizeof(uint64_t) + sizeof(MAGIC_ENDING);
+	unsigned int actual_offset = lseek(s->fd_events, 0, SEEK_CUR);
+	unsigned int eof_offset = lseek(s->fd_events, 0, SEEK_END);
+	unsigned int offset = eof_offset - rotation_size;
+	int is_old_stream = 0;
+	if(offset >= actual_offset)
+	{
+		lseek(s->fd_events, offset, SEEK_SET);
+		if(ncntf_check_file_ended(s)) {
+			is_old_stream = 1;
+		}
+	}
+	lseek(s->fd_events, actual_offset, SEEK_SET);
+	return is_old_stream;
+}
+
 static int ncntf_write_end_marker(struct stream* s, uint64_t etime64)
 {
 	uint32_t r = 0;
@@ -628,6 +646,13 @@ static struct stream *read_fileheader(const char* filepath, bool second)
 		s2 = read_fileheader(rotate_filepath, true);
 		free(rotate_filepath);
 		s2->next_rotate = s;
+		if(ncntf_is_old_stream(s) == 1) {
+			s2->current = true;
+			s->current = false;
+		} else {
+			s2->current = false;
+			s->current = true;
+		}
 	}
 
 	s->next_rotate = s2;
@@ -644,7 +669,7 @@ read_fail:
 /*
  * Free the stream structure
  */
-static void ncntf_stream_free(struct stream *s)
+static void ncntf_stream_free(struct stream *s, bool second)
 {
 	if (s == NULL) {
 		return;
@@ -659,7 +684,10 @@ static void ncntf_stream_free(struct stream *s)
 	if (s->fd_events != -1) {
 		close(s->fd_events);
 	}
-    ncntf_stream_free(s->next_rotate); //ntadeu
+    if(!second)
+    {
+        ncntf_stream_free(s->next_rotate, true);
+    }
 	free(s);
 }
 
@@ -704,7 +732,7 @@ static struct stream* ncntf_stream_get(const char* stream)
 			streams = s;
 		} else if (s != NULL) {
 			ERROR("Unable to map the Event stream rules file into memory.");
-			ncntf_stream_free(s);
+			ncntf_stream_free(s, false);
 			s = NULL;
 		}
 		free(filepath);
@@ -821,7 +849,7 @@ static int ncntf_streams_init(void)
 			streams = s;
 		} else if (s != NULL) {
 			ERROR("Unable to map the Event stream rules file into memory.");
-			ncntf_stream_free(s);
+			ncntf_stream_free(s, false);
 			s = NULL;
 		}/* else - not an event stream file */
 		free(filepath);
@@ -859,7 +887,7 @@ static void ncntf_streams_close(void)
 	s = streams;
 	while(s != NULL) {
 		streams = s->next;
-		ncntf_stream_free(s);
+		ncntf_stream_free(s, false);
 		s = streams;
 	}
 	DBG_UNLOCK("streams_mut");
@@ -974,7 +1002,7 @@ API int ncntf_stream_new(const char* name, const char* desc, int replay)
 	s->next_rotate = NULL;
 
 	if (write_fileheader(s, false) != 0 || map_rules(s) != 0) {
-		ncntf_stream_free(s);
+		ncntf_stream_free(s, false);
 		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		return (EXIT_FAILURE);
@@ -982,7 +1010,7 @@ API int ncntf_stream_new(const char* name, const char* desc, int replay)
 
 		s2 = malloc(sizeof(struct stream));
 		if (s2 == NULL) {
-			ncntf_stream_free(s);
+			ncntf_stream_free(s, false);
 			ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
 			DBG_UNLOCK("streams_mut");
 			pthread_mutex_unlock(streams_mut);
@@ -1002,7 +1030,7 @@ API int ncntf_stream_new(const char* name, const char* desc, int replay)
 		s2->next_rotate = s;
 
 		if (write_fileheader(s2, true) != 0) {
-			ncntf_stream_free(s);
+			ncntf_stream_free(s, false);
 			DBG_UNLOCK("streams_mut");
 			pthread_mutex_unlock(streams_mut);
 			return (EXIT_FAILURE);
