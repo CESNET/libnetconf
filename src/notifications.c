@@ -1199,15 +1199,16 @@ API void ncntf_stream_iter_start(const char* stream)
 		pthread_mutex_unlock(streams_mut);
 		return;
 	}
-	/* remember the current end of file position */
-	str_off->eof_offset = lseek(s->fd_events, 0, SEEK_END);
-	/* and the thread's specific position in the file (start of stream file records section) */
-	str_off->cur_offset = s->data;
-	if(s->current) {
+
+	if(s->current == false) {
 		str_off->current_fd = s->fd_events;
+		str_off->eof_offset = lseek(s->fd_events, 0, SEEK_END);
+		str_off->cur_offset = s->data;
 	}
 	else {
 		str_off->current_fd = s->next_rotate->fd_events;
+		str_off->eof_offset = lseek(s->next_rotate->fd_events, 0, SEEK_END);
+		str_off->cur_offset = s->next_rotate->data;
 	}
 	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
@@ -1272,11 +1273,8 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 			return (NULL);
 		}
 	}
-	replay_end = &(str_off->eof_offset);
 
-	if(str_off->current_fd != s->fd_events) {
-		s = s->next_rotate;
-	}
+	replay_end = &(str_off->eof_offset);
 
 	if (start == -1 && *replay_end != 0) {
 		/*
@@ -1285,8 +1283,12 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		 * so skip to the end of the file and mark replay as done
 		 */
 		str_off->cur_offset = lseek(s->fd_events, 0, SEEK_END);
+		str_off->current_fd = s->fd_events;
 		*replay_end = 0;
+	} else if(str_off->current_fd != s->fd_events && *replay_end == 0) {
+		s = s->next_rotate;
 	}
+
 
 	while (1) {
 		/* condition to read events from file (use replay):
@@ -1333,9 +1335,6 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 			int ret = ncntf_check_file_ended(s);
 			if(ret == 1) {
 				s = s->next_rotate;
-				if(*replay_end != 0) {
-					str_off->eof_offset = lseek(s->fd_events, 0, SEEK_END);
-				}
 				str_off->cur_offset = s->data;
 				lseek(s->fd_events, str_off->cur_offset, SEEK_SET);
 				str_off->current_fd = s->fd_events;
