@@ -5930,7 +5930,7 @@ process_datastore:
 			 * cover it with the <config> element to allow the creation of
 			 * xml document
 			 */
-			if (strncmp(config, "<config", 7) == 0) {
+			if (strncmp(config, "<config>", 8) == 0) {
 				data = strdup(config);
 			} else if (asprintf(&data, "<config>%s</config>", config) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
