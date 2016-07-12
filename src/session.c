@@ -1156,11 +1156,16 @@ static void announce_nc_session_closing(struct nc_session* session)
 {
 	nc_rpc *rpc_close = NULL;
 	nc_reply *reply = NULL;
+	int live_session = 0;
+
+	if (session->status == NC_SESSION_STATUS_WORKING) {
+		live_session = 1;
+	}
 
 	/* prevent infinite recursion when socket is corrupted -> stack overflow */
 	session->status = NC_SESSION_STATUS_CLOSING;
 
-	if (!session->is_server) {
+	if (!session->is_server && live_session) {
 		/* close NETCONF session */
 		rpc_close = nc_rpc_closesession();
 		if (rpc_close != NULL) {
@@ -1192,17 +1197,10 @@ static void ncntf_dispatch_stop(struct nc_session *session)
 	pthread_mutex_lock(&(session->mut_ntf));
 	if (session != NULL && session->ntf_active) {
 		session->ntf_stop = 1;
-		if (session->status == NC_SESSION_STATUS_WORKING) {
-			announce_nc_session_closing(session);
-		}
 		while (session->ntf_active) {
 			DBG_UNLOCK("mut_ntf");
 			pthread_mutex_unlock(&(session->mut_ntf));
-			DBG_UNLOCK("mut_session");
-			pthread_mutex_unlock(&(session->mut_session));
 			usleep(NCNTF_DISPATCH_SLEEP);
-			DBG_LOCK("mut_session");
-			pthread_mutex_lock(&(session->mut_session));
 			DBG_LOCK("mut_ntf");
 			pthread_mutex_lock(&(session->mut_ntf));
 		}
@@ -1225,6 +1223,16 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 
 	/* close the SSH session */
 	if (session != NULL && session->status != NC_SESSION_STATUS_CLOSING && session->status != NC_SESSION_STATUS_CLOSED) {
+#ifndef DISABLE_LIBSSH
+		if (session->ssh_chan && ssh_channel_is_eof(session->ssh_chan)) {
+			session->status = NC_SESSION_STATUS_ERROR;
+		}
+#endif
+		announce_nc_session_closing(session);
+		if (sstatus != NC_SESSION_STATUS_DUMMY) {
+			DBG_UNLOCK("mut_session");
+			pthread_mutex_unlock(&(session->mut_session));
+		}
 
 #ifndef DISABLE_NOTIFICATIONS
 		if (!ncntf_dispatch) {
@@ -1246,24 +1254,18 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			ncds_break_locks(session);
 		}
 
+		if (sstatus != NC_SESSION_STATUS_DUMMY) {
+			DBG_LOCK("mut_session");
+			pthread_mutex_lock(&(session->mut_session));
+		}
+
 		/* close NETCONF session */
-#ifdef DISABLE_LIBSSH
-		if (session->fd_output != -1) {
-			if (session->status == NC_SESSION_STATUS_WORKING && !session->is_server) {
-				announce_nc_session_closing(session);
-			}
-		} else
-#else
+#ifndef DISABLE_LIBSSH
 		if (session->ssh_chan != NULL) {
 			DBG_LOCK("mut_channel");
 			pthread_mutex_lock(session->mut_channel);
-			i = ssh_channel_is_eof(session->ssh_chan);
 			DBG_UNLOCK("mut_channel");
 			pthread_mutex_unlock(session->mut_channel);
-			if (session->status == NC_SESSION_STATUS_WORKING &&  i == 0) {
-				/* prevent infinite recursion when socket is corrupted */
-				announce_nc_session_closing(session);
-			}
 
 			DBG_LOCK("mut_channel");
 			pthread_mutex_lock(session->mut_channel);
@@ -1274,13 +1276,10 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			session->ssh_chan = NULL;
 			DBG_UNLOCK("mut_channel");
 			pthread_mutex_unlock(session->mut_channel);
-		} else
+		}
 #endif
 #ifdef ENABLE_TLS
 		if (session->tls != NULL) {
-			if (session->status == NC_SESSION_STATUS_WORKING) {
-				announce_nc_session_closing(session);
-			}
 			/* server TLS session, do not close or free */
 			if (!session->is_server) {
 				SSL_shutdown(session->tls);
@@ -1288,8 +1287,6 @@ void nc_session_close(struct nc_session* session, NC_SESSION_TERM_REASON reason)
 			}
 			session->tls = NULL;
 		}
-#else
-		{} /* close else which is not needed */
 #endif
 #ifndef DISABLE_LIBSSH
 		if (!session->is_server) {
