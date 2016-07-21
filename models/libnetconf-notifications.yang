@@ -1,0 +1,52 @@
+module libnetconf-notifications {
+
+    namespace "urn:cesnet:params:xml:ns:libnetconf:notifications";
+    prefix "lncntf";
+
+    import ietf-netconf { prefix "nc"; }
+
+    organization
+      "CESNET a.l.e.";
+
+    contact
+      "rkrejci@cesnet.cz";
+
+    description
+      "Additional libnetconf notifications.";
+
+    revision 2016-07-21 {
+      description "Initial revision.";
+    }
+
+    grouping lockinfo {
+      leaf datastore {
+        description "Locked datastore.";
+        type enumeration {
+          enum "running";
+          enum "startup";
+          enum "candidate";
+          enum "unknown";
+        }
+        mandatory true;
+      }
+      leaf session-id {
+        description "Session requested the lock.";
+        type nc:session-id-type;
+        mandatory true;
+      }
+    }
+
+    notification datastore-lock {
+      description
+        "Signal of locking one of the datastores.";
+
+      uses lockinfo;      
+    }
+
+    notification datastore-unlock {
+      description
+        "Signal of unlocking one of the datastores.";
+
+      uses lockinfo;
+    }
+}
