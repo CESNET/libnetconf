@@ -65,6 +65,11 @@
 #define READ_TIMEOUT @READ_TIMEOUT@
 
 /*
+ * NETCONF session monitoring - size of the list to store session data
+ */
+#define MONITORING_LIST_SIZE (1024*@MONITORING_LIST_SIZE@)
+
+/*
  * Compatibility section
  */
 @HAVE_EACCESS@

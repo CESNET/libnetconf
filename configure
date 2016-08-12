@@ -716,6 +716,7 @@ UNAME
 PYPREFIX
 PYTHON
 LIBSSH_DIRECTIVE
+MONITORING_LIST_SIZE
 READ_TIMEOUT
 XSLT_CONFIG
 LIBXML2_LIBS
@@ -808,6 +809,7 @@ enable_libtool_lock
 host_alias
 target_alias
 READ_TIMEOUT
+MONITORING_LIST_SIZE
 CC
 CFLAGS
 LDFLAGS
@@ -1482,7 +1484,9 @@ Optional Packages:
 
 Some influential environment variables:
   READ_TIMEOUT
-              Timeout for reading a complete NETCONF message in seconds
+              Timeout [s] for reading a complete NETCONF message (30)
+  MONITORING_LIST_SIZE
+              Size [KB] of the storage for NETCONF sessions monitoring (16)
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -3004,6 +3008,11 @@ fi
 
 if test -z "$READ_TIMEOUT"; then
     READ_TIMEOUT=30
+fi
+
+
+if test -z "$MONITORING_LIST_SIZE"; then
+    MONITORING_LIST_SIZE=16
 fi
 
 # Check whether --enable-libssh was given.
@@ -14114,6 +14123,7 @@ fi
 
 
 ############################### Set output #####################################
+
 
 
 

@@ -188,7 +188,6 @@ static struct session_list_map *session_list = NULL;
 #endif /* not ENABLE_TLS */
 #endif /* not DISABLE_LIBSSH */
 
-#define SIZE_STEP (1024*16)
 int nc_session_monitoring_init(void)
 {
 	struct stat fdinfo;
@@ -225,13 +224,13 @@ int nc_session_monitoring_init(void)
 	if (fdinfo.st_size == 0) {
 		/* we have a new file, create some initial size using file gaps */
 		first = 1;
-		lseek(session_list_fd, SIZE_STEP - 1, SEEK_SET);
+		lseek(session_list_fd, MONITORING_LIST_SIZE - 1, SEEK_SET);
 		while (((c = write(session_list_fd, "", 1)) == -1) && (errno == EAGAIN || errno == EINTR));
 		if (c == -1) {
 			WARN("%s: Preparing the session list file failed (%s).", __func__, strerror(errno));
 		}
 		lseek(session_list_fd, 0, SEEK_SET);
-		size = SIZE_STEP;
+		size = MONITORING_LIST_SIZE;
 	} else {
 		size = fdinfo.st_size;
 	}
@@ -251,7 +250,7 @@ int nc_session_monitoring_init(void)
 		pthread_rwlock_init(&(session_list->lock), &rwlockattr);
 		pthread_rwlockattr_destroy(&rwlockattr);
 		pthread_rwlock_wrlock(&(session_list->lock));
-		session_list->size = SIZE_STEP;
+		session_list->size = MONITORING_LIST_SIZE;
 		session_list->count = 0;
 		pthread_rwlock_unlock(&(session_list->lock));
 	}

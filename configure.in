@@ -128,9 +128,14 @@ AC_ARG_WITH([libxslt],
 	]
 )
 
-AC_ARG_VAR(READ_TIMEOUT, [Timeout for reading a complete NETCONF message in seconds])
+AC_ARG_VAR(READ_TIMEOUT, [Timeout [s] for reading a complete NETCONF message (30)])
 if test -z "$READ_TIMEOUT"; then
     READ_TIMEOUT=30
+fi
+
+AC_ARG_VAR(MONITORING_LIST_SIZE, [Size [KB] of the storage for NETCONF sessions monitoring (16)])
+if test -z "$MONITORING_LIST_SIZE"; then
+    MONITORING_LIST_SIZE=16
 fi
 
 AC_ARG_ENABLE([libssh],
@@ -617,6 +622,7 @@ AC_SUBST(HAVE_LIBXML2_RECONNS)
 AC_SUBST(SSH_PROG)
 AC_SUBST(PTHREAD_LIBS)
 AC_SUBST(READ_TIMEOUT)
+AC_SUBST(MONITORING_LIST_SIZE)
 
 AC_SUBST(DOXYGEN)
 if test -z "$DOXYGEN"; then
