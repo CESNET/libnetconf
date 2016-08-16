@@ -1660,8 +1660,10 @@ static char* compare_schemas(struct data_model* model, char* name, char* version
 				case '6':
 					return strndup((char*)notifications_yin + 39, notifications_yin_len - 39);
 				case '7':
-					return strndup((char*)ietf_netconf_with_defaults_yin + 39, ietf_netconf_with_defaults_yin_len - 39);
+					return strndup((char*)libnetconf_notifications_yin + 39, libnetconf_notifications_yin_len - 39);
 				case '8':
+					return strndup((char*)ietf_netconf_with_defaults_yin + 39, ietf_netconf_with_defaults_yin_len - 39);
+				case '9':
 					return strndup((char*)ietf_netconf_acm_yin + 39, ietf_netconf_acm_yin_len - 39);
 #else
 				case '4':
