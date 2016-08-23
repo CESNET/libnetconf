@@ -345,6 +345,15 @@ nc_reply* nc_reply_data(const char* data);
 
 /**
  * @ingroup reply
+ * @brief Create rpc-reply response with custom content.
+ * @param[in] data Serialized XML content of the output element for the
+ * \<rpc-reply\> message being created.
+ * @return Created \<rpc-reply\> message.
+ */
+nc_reply* nc_reply_custom(const char* data);
+
+/**
+ * @ingroup reply
  * @brief Create rpc-reply response with \<data\> content in the specified namespace.
  * @param[in] data Serialized XML content of the \<data\> element for the
  * \<rpc-reply\> message being created.

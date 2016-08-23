@@ -290,7 +290,7 @@ static struct nc_msg* nc_msg_build (const char* msg_dump)
 		nc_msg_free(msg);
 		return NULL;
 	}
-	
+
 	/* register base namespace for the rpc */
 	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_BASE10_ID, BAD_CAST NC_NS_BASE10) != 0) {
 		ERROR("Registering base namespace for the message xpath context failed.");
@@ -1694,7 +1694,7 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 	if (dupmsg == NULL) {
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
-	}	
+	}
 	dupmsg->doc = xmlCopyDoc(msg->doc, 1);
 	dupmsg->type = msg->type;
 	dupmsg->with_defaults = msg->with_defaults;
@@ -1881,12 +1881,36 @@ API nc_reply *nc_reply_data(const char* data)
 	return (nc_reply_data_ns(data, NC_NS_BASE10));
 }
 
-API nc_reply *nc_reply_data_ns(const char* data, const char* ns)
+API nc_reply *nc_reply_custom(const char* data)
 {
 	nc_reply *reply;
 	xmlDocPtr doc_data;
-	char* data_env;
 	struct nc_err* e;
+
+	if (!data) {
+		data = "";
+	}
+
+	/* prepare XML structure from given data */
+	doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, NC_XMLREAD_OPTIONS);
+	if (doc_data == NULL) {
+		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+		e = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(e, NC_ERR_PARAM_MSG, "Configuration data seems to be corrupted.");
+		return (nc_reply_error(e));
+	}
+
+	reply = (nc_reply*)nc_msg_create(doc_data->children,"rpc-reply");
+	reply->type.reply = NC_REPLY_DATA;
+	xmlFreeDoc(doc_data);
+
+	return (reply);
+}
+
+API nc_reply *nc_reply_data_ns(const char* data, const char* ns)
+{
+	nc_reply *reply;
+	char* data_env;
 	int r;
 
 	if (ns != NULL) {
@@ -1899,19 +1923,7 @@ API nc_reply *nc_reply_data_ns(const char* data, const char* ns)
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 	}
 
-	/* prepare XML structure from given data */
-	doc_data = xmlReadMemory(data_env, strlen(data_env), NULL, NULL, NC_XMLREAD_OPTIONS);
-	if (doc_data == NULL) {
-		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
-		free(data_env);
-		e = nc_err_new(NC_ERR_OP_FAILED);
-		nc_err_set(e, NC_ERR_PARAM_MSG, "Configuration data seems to be corrupted.");
-		return (nc_reply_error(e));
-	}
-
-	reply = (nc_reply*)nc_msg_create(doc_data->children,"rpc-reply");
-	reply->type.reply = NC_REPLY_DATA;
-	xmlFreeDoc(doc_data);
+	reply = nc_reply_custom(data_env);
 	free(data_env);
 
 	return (reply);
@@ -2939,7 +2951,7 @@ static nc_rpc* _rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 	/* set namespace */
 	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
 	xmlSetNs(content, ns);
-	
+
 	/* <target> */
 	node_target = xmlNewChild(content, ns, BAD_CAST "target", NULL);
 	if (node_target == NULL) {
