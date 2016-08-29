@@ -261,6 +261,25 @@ if test "$validation" = "no"; then
 	CPPFLAGS="$CPPFLAGS -DDISABLE_VALIDATION"
 fi
 
+AC_ARG_ENABLE([doc],
+        AC_HELP_STRING([--disable-doc], [Disable generation of documentation]),
+        [
+        if test "$enableval" = "no"; then
+                doc="no"
+        else
+                doc="yes"
+        fi
+        ],
+        # support doc by default
+        doc="yes"
+)
+if test "$doc" = "no"; then
+	INSTALL_DOC=""
+else
+	INSTALL_DOC=install-doc
+fi
+AC_SUBST(INSTALL_DOC)
+
 AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],[Compile with debug options]),
 	CFLAGS="$CFLAGS -g -O0 -DDEBUG"

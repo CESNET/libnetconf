@@ -67,6 +67,7 @@ LDCONFIG = ldconfig
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
+INSTALL_DOC = @INSTALL_DOC@
 RPMDIR = RPMBUILD
 NC_WORKINGDIR_PATH = $(DESTDIR)/@NC_WORKINGDIR_PATH@
 NC_SESSIONFILE_PATH = $(DESTDIR)/@NC_SESSIONFILE_PATH@
@@ -297,7 +298,7 @@ rpm: tarball $(TARBALLPYAPI)
 	fi
 
 .PHONY: install
-install: all install-devel install-doc $(INSTALLPYAPI)
+install: all install-devel $(INSTALL_DOC) $(INSTALLPYAPI)
 	$(INSTALL) -m 775 -d $(DESTDIR)/$(libdir)
 	$(LIBTOOL) --mode=install cp $(NAME).la $(DESTDIR)/$(libdir)
 	$(LIBTOOL) --mode=finish $(DESTDIR)/$(libdir)
