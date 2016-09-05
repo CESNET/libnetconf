@@ -2330,7 +2330,6 @@ static xmlNodePtr _xmlReplaceNode(xmlNodePtr old, xmlNodePtr cur)
 
 static int process_filter_param (xmlNodePtr content, const struct nc_filter* filter)
 {
-	xmlDocPtr doc_filter = NULL;
 	xmlNodePtr node, ntf_filter;
 	xmlNsPtr ns;
 
@@ -2354,7 +2353,7 @@ static int process_filter_param (xmlNodePtr content, const struct nc_filter* fil
 			/* process Subtree filter type */
 			if (xmlAddChild(content, node) == NULL) {
 				ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
-				xmlFreeDoc(doc_filter);
+				xmlFreeNode(node);
 				return (EXIT_FAILURE);
 			}
 		} else {
