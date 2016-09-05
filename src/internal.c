@@ -750,27 +750,21 @@ API int nc_close(void)
 
 char* nc_clrwspace (const char* in)
 {
-	int i, j = 0, len = strlen(in);
-	char* retval = strdup(in);
+	int len;
+	char* retval;
+
+	/* skip leading whitespaces */
+	while (isspace(in[0])) {
+		++in;
+	}
+
+	/* skip trailing whitespaces */
+	for (len = strlen(in); isspace(in[len - 1]); --len);
+
+	retval = strndup(in, len);
 	if (retval == NULL) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
-	}
-
-	if (isspace(retval[0])) {
-		/* remove leading whitespace characters */
-		for (i = 0, j = 0; i < len ; i++, j++) {
-			while (retval[i] != '\0' && isspace(retval[i])) {
-				i++;
-			}
-			retval[j] = retval[i];
-		}
-	}
-
-	/* remove trailing whitespace characters */
-	while (j >= 0 && isspace(retval[j])) {
-		retval[j] = '\0';
-		j--;
 	}
 
 	return (retval);
