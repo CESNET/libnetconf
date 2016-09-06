@@ -287,6 +287,15 @@ NC_REPLY_TYPE nc_reply_get_type(const nc_reply *reply);
 
 /**
  * @ingroup reply
+ * @brief Get contents of the \<rpc-reply\>.
+ * @param reply rpc-reply message.
+ * @return String with the content of the \<rpc-reply\> elements. Caller is
+ * responsible for freeing the returned string with free().
+ */
+char* nc_reply_get_data_custom(const nc_reply* reply);
+
+/**
+ * @ingroup reply
  * @brief Get content of the \<data\> element in \<rpc-reply\>.
  * @param reply rpc-reply message.
  * @return String with the content of the \<data\> element. Caller is

@@ -581,15 +581,22 @@ NC_REPLY_TYPE nc_reply_parse_type(nc_reply* reply)
 	}
 	/* NOTE: data element's namespace can vary (e.g. for get-schema) */
 	if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply", reply->ctxt)) != NULL) {
-		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
-			for (node = query_result->nodesetval->nodeTab[0]->children; node != NULL; node = node->next) {
-				if (node->type != XML_ELEMENT_NODE) {
-					continue;
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			if (query_result->nodesetval->nodeNr == 1) {  /* data elements are always a single node */
+				for (node = query_result->nodesetval->nodeTab[0]->children; node != NULL; node = node->next) {
+					if (node->type != XML_ELEMENT_NODE) {
+						continue;
+					}
+					if (xmlStrcmp(node->name, BAD_CAST "data") == 0) {
+						reply->type.reply = NC_REPLY_DATA;
+						break;
+					}
 				}
-				if (xmlStrcmp(node->name, BAD_CAST "data") == 0) {
+				if (reply->type.reply == NC_REPLY_UNKNOWN) {  /* if it is not data element, assume custom data element */
 					reply->type.reply = NC_REPLY_DATA;
-					break;
 				}
+			} else {  /* custom data elements can be a list */
+				reply->type.reply = NC_REPLY_DATA;
 			}
 		}
 		xmlXPathFreeObject(query_result);
@@ -1537,6 +1544,72 @@ API const char* nc_reply_get_data_ns(const nc_reply* reply)
 	return (retval);
 }
 
+API char* nc_reply_get_data_custom(const nc_reply* reply)
+{
+	xmlXPathObjectPtr query_result = NULL;
+	char *buf;
+	xmlBufferPtr data_buf;
+	xmlNodePtr data = NULL, aux_data;
+	xmlDocPtr aux_doc;
+	int gotdata = 0;
+
+	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply", reply->ctxt)) != NULL) {
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			if (query_result->nodesetval->nodeNr > 1) {
+				ERROR("%s: multiple rpc-reply elements found", __func__);
+				xmlXPathFreeObject(query_result);
+				return (NULL);
+			}
+			for (aux_data = query_result->nodesetval->nodeTab[0]->children; aux_data != NULL; aux_data = aux_data->next) {
+				if (aux_data->type == XML_ELEMENT_NODE) {
+					aux_data = aux_data->parent;
+					break;
+				}
+			}
+			if (aux_data == NULL) {
+				ERROR("%s: no custom data elements found", __func__);
+				xmlXPathFreeObject(query_result);
+				return (NULL);
+			}
+			data = xmlCopyNodeList(aux_data);
+		}
+		xmlXPathFreeObject(query_result);
+	}
+
+	if (data == NULL) {
+		ERROR("%s: parsing reply to get custom data failed. No custom data found.", __func__);
+		return(NULL);
+	}
+
+	if ((data_buf = xmlBufferCreate()) == NULL) {
+		xmlFreeNodeList(data);
+		return NULL;
+	}
+
+	aux_doc = xmlNewDoc(BAD_CAST "1.0");
+	xmlDocSetRootElement(aux_doc, data);
+	for (aux_data = aux_doc->children->children; aux_data != NULL; aux_data = aux_data->next) {
+		if (aux_data->type == XML_ELEMENT_NODE || aux_data->type == XML_TEXT_NODE) {
+			xmlNodeDump(data_buf, aux_doc, aux_data, 1, 1);
+			gotdata = 1;
+		}
+	}
+	if (gotdata == 1) {
+		buf = strdup((char*) xmlBufferContent(data_buf));
+	} else {
+		/*
+		 * Returned data content is empty, so return empty
+		 * string without any error message. This can be a valid
+		 * content of the reply, e.g. in case of filtering.
+		 */
+		buf = strdup("");
+	}
+	xmlBufferFree(data_buf);
+	xmlFreeDoc(aux_doc);
+
+	return (buf);
+}
+
 API char* nc_reply_get_data(const nc_reply* reply)
 {
 	xmlXPathObjectPtr query_result = NULL;
@@ -1885,24 +1958,38 @@ API nc_reply *nc_reply_custom(const char* data)
 {
 	nc_reply *reply;
 	xmlDocPtr doc_data;
+	char* data_env;
 	struct nc_err* e;
+	int r;
 
-	if (!data) {
-		data = "";
+	/* Since we don't know if data is a single element or a list, we wrap it with a top element
+	 * that we won't pass onto the rpc-reply (see below) */
+	r = asprintf(&data_env, "<custom_data>%s</custom_data>", (data == NULL) ? "" : data);
+
+	if (r == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 	}
 
 	/* prepare XML structure from given data */
-	doc_data = xmlReadMemory(data, strlen(data), NULL, NULL, NC_XMLREAD_OPTIONS);
+	doc_data = xmlReadMemory(data_env, strlen(data_env), NULL, NULL, NC_XMLREAD_OPTIONS);
 	if (doc_data == NULL) {
 		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+		free(data_env);
 		e = nc_err_new(NC_ERR_OP_FAILED);
 		nc_err_set(e, NC_ERR_PARAM_MSG, "Configuration data seems to be corrupted.");
 		return (nc_reply_error(e));
 	}
-
-	reply = (nc_reply*)nc_msg_create(doc_data->children,"rpc-reply");
+	
+	/*
+	 * Notice here we're not givin the imediate children (custom_data element) to nc_msg_create
+	 * but instead we provide its children
+	 */
+	reply = (nc_reply*)nc_msg_create(doc_data->children->children,"rpc-reply");
 	reply->type.reply = NC_REPLY_DATA;
+
 	xmlFreeDoc(doc_data);
+	free(data_env);
 
 	return (reply);
 }
@@ -1910,7 +1997,9 @@ API nc_reply *nc_reply_custom(const char* data)
 API nc_reply *nc_reply_data_ns(const char* data, const char* ns)
 {
 	nc_reply *reply;
+	xmlDocPtr doc_data;
 	char* data_env;
+	struct nc_err* e;
 	int r;
 
 	if (ns != NULL) {
@@ -1923,7 +2012,19 @@ API nc_reply *nc_reply_data_ns(const char* data, const char* ns)
 		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
 	}
 
-	reply = nc_reply_custom(data_env);
+	/* prepare XML structure from given data */
+	doc_data = xmlReadMemory(data_env, strlen(data_env), NULL, NULL, NC_XMLREAD_OPTIONS);
+	if (doc_data == NULL) {
+		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+		free(data_env);
+		e = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(e, NC_ERR_PARAM_MSG, "Configuration data seems to be corrupted.");
+		return (nc_reply_error(e));
+	}
+
+	reply = (nc_reply*)nc_msg_create(doc_data->children,"rpc-reply");
+	reply->type.reply = NC_REPLY_DATA;
+	xmlFreeDoc(doc_data);
 	free(data_env);
 
 	return (reply);
