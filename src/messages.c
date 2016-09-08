@@ -582,7 +582,7 @@ NC_REPLY_TYPE nc_reply_parse_type(nc_reply* reply)
 	/* NOTE: data element's namespace can vary (e.g. for get-schema) */
 	if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply", reply->ctxt)) != NULL) {
 		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			if (query_result->nodesetval->nodeNr == 1) {  /* data elements are always a single node */
+			if (query_result->nodesetval->nodeNr == 1) {
 				for (node = query_result->nodesetval->nodeTab[0]->children; node != NULL; node = node->next) {
 					if (node->type != XML_ELEMENT_NODE) {
 						continue;
@@ -595,8 +595,6 @@ NC_REPLY_TYPE nc_reply_parse_type(nc_reply* reply)
 				if (reply->type.reply == NC_REPLY_UNKNOWN) {  /* if it is not data element, assume custom data element */
 					reply->type.reply = NC_REPLY_DATA;
 				}
-			} else {  /* custom data elements can be a list */
-				reply->type.reply = NC_REPLY_DATA;
 			}
 		}
 		xmlXPathFreeObject(query_result);
@@ -1544,78 +1542,12 @@ API const char* nc_reply_get_data_ns(const nc_reply* reply)
 	return (retval);
 }
 
-API char* nc_reply_get_data_custom(const nc_reply* reply)
-{
-	xmlXPathObjectPtr query_result = NULL;
-	char *buf;
-	xmlBufferPtr data_buf;
-	xmlNodePtr data = NULL, aux_data;
-	xmlDocPtr aux_doc;
-	int gotdata = 0;
-
-	if ((query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply", reply->ctxt)) != NULL) {
-		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
-			if (query_result->nodesetval->nodeNr > 1) {
-				ERROR("%s: multiple rpc-reply elements found", __func__);
-				xmlXPathFreeObject(query_result);
-				return (NULL);
-			}
-			for (aux_data = query_result->nodesetval->nodeTab[0]->children; aux_data != NULL; aux_data = aux_data->next) {
-				if (aux_data->type == XML_ELEMENT_NODE) {
-					aux_data = aux_data->parent;
-					break;
-				}
-			}
-			if (aux_data == NULL) {
-				ERROR("%s: no custom data elements found", __func__);
-				xmlXPathFreeObject(query_result);
-				return (NULL);
-			}
-			data = xmlCopyNodeList(aux_data);
-		}
-		xmlXPathFreeObject(query_result);
-	}
-
-	if (data == NULL) {
-		ERROR("%s: parsing reply to get custom data failed. No custom data found.", __func__);
-		return(NULL);
-	}
-
-	if ((data_buf = xmlBufferCreate()) == NULL) {
-		xmlFreeNodeList(data);
-		return NULL;
-	}
-
-	aux_doc = xmlNewDoc(BAD_CAST "1.0");
-	xmlDocSetRootElement(aux_doc, data);
-	for (aux_data = aux_doc->children->children; aux_data != NULL; aux_data = aux_data->next) {
-		if (aux_data->type == XML_ELEMENT_NODE || aux_data->type == XML_TEXT_NODE) {
-			xmlNodeDump(data_buf, aux_doc, aux_data, 1, 1);
-			gotdata = 1;
-		}
-	}
-	if (gotdata == 1) {
-		buf = strdup((char*) xmlBufferContent(data_buf));
-	} else {
-		/*
-		 * Returned data content is empty, so return empty
-		 * string without any error message. This can be a valid
-		 * content of the reply, e.g. in case of filtering.
-		 */
-		buf = strdup("");
-	}
-	xmlBufferFree(data_buf);
-	xmlFreeDoc(aux_doc);
-
-	return (buf);
-}
-
 API char* nc_reply_get_data(const nc_reply* reply)
 {
 	xmlXPathObjectPtr query_result = NULL;
 	char *buf;
 	xmlBufferPtr data_buf;
-	xmlNodePtr data = NULL, aux_data;
+	xmlNodePtr data = NULL, aux_data = NULL, aux_data_custom = NULL;
 	xmlDocPtr aux_doc;
 	int gotdata = 0;
 
@@ -1630,17 +1562,27 @@ API char* nc_reply_get_data(const nc_reply* reply)
 			for (aux_data = query_result->nodesetval->nodeTab[0]->children; aux_data != NULL; aux_data = aux_data->next) {
 				if (aux_data->type != XML_ELEMENT_NODE) {
 					continue;
+				} else if (aux_data_custom == NULL) {
+					/* Store the node ptr to the first element node */
+					aux_data_custom = aux_data->parent;
 				}
+
 				if (xmlStrcmp(aux_data->name, BAD_CAST "data") == 0) {
 					break;
 				}
 			}
-			if (aux_data == NULL) {
+			if (aux_data == NULL && aux_data_custom == NULL) {
 				ERROR("%s: no data element found", __func__);
 				xmlXPathFreeObject(query_result);
 				return (NULL);
 			}
-			data = xmlCopyNode(aux_data, 1);
+
+			if (aux_data) {
+				aux_data_custom = NULL;	 /* we have data so lets clear our custom data ptr */
+				data = xmlCopyNode(aux_data, 1);
+			} else {
+				data = xmlCopyNodeList(aux_data_custom);
+			}
 		}
 		xmlXPathFreeObject(query_result);
 	}
@@ -1651,11 +1593,17 @@ API char* nc_reply_get_data(const nc_reply* reply)
 	}
 
 	if ((data_buf = xmlBufferCreate()) == NULL) {
+		if (aux_data_custom) {
+			xmlFreeNodeList(data);
+		} else if (aux_data) {
+			xmlFreeNode(data);
+		}
 		return NULL;
 	}
 
 	aux_doc = xmlNewDoc(BAD_CAST "1.0");
 	xmlDocSetRootElement(aux_doc, data);
+
 	for (aux_data = aux_doc->children->children; aux_data != NULL; aux_data = aux_data->next) {
 		if (aux_data->type == XML_ELEMENT_NODE || aux_data->type == XML_TEXT_NODE) {
 			xmlNodeDump(data_buf, aux_doc, aux_data, 1, 1);
