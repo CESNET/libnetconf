@@ -1578,9 +1578,13 @@ API char* nc_reply_get_data(const nc_reply* reply)
 			}
 
 			if (aux_data) {
-				aux_data_custom = NULL;	 /* we have data so lets clear our custom data ptr */
-				data = xmlCopyNode(aux_data, 1);
-			} else {
+				if (xmlStrcmp(aux_data->ns->href, BAD_CAST NC_NS_BASE10) == 0) {
+					aux_data_custom = NULL;
+					data = xmlCopyNode(aux_data, 1);
+				}
+			}
+
+			if (aux_data_custom) {
 				data = xmlCopyNodeList(aux_data_custom);
 			}
 		}
