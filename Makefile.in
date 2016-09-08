@@ -298,7 +298,7 @@ rpm: tarball $(TARBALLPYAPI)
 	fi
 
 .PHONY: install
-install: all install-bin install-devel $(INSTALL_DOC) $(INSTALLPYAPI)
+install: all install-bin install-devtools $(INSTALL_DOC) $(INSTALLPYAPI)
 
 .PHONY: install-bin
 install-bin:
@@ -328,8 +328,8 @@ install-bin:
 		chmod a+rwx $(NC_WORKINGDIR_PATH); \
 	fi;
 
-.PHONY: install-devel
-install-devel: $(LNCTOOL) $(NAME).la $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR) $(NAME).pc
+.PHONY: install-devtools
+install-devtools: $(LNCTOOL) $(NAME).la $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR) $(NAME).pc
 	@[ -d $(DESTDIR)/$(libdir) ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir)); \
 	[ -d $(DESTDIR)/$(libdir)/pkgconfig ] || \
@@ -371,13 +371,13 @@ install-pyapi: pyapi
 	@cd python; $(PYTHON) ./setup.py install --prefix=$(DESTDIR)/$(PYPREFIX); cd -;
 
 .PHONY: uninstall
-uninstall: uninstall-devel uninstall-doc $(UNINSTALLPYAPI)
+uninstall: uninstall-devtools uninstall-doc $(UNINSTALLPYAPI)
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libnetconf.la
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
 	rm $(NC_WORKINGDIR_PATH)/ietf-netconf-acm*.rng $(NC_WORKINGDIR_PATH)/ietf-netconf-acm-schematron.xsl;
 
-.PHONY: uninstall-devel
-uninstall-devel:
+.PHONY: uninstall-devtools
+uninstall-devtools:
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libnetconf.la \
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
 	for i in $(HDRS_PUBL_ROOT); do \
