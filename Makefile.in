@@ -374,7 +374,7 @@ install-pyapi: pyapi
 	@cd python; $(PYTHON) ./setup.py install --prefix=$(DESTDIR)/$(PYPREFIX); cd -;
 
 .PHONY: uninstall
-uninstall: uninstall-devtools uninstall-doc $(UNINSTALLPYAPI)
+uninstall: uninstall-dev uninstall-devtools uninstall-doc $(UNINSTALLPYAPI)
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libnetconf.la
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
 	rm $(NC_WORKINGDIR_PATH)/ietf-netconf-acm*.rng $(NC_WORKINGDIR_PATH)/ietf-netconf-acm-schematron.xsl;
@@ -383,17 +383,20 @@ uninstall: uninstall-devtools uninstall-doc $(UNINSTALLPYAPI)
 uninstall-devtools:
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libnetconf.la \
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
+	rm -f $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
+	rm -f $(DESTDIR)/$(bindir)/lnctool; \
+	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
+	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/xslt/; \
+	rm -f $(DESTDIR)/$(bindir)/lncdatastore;
+
+.PHONY: uninstall-dev
+uninstall-dev:
 	for i in $(HDRS_PUBL_ROOT); do \
 		rm -f $(DESTDIR)/$(includedir)/$$(basename $$i); \
 	done; \
 	for i in $(HDRS_PUBL_SUBDIR); do \
 		rm -f $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
 	done; \
-	rm -f $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
-	rm -f $(DESTDIR)/$(bindir)/lnctool; \
-	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
-	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/xslt/; \
-	rm -f $(DESTDIR)/$(bindir)/lncdatastore;
 
 .PHONY: uninstall-doc
 uninstall-doc:
