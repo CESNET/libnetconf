@@ -1353,7 +1353,8 @@ int nacm_check_notification(const nc_ntf* ntf, const struct nc_session* session)
 	int retval;
 	NCNTF_EVENT event;
 
-	if (ntf == NULL || session == NULL) {
+	if (ntf == NULL || session == NULL ||
+			(session->status != NC_SESSION_STATUS_WORKING && session->status != NC_SESSION_STATUS_DUMMY)) {
 		/* invalid input parameter */
 		return (-1);
 	}
