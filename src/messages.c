@@ -1578,7 +1578,8 @@ API char* nc_reply_get_data(const nc_reply* reply)
 			}
 
 			if (aux_data) {
-				if (xmlStrcmp(aux_data->ns->href, BAD_CAST NC_NS_BASE10) == 0) {
+				if ((xmlStrcmp(aux_data->ns->href, BAD_CAST NC_NS_BASE10) == 0) ||
+					(xmlStrcmp(aux_data->ns->href, BAD_CAST NC_NS_MONITORING) == 0)) {
 					aux_data_custom = NULL;
 					data = xmlCopyNode(aux_data, 1);
 				}
