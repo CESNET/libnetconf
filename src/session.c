@@ -2402,6 +2402,9 @@ try_again:
 
 	ret = nc_session_recv_msg(session, local_timeout, &msg);
 
+	DBG_UNLOCK("mut_mqueue");
+	pthread_mutex_unlock(&(session->mut_mqueue));
+
 	switch (ret) {
 	case NC_MSG_REPLY: /* regular reply received */
 		/* if specified callback for processing rpc-error, use it */
@@ -2435,6 +2438,9 @@ try_again:
 		break;
 	case NC_MSG_WOULDBLOCK:
 		if ((timeout == -1) || ((timeout > 0) && ((timeout = timeout - local_timeout) > 0))) {
+			/* lock again */
+			DBG_LOCK("mut_mqueue");
+			pthread_mutex_lock(&(session->mut_mqueue));
 			goto try_again;
 		}
 		break;
@@ -2459,10 +2465,6 @@ try_again:
 		ret = NC_MSG_UNKNOWN;
 		break;
 	}
-
-	/* session lock is no more needed */
-	DBG_UNLOCK("mut_mqueue");
-	pthread_mutex_unlock(&(session->mut_mqueue));
 
 	return (ret);
 }
