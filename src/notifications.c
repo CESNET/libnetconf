@@ -70,13 +70,14 @@
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
-#define NCNTF_RULES_SIZE (1024*1024)
+#define NCNTF_RULES_SIZE (1024)
 #define NCNTF_STREAMS_NS "urn:ietf:params:xml:ns:netmod:notification"
 
 
-const uint32_t MAGIC_ENDING = 0xDEADBEEF;
-const uint32_t MAGIC_ENDING_SIZE = 4;
-#define NCNTF_STREAMS_MAX_SIZE (1024*1024*0.5)
+const uint32_t MAGIC_EOF_MARKER = 0xCAFECAFE;
+const uint32_t MAGIC_END_MARKER = 0xDEADBEEF;
+const uint32_t MAGIC_MARKER_SIZE = 4;
+#define NCNTF_STREAMS_MAX_SIZE (1024*1024/4)
 
 /* path to the Event stream files, the default path is defined in config.h */
 static char* streams_path = NULL;
@@ -89,7 +90,6 @@ struct stream_offset {
 	off_t eof_offset;
 	off_t cur_offset;
 	struct stream_offset* next;
-	int current_fd;
 };
 
 static pthread_key_t ncntf_replay_ends;
@@ -138,9 +138,8 @@ struct stream {
 	int locked;
 	char* rules;
 	unsigned int data;
+	unsigned int current_offset;
 	struct stream *next;
-	bool current;
-	struct stream *next_rotate;
 };
 
 /* status information of the stream configuration */
@@ -362,6 +361,45 @@ static int map_rules(struct stream *s)
 	}
 }
 
+static unsigned int ncntf_last_notification_offset(struct stream* s)
+{
+	uint64_t t = 0;
+	uint32_t size = 0, magic_ending = 0;
+	unsigned int offset = s->data;
+
+	do {
+		if ((read(s->fd_events, &(size), sizeof(size))) < 0) {
+			offset = s->data;
+			break;
+		}
+
+		if ((read(s->fd_events, &(t), sizeof(t))) < 0) {
+			offset = s->data;
+			break;
+		}
+
+		if ((read(s->fd_events, &(magic_ending), sizeof(magic_ending))) < 0) {
+			offset = s->data;
+			break;
+		}
+
+		if(magic_ending == MAGIC_END_MARKER)
+		{
+			VERB("EOF found!");
+			break;
+		}
+		offset += sizeof(size) + sizeof(t) + size;
+		if(offset > NCNTF_STREAMS_MAX_SIZE) // migration case.... rewrite the file
+		{
+			offset = s->data;
+			break;
+		}
+		lseek(s->fd_events, offset, SEEK_SET);
+	} while( offset <= NCNTF_STREAMS_MAX_SIZE);
+
+	return offset;
+}
+
 static int ncntf_check_file_ended(struct stream* s)
 {
 	int r = 0;
@@ -373,7 +411,7 @@ static int ncntf_check_file_ended(struct stream* s)
 		return -1;
 	}
 
-	if(size == MAGIC_ENDING_SIZE)
+	if(size == MAGIC_MARKER_SIZE)
 	{
 		if ((r = read(s->fd_events, &(t), sizeof(t))) < 0) {
 			return -1;
@@ -381,9 +419,9 @@ static int ncntf_check_file_ended(struct stream* s)
 		if ((r = read(s->fd_events, &(magic_ending), sizeof(magic_ending))) < 0) {
 			return -1;
 		}
-		if(magic_ending == MAGIC_ENDING)
+		if(magic_ending == MAGIC_EOF_MARKER)
 		{
-			VERB("Old stream file, change to another");
+			VERB("EOF found!");
 			return 1;
 		}
 	}
@@ -391,29 +429,11 @@ static int ncntf_check_file_ended(struct stream* s)
 	return 0;
 }
 
-static int ncntf_is_old_stream(struct stream* s)
-{
-	uint32_t rotation_size = sizeof(uint32_t) + sizeof(uint64_t) + sizeof(MAGIC_ENDING);
-	unsigned int actual_offset = lseek(s->fd_events, 0, SEEK_CUR);
-	unsigned int eof_offset = lseek(s->fd_events, 0, SEEK_END);
-	unsigned int offset = eof_offset - rotation_size;
-	int is_old_stream = 0;
-	if(offset >= actual_offset)
-	{
-		lseek(s->fd_events, offset, SEEK_SET);
-		if(ncntf_check_file_ended(s)) {
-			is_old_stream = 1;
-		}
-	}
-	lseek(s->fd_events, actual_offset, SEEK_SET);
-	return is_old_stream;
-}
-
-static int ncntf_write_end_marker(struct stream* s, uint64_t etime64)
+static int ncntf_write_end_marker(struct stream* s, uint64_t etime64, uint32_t magic)
 {
 	uint32_t r = 0;
 
-	while (((r = write(s->fd_events, &MAGIC_ENDING_SIZE, MAGIC_ENDING_SIZE)) == -1) && (errno == EAGAIN ||errno == EINTR));
+	while (((r = write(s->fd_events, &MAGIC_MARKER_SIZE, MAGIC_MARKER_SIZE)) == -1) && (errno == EAGAIN ||errno == EINTR));
 	if (r == -1) {
 		return -1;
 	}
@@ -421,12 +441,13 @@ static int ncntf_write_end_marker(struct stream* s, uint64_t etime64)
 	if (r == -1) {
 		return -1;
 	}
-	while (((r = write(s->fd_events, &MAGIC_ENDING, MAGIC_ENDING_SIZE)) == -1) && (errno == EAGAIN ||errno == EINTR));
+	while (((r = write(s->fd_events, &magic, MAGIC_MARKER_SIZE)) == -1) && (errno == EAGAIN ||errno == EINTR));
 	if (r == -1) {
 		return -1;
 	}
 	return 0;
 }
+
 
 /*
  * Create a new stream file and write the header corresponding to the given
@@ -436,7 +457,7 @@ static int ncntf_write_end_marker(struct stream* s, uint64_t etime64)
  *
  * returns 0 on success, non-zero value else
  */
-static int write_fileheader(struct stream *s, bool second)
+static int write_fileheader(struct stream *s)
 {
 	char* filepath = NULL, *header;
 	uint16_t len, version = MAGIC_VERSION;
@@ -456,19 +477,9 @@ static int write_fileheader(struct stream *s, bool second)
 	/* check if the corresponding file is already opened */
 	if (s->fd_events == -1) {
 		/* open and create/truncate the file */
-		if(second)
-		{
-			if (asprintf(&filepath, "%s/%s.events.rotate", streams_path, s->name) == -1) {
-				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				return (EXIT_FAILURE);
-			}
-		}
-		else
-		{
-			if (asprintf(&filepath, "%s/%s.events", streams_path, s->name) == -1) {
-				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-				return (EXIT_FAILURE);
-			}
+		if (asprintf(&filepath, "%s/%s.events", streams_path, s->name) == -1) {
+			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+			return (EXIT_FAILURE);
 		}
 		mask = umask(0000);
 		s->fd_events = open(filepath, O_RDWR | O_CREAT | O_TRUNC, FILE_PERM);
@@ -547,17 +558,15 @@ static int write_fileheader(struct stream *s, bool second)
 		return (EXIT_FAILURE);
 	}
 	free(header);
+
 	/* set where the data starts */
 	s->data = lseek(s->fd_events, 0, SEEK_CUR);
+	s->current_offset = s->data;
 
-	if(second) {
-		if(ncntf_write_end_marker(s, s->created) == -1) {
-			WARN("Writing a stream event file header end failed (%s).", strerror(errno));
-			if (ftruncate(s->fd_events, 0) == -1) {
-				ERROR("ftruncate() on stream file \'%s\' failed (%s).", s->name, strerror(errno));
-			}
-			return (EXIT_FAILURE);
-		}
+	//add end of end marker
+	while (((r = write(s->fd_events, &MAGIC_END_MARKER, MAGIC_MARKER_SIZE)) == -1) && (errno == EAGAIN ||errno == EINTR));
+	if (r == -1) {
+		return (EXIT_FAILURE);
 	}
 
 	return (EXIT_SUCCESS);
@@ -568,11 +577,9 @@ static int write_fileheader(struct stream *s, bool second)
  * as filepath. If the file is not a proper libnetconf's stream file, NULL is
  * returned.
  */
-static struct stream *read_fileheader(const char* filepath, bool second)
+static struct stream *read_fileheader(const char* filepath)
 {
 	struct stream *s;
-	char* rotate_filepath = NULL;
-	struct stream *s2;
 	int fd;
 	char magic_name[strlen(MAGIC_NAME)];
 	uint16_t magic_number;
@@ -635,27 +642,9 @@ static struct stream *read_fileheader(const char* filepath, bool second)
 	s->fd_rules = -1;
 	s->next = NULL;
 
-	/* move to the end of the file */
-	s->data = lseek(s->fd_events, 0, SEEK_CUR);
-
-	if(!second) {
-		if (asprintf(&rotate_filepath, "%s.rotate", filepath) == -1) {
-			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
-			return NULL;
-		}
-		s2 = read_fileheader(rotate_filepath, true);
-		free(rotate_filepath);
-		s2->next_rotate = s;
-		if(ncntf_is_old_stream(s) == 1) {
-			s2->current = true;
-			s->current = false;
-		} else {
-			s2->current = false;
-			s->current = true;
-		}
-	}
-
-	s->next_rotate = s2;
+	/* move to lsat notification */
+	s->data = ncntf_last_notification_offset(s);
+	s->current_offset = s->data;
 
 	return (s);
 
@@ -669,7 +658,7 @@ read_fail:
 /*
  * Free the stream structure
  */
-static void ncntf_stream_free(struct stream *s, bool second)
+static void ncntf_stream_free(struct stream *s)
 {
 	if (s == NULL) {
 		return;
@@ -684,10 +673,6 @@ static void ncntf_stream_free(struct stream *s, bool second)
 	if (s->fd_events != -1) {
 		close(s->fd_events);
 	}
-    if(!second)
-    {
-        ncntf_stream_free(s->next_rotate, true);
-    }
 	free(s);
 }
 
@@ -707,12 +692,7 @@ static struct stream* ncntf_stream_get(const char* stream)
 	for (s = streams; s != NULL; s = s->next) {
 		if (strcmp(s->name, stream) == 0) {
 			/* the specified stream does exist */
-			if(s->current) {
-				return (s);
-			}
-			else {
-				return (s->next_rotate);
-			}
+			return (s);
 		}
 	}
 
@@ -726,13 +706,13 @@ static struct stream* ncntf_stream_get(const char* stream)
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			return (NULL);
 		}
-		if (((s = read_fileheader(filepath, false)) != NULL) && (map_rules(s) == 0)) {
+		if (((s = read_fileheader(filepath)) != NULL) && (map_rules(s) == 0)) {
 			/* add the stream file into the stream list */
 			s->next = streams;
 			streams = s;
 		} else if (s != NULL) {
 			ERROR("Unable to map the Event stream rules file into memory.");
-			ncntf_stream_free(s, false);
+			ncntf_stream_free(s);
 			s = NULL;
 		}
 		free(filepath);
@@ -834,22 +814,18 @@ static int ncntf_streams_init(void)
 			continue;
 		}
 
-		if(strstr(filelist[n]->d_name, ".rotate") != NULL) {
-			continue;
-		}
-
 		if (asprintf(&filepath, "%s/%s", streams_path, filelist[n]->d_name) == -1) {
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			free(filelist[n]);
 			continue;
 		}
-		if ((s = read_fileheader(filepath, false)) != NULL && (map_rules(s) == 0)) {
+		if ((s = read_fileheader(filepath)) != NULL && (map_rules(s) == 0)) {
 			/* add the stream file into the stream list */
 			s->next = streams;
 			streams = s;
 		} else if (s != NULL) {
 			ERROR("Unable to map the Event stream rules file into memory.");
-			ncntf_stream_free(s, false);
+			ncntf_stream_free(s);
 			s = NULL;
 		}/* else - not an event stream file */
 		free(filepath);
@@ -887,7 +863,7 @@ static void ncntf_streams_close(void)
 	s = streams;
 	while(s != NULL) {
 		streams = s->next;
-		ncntf_stream_free(s, false);
+		ncntf_stream_free(s);
 		s = streams;
 	}
 	DBG_UNLOCK("streams_mut");
@@ -962,7 +938,6 @@ void ncntf_close(void)
 API int ncntf_stream_new(const char* name, const char* desc, int replay)
 {
 	struct stream *s;
-	struct stream *s2;
 	xmlDocPtr oldconfig;
 
 	if (ncntf_config == NULL) {
@@ -998,56 +973,21 @@ API int ncntf_stream_new(const char* name, const char* desc, int replay)
 	s->rules = NULL;
 	s->fd_events = -1;
 	s->fd_rules = -1;
-	s->current = true;
-	s->next_rotate = NULL;
-
-	if (write_fileheader(s, false) != 0 || map_rules(s) != 0) {
-		ncntf_stream_free(s, false);
+	if (write_fileheader(s) != 0 || map_rules(s) != 0) {
+		ncntf_stream_free(s);
 		DBG_UNLOCK("streams_mut");
 		pthread_mutex_unlock(streams_mut);
 		return (EXIT_FAILURE);
 	} else {
-
-		s2 = malloc(sizeof(struct stream));
-		if (s2 == NULL) {
-			ncntf_stream_free(s, false);
-			ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
-			DBG_UNLOCK("streams_mut");
-			pthread_mutex_unlock(streams_mut);
-			return (EXIT_FAILURE);
-		}
-
-		s2->name = strdup(name);
-		s2->desc = strdup(desc);
-		s2->replay = replay;
-		s2->created = time(NULL);
-		s2->locked = 0;
-		s2->next = NULL;
-		s2->rules = NULL;
-		s2->fd_events = -1;
-		s2->fd_rules = -1;
-		s2->current = false;
-		s2->next_rotate = s;
-
-		if (write_fileheader(s2, true) != 0) {
-			ncntf_stream_free(s, false);
-			DBG_UNLOCK("streams_mut");
-			pthread_mutex_unlock(streams_mut);
-			return (EXIT_FAILURE);
-		}
-		else
-		{
-			/* add created stream into the list */
-			s->next = streams;
-			streams = s;
-			s->next_rotate = s2;
-			DBG_UNLOCK("streams_mut");
-			pthread_mutex_unlock(streams_mut);
-			oldconfig = ncntf_config;
-			ncntf_config = streams_to_xml();
-			xmlFreeDoc(oldconfig);
-			return (EXIT_SUCCESS);
-		}
+		/* add created stream into the list */
+		s->next = streams;
+		streams = s;
+		DBG_UNLOCK("streams_mut");
+		pthread_mutex_unlock(streams_mut);
+		oldconfig = ncntf_config;
+		ncntf_config = streams_to_xml();
+		xmlFreeDoc(oldconfig);
+		return (EXIT_SUCCESS);
 	}
 }
 
@@ -1199,17 +1139,10 @@ API void ncntf_stream_iter_start(const char* stream)
 		pthread_mutex_unlock(streams_mut);
 		return;
 	}
-
-	if(s->current == false) {
-		str_off->current_fd = s->fd_events;
-		str_off->eof_offset = lseek(s->fd_events, 0, SEEK_END);
-		str_off->cur_offset = s->data;
-	}
-	else {
-		str_off->current_fd = s->next_rotate->fd_events;
-		str_off->eof_offset = lseek(s->next_rotate->fd_events, 0, SEEK_END);
-		str_off->cur_offset = s->next_rotate->data;
-	}
+	/* remember the current end of file position */
+	str_off->eof_offset = s->current_offset;
+	/* and the thread's specific position in the file (start of stream file records section) */
+	str_off->cur_offset = s->data;
 	DBG_UNLOCK("streams_mut");
 	pthread_mutex_unlock(streams_mut);
 }
@@ -1235,7 +1168,6 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 	struct stream *s;
 	int32_t len;
 	uint64_t t;
-	off_t aux;
 	char* text = NULL;
 	off_t* replay_end;
 	char* time_s;
@@ -1273,7 +1205,6 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 			return (NULL);
 		}
 	}
-
 	replay_end = &(str_off->eof_offset);
 
 	if (start == -1 && *replay_end != 0) {
@@ -1282,13 +1213,9 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		 * according to RFC 5277, sec 2.1.1, this is not a replay subscription
 		 * so skip to the end of the file and mark replay as done
 		 */
-		str_off->cur_offset = lseek(s->fd_events, 0, SEEK_END);
-		str_off->current_fd = s->fd_events;
+		str_off->cur_offset = str_off->eof_offset;
 		*replay_end = 0;
-	} else if(str_off->current_fd != s->fd_events && *replay_end == 0) {
-		s = s->next_rotate;
 	}
-
 
 	while (1) {
 		/* condition to read events from file (use replay):
@@ -1323,7 +1250,7 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		}
 
 		/* check that we have something to read */
-		if (str_off->cur_offset == (aux = lseek(s->fd_events, 0, SEEK_END))) {
+		if (str_off->cur_offset == s->current_offset) {
 			/* nothing to read */
 			DBG_UNLOCK("streams_mut");
 			pthread_mutex_unlock(streams_mut);
@@ -1331,13 +1258,12 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		}
 		/* move file offset to the read position */
 		lseek(s->fd_events, str_off->cur_offset, SEEK_SET);
+
 		if (ncntf_stream_lock(s) == 0) {
 			int ret = ncntf_check_file_ended(s);
 			if(ret == 1) {
-				s = s->next_rotate;
+				ERROR("found eof.... going to begin");
 				str_off->cur_offset = s->data;
-				lseek(s->fd_events, str_off->cur_offset, SEEK_SET);
-				str_off->current_fd = s->fd_events;
 				ncntf_stream_unlock(s);
 				continue;
 			}
@@ -1349,11 +1275,11 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 			}
 			else
 			{
+				ERROR("Reading the stream %d %d", str_off->cur_offset, s->current_offset);
 				//not need to switch, continue reading
 			}
-
 			if ((r = read(s->fd_events, &len, sizeof(int32_t))) <= 0) {
-				ERROR("Reading the stream file failed 1 (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
 				DBG_UNLOCK("streams_mut");
 				ncntf_stream_iter_finish(stream);
 				pthread_mutex_unlock(streams_mut);
@@ -1361,7 +1287,7 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 			}
 			str_off->cur_offset += r;
 			if ((r = read(s->fd_events, &t, sizeof(uint64_t))) <= 0) {
-				ERROR("Reading the stream file failed 2 (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
 				DBG_UNLOCK("streams_mut");
 				ncntf_stream_iter_finish(stream);
 				pthread_mutex_unlock(streams_mut);
@@ -1393,7 +1319,7 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 			/* we're interested, read content */
 			text = malloc(len * sizeof(char));
 			if ((r = read(s->fd_events, text, len)) <= 0) {
-				ERROR("Reading the stream file failed 3 (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
+				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
 				DBG_UNLOCK("streams_mut");
 				ncntf_stream_iter_finish(stream);
 				pthread_mutex_unlock(streams_mut);
@@ -1538,41 +1464,36 @@ static int ncntf_event_store(time_t etime, const char* content)
 		if (ncntf_event_isallowed(s->name, ename) != 0) {
 			/* log the event to the stream file */
 			if (ncntf_stream_lock(s) == 0) {
+				offset = s->current_offset;
+				lseek(s->fd_events, offset, SEEK_SET);
 
-				if(!s->current) {
-					s = s->next_rotate; // todo check for errors.
-				}
+				if((offset + MAGIC_MARKER_SIZE + len + sizeof(int32_t) + sizeof(uint64_t)) >= NCNTF_STREAMS_MAX_SIZE) {
 
-				offset = lseek(s->fd_events, 0, SEEK_END);
-
-				if((offset + len + sizeof(int32_t) + sizeof(uint64_t)) >= NCNTF_STREAMS_MAX_SIZE) {
-
-					if(ncntf_write_end_marker(s, etime64) == -1) {
+					WARN("found end of file ..... going to ->data.");
+					if(ncntf_write_end_marker(s, etime64, MAGIC_EOF_MARKER) == -1) {
 						goto write_failed;
 					}
 
-					s->current = false;
-					s = s->next_rotate;
-					s->current = true;
-
-					if (ftruncate(s->fd_events, s->data) == -1) {
-						ERROR("ftruncate() on the stream file \'%s\' failed (%s).", s->name, strerror(errno));
-					}
-					offset = lseek(s->fd_events, 0, SEEK_END);
+					offset = s->data;
+					lseek(s->fd_events, offset, SEEK_SET);
 				}
 
 				while (((r = write(s->fd_events, &len, sizeof(int32_t))) == -1) && (errno == EAGAIN ||errno == EINTR));
 				if (r == -1) {
-					goto write_failed;
-				}
+                    goto write_failed;
+                }
 				while (((r = write(s->fd_events, &etime64, sizeof(uint64_t))) == -1) && (errno == EAGAIN ||errno == EINTR));
 				if (r == -1) {
-					goto write_failed;
-				}
+                    goto write_failed;
+                }
 				while (((r = write(s->fd_events, record, len)) == -1) && (errno == EAGAIN ||errno == EINTR));
 				if (r == -1) {
+                    goto write_failed;
+                }
+				if(ncntf_write_end_marker(s, etime64, MAGIC_END_MARKER) == -1) {
 					goto write_failed;
 				}
+                s->current_offset = (offset + len + sizeof(int32_t) + sizeof(uint64_t)); // do not include END MARKER
 
 write_failed:
 				if (r == -1) {
