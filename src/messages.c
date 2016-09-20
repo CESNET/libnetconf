@@ -290,7 +290,7 @@ static struct nc_msg* nc_msg_build (const char* msg_dump)
 		nc_msg_free(msg);
 		return NULL;
 	}
-	
+
 	/* register base namespace for the rpc */
 	if (xmlXPathRegisterNs(msg->ctxt, BAD_CAST NC_NS_BASE10_ID, BAD_CAST NC_NS_BASE10) != 0) {
 		ERROR("Registering base namespace for the message xpath context failed.");
@@ -581,14 +581,19 @@ NC_REPLY_TYPE nc_reply_parse_type(nc_reply* reply)
 	}
 	/* NOTE: data element's namespace can vary (e.g. for get-schema) */
 	if (reply->type.reply == NC_REPLY_UNKNOWN && (query_result = xmlXPathEvalExpression(BAD_CAST "/"NC_NS_BASE10_ID":rpc-reply", reply->ctxt)) != NULL) {
-		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval) && query_result->nodesetval->nodeNr == 1) {
-			for (node = query_result->nodesetval->nodeTab[0]->children; node != NULL; node = node->next) {
-				if (node->type != XML_ELEMENT_NODE) {
-					continue;
+		if (!xmlXPathNodeSetIsEmpty(query_result->nodesetval)) {
+			if (query_result->nodesetval->nodeNr == 1) {
+				for (node = query_result->nodesetval->nodeTab[0]->children; node != NULL; node = node->next) {
+					if (node->type != XML_ELEMENT_NODE) {
+						continue;
+					}
+					if (xmlStrcmp(node->name, BAD_CAST "data") == 0) {
+						reply->type.reply = NC_REPLY_DATA;
+						break;
+					}
 				}
-				if (xmlStrcmp(node->name, BAD_CAST "data") == 0) {
+				if (reply->type.reply == NC_REPLY_UNKNOWN) {  /* if it is not data element, assume custom data element */
 					reply->type.reply = NC_REPLY_DATA;
-					break;
 				}
 			}
 		}
@@ -1542,7 +1547,7 @@ API char* nc_reply_get_data(const nc_reply* reply)
 	xmlXPathObjectPtr query_result = NULL;
 	char *buf;
 	xmlBufferPtr data_buf;
-	xmlNodePtr data = NULL, aux_data;
+	xmlNodePtr data = NULL, aux_data = NULL, aux_data_custom = NULL;
 	xmlDocPtr aux_doc;
 	int gotdata = 0;
 
@@ -1557,17 +1562,32 @@ API char* nc_reply_get_data(const nc_reply* reply)
 			for (aux_data = query_result->nodesetval->nodeTab[0]->children; aux_data != NULL; aux_data = aux_data->next) {
 				if (aux_data->type != XML_ELEMENT_NODE) {
 					continue;
+				} else if (aux_data_custom == NULL) {
+					/* Store the node ptr to the first element node */
+					aux_data_custom = aux_data->parent;
 				}
+
 				if (xmlStrcmp(aux_data->name, BAD_CAST "data") == 0) {
 					break;
 				}
 			}
-			if (aux_data == NULL) {
+			if (aux_data == NULL && aux_data_custom == NULL) {
 				ERROR("%s: no data element found", __func__);
 				xmlXPathFreeObject(query_result);
 				return (NULL);
 			}
-			data = xmlCopyNode(aux_data, 1);
+
+			if (aux_data) {
+				if ((xmlStrcmp(aux_data->ns->href, BAD_CAST NC_NS_BASE10) == 0) ||
+					(xmlStrcmp(aux_data->ns->href, BAD_CAST NC_NS_MONITORING) == 0)) {
+					aux_data_custom = NULL;
+					data = xmlCopyNode(aux_data, 1);
+				}
+			}
+
+			if (aux_data_custom) {
+				data = xmlCopyNodeList(aux_data_custom);
+			}
 		}
 		xmlXPathFreeObject(query_result);
 	}
@@ -1578,11 +1598,17 @@ API char* nc_reply_get_data(const nc_reply* reply)
 	}
 
 	if ((data_buf = xmlBufferCreate()) == NULL) {
+		if (aux_data_custom) {
+			xmlFreeNodeList(data);
+		} else if (aux_data) {
+			xmlFreeNode(data);
+		}
 		return NULL;
 	}
 
 	aux_doc = xmlNewDoc(BAD_CAST "1.0");
 	xmlDocSetRootElement(aux_doc, data);
+
 	for (aux_data = aux_doc->children->children; aux_data != NULL; aux_data = aux_data->next) {
 		if (aux_data->type == XML_ELEMENT_NODE || aux_data->type == XML_TEXT_NODE) {
 			xmlNodeDump(data_buf, aux_doc, aux_data, 1, 1);
@@ -1694,7 +1720,7 @@ struct nc_msg *nc_msg_dup(struct nc_msg *msg)
 	if (dupmsg == NULL) {
 		ERROR("Memory reallocation failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
-	}	
+	}
 	dupmsg->doc = xmlCopyDoc(msg->doc, 1);
 	dupmsg->type = msg->type;
 	dupmsg->with_defaults = msg->with_defaults;
@@ -1879,6 +1905,46 @@ API nc_reply* nc_reply_ok(void)
 API nc_reply *nc_reply_data(const char* data)
 {
 	return (nc_reply_data_ns(data, NC_NS_BASE10));
+}
+
+API nc_reply *nc_reply_custom(const char* data)
+{
+	nc_reply *reply;
+	xmlDocPtr doc_data;
+	char* data_env;
+	struct nc_err* e;
+	int r;
+
+	/* Since we don't know if data is a single element or a list, we wrap it with a top element
+	 * that we won't pass onto the rpc-reply (see below) */
+	r = asprintf(&data_env, "<custom_data>%s</custom_data>", (data == NULL) ? "" : data);
+
+	if (r == -1) {
+		ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
+		return (nc_reply_error(nc_err_new(NC_ERR_OP_FAILED)));
+	}
+
+	/* prepare XML structure from given data */
+	doc_data = xmlReadMemory(data_env, strlen(data_env), NULL, NULL, NC_XMLREAD_OPTIONS);
+	if (doc_data == NULL) {
+		ERROR("xmlReadMemory failed (%s:%d)", __FILE__, __LINE__);
+		free(data_env);
+		e = nc_err_new(NC_ERR_OP_FAILED);
+		nc_err_set(e, NC_ERR_PARAM_MSG, "Configuration data seems to be corrupted.");
+		return (nc_reply_error(e));
+	}
+	
+	/*
+	 * Notice here we're not givin the imediate children (custom_data element) to nc_msg_create
+	 * but instead we provide its children
+	 */
+	reply = (nc_reply*)nc_msg_create(doc_data->children->children,"rpc-reply");
+	reply->type.reply = NC_REPLY_DATA;
+
+	xmlFreeDoc(doc_data);
+	free(data_env);
+
+	return (reply);
 }
 
 API nc_reply *nc_reply_data_ns(const char* data, const char* ns)
@@ -2318,7 +2384,6 @@ static xmlNodePtr _xmlReplaceNode(xmlNodePtr old, xmlNodePtr cur)
 
 static int process_filter_param (xmlNodePtr content, const struct nc_filter* filter)
 {
-	xmlDocPtr doc_filter = NULL;
 	xmlNodePtr node, ntf_filter;
 	xmlNsPtr ns;
 
@@ -2342,7 +2407,7 @@ static int process_filter_param (xmlNodePtr content, const struct nc_filter* fil
 			/* process Subtree filter type */
 			if (xmlAddChild(content, node) == NULL) {
 				ERROR("xmlAddChild failed (%s:%d)", __FILE__, __LINE__);
-				xmlFreeDoc(doc_filter);
+				xmlFreeNode(node);
 				return (EXIT_FAILURE);
 			}
 		} else {
@@ -2939,7 +3004,7 @@ static nc_rpc* _rpc_copyconfig(NC_DATASTORE source, NC_DATASTORE target, const x
 	/* set namespace */
 	ns = xmlNewNs(content, (xmlChar *) NC_NS_BASE10, NULL);
 	xmlSetNs(content, ns);
-	
+
 	/* <target> */
 	node_target = xmlNewChild(content, ns, BAD_CAST "target", NULL);
 	if (node_target == NULL) {

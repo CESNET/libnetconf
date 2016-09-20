@@ -102,6 +102,7 @@
 #include "../models/ietf-netconf-acm.xxd"
 #include "../models/ietf-netconf.xxd"
 #include "../models/notifications.xxd"
+#include "../models/libnetconf-notifications.xxd"
 #include "../models/ietf-inet-types.xxd"
 #include "../models/ietf-yang-types.xxd"
 
@@ -237,12 +238,12 @@ static struct ncds_ds* ncds_fill_func(NCDS_TYPE type)
 }
 
 #ifndef DISABLE_NOTIFICATIONS
-#define INTERNAL_DS_COUNT 9
+#define INTERNAL_DS_COUNT 10
 #define MONITOR_DS_INDEX 3
 #define NOTIF_DS_INDEX_L 4
-#define NOTIF_DS_INDEX_H 6
-#define WD_DS_INDEX 7
-#define NACM_DS_INDEX 8
+#define NOTIF_DS_INDEX_H 7
+#define WD_DS_INDEX 8
+#define NACM_DS_INDEX 9
 #else
 #define INTERNAL_DS_COUNT 6
 #define MONITOR_DS_INDEX 3
@@ -266,6 +267,7 @@ int ncds_sysinit(int flags)
 			ietf_netconf_notifications_yin,
 			nc_notifications_yin,
 			notifications_yin,
+			libnetconf_notifications_yin,
 #endif
 			ietf_netconf_with_defaults_yin,
 			ietf_netconf_acm_yin
@@ -279,6 +281,7 @@ int ncds_sysinit(int flags)
 			ietf_netconf_notifications_yin_len,
 			nc_notifications_yin_len,
 			notifications_yin_len,
+			libnetconf_notifications_yin_len,
 #endif
 			ietf_netconf_with_defaults_yin_len,
 			ietf_netconf_acm_yin_len
@@ -292,6 +295,7 @@ int ncds_sysinit(int flags)
 			NULL, /* ietf-netconf-notifications */
 			get_state_notifications, /* nc-notifications */
 			NULL, /* notifications */
+			NULL, /* libnetconf-notifications */
 #endif
 			NULL, /* ietf-netconf-with-defaults */
 			get_state_nacm /* NACM status data */
@@ -305,6 +309,7 @@ int ncds_sysinit(int flags)
 			{NCDS_TYPE_EMPTY, NULL}, /* ietf-netconf-notifications */
 			{NCDS_TYPE_EMPTY, NULL}, /* nc-notifications */
 			{NCDS_TYPE_EMPTY, NULL}, /* notifications */
+			{NCDS_TYPE_EMPTY, NULL}, /* libnetconf-notifications */
 #endif
 			{NCDS_TYPE_EMPTY, NULL},
 			{NCDS_TYPE_FILE, NC_WORKINGDIR_PATH"/datastore-acm.xml"}
@@ -319,6 +324,7 @@ int ncds_sysinit(int flags)
 			NULL, /* ietf-netconf-notifications */
 			NULL, /* nc-notifications */
 			NULL, /* notifications */
+			NULL, /* libnetconf-notifications */
 #endif
 			NULL, /* ietf-netconf-with-defaults */
 			NC_WORKINGDIR_PATH"/ietf-netconf-acm-config.rng" /* NACM RelaxNG schema */
@@ -332,6 +338,7 @@ int ncds_sysinit(int flags)
 			NULL, /* ietf-netconf-notifications */
 			NULL, /* nc-notifications */
 			NULL, /* notifications */
+			NULL, /* libnetconf-notifications */
 #endif
 			NULL, /* ietf-netconf-with-defaults */
 			NC_WORKINGDIR_PATH"/ietf-netconf-acm-schematron.xsl" /* NACM Schematron XSL stylesheet */
@@ -1653,8 +1660,10 @@ static char* compare_schemas(struct data_model* model, char* name, char* version
 				case '6':
 					return strndup((char*)notifications_yin + 39, notifications_yin_len - 39);
 				case '7':
-					return strndup((char*)ietf_netconf_with_defaults_yin + 39, ietf_netconf_with_defaults_yin_len - 39);
+					return strndup((char*)libnetconf_notifications_yin + 39, libnetconf_notifications_yin_len - 39);
 				case '8':
+					return strndup((char*)ietf_netconf_with_defaults_yin + 39, ietf_netconf_with_defaults_yin_len - 39);
+				case '9':
 					return strndup((char*)ietf_netconf_acm_yin + 39, ietf_netconf_acm_yin_len - 39);
 #else
 				case '4':
@@ -5930,7 +5939,7 @@ process_datastore:
 			 * cover it with the <config> element to allow the creation of
 			 * xml document
 			 */
-			if (strncmp(config, "<config", 7) == 0) {
+			if (strncmp(config, "<config>", 8) == 0) {
 				data = strdup(config);
 			} else if (asprintf(&data, "<config>%s</config>", config) == -1) {
 				ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);

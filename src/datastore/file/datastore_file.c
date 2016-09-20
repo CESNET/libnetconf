@@ -669,6 +669,8 @@ static int file_rollback_restore(struct ncds_ds_file* file_ds)
 	file_ds->xml_rollback = NULL;
 	file_ds->ds.last_access = 0;
 
+	file_fill_dsnodes(file_ds);
+
 	return (file_sync(file_ds));
 }
 

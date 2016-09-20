@@ -2,38 +2,42 @@
 <module name="ietf-netconf"
         xmlns="urn:ietf:params:xml:ns:yang:yin:1"
         xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"
-        xmlns:inet="urn:ietf:params:xml:ns:yang:ietf-inet-types">
+        xmlns:inet="urn:ietf:params:xml:ns:yang:ietf-inet-types"
+        xmlns:nacm="urn:ietf:params:xml:ns:yang:ietf-netconf-acm">
   <namespace uri="urn:ietf:params:xml:ns:netconf:base:1.0"/>
   <prefix value="nc"/>
   <import module="ietf-inet-types">
     <prefix value="inet"/>
+  </import>
+  <import module="ietf-netconf-acm">
+    <prefix value="nacm"/>
   </import>
   <organization>
     <text>IETF NETCONF (Network Configuration) Working Group</text>
   </organization>
   <contact>
     <text>WG Web:   &lt;http://tools.ietf.org/wg/netconf/&gt;
-WG List:  &lt;mailto:netconf@ietf.org&gt;
+WG List:  &lt;netconf@ietf.org&gt;
 
 WG Chair: Bert Wijnen
-          &lt;mailto:bertietf@bwijnen.net&gt;
+          &lt;bertietf@bwijnen.net&gt;
 
 WG Chair: Mehmet Ersue
-          &lt;mailto:mehmet.ersue@nsn.com&gt;
+          &lt;mehmet.ersue@nsn.com&gt;
 
 Editor:   Martin Bjorklund
-          &lt;mailto:mbj@tail-f.com&gt;
+          &lt;mbj@tail-f.com&gt;
 
 Editor:   Juergen Schoenwaelder
-          &lt;mailto:j.schoenwaelder@jacobs-university.de&gt;
+          &lt;j.schoenwaelder@jacobs-university.de&gt;
 
 Editor:   Andy Bierman
-          &lt;mailto:andy.bierman@brocade.com&gt;</text>
+          &lt;andy.bierman@brocade.com&gt;</text>
   </contact>
   <description>
     <text>NETCONF Protocol Data Types and Protocol Operations.
 
-Copyright (c) 2010 IETF Trust and the persons identified as
+Copyright (c) 2011 IETF Trust and the persons identified as
 the document authors.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or
@@ -43,26 +47,28 @@ set forth in Section 4.c of the IETF Trust's Legal Provisions
 Relating to IETF Documents
 (http://trustee.ietf.org/license-info).
 
-This version of this YANG module is part of RFC XXXX; see
+This version of this YANG module is part of RFC 6241; see
 the RFC itself for full legal notices.</text>
   </description>
-  <revision date="2011-03-08">
+  <revision date="2011-06-01">
     <description>
-      <text>Initial revision</text>
+      <text>Initial revision;
+2013-09-29: Updated to include NACM attributes, 
+as specified in RFC 6536: sec 3.2.5 and 3.2.8</text>
     </description>
     <reference>
-      <text>RFC XXXX: Network Configuration Protocol</text>
+      <text>RFC 6241: Network Configuration Protocol</text>
     </reference>
   </revision>
   <extension name="get-filter-element-attributes">
     <description>
-      <text>If this extension is present within the
-an 'anyxml' statement named 'filter', which must be
-conceptually defined within the RPC input section
-for the 'get' and 'get-config' protocol operations,
-then the following unqualified XML attribute is
-supported within the 'filter' element, within
-a 'get' or 'get-config' protocol operation:
+      <text>If this extension is present within an 'anyxml'
+statement named 'filter', which must be conceptually
+defined within the RPC input section for the &lt;get&gt;
+and &lt;get-config&gt; protocol operations, then the
+following unqualified XML attribute is supported
+within the &lt;filter&gt; element, within a &lt;get&gt; or
+&lt;get-config&gt; protocol operation:
 
   type : optional attribute with allowed
          value strings 'subtree' and 'xpath'.
@@ -87,7 +93,7 @@ also be enabled for that session.  Otherwise,
 this feature must not be enabled.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 8.2.</text>
+      <text>RFC 6241, Section 8.2</text>
     </reference>
   </feature>
   <feature name="candidate">
@@ -99,7 +105,7 @@ also be enabled for that session.  Otherwise,
 this feature must not be enabled.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 8.3.</text>
+      <text>RFC 6241, Section 8.3</text>
     </reference>
   </feature>
   <feature name="confirmed-commit">
@@ -112,7 +118,7 @@ also be enabled for that session.  Otherwise,
 this feature must not be enabled.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 8.4.</text>
+      <text>RFC 6241, Section 8.4</text>
     </reference>
   </feature>
   <feature name="rollback-on-error">
@@ -124,7 +130,7 @@ also be enabled for that session.  Otherwise,
 this feature must not be enabled.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 8.5.</text>
+      <text>RFC 6241, Section 8.5</text>
     </reference>
   </feature>
   <feature name="validate">
@@ -136,7 +142,7 @@ also be enabled for that session.  Otherwise,
 this feature must not be enabled.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 8.6.</text>
+      <text>RFC 6241, Section 8.6</text>
     </reference>
   </feature>
   <feature name="startup">
@@ -148,7 +154,7 @@ also be enabled for that session.  Otherwise,
 this feature must not be enabled.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 8.7.</text>
+      <text>RFC 6241, Section 8.7</text>
     </reference>
   </feature>
   <feature name="url">
@@ -160,7 +166,7 @@ also be enabled for that session.  Otherwise,
 this feature must not be enabled.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 8.8.</text>
+      <text>RFC 6241, Section 8.8</text>
     </reference>
   </feature>
   <feature name="xpath">
@@ -172,7 +178,7 @@ also be enabled for that session.  Otherwise,
 this feature must not be enabled.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 8.9.</text>
+      <text>RFC 6241, Section 8.9</text>
     </reference>
   </feature>
   <typedef name="session-id-type">
@@ -248,7 +254,7 @@ out of range, pattern mismatch.</text>
       </enum>
       <enum name="access-denied">
         <description>
-          <text>Access to the requested protocol operation, or
+          <text>Access to the requested protocol operation or
 data model is denied because authorization failed.</text>
         </description>
       </enum>
@@ -266,15 +272,15 @@ insufficient resources.</text>
       </enum>
       <enum name="rollback-failed">
         <description>
-          <text>Request to rollback some configuration change (via
-rollback-on-error or discard-changes operations) was
-not completed for some reason.</text>
+          <text>Request to roll back some configuration change (via
+rollback-on-error or &lt;discard-changes&gt; operations)
+was not completed for some reason.</text>
         </description>
       </enum>
       <enum name="data-exists">
         <description>
           <text>Request could not be completed because the relevant
-data model content already exists. For example,
+data model content already exists.  For example,
 a 'create' operation was attempted on data that
 already exists.</text>
         </description>
@@ -309,7 +315,7 @@ by servers conforming to this document.</text>
       <enum name="malformed-message">
         <description>
           <text>A message could not be handled because it failed to
-be parsed correctly. For example, the message is not
+be parsed correctly.  For example, the message is not
 well-formed XML or it uses an invalid character set.</text>
         </description>
       </enum>
@@ -318,7 +324,7 @@ well-formed XML or it uses an invalid character set.</text>
       <text>NETCONF Error Tag</text>
     </description>
     <reference>
-      <text>RFC XXXX, Appendix A.</text>
+      <text>RFC 6241, Appendix A</text>
     </reference>
   </typedef>
   <typedef name="error-severity-type">
@@ -338,7 +344,7 @@ well-formed XML or it uses an invalid character set.</text>
       <text>NETCONF Error Severity</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 4.3.</text>
+      <text>RFC 6241, Section 4.3</text>
     </reference>
   </typedef>
   <typedef name="edit-operation-type">
@@ -359,7 +365,7 @@ containing this attribute replaces any related
 configuration in the configuration datastore
 identified by the target parameter.  If no such
 configuration data exists in the configuration
-datastore, it is created. Unlike a
+datastore, it is created.  Unlike a
 &lt;copy-config&gt; operation, which replaces the
 entire target configuration, only the configuration
 actually present in the config parameter is affected.</text>
@@ -404,7 +410,7 @@ by the server.</text>
       <text>NETCONF 'operation' attribute values</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 7.2.</text>
+      <text>RFC 6241, Section 7.2</text>
     </reference>
   </typedef>
   <rpc name="get-config">
@@ -412,7 +418,7 @@ by the server.</text>
       <text>Retrieve all or part of a specified configuration.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 7.1.</text>
+      <text>RFC 6241, Section 7.1</text>
     </reference>
     <input>
       <container name="source">
@@ -459,7 +465,7 @@ datastore.</text>
     <output>
       <anyxml name="data">
         <description>
-          <text>Copy of the source datastore subset which matched
+          <text>Copy of the source datastore subset that matched
 the filter criteria (if any).  An empty data container
 indicates that the request did not produce any results.</text>
         </description>
@@ -468,11 +474,11 @@ indicates that the request did not produce any results.</text>
   </rpc>
   <rpc name="edit-config">
     <description>
-      <text>The 'edit-config' operation loads all or part of a specified
+      <text>The &lt;edit-config&gt; operation loads all or part of a specified
 configuration to the specified target configuration.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 7.2.</text>
+      <text>RFC 6241, Section 7.2</text>
     </reference>
     <input>
       <container name="target">
@@ -562,7 +568,7 @@ if there are no errors.</text>
           </enum>
           <enum name="rollback-on-error">
             <description>
-              <text>The server will rollback on errors.
+              <text>The server will roll back on errors.
 This value can only be used if the 'rollback-on-error'
 feature is supported.</text>
             </description>
@@ -576,7 +582,7 @@ feature is supported.</text>
       <choice name="edit-content">
         <mandatory value="true"/>
         <description>
-          <text>The content for the edit operation</text>
+          <text>The content for the edit operation.</text>
         </description>
         <anyxml name="config">
           <description>
@@ -587,7 +593,7 @@ feature is supported.</text>
           <if-feature name="url"/>
           <type name="inet:uri"/>
           <description>
-            <text>URL based config content.</text>
+            <text>URL-based config content.</text>
           </description>
         </leaf>
       </choice>
@@ -599,7 +605,7 @@ feature is supported.</text>
 contents of another complete configuration datastore.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 7.3.</text>
+      <text>RFC 6241, Section 7.3</text>
     </reference>
     <input>
       <container name="target">
@@ -680,7 +686,7 @@ This is optional-to-implement on the server.</text>
           </leaf>
           <anyxml name="config">
             <description>
-              <text>Inline Config content: 'config' element.  Represents
+              <text>Inline Config content: &lt;config&gt; element.  Represents
 an entire configuration datastore, not
 a subset of the running datastore.</text>
             </description>
@@ -690,11 +696,12 @@ a subset of the running datastore.</text>
     </input>
   </rpc>
   <rpc name="delete-config">
+    <nacm:default-deny-all/>
     <description>
       <text>Delete a configuration datastore.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 7.4.</text>
+      <text>RFC 6241, Section 7.4</text>
     </reference>
     <input>
       <container name="target">
@@ -730,12 +737,12 @@ a subset of the running datastore.</text>
 system of a device.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 7.5.</text>
+      <text>RFC 6241, Section 7.5</text>
     </reference>
     <input>
       <container name="target">
         <description>
-          <text>Particular configuration to lock</text>
+          <text>Particular configuration to lock.</text>
         </description>
         <choice name="config-target">
           <mandatory value="true"/>
@@ -772,7 +779,7 @@ system of a device.</text>
 previously obtained with the 'lock' operation.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 7.6.</text>
+      <text>RFC 6241, Section 7.6</text>
     </reference>
     <input>
       <container name="target">
@@ -813,7 +820,7 @@ previously obtained with the 'lock' operation.</text>
       <text>Retrieve running configuration and device state information.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 7.7.</text>
+      <text>RFC 6241, Section 7.7</text>
     </reference>
     <input>
       <anyxml name="filter">
@@ -828,7 +835,7 @@ configuration and state data to retrieve.</text>
       <anyxml name="data">
         <description>
           <text>Copy of the running datastore subset and/or state
-data which matched the filter criteria (if any).
+data that matched the filter criteria (if any).
 An empty data container indicates that the request did not
 produce any results.</text>
         </description>
@@ -840,15 +847,16 @@ produce any results.</text>
       <text>Request graceful termination of a NETCONF session.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 7.8.</text>
+      <text>RFC 6241, Section 7.8</text>
     </reference>
   </rpc>
   <rpc name="kill-session">
+    <nacm:default-deny-all/>
     <description>
       <text>Force the termination of a NETCONF session.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 7.9.</text>
+      <text>RFC 6241, Section 7.9</text>
     </reference>
     <input>
       <leaf name="session-id">
@@ -864,10 +872,10 @@ produce any results.</text>
     <if-feature name="candidate"/>
     <description>
       <text>Commit the candidate configuration as the device's new
-current configuration</text>
+current configuration.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 8.3.4.1.</text>
+      <text>RFC 6241, Section 8.3.4.1</text>
     </reference>
     <input>
       <leaf name="confirmed">
@@ -877,7 +885,7 @@ current configuration</text>
           <text>Requests a confirmed commit.</text>
         </description>
         <reference>
-          <text>RFC XXXX, section 8.3.4.1.</text>
+          <text>RFC 6241, Section 8.3.4.1</text>
         </reference>
       </leaf>
       <leaf name="confirm-timeout">
@@ -891,7 +899,7 @@ current configuration</text>
           <text>The timeout interval for a confirmed commit.</text>
         </description>
         <reference>
-          <text>RFC XXXX, section 8.3.4.1.</text>
+          <text>RFC 6241, Section 8.3.4.1</text>
         </reference>
       </leaf>
       <leaf name="persist">
@@ -900,18 +908,19 @@ current configuration</text>
         <description>
           <text>This parameter is used to make a confirmed commit
 persistent.  A persistent confirmed commit is not aborted
-if the NETCONF session terminates.  The only way to abort a
-persistent confirmed commit it to let the timer expire, or
-to use the cancel-commit operation.
+if the NETCONF session terminates.  The only way to abort
+a persistent confirmed commit is to let the timer expire,
+or to use the &lt;cancel-commit&gt; operation.
 
 The value of this parameter is a token that must be given
-in the 'persist-id' parameter of commit or cancel-commit in
-order to confirm or cancel the persistent confirmed commit.
+in the 'persist-id' parameter of &lt;commit&gt; or
+&lt;cancel-commit&gt; operations in order to confirm or cancel
+the persistent confirmed commit.
 
 The token should be a random string.</text>
         </description>
         <reference>
-          <text>RFC XXXX, section 8.3.4.1.</text>
+          <text>RFC 6241, Section 8.3.4.1</text>
         </reference>
       </leaf>
       <leaf name="persist-id">
@@ -920,12 +929,12 @@ The token should be a random string.</text>
         <description>
           <text>This parameter is given in order to commit a persistent
 confirmed commit.  The value must be equal to the value
-given in the 'persist' parameter to the commit operation.
+given in the 'persist' parameter to the &lt;commit&gt; operation.
 If it does not match, the operation fails with an
 'invalid-value' error.</text>
         </description>
         <reference>
-          <text>RFC XXXX, section 8.3.4.1.</text>
+          <text>RFC 6241, Section 8.3.4.1</text>
         </reference>
       </leaf>
     </input>
@@ -937,7 +946,7 @@ If it does not match, the operation fails with an
 running configuration.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 8.3.4.2.</text>
+      <text>RFC 6241, Section 8.3.4.2</text>
     </reference>
   </rpc>
   <rpc name="cancel-commit">
@@ -949,7 +958,7 @@ If the confirmed commit is persistent, the parameter
 'persist' parameter.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 8.4.4.1.</text>
+      <text>RFC 6241, Section 8.4.4.1</text>
     </reference>
     <input>
       <leaf name="persist-id">
@@ -957,7 +966,7 @@ If the confirmed commit is persistent, the parameter
         <description>
           <text>This parameter is given in order to cancel a persistent
 confirmed commit.  The value must be equal to the value
-given in the 'persist' parameter to the commit operation.
+given in the 'persist' parameter to the &lt;commit&gt; operation.
 If it does not match, the operation fails with an
 'invalid-value' error.</text>
         </description>
@@ -970,7 +979,7 @@ If it does not match, the operation fails with an
       <text>Validates the contents of the specified configuration.</text>
     </description>
     <reference>
-      <text>RFC XXXX, section 8.6.4.1.</text>
+      <text>RFC 6241, Section 8.6.4.1</text>
     </reference>
     <input>
       <container name="source">
@@ -1011,7 +1020,7 @@ If it does not match, the operation fails with an
           </leaf>
           <anyxml name="config">
             <description>
-              <text>Inline Config content: 'config' element.  Represents
+              <text>Inline Config content: &lt;config&gt; element.  Represents
 an entire configuration datastore, not
 a subset of the running datastore.</text>
             </description>
