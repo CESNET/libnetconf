@@ -640,9 +640,9 @@ static struct stream *read_fileheader(const char* filepath)
 	s->fd_rules = -1;
 	s->next = NULL;
 
-	/* move to lsat notification */
-	s->data = ncntf_last_notification_offset(s);
-	s->current_offset = s->data;
+	/* move to last notification */
+	s->data = lseek(s->fd_events, 0, SEEK_CUR);
+	s->current_offset = ncntf_last_notification_offset(s);
 
 	return (s);
 
