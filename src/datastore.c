@@ -773,6 +773,8 @@ static void* transapi_fmon(void *arg)
 			ERROR("Inotify failed (EOF).");
 			break;
 		} else if (r == -1) {
+			if(errno == EINTR)
+		            continue;
 			ERROR("Inotify failed (%s).", strerror(errno));
 			break;
 		}
