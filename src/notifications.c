@@ -364,7 +364,7 @@ static int map_rules(struct stream *s)
 static unsigned int ncntf_last_notification_offset(struct stream* s)
 {
 	uint64_t t = 0;
-	uint32_t size = 0, magic_ending = 0;
+	uint32_t size = 0, end_marker = 0;
 	unsigned int offset = s->data;
 
 	do {
@@ -378,14 +378,13 @@ static unsigned int ncntf_last_notification_offset(struct stream* s)
 			break;
 		}
 
-		if ((read(s->fd_events, &(magic_ending), sizeof(magic_ending))) < 0) {
+		if ((read(s->fd_events, &(end_marker), sizeof(end_marker))) < 0) {
 			offset = s->data;
 			break;
 		}
 
-		if(magic_ending == MAGIC_END_MARKER)
+		if(end_marker == MAGIC_END_MARKER)
 		{
-			VERB("EOF found!");
 			break;
 		}
 		offset += sizeof(size) + sizeof(t) + size;
@@ -404,7 +403,7 @@ static int ncntf_check_file_ended(struct stream* s)
 {
 	int r = 0;
 	uint64_t t = 0;
-	uint32_t size = 0, magic_ending = 0;
+	uint32_t size = 0, end_marker = 0;
 	unsigned int actual_offset = lseek(s->fd_events, 0, SEEK_CUR);
 
 	if ((r = read(s->fd_events, &(size), sizeof(size))) < 0) {
@@ -416,12 +415,11 @@ static int ncntf_check_file_ended(struct stream* s)
 		if ((r = read(s->fd_events, &(t), sizeof(t))) < 0) {
 			return -1;
 		}
-		if ((r = read(s->fd_events, &(magic_ending), sizeof(magic_ending))) < 0) {
+		if ((r = read(s->fd_events, &(end_marker), sizeof(end_marker))) < 0) {
 			return -1;
 		}
-		if(magic_ending == MAGIC_EOF_MARKER)
+		if(end_marker == MAGIC_EOF_MARKER)
 		{
-			VERB("EOF found!");
 			return 1;
 		}
 	}
@@ -1262,7 +1260,6 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		if (ncntf_stream_lock(s) == 0) {
 			int ret = ncntf_check_file_ended(s);
 			if(ret == 1) {
-				ERROR("found eof.... going to begin");
 				str_off->cur_offset = s->data;
 				ncntf_stream_unlock(s);
 				continue;
@@ -1275,7 +1272,6 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 			}
 			else
 			{
-				ERROR("Reading the stream %d %d", str_off->cur_offset, s->current_offset);
 				//not need to switch, continue reading
 			}
 			if ((r = read(s->fd_events, &len, sizeof(int32_t))) <= 0) {
@@ -1469,7 +1465,7 @@ static int ncntf_event_store(time_t etime, const char* content)
 
 				if((offset + MAGIC_MARKER_SIZE + len + sizeof(int32_t) + sizeof(uint64_t)) >= NCNTF_STREAMS_MAX_SIZE) {
 
-					WARN("found end of file ..... going to ->data.");
+					VERB("EOF found, starting from the begining");
 					if(ncntf_write_end_marker(s, etime64, MAGIC_EOF_MARKER) == -1) {
 						goto write_failed;
 					}
