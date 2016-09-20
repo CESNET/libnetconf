@@ -70,14 +70,14 @@
 
 static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 
-#define NCNTF_RULES_SIZE (1024)
+#define NCNTF_RULES_SIZE (1024*1024)
 #define NCNTF_STREAMS_NS "urn:ietf:params:xml:ns:netmod:notification"
 
 
 const uint32_t MAGIC_EOF_MARKER = 0xCAFECAFE;
 const uint32_t MAGIC_END_MARKER = 0xDEADBEEF;
 const uint32_t MAGIC_MARKER_SIZE = 4;
-#define NCNTF_STREAMS_MAX_SIZE (1024*1024/4)
+#define NCNTF_STREAMS_MAX_SIZE (1024*1024*200)
 
 /* path to the Event stream files, the default path is defined in config.h */
 static char* streams_path = NULL;
