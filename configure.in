@@ -308,6 +308,13 @@ AC_ARG_WITH([sessionfiledir],
 	,
 	NC_SESSIONFILE_PATH="$NC_WORKINGDIR_PATH"
 )
+AC_ARG_WITH([maxnotificationfilesize],
+	AC_HELP_STRING([--with-maxnotificationfilesize=size],[Maximum size for the notification stream files, if not specified the file can grow indefinitely]),
+	NCNTF_STREAMS_MAX_SIZE_IN_MB="$withval"
+	CONFIGURE_PARAMS="--with-maxnotificationfilesize=$withval $CONFIGURE_PARAMS"
+	,
+	NCNTF_STREAMS_MAX_SIZE_IN_MB=0
+)
 AC_ARG_WITH([streamsdir],
 	AC_HELP_STRING([--with-streamsdir=path],[Path to the events streams, the default value is streams subdirectory of libnetconf working directory]),
 	NCNTF_STREAMS_PATH="$withval"
@@ -617,6 +624,7 @@ AC_SUBST(PROVIDES)
 AC_SUBST(DISTRO)
 AC_SUBST(NC_WORKINGDIR_PATH)
 AC_SUBST(NC_SESSIONFILE_PATH)
+AC_SUBST(NCNTF_STREAMS_MAX_SIZE_IN_MB)
 AC_SUBST(NCNTF_STREAMS_PATH)
 AC_SUBST(SETBIT)
 AC_SUBST(SETUSER)

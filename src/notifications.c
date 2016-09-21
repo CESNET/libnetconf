@@ -73,6 +73,17 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 #define NCNTF_RULES_SIZE (1024*1024)
 #define NCNTF_STREAMS_NS "urn:ietf:params:xml:ns:netmod:notification"
 
+
+const uint32_t MAGIC_EOF_MARKER = 0xCAFECAFE;
+const uint32_t MAGIC_END_MARKER = 0xDEADBEEF;
+const uint32_t MAGIC_MARKER_SIZE = 4;
+
+#ifdef NCNTF_STREAMS_MAX_SIZE_IN_MB
+static const uint32_t NCNTF_STREAMS_MAX_SIZE = 1024*1024*NCNTF_STREAMS_MAX_SIZE_IN_MB;
+#else
+static const uint32_t NCNTF_STREAMS_MAX_SIZE = 0;
+#endif
+
 /* path to the Event stream files, the default path is defined in config.h */
 static char* streams_path = NULL;
 
@@ -132,6 +143,7 @@ struct stream {
 	int locked;
 	char* rules;
 	unsigned int data;
+	unsigned int current_offset;
 	struct stream *next;
 };
 
@@ -354,6 +366,94 @@ static int map_rules(struct stream *s)
 	}
 }
 
+static unsigned int ncntf_last_notification_offset(struct stream* s)
+{
+	uint64_t t = 0;
+	uint32_t size = 0, end_marker = 0;
+	unsigned int offset = s->data;
+
+	// if max size is not defined return end of the file
+	if(NCNTF_STREAMS_MAX_SIZE == 0) {
+		offset = lseek(s->fd_events, 0, SEEK_END);
+		return offset;
+	}
+
+	do {
+		if ((read(s->fd_events, &(size), sizeof(size))) < 0) {
+			offset = s->data;
+			break;
+		}
+
+		if ((read(s->fd_events, &(t), sizeof(t))) < 0) {
+			offset = s->data;
+			break;
+		}
+
+		if ((read(s->fd_events, &(end_marker), sizeof(end_marker))) < 0) {
+			offset = s->data;
+			break;
+		}
+
+		if (end_marker == MAGIC_END_MARKER) {
+			break;
+		}
+		offset += sizeof(size) + sizeof(t) + size;
+		if (offset > NCNTF_STREAMS_MAX_SIZE) { // migration case.... rewrite the file
+			offset = s->data;
+			break;
+		}
+		lseek(s->fd_events, offset, SEEK_SET);
+	} while( offset <= NCNTF_STREAMS_MAX_SIZE);
+
+	return offset;
+}
+
+static int ncntf_check_file_ended(struct stream* s)
+{
+	int r = 0;
+	uint64_t t = 0;
+	uint32_t size = 0, end_marker = 0;
+	unsigned int actual_offset = lseek(s->fd_events, 0, SEEK_CUR);
+
+	if ((r = read(s->fd_events, &(size), sizeof(size))) < 0) {
+		return -1;
+	}
+
+	if (size == MAGIC_MARKER_SIZE) {
+		if ((r = read(s->fd_events, &(t), sizeof(t))) < 0) {
+			return -1;
+		}
+		if ((r = read(s->fd_events, &(end_marker), sizeof(end_marker))) < 0) {
+			return -1;
+		}
+		if (end_marker == MAGIC_EOF_MARKER) {
+			return 1;
+		}
+	}
+	lseek(s->fd_events, actual_offset, SEEK_SET);
+	return 0;
+}
+
+static int ncntf_write_end_marker(struct stream* s, uint64_t etime64, uint32_t magic)
+{
+	uint32_t r = 0;
+
+	while (((r = write(s->fd_events, &MAGIC_MARKER_SIZE, MAGIC_MARKER_SIZE)) == -1) && (errno == EAGAIN ||errno == EINTR));
+	if (r == -1) {
+		return -1;
+	}
+	while (((r = write(s->fd_events, &etime64, sizeof(etime64))) == -1) && (errno == EAGAIN ||errno == EINTR));
+	if (r == -1) {
+		return -1;
+	}
+	while (((r = write(s->fd_events, &magic, MAGIC_MARKER_SIZE)) == -1) && (errno == EAGAIN ||errno == EINTR));
+	if (r == -1) {
+		return -1;
+	}
+	return 0;
+}
+
+
 /*
  * Create a new stream file and write the header corresponding to the given
  * stream structure. If the file is already opened (the stream structure has a file
@@ -466,6 +566,13 @@ static int write_fileheader(struct stream *s)
 
 	/* set where the data starts */
 	s->data = lseek(s->fd_events, 0, SEEK_CUR);
+	s->current_offset = s->data;
+
+	//add end of end marker
+	while (((r = write(s->fd_events, &MAGIC_END_MARKER, MAGIC_MARKER_SIZE)) == -1) && (errno == EAGAIN ||errno == EINTR));
+	if (r == -1) {
+		return (EXIT_FAILURE);
+	}
 
 	return (EXIT_SUCCESS);
 }
@@ -540,8 +647,9 @@ static struct stream *read_fileheader(const char* filepath)
 	s->fd_rules = -1;
 	s->next = NULL;
 
-	/* move to the end of the file */
+	/* move to last notification */
 	s->data = lseek(s->fd_events, 0, SEEK_CUR);
+	s->current_offset = ncntf_last_notification_offset(s);
 
 	return (s);
 
@@ -1037,7 +1145,7 @@ API void ncntf_stream_iter_start(const char* stream)
 		return;
 	}
 	/* remember the current end of file position */
-	str_off->eof_offset = lseek(s->fd_events, 0, SEEK_END);
+	str_off->eof_offset = s->current_offset;
 	/* and the thread's specific position in the file (start of stream file records section) */
 	str_off->cur_offset = s->data;
 	DBG_UNLOCK("streams_mut");
@@ -1065,7 +1173,6 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 	struct stream *s;
 	int32_t len;
 	uint64_t t;
-	off_t aux;
 	char* text = NULL;
 	off_t* replay_end;
 	char* time_s;
@@ -1148,7 +1255,7 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		}
 
 		/* check that we have something to read */
-		if (str_off->cur_offset == (aux = lseek(s->fd_events, 0, SEEK_END))) {
+		if (str_off->cur_offset == s->current_offset) {
 			/* nothing to read */
 			DBG_UNLOCK("streams_mut");
 			pthread_mutex_unlock(streams_mut);
@@ -1158,6 +1265,19 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 		lseek(s->fd_events, str_off->cur_offset, SEEK_SET);
 
 		if (ncntf_stream_lock(s) == 0) {
+			int ret = ncntf_check_file_ended(s);
+			if (ret == 1) {
+				str_off->cur_offset = s->data;
+				ncntf_stream_unlock(s);
+				continue;
+			}
+			else if(ret == -1) {
+				DBG_UNLOCK("streams_mut");
+				pthread_mutex_unlock(streams_mut);
+				return(NULL);
+			} else {
+				//not need to switch, continue reading
+			}
 			if ((r = read(s->fd_events, &len, sizeof(int32_t))) <= 0) {
 				ERROR("Reading the stream file failed (%s).", (r < 0) ? strerror(errno) : "Unexpected end of file");
 				DBG_UNLOCK("streams_mut");
@@ -1344,19 +1464,35 @@ static int ncntf_event_store(time_t etime, const char* content)
 		if (ncntf_event_isallowed(s->name, ename) != 0) {
 			/* log the event to the stream file */
 			if (ncntf_stream_lock(s) == 0) {
-				offset = lseek(s->fd_events, 0, SEEK_END);
+				offset = s->current_offset;
+				lseek(s->fd_events, offset, SEEK_SET);
+
+				if ((NCNTF_STREAMS_MAX_SIZE != 0) && ((offset + MAGIC_MARKER_SIZE + len + sizeof(int32_t) + sizeof(uint64_t)) >= NCNTF_STREAMS_MAX_SIZE)) {
+					VERB("EOF found, starting from the begining");
+					if ((r = ncntf_write_end_marker(s, etime64, MAGIC_EOF_MARKER)) == -1) {
+						goto write_failed;
+					}
+
+					offset = s->data;
+					lseek(s->fd_events, offset, SEEK_SET);
+				}
+
 				while (((r = write(s->fd_events, &len, sizeof(int32_t))) == -1) && (errno == EAGAIN ||errno == EINTR));
 				if (r == -1) {
                     goto write_failed;
-                }
+				}
 				while (((r = write(s->fd_events, &etime64, sizeof(uint64_t))) == -1) && (errno == EAGAIN ||errno == EINTR));
 				if (r == -1) {
                     goto write_failed;
-                }
+				}
 				while (((r = write(s->fd_events, record, len)) == -1) && (errno == EAGAIN ||errno == EINTR));
 				if (r == -1) {
                     goto write_failed;
-                }
+				}
+				if ((r = ncntf_write_end_marker(s, etime64, MAGIC_END_MARKER)) == -1) {
+					goto write_failed;
+				}
+				s->current_offset = (offset + len + sizeof(int32_t) + sizeof(uint64_t)); // do not include END MARKER
 
 write_failed:
 				if (r == -1) {
