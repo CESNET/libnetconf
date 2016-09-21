@@ -77,7 +77,12 @@ static const char rcsid[] __attribute__((used)) ="$Id: "__FILE__": "RCSID" $";
 const uint32_t MAGIC_EOF_MARKER = 0xCAFECAFE;
 const uint32_t MAGIC_END_MARKER = 0xDEADBEEF;
 const uint32_t MAGIC_MARKER_SIZE = 4;
-#define NCNTF_STREAMS_MAX_SIZE (1024*1024*200)
+
+#ifdef NCNTF_STREAMS_MAX_SIZE_IN_MB
+static const uint32_t NCNTF_STREAMS_MAX_SIZE = 1024*1024*NCNTF_STREAMS_MAX_SIZE_IN_MB;
+#else
+static const uint32_t NCNTF_STREAMS_MAX_SIZE = 0;
+#endif
 
 /* path to the Event stream files, the default path is defined in config.h */
 static char* streams_path = NULL;
@@ -366,6 +371,12 @@ static unsigned int ncntf_last_notification_offset(struct stream* s)
 	uint64_t t = 0;
 	uint32_t size = 0, end_marker = 0;
 	unsigned int offset = s->data;
+
+	// if max size is not defined return end of the file
+	if(NCNTF_STREAMS_MAX_SIZE == 0) {
+		offset = lseek(s->fd_events, 0, SEEK_END);
+		return offset;
+	}
 
 	do {
 		if ((read(s->fd_events, &(size), sizeof(size))) < 0) {
@@ -1456,7 +1467,7 @@ static int ncntf_event_store(time_t etime, const char* content)
 				offset = s->current_offset;
 				lseek(s->fd_events, offset, SEEK_SET);
 
-				if ((offset + MAGIC_MARKER_SIZE + len + sizeof(int32_t) + sizeof(uint64_t)) >= NCNTF_STREAMS_MAX_SIZE) {
+				if ((NCNTF_STREAMS_MAX_SIZE != 0) && ((offset + MAGIC_MARKER_SIZE + len + sizeof(int32_t) + sizeof(uint64_t)) >= NCNTF_STREAMS_MAX_SIZE)) {
 					VERB("EOF found, starting from the begining");
 					if ((r = ncntf_write_end_marker(s, etime64, MAGIC_EOF_MARKER)) == -1) {
 						goto write_failed;
