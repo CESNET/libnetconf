@@ -383,13 +383,11 @@ static unsigned int ncntf_last_notification_offset(struct stream* s)
 			break;
 		}
 
-		if(end_marker == MAGIC_END_MARKER)
-		{
+		if (end_marker == MAGIC_END_MARKER) {
 			break;
 		}
 		offset += sizeof(size) + sizeof(t) + size;
-		if(offset > NCNTF_STREAMS_MAX_SIZE) // migration case.... rewrite the file
-		{
+		if (offset > NCNTF_STREAMS_MAX_SIZE) { // migration case.... rewrite the file
 			offset = s->data;
 			break;
 		}
@@ -410,16 +408,14 @@ static int ncntf_check_file_ended(struct stream* s)
 		return -1;
 	}
 
-	if(size == MAGIC_MARKER_SIZE)
-	{
+	if (size == MAGIC_MARKER_SIZE) {
 		if ((r = read(s->fd_events, &(t), sizeof(t))) < 0) {
 			return -1;
 		}
 		if ((r = read(s->fd_events, &(end_marker), sizeof(end_marker))) < 0) {
 			return -1;
 		}
-		if(end_marker == MAGIC_EOF_MARKER)
-		{
+		if (end_marker == MAGIC_EOF_MARKER) {
 			return 1;
 		}
 	}
@@ -1259,19 +1255,16 @@ API char* ncntf_stream_iter_next(const char* stream, time_t start, time_t stop, 
 
 		if (ncntf_stream_lock(s) == 0) {
 			int ret = ncntf_check_file_ended(s);
-			if(ret == 1) {
+			if (ret == 1) {
 				str_off->cur_offset = s->data;
 				ncntf_stream_unlock(s);
 				continue;
 			}
-			else if(ret == -1)
-			{
+			else if(ret == -1) {
 				DBG_UNLOCK("streams_mut");
 				pthread_mutex_unlock(streams_mut);
 				return(NULL);
-			}
-			else
-			{
+			} else {
 				//not need to switch, continue reading
 			}
 			if ((r = read(s->fd_events, &len, sizeof(int32_t))) <= 0) {
@@ -1463,10 +1456,9 @@ static int ncntf_event_store(time_t etime, const char* content)
 				offset = s->current_offset;
 				lseek(s->fd_events, offset, SEEK_SET);
 
-				if((offset + MAGIC_MARKER_SIZE + len + sizeof(int32_t) + sizeof(uint64_t)) >= NCNTF_STREAMS_MAX_SIZE) {
-
+				if ((offset + MAGIC_MARKER_SIZE + len + sizeof(int32_t) + sizeof(uint64_t)) >= NCNTF_STREAMS_MAX_SIZE) {
 					VERB("EOF found, starting from the begining");
-					if(ncntf_write_end_marker(s, etime64, MAGIC_EOF_MARKER) == -1) {
+					if (ncntf_write_end_marker(s, etime64, MAGIC_EOF_MARKER) == -1) {
 						goto write_failed;
 					}
 
@@ -1486,7 +1478,7 @@ static int ncntf_event_store(time_t etime, const char* content)
 				if (r == -1) {
                     goto write_failed;
 				}
-				if((r = ncntf_write_end_marker(s, etime64, MAGIC_END_MARKER)) == -1) {
+				if ((r = ncntf_write_end_marker(s, etime64, MAGIC_END_MARKER)) == -1) {
 					goto write_failed;
 				}
 				s->current_offset = (offset + len + sizeof(int32_t) + sizeof(uint64_t)); // do not include END MARKER
