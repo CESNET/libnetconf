@@ -1458,7 +1458,7 @@ static int ncntf_event_store(time_t etime, const char* content)
 
 				if ((offset + MAGIC_MARKER_SIZE + len + sizeof(int32_t) + sizeof(uint64_t)) >= NCNTF_STREAMS_MAX_SIZE) {
 					VERB("EOF found, starting from the begining");
-					if (ncntf_write_end_marker(s, etime64, MAGIC_EOF_MARKER) == -1) {
+					if ((r = ncntf_write_end_marker(s, etime64, MAGIC_EOF_MARKER)) == -1) {
 						goto write_failed;
 					}
 
