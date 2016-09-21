@@ -759,7 +759,7 @@ char* nc_clrwspace (const char* in)
 	}
 
 	/* skip trailing whitespaces */
-	for (len = strlen(in); isspace(in[len - 1]); --len);
+	for (len = strlen(in); len && isspace(in[len - 1]); --len);
 
 	retval = strndup(in, len);
 	if (retval == NULL) {
