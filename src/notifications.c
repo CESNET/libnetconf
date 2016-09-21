@@ -1477,19 +1477,19 @@ static int ncntf_event_store(time_t etime, const char* content)
 				while (((r = write(s->fd_events, &len, sizeof(int32_t))) == -1) && (errno == EAGAIN ||errno == EINTR));
 				if (r == -1) {
                     goto write_failed;
-                }
+				}
 				while (((r = write(s->fd_events, &etime64, sizeof(uint64_t))) == -1) && (errno == EAGAIN ||errno == EINTR));
 				if (r == -1) {
                     goto write_failed;
-                }
+				}
 				while (((r = write(s->fd_events, record, len)) == -1) && (errno == EAGAIN ||errno == EINTR));
 				if (r == -1) {
                     goto write_failed;
-                }
-				if(ncntf_write_end_marker(s, etime64, MAGIC_END_MARKER) == -1) {
+				}
+				if((r = ncntf_write_end_marker(s, etime64, MAGIC_END_MARKER)) == -1) {
 					goto write_failed;
 				}
-                s->current_offset = (offset + len + sizeof(int32_t) + sizeof(uint64_t)); // do not include END MARKER
+				s->current_offset = (offset + len + sizeof(int32_t) + sizeof(uint64_t)); // do not include END MARKER
 
 write_failed:
 				if (r == -1) {
