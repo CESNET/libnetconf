@@ -1175,7 +1175,7 @@ static char* nc_rpc_get_cfg_editconfig(const nc_rpc* rpc)
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			return (NULL);
 		}
-		retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "edit-config", 0);
+		retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "edit-config", 1);
 		free(query);
 	}
 #endif
@@ -1203,7 +1203,7 @@ static char* nc_rpc_get_cfg_validate(const nc_rpc* rpc)
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			return (NULL);
 		}
-		retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "validate", 0);
+		retval = nc_rpc_get_cfg_common(rpc, BAD_CAST query, "validate", 1);
 		free(query);
 	}
 #endif
@@ -1260,7 +1260,7 @@ static xmlNodePtr ncxml_rpc_get_cfg_editconfig(const nc_rpc* rpc)
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			return (NULL);
 		}
-		retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "edit-config", 0);
+		retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "edit-config", 1);
 		free(query);
 	}
 #endif
@@ -1288,7 +1288,7 @@ static xmlNodePtr ncxml_rpc_get_cfg_validate(const nc_rpc* rpc)
 			ERROR("asprintf() failed (%s:%d).", __FILE__, __LINE__);
 			return (NULL);
 		}
-		retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "validate", 0);
+		retval = ncxml_rpc_get_cfg_common(rpc, BAD_CAST query, "validate", 1);
 		free(query);
 	}
 #endif
@@ -1933,7 +1933,7 @@ API nc_reply *nc_reply_custom(const char* data)
 		nc_err_set(e, NC_ERR_PARAM_MSG, "Configuration data seems to be corrupted.");
 		return (nc_reply_error(e));
 	}
-	
+
 	/*
 	 * Notice here we're not givin the imediate children (custom_data element) to nc_msg_create
 	 * but instead we provide its children
