@@ -4264,7 +4264,12 @@ static int apply_rpc_validate_(struct ncds_ds* ds, const struct nc_session* sess
 		}
 		xmlDocSetRootElement(doc, root);
 
-		ret = validate_ds(ds, doc, e);
+		if (root->children) {
+			ret = validate_ds(ds, doc, e);
+		} else {
+			/* no data from the datastore model */
+			ret = EXIT_RPC_NOT_APPLICABLE;
+		}
 
 		xmlFreeDoc(doc);
 	}
