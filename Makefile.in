@@ -299,7 +299,7 @@ rpm: tarball $(TARBALLPYAPI)
 	fi
 
 .PHONY: install
-install: all install-bin install-devel $(INSTALL_DOC) $(INSTALLPYAPI)
+install: all install-bin install-dev install-devtools $(INSTALL_DOC) $(INSTALLPYAPI)
 
 .PHONY: install-bin
 install-bin:
@@ -329,16 +329,12 @@ install-bin:
 		chmod a+rwx $(NC_WORKINGDIR_PATH); \
 	fi;
 
-.PHONY: install-devel
-install-devel: $(LNCTOOL) $(NAME).la $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR) $(NAME).pc
+.PHONY: install-devtools
+install-devtools: $(LNCTOOL) $(NAME).la $(NAME).pc
 	@[ -d $(DESTDIR)/$(libdir) ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir); chmod 755 $(DESTDIR)/$(libdir)); \
 	[ -d $(DESTDIR)/$(libdir)/pkgconfig ] || \
 	    (mkdir -p $(DESTDIR)/$(libdir)/pkgconfig; chmod 755 $(DESTDIR)/$(libdir)/pkgconfig); \
-	[ -d $(DESTDIR)/$(includedir) ] || \
-	    (mkdir -p $(DESTDIR)/$(includedir); chmod 755 $(DESTDIR)/$(includedir)); \
-	[ -d $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR) ] || \
-		(mkdir -p $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)); \
 	[ -d $(DESTDIR)/$(datadir)/$(NAME)/rnglib ] || \
 		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/rnglib); \
 	[ -d $(DESTDIR)/$(datadir)/$(NAME)/xslt ] || \
@@ -346,12 +342,6 @@ install-devel: $(LNCTOOL) $(NAME).la $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR) $(NAM
 	[ -d $(DESTDIR)/$(datadir)/$(NAME)/templates ] || \
 		(mkdir -p $(DESTDIR)/$(datadir)/$(NAME)/templates);
 	$(LIBTOOL) --mode=install cp $(NAME).la $(DESTDIR)/$(libdir); \
-	for i in $(HDRS_PUBL_ROOT); do \
-		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$$(basename $$i); \
-	done; \
-	for i in $(HDRS_PUBL_SUBDIR); do \
-		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
-	done;
 	$(INSTALL_DATA) $(NAME).pc $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc;
 	[ -d $(DESTDIR)/$(bindir) ] || \
 	   	(mkdir -p $(DESTDIR)/$(bindir); chmod 755 $(DESTDIR)/$(bindir)); \
@@ -359,6 +349,19 @@ install-devel: $(LNCTOOL) $(NAME).la $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR) $(NAM
 	$(INSTALL_DATA) dev-tools/lnctool/rnglib/* $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
 	$(INSTALL_DATA) dev-tools/lnctool/xslt/* $(DESTDIR)/$(datadir)/$(NAME)/xslt/;
 	$(INSTALL_DATA) dev-tools/lnctool/generator/* $(DESTDIR)/$(datadir)/$(NAME)/templates/;
+
+.PHONY: install-dev
+install-dev: $(HDRS_PUBL_ROOT) $(HDRS_PUBL_SUBDIR)
+	[ -d $(DESTDIR)/$(includedir) ] || \
+	    (mkdir -p $(DESTDIR)/$(includedir); chmod 755 $(DESTDIR)/$(includedir)); \
+	[ -d $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR) ] || \
+		(mkdir -p $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)); \
+	for i in $(HDRS_PUBL_ROOT); do \
+		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$$(basename $$i); \
+	done; \
+	for i in $(HDRS_PUBL_SUBDIR); do \
+		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
+	done;
 
 .PHONY: install-doc
 install-doc: doc
@@ -372,26 +375,29 @@ install-pyapi: pyapi
 	@cd python; $(PYTHON) ./setup.py install --prefix=$(DESTDIR)/$(PYPREFIX); cd -;
 
 .PHONY: uninstall
-uninstall: uninstall-devel uninstall-doc $(UNINSTALLPYAPI)
+uninstall: uninstall-dev uninstall-devtools uninstall-doc $(UNINSTALLPYAPI)
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libnetconf.la
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
 	rm $(NC_WORKINGDIR_PATH)/ietf-netconf-acm*.rng $(NC_WORKINGDIR_PATH)/ietf-netconf-acm-schematron.xsl;
 
-.PHONY: uninstall-devel
-uninstall-devel:
+.PHONY: uninstall-devtools
+uninstall-devtools:
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)/$(libdir)/libnetconf.la \
 	[ ! -d $(DESTDIR)/$(libdir) ] || rmdir -p $(DESTDIR)/$(libdir) || echo "Directory already gone."
+	rm -f $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
+	rm -f $(DESTDIR)/$(bindir)/lnctool; \
+	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
+	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/xslt/; \
+	rm -f $(DESTDIR)/$(bindir)/lncdatastore;
+
+.PHONY: uninstall-dev
+uninstall-dev:
 	for i in $(HDRS_PUBL_ROOT); do \
 		rm -f $(DESTDIR)/$(includedir)/$$(basename $$i); \
 	done; \
 	for i in $(HDRS_PUBL_SUBDIR); do \
 		rm -f $(DESTDIR)/$(includedir)/$(SUBHEADERS_DIR)/$$(basename $$i); \
 	done; \
-	rm -f $(DESTDIR)/$(libdir)/pkgconfig/$(NAME).pc; \
-	rm -f $(DESTDIR)/$(bindir)/lnctool; \
-	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/rnglib/; \
-	rm -rf $(DESTDIR)/$(datadir)/$(NAME)/xslt/; \
-	rm -f $(DESTDIR)/$(bindir)/lncdatastore;
 
 .PHONY: uninstall-doc
 uninstall-doc:
