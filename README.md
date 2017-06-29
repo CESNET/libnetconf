@@ -20,8 +20,8 @@ functions.
 **libnetconf** was developed by the [Tools for
 Monitoring and Configuration](https://www.liberouter.org/) department of
 [CESNET](http://www.ces.net/). It implements the NETCONF protocol introduced by IETF -
-more information about NETCONF protocol can be found at [NETCONF WG]
-(http://trac.tools.ietf.org/wg/netconf/trac/wiki).
+more information about NETCONF protocol can be found at 
+[NETCONF WG](http://trac.tools.ietf.org/wg/netconf/trac/wiki).
 
 ## Documentation
 
@@ -58,8 +58,7 @@ Informations about differencies to the previous version can be found in [RELEASE
 ## Interoperability
 
 In November 2012, prior to the IETF 85 meeting, **libnetconf** was one of the
-NETCONF protocol implementation participating in [NETCONF Interoperability Testing]
-(http://www.internetsociety.org/articles/successful-netconf-interoperability-testing-announced-ietf-85).
+NETCONF protocol implementation participating in [NETCONF Interoperability Testing](http://www.internetsociety.org/articles/successful-netconf-interoperability-testing-announced-ietf-85).
 
 ## Papers and Articles
 
@@ -90,8 +89,8 @@ In 2013, the [Netopeer project](http://code.google.com/p/netopeer/) was restarte
 Currently it contains an advanced NETCONF server developed at CESNET with several
 transAPI modules covering basic configuration of the Linux server. Furthermore, it
 also contains a command line interface that came from the **libnetconf**, where it was
-used as example application. [The Netopeer web client]
-(https://github.com/CESNET/Netopeer-GUI) is available separately at GitHub.
+used as example application. [The Netopeer web client](https://github.com/CESNET/Netopeer-GUI)
+is available separately at GitHub.
 
 In June 2015, the project was moved to GitHub because of GoogleCode shutdown.
 
