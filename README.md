@@ -1,32 +1,27 @@
 ## libnetconf – The NETCONF protocol library
 
-[![Project Stats](https://www.openhub.net/p/libnetconf/widgets/project_thin_badge.gif)]
-(https://www.openhub.net/p/libnetconf)
+[![Project Stats](https://www.openhub.net/p/libnetconf/widgets/project_thin_badge.gif)](https://www.openhub.net/p/libnetconf)
 
 **libnetconf** is a NETCONF library in C intended for building NETCONF clients
 and servers. It provides basic functions to connect NETCONF client and server
 to each other via SSH, to send and receive NETCONF messages and to store and
 work with the configuration data in a datastore.
 
-**libnetconf** implements the NETCONF protocol introduced by IETF. More
-information about NETCONF protocol can be found at [NETCONF WG]
-(http://trac.tools.ietf.org/wg/netconf/trac/wiki).
-
-**libnetconf** is maintained and further developed by the [Tools for
-Monitoring and Configuration](https://www.liberouter.org/) department of
-[CESNET](http://www.ces.net/). Any testing of the library is welcome. Please
-inform us about your experiences with using **libnetconf** via the [issue tracker]
-(https://github.com/CESNET/libnetconf/issues).
-
-Based on our experiences with development **libnetconf**, we are currently
-working on next generation of this library based on [libyang]
+With the experiences from **libnetconf**, we have moved our activities to
+work on next generation of this library based on [libyang]
 (https://github.com/CESNET/libyang) library. [libnetconf2](https://github.com/CESNET/libnetconf2)
-is already quite mature, but is still missing server-side notifications. Also,
-**libnetconf2** does not include NETCONF datastore implementation. So,
-if you either want to build a standard NETCONF client or a NETCONF server without notifications
-(for now) and with your own datastores, it is recommended to use **libnetconf2** instead
-**libnetconf**. Examples of applications built on **libnetconf2** are [netopeer2](https://github.com/CESNET/netopeer2)
-server and CLI.
+is mature enough to be used as a replacement of the original **libnetconf**. Therefore, the
+**libnetconf** is no more developed neither maintained. Note, that while **libnetconf2** does not
+include NETCONF datastore implementation, this particular functionality can be implemented
+via [sysrepo](https://github.com/sysrepo/sysrepo) project. Similarly, the NETCONF server/client
+implementation [Netopeer](https://github.com/CESNET/netopeer) is deprecated and replaced by [Netopeer2](https://github.com/CESNET/netopeer2) which can be also used as a reference tool using **libnetconf2**
+functions.
+
+**libnetconf** was developed by the [Tools for
+Monitoring and Configuration](https://www.liberouter.org/) department of
+[CESNET](http://www.ces.net/). It implements the NETCONF protocol introduced by IETF -
+more information about NETCONF protocol can be found at [NETCONF WG]
+(http://trac.tools.ietf.org/wg/netconf/trac/wiki).
 
 ## Documentation
 
@@ -99,6 +94,10 @@ used as example application. [The Netopeer web client]
 (https://github.com/CESNET/Netopeer-GUI) is available separately at GitHub.
 
 In June 2015, the project was moved to GitHub because of GoogleCode shutdown.
+
+In 2016 we have moved our activity to [libyang](https://github.com/CESNET/libyang)
+and [libnetconf2](https://github.com/CESNET/libnetconf2). The tools became mature
+in 2017 so the original libnetconf is no more maintained from that time.
 
 ## Release History
 
