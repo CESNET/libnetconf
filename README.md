@@ -8,8 +8,8 @@ to each other via SSH, to send and receive NETCONF messages and to store and
 work with the configuration data in a datastore.
 
 With the experiences from **libnetconf**, we have moved our activities to
-work on next generation of this library based on [libyang]
-(https://github.com/CESNET/libyang) library. [libnetconf2](https://github.com/CESNET/libnetconf2)
+work on next generation of this library based on [libyang](https://github.com/CESNET/libyang)
+library. [libnetconf2](https://github.com/CESNET/libnetconf2)
 is mature enough to be used as a replacement of the original **libnetconf**. Therefore, the
 **libnetconf** is no more developed neither maintained. Note, that while **libnetconf2** does not
 include NETCONF datastore implementation, this particular functionality can be implemented
