@@ -515,9 +515,12 @@ fi
 
 if test "$libssh" = "yes"; then
 	### libssh ###
-	AC_CHECK_LIB([ssh], [ssh_pki_key_ecdsa_name], [], AC_MSG_ERROR([Missing libssh (>=0.6.4).]))
+	AC_CHECK_LIB([ssh], [ssh_threads_get_pthread], [], [
+        AC_CHECK_LIB([ssh], [ssh_pki_key_ecdsa_name], [], AC_MSG_ERROR([Missing libssh (>=0.6.4).]))
+        AC_CHECK_LIB([ssh_threads], [ssh_threads_get_pthread], [], AC_MSG_ERROR([Missing the libssh_threads library.]))
+	])
 	AC_CHECK_HEADERS([libssh/libssh.h], [], AC_MSG_ERROR([Missing libssh headers.]))
-	AC_CHECK_LIB([ssh_threads], [ssh_threads_get_pthread], [], AC_MSG_ERROR([Missing the libssh_threads library.]))
+
 	BUILDREQS="$BUILDREQS libssh-devel >= 0.6.4"
 	DEVELREQS="$DEVELREQS libssh-devel >= 0.6.4"
 fi
