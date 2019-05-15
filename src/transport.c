@@ -875,6 +875,7 @@ struct nc_session* _nc_session_accept(const struct nc_cpblts* capabilities, cons
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		free(retval);
 		return (NULL);
 	}
 	retval->mut_channel = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
@@ -886,6 +887,7 @@ struct nc_session* _nc_session_accept(const struct nc_cpblts* capabilities, cons
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
 		pthread_mutexattr_destroy(&mattr);
+		free(retval);
 		return (NULL);
 	}
 	pthread_mutexattr_destroy(&mattr);

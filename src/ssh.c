@@ -518,6 +518,7 @@ struct nc_session *nc_session_connect_libssh_channel(struct nc_session *session)
 
 	if (pthread_mutexattr_init(&mattr) != 0) {
 		ERROR("Memory allocation failed (%s:%d).", __FILE__, __LINE__);
+		free(retval);
 		return (NULL);
 	}
 	pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
@@ -527,6 +528,7 @@ struct nc_session *nc_session_connect_libssh_channel(struct nc_session *session)
 			(r = pthread_mutex_init(&(retval->mut_session), &mattr)) != 0) {
 		ERROR("Mutex initialization failed (%s).", strerror(r));
 		pthread_mutexattr_destroy(&mattr);
+		free(retval);
 		return (NULL);
 	}
 	pthread_mutexattr_destroy(&mattr);

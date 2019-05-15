@@ -167,11 +167,13 @@ static char* callback_sshauth_password_default (const char* username,
 
 	if ((tty = fopen("/dev/tty", "r+")) == NULL) {
 		ERROR("Unable to open the current terminal (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+		free(buf);
 		return (NULL);
 	}
 
 	if (tcgetattr(fileno(tty), &oldterm) != 0) {
 		ERROR("Unable to get terminal settings (%d: %s).", __LINE__, strerror(errno));
+		free(buf);
 		return (NULL);
 	}
 
@@ -185,6 +187,7 @@ static char* callback_sshauth_password_default (const char* username,
 	tcflush(fileno(tty), TCIFLUSH);
 	if (tcsetattr(fileno(tty), TCSANOW, &newterm) != 0) {
 		ERROR("Unable to change terminal settings for hiding password (%d: %s).", __LINE__, strerror(errno));
+		free(buf);
 		return (NULL);
 	}
 
@@ -332,11 +335,13 @@ static char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 
 	if ((tty = fopen("/dev/tty", "r+")) == NULL) {
 		ERROR("Unable to open the current terminal (%s:%d - %s).", __FILE__, __LINE__, strerror(errno));
+		free(buf);
 		return (NULL);
 	}
 
 	if (tcgetattr(fileno(tty), &oldterm) != 0) {
 		ERROR("Unable to get terminal settings (%d: %s).", __LINE__, strerror(errno));
+		free(buf);
 		return (NULL);
 	}
 
@@ -350,6 +355,7 @@ static char* callback_sshauth_publickey_default (const char*  UNUSED(username),
 	tcflush(fileno(tty), TCIFLUSH);
 	if (tcsetattr(fileno(tty), TCSANOW, &newterm) != 0) {
 		ERROR("Unable to change terminal settings for hiding password (%d: %s).", __LINE__, strerror(errno));
+		free(buf);
 		return (NULL);
 	}
 
