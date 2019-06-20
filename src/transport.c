@@ -1181,7 +1181,7 @@ API int nc_callhome_listen(unsigned int port)
 		port = NC_REVERSE_PORT;
 	}
 
-	if (snprintf(port_s, SHORT_INT_LENGTH, "%d", port) < 0) {
+	if (snprintf(port_s, SHORT_INT_LENGTH, "%u", port) < 0) {
 		/* converting short int to the string failed */
 		ERROR("Unable to convert the port number to a string.");
 		return (EXIT_FAILURE);

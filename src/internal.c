@@ -259,7 +259,7 @@ static int nc_apps_check(const char* comm, struct nc_apps* apps) {
 		if (readcount < 0) {
 			continue;
 		}
-		if (runcomm[readcount-1] == '\n') {
+		if (readcount > 0 && runcomm[readcount-1] == '\n') {
 			runcomm[readcount-1] = '\0';
 		} else {
 			runcomm[readcount] = '\0';

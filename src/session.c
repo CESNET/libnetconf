@@ -303,11 +303,15 @@ API int nc_session_monitor(struct nc_session* session)
 #define UNKN_HOST "UNKNOWN"
 #define UNKN_HOST_SIZE 8
 
+	if (session == NULL) {
+		return (EXIT_FAILURE);
+	}
+
 	if (session->monitored) {
 		return (EXIT_SUCCESS);
 	}
 
-	if (session == NULL || session_list == NULL) {
+	if (session_list == NULL) {
 		return (EXIT_FAILURE);
 	}
 

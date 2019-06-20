@@ -1695,6 +1695,7 @@ static char* compare_schemas(struct data_model* model, char* name, char* version
 			/* perhaps starts with "<?xml"? */
 			if (fread(retval, 1, 5, file) < 5) {
 				ERROR("%s: failed to read \"%s\" (%s).", __func__, model->path, strerror(errno));
+				free(retval);
 				fclose(file);
 				return (ERROR_POINTER);
 			}
@@ -1724,6 +1725,7 @@ static char* compare_schemas(struct data_model* model, char* name, char* version
 			/* read the rest */
 			if (fread(retval + start, 1, size, file) < (unsigned)size) {
 				ERROR("%s: failed to read \"%s\" (%s).", __func__, model->path, strerror(errno));
+				free(retval);
 				fclose(file);
 				return (ERROR_POINTER);
 			}
@@ -3433,6 +3435,7 @@ API int ncds_add_augment_transapi_static(const char* model_path, const struct tr
 		/* allocate transapi structure */
 		if ((model->transapi = malloc(sizeof(struct transapi_internal))) == NULL) {
 			ERROR("Memory allocation failed - %s (%s:%d).", strerror (errno), __FILE__, __LINE__);
+			free(tapi_item);
 			ncds_ds_model_free(model);
 			return (EXIT_FAILURE);
 		}

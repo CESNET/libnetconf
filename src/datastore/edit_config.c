@@ -142,9 +142,7 @@ static NC_EDIT_OP_TYPE get_operation(xmlNodePtr node, NC_EDIT_DEFOP_TYPE defop, 
 			op = NC_EDIT_OP_REMOVE;
 		} else {
 			if (error != NULL) {
-				if (error != NULL) {
-					*error = nc_err_new(NC_ERR_BAD_ATTR);
-				}
+				*error = nc_err_new(NC_ERR_BAD_ATTR);
 				nc_err_set(*error, NC_ERR_PARAM_INFO_BADATTR, NC_EDIT_ATTR_OP);
 			}
 			op = NC_EDIT_OP_ERROR;
@@ -714,9 +712,6 @@ static xmlXPathObjectPtr get_operation_elements(NC_EDIT_OP_TYPE op, xmlDocPtr ed
 	/* create xpath evaluation context */
 	edit_ctxt = xmlXPathNewContext(edit);
 	if (edit_ctxt == NULL) {
-		if (edit_ctxt != NULL) {
-			xmlXPathFreeContext(edit_ctxt);
-		}
 		ERROR("Creating the XPath evaluation context failed (%s:%d).", __FILE__, __LINE__);
 		return (NULL);
 	}
