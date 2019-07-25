@@ -1005,7 +1005,7 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 			 * reboots
 			 */
 			if (!nc_cpblts_enabled(dummy_session, NC_CAP_STARTUP_ID)) {
-				goto cleanup;
+				goto cleanup_inloop;
 			}
 
 			/* replace running datastore with current configuration provided by module, or erase it if none provided
@@ -1029,6 +1029,7 @@ API int ncds_device_init(ncds_id *id, struct nc_cpblts *cpblts, int force)
 			}
 			nc_reply_free(reply_msg);
 
+cleanup_inloop:
 			/* prepare variable for the next loop */
 			free(new_running_config);
 			new_running_config = NULL;
